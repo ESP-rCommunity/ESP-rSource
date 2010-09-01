@@ -61,7 +61,7 @@ C Path to model.
       common/uhome/upath
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/user/browse
 
       common/rcmd/LCMDFL
@@ -131,7 +131,7 @@ C Name of current application
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
@@ -1181,9 +1181,9 @@ C Path to model.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
       character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
@@ -1363,7 +1363,7 @@ C inqu_tmc: Check if tmc control active.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1376,13 +1376,11 @@ C geometry.h provides commons G0 and G2.
       character outs*124
 
       logical XST
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       ITA1=IFIL+6
 
 C NABS = number of alternative blind states.
       NABS=0
-      newgeo=.false.  ! assume older format geometry.
 
 C Loop through zones checking if a tmc file has been referenced.
       do 10 ICOMP=1,NCOMP
@@ -1392,12 +1390,7 @@ C Rescan zone Construction and TMC file
 C (need to test blind/ shuter control flags).
           call FINDFIL(LTHRM(ICOMP),XST)
           if(XST)then
-            call eclose(gversion(icomp),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-            else
-              call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-            endif
+            call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
             CALL ECONST(LTHRM(ICOMP),ITA1,ICOMP,0,IUOUT,IER)
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else

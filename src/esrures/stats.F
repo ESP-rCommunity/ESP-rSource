@@ -74,6 +74,7 @@ C SNAPSH is a logical flag to request variation in header.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER RSNAME*40
       CHARACTER*3 NMTHNM(12)
+      integer IWM,ihd  ! for radio buttons
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -713,6 +714,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)
@@ -733,6 +735,7 @@ C Display help messages.
 
 C Menu help text.
         H(1)='Information on each report is provided.'
+        ihd=1
         call easkatog(' ','Help options:','overview','summary stats',
      &   'frequency table','energy balances','detailed stats',
      &   'monthly gain loss','cancel',ihd,1)
@@ -2235,8 +2238,6 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -2250,8 +2251,6 @@ C =2 with more than 3 day types
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,lodlabel*6,act*1,prompt*124
@@ -2259,14 +2258,12 @@ C =2 with more than 3 day types
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check for sufficient information.
       IF(ISAVE.le.1)THEN
         CALL EPAGEW
         RETURN
       ENDIF
-      newgeo=.false.  ! assume older format geometry.
 
       LABSurf(1)= ' @opq'
       LABSurf(2)= ' @trn'
@@ -2333,12 +2330,8 @@ C Read geometry and construction files and setup labels.
       DO 65 JZ=1,NZ
         izone=NZNO(JZ)
         iunit=ifil+1
-        call eclose(gversion(izone),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,LGEOM(izone),izone,0,iuout,ier)
-        else
-          call egomin(iunit,LGEOM(izone),izone,0,0,iuout,ier)
-        endif
+        call georead(iunit,LGEOM(izone),izone,0,iuout,ier)
+
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.

@@ -63,8 +63,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
 C Path to problem
       common/rpath/path
@@ -291,7 +289,7 @@ C Initialize the 1D gridding variables.
 
 C Set flag so that bounds are checked.
               DO 30 ICOMP=1,NCOMP
-                ZBFLG(ICOMP)=0
+                iZBFLG(ICOMP)=0
    30         CONTINUE
               CFGOK=.TRUE.
               MODIFY=.TRUE.
@@ -412,7 +410,7 @@ C Initialize the 1D gridding variables.
 
 C Set flag so that bounds are checked.
           DO 20 ICOMP=1,NCOMP
-            ZBFLG(ICOMP)=0
+            iZBFLG(ICOMP)=0
    20     CONTINUE
           ENDIF
         ELSE
@@ -499,7 +497,7 @@ C *********************************************************************
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
@@ -519,7 +517,6 @@ C geometry.h provides commons G0 and G2.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
       LOGICAL GRDOK
-      logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERTX*2
 
 C If materials database not opened warn the user.
@@ -535,7 +532,6 @@ C If materials database not opened warn the user.
       endif
 
       GRDOK=.true.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       FMIN=0.45
       FREF=0.5
@@ -546,12 +542,7 @@ C If materials database not opened warn the user.
       BCNV=5.0
       NNDS=0
       DO 10 ICOMP=1,NCOMP
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         IF(IER.NE.0)THEN
           GRDOK=.FALSE.
           RETURN

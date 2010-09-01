@@ -106,15 +106,6 @@ C Monitor commons.
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
 
-C TDF commons. zrotp is the previous rotation angle for each zone.
-      COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
@@ -208,41 +199,10 @@ C Common for electrical file.
 
 C Additional commons for SHOCC.
 
-C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)
 C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
 C             base area has been supplied by the user.
-C SOTF (32 char) - surface attribute indicating OPAQUE or an optical property.
-C SVFC (4 char) - string indicating whether the surface is to be
-C     counted as a UP/FLOR (face up), VERT (wall), DOWN/CEIL (face down),
-C     SLOP (not vertical) for purposes of floor area and daylighting.
-C 
-C SMLCN (32 char) surface construction attribute.
-C SOTHER (24 char * 3) surface attributes for `other` side. 
-C   SOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
-C               for this case SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = EXTERIOR means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = ADIABATIC means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = SIMILAR means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = BASESIMP means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = GROUND means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = if a zone name then its index will be moved to SOTHER(2) and
-C               the surface index in SOTHER(3) and the key word ANOTHER is
-C               put in SOTHER(1).
-C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
-C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface as follows (note this is
-C    likely to be a temporary variable and will be depreciated in favour
-C    of SSUSE:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
+C Common block G5 documented in geometry.h
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
 
@@ -267,9 +227,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 
       CHARACTER*72 hvacfile
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
@@ -319,7 +276,6 @@ C water
       logical itank_flag
 
       logical autook
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer ier,IClmErr
 
 C SUN F90 has spotty support for cpu_time intrinsic
@@ -343,9 +299,6 @@ C is complete.
 C Trace output.
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(40).ne.0) call edisp(itu,' entering subroutine mznuma')
-
-      newgeo=.false.  ! assume older format geometry.
-
 
 C If computational time-step less than one hour
 C modify coefficients computed in MZCOE1.
@@ -1197,13 +1150,7 @@ C                 if(itrc.gt.1)then
                     CALL EDISP(IUOUT,outs)
 C                 endif
                   igu=ifil+1
-                  call eclose(gversion(icomp),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
-                  else
-                    call egomin(igu,LGEOM(icomp),icomp,1,itrc,iuout,
-     &                IER)
-                  endif
+                  call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
                   call escrot(OBROT,0.,0.)
 
 C Recalculate time invariant zone data.

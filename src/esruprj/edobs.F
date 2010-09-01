@@ -45,8 +45,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/pophelp/h(60)
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -58,8 +56,6 @@ C LPRFDB,IPRODB (for event profile database)
       dimension IVALB(MB)
       CHARACTER*33 VERT(35)
       character*32 PICK(MB)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER KEY*1,H*72,HOLD*24
       character blkroot*8,mat*12,tbn*12
       character holds*36
@@ -69,6 +65,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical silent  ! to signal quiet dependency resolution
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
+      integer IW  ! for radio button
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -460,6 +457,7 @@ C Rotation choices.
 
 C +- Obstruction.
         h(1)='Use this to add / delete / copy obstructions. '
+        IW=1
         CALL EASKATOG('Modify obstruction list:',' ',
      &    'add','delete','copy','continue',' ',' ',' ',IW,1)
         IF(IW.EQ.2)THEN
@@ -707,11 +705,11 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
       CHARACTER H*72,LTMP*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1041,6 +1039,7 @@ C if user requests conversion to a general 6 sided polygon.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "prj3dv.h"
 
 C Parameters
       integer ITRU   ! unit for writing errors
@@ -1051,17 +1050,12 @@ C Parameters
       
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
-C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND
       DIMENSION VERT(22),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12
@@ -1743,7 +1737,6 @@ C Parameters
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XXW(4),YYW(4),ZZW(4)
       DIMENSION  TMAT(4,4),RMAT(4,4),VP(3),EP(3),EQN(4)

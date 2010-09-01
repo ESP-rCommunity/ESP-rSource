@@ -37,15 +37,10 @@ C ITC maps fields >> VAL index where VAL(1) is the fractional julain
 C day and VAL(2...) are timestep fields.
 
       SUBROUTINE RCTDFR(ITRC,ID,IJ,time,VAL,ISDAT,IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      common/tdset/itdyear,itdbdoy,itdedoy
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       dimension VAL(MBITS+2)
@@ -138,32 +133,25 @@ C Reporting.
 C ******************** MOMEASURED ********************
 
 C MOMEASURED sets up data from temporal file for measured
-C zone db temperatures and (?). This is done by recovering the
-C and interpolating as required. Returns requested value
-C in GVAL.
+C zone db temperatures, surface temperatures and (?). 
+C This is done by recovering the and interpolating as required. 
+C Returns requested value in GVAL.
 
-      subroutine momeasured(iday,izone)
+      subroutine momeasured(focus,iday,izone,isurf)
 #include "building.h"
 #include "tdf2.h"
 
 C Parameters
+      character focus*8  ! key word for the focus
       integer iday  ! the current day
       integer izone ! the associated zone
+      integer isurf ! the associated surface
 
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/AVRAGE/IDAVER
-
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
 
       DIMENSION VAL(MBITS+2)
 C      CHARACTER OUTS*124   ! uncomment if debug needed
@@ -173,7 +161,11 @@ C      CHARACTER OUTS*124   ! uncomment if debug needed
 C Check to see if there is a temporal measured data
 C entry for this zone.
       found = .false.
-      if(IDBTZNM(izone).ne.0)found = .true.
+      if(focus(1:5).eq.'DBZNM')then
+        if(IDBTZNM(izone).ne.0)found = .true.
+      elseif(focus(1:5).eq.'SURTM')then
+        if(ISURTMEAS(izone,isurf).ne.0)found = .true.
+      endif
       if(found)then
 
 C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
@@ -193,7 +185,11 @@ C TFL is is the last timestep of the previous day.
             TP = TF - (1./Y2)
 
 C Get value of the temporal item.
-            itdi=IDBTZNM(izone)
+            if(focus(1:5).eq.'DBZNM')then
+              itdi=IDBTZNM(izone)
+            elseif(focus(1:5).eq.'SURTM')then
+              itdi=ISURTMEAS(izone,isurf)
+            endif
             IFOC=itdi
             if(ij.eq.1)then
               CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)

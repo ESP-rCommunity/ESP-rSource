@@ -47,7 +47,6 @@ c zonetotsurfacearea - total surface area in the zone (held in geometry.h)
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
@@ -129,7 +128,6 @@ c VOL    - zone bounded volume
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
 
       V=0.
@@ -177,8 +175,8 @@ c           convection coefficients.
 
       SUBROUTINE MZPAZI(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -233,8 +231,6 @@ c unavailable.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/V2/CFB(MCOM,MST,MST)
 
@@ -397,7 +393,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
+C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
 #include "power.h"
 
@@ -407,8 +403,6 @@ C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -713,8 +707,7 @@ c ITCNST  - number of start-up days
 
       SUBROUTINE MZTCON(ICOMP)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -803,8 +796,6 @@ c           surface respectively
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)

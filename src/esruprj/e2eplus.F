@@ -33,7 +33,7 @@ C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -58,11 +58,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
 
@@ -104,10 +99,7 @@ C Simulation parameter presets.
 
       character GDESCR*36
       CHARACTER NAM*72,outs*124,h*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,CLMLOC*30,LCFGF*72
+      character CLMLOC*30,LCFGF*72
       character cfgroot*24
       character ctldoc*248,LCTLF*72
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
@@ -1844,11 +1836,7 @@ C Read in the zone geometry.
         WRITE(outs,'(a,a)',iostat=ios,err=5)' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
-        else
-          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
-        endif
+        call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7

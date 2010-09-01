@@ -706,8 +706,7 @@ C INTCNC initializes the multi-D connection surfaces variables.
 C *********************************************************************
       SUBROUTINE INTCNC
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -913,8 +912,8 @@ C INDCNC Initializes the connection surfaces indentations.
 C *********************************************************************
       SUBROUTINE INDCNC
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
       COMMON/GR3D08/Y1S(MS),Y1SS(MSSZ),Y1SE(MSEZ)
@@ -1487,8 +1486,7 @@ C CMVRTS determines if a vertex is included in a surface.
 C *********************************************************************
       SUBROUTINE CMVRTS(IV1,IS2,YES)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       LOGICAL YES
 
@@ -1707,8 +1705,8 @@ C PLNORM defines the direction cosines for a plane in space.
 C *********************************************************************
       SUBROUTINE PLNORM(IV1,IV2,IV3,PLNRM)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION VECT1(3),VECT2(3),PLNRM(3)
 
       VECT1(1)=X(IV2)-X(IV1)
@@ -1730,8 +1728,8 @@ C LINORM defines the direction cosines for a line in space.
 C *********************************************************************
       SUBROUTINE LINORM(IV1,IV2,XYZLIN)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION XYZLIN(3)
 
       XYZLIN(1)=X(IV2)-X(IV1)
@@ -1749,8 +1747,7 @@ C ANGCOS defines the angle between two vectors in space from cosine law.
 C *********************************************************************
       SUBROUTINE ANGCOS(IV1,IV2,IV3,THETA)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       PI=3.1415927
       DX1=X(IV1)-X(IV2)
@@ -1771,8 +1768,8 @@ C GCOORD determines the global coordinate.
 C *********************************************************************
       SUBROUTINE GCOORD(ISP,NSP,XND,YND,ZND,GX,GY,GZ)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D08/Y1S(MS),Y1SS(MSSZ),Y1SE(MSEZ)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)

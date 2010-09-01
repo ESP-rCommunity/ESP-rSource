@@ -27,6 +27,8 @@ C **************** EMKCFG
 C EMKCFG writes out the current contents of system configuration
 C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
+      
+      USE AIM2_InputData, ONLY:LAIM2
 
 #include "building.h"
 #include "model.h"
@@ -51,7 +53,6 @@ C ICLIM,LCLIM (for climate file)
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
-#include "UserSimulationToggles.h"
       PARAMETER (MSTMC=20,MSGAL=40)
 #include "schedule.h"
       
@@ -76,7 +77,7 @@ C Plant network.
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -136,9 +137,6 @@ C Structured mesh.
       COMMON/GRSD101/LGrdSt
 
 C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
@@ -189,8 +187,6 @@ C Simulation parameter presets.
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
@@ -254,12 +250,12 @@ C If 0 then the calculation includes diffuse shading.
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
 
-      CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
+      CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
-      CHARACTER LPNF*72,LTDF*72,LTDFA*72
+      CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       character lradcf*72
@@ -270,7 +266,7 @@ C If 0 then the calculation includes diffuse shading.
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
@@ -478,6 +474,8 @@ C Begin writing the file with version number in the header.
      &  '  # path to networks'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',aimpth,
+     &  '  # path to aim2 files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
@@ -708,31 +706,6 @@ C Write initial view info if other than default.
      &    VIEWMI(1),VIEWMI(2),VIEWMI(3),ANGI
       endif
 
-C User defined simulation toggles. 
-      UserGAM: if ( bUserGAM ) then 
-      
-        WRITE(IFCFG,'(A,A,f8.4)',IOSTAT=IOS,ERR=2)
-     &     '*sim-toggle ', 
-     &     'bld-soln-implicitness ',
-     &     fUserGAM
-      
-      endif UserGAM
-      
-      UserSolar: if ( bUserSolar ) then 
-      
-        if ( iUserSolar == 0 ) then
-          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &     '*sim-toggle ', 
-     &     'bld-solar-processing ',
-     &     'enabled '
-        else 
-          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &     '*sim-toggle ', 
-     &     'bld-solar-processing ',
-     &     'disabled '
-        endif 
-      endif UserSolar
-      
 C Write out calendar if defined
       IF(CALENAME(1:7).NE.'UNKNOWN')THEN
         write(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*calename ',
@@ -1452,12 +1425,8 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8986)  

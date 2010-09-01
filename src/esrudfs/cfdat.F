@@ -1467,13 +1467,9 @@ C   from common block variable icp.
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER SURF*12
       integer lnssn,lnsurf
 
@@ -2043,9 +2039,9 @@ C  with the origin at the lower southwest corner of the CFD domain.
       SUBROUTINE SETGEO
 #include "cfd.h"
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),

@@ -40,7 +40,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G1/G2/c20.
 #include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -59,7 +59,6 @@ C espriou.h provides currentfile.
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
@@ -87,7 +86,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
       LOGICAL prob,OK,dok,unixok
       logical longpause
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
@@ -99,7 +97,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
 C Check if Unix-based or DOS based.
       call isunix(unixok)
       longpause=.true.     ! initially use longer pause
-      newgeo=.false.  ! assume older format geometry.
 
 C General image option flags for use with cadjview.
       ITDSP=1
@@ -520,12 +517,7 @@ C of connections re-establish the IZSTOCN array.
           call edisp(iuout,'Clearing contiguity... ')
           ICC=0
           do 87 IZ=1,NCOMP
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-            else
-              call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-            endif
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
             nzsur(iz)=nsur
             do 88 IS=1,NSUR
               ICC=ICC+1
@@ -588,12 +580,7 @@ C attributes.
 C << show the surface attributes also be cleared?? >>
 
           do 187 IZ=1,NCOMP
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-            else
-              call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-            endif
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
             nzsur(iz)=nsur
             do 188 IS=1,NSUR
               if(ICT(ICC).eq.1.and.M1OK)then
@@ -787,14 +774,8 @@ C the user to confirm before writing to temporary configuration file.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C G5 required for updating zone geometry file (until such time as geometry
 C write can use G6 common blocks).
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
@@ -809,10 +790,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72
       character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
@@ -876,12 +853,7 @@ C skiped.
 C Display the reference zone (if type 3 then display both).
 C Remember topology attributes for reference zone.
         IUO=IFIL+1
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUO,LGEOM(IZ),IZ,0,iuout,IER)
-        else
-          call egomin(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
-        endif
+        call georead(IUO,LGEOM(IZ),IZ,0,iuout,IER)
         do 322 IJ=1,NSUR
           ICN=IZSTOCN(iz,ij)
           TOTHER(IJ,1)=SSOTHER(ICN,1)
@@ -1705,12 +1677,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
 
         if(UPDGEO)then
           call edisp(iuout,' Updating surface attributes...')
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+2,LGEOM(IZ),IZ,0,iuout,IER)
-          else
-            call egomin(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
-          endif
+          call georead(IFIL+2,LGEOM(IZ),IZ,0,iuout,IER)
           do 323 IJ=1,NSUR
             SOTHER(IJ,1)=TOTHER(IJ,1)
             SOTHER(IJ,2)=TOTHER(IJ,2)
@@ -1784,8 +1751,6 @@ C Parameters: logical variables set the context of what to check
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1795,16 +1760,12 @@ C Parameters: logical variables set the context of what to check
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
       CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
       CHARACTER bl*2
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C General image option flags.
-      newgeo=.false.  ! assume older format geometry.
       bl='  '
       ITDSP=1
       ITBND=1
@@ -1832,12 +1793,7 @@ C and display zone when connection jumps to another zone.
         CALL CONXINF(1,ICC,CXSTR)
         CALL EDISP(iuout,CXSTR)
         IF(ICL.NE.IC1(ICC))THEN
-          call eclose(gversion(IC1(ICC)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,ITRU,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,0,ITRU,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,ITRU,IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
 
@@ -2957,9 +2913,6 @@ C espriou.h for climatelist file name.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C IDST tool commands.
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
      &             CMDLNAM(10)
@@ -2974,8 +2927,6 @@ C IDST tool commands.
       character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,outs*124,LTMP*72
       character clmdb*144
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
       character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,alias*32,donegdst*72
@@ -3047,12 +2998,7 @@ C updated as well.
                   is=ie1(ifoc)
                   icc=izstocn(iz,is)
                   LTMP=LGEOM(IZ)
-                  call eclose(gversion(IZ),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
-                  else
-                    call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
-                  endif
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
@@ -3088,12 +3034,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   is=ie1(ifoc)
                   icc=izstocn(iz,is)
                   LTMP=LGEOM(IZ)
-                  call eclose(gversion(IZ),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
-                  else
-                    CALL EGOMIN(IUF,LTMP,IZ,1,0,iuout,IER)
-                  endif
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
@@ -3129,12 +3070,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   is=ie1(ifoc)
                   icc=izstocn(iz,is)
                   LTMP=LGEOM(IZ)
-                  call eclose(gversion(IZ),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
-                  else
-                    call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
-                  endif
+                  call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
@@ -3351,9 +3287,6 @@ C Serchrpl handles search and replace of composition attributes.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
@@ -3365,12 +3298,12 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
 
       character LTMP*72
       character H*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,outs*124,SN*12,SSPARENT*12
+      character ZN*12,outs*124,SN*12
       character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
       character AL8*12,AL9*12,CXITM*43
+      integer ltype,ins2,ins3   ! for radio buttons
 
       iuf=IFIL+1
       newgeo=.false.  ! assume older format geometry.
@@ -3423,12 +3356,7 @@ C Search and replace by finding matching constructions.
      &           ' attributes...'
               CALL USRMSG(' ',outs,'-')
               LTMP=LGEOM(IVALS(IZ))
-              call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-              else
-                call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-              endif
+              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
               WRITE(outs,93)
               call edisp(iuout,outs)
@@ -3493,6 +3421,7 @@ C Anchor point substitution.
           AL4=ALOCLBL(4)
           AL5=ALOCLBL(5)
           h(1)='Indicate which anchor to use. '
+          ltype=1
           CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
      &      'other anchors','continue',ltype,1)
           if(ltype.eq.7)then
@@ -3503,6 +3432,7 @@ C Anchor point substitution.
             AL7=ALOCLBL(7)
             AL8=ALOCLBL(8)
             AL9=ALOCLBL(9)
+            ltype=1
             CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
      &        'continue',' ',' ',ltype,1)
             if(ltype.gt.4)then
@@ -3527,12 +3457,7 @@ C Anchor point substitution.
             is=ie1(ifoc)
             icc=izstocn(iz,is)
             LTMP=LGEOM(IZ)
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IZ,1,iuout,IER)
             WRITE(SSMLCN(icc),'(A12)')DESC(ISELR)(1:12)
 
 C << If newgeometry then can write out the optical property instead
@@ -3593,6 +3518,7 @@ C << of TRAN for SSOTF.
 
         H(1)='You may restrict updating to only surfaces which '
         H(2)='face the outside, partitions (internal) etc. '
+        ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
      &      'adiabatic','cancel',ins2,2)
@@ -3602,6 +3528,7 @@ C << of TRAN for SSOTF.
 
         H(1)='You may restrict updating to only surfaces which '
         H(2)='have a particular orientation. '
+        ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
      &      'any horizontal','any orien.','cancel',ins3,2)
@@ -3631,12 +3558,7 @@ C << of TRAN for SSOTF.
      &         '...'
             CALL USRMSG(' ',outs,'-')
             LTMP=LGEOM(IVALS(IZ))
-            call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
             WRITE(outs,93)
    93     FORMAT('           Sur|  Area  |Azim|Elev| surface    |',

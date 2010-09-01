@@ -38,13 +38,13 @@ C MENU3D displays the multi-gridding menu.
 C *********************************************************************
       SUBROUTINE MENU3D(ITRC)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -561,11 +561,10 @@ C *********************************************************************
       SUBROUTINE DFNCSE(IZ)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -574,8 +573,6 @@ C *********************************************************************
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
 
       CHARACTER VERT(35)*35,KEY*1,H*72,STTS*4,ENAME*9,TEXT*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER STATS*16
 
 C Initialise connection menu size variables based on window size. 
@@ -691,11 +688,10 @@ C *********************************************************************
       SUBROUTINE DFNCEE(IZ)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -704,8 +700,6 @@ C *********************************************************************
       COMMON/GR3D61/NUMEE,IBDYEE(MEEZ,2),IVRTEE(MEEZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER VERT(35)*19,KEY*1,H*72,STTS*4
 
 C Initialise connection menu size variables based on window size. 
@@ -815,11 +809,10 @@ C *********************************************************************
       SUBROUTINE DFNCEC(IZ)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -830,8 +823,6 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER VERT(35)*33,KEY*1,H*72,STTS*4,ENAME*9,CNAME*11
 
 C Initialise connection menu size variables based on window size. 
@@ -976,7 +967,7 @@ C *********************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G1 and G2.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -986,21 +977,18 @@ C geometry.h provides commons G0 and G2.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
 
       LOGICAL ZONOK
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION IVALZ(MCOM)
 
       CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
-      newgeo=.false.  ! assume older format geometry.
 
 C Show the zone selection menu.
       H(1)='    Select the zone for which the multi-D gridding'
@@ -1012,12 +1000,7 @@ C Show the zone selection menu.
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
         IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
         IF(IER.EQ.0)THEN
           ZONOK=.TRUE.
@@ -1101,7 +1084,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1438,7 +1420,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)

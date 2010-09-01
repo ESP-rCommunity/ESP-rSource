@@ -36,9 +36,10 @@ C an extrusion. IER=0 OK.
 #include "building.h"
 #include "model.h"
 
-C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
+C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -46,38 +47,29 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       Logical MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/CFGV/icfgv
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER HOLD*32
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character MODE*4,SSPARENT*12,fs*1
-      CHARACTER OUTSTR*124,H*72,ZN*12,outs*124
+      character MODE*4,fs*1
+      CHARACTER OUTSTR*124,H*72,ZN*12,outs*124,aimpth*24
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
@@ -96,7 +88,14 @@ C If browsing then user cannot create a new zone.
      &    'mode, you must `own` the model!','W')
         return
       endif
-      newgeo=.false.  ! assume older format geometry.
+ 
+C If newer model cfg file ensure version 1.1 geometry file created. 
+      if(icfgv.lt.4)then
+        newgeo=.false.  ! assume older format geometry.
+      else
+        newgeo=.true.   ! set to newer format
+        gversion(icomp)=1.1
+      endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -234,6 +233,7 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
 
 C Convert box into a gen description using two rotation angles.
+C Pass in critical dimensions and expect the data back via common G1.
         CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
@@ -241,7 +241,7 @@ C Convert box into a gen description using two rotation angles.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0
+        iZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
@@ -296,7 +296,8 @@ C Allow user to have a 2nd chance to input the vertices.
         CALL EASKR(AR,' ','Rotation angle?',
      &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,2)
 
-C Convert into a gen body and rotate if required.
+C Convert into a gen body and rotate if required. Pass in critical dimensions
+C and expect the data back via common G1. And ESCROT also acts on G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         IF(AR.LT.-.01.OR.AR.GT..01)then
           x1=XX(1)
@@ -309,14 +310,14 @@ C Convert into a gen body and rotate if required.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0
+        iZBFLG(ICOMP)=0
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
       IF(ishape.ne.3.and.ishape.ne.4)THEN
 
-C << does this fill all of the G5 variables? >>
+C Use subroutine filsur to instanciate G5 common block.
         CALL FILSUR(ICOMP,0)
 
 C Update the connection list and hash.
@@ -427,7 +428,7 @@ C Update the connection list and hash for initial surface.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(icomp)=0
+        iZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
 C Point and click on a bitmap. After return, re-scan the system
@@ -550,38 +551,27 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
       CHARACTER*72 LTMP,DFILE
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER OUTSTR*124,H*72,ctldoc*248,LCTLF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sfile*72,snpfile*72,fs*1,outs*124
 
       LOGICAL OK,DOK,XST,OKC,unixok
@@ -599,20 +589,33 @@ C Set folder separator (fs) to \ or / as required.
 
  293  H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
-      H(3)='(i.e whole model conversion)or create a zone by inputing'
-      H(4)='data related to primitive shapes.'
+      H(3)='(i.e whole model conversion) or create a zone by inputing'
+      H(4)='data related to primitive shapes. '
+      h(5)=' '
+      h(6)='NOTE: a cflow3/IES zip file is NOT a DXF file. If you'
+      h(7)='want to import DXF use the Model Management -> import CAD'
+      h(8)='file facility. '
+      h(9)=' '
+      h(10)='NOTE: it is assumed that you the zone geometry file'
+      h(11)='that you specify is not that is NOT already used in'
+      h(12)='your model! Otherwise the Project Manager may get '
+      h(13)='confused because two zones point to the same fie! '
+      h(14)=' '
+      h(15)='Check the zone name after you have loaded the existing'
+      h(16)='zone geometry file to make sure it is unique. '
       CALL EASKABCD(' ','New zone options:','input dimensions',
-     &  'load existing (ESP-r)','load existing (CAD)','cancel',
-     &  INZOPT,48)
+     &  'load existing (ESP-r)','load existing (cflow3 zip)',
+     &  'cancel',INZOPT,16)
 
 C Input dimensions.
       if(INZOPT.eq.1)then
 
-C Provide scratch description and the
-C default assumptions for other zone files.
+C Provide scratch description and the default assumptions for
+C other zone files. If the cfg file is version 4 or newer then
+C set to create version 1.1 zone geometry files.
         CALL SCRZONE(IC,IER)
         CALL EDZONE(ITRC,IC,IER)
-        ZBFLG(IC)=0
+        iZBFLG(IC)=0
         return
 
 C Load existing ESP-r.
@@ -649,13 +652,18 @@ C User did not select a file. Take them back to the question.
         endif
 
 C Existing ESP-r geom file.
-        h(1)='If there was not existing geometry file found in the'
-        h(2)='../zones folder then you must supply a file name. '
-        h(3)='It should be relative to the cfg folder. '
+        h(1)='If there was no existing geometry file found in the'
+        h(2)='../zones folder then you must supply a file name.'
+        h(3)='It should be relative to the cfg folder.'
+        h(4)=' '
+        h(5)='NOTE: it is assumed that you the zone geometry file'
+        h(6)='that you specify is not that is NOT already used in'
+        h(7)='your model! Otherwise the Project Manager may get '
+        h(8)='confused because two zones point to the same fie! '
         DFILE=' '
         WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
-        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,3)
+        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,8)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
@@ -673,12 +681,7 @@ C Existing ESP-r geom file.
 
 C Scan geometry file and update control and connections.
 C Try reading in the geometry to fill in the data below.
-        call eclose(gversion(IC),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='While scanning the geometry file a problem was'
@@ -693,6 +696,7 @@ C Try reading in the geometry to fill in the data below.
             return   ! stop this before the model gets messed up.
           endif
         ENDIF
+        call eclose(gversion(ic),1.1,0.01,newgeo) ! find out what version
 
 C Read in control file if defined.
         OKC=.false.
@@ -709,6 +713,7 @@ C Update the connection list and then the model configuration.
         NZSUR(NCOMP)=NSUR
         NZTV(NCOMP)=NTV
         NCCODE(NCOMP)=NCOMP
+        iZBFLG(NCOMP)=0
         if(OKC)then
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
@@ -802,6 +807,15 @@ C Update the connection based data structures.
           IZSTOCN(ncomp,icc)=iccc
   132   CONTINUE
         NCON=ICCC
+
+C Update the global coordinates for this new zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+        DO 40 J=1,NZTV(NCOMP)
+          VCOORD(NCOMP,J,1)=X(J)
+          VCOORD(NCOMP,J,2)=Y(J)
+          VCOORD(NCOMP,J,3)=Z(J)
+   40   CONTINUE
 
 C If any of the boundary conditions were altered then write out
 C the geometry file.
@@ -1020,18 +1034,13 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1062,18 +1071,12 @@ C Anchor data.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER cfgroot*24
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
@@ -1366,12 +1369,7 @@ C the values of ICT, IE2 and IC2.
       do 25 IX=1,NCOMP
         if(IX.ne.IW2)then
           changed=.FALSE.
-          call eclose(gversion(IX),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
 
@@ -1470,12 +1468,7 @@ C Reread selected zone data then remove each of the surfaces
 C in reverse order (adjusting the connections as required).
       write(outs,'(2A)') ' removing surfaces in ',zname(IW2)
       call usrmsg('  ',outs,'-')
-      call eclose(gversion(IW2),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
       IX=NSUR+1
   35  CONTINUE
       IX=IX-1
@@ -1624,7 +1617,7 @@ C Shift viewing bounds.
         ZXMX(IX)=ZXMX(IX+1)
         ZYMX(IX)=ZYMX(IX+1)
         ZZMX(IX)=ZZMX(IX+1)
-        ZBFLG(IX)=ZBFLG(IX+1)
+        iZBFLG(IX)=iZBFLG(IX+1)
         ZCOG(IX,1)=ZCOG(IX+1,1)
         ZCOG(IX,2)=ZCOG(IX+1,2)
         ZCOG(IX,3)=ZCOG(IX+1,3)
@@ -1656,12 +1649,7 @@ C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
       do 48 ir=1,NCOMP
-        call eclose(gversion(ir),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
-        else
-          call egomin(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
-        endif
+        call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
         XST=.false.
         call FINDFIL(LPROJ(ir),XST)
         IF(XST)THEN
@@ -2122,7 +2110,7 @@ C It assumes that calling code will decide whether the distance
 C can be used. 
       subroutine pointtoline(ipoint,iwhich1,iwhich2,offset,match)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       dimension vd(3),vd1(3),vd2(3)
       logical match
 
@@ -2185,10 +2173,10 @@ C   nothing found).
 C      subroutine twodpointtoline(itx,ity,icomp,ioffset,ifsurf1,ifsurf2,
 C     &  ifvrt1,ifvrt2,match)
 C#include "building.h"
+C#include "geometry.h"
 
 C << logic needs to be written >>
 
-C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 C      dimension vd(3),vd1(3),vd2(3)
 C      logical match
 

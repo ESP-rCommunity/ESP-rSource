@@ -174,6 +174,7 @@ C Characters
       CHARACTER*124 OUTS
 
       LOGICAL OK,DOK,BASEV
+      integer INP  ! for radio button
 
 C Give a message to user explaining they should have fully defined the 
 C building side and the plant network prior to defining the electrical
@@ -334,6 +335,7 @@ C Assign new network type
         H(4)='Balanced - a balanced 3-phase system '
         H(5)='Mixed    - Mix of 1,2,3-phase elements and possibly d.c.'
         H(6)='                         <the default> '
+        INP=1
         CALL EASKATOG('Select network type:',' ',
      &'d.c.','1-phase','2-phase','3-phase','Balanced','Mixed',
      &'Continue',INP,6)
@@ -470,7 +472,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -667,7 +668,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected hybrid components
       COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
@@ -853,7 +853,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected power only components
       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
@@ -1042,7 +1041,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connecting components
       COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
@@ -1231,7 +1229,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
@@ -1486,6 +1483,7 @@ C Characters
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
       CHARACTER*124 OUTS
+      integer INODT  ! for radio button
 
 C Set up the local phase string endings
       STREN(1)='_1'
@@ -1510,6 +1508,7 @@ C Ask the user how many nodes they want to add.
         H(10)='For example: generator_1, generator_2, generator_3 '
         H(11)='or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
         NANOD=0
+        INODT=1
         CALL EASKATOG
      &  ('What type of node(s) do you want to add (see help)? ',
      &'(No. in brackets = No. of nodes added).',

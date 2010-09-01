@@ -57,7 +57,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -74,7 +74,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER H*72,LTMP*72,outs*124,outstr*124
       character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
@@ -716,11 +716,10 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
+      integer IVV  ! for radio button
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 
-      newgeo=.false.  ! assume older format geometry.
       IFNOD=INOD
 C Add/Edit a node to the network. 
       IF(MOD.EQ.'A'.OR.MOD.EQ.'E')THEN
@@ -809,6 +808,7 @@ C Node type
         h(22)='wind velocity, wind direction and a pressure '
         h(23)='coefficient, Cp, (assigned based on the orientation and'
         h(24)='geometry of the surface): P=f(V,D,Cp).'
+        IVV=1
         CALL EASKATOG(prt,' ',
      &  'internal:unknown','internal:known','boundary:known',
      &  'boundary:wind induced','continue',' ',' ',IVV,24)
@@ -984,12 +984,7 @@ C (Re)Set all surfaces to standard line width.
           if(IZ.eq.0) goto 20
 
 C General image option flags.
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
@@ -1844,10 +1839,8 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
       CHARACTER outs*124,H*72
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Warn if current wind reduction factor is zero
-      newgeo=.false.  ! assume older format geometry.
       H(1)='Edit / input local wind speed reduction factor'
       H(2)=' -------------------------------------------- '
       H(3)='which is the ratio of local wind speed at roof'
@@ -1898,13 +1891,7 @@ C Allow the user to select the roof of the building
       call usrmsg(' ',' ','-')
       if(IZ.eq.0) goto 11
 
-      itrc=0
-      call eclose(gversion(IZ),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
 C << might want to save current values for later recovery >>

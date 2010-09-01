@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -26,16 +26,16 @@ C  EDZCON: Takes the information in the MLC db, surface attributes and
 C          attempts to build a zone construction file.
 C  MKTWIN: Create a transparent construction file based on information
 C          currently held in common blocks.
-C  EDTWIN: Edit/configure transparent construction common block data.  
+C  EDTWIN: Edit/configure transparent construction common block data.
 C  EOPTKS: Edits optical properties of a transparent surface..
-C MATCHDB: Takes an existing zone construction file and scans the 
+C MATCHDB: Takes an existing zone construction file and scans the
 C          constructions database to confirm matching vaules.
 C SCNTCNST: Scan model for current maximum time constant.
 
-C ************* EDCON 
-C Control editing/creation of zone construction file and allow updated 
-C information to be saved into a new file. ITRU unit number for user 
-C output, IER=0 OK. 
+C ************* EDCON
+C Control editing/creation of zone construction file and allow updated
+C information to be saved into a new file. ITRU unit number for user
+C output, IER=0 OK.
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
 #include "model.h"
@@ -43,18 +43,15 @@ C output, IER=0 OK.
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "epara.h"
-#include "sbem.h"      
+#include "sbem.h"
 #include "CFC_common.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -68,7 +65,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -79,11 +76,10 @@ C geometry.h provides commons G0/G2/c20/precz.
       CHARACTER*72 CFILE
       CHARACTER*72 DFILE
       CHARACTER SFILE*72,H*72,LTMP*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
+      CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82,aimpth*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,TOPTIC*12,OPTIC*12
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,TOPTIC*12,
+     &      OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -138,12 +134,7 @@ C Set existance of a zone construction file to false.
       if(itrc.gt.1) CALL USRMSG(' ',outs,'-')
 
 C Read in the related geometry file into common.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       IF(IER.NE.0)THEN
         CALL USRMSG(' ',' Problem detected in geometry... ','W')
         RETURN
@@ -176,7 +167,7 @@ C On entry display the current zone. Reset all surface lines to std.
       if(QUIET)then
         ITORG=1
         ITGRD=1
-      endif 
+      endif
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
@@ -217,8 +208,8 @@ C Construction file name not yet specified.
 
       call FINDFIL(LTHRM(ICOMP),XST)
       if(XST)then
-        IF(QUIET) THEN 
-          CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
+        IF(QUIET) THEN
+          CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
         ELSE
           write(outs,'(3a)') 'Found an existing constructions file: ',
      &            LTHRM(ICOMP)(1:lnblnk(LTHRM(ICOMP))),'.'
@@ -236,11 +227,11 @@ C Construction file name not yet specified.
             endif
           elseif(IWA.EQ.2)then
             call tstamp('>','PRJ: scan db & rebuild zone construction')
-            CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
+            CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
           elseif(IWA.eq.3)then
             call tstamp('>','PRJ: abandoned rebuild zone construction')
             return
-          ENDIF 
+          ENDIF
         ENDIF
       else
 
@@ -298,7 +289,7 @@ C If transparent surfaces, proceed to read existing data or create
 C from the surface attributes.
       IF(TFOUND)THEN
         if(ITW(ICOMP).ne.1)then
-          ITW(ICOMP)=1 
+          ITW(ICOMP)=1
           H(1)='A TMC file holds optical properties for transparent'
           H(2)='surfaces within a zone as well as the definition of'
           H(3)='any control of blinds associated with such surfaces.'
@@ -342,7 +333,7 @@ C If TMC file exists read it, otherwise create one.
             ITW(ICOMP)=1
           endif
         ENDIF
-      ENDIF 
+      ENDIF
 
 C---------create cfc file
 C Now, check to see if there are any CFC surfaces and assemble ICFCFL index.
@@ -361,10 +352,10 @@ C If CFC surfaces, proceed to create a *.cfc file
 C At this stage only the CFC index 'icfcfl' is written. The rest
 C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
       call FINDFIL(lcfcin(ICOMP),XST)
-      
+
       IF(CFCFOUND)THEN
        if(icfc(icomp).ne.1.or.(.NOT.XST))then
-        icfc(icomp)=1 
+        icfc(icomp)=1
         H(1)='Specify name of *.cfc file which will store the CFC'
         H(2)='input data for this zone.'
         lcfcin(icomp)=CFCFILE
@@ -404,7 +395,7 @@ C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
             RETURN
         ENDIF
        endif
-      ENDIF 
+      ENDIF
 C -------------------
 
 C If in quiet mode, save data and then return without user intervention.
@@ -429,8 +420,8 @@ C into the model description.
 C Initial menu entry setup.
    92 IER=0
       IVERT=-3
-C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C Loop through the items until the page to be displayed. M is the
+C current menu line index. Build up text strings for the menu.
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -451,11 +442,11 @@ C current menu line index. Build up text strings for the menu.
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text.      
+C If a long list include page facility text.
       IF(IPFLG.EQ.0)THEN
         VERT(M+1)='  _____________________________   '
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT   ('0 Page ---- Part: ',I2,' of ',I2,' -----')
       ENDIF
       VERT(1)    ='  Surface      Type  Composition  Optics'
@@ -495,7 +486,7 @@ C Help text for this menu.
       H(8)='the zone contructions file.'
       H(9)=' '
       H(10)='Surfaces which are composed of transparent materials'
-      H(11)='will have optical properties defined from either' 
+      H(11)='will have optical properties defined from either'
       H(12)='the optical database or by manual input. If there'
       H(13)='is a mismatch between information in a zone TMC'
       H(14)='file and existing surface attributes then you will be'
@@ -579,7 +570,7 @@ C Save data and then return to menu.
 
 C Linear thermal conductivity.
         H(1)='This facility currently requires that you use an'
-        H(2)='external text editor to add information to the zone' 
+        H(2)='external text editor to add information to the zone'
         H(3)='constructions file to define linear dependencies.'
         H(4)='Please contact your administrator for information on'
         H(5)='how to do this.'
@@ -698,7 +689,7 @@ C If any of the surfaces are transparent save this info.
       IF(TFOUND)THEN
         CALL MKTWIN(IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)RETURN
-        ITW(ICOMP)=1 
+        ITW(ICOMP)=1
 
 C If in quiet mode then files already exist => no need to save.
         IF(.NOT.QUIET) THEN
@@ -710,7 +701,7 @@ C If in quiet mode then files already exist => no need to save.
 C Check to see if there was an initial assumption that tmc file was
 C needed and now it is not.
          if(ITW(ICOMP).eq.1)then
-           ITW(ICOMP)=0 
+           ITW(ICOMP)=0
            call usrmsg('Removing unused tmc file: ',LTWIN(ICOMP),'-')
            CALL ERPFREE(IUF,ISTAT)
            CALL EFOPSEQ(IUF,LTWIN(ICOMP),1,IER)
@@ -744,7 +735,7 @@ C If in quiet mode then files already exist => no need to save.
 C Check to see if there was an initial assumption that cfc file was
 C needed and now it is not.
          if(icfc(ICOMP).eq.1)then
-           icfc(ICOMP)=0 
+           icfc(ICOMP)=0
            call usrmsg('Removing unused cfc file: ',lcfcin(ICOMP),'-')
            CALL ERPFREE(IUF,ISTAT)
            CALL EFOPSEQ(IUF,lcfcin(ICOMP),1,IER)
@@ -788,17 +779,18 @@ C Return to menu or exit from editing facility as required.
 
       END
 
-C ************* EDSCON 
-C Edit zone surface construction attributes in common block G6 and 
-C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
+C ************* EDSCON
+C Edit zone surface construction attributes in common block G6 and
+C allow this to be saved. ITRU unit number for user output, IER=0 OK,
 C IER=1 problem. Make use of construction information in common MLC.
       SUBROUTINE EDSCON(ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
-      
+
       integer lnblnk  ! function definition
 
 C Parameters
@@ -813,9 +805,6 @@ C Parameters
       common/pophelp/h(60)
 
 C Optical and geometric properties.
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/PRECT4/TOPTIC(MCOM,MTMC)
 
@@ -833,8 +822,6 @@ C Material properties.
       DIMENSION ISD(19)
       CHARACTER NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
@@ -856,21 +843,21 @@ C with ier=1.
 C Setup text for menu.
    12 INODA=-3
       icn1=izstocn(icomp,isur)
-   13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)     
+   13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)
       if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
      &   SSOTF(icn1)(1:4).eq.'TRAN'.or.
-     &   SSOTF(icn1)(1:4).eq.'CFC ')then     
+     &   SSOTF(icn1)(1:4).eq.'CFC ')then
         write(ISD(2),'(A,A)') 'a Surface type    : ',SSOTF(icn1)(1:12)
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
       endif
-      write(ISD(3),'(A,A)') 'b Construction    : ',SSMLCN(icn1)(1:12)     
+      write(ISD(3),'(A,A)') 'b Construction    : ',SSMLCN(icn1)(1:12)
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
-        write(ISD(4),'(2A)')'  Optical property: ',optic     
+        write(ISD(4),'(2A)')'  Optical property: ',optic
       else
         optic=' - '
-        write(ISD(4),'(2A)')'  Optical property: ',optic    
+        write(ISD(4),'(2A)')'  Optical property: ',optic
       endif
       ISD(5)='  ______________________________________ '
 
@@ -882,7 +869,7 @@ C Surface properties.
       ISD(8)='  ______________________________________ '
       M=8
 
-C Find composite which matches. 
+C Find composite which matches.
       ICF=-1
       lstr=lnblnk(SSMLCN(icn1))
       DO 20 IC=1,NMLC
@@ -989,7 +976,7 @@ C Specify whether surface multilayer construction is opaque, transparent,
 C or fictitious (bookkeeping purposes only). If transparent ask user
 C which set of optical properties to use. (This will probably result in
 C an additional surface attribute!!!)
-C Additional option to choose CFC type. 
+C Additional option to choose CFC type.
         H(1)='The choice of using an opaque or transparent construction'
         H(2)='is dependent on the optical properties. Where there is a'
         H(3)='mix of opaque and transparent layers the construction'
@@ -1067,10 +1054,10 @@ C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
           matarrayindex=IPRMAT(IC,IL)   ! which legacy index
           if(matarrayindex.ge.0)then
- 
+
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
             if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
               E=0.99; A=0.99
               NAM='AIR'
             else
@@ -1155,7 +1142,7 @@ C assign an appropriate U value to each air gap encountered.
         MODGEO=.TRUE.
       ELSEIF(INODA.EQ.6)THEN
 
-C Emissivity. 
+C Emissivity.
 C << todo take advantage of the out/in data within the material arrays. >>
 
         H(1)='The infrared emissivity is normally 0.1 < x < 0.9'
@@ -1183,7 +1170,7 @@ C first pass.
         MODCON=.TRUE.
         if(.not.told)then
           H(1)='WARNING: You are allowed to modify the properties'
-          H(2)='of the layers BUT NOT CHANGE the TOPOLOGY (ie.' 
+          H(2)='of the layers BUT NOT CHANGE the TOPOLOGY (ie.'
           H(3)='move air gaps around) - do that in the multi-layer '
           H(4)='construction database facility.  Quality assurance'
           H(5)='is enhanced if you use the multilayer construction'
@@ -1236,9 +1223,9 @@ C Find air gap resistance for this layer.
       INODA=-4
       goto 13
 
-      END 
+      END
 
-C ****************** EDZCON 
+C ****************** EDZCON
 C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
@@ -1257,8 +1244,6 @@ C Parameters
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1274,8 +1259,7 @@ C Material properties.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
 
-      CHARACTER outs*124,SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER outs*124
       CHARACTER NAM*72
 
 C Assume no window optical properties asked for.
@@ -1364,10 +1348,10 @@ C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
               matarrayindex=IPRMAT(IC,IL)   ! which array index
               if(matarrayindex.ge.0)then
- 
+
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
                 if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0
                   E=0.99; A=0.99
                   NAM='AIR'
                 else
@@ -1452,7 +1436,7 @@ C assign an appropriate U value to each air gap encountered.
           write(outs,'(5A)') ' The construction ',SSMLCN(ioc),
      &         ' of ',SSNAME(ioc),' was not found in the mlc db...'
           call usrmsg(outs,'resetting attribute to UNKNOWN.','W')
-          SSMLCN(ioc)='UNKNOWN'          
+          SSMLCN(ioc)='UNKNOWN'
           goto 244
         endif
 
@@ -1460,9 +1444,9 @@ C Assume no default windows.
    10 CONTINUE
 
       RETURN
-      END 
+      END
 
-C *************** MKTWIN 
+C *************** MKTWIN
 C Create a transparent construction file based on information
 C currently held in common blocks.
 C LTWIN is the name of the file to be written to (any existing file
@@ -1480,7 +1464,7 @@ C the number of composite layers to build this up.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
 C Parameter
@@ -1509,7 +1493,7 @@ C Parameter
       dimension ival(MS)
       CHARACTER H*72,TOPTIC*12,louts*248
 
-C If in quiet mode then the file should exist, but if it is not a 
+C If in quiet mode then the file should exist, but if it is not a
 C silly name open it and inform.
       IF(QUIET) THEN
         call FINDFIL(LTWIN(ICOMP),XST)
@@ -1640,7 +1624,7 @@ C If in quiet mode: the file should exist => error if we are here.
 
       END
 
-C *************** EDTWIN 
+C *************** EDTWIN
 C Edit and configure transparent construction information
 C currently held in common blocks PRECTC, PRECT2, TMCB1,
 C TMCB2, TMCB3.
@@ -1655,15 +1639,13 @@ C through each of the existing surfaces and finds unique optical types.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1680,13 +1662,12 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
       logical canceled   ! toggle set if user interupts an edit session.
+      integer IRT        ! for radio button
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
       CHARACTER outs*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER msg*28
-      
+
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.
       IF(NTMC.GT.0)GOTO 90
@@ -1728,7 +1709,7 @@ C optical properties then the user will have to supply this manually.
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,0)
           if(IWB.eq.1)then
-  
+
 C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
             if(ISEL.GT.0)then
@@ -1776,7 +1757,7 @@ C << todo consider how one might treat a cancel request within eoptks
         ENDIF
 
 C Optical properties known so grab from db. If new then add data from
-C common GOPT to the current TMC type. 
+C common GOPT to the current TMC type.
         if(lastopt(1:12).ne.OPT(1:12))then
           CALL EROPTDB(ITRC,ITRU,OPT,GDESCR,IER)
           IF(IER.NE.0)GOTO 98
@@ -2004,7 +1985,7 @@ C For each control period get the appropriate replacement properties.
 
           N3=NBCTT(ICOMP,ICP,IT)
           H(1)='Surfaces composed of transparent constructions'
-          H(2)='will have optical properties defined from either' 
+          H(2)='will have optical properties defined from either'
           H(3)='the Optical Properties db or by manual input. If'
           H(4)='there is a mismatch between information in a zone'
           H(5)='TMC file and existing surface attributes then you'
@@ -2052,6 +2033,7 @@ C For each control period get the appropriate replacement properties.
           H(47)='the optical property control logic so some care and'
           H(48)='testing is required to ensure that optical and flow'
           H(49)='control works together.'
+          IRT=1
           if(n3.eq.-99)then
             call EASKATOG('Controlled on:','(currently time)',
      &      'time','incident radiation','ambient temp.','zone temp.',
@@ -2139,7 +2121,7 @@ C << todo: consider how to react to a cancel request within eoptks
             TMCA2(ICOMP,IT,J,5,ICP)=AB(J,5)
    44     CONTINUE
    24   CONTINUE
-   22 CONTINUE 
+   22 CONTINUE
       GOTO 200
 
 
@@ -2156,7 +2138,7 @@ C Error messages.
       END
 
 
-C ************* EOPTKS 
+C ************* EOPTKS
 C Edits optical properties associated with a transparent surface.
 C Takes in and returns data via common block GOPT. If WHICH='T' for
 C transparent construction data editing.
@@ -2265,17 +2247,16 @@ C ******* SCNTCNST
 C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 c ITCNST  - number of start-up days
       COMMON/PREC7/ITCNST
@@ -2283,8 +2264,7 @@ c ITCNST  - number of start-up days
       integer matarrayindex ! the indes within matdatarray
 
       character outs*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character MLCN*12,SSPARENT*12
+      character MLCN*12
       logical found,closemat1,closemat2
 
 C Establish if material data arrays have been filled. If not return
@@ -2323,10 +2303,10 @@ c homogeneous layer.
           DO 45 il=1,LAYERS(ic)
             matarrayindex=IPRMAT(IC,IL)   ! which array index
             if(matarrayindex.ge.0)then
- 
+
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
               if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                DBCON=0.0; DBDEN=0.0; DBSHT=0.0
               elseif(matarrayindex.gt.0)then
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)

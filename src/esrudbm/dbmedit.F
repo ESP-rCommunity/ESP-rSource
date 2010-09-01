@@ -87,6 +87,7 @@ C Backup of documentation (for editing).
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
+      integer IWM  ! for radio button
 
 C Read the header.
       IFB=igendbf(idbh)
@@ -541,6 +542,7 @@ C List one or more categories.
           H(4) ='  single space between columns'
           H(5) ='  comma separator (for excel)'
           H(6) ='  tab separator (for excel)'
+          IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','continue',' ',
      &      ' ',IWM,6)
@@ -711,6 +713,7 @@ C      common/gendb/LGENDB
       character action*1,KEY*1,PDBM*38,head*42,h*72,t32*32,t12*12
       CHARACTER dstmp*24,catlist*32
       character ct*8,bl2*2
+      integer IV  ! for radio button
 
 C Assumes that the db file is open, gather the catg documentation.
       bl2='  '
@@ -943,6 +946,7 @@ C Delete/add/copy/move...
         h(1)='You may remove an empty category (i.e. which has no more'
         h(2)='than one item in it) or you may add a category at the end'
         h(3)='of the database. '
+        IV=1
         CALL EASKATOG('Options for items: ',' ','delete','add','copy',
      &    'move (to another catg)','continue',' ',' ',IV,3)
         if(iv.eq.1)then

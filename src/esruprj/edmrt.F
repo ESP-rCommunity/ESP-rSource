@@ -37,12 +37,8 @@ C will have been defined prior to calling edmrt.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
-      common/CFGV/icfgv
 
       common/pophelp/h(60)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -53,22 +49,19 @@ C will have been defined prior to calling edmrt.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
 
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character doit*248,tmode*8,tfile*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1
+      character docpth*24,tmppth*24,dbspth*24,act*1,aimpth*24,bsmpth*24
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
 #ifdef OSI
@@ -80,7 +73,6 @@ C will have been defined prior to calling edmrt.
 #endif
 
       cfgmod=.false.
-      newgeo=.false.  ! assume older format geometry.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -106,12 +98,7 @@ C matching geometry file.
       write(ZN,'(A)') zname(ICOMP)
 
 C Set VEWF array in preparation for editing or silent creation.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
@@ -626,7 +613,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),

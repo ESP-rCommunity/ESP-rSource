@@ -35,7 +35,7 @@ C *********************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G2/g6/c20/precz.
 #include "geometry.h"
       integer iCountWords
 
@@ -46,9 +46,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -59,12 +56,8 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,SAVEOK
       LOGICAL ZONOK,XST,MSTROK,MSTRZN
-      logical newgeo  ! to use for testing if new/old geometry file.
-
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)
@@ -73,7 +66,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       IZ=0
       ZONOK=.FALSE.
       SAVEOK=.FALSE.
-      newgeo=.false.  ! assume older format geometry.
 
    10 INO=-3
       IF(ZONOK)THEN
@@ -137,12 +129,7 @@ C Show the zone selection menu.
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
-          else
-            call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
-          endif
+          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
           IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
           IF(IER.EQ.0)THEN
             ZONOK=.TRUE.
@@ -303,6 +290,7 @@ C distribution menu after performing the request.
 C *********************************************************************
       SUBROUTINE HYGRIC(IZ)
 #include "building.h"
+#include "geometry.h"
       integer iCountWords
 
       common/pophelp/h(60)
@@ -310,8 +298,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST05/IPERM(MCOM,MS,ME),PERM(MCOM,MS,ME,3)
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
@@ -320,8 +306,6 @@ C *********************************************************************
       CHARACTER ITEM(10)*35,ITEMC(MS)*20
       CHARACTER SURFNM*12
       CHARACTER H*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*72 MSG1,TXT,TEXT1,TEXT2
 
       DIMENSION IVALS(MS),IVALL(ME)

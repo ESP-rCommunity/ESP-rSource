@@ -1056,7 +1056,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fill array with existing containment types.
       cnttyp(1)='Ambient air temperature.             '
@@ -1171,12 +1170,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.4) THEN
               RETURN
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
-              call eclose(gversion(IZ),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-              else
-                call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
-              endif
+              call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
               ITDSP=1
@@ -2090,14 +2084,12 @@ C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -2106,8 +2098,6 @@ C The routine presents a list of surface layers.
       integer header,footer
       character item*32
       CHARACTER NAM*72,PNAM*20,H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.
@@ -2528,9 +2518,7 @@ C Common for the building plant lin
       LOGICAL OK,dok,CLOSE
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
-      newgeo=.false.  ! assume older format geometry.
       IF(MODE.EQ.'A'.OR.MODE.EQ.'E') THEN
 
 C Add a building plant link and update the control data. 
@@ -2690,12 +2678,7 @@ C Determine the linkage type.
           IPCLINKT(IBPLINK)=IOPT
           ASKSTR='What is the embedded component?'
 
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
           ITDSP=1

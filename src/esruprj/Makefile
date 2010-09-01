@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
@@ -9,7 +10,6 @@ VLDdir = $(SRCdir)/esruvld
 PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
-BLDdir = $(SRCdir)/esrubld
 PRJdir = $(SRCdir)/esruprj
 PROG = prj$(EXE)
 
@@ -17,7 +17,8 @@ PROG = prj$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
+OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesimp.o \
+	  basesimp_inputs.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o bscoeff.o bscoeff_extended.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
@@ -35,8 +36,10 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
 	  PltDummy.o
 
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod aim2_inputs_inputdata.mod	
+
 $(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS) 
 
 anlytc.F:
 	rm -f anlytc.F
@@ -44,6 +47,18 @@ anlytc.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
@@ -212,9 +227,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-aim2_pretimestep.F:
-	rm -f aim2_pretimestep.F
-	ln -s $(CETCdir)/aim2_pretimestep.F .
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 DG_controller_menu.F:
 	rm -f DG_controller_menu.F
 	ln -s $(CETCdir)/DG_controller_menu.F .
@@ -239,8 +254,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	anlytc.F aim2_pretimestep.F ascii_mat.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	anlytc.F aim2_module.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \

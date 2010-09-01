@@ -217,7 +217,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   i = stat(name2, &st);
   ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
   if (ifolder == 0) {
-    fprintf(stderr,"folder passed %s %d %d is not a folder.\n",name2,ilen,lenfolder);
+    fprintf(stderr,"folder name passed %s is not recognized as a folder.\n",name2);
     return;
   }
   if (lenact == 0) {

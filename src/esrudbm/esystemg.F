@@ -115,11 +115,18 @@ C           network need not be matched.
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
+C AIM-2.
+C IAIM2 set to 1 if AIM-2 infiltration model active.
+C LAIM2 (72 char) file holding AIM-2 infiltration model data.
+C      common/aim2def/iAIM2,LAIM2
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
 #include "building.h"
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/prec2/precz/c20.
+C geometry.h provides commons G0/G2/G5/prec2/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -159,10 +166,6 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -201,15 +204,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Temporal definition commons.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C ITEMSTD: Number of temporal items associated/used in this model.
-      COMMON/TDFFLG/ITEMSTD
-
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
@@ -235,7 +229,7 @@ C DOCPTH (24 char) relative path to the model documents folder
 C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -345,10 +339,6 @@ C Simulation parameter presets.
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 
-C AIM-2.
-C IAIM2 set to 1 if AIM-2 infiltration model active.
-C LAIM2 (72 char) file holding AIM-2 infiltration model data.
-      common/aim2def/iAIM2,LAIM2
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -445,7 +435,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LCFD
-      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LPNF
       character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -460,15 +450,11 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
+      character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
@@ -482,7 +468,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LWndSupp*72
       character HDR*12
       character ipvact*3  ! to singnal internal or external IPV file
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       integer ier
@@ -492,8 +477,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
-
-      newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -685,6 +668,10 @@ C via tags.
           goto 34
         elseif(WORD(1:7).eq.'*ctlpth')then
           CALL EGETRM(OUTSTR,K,ctlpth,'W','path to ctl',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:7).eq.'*aimpth')then
+          CALL EGETRM(OUTSTR,K,ctlpth,'W','path to aim2',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:7).eq.'*imgpth')then
@@ -2095,7 +2082,7 @@ c beeen read in do not include the extended surface `context`.
             call ZINFOREP(iuout,icomp)
             context=.false.
             CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1)CALL VERINFO(iuout)
+            IF(ITRC.GT.1)CALL VERINFO(icomp,iuout)
             CALL INSINFO(ICOMP,iuout)
           endif
         endif
@@ -2554,11 +2541,7 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       if(ICON.EQ.0.AND.ICF.GT.0)then
         WRITE(CXSTR,8986)  

@@ -29,6 +29,8 @@ C EXTRACTS: writes an ascii exchange file beginning at TIMEJD.
 C TDFUPD: updates TDF file from an exchange file.
 
       subroutine tdfedit(act,ier)
+#include "building.h"
+#include "model.h"
 #include "epara.h"
 #include "tdf2.h"
 #include "espriou.h"
@@ -45,55 +47,29 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       character cfgroot*24,LCFGF*72
       common/C21/IFCFG,cfgroot,LCFGF
-
-C Common blocks unique to TDF:
-C Related to TDF ITEMS db.
-C ITDFLG is zero if no file, one if older version, two if pre-2005
-C        and three if 2005 version.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-
-C Related to TDF header.
-C NWPR  : Number of words per record in the TAB file.
-C NITDF : Total number of instances in the TDF db.
-C NTSPH : Number of time steps per hour, 1 to 60 allowed.
-C NEXTCL: Next column available in tabular file.
-C NEXTRC: Next record available in << >>
-C LASTHD: Last record used by the TDF header section.
-C NDBSTP: Total number of timesteps during the db tabular period.
-C NUWPR : Current number of data columns used (not counting time column)
-C         i.e. this is the sum of ntbits() for current contents.
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
 C Related to inport and export files.
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
 
 C Logical flags for file openings.
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
+      COMMON/TDFOPEN/OPTDF
       
-      LOGICAL      OPTDF,OPIMP,OPEXP,OK,dok
+      LOGICAL      OPTDF,OK,dok
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
-      CHARACTER LTDF*72,LTDFA*72,LIMP*72,LEXP*72,H*72,tdaide*72
+      CHARACTER LIMP*72,LEXP*72,H*72,tdaide*72
       character afil*72,tfile*72,TTAG*12
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,LTMPFL*72
+      CHARACTER LTMPFL*72
       CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*72
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character path*72,outs*124,fs*1
@@ -101,6 +77,7 @@ C Logical flags for file openings.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer IRE  ! for radio button
 
 C For debugging set itrc =2
       ITRC=1
@@ -125,14 +102,12 @@ C Import file unknown (ITIMP=0), ASCII column listing (ITIMP=1).
       IUIMP=IFIL+5 
       LIMP ='tdf.import' 
       ITIMP=1
-      OPIMP=.FALSE.
 
 C ASCII export file: IUEXP=unit, LEXP=file name.
 C Export file unknown (ITEXP=0), ASCII column listing (ITEXP=1).
       IUEXP=IFIL+6
       LEXP ='tdf.export' 
       ITEXP=1
-      OPEXP=.FALSE.
 
 C Instanciate the standard temporal entities.
       FOCUS='ALL'
@@ -376,8 +351,8 @@ C Set the menu control text.
       H(25)=' ACTIVITY -global database: gains,setpoints, etc.'
       H(26)=' BIDIRSET -alternate bidirectional datasets'
       H(27)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(28)=' DBTZNM  - measured zone db temperature'
-      H(29)=' '
+      H(28)=' DBTZNM   - measured zone db temperature'
+      H(29)=' SURTM    - measured surface temperature'
       H(30)=' '
       H(31)='To create a new file, select option 1 and follow the'
       H(32)='instructions given. You will be asked for the year '        
@@ -579,6 +554,7 @@ C Help about temporal facility.
 C Save TDF data. May have to move to the last record before exiting.
         h(1)='You may save the current binary file or'
         h(2)='import or export a ASCII version. '
+        IRE=1
         CALL EASKATOG(' File options:',' ','save ascii file',
      &   'ascii temporal>binary','binary>ascii temporal',
      &   'extract data','continue',' ',' ',IRE,2)
@@ -779,10 +755,8 @@ C Not one of the legal menu choices.
 C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
+#include "building.h"
 #include "tdf2.h"
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
@@ -818,21 +792,16 @@ C ********************* glbset
 C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
-C Related to TDF header.
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-
-      character foc*4,TTAG*12,TAG*12,TTYPE*8,TMENU*16,TAIDE*36
+      character foc*4,TTAG*12
       CHARACTER*72 H,tdaide,tmp72
 
       if(foc.eq.'init'.or.foc.eq.'date')then
@@ -926,23 +895,15 @@ C of data beginning at TIMEJD. ITRC is the trace level,
 C IER=0 OK, IER=1 problem. 
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/HDAT/IHREC(MIT)
-      common/tdset/itdyear,itdbdoy,itdedoy
       LOGICAL CLOSE,found
 
       CHARACTER AFIL*72,FSTR*80,HDR*12
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,tab*1,outs*124,msgl2*48
+      CHARACTER tab*1,outs*124,msgl2*48
       CHARACTER*5 DESCRH,DESCRD
 
       tab=','

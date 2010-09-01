@@ -58,12 +58,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       
@@ -90,22 +84,20 @@ C << what about including common zndata in this manipulation? >>
       integer foundone  ! index of a shared vertex
       integer foundonepos ! position of shared vertex in parent jvn array
       integer iotherzone ! the other zone needing to be updated
+      integer ipkany,izc ! for use with pickssur
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
       dimension jvn2(MV)  ! dummy array for sorti call
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER SNAME1*12,SMLCN1*32,SVFC1*4,SOTF1*32,SNAMED*12
       character SUSE11*8,SUSE12*8
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -149,13 +141,8 @@ C << files held in memory so files can be updated without having
 C << to re-read. several steps required before this is possible.
 
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
+              call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
-              else
-                call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
-     &            iuout,IER)
-              endif
 
 C Adjust the data structures.
               ICT(IXU)=-1
@@ -195,13 +182,8 @@ C be rewritten. Scan it and update ssother and then write.
      &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
               call edisp(iuout,outs)
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
+              call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
-              else
-                call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
-     &            iuout,IER)
-              endif
 
 C Update IE2 and ssother third tag in the other zone.
               IE2(IXU)=IE2(IXU)-1
@@ -562,10 +544,13 @@ C Find out which other zone to copy from. Save the current state of the
 C menu so that can return to where we were. Also connected surface.
  99       CALL EPMENSV
           CALL EASKGEOF('Select source zone to copy from:',
-     &      CFGOK,IZ,'-',IER)
+     &      CFGOK,IZC,'-',IER)
+
+C Debug.
+C          write(6,*) 'copy from zone ',izc
           CALL EPMENRC
-          if(iz.eq.icomp)goto 99
-          if(iz.eq.0)return
+          if(izc.eq.icomp)goto 99
+          if(izc.eq.0)return
           same=.false.
         elseif(ISCOPT.eq.2)then
           same=.true.
@@ -591,7 +576,7 @@ C Reset all surface lines in donor zone.
           CALL INLNST(1)
           itsnm=0
           nzg=1
-          nznog(1)=IZ
+          nznog(1)=IZC   ! alter focus to the other zone
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
           MODIFY=.TRUE.
@@ -602,11 +587,13 @@ C Use pickssur to find up to ilimit surfaces to copy, returning
 C the selections via array ispk.
         CALL EDISP(iuout,'Please specify surface(s) to copy...')
         IS=1
+        IZ=1
         inpick=0
         if(same)then
           CALL EPMENSV
           ilimit=iposbcp
-          call pickssur(icomp,inpick,'c',ispk,0,ilimit,ier)
+          ipkany=0
+          call pickssur(icomp,inpick,'c',ispk,ipkany,ilimit,ier)
           CALL EPMENRC
           if(inpick.eq.0)then
             return
@@ -614,7 +601,8 @@ C the selections via array ispk.
         else
           CALL EPMENSV
           ilimit=iposbcp
-          call pickssur(iz,inpick,'c',ispk,0,ilimit,ier)
+          ipkany=0
+          call pickssur(izc,inpick,'c',ispk,ipkany,ilimit,ier)
           CALL EPMENRC
           if(inpick.eq.0)then
             return
@@ -623,12 +611,7 @@ C the selections via array ispk.
 
 C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
         endif
         npick=1
   191   continue
@@ -636,7 +619,7 @@ C Read the other zone and put selected surface data into temp storage.
         if(same)then
           write(outs,'(2a)') ' Copying attributes of ',SNAME(ICOMP,IS)
         else
-          write(outs,'(2a)') ' Copying attributes of ',SNAME(IZ,IS)
+          write(outs,'(2a)') ' Copying attributes of ',SNAME(IZC,IS)
         endif
         call usrmsg(outs,' ','-')
         NVER1=NVER(IS)
@@ -654,8 +637,8 @@ C << surface.
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
           write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
         else
-          write(SNAMED,'(a,a)') 'x',SNAME(IZ,IS)(1:11)
-          write(SNAME1,'(a)') SNAME(IZ,IS)(1:12)
+          write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
+          write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
         endif
         call snamdup(SNAME1,icomp,0,nameok)
         if(.NOT.nameok)then
@@ -683,12 +666,7 @@ C blocks. Because the surface to be added is not yet in the
 C connections list find ICON future position via `one connection 
 C past the current last surface in the zone`.
         if(.NOT.same)then
-          call eclose(gversion(icomp),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,iuout,IER)
         endif
 
 C Up the surface count.
@@ -721,6 +699,7 @@ C Generate combined name for dialog.
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         if(.NOT.DDOK)then
+          IRT=1
           CALL EASKATOG(' Actions to take on the new surface :',' ',
      &      'shift along normal','transform xyz','rotate','invert',
      &      'combination','continue ?',' ',IRT,7)
@@ -1019,14 +998,10 @@ C copying the next surface.
             endif
             call edisp(iuout,' getting donor zone info...')
 
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
-            else
-              call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
-            endif
+            call eclose(gversion(IZC),1.1,0.01,newgeo)
+            call georead(IFIL+1,LGEOM(IZC),IZ,0,iuout,IER)
             write(outs,'(3a)') ' Repeat transforms for ',
-     &        SNAME(IZ,ispk(npick)),' ?'
+     &        SNAME(IZC,ispk(npick)),' ?'
           else
             call edisp(iuout,' updating current zone...')
             call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1106,8 +1081,7 @@ C present editing of vertices with the option for mouse.
           if(iglib.eq.1)then
             if(ISCOPT.eq.0)then  
               hold64='                                                '
-              write(t248,'(4a)') hold64,hold64,hold64,'               '
-              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
+              write(t248,'(3a)') hold64,hold64,hold64
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               NV = iCountWords(t248)
@@ -1157,8 +1131,11 @@ C User has specified clicking from mouse so just do that.
                 call edisp(iuout,'Not enough points to make a surface.')
                  goto 41
               endif
+
+C Clear the string buffer, write into it the list of vertices that were
+C selected by the user so that errors and duplicates can be corrected.
               hold64='                                                '
-              write(t248,'(4a)') hold64,hold64,hold64,'               '
+              write(t248,'(3a)') hold64,hold64,hold64
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
@@ -1172,10 +1149,12 @@ C User has specified clicking from mouse so just do that.
             endif
           elseif(iglib.eq.2)then
          
-C For the GTK version there is no mouse click so offer a long blank editing
-C string. Fill the string first with spaces (MSYS should like this approach
-            hold64='                                                  '
-            write(t248,'(4a)') hold64,hold64,hold64,'                 '
+C For the GTK version there is no mouse click so offer a blank editing
+C string. Fill the string first with spaces and a single character (GTK
+C does not seem to like to start with a fully blank string).
+C            hold64='                                                  '
+C            write(t248,'(3a)') hold64,hold64,hold64
+            t248='  1                                               '
             CALL EASKS248(t248,'Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
             NV = iCountWords(t248)
@@ -1188,7 +1167,10 @@ C string. Fill the string first with spaces (MSYS should like this approach
           endif
         endif
 
-C Fill default attributes.
+C Fill default attributes. Edit with a 14 char wide string buffer
+C and then copy to 12 char string (SN) and then use st2name to
+C get rid of blanks and non-printable characters and then use
+C snamdup to ensure that it is a unique name (in this zone).
         CALL FILSUR(ICOMP,NSUR)
         T14=' '
         write(T14,'(2a)') SNAME(ICOMP,NSUR),'  '
@@ -1247,10 +1229,6 @@ C   for new position, IER is -3 user aborted action.
       common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1258,8 +1236,6 @@ C   for new position, IER is -3 user aborted action.
 
       character constr*12,act*2,mode*1,OPT*12,h*72
       character outs*124,SN*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       DIMENSION  XXW(4),YYW(4),ZZW(4)  ! for the initial surface
       DIMENSION  XXM(4),YYM(4),ZZM(4)  ! for matching surface
@@ -1575,9 +1551,6 @@ C   pass back in ier.
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
@@ -1585,8 +1558,6 @@ C   pass back in ier.
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
       CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*36,outs*124
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       integer iier  ! local variable for use in can't delete
 
       check = .false.
@@ -1919,17 +1890,13 @@ C << could this be done with G6 and with ??
 
       SUBROUTINE CKVERT(ivb,ICOMP,bounded,iub,inve,IER)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
       CHARACTER outs*124
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       logical bounded,hilight
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
@@ -2089,13 +2056,6 @@ C door width and height.
       real defwininsert,defdoorwidth,defdoorheight
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -2109,11 +2069,8 @@ C door width and height.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,T14*14
+      CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
 
 #ifdef OSI
@@ -2192,12 +2149,6 @@ C edited to a thick line if currently in graphics mode.
         goto 72
       endif
 
-C Remind use of parent surface length and height (bounding box).
-      CALL SURLEHI(IS,XYMAX,ZMAX)
-      Write(outs,'(a,f7.3,a,f6.3,a)') 'Parent surface width = ',
-     &  XYMAX,' m, and height = ',ZMAX,' m.'
-      call edisp(itru,outs)
-
 C Insert within surface or at bottom edge (as in a door).
       H(1)='When adding a rectangular opening (e.g. a window or'
       H(2)='door) to a surface you specify its position within'
@@ -2253,7 +2204,7 @@ C vertices in this surface +6 are < MV.
           RETURN
         ENDIF
         XO1=0.1
-        ZO1=0.
+        ZO1=0.0
         XW=defdoorwidth
         ZH=defdoorheight
         guesstype='door_grill_frame'
@@ -2287,64 +2238,119 @@ C edited to a thick line if currently in graphics mode.
       endif
 
   43  if(IRT.eq.1)then
+
+C Report parent surface length and height (bounding box).
+        CALL SURLEHI(IS,XYMAX,ZMAX)
+        Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
+        call edisp(itru,outs)
+
+C Warn if offsets or size are small.
         H(1)='The X offset is the distance from the lower left '
-        H(2)='corner of the parent surface (looking at the  '
+        H(2)='corner of the parent surface (looking at the'
         H(3)='outside face) to the left side of the new surface.'
-        H(4)=' '
-        H(5)='The Z offset is the distance from the bottom  '
-        H(6)='edge of the parent surface (looking at the '
-        H(7)='outside face) to the bottom of the new surface.'
-        H(8)=' '
-        H(9)='The opening width and height are in metres. '
+        H(4)='The X offset should be at least 20mm. '
+        H(5)=' '
+        H(6)='The Z offset is the distance from the bottom  '
+        H(7)='edge of the parent surface (looking at the '
+        H(8)='outside face) to the bottom of the new surface.'
+        H(9)='The Z offset should be at least 20mm.'
+        H(10)=' '
+        H(11)='The opening width and height are in metres. The'
+        H(12)='opening dimensions should be at least 100mm. '
         write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
-     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,9)
+     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,12)
         K=0
-        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
-        CALL EGETWR(HOLD,K,ZO1,0.0,99.,'W','Z offset',IER)
-        CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
-        CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
+        CALL EGETWR(HOLD,K,XO1,0.025,99.0,'F','X offset',IER)
+        CALL EGETWR(HOLD,K,ZO1,0.025,99.0,'F','Z offset',IER)
+        CALL EGETWR(HOLD,K,XW,0.1,99.0,'F','width',IER)
+        CALL EGETWR(HOLD,K,ZH,0.1,99.0,'F','height',IER)
+
+C Test if the opening is going to be bigger than the bounding box.
+        if((XW+XO1).ge.XYMAX)then
+          call edisp(iuout,
+     &      'Width of new opening is bigger than bounding box!')
+          goto 43
+        elseif((ZH+ZO1).ge.ZMAX)then
+          call edisp(iuout,
+     &      'Height of new opening is bigger than bounding box!')
+          goto 43
+        endif
       elseif (IRT.eq.2)then
+
+C Report parent surface length and height (bounding box).
+        CALL SURLEHI(IS,XYMAX,ZMAX)
+        Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
+        call edisp(itru,outs)
+
+C Warn if offsets or size are small.
         H(1)='The X offset is the distance from the left edge'
         H(2)='of the parent surface (looking at the outside '
-        H(3)='face) to the left side of the new surface. '
-        H(4)=' '
-        H(5)='The opening width and height are in metres. '
+        H(3)='face) to the left side of the new surface. It should'
+        H(4)='be at least 25mm (the edge generation will not be '
+        H(5)='correct with a zero offset)! '
+        H(6)=' '
+        H(7)='The opening width and height are in metres. The'
+        H(8)='door dimensions should be at least 100mm.'
         write(hold,'(3f8.3,a)') XO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Width, Height (m): (see help)',
-     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,5)
+     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,8)
         K=0
-        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
-        CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
-        CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
-      elseif (IRT.eq.3)then
+        CALL EGETWR(HOLD,K,XO1,0.025,99.,'F','X offset',IER)
+        CALL EGETWR(HOLD,K,XW,0.1,99.0,'F','width',IER)
+        CALL EGETWR(HOLD,K,ZH,0.1,99.0,'F','height',IER)
 
-C Ask for percentage.
-        hold=' '
-        H(1)='Define the surface area of the opening as a percentage'
-        H(2)='value of the parent surface (e.g. 40%).'
-        H(3)='The new surface will be located in the centre of the'
-        H(4)='parent surface.'
-        CALL EASKR(PERC,'Percentage of parent surface.',
-     &    ' ',0.,'F',99.,'F',15.0,'parent percentage',IER,4)
+C Test if the opening is going to be bigger than the bounding box.
+        if((XW+XO1).ge.XYMAX)then
+          call edisp(iuout,
+     &      'Width of new opening is bigger than bounding box!')
+          goto 43
+        elseif(ZH.ge.ZMAX)then
+          call edisp(iuout,
+     &      'Height of new opening is bigger than bounding box!')
+          goto 43
+        endif
+        if((XO1).lt.0.05)then
+          call edisp(iuout,
+     &      'Offset is to close to parent left vertical edge!')
+          goto 43
+        endif
+      elseif (IRT.eq.3)then
 
 C Determine parent surface length and height (bounding box).
         CALL SURLEHI(IS,XYMAX,ZMAX)
         Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
-     &    XYMAX,' m, surface height = ',ZMAX,' m.'
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
         call edisp(itru,outs)
 
+C Ask for percentage between 5 and 95%.
+        hold=' '
+        H(1)='Define the surface area of the opening as a percentage'
+        H(2)='value of the parent surface (e.g. 40%).'
+        H(3)='The new surface will be located in the centre of the'
+        H(4)='parent surface. For best results choose a percentage'
+        H(5)='between 5 and 95.'
+        H(6)=' '
+        H(7)='The logic assumes that the parent surface is rectangular'
+        H(8)='and may result in strange shapes if it is not. '
+        CALL EASKR(PERC,'Percentage of parent surface.',
+     &    ' ',5.,'F',95.,'F',15.0,'parent percentage',IER,8)
+
 C Determine opening width, height, X offset and z offset.
-C << NOTE: this logic assumes a rectangular parent surface >>
-C << and the area will not be correct for other surface shapes. >>
+C NOTE: this logic assumes a rectangular parent surface
+C and the area will not be correct for other surface shapes.
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
         XO1=((XYMAX-XW)/2)
         ZO1=((ZMAX-ZH)/2)
         guesstype='window_grill_frame'
       endif
+
+C If error state non-zero then jump back.
       if(ier.ne.0)goto 43
 
 C Transform existing surface into into site coordinates in the
@@ -2920,8 +2926,7 @@ C Uses a temporary transform into 2D to get this data so
 C it work on surface of most orientations.
       SUBROUTINE SURLEHI(IS,XYMAX,ZMAX)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XA(4),YA(4),ZA(4)
       DIMENSION  VP(3),EP(3),EQN(4)
@@ -3010,14 +3015,11 @@ C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,act*1
+      CHARACTER act*1
 
       if(act.eq.'+')then
 C Add a connection, this code shifts G6 G7 G8 data upwards.
@@ -3075,20 +3077,12 @@ C icomp is the index of the zone
 C icon is the index of the new connection (from parent code).
       subroutine addedsurf(icomp,icon,itrc,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer IX,ival1,ival2
 
 C Update the connection list. Move all others up and then insert with

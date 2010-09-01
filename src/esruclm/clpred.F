@@ -514,6 +514,7 @@ C polynomial function
      &             PWV(MD,MT),PWD(MD,MT),PRH(MD,MT),PLAST(MD,MT)
       DIMENSION A(10)
       character H*72,COEFFS*72,STR*72
+      integer ILC  ! for radio button
 
 C Setup limits for climate parameters
       IF(ICLMT.EQ.1)THEN
@@ -556,7 +557,7 @@ C Setup limits for climate parameters
       H(17)='Relevant number of coefficients a0, a1 etc. are also'
       H(18)='required as input'
       COEFFS=' '
-
+      ILC=1
       CALL EASKATOG('Change original climate value ','(see help)'
      & ,'set to constant','change by constant','fraction of original'
      &    ,'polynomial transform ','continue',' ',' ',ILC,18)

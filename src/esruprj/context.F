@@ -1067,7 +1067,7 @@ C model including view and add images (delete not yet working).
       common/pophelp/h(60)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -1089,7 +1089,7 @@ C and control of project images.
       character limg*72,key*1,fs*1
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
 
@@ -1311,6 +1311,7 @@ C temporal data to be associated with a model.
 
       SUBROUTINE setuptemporal(MODSIT,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
@@ -1323,19 +1324,10 @@ C temporal data to be associated with a model.
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
+     &             dbspth,aimpth,bsmpth
      
 C TDF related.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
@@ -1346,14 +1338,12 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character H*72,outs*124,ltmp*72,hold*40
       character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
-      character*72 LTDF,LTDFA,DLTDF
+      character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,aimpth*24,
+     &          bsmpth*24
+      character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       integer ier
 
 C Action to pass to tdfedit. Prior 'update' option moved into
@@ -1442,7 +1432,7 @@ C and present a different interface depending on file type.
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
       H(34)=' DBTZNM  - measured zone db temperature'
-      H(35)=' '
+      H(35)=' SURTM   - measured surface temperature'
       H(36)=' '
       H(37)='manage associations - you can add and delete associations'
       H(38)='  that have been previously defined. Note this does not'
@@ -2351,6 +2341,21 @@ C Measured db T (probably associated with a zone).
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:5).eq.'SURTM')then
+
+C Measured surface T (associated with a zone and up to 6 surfaces).
+            IC=-1
+ 355        izdef=0
+            call askzone(ic,izdef,'Related zone for measured surf T?',
+     &        'Related zone','-',
+     &        'Measured surface T within which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 355
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &        'Select surface associated with measured temperature',
+     &        ' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -2638,6 +2643,9 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      COMMON/FILEP/IFIL
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2657,7 +2665,7 @@ C 31
       character h*72,vert*33,DS*7,DS1*10,act*1,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
-      logical modify,browse
+      logical modify,browse,XST
       INTEGER IHL
 
 C If user requested initial calendar.
@@ -2826,6 +2834,13 @@ C Add or delete a day type.
             CALL EASKABC(' Options:',' ',
      &        'add','delete (not available)','continue',IRT,5)
             if(irt.eq.1)then
+
+C Update control file before increasing day types
+              ICTLF=IFIL+1
+              CALL ERPFREE(ICTLF,ISTAT)
+              call FINDFIL(LCTLF,XST)
+              IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+
               nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
               calentag(nbdaytype)='new'
@@ -2853,7 +2868,8 @@ C Edit calendar day tag and name.
                 endif
               endif
 
-C Update operations data for all zones to include this new day type
+C Update operations and control data for all zones to include this new day type
+              CALL CTLWRT(ICTLF,IER)
               CALL UPDOPR
               modify=.true.
               goto 73

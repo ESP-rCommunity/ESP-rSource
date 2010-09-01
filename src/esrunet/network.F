@@ -3215,6 +3215,7 @@ C znamecon is the zone name associated with inside face a conneciton
       character snamecon*12,znamecon*12,outs*124,tl*18,tc*18,tt*18
       character zn*12
       LOGICAL OK,DOK,isexavail
+      integer IRT  ! for radio button
 
 C Rewind summary file if it exists (assumed to be open on unit iuex).
       if(isexavail)then
@@ -3604,6 +3605,7 @@ C Z cog, Z max, zone name and surface name.
           write(tt,'(a,f7.3,a)') 'top (',surzmax(ifoc),'m)'
           write(outs,'(3a)') 'Use ',
      &      conname(ifoc)(1:lnblnk(conname(ifoc))),' attributes with'
+          IRT=1
           call easkatog(outs,'options:',tl,tc,tt,'other','continue',
      &      ' ',' ',IRT,3)
           IF(irt.eq.5)GOTO 72

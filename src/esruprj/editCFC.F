@@ -56,18 +56,14 @@ C ********************************************************************
       character h*72
       COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
 
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount
@@ -968,10 +964,6 @@ C ********************************************************************
       integer iuout,iuin
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer izstocn
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
@@ -1361,11 +1353,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "epara.h"
 #include "CFC_common.h"
 #include "geometry.h"
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
       COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn

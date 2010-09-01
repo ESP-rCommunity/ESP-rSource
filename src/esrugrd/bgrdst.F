@@ -218,19 +218,15 @@ C *********************************************************************
       SUBROUTINE LCLCMP(IZ)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
 
       CHARACTER KEY*1,H*72,ITEM(20)*31,STTS*13
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -931,12 +927,11 @@ C *********************************************************************
       SUBROUTINE DFNMTR(IComp)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -944,8 +939,6 @@ C *********************************************************************
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
       COMMON/GRSD54/IMLayS(MMTR),IMLayE(MMTR)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER KEY*1,H*72,LstMtr*72,SrfNm*12
       character*38 ITEM(20)
 
@@ -1464,7 +1457,7 @@ C *********************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1473,8 +1466,6 @@ C geometry.h provides commons G0/G2/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GRSD31/INDLCL(MS)
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
@@ -1489,14 +1480,12 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/GRSD64/IBLayS(MBND),IBLayE(MBND)
 
       LOGICAL ZONOK
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION IVALZ(MCOM)
 
       CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
-      newgeo=.false.  ! assume older format geometry.
 
 C Show the zone selection menu.
       H(1)='    Select the zone for which the multi-D gridding'
@@ -1508,12 +1497,7 @@ C Show the zone selection menu.
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
         IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
         IF(IER.EQ.0)THEN
           ZONOK=.TRUE.

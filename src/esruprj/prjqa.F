@@ -27,6 +27,14 @@ C ************ prjqa
 C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
+C AIM-2.
+C IAIM2 set to 1 if AIM-2 infiltration model active.
+C LAIM2 (72 char) file holding AIM-2 infiltration model data.
+C      common/aim2def/iAIM2,LAIM2
+
+      USE AIM2_InputData, ONLY:iAIM2,LAIM2
+      USE AIM2, ONLY:AIM2_READIN, AIM2_report
+      
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -69,9 +77,6 @@ C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -89,8 +94,6 @@ C LPNF (72 char) plant network file name.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -106,9 +109,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/IPVF/lipvdatf
       common/CFGV/icfgv
 
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
@@ -170,8 +170,6 @@ C Remember if each zone is fully attributed.
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESCRC*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
       character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
@@ -186,7 +184,6 @@ C Remember if each zone is fully attributed.
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
-      character LAIM2*72
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
@@ -207,6 +204,7 @@ C in the current model. A -1 means not applicable
       integer iercl  ! error state returned for scanning climate list.
       integer llbm,llbn  ! string lengths for obstructions
       integer ivz        ! index of current zone in list
+      integer ins2,ins3  ! for radio buttons
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -637,12 +635,14 @@ C << mlcmatch not yet used >>
 
         H(1)='You may filter for surfaces which face the outside,'
         H(2)='partitions (internal) etc. '
+        ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
      &      'adiabatic','any contiguity',ins2,2)
 
         H(1)='You may filter for surfaces which have a particular'
         H(2)='orientation. '
+        ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
      &      'any horizontal','any orientation',' ',ins3,2)
@@ -720,12 +720,7 @@ C << mlcmatch not yet used >>
 
 C << it might not be necesary to scan geometry file >>
             LTMP=LGEOM(IVALS(IZ))
-            call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
 C For each surface in current zone check for match to attributes.
             do 11 i=1,nzsur(ivals(iz))
@@ -1415,12 +1410,7 @@ C Jump if no zones.
       do 97 IZ=1,INPIC
         if(IVALS(IZ).GT.0)then
           LTMP=LGEOM(IVALS(IZ))
-          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-          else
-            call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-          endif
+          call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
           OPQ=0.
           TRN=0.
           attribok(IVALS(IZ))=.true.
@@ -1498,12 +1488,7 @@ C Jump if no zones or no zone info requested.
         IZZ=IVALS(IZ)
         if(IZZ.eq.0)goto 98
         LTMP=LGEOM(IZZ)
-        call eclose(gversion(izz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUF,LTMP,IZZ,1,itu,IER)
-        else
-          call egomin(IUF,LTMP,IZZ,1,0,itu,IER)
-        endif
+        call georead(IUF,LTMP,IZZ,1,itu,IER)
 
         call edisp(itu,'  ')
         WRITE(outs,240)
@@ -2221,9 +2206,6 @@ C not browsing.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2252,8 +2234,6 @@ C Images.
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER CTLDOC*248,LCTLF*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,XST,anyish,unixok

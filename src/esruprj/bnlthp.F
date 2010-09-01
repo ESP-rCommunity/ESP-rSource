@@ -76,7 +76,7 @@ C **************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/G5/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -87,12 +87,9 @@ C geometry.h provides commons G0/G2/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP) 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       COMMON/VTHP18/LNLTHP
@@ -101,26 +98,17 @@ C geometry.h provides commons G0/G2/precz.
       DIMENSION IVAL2(4),IVAL3(MCOM),IVAL4(MS),IVAL5(ME)
       LOGICAL INTHPS,INTHPZ
       LOGICAL OK,DOK,SAVEOK,XST
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
       CHARACTER*95 TEXT,TEXT1
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character ltmp*72
 
 C Read the complete building thermal and geometical data.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       SAVEOK=.FALSE.
       DO 5 ICOMP=1,NCOMP
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         IF(IER.NE.0)RETURN
         CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,0,IUOUT,IER)
         IF(IER.NE.0)RETURN

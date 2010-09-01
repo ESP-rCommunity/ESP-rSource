@@ -100,6 +100,7 @@ C Name of current application
       LOGICAL OK,DOK,unixok,there,silent
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer ic,iwm  ! for radio buttons
 
 C Initial assumptions. Pass module name to C code structure.
       call ezero
@@ -486,7 +487,7 @@ C Present the opening display and control menu.
       INO=-3
       CALL EMENU('Climate Analysis',ITEM,NITEM,INO)
       IF(INO.EQ.NITEM)THEN
-        call usrmsg(' Closing clmate module...',' ','P')
+        call usrmsg(' Closing climate module...',' ','P')
         write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
 
@@ -663,6 +664,7 @@ C Creation of climate file from manual editing.
         H(11)=' '
         H(12)='Prediction is used for predicting radiation from site '
         H(13)=' position '
+        IC=1
         CALL EASKATOG(' Creation of data via: ',' ',
      &    'keyboard entry','prediction','transforms','curve fitting',
      &    'continue',' ',' ',IC,13)
@@ -998,6 +1000,7 @@ C Delimiter.
         H(4) ='  single space between columns'
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
      &    ' ',IWM,6)

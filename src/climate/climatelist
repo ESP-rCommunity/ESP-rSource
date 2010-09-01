@@ -262,6 +262,46 @@ Winter season is Mon 29 Oct - Mon 31 Dec
 Typical winter week begins Mon 24 Dec
 *help_end
 *item
+*name	Brescia-Ghedi - ITA
+*aide	Brescia-Ghedi - ITA was sourced from us DoE
+*dbfl	/usr/esru/esp-r/climate/ITA_Brescia-Ghedi
+*avail	ONLINE
+*winter_s  1  1 20  3 12 12 31 12 # seasons Sat-01-Jan--Sun-20-Mar & Mon-12-Dec--Sat-31-Dec
+*spring_s 21  3 19  6 25  9 11 12 # seasons Mon-21-Mar--Sun-19-Jun & Sun-25-Sep--Sun-11-Dec
+*summer_s 20  6 24  9 # summer season Mon-20-Jun--Sat-24-Sep
+*winter_t 19  2 25  2 19 12 25 12 # typical Sat-19-Feb--Fri-25-Feb & Mon-19-Dec--Sun-25-Dec
+*spring_t  6  6 12  6 13 11 19 11 # typical Mon-06-Jun--Sun-12-Jun & Sun-13-Nov--Sat-19-Nov
+*summer_t  8  8 14  8 # typical summer Mon-08-Aug--Sun-14-Aug
+*help_start
+Climate is Brescia-Ghedi - ITA
+ Location: 45.42N  4.72W : 2005
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -5.0 @ 7h00 Fri-07       13.0 @16h00 Tue-04     2.2
+ Feb     -5.0 @ 7h00 Thu-24       15.8 @14h00 Sat-26     4.2
+ Mar     -6.0 @ 7h00 Tue-01       19.3 @14h00 Mon-28     7.0
+ Apr     -6.0 @ 4h00 Tue-12       21.0 @16h00 Fri-08    11.4
+ May      4.6 @23h00 Sun-01       31.0 @16h00 Fri-20    16.9
+ Jun      4.6 @23h00 Wed-01       31.0 @16h00 Mon-27    19.1
+ Jul     10.0 @ 7h00 Fri-22       33.0 @16h00 Sat-30    22.8
+ Aug     12.8 @24h00 Wed-10       32.0 @16h00 Mon-01    22.4
+ Sep      3.4 @ 5h00 Tue-27       30.0 @16h00 Sun-11    18.6
+ Oct      1.0 @ 7h00 Thu-27       25.3 @14h00 Sat-01    12.3
+ Nov     -3.1 @ 5h00 Sat-26       19.0 @19h00 Fri-04     7.3
+ Dec     -9.0 @ 4h00 Sat-03       11.1 @14h00 Sun-25     1.2
+ Annual  -9.0 @ 4h00 Sat-03-Dec   33.0 @16h00 Sat-30-Jul    12.2
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-20-Mar
+Typical winter week begins Sat-19-Feb
+Spring season is Mon-21-Mar - Sun-19-Jun
+Typical spring week begins Mon-06-Jun
+Summer season is Mon-20-Jun - Sat-24-Sep
+Typical summer week begins Mon-08-Aug
+Autumn season is Sun-25-Sep - Sun-11-Dec
+Typical autumn week begins Sun-13-Nov
+Winter season is Mon-12-Dec - Sat-31-Dec
+Typical winter week begins Mon-19-Dec
+*help_end
+*item
 *name	Brussels Belgium IWEC WMO 064510
 *aide	Brussels (sourced from IWEC/DoE)
 *dbfl	/usr/esru/esp-r/climate/bel_brussels_iwec

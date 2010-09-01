@@ -180,6 +180,7 @@ C IGET = 75 IPV metric pollutant emissions (kg/m^2/yr)
 C IGET = 76 IPV metric overall thermal comfort distribution
 
 C IGET = 80 Measured zone db T (for display only)
+C IGET = 81 Measured surface T (for display only)
 
 
 C ************************ GOMSETUP ************************
@@ -427,16 +428,6 @@ C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
-C TDF commons.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
       CHARACTER ITEMC(21)*24
@@ -456,6 +447,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer nbofhelp   ! how many help lines to display for different menu types.
       integer loop       ! for do loops
       integer IAC        ! for user selection
+      integer IOT,IWM    ! for radio buttons
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
 #ifdef OSI
@@ -2142,7 +2134,7 @@ C IGET = 10  Total sensible zone loads.
 C IGET = 32  All latent zone loads.
           IGETNO(NGET,1)=32
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' TotSen'
+          SUFFIX=' TotLat'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone latent load (kW)'
           elseif(IROC.eq.1)then
@@ -2695,29 +2687,61 @@ C CFD flow.
       elseif(INO.EQ.20)then
 
 C Measured data.
-C Measured zone db T, select associated zone.
+C Measured zone db T, select associated zone or if measured
+C surface T select the zone and surface.
 C << give the users clues about which zones have measured temps >>
+C << make this into a selection list, but if there is only one
+C << then it could be automatically selected
         do 188 loop=1,NZ
           if(IDBTZNM(loop).ne.0)then
-            write(outs,'(2a)') 'measured T in ',
+            write(outs,'(2a)') 'measured db T in ',
      &        ZNAME(loop)(1:lnzname(loop))
             call edisp(iuout,outs)
           endif
+          do 189 kk=1,nzsur(loop)
+            if(ISURTMEAS(loop,kk).ne.0)then
+              write(outs,'(3a,i2)') 'measured surf T in ',
+     &          ZNAME(loop)(1:lnzname(loop)),' surf ',kk
+              call edisp(iuout,outs)
+            endif
+  189     continue
   188   continue
+        CALL EASKAB('Which measured data type',
+     &    ' :','zone db T','surface T',IR,0)
         NGET=NGET+1
-        call ASKZON(IZONE)
-        IGETNO(NGET,1)=80
-        IGETNO(NGET,2)=IZONE
-        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
-        SUFFIX=' db T'
-        GLABEL(NGET)='Measured db Tmp'
-        if(IROC.eq.0)then
-          SLABEL(NGET)='Measured zone db T (degC)'
-        elseif(IROC.eq.1)then
-          SLABEL(NGET)='Meas zone db T change (degC/hr)'
-        elseif(IROC.eq.-1)then
-          SLABEL(NGET)='Meas zone db T hours (degC.hr)'
+        if(ir.eq.1)then
+          call ASKZON(IZONE)
+          IGETNO(NGET,1)=80
+          IGETNO(NGET,2)=IZONE
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+          SUFFIX=' db T'
+          GLABEL(NGET)='Measured db Tmp'
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Measured zone db T (degC)'
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Meas zone db T change (degC/hr)'
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Meas zone db T hours (degC.hr)'
+          endif
+        elseif(ir.eq.2)then
+          call ASKZON(IZONE)
+          call ASKSUR(IZONE,ISFN)
+          IGETNO(NGET,1)=81
+          IGETNO(NGET,2)=IZONE
+          IGETNO(NGET,3)=ISFN
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+          SUFFIX=' surf T'
+          GLABEL(NGET)='Measured surf T'
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Measured surf T (degC)'
+          elseif(IROC.eq.1)then
+            SLABEL(NGET)='Meas surf T change (degC/hr)'
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Meas surf T hours (degC.hr)'
+          endif
+
         endif
 
 C << ****** >>
@@ -2802,6 +2826,7 @@ C based set iocut=-1, if always occup set iocut=0.
             H(3)='list. Type 1 usually represents casual gains from '
             H(4)='people,although any of the three casual gain types'
             H(5)='can be used. '
+            IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
             if (IOT.gt.1.and.IOT.lt.5) then
@@ -2910,6 +2935,7 @@ C Toggle delimeter.
           H(5) ='  comma separator (for excel)'
           H(6) ='  tab separator (for excel)'
           H(7) ='  tagged - marked up data'
+          IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','tagged',
      &      'continue',' ',IWM,7)
@@ -3061,7 +3087,8 @@ C case of climate data or measured data GLABEL has already been set.
       if (IGETNO(NGET,1).eq.2.or.IGETNO(NGET,1).eq.19.or.
      &    IGETNO(NGET,1).eq.20.or.IGETNO(NGET,1).eq.21.or.
      &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.26.or.
-     &    IGETNO(NGET,1).eq.34.or.IGETNO(NGET,1).eq.80) then
+     &    IGETNO(NGET,1).eq.34.or.IGETNO(NGET,1).eq.80.or.
+     &    IGETNO(NGET,1).eq.81) then
 
 C Do nothing.
         continue
@@ -3422,20 +3449,13 @@ C This recovers one day.
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
-
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -3445,7 +3465,6 @@ C =2 with more than 3 day types
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
-      newgeo=.false.  ! assume older format geometry.
       if(IGETNO(KGET,1).eq.1)then
 
 C IGETNO(KGET,1) =  1 Zone temperature
@@ -3823,12 +3842,8 @@ C area to 1.
 C Read in the zone geometry, construction data, zone operational data,
 C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
+
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
 
 C If izver is 4 or greater then assume direct read of data, otherwise
@@ -4206,7 +4221,12 @@ C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
       elseif(IGETNO(KGET,1).eq.80)then
 
 C IGETNO(KGET,1) = 80 Zone measured db temperature
-        CALL MOMEASURED(IDAY,IGETNO(KGET,2))
+        CALL MOMEASURED('DBZNM   ',IDAY,IGETNO(KGET,2),0)
+        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.81)then
+
+C IGETNO(KGET,1) = 81 Surface measured db temperature
+        CALL MOMEASURED('SURTM   ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       endif
 

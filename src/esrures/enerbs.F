@@ -49,32 +49,20 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       COMMON/RECV5/SNA(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER TSTR*10,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER SN*12,ZN*12
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
 
 C Read in the zone geometry data.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
-      call eclose(gversion(izone),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
-      else
-        call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
-      endif
+      call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
 
 C Read (silently) construction file to get surface emissivities.
       CALL ECONST(LTHRM(IZONE),IUNIT,IZONE,0,IUOUT,IER)

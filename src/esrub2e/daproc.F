@@ -722,10 +722,12 @@ C This routine calls tdf in update mode. There are two calling modes.
 C BEMS - updates tdf with in formation from a BEMS system
 C CLIM - updates tdf with information from a climate lookahead routine. 
 
-C << thie subroutine logic must change to reflect that tdf functionality
+C << this subroutine logic must change to reflect that tdf functionality
 C << has been moved into the project manager.
 
       SUBROUTINE TDFUPDT(MODE)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -735,12 +737,8 @@ C Commons
 
       COMMON/B2EI/MODELCFG,BFILE,TDFUD,RSFIL,BREPT
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-
       CHARACTER MODE*4
-      CHARACTER*72 LTDF,LTDFA,MODELCFG,BFILE,TDFUD,RSFIL,BREPT
+      CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
       CHARACTER DOIT*124
       character msgl2*124
     
@@ -782,14 +780,12 @@ C module b2e and the code which generates the file is in daproc.F
 C as routine TDFUDWR. Only the tdf module needs routine tdfupd.
 C ITRC is the trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       logical FOUND,CLOSE,CLOSET,foundit
 
       CHARACTER AFIL*72,FOCUS*8,tail*8

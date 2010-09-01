@@ -41,16 +41,12 @@ C a zone transitional shading file.
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
 
       dimension month(12),iavdec(12)
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character outs*124,month*3,sn*12
       logical ok,dok
  
@@ -229,15 +225,11 @@ C surface shading for each hour based on common block data.
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
 
       dimension month(12),iavdec(12)
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character outs*124,month*3,sn*12
       logical ok,dok
  
@@ -367,16 +359,12 @@ C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
       common/contr/mon,isc(ms),iyd
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,24),psof(ms,24)
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
 
       character month*3,outs*124,sn*12
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character act*1
       dimension month(12),iavdec(12)
       logical close,ok,dok

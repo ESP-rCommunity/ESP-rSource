@@ -380,12 +380,12 @@ c
 
       SUBROUTINE H3KSTORE_AIM2_DATA(AIM2_total)
 
-           IMPLICIT NONE
+      USE AIM2_CalcData, ONLY:AIM2_house_vol
+
+      IMPLICIT NONE
 #include "building.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 #include "h3kstore_common.h"
       character outs*124
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

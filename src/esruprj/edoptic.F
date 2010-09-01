@@ -65,6 +65,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical moddb,browse,OK,DOK,edt
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
+      integer IOW     ! for radio button
       logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
@@ -243,6 +244,7 @@ C Import/Add/Del/Copy if not browsing....
         h(6)='the thickness after the import.'
         h(7)=' '
         h(8)='Add/Delete/Copy work on current contents of db. '
+        IOW=1
         CALL EASKATOG('Optical actions: ',' ',
      &    'Import Window4 or Window5','Import WIS',
      &    'Add','Delete','Copy','Ignore',' ',IOW,8)
@@ -582,7 +584,6 @@ C Free the files, restore the optics db name and file unit.
 C ****** OPT2TMP(ier)
 C Copy current optical db to temporary file.
       SUBROUTINE OPT2TMP(IER)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       CHARACTER topt*72,SOPT*12,GDESCR*36
 
@@ -623,7 +624,6 @@ C EDITOPT edits one set of optical properties via common block.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
@@ -1573,7 +1573,6 @@ C to 20 for the present.
 C      integer lnblnk  ! function definition
 
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
-      common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND

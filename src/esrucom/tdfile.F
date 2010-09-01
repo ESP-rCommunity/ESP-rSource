@@ -60,6 +60,7 @@ C  Check whether it is an ascii file or a binary file. Depending on
 C which create the scratch or ascii version.
       subroutine supplyandcheck(tfile,act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
@@ -72,34 +73,17 @@ C Related to TDF ITEMS file.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)   
-        
-C For each zone a pointer to relevant temporal entry 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      LOGICAL OPTDF,OPIMP,OPEXP,XST
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER LTDF*72,LTDFA*72,tfile*72,LTMPFL*72
+      COMMON/TDFOPEN/OPTDF
+      LOGICAL OPTDF,XST
+
+      CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
+      CHARACTER HDR*12
       logical unixok,FOUND
       integer ier
 
@@ -168,6 +152,16 @@ C Vertical solar radiation data are assigned per surface
                             IVERSOL(itd3,IS)=itd4
                           endif
  975                    continue
+                      endif
+
+C Measured surface temperature data are assigned per surface
+                      if(DBTASK(ITD1)(1:5).eq.'SURTM')then
+                        DO 976 IS=1,NZSUR(itd3)
+                          if(DBSN(itd1)(1:12).eq.
+     &                       sname(itd3,IS)(1:12))then
+                            ISURTMEAS(itd3,IS)=itd4
+                          endif
+ 976                    continue
                       endif
                     endif
   77              continue
@@ -462,53 +456,19 @@ C the file is an asci or unsupported version).
 C If the version is 1 or 2 then details of the fields of each item
 C will be read in. If version 3 then only a limited header is expected.
       SUBROUTINE ERTDF(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C Related to each instance.
-C TAG  : 12 char unique itentity for the item, outside code may reference.
-C TTYPE: 8 char generic type tag for type of processing and information.
-C TMENU: 32 char descriptive text for use in selection menus.
-C TAIDE: 36 char Aide memoire, especially useful with similar items.
-C TDFIH is the text for each field. 3+1+1+5+10+1
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-
-C TDFLD holds information related to each field in one item, this equates
-C closely with TDFG5.
-C ITCOL : For tabular information, the column in the scratch file for each
-C         period field.
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-
-C TDFTEX is the chosen alternative text parameter for text fields in
-C the instance.
-C TMAT : 16 char text attributes - zone, sensor, control names.
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-
-C TDFREL are ranges allowed for real fields in the instance.
-C TMIN,TMAX: Acceptable minimum and maximum for range checking.
-C TMAR : real attributes to be passed to outside code.
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
 
 C Pointer to start of each item header in TDF file.
       COMMON/HDAT/IHREC(MIT)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      common/TDFHD/tdbdate
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,WORD*8,tdbdate*24
+      CHARACTER WORD*8
+      character tdbdate*24  ! date stamp for temporal scratch file
       CHARACTER FSTR*80,HDR*12,OUTS*124,tdaide*72,msgl2*48
 
 C Assume that the file is already opened before calling this routine.
@@ -717,31 +677,20 @@ C ************* EWTDF
 C EWTDF writes an binary (scratch) TDF file from info in common blocks.
 C IER=0 OK, IER=1 problem. 
       SUBROUTINE EWTDF(IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/HDAT/IHREC(MIT)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      common/TDFHD/tdbdate
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      LOGICAL OPTDF,OPIMP,OPEXP
+      COMMON/TDFOPEN/OPTDF
+      LOGICAL OPTDF
 
-      CHARACTER LTDF*72,LTDFA*72,FSTR*80,HDR*12,tdaide*72
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,msgl2*48
-      CHARACTER TDFDES*32,TMAT*16,tdbdate*24,tail*8
+      CHARACTER FSTR*80,HDR*12,tdaide*72
+      CHARACTER msgl2*48
+      CHARACTER tdbdate*24  ! data stamp for temporal scratch file
+      character tail*8
       integer ier
 
 C Write out to version 3 format. This assumes that the binary
@@ -794,12 +743,13 @@ C Record which points to the beginning of each item header.
       msgl2='scratch record 4 '
       WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)(IHREC(K),K=1,NWPR)
 
-C For each item read its attributes.3+2+4+9+1+1
+C For each item read its attributes.3+2+8+9+1+1
       if(NDATA.eq.0) goto 11
       DO 10 I=1,NDATA
         IREC=IREC+1
         IHREC(I)=IREC
         msgl2='scratch item tag & type '
+
         WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)TAG(I),TTYPE(I),
      &    TMENU(I),TAIDE(I),NTSTAT(I),NTBITS(I)
 
@@ -861,8 +811,7 @@ C Binary file read errors.
  102  CALL USRMSG(' could not write TDF header record 1',msgl2,'W')
       IER=1
       goto 99
- 103  msgl2='  '
-      CALL USRMSG(' could not write TDF instance record ',msgl2,'W')
+ 103  CALL USRMSG(' could not write TDF instance record ',msgl2,'W')
       IER=1
       goto 99
 
@@ -878,28 +827,18 @@ C   additional columns of default data will be written. If iadcols is
 C   negative then fewer columns will be written.
 C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       SUBROUTINE EWTDFA(ITRC,AFIL,IAFIL,iiadcols,IER)
+#include "building.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/HDAT/IHREC(MIT)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
       common/TDFADDC/iadcols,deftabu(9)
 
       CHARACTER AFIL*72,FSTR*80,HDR*12,tdaide*72
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,delim*1
-      CHARACTER TDFDES*32,TMAT*16,tab*1,msgl2*72,louts*124
+      CHARACTER delim*1
+      CHARACTER tab*1,msgl2*72,louts*124
 
       tab=','
       HDR  ='ASCIITDF3'
@@ -1073,6 +1012,8 @@ C their timestep data).
 C Note that a call with act='i' is assumed to happen after a call with
 C act='c'.
       SUBROUTINE TDFAIMPT(ITRC,AFIL,IAFIL,act,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
 C espriou.h provides current file.
@@ -1081,28 +1022,15 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+      COMMON/TDFOPEN/OPTDF
       COMMON/HDAT/IHREC(MIT)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      logical close,OPTDF,OPIMP,OPEXP,XST
+      logical close,OPTDF,XST
 
-      CHARACTER*72 AFIL,tdaide,LTDF,LTDFA
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,act*1
-      CHARACTER TDFDES*32,TMAT*16,outs*124
+      CHARACTER*72 AFIL,tdaide
+      CHARACTER act*1
+      CHARACTER outs*124
       character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
 
@@ -1417,25 +1345,26 @@ C width.
       endif
 
 C Use logic for minimal width opening of the scratch file.
+C Longest item its attributes take up 3+2+8+9+1+1 words (24).
 
 C Debug.
 C      write(6,*) 'a nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
 C     &  ' ndata',ndata
 
       if(nuwpr.eq.1)then
-        ITWPR= 20
+        ITWPR= 24
         NWPR= ITWPR-1
-      elseif(nuwpr.gt.1.and.nuwpr.lt.20)then
-        ITWPR= 20
+      elseif(nuwpr.gt.1.and.nuwpr.lt.24)then
+        ITWPR= 24
         NWPR= ITWPR-1
-      elseif(nuwpr.ge.20)then
+      elseif(nuwpr.ge.24)then
         ITWPR=NUWPR+1
         NWPR= ITWPR-1
       endif
 
 C Debug.
-C      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
-C     &  ' ndata',ndata
+      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
+     &  ' ndata',ndata
 
       ier=0
       call EFOPRAN(iutdf,LTDF,ITWPR,3,IER)
@@ -1467,12 +1396,11 @@ C ERTABU reads one timesteps info from binary TDF file.
 C ITREC is the timestep record to read. ITRC is the 
 C trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE ERTABU(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
 
 C Single timestep of TABULAR data and temporary storage TABT.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -1511,12 +1439,11 @@ C ERTABUPREV reads one timesteps info from binary TDF file into TABUPREV array.
 C ITREC is the timestep record to read. ITRC is the 
 C trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE ERTABUPREV(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
 
 C Single timestep of TABULAR data and temporary storage TABUPREV.
       COMMON/TDATPREV/TABUPREV(MTABC)
@@ -1555,12 +1482,11 @@ C ************* EWTABU
 C EWTABU writes one timesteps Tabular info to TDF file from the array TAB. 
 C ITREC is the record to be written.  ITRC is the trace level.
       SUBROUTINE EWTABU(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       CHARACTER msgl2*48
 
@@ -1594,11 +1520,10 @@ C Note: only writes out the number of columns of data that are
 C actually used in the file. However, if ewtaba is being called
 C to alter the number of columns check the value of iadcols.
       SUBROUTINE EWTABA(ITREC,RDOTY,iafil,IER)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       CHARACTER delim*1,msgl2*48,louts*248,outs*124
@@ -1649,6 +1574,7 @@ C TAB file write errors.
 C ************* CLRTAB 
 C CLRTAB clears the current working tabular timestep data.
       SUBROUTINE CLRTAB
+#include "building.h"
 #include "tdf2.h"
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
@@ -1663,6 +1589,7 @@ C For current timestep item clear tabular array.
 C ************* CLRTABPREV 
 C CLRTABPREV clears the previous records working tabular timestep data.
       SUBROUTINE CLRTABPREV
+#include "building.h"
 #include "tdf2.h"
       COMMON/TDATPREV/TABUPREV(MTABC)
 

@@ -20,11 +20,11 @@ C Boston, MA 02111-1307 USA.
 
 C e2dxf takes an esp-r problem definition and creates a zip
 C file.
-      subroutine e2zip(itrc,incobs,ichop)
+      subroutine e2zip(incobs,ichop)
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -33,17 +33,13 @@ C geometry.h provides commons G0/G2/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       dimension ndum(MS)
 
       character outs*124
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.
       IFIL=11
-      newgeo=.false.  ! assume older format geometry.
 
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
@@ -58,12 +54,7 @@ C If zip output required.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-        call eclose(gversion(newfoc),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-        else
-          call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
-        endif
+        call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
 
 C Write surface information to the zip file. (Rotation set to 0 deg).
         WRITE(ioout,'(a,a12)')'GEN ',zname(newfoc)

@@ -63,8 +63,6 @@ c           surface respectively
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -163,7 +161,6 @@ C (equivalent to subroutine in esruish/miscel.F)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
@@ -234,11 +231,10 @@ C FACDRW draws the elevation of the surface.
       SUBROUTINE FACDRW(IHOUR,ICOMP,ISUR,NV,XMIN,XMAX,ZMIN,ZMAX,
      &            Xadd,Zadd,SCA)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -253,8 +249,6 @@ C FACDRW draws the elevation of the surface.
 
       CHARACTER*72 ETEXT
       CHARACTER*3 MTHNAM
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
@@ -300,7 +294,7 @@ C 'POINT1' determines if a specified point is within or outwith any
 C specified object body face boundary.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION C(26)
       IANS=0
@@ -340,8 +334,8 @@ C Determine if point XX,ZZ is within this face.
 C *****************************************************************
       SUBROUTINE TRNSF4(IS)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
 

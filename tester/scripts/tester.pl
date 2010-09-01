@@ -2334,6 +2334,7 @@ sub process_case($){
     if ( $save_level =~ /4/ ){
       execute ( "mv input.xml input_bak.xml" );
     }
+    # Run tests!
     invoke_tests($model_name,
                  $model_root_name,
                  "$model_name\_temp.cfg",
@@ -2534,25 +2535,27 @@ sub invoke_tests($$$$$){
       # Use callgrind_annotate to turn raw callgrind output into meaningful
       # results
       system("callgrind_annotate --threshold=100 --inclusive=yes --tree=both callgrind.out.* > out.callgrind 2>&1 ");
-
+      
+      # move simulation results. 
+      move_simulation_results($model_path,$model,$folder,$save_level,"$version");
       $time_end = (times)[2];
-      $user_time = $time_end-$time_start;
-      $run_time = "($user_time seconds on CPU)";
-      stream_out("done. $run_time\n");
 
-    }
+    }else{
    
     # run new bin
-    stream_out("   running: $bps_versions{\"$version\"} ($version, save level $save_level) ...");
 
-    $time_start = (times)[2];
+      stream_out("   running: $bps_versions{\"$version\"} ($version, save level $save_level) ...");
 
-    execute($cmd);
+      $time_start = (times)[2];
 
-    # archive output
-    move_simulation_results($model_path,$model,$folder,$save_level,"$version");
-    
-    $time_end = (times)[2];
+      execute($cmd);
+
+      # archive output
+      move_simulation_results($model_path,$model,$folder,$save_level,"$version");
+      
+      $time_end = (times)[2];
+  
+    }
   
     # Save run-time data
     $user_time = $time_end-$time_start;
@@ -2685,7 +2688,7 @@ sub add_case_folders_to_archive($$$){
 sub compare_results($$){
 
   my ($model, $folder) = @_;
-
+  
   # Do reference files exist?
   if ( ! defined $gTestable_files{"$folder/$model"}{"reference"} ){
     $gTest_Results{"$folder/$model"}{"overall"} = "unknown";
@@ -3133,7 +3136,9 @@ sub CollectCallGrindResults($$$){
 
   $file{"reference"} = $ref_file;
   $file{"test"} = $test_file;
-
+  
+  my $debug_out = 0;
+  
   # Collect procedure-by-procedure results for reference and test versions.
   foreach my $version (sort keys %file){
 
@@ -3142,17 +3147,18 @@ sub CollectCallGrindResults($$$){
     my %referenced_by = ();
     my $program_total;
     my $parent = "";
+
     while ( my $line = <INPUT> ){
 
       # Delete leading spaces
-      $line =~ s/^\s*//g;
+      $line =~ s/^\s*//g; 
 
       # Delete any line that does not begin with a number
       $line =~ s/^[^0-9].*\n//g;
 
       # if there's anything left, process line.
       if ( $line ){
-
+        
         # If line contains PROGRAM TOTALS keyphrase, it's describing
         # the total number of instructions. append to all-procedures 
         if ($line =~ /PROGRAM TOTALS/ ){
@@ -3172,19 +3178,19 @@ sub CollectCallGrindResults($$$){
           # it can be consistantly parsed. Delimiter: ':~:'
 
           # Initial format:
-          # 459,620,468  < bmatsu.F:mzcoe3_ (720x) [/home/aferguso/esp-prp/bin/bps]
-          # 459,620,468  *  casual.F:mzcasi_ [/home/aferguso/esp-test/bin/bps]
-          #      50,644  >   plt_zone_gain_coupling.F:fpltzone_convective_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
-          #       2,880  >   shocc_dummy.c:updateequipment_ (720x) [/home/aferguso/esp-test/bin/bps]
-          #     120,303  >   ???:s_copy (1440x) [/usr/lib/gcc/i686-pc-linux-gnu/3.4.6/libg2c.so.0.0.0]
-          #      50,441  >   plt_zone_gain_coupling.F:fpltzone_radiant_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
-          #      12,240  >   esru_lib.F:eclose_ (720x) [/home/aferguso/esp-test/bin/bps]
-          #      20,160  >   shocc_dummy.c:fetchloads_ (5040x) [/home/aferguso/esp-test/bin/bps
+          # 459,620,468  < /path/to/esrubps/bmatsu.F:mzcoe3_ (720x) [/home/aferguso/esp-prp/bin/bps]
+          # 459,620,468  * /path/to/casual.F:mzcasi_ [/home/aferguso/esp-test/bin/bps]
+          #      50,644  > /path/to/plt_zone_gain_coupling.F:fpltzone_convective_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
+          #       2,880  > /path/to/shocc_dummy.c:updateequipment_ (720x) [/home/aferguso/esp-test/bin/bps]
+          #     120,303  > ???:s_copy (1440x) [/usr/lib/gcc/i686-pc-linux-gnu/3.4.6/libg2c.so.0.0.0]
+          #      50,441  > /path/to/plt_zone_gain_coupling.F:fpltzone_radiant_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
+          #      12,240  > /path/to/esru_lib.F:eclose_ (720x) [/home/aferguso/esp-test/bin/bps]
+          #      20,160  > /path/to/shocc_dummy.c:fetchloads_ (5040x) [/home/aferguso/esp-test/bin/bps
           # Final format:
-          # 459,620,468:~:<:~:bmatsu.F:mzcoe3_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
-          # 459,620,468:~:*:~:casual.F:mzcasi_:~:[/home/aferguso/esp-prp/bin/bps] 
-          # 50,644:~:>:~:plt_zone_gain_coupling.F:fpltzone_convective_gain__:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
-          # 2,880:~:>:~:shocc_dummy.c:updateequipment_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps]
+          # 459,620,468:~:<:~:/path/to/bmatsu.F:mzcoe3_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
+          # 459,620,468:~:*:~:/path/to/casual.F:mzcasi_:~:[/home/aferguso/esp-prp/bin/bps] 
+          # 50,644:~:>:~:/path/to/plt_zone_gain_coupling.F:fpltzone_convective_gain__:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
+          # 2,880:~:>:~:/path/to/shocc_dummy.c:updateequipment_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps]
           # 120,303:~:>:~:???:s_copy:~:(1440x):~:[/usr/lib/gcc/i686-pc-linux-gnu/3.4.6/libg2c.so.0.0.0]
           
 
@@ -3209,7 +3215,14 @@ sub CollectCallGrindResults($$$){
           #                called-procedure
           # - $procedure : procedure name
           # - $callcount : # of times a procedure was called. 
+          
           my ($iCount, $class, $procedure, $callcount, $arg5) = split /:~:/, $line;
+
+          # Recent versions of callgrid append full path to filename in front 
+          # of procedure. Strip portion of procedure before last '/' character.
+          # This is important as it allows us to compare corresponding proceudures
+          # from different versions (and therefore located at different paths)
+          $procedure =~ s/^.*\///g;          
 
           # Strip ',' from procedure instruction count --- allows them to
           # be intrepreted as ints
@@ -3229,18 +3242,22 @@ sub CollectCallGrindResults($$$){
             }
 
             if ( $class =~ /\*/ ){
+
+              # This code can be used to limit output to a single 
+              # procedure for debugging.
+              #if ( $procedure =~ /0x08e109cc/ ) { $debug_out = 1; }
+              #else{ $debug_out = 0; }
+              
               # This is the total number of instructions for a routine
+              $results{$key}{$version}{$procedure}{"total_instructions"} = $iCount;
 
-                  $results{$key}{$version}{$procedure}{"total_instructions"} = $iCount;
 
-#                 print ">>> $version : $procedure : $iCount \n";
-
-                # Extract the number of times this procedure was referenced, and append
-                # the number of calls to the procedures that reference it.
-                foreach my $reference (keys %referenced_by ){
-                  $callcount = $referenced_by{$reference}{"callcount"};
+              # Extract the number of times this procedure was referenced, and append
+              # the number of calls to the procedures that reference it.
+              foreach my $reference (keys %referenced_by ){
+                $callcount = $referenced_by{$reference}{"callcount"};
                   $results{$key}{$version}{$procedure}{"references"}{$reference}{"callcount"} = $callcount;
-                }
+              }
 
             }
 
@@ -3250,17 +3267,24 @@ sub CollectCallGrindResults($$$){
             if ( $class =~/\>/){
 
               $results{$key}{$version}{$parent}{'children'}{$procedure} = $iCount;
+              # This code can be used to limit output to a single 
+              # procedure for debugging.
+              # if ( $procedure =~ /0x08e109cc/ ) { $debug_out = 1; }
+              # else{ $debug_out = 0; }
               
+            }
+            
+            # If this is a summary variable for a procedure, mark it as a
+            # parent and begin tracking its children.
+            if ( $class =~ /\*/  ){
+              %referenced_by = ();
+              $parent = $procedure;
             }
           
           }
 
-          # If this is a summary variable for a procedure, mark it as a
-          # parent and begin tracking its children.
-          if ( $class =~ /\*/ ){
-            %referenced_by = ();
-            $parent = $procedure;
-          }
+
+          if ( $debug_out ) { print "$line_org\n"; } 
 
         }
 
@@ -3269,6 +3293,9 @@ sub CollectCallGrindResults($$$){
     }
 
     # Done parsing callgrind results.
+    
+    $debug_out = 0; 
+    
     # Now compute the actual number of instructions in each procedure
     foreach my $procedure ( keys %{$results{$key}{$version}} ){
 
@@ -3279,7 +3306,13 @@ sub CollectCallGrindResults($$$){
       # Skip procedures in low-level libraries
       if ( ! IsLowLevel($procedure) ){
 
-#         print ">-- $version : $procedure TOTAL -> $local \n";
+      # This code can be used to limit output to a single 
+      # procedure for debugging.
+      # if ( $procedure =~ /prodedure_name/ ) { $debug_out = 1; }
+      # else{ $debug_out = 0; }
+              
+      
+        if ( $debug_out ){ print "\n>-- $version : $procedure TOTAL -> $local \n";}
 
         # Loop through this procedure's children, and subract their instructions
         # from the parent's total. 
@@ -3296,14 +3329,14 @@ sub CollectCallGrindResults($$$){
             $local = $local - $subcalls;
 
           }
-#           print "         - SUBCALL ".substr($child,0,30)."($subcalls) \n";
+          if ( $debug_out ) { print "         - SUBCALL ".substr($child,0,30)."($subcalls) \n";}
         }
 
         # Save final talley for procedure's instructions.
         $results{$key}{$version}{$procedure}{"local_instructions"} = $local;
         
 
-#           print "         = LOCAL  $local \n"
+        if ( $debug_out ){ print "         = LOCAL  $local \n"; }
 
 
       }
@@ -3318,7 +3351,6 @@ sub CollectCallGrindResults($$$){
   my %diffs_for_sort=();
   foreach my $procedure ( keys %$procedures ){
 
-    #print "> $procedure \n";
 
       # Get instruction counts for test and reference version of this procedure.
       my ($test_inst, $reference_inst);
@@ -3349,10 +3381,10 @@ sub CollectCallGrindResults($$$){
   $procedures = $results{$key}{"reference"};
   foreach my $procedure ( keys %$procedures ){
     
-      if ( ! defined( $results{$key}{"deltas"}{$procedure}{"diff"} ) ) {
-        my $reference_inst = $results{$key}{"reference"}{$procedure}{"local_instructions"};
-        $results{$key}{"deltas"}{$procedure}{"diff"} = 0 - $reference_inst;
-        $results{$key}{"deltas"}{$procedure}{"percent"} = -100 ;
+      if ( ! defined( $results{$key}{"deltas"}{"$procedure"}{"diff"} ) ) {
+        my $reference_inst = $results{$key}{"reference"}{"$procedure"}{"local_instructions"};
+        $results{$key}{"deltas"}{"$procedure"}{"diff"} = 0 - $reference_inst;
+        $results{$key}{"deltas"}{"$procedure"}{"percent"} = -100 ;
         
         $results{$key}{"test"}{"$procedure"}{"local_instructions"} = 0;
         # Save procedure and intruction as unique key for sorting later.

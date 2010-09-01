@@ -365,8 +365,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C << rewrite logic using G6 common block >>
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -395,13 +393,10 @@ C sstr in spdesc.
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER DADESC*72,spitem2*32
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
@@ -421,7 +416,6 @@ C with ier=1.
 
 C Set the special components reporting variable
       SPREPT=.FALSE.
-      newgeo=.false.  ! assume older format geometry.
 
 C Set the number of special maperials
       ispmn=ispm
@@ -637,12 +631,7 @@ c      ISO=ispmloc(IVAL,2)
       CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
       call usrmsg(' ',' ','-')
       if(IZ.eq.0) return
-      call eclose(gversion(IZ),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
@@ -691,12 +680,7 @@ C Edit item identified by KEYIND. Recover the related zone.
 c      CALL KEYIND(MVERT,IVERT,IFOC,IO)
 c      IVAL=IFOC
 
-      call eclose(gversion(IZ),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
       MODIFY=.TRUE.
@@ -877,12 +861,7 @@ C For ducted wind turbine - select the position of the DWT outlet
         CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
         call usrmsg(' ',' ','-')
         if(IZ.eq.0) return
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
@@ -916,12 +895,7 @@ C General image option flags.
         CALL EPMENRC
 
 C Recover the related zone.
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
         MODIFY=.TRUE.

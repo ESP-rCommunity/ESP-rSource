@@ -1105,6 +1105,10 @@ C CVVPM & CVVFM - as CVVP & CVVF but normalised to the
 C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
+
 #include "building.h"
 #include "geometry.h"
 #include "tdf2.h"
@@ -1125,18 +1129,6 @@ C                 external temperature (for use in MZLS3).
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-C TDF commons.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
 
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
@@ -1166,9 +1158,6 @@ C Save present values for possible iterations at this time step.
 
       common/ts4/itsitr(msch),itrpas
 
-C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character LAIM2*72
 
 c Mechanical ventilation systems
       Common /mechvdef/ iMech, LMech
@@ -1339,8 +1328,8 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
         ZMBI(ICOMP,2)=0.0
         ZMBI(ICOMP,4)=0.0
         ZCVENT(ICOMP)=0.0
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         DO 602 I=1,NCOMP
           if(I.eq.IACC1)then
             CCVVF(I)=0.33*VOL(ICOMP)*ACC1
@@ -1357,10 +1346,10 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
           else
             CCVVF(I)=0.
           endif
-          CCVVFM(I)=CCVVF(I)*TFA(I)/X
+          CCVVFM(I)=CCVVF(I)*TFA(I)/XX
           SUM=SUM+CCVVFM(I)
   602   CONTINUE
-        XX3=CVIF*TF+SUM*X
+        XX3=CVIF*TF+SUM*XX
         CVVFM=SUM
 
 C If UK ncm calculations then use fresh air requirements from
@@ -1488,11 +1477,11 @@ C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
         CVIF=0.33*VOL(ICOMP)*ACI        
         IF(ACI.LE.0.)CVIF=0.
 
-C set x=0 for now. Not used at the moment but attempting
+C set xx=0 for now. Not used at the moment but attempting
 C to follow similar pattern as the classic ventilation
 C entry in tdf
-        X=0. 
-        XX3=CVIF*TF+SUM*X
+        XX=0. 
+        XX3=CVIF*TF+SUM*XX
         CVVFM=0.
       else
 
@@ -1717,23 +1706,23 @@ C Modify to relate to outside temperature.
       IF(IAIRN.ge.1)THEN
 
 C In the case of a flow network.
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         CVVFM=TAF
       ELSE
 
 C No flow network.
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         if(ICF.EQ.0)then
-          CVVFM=CF*TAF/X
+          CVVFM=CF*TAF/XX
         else
-          CVVFM=CF*TFA(ICF)/X
+          CVVFM=CF*TFA(ICF)/XX
         endif
       ENDIF
 
 C Determine XX3.
-      XX3=CVIF*TF+CVVFM*X
+      XX3=CVIF*TF+CVVFM*XX
 
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM
@@ -1898,6 +1887,7 @@ c Common for time step computed parameters of HVAC system
 c in common/hvac_timestep_parameters is included via hvac_parameters.h.
       character outs*124
       LOGICAL MSTROK,MSTRZN
+      real ADDMOIST
 
 C Moisture modelling is invoked for the current zone.
       IF(MSTROK.AND.MSTRZN(ICOMP))THEN
@@ -1923,7 +1913,10 @@ C Initialise.
       VCLGF(ICOMP)=0.0
       VSRCF(ICOMP)=0.0
       ZMDAF(ICOMP)=1.2*VOL(ICOMP)
+      ZLLDP(ICOMP)=0.0
       GFA(ICOMP)=0.0
+      ENTHCT=0.0
+      ENTHUC=0.0
 
     5 VCIP(ICOMP)=VCIF(ICOMP)
       VCCP(ICOMP)=VCCF(ICOMP)
@@ -1932,6 +1925,7 @@ C Initialise.
       VCLGP(ICOMP)=VCLGF(ICOMP)
       ZMDAP(ICOMP)=ZMDAF(ICOMP)
       VSRCP(ICOMP)=VSRCF(ICOMP)
+      ZLLDP(ICOMP)=ZLLDF(ICOMP)
       GPA(ICOMP)=GFA(ICOMP)
 
 C Infiltration mass flow rate only.
@@ -1946,8 +1940,6 @@ C Get the gain from evaporative  surface and re set the value for the next time-
 
 C Enter gain due to mechanical system here
 C mechanical system mass flow rate * moisture content.
-C If idealised humidity control is active and no plant network is attached, 
-C then this variable is adjusted to meet the required set point.
       VCMF(ICOMP)=ZMBI(ICOMP,3)
 
 C Set latent load from casual gains (value set in casual.F, mzcasi).      
@@ -1968,12 +1960,12 @@ C Total mass flow rate lost from the zone (no moisture included).
 C Zonal mass of dry air (relies on DENSIT in MFUTIL of ESRUmfs).
       ZMDAF(ICOMP)=DENSIT(1,TFA(ICOMP))*VOL(ICOMP)
 
-
 C Perform a free float air node moisture balance.
-C Calculate RHS of equation from (future value = present value + all in - all out).
 C Mass flow into the zone is averaged over present and future timesteps, this mirrors 
 C the treatment of exfiltration. (Previously only future inlet flows were considered 
 C leading to instability with timesteps over 3 minutes).
+C RHS contains all the known terms:
+C    present value + all in (present and future) + all out (present).
 C Last line of equation takes into account the effect of a
 C cooling coil on zone moisture balance.
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
@@ -1986,7 +1978,8 @@ C cooling coil on zone moisture balance.
 
 C Equation modified to account for cooling coil operation effect on 
 C zone moisture balance.
-C Calculate the future zone air moisture content.
+C Calculate the future zone air moisture content. This is only correct if there
+C is no humidity control. Mass balance altered later if there is RH control.
 C      GFA(ICOMP)=RHS/(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
       GFA(ICOMP)=RHS/(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP) + 
      &                coil_moist_out2(ICOMP))
@@ -2031,7 +2024,8 @@ C Left hand side
 C Right hand side
           WRITE(OUTS,'(A)') ' '
           CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A)') ' Right hand side '
+          WRITE(OUTS,'(A)') ' Right hand side 
+     &            (* indicates present timerow) '
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Infiltration in (kg) ',
      &      VCIF(ICOMP)*GEXTF*3600./(2.*NTSTEP)
@@ -2070,35 +2064,88 @@ C Right hand side
      &      VCLP(ICOMP)*GPA(ICOMP)*3600./(2.*NTSTEP)
           CALL EDISP(ITU,OUTS)
 
-C Sum of the RHS
-          RHS=(VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)
+C Sum of the RHS including outflow at future timerow, assuming no RH control.
+          RHS2=(VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)
      &    +VSRCF(ICOMP))*3600./(2*NTSTEP)+
      &    (VCIP(ICOMP)*GEXTP+VCCP(ICOMP)+VCMP(ICOMP)+VCLGP(ICOMP)
      &    +VSRCP(ICOMP))*3600./(2*NTSTEP) -GPA(ICOMP)*VCLP(ICOMP)
      &    *3600./(2.*NTSTEP)
      &    -GFA(ICOMP)*VCLF(ICOMP)*3600./(2.*NTSTEP)
-          WRITE(OUTS,'(A,F10.5)') 'Total in - total out (kg)',RHS
+          WRITE(OUTS,'(A,F10.5)') 'Total in - total out (kg)',RHS2
           CALL EDISP(ITU,OUTS)
 
-C Difference between RHS and LHS
-           WRITE(OUTS,'(A,F10.5)') 'LHS-RHS',AHS-RHS
+C Difference between RHS and LHS.
+          WRITE(OUTS,'(A,F10.5)') 'LHS-RHS assuming no humidity control'
+     &       ,AHS-RHS2
           CALL EDISP(ITU,OUTS)
         ENDIF     
       ENDIF
 
 C If the relative humidity control is active then apply control, the
 C above value of moisture content is essentially the free floating value
-C if no plant is connected to the system.
-      IF(IRHCT(ICOMP).GT.0) THEN
-        
-        CALL ZRHCTL(ICOMP,IRHCT(ICOMP),GFA(ICOMP),GAXF)
-C Alter the zone moisture content with the effect of control action (GAXF)
-        IF((GFA(ICOMP)+GAXF).GT.0.0) THEN
-          GFA(ICOMP)=GFA(ICOMP)+GAXF 
+C if no plant is connected to the system and there is no RH control.
+C Only control type 1 dealt with here.
+      IF(IRHCT(ICOMP).EQ.1) THEN
+
+C Calculate zone moisture content at the upper and lower RH set points. 
+        GCTU=HUMRT1(TFA(ICOMP),RHSPTU(ICOMP),PATMOS,0) 
+        GCTL=HUMRT1(TFA(ICOMP),RHSPTL(ICOMP),PATMOS,0)
+
+        IF(GFA(ICOMP).GT.GCTU.OR.GFA(ICOMP).LT.GCTL)THEN
+
+C Calculate amount of moisture (kg) to remove if dehumidification required.
+          IF(GFA(ICOMP).GT.GCTU) THEN         
+            ADDMOIST=GCTU*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
+     &              -RHS
+            GFA(ICOMP)=GCTU
+C Check that the maximum dehumidification is not exceeded (kg).
+C ADDMOIST will be negative for dehumidification.   
+            IF(ADDMOIST.LT.RHDC(ICOMP)*3600/NTSTEP) THEN
+
+C At the maximum dehumidification, so undertake moisture mass balance with this quantity of moisture removed.
+              GFA(ICOMP)=(RHDC(ICOMP)*3600/NTSTEP+RHS)/
+     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
+              ADDMOIST=RHDC(ICOMP)*3600/NTSTEP
+            ENDIF
+C Enthalpy for final moisture content (J/kg). 
+            ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
+C Enthalpy if  humidification had not been applied.
+            ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
+     &             -ADDMOIST/ZMDAF(ICOMP))*1000.
+C Calculate the latent addition/extraction (W).
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+
+          ELSEIF(GFA(ICOMP).LT.GCTL)THEN  
+            ADDMOIST=GCTL*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
+     &              -RHS
+            GFA(ICOMP)=GCTL
+
+C Check that the maximum humidification is not exceeded (kg).
+C ADDMOIST will be positive for humidification.   
+            IF(ADDMOIST.GT.RHHC(ICOMP)*3600/NTSTEP) THEN
+
+C At the maximum humidification, so undertake moisture mass balance with this quantity of moisture added.
+              GFA(ICOMP)=(RHHC(ICOMP)*3600/NTSTEP+RHS)/
+     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
+              ADDMOIST=RHHC(ICOMP)*3600/NTSTEP
+            ENDIF
+C Enthalpy for final moisture content (J/kg) 
+            ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
+C Enthalpy if  humidification had not been applied
+            ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
+     &             -ADDMOIST/ZMDAF(ICOMP))*1000.
+C Calculate the latent addition/extraction (W)
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+          ENDIF
+        ELSE
+          ZLLDF(ICOMP)=0.0
         ENDIF
       ELSE
-        ZLLDF(ICOMP)=0.
+        ZLLDF(ICOMP)=0.0
       ENDIF
+
+C Reset the relative humidity control flag.
+      IRHCT(ICOMP)=0
 
 C Calculate moisture content and temperature.
       GMA=(GPA(ICOMP)+GFA(ICOMP))*0.5
@@ -2125,7 +2172,7 @@ C Next check not really necessary.
         GOTO 661
       ENDIF
 
-C Also check whether the computed moisture content needs reset.
+C Also check whether the computed moisture content needs to be reset.
        IF(GFA(ICOMP).LT.0.0) THEN
          WRITE(OUTS,'(A,I5,A,F7.2,a)')
      &   ' MZVAPC: for zone',ICOMP,' the computed moisture content of',
@@ -2189,6 +2236,24 @@ C Append computed results to early trace statements.
       write(outs,99979)GPA(ICOMP),GFA(ICOMP),ZRH
 99979 format(' GPA   = ',F14.6,' GFA   = ',F14.6,' ZRH   = ',F14.6)
       call edisp(itu,outs)
+      write(outs,99980) RHSPTU(ICOMP)
+99980 format(' RH set point upper: ',F14.6)
+      call edisp(itu,outs)
+      write(outs,99981) RHSPTL(ICOMP)
+99981 format(' RH set point lower: ',F14.6)
+      call edisp(itu,outs)
+      write(outs,99982) RHHC(ICOMP)
+99982 format(' Max humidification rate: ',F14.6)
+      call edisp(itu,outs)
+      write(outs,99983) RHDC(ICOMP)
+99983 format(' Max dehumidification rate: ',F14.6)
+      call edisp(itu,outs)
+      write(outs,99984) ENTHUC,ENTHCT
+99984 format(' ENTHUC  = ',F14.6,' ENTHCT  = ',F14.6)
+      call edisp(itu,outs)
+      write(outs,99985) ZLLDF(ICOMP)
+99985 format( 'Zone latent load to maintain RH setpoint = ',F14.6)
+      call edisp(itu,outs)
 
  9999 RETURN
       END
@@ -2207,13 +2272,6 @@ C typical building based on rules in the UK NCM guide (v4d March 2008)
       logical closeto0
       integer itdi,icomp
 
-C TDFREL are ranges allowed for real fields in the instance.
-C TMIN,TMAX: Acceptable minimum and maximum for range checking.
-C TMAR : real attributes to be passed to outside code.
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      real TMAR,TMIN,TMAX
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      integer ITDFTR,IATDF,ITCOL
       common/btime/btimep,btimef
       real btimep,btimef
       real VAL
@@ -2232,19 +2290,6 @@ C Auxiliary energy:
       integer i_countsteps
       integer numbStartTimesteps  !total number of start-up timesteps
       integer numTotTimstps !total number of timesteps including the start-up days
-
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-     
-      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA,ISKYLUX
-      integer IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
-      integer IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT,ICASUAL3,IACTIV,IBIDIRS
-      integer IVERSOL,IHTCLSETP,IDBTZNM
 
 C Common to count for the number of timesteps that systems are in operatrion
 C Used to calculate an NCM Auxiliary energy (post-processed in save level 6)

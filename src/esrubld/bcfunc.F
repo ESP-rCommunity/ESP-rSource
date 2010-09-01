@@ -379,15 +379,8 @@ C with the sensor defined for the control function.
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
 
 C TDF commons.
-C Index for each potential temporal db entry type 0=not used, 2=tabular data.
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
+C Index for each potential temporal db entry type 0=not used are in
+C ommon tdfflg2
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -614,14 +607,6 @@ C Recover control point data.
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
       common/btime/btimep,btimef
-
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
 
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MTABC+2)
@@ -1267,10 +1252,11 @@ C Upper relative humidity set point (%).
 C Lower relative humidity set point (%).
         RHSPTL(IICOMP)=BMISCD(ICF,IDTYP,IPER,9)
 
-C Humidification capacity limit (W)
+C Humidification capacity limit (kg/s).
+C User specifies these in g/s.
         RHHC(IICOMP)=BMISCD(ICF,IDTYP,IPER,10)/1000.
 
-C Dehumidification capacity limit (W)
+C Dehumidification capacity limit (kg/s).
         RHDC(IICOMP)=-BMISCD(ICF,IDTYP,IPER,11)/1000.
 
 C Relative humidity control method 1-moisture injection/extraction 
@@ -2121,10 +2107,6 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
-     &             ICONDX(MPCOM,MNODEC,MPCONC)
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       DIMENSION ICPL(MPCOM,2),IXTC(MPCOM,2)
 
@@ -2161,30 +2143,17 @@ C Fatal error tests
          STOP
       endif
 
+
       QFUT=0.
       TFUT=TNP
       INEX=0
-      XMDR=1.0 ! Mass diversion fraction for fluid flow to zone
 
 C Determine coupled supply plant component and node.
+
       IF(ISIND.NE.4) THEN 
         IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
         IPNOD=IFIX(BMISCD(ICF,IDTYP,IPER,3))
         IN=NPCDAT(IPCMP,9)+IPNOD-1
-
-C Get the connections this node sends mass to 
-        IBLDGZ=NINT(BMISCD(ICF,IDTYP,IPER,7))
-        ICON=0
-        DO 1 IPCON=1,NPCON
-          IF(IPC2(IPCON).EQ.IN)THEN
-            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
-              ICON=IPCON
-              XMDR=PCONDR(ICON)
-            ENDIF
-          ENDIF
- 1      CONTINUE
-        IF(ICON.EQ.0)CALL EDISP(ITU,
-     &  'BCL06: Mass diversion for plant zone link not found')
       ELSEIF(ISIND.EQ.4) THEN
 
 C Set the embedded flag to zero after finding ipcmp.
@@ -2272,7 +2241,7 @@ C      from the previous time step to calculate the resulting heat injection.
 
 C Temperature, 1st and 2nd mass flow rate of plant injection node
          TMPN=CSVF(IN,1) 
-         AMFR=CSVF(IN,2)*xmdr
+         AMFR=CSVF(IN,2)
          VMFR=CSVF(IN,3)
 
 C Heat capcity of dry air & vapor:
@@ -5128,7 +5097,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G1/G2.
 #include "geometry.h"
 #include "control.h"
 
@@ -5143,8 +5112,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C In support of ZRH calculations.
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
      &              hcof(mcom,ms)
@@ -5154,7 +5121,6 @@ C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
 
       CHARACTER OUTS*124
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical unixok
 
 C Fatal error test.
@@ -5165,7 +5131,6 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
 
-      newgeo=.false.  ! assume older format geometry.
       QFUT=0.
       TFUT=TNP
 
@@ -5224,12 +5189,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
         cw=4180.
 
 C Read in surface details and calculate the area weighted radiant temperature. 
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
-        else
-          call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
-        endif
+        call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         tsurf=0.
         do 20 isurf=1,nsur
           if(isurf.ne.isur)then
@@ -5655,21 +5615,9 @@ C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
 
-C TDF commons.
-C Index for each potential temporal db entry type 0=not used, 2=tabular data.
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
-C These two commons relate to setting cooling on if temperature exceeds
+C These common TDFREL relate to setting cooling on if temperature exceeds
 C the heating set point by 1degC for the UKNCM notional model (and
 C associated DSM testing models)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
       character dllsubr*12,dllmesg*124,outs*124,cmsg*12
       logical dll,near
@@ -6136,7 +6084,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0,G2 G5.
 #include "geometry.h"
 
 #include "esprdbfile.h"
@@ -6167,8 +6115,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tpmod/itpmod(mcom)
@@ -6180,10 +6126,6 @@ C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
-      logical newgeo  ! to use for testing if new/old geometry file.
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C << for the case of bcl being called from solar is the limit >>
 C << of 3 surface to change will have to be increased!        >>
@@ -6192,7 +6134,6 @@ C << of 3 surface to change will have to be increased!        >>
       logical itpmod, close, usealt, CHANGED
       
       iunit=ifil+1
-      newgeo=.false.  ! assume older format geometry.
       
 C Debug...
 C      write(6,*) 'BCL 99 ',btimef
@@ -6287,12 +6228,7 @@ C Reset properties by reading in zone descriptor files.
 C Debug.
 C        write(6,*)'Resetting tp properties at btimef ',btimef
 
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
         itpmod(ICMP)=.false.
       elseif ((.not.itpmod(ICMP)).and.usealt) then
@@ -6301,12 +6237,7 @@ C        write(6,*)'Resetting tp properties at btimef ',btimef
 C Change to alternate properties (up to three constructions).
 C Read in the thermophysical properties for this zone 
 C (needed in subroutine mzcoe1).
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
 
 C Get replacement properties for up to 3 constructions from 
@@ -6610,164 +6541,6 @@ c TDIFF acceptable. Conduct backward substitution.
       endif
       RETURN
       END
-
-C ****************************** SUBROUTINE ZRHCTL *****************************
-C This subroutine contains control algorithms for the control of relative humidity 
-C in a zone. The algorithms are (or will be) the mirrors of the relevant thermal  
-C control algorithms. The following algorithms are available:
-C ZRHCTL- the controlling routine
-C ZRH01 - basic control of zone relative humidity (capacity limited). 
-
-
-      SUBROUTINE ZRHCTL(ICOMP,ITYP,GUC,GAXF)
-      IF(ITYP.EQ.1) THEN
-        CALL ZRH01(ICOMP,GUC,GAXF)
-      ELSE
-        RETURN
-      ENDIF
-
-      RETURN
-      END
-
-C ****************************** SUBROUTINE ZRH01 *****************************
-C This routine performs control on the zone relative humidity
-C Variables are as follows:
-C 
-
-      SUBROUTINE ZRH01(ICOMP,GUC,GAXF)
-
-#include "building.h"
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/TC/ITC,ICNT
-
-      COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
-C Common for relative humidity control (ideal)
-C      COMMON/IDRHCTL1/RHSPT(MCOM),IRHCT(MCOM)
-
-      COMMON/IDRHCTL1/RHSPTU(MCOM),RHSPTL(MCOM),RHHC(MCOM),
-     &RHDC(MCOM),IRHCT(MCOM)
-
-      COMMON/ATPRES/PATMOS
-      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-      COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM)
-
-C Common for humidity control variables
-      COMMON/RHCTLDAT/ZLLDF(MCOM),ZLLDP(MCOM)
-
-      CHARACTER OUTS*124
-
-C Initialise the variables
-      IF(NSINC.GT.1) THEN
-        ZLLDP(ICOMP)=ZLLDF(ICOMP)
-      ELSE
-        ZLLDP(ICOMP)=0.0
-      ENDIF
-
-      GCTU=0.0
-      GCTL=0.0
-      GCT=0.
-      GAXF=0.0
-      ENTHCT=0.0
-      ENTHUC=0.0
-      ZLLDF(ICOMP)=0.0
-      ZRHUC=0.0
-
-C Calculate zone moisture content at the upper RH set point 
-      GCTU=HUMRT1(TFA(ICOMP),RHSPTU(ICOMP),PATMOS,0)
-
-C Calculate zone moisture content at the lower RH set point 
-      GCTL=HUMRT1(TFA(ICOMP),RHSPTL(ICOMP),PATMOS,0)
-
-      IF(GUC.GT.GCTU.OR.GUC.LT.GCTL)THEN
-
-C Calculate change in moisture content required (kg/kg da)
-        IF(GUC.GT.GCTU) THEN
-          GAXF=GCTU-GUC
-
-C Check that the maximum dehumidification rate is not exceeded
-          GAXR=(GAXF*ZMDAF(ICOMP))/(3600/NTSTEP)   
-          IF(GAXR.LT.RHDC(ICOMP)) GAXF=
-     &(RHDC(ICOMP)*3600/NTSTEP)/ZMDAF(ICOMP)
-          ENTHCT=ENTHP2(TFA(ICOMP),GUC+GAXF)*1000.
-        ENDIF
-        IF(GUC.LT.GCTL)THEN 
-          GAXF=GCTL-GUC
-
-C Check that the maximum humidification rate is not exceeded
-          GAXR=(GAXF*ZMDAF(ICOMP))/(3600/NTSTEP)   
-          IF(GAXR.GT.RHHC(ICOMP)) GAXF=
-     &(RHHC(ICOMP)*3600/NTSTEP)/ZMDAF(ICOMP)
-          ENTHCT=ENTHP2(TFA(ICOMP),GUC+GAXF)*1000.
-        ENDIF
-
-C Calculate the total moisture addition or extraction over the timestep (kg) 
-C        GAXTOT=GAXF*(NTSTEP/3600)*ZMDAF(ICOMP)
- 
-C Calculate the enthalpy at uncontrolled moisture content.
-         ENTHUC=ENTHP2(TFA(ICOMP),GUC)*1000.
-
-C Calculate the latent addition/extraction (W)
-         ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
-
-C Reset the relative humidity control flag
-        IRHCT(ICOMP)=0     
-      ELSE
-        GAXF=0.
-        ZLLDF(ICOMP)=0.0 
-      ENDIF
-
-C Reset the relative humidity control flag
-      IRHCT(ICOMP)=0
-
-C If control is active then perform trace.
-      write(outs,'(a)') 'Control active ....'
-
-C Trace output ?
-      IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
-
-      IF(ITRACE(10).EQ.0.OR.NSINC.GT.ITCF.OR.
-     &   IZNTRC(ICOMP).NE.1)goto 9999
-      write(outs,'(A,I4)')' Subroutine ZRH01 Trace output',ICNT
-      call edisp(itu,outs)
-      write(outs,'(23X,A,I4)')' Zone',ICOMP
-      ICNT=ICNT+1
-      CALL DAYCLK(IDYP,BTIMEF,ITU)
-      call edisp(itu,outs)
-
-      write(outs,99980) RHSPTU(ICOMP)
-99980 format(' RH set point upper: ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99981) RHSPTL(ICOMP)
-99981 format(' RH set point lower: ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99982) RHHC(ICOMP)
-99982 format(' Max humidification rate: ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99983) RHDC(ICOMP)
-99983 format(' Max dehumidification rate: ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99984) GUC
-99984 format(' Moisture cnt before control : ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99985) GAXF
-99985 format('Moisture addition extraction : ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99987) ZLLDF(ICOMP)
-99987 format('Room latent load = ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99988) ENTHUC,ENTHCT
-99988 format(' ENTHUC  = ',F14.6,' ENTHCT  = ',F14.6)
-      call edisp(itu,outs)
-      write(outs,99989) ZLLDF(ICOMP)
-99989 format( 'Zone latent load = ',F14.6)
-      call edisp(itu,outs)
-
- 9999 RETURN
-      END
-
 
 C *********************** SUBROUTINE FZINIT
 C This routine is called every time-step to zeroise common variables
