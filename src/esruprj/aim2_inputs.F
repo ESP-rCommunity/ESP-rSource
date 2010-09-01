@@ -1515,11 +1515,11 @@ C Common blocks
       COMMON/USER/BROWSE
       LOGICAL BROWSE
       COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
       COMMON/rpath/path
       CHARACTER path*72
       CHARACTER*24 :: zonepth,netpth,ctlpth,imgpth,radpth,docpth
-      CHARACTER*24 :: tmppth,dbspth,aimpth
+      CHARACTER*24 :: tmppth,dbspth,aimpth,bsmpth
       INTEGER :: aim2index
       INTEGER :: ipaths
       LOGICAL :: unixok

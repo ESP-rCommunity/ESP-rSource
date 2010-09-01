@@ -32,7 +32,7 @@ C **********************************************************************
       COMMON/pophelp/h(60)
       COMMON/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,bsmpth
+     &             dbspth,aimpth,bsmpth
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -48,7 +48,7 @@ C COMMONS FOR BASEREAD
       CHARACTER :: delimiter
       CHARACTER*72 sfile,snpfile,LBSIMP
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,bsmpth
+     &             dbspth,bsmpth,aimpth
 
       INTEGER UNIT ! Filehandle 66 is used for .bsm output file
       INTEGER iBSIMP ! iBSIMP flag to talk to cfg
