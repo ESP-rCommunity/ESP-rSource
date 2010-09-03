@@ -87,7 +87,7 @@ C =2 with more than 3 day types allowed and sorted
       REAL CMGS,CMGL,RADC,CONC
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
@@ -107,6 +107,7 @@ C updated when the user exits).
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
@@ -2615,7 +2616,7 @@ C =2 with more than 3 day types allowed and sorted
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
@@ -2635,7 +2636,7 @@ C Scratch copy of air flow pattern from an operations file.
       CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
@@ -4895,7 +4896,7 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       common/loadlabelc/lodlabelc(7)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
@@ -4918,7 +4919,7 @@ C Descriptive label for a zone load or casual gain.
       character h*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character lodlabel*6,lodlabelc*6
       character fs*1,GFILE*72,iwatt*8
       character actcas*8

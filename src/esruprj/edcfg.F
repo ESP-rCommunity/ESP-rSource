@@ -74,7 +74,7 @@ C LPRFDB,IPRODB (for event profile database)
       common/uhome/upath
       common/CFGV/icfgv
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -128,6 +128,7 @@ C Uncertainty.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,tmode*8,doit*248
+      character hvacpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,aimpth*24
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
@@ -148,6 +149,20 @@ C Uncertainty.
       integer*8 ICPMOD              ! passed from tchild
 #endif
 
+C HVAC
+C Flag indicating presence of HVAC models:
+C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
+      common/hvacinfo/ihvacflag,hvacfile
+      character hvacfile*72,HVAC_ITEMS*24
+      integer nhvac_items
+      integer hvind, indhvac, hvidind
+      PARAMETER (nhvac_items = 5)
+      dimension HVAC_ITEMS(nhvac_items)
+      
+C Menu flag
+C To avoid the further use of goto loops, plan to use a do while loop with
+C flags to return to the main menu instead of the goto 3 statment
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -165,6 +180,7 @@ C are active.
       if(indcfg.ge.2)nets=nets+1
       if(iairn.ge.1)nets=nets+1
       if(ientxist.gt.0)nets=nets+1
+      if(ihvacflag.gt.0)nets=nets+1
 
       ictl=ncf+ncl+ncc+ngf+nof
       IER=0
@@ -183,7 +199,7 @@ C are active.
       WRITE(ITEMS(5),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
       ITEMS(6)   ='c composition                ' 
       WRITE(ITEMS(7),'(A,I2,A)')' ... Networks......(',nets,' defined)'
-      if(indcfg.ge.2)then
+      if(indcfg.ge.2.or.ihvacflag.gt.0)then
         ITEMS(8)='d plant & systems (defined)  '
       else
         ITEMS(8)='d plant & systems            '
@@ -473,59 +489,111 @@ C Go to zones definintion menu.
         call EDZCOMP(ITRC,ITRU,IER)
       ELSEIF(INO.EQ.8)THEN
 
-C Plant network description, ask for plant network file and then
-C display it before starting up editing facilities.
+C ---------------------------------------------------------------------------------------------
+C -----------------------------------PLANT NETWORK DESCRIPTION---------------------------------
+C Plant network description, select either an idealized HVAC network (5 choices currently 
+C available) or define and explicit plant network. If an idealized model is selected, choose 
+C an option and set required parameters. If an explicit model is chosen, ask for plant network 
+C file and then display it before starting up editing facilities.
+C ---------------------------------------------------------------------------------------------
+
         IF(.NOT.CFGOK)THEN
           CALL USRMSG('Please define your model first!',' ','W')
           GOTO 3
-        ELSE
-          if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
-            dok=.false.
-            h(1)='A plant network file holds the definition of a'
-            h(2)='system, the purpose of which is usually to supply'
-            h(3)='the building with heat, coolth and/or power. Unless'
-            h(4)='you have access to a suitable components database,'
-            h(5)='DO NOT use this facility.'
-            CALL ASKOK(
-     &      'Currently there is no plant network associated with',
-     &      'the model. Create/select one?',OK,DOK,5)
-            if(.NOT.ok)goto 3
-            if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
-              WRITE(LPNF,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.pln'
-            else
-              WRITE(LPNF,'(4a)') netpth(1:lnblnk(netpth)),'/',
-     &         cfgroot(1:lnblnk(cfgroot)),'.pln'
-            endif
-            clkok=.false.
-            ltmp=LPNF
-            H(1)='The plant network file defines plant components'
-            H(2)='and their connection topology.'
-            CALL EASKS(ltmp,' ','Plant network definition file?',72,
-     &        DPNF,'plant network file',IER,2)
-            goto 46
+        else
+      
+C Options for the plant network menu
+          hvind=-1
+          do while (hvind.ne.nhvac_items)
+          
+          if(ihvacflag.eq.0)then
+            HVAC_ITEMS(1)='a Idealized           '
+          elseif(ihvacflag.eq.1)then
+            HVAC_ITEMS(1)='a Idealized (defined) '
           endif
-          H(1)='The plant network file defines plant components and'
-          H(2)='topology. If you supply an existing file it will be'
-          H(3)='used, otherwise a new file will be created.'
-          H(4)=' '
-          H(5)='The dereference option removes the name of the plant'
-          H(6)='network file from the system configuration file but'
-          H(7)='does not delete it. The plant domain can later be'
-          H(8)='re-established by rintrosucting the configuration'
-          H(9)='file reference.'
-          ltmp=LPNF
-          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
- 301      if(iglib.eq.2)then
-            CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
-     &        'dereference',clkok,72,DPNF,'plant network file',iser,9)
-            if(clkok)iclkok=2   ! notice dereference button
-            if(iser.eq.-3) goto 3  ! notice GTK cancel button
-          else
+          if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
+            HVAC_ITEMS(2)='b Explicit            '
+          elseif(LPNF(1:4).ne.'UNKN'.or.LPNF(1:2).ne.'  ')then
+            HVAC_ITEMS(2)='b Explicit (defined)  '
+          endif
+          HVAC_ITEMS(3)  =' ___________________  '
+          HVAC_ITEMS(4)  ='? help                '
+          HVAC_ITEMS(5)  ='- exit this menu      '
+          
+C Help text for the plant network menu
+          H(1)='Idealized model creates an .hvac file with    '
+          H(2)='descriptions of main and backup systems.      '
+          H(3)='Explicit creates a plant network file which   '
+          H(4)='defines plant components and their connection '
+          H(5)='topology.                                     '
+          
+          CALL EMENU('Plant Model',HVAC_ITEMS,nhvac_items,hvind)
+          
+          if(hvind.eq.nhvac_items)then
+C If user does not wish to continue, exit back to calling menu and clear dialogue box.
+            CALL USRMSG(' ',' ','-')
+            GOTO 3
+          elseif(hvind.eq.nhvac_items-1)then
+            CALL PHELPD('Idealized or Explicit Plant Model?'
+     &                    ,5,'-',0,0,IER)
+          elseif(hvind.le.0)then
+C If no selection is made, or user clicks of screen, do nothing and redraw menu.
+          elseif(hvind.eq.1)then 
+C If idealized plant model is desired, enter idealized HVAC subroutine.
+            CALL HVACGIN()
+          elseif(hvind.eq.2)then
+C If explicit plant model is desired, continue to define an explicit plant network.
+            
+            if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
+              dok=.false.
+              h(1)='A plant network file holds the definition of a     '
+              h(2)='system, the purpose of which is usually to supply  '
+              h(3)='the building with heat, coolth and/or power. Unless'
+              h(4)='you have access to a suitable components database, '
+              h(5)='DO NOT use this facility.                          '
+              CALL ASKOK(
+     &        'Currently there is no plant network associated with',
+     &        'the model. Create/select one?',OK,DOK,5)
+              IF(.NOT.ok)GOTO 3
+
+              if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
+                WRITE(LPNF,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.pln'
+              else
+                WRITE(LPNF,'(4a)') netpth(1:lnblnk(netpth)),'/',
+     &               cfgroot(1:lnblnk(cfgroot)),'.pln'
+              endif
+              clkok=.false.
+              ltmp=LPNF
+              H(1)='The plant network file defines plant components'
+              H(2)='and their connection topology.'
+              CALL EASKS(ltmp,' ','Plant network definition file?',72,
+     &                   DPNF,'plant network file',IER,2)
+              goto 46
+            endif
+
+            H(1)='The plant network file defines plant components and'
+            H(2)='topology. If you supply an existing file it will be'
+            H(3)='used, otherwise a new file will be created.'
+            H(4)=' '
+            H(5)='The dereference option removes the name of the plant'
+            H(6)='network file from the system configuration file but'
+            H(7)='does not delete it. The plant domain can later be'
+            H(8)='re-established by rintrosucting the configuration'
+            H(9)='file reference.'
+            ltmp=LPNF
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+ 301        if(iglib.eq.2)then
+              CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
+     &                       'dereference',clkok,72,DPNF,
+     &                        'plant network file',iser,9)
+              if(clkok)iclkok=2   ! notice dereference button
+              if(iser.eq.-3) goto 3  ! notice GTK cancel button
+            else
             CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
      &      'cancel','dereference',iclkok,72,DPNF,'plant network file',
      &      iser,9)
             if(iclkok.eq.1) goto 3    ! notice X11 cancel option
-          endif
+            endif
 
 C If user wishes to deselect the current file, reset name to
 C blank and save the configuration file.
@@ -605,7 +673,10 @@ C If an error has been encountered then reset the configuration type.
      &          ' ','-')
             endif
           endif
+          endif
+          enddo
         endif
+        
       ELSEIF(INO.EQ.9)THEN
 
 C Flow description.
@@ -1235,7 +1306,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1296,6 +1367,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82
@@ -4069,7 +4141,7 @@ C      common/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF
       common/radcfg/LRADCF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
@@ -4078,7 +4150,7 @@ C      common/OUTIN/IUOUT,IUIN
       character doit*124,tmode*8,H*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

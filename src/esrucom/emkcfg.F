@@ -77,7 +77,7 @@ C Plant network.
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -267,6 +267,7 @@ C If 0 then the calculation includes diffuse shading.
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
@@ -468,24 +469,26 @@ C Begin writing the file with version number in the header.
      &  '  # latest file modification '
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=3) '*root ',
      &  cfgroot(1:lnblnk(cfgroot))
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*zonpth ',zonepth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*zonpth  ',zonepth,
      &  '  # path to zones'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*netpth ',netpth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*netpth  ',netpth,
      &  '  # path to networks'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth  ',ctlpth,
      &  '  # path to controls'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',aimpth,
      &  '  # path to aim2 files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth  ',imgpth,
      &  '  # path to project images'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth  ',tmppth,
      &  '  # path to project scratch folder'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth  ',docpth,
      &  '  # path to project documents'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth  ',dbspth,
      &  '  # path to local databases'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*hvacpth ',hvacpth,
+     &  '  # path to hvac files'
       WRITE(IFCFG,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)

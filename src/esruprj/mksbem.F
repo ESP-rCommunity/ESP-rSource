@@ -521,6 +521,49 @@ C Generate EPC information
         endif
         goto 42
 
+      elseif(iecmoption.eq.2)then
+
+C Use existing models and run assessments and generate EPC.
+        iuact = 2
+C        CFGROOT = CFGROOT_O ! re-establish the initial root name
+C        CALL EMKSBM(iier)   ! generate Notional model
+C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+C        CALL EMKREF  ! Reference model
+C        CALL EMKTYP  ! Typical model
+
+        H(1)='You are using existing UK NCM stripped, notional,'
+        H(2)='reference and typical models. In order to generate'
+        H(3)='EPC and BRUKL (UK building regulations) specific'
+        H(4)='information annual simulations for all these models'
+        H(5)='need to run and may take some time. If you picked this'
+        H(6)='choice in error just say no.'
+        CALL ASKOK(
+     &    'Run NCM simulations based on existing models (see help)',
+     &    ' ',OK,dok,6)
+
+C Run simulation and recover information from save level 6 results file
+        if(ok)then
+          CALL SIMRUN(2) ! Notional model
+          CALL SIMRUN(1) ! Stripped model
+
+C To save time in formal NCM testing comment out the next two lines.
+          CALL SIMRUN(3) ! Reference model
+          CALL SIMRUN(4) ! Typical model
+
+C Generate BER and TER - if doing DSM testing the call is made from 
+C RSL6TF
+          IF(iDsmTestingFlag.LE.0.OR.iDsmTestingFlag.GE.3)then
+            CALL BERTER(IER)
+          ENDIF
+
+C Generate BRUKL information
+          CALL NCMCAL(IER)
+
+C Generate EPC information
+          CALL EPCCAL(IER)
+        endif
+        goto 42
+
       elseif(iecmoption.eq.3)then
 
 C Recover information from save level 6 results file
@@ -2975,6 +3018,7 @@ C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers).
         D64='000000000000'
+        D64='000000000000'
         H(1)='Input the Unique Property Reference Number (UPRN) here.'
         H(2)='Applicable only for England, Wales & Northern Ireland.'
         CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
@@ -3485,7 +3529,7 @@ C required models ') which returned iuact=1.
       COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
@@ -3515,7 +3559,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,fs*1,msgl2*48,
      &      tab*1
-      character outs*124,h*72,GUESS*24,aimpth*24
+      character outs*124,h*72,GUESS*24,aimpth*24,hvacpth*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -7356,7 +7400,7 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
@@ -7364,7 +7408,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1 
+      character fs*1, col*1,hvacpth*24
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
@@ -8497,7 +8541,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
@@ -8505,7 +8549,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1, quote*1
+      character fs*1, col*1, quote*1,hvacpth*24
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK

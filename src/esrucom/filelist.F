@@ -52,7 +52,7 @@ C espriou.h for parameter MFFOLD
       common/uhome/upath
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -64,7 +64,8 @@ C   `rad` (looks in ../rad), `doc` (looks in ../doc),
 C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
-C   `dbm` (looks in {where esp-r installed}/databases).
+C   `dba` (looks in {where esp-r installed}/databases).
+C   `hva`(looks in ../hvac).
 
 C what can be: `dir` list of folders, `fil` any files in the folders,
 C   `cfg` configuration files, `ctl` control files,
@@ -80,7 +81,8 @@ C   `dba` ascii database,
 C   `dbb` binary database or climate file (for future use),
 C   `xbm` X bitmap files, `gif` gif image files,
 C   `ipv` IPV definition file, `rep` IPV report file
-C   `qac` QA contents file, `zip` cflo3 zip (geometry) file.
+C   `qac` QA contents file, `zip` cflo3 zip (geometry) file, 
+C   `hva` hvac files.
 
       dimension nwlistf(MFFOLD),ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
@@ -88,7 +90,7 @@ C   `qac` QA contents file, `zip` cflo3 zip (geometry) file.
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,act*1,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character dinstpath*48
 
 C Array for browse menu.
@@ -125,6 +127,11 @@ C project manager was started from).
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    dbspth(1:lnblnk(dbspth))
+      elseif(where(1:3).eq.'hva')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),hvacpth(1:lnblnk(hvacpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    hvacpth(1:lnblnk(hvacpth))
       elseif(where(1:3).eq.'zon')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),zonepth(1:lnblnk(zonepth))
@@ -232,6 +239,9 @@ C In DOS no need to prepend odir (just use the relative path defined above).
       elseif(what(1:3).eq.'aim')then
         action='aim'
         write(outs,*) 'aim2 files in ',subpath
+      elseif(what(1:3).eq.'hva')then
+        action='hva'
+        write(outs,*) 'hvac models in ',subpath
       elseif(what(1:3).eq.'afn')then
         action='afn'
         write(outs,*) 'network files in ',subpath

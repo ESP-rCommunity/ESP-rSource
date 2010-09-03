@@ -57,7 +57,7 @@ C Redirected text/graphics parameters.
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -111,6 +111,7 @@ C Name of current application
 C      character curfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
@@ -982,7 +983,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
@@ -995,6 +996,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character H*72,outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
@@ -1749,7 +1751,7 @@ C if database names have changed.
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -1764,6 +1766,7 @@ C      common/gendb/LGENDB
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72

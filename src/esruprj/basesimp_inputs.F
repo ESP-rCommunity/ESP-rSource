@@ -36,7 +36,7 @@ C Declare calling parameters
       COMMON/pophelp/h(60)
       COMMON/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/OUTIN/IUOUT,IUIN
 
 C COMMONS FOR BASEREAD
@@ -51,7 +51,7 @@ C COMMONS FOR BASEREAD
       CHARACTER :: delimiter
       CHARACTER*72 sfile,snpfile,LBSIMP
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,bsmpth,aimpth
+     &             dbspth,bsmpth,aimpth,hvacpth
 
       INTEGER iBSIMP ! iBSIMP flag to talk to cfg
       INTEGER x,iier,iuout,iuin,iwhich,nfile

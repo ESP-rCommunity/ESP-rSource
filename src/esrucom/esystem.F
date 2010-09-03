@@ -273,8 +273,9 @@ C RADPTH (24 char) relative path to the model Radiance folder
 C DOCPTH (24 char) relative path to the model documents folder
 C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
+C hvacpth (24 char) relative path to model hvac folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -504,6 +505,7 @@ C Simulation parameters
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -755,6 +757,10 @@ C embedded in the configuration file.
           goto 34
         elseif(WORD(1:7).eq.'*dbspth')then
           CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:8).eq.'*hvacpth')then
+          CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:5).eq.'*indx')then

@@ -1067,7 +1067,7 @@ C model including view and add images (delete not yet working).
       common/pophelp/h(60)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -1090,6 +1090,7 @@ C and control of project images.
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
 
@@ -1324,7 +1325,7 @@ C temporal data to be associated with a model.
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
      
 C TDF related.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
@@ -1339,7 +1340,7 @@ C TDF related.
       character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character OUTSTR*124,HDR*12

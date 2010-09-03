@@ -36,8 +36,6 @@ c                  volume flow rate
 c  ASHP_PLF        determine the part-load factor of the air-source heat pump
 c                  when not operating simultaneously with a fossil fuel backup
 c                  heat source
-c  ASHP_COEFF      set the correlation coeff for the part-load performance of 
-c                  the air-source heat pump
 c  BACKUP_LOAD     determine the remaining space load to be supplied by a 
 c                  baseboard/hydronic/plenum heater backup system when the 
 c                  primary system does not have enough capacity to meet the
@@ -738,80 +736,6 @@ c Equation 7 in Air-source heat pump Ref by Haddad
       return
       end
 
-c *********************************************************************
-c *********************************************************************
-c ASHP_COEFF
-
-c Created by: Kamel Haddad
-c Initial Creation Date: July 18th 2000
-c Copyright 2000: NRCan Buildings Group
-c
-c Subroutine to set the correlation coefficients of an air-source heat pump
-
-c References:
-c             "Part load curves for use in DOE-2"
-c              Prepared for the Lawrence Berkley Laboratory by
-c              Hugh Henderson, CDH Energy Corp, Cazenovia, NY
-
-c       Air-Source Heat Pump Model for Implementation in H3k
-c       H3k model documentation, Kamel Haddad, June 10 2000
-
-c INPUTS:
-c isys number of HVAC system
-c   HEAT_PUMP_INPUT_DATA
-c	common for heat pump input data
-c   HVAC_INPUT_DATA
-c	common for HVAC input data
-
-c OUTPUTS:
-c       ahp,bhp,chp,dhp coefficients for the part-load performance
-c       of the heat pump. Stored in ashp_corr common
-c **********************************************************************
-      SUBROUTINE ASHP_COEFF(isys)
-
-      IMPLICIT NONE
-
-c Variable in call
-      INTEGER isys
-
-#include "building.h"
-
-#include "hvac_parameters.h"
-
-#include "hvac_common.h"
-
-#include "ashp_common.h"
-
-c Set the part-load performance coefficients for the three types of air-source
-c heat pump systems. The coefficients for the part-load performance are based
-c on the report of Henderson listed in the heading of this subroutine.
-c The following coefficients are in Table 1 of the air-source heat pump
-c Ref by Haddad
-
-c For a Typical unit      
-      if(isys_type(isys).eq.1) then
-        ahp(isys) = 0.0101858
-        bhp(isys) = 1.18131
-        chp(isys) = -0.246748
-        dhp(isys) = 0.0555745
-c For a Good unit
-      elseif(isys_type(isys).eq.2) then
-        ahp(isys) = 0.00988125
-        bhp(isys) = 1.08033
-        chp(isys) = -0.105267
-        dhp(isys) = 0.0151403
-c For a Poor unit
-      elseif(isys_type(isys).eq.3) then
-        ahp(isys) = 0.0300924
-        bhp(isys) = 1.20211
-        chp(isys) = -0.311465
-        dhp(isys) = 0.0798283
-      endif
-
-      return
-      end
-
-c *********************************************************************
 c *********************************************************************
 c BACKUP_LOAD
 

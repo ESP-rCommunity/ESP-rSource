@@ -73,9 +73,10 @@ C Climate data.
       character XMLMETRICS*248
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -502,7 +503,7 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
 
@@ -543,6 +544,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
@@ -1280,7 +1282,7 @@ C IPV description via ipvdata.h.
       integer icascf
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
 
 C XMLMETRICS are the metrics that could be included in the input.xml
@@ -1299,6 +1301,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
+      character hvacpth*24
       integer IFCFG
 
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,aimpth*24
@@ -2693,7 +2696,7 @@ C IPV description via ipvdata.h.
       integer icascf
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -2713,6 +2716,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
+      character hvacpth*24
       integer IFCFG
 
       CHARACTER outs*124,outsd*124,aimpth*24
