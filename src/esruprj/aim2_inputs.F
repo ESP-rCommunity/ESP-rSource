@@ -1494,22 +1494,6 @@ C Declare local variables
       INTEGER :: i                       !loop counter
       INTEGER :: TestCase                !temporary select case variable
       INTEGER :: padlength               !used to pad out a variable length string
-C Common blocks
-      COMMON/WindowControl/
-     &     fWindowSetpoint,
-     &     fACSetPoint,
-     &     bWindowControlFlag,
-     &     iWindowControlZone,
-     &     bWindowsAreOpen,
-     &    fDeltaTInttoExt,
-     &     fWindowLowSetpoint
-      REAL fWindowSetpoint
-      REAL fACSetPoint
-      INTEGER iWindowControlZone
-      LOGICAL bWindowControlFlag
-      LOGICAL bWindowsAreOpen
-      REAL  fDeltaTInttoExt
-      REAL fWindowLowSetpoint
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT, IUIN
       COMMON/USER/BROWSE
@@ -1523,10 +1507,10 @@ C Common blocks
       INTEGER :: aim2index
       INTEGER :: ipaths
       LOGICAL :: unixok
-      CHARACTER :: fs*1
+      CHARACTER :: fs
       
 CPrint out all the selected parameters
-      CALL AIM2_report(iuout,0)
+      CALL AIM2_report(iuout)
       
 C check that the current model is not one being browsed.
       IF (BROWSE) THEN

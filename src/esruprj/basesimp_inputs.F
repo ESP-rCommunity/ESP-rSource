@@ -25,15 +25,18 @@ C Function: This subroutine adds functionality to ESP-r project manager
 C     to allow the user to create a basesimp input file.
 C **********************************************************************
       SUBROUTINE BASESIMP_INPUTS(ICOMP,IER)
-#include "building.h"
-#include "espriou.h"
-#include "ground_temp_mains_common.h"
 
+      IMPLICIT NONE
+
+#include "building.h"
+C Declare calling parameters 
+      INTEGER, INTENT(IN)  :: ICOMP		
+      INTEGER, INTENT(INOUT)  :: IER
+      
       COMMON/pophelp/h(60)
       COMMON/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth,aimpth,bsmpth
-      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
 C COMMONS FOR BASEREAD
@@ -50,11 +53,10 @@ C COMMONS FOR BASEREAD
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth,bsmpth,aimpth
 
-      INTEGER UNIT ! Filehandle 66 is used for .bsm output file
       INTEGER iBSIMP ! iBSIMP flag to talk to cfg
-      INTEGER x,IER,STATUS
+      INTEGER x,iier,iuout,iuin,iwhich,nfile
 
-      LOGICAL exists,exists1,file_exists,old_name
+      LOGICAL exists,file_exists,old_name
 
       REAL fBASESIMPVersionNumber ! version number of BASESIMP file
       REAL bsmtHeight,bsmtDepth ! Foundation height & depth in meters
@@ -67,10 +69,9 @@ C COMMONS FOR BASEREAD
       REAL TGamp ! Amplitude of ground-temperature's annual sine wave.
       REAL TGps ! Phase lag of ground-temperature's annual sine wave.
 
-      REAL Height,Depth,Length,Width,Overlap,RSI,Soil,Water
 
       REAL min_bsmtHeight,max_bsmtHeight,min_bsmtDepth,max_bsmtDepth
-      REAL min_bsmtLength,max_bsmtLength,
+      REAL min_bsmtLength,max_bsmtLength,min_bsmtWidth,
      &             min_bsmtDepthWidth,max_bsmtWidth
       REAL max_Insul_Overlap,min_Insul_Overlap
       REAL max_Insul_rsi,min_Insul_rsi
@@ -466,13 +467,13 @@ C Writes the cleaned up strings to the output .bsm file with comments.
         WRITE(66,'(A,A)') strSoil,'# soil conductivity (W/m K)'
         WRITE(66,'(A,A)') strWater,'# water table (m)'
 
-        IF(fBASESIMPVersionNumber.EQ.1)THEN
+        IF(fBASESIMPVersionNumber.EQ.1.)THEN
           CLOSE(66)
           iBSIMP(ICOMP)=1
           LBSIMP(ICOMP)='../bsm/'//bsmFile
           RETURN
 
-        ELSEIF(fBASESIMPVersionNumber.EQ.0)THEN
+        ELSEIF(fBASESIMPVersionNumber.EQ.0.)THEN
 
 C If the user input the ground temperature variables, they are written
 C to the .bsm file also.

@@ -1051,7 +1051,7 @@ C Context of the model.
 C If there is an AIM-2 descritption scan the file and then report.
         if(iAIM2.eq.1)then
           call AIM2_READIN
-          call AIM2_report(itu,ier)
+          call AIM2_report(itu)
         endif
 
         if(ipconv.eq.1)then

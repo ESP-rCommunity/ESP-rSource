@@ -3187,14 +3187,14 @@ C show attributes in list.
 
       common/pophelp/h(60)
 
-      integer ncomp,ncon,ibst,BSM,a,b
+      integer ncomp,ncon,a,b
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35),BSM(35),BSM_TEST(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
-      LOGICAL SELECT,BSM_TEST
+      LOGICAL SELECT
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
