@@ -1693,29 +1693,43 @@ C Control on wind.
             CVVF=ACR*0.33*VOL(ICOMP)
             CF=CVVF
 C Add own ventilation control, here
-C ITCTL = -17, factors for CVVF which respect day types and periods defined
+C ITCTL = -17, CVVF is controlled, day types and periods defined are respected.
+C    .opr entries are used in a slightly non-conform way:
+C       ITCTL   TLO   TUP   THI
+C
+C low:    ACIL    ACVL   ICF   TAL
+C mid:    ACIU    ACVU   ICF   TAU
+C high:   ACIH    ACVH   ICF   TAH
 C              << functionality ??>>
 C << to do: ?? >>
           elseif (ITCTL(ICOMP).EQ.-17) then
             if (TF.LE.TLO(icomp)) then
               TAF  = TAL(icomp)
 C   ** "winter control" **
-C << add drawing of logic >>
+C
+C   1.0 ---        --------
+C          |     /
+C          |   /
+C   0.4    | /
+C          
+C        ACVL   ACVU
               if (TFA(ICOMP).LE.ACVL(icomp)) then
-                ! ventilation with 100% of scheduled ACH at TAL(icomp)
-              elseif (TFA(ICOMP).LE.20.0) then
-                ! ventilation rate acc. to ramp between ACVL and 20 °C, also at TAL(icomp)
+                ! ventilation with 100% of scheduled ACH at TAL(icomp),
+                ! support heating ...
+              elseif (TFA(ICOMP).LE.ACVU(icomp)) then
+                ! ventilation rate acc. to ramp between ACVL and ACVU, also at TAL(icomp)
                 ! Lower end of ramp is 40% of scheduled ACH
-                call eclose(20.0,ACVL(icomp),0.01,closeto0)
+                call eclose(ACVL(icomp),ACVU(icomp),0.01,closeto0)
                 if (closeto0) then
                   grad=1.0
                 else
-                  grad=-0.6/(20.0-ACVL(icomp))
+                  grad=0.6/(ACVU(icomp)-ACVL(icomp))
                 endif
-                CVVF = CVVF*(grad*TFA(icomp)+1.0-grad*ACVL(icomp))
+                CVVF = CVVF*(grad*TFA(icomp)+0.4-grad*ACVL(icomp))
               else
-                ! ventilation with 40% of scheduled ACH at TAL(icomp)
-                CVVF = CVVF*0.4
+                ! ventilation with 100% of scheduled ACH at TAL(icomp),
+                ! support cooling ...
+!                CVVF = CVVF*0.4
               endif
             else
 C   ** transitional / summer season control **
