@@ -1698,10 +1698,11 @@ C              << functionality ??>>
 C << to do: ?? >>
           elseif (ITCTL(ICOMP).EQ.-17) then
             if (TF.LE.TLO(icomp)) then
+              TAF  = TAL(icomp)
 C   ** "winter control" **
-              if (TFA(ICOMP).LE.ACIL(icomp)) then
+C << add drawing of logic >>
+              if (TFA(ICOMP).LE.ACVL(icomp)) then
                 ! ventilation with 100% of scheduled ACH at TAL(icomp)
-                TAF  = TAL(icomp)
               elseif (TFA(ICOMP).LE.20.0) then
                 ! ventilation rate acc. to ramp between ACVL and 20 °C, also at TAL(icomp)
                 ! Lower end of ramp is 40% of scheduled ACH
@@ -1712,13 +1713,13 @@ C   ** "winter control" **
                   grad=-0.6/(20.0-ACVL(icomp))
                 endif
                 CVVF = CVVF*(grad*TFA(icomp)+1.0-grad*ACVL(icomp))
-                TAF  = TAL(icomp)
               else
                 ! ventilation with 40% of scheduled ACH at TAL(icomp)
                 CVVF = CVVF*0.4
               endif
             else
 C   ** transitional / summer season control **
+C << add drawing of logic >>
               ! Set TAF according to ambient temp.
               if (TF.lt.TUP(ICOMP)) then
                 TAF = TAU(icomp)
