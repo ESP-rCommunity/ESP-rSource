@@ -223,7 +223,7 @@ C----------------------------------------------------------------------------
 C       INTEGER iFC_opr_signal     ! fuel cell operating signal (on/off)
 
 
-       real    check     ! for debugging
+C       real    check     ! for debugging
 
 C----------------------------------------------------------------------------
 C Save data required on subsequent timesteps

@@ -4014,7 +4014,7 @@ C   where a surface such as a floor has been subdivided)
       logical closeazi,closeelv,foundone,ok,dok,same
 
 C iwhich is local variable to sort most often referenced adjacent surf.
-      dimension iwhich(MV),iwhichs(MV),iwhichc(MV),iwhichb(MV)
+      dimension iwhich(MV),iwhichs(MV),iwhichc(MV)
 
       if(izone.ne.0.and.izone.le.NCOMP)then
         if(act.eq.'c')then
@@ -4304,7 +4304,7 @@ C G9 holds information on children of a surface.
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
       dimension idupv(MS,6)    ! duplicate vertex indices
       dimension iduplist(MS,6) ! position in list
-      LOGICAL PARENT,closeazi,closeelv
+      LOGICAL closeazi,closeelv
       CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
       integer jsur   ! loop counter for child surface loop

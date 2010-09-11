@@ -35,8 +35,10 @@ C information to be saved into a new file. ITRU unit number for user
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
       
-      USE AIM2_Inputs, ONLY : AIM2_Interface
+      USE AIM2_Inputs, ONLY : AIM2_Interface, iAIM2
       
+      IMPLICIT NONE
+            
 #include "building.h"
 #include "model.h"
 
@@ -50,34 +52,49 @@ C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
-      
-      integer lnblnk  ! function definition
 
+C Function definition
+      INTEGER :: lnblnk
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      INTEGER :: mmod,limit,limtty
       common/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      INTEGER :: iappw,iappx,iappy
       common/gzonpik/izgfoc,nzg,nznog(mcom)
+      INTEGER :: izgfoc,nzg,nznog
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
+      REAL :: GRDIS
+      INTEGER :: ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR
+      INTEGER :: ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
-      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      INTEGER :: ncomp,ncon
       common/C6/INDCFG
+      INTEGER :: indcfg
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv
+      INTEGER :: icfgv
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -85,20 +102,28 @@ C Defaults.
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/entfile/entflnam,ientxist
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+      INTEGER :: NPRE
+      REAL :: FPRE
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
+      REAL :: GRMAX,GRSPC,GRLYRH
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
+      REAL :: SCALF,VIEWCEN,VIEWLIM
+      INTEGER :: IVIEW
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/ICONDBNAM/ICONDBFL      
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       COMMON/NWKTYP/INWKTYP,vergnf
+      REAL :: vergnf
       COMMON/NWKGRDL/GON,SON
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
@@ -106,13 +131,20 @@ C Uncertainty.
      & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
      & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
      & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
+      INTEGER :: NNICN,ICONTP,NICONATR,NCONP,ICNCT,IVEICN,NIVC,NIVE,NIVD
+      INTEGER :: IVDOT,NIVA,IVARC,NIVL,IVLBL,NIVT
+      REAL :: XYZICON,CONCP,VCICON
+     
       COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
      & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
+      INTEGER :: NICNN,ICNS,ICNE,ICNNT,ICNSP,ICNEP,NCONWP,idatrdom
+      REAL ::CNWNP
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+      INTEGER :: NCONTM,NOCNTM
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
@@ -141,6 +173,16 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      
+      INTEGER :: itrc,itru,ier,i,ic,icc,istat
+      INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
+      INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
+      INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
+      INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
+      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems,szlow
+      REAL :: szcog,szhigh
+C Function definition      
+      INTEGER :: igraphiclib
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -153,6 +195,7 @@ C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      integer ihvacflag
       character hvacfile*72,HVAC_ITEMS*24
       integer nhvac_items
       integer hvind, indhvac, hvidind

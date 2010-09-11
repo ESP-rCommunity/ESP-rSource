@@ -63,8 +63,11 @@ C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file.
       SUBROUTINE CLRPRB
 
+      
       USE AIM2_InputData, ONLY: iAIM2,LAIM2
       USE AIM2, ONLY: AIM2_ClearAll
+
+      IMPLICIT NONE
       
 #include "building.h"
 #include "model.h"
@@ -79,11 +82,12 @@ C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "schedule.h"
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
 C << G7 and G8 need to be cleared >>
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -92,40 +96,53 @@ C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-
+      INTEGER :: iaplic,nsurfcalc,nsurfinso,lstsfcalc,isurfinso
+      
 C HOT3000:HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
+      INTEGER :: isstday,isstmon,isfnday,isfnmon
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
+
 C HOT3000: BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+      INTEGER :: ibsimp
 
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: ifpnf
       common/cctl/icascf(mcom)
+      INTEGER :: icascf
       COMMON/PREC8/SLAT,SLON
+      REAL :: slat,slon
 
 C Radiance scenes file.
       common/radcfg/LRADCF
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      INTEGER :: ifcfd
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
-
+      INTEGER :: ncfdnd,icfdnd,nconf
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      INTEGER :: idwe1,idwe2
 
 C IPV description.
       common/IPVF/lipvdatf
@@ -133,11 +150,11 @@ C IPV description.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: naloc,ialoc,lstanchr
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
-
 C 1D node distribution.
       COMMON/GR1D05/LGRD1D
       COMMON/GR1D06/IGR1D
@@ -160,15 +177,25 @@ C Ground topology.
 
 C Primary energy conversions and emissions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      INTEGER :: ipconv
+      REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
 
+      REAL :: phtco2,phtnox,phtsox,pclco2,pclnox,pclsox
+      REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
+      REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+      
+
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
+      REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
+      INTEGER :: icpcon,irt
 
       common/CFGV/icfgv
+      INTEGER :: icfgv
 
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
@@ -176,15 +203,15 @@ C Project log file, paths to standard file locations.
      &             dbspth,aimpth,bsmpth,hvacpth
 
 C Images.
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
       character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
+      common/imagfi/noimg,iton
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -192,7 +219,7 @@ C Configuration control.
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
-
+      INTEGER :: ispmxist,ientxist
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input
@@ -258,7 +285,9 @@ C door width and height.
       character cfgroot*24,LCFGF*72
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
-
+     
+      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,ivu,isystcurrent,imu
+ 
       call tstamp('>','PRJ: clearing model commons')
       
 C Clear any allocated arrays      
@@ -3187,8 +3216,8 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      integer ncomp,ncon,a,b
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon,a,b
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35),BSM(35),BSM_TEST(35)
 

@@ -1300,12 +1300,12 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24
       character hvacpth*24
       integer IFCFG
 
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,aimpth*24
-      character dstmp*24
+      character dstmp*24,LCFGF*72
       character word248*248
 
       character act*1  ! action requested.
@@ -2715,11 +2715,11 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24
       character hvacpth*24
       integer IFCFG
 
-      CHARACTER outs*124,outsd*124,aimpth*24
+      CHARACTER outs*124,outsd*124,aimpth*24,LCFGF*72
       character dstmp*24
 
       character act*1      ! action requested.

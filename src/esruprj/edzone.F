@@ -65,11 +65,11 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
-      character MODE*4,fs*1
+      character MODE*4,fs*1,LCFGF*72
       CHARACTER OUTSTR*124,H*72,ZN*12,outs*124,aimpth*24,hvacpth*24
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24,LCFGF*72
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h

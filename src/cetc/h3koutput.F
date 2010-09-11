@@ -72,17 +72,12 @@ c     NTSTEP is used to norlamlise the values to one hour.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 c     RFILE is the the results library filename.
       
-      common/C21/IFCFG,cfgroot,LCFGF
       character*72 LBSIMP
       character LTMP*72,h*72,outs*124
       character PFILE*72,MSTRFILE*72,LAFRES*72
-      character cfgroot*24,tab*1
-      character*72 lcfgf,rfile
-      DIMENSION MTHNAM(12)
-      CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
-      logical OK
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &     'Sep','Oct','Nov','Dec'/
+      character tab*1
+      character*72 rfile
+      CHARACTER DS*7,DS1*10,DE*7,DE1*10
       
       CALL EFDELET(101,ISTAT) !DELETES DECEMBER file from progress subroutine.
       write(outs,'(a)')' '

@@ -58,7 +58,7 @@ C COMMONS FOR BASEREAD
 
       LOGICAL exists,file_exists,old_name
 
-      REAL fBASESIMPVersionNumber ! version number of BASESIMP file
+      INTEGER :: fBASESIMPVersionNumber ! version number of BASESIMP file
       REAL bsmtHeight,bsmtDepth ! Foundation height & depth in meters
       REAL bsmtLength,bsmtWidth ! Foundation length & width in meters.
       REAL Insul_Overlap ! Insul overlap for combination configurations.
@@ -189,7 +189,7 @@ C IF LOOP TO SKIP THE INPUT OF VARIABLES IF AN EXISTING FILE IS READ IN
              TGavg = bsTGavg(ICOMP)
              TGamp = bsTGamp(ICOMP)
              TGps = bsTGps(ICOMP)
-             fBASESIMPVersionNumber=bsVrsnNmbr(ICOMP)
+             fBASESIMPVersionNumber=INT(bsVrsnNmbr(ICOMP))
 
 C HELP CONTENT
 C      H(1)= 'You have chosen to use an existing .bsm file.      '
@@ -276,7 +276,7 @@ C HELP CONTENT
      &        min_Insul_rsi,'F',max_Insul_rsi,'F',Insul_rsi,
      &        'Insulation rsi',IER,4)
       min_Soil_Cond = 0.1                     ! W/mK
-      max_Soil_Cond = 10                      ! W/mK
+      max_Soil_Cond = 10.                      ! W/mK
 C HELP CONTENT
       H(1)= 'Thermal conductivity of soil surrounding the       '
       H(2)= 'foundation in W/mK.                                '
@@ -285,8 +285,8 @@ C HELP CONTENT
         CALL EASKR(Soil_Cond,' ',' Soil conductivity ? ',
      &        min_Soil_Cond,'F',max_Soil_Cond,'F',Soil_Cond,
      &        'Soil Conductivity',IER,4)
-      min_Water_Table = 5                     ! meter
-      max_Water_Table = 20                    ! meter
+      min_Water_Table = 5.                     ! meter
+      max_Water_Table = 20.                    ! meter
 C HELP CONTENT
       H(1)= 'Water table depth: defines location of horizontal  '
       H(2)= 'thermal boundary. The deeper the water table, the  '
@@ -321,20 +321,20 @@ C HELP CONTENT
       H(4)= '                                                   '
 
           IF(IWHICH.EQ.1)THEN
-            fBASESIMPVersionNumber = 1.
+            fBASESIMPVersionNumber = 1
           ELSEIF(IWHICH.EQ.2)THEN
-            fBASESIMPVersionNumber = 0.
+            fBASESIMPVersionNumber = 0
 C HELP CONTENT
             H(1)= '                                                   '
             H(2)= 'TGavg: Average ground temperature (degC)           '
             H(3)= '                                                   '
             H(4)= 'Value must be between -10 and 20.'
-            min_TGavg = -10                   ! unitless
-            max_TGavg = 20                    ! unitless
+            min_TGavg = -10.                   ! unitless
+            max_TGavg = 20.                    ! unitless
             CALL EASKR(TGavg,' ',' TGavg ?',
      &            min_TGavg,'F',max_TGavg,'F',8.9,'TGavg',IER,4)
-            min_TGamp = 0                     ! unitless
-            max_TGamp = 25                    ! unitless
+            min_TGamp = 0.                     ! unitless
+            max_TGamp = 25.                    ! unitless
 C HELP CONTENT
             H(1)= '                                                   '
             H(2)= 'TGamp: Amplitude of the ground temperature         '
@@ -347,8 +347,8 @@ C HELP CONTENT
             H(2)= 'TGps: Phase lag of ground temperature              '
             H(3)= '                                                   '
             H(4)= 'Value must be between 0 and 1.'
-            min_TGps = 0                      ! unitless
-            max_TGps = 1                      ! unitless
+            min_TGps = 0.                      ! unitless
+            max_TGps = 1.                      ! unitless
             CALL EASKR(TGps,' ',' TGps ?',
      &            min_TGps,'F',max_TGps,'F',0.380,'TGps',IER,4)
           ELSEIF(IWHICH.EQ.3)THEN
@@ -428,9 +428,9 @@ C HELP CONTENT
 
         END IF
 
-        IF(fBASESIMPVersionNumber.EQ.1.0)THEN
+        IF(fBASESIMPVersionNumber.EQ.1)THEN
           WRITE(66,'(A)') '*FileVersion1.0'
-        ELSEIF(fBASESIMPVersionNumber.EQ.0.0)THEN
+        ELSEIF(fBASESIMPVersionNumber.EQ.0)THEN
           WRITE(66,'(A)') '*FileVersion0.0'
         END IF
 
@@ -467,13 +467,13 @@ C Writes the cleaned up strings to the output .bsm file with comments.
         WRITE(66,'(A,A)') strSoil,'# soil conductivity (W/m K)'
         WRITE(66,'(A,A)') strWater,'# water table (m)'
 
-        IF(fBASESIMPVersionNumber.EQ.1.)THEN
+        IF(fBASESIMPVersionNumber.EQ.1)THEN
           CLOSE(66)
           iBSIMP(ICOMP)=1
           LBSIMP(ICOMP)='../bsm/'//bsmFile
           RETURN
 
-        ELSEIF(fBASESIMPVersionNumber.EQ.0.)THEN
+        ELSEIF(fBASESIMPVersionNumber.EQ.0)THEN
 
 C If the user input the ground temperature variables, they are written
 C to the .bsm file also.

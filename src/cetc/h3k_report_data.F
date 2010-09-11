@@ -658,11 +658,11 @@ C-----------------------------------------------------------------------
 
 C.....Collect zone air-changes/hour
         IF (ALLOCATED(AIM2_infil_to_zones)) THEN
-          fZoneInfiltrationACH = AIM2_infil_to_zones(iZone) / VOL(iZone)
+          fZoneInfiltrationACH = AIM2_infil_to_zones(iZone)/VOL(iZone)
      &                          * 3600.0
         ELSE
           CALL EDISP(IUOUT,
-     &       ' Warning: AIM2_infil_to_zones array not allocated')
+     &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
         END IF
 
 

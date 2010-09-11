@@ -128,7 +128,7 @@ C Name of current application
       
       character cAppName*12
 
-      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
 
       DIMENSION ITEM(26) 
@@ -152,7 +152,6 @@ C Initial assumptions (summary reporting).
       call ezero
       call curmodule('aco ')
       cAppName = 'aco'
-      ITRC=1
       IUIN = 5
       IUOUT = 6
       ixunit = 7
@@ -201,7 +200,6 @@ C Set folder separator (fs) to \ or / as required.
       write(path,'(a1,a1)')'.',fs
 
 C Set defaults.
-      OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
       MATDBOK=.FALSE.

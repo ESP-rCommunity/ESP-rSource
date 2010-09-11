@@ -1959,7 +1959,7 @@ C Declarations for local variables and variables passed in common blocks.
       character b_shielding*48,f_shielding*48   ! shielding of building and flue
       character crawl*48,attic*48
 
-      INTEGER IER,ij,itru,llna
+      INTEGER ij,itru,llna
       REAL total
       LOGICAL CLOSE
 

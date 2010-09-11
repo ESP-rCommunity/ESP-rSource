@@ -88,7 +88,7 @@ C MMGFUN controls all UK NCM related tasks
       integer iuout,iuin
 
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
-      INTEGER IHVACFLAG
+      INTEGER :: ihvacflag
       CHARACTER*72 HVACFILE
 
       COMMON/C21/IFCFG,CFGROOT,LCFGF
@@ -108,7 +108,7 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER*72 LCFD
 
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
-      LOGICAL BLDG3D,ZONE3D
+      LOGICAL :: BLDG3D,ZONE3D
 
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       LOGICAL MSTROK,MSTRZN
@@ -182,7 +182,7 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER spflnam*72
 
       common/entfile/entflnam,ientxist
-      INTEGER IENTXIST
+      INTEGER :: ientxist
       CHARACTER entflnam*72
 
       common/IPVF/lipvdatf
@@ -3518,12 +3518,15 @@ C required models ') which returned iuact=1.
 
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -4215,11 +4218,13 @@ C This routine assumes newer geometry files are being used.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection

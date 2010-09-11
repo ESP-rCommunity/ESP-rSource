@@ -28,7 +28,9 @@ C EMKCFG writes out the current contents of system configuration
 C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
       
-      USE AIM2_InputData, ONLY:LAIM2
+      USE AIM2_InputData, ONLY:LAIM2,iAIM2
+      
+      IMPLICIT NONE
 
 #include "building.h"
 #include "model.h"
@@ -53,26 +55,35 @@ C ICLIM,LCLIM (for climate file)
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
-      PARAMETER (MSTMC=20,MSGAL=40)
+      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
 #include "schedule.h"
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
+      INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
+      INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: ifpnf
       common/CFGV/icfgv
+      INTEGER :: icfgv
 
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
@@ -95,6 +106,8 @@ C Images.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
+      REAL :: angi,EYEMI,VIEWMI
+      INTEGER :: initvt
 
 C Radiance scene file.
       common/radcfg/LRADCF
@@ -102,8 +115,10 @@ C Radiance scene file.
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
+      INTEGER :: ispmxist,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
@@ -123,6 +138,7 @@ C Ground topology.
 
 C CFD
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      INTEGER :: ifcfd
 
 C 3D zones.
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -134,6 +150,7 @@ C Moisture.
 
 C Structured mesh.
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
 
 C Temporal definition commons.
@@ -141,21 +158,30 @@ C Temporal definition commons.
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      INTEGER :: ipconv
+      REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/ECONV/ieconv
+      INTEGER :: ieconv
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
-
+      REAL :: phtco2,phtnox,phtsox,pclco2,pclnox,pclsox
+      REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
+      REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+ 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
+      REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
+      INTEGER :: icpcon,irt
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      INTEGER :: idwe1,idwe2
 
 C Strings associated with one climatelist item.
 C clmlnam (char*32) is the selection list string
@@ -169,6 +195,7 @@ C clmlhelp (char*72) is array of help strings
 
 C Numbers associated with one climatelist item.
       common/clmlnum/nbclmlhelp
+      INTEGER :: nbclmlhelp
 
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -176,25 +203,31 @@ C Uncertainty analysis common.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: naloc,ialoc,lstanchr
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
+      INTEGER :: isstday,isstmon,isfnday,isfnmon
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh      
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+      INTEGER :: ibsimp
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
+      INTEGER :: NCONTM,NOCNTM,NTSTEPC
 
 C Path to SHOCC input files
 C bSHOCCed     - logical flag whether project has SHOCC input
@@ -213,9 +246,12 @@ C DHW.
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
+      INTEGER :: iFClds
 
 C External longwave radiation used by HOT3000.
-      COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
+      COMMON/LongRad/iExtLgRadFlag,eGrdTp
+      INTEGER :: iExtLgRadFlag
+      REAL :: eGrdTp(12)
       INTEGER jMon
 
 C GSHP
@@ -226,6 +262,7 @@ C GSHP
 
 C Wind-generated electricity
       common/H2wind/LWndSupp,iWndSupp
+      INTEGER :: iWndSupp
 
 C GCEP
        common/gcepinfo/igcep
@@ -235,11 +272,13 @@ C GCEP
 
 C Bidirectional raw optical data file.
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -302,6 +341,10 @@ C Control for writing out multi-climate sim presets
       integer ipos    ! position in flow node string buffer
       integer lnouts   ! location at end of flow node string buffer
       integer lnipv   ! location at end of the external IPV file
+      
+      INTEGER :: ier,i,ia,iav,icc,icd,id1,id2,id3,id4,im1,im2,im3,im4
+      INTEGER :: ij,img,ios,iss,iuf,iw,j,l,lcfgl,lcfgr,lct,lctn,loutlen
+      INTEGER :: loutln,ncn
       
       IUF=IFIL+1
       IER=0
@@ -1429,6 +1472,7 @@ C if possible. If ICON=0 then generate a text heading.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN

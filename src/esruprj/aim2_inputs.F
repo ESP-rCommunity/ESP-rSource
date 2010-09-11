@@ -137,22 +137,28 @@ C ******************************************************************************
 
 C Declare local variables
       INTEGER :: i                            !loop index
+C Function declaration      
+      LOGICAL :: REQUAL                       
 
       CheckForChanges = .FALSE.  !flag for changes
       
       IF (iairtight_type.NE.airtight_type) CheckForChanges = .TRUE.
       IF (iblower_door_input_option.NE.blower_door_input_option)
      &   CheckForChanges = .TRUE.
-      IF (iACH_50Pa.NE.ACH_50Pa) CheckForChanges = .TRUE.
-      IF (iELA_deltaP.NE.ELA_deltaP) CheckForChanges = .TRUE.
-      IF (iELA_given.NE.ELA_given) CheckForChanges = .TRUE.
-      IF (iELA_cm.NE.ELA_cm) CheckForChanges = .TRUE.
-      IF (iELA_Cd.NE.ELA_Cd) CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iACH_50Pa,ACH_50Pa,.001))CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iELA_deltaP,ELA_deltaP,.001))
+     &   CheckForChanges = .TRUE.
+      IF (iELA_given.NE.ELA_given) CheckForChanges= .TRUE.
+      IF (.NOT.REQUAL(iELA_cm,ELA_cm,.001)) CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iELA_Cd,ELA_Cd,.001)) CheckForChanges = .TRUE.
       IF (iuserspec_leakage.NE.userspec_leakage) 
      &   CheckForChanges = .TRUE.
-      IF (iAIM2_ceil_frac.NE.AIM2_ceil_frac) CheckForChanges = .TRUE.
-      IF (iAIM2_wall_frac.NE.AIM2_wall_frac) CheckForChanges = .TRUE.
-      IF (iAIM2_floor_frac.NE.AIM2_floor_frac) CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_ceil_frac,AIM2_ceil_frac,.001))
+     &   CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_wall_frac,AIM2_wall_frac,.001))
+     &   CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_floor_frac,AIM2_floor_frac,.001))
+     &   CheckForChanges = .TRUE.
       IF (iAIM2_terrain_weather.NE.AIM2_terrain_weather) 
      &    CheckForChanges = .TRUE.
       IF (iAIM2_terrain_building.NE.AIM2_terrain_building) 
@@ -161,16 +167,20 @@ C Declare local variables
      &    CheckForChanges = .TRUE.
       IF (iAIM2_flue_shielding.NE.AIM2_flue_shielding)
      &    CheckForChanges = .TRUE.
-      IF (iAIM2_anemom_height.NE.AIM2_anemom_height) 
+      IF (.NOT.REQUAL(iAIM2_anemom_height.NE.AIM2_anemom_height)) 
      &    CheckForChanges = .TRUE.
-      IF (iAIM2_eaves_height.NE.AIM2_eaves_height) 
+      IF (.NOT.REQUAL(iAIM2_eaves_height.NE.AIM2_eaves_height)) 
      &   CheckForChanges = .TRUE.
-      IF (iAIM2_furnace_flue.NE.AIM2_furnace_flue) 
+      IF (.NOT.REQUAL(iAIM2_furnace_flue.NE.AIM2_furnace_flue)) 
      &   CheckForChanges = .TRUE.
-      IF (iAIM2_fire_flue1.NE.AIM2_fire_flue1) CheckForChanges = .TRUE.
-      IF (iAIM2_fire_flue2.NE.AIM2_fire_flue2) CheckForChanges = .TRUE.
-      IF (iAIM2_DHW_flue1.NE.AIM2_DHW_flue1) CheckForChanges = .TRUE.
-      IF (iAIM2_DHW_flue2.NE.AIM2_DHW_flue2) CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_fire_flue1,AIM2_fire_flue1,.001))
+     &   CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_fire_flue2,AIM2_fire_flue2,.001)) 
+     &   CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_DHW_flue1,AIM2_DHW_flue1,.001))
+     &   CheckForChanges = .TRUE.
+      IF (.NOT.REQUAL(iAIM2_DHW_flue2,AIM2_DHW_flue2,.001))
+     &   CheckForChanges = .TRUE.
       IF (iAIM2_ref_zone.NE.AIM2_ref_zone) CheckForChanges = .TRUE.
       IF (iAIM2_num_zones_infil.NE.AIM2_num_zones_infil)
      &   CheckForChanges = .TRUE.
@@ -348,6 +358,8 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                  !Array holding help text
       CHARACTER :: H*72                     !Strings for help text
+C Function defenition      
+      LOGICAL :: CheckForChanges
 
      
       IF (.NOT.AIM2_Initialized) THEN
@@ -428,7 +440,7 @@ C Building eves description.
 C Diameter of furnace flue (mm).
            Temp = AIM2_furnace_flue 
            CALL EASKR(Temp,' ','Diameter of furnace flue (mm)?'
-     &          ,0,'F',500.0,'F',200.0,'Furnace flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Furnace flue diameter' 
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_furnace_flue = Temp
            WRITE(DisplayString,'(A, F8.2, A)')'Furnace flue diameter: ',
@@ -438,7 +450,7 @@ C Diameter of furnace flue (mm).
 C Diameter of #1 fireplace flue (mm).
            Temp = AIM2_fire_flue1 
            CALL EASKR(Temp,' ','Diameter of #1 fireplace flue (mm)?'
-     &          ,0,'F',500.0,'F',200.0,'Fireplace #1 flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Fireplace #1 flue diameter' 
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_fire_flue1 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -448,7 +460,7 @@ C Diameter of #1 fireplace flue (mm).
 C Diameter of #2 fireplace flue (mm).
            Temp = AIM2_fire_flue2 
            CALL EASKR(Temp,' ','Diameter of #2 fireplace flue (mm)?'
-     &          ,0,'F',500.0,'F',200.0,'Fireplace #2 flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Fireplace #2 flue diameter' 
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_fire_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -458,7 +470,7 @@ C Diameter of #2 fireplace flue (mm).
 C Diameter of primary DHW system flue (mm).
            Temp = AIM2_DHW_flue1 
            CALL EASKR(Temp,' ',
-     &       'Diameter of primary DHW system flue (mm)?',0,'F',
+     &       'Diameter of primary DHW system flue (mm)?',0.,'F',
      &       500.0,'F',200.0,'Primary DHW system flue diameter',IER,3)
            IF (IER.EQ.0) AIM2_DHW_flue1 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -468,7 +480,7 @@ C Diameter of primary DHW system flue (mm).
 C Diameter of secondary DHW system flue (mm).
            Temp = AIM2_DHW_flue2
            CALL EASKR(Temp,' ',
-     &        'Diameter of Secondary DHW system flue (mm)?',0,'F',
+     &        'Diameter of Secondary DHW system flue (mm)?',0.,'F',
      &        500.0,'F',200.0,'Secondary DHW system diameter',IER,3)
            IF (IER.EQ.0) AIM2_DHW_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -504,12 +516,13 @@ C ClearLeakageParams clears previously defined blower door parameters
 C *********************************************************************
       SUBROUTINE ClearLeakageParams()
        
-      ACH_50Pa = -1.
-      ELA_deltaP = -1.
+      ACH_50Pa = 0.
+      ELA_deltaP = 0.
       ELA_given = 0
-      ELA_cm = -1.
-      ELA_Cd = -1.
+      ELA_cm = 0.
+      ELA_Cd = 0.
       airtight_type = 0
+      blower_door_input_option = 0
 
       END SUBROUTINE ClearLeakageParams
 
@@ -702,6 +715,8 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
+C Function definition      
+      LOGICAL :: REQUAL                         !used to compare real variables
 
 C Help text for this menu.
       H(1)= 'The blower door test values entered determine the flow'
@@ -757,7 +772,7 @@ C INO needs to be set to -4 for the menu to be displayed in text mode
       IF (INO.EQ.1) THEN
 C Get the flow coefficient and flow exponent
         Temp = AIM2_CO 
-        IF (Temp.EQ.0.) Temp=0.05
+        IF (REQUAL(Temp,0.,.001)) Temp=0.05
         CALL EASKR(Temp,' ',
      &    ' Building fabric flow coefficient [m^3/(s Pa^n)]? ',
      &    0.,'F',0.1,'W',0.05,'flow coefficient',IER,3)
@@ -769,7 +784,7 @@ C Get the flow coefficient and flow exponent
           CALL EDISP(IUOUT,DisplayString)
         ENDIF
         Temp = AIM2_n
-        IF (Temp.EQ.0.) Temp=.67
+        IF (REQUAL(Temp,0.,.001))Temp=0.67
         CALL EASKR(Temp,' ',
      &    ' Building flow exponent (dimensionless)? ',
      &     0.5,'F',1.,'W',0.67,'flow exponent',IER,3)
@@ -783,7 +798,7 @@ C Get the flow coefficient and flow exponent
       ELSE IF (INO.LT.4) THEN   ! option 2 or 3 (both need air change rate @ 50Pa)
 C Get air change rate @ 50Pa
         Temp = ACH_50Pa
-        IF (Temp.EQ.-1.) Temp=15.
+        IF (REQUAL(Temp,0.,.001))Temp=15.
         CALL EASKR(Temp,' ',
      &     ' Air change rate @50 Pa? ',
      &     0.1,'F',30.0,'W',15.0,'air change rate',IER,3)
@@ -795,7 +810,7 @@ C Get air change rate @ 50Pa
         ENDIF           
 C Get Pressure difference in Pa
         Temp = ELA_deltaP
-        IF (Temp.EQ.-1.) Temp=10.
+        IF (REQUAL(Temp,0.,.001))Temp=10.
         CALL EASKR(Temp,' ','Pressure difference (Pa)?',
      &         4.0,'W',10.0,'W',10.0,'Pressure difference',
      &         IER,3)
@@ -807,7 +822,7 @@ C Get Pressure difference in Pa
         ENDIF          
         IF (INO.EQ.3) THEN
           Temp = ELA_cm
-          IF (Temp.EQ.-1.) Temp=500.
+          IF (REQUAL(Temp,0.,.001))Temp=500.
           CALL EASKR(Temp,' ',
      &      'Equivalent air leakage area in (ELA) cm^2?',0.1,'F',7999.0
      &      ,'W',500.0,'Equivalent air leakage area',IER,3)
@@ -848,12 +863,14 @@ C Declare local variables
       CHARACTER :: DisplayString*248        !data selection display string
       INTEGER :: IER                        !errorflag
       INTEGER :: INO                        !selection
-      REAL :: Temp                        !temporary variable
+      REAL :: Temp                          !temporary variable
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                 !Array holding help text
-      CHARACTER :: H*72                        !Strings for help text
+      CHARACTER :: H*72                    !Strings for help text
+c Function declaration      
+      LOGICAL :: REQUAL                    !used to compare real variables
 
 C Help text for the leakage distribution
       H(1)= 'Leakage Fraction for Ceilings, Walls, and Floors'
@@ -898,7 +915,7 @@ C defaults assumed from http://www.inive.org/members_area/medias/pdf/Inive%5CIBP
 C check to ensure fractions add up to 1.
           IF (IER.EQ.0) AIM2_floor_frac = Temp
             Temp = AIM2_ceil_frac+AIM2_wall_frac+AIM2_floor_frac
-          IF (Temp.EQ.1.) THEN
+          IF (REQUAL(Temp,1.,.001))THEN
             WRITE(DisplayString,'(A, F6.3, A, F6.3, A, F6.2)')
      &             ' Ceiling: ',AIM2_ceil_frac, 
      &       '     Wall: ',AIM2_wall_frac,
@@ -935,12 +952,13 @@ C Declare local variables
       INTEGER :: NITEMS                         !number of items
       INTEGER :: INO                            !menu selection
       REAL :: Temp                              !temporary variable
-      INTEGER :: PreviousSelection              !previous menu selction
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
+C Function declaration      
+      LOGICAL :: REQUAL                         !used to compare real variables
 
 C Help text for this menu.
       H(1)= 'The weather station terrain is used to specify the '
@@ -955,39 +973,39 @@ C Help text for this menu.
       H(10)= 'the anemometer at the weather station. '
       H(11)= 'This is equation 27 from Bradley (1993, p8).'
             
-      IF (AIM2_terrain_weather.NE.-1) THEN
+      IF (AIM2_terrain_weather.NE.0) THEN
         WRITE(ITEM(1),'(A, I1, A)')'a Terrain at weather station  (',
      &                  AIM2_terrain_weather,')'
       ELSE
         ITEM(1)='a Terrain at weather station   '
       ENDIF 
       
-      IF (AIM2_terrain_building.NE.-1) THEN
+      IF (AIM2_terrain_building.NE.0) THEN
         WRITE(ITEM(2),'(A, I1, A)')'b Terrain at building         (',
      &                 AIM2_terrain_building,')'
       ELSE
         ITEM(2)='b Terrain at building          '
       ENDIF 
       
-      IF (AIM2_wall_shielding.NE.-1) THEN
+      IF (AIM2_wall_shielding.NE.0) THEN
         WRITE(ITEM(3),'(A, I1, A)')'c shielding on walls          (',
      &                AIM2_wall_shielding,')'
       ELSE
         ITEM(3)='c shielding on walls       '
       ENDIF 
       
-      IF (AIM2_flue_shielding.NE.-1) THEN
+      IF (AIM2_flue_shielding.NE.0) THEN
         WRITE(ITEM(4),'(A, I1, A)')'d shielding on flue           (',
      &                 AIM2_flue_shielding,')'
       ELSE
         ITEM(4)='d shielding on flue         '
       ENDIF 
       
-      IF (AIM2_anemom_height.NE.-1.) THEN
+      IF (.NOT.REQUAL(AIM2_anemom_height,10.,.001)) THEN
         WRITE(ITEM(5),'(A, F6.2, A)')'e anemometer height  (',
      &                   AIM2_anemom_height,' (m))'
       ELSE
-        ITEM(5)='e anemometer height       '
+        ITEM(5)='e anemometer height     10m '
       ENDIF
       
       ITEM(6)='? Help              '
@@ -998,15 +1016,12 @@ C Help text for this menu.
 C Because the selection needs to be set to -4 for the menu to be displayed in text mode
 C the selection (if one was made) needs to be saved in case the user does not change their
 C selection
-      PreviousSelection = Selection  
       Selection = -4
 
       CALL EMENU(' Shielding and terrain description',ITEM,NITEMS,
      &          Selection)
-
       IF (Selection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
-        Selection = PreviousSelection 
         CALL PHELPD('Shielding and terrain description',11,'-',0,0,IER)
       ELSE IF (Selection.EQ.NITEMS) THEN
 C Exit this menu
@@ -1278,6 +1293,9 @@ C Common blocks
       CHARACTER :: H*72                             !Strings for help text
       INTEGER, DIMENSION(NCOMP) :: InfilZones       !Temporary array to hold zones to recieve infiltration
 
+C Function definition
+      INTEGER :: lnblnk
+      
       InfilZones=0
       
           
@@ -1508,6 +1526,9 @@ C Declare local variables
       INTEGER :: ipaths
       LOGICAL :: unixok
       CHARACTER :: fs
+C Function definition
+      INTEGER :: lnblnk
+      
       
 CPrint out all the selected parameters
       CALL AIM2_report(iuout)
@@ -1764,18 +1785,9 @@ C Write zone number of basement,crawlspace and attic
       WRITE(AIM2_FUnit,'(3I3,31x,A)') AIM2_basement_zone,
      &      AIM2_CrawlSpace_zone,AIM2_attic_zone,OutString
 
-! C Write Blind control and Window control and Zone which temperature  controls the windows.
-!       WRITE(AIM2_FUnit,'(A)')
-!      &  '#---Blind and window control---------------------------------'
-!       IF (bWindowControlFlag) THEN
-!         WRITE(AIM2_FUnit,'(A,I4,3F10.2)')' 1  ',iWindowControlZone,
-!      &   fWindowSetpoint,fWindowLowSetpoint,fDeltaTInttoExt
-!       ELSE 
-!         WRITE(AIM2_FUnit,'(A)')' 0  '
-!       ENDIF
-
 C Close AIM-2 input data file.
       CALL ERPFREE(AIM2_FUnit,ISTAT)
       RETURN
       END SUBROUTINE SAVE_AIM2
+
       END MODULE AIM2_Inputs

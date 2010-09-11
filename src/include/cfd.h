@@ -7,31 +7,31 @@ C  these variables to be sized to 32. The other variables have little
 C  impact of the size of dfs and bps.
 C  
 C  Maximum number of cells in x direction (usual setting NTCELX=32)
-      PARAMETER (NTCELX=32)
+      INTEGER, PARAMETER :: NTCELX=32
 C  Maximum number of cells in y direction (usual setting NTCELY=32)
-      PARAMETER (NTCELY=32)
+      INTEGER, PARAMETER :: NTCELY=32
 C  Maximum number of cells in z direction (usual setting NTCELZ=32)
-      PARAMETER (NTCELZ=32)
+      INTEGER, PARAMETER :: NTCELZ=32
 C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=32)
-      PARAMETER (MCEL1D=32)
+      INTEGER, PARAMETER :: MCEL1D=32
 C  Maximum number of new mfs connections created for CFD domain (usual setting MCFND=10)
-      PARAMETER (MCFND=10)
+      INTEGER, PARAMETER :: MCFND=10
 C  Maximum number of gridding regions per axis (usual setting MNREG=20)
-      PARAMETER (MNREG=20)
+      INTEGER, PARAMETER :: MNREG=20
 C  Maximum number of heat source (usual setting MNHS=3)
-      PARAMETER (MNHS=3)
+      INTEGER, PARAMETER :: MNHS=3
 C  Maximum number of solid boundaries per zone 
 C (set equal to or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
-      PARAMETER (MNSBZ=32)
+      INTEGER, PARAMETER :: MNSBZ=32
 C  Maximum number of zones with CFD (usual setting MNZ=1)
-      PARAMETER (MNZ=1)
+      INTEGER, PARAMETER :: MNZ=1
 C  Maximum number of key volumes (usual setting MNVLS=120)
-      PARAMETER (MNVLS=120)
+      INTEGER, PARAMETER :: MNVLS=120
 C  Maximum number of contaminants that can be modelled (Set equal to
-C  parameter MCONTM in net_flow.h, if this is changed also change MCONTM)
-      PARAMETER (MCTM=4)
+C  INTEGER, PARAMETER :: MCONTM in net_flow.h, if this is changed also change MCONTM)
+      INTEGER, PARAMETER :: MCTM=4
 C Maximum frequency of residuals plotting during CFD solutions    
-      PARAMETER (MFRP=100)
+      INTEGER, PARAMETER :: MFRP=100
 

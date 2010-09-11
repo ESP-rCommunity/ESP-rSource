@@ -1129,7 +1129,7 @@ C indoor-outdoor temperature difference.
         ZONE_infil_cond = AIM2_infil_to_zones(ICOMP) * rho * Cp
       ELSE
         CALL EDISP(IUOUT,
-     &        ' Warning: AIM2_infil_to_zones array not allocated')
+     &        ' Warning: AIM2_infil_to_zones array not allocated (b)')
       END IF
 
 
@@ -1184,7 +1184,7 @@ C treatment should be used in the future.
      &             attic_ach * VOL(AIM2_attic_zone) / 3600.
         ELSE
 	  CALL EDISP(IUOUT,
-     &         ' Warning: AIM2_infil_to_zones array not allocated')
+     &         ' Warning: AIM2_infil_to_zones array not allocated (c)')
         END IF
       END IF
 

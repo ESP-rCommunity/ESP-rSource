@@ -3522,7 +3522,6 @@ C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
 #include "building.h"
-#include "DG_controller_include.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
