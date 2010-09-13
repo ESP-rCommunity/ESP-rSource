@@ -279,7 +279,7 @@ C An array of mass flow nodes for writing.
 
       dimension iav(60)
 
-      logical KNOWN,dogrnd
+      logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24

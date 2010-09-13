@@ -753,14 +753,6 @@ C ------------------------------------------------------------------------------
 
       REAL TIMSEC
 
-C     Common for determining if the plant domain has converged
-      COMMON/pltcon/
-     & bpltcon,
-     & lastTStp
-
-      LOGICAL bpltcon
-      REAL lastTStp
-
       common/pcnam/pcname(mpcom)       ! Plant component names
       character*15 pcname
 
@@ -2325,14 +2317,6 @@ C ------------------------------------------------------------------------------
      & TIMSEC
 
       REAL TIMSEC
-
-C     Common for determining if the plant domain has converged
-      COMMON/pltcon/
-     & bpltcon,
-     & lastTStp
-
-      LOGICAL bpltcon
-      REAL lastTStp
 
       common/pcnam/pcname(mpcom)       ! Plant component names
       character*15 pcname

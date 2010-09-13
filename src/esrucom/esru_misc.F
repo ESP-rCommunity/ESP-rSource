@@ -3219,7 +3219,7 @@ C show attributes in list.
       COMMON/C1/NCOMP,NCON
       integer ncomp,ncon,a,b
       COMMON/C24/IZSTOCN(MCOM,MS)
-      DIMENSION VERT(35),VERTS(35),BSM(35),BSM_TEST(35)
+      DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
@@ -3772,6 +3772,8 @@ C *********************************************************************
       SUBROUTINE DeallocateAllArrays
       
       USE AIM2, ONLY:AIM2_DEALLOCATE
+      
+      IMPLICIT NONE
      
       CALL AIM2_DEALLOCATE
       

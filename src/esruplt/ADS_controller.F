@@ -54,10 +54,6 @@ C-----------------------------------------------------------------------------
        INTEGER IUOUT           !-write unit number
        INTEGER IUIN            !-read unit number
 
-       COMMON/TC/ITC,ICNT
-       INTEGER ITC             !-trace output index
-       INTEGER ICNT            !-trace output counting variable
-      
        COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
        INTEGER ITCF            !-building-side time increment
                                !-to end trace output 
@@ -113,14 +109,6 @@ C-----------------------------------------------------------------------------
                                !-and state variable
        REAL    CSVP            !-array holding present value for plant node
                                !-and state variable
-
-       COMMON/PTIME/PTIMEP,PTIMEF
-       REAL    PTIMEP          !-present time row time plant side
-       REAL    PTIMEF          !-future time row time plant side
-
-       COMMON/BTIME/BTIMEP,BTIMEF
-       REAL    BTIMEP          !-present time row time building side
-       REAL    BTIMEF          !-future time row time building side
 
        COMMON/pltcon/bpltcon,lastTStp   
        LOGICAL bpltcon         !-logical variable indicating if plant domain

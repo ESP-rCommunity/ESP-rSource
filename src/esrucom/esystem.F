@@ -571,7 +571,6 @@ C Simulation parameters
       integer INDU    ! to detect old zone utility files
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
       integer itru    ! unit for output
       integer iflag   ! for error traps
@@ -579,7 +578,7 @@ C Simulation parameters
       INTEGER :: id1,id2,id3,id4,icon,icomp,icc,i,ia,ibrowse,ierv
       INTEGER :: im1,im2,im3,im4,iier,irec,ipos,ios,inod,inisz,igrdp
       INTEGER :: irva,is,iset_start,k,kv,iwarn,j,iv,iva,iunit,iunit1,lc
-      INTEGER :: itwpr,itrunc,iss,isfsmon,isva,istat,n,m,items,lastcc
+      INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
       
       REAL :: gva

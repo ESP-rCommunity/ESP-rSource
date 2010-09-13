@@ -729,7 +729,7 @@ C << has been moved into the project manager.
 #include "building.h"
 #include "model.h"
       
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -739,7 +739,7 @@ C Commons
 
       CHARACTER MODE*4
       CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
-      CHARACTER DOIT*124
+C      CHARACTER DOIT*124
       character msgl2*124
     
 C Update tdf based on the callimg mode

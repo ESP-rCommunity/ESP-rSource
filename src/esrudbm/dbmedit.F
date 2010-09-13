@@ -1521,7 +1521,7 @@ C Backup of documentation (for editing).
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character dbnote*72,c8*8,outs*124
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
-      character t72*72,LGENDB*72,act*1,h*72,dstmp*24,t248*248
+      character LGENDB*72,act*1,h*72,dstmp*24,t248*248
 
 C Assumes that the db file is open, gather the catg documentation. 
       IAFIL=IFIL+1

@@ -1005,8 +1005,6 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
 !Local Variables 
       REAL   fTotalEnergyInTank
-      REAL   fEnergyInHotWaterPortion
-      REAL   fEnergyInColdWaterPortion
       REAL   fEnergyInTank
       REAL   fHotWaterVolumeRemaining
       

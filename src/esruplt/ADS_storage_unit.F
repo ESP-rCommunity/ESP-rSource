@@ -686,8 +686,7 @@ C-------------------------------------------------------------------------------
        REAL       fTemp_con1a, fTemp_con1b, fTemp_con3a    !-temperatures of sending connections
        REAL       fTemp_con3b, fTemp_con3b_K
        REAL       fTemp_con1a_present, fTemp_con1b_present !-present values of temperature for connections to node 1
-       REAL       fTemp_con3a_present                      !-present values of temperature for connection from
-                                                           !-auxiliary water tank to node 3
+
        REAL       fTamb_present, fTamb_future              !-containment temperatures
        REAL       fMdot_con1a_future, fMdot_con1b_future   !-future value of mass flow rates
        REAL       fMdot_con3a                              !-mass flow rates
@@ -701,14 +700,12 @@ C-------------------------------------------------------------------------------
        REAL       fTemp_node2_K, fTemp_node3_K  !-temperature values of nodes 2 and 3, respectively, K
        REAL       R_gas                    !-universal gas constant             
        PARAMETER ( R_gas = 8.3144 )        !-(kJ/kmolK)
-       REAL       fPressure_Adsorber                       !-pressure in adsorber (kPa)
 
        REAL       fH2O_molW       !-molecular weight of water (kg/kmol)
        PARAMETER ( fH2O_molW = 18.0155 )
        REAL       H20LiquidCpCel  !-function to obtain Cp of water; Cp=f(P,T)
        REAL       SHTFLD          !-function to calculate Cp of water; Cp=f(T)
-       REAL       fH2OVapourDensity, fVapPressureAdsorber, fTemp_node1_K
-       REAL       H20GasDensity   !-function to calculate density of water vapour f(P,T)
+       REAL       fVapPressureAdsorber, fTemp_node1_K
        REAL       fdX_dT          !-partial pressure of X with respect to temperature T
                                   !-at constant pressure P.
        REAL       Tplus, Tminus, X_Tplus, X_Tminus

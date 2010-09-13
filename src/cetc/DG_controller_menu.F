@@ -40,12 +40,8 @@ C.....Array containing user-defined DG controller configuration
 
 C.....Temporary variables for holding miscellanous user
 C.....responsed
-      logical bDG_misc_boolean
       integer iDG_misc_integer
       real    fDG_misc_float
-
-C.....#number of data in controller configuration
-      integer iDG_Number_of_data
 
 C.....Flags for hot/cold tank controls
       logical bDG_HOT_control, bDG_COLD_control
@@ -65,7 +61,6 @@ C.....Hot tank control data
 C.....Colt tank control data
       integer iDG_CWT_index, iDG_CWT_node
       integer iDG_CS_start, iDG_CS_end
-      real    fDG_CS_constant
       integer iDG_CS_strategy
       real    fDG_CWT_T_su,  fDG_CWT_T_sl, fDG_CWT_Target
       real    fDG_CWT_Kp,  fDG_CWT_Ki,  fDG_CWT_Kd 

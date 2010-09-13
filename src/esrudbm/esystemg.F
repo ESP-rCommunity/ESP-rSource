@@ -528,8 +528,9 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
+      REAL :: gva
       INTEGER :: iier,indu,igrdp,iflag,ierv,icon,icomp,icc,ibrowse,ia,i
-      INTEGER :: gva,itwpr,itrunc,items,istat,iss,iset_start,nd,louts
+      INTEGER :: itwpr,itrunc,items,istat,iss,iset_start,nd,louts
       INTEGER :: is,irvc,irva,irec,ircc,ipos,ios,inod,j,k,iuc,iuf
       INTEGER :: itvc,iunit1,iv,iva,kv,lc,lcfgl,lcfgr,itrc,iunit,m,ncn
       

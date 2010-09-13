@@ -58,7 +58,7 @@ C Generic db commons:
       character ittag*12,itmenu*32,itdate*24,itdoc*248
       character dbnote*72,outs*124,outs248*248,hold*60
       character ituntstr*42,itsrcstr*1,itcnfstr*42
-      character ustr*12,unote*72,DayT*8,KEY*1,Patr*8,head*38
+      character DayT*8,KEY*1,Patr*8,head*38
       character snote*248
       logical primod,OK,dok,showtags
 
