@@ -36,7 +36,7 @@ C          file is present, continue to the next step of .hvac system
 C          selection and definition.
 C HVAC_type:        Displays the idealized hvac types for user selection.
 C FURNOPT:          User interface and variable definition for the furnace choice in the idealized HVAC system
-C BASEBOARD:        User interface and variable definition for the basboard choice in the idealized HVAC system
+C BASEBOARD_INPUTS: User interface and variable definition for the basboard choice in the idealized HVAC system
 C HPHOT:            User interface and variable definition for the ASHP choice in the idealized HVAC system
 C HPCOLD:           User interface and variable definition for the ASHP with cooling choice in the idealized HVAC system
 C FURNACE_WRITE:    Writes variables associated with furnace system directly to .hvac file.
@@ -79,6 +79,7 @@ C -------------------------------HVACGIN-------------------------------
       COMMON/pophelp/h(60)
       CHARACTER h*72                   ! help arrays
       COMMON/rpath/path
+      
       CHARACTER path*72                !path
       CHARACTER LCFGF*72
       CHARACTER cfgroot*24
@@ -99,6 +100,7 @@ C -------------------------------HVACGIN-------------------------------
       INTEGER k                        ! Variable used as a counter
       INTEGER heatok                   ! Flag for use of a heating system with a cooling HP 
       INTEGER hvac_typ                 ! hvac system type
+      INTEGER ihvacflag                ! flags whether an hvac file exists
       INTEGER ival                     ! Passed value from subroutine
       INTEGER hvacunit                 ! file number for hvac file
       INTEGER priority                 ! system priority, either main(1) or backup (2) in a specific zone
@@ -436,7 +438,7 @@ C not sure if we need to change this to give the choice of ASHP or GSHP
 C Call for Baseboard
           elseif(hvac_typ.eq.2)then
             priority = 1
-            CALL BASEBOARD(priority,i,exitflag)
+            CALL BASEBOARD_INPUTS(priority,i,exitflag)
             CALL USRMSG(' ',' ','-') ! Clear Screen
             i = num_hvac_sys
 		
@@ -735,17 +737,14 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
 
 
       common/pophelp/h(60)
-
-C NEED TO INITIALIZE SOME SORT OF IVAL VALUE, OF SIZE OF OPTIONS (here there are
-C 14 options to choose from)
-      integer ncomp,ncon
-      common/C1/NCOMP,NCON
+      common/C1/NCOMP, NCON
       
-      INTEGER   ipck              ! Integer returned from epicks menu
+      INTEGER ipck                ! Integer returned from epicks menu
       INTEGER nfurntyp            ! Number of furnace options
       INTEGER nfueltyp            ! Number of fuel options
       INTEGER i                   ! identifier for current system number
       INTEGER k                   ! Counter used for zone association
+      INTEGER NCOMP, NCON         ! Number of zones in system
       INTEGER sys_zone_number(ncomp)   !Zone number of of a zone associated with the system
       INTEGER zonenum(ncomp)      !Array of all zone numbers associated with the system 
       INTEGER priority            !Passed integer. 1 if primary, 2 if backup
@@ -1022,7 +1021,7 @@ C of loop - can be added later when fractions matter
         h(1) = 'Enter the draft fan power of the system in Watts.'
         h(2) = 'If unknown, a selection of 75W is suggested.'
             
-        CALL EASKR(draft_fan_power(i), ' ', 'Draft fan power (W)', -1,
+        CALL EASKR(draft_fan_power(i), ' ', 'Draft fan power (W)', -1.,
      &             'F',200.,'F', 75.0,
      &             'Invalid input, please see help file',ier, 2)
         if(ier.eq.-3)then
@@ -1052,7 +1051,7 @@ C of loop - can be added later when fractions matter
       
       CALL EASKI(iduct_sys_flag(i),'Specify if there is a duct system',
      &           '1 yes, 0 no (default)',0,'F',1,'F',0,
-     &           'value must be 1 or 2',ier,3)
+     &           'value must be 0 or 1',ier,3)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1077,7 +1076,7 @@ C variables are saved in the common hvac variables.  The user must actually save
 C the hvac file for changes to be recorded.
 C ---------------------------------------------------------------------
 
-      SUBROUTINE BASEBOARD(priority,i,exit)
+      SUBROUTINE BASEBOARD_INPUTS(priority,i,exit)
 
 #include "building.h"
 #include "geometry.h"
@@ -1086,18 +1085,19 @@ C ---------------------------------------------------------------------
 #include "furnace_common.h"
 
       common/pophelp/h(60)
-      common/C1/NCOMP
+      common/C1/NCOMP, NCON
 
 C	Common it up here.
 			
       INTEGER ier                    ! Returned if error/nothing selected
       INTEGER priority               ! Passed as primary/backup
       INTEGER i                      ! Identifier for system number
-      INTEGER sys_zone_number(NCOMP) ! Zone number of of a zone associated with the system
+      INTEGER NCOMP, NCON            ! Number of zones in system
+      INTEGER sys_zone_number(NCOMP) ! Zone numbers of zones associated with the system
       INTEGER K                      ! Counter used for zone association
       INTEGER nnm                    ! Counter used for zone association
       character h*72                 ! help
-      INTEGER zonenum(ncom  p)       ! Array of zone numbers associated with the system
+      INTEGER zonenum(ncomp)         ! Array of zone numbers associated with the system
       REAL fraction                  ! Fraction of power assigned to zones so far
       REAL ifraction                 ! 1-fraction, fraction which remains to be assigned
       CHARACTER*50 zoneopt(ncomp+1)  ! Array of zone names associated with system
@@ -1261,7 +1261,7 @@ C of loop - can be added later when fractions matter
         h(3) = 'If the fan is in continuous mode, fan power need to'
         h(4) = 'be included as internal gain in the ESP-r opr file.'
       
-        CALL EASKR(fan_power(i), ' ', 'Fan power (W)',-1,'F',1.E4,'F',
+        CALL EASKR(fan_power(i), ' ', 'Fan power (W)',-1.,'F',1.E4,'F',
      &             100.0,'Invalid input, please see help file',ier, 4)
         if(ier.eq.-3)then
           exit=.true.
@@ -1307,7 +1307,7 @@ C ---------------------------------------------------------------------
 
 
       common/pophelp/h(60)
-      common/C1/NCOMP
+      common/C1/NCOMP, NCON
 
 C	Common it up here.
 			
@@ -1316,6 +1316,7 @@ C	Common it up here.
       INTEGER I                       ! Identifier for current system
       INTEGER priority                ! Passed priority of system, backup or primary
       INTEGER fbackup                 ! Passed whether system has a furnace backup
+      INTEGER NCOMP, NCON             ! Number of zones in system
       INTEGER sys_zone_number(ncomp)  ! Array of zone numbers associated with the system
       REAL fraction                   ! Fraction of power assigned to zones so far
       REAL ifraction                  ! 1-fraction, fraction which remains to be assigned
@@ -1456,7 +1457,7 @@ C Set heat pump capacity
       h(1) = 'Enter the steady state capacity of the system in Watts.'
       
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
-     &           '(W):', 0., 'F', 1.E6, 'F', 100,
+     &           '(W):', 0., 'F', 1.E6, 'F', 100.,
      &           'Enter a capacity greater than 0',ier, 1)
       if(ier.eq.-3)then
         exit=.true.
@@ -1468,7 +1469,7 @@ C Set heat pump COP
       h(1) = 'Enter the heat pump COP'
       h(2) = 'Max = 50'
         
-      CALL EASKR(ss_cop(i),' ','Heat pump COP', 0, 'F', 1000., 'F', 
+      CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F', 
      &           0., 'COP', ier, 2)
       if(ier.eq.-3)then
         exit=.true.
@@ -1481,7 +1482,7 @@ C Set heat pump flow rate
       h(2) = 'This is the flow rate that occurs during the actual'
       h(3) = 'operation of the heat pump system.'
        
-      CALL EASKR(flow_rate(i),' ','Flow Rate',-1, 'F', 10.0, 'F', 0., 
+      CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0., 
      &           'Flow rate.', ier, 3)
       if(ier.eq.-3)then
         exit=.true.
@@ -1493,7 +1494,7 @@ C Set flow rate at rating conditions.
       h(1) = 'If flow rate set < 0, value is set internally'
        
       CALL EASKR(flow_rate_r(i),' ',
-     &           'Flow Rate at rating conditions',-1,'F', 10.0, 'F', 0., 
+     &           'Flow Rate at rating conditions',-1.,'F', 10.0,'F',0.,
      &           'Rated Flow rate.', ier, 1)
       if(ier.eq.-3)then
         exit=.true.
@@ -1540,7 +1541,7 @@ C set circulation fan power
         h(4) = 'be included as internal gain in the ESP-r opr file.'
        
         CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)', 
-     &             -1, 'F', 1.E4,'F', 100,'Circulation Fan',
+     &             -1., 'F', 1.E4,'F', 100.,'Circulation Fan',
      &             ier, 4)
         if(ier.eq.-3)then
           exit=.true.
@@ -1560,7 +1561,7 @@ C set outdoor  fan power
         h(2) = 'pump. Not used for ashp in heating but value needed.'
        
         CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)', 
-     &             -1, 'F', 1.E4,'F', 100, 'Outdoor fan power',
+     &             -1., 'F', 1.E4,'F', 100., 'Outdoor fan power',
      &             ier, 2)
         if(ier.eq.-3)then
           exit=.true.
@@ -1574,7 +1575,7 @@ C set auto mode  fan power
        
         CALL EASKR(fan_power_auto(i),' ',
      &             'Fan power associated with auto mode',
-     &             -1, 'F', 1.E4,'F',100, 'Auto Fan Power',
+     &             -1., 'F', 1.E4,'F',100., 'Auto Fan Power',
      &             ier, 2)
         if(ier.eq.-3)then
           exit=.true.
@@ -1607,7 +1608,7 @@ C set circulation mode  fan power during rating test
       
         CALL EASKR(fan_power_r(i),' ',
      &             'circulation fan power during rating test',
-     &             -1, 'F', 1.E4,'F',100,
+     &             -1., 'F', 1.E4,'F',100.,
      &             'Invalid input, please see help file',ier, 2)
         if(ier.eq.-3)then
           exit=.true.
@@ -1641,8 +1642,8 @@ C Temperature control
 C cutoff temperature
       h(1) = 'Cutoff Temperature in C'
       
-      CALL EASKR(cutoff_temp(i),' ','Cutoff T in C',-1, 'F', 50.,'F',
-     &           50, 'Cutoff Temperature',ier, 1)
+      CALL EASKR(cutoff_temp(i),' ','Cutoff T in C',-1., 'F', 50.,'F',
+     &           50., 'Cutoff Temperature',ier, 1)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1692,7 +1693,7 @@ C ---------------------------------------------------------------------
 C    fbackup = 1 if there is a backup, 0 if not
 
       common/pophelp/h(60)
-      common/C1/NCOMP
+      common/C1/NCOMP, NCON
 
 C	Common it up here.
 		
@@ -1701,6 +1702,7 @@ C	Common it up here.
       INTEGER I                      ! Identifier for current system
       INTEGER priority               ! Passed priority of system, backup or primary
       INTEGER fbackup                ! Passed whether system has a furnace backup
+      INTEGER NCOMP, NCON            ! Number of zones in system
       INTEGER sys_zone_number(ncomp) ! Array of zone numbers associated with the system
       REAL fraction                  ! Fraction of power assigned to zones so far
       REAL ifraction                 ! 1-fraction, fraction which remains to be assigned
@@ -1862,8 +1864,8 @@ C Set heat pump COP
       h(1) = 'Enter the heat pump COP'
       h(2) = 'Max = 50'
         
-      CALL EASKR(ss_cop(i),' ','Heat pump COP', 0, 'F', 1000., 'F', 
-     &           0, 'COP', ier, 2)
+      CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F', 
+     &           0., 'COP', ier, 2)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1875,7 +1877,7 @@ C Set heat pump flow rate
       h(2) = 'This is the flow rate that occurs during the actual'
       h(3) = 'operation of the heat pump system.'
        
-      CALL EASKR(flow_rate(i),' ','Flow Rate',-1, 'F', 10.0, 'F', 0, 
+      CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0., 
      &           'Flow rate.', ier, 3)
       if(ier.eq.-3)then
         exit=.true.
@@ -1887,7 +1889,7 @@ C Set flow rate at rating conditions.
       h(1) = 'If flow rate set < 0, value is set internally'
        
       CALL EASKR(flow_rate_r(i),' ',
-     &           'Flow Rate at rating conditions',-1,'F', 10.0, 'F', 0, 
+     &           'Flow Rate at rating conditions',-1.,'F', 10.0, 'F',0.,
      &           'Rated Flow rate.', ier, 1)
       if(ier.eq.-3)then
         exit=.true.
@@ -1937,7 +1939,7 @@ C set circulation fan power
         h(4) = 'be included as internal gain in the ESP-r opr file.'
        
         CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)', 
-     &             -1, 'F', 1.E4,'F', 100,'Circulation Fan',
+     &             -1., 'F', 1.E4,'F', 100.,'Circulation Fan',
      &             ier, 4)
         if(ier.eq.-3)then
           exit=.true.
@@ -1955,7 +1957,7 @@ C set outdoor  fan power
         h(2) = 'pump. Not used for ashp in heating but value needed.'
        
         CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)', 
-     &             -1, 'F', 1.E4,'F', 100, 'Outdoor fan power',
+     &             -1., 'F', 1.E4,'F', 100., 'Outdoor fan power',
      &             ier, 2)
         if(ier.eq.-3)then
           exit=.true.
@@ -1969,7 +1971,7 @@ C set auto mode  fan power
        
         CALL EASKR(fan_power_auto(i),' ',
      &             'Fan power associated with auto mode',
-     &             -1,'F',1.E4,'F',100,'Auto Fan Power',
+     &             -1.,'F',1.E4,'F',100.,'Auto Fan Power',
      &             ier, 2)
         if(ier.eq.-3)then
           exit=.true.
@@ -2001,7 +2003,7 @@ C set circulation mode  fan power during rating test
       
         CALL EASKR(fan_power_r(i),' ',
      &             'circulation fan power during rating test',
-     &             -1,'F',1.E4,'F',100,
+     &             -1.,'F',1.E4,'F',100.,
      &             'Invalid input, please see help file',ier,3)
         if(ier.eq.-3)then
           exit=.true.
@@ -2022,7 +2024,7 @@ C sensible heat ratio
       h(2) = 'and 19.4 Twb oC).'
       
       CALL EASKR(shrr(i),' ','Sensible Heat Ratio',
-     &           0, 'F', 1.0,'F', 100, 'Heat Ratio',ier, 2)
+     &           0., 'F', 1.0,'F', 100., 'Heat Ratio',ier, 2)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2117,7 +2119,7 @@ C Outdoor air flow rate for m for day type n
        
             CALL EASKR(day_period_out_air_flow(i,period_counter),
      &                 'Outdoor air flow rate for period', periodout,
-     &                 0,'F',10.,'F',1,'Periods',ier,2)
+     &                 0.,'F',10.,'F',1.,'Periods',ier,2)
             if(ier.eq.-3)then
               exit=.true.
               CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2165,7 +2167,7 @@ C Economizer control type
        
         CALL EASKR(economizer_min_out_air_flow(i),
      &             'Economizer minimum outdoor air flow',
-     &             'm3/s',0,'F',10.0,'F',100.0,'Min. Air flow.',ier,1)
+     &             'm3/s',0.,'F',10.0,'F',100.0,'Min. Air flow.',ier,1)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2178,7 +2180,7 @@ C Economizer control type
        
         CALL EASKR(economizer_ind_temp_setpoint(i),
      &             'Economizer indoor space set point',
-     &             'C',0,'F',100.0,'F',22.0,'Indoor Set Point',ier,3)
+     &             'C',0.,'F',100.0,'F',22.0,'Indoor Set Point',ier,3)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2193,7 +2195,7 @@ C Economizer control type
        
           CALL EASKR(economizer_out_temp_limitcon(i),
      &               'Economizer outdoor temperature limit',
-     &               'C',0,'F',100.0,'F',25.0,'Temp limit',ier,3)
+     &               'C',0.,'F',100.0,'F',25.0,'Temp limit',ier,3)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2207,7 +2209,7 @@ C Economizer control type
        
           CALL EASKR(economizer_out_enth_limitcon(i),
      &               'Economizer outdoor enthalpy limit control',
-     &               'J/kg',0,'F',100.0,'F',50.0,'enthalpy limit',ier,3)
+     &              'J/kg',0.,'F',100.0,'F',50.0,'enthalpy limit',ier,3)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2431,6 +2433,7 @@ C ---------------------------------------------------------------------
       CHARACTER h*72                              ! help array
       COMMON/hvacinfo/ihvacflag,hvacfile
       
+      CHARACTER*72 hvacfile                       ! name of hvacfile
       CHARACTER*10 hvacnames(9)                   ! names of hvac systems in order corresponding to global variables
       CHARACTER*32 hvac_summary(10)               ! array of items in the hvac summary menu
       INTEGER i                                   ! counter for the do loop that sets up the menu based on the number of systems present
@@ -2438,6 +2441,8 @@ C ---------------------------------------------------------------------
       INTEGER edit                                ! integer returned to hvacgin of the system number that should be edited, 0 if none
       INTEGER nhvac_summary                       ! number of items in the hvac summary menu
       INTEGER system_number                       ! system number chosen from main menu
+      INTEGER ihvacflag                           ! flags whether an hvac file exists
+      
       LOGICAL add,save_flag                       ! logical returned to main HVAGIN as true if user chooses to save or add
       LOGICAL editflag                            ! logical returned from HVAC_SYS_SUMMARY as true if user chooses to edit a system
       LOGICAL exit_flag                           ! logical returned to main HVAGIN as true if user chooses to exit
