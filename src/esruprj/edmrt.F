@@ -65,6 +65,8 @@ C will have been defined prior to calling edmrt.
       character hvacpth*24
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -625,6 +627,8 @@ C EDMRTS: Edit details of a MRT sensor block.
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
+      integer NITMS,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -684,7 +688,8 @@ C Help text for this menu.
       H(7)='from the X axis.'
 
 C Now display the menu.
-      CALL EMENU(head,VERT,11,IVERT)
+      NITMS=11
+      CALL EMENU(head,VERT,NITMS,IVERT)
       IF(IVERT.EQ.1)THEN
         H(1)='The origin of the sensor is in site coords. '
         WRITE(MSG,'(a,I3)')'For sensor ',ICUB

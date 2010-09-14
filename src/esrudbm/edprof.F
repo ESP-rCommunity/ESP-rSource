@@ -61,6 +61,7 @@ C Generic db commons:
       character DayT*8,KEY*1,Patr*8,head*38
       character snote*248
       logical primod,OK,dok,showtags
+      integer MPLEM,IW,IWR ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.

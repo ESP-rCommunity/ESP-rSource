@@ -166,6 +166,7 @@ C *********************************************************************
       CHARACTER*72 AFLNDC,BFLNDC,AFLTAQ,BFLTAQ
       CHARACTER H*72,ITEM(11)*41,MSG*72,FLTMP*65
       integer ier
+      integer MITEM,INO ! max items and current menu item
 
       IF(IZ.EQ.-1)THEN
         BFLCVS=LGDCVS

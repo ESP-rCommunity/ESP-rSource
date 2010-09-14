@@ -41,6 +41,7 @@ C          interaction is begun.
       CHARACTER H*72,VERT*60,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
      &FTYPN*6
       LOGICAL SELECT
+      integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -232,6 +233,7 @@ C interaction is begun.
       CHARACTER H*72,VERT*75,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 

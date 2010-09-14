@@ -40,6 +40,8 @@ C facilities are 'hidden' in the current version.
       CHARACTER*23 ITEM(12)
       character doit*124,tmode*8
       character H*72,xfile*144,tg*1,delim*1
+      integer NITMS,INO ! max items and current menu item
+
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else

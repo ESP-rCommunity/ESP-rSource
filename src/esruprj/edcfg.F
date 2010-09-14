@@ -183,6 +183,7 @@ C Uncertainty.
       REAL :: szcog,szhigh
 C Function definition      
       INTEGER :: igraphiclib
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -1423,6 +1424,8 @@ C Flag noting whether casual gain periods are currently sorted.
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
       integer IRT,irop  ! for radio buttons
+      integer nitems,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild

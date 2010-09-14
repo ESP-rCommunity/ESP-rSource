@@ -47,6 +47,7 @@ C ******* Sky calculations. *******
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
+      integer NITEMS,INO ! max items and current menu item
 
       DIMENSION ITEM(14)
 
@@ -322,6 +323,7 @@ C #include "geometry.h"
       character runpath*72,pathtype*24
       character item*32,h*72,ACT*1,GTGEOM*72
       integer lnrp  ! length of run path
+      integer NITEMS,INO ! max items and current menu item
 
       ITA1 = IFIL+6
       outdone=.false.

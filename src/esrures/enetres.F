@@ -56,6 +56,7 @@ C Electrical network results library details.
 
       CHARACTER H*72,LTMP*72,ELRFLNAM*72,DFILE*72,ITEM*42,MMODE*1
       LOGICAL OK,dok
+      integer NITMS,INO ! max items and current menu item
 
 C Open the electrical results library if necessary
       IER=0
@@ -482,6 +483,7 @@ C Type casting (all varaiables and arrays cast explicitly)
       CHARACTER ITEM*24,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
      &TG*1,XFILE*144,H*72,HEADER*32,VALUES*20
       integer IWM  ! for radio button
+      integer NITEMS,INO ! max items and current menu item
 
 C Firstly clear all existing selections and initialise variables.
       CALL EDISP (IUOUT,' ')

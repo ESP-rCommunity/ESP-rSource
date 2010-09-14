@@ -329,6 +329,7 @@ C MCFDM - define the parameters for the visualization of results.
       CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24
       integer IWM,IWE  ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
 C Set vector colour option to velocity and temperature only.
       IMOPTS=0

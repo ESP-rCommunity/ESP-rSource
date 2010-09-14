@@ -57,6 +57,7 @@ C ******* Setup of image quality and calculation options.
       character hvacpth*24
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      integer NITEMS,INO  ! max items and current menu item
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
 

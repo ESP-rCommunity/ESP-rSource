@@ -962,6 +962,7 @@ C Remember width of file/folder names passed back from getfilelist.
       character hvacpth*24
       character subpath*72,action*3
       integer lnod   ! length for odir
+      integer nitems,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       changedit=.false.
@@ -1537,6 +1538,7 @@ C CFD
       character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       logical modcfg,XST,unixok
+      integer MITEM,INO ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe

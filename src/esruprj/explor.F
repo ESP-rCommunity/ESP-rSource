@@ -91,6 +91,8 @@ C IALT is the number of text alternatives available for a text field.
       character*35 ITEMS(9)      
       CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
       CHARACTER OUTSTR*124
+      integer IPDL,INODA,nitms,INO  ! max items and current menu item
+
 #ifdef OSI
       integer impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
 #else
@@ -907,6 +909,7 @@ C IPS is the timestep to insert data at.
       CHARACTER SALT*16
       CHARACTER DFILE*72,tfile*72,msgl2*48
       logical warncas,XST
+      integer IMPTL,INODA ! max items and current menu item
 
 C Clear column association.
       DO 27 I=1,MBITS
@@ -1270,6 +1273,7 @@ C from a file and to which static value it matches.
       CHARACTER*72 LIMP,LEXP
       CHARACTER DFILE*72,tfile*72,msgl2*48
       logical XST
+      integer IMPTL,INODA ! max items and current menu item
 
 C Static item association.
       DO 27 I=1,MBITS

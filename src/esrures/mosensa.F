@@ -55,6 +55,7 @@ C can proceed.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER ITEM(10)*25,H*72,outs*124
+      integer NITMS,INO ! max items and current menu item
 
 C Check that the result library contains the results from a 
 C uncertainty analysis.
@@ -1252,6 +1253,7 @@ C WHSET displays currently chosen sets and lets user toggle selections.
 
       CHARACTER VERT(35)*65, H*72, RSNAME*40, KEY*1
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
 C Display all sets in a menu
 C Initialise surface menu variables based on window size. 

@@ -977,6 +977,7 @@ C  ***********************************************************************
       CHARACTER H*72,ELEND*5,VERT*30,HEAD*30,SLOUT*22,EVLABS*16,
      &EVLABU*4,KEY*1
       DIMENSION VERT(MERAWD)
+      integer MVERT,IVERT ! max items and current menu item
 
 C Ensure that the selected data information is avalaible
       II=1

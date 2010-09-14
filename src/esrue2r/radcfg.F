@@ -304,6 +304,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       LOGICAL SELECT,delzone,cpyzone,modscene
       integer IW  ! for radio button
+      integer MVERT,IVERT  ! max items and current menu item
 
  1    IER=0
       SELECT=.false.

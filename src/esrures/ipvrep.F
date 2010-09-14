@@ -104,6 +104,7 @@ C Pre calculated data (filtered).
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Remember the initial periods.
       jiod1=IOD1

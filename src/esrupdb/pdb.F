@@ -79,6 +79,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialise output device, assume minimal trace, and a smallish
 C display.  If passed zero size and offsets use default, if size

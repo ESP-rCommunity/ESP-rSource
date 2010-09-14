@@ -113,6 +113,8 @@ C Name of current application
       LOGICAL areaSSO
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NITMS,INO,INOt,INO1,INO2  ! max items and current menu item
+
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else

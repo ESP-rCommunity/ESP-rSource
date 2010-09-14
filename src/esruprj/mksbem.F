@@ -681,6 +681,7 @@ C For tdf to call arlist:
       integer IPASS !to ask for a password
       integer ier,itrc,IAPROB,ISTAT,iw
       integer iuact  ! return state from sbmedit call
+      integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
 
 C Change cfgroot to have only 20 characters instead of the usual 24 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
@@ -2199,13 +2200,14 @@ C EDSBMSYS edits the system definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
 
-      integer IHO,JC,IY,IIN  ! positions in menu
-      integer ICMSYS,NITEMH,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
+      integer JC,IY,IIN  ! positions in menu
+      integer ICMSYS,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
       dimension ITEMH(MCOM+4),KSYS(MHT),ITHND(MPT),PRSSN(MPT)
       character ITEMH*70,D64*64,PRSSN*60
       character outs*124
       integer INatMech !flag for easkab to choose between natural or
                        !mechanical extract/supply ventilation system
+      integer nitEmH,IHO ! max items and current menu item
 
 C Edit HVAC and system information after a display of current contents.
       call lstncm('s',iuout)
@@ -2656,7 +2658,7 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
       character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,D20*20,outs*124
-      integer INO
+      integer nitms,INO ! max items and current menu item
 
 C Enter building, owner and verifier information
   15  CALL EDISP(IUOUT,
@@ -2949,7 +2951,7 @@ C EDSBMASSOR edits the assessor contact definition within the UK NCM file.
       character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,outs*124
-      integer INO
+      integer nitms,INO ! max items and current menu item
 
 C List current state of the energy assessor data.
       call lstncm('e',iuout)
@@ -3257,7 +3259,7 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       dimension IVALSS(29)       ! array to get epicks answer from
       dimension iedit(MCOM) !to use for menu and saving of air leakage (ach per zone)
       integer iedit
-      integer INO
+      integer nitms,INO ! max items and current menu item
       logical NEAR
       real Air_infilt
 
@@ -13358,10 +13360,11 @@ C information)
       logical menulogical !Logical to use for a menu in order to avoid the GOTO statements
       logical pickedsomething ! set to true if one of the options selected
       logical close,closea  ! to test for close to zero
-      integer nitms,i_default,i_define,INO,IER
+      integer i_default,i_define,IER
       dimension items(5)
       character head*30,items*50
       integer IansLeakage
+      integer nitms,ino ! max items and current menu item
 
       pickedsomething=.false.
       menulogical=.false.

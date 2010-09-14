@@ -54,6 +54,7 @@ c set saved in the solutions library.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
 
@@ -95,7 +96,8 @@ c be chosen after a simulation control function has been defined.
       logical PBYFIL
 
       CHARACTER*42 ITEM(19)
-      CHARACTER  outs*124,h*72
+      CHARACTER  outs*124
+      integer NITMS,INO ! max items and current menu item
 
       ITEM(1) ='1: Define results library'
       ITEM(2) ='2: Specify simulation period'
@@ -646,12 +648,13 @@ c ICNT    - counts trace output for page numbering purposes
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      character H*72
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       CHARACTER*36 ITEM(14)
-      character  H*72
+      integer NITEMS,INO  ! max items and current menu item
 
       ITEM(1) ='1 Configuration file'
       ITEM(2) ='   ......'

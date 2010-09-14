@@ -33,6 +33,8 @@ C Redirected text/graphics parameters.
       character xfile*144,tg*1,delim*1
       logical close,OK
       integer IW  ! for radio button
+      integer NITMS,INO! max items and current menu item
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
@@ -117,7 +119,8 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('vew ',1)
 
 C Main MENU.
-21    CALL EMENU('viewer',M,23,INO)
+21    NITMS=23
+      CALL EMENU('viewer',M,NITMS,INO)
       IF(INO.LE.0 .OR. INO.GT.23)then
         INO=-1
         GOTO 21

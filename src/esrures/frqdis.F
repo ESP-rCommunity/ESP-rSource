@@ -72,6 +72,7 @@ C Selection menu for graphs and/or tables.
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
+      integer NITMS,IG ! max items and current menu item
 
 C If output to file alter the edisp unit number.
       itru = icout

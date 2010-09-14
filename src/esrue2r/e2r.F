@@ -149,6 +149,7 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero

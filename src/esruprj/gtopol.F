@@ -58,6 +58,8 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+      integer nitms,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -418,6 +420,8 @@ C IER=0 OK, IER=1 problem.
       CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
       integer IRT  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy
 #else
@@ -1384,6 +1388,8 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -1896,6 +1902,7 @@ C show attributes in list.
       CHARACTER H*72,VERT*20,VERTS*33,KEY*1,MOD*1,title*29
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
       IER=0
       write(title,'(2a)') 'Surface attributes in ',
@@ -2484,6 +2491,8 @@ C IER=1 problem.
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       integer IRT   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iupdown,isym,iix,iiy    ! passed to etplot
 #else

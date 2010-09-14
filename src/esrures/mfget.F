@@ -164,6 +164,7 @@ C air flow reporting.
       integer YAXSET, ADDLIN
       integer lcname  ! length of contaminate string
       integer IOT,IWM  ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSI
@@ -2458,6 +2459,7 @@ C glmflabel char*32 is longer label for flow item
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       integer ORDER,OGET
       dimension INCGET(MFRS),ORDER(MFRS),OGET(MFRS)
+      integer MVERT,IVERT ! max items and current menu item
 
 C Sort ORDER of IMFGETNO array for display purposes.
       do 100 I=1,NMFGET

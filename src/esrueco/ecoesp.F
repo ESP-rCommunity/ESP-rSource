@@ -58,6 +58,7 @@ C Parameters
       CHARACTER ACTION*1,CLSSEL*36,lltmp*144,CLSDES*30,H*72
       CHARACTER KEY*1,PDBM*64,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
+      integer NCO,NITMS,ICO,INO,IW ! max items and current menu item
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -877,6 +878,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
       logical changedit
+      integer MVERT,IVERT ! max items and current menu item
 
       zbzero=.FALSE.
       changedit=.false.
@@ -1550,6 +1552,7 @@ C << Why is SDATA used? >>
       CHARACTER*55 LabelB, LabelA, LabelC, LabelD
       CHARACTER*12 Labelout(4+MIMP),LabelTmp(4+MIMP)
       LOGICAL Exist, dupedges,context
+      integer NITEMS,INO ! max items and current menu item
 
       REAL HeightCo,WidthCo, Perimeter, Area, WeigtMat
       REAL TotDumpM, TotBurnM, TotRecyM
@@ -2585,6 +2588,7 @@ C phylosophy as LCACalc
       REAL LayerTot(MIMP),CompoTot(MIMP),ZoneTot(MIMP),StageTot(MIMP),
      &     WholeTot(MIMP),ProjTot(MIMP)
       INTEGER NbEIALay, ICalType
+      integer NITEMS,INO ! max items and current menu item
  
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)

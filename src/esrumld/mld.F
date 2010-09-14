@@ -68,6 +68,7 @@ C Name of current application
       logical unixok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer nitem,ino ! max items and current menu item
 
 C Initialize global common data.
       call ezero

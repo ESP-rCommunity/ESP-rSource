@@ -330,6 +330,7 @@ C Definitions of most variables is given in ctread.F
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,BROWSE
 
       integer NTSTEPCT   ! for local editing.
+      integer NITEMS,NITEML,INO,INNO,ISO ! max items and current menu item
 
 C set contaminant file
       IUNIT=IFIL+72

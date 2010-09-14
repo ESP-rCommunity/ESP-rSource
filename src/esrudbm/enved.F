@@ -59,6 +59,7 @@ C Generic db commons:
       character lasm2*32
       character snote*248
       logical primod
+      integer MPLEM,IW ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -392,6 +393,7 @@ C Generic db commons:
       character selmenu*32,trntag*12,trnmenu*32,kact*1
       character snote*248
       logical primod
+      integer MPLEM,IW ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -624,6 +626,7 @@ C Generic db commons:
       character rnmenu*32,inmenu*32,dnmenu*32
       character snote*248
       logical primod
+      integer MPLEM,IW ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -963,6 +966,7 @@ C Generic db commons:
       character itdat*248,itrep*248,kact*1
       character snote*248
       logical primod,showtags
+      integer MPLEM,IW  ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.

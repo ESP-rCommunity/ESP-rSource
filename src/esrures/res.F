@@ -158,6 +158,7 @@ C IEEE callback (Solaris)
       character longtmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NITMS,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero

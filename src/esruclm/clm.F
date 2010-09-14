@@ -101,6 +101,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ic,iwm  ! for radio buttons
+      integer NITEM,INO  ! max items and current menu item
 
 C Initial assumptions. Pass module name to C code structure.
       call ezero
@@ -1165,6 +1166,7 @@ C SETUP provides the menus and control logic for the preferences menu.
 
       DIMENSION SETUPM(6)
       CHARACTER SETUPM*36,H*72
+      integer nitms,ISETUP  ! max items and current menu item
 
 C Present the preferences menu. ISETUP is the menu index returned.
     2 IER=0
@@ -1191,8 +1193,8 @@ C Display of time of day.
 
       SETUPM(4)=  '? Help                              '
       SETUPM(5)=  '- Exit to main menu                 '
-
-      CALL EMENU('clm preferences',SETUPM,5,ISETUP)
+      nitms=5
+      CALL EMENU('clm preferences',SETUPM,nitms,ISETUP)
 
       IF(ISETUP.EQ.1)THEN
 

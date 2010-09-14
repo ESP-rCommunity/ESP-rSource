@@ -60,6 +60,8 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
+      integer NITMS,INO1 ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
@@ -148,8 +150,8 @@ C Help text for this menu.
       H(55)='This export facility supports testing of this file'
       H(56)='format and data structures.'
       H(57)=' '
- 
-      CALL EMENU('Export Model',ITEMS1,12,INO1)
+      NITMS=12
+      CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
 
@@ -893,6 +895,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character dq*1,fs*1,thecfgis*72
       character useraction*8
       logical XST,unixok
+      integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
