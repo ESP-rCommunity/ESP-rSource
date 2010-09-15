@@ -30,7 +30,7 @@ C **********************************************************************
 
 #include "building.h"
 C Declare calling parameters 
-      INTEGER, INTENT(IN)  :: ICOMP		
+      INTEGER, INTENT(IN)  :: ICOMP     
       INTEGER, INTENT(INOUT)  :: IER
       
       COMMON/pophelp/h(60)
@@ -91,12 +91,12 @@ C Declares initial default values for basesimp inputs.
       bsmtLength = 12.0         ! meter
       bsmtWidth = 8.0           ! meter
       Insul_Overlap = 0.        ! meter
-      Insul_rsi = 2.72          ! rsi
+      Insul_rsi = 2.72          ! m2K/W
       Soil_Cond = 0.85          ! W/mK
       Water_Table = 8.          ! meter
       TGavg = 0.1               ! degC
-      TGamp = 0.1               ! unitless
-      TGps = 0.1                ! unitless
+      TGamp = 0.1               ! degC
+      TGps = 0.1                ! radians 
 
 C FOLDER CHECK
 C Determines whether to use / or \ depending on system.
@@ -215,23 +215,23 @@ C      H(4)= 'review and/or make changes to the existing inputs  '
           END IF
 
 C BASESIMP file inputs
-      min_bsmtDepth = 0.                      ! meter
-      max_bsmtDepth = 99.                     ! meter
+      min_bsmtDepth = 0.05                    ! meter
+      max_bsmtDepth = 2.4                     ! meter
 C HELP CONTENT
       H(1)= 'Depth: distance from the top of the floor slab to  '
       H(2)= 'the grade level.                                   '
-      H(3)= '                                                   '
+      H(3)= 'Must be between 0.05 and 2.4m                      '
       H(4)= '                                                   '
         CALL EASKR(bsmtDepth,' ',' Depth of the basement (m) ? ',
      &        min_bsmtDepth,'F',max_bsmtDepth,'F',bsmtDepth,
      &        'depth of the basement',IER,4)
       min_bsmtHeight = bsmtDepth+0.1          ! meter
-      max_bsmtHeight = 99.                    ! meter
+      max_bsmtHeight = 2.5                    ! meter
 C HELP CONTENT
       H(1)= 'Height: distance from the top of the floor slab to '
       H(2)= 'the top of the basement structural wall.           '
       H(3)= 'Must be at least 0.1m greater than the depth.      '
-      H(4)= '                                                   '
+      H(4)= 'Must also be between 1.0 and 2.5m                  '
         CALL EASKR(bsmtHeight,' ',' Height of the basement (m) ? ',
      &        min_bsmtHeight,'F',max_bsmtHeight,'F',bsmtHeight,
      &        'height of the basement',IER,4)
@@ -241,7 +241,7 @@ C HELP CONTENT
       H(1)= 'Width: exterior-of-structural-wall to exterior-of- '
       H(2)= 'structural-wall distance.                          '
       H(3)= 'Must be less than or equal to the length.          '
-      H(4)= 'Value must be between 2 and 20m.                   '
+      H(4)= 'Value must be between 2.0 and 20m.                 '
         CALL EASKR(bsmtWidth,' ',' Width of the basement (m) ? ',
      &        min_bsmtWidth,'F',max_bsmtWidth,'F',bsmtWidth,
      &        'width of the basement',IER,4)
@@ -256,23 +256,23 @@ C HELP CONTENT
      &        min_bsmtLength,'F',max_bsmtLength,'F',bsmtLength,
      &        'width of the basement',IER,4)
       min_Insul_Overlap = 0.                  ! meter
-      max_Insul_Overlap = 99.                 ! meter
+      max_Insul_Overlap = 2.4                 ! meter
 C HELP CONTENT
       H(1)= 'Insulation overlap: value must be given but only   '
       H(2)= 'used for BCCN_1 and BCCN_2 combination cases.      '
-      H(3)= '                                                   '
-      H(4)= '                                                   '
-        CALL EASKR(Insul_Overlap,' ',' Insulation overlap ? ',
+      H(3)= 'Height of the wall covered by both interior and    '
+      H(4)= 'exterior wall insulation (between 0 and 2.4m).     '
+        CALL EASKR(Insul_Overlap,' ',' Insulation overlap (m)? ',
      &        min_Insul_Overlap,'F',max_Insul_Overlap,'F',Insul_Overlap,
      &        'Insulation overlap',IER,4)
-      min_Insul_rsi = 0.                      ! rsi
-      max_Insul_rsi = 20.                     ! rsi
+      min_Insul_rsi = 0.                      ! rsi (m2K/W)
+      max_Insul_rsi = 20.                     ! rsi (m2K/W)
 C HELP CONTENT
       H(1)= 'Insulation: define the thermal resistance of the   '
-      H(2)= 'insulation by entering the rsi value.              '
+      H(2)= 'insulation by entering the rsi value (m2K/W).      '
       H(3)= '                                                   '
-      H(4)= 'Value must be between 0 and 20 rsi.                '
-        CALL EASKR(Insul_rsi,' ',' Insulation rsi ? ',
+      H(4)= 'Value must be between 0 and 20 m2K/W.              '
+        CALL EASKR(Insul_rsi,' ',' Insulation rsi (m2K/W)? ',
      &        min_Insul_rsi,'F',max_Insul_rsi,'F',Insul_rsi,
      &        'Insulation rsi',IER,4)
       min_Soil_Cond = 0.1                     ! W/mK
@@ -282,7 +282,7 @@ C HELP CONTENT
       H(2)= 'foundation in W/mK.                                '
       H(3)= 'Value must be between 0.1 and 10 W/mK.             '
       H(4)= '                                                   '
-        CALL EASKR(Soil_Cond,' ',' Soil conductivity ? ',
+        CALL EASKR(Soil_Cond,' ',' Soil conductivity (W/mK) ? ',
      &        min_Soil_Cond,'F',max_Soil_Cond,'F',Soil_Cond,
      &        'Soil Conductivity',IER,4)
       min_Water_Table = 5.                     ! meter
@@ -292,13 +292,13 @@ C HELP CONTENT
       H(2)= 'thermal boundary. The deeper the water table, the  '
       H(3)= 'lower the foundation heat loss will be.            '
       H(4)= 'Value must be between 5 and 20m.                   '
-        CALL EASKR(Water_Table,' ',' Water table depth ? ',
+        CALL EASKR(Water_Table,' ',' Water table depth (m) ? ',
      &        min_Water_Table,'F',max_Water_Table,'F',Water_Table,
      &        'Water table depth',IER,4)
 
 C SELECT METHOD OF HANDLING GROUND TEMPERATURE
 C Using the Moore method for ground temperatures the TG values are
-C calculated by another program. Otherwise, they must enter these.
+C calculated by another subroutine. Otherwise, they must enter these.
 
 C HELP CONTENT
       H(1)= 'If you choose to use the Moore Method,             '
@@ -316,8 +316,8 @@ C values of TG avg, TGamp, TGps are read in.
 
 C HELP CONTENT
       H(1)= 'TGavg: Average ground temperature (degC)           '
-      H(2)= 'TGamp: Amplitude of the ground temperature         '
-      H(3)= 'TGps: Phase lag of ground temperature              '
+      H(2)= 'TGamp: Amplitude of the ground temperature (degC)  '
+      H(3)= 'TGps: Phase lag of ground temperature (radians)    '
       H(4)= '                                                   '
 
           IF(IWHICH.EQ.1)THEN
@@ -328,28 +328,28 @@ C HELP CONTENT
             H(1)= '                                                   '
             H(2)= 'TGavg: Average ground temperature (degC)           '
             H(3)= '                                                   '
-            H(4)= 'Value must be between -10 and 20.'
-            min_TGavg = -10.                   ! unitless
-            max_TGavg = 20.                    ! unitless
-            CALL EASKR(TGavg,' ',' TGavg ?',
+            H(4)= 'Value must be between -10 and 20(degC).            '
+            min_TGavg = -10.                  ! degC
+            max_TGavg = 20.                   ! degC
+            CALL EASKR(TGavg,' ',' TGavg (degC) ?',
      &            min_TGavg,'F',max_TGavg,'F',8.9,'TGavg',IER,4)
-            min_TGamp = 0.                     ! unitless
-            max_TGamp = 25.                    ! unitless
+            min_TGamp = 0.                    ! degC
+            max_TGamp = 25.                   ! degC
 C HELP CONTENT
             H(1)= '                                                   '
             H(2)= 'TGamp: Amplitude of the ground temperature         '
             H(3)= '                                                   '
-            H(4)= 'Value must be between 0 and 25.'
-            CALL EASKR(TGamp,' ',' TGamp ?',
+            H(4)= 'Value must be between 0 and 25(degC).              '
+            CALL EASKR(TGamp,' ',' TGamp (degC) ?',
      &            min_TGamp,'F',max_TGamp,'F',14.20,'TGamp',IER,4)
 C HELP CONTENT
             H(1)= '                                                   '
             H(2)= 'TGps: Phase lag of ground temperature              '
             H(3)= '                                                   '
-            H(4)= 'Value must be between 0 and 1.'
-            min_TGps = 0.                      ! unitless
-            max_TGps = 1.                      ! unitless
-            CALL EASKR(TGps,' ',' TGps ?',
+            H(4)= 'Value must be between 0 and 1 radians.             '
+            min_TGps = 0.                     ! radians
+            max_TGps = 1.                     ! radians
+            CALL EASKR(TGps,' ',' TGps (radians) ?',
      &            min_TGps,'F',max_TGps,'F',0.380,'TGps',IER,4)
           ELSEIF(IWHICH.EQ.3)THEN
             RETURN
