@@ -1005,8 +1005,6 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 
 !Local Variables 
       REAL   fTotalEnergyInTank
-      REAL   fEnergyInHotWaterPortion
-      REAL   fEnergyInColdWaterPortion
       REAL   fEnergyInTank
       REAL   fHotWaterVolumeRemaining
       
@@ -1133,14 +1131,12 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h" 
 
-      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      common/C21/IFCFG,cfgroot,LCFGF
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
 
 C Declarations for local variables and variables passed in common blocks.
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its,iDAYN
-      INTEGER   isd1,ism1,isd2,ism2,isds,isdf,ntstep,iTankNumber
+      INTEGER   isd1,ism1,isd2,ism2,isds,isdf,ntstep
       character cfgroot*24,LCFGF*72
       integer IFCFG
 

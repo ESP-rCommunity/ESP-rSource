@@ -52,6 +52,7 @@ C ***************** UNCERTA *********************
       character path*72,LUALF*72
       CHARACTER H*72,LTEMP*72,DTEMP*72,outs*124
       character cfgroot*24,LCFGF*72
+      integer NITMS,INO ! max items and current menu item
 
       LOGICAL LIBXST
 
@@ -206,6 +207,7 @@ C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       CHARACTER H*72,KEY*1,MLCITM(35)*24
 
       dimension IDEL(muadel)
+      integer NITMS,INO ! max items and current menu item
 
       IER=0
       if (ITYP.lt.1.and.ITYP.gt.3) return
@@ -452,6 +454,7 @@ C ICDEF  If equal to zero then add a new definition, else edit.
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER H*72, ITEM(17)*40, outs*124
+      integer NITMS,INO ! max items and current menu item
 
       IERR=0
       IER=0

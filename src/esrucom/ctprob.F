@@ -300,7 +300,7 @@ C Definitions of most variables is given in ctread.F
       COMMON/USER/BROWSE
       COMMON/FILEP/IFIL
       COMMON/PATHS/ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DOCPTH,TMPPTH,
-     &             DBSPTH,AIMPTH,BSMPTH
+     &             DBSPTH,AIMPTH,BSMPTH,HVACPTH
       COMMON/C21/IFCFG,CFGROOT,LCFGF
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -318,6 +318,7 @@ C Definitions of most variables is given in ctread.F
 
       CHARACTER ZONEPTH*24,NETPTH*24,CTLPTH*24,IMGPTH*24,RADPTH*24
       CHARACTER DOCPTH*24,TMPPTH*24,DBSPTH*24,AIMPTH*24,BSMPTH*24
+      CHARACTER HVACPTH*24
       CHARACTER*124 CNTMDESC
       CHARACTER*72 CNTMFIL,H,CTMF,LCFGF
       CHARACTER CONTMNAM*12,CMNAM*12,LTPCMP*60,SSNAME*12
@@ -330,6 +331,7 @@ C Definitions of most variables is given in ctread.F
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,BROWSE
 
       integer NTSTEPCT   ! for local editing.
+      integer NITEMS,NITEML,INO,INNO,ISO ! max items and current menu item
 
 C set contaminant file
       IUNIT=IFIL+72

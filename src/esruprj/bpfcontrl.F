@@ -56,7 +56,7 @@ C                             data for validity.
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -86,10 +86,11 @@ C ipeerptbk is pointer from position in display to day type.
       CHARACTER outs*124,H*72,LASCI*72,cfgroot*24,aimpth*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,t248*248,SSTR*96
-      character sfile*72,snpfile*72,fs*1
+      character sfile*72,snpfile*72,fs*1,hvacpth*24
       logical LINKED,OK,dok,XST,browse,unixok
       integer icomp
       integer IW   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
       logical CFCfilexists,CFCcontrolOK
       
 C Zeroize all control data.
@@ -1416,6 +1417,7 @@ C Plant common required for building/plant flux linkage
       dimension icsn(5)! for passing sensor location to
       integer icsn,nn
       integer lastndx  ! to keep track of last data position used.
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -2873,6 +2875,7 @@ C      DIMENSION IGVAL(60)
       integer LL
       logical bNumsAreEqual
       integer isetp_displayCM,idat_displayCM !for display purposes to be combatible with gcc4
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of optical functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -3280,6 +3283,7 @@ C ********************************************************************
       integer iclawt   ! control law index passed back from editctlperiod
       integer icfoc
       integer icurrentctltype
+      integer MVERT,IVERT ! max items and current menu item
       
       icfoc = 6
       
@@ -3580,7 +3584,6 @@ C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
 #include "building.h"
-#include "DG_controller_include.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3594,6 +3597,7 @@ C Edit plant control function II.
 
       CHARACTER hold*60
       logical close1
+      integer MVERT,IVERT ! max items and current menu item
 
 
 C Number of plant loops and day type must be > 0.
@@ -4630,6 +4634,7 @@ C Portions of multi-sensor feedback message.
       character msg1*24,msg2*24,msg3*24,msg4*24
       logical close1,OK,DOK
       real ocli
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -5295,6 +5300,7 @@ C Edit global control function II.
       CHARACTER*84 VERT(20)
       logical close1
       integer IADR  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of global functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -5692,6 +5698,7 @@ C flow connections.It is assumed that the user will make one selection only.
       CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,SALT*40
       integer isn1T,isn2T,isn3T,isn4T,ilayt   ! temporary values for editing.
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -6467,6 +6474,7 @@ C flow connections.It is assumed that the user will make one selection only.
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
       logical vb_xst ! local variable to check if slat type blind exists in CFC
       logical shd_xst ! local variable to check if shading alyer exists in CFC
+      integer MVERT,IVERT ! max items and current menu item
       
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -7028,6 +7036,7 @@ C   for control law one.
       integer imasctlindex    ! index of master control used by slave controller.
       integer iclawcurrent    ! to remember the current control law
       integer ivalue,imini,imaxi,idefa  ! local values for editing as integer
+      integer MVERT,IVERT ! max items and current menu item
 
 C Set initial logical values.
       close=.true.

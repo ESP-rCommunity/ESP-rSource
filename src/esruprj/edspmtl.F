@@ -55,6 +55,8 @@ C IER=0 OK, IER=1 problem.
       CHARACTER deflnam*72,lfil*72
       CHARACTER*2 MODE,MOD
       LOGICAL ISPOPEN, XST,NEW,OK,OKK,DOK
+      integer MVERT,IVERT,ID ! max items and current menu item
+
       OK=.FALSE.
       OKK=.FALSE.
       IFOC=0
@@ -400,7 +402,7 @@ C sstr in spdesc.
       CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
-
+      integer nspitm,imout,NSPITEM2,IMOUT2,NITMS,IVERT,ino ! max items and current menu item
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.

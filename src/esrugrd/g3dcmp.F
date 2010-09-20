@@ -87,6 +87,7 @@ C *********************************************************************
       CHARACTER*72 H
       CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
       CHARACTER ITEM*28,SZN*12,STTS*5
+      integer MITEM,INO ! max items and current menu item
 
       SZN=zname(IZ)
       SSRF=' '
@@ -957,6 +958,7 @@ C *********************************************************************
       CHARACTER SRF(2)*12,ITEMS(MEZ)*27
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
       real DZX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -1362,6 +1364,7 @@ C *********************************************************************
       CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94
       CHARACTER TEXT*124,BAR*1
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1961,7 +1964,7 @@ C *********************************************************************
       CHARACTER SRF(3)*12,ITEMS(MCZ)*25
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
       real DZX   ! To avoid variable name clash with DX from geometry.h
-
+      integer MITEM,INO  ! max items and current menu item
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -2374,6 +2377,7 @@ C *********************************************************************
       CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32
       CHARACTER TEXT*124,BAR*1
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)

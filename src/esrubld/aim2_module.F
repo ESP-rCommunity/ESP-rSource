@@ -639,7 +639,7 @@ C Declarations for local variables and variables passed in common blocks.
       REAL val
       LOGICAL CLOSE
       
-      INTEGER :: allocate_status	!allocate status=0 if sucessfull
+      INTEGER :: allocate_status   !returns 0 for sucessful memory allocation
       
 C Initialise H2K Defaults
       CALL AIM2_H2KDefaults()
@@ -933,16 +933,16 @@ C of the zones that do receive infiltration.
       
  
       IF (AIM2_num_zones_infil.GT.0) THEN
+C Ensure that arrays AIM2_zone_infil and AIM2_infil_to_zones are deallocate d.
         CALL AIM2_Deallocate
-        IF ((.NOT.ALLOCATED(AIM2_zone_infil)).AND.
-     &      (.NOT.ALLOCATED(AIM2_infil_to_zones))) THEN
+C Allocate memory for AIM2_num_zones_infil
           ALLOCATE(AIM2_zone_infil(AIM2_num_zones_infil),
      &       STAT=allocate_status)
 C Check allocation was sucessful     
           IF (.NOT.ALLOCATED(AIM2_zone_infil)) THEN
             CALL EDISP(IUOUT,' Warning: AIM2_zone_infil not allocated')
           END IF
-	  
+C Allocate memory for AIM2_num_zones_infil
           ALLOCATE(AIM2_infil_to_zones(NCOMP),
      &       STAT=allocate_status)
 C Check allocation was sucessful     
@@ -950,8 +950,7 @@ C Check allocation was sucessful
             CALL EDISP(IUOUT,'AIM2_infil_to_zones not allocated')
 	  END IF
 	  
-          IF ((ALLOCATED(AIM2_zone_infil)).AND.
-     &        (ALLOCATED(AIM2_infil_to_zones))) THEN
+        IF (ALLOCATED(AIM2_zone_infil)) THEN
             DO ICOMP=1,AIM2_num_zones_infil
               CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
      &            ' zone receiving infil',IER)
@@ -963,7 +962,6 @@ C Check allocation was sucessful
 	    END DO
           END IF
         END IF
-      END IF
 
 
 C Read zone number of basement (basements treated differently that living space
@@ -1149,8 +1147,6 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "geometry.h"
 
-      COMMON/C1/NCOMP,NCON
-      INTEGER NCOMP,NCON
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
 
@@ -1256,8 +1252,6 @@ C Type declarations for local variables.
       INTEGER j_biggest
       REAL area_temp
       REAL total
-      REAL temp
-
 
 C Leakage fractions from Table 3 of Lew (1993).
 C `i' is building type index, `j' foundation type index, and `k' a storey index.
@@ -1946,30 +1940,15 @@ C Initial Creation Date: February 28, 2007
 C Copyright 2007: ESRU
 C AIM2_report decodes the AIM-2 common blocks into a brief report.
 
-      subroutine AIM2_report(itru,ier)
+      subroutine AIM2_report(itru)
 
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
-#include "espriou.h"
-C espriou.h provides currentfile.
 
       integer lnblnk
 
 
-      COMMON/WindowControl/
-     &     fWindowSetpoint,
-     &     fACSetPoint,
-     &     bWindowControlFlag,
-     &     iWindowControlZone,
-     &     bWindowsAreOpen,
-     &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint
-
-      REAL fWindowSetpoint,fACSetPoint
-      INTEGER iWindowControlZone
-      LOGICAL bWindowControlFlag,bWindowsAreOpen
-      REAL  fDeltaTInttoExt,fWindowLowSetpoint
 
 C Declarations for local variables and variables passed in common blocks.
       CHARACTER outs248*248
@@ -1980,7 +1959,7 @@ C Declarations for local variables and variables passed in common blocks.
       character b_shielding*48,f_shielding*48   ! shielding of building and flue
       character crawl*48,attic*48
 
-      INTEGER IER,ND,k,ij,itru,llna
+      INTEGER ij,itru,llna
       REAL total
       LOGICAL CLOSE
 

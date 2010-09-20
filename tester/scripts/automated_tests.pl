@@ -123,9 +123,6 @@ my %gLong_codes;
 
 my $gVerboseArg="";
 
-# Flag for pointing to reference test_suite location
-my $ref_test_suite = 0;
-
 #------------------------------------------------------------
 # Synopsys
 #------------------------------------------------------------ 
@@ -190,17 +187,12 @@ my $synopsys= "
    --skip-forcheck, --skip-regression, --skip-builds:
        Skip portions of the QA tests
 
-   --run-callgrind: Run call-grind analysis on ESRU benchmark test case.
-
    --ref-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
        when compiling reference version.
 
    --test-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
        when compiling test version.
-
-   --ref-test_suite: Use reference version test_suite instead of the 
-       default test version.       
-
+       
    -v: 
        Verbose output; print test progress to the buffer.
        
@@ -449,15 +441,8 @@ if ( @ARGV ){
         $veryverbose = 1;
         last SWITCH;
       }
-      
-      # Use reference version test_suite
-      if ( $arg =~ /^--ref-test_suite/ ){
-        $ref_test_suite = 1;
-        last SWITCH;
       }
-
     }
-  }
 }
 
 if ( $verbose ) { $gVerboseArg = "-v"; }
@@ -553,8 +538,8 @@ my $mail_from= $ENV{USER}.'@esp-r.net';
 
 
 # Dump configuration to screen, if running in verbose mode.
-if ( $verbose ) { echo_config(); }
-if ( $echo )  { die echo_config(); }
+if ( $verbose || $echo ) { echo_config(); }
+if ( $echo )  { die;  }
 
 #------------------------------------------------------------
 # Prepare test directory and checkout code.
@@ -1054,64 +1039,48 @@ if ( $test_regression ) {
   while ( my ($key, $revision ) = each  %revisions ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
-
+    
     #destination directory for 'test' or 'reference' builds
-    my $build_path = "$TestFolder/esp-r_$key";
-    execute("mkdir $build_path");    
+    my $build_path = "$TestFolder/$key";
+    execute("mkdir $build_path");
     
     if ( $debug_forcheck || $test_callgrind ) {
       # Quick rebuild for debugging, OR retain object files
       # for call-grind. 
-      buildESPr($build_path, $build_args{"$key"},"default","debug","together");
+      buildESPr($build_path,$build_args{"$key"},"default","debug","together");
     }else{
       # Comprehensive rebuild 
       execute("make clean");
-      buildESPr($build_path, $build_args{"$key"},"default","clean","together");
+      buildESPr($build_path,$build_args{"$key"},"default","clean","together");
     }
     stream_out(" Done\n");
   }
   
   # Now run test suite, using test version of tester.pl
   stream_out("Running regression test...");
-  my $ref_esp = "$TestFolder/esp-r_reference/esp-r/bin";
-  my $test_esp = "$TestFolder/esp-r_test/esp-r/bin";
+  my $ref_esp = "$TestFolder/reference/esp-r/bin";
+  my $test_esp = "$TestFolder/test/esp-r/bin";
 
   my ($test_suite_dir, $call_grind_arg);
 
   if ( $test_callgrind ){
 
-    $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/esru_benchmark_model/cfg/bld_basic_summer.cfg";
+    $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/";
     $call_grind_arg = "--run_callgrind";
 
   }else{
-  # Disable callgrind 
-  $call_grind_arg = "";
-
-    # Use version of test suite in reference or test version, depending on
-    # user preference.
-    if ($ref_test_suite ){
-  
-        $test_suite_dir="$TestFolder/$src_dirs{\"reference\"}/tester/test_suite/";
-
-      }else{
 
         $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/";
-
+    #$test_suite_dir="$TestFolder/$src_dirs{\"reference\"}/tester/test_suite/ccht_benchmark/cfg/basic_ctl_summer.cfg";
+    $call_grind_arg = "";
       }
-
-  }
-
-  # If user has asked to preserve the directory, tell tester.pl to
-  # save the current result set.
-  my $save_arg = $del_dir ? "" : "--save_results";
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
-  
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
-           ."-d $TestFolder/esp-r_test/esp-r --no_data --no_h3k "
+           ."-d $TestFolder/test/esp-r --no_data --no_h3k"
            ." --ref_loc $ref_esp --test_loc $test_esp "
-           ."-p $test_suite_dir $call_grind_arg $gVerboseArg $save_arg" );
+           ."-p $test_suite_dir $call_grind_arg $gVerboseArg" );
 
   
   # Digest results
@@ -1190,7 +1159,7 @@ if ( defined ($results) ){
 
 if ( scalar(@addresses) > 0 ){
 
-  stream_out("Mailing results...");
+  stream_out("Mailing results...\n");
   
   my ($subject);
 
@@ -1209,8 +1178,9 @@ if ( scalar(@addresses) > 0 ){
   $subject .=  "($revisions{\"test\"}) ";
 
   $subject =~ s/branches\///g;
-  
+  #push @addresses, "aferguso\@nrcan.gc.ca", "blomanow\@nrcan.gc.ca";
   foreach my $address (@addresses){
+    stream_out(" -> $address \n");
     mail_message($smtp_server,$address,$mail_from,$subject,$output);
   }
   stream_out("Done\n");
@@ -1229,6 +1199,7 @@ close(OUTPUT_FILE);
 # Clean up
 #================================================
 
+# DEBUG
 if ( ! $debug_forcheck && $del_dir ){
   execute("rm -fr $TestFolder");
 }
@@ -1257,12 +1228,12 @@ sub passfail($){
 #-------------------------------------------------------------------
 sub buildESPr($$$$$){
   
-  my($build_path, $extra_args, $xLibs, $state, $build) =@_;
-
+  my($build_path, $extra_args, $xLibs,$state,$build) =@_;
+  
   if($build_path eq 'default'){
      $build_path = $TestFolder;
   }
-  
+
   # Test if 'configure' script exists.
   my $autotools = 0;
   if ( -r "./configure" ) {
@@ -1655,11 +1626,18 @@ sub fatalerror($){
 # Echo configuration
 #----------------------------------------------
 sub echo_config(){
-  print("Configuration:\n");
-  print("  - Working directory: $TestFolder\n");
-  print("  - svn_source:        $revisions{\"reference\"}, $revisions{\"test\"}\n");
-  print("  - build args:        $build_args{\"reference\"} (ref.), $build_args{\"test\"} (test)\n");
-  print("  - email destination: @addresses\n");
+  print("--------------\n");
+  my $msg = "Configuration:\n";
+     $msg .= "  - Working directory: $TestFolder\n";
+     $msg .= "  - svn_source:        $revisions{\"reference\"}, $revisions{\"test\"}\n";
+     $msg .= "  - build args:        $build_args{\"reference\"} (ref.), $build_args{\"test\"} (test)\n";
+     $msg .= "  - email destination: @addresses\n";
+
+     print($msg);
+     # Possibly mail configuration (easy way to test mail facilities)
+     # mail_message($smtp_server,'aferguso@nrcan.gc.ca','aferguso@nrcan.gc.ca',"Test email",$msg);
+     
+     
 }
 
 

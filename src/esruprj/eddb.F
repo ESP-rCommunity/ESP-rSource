@@ -71,6 +71,7 @@ C Default esp-r distribution path.
       logical moddb,browse,modcon,QUIET
       logical haveconstr
       integer ihd  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
       character H*72,path*72
       character*72 ITEMS(15)
@@ -177,15 +178,15 @@ C Help text for this menu.
       H(17)='are not found, the most likely reason is that they'
       H(18)='have not been correctly installed in folders'
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
-
+      NITMS=15
       if(MMOD.EQ.8)then
         impx=0
         impy=0
         iwe=iw
-        CALL VWMENU('Database Maintenance',ITEMS,15,impx,impy,iwe,
+        CALL VWMENU('Database Maintenance',ITEMS,NITMS,impx,impy,iwe,
      &    irpx,irpy,INO)
       else
-        CALL EMENU('Database Maintenance',ITEMS,15,INO)
+        CALL EMENU('Database Maintenance',ITEMS,NITMS,INO)
       endif
       IF(INO.EQ.15)THEN
         if(browse)return
@@ -658,7 +659,7 @@ C     if blank then no file name change implied.
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Default ESP-r distribution path.
       common/deflt4/dinstpath
@@ -672,6 +673,7 @@ C Default ESP-r distribution path.
       character H*72,LLTMP*144,LTMP*92,lguess*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character fs*1,message*48
       character doit*300,LCOPY*144
       character DFILE*144,LLASCI*144,LLTMPFL*144
@@ -1550,7 +1552,7 @@ C     if blank then no file name change implied.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/rpath/path
@@ -1561,7 +1563,7 @@ C     if blank then no file name change implied.
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,outs248*248,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH,aimpth,
-     &             BSMPTH
+     &             BSMPTH,HVACPTH
       CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
@@ -2114,7 +2116,7 @@ C << introduce concept of types of profiles
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -2125,7 +2127,7 @@ C << introduce concept of types of profiles
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH,aimpth,
-     &             BSMPTH
+     &             BSMPTH,HVACPTH
       CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
@@ -2822,7 +2824,7 @@ C     if blank then no file name change implied.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
@@ -2840,6 +2842,7 @@ C Default esp-r distribution path.
       CHARACTER outs248*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -3355,7 +3358,7 @@ C This facility offers browsing for GTK version.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -3368,7 +3371,7 @@ C This facility offers browsing for GTK version.
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER outs248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH,aimpth,
-     &             BSMPTH
+     &             BSMPTH,HVACPTH
       CHARACTER*24 DOCPTH,TMPPTH
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
@@ -3877,7 +3880,7 @@ C This facility offers browsing for GTK version.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -3891,7 +3894,7 @@ C This facility offers browsing for GTK version.
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH,BSMPTH
-      CHARACTER*24 DOCPTH,TMPPTH,aimpth
+      CHARACTER*24 DOCPTH,TMPPTH,aimpth,HVACPTH
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
@@ -4417,7 +4420,7 @@ C espriou.h provides currentfile.
       common/OUTIN/IUOUT,IUIN
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       
       integer ncomp,ncon
@@ -4439,7 +4442,7 @@ C Calendar.
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH,BSMPTH
-      CHARACTER*24 DOCPTH,TMPPTH,aimpth
+      CHARACTER*24 DOCPTH,TMPPTH,aimpth,HVACPTH
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48,path*72
@@ -5193,9 +5196,10 @@ C is via a text editor.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
 
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20

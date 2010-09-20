@@ -61,6 +61,7 @@ C Special materials file flag
       CHARACTER*23 ITEM(15)
       character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
       integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0

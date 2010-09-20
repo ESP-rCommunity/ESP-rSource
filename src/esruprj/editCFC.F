@@ -77,9 +77,10 @@ C ********************************************************************
       integer ne,nairg,ipairg
       real rairg
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
 
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount
@@ -1669,6 +1670,7 @@ c      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       
       character OUTSTR*124
       integer IUA, NS, K, M, L, i, j, icn, II, IO
+      integer MVERT,IVERT ! max items and current menu item
 
       DIMENSION IVA(MS)
       

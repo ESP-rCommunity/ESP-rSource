@@ -43,6 +43,7 @@ C MENUTYPE 9: Psychrometric chart
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER ITEM(15)*21,h*72
+      integer NITMS,INO ! max items and current menu item
 
 C Create menu.
       ITEM(1) ='   Graphs:           '

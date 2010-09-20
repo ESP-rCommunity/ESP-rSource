@@ -47,6 +47,7 @@ C of inter-fabric temperature and condensation conditions.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
       character H*72,xfile*144,tg*1,delim*1,act*1
+      integer NITMS,INO ! max items and current menu item
 
 C Setup for menu.
    3  ITEM(1) ='2 select result set    '

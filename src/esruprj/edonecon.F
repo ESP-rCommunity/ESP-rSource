@@ -71,7 +71,7 @@ C SO is a tempporary array to hold current surface SSOTHER.
       character SO*24,TOTHER*24
       character CXITM*43
       logical newgeo  ! to use for testing if new/old geometry file.
-
+      integer MVERT,IVERT ! max items and current menu item
 
 C Set for redraw if image on first entry (if refresh set to after
 C each edit). Set flag for updating geometry file (for changed

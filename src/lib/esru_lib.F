@@ -82,6 +82,7 @@ C  CROSS:   Performs a cross-product on vectors A() & B() returning in C().
 C  CROSS2:  Performs a cross-product on vectors passing parameters as ax,ay,az etc.
 C  DOT3(a,b,product) Return dot product of two vectors a & b.
 C  ZEROS:   Clear a 4x4 array prior to doing vieweing transforms.
+C  REQUAL:  Checks tolerance between two real numbers. Function returning .TRUE. or .FALSE. 
 C  ECLOSE:  Checks tolerance between two real numbers.
 C  ECLOSE3: Checks tolerance between two real vectors (3 numbers).
 C  ESIND:   Function returning SIN of angle where angle is given in degrees.
@@ -2382,6 +2383,20 @@ C ZEROS Clear a 4x4 array prior to doing viewing transforms.
       A(4,2)=0.0
       A(4,3)=0.0
       A(4,4)=0.0
+
+      RETURN
+      END
+      
+C ******************** REQUAL
+C REQUAL allows two real numbers R1 & R2 to be checked for closeness
+C to a given tolerance TOL and returns .TRUE. or .FALSE.
+      LOGICAL FUNCTION REQUAL(R1,R2,TOLERANCE)
+
+      IMPLICIT NONE
+C Declare calling parameters 
+      REAL, INTENT(IN)  :: R1,R2,TOLERANCE
+      
+      CALL ECLOSE(R1,R2,TOLERANCE,REQUAL)
 
       RETURN
       END

@@ -52,8 +52,9 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       character cfgroot*24,LCFGF*72
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -78,6 +79,7 @@ C Logical flags for file openings.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer IRE  ! for radio button
+      integer MITEM,INO ! max items and current menu item
 
 C For debugging set itrc =2
       ITRC=1
@@ -1057,6 +1059,7 @@ C data preference menu. This source used to be found in esrutdf/setup.F
       DIMENSION SETUPM(7)
       CHARACTER*72 LIMP,LEXP
       CHARACTER SETUPM*50,H*72,DFILE*72,tfile*72
+      integer NITMS,ISETUP ! max items and current menu item
 
 C Present the preference menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -1118,7 +1121,8 @@ C Help text for this menu.
       H(12)='display as well as that of any exported data. '
 
 C Menu control.
-      CALL EMENU('Preferences',SETUPM,7,ISETUP)
+      NITMS=7
+      CALL EMENU('Preferences',SETUPM,NITMS,ISETUP)
 
       IF(ISETUP.EQ.1)THEN
 

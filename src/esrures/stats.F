@@ -75,6 +75,7 @@ C SNAPSH is a logical flag to request variation in header.
       CHARACTER RSNAME*40
       CHARACTER*3 NMTHNM(12)
       integer IWM,ihd  ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',

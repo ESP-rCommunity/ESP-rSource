@@ -1435,6 +1435,7 @@ C ******************************************************************************
       LOGICAL CVGCHK
       CHARACTER*40 ITEM(10)
       CHARACTER*72 H
+      integer NITMS,INO  ! max items and current menu item
 
 C Build up a menu allowing the user to edit the simulation parameters
   10  WRITE(ITEM(1),'(A)')'  Select parameter to change:'

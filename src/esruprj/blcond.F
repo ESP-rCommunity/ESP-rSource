@@ -51,6 +51,7 @@ C ********************************************************************
 
       CHARACTER ITEM(9)*29,DPNDC*20
       CHARACTER H*72,TEXT*50,MSGSET*70
+      integer NITEM,INO ! max items and current menu item
 
       LOGICAL     OK,DOK
 
@@ -224,6 +225,7 @@ C *******************************************************************
 
       CHARACTER*25 ITEM(6)
       CHARACTER TEXT*50,H*72
+      integer NITEM,INO ! max items and current menu item
 
    10 ITEM(1)='a select zone            '
       ITEM(2)='b select constructions   '

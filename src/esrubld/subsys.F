@@ -57,7 +57,6 @@ C    SBC       = Stefan-Boltzmann constant.
       COMMON/TC/ITC,ICNT
 
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON /PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &              NPGAP(MCOM,MS,MGP)
@@ -473,7 +472,7 @@ C      is set at 10 W/m^2K.
       SHT=880.0
       CON=1.28
       GHTC=10.0
-      TIMSTP=3600.0/NTSTEP
+      TIMSTP=3600.0/real(NTSTEP)
 
 C Consider surface node (ie node 1).
       CAP=DEN*SHT*0.1
@@ -576,7 +575,7 @@ C Here provide the different sky temperature options
 C Use default Martin & Berdahl calculation
 C Clear sky condition:
         PI = 4.0 * ATAN(1.0)
-        TIM=2*PI*IHRF/24
+        TIM=2.0*PI*real(IHRF)/24.0
         E0=0.711+0.56*(TDP/100.0)+0.73*((TDP/100.0)**2)+
      &   0.013*COS(TIM)+(12.0E-05)*(PATM-1000.)
 
@@ -771,17 +770,17 @@ c are non-vertical.
         IAVE=1
         TAVE=TF
       ENDIF
-      TBAVE=(TAVE/IAVE)+ZEROK
+      TBAVE=(TAVE/real(IAVE))+ZEROK
       IF(IROOF.EQ.0)TBROOF=TBAVE
-      IF(IROOF.GT.0)TBROOF=(TROOF/IROOF)+ZEROK
+      IF(IROOF.GT.0)TBROOF=(TROOF/real(IROOF))+ZEROK
       IF(INORTH.EQ.0)TBNRTH=TBAVE
-      IF(INORTH.GT.0)TBNRTH=(TNORTH/INORTH)+ZEROK
+      IF(INORTH.GT.0)TBNRTH=(TNORTH/real(INORTH))+ZEROK
       IF(IEAST.EQ.0)TBEAST=TBAVE
-      IF(IEAST.GT.0)TBEAST=(TEAST/IEAST)+ZEROK
+      IF(IEAST.GT.0)TBEAST=(TEAST/real(IEAST))+ZEROK
       IF(ISOUTH.EQ.0)TBSUTH=TBAVE
-      IF(ISOUTH.GT.0)TBSUTH=(TSOUTH/ISOUTH)+ZEROK
+      IF(ISOUTH.GT.0)TBSUTH=(TSOUTH/real(ISOUTH))+ZEROK
       IF(IWEST.EQ.0)TBWEST=TBAVE
-      IF(IWEST.GT.0)TBWEST=(TWEST/IWEST)+ZEROK
+      IF(IWEST.GT.0)TBWEST=(TWEST/real(IWEST))+ZEROK
 
 C Calculate surrounding building temperature for each
 C vertical surface.
@@ -1108,6 +1107,8 @@ C                 external temperature (for use in MZLS3).
       
       USE AIM2_InputData, ONLY:iAIM2
       USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
+      
+      IMPLICIT NONE
 
 #include "building.h"
 #include "geometry.h"
@@ -1118,45 +1119,65 @@ C                 external temperature (for use in MZLS3).
 #include "hvac_common.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      INTEGER :: icalender,nbcaldays,nbdaytype
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER :: ITCF,ITRACE,IZNTRC,ITU
       COMMON/TC/ITC,ICNT
+      INTEGER :: ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
+      INTEGER :: ITCTL,IVL,IVU,IVH
+      REAL :: TLO,TUP,THI,ACIL,ACVL,TAL,ACIU,ACVU,TAU,ACIH,ACVH,TAH
 
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
+      REAL :: CVIN,CVVN,TIAN
+      INTEGER :: ICCN
      
       COMMON/BTIME/BTIMEP,BTIMEF
+      REAL :: btimep,btimef
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
+      INTEGER :: IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL :: QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       common/pvala/tpa(mcom),qpa(mcom)
+      REAL :: tpa,qpa
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      REAL :: TFA,QFA
 
       COMMON/COE39/CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
+      REAL :: CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
 
 C The following common block saves the future time values
 C (held in /COE39/) for use at the next time-step.
 C Save present values for possible iterations at this time step.
       COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
+      REAL :: CIF,CVF,X3,CVM
       COMMON/COE39PS/CIP(MCOM),CVP(MCOM),QVP(MCOM),CVPM(MCOM)
+      REAL :: CIP,CVP,QVP,CVPM
 
       COMMON/FVALG/GFA(MCOM)
+      REAL :: GFA
       COMMON/MBINFO/ZMBI(MCOM,4)
+      REAL :: ZMBI
       COMMON/ZCVNT/ZCVENT(MCOM)
+      REAL :: ZCVENT
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
       COMMON/MFSINC/MFBSNC
+      INTEGER :: MFBSNC
 
       common/ts4/itsitr(msch),itrpas
+      INTEGER :: itsitr,itrpas
 
       common/TAFtoH3K/TAF
       real TAF
@@ -1173,7 +1194,7 @@ C Declare local variables used to store the conductances caused by
 C mechanical ventilation and infiltration.
       REAL ZONE_mechvent_cond,ZONE_infil_cond
 
-      PARAMETER    (SMALL=1.0E-15)
+      REAL, PARAMETER :: SMALL=1.0E-15
       DIMENSION VAL(MBITS+2)
 
       CHARACTER LAPROB*72
@@ -1229,6 +1250,13 @@ C     This prevents the zone becoming too cold.
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
       real BB1,BB2,BB3,TNP,QFUT,TFUT,grad
+      
+      REAL :: acc,acc1,acc2,aci,acr,amh,amn
+      REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
+      INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
+      INTEGER :: itrc,ifunit,iv,ival
+      REAL :: sum,t1,ta1,ta2,tafl,tafu,trat,tx,val,xx
+      REAL :: time
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0

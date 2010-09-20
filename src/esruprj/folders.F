@@ -59,7 +59,7 @@ C espriou.h provides currentfile and MFFOLD.
       common/rpath/path
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
@@ -104,6 +104,7 @@ C Passed in parameters.
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
 
@@ -268,6 +269,7 @@ C variable to equal mpath (which was passed into this subroutine).
           write(docpth,'(2a)')'.',fs
           write(tmppth,'(2a)')'.',fs
           write(dbspth,'(2a)')'.',fs
+          write(hvacpth,'(2a)')'.',fs
 
 C Re-establish pwd and then project folders.
           call edisp(iuout,
@@ -320,6 +322,7 @@ C Assume all types of files go in the single project folder (mpath).
           write(docpth,'(2a)')'.',fs
           write(tmppth,'(2a)')'.',fs
           write(dbspth,'(2a)')'.',fs
+          write(hvacpth,'(2a)')'.',fs
 
 C Re-establish pwd and then project folders.
           write(path,'(2a)')mpath(1:lnblnk(mpath)),fs
@@ -429,6 +432,20 @@ C Check that the doc folder path is standard.
           call runit(doit,'-')
           call pausems(400)
 
+C Check that the hvac folder path is standard.
+          call GETTOKENS(hvacpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'hvac'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'hvac'
+            write(hvacpth,'(3a)')'..',fs,'hvac'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+
 C Check that the dbs folder path is standard.
           call GETTOKENS(dbspth,IW,WORDS)
           lnw=lnblnk(WORDS(IW))
@@ -490,21 +507,22 @@ C the model description.
         write(H(7),'(3x,2a)')cfgroot(1:lncr),'/ctl (control files)'
         write(H(7),'(3x,2a)')cfgroot(1:lncr),'/aim2 (aim2 files)'
         write(H(8),'(3x,2a)')cfgroot(1:lncr),'/zones (zone files)'
-        write(H(9),'(3x,2a)')cfgroot(1:lncr),'/nets (networks)'
-        write(H(10),'(3x,2a)')cfgroot(1:lncr),'/doc (reports and notes)'
-        write(H(11),'(3x,2a)')cfgroot(1:lncr),'/tmp (odds+ends)'
-        write(H(12),'(3x,2a)')cfgroot(1:lncr),'/dbs (project databases)'
-        H(13)=' '
-        H(14)='will be created. '
-        H(15)=' '
-        H(16)='Or, if the model will be small (one or two zones)'
-        H(17)='all the files can be in one folder shown below:'
-        H(18)=' '
-        write(H(19),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+        write(H(9),'(3x,2a)')cfgroot(1:lncr),'/hvac (hvac files)'
+        write(H(10),'(3x,2a)')cfgroot(1:lncr),'/nets (networks)'
+        write(H(11),'(3x,2a)')cfgroot(1:lncr),'/doc (reports and notes)'
+        write(H(12),'(3x,2a)')cfgroot(1:lncr),'/tmp (odds+ends)'
+        write(H(13),'(3x,2a)')cfgroot(1:lncr),'/dbs (project databases)'
+        H(14)=' '
+        H(15)='will be created. '
+        H(16)=' '
+        H(17)='Or, if the model will be small (one or two zones)'
+        H(18)='all the files can be in one folder shown below:'
+        H(19)=' '
+        write(H(20),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &    ' (project folder)'
         CALL EASKABC(' Create model in:',
      &    '(see help)','single folder','standard set of folders',
-     &    'cancel',IW,19)
+     &    'cancel',IW,20)
       endif
 
       if(IW.eq.1)then
@@ -519,6 +537,7 @@ C Assume all types of files go in the single project folder.
         write(docpth,'(2a)')'.',fs
         write(tmppth,'(2a)')'.',fs
         write(dbspth,'(2a)')'.',fs
+        write(hvacpth,'(2a)')'.',fs
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
         lnod=lncr
@@ -578,6 +597,7 @@ C Check longer paths cause the path variable to have a string buffer overflow.
         write(docpth,'(3a)')'..',fs,'doc'
         write(tmppth,'(3a)')'..',fs,'tmp'
         write(dbspth,'(3a)')'..',fs,'dbs'
+        write(hvacpth,'(3a)')'..',fs,'hvac'
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
         lnod=lncr
@@ -622,6 +642,10 @@ C Check longer paths cause the path variable to have a string buffer overflow.
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'dbs'
+        call usrmsg('Creating folder:',doit,'-')
+        call runit(doit,'-')
+        call pausems(400)
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'hvac'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
@@ -912,7 +936,7 @@ C geometry.h provides commons G0 and G2.
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -931,12 +955,14 @@ C Remember width of file/folder names passed back from getfilelist.
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
-      character*33 ITEMS(21)
+      character*33 ITEMS(23)
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character subpath*72,action*3
       integer lnod   ! length for odir
+      integer nitems,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       changedit=.false.
@@ -1011,17 +1037,18 @@ C        write(6,*) 'OSX path is ',path
       WRITE(ITEMS(10),'(2A)')'h temp.   : ',tmppth(1:20)
       WRITE(ITEMS(11),'(2A)')'i radiance: ',radpth(1:20)
       WRITE(ITEMS(12),'(2A)')'j local db: ',dbspth(1:20)
-      ITEMS(13)  =           ' _____________________________ '
-      ITEMS(14)  =           'j zone files                   '
-      ITEMS(15)  =           'k scan and rewrite model files '
-      ITEMS(16)  =           ' _____________________________ '
-      WRITE(ITEMS(17),'(A)') 'l list ASCII file              '
-      WRITE(ITEMS(18),'(A)') 'm edit ASCII file              '
-      WRITE(ITEMS(19),'(A)') 'n list files in esp-r/databases'
-      WRITE(ITEMS(20),'(A)') 'o list files in esp-r/climate  '
-      ITEMS(21)  =           '? help                         '
-      ITEMS(22)  =           '- exit this menu               '
-      nitems=22
+      WRITE(ITEMS(13),'(2A)')'k hvac    : ',hvacpth(1:20)
+      ITEMS(14)  =           ' _____________________________ '
+      ITEMS(15)  =           'l zone files                   '
+      ITEMS(16)  =           'm scan and rewrite model files '
+      ITEMS(17)  =           ' _____________________________ '
+      WRITE(ITEMS(18),'(A)') 'n list ASCII file              '
+      WRITE(ITEMS(19),'(A)') 'o edit ASCII file              '
+      WRITE(ITEMS(20),'(A)') 'p list files in esp-r/databases'
+      WRITE(ITEMS(21),'(A)') 'q list files in esp-r/climate  '
+      ITEMS(22)  =           '? help                         '
+      ITEMS(23)  =           '- exit this menu               '
+      nitems=23
 
 C Help text for this menu.
       H(1)='This menu allows you to edit the information related'
@@ -1252,6 +1279,26 @@ C            write(6,*) 'iier is ',iier,nli
         call getfilelist(subpath,action,listf,nwlistf,nlistf)
         call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
         call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+      elseif(ino.eq.12)then
+        if(.NOT.browse)then
+          H(1)='Give relative path from cfg to hvac folder.'
+          H(2)='For example `../hvac`.'
+          t24=hvacpth
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to hvac folder?',
+     &       24,'../hvac','relative hvac path',IER,2)
+          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
+            hvacpth=t24
+            changedit=.true.
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('p','hva','hvac',sfile,snpfile,nli,iier)
+          endif
+        else
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('p','hva','hvac',sfile,snpfile,nli,iier)
+        endif
 
 C << interface for dbspath here >>
 
@@ -1315,7 +1362,7 @@ C and change any / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
-      elseif(ino.eq.18)then
+      elseif(ino.eq.19)then
 
 C List files in corporate databases folder.
         sfile=' '
@@ -1465,7 +1512,7 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/pophelp/h(60)
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/CFGV/icfgv
       common/user/browse
@@ -1488,8 +1535,10 @@ C CFD
       character D*72,T15*12,D15*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       logical modcfg,XST,unixok
+      integer MITEM,INO ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe

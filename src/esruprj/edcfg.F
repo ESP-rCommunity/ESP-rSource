@@ -35,8 +35,10 @@ C information to be saved into a new file. ITRU unit number for user
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
       
-      USE AIM2_Inputs, ONLY : AIM2_Interface
+      USE AIM2_Inputs, ONLY : AIM2_Interface, iAIM2
       
+      IMPLICIT NONE
+            
 #include "building.h"
 #include "model.h"
 
@@ -50,34 +52,49 @@ C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
-      
-      integer lnblnk  ! function definition
 
+C Function definition
+      INTEGER :: lnblnk
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      INTEGER :: mmod,limit,limtty
       common/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      INTEGER :: iappw,iappx,iappy
       common/gzonpik/izgfoc,nzg,nznog(mcom)
+      INTEGER :: izgfoc,nzg,nznog
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
+      REAL :: GRDIS
+      INTEGER :: ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR
+      INTEGER :: ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
-      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      INTEGER :: ncomp,ncon
       common/C6/INDCFG
+      INTEGER :: indcfg
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv
+      INTEGER :: icfgv
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -85,20 +102,28 @@ C Defaults.
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/entfile/entflnam,ientxist
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+      INTEGER :: NPRE
+      REAL :: FPRE
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
+      REAL :: GRMAX,GRSPC,GRLYRH
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
+      REAL :: SCALF,VIEWCEN,VIEWLIM
+      INTEGER :: IVIEW
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/ICONDBNAM/ICONDBFL      
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       COMMON/NWKTYP/INWKTYP,vergnf
+      REAL :: vergnf
       COMMON/NWKGRDL/GON,SON
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
@@ -106,13 +131,20 @@ C Uncertainty.
      & VCICON(MICN,MICNV,3),IVEICN(MICN,MICNE,5),NIVC(MICN),
      & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
      & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
+      INTEGER :: NNICN,ICONTP,NICONATR,NCONP,ICNCT,IVEICN,NIVC,NIVE,NIVD
+      INTEGER :: IVDOT,NIVA,IVARC,NIVL,IVLBL,NIVT
+      REAL :: XYZICON,CONCP,VCICON
+     
       COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
      & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
+      INTEGER :: NICNN,ICNS,ICNE,ICNNT,ICNSP,ICNEP,NCONWP,idatrdom
+      REAL ::CNWNP
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+      INTEGER :: NCONTM,NOCNTM
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
@@ -128,6 +160,7 @@ C Uncertainty.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,tmode*8,doit*248
+      character hvacpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,aimpth*24
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
@@ -140,6 +173,17 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      
+      INTEGER :: itrc,itru,ier,i,ic,icc,istat
+      INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
+      INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
+      INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
+      INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
+      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems,szlow
+      REAL :: szcog,szhigh
+C Function definition      
+      INTEGER :: igraphiclib
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -148,6 +192,21 @@ C Uncertainty.
       integer*8 ICPMOD              ! passed from tchild
 #endif
 
+C HVAC
+C Flag indicating presence of HVAC models:
+C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
+      common/hvacinfo/ihvacflag,hvacfile
+      integer ihvacflag
+      character hvacfile*72,HVAC_ITEMS*24
+      integer nhvac_items
+      integer hvind, indhvac, hvidind
+      PARAMETER (nhvac_items = 5)
+      dimension HVAC_ITEMS(nhvac_items)
+      
+C Menu flag
+C To avoid the further use of goto loops, plan to use a do while loop with
+C flags to return to the main menu instead of the goto 3 statment
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -165,6 +224,7 @@ C are active.
       if(indcfg.ge.2)nets=nets+1
       if(iairn.ge.1)nets=nets+1
       if(ientxist.gt.0)nets=nets+1
+      if(ihvacflag.gt.0)nets=nets+1
 
       ictl=ncf+ncl+ncc+ngf+nof
       IER=0
@@ -183,7 +243,7 @@ C are active.
       WRITE(ITEMS(5),'(A,I2,A)')' ... Zones.....(',NCOMP,' defined)'
       ITEMS(6)   ='c composition                ' 
       WRITE(ITEMS(7),'(A,I2,A)')' ... Networks......(',nets,' defined)'
-      if(indcfg.ge.2)then
+      if(indcfg.ge.2.or.ihvacflag.gt.0)then
         ITEMS(8)='d plant & systems (defined)  '
       else
         ITEMS(8)='d plant & systems            '
@@ -473,23 +533,73 @@ C Go to zones definintion menu.
         call EDZCOMP(ITRC,ITRU,IER)
       ELSEIF(INO.EQ.8)THEN
 
-C Plant network description, ask for plant network file and then
-C display it before starting up editing facilities.
+C ---------------------------------------------------------------------------------------------
+C -----------------------------------PLANT NETWORK DESCRIPTION---------------------------------
+C Plant network description, select either an idealized HVAC network (5 choices currently 
+C available) or define and explicit plant network. If an idealized model is selected, choose 
+C an option and set required parameters. If an explicit model is chosen, ask for plant network 
+C file and then display it before starting up editing facilities.
+C ---------------------------------------------------------------------------------------------
+
         IF(.NOT.CFGOK)THEN
           CALL USRMSG('Please define your model first!',' ','W')
           GOTO 3
-        ELSE
+        else
+      
+C Options for the plant network menu
+          hvind=-1
+          do while (hvind.ne.nhvac_items)
+          
+          if(ihvacflag.eq.0)then
+            HVAC_ITEMS(1)='a Idealized           '
+          elseif(ihvacflag.eq.1)then
+            HVAC_ITEMS(1)='a Idealized (defined) '
+          endif
           if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
+            HVAC_ITEMS(2)='b Explicit            '
+          elseif(LPNF(1:4).ne.'UNKN'.or.LPNF(1:2).ne.'  ')then
+            HVAC_ITEMS(2)='b Explicit (defined)  '
+          endif
+          HVAC_ITEMS(3)  =' ___________________  '
+          HVAC_ITEMS(4)  ='? help                '
+          HVAC_ITEMS(5)  ='- exit this menu      '
+          
+C Help text for the plant network menu
+          H(1)='Idealized model creates an .hvac file with    '
+          H(2)='descriptions of main and backup systems.      '
+          H(3)='Explicit creates a plant network file which   '
+          H(4)='defines plant components and their connection '
+          H(5)='topology.                                     '
+          
+          CALL EMENU('Plant Model',HVAC_ITEMS,nhvac_items,hvind)
+          
+          if(hvind.eq.nhvac_items)then
+C If user does not wish to continue, exit back to calling menu and clear dialogue box.
+            CALL USRMSG(' ',' ','-')
+            GOTO 3
+          elseif(hvind.eq.nhvac_items-1)then
+            CALL PHELPD('Idealized or Explicit Plant Model?'
+     &                    ,5,'-',0,0,IER)
+          elseif(hvind.le.0)then
+C If no selection is made, or user clicks of screen, do nothing and redraw menu.
+          elseif(hvind.eq.1)then 
+C If idealized plant model is desired, enter idealized HVAC subroutine.
+            CALL HVACGIN()
+          elseif(hvind.eq.2)then
+C If explicit plant model is desired, continue to define an explicit plant network.
+            
+            if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
             dok=.false.
-            h(1)='A plant network file holds the definition of a'
-            h(2)='system, the purpose of which is usually to supply'
+              h(1)='A plant network file holds the definition of a     '
+              h(2)='system, the purpose of which is usually to supply  '
             h(3)='the building with heat, coolth and/or power. Unless'
-            h(4)='you have access to a suitable components database,'
-            h(5)='DO NOT use this facility.'
+              h(4)='you have access to a suitable components database, '
+              h(5)='DO NOT use this facility.                          '
             CALL ASKOK(
      &      'Currently there is no plant network associated with',
      &      'the model. Create/select one?',OK,DOK,5)
-            if(.NOT.ok)goto 3
+              IF(.NOT.ok)GOTO 3
+
             if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
               WRITE(LPNF,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.pln'
             else
@@ -504,6 +614,7 @@ C display it before starting up editing facilities.
      &        DPNF,'plant network file',IER,2)
             goto 46
           endif
+
           H(1)='The plant network file defines plant components and'
           H(2)='topology. If you supply an existing file it will be'
           H(3)='used, otherwise a new file will be created.'
@@ -517,7 +628,8 @@ C display it before starting up editing facilities.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
  301      if(iglib.eq.2)then
             CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
-     &        'dereference',clkok,72,DPNF,'plant network file',iser,9)
+     &                       'dereference',clkok,72,DPNF,
+     &                        'plant network file',iser,9)
             if(clkok)iclkok=2   ! notice dereference button
             if(iser.eq.-3) goto 3  ! notice GTK cancel button
           else
@@ -606,6 +718,9 @@ C If an error has been encountered then reset the configuration type.
             endif
           endif
         endif
+          enddo
+        endif
+        
       ELSEIF(INO.EQ.9)THEN
 
 C Flow description.
@@ -1235,7 +1350,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1296,6 +1411,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82
@@ -1308,6 +1424,8 @@ C Flag noting whether casual gain periods are currently sorted.
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
       integer IRT,irop  ! for radio buttons
+      integer nitems,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
@@ -4070,7 +4188,7 @@ C      common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
@@ -4079,7 +4197,7 @@ C      common/OUTIN/IUOUT,IUIN
       character doit*124,tmode*8,H*72,act_1*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
-     &          bsmpth*24
+     &          bsmpth*24,hvacpth*24
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

@@ -43,6 +43,7 @@ C a building.
       common/pophelp/h(60)
       dimension ITEMS(15)
       character items*36,h*72,hold*32
+      integer nitms,INO ! max items and current menu item
 
       logical moddb,close
 
@@ -372,6 +373,7 @@ C should calculate pressure coefficients.
       DIMENSION XX(MV),YY(MV),ZZ(MV)
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
       real DX1,DZ1  ! to avoid name clash in geometry.h
+      integer MVERT,IVERT ! max items and current menu item
       
 #ifdef OSI
       integer iix,iiy
@@ -1452,6 +1454,7 @@ C IER=0 OK, IER=1 problem.
       integer lnwkg   ! for length of working file name
       integer iw      ! for radio button
       logical unixok  ! to check for database path file separators
+      integer NITMS,IVERT,INOO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

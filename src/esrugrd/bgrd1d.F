@@ -55,6 +55,7 @@ C *********************************************************************
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
       CHARACTER H*72,TEXT*40,LGRD1D*72
+      integer MITEM,INO ! max items and current menu item
 
       DIMENSION IVALSZ(MCOM),IVALSC(MS),IVALSL(ME)
 
@@ -307,6 +308,7 @@ C *********************************************************************
       COMMON/GR1D04/GAM,RGAM
 
       CHARACTER ITEM(14)*30,H*72,TEXT2*120,ONFF*3
+      integer NITMS,INO ! max items and current menu item
 
       DIMENSION FRN(MS,ME)
 
@@ -380,7 +382,8 @@ C Help text for menu.
       H(39)='     updated if the dynamic gridding was ON. '
 
       CALL USRMSG(' ',' ','-')
-      CALL EMENU('  Automatic Node Distribution',ITEM,14,INO)
+      NITMS=14
+      CALL EMENU('  Automatic Node Distribution',ITEM,NITMS,INO)
       IF(INO.EQ.2.AND.IVAR.EQ.1)THEN
 
 C Switching the dynamic gridding index.
@@ -541,6 +544,7 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
+      integer NITMS,INO ! max items and current menu item
 
 C Initialise the external and internal convective heat transfer 
 C coefficient.
@@ -596,7 +600,8 @@ C Help text for this menu.
       H(26)=' -   return to the nodes distribution menu. '
 
       CALL USRMSG(' ',' ','-')
-      CALL EMENU(' Lumped Constructions',ITEM,15,INO)
+      NITMS=15
+      CALL EMENU(' Lumped Constructions',ITEM,NITMS,INO)
       IF(INO.EQ.3)THEN
 
 C Assign the (hc) value for a surface.

@@ -206,7 +206,6 @@ C Characters
 
       DIMENSION RVHY(MHYDAT),RVPC(MPWDAT),RVCC(MCCDAT)
       DIMENSION IVPC(3)          !- array used to read PCU sending node and receiving node
-      DIMENSION IVA(2)           !- array used to read AC and DC node to which hybrid plant component is connected to.
 
       PARAMETER (BIG=1E+15)
 
@@ -1105,7 +1104,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER CFGROOT*24
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &ENTFLNAM,LFIL,DEFLNAM,H,LCFGF,TFILE
+     &ENTFLNAM,LFIL,DEFLNAM,H,LCFGF
       CHARACTER OUTS*124,longtfile*144
       LOGICAL CONCAT
 

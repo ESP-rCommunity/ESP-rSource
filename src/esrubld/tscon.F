@@ -120,6 +120,7 @@ C ITRPAS       : Counts number of iterations performed so far.
       CHARACTER*39  ZITEM(9)
       character*36  zitem1(9)
       character     H*72,outs*80
+      integer NITEMS,INO  ! max items and current menu item
 
 C Initialise timestep controllers variables.
     1 ITSFLG=1

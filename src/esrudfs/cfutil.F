@@ -325,7 +325,7 @@ C Change call to call with parameter "IFRAME" which is the time step!
 
       integer IFRAME
 
-      character lflname*72,tfile*72
+      character lflname*72
 
 Cag@241106
 CC      write(*,*) 'TECPLOTEND:IFRAME = ',IFRAME

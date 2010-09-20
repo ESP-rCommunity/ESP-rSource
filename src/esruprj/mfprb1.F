@@ -57,7 +57,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -75,10 +75,12 @@ C LPRFDB,IPRODB (for event profile database)
       character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer NITMS1,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -717,6 +719,7 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       integer IVV  ! for radio button
+      integer NITMS,IVERT ! max items and current menu item
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 

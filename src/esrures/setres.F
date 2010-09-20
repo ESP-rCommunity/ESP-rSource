@@ -40,6 +40,7 @@ C SETUP provides the menus and control logic for the res preference menu.
       DIMENSION SETUPM(10)
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       CHARACTER SETUPM*50,H*72,pifltog*4,lpifl*72,ltmp*72
+      integer NITMS,ISETUP ! max items and current menu item
 
 C Present the preferences menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -93,8 +94,8 @@ C Instanciate h() array for the menu.
       H(5)='Remember that the size of the window may be resized '
       H(6)='via the Environment button so that complex images '
       H(7)='may be viewed in greater detail.'
-
-      CALL EMENU('res preferences',SETUPM,9,ISETUP)
+      NITMS=9
+      CALL EMENU('res preferences',SETUPM,NITMS,ISETUP)
 
       IF(ISETUP.EQ.2)THEN
 

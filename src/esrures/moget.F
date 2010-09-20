@@ -248,6 +248,7 @@ C EDGOGET allows removal of output requests.
       character VERT(MZS+3)*28,KEY*1,h*72
       integer ORDER,OGET
       dimension INCGET(MZS),ORDER(MZS),OGET(MZS)
+      integer MVERT,IVERT ! max items and current menu item
 
 C Sort ORDER of IGETNO array for display purposes.
       do 100 I=1,NGET
@@ -448,6 +449,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer loop       ! for do loops
       integer IAC        ! for user selection
       integer IOT,IWM    ! for radio buttons
+      integer NITMS,INO  ! max items and current menu item
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
 #ifdef OSI

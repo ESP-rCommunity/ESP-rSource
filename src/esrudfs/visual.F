@@ -57,6 +57,7 @@ C VISOUT - define the parameters for the visualization of results.
       CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24,Lflpar*72
       integer IWM,IWE   ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
 C Check for visualidsation data.
       if (Lflpar(ICOMP)(1:7).ne.'UNKNOWN') call rdFVP(ICOMP,ier)
@@ -562,6 +563,7 @@ C imgtyp  Output image type.
       character name*12,BITITL*5,LBITrt*12,H*72,outs*124,t24*24
       CHARACTER POLNAM*12,ITEM(MCTM+2)*18
       integer ISCALAR  ! for radio button
+      integer NITMS,INO  ! max items and current menu item
 
 C Set the geometry for the CFD domain in terms of ESP-r's standard
 C geometry model.

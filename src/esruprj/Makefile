@@ -27,14 +27,15 @@ OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesim
 	  edobs.o edonecon.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
 	  egrid.o egtgeom.o emeta.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
 	  eroper.o esru_misc.o esystem.o exlgrad.o explor.o filelist.o folders.o \
-	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o \
+	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o hvacgui.o initalc.o insert.o item.o \
 	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
-	  PltDummy.o 
+	  hvacinput.o \
+	  PltDummy.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod aim2_inputs_inputdata.mod	
 
@@ -239,6 +240,9 @@ DHW_module.F:
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
+hvacinput.F:
+	rm -f hvacinput.F
+	ln -s $(CETCdir)/hvacinput.F .
 PltDummy.F:
 	rm -f PltDummy.F
 	ln -s $(PLTdir)/PltDummy.F .

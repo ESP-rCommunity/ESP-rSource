@@ -55,6 +55,7 @@ C *********************************************************************
 
       CHARACTER ITEM(13)*26,SZN*15
       CHARACTER*72 LGrdSt,H
+      integer MITEM,INO ! max items and current menu item
 
       SZN=' '
       IZ=0
@@ -227,6 +228,7 @@ C *********************************************************************
       COMMON/GRSD31/INDLCL(MS)
 
       CHARACTER KEY*1,H*72,ITEM(20)*31,STTS*13
+      integer NITEMS,INO  ! max items and current menu item
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -318,6 +320,7 @@ C *********************************************************************
       DIMENSION ITEM(8)
 
       CHARACTER H*72,ITEM*22
+      integer MITEM,INO ! max items and current menu item
 
       CALL INTSTM
       ICalc=0

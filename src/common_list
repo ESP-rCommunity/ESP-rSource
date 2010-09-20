@@ -1751,7 +1751,7 @@ C << still working on this >>
 
 C DOCUMENT PATHS
       COMMON/PATHS/ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DOCPTH,TMPPTH,
-     &             dbspth
+     &             dbspth,hvacpth
 C ZONEPTH (24 char) relative path to the model zones folder.
 C NETPTH (24 char) relative path to the model networks folder
 C CTLPTH (24 char) relative path to the model control folder
@@ -1760,6 +1760,7 @@ C RADPTH (24 char) relative path to the model Radiance folder
 C DOCPTH (24 char) relative path to the model documents folder
 C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
+C hvacpth (24 char) relative path to the model hvac folder
 
 C DOCUMENT PBYDAT
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS

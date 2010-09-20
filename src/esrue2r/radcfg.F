@@ -51,16 +51,18 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/rpath/path
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
+
       common/user/browse
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
+
+      character tmp_rifname*72
+
       character WORD*124, OUTS*124, OUTSTR*124
       character pfile*72,path*72,runpath*72,pathtype*24,fs*1
-      
-      character tmp_rifname*72
-      
       integer lnrp  ! length of run path
 
       integer ifocz_tmp(MBP+1)
@@ -326,6 +328,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       LOGICAL SELECT,delzone,cpyzone,modscene
       integer IW  ! for radio button
+      integer MVERT,IVERT  ! max items and current menu item
 
       integer irif ! loop variable for more than one rif per scene
       

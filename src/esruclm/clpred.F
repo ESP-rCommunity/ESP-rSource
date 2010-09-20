@@ -69,6 +69,7 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       character outs*124
       DIMENSION ICLM(24,6),ICK(6),WVEL(24),NANG(MAAS),WRDF(MAAS)
       logical OK,dok,FOUND
+      integer NITEMS,INO  ! max items and current menu item
 
    1  ISAVE=1
       if(ist.eq.1)then

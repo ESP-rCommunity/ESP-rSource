@@ -40,6 +40,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       character CLSDES*48,H*72,KEY*1,outs*124
       character TYPEDES(5)*20,t32*32,d32*32
       logical closemat1,closemat2
+      integer NCO,ICO ! max items and current menu item
       
 C Define material types.
       TYPEDES(1)='unknown'

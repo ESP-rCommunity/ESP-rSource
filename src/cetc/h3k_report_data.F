@@ -784,11 +784,11 @@ C-----------------------------------------------------------------------
 
 C.....Collect zone air-changes/hour
         IF (ALLOCATED(AIM2_infil_to_zones)) THEN
-      fZoneInfiltrationACH = AIM2_infil_to_zones(iZone) / VOL(iZone)
+          fZoneInfiltrationACH = AIM2_infil_to_zones(iZone)/VOL(iZone)
      &                          * 3600.0
         ELSE
           CALL EDISP(IUOUT,
-     &       ' Warning: AIM2_infil_to_zones array not allocated')
+     &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
         END IF
 
 
@@ -1425,13 +1425,13 @@ C           gain type "1"
       endif
 
 C Report occupancy status
-            call add_to_xml_reporting (
-     &        real(is_occupied(iZone)),  ! flag
-     &        H3K_rep_NAME(1:iH3K_NameLen) 
-     &         // '/occupt',
-     &         'units', '(-)',
-     &         'occupancy flag, 0 not occ, 1 occ'
-     &      )
+       call add_to_xml_reporting (
+     &      real(is_occupied(iZone)),  ! flag
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &      // '/occupt',
+     &      'units', '(-)',
+     &      'occupancy flag, 0 not occ, 1 occ'
+     & )
 
 C.....ARTIFICIAL LIGHTING GAIN FRACTION
 

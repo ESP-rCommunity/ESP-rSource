@@ -50,6 +50,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr
       CHARACTER VERT*29,H*72,CUBN*6
       character outs*124
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -238,6 +239,7 @@ C IER=0 OK, IER=1 problem.
 
       DIMENSION STMENU(30)
       LOGICAL GEOLOAD,MRTLOAD
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initial menu entry setup return if no file has been read in.
       IF(.NOT.GEOLOAD)RETURN

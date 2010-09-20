@@ -66,6 +66,7 @@ C LPRFDB,IPRODB (for event profile database)
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
       integer IW  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -705,11 +706,12 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       CHARACTER H*72,LTMP*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1065,6 +1067,7 @@ C Parameters
       logical havesaved  ! to signal zone file written
       integer llbm    ! length for material
       real top        ! for the highest point of the block
+      integer NITMS,IVERT ! max items and current menu item
 
 C Initial values for point at angle facility.
       V1=1.0
@@ -1260,9 +1263,11 @@ C Help text for this menu.
 C Now display the menu.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
      &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-        CALL EMENU('Block Details',VERT,22,IVERT)
+        NITMS=22
+        CALL EMENU('Block Details',VERT,NITMS,IVERT)
       else
-        CALL EMENU('Obstruction Details',VERT,19,IVERT)
+        NITMS=19
+        CALL EMENU('Obstruction Details',VERT,NITMS,IVERT)
       endif
 
 C One set of interface actions if type 'obs' or 'obs3'.

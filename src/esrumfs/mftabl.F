@@ -66,6 +66,7 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
 
       character WORD*20,H*72,outs*124,OUTSTR*124
       character PERST1*14,PERST2*44,PERST3*44,NDNAM*12
+      integer NITMS,INO ! max items and current menu item
 
       IDIM=1
       VOL(1)=1.
@@ -388,6 +389,7 @@ C ICLIM,LCLIM (for climate file)
       CHARACTER NDNAM*12
       DIMENSION  COLCNT(MCOLT),ICOLIX(MCOLT,2)
       logical OK,dok
+      integer NITMS,INO ! max items and current menu item
 
       IDIM=1
       VOL(1)=1.

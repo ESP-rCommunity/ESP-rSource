@@ -447,122 +447,68 @@ amount of testing that can be performed, and ESP-r may
 not install or function correctly on some machines.
 
 The following table summarizes the most recent test results
-on each of ESP-r's supported platforms:
+on the stability of ESP-r Release 11.9 on various compilers:
 
-                 Testing for ESP-r Release 11.8
-      (2009-11-20, svn revision r4842 on pre-release_patches branch)
- -----------------------------------------------------------------------
- Platform  Compiler    Notes
- .......................................................................
- Linux     GCC 4.1.2   A complete regression test was performed against
-                       the last release (2009-05-25, r4324). This 
-                       comparison highlighted numerical differences
-                       introduced by bug fixes in the code (r4682),
-                       new window shading control (r4722), new obstruction
-                       rotations and six-sided obstructions (r4710) and a 
-                       new global control (r3607) where
-                       anticipated numerical differences were observed.
-                       One bug fix (r4841) yielded significant
-                       reductions in runtime. No unintended results were
-                       observed.
+                 Testing for ESP-r Release 11.9
+      (2010-06-25, svn revision r5445 on pre-release_patches branch)
                        
-Complete discussion of these results is provided in the file: 
-'/tester/testing_results/Testing_results_ESPr_11_8.txt'.
-
-The Linux / GCC 4.1.2 reference platform testing archive is provided
-in the file:
-'/tester/testing_results/ref_platform_linux_gcc_4_1_2_results_archive_11_8.tar.gz'.
+------------------------------------------------------------------------
+Compiler          Status        Notes 
+........................................................................
+GCC   3.X         Obsolete      GCC3 was depreciated in release 11.6, and we now
+                                regard it as obsolete. NRCan no longer tests 
+                                ESP-r with GCC3, and recommends any developers
+                                still using GCC3 move to GCC4. 
                        
-                 Testing for ESP-r Release 11.7
-      (2009-05-25, svn revision r4286 on pre-release_patches branch)
- -----------------------------------------------------------------------
- Platform  Compiler    Notes
- .......................................................................
- Linux     GCC 3.4.6   Comparisons suggest GCC 4.1.2 is more stable
-                       and robust than GCC 3.4.x. For this reaseon,
-                       although GCC 3.4.6 continues to be supported, 
-                       regression testing is now performed using GCC
-                       4.1.2. 
-
-           GCC 4.1.2   A complete regression test was performed against
-                       the last release (2008-11-21, r3640). This 
-                       comparison highlighted numerical differences
-                       introduced by bug fixes in the code (r4129) and
-                       new window shading models (r4092) where
-                       anticipated numerical differences were observed.
-                       One bug fix (r4233) yielded significant
-                       reductions in runtime. No unintended results were
-                       observed.
+      4.1.2       Supported     Formerly the reference compiler, GCC 4.1.2 builds
+                                remain stable, and continue to show good agreement
+                                with the Intel compiler (v 10.0). Version 4.1.2 
+                                also agrees well with more recent versions of 
+                                GCC4 (4.3.2 and 4.4.1). 
                        
-                       A comprehensive comparison between GCC 4.1.2, GCC
-                       3.4.6, Intel and sun cc builds suggests that the
-                       GCC 4.1.2 is the most stable and robust compiler
-                       for building ESP-r. For this reason, GCC 4.1.2
-                       is now the recommended compiler for building
-                       ESP-r.
+      4.2.X       Unsupported   We observed substantial instability when using 
+                                GCC 4.2, and the GCC community regarded this 
+                                release as less robust than the 4.1 version. 
+                                We have not undertaken comprehensive testing 
+                                with GCC 4.2, and recommend developers use more
+                                recent versions of the GCC 4 compiler.
+                          
+      4.3.2       Reference     Version 4.3.2 has proven robust and its results
+                                agree well very well with the previous reference
+                                compiler (4.1.2), as well as with gcc 4.4.1 and 
+                                Intel v 10. Given the wide availability of GCC4.3.2,
+                                we recommend designating it as the reference compiler
+                                for ESP-r release 11.9. 
+                          
+      4.4.1       Supported     Version 4.4.1 also incorporates enhanced exception 
+                                handling. When enabled, bps reports fatal divide-by-zero
+                                errors, but preliminary investigation of these errors 
+                                suggests they reside in low-level GNU libraries and not
+                                in ESP-r related code. Thus, the utility of these 
+                                improvements remains to be seen.
+                          
+      4.5.X       Unsupported   GNU has designated GCC 4.5.0 as stable, but it is not
+                                yet available on our test systems (ubuntu & gentoo). 
+                                It remains unsupported for this test cycle. 
 
-           GCC 4.2.3   The GCC 4.2.3 compiler suite  provides exact
-                       agreement with GCC 4.1.2 in all but a handful
-                       of test cases, where numerical exceptions cause
-                       floating point errors. For this reason, use of
-                       GCC 4.2 for research purposes is discouraged.
+Intel 10.0.032    Supported     Version 10 of the Intel compiler continues to be robust
+                                as long as the default optimizations (-O2) are suppressed.
+                                One test case (bld_hc_ISO15099) continues to produce small,
+                                but non trivial differences for unknown reasons. 
 
-           Intel 10.0  With optimization deactivated, the Intel
-                       compiler consistently produced results close to
-                       the gFortran and Sun f90 builds. But When the
-                       default optimization is activated (using the -O2)
-                       option, agreement between the Intel and GCC 4.1.2
-                       compiler deteriorates considerably. Nearly all of
-                       the models exhibit small, non-trace differences,
-                       and in every case these differences were slightly,
-                       or significantly larger than those observed with
-                       optimization deactivated.
- ......................................................................
- Cygwin    GCC 4.1.2   A comprehensive comparison to results from a
-                       Linux/GCC 4.1.2 build exhibited very good
-                       agreement.
- ......................................................................
- Solaris   Sun CC      A comprehensive comparison between results from
-                       the sun compiler suite and GCC 4.1.2 exhibited 
-                       good agreement. 
- .......................................................................
- OS X     GCC 3.4.6    A comprehensive comparison betwen results from
-                       an OS X build revealed unexplained non-trivial
-                       differences from GCC 3.4.6 and 4.1.2 Linux builds.
-                       For this reason, OS X builds should be used with
-                       caution.
- .......................................................................
- MinGW    GCC 3.4.5    The release compiles correctly on MinGW, but the
-                       testing tools do not correctly run in a DOS
-                       environment. For this reason, a comprehensive
-                       cross platform test has not been undertaken. 
- -----------------------------------------------------------------------
+      11.1.072    Beta          Version 11 of ifort exhibits trace differences from version
+                                10 over many test cases, enhanced floating point exception
+                                handling. When run with this exception handling enabled,
+                                this bps produces fatal errors on models not previously
+                                known to cause problems. These errors will be investigated
+                                in the next release cycle. 
 
-Numerical differences between the reference version of ESP-r (Linux,
-GCC 4.1.2 and X11) each platform and compiler combination
-and the reference version ares summarized below. Complete discussion of
-these results is provided in the file 
-'/tester/testing_results/Testing_results_ESPr_11_7.txt'.
-
-   Comparison of results from GCC4.1.2-compiled versions
-   (X11, Linux) with builds from other platform/compilers.
- -----------------------------------------------------------------
- Architecture  Platform    Compiler      Maximum difference (%) 
- ................................................................. 
-    IA-32      CYGWIN      GCC 4.1.2            0.63 
-               LINUX       GCC 4.1.2            (REF)
-               SOLARIS     Sun CC/f90           5.28 (note 2)
-               LINUX       Intel -O0            0.75  
-    PowerPC    OSX         GCC 3.4              3.41 
-    Sparc      SOLARIS     Sun CC/f90           2.61 
- .................................................................
- NOTES:
-   1. Some test cases produced numerical exceptions and
-      floating point errors.
-   2. Two test cases caused a numerical exception.
-   3. Testing on MinGW was not carried out due to an issue
-      with DOS path management in ESP-r.
- -----------------------------------------------------------------
+SUN   Std. 12     Unsupported   ORACLE now offers the SUN C, C++ and Fortran compilers free.
+                                We have not tested ESP-r with these compilers, but plant
+                                to explore their use in the next test cycle. 
+                            
+Complete discussion of these results is provided on the ESP-r wiki: 
+http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.9
 
 ===========================================================
 11. SUPPORT

@@ -65,7 +65,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -77,6 +77,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       CHARACTER*72 DFILE
       CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82,aimpth*24
+      CHARACTER hvacpth*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,TOPTIC*12,
      &      OPTIC*12
@@ -85,6 +86,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       logical CFCFOUND !used to determine whether CFCs exist
       character*72 CFCFILE
+      integer MVERT,IVERT ! max items and current menu item
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -826,6 +828,7 @@ C Material properties.
       DIMENSION ISD(19)
       CHARACTER NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
+      integer ISDN,INODA ! max items and current menu item
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/

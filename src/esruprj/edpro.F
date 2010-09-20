@@ -68,6 +68,7 @@ C   control information to the configuration control file.
 
       logical asciupdate   ! to signal if user has edited data.
       logical unixok  ! to check for database path file separators
+      integer MVERT,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -335,6 +336,7 @@ C << as multiple casual gain types
       character fs*1       ! file separator
       logical asciupdate   ! signal if user edits data
       logical unixok  ! to check for database path file separators
+      integer MVERT,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

@@ -184,7 +184,7 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
       CHARACTER outs*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero
-      logical close,context
+      logical context
 
 C Initialisation
       zbzero=.FALSE.
@@ -203,8 +203,6 @@ C Recover zone data (read only, no display).
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
-      FLA=0.
-      IFLA=0
       OPQ=0.
       TRN=0.
       DO 41 I=1,NSUR

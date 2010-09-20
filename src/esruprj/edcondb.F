@@ -67,6 +67,7 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       real per1,per2   ! percentages of material for non-homogeneous layer
       integer iwhich2  ! 2nd material array index
       integer idb,idb2 ! the two legacy indices selected
+      integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1496,6 +1497,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
       integer IW   ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2166,6 +2168,7 @@ C Note: size of MLED supports a dozen layers in a construction.
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
       character PNAM*72
       character ZN*12,SN*12
+      integer NLED,ILED  ! max items and current menu item
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -3499,6 +3502,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       DIMENSION VERT(35)
       CHARACTER VERT*68,KEY*1
 C      character outs*124
+      integer MVERT,IVERT ! max items and current menu item
 
 C Set to zero first.
       imatarrayindex=0

@@ -48,6 +48,7 @@ C climate file.
       logical ok,dok,altered
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer mitem,INO  ! max items and current menu item
 
       altered=.false.
       onleft = 2      ! assume all axes to be drawn

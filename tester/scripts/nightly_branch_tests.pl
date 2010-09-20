@@ -42,6 +42,7 @@ use Cwd;
 use warnings;
 use strict;
 
+
 #--------------------------------------------------------------------
 # Prototypes
 #--------------------------------------------------------------------
@@ -77,6 +78,10 @@ my @gInput;                    # Buffer to store configuration file
 
 my $debug = 0;
 
+my $gForceUnlock = 0;          # Force a test, even if input
+                               # file is locked?
+
+my $gVerboseArg = "";
 #--------------------------------------------------------------------
 # SYNOPSYS 
 #--------------------------------------------------------------------
@@ -96,6 +101,8 @@ my $synopsys = "
    -v: report progress to screen (verbose mode)
    
    -vv: print test messages to screen (very-verbose mode)
+
+   -f, --force-unlock: Unlock a previously locked file and run tests.
 
  SYNOPSYS:
  
@@ -127,6 +134,7 @@ if ( @ARGV ){
   
   # Convert short-hand arguements into long hand 
   $cmd_arguements =~ s/-h;/--help;/g;
+  $cmd_arguements =~ s/-f;/--force-unlock;/g;
   $cmd_arguements =~ s/-v;/--verbose;/g;
   $cmd_arguements =~ s/-vv;/--very-verbose;/g;
   
@@ -163,6 +171,12 @@ if ( @ARGV ){
         $gVeryVerbose = 1;
         last SWITCH;
       }
+
+      if ( $arg =~ /^--force-unlock/ ){
+        # steam out all messages
+        $gForceUnlock = 1;
+        last SWITCH;
+      }      
       
       # If arguement is not prefixed with '-', assume it's an 
       # input file 
@@ -182,6 +196,10 @@ if ( @ARGV ){
   }
 }
 
+# Set arguement for subordinate script verbosity
+if ( $gVerbose ) { $gVerboseArg = "-v"; }
+if ( $gVeryVerbose ) { $gVerboseArg = "-vv"; }
+
 # Attempt to obtain lock on file 
 
 stream_out (`date`);
@@ -189,22 +207,40 @@ stream_out (`date`);
 if ( LockFile ( $gInputFile, "lock" ) ) {
 
   # Read input file.
+
   read_data_file($gInputFile);
-  
+
   # Possibly dump configuration to buffer
   echo_config();
-  
-  # Run tests
-  foreach my $branch ( keys %gBranches ){
-    
-    test_branch($branch);
+
+  # Flag indicating if branch was tested. 
+  my $test_done = 0;
+
+
+  # Sort branches by ascending revision #'s
+
+  my @sorted_branch_list = sort { $gBranches{$a}{'ref_rev'} <=> $gBranches{$b}{'ref_rev'} }
+                           ( keys ( %gBranches ) );
+
+  # Loop though branches until we find a test to run.
+
+  foreach my $branch ( @sorted_branch_list ){
+
+    # Check if we've already performed a test:
+    if ( ! $test_done ){
+
+      # If we haven't yet performed a branch, attempt to
+      # Test this branch
+
+      $test_done = test_branch($branch);
+
+    }
   
   }
-  
-  # Update 'last tested revision' numbers in configurtion file with
-  # most recent revision 
+
+  # Update 'last tested revision' numbers in configuration file with
+  # most recent revision
   update_data_file($gInputFile);
-  
   # Unlock file
   LockFile( $gInputFile, "unlock" )
 
@@ -213,8 +249,6 @@ if ( LockFile ( $gInputFile, "lock" ) ) {
   stream_out ("$gInputFile locked; no tests performed.\n");
   
 }
-
-die;
 
 #-------------------------------------------------------------------
 # Read input file, and attempt to update 'locked' flag 
@@ -227,13 +261,12 @@ sub LockFile($$){
   
   # Parse file
 
-  
   open (INPUT, "$input_file" ) or fatalerror ("Could not open $input_file for reading\n");
     
   my ($output) = "";
     
   while ( my $line = <INPUT> ){
-    
+
     my $line_copy = $line;
     
     # Strip comments and leading spaces from copy 
@@ -244,26 +277,54 @@ sub LockFile($$){
     # If there's anything left, check if line matches '*FILE-LOCK OPEN'
     if ( $line_copy =~ /[^\s]/ ){
     
-      
+      # Check if file is unlocked, and attempt to unlock
       if ( $action =~ /lock/ ){
           
             if ( $line_copy =~ /\*FILE-LOCK,UNLOCKED/ ){
         
-            # Lock file 
-              $line =~ s/UNLOCKED/LOCKED/g;
+              # Lock file, and initialize counter at 1.
+              $line =~ s/UNLOCKED/LOCKED,1/g;
               
               $FileLockedOk = 1;
               
             }
             
       }
+
+      # If file's already locked, increment counter,
+      if ( $action =~ /lock/ ){
+
+         if ( $line_copy =~ /\*FILE-LOCK,LOCKED/ ){
+
+            #Read counter and increment value
+
+            my ($dummy_flag,$dummy_status,$count) = split ( /,/, $line_copy ); 
+
+            # After 24 hours, unlock the file (assuming cron invokes
+            # the script every 10 minutes.
+            if ( $count > 143 || $gForceUnlock ){
+              $line = "*FILE-LOCK,LOCKED,1\n";
+              $FileLockedOk = 1;
+              # We could try to agressively delete the
+              # remaining temporary files from failed tests here...
+            }else{
+              # Increment counter, and store in buffer.
+              $count = $count +1;
+              $line = "*FILE-LOCK,LOCKED,$count\n";
+
+            }
+
+         }
+
+      }
+
       
       if ( $action =~ /unlock/ ){
           
             if ( $line_copy =~ /\*FILE-LOCK,LOCKED/ ){
         
-            # Lock file 
-              $line =~ s/LOCKED/UNLOCKED/g;
+            # UnLock file 
+              $line =~ s/LOCKED.*$/UNLOCKED/g;
               
               $FileLockedOk = 1;
               
@@ -278,11 +339,10 @@ sub LockFile($$){
     $output .= $line;
   
   }
-  
+
   # Close input, and open output 
   
   close (INPUT);
-
 
   open (OUTPUT, ">$input_file" ) or fatalerror ("Could not open $input_file for writing\n");
   
@@ -313,10 +373,11 @@ sub test_branch($){
   
   
   if ( ! $last_revision ){
-    my $svn_out = `svn info`;
+    my $svn_out = `svn info $gBaseURL/$gBranches{$branch}{"name"}`;
     stream_out ("SVN INFO: $svn_out \n");
-    fatalerror ("Unable to collect output from command `svn info`");
     LockFile ($gInputFile, "unlock");
+    fatalerror ("Unable to collect output from command `svn info`");
+
   }
     
   $gBranches{$branch}{"test_rev"} = $last_revision;
@@ -345,7 +406,9 @@ sub test_branch($){
     if ( $gBranches{$branch}{"tests"} !~ "STATIC" )      { $local_test_options .= " --skip-forcheck ";  }
     if ( $gBranches{$branch}{"tests"} !~ "BUILD" )       { $local_test_options .= " --skip-builds ";    }
     if ( $gBranches{$branch}{"tests"} !~ "REGRESSION" )  { $local_test_options .= " --skip-regression ";}
-    
+    if ( $gBranches{$branch}{"tests"} =~ "CALLGRIND" )   { $gBranches{$branch}{"args"} .=" --debug "; 
+                                                           $local_test_options .= " --run-callgrind ";
+                                                           $local_test_options =~ s/\-\-skip\-regression//g; ;}
     # Build url arguements 
     my $URL_1 = $gBranches{$branch}{"name"}."\@".$old_rev;
     my $URL_2 = $gBranches{$branch}{"name"}."\@".$gBranches{$branch}{"test_rev"};
@@ -356,18 +419,23 @@ sub test_branch($){
     my $addresses = " -a " ; 
 
     if ( ! $debug ){
+      my $first = 1;
       foreach my $member ( @members ) {
-        $addresses .= $gMembers{$member}.",";
+        if ( ! $first ){ $addresses.=","; }
+        else{ $first = 0; }
+        $addresses .= $gMembers{$member};
       }
+      
     }else{
-      $addresses .= "aferguso\@nrcan.gc.ca";
+      # Insert your address here!
+      $addresses .= "";
     }
-    
     # Strip trailing , off of address list
     $addresses =~ s/,$//g;
 
-    # Escape arguement string.
+    # Escape argument string.
 
+    my $standard_options="";
     my $extra_args = "";
     my $extra_options = "";
     if ( $gBranches{$branch}{"args"} ) {
@@ -375,9 +443,11 @@ sub test_branch($){
       $extra_options  ="--test-build-args=$extra_args";
       $extra_options .=" --ref-build-args=$extra_args";
     }
-    execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options");
-
+    
+    #stream_out("\n>>> ./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options $gVerboseArg  \n");
+    execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options $gVerboseArg  ");
     # Set flag to update branch entry in input file 
+
     $gBranches{$branch}{"updated"} = 1;
   
   }else{
@@ -387,8 +457,9 @@ sub test_branch($){
     stream_out ("Skipping $branch\@r$old_rev: No change.\n");
     
   }
-  
-  return;
+
+  # Return 1 if a branch was tested, 0 otherwise.
+  return $gBranches{$branch}{"updated"};
 }
 
 #--------------------------------------------------------------------
@@ -480,13 +551,14 @@ sub read_data_file($){
     open (INPUT, "$input_file" );
     
     while ( my $line = <INPUT> ){
-      
+      print "r>$line \n";
       # Save line for use later 
       push @gInput, $line; 
 
       # if line contains quotes, escape them and embedded spaces.
 
       while ( $line =~ /"/ ){
+        
         my $quote_sting = $line;
 
         $quote_sting =~ s/^[^"]*("[^"]*").*$/$1/;
@@ -501,7 +573,7 @@ sub read_data_file($){
 
         # Substitute back into command arguement string
         $line =~ s/$quote_sting/$convert_string/;
-
+        print ">>> $line\n";
         
       }
 
@@ -517,6 +589,7 @@ sub read_data_file($){
       # If there's anything left, parse contents
       
       if ( $line =~ /[^\s]/ ){
+        print ">$line\n";
         # Open/close address and branch blocks as necessary
         if ( $line =~ /^\*ADDRESSES\s*$/ )     { $Addresses_open = 1; }
         if ( $line =~ /^\*ADDRESSES-END\s*$/ ) { $Addresses_open = 0; }
@@ -634,7 +707,7 @@ sub execute($){
 #----------------------------------------------
 sub fatalerror($){
   my ($err_msg) = @_;
-  print "\ntester.pl -> Fatal error: \n";
+  print "\nnightly_branch_tests.pl -> Fatal error: \n";
   print " >>> $err_msg \n\n";
   die;
 }

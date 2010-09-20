@@ -88,7 +88,7 @@ C MMGFUN controls all UK NCM related tasks
       integer iuout,iuin
 
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
-      INTEGER IHVACFLAG
+      INTEGER :: ihvacflag
       CHARACTER*72 HVACFILE
 
       COMMON/C21/IFCFG,CFGROOT,LCFGF
@@ -108,7 +108,7 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER*72 LCFD
 
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
-      LOGICAL BLDG3D,ZONE3D
+      LOGICAL :: BLDG3D,ZONE3D
 
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       LOGICAL MSTROK,MSTRZN
@@ -182,7 +182,7 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER spflnam*72
 
       common/entfile/entflnam,ientxist
-      INTEGER IENTXIST
+      INTEGER :: ientxist
       CHARACTER entflnam*72
 
       common/IPVF/lipvdatf
@@ -521,6 +521,49 @@ C Generate EPC information
         endif
         goto 42
 
+      elseif(iecmoption.eq.2)then
+
+C Use existing models and run assessments and generate EPC.
+        iuact = 2
+C        CFGROOT = CFGROOT_O ! re-establish the initial root name
+C        CALL EMKSBM(iier)   ! generate Notional model
+C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+C        CALL EMKREF  ! Reference model
+C        CALL EMKTYP  ! Typical model
+
+        H(1)='You are using existing UK NCM stripped, notional,'
+        H(2)='reference and typical models. In order to generate'
+        H(3)='EPC and BRUKL (UK building regulations) specific'
+        H(4)='information annual simulations for all these models'
+        H(5)='need to run and may take some time. If you picked this'
+        H(6)='choice in error just say no.'
+        CALL ASKOK(
+     &    'Run NCM simulations based on existing models (see help)',
+     &    ' ',OK,dok,6)
+
+C Run simulation and recover information from save level 6 results file
+        if(ok)then
+          CALL SIMRUN(2) ! Notional model
+          CALL SIMRUN(1) ! Stripped model
+
+C To save time in formal NCM testing comment out the next two lines.
+          CALL SIMRUN(3) ! Reference model
+          CALL SIMRUN(4) ! Typical model
+
+C Generate BER and TER - if doing DSM testing the call is made from 
+C RSL6TF
+          IF(iDsmTestingFlag.LE.0.OR.iDsmTestingFlag.GE.3)then
+            CALL BERTER(IER)
+          ENDIF
+
+C Generate BRUKL information
+          CALL NCMCAL(IER)
+
+C Generate EPC information
+          CALL EPCCAL(IER)
+        endif
+        goto 42
+
       elseif(iecmoption.eq.3)then
 
 C Recover information from save level 6 results file
@@ -638,6 +681,7 @@ C For tdf to call arlist:
       integer IPASS !to ask for a password
       integer ier,itrc,IAPROB,ISTAT,iw
       integer iuact  ! return state from sbmedit call
+      integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
 
 C Change cfgroot to have only 20 characters instead of the usual 24 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
@@ -2156,13 +2200,14 @@ C EDSBMSYS edits the system definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
 
-      integer IHO,JC,IY,IIN  ! positions in menu
-      integer ICMSYS,NITEMH,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
+      integer JC,IY,IIN  ! positions in menu
+      integer ICMSYS,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
       dimension ITEMH(MCOM+4),KSYS(MHT),ITHND(MPT),PRSSN(MPT)
       character ITEMH*70,D64*64,PRSSN*60
       character outs*124
       integer INatMech !flag for easkab to choose between natural or
                        !mechanical extract/supply ventilation system
+      integer nitEmH,IHO ! max items and current menu item
 
 C Edit HVAC and system information after a display of current contents.
       call lstncm('s',iuout)
@@ -2613,7 +2658,7 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
       character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,D20*20,outs*124
-      integer INO
+      integer nitms,INO ! max items and current menu item
 
 C Enter building, owner and verifier information
   15  CALL EDISP(IUOUT,
@@ -2906,7 +2951,7 @@ C EDSBMASSOR edits the assessor contact definition within the UK NCM file.
       character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,outs*124
-      integer INO
+      integer nitms,INO ! max items and current menu item
 
 C List current state of the energy assessor data.
       call lstncm('e',iuout)
@@ -2974,6 +3019,7 @@ C Produce help text for the menu.
 C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers).
+        D64='000000000000'
         D64='000000000000'
         H(1)='Input the Unique Property Reference Number (UPRN) here.'
         H(2)='Applicable only for England, Wales & Northern Ireland.'
@@ -3213,7 +3259,7 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       dimension IVALSS(29)       ! array to get epicks answer from
       dimension iedit(MCOM) !to use for menu and saving of air leakage (ach per zone)
       integer iedit
-      integer INO
+      integer nitms,INO ! max items and current menu item
       logical NEAR
       real Air_infilt
 
@@ -3474,18 +3520,21 @@ C required models ') which returned iuact=1.
 
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
@@ -3515,7 +3564,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,bsmpth*24,fs*1,msgl2*48,
      &      tab*1
-      character outs*124,h*72,GUESS*24,aimpth*24
+      character outs*124,h*72,GUESS*24,aimpth*24,hvacpth*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -4171,11 +4220,13 @@ C This routine assumes newer geometry files are being used.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection
@@ -7356,7 +7407,7 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
@@ -7364,7 +7415,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1 
+      character fs*1, col*1,hvacpth*24
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
@@ -8497,7 +8548,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
@@ -8505,7 +8556,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1, quote*1
+      character fs*1, col*1, quote*1,hvacpth*24
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK
@@ -13309,10 +13360,11 @@ C information)
       logical menulogical !Logical to use for a menu in order to avoid the GOTO statements
       logical pickedsomething ! set to true if one of the options selected
       logical close,closea  ! to test for close to zero
-      integer nitms,i_default,i_define,INO,IER
+      integer i_default,i_define,IER
       dimension items(5)
       character head*30,items*50
       integer IansLeakage
+      integer nitms,ino ! max items and current menu item
 
       pickedsomething=.false.
       menulogical=.false.
