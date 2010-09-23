@@ -59,6 +59,8 @@ C
 C**********************************************************************************************
 
       SUBROUTINE H3K_transport_build_data(iZone)
+
+      USE AIM2_InputData, ONLY:iAIM2
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
 
       IMPLICIT NONE
@@ -72,7 +74,7 @@ C.....Passed variable
 C.....Common variables
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! number of connections 
+      integer ncon           ! number of connections
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -86,10 +88,10 @@ C QPA(MCOM)            ! - zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       REAL TPA, QPA
 
-C Atmospheric pressure      
-      COMMON/ATPRES/PATMOS      
+C Atmospheric pressure
+      COMMON/ATPRES/PATMOS
       real PATMOS
-      
+
 C TFA(MCOM)            ! - future zone air point temperature (oC)
 C QFA(MCOM)            ! - zone air point heat injection (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -98,8 +100,8 @@ C QFA(MCOM)            ! - zone air point heat injection (W)
 C GFA(MCOM)            ! zone futue  relative humidity values
       common/FVALG/GFA(MCOM)
       real gfa
-      
-      
+
+
 C TPC(MCOM,MS,MN),     ! - present construction temperature (oC)
 C QPC(MCOM)            ! - construction heat injection (W)
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -126,7 +128,7 @@ C QFS(MCOM)            ! - surface heat injection (W)
      &     CONV(MCOM)           !  - convective ratio
       real qpltp, qpltf, conv
 
-C.....Climate data 
+C.....Climate data
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 C QFP Diffuse horizontal radiation - present time row
 C QFF Diffuse horizontal radiation - future time row
@@ -170,13 +172,13 @@ C.....Flags indicating zone is heated, cooled.
 C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 
-C.....Ventilation, infiltration data 
+C.....Ventilation, infiltration data
       common/coe39/cvip,cvvp,cvif,cvvf,qvnp,xx3,cvvpm,cvvfm
       real cvip, cvif           ! Conductances assoc. w/ infiltration
                                 !   on present and future time rows
       real cvvp, cvvf           ! Conductances assoc. w/ ventilation
                                 !   on present and future time rows
-      real qvnp,xx3,cvvpm,cvvfm ! Not used in current context 
+      real qvnp,xx3,cvvpm,cvvfm ! Not used in current context
 
 C.....Zone boundary conditions
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
@@ -210,7 +212,7 @@ C.....Named constants for surface types
      &            iSurfWindow     = 4,
      &            iSurfFoundation = 5,
      &            iSurfInternal   = 6 )
-C.....Variable indicating type of surface. 
+C.....Variable indicating type of surface.
       integer iSurfType
 
 C.....Surface Energy balances.
@@ -288,7 +290,7 @@ C.....Surface area data
       COMMON/COE31S/HRS(MCOM,MS,MS),ZHRS(MCOM,MS)
       real HRS,ZHRS
 
-C.....Sky temperature and cloud cover; ground temperature, 
+C.....Sky temperature and cloud cover; ground temperature,
       COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
      &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
      &TBSUTH,TBEAST,TBWEST
@@ -304,7 +306,7 @@ C.....Local variables
       REAL TMA                  ! Mean air point temperature (oC)
       real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
-      REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area  
+      REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area
       INTEGER i_ZnCtl           ! Zone control flag
 
 
@@ -333,7 +335,7 @@ C----------------------------------------------------------------------
                                           !   heaiting loads
 C       real fm2ZoneUsefulSolarGains        ! As fZoneUsefulSolarGains but
 C                                           ! per m2 of floor area
-                                          
+
       real fZoneAdverseSolarGains         ! Gains coincident with cooling
 
       real fZoneSurfaceFlux               ! Flux across all zone surfaces
@@ -344,14 +346,14 @@ C                                           ! per m2 of floor area
       real fm2ZoneHeatLoad                !fZoneHeatLoad per m2
       real fm2ZoneCoolLoad                !fZoneCoolLoad per m2
       real fm2ZoneHeatFlux                !fZoneHeatFlux per m2
-      
+
       real fZoneHeatFluxAboveGrade        ! Heat flux through above-grade
-                                          !    components 
+                                          !    components
       real fZoneHeatLossBelowGrade
       real fZoneHeatLossAboveGrade
       real fZoneHeatGainBelowGrade
       real fZoneHeatGainAboveGrade
-      real fZoneInfiltrationLoad          ! Infiltration load 
+      real fZoneInfiltrationLoad          ! Infiltration load
       real fZoneVentilationLoad           ! Ventilation load
       real fZoneInternalGains             ! Internal gains
       real fZoneUsefulInternalGains       ! Useful internal gains
@@ -410,7 +412,7 @@ C.....Plant interaction
       real fSUMNetFlux                       ! Total net flux (W)
 
 C.....Loads
-      real fSUMNetLoad                       ! Net load 
+      real fSUMNetLoad                       ! Net load
       real fSUMHeatLoss                      ! Heating load (W)
       real fSUMHeatGain                      ! Cooling load (W)
       real fSUMHeatLossAboveGrade            ! Above-grade heat load (W)
@@ -433,7 +435,7 @@ C.....Loads
 C.....Gains (W)
       real fSUMInternalGains                 ! Internal sources
       real fSUMUsefulInternalGains           !   - coincident with heating
-      real fSUMAdverseInternalGains          !   - coincident with cooling 
+      real fSUMAdverseInternalGains          !   - coincident with cooling
       real fSUMSolarGains                    ! Total solar gains
       real fSUMUsefulSolarGains              !   - coincident with heating
       real fSUMAdverseSolarGains             !   - coincident with cooling
@@ -480,8 +482,8 @@ C     References
 C----------------------------------------------------------------------
       real fSurface_radiant_gain   ! Function returining the
                                    ! radiant gain on a surface (W)
-      real PCRH2                   ! Function returning relative 
-                                   ! humidity given zone temperature, 
+      real PCRH2                   ! Function returning relative
+                                   ! humidity given zone temperature,
                                    ! moisture content and atm. pressure.
 C----------------------------------------------------------------------
 C     Check zone index. If iZone=1, re-zero running totals for
@@ -570,7 +572,7 @@ C PIN is air point
         endif
       else
 
-C A zone with no control 
+C A zone with no control
         Q_zone = 0.0
 
       endif
@@ -657,6 +659,7 @@ C-----------------------------------------------------------------------
         endif INF_is_zone_heated
 
 C.....Collect zone air-changes/hour
+      IF (iAIM2.EQ.1) THEN
         IF (ALLOCATED(AIM2_infil_to_zones)) THEN
           fZoneInfiltrationACH = AIM2_infil_to_zones(iZone)/VOL(iZone)
      &                          * 3600.0
@@ -664,7 +667,7 @@ C.....Collect zone air-changes/hour
           CALL EDISP(IUOUT,
      &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
         END IF
-
+      END IF
 
 C-----------------------------------------------------------------------
 C     Compute external heat loss/heat gain metrics by examining all
@@ -692,15 +695,15 @@ C-----------------------------------------------------------------------
      &          'units', '(W)',
      &          'Short-wave solar radiation'
      &           )
-     
+
         call add_to_xml_reporting (
      &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
      &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/'
      &            //  'shortwave/unit_area' ,
      &          'units', '(W/m2)',
      &          'Short-wave solar radiation per unit area'
-     &          )     
-     
+     &          )
+
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
 C       balance on exterior surface node. Equation depends on
@@ -764,7 +767,7 @@ C                           + long-wave radiation exhange with
 C                                 sky (qlwrsk)
 C
 C         ( Multiply by -1 to convert from ESP-r to HOT3000 sign
-C           conventions. Positive values of fSurface_balance_net 
+C           conventions. Positive values of fSurface_balance_net
 C           indicate heat transfer from the building to the surroundings.
 C-----------------------------------------------------------------------
 
@@ -952,7 +955,7 @@ C-----------------------------------------------------------------------
 !      &          H3K_rep_NAME(1:27) // '/temperature/outside',
 !      &          'units', '(oC)',
 !      &          'Temperature on external surface' )
-! 
+!
 !         call add_to_xml_reporting (
 !      &          tfs(iZone,iSurface),
 !      &          H3K_rep_NAME(1:27) // '/temperature/inside',
@@ -1004,7 +1007,7 @@ C-----------------------------------------------------------------------
         fZoneUsefulSolarGains    = fZoneSolarGains
         fZoneUsefulInternalGains = fZoneInternalGains
 
-C Calculate these variables also per zone floor area        
+C Calculate these variables also per zone floor area
 C         fm2ZoneUsefulSolarGains    = fZoneSolarGains/zbasea(iZone)
 C         fm2ZoneUsefulInternalGains = fZoneInternalGains/zbasea(iZone)
       else
@@ -1092,22 +1095,22 @@ C.....Internal gains
 
       fSUMAdverseInternalGains =   fSUMAdverseInternalGains
      &                           + fZoneAdverseInternalGains
-C 
+C
 C C Calculate loads per m2
 C       fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
 C       fm2ZoneCoolLoad=fZoneCoolLoad/zbasea(iZone)
-C       
+C
 C       fm2SUMNetLoad=fm2SUMNetLoad/zbasea(iZone)
 C       fm2SUMHeatLoss=fm2SUMHeatLoss/zbasea(iZone)
 C       fm2SUMHeatGain=fm2SUMHeatGain/zbasea(iZone)
 C       fm2SUMHeatLossInfiltration=fm2SUMHeatLossInfiltration/
-C      &  zbasea(iZone)      
+C      &  zbasea(iZone)
 C       fm2SUMHeatGainInfiltration=fm2SUMHeatGainInfiltration/
 C      &  zbasea(iZone)
 C       fm2SUMInternalGains=fm2SUMInternalGains/zbasea(iZone)
-C       fSUMUsefulInternalGains=fm2SUMUsefulInternalGains/zbasea(iZone)    
-C       fm2SUMAdverseInternalGains=fSUMAdverseInternalGains/zbasea(iZone) 
-      
+C       fSUMUsefulInternalGains=fm2SUMUsefulInternalGains/zbasea(iZone)
+C       fm2SUMAdverseInternalGains=fSUMAdverseInternalGains/zbasea(iZone)
+
 C=======================================================================
 C
 C     Pass data to H3KReports
@@ -1133,14 +1136,14 @@ C.....AIR POINT TEMPERATURE
      &         'Zone air-point temperature' )
 
 C.....Zone relative humidity
-      fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)     
+      fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
 
       call add_to_xml_reporting (
      &         fZoneRH,
      &         H3K_rep_NAME(1:16)// '/air_point/relative_humidity',
      &         'units', '(%)',
      &         'Zone relative humidity' )
-     
+
 C.....ZONE HEAT INJECTION / EXTRACTION
 
       call add_to_xml_reporting (
@@ -1160,7 +1163,7 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling',
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
-     
+
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
       Qm2_Heat=Q_Heat/zbasea(iZone)
@@ -1768,7 +1771,7 @@ C.....Net energy balance
       endif report_whole_building
 
 C---------------------------------------------------------------------
-C     Loop through zone surfaces and MLC layers, reporting data 
+C     Loop through zone surfaces and MLC layers, reporting data
 C---------------------------------------------------------------------
 
 
@@ -1787,7 +1790,7 @@ C.......below should also make use of.
 
          H3K_format='(A,A,A,A,A)'
 
-C........Surface temperature 
+C........Surface temperature
 C........-> set name
          WRITE(H3K_rep_NAME,H3K_FORMAT)
      &      'building/zone_',cZone_Chars,
@@ -1868,10 +1871,10 @@ C               wtrsum = wtrsum + EI(iZone,iViewSurface)*
 C                              CFB(iZone,iSurface,iViewSurface)*
 C     &                           (TFS(iZone,iViewSurface)+273.15)**4
 
-            enddo 
+            enddo
             trsum = trsum**0.25 - 273.15
 C            wtrsum = wtrsum**0.25 - 273.15
-C........Plane radiant temperature 
+C........Plane radiant temperature
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
      &         'building/zone_',cZone_Chars,
@@ -1884,7 +1887,7 @@ C........->Report data
      &         'units', '(oC)',
      &         'Plane radiant temperature on zone inside face' )
 
-C........Emissivity weighted plane radiant temperature 
+C........Emissivity weighted plane radiant temperature
 C........-> set name
 C            WRITE(H3K_rep_NAME,H3K_FORMAT)
 C     &         'building/zone_',cZone_Chars,
@@ -1945,23 +1948,23 @@ C......NODE DATA
 !               write(cNode_Chars, '(A,I1)') '0', iNode
 !             endif
 !             H3K_format = '(A,A,A,A,A,A,A)'
-! 
-! C...........MLC layer temperature 
+!
+! C...........MLC layer temperature
 ! C...........-> set name
 !             WRITE(H3K_rep_NAME,H3K_FORMAT)
 !      &         'building/zone_',cZone_Chars,
 !      &         '/surface_',cSurf_Chars,
 !      &         '/node_',cNode_Chars,
 !      &         '/temperature'
-! C...........->Report data     
+! C...........->Report data
 !             call add_to_xml_reporting (
 !      &         tfc(iZone,iSurface,iNode),
 !      &         H3K_rep_NAME,
 !      &         'units', '(oC)',
 !      &         'Temperature at node within multilayer construction' )
-! 
+!
 !          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
-! 
+!
       enddo ! <- end iSurface 1,N of iZone
 
 
@@ -2015,10 +2018,10 @@ C.....Sky temperature and cloud cover
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*12  H3K_format
-      
+
       INTEGER LNBLNK
 
-C----------------------------------------------------------------------     
+C----------------------------------------------------------------------
 C     References
 C----------------------------------------------------------------------
       REAL HUMR      ! Function returning the humidity ratio
@@ -3065,7 +3068,7 @@ C     Electrically heated water tank
          elseif ( iComponent_type .eq. 82 ) then
 
             CALL CETC_tank_data_transport(iComponent_index,iEle_tank)
-            
+
 C     Hydrogen Storage
          elseif ( iComponent_type .eq. 101 ) then
 
@@ -3571,7 +3574,7 @@ C........-> set name
       enddo
 
 C.....Call RE-H2-CTL reporting function
-      call RESH2_Ctl_PostProcess()      
+      call RESH2_Ctl_PostProcess()
 
 
       return
@@ -3714,7 +3717,7 @@ C Store a new string
           stop "H3K reports error! Too many variables"
         endif
         iLength = lnblnk( cString )
-         
+
         cStrings (iActive_Index ) = cString
         iLengths (iActive_index ) = iLength
 
@@ -3830,7 +3833,7 @@ C.....Local variables
       integer i_neg, i_CompType,i_CompIndex
 
       real area,rhon,PI ! component area and fluid density at node, PI
-      
+
       Logical b_noveloc ! logical for velocity calc.
 
 C.....Commons indicating if meta items have been initialized
@@ -4003,7 +4006,7 @@ C.........Loop through all interconnections in a flow network
         ! end code snippet from mfget.F
 
                if (b_noveloc .eqv. .false.) THEN
-        ! Now get density of "sending" node. If flw1(jj) is negative, use density of 
+        ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
                   if (FLW1(jj) .lt. 0) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
@@ -4099,7 +4102,7 @@ C.....Heating and cooling setpoint (oC)
 
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! number of connections 
+      integer ncon           ! number of connections
 
       integer iZone          ! counter
 
