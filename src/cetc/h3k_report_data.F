@@ -59,7 +59,9 @@ C
 C**********************************************************************************************
 
       SUBROUTINE H3K_transport_build_data(iZone)
+      USE AIM2_InputData, ONLY:iAIM2
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
+c      USE Building
 
       IMPLICIT NONE
 #include "building.h"
@@ -787,10 +789,9 @@ C.....Collect zone air-changes/hour
           fZoneInfiltrationACH = AIM2_infil_to_zones(iZone)/VOL(iZone)
      &                          * 3600.0
         ELSE
-          CALL EDISP(IUOUT,
-     &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
+c          CALL EDISP(IUOUT,
+c     &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
         END IF
-
 
 C-----------------------------------------------------------------------
 C     Compute external heat loss/heat gain metrics by examining all
@@ -2547,6 +2548,7 @@ C*******************************************************************************
       SUBROUTINE H3K_Report_time(
      &     btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep, nsinc
      &     )
+c      USE Building
       IMPLICIT NONE
 
 #include "building.h"
@@ -2739,8 +2741,10 @@ C code to be called independently of these routines.
 C
 C**********************************************************************************************
       subroutine h3k_transport_plant_data()
+c      USE Building
       implicit none
 #include "plant.h"
+#include "building.h"
 C.....ESP-r commons
       common/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)  ! Control data for each component
       integer NPCOMP, NCI
@@ -4160,6 +4164,7 @@ C reporting facilities.
 C
 C**********************************************************************************************
       subroutine h3k_transport_mfn_data()
+c      USE Building
       implicit none
 #include "building.h"
 #include "net_flow.h"
@@ -4507,6 +4512,7 @@ C     Initialize h3k zone control flags to .false.
 C-----------------------------------------------------------------------
 
       blockdata initialize_h3k_zone_ctl_flags
+c      USE Building
 #include "building.h"
 
 C.....Description of zone control action; these data are used
@@ -4531,6 +4537,7 @@ C     Reset zone control flags to false.
 C-----------------------------------------------------------------------
 
       subroutine h3kReports_reset_zone_flags()
+c      USE Building
 #include "building.h"
 
 C.....Description of zone control action; these data are used
