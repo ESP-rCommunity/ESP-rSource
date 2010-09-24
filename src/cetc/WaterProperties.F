@@ -1829,7 +1829,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       implicit none
       REAL RHOL,DPDT,PHI,T,FUNSL
 
-      FUNSL=PHI + 1 /RHOL * DPDT
+      FUNSL=PHI + 1. /RHOL * DPDT
 
       RETURN
       END
@@ -1840,7 +1840,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       implicit none
       REAL RHOV,DPDT,PHI,T,FUNSV
 
-      FUNSV=PHI + 1 /RHOV * DPDT
+      FUNSV=PHI + 1. /RHOV * DPDT
 
       RETURN
       END
@@ -1853,7 +1853,7 @@ C     IPAWS 1994 RELEASE
       REAL tau,FUNSURF
       COMMON /SURF/ S1,S2,S3     
 
-      FUNSURF = REAL(S1*(1+S3*DBLE(tau))*DBLE(tau)**S2)
+      FUNSURF = REAL(S1*(1.+S3*DBLE(tau))*DBLE(tau)**S2)
 
       RETURN
       END
@@ -1886,7 +1886,7 @@ C     LIM SHOULD NOT NEED TO BE LARGER THAN 10
          IF(FUNTSAT.GT.TC)FUNTSAT=REAL(TC)
 c         write(69,*)funtsat,p,terror
 
-         IF(ABS(terror*100/FUNTSAT).LT.LIM2)GOTO 10
+         IF(ABS(terror*100./FUNTSAT).LT.LIM2)GOTO 10
       ENDDO
       write(*,*)'** ERROR FINDING TSAT**'
 
@@ -2269,7 +2269,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       COMMON /CRIT1/ Tc,Pc,RHOc,ALPHA0
       COMMON /PRESSURE/ a,atop
 
-      DFUNPV=0 
+      DFUNPV=0. 
       DO i=1,6
          DFUNPV = DFUNPV + a(i)*tau**atop(i)
       ENDDO
@@ -2288,7 +2288,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       COMMON /CRIT1/ Tc,Pc,RHOc,ALPHA0
       COMMON /DENSITYL/ b,btop
 
-      DFUNRHOL=1 
+      DFUNRHOL=1.
       DO i=1,6
          DFUNRHOL = DFUNRHOL + b(i)*tau**btop(i)
       ENDDO
@@ -2307,7 +2307,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       COMMON /CRIT1/ Tc,Pc,RHOc,ALPHA0
       COMMON /DENSITYV/ c,ctop
 
-      DFUNRHOV=0 
+      DFUNRHOV=0. 
       DO i=1,6
          DFUNRHOV = DFUNRHOV + c(i)*tau**ctop(i)
       ENDDO
@@ -2354,11 +2354,11 @@ C     ON SATURATION PROPERTIES
       theta = T/Tc
 
       DFUNAUXPHI=dphi
-      DFUNAUXPHI = DFUNAUXPHI + 19 /20 *d(1)*theta**(-20 )
+      DFUNAUXPHI = DFUNAUXPHI + 19. /20. *d(1)*theta**(-20 )
       DFUNAUXPHI = DFUNAUXPHI + d(2)*LOG(theta)
-      DFUNAUXPHI = DFUNAUXPHI + 9 /7 *d(3)*theta**3.5 
-      DFUNAUXPHI = DFUNAUXPHI + 5 /4 *d(4)*theta**4 
-      DFUNAUXPHI = DFUNAUXPHI + 109 /107 *d(5)*theta**53.5 
+      DFUNAUXPHI = DFUNAUXPHI + 9. /7. *d(3)*theta**3.5 
+      DFUNAUXPHI = DFUNAUXPHI + 5. /4. *d(4)*theta**4 
+      DFUNAUXPHI = DFUNAUXPHI + 109. /107. *d(5)*theta**53.5 
 
       DFUNAUXPHI = PHI0*DFUNAUXPHI
 
@@ -2374,7 +2374,7 @@ C     ON SATURATION PROPERTIES
       REAL Tc,Pc,RHOc,ALPHA0,T,DFUNTAU
       COMMON /CRIT1/ Tc,Pc,RHOc,ALPHA0
 
-      DFUNTAU = 1  - T/Tc
+      DFUNTAU = 1.  - T/Tc
 
       RETURN
       END
@@ -2417,7 +2417,7 @@ C      SUPTRACTING THE TWO.
       implicit none
       REAL RHOL,RHOV,DPDT,T,DFUNHFG
 
-      DFUNHFG = (1 /RHOV - 1 /RHOL)*T*DPDT
+      DFUNHFG = (1. /RHOV - 1. /RHOL)*T*DPDT
 
       RETURN
       END
@@ -2450,7 +2450,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       implicit none
       REAL RHOL,DPDT,PHI,T,DFUNSL
 
-      DFUNSL=PHI + 1 /RHOL * DPDT
+      DFUNSL=PHI + 1. /RHOL * DPDT
 
       RETURN
       END
@@ -2461,7 +2461,7 @@ C     THE IPAWS 1992 SUPPLEMENTARY RELEASE ON SATURATION PROPERTIES
       implicit none
       REAL RHOV,DPDT,PHI,T,DFUNSV
 
-      DFUNSV=PHI + 1 /RHOV * DPDT
+      DFUNSV=PHI + 1. /RHOV * DPDT
 
       RETURN
       END
@@ -2473,7 +2473,7 @@ C     IPAWS 1994 RELEASE
       REAL S1,S2,S3,tau,DFUNSURF
       COMMON /SURF/ S1,S2,S3     
 
-      DFUNSURF = S1*(1+S3*tau)*tau**S2
+      DFUNSURF = S1*(1.+S3*tau)*tau**S2
 
       RETURN
       END
@@ -2506,9 +2506,9 @@ C     LIM SHOULD NOT NEED TO BE LARGER THAN 10
          IF(DFUNTSAT.GT.TC)DFUNTSAT=TC
 c         write(69,*)funtsat,p,terror
 
-         IF(ABS(terror*100/DFUNTSAT).LT.LIM2)GOTO 10
+         IF(ABS(terror*100./DFUNTSAT).LT.LIM2)GOTO 10
       ENDDO
-      write(*,*)'** ERROR FINDING TSAT*',P/1D5,ABS(terror*100/DFUNTSAT)
+      write(*,*)'** ERROR FINDING TSAT*',P/1D5,ABS(terror*100./DFUNTSAT)
 
  10   CONTINUE
 
@@ -2536,8 +2536,8 @@ C     IPAWS RELEASE.
       ENDDO
       MU0=SQRT(Tbar)/MU0
 
-      Tbit   = 1 /Tbar - 1 
-      RHObit = RHObar - 1 
+      Tbit   = 1. /Tbar - 1.
+      RHObit = RHObar - 1. 
 
 C     BELOW IS THE SLOW BUT EASY TO UNDERSTAND EQUATION
 c      DO i=0,3
@@ -2597,7 +2597,7 @@ C     THIS ROUTINE MIGHT BE ABLE TO BE SPEED UP A LITTLE
       Tbar   = T / TCstar
       RHObar = RHO / RHOCstar
 
-      LAM0 = 0 
+      LAM0 = 0. 
       DO k=0,3
          LAM0 = LAM0 + AC(k)*(Tbar**k)
       ENDDO
@@ -2608,12 +2608,12 @@ C     THIS ROUTINE MIGHT BE ABLE TO BE SPEED UP A LITTLE
      &       BC(2)*EXP(BC1*(RHObar + BC2)*(RHObar + BC2) )
 
 
-      DELT = ABS(Tbar - 1 ) + CC(4)
-      Q = 2  + (CC(5)/DELT**(3 /5 ))
+      DELT = ABS(Tbar - 1. ) + CC(4)
+      Q = 2  + (CC(5)/DELT**(3. /5. ))
       IF(Tbar.GE.1.)THEN
-         S = 1 /DELT
+         S = 1. /DELT
       ELSE
-         S = CC(6)/(DELT**(3 /5 ))
+         S = CC(6)/(DELT**(3. /5. ))
       ENDIF
 
       LAM2 = (DC(1)*(Tbar**(-10)) +DC(2))*
@@ -2663,7 +2663,7 @@ C     Saturation temperature (K), at pressure P (N/m**2).
 
       PLOG  = LOG(P)
       RTSP  = A0 + PLOG*(A1 + PLOG*(A2 + PLOG*A3))
-      DFUNTSPTEMP = 1  / RTSP
+      DFUNTSPTEMP = 1.  / RTSP
 
       RETURN
       END
@@ -2680,7 +2680,7 @@ C     FOR REGION 2, SUBREGION 2A (I.E. LESS THAN 40BAR AND VAPOUR)
      &     DFUNTAU,DFUNRHOV,DFNFIND
       COMMON /REVERSE/ II,JI,NI
 
-      DSBACKWARD2A=0 
+      DSBACKWARD2A=0. 
       
       DO i=1,46
          DSBACKWARD2A = DSBACKWARD2A + NI(i) * 
