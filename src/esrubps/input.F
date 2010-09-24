@@ -165,6 +165,11 @@ C                         zone air temp. used and if cntdat(3) zero
 C                         use the inside surface node temperature
 
       subroutine mzinpt(IREP,IER)
+      
+      USE AIM2_InputData, ONLY: iAIM2, LAIM2
+      USE AIM2, ONLY: AIM2_READIN
+      
+      IMPLICIT NONE
 
 #include "building.h"
 #include "model.h"
@@ -185,32 +190,46 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
-      PARAMETER (MSTMC=20)
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       common/er1/ier1
+      INTEGER :: ier1
       common/trc/itrc
+      INTEGER :: itrc
       common/filep/ifil
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      INTEGER :: icyear,icdngh
+      REAL :: clat,clong
 
-      common/outin/iuout,iuin
 
 C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       common/c6/indcfg
+      INTEGER :: indcfg
       common/CFGV/icfgv
+      INTEGER :: icfgv
 
       common/afn/iairn,laprob,icaas(mcom)
+      INTEGER :: iairn,icaas
       common/ffn/iflwn,icffs(mpcon)
+      INTEGER :: iflwn,icffs
 
       common/prec7/itcnst
+      INTEGER :: itcnst
       COMMON/DNORGH/IRTYPE
+      INTEGER :: irtype
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
@@ -222,35 +241,43 @@ C to read from the temporal file if already known.
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
+      INTEGER :: ispmxist,ientxist
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
+      REAL :: GAM, RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL :: BLDG3D,ZONE3D
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
+      INTEGER :: icvs,icnc,indc,indd,itaq,itlw,ilwv,itf3
       COMMON/GRND100/GRND3D
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)
+      INTEGER :: NNODTG,ITCNSTG
+      REAL :: TEMP3G,AREAGD
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
 
 C Uncertainty common.
       COMMON/UA5/IMET,ISIM,NRSIM
+      INTEGER :: imet,isim,nrsim
 
 C Simulator parameter.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       common/SPFLN/spsname
       COMMON/Vld30/Tinitial
+      REAL :: Tinitial
       common/dllerr/dllsubr,dllmesg
 
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Mechanical Ventilation systems.
       Integer iMech
@@ -270,17 +297,18 @@ C For reading in of bi-directional data.
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
-      character hvacfile*72,LAIM2*72
+      character hvacfile*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
-      LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
+      LOGICAL GRND3D,MSTROK,MSTRZN
       logical dll,closemat1,closemat2,unixok
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
 C igshp = 1 there is a gshp file; igshp = 0 no gshp file.
       common/gshpinfo/igshp
+      INTEGER :: igshp
       common/gshpfile/gshpfile
       character gshpfile*72
 
@@ -288,6 +316,7 @@ C GCEP
 C Common holding flag indicating presence of gcep data input file:
 C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
+      INTEGER :: igcep
       common/gcepfile/gcepfile
       character gcepfile*72
 
@@ -302,7 +331,10 @@ C Status of multi-year climate database
       character lworking*144,fs*1
 
       integer IClmErr  ! the error state for climate file opening
-      integer ier
+      integer ier, irep
+      
+      REAL :: clmloc
+      INTEGER :: i,iaprob,iglib,irec,istat,itru,iua,llt,nclass
 
 C Reset error indicator and check if running as a dll.
       ier1=0
@@ -912,14 +944,16 @@ C geometry.h provides commons G0/G2/G5/c20/precz.
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C During setup scan for inbuilt and user defined ground temperatures.
 C igttype: if > 1 then index points to most often used standard profile
@@ -1449,6 +1483,7 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
+      INTEGER :: ier1
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)

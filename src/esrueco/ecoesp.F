@@ -1237,7 +1237,6 @@ C square meter of the selected composite.
       INTEGER I,J,K,L,NoStep
       REAL HeightCo,WidthCo, Perimeter, Area
 
-      CHARACTER DESC*48
 
       CHARACTER*12 FabPt,TrPt,RecyPt,ReTrPt,BurnPt,BuTrPt,DumpPt,DuTrPt
       CHARACTER*12 ComAsPt,CoTrPt,MaintPt,AsProjPt
@@ -1547,7 +1546,7 @@ C << Why is SDATA used? >>
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
-      CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
+      CHARACTER H*72,outs*170,ITEM*36
       CHARACTER StepName*36,StepSName*12
       CHARACTER*110 LabelGen, GenUnt, Label, LabelUnt, LabelImp, ImpUnt
       CHARACTER*55 LabelB, LabelA, LabelC, LabelD
@@ -2565,7 +2564,6 @@ C phylosophy as LCACalc
       DIMENSION ITEM(NbSteps+5)
       DIMENSION WeitLayr(ME),WtLayrDu(ME),WtLayrBu(ME),WtLayrRe(ME)
 
-      CHARACTER LCFGF*72
       CHARACTER TxtCompo*22,TxtMat*22
 
       CHARACTER*12 FabPt,TrPt,RecyPt,ReTrPt,BurnPt,BuTrPt,DumpPt,DuTrPt

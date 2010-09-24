@@ -101,7 +101,8 @@ C is a logical flag, .true. restricts update/save options.
       common/uhome/upath
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
+
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Indicator of possible focus zone.
@@ -172,7 +173,8 @@ C      character outs248*248
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
@@ -245,11 +247,13 @@ C Set folder separator (fs) to \ or / as required.
       write(zonepth,'(a1,a1)')'.',fs
       write(netpth,'(a1,a1)')'.',fs
       write(ctlpth,'(a1,a1)')'.',fs
+      write(aimpth,'(a1,a1)')'.',fs
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
+      write(hvacpth,'(a1,a1)')'.',fs
       IYEAR=2007
       IBDOY=1
       IEDOY=365
@@ -556,6 +560,9 @@ C and if so do what it says.
             if(theprimedirective(1:3).eq.'new')then
               call usrmsg('Processing of silent file complete.',
      &          'Exiting from project manager','P')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             else
@@ -578,6 +585,8 @@ C We assume that the user owns the model to be transformed.
             if(ier.eq.-3)then
               call usrmsg('Configuration file could not be loaded.',
      &          'Exiting from project manager','W')
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             endif
@@ -590,6 +599,8 @@ C Open core of databases if not already done so.
               if(ier.ne.0)then
                 call usrmsg('Possible problem with the Constructions',
      &               'or Optical Properties db. Exiting.','W')
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
                 CALL EPAGEND
                 STOP
               endif
@@ -625,6 +636,9 @@ C Perform either the transform or rotation.
               call usrmsg(
      &          'Processing of transform or rotate complete.',
      &          'Exiting from project manager','W')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             else
@@ -990,6 +1004,9 @@ C If there is a temporary optical file remove it.
           CALL EFOPSEQ(IUF,topt,1,IER)
           CALL EFDELET(IUF,ISTAT)
         endif
+
+C Clear allocatable arrays
+        CALL DeallocateAllArrays
         CALL EPAGEND
         STOP
       ELSEIF(INO.EQ.1)THEN
@@ -4390,7 +4407,8 @@ C Path to model and command line file (if any).
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
+
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -4408,7 +4426,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
-      CHARACTER*24 dbspth,cfgroot
+      CHARACTER*24 dbspth,cfgroot,aimpth,bsmpth,hvacpth
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124

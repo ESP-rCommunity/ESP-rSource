@@ -36,7 +36,7 @@ C dataout is the array of data after the fit has been done.
 
       COMMON/OUTIN/IUOUT,IUIN
       real datain(mbrow),datout(mbrow)
-      integer howmany,basedon
+      integer howmany
       character act*1
 
 C Begin by clearing datout and copying in datain up to the

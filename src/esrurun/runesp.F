@@ -68,7 +68,7 @@ C ************************************************************
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/radcfg/LRADCF
 
       common/IPVF/lipvdatf
@@ -112,7 +112,8 @@ C Uncertainty.
       character act*16
       character LUALF*72,LCNG*15,LLOC*15
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
@@ -178,6 +179,7 @@ C Set folder separator (fs) to \ or / as required.
       write(zonepth,'(a1,a1)')'.',fs
       write(netpth,'(a1,a1)')'.',fs
       write(ctlpth,'(a1,a1)')'.',fs
+      write(aimpth,'(a1,a1)')'.',fs
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
@@ -1044,7 +1046,7 @@ C small power in W/m2. Occupied times are 9-21h each day.
 #include "espriou.h"
       COMMON/FILEP/IFIL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Array of occupant, lighting, sp density.
       real densityof(3)
@@ -1052,7 +1054,8 @@ C Array of occupant, lighting, sp density.
       character opfil*72
       character dstmp*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character fs*1
       logical unixok
 
@@ -1297,13 +1300,14 @@ C typical day with free float outside of occupied period.
 #include "espriou.h"
       COMMON/FILEP/IFIL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character cfgroot*24,LCFGF*72
       character LCTLF*72,ctldoc*248
       character fs*1

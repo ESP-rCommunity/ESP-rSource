@@ -57,7 +57,6 @@ C    SBC       = Stefan-Boltzmann constant.
       COMMON/TC/ITC,ICNT
 
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON /PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &              NPGAP(MCOM,MS,MGP)
@@ -1105,6 +1104,12 @@ C CVVPM & CVVFM - as CVVP & CVVF but normalised to the
 C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
+      
+      IMPLICIT NONE
+
 #include "building.h"
 #include "geometry.h"
 #include "tdf2.h"
@@ -1114,49 +1119,66 @@ C                 external temperature (for use in MZLS3).
 #include "hvac_common.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      INTEGER :: icalender,nbcaldays,nbdaytype
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER :: ITCF,ITRACE,IZNTRC,ITU
       COMMON/TC/ITC,ICNT
+      INTEGER :: ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
+      INTEGER :: ITCTL,IVL,IVU,IVH
+      REAL :: TLO,TUP,THI,ACIL,ACVL,TAL,ACIU,ACVU,TAU,ACIH,ACVH,TAH
 
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
-     
+      REAL :: CVIN,CVVN,TIAN
+      INTEGER :: ICCN
+      
       COMMON/BTIME/BTIMEP,BTIMEF
+      REAL :: btimep,btimef
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
+      INTEGER :: IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL :: QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       common/pvala/tpa(mcom),qpa(mcom)
+      REAL :: tpa,qpa
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      REAL :: TFA,QFA
 
       COMMON/COE39/CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
+      REAL :: CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
 
 C The following common block saves the future time values
 C (held in /COE39/) for use at the next time-step.
 C Save present values for possible iterations at this time step.
       COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
+      REAL :: CIF,CVF,X3,CVM
       COMMON/COE39PS/CIP(MCOM),CVP(MCOM),QVP(MCOM),CVPM(MCOM)
+      REAL :: CIP,CVP,QVP,CVPM
 
       COMMON/FVALG/GFA(MCOM)
+      REAL :: GFA
       COMMON/MBINFO/ZMBI(MCOM,4)
+      REAL :: ZMBI
       COMMON/ZCVNT/ZCVENT(MCOM)
+      REAL :: ZCVENT
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
 
       COMMON/MFSINC/MFBSNC
+      INTEGER :: MFBSNC
 
       common/ts4/itsitr(msch),itrpas
+      INTEGER :: itsitr,itrpas
 
-C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character LAIM2*72
 
 c Mechanical ventilation systems
       Common /mechvdef/ iMech, LMech
@@ -1167,7 +1189,7 @@ C Declare local variables used to store the conductances caused by
 C mechanical ventilation and infiltration.
       REAL ZONE_mechvent_cond,ZONE_infil_cond
 
-      PARAMETER    (SMALL=1.0E-15)
+      REAL, PARAMETER :: SMALL=1.0E-15
       DIMENSION VAL(MBITS+2)
 
       CHARACTER LAPROB*72
@@ -1223,6 +1245,13 @@ C     This prevents the zone becoming too cold.
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
       real BB1,BB2,BB3,TNP,QFUT,TFUT
+      
+      REAL :: acc,acc1,acc2,aci,acr,amh,amn
+      REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
+      INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
+      INTEGER :: itrc,ifunit,iv,ival
+      REAL :: sum,t1,ta1,ta2,taf,tafl,tafu,trat,tx,val,xx
+      REAL :: time
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0

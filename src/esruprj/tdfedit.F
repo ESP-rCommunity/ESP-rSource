@@ -51,9 +51,10 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       COMMON/GDPER/igbdoy,igedoy
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
       character cfgroot*24,LCFGF*72
       common/C21/IFCFG,cfgroot,LCFGF
 

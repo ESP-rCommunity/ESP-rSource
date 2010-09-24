@@ -706,11 +706,12 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth,hvacpth
 
       CHARACTER H*72,LTMP*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1033,9 +1034,7 @@ C Write to geometry file or the obstructions file.
 
 C ************* EDOBSB 
 C EDOBSB: Edit details of an obstruction block. Adapt interface
-C if user requests conversion to a general 6 sided polygon. This
-C subroutine assues that the current zone geometry common blocks
-C have already been filled.
+C if user requests conversion to a general 6 sided polygon.
       SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
 #include "model.h"
@@ -1290,9 +1289,6 @@ C One set of interface actions if type 'obs' or 'obs3'.
      &        ZOB(ICOMP,IB)
             MODIFY=.TRUE.
           elseif(IBOPT.eq.2)then
-
-C Use current zone G1 common blocks to present list of points
-C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertices for origin',
@@ -1307,9 +1303,6 @@ C via epkvert.
               goto 92
             endif
           elseif(IBOPT.eq.3)then
-
-C Use current zone G1 common blocks to present list of points
-C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertice in zone',

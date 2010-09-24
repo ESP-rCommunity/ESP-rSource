@@ -60,7 +60,7 @@ C Name of current application
       character cAppName*12
 
       CHARACTER INTER*144,INF*144
-      character path*72,upath*72,outs*124,outs248*248
+      character path*72,upath*72,outs248*248
       character fs*1
       LOGICAL unixok
 

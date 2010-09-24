@@ -1185,6 +1185,8 @@ C Close moisture result library.
         CALL EPAGEND
         if( dll ) return
 
+C Clear allocatable arrays
+	CALL DeallocateAllArrays
         call epagend
         STOP
       else
