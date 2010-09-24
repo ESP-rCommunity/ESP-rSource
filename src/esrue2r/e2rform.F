@@ -1132,10 +1132,10 @@ C << to be done - find out syntax for blocks with multiple rotations >>
 C           Create a >polygon< command for each of 6 faces
               do 785 isf=1,6 ! hard-code this?
 
-                WRITE(irofil,'(a,a,a,a,a,a)')'rc_ex_',
+                WRITE(irofil,'(a,a,a,a,a,I1)')'rc_ex_',
      &            ObsMatName,'  polygon ',
      &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
-     &            '_',isf ! add face number to block name
+     &            '_', isf  ! add face number to block name
                 WRITE(irofil,'(a)') '0 '
                 WRITE(irofil,'(a)') '0 '
                 WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
