@@ -904,18 +904,22 @@ C asking user which year to transfer.
      &             1900,'W',2020,'W',2000,'year',IER,3)
           CLMLOC=' '
           H(1)='Site name (30 char) for descriptive purposes. '
-          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
+          CALL EASKS(CLMLOC,' ','Climate site name ? ',
      &      30,'North_Pole','climate site. ',IER,1)
 
           H(1)='The climate latitude does not necessarily have to '
           H(2)='match the site latitude.  However, the difference '
           H(3)='should not be great or simulation results may be '
           H(4)='open to question.'
-          CALL EASKR(CLAT,' ',' Climate latitude ? ',
-     &             -89.9,'W',89.9,'W',30.0,'climate latitude',IER,4)
+          H(5)=' '
+          H(6)='Longitude difference is typically +-15 degrees and'
+          H(7)='is the offset from the local time meridian.'
+          CALL EASKR(CLAT,' ','Climate latitude ? ',
+     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,7)
 
-          CALL EASKR(CLONG,' ',' Longitude diference ?',
-     &             -14.9,'W',14.9,'W',0.0,'climate long',IER,4)
+          CALL EASKR(CLONG,' ',
+     &      'Longitude diference from local time meridian?',
+     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,7)
 
           LASCI=' '
           LLASCI=' '
@@ -959,7 +963,17 @@ C If user canceled loop show menu again.
 C Cast back to 72 char name and do the conversion.
           llt=MIN0(lnblnk(llasci),72)
           write(LASCI,'(a)') LLASCI(1:llt)
-          call MKOREANCLM(ITRU,LASCI,IUNIT,IER)
+
+C Ask if older or newer file format.
+          H(1)='The Korean met office older files are in a different'
+          H(2)='format than file after ~2006.'
+          CALL EASKABC('Korean met office file age options:',' ',
+     &     'older file','newer file','cancel',ICT,2)
+          if(ICT.eq.1)then
+            call MKOREANCLM(ITRU,LASCI,IUNIT,'old',IER)
+          elseif(ICT.eq.2)then
+            call MKOREANCLM(ITRU,LASCI,IUNIT,'new',IER)
+          endif
         endif
       ELSEIF(INO.EQ.15)THEN
 
