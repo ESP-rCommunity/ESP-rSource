@@ -552,13 +552,17 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-     
+C For obstruction blocks of type "obsp":
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      character GSNAME*6,GMLCN*12
 
       common/expath/runpath,pathtype
+      character runpath*72,pathtype*24
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
@@ -576,11 +580,11 @@ C TMC data
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
-      CHARACTER GMLCN*12,GSNAME*6,ACT_1*1,doit*144
-      character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
-      character pfile*72,atfile*72,ltmp72*72,dtmp72*72
+      CHARACTER ACT_1*1,doit*144
+      character outsn*124,outsd*124, tfile*72
+      character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnrp  ! length of run path
-      integer lnbm  ! length of block material
+      integer lnbm  ! length of block material name
 
       LOGICAL OK,DOK,fict,extern,XST,similar
 
@@ -1087,40 +1091,71 @@ C Confirm inclusion of obstructions.
           else
             OK=.TRUE.
           endif
-          if(.not.OK)goto 61
 
+          if (.not.OK) goto 61
 
           WRITE(irofil,'(a)') '# Obstruction defs... '
           WRITE(irofil,'(a)') '  '
+
           nobs=nobs+nbobs(newfoc)  ! increment count of obstructions
+
           do 43 ib=1,nbobs(newfoc)
+C BLOCKTYP (4 char) type of block:
+C   'obs ' - standard block (origin, three dimensions, one rotation)
+C   'obs3' - general block (origin, three dimensions, three rotations)
+C   'obsp' - general polygon (six sides formed from 8 vertices)
 
-C Create a genbox command to match the obstruction.
+C           Set material name
+            if (BLOCKMAT(newfoc,ib)(1:4).eq.'NONE') then
+               lnbm=7
+               ObsMatName='unknown'
+            else
+               lnbm=LNBLOCKMAT(newfoc,ib)
+               ObsMatName=BLOCKMAT(newfoc,ib)
+            endif
 
+            if (BLOCKTYP(newfoc,ib).eq.'obs ') then
+C           Create a >genbox< command to match the obstruction.
+                WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
+     &            '!genbox  rc_ex_',ObsMatName(1:lnbm),
+     &            '  ',        
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
+     &            ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &            ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
+                WRITE(irofil,'(a)') ' '
+
+            elseif (BLOCKTYP(newfoc,ib).eq.'obs3') then
 C << to be done - find out syntax for blocks with multiple rotations >>
 
-            if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
-              WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox rc_ex_unknown ',
-     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
-     &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
-     &          ' | xform -rz ',BANGOB(newfoc,ib,1),
-     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
-              WRITE(irofil,'(a)') ' '
+            elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
+C           Create a >polygon< command for each of 6 faces
+              do 785 isf=1,6 ! hard-code this?
+
+                WRITE(irofil,'(a,a,a,a,a,a)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            '_',isf ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C               Write the coordinates for face isf.
+                do 784 iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for obstruction blocks?
+                  WRITE(irofil,'(3F11.5)')
+     &              XBP(newfoc,IB,K),
+     &              YBP(newfoc,IB,K),
+     &              ZBP(newfoc,IB,K)
+784             continue
+                WRITE(irofil,'(a)') '  '
+785           continue
             else
-              lnbm=LNBLOCKMAT(newfoc,ib)
-              WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
-     &          '  ',        
-     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
-     &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
-     &          ' | xform -rz ',BANGOB(newfoc,ib,1),
-     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
-              WRITE(irofil,'(a)') ' '
-            endif
- 43       continue
-        endif
-  61    continue
+               ! error, shouldn't end up here ...
+            endif ! check BLOCKTYP()
+ 43       continue ! loop through all obstructions of zone
+        endif ! nbobs() .ge. 1
+ 61     continue
 
 C Now surface information.
         WRITE(irofil,'(a)') '# Outside zone Surface defs... '
