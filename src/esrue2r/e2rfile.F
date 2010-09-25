@@ -321,7 +321,7 @@ C IERR=1 if a scene file is missing.
 
 C Reset render and octree special options.
       crenrp='   '
-      coconv='   '
+      coconv=' -w '
 
 C Reset once we know if outside or inside.
       indxscn=0

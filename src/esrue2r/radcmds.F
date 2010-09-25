@@ -312,7 +312,7 @@ C Rebuild.
 
 C Run rtrace. << ?? what about pathtype?? >>
         write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
-     &      '; rtrace -ov -I -h @',
+     &      '; rtrace -ov -I -h -w @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
      &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',

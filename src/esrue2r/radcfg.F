@@ -732,7 +732,7 @@ C Coupling calculation selected. (thermal/lighting simulation)
         ipicx  = 258
         penumb = 'False'
         crenrp = '-av 0 0 0  '
-        coconv = '  '
+        coconv = ' -w '
       elseif (IRP.eq.6) then 
 
 C Daylight coefficient calculation selected. (thermal/lighting simulation)
@@ -758,7 +758,7 @@ C Sun positions.
         ipicx  = 258
         penumb = 'False'
         crenrp = '-av 10 10 10 '
-        coconv = ' '
+        coconv = '  '
 c        ifocz = -1
       endif
 

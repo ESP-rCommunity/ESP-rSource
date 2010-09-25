@@ -446,7 +446,7 @@ C Initial assumptions.
         ipicx  = 258
         penumb = 'False'
         crenrp = '  '
-        coconv = '  '
+        coconv = ' -w '
       endif
 
 C Generate bounding box.

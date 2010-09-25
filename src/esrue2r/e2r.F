@@ -243,7 +243,7 @@ C Default values for rif file variables.
       ipicx  = 258
       penumb = 'False'
       crenrp='  '
-      coconv='  '
+      coconv=' -w '
 
       indxscn=0
       do 4 i=1,10
@@ -511,11 +511,12 @@ C line as 'Coupling' or 'Day_coef' or 'Day_fact'.
       endif
 
 C Read RADIANCE configuration if it exists. If we are returning to a
-C model that was previously worked on then thescene file would be
+C model that was previously worked on then the scene file would be
 C in the cfg folder. If we are not browsing then that file should be
 C copied into the ../rad folder.
       XST=.FALSE.
-      write(tfile,'(a,a)')path(1:lnblnk(path)),LRADCF(1:lnblnk(LRADCF))
+      write(tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+     &                         LRADCF(1:lnblnk(LRADCF))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
 
@@ -694,10 +695,10 @@ C then there is no need to copy all files back.
 	  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).
-            write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
-     &               LRADCF(1:lnblnk(LRADCF)),' ',path(1:lnblnk(path))
-            call runit(outs,'-')
-            call edisp(iuout,outs)
+c            write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
+c     &               LRADCF(1:lnblnk(LRADCF)),' ',path(1:lnblnk(path))
+c            call runit(outs,'-')
+c            call edisp(iuout,outs)
             KEEP=.false.
           endif
         else ! not unixok
