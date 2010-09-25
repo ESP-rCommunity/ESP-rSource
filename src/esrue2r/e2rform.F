@@ -1126,7 +1126,18 @@ C           Create a >genbox< command to match the obstruction.
                 WRITE(irofil,'(a)') ' '
 
             elseif (BLOCKTYP(newfoc,ib).eq.'obs3') then
-C << to be done - find out syntax for blocks with multiple rotations >>
+C           Create a >genbox< command to match the obstruction with 
+C           rz, ry, rx rotations.
+                WRITE(irofil,'(a,a,a,a,3f9.3,3(a,f9.3),a,3f9.3)')
+     &            '!genbox  rc_ex_',ObsMatName(1:lnbm),
+     &            '  ',        
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
+     &            ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &            ' -ry ',-1.0*BANGOB(newfoc,ib,2),
+     &            ' -rx ',BANGOB(newfoc,ib,3),
+     &            ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
+                WRITE(irofil,'(a)') ' '
 
             elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
 C           Create a >polygon< command for each of 6 faces
