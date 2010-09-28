@@ -970,9 +970,9 @@ C Ask if older or newer file format.
           CALL EASKABC('Korean met office file age options:',' ',
      &     'older file','newer file','cancel',ICT,2)
           if(ICT.eq.1)then
-            call MKOREANCLM(ITRU,LASCI,IUNIT,'old',IER)
+            call MKOREANCLM(LASCI,IUNIT,'old',IER)
           elseif(ICT.eq.2)then
-            call MKOREANCLM(ITRU,LASCI,IUNIT,'new',IER)
+            call MKOREANCLM(LASCI,IUNIT,'new',IER)
           endif
         endif
       ELSEIF(INO.EQ.15)THEN

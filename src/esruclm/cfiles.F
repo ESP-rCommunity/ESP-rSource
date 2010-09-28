@@ -461,11 +461,10 @@ C Each data line is | separated and values are a mix of reals and integers.
 C Assume that the climate file has already been opened elsewhere.
 
 C silent is a logical toggle, if .true. then do not interact with user.
-      SUBROUTINE MKOREANCLM(ITRU,LASCI,IUNIT,ACT,IER)
+      SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
 #include "esprdbfile.h"
 
 C Parameters
-      integer ITRU       ! verbosity when reading
       character LASCI*72 ! file name to import
       integer IUNIT      ! unit number of the file (assumed already opened)
       character ACT*3    ! old pre 2006 files, new current files.
@@ -551,241 +550,246 @@ C Export climate data to ASCII file (with similar name).
         iapprox_diff=2
       endif
 
+      scan: do
+        if(act(1:3).eq.'old')then
+
 C If the older format read a line of the file.
- 42   if(act(1:3).eq.'old')then
-        CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
-        if(ier.lt.0) goto 48
-        K=0
-        CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
-        CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
-        if(iyr.lt.iyear) goto 42   ! if not yet the correct year read again.
-        if(iyr.gt.iyear) goto 48   ! if past the correct year write tail.
+          CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          if(ier.lt.0) exit scan
+          K=0
+          CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
+          CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
+          if(iyr.lt.iyear) cycle   ! if not yet the correct year read again.
+          if(iyr.gt.iyear) exit scan   ! if past the correct year write tail.
 
 C We have a correct year so carry on scanning.
-        CALL EGETWI(OUTSTR,K,imonth,1,12,'W','month index',IER)
-        CALL EGETWI(OUTSTR,K,iday,1,31,'W','day index',IER)
+          CALL EGETWI(OUTSTR,K,imonth,1,12,'W','month index',IER)
+          CALL EGETWI(OUTSTR,K,iday,1,31,'W','day index',IER)
 
-        write(outs,'(a,i2,a,i2,3a)') 'Data for month ',imonth,' day ',
-     &    iday,' ',outstr(1:60),'...'
-        call edisp(iuout,outs)
+          write(outs,'(a,i2,a,i2,3a)') 'Data for month ',imonth,' day ',
+     &      iday,' ',outstr(1:60),'...'
+          call edisp(iuout,outs)
 
 C Read 24 hours of dry bulb temperature and assign to ICLM.
-        do 43 ih=1,24
-          CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','db temperature',IER)
-          ICLM(ih,2)=ITMP
- 43     continue
+          do 43 ih=1,24
+            CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','db temperature',IER)
+            ICLM(ih,2)=ITMP
+ 43       continue
 
 C Read 24 hours of wind direction, decode and assign to IDIR.
 C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
 C         16=157, 18=180, 20=202, 23=225, 25=247, 
 C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
-        do 44 ih=1,24
-          CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',IER)
-          if(idir.eq.2)then
-            ICLM(ih,5)=22
-          elseif(idir.eq.5)then 
-            ICLM(ih,5)=45
-          elseif(idir.eq.7)then
-            ICLM(ih,5)=67
-          elseif(idir.eq.9)then
-            ICLM(ih,5)=90
-          elseif(idir.eq.11)then
-            ICLM(ih,5)=112
-          elseif(idir.eq.14)then 
-            ICLM(ih,5)=135
-          elseif(idir.eq.16)then 
-            ICLM(ih,5)=157
-          elseif(idir.eq.18)then 
-            ICLM(ih,5)=180
-          elseif(idir.eq.20)then 
-            ICLM(ih,5)=202
-          elseif(idir.eq.23)then 
-            ICLM(ih,5)=225
-          elseif(idir.eq.25)then 
-            ICLM(ih,5)=247
-          elseif(idir.eq.27)then 
-            ICLM(ih,5)=270
-          elseif(idir.eq.29)then 
-            ICLM(ih,5)=292
-          elseif(idir.eq.32)then 
-            ICLM(ih,5)=315
-          elseif(idir.eq.34)then 
-            ICLM(ih,5)=337
-          elseif(idir.eq.36)then 
-            ICLM(ih,5)=0
-          elseif(idir.eq.0)then 
-            ICLM(ih,5)=0
-          else
-            ICLM(ih,5)=0
-          endif
- 44     continue
+          do 44 ih=1,24
+            CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',
+     &        IER)
+            if(idir.eq.2)then
+              ICLM(ih,5)=22
+            elseif(idir.eq.5)then 
+              ICLM(ih,5)=45
+            elseif(idir.eq.7)then
+              ICLM(ih,5)=67
+            elseif(idir.eq.9)then
+              ICLM(ih,5)=90
+            elseif(idir.eq.11)then
+              ICLM(ih,5)=112
+            elseif(idir.eq.14)then 
+              ICLM(ih,5)=135
+            elseif(idir.eq.16)then 
+              ICLM(ih,5)=157
+            elseif(idir.eq.18)then 
+              ICLM(ih,5)=180
+            elseif(idir.eq.20)then 
+              ICLM(ih,5)=202
+            elseif(idir.eq.23)then 
+              ICLM(ih,5)=225
+            elseif(idir.eq.25)then 
+              ICLM(ih,5)=247
+            elseif(idir.eq.27)then 
+              ICLM(ih,5)=270
+            elseif(idir.eq.29)then 
+              ICLM(ih,5)=292
+            elseif(idir.eq.32)then 
+              ICLM(ih,5)=315
+            elseif(idir.eq.34)then 
+              ICLM(ih,5)=337
+            elseif(idir.eq.36)then 
+              ICLM(ih,5)=0
+            elseif(idir.eq.0)then 
+              ICLM(ih,5)=0
+            else
+              ICLM(ih,5)=0
+            endif
+ 44       continue
 
 C Read 24 hours of wind velocity and assign to ICLM.
-        do 45 ih=1,24
-          CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','wind velocity',IER)
-          ICLM(ih,4)=IVEL
- 45     continue
+          do 45 ih=1,24
+            CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','wind velocity',IER)
+            ICLM(ih,4)=IVEL
+ 45       continue
 
 C Read 24 hours of humidity and assign to ICLM.
-        do 46 ih=1,24
-          CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
-          ICLM(ih,6)=IHUM
- 46     continue
+          do 46 ih=1,24
+            CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
+            ICLM(ih,6)=IHUM
+ 46       continue
 
 C Clear solar values.
-        idif=0
-        ighr=0
-        do 47 ih=1,24
-          ICLM(ih,1)=idif
-          ICLM(ih,3)=ighr
- 47     continue
+          idif=0
+          ighr=0
+          do 47 ih=1,24
+            ICLM(ih,1)=idif
+            ICLM(ih,3)=ighr
+ 47       continue
 
-        do 147 ih=6,20
-          CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
+          do 147 ih=6,20
+            CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
 
 C Convert MJ/m2 to W/m2
-          IGLOBH=IGLOBH*277
-          ICLM(ih,3)=IGLOBH
-          CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
-     &      longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
-          IDRAD=NINT(DRAD)
-          ICLM(ih,1)=IDRAD
- 147    continue
+            IGLOBH=IGLOBH*277
+            ICLM(ih,3)=IGLOBH
+            CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
+     &        longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+            IDRAD=NINT(DRAD)
+            ICLM(ih,1)=IDRAD
+ 147      continue
  
 C Convert month and day to julian day.
-        call eday(iday,imonth,ijday)
+          call eday(iday,imonth,ijday)
 
 C Transfer this to the binary file.
-        IREC=ijday
-        WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
-     &    ((ICLM(J,K),K=1,6),J=1,24)
+          IREC=ijday
+          WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+     &      ((ICLM(J,K),K=1,6),J=1,24)
 
-        goto 42  ! go back and read another line of the file.
-      else
+          cycle  ! go back and read another line of the file.
+        else
 
 C Read the newer format
- 242    CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
-        if(ier.lt.0) goto 48
-        K=0
-        CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
-        CALL EGETW(OUTSTR,K,WORD,'W','string for date',IER)
-        write(t4,'(a)') WORD(1:4)  ! string for year
-        write(t2m,'(a)') WORD(5:6) ! string for month
-        write(t2d,'(a)') WORD(7:8) ! string for day
-        read(t4,*,IOSTAT=IOS,ERR=1002) iyr
-        if(iyr.lt.iyear) goto 242   ! if not yet the correct year read again.
-        if(iyr.gt.iyear) goto 48   ! if past the correct year write tail.
-        read(t2m,*,IOSTAT=IOS,ERR=1002) imonth
-        read(t2d,*,IOSTAT=IOS,ERR=1002) iday
+          CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          if(ier.lt.0) exit scan
+          K=0
+          CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
+          CALL EGETW(OUTSTR,K,WORD,'W','string for date',IER)
+          write(t4,'(a)') WORD(1:4)  ! string for year
+          write(t2m,'(a)') WORD(5:6) ! string for month
+          write(t2d,'(a)') WORD(7:8) ! string for day
+          read(t4,*,IOSTAT=IOS,ERR=1002) iyr
+          if(iyr.lt.iyear) cycle     ! if not yet the correct year read again.
+          if(iyr.gt.iyear) exit scan ! if past the correct year write tail.
+          read(t2m,*,IOSTAT=IOS,ERR=1002) imonth
+          read(t2d,*,IOSTAT=IOS,ERR=1002) iday
 
 C We have a correct year so carry on scanning.
-        write(outs,'(a,i2,a,i2,3a)') 'Data for month ',imonth,' day ',
-     &    iday,' ',outstr(1:60),'...'
-        call edisp(iuout,outs)
+          write(outs,'(a,i2,a,i2,3a)') 'Data for month ',imonth,' day ',
+     &      iday,' ',outstr(1:60),'...'
+          call edisp(iuout,outs)
 
 C Read 24 hours of dry bulb temperature and assign to ICLM.
-        do 243 ih=1,24
-          CALL EGETWR(OUTSTR,K,value,0.,0.,'-','db temperature',IER)
-          ICLM(ih,2)=NINT(value*10.0)  ! multiply by 10 so in tenths deg C
- 243    continue
-        write(6,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
+          do 243 ih=1,24
+            CALL EGETWR(OUTSTR,K,value,0.,0.,'-','db temperature',IER)
+            ICLM(ih,2)=NINT(value*10.0)  ! multiply by 10 so in tenths deg C
+ 243      continue
+          write(6,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
 
 C Read 24 hours of humidity and assign to ICLM.
-        do 246 ih=1,24
-          CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
-          ICLM(ih,6)=IHUM
- 246    continue
-        write(6,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
+          do 246 ih=1,24
+            CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
+            ICLM(ih,6)=IHUM
+ 246      continue
+          write(6,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
 
 C Read 24 hours of wind direction, decode and assign to IDIR.
 C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
 C         16=157, 18=180, 20=202, 23=225, 25=247, 
 C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
-        do 244 ih=1,24
-          CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',IER)
-          if(idir.eq.2)then
-            ICLM(ih,5)=22
-          elseif(idir.eq.5)then 
-            ICLM(ih,5)=45
-          elseif(idir.eq.7)then
-            ICLM(ih,5)=67
-          elseif(idir.eq.9)then
-            ICLM(ih,5)=90
-          elseif(idir.eq.11)then
-            ICLM(ih,5)=112
-          elseif(idir.eq.14)then 
-            ICLM(ih,5)=135
-          elseif(idir.eq.16)then 
-            ICLM(ih,5)=157
-          elseif(idir.eq.18)then 
-            ICLM(ih,5)=180
-          elseif(idir.eq.20)then 
-            ICLM(ih,5)=202
-          elseif(idir.eq.23)then 
-            ICLM(ih,5)=225
-          elseif(idir.eq.25)then 
-            ICLM(ih,5)=247
-          elseif(idir.eq.27)then 
-            ICLM(ih,5)=270
-          elseif(idir.eq.29)then 
-            ICLM(ih,5)=292
-          elseif(idir.eq.32)then 
-            ICLM(ih,5)=315
-          elseif(idir.eq.34)then 
-            ICLM(ih,5)=337
-          elseif(idir.eq.36)then 
-            ICLM(ih,5)=0
-          elseif(idir.eq.0)then 
-            ICLM(ih,5)=0
-          else
-            ICLM(ih,5)=0
-          endif
- 244    continue
-        write(6,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
+          do 244 ih=1,24
+            CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',
+     &        IER)
+            if(idir.eq.2)then
+              ICLM(ih,5)=22
+            elseif(idir.eq.5)then 
+              ICLM(ih,5)=45
+            elseif(idir.eq.7)then
+              ICLM(ih,5)=67
+            elseif(idir.eq.9)then
+              ICLM(ih,5)=90
+            elseif(idir.eq.11)then
+              ICLM(ih,5)=112
+            elseif(idir.eq.14)then 
+              ICLM(ih,5)=135
+            elseif(idir.eq.16)then 
+              ICLM(ih,5)=157
+            elseif(idir.eq.18)then 
+              ICLM(ih,5)=180
+            elseif(idir.eq.20)then 
+              ICLM(ih,5)=202
+            elseif(idir.eq.23)then 
+              ICLM(ih,5)=225
+            elseif(idir.eq.25)then 
+              ICLM(ih,5)=247
+            elseif(idir.eq.27)then 
+              ICLM(ih,5)=270
+            elseif(idir.eq.29)then 
+              ICLM(ih,5)=292
+            elseif(idir.eq.32)then 
+              ICLM(ih,5)=315
+            elseif(idir.eq.34)then 
+              ICLM(ih,5)=337
+            elseif(idir.eq.36)then 
+              ICLM(ih,5)=0
+            elseif(idir.eq.0)then 
+              ICLM(ih,5)=0
+            else
+              ICLM(ih,5)=0
+            endif
+ 244      continue
+          write(6,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
 
 C Read 24 hours of wind velocity and assign to ICLM.
-        do 245 ih=1,24
-          CALL EGETWR(OUTSTR,K,value,0.,0.,'-','wind velocity',IER)
-          ICLM(ih,4)=NINT(value*10.0)  ! to get tenths m/s
- 245    continue
-        write(6,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
+          do 245 ih=1,24
+            CALL EGETWR(OUTSTR,K,value,0.,0.,'-','wind velocity',IER)
+            ICLM(ih,4)=NINT(value*10.0)  ! to get tenths m/s
+ 245      continue
+          write(6,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
 
 C Clear solar values.
-        idif=0
-        ighr=0
-        do 247 ih=1,24
-          ICLM(ih,1)=idif
-          ICLM(ih,3)=ighr
- 247    continue
+          idif=0
+          ighr=0
+          do 247 ih=1,24
+            ICLM(ih,1)=idif
+            ICLM(ih,3)=ighr
+ 247      continue
 
-        do 347 ih=6,20
-          CALL EGETWR(OUTSTR,K,value,0.,100.,'-','GLOB_HORIZO MJ/m2',
-     &      IER)
+          do 347 ih=6,20
+            CALL EGETWR(OUTSTR,K,value,0.,100.,'-','GLOB_HORIZO MJ/m2',
+     &        IER)
 
 C Convert MJ/m2 to W/m2
-          watts=value*277.78
-          ICLM(ih,3)=NINT(watts)
-          IGLOBH=NINT(watts)
-          CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
-     &      longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
-          IDRAD=NINT(DRAD)
-          ICLM(ih,1)=IDRAD
- 347    continue
+            watts=value*277.78
+            ICLM(ih,3)=NINT(watts)
+            IGLOBH=NINT(watts)
+            CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
+     &        longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+            IDRAD=NINT(DRAD)
+            ICLM(ih,1)=IDRAD
+ 347      continue
  
 C Convert month and day to julian day.
-        call eday(iday,imonth,ijday)
+          call eday(iday,imonth,ijday)
 
 C Transfer this to the binary file.
-        IREC=ijday
-        WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
-     &    ((ICLM(J,K),K=1,6),J=1,24)
+          IREC=ijday
+          WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+     &      ((ICLM(J,K),K=1,6),J=1,24)
 
-        goto 242  ! go back and read another line of the file.
+          cycle  ! go back and read another line of the file.
 
-      endif
+        endif
+      end do scan
 
 C Insert Climatic Year.
- 48   IREC=366
+      IREC=366
       ICDNGH=IDNGH
       WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
@@ -797,17 +801,18 @@ C Close ASCIIfile.
       CALL ERPFREE(IUNIT,ISTAT)
       call edisp(iuout,'Closing the Korean Met office file.')
 
-   19 return
+      return  ! normal exit from subroutine
 
  1001 WRITE(outs,775)ISTAT
   775 FORMAT(' Error ',I7,' writing climate database year')
       call edisp(iuout,outs)
-      GOTO 19
+      return
 
  1002 WRITE(outs,777)ISTAT
   777 FORMAT(' Error ',I7,' writing climate database')
       call edisp(iuout,outs)
-      GOTO 19
+      return
+
       end
 
 C ----------- CFILIN 
