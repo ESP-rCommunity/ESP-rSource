@@ -1218,7 +1218,8 @@ C Loop until start of "Optical Properties" section.
           goto 12
         endif
         goto 10
-      elseif(outstr(1:9).eq.'Window 5.')then
+      elseif(outstr(1:9).eq.'Window 5.'.or.
+     &       outstr(1:8).eq.'Window v')then
 
 C A newer format file.
  13     CALL STRIPC(iwin4,outstr,0,ND,1,'data',IER)
@@ -1322,7 +1323,7 @@ C Newer files do not have a # after air layers.
         ABED(IL,4)=v5
         CALL EGETWR(outstr,K,v6,0.0,0.999,'W','abs @80',IER)
         ABED(IL,5)=v6
-        write(outs,'(7f6.3,i2)')v1,v2,v3,v4,v5,v6,wdum,IL
+        write(outs,'(6f6.3,a,i2)')v1,v2,v3,v4,v5,v6,wdum,IL
         call edisp(iuout,outs)
 
 C If inserting air gaps do it here, except for the inside layer.

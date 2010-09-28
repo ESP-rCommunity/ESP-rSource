@@ -262,23 +262,23 @@ C Check if Unix-based or DOS based.
       newgeo=.false.  ! assume older format geometry.
       IUF=IFIL+2
       siteinfo=2
-      databaseinfo=1
+      databaseinfo=2  ! assume verbose mode for database reporting
       contextinfo=2
       ICTLF=IUF
       CALL ERPFREE(ICTLF,ISTAT)
       call FINDFIL(LCTLF,XST)
       if(XST)then
-        controlinfo=2
+        controlinfo=2  ! if control used set to verbose
       else
         controlinfo=-1
       endif 
       if(IAIRN.ge.1)then
-        netinfo=2
+        netinfo=2      ! if a network included set to verbose
       else
         netinfo=-1
       endif
       if(indcfg.eq.2.or.indcfg.eq.3)then
-        plantinfo=2
+        plantinfo=2   ! if plant included in model set to verbose
       else
         plantinfo=-1
       endif
@@ -323,6 +323,8 @@ C Setup the selection menu.
         items(9)='b databases >> compact'
       elseif(databaseinfo.eq.2)then
         items(9)='b databases >> verbose'
+      elseif(databaseinfo.eq.3)then
+        items(9)='b databases >> verbose all'
       endif
       if(contextinfo.eq.0)then
         items(10)='c model context >> none'
@@ -593,8 +595,8 @@ C Execute image viewer (get tool via prior scan of default file).
         siteinfo=siteinfo+1
         if(siteinfo.gt.2)siteinfo=0
       elseif(ino.eq.9)then
-        databaseinfo=databaseinfo+1
-        if(databaseinfo.gt.2)databaseinfo=0
+        databaseinfo=databaseinfo+1  ! allow up to 3
+        if(databaseinfo.gt.3)databaseinfo=0
       elseif(ino.eq.10)then
         contextinfo=contextinfo+1
         if(contextinfo.gt.2)contextinfo=0
@@ -1254,7 +1256,7 @@ C If temporal data associated with the model report it.
         endif
       endif
 
-C Databases associated with the model.
+C Databases associated with the model. First print the file names.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
@@ -2196,7 +2198,9 @@ C if the zones are fully attributed.
         endif
       endif
 
-C MLC database reporting.
+C MLC database reporting. If toggle set to 'verbose' only list out those
+C constructions which have been referenced in the model. If toggle is
+C set to 'verbose all' then include all of them.
    57 if(databaseinfo.ge.1)then
         call edisp(itu,' ')
         WRITE(outs,240)
@@ -2213,6 +2217,13 @@ C MLC database reporting.
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
             call edisp(itu,outs)
+          else
+            if(databaseinfo.eq.3)then
+              call etmldb(2,itu,imlc,imerr)
+              write(outs,'(3a)') ' Total area of ',
+     &          mlcname(1:lnblnk(mlcname)),' is zero (not referenced)'
+              call edisp(itu,outs)
+            endif
           endif
   342   continue
       endif
