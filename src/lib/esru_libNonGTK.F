@@ -3759,13 +3759,8 @@ C        write(6,*)sstr(1)
         INQUIRE(FILE=tfile(1:ltf),EXIST=there)
         if(there)then
           close(iuf)
-#ifdef F90
           open(iuf,file=tfile(1:ltf),position='APPEND',
      &      status='UNKNOWN',err=1)
-#else
-          open(iuf,file=tfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
         else
           close(iuf)
           open(iuf,file=tfile,status='UNKNOWN',err=1)
