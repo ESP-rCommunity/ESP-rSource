@@ -391,6 +391,8 @@ C      REAL TMA                  ! Mean air point temperature (oC)
       real trsum
       REAL Q_zone,Q_heat,Q_cool   ! Total heat injection / extraction
       REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area
+      real solrad_dir,solrad_diff,inc_ang,psazi2,pselv2 ! solar incidence radiation and angle
+
       INTEGER i_ZnCtl             ! Zone control flag
 
       integer IDTY,IDAY           ! index for current day type, current day
@@ -818,24 +820,24 @@ C.......Create base name for surface values output
 c        iH3K_NameLen=lnblnk(H3K_rep_NAME)
 
 C-----------------------------------------------------------------------
-C       Report total short wave radiation on this surface.
+C       Report total short wave radiation on this surface. ??? what is this ??? dubious output!!
 C-----------------------------------------------------------------------
-        call add_to_xml_reporting (
-     &          qswrde(iZone,iSurface,2),
-     &          H3K_rep_NAME(1:iH3K_NameLen) 
-     &            // '/heat_flux/radiation/shortwave',
-     &          'units', '(W)',
-     &          'Short-wave solar radiation'
-     &           )
+c        call add_to_xml_reporting (
+c     &          qswrde(iZone,iSurface,2),
+c     &          H3K_rep_NAME(1:iH3K_NameLen) 
+c     &            // '/heat_flux/radiation/shortwave',
+c     &          'units', '(W)',
+c     &          'Short-wave solar radiation'
+c     &           )
 
-        call add_to_xml_reporting (
-     &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
-     &          H3K_rep_NAME(1:iH3K_NameLen) 
-     &            // '/heat_flux/radiation/'
-     &            //  'shortwave_m2' ,
-     &          'units', '(W/m2)',
-     &          'Short-wave solar radiation per unit area'
-     &          )
+c        call add_to_xml_reporting (
+c     &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
+c     &          H3K_rep_NAME(1:iH3K_NameLen) 
+c     &            // '/heat_flux/radiation/'
+c     &            //  'shortwave_m2' ,
+c     &          'units', '(W/m2)',
+c     &          'Short-wave solar radiation per unit area'
+c     &          )
 
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
@@ -943,7 +945,7 @@ C.............Read surface type from iSurfOreint array
 C.............Surface is transparent
               iSurfType = iSurfWindow
             endif
-
+			
           case ( iBCInternalConst, iBCInternalSame )
 
 C...........Flux to known conditions
@@ -1086,13 +1088,11 @@ C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
 C........External facing surfaces -> Surface temperature
-C         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
             call add_to_xml_reporting (
      &          tfc(iZone,iSurface,1),
      &          H3K_rep_Name(1:iH3K_NameLen) // '/temp/outside',
      &          'units', '(oC)',
      &          'Temperature on external surface facing "exterior" ' )
-C         Endif ! if ie = 0
 
          call add_to_xml_reporting (
      &          tfs(iZone,iSurface),
@@ -1100,6 +1100,25 @@ C         Endif ! if ie = 0
      &          'units', '(oC)',
      &          'Temperature on internal surface' )
 
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+C.............get solar incidence angle on surface and total solar (dir + diff)
+           call get_incident_solrad(iZone,iSurface,solrad_dir, 
+     &                                             solrad_diff, 
+     &                                   inc_ang,psazi2,pselv2)
+
+           call add_to_xml_reporting (
+     &        (solrad_dir+solrad_diff),
+     &        H3K_rep_Name(1:iH3K_NameLen) // '/totRad',
+     &        'units', '(W/m2)',
+     &        'Total solar radiation incidence on surface (dir+diff)')
+
+           call add_to_xml_reporting (
+     &        psazi2,
+     &        H3K_rep_Name(1:iH3K_NameLen) // '/psazi',
+     &        'units', '(o)',
+     &        'Solar azimuth angle relative to surface ' )
+
+         endif
 C node temperature for node "nndc" is zero for whatever reasons ... (???)
 C         call add_to_xml_reporting (
 C     &          tfc(iZone,iSurface,nndc(iZone,iSurface)),
