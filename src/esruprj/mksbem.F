@@ -3533,8 +3533,6 @@ C required models ') which returned iuact=1.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
@@ -3561,10 +3559,8 @@ C Where ESP-r was installed (as recorded when it was compiled).
 
       CHARACTER ACT*1,ADF*124
       character cfgroot*24,LCFGF*72,NNAME*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,fs*1,msgl2*48,
-     &      tab*1
-      character outs*124,h*72,GUESS*24,aimpth*24,hvacpth*24
+      character fs*1,msgl2*48,tab*1
+      character outs*124,h*72,GUESS*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -7388,6 +7384,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       SUBROUTINE NCMCAL(IER)
 #include "sbem.h"
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "geometry.h"
 #include "material.h"
@@ -7406,16 +7403,12 @@ C It finally generate BRUKL input document and other SBEM reports.
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1,hvacpth*24
+      character fs*1, col*1
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
@@ -8529,6 +8522,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
 
 #include "sbem.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       integer lnblnk  ! function definition
@@ -8547,16 +8541,12 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       integer ifcfg
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character fs*1, col*1, quote*1,hvacpth*24
+      character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK

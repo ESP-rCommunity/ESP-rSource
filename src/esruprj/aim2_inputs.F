@@ -1496,6 +1496,9 @@ C ******************************************************************************
       SUBROUTINE SAVE_AIM2
 
       IMPLICIT NONE
+#include "building.h"
+#include "model.h"
+
 C Declare local variables
       CHARACTER :: OutString*248         !display data string 
       CHARACTER :: TempString*248        !temporary string 
@@ -1516,12 +1519,8 @@ C Declare local variables
       INTEGER :: IUOUT, IUIN
       COMMON/USER/BROWSE
       LOGICAL BROWSE
-      COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/rpath/path
       CHARACTER path*72
-      CHARACTER*24 :: zonepth,netpth,ctlpth,imgpth,radpth,docpth
-      CHARACTER*24 :: tmppth,dbspth,aimpth,bsmpth,hvacpth
       INTEGER :: aim2index
       INTEGER :: ipaths
       LOGICAL :: unixok

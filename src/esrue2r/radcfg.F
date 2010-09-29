@@ -41,6 +41,7 @@ C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -48,8 +49,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/FILEP/IFIL
       common/rpath/path
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -59,10 +58,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/radgrid/LDFGRID
       common/radabs/NABS
       common/user/browse
-
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72

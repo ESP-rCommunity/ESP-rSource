@@ -1556,8 +1556,6 @@ C ICLIM,LCLIM (for climate file)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/user/browse
       common/IPVF/lipvdatf
       COMMON/GR1D05/LGRD1D
@@ -1617,9 +1615,8 @@ C The string buffer doit is only used within ifdef code.
       character tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72,aimpth*24,
-     &          bsmpth*24,hvacpth*24
+      character fs*1
+      character LTMPFL*72
       character LF*72,LFL*144
       CHARACTER spflnam*72,entflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ

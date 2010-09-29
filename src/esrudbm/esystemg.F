@@ -236,17 +236,6 @@ C lctlf (72 char) - model control file name.
 C LPRJLG (72 char) model log file.
       COMMON/LOG/LPRJLG
 
-C ZONEPTH (24 char) relative path to the model zones folder.
-C NETPTH (24 char) relative path to the model networks folder
-C CTLPTH (24 char) relative path to the model control folder
-C IMGPTH (24 char) relative path to the model images folder
-C RADPTH (24 char) relative path to the model Radiance folder
-C DOCPTH (24 char) relative path to the model documents folder
-C TMPPTH (24 char) relative path to scratch folder
-C dbspth (24 char) relative path to model specific databases folder
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
-
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
 C         the model, it must match one of the known fmttag.
@@ -498,9 +487,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
