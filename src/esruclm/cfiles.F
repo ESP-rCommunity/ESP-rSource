@@ -424,7 +424,8 @@ C Close ASCII file.
 
 C 'MKOREANCLM' Allows a period of climatic data in a suitable ASCII file
 C to be transferred to a binary climate file.  The ASCII file should 
-C contain the following values for each hour:
+C contain the following values for each hour (if it was created prior
+C to ~2006:
 C col     description                    unit            variable
 C 1.     Site index (integer)
 C 2.     Year (integer)
@@ -438,16 +439,35 @@ C       16=157, 18=180, 20=202, 23=225, 25=247,
 C       27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
 C 53-76  Prevailing wind speed           (TENTHS M/S)     IVEL
 C 77-100 Relative humidity               (PERCENT)        IHUM
+C Each data line is | separated and all values should be integers.
 
 C Korean Met office files have pyronometer data (0.01MJ) and Cloud tenths.
 C these are not yet dealt with.
 
-C Each data line is | separated and all values should be integers.
+C Recent files adopt a different format
+C col     description                    unit            variable
+C 1     site number (int), 
+C 2     year month day as one string e.g. 20090703 is 2009 july 3
+C 3-26 (24 values) amb temp (real),     (DEG.C)
+C 27-50 (24 values) humidity (ints),    (PERCENT)
+C 51-74 (24 values) wind direction (between 0-36) north is zero take number and mult by 10
+C 75-98 (24 values) wind speed m/s (real), (M/S)
+C 99-114 (16 values) solar radiation MJ/m2 (real) mult 277.7 from MJ/m2->W/M2
+C 115-122 (8 values) cloud cover (0-10) (ints) probably multiply by 10 to get percent 
+C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
+
+
+C Each data line is | separated and values are a mix of reals and integers.
 C Assume that the climate file has already been opened elsewhere.
 
 C silent is a logical toggle, if .true. then do not interact with user.
-      SUBROUTINE MKOREANCLM(ITRU,LASCI,IUNIT,IER)
+      SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
 #include "esprdbfile.h"
+
+C Parameters
+      character LASCI*72 ! file name to import
+      integer IUNIT      ! unit number of the file (assumed already opened)
+      character ACT*3    ! old pre 2006 files, new current files.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -460,7 +480,9 @@ C silent is a logical toggle, if .true. then do not interact with user.
 
       dimension ICLM(24,6)
 
-      CHARACTER CLMLOC*30,LASCI*72,outs*124,OUTSTR*400
+      CHARACTER CLMLOC*30,outs*124
+      character OUTSTR*1000   ! a 1K string buffer
+      character word*24,t2m*2,t2d*2,t4*4
       integer isite    ! site index
       integer iyr      ! year of scan
       integer imonth   ! month of scan
@@ -468,6 +490,9 @@ C silent is a logical toggle, if .true. then do not interact with user.
       integer ih       ! hour counter
       integer ijday    ! julian day
       integer idif,itmp,ivel,idir,ihum
+      integer IGLOBH   ! to hold int version of global horiz W
+      real value       ! for use in scan
+      real watts       ! for use in conversion
 
       character h*72
       real longit_for_diffuse_calcs,differ_from_Greenwich
@@ -498,7 +523,7 @@ C Set the radiation flag to Global horizontal
       H(3)='should not be great or simulation results may be '
       H(4)='open to question.'
       CALL EASKR(longit_for_diffuse_calcs,' ',
-     &           ' Climate longitude ? (west: positive) ',
+     &           ' Climate longitude (actual)? (west: positive) ',
      &           -180.0,'W',180.0,'W',30.0,'climate longitude',IER,4)
 
       H(1)='The local time difference from Greenwich is needed.'
@@ -524,15 +549,18 @@ C Export climate data to ASCII file (with similar name).
         elseif(IDIFF.eq.2)then  
           iapprox_diff=2
         endif
-                
-C Read a line of the file.
- 42   CALL STRIPC400(IUNIT,OUTSTR,0,ND,1,'data line',IER)
-      if(ier.lt.0) goto 48
+
+      scan: do
+        if(act(1:3).eq.'old')then
+
+C If the older format read a line of the file.
+          CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          if(ier.lt.0) exit scan
       K=0
       CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
       CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
-      if(iyr.lt.iyear) goto 42   ! if not yet the correct year read again.
-      if(iyr.gt.iyear) goto 48   ! if past the correct year write tail.
+          if(iyr.lt.iyear) cycle   ! if not yet the correct year read again.
+          if(iyr.gt.iyear) exit scan   ! if past the correct year write tail.
 
 C We have a correct year so carry on scanning.
       CALL EGETWI(OUTSTR,K,imonth,1,12,'W','month index',IER)
@@ -553,7 +581,8 @@ C       02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
 C       16=157, 18=180, 20=202, 23=225, 25=247, 
 C       27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
       do 44 ih=1,24
-        CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',IER)
+            CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',
+     &        IER)
         if(idir.eq.2)then
           ICLM(ih,5)=22
         elseif(idir.eq.5)then 
@@ -608,7 +637,7 @@ C Read 24 hours of humidity and assign to ICLM.
 C Clear solar values.
       idif=0
       ighr=0
-      do 47 ih=1,5
+          do 47 ih=1,24
         ICLM(ih,1)=idif
         ICLM(ih,3)=ighr
  47   continue
@@ -617,21 +646,134 @@ C Clear solar values.
         CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
 
 C Convert MJ/m2 to W/m2
-C        IGLOBH=IGLOBH/3600
+            IGLOBH=IGLOBH*277
         ICLM(ih,3)=IGLOBH
         CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
      &      longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
         IDRAD=NINT(DRAD)
         ICLM(ih,1)=IDRAD
  147  continue
+ 
+C Convert month and day to julian day.
+          call eday(iday,imonth,ijday)
+
+C Transfer this to the binary file.
+          IREC=ijday
+          WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
+     &      ((ICLM(J,K),K=1,6),J=1,24)
+
+          cycle  ! go back and read another line of the file.
+        else
+
+C Read the newer format
+          CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          if(ier.lt.0) exit scan
+          K=0
+          CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
+          CALL EGETW(OUTSTR,K,WORD,'W','string for date',IER)
+          write(t4,'(a)') WORD(1:4)  ! string for year
+          write(t2m,'(a)') WORD(5:6) ! string for month
+          write(t2d,'(a)') WORD(7:8) ! string for day
+          read(t4,*,IOSTAT=IOS,ERR=1002) iyr
+          if(iyr.lt.iyear) cycle     ! if not yet the correct year read again.
+          if(iyr.gt.iyear) exit scan ! if past the correct year write tail.
+          read(t2m,*,IOSTAT=IOS,ERR=1002) imonth
+          read(t2d,*,IOSTAT=IOS,ERR=1002) iday
+
+C We have a correct year so carry on scanning.
+          write(outs,'(a,i2,a,i2,3a)') 'Data for month ',imonth,' day ',
+     &      iday,' ',outstr(1:60),'...'
+          call edisp(iuout,outs)
+
+C Read 24 hours of dry bulb temperature and assign to ICLM.
+          do 243 ih=1,24
+            CALL EGETWR(OUTSTR,K,value,0.,0.,'-','db temperature',IER)
+            ICLM(ih,2)=NINT(value*10.0)  ! multiply by 10 so in tenths deg C
+ 243      continue
+          write(6,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
+
+C Read 24 hours of humidity and assign to ICLM.
+          do 246 ih=1,24
+            CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
+            ICLM(ih,6)=IHUM
+ 246      continue
+          write(6,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
+
+C Read 24 hours of wind direction, decode and assign to IDIR.
+C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
+C         16=157, 18=180, 20=202, 23=225, 25=247, 
+C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
+          do 244 ih=1,24
+            CALL EGETWI(OUTSTR,K,IDIR,0,36,'W','wind direction index',
+     &        IER)
+            if(idir.eq.2)then
+              ICLM(ih,5)=22
+            elseif(idir.eq.5)then 
+              ICLM(ih,5)=45
+            elseif(idir.eq.7)then
+              ICLM(ih,5)=67
+            elseif(idir.eq.9)then
+              ICLM(ih,5)=90
+            elseif(idir.eq.11)then
+              ICLM(ih,5)=112
+            elseif(idir.eq.14)then 
+              ICLM(ih,5)=135
+            elseif(idir.eq.16)then 
+              ICLM(ih,5)=157
+            elseif(idir.eq.18)then 
+              ICLM(ih,5)=180
+            elseif(idir.eq.20)then 
+              ICLM(ih,5)=202
+            elseif(idir.eq.23)then 
+              ICLM(ih,5)=225
+            elseif(idir.eq.25)then 
+              ICLM(ih,5)=247
+            elseif(idir.eq.27)then 
+              ICLM(ih,5)=270
+            elseif(idir.eq.29)then 
+              ICLM(ih,5)=292
+            elseif(idir.eq.32)then 
+              ICLM(ih,5)=315
+            elseif(idir.eq.34)then 
+              ICLM(ih,5)=337
+            elseif(idir.eq.36)then 
+              ICLM(ih,5)=0
+            elseif(idir.eq.0)then 
+              ICLM(ih,5)=0
+            else
+              ICLM(ih,5)=0
+            endif
+ 244      continue
+          write(6,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
+
+C Read 24 hours of wind velocity and assign to ICLM.
+          do 245 ih=1,24
+            CALL EGETWR(OUTSTR,K,value,0.,0.,'-','wind velocity',IER)
+            ICLM(ih,4)=NINT(value*10.0)  ! to get tenths m/s
+ 245      continue
+          write(6,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
 
 C Clear solar values.
       idif=0
       ighr=0
-      do 247 ih=21,24
+          do 247 ih=1,24
         ICLM(ih,1)=idif
         ICLM(ih,3)=ighr
  247  continue
+
+          do 347 ih=6,20
+            CALL EGETWR(OUTSTR,K,value,0.,100.,'-','GLOB_HORIZO MJ/m2',
+     &        IER)
+
+C Convert MJ/m2 to W/m2
+            watts=value*277.78
+            ICLM(ih,3)=NINT(watts)
+            IGLOBH=NINT(watts)
+            CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
+     &        longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+            IDRAD=NINT(DRAD)
+            ICLM(ih,1)=IDRAD
+ 347      continue
  
 C Convert month and day to julian day.
       call eday(iday,imonth,ijday)
@@ -641,10 +783,13 @@ C Transfer this to the binary file.
       WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1002)
      &  ((ICLM(J,K),K=1,6),J=1,24)
 
-      goto 42  ! go back and read another line of the file.
+          cycle  ! go back and read another line of the file.
+
+        endif
+      end do scan
 
 C Insert Climatic Year.
- 48   IREC=366
+      IREC=366
       ICDNGH=IDNGH
       WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
@@ -656,17 +801,18 @@ C Close ASCIIfile.
       CALL ERPFREE(IUNIT,ISTAT)
       call edisp(iuout,'Closing the Korean Met office file.')
 
-   19 return
+      return  ! normal exit from subroutine
 
  1001 WRITE(outs,775)ISTAT
   775 FORMAT(' Error ',I7,' writing climate database year')
       call edisp(iuout,outs)
-      GOTO 19
+      return
 
  1002 WRITE(outs,777)ISTAT
   777 FORMAT(' Error ',I7,' writing climate database')
       call edisp(iuout,outs)
-      GOTO 19
+      return
+
       end
 
 C ----------- CFILIN 

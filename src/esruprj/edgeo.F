@@ -125,6 +125,7 @@ C prec17 common is described in geometry.h.
       integer lna,lnb,lnbm,lnbn
       integer IRT  ! for radio button selections
       integer NITMS,INO,INOR ! max items and current menu item
+      integer INPICK  ! to use with epkvert
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1527,6 +1528,8 @@ C clear the pending rotateit structure.
               rotateit(icomp,5)=x1
               rotateit(icomp,6)=y1
             elseif(INOR.eq.3)then
+
+C Scan G1 for vertes in this zone and allow user to select one.
               inpick=1
               call EPKVERT(INPICK,IVLST,'Rotation Point',
      &          'Select vertex to rotate around.',' ',58,ier)
@@ -1705,7 +1708,7 @@ C Ask the user what the transform for each axis should be.
           elseif(INOR.eq.8)then
 
 C Identify two points that define the vector and find the difference
-C between the two X and two Y and two Z.
+C between the two X and two Y and two Z. This uses G1 commons.
             inpick=2
             call EPKVERT(INPICK,IVLST,
      &        'Define Vector',
@@ -1733,7 +1736,7 @@ C between the two X and two Y and two Z.
 
 C As the user for a start vertex in this zone and a final vertex in
 C another zone. This will require saving and loading geometry common
-C blocks.
+C blocks (epkvert uses common G1).
             inpick=1
             call EPKVERT(INPICK,IVLST,'Start Point',
      &        'Select starting vertex.',' ',58,ier)
@@ -1778,6 +1781,8 @@ C other zone.
             CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
+
+C Load and scan G1 for vertes in other zone and allow user to select one.
               call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
             inpick=1
             call EPKVERT(INPICK,IVLST,'Other Zone Vertex',
@@ -2831,8 +2836,9 @@ C If copy action set inpic to ilimit otherwise set to nzsur().
 
 C Loop through each surface in the zone and make up display list based on the
 C attributes of the surface. For shading or insulation mark surfaces
-C which are not applicable.
-        DO 11 I=1,INPIC
+C which are not applicable. The do loop needs to use nzsur so that all
+C surfaces are presented even if only ilimit can be copied.
+        DO 11 I=1,NZSUR(IZONE)
          ioc=IZSTOCN(izone,i)
          if(act.eq.'s'.or.act.eq.'S')then
            if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
@@ -5120,6 +5126,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       logical anotherone  ! to signal that another point will be requested
       integer IRT  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
+      integer INPICK  ! to use with epkvert
 
 #ifdef OSI
       integer iix,iiy
@@ -5253,7 +5260,8 @@ C Based on users selection or jump back point for 'do another one'.
           continue
         elseif(ino.eq.1)then
 
-C Vertices along a line between two verts.
+C Vertices along a line between two verts. Uses common G1 for the
+C current zone.
           if(anotherone)then
           inpick=2
           else
@@ -5306,7 +5314,7 @@ C inserted in another surface is done in code near line 5580.
 
         elseif(ino.eq.2)then
 
-C Distance between two vertices.
+C Distance between two vertices (based on current G1 common block).
           inpick=2
           CALL EPMENSV
           call EPKVERT(INPICK,IVLST,'Define Line',
@@ -5333,7 +5341,7 @@ C Distance between two vertices.
 
         elseif(ino.eq.3)then
 
-C Vertex at distance and angle from another.
+C Vertex at distance and angle from another (based on current G1 common).
           if(anotherone)then
           inpick=1
           else
@@ -5396,7 +5404,7 @@ C inserted in another surface is done in code near line 5580.
 
         elseif(ino.eq.4)then
 
-C Angle between two lines.
+C Angle between two lines (based on current G1 common block).
           inpick=3
           CALL EPMENSV
           call EPKVERT(INPICK,IVLST,'Define Angle',
@@ -5422,7 +5430,7 @@ C Angle between two lines.
 
         elseif(ino.eq.5)then
 
-C Intersection line and plane.
+C Intersection line and plane (based on info in current G1 common).
 
 C << add option for picking surface in another zone >>
           inpick=2
@@ -5649,7 +5657,7 @@ C inserting the new vertex index.
                       JVN(jivj,jivjj+1)=jwhich3
 
 C Debug...
-C                      write(6,'(a,30i3)') 'now jvn is ',
+C                      write(6,'(a,32i4)') 'now jvn is ',
 C     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
  
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -5678,7 +5686,7 @@ C And re-draw the zone to clean up the circles.
 
         elseif(ino.eq.7)then
 
-C Distance between point and a line.
+C Distance between point and a line (based on current G1 common block).
           inpick=2
           CALL EPMENSV
           call EPKVERT(INPICK,IVLST,'Define Line',
@@ -5715,7 +5723,8 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
         elseif(ino.eq.8)then
 
 C Bring a point off a line into alignment. Begin by checking the
-C distance between point and the line.
+C distance between point and the line (based on current G1 common
+C block data).
           inpick=2
           CALL EPMENSV
           call EPKVERT(INPICK,IVLST,'Define Line',
@@ -6066,7 +6075,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug...
-C                     write(6,'(a,30i3)') 'now jvn is ',
+C                     write(6,'(a,32i4)') 'now jvn is ',
 C     &                 (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -6388,6 +6397,7 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
       integer MVERT,IVERT,NITMS,IRT ! max items and current menu item
+      integer icmpall  ! to signal request to compare all names
       
 #ifdef OSI
       integer iix,iiy
@@ -7231,7 +7241,8 @@ C Update the counters (ibasecount decrements, itopcount increments).
           endif
 
 C Check that suraface name is unique.
-          call snamdup(SNAME1,icomp,0,nameok)
+          icmpall=0 ! force compare of all surfaces
+          call snamdup(SNAME1,icomp,icmpall,nameok)
           if(.NOT.nameok)then
 
 C Copy to a slightly longer buffer for editing and ensure that
@@ -7444,7 +7455,7 @@ C Set up a long string buffer for editing vertex list for the
 C surface. 
         hold64='                                                      '
         write(t248,'(4a)') hold64,hold64,hold64,'                     '
-        WRITE(t248,'(24I4)')(JVN(IFOC,j),J=1,nv)
+        WRITE(t248,'(32I4)')(JVN(IFOC,j),J=1,nv)
         CALL EASKS248(t248,' Associated vertices (type the indices)?',
      &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,8)
         NV = iCountWords(t248)
@@ -7501,17 +7512,25 @@ C Not one of the legal menu choices.
 C ************* EPKVERT 
 C EPKVERT Select one or more vertices from information currently in
 C common block G1.
-C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
 #include "building.h"
 #include "geometry.h"
 #include "epara.h"
 #include "prj3dv.h"
+
+C Parameters passed.
+      integer inpick  ! passed in number of items that can be selected
+                      ! and becomes actual number of items selected
+      integer IVLST   ! array to hold items selected
+      CHARACTER*(*) TITLE,PROMPT1,PROMPT2
+      integer nhelp   ! number of context help lines
+      integer ier     ! error state zero ok, one problem
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       DIMENSION  item(36)
+      real COG1,COG2,COG3  ! position to check against
       DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
-      CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
       integer MVERT,IVERT ! max items and current menu item
