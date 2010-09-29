@@ -4,7 +4,7 @@ C Please contact Ian Beausoleil-Morrison for details concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -23,19 +23,19 @@ C of the AIM-2 infiltration model.
 
 C ************************ MODULE AIM2_INPUTS_InputData*******************************************
 C Created by: Francesca Macdonald
-C 
+C
 C Initialise        - contains the exact same data as in AIM2_InputData Module.
-C CheckForChanges   - checks if the interface has been used to make any changes 
-C                     to the AIM2 parameters, so it can promt the user to save 
+C CheckForChanges   - checks if the interface has been used to make any changes
+C                     to the AIM2 parameters, so it can promt the user to save
 C                     changes if they have been made.
 C Deallocate        - deallocates any memory allocated to iAIM2_infil_to_zones
 C
 C ********************************************************************************
-      MODULE AIM2_INPUTS_InputData 
-      
+      MODULE AIM2_INPUTS_InputData
+
       USE AIM2_InputData
       IMPLICIT NONE
-      
+
       SAVE !ensures values do not change between sucessive invocations
 
 C---------------------------------------------------------------------------------
@@ -67,11 +67,11 @@ C-------------------------------------------------------------------------------
       INTEGER :: iAIM2_basement_zone
       INTEGER :: iAIM2_CrawlSpace_zone
       INTEGER :: iAIM2_attic_zone
-      
+
 C Add Proceedures
       CONTAINS
 C *******************************************************************************
-C Initialise() sets all the AIM2_INPUTS_InputData to AIM2_InputData 
+C Initialise() sets all the AIM2_INPUTS_InputData to AIM2_InputData
 C *******************************************************************************
       SUBROUTINE Initialise()
 
@@ -107,11 +107,11 @@ C Common blocks
       iAIM2_DHW_flue2=AIM2_DHW_flue2
       iAIM2_ref_zone=AIM2_ref_zone
       iAIM2_num_zones_infil=AIM2_num_zones_infil
-C Allocate memory for iAIM2_zone_infil 
+C Allocate memory for iAIM2_zone_infil
       IF (.NOT.ALLOCATED(iAIM2_zone_infil)) THEN
         ALLOCATE(iAIM2_zone_infil(iAIM2_num_zones_infil),
      &       STAT=allocate_status)
-C Check allocation was sucessful     
+C Check allocation was sucessful
         IF (.NOT.ALLOCATED(iAIM2_zone_infil)) THEN
           CALL EDISP(IUOUT,' iAIM2_zone_infil not allocated')
         ELSE
@@ -123,7 +123,7 @@ C Check allocation was sucessful
       iAIM2_basement_zone=AIM2_basement_zone
       iAIM2_CrawlSpace_zone=AIM2_CrawlSpace_zone
       iAIM2_attic_zone=AIM2_attic_zone
-      
+
       END SUBROUTINE Initialise
 
 C *******************************************************************************
@@ -132,16 +132,14 @@ C if the user has changed any parameters.
 C *******************************************************************************
 
       LOGICAL FUNCTION CheckForChanges()
-  
+
       IMPLICIT NONE
 
-C Declare local variables
-      INTEGER :: i                            !loop index
-C Function declaration      
-      LOGICAL :: REQUAL                       
+C Function declaration
+      LOGICAL :: REQUAL
 
       CheckForChanges = .FALSE.  !flag for changes
-      
+
       IF (iairtight_type.NE.airtight_type) CheckForChanges = .TRUE.
       IF (iblower_door_input_option.NE.blower_door_input_option)
      &   CheckForChanges = .TRUE.
@@ -151,7 +149,7 @@ C Function declaration
       IF (iELA_given.NE.ELA_given) CheckForChanges= .TRUE.
       IF (.NOT.REQUAL(iELA_cm,ELA_cm,.001)) CheckForChanges = .TRUE.
       IF (.NOT.REQUAL(iELA_Cd,ELA_Cd,.001)) CheckForChanges = .TRUE.
-      IF (iuserspec_leakage.NE.userspec_leakage) 
+      IF (iuserspec_leakage.NE.userspec_leakage)
      &   CheckForChanges = .TRUE.
       IF (.NOT.REQUAL(iAIM2_ceil_frac,AIM2_ceil_frac,.001))
      &   CheckForChanges = .TRUE.
@@ -159,23 +157,23 @@ C Function declaration
      &   CheckForChanges = .TRUE.
       IF (.NOT.REQUAL(iAIM2_floor_frac,AIM2_floor_frac,.001))
      &   CheckForChanges = .TRUE.
-      IF (iAIM2_terrain_weather.NE.AIM2_terrain_weather) 
+      IF (iAIM2_terrain_weather.NE.AIM2_terrain_weather)
      &    CheckForChanges = .TRUE.
-      IF (iAIM2_terrain_building.NE.AIM2_terrain_building) 
+      IF (iAIM2_terrain_building.NE.AIM2_terrain_building)
      &    CheckForChanges = .TRUE.
-      IF (iAIM2_wall_shielding.NE.AIM2_wall_shielding) 
+      IF (iAIM2_wall_shielding.NE.AIM2_wall_shielding)
      &    CheckForChanges = .TRUE.
       IF (iAIM2_flue_shielding.NE.AIM2_flue_shielding)
      &    CheckForChanges = .TRUE.
-      IF (.NOT.REQUAL(iAIM2_anemom_height.NE.AIM2_anemom_height)) 
+      IF (.NOT.REQUAL(iAIM2_anemom_height,AIM2_anemom_height,.001))
      &    CheckForChanges = .TRUE.
-      IF (.NOT.REQUAL(iAIM2_eaves_height.NE.AIM2_eaves_height)) 
+      IF (.NOT.REQUAL(iAIM2_eaves_height,AIM2_eaves_height,.001))
      &   CheckForChanges = .TRUE.
-      IF (.NOT.REQUAL(iAIM2_furnace_flue.NE.AIM2_furnace_flue)) 
+      IF (.NOT.REQUAL(iAIM2_furnace_flue,AIM2_furnace_flue,.001))
      &   CheckForChanges = .TRUE.
       IF (.NOT.REQUAL(iAIM2_fire_flue1,AIM2_fire_flue1,.001))
      &   CheckForChanges = .TRUE.
-      IF (.NOT.REQUAL(iAIM2_fire_flue2,AIM2_fire_flue2,.001)) 
+      IF (.NOT.REQUAL(iAIM2_fire_flue2,AIM2_fire_flue2,.001))
      &   CheckForChanges = .TRUE.
       IF (.NOT.REQUAL(iAIM2_DHW_flue1,AIM2_DHW_flue1,.001))
      &   CheckForChanges = .TRUE.
@@ -184,16 +182,16 @@ C Function declaration
       IF (iAIM2_ref_zone.NE.AIM2_ref_zone) CheckForChanges = .TRUE.
       IF (iAIM2_num_zones_infil.NE.AIM2_num_zones_infil)
      &   CheckForChanges = .TRUE.
-      IF (iAIM2_basement_zone.NE.AIM2_basement_zone) 
+      IF (iAIM2_basement_zone.NE.AIM2_basement_zone)
      &   CheckForChanges = .TRUE.
       IF (iAIM2_CrawlSpace_zone.NE.AIM2_CrawlSpace_zone)
      &   CheckForChanges = .TRUE.
       IF (iAIM2_attic_zone.NE.AIM2_attic_zone) CheckForChanges = .TRUE.
-      
+
       END FUNCTION CheckForChanges
 
 
-      
+
 C *******************************************************************************
 C Deallocate() deallocates any memory allocated to iAIM2_infil_to_zones
 C *******************************************************************************
@@ -207,7 +205,7 @@ C Common blocks
 
       IF (ALLOCATED(iAIM2_zone_infil)) THEN
         DEALLOCATE(iAIM2_zone_infil, STAT=deallocatestatus)
-C Check allocation was sucessful     
+C Check allocation was sucessful
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
      &       ' Problem with deallocation of AIM2_infil_to_zones array')
@@ -226,20 +224,20 @@ C   AIM2_Interface - responsible for enabling the creation & editing
 C                    of the .AIM file
 C   Toplevel_Menu - function displays top level menu, and returns
 C                   the menu selection (avoiding gotos)
-C   AIM2_Interface - provides access to the Leakage menus, Shielding 
-C                    and terrain menus and InfiltrationZonesMenu as 
-C                    well as enabling the user to specify Building eves 
+C   AIM2_Interface - provides access to the Leakage menus, Shielding
+C                    and terrain menus and InfiltrationZonesMenu as
+C                    well as enabling the user to specify Building eves
 C                    height and Flue diameters
 C   ClearLeakageParams - clears previously defined blower door parameters
-C   BlowerDoorInputMenu - displays the Blower-door results input menu allowing 
+C   BlowerDoorInputMenu - displays the Blower-door results input menu allowing
 C                         the user to iput the required blower door data.
-C   LeakageMenu - allows the user to specify whether the leakage description 
-C                 is from a blower door test (CGSB), a blower door test as 
+C   LeakageMenu - allows the user to specify whether the leakage description
+C                 is from a blower door test (CGSB), a blower door test as
 C                 operated oran Air tightness type
 C   AirTightnessTypeMenu - displays the options for specifying air tightness
-C   LeakageDistribution - allows the user to iput the leakage fractions for 
+C   LeakageDistribution - allows the user to iput the leakage fractions for
 C                         ceiling, wall, and floor
-C   ShieldingMenu - displays the shielding menu used to select the local 
+C   ShieldingMenu - displays the shielding menu used to select the local
 C                   shielding on the walls and flue
 C   TerrainMenu - displays the terrain menu used to select the terrain flag
 C                 for the weather station and for the building site.
@@ -247,36 +245,36 @@ C                 by zones tocheck for duplicates.
 C   InfiltrationZonesMenu - allows the user to specify the zones used in the
 C                           infiltration calculations.
 C   SAVE_AIM2 - saves the input data required by the AIM-2 infiltration
-C               model (i.e. the contents of the .aim file). 
+C               model (i.e. the contents of the .aim file).
 
 C *********************************************************************
 C Toplevel_Menu() displays the top level menu and returns the selection
 C *********************************************************************
       MODULE AIM2_Inputs
-      
+
       USE AIM2_InputData
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones,AIM2_CO,AIM2_n
       USE AIM2, ONLY:Initialize_AIM2_Params,AIM2_H2KDefaults,
      &    AIM2_report,AIM2_Deallocate
-      
-      
+
+
 C Add Proceedures
       CONTAINS
       INTEGER FUNCTION Toplevel_Menu()
-      
+
       IMPLICIT NONE
-      
+
 C Declare local variables
-      CHARACTER, DIMENSION(10) :: ITEM*34        !Array holding strings for menu items 
+      CHARACTER, DIMENSION(10) :: ITEM*34        !Array holding strings for menu items
       INTEGER :: IER                             !errorflag
       INTEGER :: NITEMS                          !number of items
 C Common blocks
       COMMON/POPHELP/H(60)                       !Array holding help text
       CHARACTER :: H*72                          !Strings for help text
-      
+
 C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
       Toplevel_Menu=-4
-      
+
       ITEM(1)='a Leakage description'
       ITEM(2)='b Leakage distribution'
       ITEM(3)='c Shielding and terrain '
@@ -288,7 +286,7 @@ C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
       ITEM(9)='? help           '
       ITEM(10)='- exit this menu'
       NITEMS=10
-  
+
       H(1) ='This is the main menu for the empirical air '
       H(2) ='Alberta Infiltration Model (AIM2).  This model applies'
       H(3) ='only to low rise (up to 3 storey) detatched single family'
@@ -303,7 +301,7 @@ C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
       H(12)='     are all used to calculate the wind speed correction'
       H(13)='     factor.'
       H(14)='  d. Height of building eves is used to define the height'
-      H(15)='     of the eaves. The height of the building eaves' 
+      H(15)='     of the eaves. The height of the building eaves'
       H(16)='     defaults to 2.5m*(# of storeys) + 0.5m, based on the'
       H(17)='     number of storeys indicated in the house '
       H(18)='     specifications description. This value may be '
@@ -321,7 +319,7 @@ C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
 
       CALL EMENU('Empirical Air Infiltration Model',ITEM,NITEMS,
      &            Toplevel_Menu)
-      
+
       IF (Toplevel_Menu.EQ.NITEMS-1) THEN
 C List help text for the top level menu.
         CALL PHELPD('AIM2 model menu',30,'-',0,0,IER)
@@ -330,21 +328,21 @@ C List help text for the top level menu.
 C Exit this menu
            CALL USRMSG(' ',' ','-')
       END IF
-      
+
       END FUNCTION Toplevel_Menu
-      
-      
+
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C AIM2_Interface responsible for enabling the creation & editing
-C of the .AIM file by providing access to the Leakage menus, Shielding 
-C and terrain menus and InfiltrationZonesMenu as well as enabling the 
+C of the .AIM file by providing access to the Leakage menus, Shielding
+C and terrain menus and InfiltrationZonesMenu as well as enabling the
 C user to specify Building eves height and Flue diameters
 C *********************************************************************
       SUBROUTINE AIM2_Interface()
 
-      USE AIM2_INPUTS_InputData 
-      
+      USE AIM2_INPUTS_InputData
+
       IMPLICIT NONE
 C Declare local variables
       INTEGER :: IER                        !errorflag
@@ -358,24 +356,24 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                  !Array holding help text
       CHARACTER :: H*72                     !Strings for help text
-C Function defenition      
+C Function defenition
       LOGICAL :: CheckForChanges
 
-     
+
       IF (.NOT.AIM2_Initialized) THEN
 C Initialze all input parameters
         CALL Initialize_AIM2_Params()
-C Initialze generic house data required by the AIM-2 model      
+C Initialze generic house data required by the AIM-2 model
         CALL AIM2_H2KDefaults()
       END IF
 
 C Copy all parameters to temporary variables to enable checking for changes
       CALL Initialise
-      
+
       DO
         Selection = Toplevel_Menu()
         SELECT CASE (Selection)
-        
+
 C Leakage description.
         CASE (1)
           CALL  LeakageMenu(Selection2)
@@ -384,35 +382,35 @@ C Leakage description.
           ELSE IF (Selection2.EQ.3) THEN
             CALL AirTightnessTypeMenu()
           ENDIF
-           
+
           CASE (2)
           CALL LeakageDistribution()
 
         CASE (3)
-C Keep displaying the shielding menu until exit is selected.        
+C Keep displaying the shielding menu until exit is selected.
           DO
             CALL ShieldingAndTerrainMenu(Selection2)
              IF (Selection2.EQ.1) THEN
-              CALL TerrainMenu(AIM2_terrain_weather, 
+              CALL TerrainMenu(AIM2_terrain_weather,
      &        'Terrain at weather station    ')
             ELSE IF (Selection2.EQ.2) THEN
-              CALL TerrainMenu(AIM2_terrain_building, 
+              CALL TerrainMenu(AIM2_terrain_building,
      &        'Terrain at building           ')
             ELSE IF (Selection2.EQ.3) THEN
-              CALL ShieldingMenu(AIM2_wall_shielding, 
+              CALL ShieldingMenu(AIM2_wall_shielding,
      &        'Shielding on walls            ')
             ELSE IF (Selection2.EQ.4) THEN
-              CALL ShieldingMenu(AIM2_flue_shielding, 
+              CALL ShieldingMenu(AIM2_flue_shielding,
      &        'Shielding on flue             ')
-          
+
 C Height of anemometer at weather station.
             ELSE IF (Selection2.EQ.5) THEN
               H(1) ='The Anemometer Height is the height at which the'
               H(2) ='wind speed was measured at the weather station.  A'
               H(3) ='default of 10 meters is assumed, and should not be'
-              H(4) ='changed unless a user-defined weather file is used' 
+              H(4) ='changed unless a user-defined weather file is used'
               H(5) ='and the anemometer was at a different height.'
-              Temp = AIM2_anemom_height 
+              Temp = AIM2_anemom_height
               CALL EASKR(Temp,' ',
      &         'Height of anenometor at weather station (m)?',0.1,'F',
      &         100.0,'F',10.0, 'Amenometer height',IER,5)
@@ -427,7 +425,7 @@ C Height of anemometer at weather station.
 
         CASE (4)
 C Building eves description.
-           Temp = AIM2_eaves_height 
+           Temp = AIM2_eaves_height
            CALL EASKR(Temp,' ',
      &        'Height of the building eaves (m)?',1.,'F',10.0,
      &        'F',5.0,'Eaves height',IER,3)
@@ -435,12 +433,12 @@ C Building eves description.
            WRITE(DisplayString,'(A, F8.2, A)')'Building eaves height: ',
      &             AIM2_eaves_height, ' m'
            CALL EDISP(IUOUT,DisplayString)
-        
+
         CASE (5)
 C Diameter of furnace flue (mm).
-           Temp = AIM2_furnace_flue 
+           Temp = AIM2_furnace_flue
            CALL EASKR(Temp,' ','Diameter of furnace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Furnace flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Furnace flue diameter'
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_furnace_flue = Temp
            WRITE(DisplayString,'(A, F8.2, A)')'Furnace flue diameter: ',
@@ -448,9 +446,9 @@ C Diameter of furnace flue (mm).
            CALL EDISP(IUOUT,DisplayString)
 
 C Diameter of #1 fireplace flue (mm).
-           Temp = AIM2_fire_flue1 
+           Temp = AIM2_fire_flue1
            CALL EASKR(Temp,' ','Diameter of #1 fireplace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Fireplace #1 flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Fireplace #1 flue diameter'
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_fire_flue1 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -458,9 +456,9 @@ C Diameter of #1 fireplace flue (mm).
            CALL EDISP(IUOUT,DisplayString)
 
 C Diameter of #2 fireplace flue (mm).
-           Temp = AIM2_fire_flue2 
+           Temp = AIM2_fire_flue2
            CALL EASKR(Temp,' ','Diameter of #2 fireplace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Fireplace #2 flue diameter' 
+     &          ,0.,'F',500.0,'F',200.0,'Fireplace #2 flue diameter'
      &         ,IER,3)
            IF (IER.EQ.0) AIM2_fire_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
@@ -468,7 +466,7 @@ C Diameter of #2 fireplace flue (mm).
            CALL EDISP(IUOUT,DisplayString)
 
 C Diameter of primary DHW system flue (mm).
-           Temp = AIM2_DHW_flue1 
+           Temp = AIM2_DHW_flue1
            CALL EASKR(Temp,' ',
      &       'Diameter of primary DHW system flue (mm)?',0.,'F',
      &       500.0,'F',200.0,'Primary DHW system flue diameter',IER,3)
@@ -484,7 +482,7 @@ C Diameter of secondary DHW system flue (mm).
      &        500.0,'F',200.0,'Secondary DHW system diameter',IER,3)
            IF (IER.EQ.0) AIM2_DHW_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
-     &       'Secondary DHW system flue diameter: ',AIM2_DHW_flue2, 
+     &       'Secondary DHW system flue diameter: ',AIM2_DHW_flue2,
      &       ' mm'
            CALL EDISP(IUOUT,DisplayString)
 
@@ -493,13 +491,13 @@ C Diameter of secondary DHW system flue (mm).
         CASE (8)
 C Save AIM2 file
           CALL SAVE_AIM2
-C Save all parameters to temporary variables to enable checking for 
+C Save all parameters to temporary variables to enable checking for
 C any further changes
           CALL Initialise
         CASE (10)
 C Check to see if any of the paramets have changed before exiting
           IF (CheckForChanges()) THEN
-C Check if the user wants to save the changes made        
+C Check if the user wants to save the changes made
             CALL ASKOK(' Do you wish to save your changes?',' ',OK,
      &                .TRUE.,0)
             IF (OK) CALL SAVE_AIM2
@@ -507,15 +505,15 @@ C Check if the user wants to save the changes made
           EXIT
         END SELECT
       END DO
-        
+
       END SUBROUTINE AIM2_Interface
-      
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C ClearLeakageParams clears previously defined blower door parameters
 C *********************************************************************
       SUBROUTINE ClearLeakageParams()
-       
+
       ACH_50Pa = 0.
       ELA_deltaP = 0.
       ELA_given = 0
@@ -528,25 +526,25 @@ C *********************************************************************
 
 C *********************************************************************
 C Created by: Francesca Macdonald
-C LeakageMenu allows the user to specify whether the leakage description 
+C LeakageMenu allows the user to specify whether the leakage description
 C is from a blower door test (CGSB), a blower door test as operated or
 C an Air tightness type
- 
+
 C *********************************************************************
       SUBROUTINE LeakageMenu(Selection)
-       
+
       IMPLICIT NONE
 C Declare calling parameter types
       INTEGER, INTENT(OUT)  :: Selection        !menu selection
 C Declare local variables
-      CHARACTER, DIMENSION(5) :: ITEM*34        !Array holding strings for menu items 
+      CHARACTER, DIMENSION(5) :: ITEM*34        !Array holding strings for menu items
       INTEGER :: IER                            !errorflag
       INTEGER :: NITEMS                         !number of items
 C Common blocks
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
 
-      
+
 C Help text for this menu.
       H(1)= 'The Air Tightness Type is used to indicate the natural'
       H(2)= 'infiltration rate. Air tightness is measured in air '
@@ -557,26 +555,26 @@ C Help text for this menu.
       H(7)= 'automatically calculated by esp-r.'
       H(8)= ''
       H(9)= 'For further information on the blower door tests see'
-      H(10)= '1. Canadian General Standards Board (CGSB) standard' 
+      H(10)= '1. Canadian General Standards Board (CGSB) standard'
       H(11)= '   "Determination of the Airtightness of Building '
       H(12)= '    Envelopes by the Fan Depressurization Method" '
-      H(13)= '2.  Airtightness tested in accordance with the EnerGuide' 
+      H(13)= '2.  Airtightness tested in accordance with the EnerGuide'
       H(14)= '    for Houses "as operated" airtightness test procedure'
       H(15)= '    in EnerGuide for Houses: "Energy Advisor Workshop'
       H(16)= '    Manual, Module 3 Conducting a Blower Door Test." '
-      
+
       IF (airtight_type.EQ.1) THEN
         ITEM(1)='a Blower door test (CGSB)        ***'
-      ELSE 
+      ELSE
         ITEM(1)='a Blower door test (CGSB)  '
       ENDIF
-      
+
       IF (airtight_type.EQ.2) THEN
         ITEM(2)='b Blower door test (as operated) ***'
       ELSE
         ITEM(2)='b Blower door test (as operated)'
       ENDIF
-      
+
       IF (airtight_type.GT.2) THEN
          WRITE(ITEM(3),'(A, I1, A)')
      &           'c Air tightness type   (',airtight_type,')'
@@ -590,7 +588,7 @@ C Help text for this menu.
 
 C Selection needs to be set to -4 for the menu to be displayed in text mode
       Selection = -4
-      
+
       CALL EMENU(' Leakage description',ITEM,NITEMS,Selection)
       IF (Selection.EQ.NITEMS-1) THEN! help
 C List help text for the Leakage description menu.
@@ -599,9 +597,9 @@ C List help text for the Leakage description menu.
 C Exit this menu
         CALL USRMSG(' ',' ','-')
       END IF
-              
+
       END SUBROUTINE LeakageMenu
-      
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C AirTightnessTypeMenu displays the options for specifying air tightness
@@ -610,10 +608,10 @@ C 3=loose; 4=average; 5=present; 6=energy tight.
 
 C *********************************************************************
       SUBROUTINE AirTightnessTypeMenu()
-       
+
       IMPLICIT NONE
 C Declare local variables
-      CHARACTER, DIMENSION(6) :: ITEM*34        !Array holding strings for menu items 
+      CHARACTER, DIMENSION(6) :: ITEM*34        !Array holding strings for menu items
       CHARACTER :: DisplayString*248            !data selection display string
       INTEGER :: IER                            !errorflag
       INTEGER :: NITEMS                         !number of items
@@ -623,7 +621,7 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
-      
+
 C Help text for this menu.
       H(1)= 'The Air Tightness Type is used to indicate the natural'
       H(2)= 'infiltration rate. Air tightness is measured in air '
@@ -636,30 +634,30 @@ C Help text for this menu.
       H(9)= ' air change rate and the equivalent leakage area are '
       H(10)= 'automatically calculated by esp-r.'
 
-      IF (airtight_type-2.EQ.1) THEN    
+      IF (airtight_type-2.EQ.1) THEN
         ITEM(1)='a Loose          ***'
       ELSE
         ITEM(1)='a Loose             '
       END IF
 
-      IF (airtight_type-2.EQ.2) THEN    
+      IF (airtight_type-2.EQ.2) THEN
         ITEM(2)='b Average        ***'
       ELSE
         ITEM(2)='b Average           '
-      END IF        
+      END IF
 
-      IF (airtight_type-2.EQ.3) THEN    
+      IF (airtight_type-2.EQ.3) THEN
         ITEM(3)='c Present        ***'
       ELSE
         ITEM(3)='c Present           '
       END IF
-      
-      IF (airtight_type-2.EQ.4) THEN    
+
+      IF (airtight_type-2.EQ.4) THEN
          ITEM(4)='d Energy Tight   ***'
       ELSE
          ITEM(4)='d Energy Tight      '
       END IF
-      
+
       ITEM(5)='? Help              '
       ITEM(6)='- Exit              '
       NITEMS=6
@@ -669,25 +667,25 @@ C INO needs to be set to -4 for the menu to be displayed in text mode
       CALL EMENU(' Air tightness type',ITEM,NITEMS,INO)
       IF (INO.LE.4) THEN
         IF (INO.NE.airtight_type+2) THEN
-          CALL ClearLeakageParams()   
+          CALL ClearLeakageParams()
         END IF
         airtight_type = INO+2
         WRITE(DisplayString,'(A, A)')'Air tightness type: ',
      &         ITEM(INO)
         CALL EDISP(IUOUT,DisplayString)
-      ELSE IF (INO.EQ.NITEMS-1) THEN 
+      ELSE IF (INO.EQ.NITEMS-1) THEN
 C List help text for the Leakage description menu.
         CALL PHELPD('Leakage description',10,'-',0,0,IER)
       ELSE IF (INO.EQ.NITEMS) THEN
 C Exit this menu
         CALL USRMSG(' ',' ','-')
       END IF
-          
+
       END SUBROUTINE AirTightnessTypeMenu
-          
+
 C *********************************************************************
 C Created by: Francesca Macdonald
-C BlowerDoorInputMenu displays the Blower-door results input menu allowing 
+C BlowerDoorInputMenu displays the Blower-door results input menu allowing
 C the user to iput the required blower door data.
 C Three options are available for the blower-door results inputs
 C Option 1: flow coefficient C0 [m^3/(s Pa^n)]
@@ -698,13 +696,13 @@ C Option 3: Air change rate @ 50Pa
 C           Pressure difference in Pa
 C           Equivalent leakage area in cm^2
 C           Discharge coefficient Cd used to calculate leakage area
- 
+
 C *********************************************************************
       SUBROUTINE BlowerDoorInputMenu()
-      
+
       IMPLICIT NONE
 C Declare local variables
-      CHARACTER, DIMENSION(5) :: ITEM*34        !Array holding strings for menu items 
+      CHARACTER, DIMENSION(5) :: ITEM*34        !Array holding strings for menu items
       CHARACTER :: DisplayString*248            !data selection display string
       INTEGER :: IER                            !errorflag
       INTEGER :: NITEMS                         !number of items
@@ -715,7 +713,7 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
-C Function definition      
+C Function definition
       LOGICAL :: REQUAL                         !used to compare real variables
 
 C Help text for this menu.
@@ -739,23 +737,23 @@ C Help text for this menu.
       ELSE
         ITEM(1)='a C & n             '
       ENDIF
-      
+
       IF (blower_door_input_option.EQ.2) THEN
         ITEM(2)='b ACH & delta P     ***'
       ELSE
         ITEM(2)='b ACH & delta P        '
       ENDIF
-      
+
       IF (blower_door_input_option.EQ.3) THEN
          ITEM(3)='c ACH, delta P & ELA   ***'
       ELSE
          ITEM(3)='c ACH, delta P & ELA      '
       ENDIF
-      
-      
+
+
       DisplayString = 'Blower Door Results'
       CALL EDISP(IUOUT,DisplayString)
-      
+
       ITEM(4)='? Help              '
       ITEM(5)='- Exit              '
       NITEMS=5
@@ -764,14 +762,14 @@ C INO needs to be set to -4 for the menu to be displayed in text mode
       INO = -4
       CALL EMENU(' Blower-door results input',ITEM,NITEMS,INO)
       IF (INO.NE.blower_door_input_option) THEN
-        CALL ClearLeakageParams()   
+        CALL ClearLeakageParams()
       END IF
       blower_door_input_option = INO
-      
+
 
       IF (INO.EQ.1) THEN
 C Get the flow coefficient and flow exponent
-        Temp = AIM2_CO 
+        Temp = AIM2_CO
         IF (REQUAL(Temp,0.,.001)) Temp=0.05
         CALL EASKR(Temp,' ',
      &    ' Building fabric flow coefficient [m^3/(s Pa^n)]? ',
@@ -793,7 +791,7 @@ C Get the flow coefficient and flow exponent
           WRITE(DisplayString,'(A, F7.2)')
      &      'Building flow exponent (dimensionless) ',AIM2_n
           CALL EDISP(IUOUT,DisplayString)
-        ENDIF          
+        ENDIF
 
       ELSE IF (INO.LT.4) THEN   ! option 2 or 3 (both need air change rate @ 50Pa)
 C Get air change rate @ 50Pa
@@ -807,7 +805,7 @@ C Get air change rate @ 50Pa
           WRITE(DisplayString,'(A, F7.2)')
      &      'Air change rate @50 Pa ',ACH_50Pa
           CALL EDISP(IUOUT,DisplayString)
-        ENDIF           
+        ENDIF
 C Get Pressure difference in Pa
         Temp = ELA_deltaP
         IF (REQUAL(Temp,0.,.001))Temp=10.
@@ -819,7 +817,7 @@ C Get Pressure difference in Pa
           WRITE(DisplayString,'(A, F7.2, A)')
      &       'Pressure difference ',ELA_deltaP,' Pa'
           CALL EDISP(IUOUT,DisplayString)
-        ENDIF          
+        ENDIF
         IF (INO.EQ.3) THEN
           Temp = ELA_cm
           IF (REQUAL(Temp,0.,.001))Temp=500.
@@ -832,7 +830,7 @@ C Get Pressure difference in Pa
              WRITE(DisplayString,'(A, F8.2, A)')
      &              'Equivalent air leakage area ',ELA_cm,' cm^2'
             CALL EDISP(IUOUT,DisplayString)
-          ELSE         
+          ELSE
             ELA_given = 0 !no input
           ENDIF
         ENDIF
@@ -856,7 +854,7 @@ C AIM2_ceil_frac,AIM2_wall_frac,AIM2_floor_frac - Ceiling, wall, and floor leaka
 
 C *********************************************************************
       SUBROUTINE LeakageDistribution()
-       
+
       IMPLICIT NONE
 
 C Declare local variables
@@ -869,7 +867,7 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                 !Array holding help text
       CHARACTER :: H*72                    !Strings for help text
-c Function declaration      
+c Function declaration
       LOGICAL :: REQUAL                    !used to compare real variables
 
 C Help text for the leakage distribution
@@ -878,24 +876,24 @@ C Help text for the leakage distribution
       H(3)= 'the total building air leakage to attribute to the '
       H(4)= 'ceilings, walls and floors.'
       H(5)= 'If use defaults is selected, the default values are set '
-      H(6)= 'by esp-r and are based on the house type, number of'      
+      H(6)= 'by esp-r and are based on the house type, number of'
       H(7)= 'storeys, and the type of foundation (crawl space, '
       H(8)= 'basement) specified for the house.'
       H(9)= 'Otherwise the user must specify the leakage fractions '
       H(10)= 'to ceilings, walls, and floors. The desired leakage '
       H(11)= 'fractions must be entered as a decimal value, and must '
       H(12)= 'total 1.0.'
-        
+
       CALL EASKAB(
      &    'Specify leakage fractions for ceiling, wall and floor?',
      &    'Options:','No - use defaults','Yes',INO,12)
-     
+
       userspec_leakage = INO-1
-          
+
       IF (userspec_leakage.EQ.1) THEN
          !make sure the fractions add up to 1.0
         DO
-        
+
 C defaults assumed from http://www.inive.org/members_area/medias/pdf/Inive%5CIBPSA%5CUFSC425.pdf
           Temp = AIM2_ceil_frac
           CALL EASKR(Temp,' ',
@@ -917,7 +915,7 @@ C check to ensure fractions add up to 1.
             Temp = AIM2_ceil_frac+AIM2_wall_frac+AIM2_floor_frac
           IF (REQUAL(Temp,1.,.001))THEN
             WRITE(DisplayString,'(A, F6.3, A, F6.3, A, F6.2)')
-     &             ' Ceiling: ',AIM2_ceil_frac, 
+     &             ' Ceiling: ',AIM2_ceil_frac,
      &       '     Wall: ',AIM2_wall_frac,
      &       '     Floor: ',AIM2_floor_frac
             CALL EDISP(IUOUT,'Infiltration leakage fractions:')
@@ -927,10 +925,10 @@ C check to ensure fractions add up to 1.
           CALL USRMSG(' ','The fractions must add up to 1.0 ','W')
         END DO
       ENDIF
-         
+
       END SUBROUTINE LeakageDistribution
-          
-      
+
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C ShieldingAndTerrainMenu enables to user to specify
@@ -941,12 +939,12 @@ C Flag indicating local shielding on flue (AIM2_flue_shielding)
 C Height of anenometor at weather station (m).
 C *********************************************************************
       SUBROUTINE ShieldingAndTerrainMenu(Selection)
-       
+
       IMPLICIT NONE
-C Declare calling parameters 
+C Declare calling parameters
       INTEGER, INTENT(OUT)  :: Selection
 C Declare local variables
-      CHARACTER, DIMENSION(7) :: ITEM*34        !Array holding strings for menu items 
+      CHARACTER, DIMENSION(7) :: ITEM*34        !Array holding strings for menu items
       CHARACTER :: DisplayString*248            !data selection display string
       INTEGER :: IER                            !errorflag
       INTEGER :: NITEMS                         !number of items
@@ -957,7 +955,7 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                      !Array holding help text
       CHARACTER :: H*72                         !Strings for help text
-C Function declaration      
+C Function declaration
       LOGICAL :: REQUAL                         !used to compare real variables
 
 C Help text for this menu.
@@ -972,42 +970,42 @@ C Help text for this menu.
       H(9)= 'station, the height of the eaves, and the height of '
       H(10)= 'the anemometer at the weather station. '
       H(11)= 'This is equation 27 from Bradley (1993, p8).'
-            
+
       IF (AIM2_terrain_weather.NE.0) THEN
         WRITE(ITEM(1),'(A, I1, A)')'a Terrain at weather station  (',
      &                  AIM2_terrain_weather,')'
       ELSE
         ITEM(1)='a Terrain at weather station   '
-      ENDIF 
-      
+      ENDIF
+
       IF (AIM2_terrain_building.NE.0) THEN
         WRITE(ITEM(2),'(A, I1, A)')'b Terrain at building         (',
      &                 AIM2_terrain_building,')'
       ELSE
         ITEM(2)='b Terrain at building          '
-      ENDIF 
-      
+      ENDIF
+
       IF (AIM2_wall_shielding.NE.0) THEN
         WRITE(ITEM(3),'(A, I1, A)')'c shielding on walls          (',
      &                AIM2_wall_shielding,')'
       ELSE
         ITEM(3)='c shielding on walls       '
-      ENDIF 
-      
+      ENDIF
+
       IF (AIM2_flue_shielding.NE.0) THEN
         WRITE(ITEM(4),'(A, I1, A)')'d shielding on flue           (',
      &                 AIM2_flue_shielding,')'
       ELSE
         ITEM(4)='d shielding on flue         '
-      ENDIF 
-      
+      ENDIF
+
       IF (.NOT.REQUAL(AIM2_anemom_height,10.,.001)) THEN
         WRITE(ITEM(5),'(A, F6.2, A)')'e anemometer height  (',
      &                   AIM2_anemom_height,' (m))'
       ELSE
         ITEM(5)='e anemometer height     10m '
       ENDIF
-      
+
       ITEM(6)='? Help              '
       ITEM(7)='- Exit         '
       NITEMS=7
@@ -1027,10 +1025,10 @@ C List help text for the Shielding and Terrain menu.
 C Exit this menu
         CALL USRMSG(' ',' ','-')
       END IF
-     
+
       END SUBROUTINE ShieldingAndTerrainMenu
-     
-     
+
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C TerrainMenu displays the terrain menu used to select the terrain flag
@@ -1045,13 +1043,13 @@ C         7=Suburban, forest
 C         8=City centre
 C *********************************************************************
       SUBROUTINE TerrainMenu(TerrainSelection, MenuString)
-       
+
       IMPLICIT NONE
-C Declare calling parameters 
+C Declare calling parameters
       INTEGER, INTENT(INOUT)  :: TerrainSelection            !menu selection
       CHARACTER, INTENT(IN)  :: MenuString*30                !string of menu item
 C Declare local variables
-      CHARACTER, DIMENSION(10) :: ITEM*34                    !Array holding strings for menu items 
+      CHARACTER, DIMENSION(10) :: ITEM*34                    !Array holding strings for menu items
       CHARACTER :: DisplayString*248                         !data selection display string
       INTEGER :: IER                                         !errorflag
       INTEGER :: NITEMS                                      !number of items
@@ -1074,56 +1072,56 @@ C Help text for this menu.
       H(9)= 'station, the height of the eaves, and the height of '
       H(10)= 'the anemometer at the weather station. '
       H(11)= 'This is equation 27 from Bradley (1993, p8).'
- 
-            
+
+
       IF (TerrainSelection.EQ.1) THEN
         ITEM(1)='a Open sea,fetch > 5 km          ***'
       ELSE
         ITEM(1)='a Open sea,fetch > 5 km             '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.2) THEN
         ITEM(2)='b Mud flats,no vegetation        ***'
       ELSE
         ITEM(2)='b Mud flats,no vegetation           '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.3) THEN
         ITEM(3)='c Open flat terrain, grass       ***'
       ELSE
         ITEM(3)='c Open flat terrain, grass          '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.4) THEN
         ITEM(4)='d Low crops, x/H > 20            ***'
       ELSE
         ITEM(4)='d Low crops, x/H > 20               '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.5) THEN
         ITEM(5)='e High crops, scattered obstacles ***'
       ELSE
         ITEM(5)='e High crops, scattered obstacles    '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.6) THEN
         ITEM(6)='f Parkland, bushes, x/H ~ 10     ***'
       ELSE
         ITEM(6)='f Parkland, bushes, x/H ~ 10        '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.7) THEN
         ITEM(7)='g Suburban, forest               ***'
       ELSE
         ITEM(7)='g Suburban, forest                  '
-      END IF 
-      
+      END IF
+
       IF (TerrainSelection.EQ.8) THEN
         ITEM(8)='h City centre                    ***'
       ELSE
         ITEM(8)='h City centre                       '
-      END IF 
-     
+      END IF
+
       ITEM(9)='- Help         '
       ITEM(10)='- Exit         '
       NITEMS=10
@@ -1131,31 +1129,31 @@ C Help text for this menu.
 C Because the selection needs to be set to -4 for the menu to be displayed in text mode
 C the selection (if one was made) needs to be saved in case the user does not change their
 C selection
-      PreviousSelection = TerrainSelection  
+      PreviousSelection = TerrainSelection
       TerrainSelection = -4
 
       CALL EMENU(MenuString,ITEM,NITEMS,TerrainSelection)
 
       IF (TerrainSelection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
-        TerrainSelection = PreviousSelection 
+        TerrainSelection = PreviousSelection
         CALL PHELPD('Terrain selection',11,'-',0,0,IER)
-      ELSE IF (TerrainSelection.EQ.NITEMS) THEN 
+      ELSE IF (TerrainSelection.EQ.NITEMS) THEN
 C Exit this menu
         TerrainSelection = PreviousSelection
         CALL USRMSG(' ',' ','-')
         RETURN
       ENDIF
-        
+
       WRITE(DisplayString,'(A, A, A)')MenuString, ' ',
      &   ITEM(TerrainSelection)
       CALL EDISP(IUOUT,DisplayString)
-        
+
       END SUBROUTINE TerrainMenu
-      
+
 C *********************************************************************
 C Created by: Francesca Macdonald
-C ShieldingMenu displays the shielding menu used to select the local 
+C ShieldingMenu displays the shielding menu used to select the local
 C shielding on the walls and flue
 C         1=No local shielding
 C         2=Light local shielding
@@ -1164,13 +1162,13 @@ C         4=Very heavy
 C         5=Complete (by large buildings)
 C *********************************************************************
       SUBROUTINE ShieldingMenu(ShieldingSelection, MenuString)
-       
+
       IMPLICIT NONE
-C Declare calling parameters 
+C Declare calling parameters
       INTEGER, INTENT(INOUT)  :: ShieldingSelection          !menu selection
       CHARACTER, INTENT(IN)  :: MenuString*30                !string of menu item
 C Declare local variables
-      CHARACTER, DIMENSION(7) :: ITEM*34                     !Array holding strings for menu items 
+      CHARACTER, DIMENSION(7) :: ITEM*34                     !Array holding strings for menu items
       CHARACTER :: DisplayString*248                         !data selection display string
       INTEGER :: IER                                         !errorflag
       INTEGER :: NITEMS                                      !number of items
@@ -1195,38 +1193,38 @@ C Help text for this menu.
       H(11)= '   obstructions within one house height'
       H(12)= '5. Complete (by large buildings): local shielding having'
       H(13)= '   large buildings immediately adjacent'
- 
-      
+
+
       IF (ShieldingSelection.EQ.1) THEN
         ITEM(1)='a None          ***'
       ELSE
         ITEM(1)='a None             '
-      END IF 
-      
+      END IF
+
       IF (ShieldingSelection.EQ.2) THEN
         ITEM(2)='b Light        ***'
       ELSE
         ITEM(2)='b Light           '
-      END IF 
-      
+      END IF
+
       IF (ShieldingSelection.EQ.3) THEN
         ITEM(3)='c Heavy       ***'
       ELSE
         ITEM(3)='c Heavy          '
-      END IF 
-      
+      END IF
+
       IF (ShieldingSelection.EQ.4) THEN
         ITEM(4)='d Very Heavy            ***'
       ELSE
         ITEM(4)='d Very Heavy               '
-      END IF 
-      
+      END IF
+
       IF (ShieldingSelection.EQ.5) THEN
         ITEM(5)='e Complete (by large buildings)    ***'
       ELSE
         ITEM(5)='e Complete (by large buildings)       '
-      END IF 
-      
+      END IF
+
       ITEM(6)='- Help         '
       ITEM(7)='- Exit         '
       NITEMS=7
@@ -1234,16 +1232,16 @@ C Help text for this menu.
 C Because the selection needs to be set to -4 for the menu to be displayed in text mode
 C the selection (if one was made) needs to be saved in case the user does not change their
 C selection
-      PreviousSelection = ShieldingSelection  
+      PreviousSelection = ShieldingSelection
       ShieldingSelection = -4
-      
+
       CALL EMENU(MenuString,ITEM,NITEMS,ShieldingSelection)
 
       IF (ShieldingSelection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
-        ShieldingSelection = PreviousSelection 
+        ShieldingSelection = PreviousSelection
         CALL PHELPD('Shielding selection',13,'-',0,0,IER)
-       ELSE IF (ShieldingSelection.EQ.NITEMS) THEN 
+       ELSE IF (ShieldingSelection.EQ.NITEMS) THEN
 C Exit this menu
         ShieldingSelection = PreviousSelection
         CALL USRMSG(' ',' ','-')
@@ -1253,10 +1251,10 @@ C Exit this menu
       WRITE(DisplayString,'(A, A, A)')MenuString, ' ',
      &        ITEM(ShieldingSelection)
       CALL EDISP(IUOUT,DisplayString)
-        
+
       END SUBROUTINE ShieldingMenu
 
-      
+
 C *********************************************************************
 C Created by: Francesca Macdonald
 C InfiltrationZonesMenu allows the user to specify the zones used in the
@@ -1269,10 +1267,10 @@ C Zone number of Crawl Space (AIM2_CrawlSpace_zone)
 C Zone number of attic. (AIM2_attic_zone)
 C *********************************************************************
       SUBROUTINE InfiltrationZonesMenu()
-       
+
       IMPLICIT NONE
 C Declare local variables
-      CHARACTER, DIMENSION(8) :: ITEM*34            !Array holding strings for menu items 
+      CHARACTER, DIMENSION(8) :: ITEM*34            !Array holding strings for menu items
       CHARACTER :: DisplayString*248                !data selection display string
       CHARACTER :: TempString*128                   !data selection display string
       INTEGER :: IER                                !errorflag
@@ -1288,25 +1286,25 @@ C Common blocks
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL :: CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK  !CFGOK flag for wether cfg file has been loaded in
       COMMON/C1/NCOMP,NCON
-      INTEGER :: NCOMP,NCON                         !ncomp is the number of zones      
+      INTEGER :: NCOMP,NCON                         !ncomp is the number of zones
       COMMON/POPHELP/H(60)                          !Array holding help text
       CHARACTER :: H*72                             !Strings for help text
       INTEGER, DIMENSION(NCOMP) :: InfilZones       !Temporary array to hold zones to recieve infiltration
 
 C Function definition
       INTEGER :: lnblnk
-      
+
       InfilZones=0
-      
-          
+
+
       ITEM(1)='a Reference zone         '
       ITEM(2)='b Infiltration zones '
       ITEM(3)='c Basement zone '
       ITEM(4)='d Crawl space zone '
       ITEM(5)='e Attic zone '
       ITEM(6)='? Help              '
-      ITEM(7)='- Exit              ' 
-      NITEMS = 7            
+      ITEM(7)='- Exit              '
+      NITEMS = 7
 C Help text for this menu.
       H(1)= 'The reference zone is the number of the zone whose '
       H(2)= 'temperature is used as reference for infiltration '
@@ -1317,7 +1315,7 @@ C Help text for this menu.
       H(7)= ''
       H(8)= 'The basement zone is the number of the zone describing '
       H(9)= 'the basement as basements have different infiltration '
-      H(10)= 'air flow allocations to that of living space. If no ' 
+      H(10)= 'air flow allocations to that of living space. If no '
       H(11)= 'basement is selected, it is assumed that there is no '
       H(12)= 'basement.'
       H(13)= ''
@@ -1335,9 +1333,9 @@ C Help text for this menu.
 C INO needs to be set to -4 for the menu to be displayed in text mode
       INO = -4
       DO
-        OK = .FALSE.      
+        OK = .FALSE.
         CALL EMENU(' Infiltration Zones',ITEM,NITEMS,INO)
-      
+
         SELECT CASE (INO)
 C Number of zone whose temperature is used as reference for infiltration calculations.
         CASE (1)
@@ -1347,41 +1345,41 @@ C present a list of zones.
           CALL ASKZONE(Zone,Zone,
      &      'Select the zone to use as the reference zone',
      &      'Reference Zone','-','Please select a zone',IER)
-C Check for errors     
+C Check for errors
           IF (IER.EQ.0) THEN
             AIM2_ref_zone = Zone
             WRITE(DisplayString,'(A, I5)')'Reference zone number:',
      &              AIM2_ref_zone
             CALL EDISP(IUOUT,DisplayString)
-          END IF 
+          END IF
 
-C Array holding indices of zones that receive infiltration.  
+C Array holding indices of zones that receive infiltration.
         CASE (2)
           CALL ASKMULTIZONE(AIM2_num_zones_infil,InfilZones,
      &          ' Select zones to receive infiltration?',
      &          'Infiltration Zones','-',IER)
-C Check for errors     
+C Check for errors
           IF (IER.EQ.0) THEN
 C Allocate memory for AIM2_zone_infil and AIM2_infil_to_zones matices
             CALL AIM2_Deallocate
             ALLOCATE(AIM2_zone_infil(AIM2_num_zones_infil),
      &          STAT=allocate_status)
-C Check allocation was sucessful     
+C Check allocation was sucessful
             IF (.NOT.ALLOCATED(AIM2_zone_infil)) THEN
               CALL EDISP(IUOUT,' AIM2_zone_infil not allocated')
             END IF
-          
+
             ALLOCATE(AIM2_infil_to_zones(NCOMP),
      &                 STAT=allocate_status)
-C Check allocation was sucessful     
+C Check allocation was sucessful
             IF (.NOT.ALLOCATED(AIM2_infil_to_zones)) THEN
               CALL EDISP(IUOUT,'AIM2_infil_to_zones not allocated')
             END IF
-C Copy array data            
+C Copy array data
             AIM2_zone_infil=InfilZones
-C Display the zones selected           
+C Display the zones selected
             WRITE(DisplayString,'(A, I5)')
-     &         'Number of zones receiving infiltration:', 
+     &         'Number of zones receiving infiltration:',
      &          AIM2_num_zones_infil
             CALL EDISP(IUOUT,DisplayString)
 C write out the zones selected
@@ -1391,10 +1389,10 @@ C write out the zones selected
      &              DisplayString(1:lnblnk(DisplayString)),
      &              AIM2_zone_infil(zoneindex)
               WRITE(DisplayString,'(A)')TempString
-            END DO          
+            END DO
             CALL EDISP(IUOUT,DisplayString)
           END IF
-C Zone number of basement 
+C Zone number of basement
         CASE (3)
           Zone = AIM2_basement_zone
           IF (Zone.NE.0) THEN
@@ -1420,9 +1418,9 @@ C check that the basement zone is not the same as the attic and crawlspace
      &           'Number of basement zone:', AIM2_basement_zone
               CALL EDISP(IUOUT,DisplayString)
             END IF
-          END IF 
+          END IF
 
-C Zone number of Crawl Space 
+C Zone number of Crawl Space
         CASE (4)
           Zone = AIM2_CrawlSpace_zone
           IF (Zone.NE.0) THEN
@@ -1447,7 +1445,7 @@ C check that the basement zone is not the same as the attic and crawlspace
      &        'Number of crawl space zone:', AIM2_CrawlSpace_zone
             CALL EDISP(IUOUT,DisplayString)
           END IF
-C Zone number of attic. 
+C Zone number of attic.
         CASE (5)
           Zone = AIM2_attic_zone
           IF (Zone.NE.0) THEN
@@ -1480,14 +1478,14 @@ C Exit this menu
            CALL USRMSG(' ',' ','-')
            EXIT
         END SELECT
-      END DO  
+      END DO
       END SUBROUTINE InfiltrationZonesMenu
 
 C ********************************************************************************
 C ************************ SAVE_AIM2 *******************************************
 C Created by: Francesca Macdonald
 C SAVE_AIM2 saves the input data required by the AIM-2 infiltration
-C model (i.e. the contents of the .aim file). 
+C model (i.e. the contents of the .aim file).
 
 C INPUTS:
 C    LAIM2  The name of the AIM-2 data input file.
@@ -1497,10 +1495,10 @@ C ******************************************************************************
 
       IMPLICIT NONE
 C Declare local variables
-      CHARACTER :: OutString*248         !display data string 
-      CHARACTER :: TempString*248        !temporary string 
-      CHARACTER :: CaseString*128        !temporary string 
-      CHARACTER :: PadString*128         !temporary formating string 
+      CHARACTER :: OutString*248         !display data string
+      CHARACTER :: TempString*248        !temporary string
+      CHARACTER :: CaseString*128        !temporary string
+      CHARACTER :: PadString*128         !temporary formating string
       CHARACTER :: PathString*128        !path to aim2 directory
       INTEGER :: IER                     !errorflag
       INTEGER :: INO                     !Selection
@@ -1528,11 +1526,11 @@ C Declare local variables
       CHARACTER :: fs
 C Function definition
       INTEGER :: lnblnk
-      
-      
+
+
 CPrint out all the selected parameters
       CALL AIM2_report(iuout)
-      
+
 C check that the current model is not one being browsed.
       IF (BROWSE) THEN
         CALL USRMSG('Cannot save the AIM2file while in browse',
@@ -1540,15 +1538,15 @@ C check that the current model is not one being browsed.
         RETURN
       END IF
 
-      
+
       AIM2_FUnit = 42
-      
-C Set iAIM2 flag to ensure AIM2 file path is saved in the cfg file      
+
+C Set iAIM2 flag to ensure AIM2 file path is saved in the cfg file
       iAIM2 = 1
-        
+
 C Check to see if standard directories exist, by checking to see if there is a zones folder
       ipaths = lnblnk(zonepth)
-C Other folders exist so create an aim2 folder if it doesn't      
+C Other folders exist so create an aim2 folder if it doesn't
       IF (ipaths.GT.3) THEN
 	aimpth='../aim2'
         WRITE(OutString,'(3A)')'mkdir -p ',path(1:lnblnk(path)),aimpth
@@ -1581,8 +1579,8 @@ C Check for error
       END IF
 C If the infiltration file exists use it check about overwritting, otherwise create it.
       CALL EFOPSEQ(AIM2_FUnit,LAIM2,4,IER)
-  
-      
+
+
 C Check for error
       IF (IER.NE.0) THEN
         CALL USRMSG('Problem with opening aim2 file',' ','W')
@@ -1599,7 +1597,7 @@ C If error opening file - return
 C Write air tightness type.
       WRITE(AIM2_FUnit,'(A)')
      &  '#---Leakage description--------------------------------------'
-     
+
 C Write air tightness type and supplementary blower door data
       IF (airtight_type.GT.2) THEN
         OutString = '# Air tightness type is :'
@@ -1643,7 +1641,7 @@ C Write air tightness type and supplementary blower door data
             WRITE(OutString,'(2A,F8.2,A)')
      &          TempString(1:lnblnk(TempString)),'ELA=',ELA_cm,' cm^2'
             WRITE(AIM2_FUnit,'(2I3,4F7.2,6x,A)') airtight_type,
-     &          blower_door_input_option, ACH_50Pa,ELA_deltaP, ELA_cm, 
+     &          blower_door_input_option, ACH_50Pa,ELA_deltaP, ELA_cm,
      &          ELA_Cd,OutString
           ENDIF
         ENDIF
@@ -1654,7 +1652,7 @@ C Write leakage distribution (if specified).
      &  '#---Leakage distribution-------------------------------------'
       IF(userspec_leakage.EQ.1)THEN
         TempString='# Ceiling, wall & floor fractions'
-        WRITE(AIM2_FUnit,'(I3,3F7.2,16x,A)') 
+        WRITE(AIM2_FUnit,'(I3,3F7.2,16x,A)')
      &     userspec_leakage,AIM2_ceil_frac,AIM2_wall_frac,
      &     AIM2_floor_frac,TempString
       ELSE IF (userspec_leakage.EQ.0)THEN
@@ -1668,7 +1666,7 @@ C Write shielding and terrain data.
         IF (i.EQ.1) THEN
           TestCase = AIM2_terrain_weather
           OutString = '# Weather station terrain:'
-        ELSE 
+        ELSE
           TestCase = AIM2_terrain_building
           TempString = OutString
           WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
@@ -1702,13 +1700,13 @@ C Write shielding and terrain data.
      &    AIM2_terrain_weather,AIM2_terrain_building,
      &    AIM2_wall_shielding,AIM2_flue_shielding,AIM2_anemom_height,
      &    OutString
-     
-      
+
+
       DO i=1,2
         IF (i.EQ.1) THEN
           TestCase = AIM2_terrain_weather
           OutString = '# Wall shielding:'
-        ELSE 
+        ELSE
           TestCase = AIM2_terrain_building
           TempString = OutString
           WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
@@ -1751,13 +1749,13 @@ C Write diameters of furnace, fireplace, and DHW flues.
 C Write the zone coupling data
       WRITE(AIM2_FUnit,'(A)')
      &  '#---Zone indices---------------------------------------------'
-C Write the number of the reference zone. 
+C Write the number of the reference zone.
       OutString = '# Zone whose temperature is used to calculate '
       TempString = OutString
       WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
      &      ' the density of indoor air'
       WRITE(AIM2_FUnit,'(I3,37x,A)')AIM2_ref_zone, OutString
-      
+
 C Write the number of zones in model that will receive infiltration, followed by the
 C indices of the zones that receive infiltration.
       WRITE(OutString,'(I3)')AIM2_num_zones_infil
@@ -1766,12 +1764,12 @@ C indices of the zones that receive infiltration.
         WRITE(OutString,'(A, I3)'),TempString(1:lnblnk(TempString)),
      &    AIM2_zone_infil(zoneindex)
       END DO
-C Pad the string out to line up formatting        
+C Pad the string out to line up formatting
       padlength = 40-LEN_TRIM(OutString)
       PadString = '                                               '
       TempString = OutString
       WRITE(OutString,'(A,A,A)'),TempString(1:lnblnk(TempString)),
-     &      PadString(1:padlength), 
+     &      PadString(1:padlength),
      &      '# Total number of zones receiving infil; '
       TempString = OutString
       WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
