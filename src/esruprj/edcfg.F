@@ -67,8 +67,8 @@ C Function definition
       INTEGER :: iappw,iappx,iappy
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       INTEGER :: izgfoc,nzg,nznog
-      common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       REAL :: GRDIS
       INTEGER :: ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR
       INTEGER :: ITOBS,ITHLS,ITHLZ,ITGRD,ITPPSW
@@ -89,8 +89,6 @@ C Function definition
       common/uhome/upath
       common/CFGV/icfgv
       INTEGER :: icfgv
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -158,11 +156,9 @@ C Uncertainty.
       character LCFGF*72,H*72,ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,tmode*8,doit*248
-      character hvacpth*24
+      character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72,aimpth*24
+      character selres*72,entflnam*72,upath*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -1349,8 +1345,6 @@ C output, IER=0 indicates no error.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1409,9 +1403,6 @@ C Flag noting whether casual gain periods are currently sorted.
       character doit*248,tmode*8,DSFIL*72,ZN*12
       character outs*124,outs248*248,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82

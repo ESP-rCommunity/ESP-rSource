@@ -56,6 +56,7 @@ C -------------------------------HVACGIN-------------------------------
       SUBROUTINE HVACGIN
 
 #include "building.h"
+#include "model.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 #include "furnace_common.h"
@@ -65,11 +66,6 @@ C -------------------------------HVACGIN-------------------------------
       COMMON/ER/IER
       COMMON/FILEP/IFIL
       COMMON/user/browse
-      COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
-      CHARACTER zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      CHARACTER docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24,
-     &             hvacpth*24    ! file paths
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK      ! file flags

@@ -29,14 +29,15 @@ C **********************************************************************
       IMPLICIT NONE
 
 #include "building.h"
+#include "model.h"
 C Declare calling parameters 
       INTEGER, INTENT(IN)  :: ICOMP     
       INTEGER, INTENT(INOUT)  :: IER
+
+      INTEGER LNBLNK   ! function definition
       
       COMMON/pophelp/h(60)
       COMMON/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-      COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/OUTIN/IUOUT,IUIN
 
 C COMMONS FOR BASEREAD
@@ -50,11 +51,10 @@ C COMMONS FOR BASEREAD
      &        strRSI,strSoil,strWater,strTGavg,strTGamp,strTGps
       CHARACTER :: delimiter
       CHARACTER*72 sfile,snpfile,LBSIMP
-      CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,bsmpth,aimpth,hvacpth
 
       INTEGER iBSIMP ! iBSIMP flag to talk to cfg
       INTEGER x,iier,iuout,iuin,iwhich,nfile
+      integer iln  ! length of file
 
       LOGICAL exists,file_exists,old_name
 
@@ -152,7 +152,12 @@ C If YES, they must enter the basesimp parameters below.
      &              nfile,iier)
               IF(snpfile(1:2).ne.'  ')THEN
                 iBSIMP(ICOMP) = 1
-                LBSIMP(ICOMP) = '../bsm/'//snpfile
+                iln=lnblnk(snpfile)
+                if(iln.lt.65)then
+                  LBSIMP(ICOMP) = '../bsm/'//snpfile(1:iln)
+                else
+                  LBSIMP(ICOMP) = '../bsm/'//snpfile(1:64)
+                endif
                 x=1
               ELSE
                  CALL EDISP(IUOUT,
@@ -470,7 +475,12 @@ C Writes the cleaned up strings to the output .bsm file with comments.
         IF(fBASESIMPVersionNumber.EQ.1)THEN
           CLOSE(66)
           iBSIMP(ICOMP)=1
-          LBSIMP(ICOMP)='../bsm/'//bsmFile
+          iln=lnblnk(bsmFile)
+          if(iln.lt.65)then
+            LBSIMP(ICOMP)='../bsm/'//bsmFile(1:iln)
+          else
+            LBSIMP(ICOMP)='../bsm/'//bsmFile(1:64)
+          endif
           RETURN
 
         ELSEIF(fBASESIMPVersionNumber.EQ.0)THEN
@@ -494,7 +504,12 @@ C Writes the cleaned up strings to the output .bsm file with comments.
 
           CLOSE(66)
           iBSIMP(ICOMP)=1
-          LBSIMP(ICOMP)='../bsm/'//bsmFile
+          iln=lnblnk(bsmFile)
+          if(iln.lt.65)then
+            LBSIMP(ICOMP)='../bsm/'//bsmFile(1:iln)
+          else
+            LBSIMP(ICOMP)='../bsm/'//bsmFile(1:62)
+          endif
           RETURN
         END IF
       RETURN

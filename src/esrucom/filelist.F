@@ -44,6 +44,8 @@ C parameter ier returned as 2 if problem writing file name path.
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
 #include "espriou.h"
 C espriou.h for parameter MFFOLD
+#include "building.h"
+#include "model.h"
 
       integer lnblnk  ! function definition
 
@@ -51,8 +53,6 @@ C espriou.h for parameter MFFOLD
       common/pophelp/h(60)
       common/uhome/upath
       common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -88,9 +88,7 @@ C   `hva` hvac files.
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
       character*72 upath,path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,act*1,aimpth*24,
-     &          bsmpth*24,hvacpth*24
+      character fs*1,act*1
       character dinstpath*48
 
 C Array for browse menu.

@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -36,8 +37,6 @@ C ******* Setup of image quality and calculation options.
       common/rad2/mono,intext,ifocz
       common/radrp/ipicx
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
@@ -52,9 +51,6 @@ C ******* Setup of image quality and calculation options.
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
       character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       integer NITEMS,INO  ! max items and current menu item

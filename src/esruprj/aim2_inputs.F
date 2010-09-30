@@ -564,20 +564,20 @@ C Help text for this menu.
       H(16)= '    Manual, Module 3 Conducting a Blower Door Test." '
 
       IF (airtight_type.EQ.1) THEN
-        ITEM(1)='a Blower door test (CGSB)        ***'
+        ITEM(1)='a Blower door test (CGSB) ***'
       ELSE
         ITEM(1)='a Blower door test (CGSB)  '
       ENDIF
 
       IF (airtight_type.EQ.2) THEN
-        ITEM(2)='b Blower door test (as operated) ***'
+        ITEM(2)='b Blower door test (operated) ***'
       ELSE
         ITEM(2)='b Blower door test (as operated)'
       ENDIF
 
       IF (airtight_type.GT.2) THEN
          WRITE(ITEM(3),'(A, I1, A)')
-     &           'c Air tightness type   (',airtight_type,')'
+     &          'c Air tightness type (',airtight_type,')'
       ELSE
         ITEM(3)='c Air tightness type         '
       END IF
@@ -1075,51 +1075,51 @@ C Help text for this menu.
 
 
       IF (TerrainSelection.EQ.1) THEN
-        ITEM(1)='a Open sea,fetch > 5 km          ***'
+        ITEM(1)='a Open sea,fetch > 5 km     ***'
       ELSE
-        ITEM(1)='a Open sea,fetch > 5 km             '
+        ITEM(1)='a Open sea,fetch > 5 km        '
       END IF
 
       IF (TerrainSelection.EQ.2) THEN
-        ITEM(2)='b Mud flats,no vegetation        ***'
+        ITEM(2)='b Mud flats,no vegetation   ***'
       ELSE
-        ITEM(2)='b Mud flats,no vegetation           '
+        ITEM(2)='b Mud flats,no vegetation      '
       END IF
 
       IF (TerrainSelection.EQ.3) THEN
-        ITEM(3)='c Open flat terrain, grass       ***'
+        ITEM(3)='c Open flat terrain, grass  ***'
       ELSE
-        ITEM(3)='c Open flat terrain, grass          '
+        ITEM(3)='c Open flat terrain, grass     '
       END IF
 
       IF (TerrainSelection.EQ.4) THEN
-        ITEM(4)='d Low crops, x/H > 20            ***'
+        ITEM(4)='d Low crops, x/H > 20       ***'
       ELSE
-        ITEM(4)='d Low crops, x/H > 20               '
+        ITEM(4)='d Low crops, x/H > 20          '
       END IF
 
       IF (TerrainSelection.EQ.5) THEN
-        ITEM(5)='e High crops, scattered obstacles ***'
+        ITEM(5)='e High crops, scattered obst ***'
       ELSE
-        ITEM(5)='e High crops, scattered obstacles    '
+        ITEM(5)='e High crops, scattered obst    '
       END IF
 
       IF (TerrainSelection.EQ.6) THEN
-        ITEM(6)='f Parkland, bushes, x/H ~ 10     ***'
+        ITEM(6)='f Parkland, bushes, x/H ~ 10 ***'
       ELSE
-        ITEM(6)='f Parkland, bushes, x/H ~ 10        '
+        ITEM(6)='f Parkland, bushes, x/H ~ 10    '
       END IF
 
       IF (TerrainSelection.EQ.7) THEN
-        ITEM(7)='g Suburban, forest               ***'
+        ITEM(7)='g Suburban, forest           ***'
       ELSE
-        ITEM(7)='g Suburban, forest                  '
+        ITEM(7)='g Suburban, forest              '
       END IF
 
       IF (TerrainSelection.EQ.8) THEN
-        ITEM(8)='h City centre                    ***'
+        ITEM(8)='h City centre                ***'
       ELSE
-        ITEM(8)='h City centre                       '
+        ITEM(8)='h City centre                   '
       END IF
 
       ITEM(9)='- Help         '
@@ -1220,9 +1220,9 @@ C Help text for this menu.
       END IF
 
       IF (ShieldingSelection.EQ.5) THEN
-        ITEM(5)='e Complete (by large buildings)    ***'
+        ITEM(5)='e Complete (large buildings) ***'
       ELSE
-        ITEM(5)='e Complete (by large buildings)       '
+        ITEM(5)='e Complete (large buildings)    '
       END IF
 
       ITEM(6)='- Help         '
@@ -1494,6 +1494,9 @@ C ******************************************************************************
       SUBROUTINE SAVE_AIM2
 
       IMPLICIT NONE
+#include "building.h"
+#include "model.h"
+
 C Declare local variables
       CHARACTER :: OutString*248         !display data string
       CHARACTER :: TempString*248        !temporary string
@@ -1514,12 +1517,8 @@ C Declare local variables
       INTEGER :: IUOUT, IUIN
       COMMON/USER/BROWSE
       LOGICAL BROWSE
-      COMMON/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/rpath/path
       CHARACTER path*72
-      CHARACTER*24 :: zonepth,netpth,ctlpth,imgpth,radpth,docpth
-      CHARACTER*24 :: tmppth,dbspth,aimpth,bsmpth,hvacpth
       INTEGER :: aim2index
       INTEGER :: ipaths
       LOGICAL :: unixok
@@ -1669,7 +1668,7 @@ C Write shielding and terrain data.
         ELSE
           TestCase = AIM2_terrain_building
           TempString = OutString
-          WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
+          WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &         ';   Building site terrain:'
         END IF
         SELECT CASE (TestCase)
@@ -1693,7 +1692,7 @@ C Write shielding and terrain data.
             CaseString=''
         END SELECT
         TempString = OutString
-        WRITE(OutString,'(3A)'),TempString(1:lnblnk(TempString)),
+        WRITE(OutString,'(3A)') TempString(1:lnblnk(TempString)),
      &         CaseString(1:lnblnk(CaseString))
       END DO
       WRITE(AIM2_FUnit,'(4I3,F7.2,21x,A)')
@@ -1709,7 +1708,7 @@ C Write shielding and terrain data.
         ELSE
           TestCase = AIM2_terrain_building
           TempString = OutString
-          WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
+          WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &         ';   flue shielding:'
         END IF
         SELECT CASE (TestCase)
@@ -1727,7 +1726,7 @@ C Write shielding and terrain data.
             CaseString=''
         END SELECT
         TempString = OutString
-        WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
+        WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &         CaseString(1:lnblnk(CaseString))
       END DO
       WRITE(AIM2_FUnit,'(40x,2A,F6.2,A)')OutString(1:lnblnk(OutString)),
@@ -1752,33 +1751,33 @@ C Write the zone coupling data
 C Write the number of the reference zone.
       OutString = '# Zone whose temperature is used to calculate '
       TempString = OutString
-      WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
+      WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &      ' the density of indoor air'
       WRITE(AIM2_FUnit,'(I3,37x,A)')AIM2_ref_zone, OutString
 
 C Write the number of zones in model that will receive infiltration, followed by the
 C indices of the zones that receive infiltration.
-      WRITE(OutString,'(I3)')AIM2_num_zones_infil
+      WRITE(OutString,'(I3)') AIM2_num_zones_infil
       DO zoneindex=1,AIM2_num_zones_infil
         TempString = OutString
-        WRITE(OutString,'(A, I3)'),TempString(1:lnblnk(TempString)),
+        WRITE(OutString,'(A, I3)') TempString(1:lnblnk(TempString)),
      &    AIM2_zone_infil(zoneindex)
       END DO
 C Pad the string out to line up formatting
       padlength = 40-LEN_TRIM(OutString)
       PadString = '                                               '
       TempString = OutString
-      WRITE(OutString,'(A,A,A)'),TempString(1:lnblnk(TempString)),
+      WRITE(OutString,'(A,A,A)') TempString(1:lnblnk(TempString)),
      &      PadString(1:padlength),
      &      '# Total number of zones receiving infil; '
       TempString = OutString
-      WRITE(OutString,'(2A)'),TempString(1:lnblnk(TempString)),
+      WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &      ' indices of zones receiving infil'
-      WRITE(AIM2_FUnit,'(A)')OutString
+      WRITE(AIM2_FUnit,'(A)') OutString
 C Write zone number of basement,crawlspace and attic
       OutString = '# Index of basement, crawlspace & attic zones'
       TempString = OutString
-      WRITE(OutString,'(2A)')TempString(1:lnblnk(TempString)),
+      WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
      &      ' (=0 if none)'
       WRITE(AIM2_FUnit,'(3I3,31x,A)') AIM2_basement_zone,
      &      AIM2_CrawlSpace_zone,AIM2_attic_zone,OutString
