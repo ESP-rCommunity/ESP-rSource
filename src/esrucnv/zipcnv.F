@@ -55,6 +55,7 @@ C geometry.h provides commons G0/G1/G2/G4/c20/precz/GS5/GS6.
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
       character oformat*24,head*4,LOUT*72,OTF*4,SN*12
+      character dstmp*24
 
       logical okform,okant,zipok
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
