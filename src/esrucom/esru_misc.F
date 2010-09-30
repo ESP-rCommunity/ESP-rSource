@@ -1055,7 +1055,7 @@ C Trace.
         CALL EDISP(ITRU,'Details of obstruction blocks:')
         WRITE(OUTSTR,997)NOX(icomp),NOZ(icomp)
   997   FORMAT('Shading based on a grid of ',
-     &           I2,' by ',I2,' for surfaces.')
+     &           I3,' by ',I3,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
         WRITE(OUTSTR,9996)nbobs(icomp)
  9996   FORMAT('There are ',I2,
@@ -1128,7 +1128,7 @@ C For each block write info, use space as item separation.
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
      &    BANGOB(icomp,I,1),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
+  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I3)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE

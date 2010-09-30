@@ -181,7 +181,7 @@ C Present a list of the existing blocks and options. If we reached
 C this point with zero gridding then assign a default value.
       if(NOX(icomp).eq.0) NOX(icomp)=20
       if(NOZ(icomp).eq.0) NOZ(icomp)=20
-      WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX(icomp),
+      WRITE(VERT(1),'(A,2I4)')  'a Surface X&Z grid:',NOX(icomp),
      &  NOZ(icomp)
       WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbobs(icomp)
       VERT(3)    =              '  __________________________  '

@@ -2110,8 +2110,8 @@ C Applicable surfaces are the current exterior facing surfaces.
 
 C If there will be shading or insulation then the density of the
 C grid is found after the token *solar_grid.
-        CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
-        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
+        CALL EGETWI(OUTSTR,K,NOX(nsz),4,MOX,'F','opq grid X',IER)
+        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,MOZ,'F','opq grid Z',IER)
         goto 43
       elseif(WORD(1:5).eq.'*obs3')then
 
