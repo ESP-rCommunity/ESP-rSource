@@ -20,6 +20,7 @@ C Boston, MA 02111-1307 USA.
 
       program mld
 #include "building.h"
+#include "model.h"
 #include "mould.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -49,7 +50,6 @@ C Boston, MA 02111-1307 USA.
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Defaults.
@@ -63,7 +63,7 @@ C Name of current application
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
-      character path*72,upath*72
+      character path*72
       character species*64, grow*1, head*29,fs*1
       logical unixok
 

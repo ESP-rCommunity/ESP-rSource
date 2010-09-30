@@ -61,7 +61,6 @@ C Redirected text/graphics parameters.
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Generic db commons.
@@ -105,7 +104,7 @@ C Name of current application
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72
       character outs248*248,LTMP*144
-      character path*72,upath*72,pass*12,H*72,outs*124
+      character path*72,pass*12,H*72,outs*124
       character xfile*144,tg*1,delim*1,cfgroot*24
       character dba*12,act*1,action*12
 C      character curfile*72

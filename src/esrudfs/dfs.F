@@ -29,6 +29,7 @@ C if these are 0 then use default values.
       program dfs
 #include "cfd.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -58,7 +59,6 @@ C if these are 0 then use default values.
 
 C Path to problem.
       common/rpath/path
-      common/uhome/upath
 
 C Defaults.
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
@@ -98,7 +98,7 @@ C Name of current application
 
       CHARACTER*24 ITEM(10)
       CHARACTER H*72,inf*144,LCFD*72,DFCFD*72,Lflpar*72
-      character path*72,upath*72,longtfile*144
+      character path*72,longtfile*144
       CHARACTER doit*248,tmode*8,outs*124,fs*1,outstr*124
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice

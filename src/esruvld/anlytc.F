@@ -856,12 +856,11 @@ C #include "geometry.h"
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       COMMON/Vld10/VlDirR,VlDirL
 
       character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
+      CHARACTER*72 path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
 
       logical xst

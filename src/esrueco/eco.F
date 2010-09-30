@@ -40,6 +40,7 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 
       PROGRAM eco
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -98,7 +99,6 @@ C Composites information
 C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C For exporting to file
@@ -157,7 +157,7 @@ C Name of current application
       CHARACTER H*72,outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER path*72,upath*72,L144*144
+      CHARACTER path*72,L144*144
       CHARACTER NAM*72
 C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
