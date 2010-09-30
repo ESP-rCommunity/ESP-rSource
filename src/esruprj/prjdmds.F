@@ -38,6 +38,7 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 #include "schedule.h"
       
@@ -50,8 +51,6 @@ C file unit for the demands file. IER=0 is OK.
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Floor area (optionally) associated with each demand type in an IPV.
@@ -71,9 +70,6 @@ C Flags noting whether casual gain periods are currently sorted.
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
       character cfgroot*24,LCFGF*72,hold*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
       integer NITEMS,INO ! max items and current menu item

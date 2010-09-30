@@ -705,13 +705,8 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       common/pophelp/h(60)
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       CHARACTER H*72,LTMP*72,OFILE*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.

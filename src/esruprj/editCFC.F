@@ -62,6 +62,7 @@ C
 C ********************************************************************
       subroutine makeCFCfile(icomp,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -76,11 +77,6 @@ C ********************************************************************
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
 
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount

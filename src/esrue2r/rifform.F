@@ -21,6 +21,8 @@ C Boston, MA 02111-1307 USA.
 C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
 #include "building.h"
+#include "model.h"
+      
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
@@ -29,8 +31,6 @@ C ******* Setup of image quality and calculation options.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
 
       CHARACTER doit*124,VALT*32
@@ -38,9 +38,6 @@ C ******* Setup of image quality and calculation options.
       character item*30,h*72,HOLD*24
       character fil*80
       character ltmp*72,ltmp60*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
 
       integer NITEMS,INO  ! max items and current menu item
 

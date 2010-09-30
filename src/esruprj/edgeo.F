@@ -82,8 +82,6 @@ C prec17 common is described in geometry.h.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/user/browse
 
 
@@ -100,9 +98,7 @@ C prec17 common is described in geometry.h.
       CHARACTER DESCRC*25
       CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
       CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64,aimpth*24,
-     &          bsmpth*24,hvacpth*24
+      character T64*64,D64*64
       CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
@@ -2398,8 +2394,6 @@ C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
@@ -2407,9 +2401,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       dimension isd(16)
       CHARACTER IALT*36,H*72
       CHARACTER isd*33,SFIL*72,DSFIL*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,ZN*12,aimpth*24,bsmpth*24
-      character hvacpth*24
+      character ZN*12
       character LCFGF*72,cfgroot*24
       LOGICAL comold,tmcold,vwfold,ishold,cfcold
       logical changed,newgeo
@@ -7802,8 +7794,6 @@ C             base area has been supplied by the user.
 
 C ZNAME (12 char) - the zone name from geometry.h.
 C ZDESC (64 char) - zone notes from geometry.h.
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -7826,9 +7816,6 @@ C be inserted.
       character lzip*72,dfile*72
       character phrasea*64,phraseb*64,outs*124
       character dllsubr*12,dllmesg*124,act*2
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       logical dll,checkbase
       logical newgeo  ! to use for testing if new/old geometry file.
 

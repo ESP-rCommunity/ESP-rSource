@@ -5861,13 +5861,8 @@ C If there is a journal file append the current message to it and close.
           INQUIRE(FILE=jfile(1:ltf),EXIST=there)
           if(there)then
             close(iuj)
-#ifdef F90
             open(iuj,file=jfile(1:ltf),position='APPEND',
      &        status='UNKNOWN',err=1)
-#else
-            open(iuj,file=jfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &        err=1)
-#endif
             LN=max(1,lnblnk(outs))
             write(iuj,'(a)',iostat=ios,err=2)outs(1:LN)
             close(iuj)

@@ -102,8 +102,6 @@ C is a logical flag, .true. restricts update/save options.
       common/rpath/path
       common/uhome/upath
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
@@ -171,9 +169,6 @@ C      character outs248*248
       character journcmd*20,jfile*72,tfile*72,cjfile*72
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
@@ -181,6 +176,7 @@ C      character outs248*248
       CHARACTER dinstpath*48,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
+      character fs*1
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12
@@ -4405,9 +4401,6 @@ C Path to model and command line file (if any).
 
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
-
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -4424,8 +4417,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
-      CHARACTER*24 dbspth,cfgroot,aimpth,bsmpth,hvacpth
+      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124

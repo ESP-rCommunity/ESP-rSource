@@ -58,8 +58,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/PREC8/SLAT,SLON
       common/rpath/path
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
@@ -102,9 +100,7 @@ C Passed in parameters.
       character uname*24,pwd*40,tmode*8
       character limg*72,act*2
       character iformat*4,ifocus*4
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
+      character fs*1
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
 
@@ -935,8 +931,6 @@ C geometry.h provides commons G0 and G2.
       
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -957,9 +951,7 @@ C Remember width of file/folder names passed back from getfilelist.
       character tmode*8,t24*24,act*1,outstr*124,outs*124
       character*33 ITEMS(23)
       character*72 listf(MFFOLD),listfc(MFFOLD)
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
+      character fs*1
       character subpath*72,action*3
       integer lnod   ! length for odir
       integer nitems,INO ! max items and current menu item
@@ -1511,8 +1503,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
 
       common/CFGV/icfgv
       common/user/browse
@@ -1533,9 +1523,6 @@ C CFD
       character ITEMS*72,head*25,path*72,L*72,ZN*12
       character LCFD*72,H*72,outs*124
       character D*72,T15*12,D15*12
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       character sfile*72,snpfile*72,fs*1
       logical modcfg,XST,unixok
       integer MITEM,INO ! max items and current menu item

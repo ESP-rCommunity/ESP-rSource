@@ -53,6 +53,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDCOMP(izone,iuf,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "cfd.h"
 C #include "esprdbfile.h"
@@ -65,8 +66,6 @@ C #include "esprdbfile.h"
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -79,9 +78,6 @@ C #include "esprdbfile.h"
       character H*72,OUTSTR*124,WORD*124
       CHARACTER ITEM(11)*34
       character ltmp*72,dtmp*72,LCFD*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      character hvacpth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       integer IWO  ! for radio button
