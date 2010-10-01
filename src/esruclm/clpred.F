@@ -938,16 +938,22 @@ C **************
 C Subroutine APPRDIFFUSE is used to approximate diffuse
 C solar radiation data from Global horizontal data based on Muneer's model
 C See "Solar radiation and daylight models" book from Muneer 
-C (1997) - ISBN: 0-7506-2495-7
+C (1997) - ISBN: 0-7506-2495-7  pages 101-104.
 C and Erbs, Klein and Duffie model: see Solar energy Journal Vol. 28,
 C pp.293-302
-C IGLOBH is the global horizontal value to be passed in (in w/m2)
-C DRAD is the approximated diffuse value to be returned (in w/m2)
-C LONGITUDE is the climate longitude (west: positive)
-C DIFFGRNWCH is the local time difference from Greenwich. Assumes
-C that west is positive (e.g. use -2 for Greece)
       SUBROUTINE APPRDIFFUSE(IYEAR,IMT,IDAY,IHR,IGLOBH,LONGITUDE,
      &           DIFFGRNWCH,DRAD)
+
+C Parameters:
+      integer iyear   ! the year to scan for within multi-year data file
+      integer imt     ! the current month
+      integer iday    ! the current day of the month
+      integer ihr     ! the current hour of the day
+      integer IGLOBH  ! global horizontal value (in w/m2)
+      real LONGITUDE  ! the climate longitude (west: positive)
+      real DIFFGRNWCH ! local time difference from Greenwich. Assumes
+                      ! that west is positive (e.g. use -2 for Greece)
+      real DRAD       ! diffuse value to be returned Muneer or Maxwell (in w/m2)
 
 C RADTYP Common might be needed in order to specify that climate
 C is based on global horizontal and not direct normal. At the moment
@@ -958,12 +964,27 @@ C      COMMON/RADTYP/IDNGH
       COMMON/APPRDIFF/iapprox_diff
 
 C IME specifies the minute
-      real IME,LONGITUDE
+      real IME
+
+C Local variables
+      real DTOR  ! pi/180.0
+      real CAPG,CAPL,CAPC,G360,ALPHA,DEC,SHA,DIFRAT
+      real XAM,XKNC,CAPA,CAPB,XMAXI,XMAXHB
+      real differ  ! difference between global and beam
+      integer IYR1,IMT1
+      logical close
 
       DTOR=3.14159/180.0 
 
-C Minute input is needed. At the moment IME is assumed 1.0
+C Minute input is needed. IME could be assumed 30.0
+C to fit with half-hour centred data or 1.0 for on the
+C hour. Orgill and Hollands and Maxwell are very sensitive to
+C this value. Erbs is not so sensitive.
       IME=1.0
+
+C Calculate UT based on time difference from Greenwich.
+      XLCT=(1.0*IHR)+(1.0*IME/60.0)
+      UT=XLCT+DIFFGRNWCH
       IF (IMT.GT.2) THEN
         IYR1=IYEAR
         IMT1=IMT-3
@@ -972,8 +993,6 @@ C Minute input is needed. At the moment IME is assumed 1.0
         IMT1=IMT+9
       ENDIF 
 
-      XLCT=(1.0*IHR)+(1.0*IME/60.0)
-      UT=XLCT+DIFFGRNWCH
       INTT1=INT(30.6*IMT1+0.5)
       INTT2=INT(365.25*(IYR1-1976))
       SMLT=((UT/24.0)+IDAY+INTT1+INTT2-8707.5)/36525.0
@@ -1006,7 +1025,7 @@ C Muneer has the Calculation of the Apparent Solar Time
 C but espr method does not use it - just commented here
 C      AST=12.0+(SHA/15.0)
 
-C Calculate SOLar ALTitude 
+C Calculate Solar Altitude 
       TRM111=SIN(CLAT*DTOR)*SIN(DEC*DTOR)
       TRM112=
      &  COS(CLAT*DTOR)*COS(DEC*DTOR)*COS((SHA+180.0)*DTOR)
@@ -1027,25 +1046,73 @@ C Calculate horizontal Extraterrestrial irRADiance
       ERAD=
      &  1353.0*(1.+0.033*COS(0.0172024*DN))*SIN(SOLALT*DTOR) 
 
-C Muneer has the next line for other purposes - just commented here
-C      XMAXI0=1353.0*(1.+0.033*COS(0.0172024*DN))
+C Muneer has the next line for Maxwell method.
+      XMAXI0=1353.0*(1.+0.033*COS(0.0172024*DN))
 
-C Calculate horizontal Diffuse irRADiance
-      GRAD=IGLOBH
+C Calculate horizontal Diffuse irRADiance Orgill and Hollands
+      GRAD=real(IGLOBH)
       XKT=GRAD/ERAD 
       IF(iapprox_diff.EQ.1)THEN
 
-C Muneer model.
+C Muneer model using Orgill and Hollands.
         DIFRAT=0.98
-        IF(XKT.GT.0.2.AND.XKT.LE.1.0) THEN
+        IF(XKT.GT.0.2) THEN
           DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
      &    -(12.7616*XKT**3)+9.7166*XKT**4
-        ELSEIF(XKT.GT.1.0) THEN
-          XKT=1.0
-          DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
-     &    -(12.7616*XKT**3)+(9.7166*XKT**4)
         ENDIF
+
+C Occassionally DIFRAT evaluates to greater than one. If so use 0.98
+        if(DIFRAT.gt.1.0)then
+          DRAD=GRAD*0.98
+        else
+          DRAD=GRAD*DIFRAT
+        endif
+
+C Old logic for Orgill and Hollands.
+C        IF(XKT.GT.0.2.AND.XKT.LE.1.0) THEN
+C          DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
+C     &    -(12.7616*XKT**3)+9.7166*XKT**4
+C        ELSEIF(XKT.GT.1.0) THEN
+C          XKT=1.0
+C          DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
+C     &    -(12.7616*XKT**3)+(9.7166*XKT**4)
+C        ENDIF
       ELSEIF(iapprox_diff.EQ.2)THEN
+
+C Calculate horizontal beam irradiance using Maxwell model on
+C page 102 of Muneer book (1987). 
+        XAM=1.0/SIN(SOLALT*DTOR)
+        XKNC=0.866-0.122*XAM+0.0121*XAM*XAM
+     &       -(0.000653*XAM**3)+0.000014*XAM**4 
+     
+        IF(XKT.LE.0.6) THEN
+          CAPA=0.512-1.56*XKT+2.286*XKT*XKT-2.222*XKT**3
+          CAPB=0.37+0.962*XKT
+          CAPC=-0.28+0.932*XKT-2.048*XKT**2 
+        ELSE
+          CAPA=-5.743+21.77*XKT-27.49*XKT*XKT+11.56*XKT**3
+          CAPB=41.4-118.5*XKT+66.05*XKT*XKT+31.9*XKT**3
+          CAPC=-47.01+184.2*XKT-222.0*XKT**2+73.81*XKT**3
+        ENDIF
+
+C Calculate the beam (XMAXHB) and if a posive number
+C and less than GRAD then subtract it from GRAD to get
+C the diffuse. If (XMAXHB) would cause diffuse to be
+C greater than global then set it to 0.98 of global.
+        XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(XAM*CAPC)))      
+        XMAXHB=XMAXI*SIN(SOLALT*DTOR)
+        if(XMAXHB.gt.0.0.and.GRAD.gt.XMAXHB)then
+          DRAD=GRAD-XMAXHB
+        else
+          DRAD=GRAD*0.98
+        endif
+
+C And if GRAD is zero then set DRAD to zero. 
+        call eclose(GRAD,0.0,1.0,close)
+        if(close)then
+          DRAD=0.0
+        endif
+      ELSEIF(iapprox_diff.EQ.3)THEN
 
 C Erbs, Klein and Duffie model.
         IF(XKT.LE.0.22)THEN
@@ -1056,10 +1123,17 @@ C Erbs, Klein and Duffie model.
         ELSEIF(XKT.GT.0.8)THEN
           DIFRAT=0.165
         ENDIF
+
+C Occassionally DIFRAT evaluates to greater than one. If so use 0.98
+        if(DIFRAT.gt.1.0)then
+          DRAD=GRAD*0.98
+        else
+          DRAD=GRAD*DIFRAT
+        endif
+
       ELSE
         iapprox_diff=1
       ENDIF
-      DRAD=GRAD*DIFRAT
 
       RETURN
       END

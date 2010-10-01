@@ -457,8 +457,9 @@ C 115-122 (8 values) cloud cover (0-10) (ints) probably multiply by 10 to get pe
 C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
 
 
-C Each data line is | separated and values are a mix of reals and integers.
-C Assume that the climate file has already been opened elsewhere.
+C Each data line is | or , separated and values are a mix of reals and integers.
+C Assume that the climate file has already been opened elsewhere. Note some
+C files may have first line STN_ID if this is found skip and try next.
 
 C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
@@ -536,26 +537,48 @@ C Export climate data to ASCII file (with similar name).
       h(1)='The default conversion model is based on a publication'
       h(2)='from Muneer: Solar Radiation and Daylight models (1997)'
       h(3)='ISBN: 0-7506-2495-7.'
-      h(4)='The Erbs, Klein and Duffie model is based on empirical '
-      h(5)='correlations, documented in: Erbs D.G., Klein S.A., '
-      h(6)='Duffie J.A. 1982. Estimation of the diffuse radiation'
-      h(7)='fraction for hourly, daily and monthly-average global '
-      h(8)='radiation. Solar Energy 28: pp.293-302.'
-      call easkab
-     &  (' There are two available models to approximate diffuse:',' ',
-     &   'Muneer (default)','Erms/Klein/Duffie',IDIFF,8)
+      h(4)=' '
+      h(5)='The Maxwell model is equation 3.4.2a and 3.4.2b of '
+      h(6)='Muneer book on page 102. '
+      h(7)='The Erbs, Klein and Duffie model is based on empirical '
+      h(8)='correlations, documented in: Erbs D.G., Klein S.A., '
+      h(9)='Duffie J.A. 1982. Estimation of the diffuse radiation'
+      h(10)='fraction for hourly, daily and monthly-average global '
+      h(11)='radiation. Solar Energy 28: pp.293-302.'
+      h(12)=' '
+      h(13)='The three methods tend to give different estimates of'
+      h(14)='diffuse radiation for a given global horizontal solar'
+      h(15)='radiation value. The default method tends to give higher'
+      h(16)='diffuse values. '
+      h(17)=' '
+      h(18)='If in doubt, create a climate file for each of the'
+      h(19)='methods and visually inspect the predictions.'
+      h(20)=' '
+      call easkabc
+     &  ('There are three available models to approximate diffuse:',
+     &  ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
+     &  IDIFF,20)
+
+C Set the global variable iapprox_diff to tell underlying calculation
+C method which equation set to use.
       if(IDIFF.eq.1)then
         iapprox_diff=1
       elseif(IDIFF.eq.2)then  
         iapprox_diff=2
+      elseif(IDIFF.eq.3)then  
+        iapprox_diff=3
       endif
 
+C Read each line of the data file and parse the data.
       scan: do
         if(act(1:3).eq.'old')then
 
 C If the older format read a line of the file.
           CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
           if(ier.lt.0) exit scan
+          if(OUTSTR(1:6).eq.'STN_ID')then  ! skip the header line
+            CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          endif
           K=0
           CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
           CALL EGETWI(OUTSTR,K,iyr,1900,2020,'W','year index',IER)
@@ -668,6 +691,9 @@ C Transfer this to the binary file.
 C Read the newer format
           CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
           if(ier.lt.0) exit scan
+          if(OUTSTR(1:6).eq.'STN_ID')then  ! skip the header line
+            CALL STRIPC1K(IUNIT,OUTSTR,0,ND,1,'data line',IER)
+          endif
           K=0
           CALL EGETWI(OUTSTR,K,isite,0,999,'W','site index',IER)
           CALL EGETW(OUTSTR,K,WORD,'W','string for date',IER)
@@ -690,14 +716,18 @@ C Read 24 hours of dry bulb temperature and assign to ICLM.
             CALL EGETWR(OUTSTR,K,value,0.,0.,'-','db temperature',IER)
             ICLM(ih,2)=NINT(value*10.0)  ! multiply by 10 so in tenths deg C
  243      continue
-          write(6,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
+
+C Debug.
+          write(*,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
 
 C Read 24 hours of humidity and assign to ICLM.
           do 246 ih=1,24
             CALL EGETWI(OUTSTR,K,IHUM,0,100,'-','humidity %',IER)
             ICLM(ih,6)=IHUM
  246      continue
-          write(6,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
+
+C Debug.
+          write(*,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
 
 C Read 24 hours of wind direction, decode and assign to IDIR.
 C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
@@ -744,14 +774,18 @@ C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
               ICLM(ih,5)=0
             endif
  244      continue
-          write(6,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
+
+C Debug.
+          write(*,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
 
 C Read 24 hours of wind velocity and assign to ICLM.
           do 245 ih=1,24
             CALL EGETWR(OUTSTR,K,value,0.,0.,'-','wind velocity',IER)
             ICLM(ih,4)=NINT(value*10.0)  ! to get tenths m/s
  245      continue
-          write(6,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
+
+C Debug.
+          write(*,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
 
 C Clear solar values.
           idif=0
