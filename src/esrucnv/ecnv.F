@@ -69,7 +69,6 @@ C ESP-r commons.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C6/INDCFG
-      common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1412,7 +1411,6 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       COMMON/LOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf

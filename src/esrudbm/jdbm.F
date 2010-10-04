@@ -1535,11 +1535,11 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within

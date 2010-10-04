@@ -2,6 +2,15 @@ C This header relates to high level model entities in ESP-r. It is
 C dependant on building.h and should follow building.h so that
 C parameters will have been defined.
 
+C Configuration file information.
+      integer icfgv  ! version of configuration file which determines
+                     ! the format and contents of the file:
+                     ! version 1 did not have *database section
+                     ! version 2 did not use tag data format (before 1996)
+                     ! version 3 used zone obstruction files and IPV files
+                     ! version 4 current version from May 2008
+      common/CFGV/icfgv
+
 C The title and summary of the model
       character modeltitle*72  ! title of the model (to replace LSNAM)
       character modeldocblock*248   ! text block of documentation for model

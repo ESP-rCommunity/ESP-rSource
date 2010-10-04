@@ -220,7 +220,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
 C Path to model and command line file (if any).
       common/rpath/path
       common/rcmd/LCMDFL
-      common/CFGV/icfgv
       common/user/browse
 
 C CFD output channels.

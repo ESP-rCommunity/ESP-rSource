@@ -206,8 +206,6 @@ C LPNF (72 char) plant network file name.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
-      common/CFGV/icfgv
-      INTEGER :: icfgv
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
