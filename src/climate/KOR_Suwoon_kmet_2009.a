@@ -3,7 +3,7 @@
 # defined in: suwoon_2009_jan-dec.a
 # col 1: Diffuse solar on the horizontal (W/m**2)
 # col 2: External dry bulb temperature   (Tenths DEG.C)
-# col 3: Direct normal solar intensity   (W/m**2)
+# col 3: Global horizontal solar intensity   (W/m**2)
 # col 4: Prevailing wind speed           (Tenths m/s) 
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
