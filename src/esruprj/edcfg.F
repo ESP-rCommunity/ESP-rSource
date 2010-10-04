@@ -771,10 +771,10 @@ C  Use exsisting functionality for network flow
           H(16)=' '
           H(17)='Flow networks may be defined by selecting components'
           H(18)='from a menu or by graphical manipulation.'
-          CALL EASKABCD(' ','Define network flow via:',
-     &       'schedule','flow network (menu)','flow network (graphic)',
-     &       'cancel',IW,18)
-          IF(IW.EQ.1)THEN
+c          CALL EASKABCD(' ','Define network flow via:',
+c     &       'schedule','flow network (menu)','flow network (graphic)',
+c     &       'cancel',IW,18)
+c          IF(IW.EQ.1)THEN
 
         CALL EASKABCD(' ','Define air flow via:',
      &       'schedule','flow network (menu)','flow network (graphic)',
@@ -1030,7 +1030,7 @@ C        elseif(IW.eq.3)then
 C          call tstamp('>','PRJ: export to java agent')
 C          doit = '/usr/esru/bin/flow_agent.sh'
 C          call runit(doit,'-')
-        endif
+c        endif
         ENDIF
         ELSEIF(IW.EQ.3)THEN airflowtype
          GOTO 3 
