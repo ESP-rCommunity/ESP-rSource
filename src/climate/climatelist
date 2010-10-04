@@ -2110,6 +2110,46 @@ Winter season is Mon 29 Oct - Mon 31 Dec
 Typical winter week begins Mon 26 Nov
 *help_end
 *item
+*name	Suwoon Korea MET 2009
+*aide	Suwoon Korea MET office 2009 actual data (Muneer solar)
+*dbfl	/usr/esru/esp-r/climate/KOR_Suwoon_kmet_2009
+*avail	ONLINE
+*winter_s  1  1  8  3  2 11 31 12 # seasons Thu-01-Jan--Sun-08-Mar & Mon-02-Nov--Thu-31-Dec
+*spring_s  9  3 31  5 31  8  1 11 # seasons Mon-09-Mar--Sun-31-May & Mon-31-Aug--Sun-01-Nov
+*summer_s  1  6 30  8 # summer season Mon-01-Jun--Sun-30-Aug
+*winter_t 12  2 18  2 30 11  6 12 # typical Thu-12-Feb--Wed-18-Feb & Mon-30-Nov--Sun-06-Dec
+*spring_t  6  4 12  4 21  9 27  9 # typical Mon-06-Apr--Sun-12-Apr & Mon-21-Sep--Sun-27-Sep
+*summer_t 20  7 26  7 # typical summer Mon-20-Jul--Sun-26-Jul
+*help_start
+Climate is Suwoon Korea MET 2009
+ Location: 38.00N  8.42E : 2009
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan    -14.3 @ 7h00 Sun-25       12.2 @16h00 Fri-30    -2.7
+ Feb     -8.8 @ 7h00 Sat-21       16.7 @10h00 Fri-13     2.4
+ Mar     -4.7 @ 6h00 Mon-02       21.8 @15h00 Sat-21     6.1
+ Apr      0.9 @ 6h00 Thu-02       26.2 @13h00 Sun-19    12.0
+ May      8.4 @ 5h00 Fri-01       30.8 @16h00 Thu-28    18.3
+ Jun     12.7 @ 5h00 Mon-01       31.4 @15h00 Sat-27    22.2
+ Jul     18.6 @13h00 Thu-02       31.5 @15h00 Thu-16    24.2
+ Aug     16.6 @ 4h00 Mon-31       34.4 @16h00 Sun-16    25.7
+ Sep     14.7 @ 4h00 Thu-24       30.7 @14h00 Sun-06    21.6
+ Oct      5.9 @ 6h00 Thu-22       26.8 @14h00 Thu-01    15.7
+ Nov     -5.7 @ 7h00 Wed-18       22.3 @15h00 Mon-09     6.9
+ Dec    -12.5 @ 4h00 Tue-29       10.9 @15h00 Tue-01    -0.5
+ Annual -14.3 @ 7h00 Sun-25-Jan   34.4 @16h00 Sun-16-Aug    12.7
+ ---Seasons & typical periods---
+Winter season is Thu-01-Jan - Sun-08-Mar
+Typical winter week begins Thu-12-Feb
+Spring season is Mon-09-Mar - Sun-31-May
+Typical spring week begins Mon-06-Apr
+Summer season is Mon-01-Jun - Sun-30-Aug
+Typical summer week begins Mon-20-Jul
+Autumn season is Mon-31-Aug - Sun-01-Nov
+Typical autumn week begins Mon-21-Sep
+Winter season is Mon-02-Nov - Thu-31-Dec
+Typical winter week begins Mon-30-Nov
+*help_end
+*item
 *name	Shearwater NS CAN
 *aide	Shearwater NS CAN was sourced from US DoE
 *dbfl	/usr/esru/esp-r/climate/CAN_NS_Shearwater_CWEC
