@@ -45,6 +45,7 @@ C                           furniture
 
       PROGRAM RevTime
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "acoustic.h"
 #include "esprdbfile.h"
@@ -97,7 +98,6 @@ C Zone information
 C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/C21/IFCFG,cfgroot,LCFGF
@@ -138,7 +138,7 @@ C Name of current application
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER*72 path,upath
+      CHARACTER*72 path
       CHARACTER fs*1,outsd*124
       CHARACTER TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 

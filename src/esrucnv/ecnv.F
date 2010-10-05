@@ -63,7 +63,6 @@ C ESP-r commons.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/rpath/path
-      common/uhome/upath
       common/FILEP/IFIL
 
       integer ncomp,ncon
@@ -99,7 +98,7 @@ C Name of current application
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      character path*72,upath*72
+      character path*72
       character upgcfg*72
 
       character cfgroot*24,dstmp*24,MODE*4

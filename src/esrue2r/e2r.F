@@ -59,7 +59,6 @@ C Defaults.
 
 C Path to model.
       common/rpath/path
-      common/uhome/upath
       common/expath/runpath,pathtype
 
       common/user/browse
@@ -123,7 +122,7 @@ C Name of current application
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,upath*72,cfgroot*24
+      character path*72,cfgroot*24
       character crenrp*160,coconv*40
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -1160,7 +1159,6 @@ C MODLSU read in supplied configuration file and set up paths.
 
 C Path to model.
       common/rpath/path
-      common/uhome/upath
       common/expath/runpath,pathtype
       common/rcmd/LCMDFL
       common/user/browse
@@ -1182,7 +1180,7 @@ C Path to model.
 
       character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
-      character outs*124,fs*1,tldir*72,upath*72,MODE*4
+      character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

@@ -86,7 +86,6 @@ C Function definition
       INTEGER :: IZSTOCN
 
       common/user/browse
-      common/uhome/upath
       common/CFGV/icfgv
       INTEGER :: icfgv
 
@@ -158,7 +157,7 @@ C Uncertainty.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72
+      character selres*72,entflnam*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -4169,6 +4168,8 @@ C visualz drives visualisation process - hidden line or raytracing.
 C << this duplicates opts within the model export facility >>
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act,ier)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -4177,17 +4178,14 @@ C      common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/radcfg/LRADCF
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
       character lradcf*72,dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
       character doit*124,tmode*8,H*72,act*1
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
-     &          bsmpth*24,hvacpth*24
+      character fs*1
+      character longtfile*124
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

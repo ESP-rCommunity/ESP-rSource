@@ -24,12 +24,10 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "espriou.h"
-
-C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
-      parameter (MIPVA=MSPS)
       
 #include "seasons.h"
 C seasons.h provides typper and typsea
@@ -65,7 +63,6 @@ C file associated with this action.
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Project journal on/off, unit number, cmd, file name.
@@ -92,7 +89,7 @@ C Name of current application
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
-      character path*72,upath*72,xfile*144,tg*1,delim*1
+      character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72

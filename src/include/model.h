@@ -18,6 +18,11 @@ C folder names are in the form of ../nets the string length is short.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth,aimpth,bsmpth,hvacpth
 
+      character upath*72  ! Path to the users home folder (this is often
+                          ! combined with local path names to make up a
+                          ! longer (144 character) string.
+      common/uhome/upath
+
       character LPROJ*72 ! zone scheduling (operation files)
       character LGEOM*72 ! zone geometry file
       character LSHAD*72 ! zone temporal shading and insolation file
