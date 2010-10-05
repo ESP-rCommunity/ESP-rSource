@@ -82,7 +82,6 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
@@ -1456,8 +1455,6 @@ C to include the path and create a string to drive the modules.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C Temporal header (to get its time frequency)
-      common/CFGV/icfgv
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
@@ -2443,7 +2440,6 @@ C to include the path and create a string to drive the modules.
       common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
       common/exporttg/xfile,tg,delim
-      common/CFGV/icfgv
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -3789,13 +3785,13 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -4393,7 +4389,6 @@ C Path to model and command line file (if any).
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),

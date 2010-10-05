@@ -77,8 +77,6 @@ C ICLIM,LCLIM (for climate file)
 C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
@@ -316,7 +314,7 @@ C code in edcfg to trap updates following on from other modifications).
 
 C If no model root name has been set, make from configuration file.
 C If filename > 4 char it might have a .cfg attached.
-          icfgv=3
+          icfgv=4   ! set to the current default version
           lcfgr=lnblnk(LCFGF)
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then

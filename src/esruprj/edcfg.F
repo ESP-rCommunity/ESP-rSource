@@ -86,8 +86,6 @@ C Function definition
       INTEGER :: IZSTOCN
 
       common/user/browse
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
 C Plant network.
       common/C23/IFPNF,LPNF

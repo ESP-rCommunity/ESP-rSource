@@ -13551,9 +13551,6 @@ C G9 holds information on children of a surface.
       logical unixok
       logical newgeo
 
-C ICFGV   - version of the model configuration file.
-      common/CFGV/icfgv
-
 C For parameters:
       integer ier
       character act*1

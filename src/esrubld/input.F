@@ -137,8 +137,6 @@ C Path to model and command line file name.
       INTEGER :: IFCFG
       common/c6/indcfg
       INTEGER :: indcfg
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
       common/afn/iairn,laprob,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
