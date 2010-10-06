@@ -769,7 +769,7 @@ C embedded in the configuration file.
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:7).eq.'*aimpth')then
-          CALL EGETRM(OUTSTR,K,ctlpth,'W','path to aim2',IER)
+          CALL EGETRM(OUTSTR,K,aimpth,'W','path to aim2',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:7).eq.'*imgpth')then
