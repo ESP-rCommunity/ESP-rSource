@@ -327,7 +327,7 @@ C Open the materials, mlc & optics db.
       izgfoc = nznog(1)
 
 C Fictitious transmission threshhold.
-      ftr=0.999
+      ftr=0.997
 
 10    INO = -4
       ITEM(1) =       ' Toggles ...                   '
@@ -1032,7 +1032,7 @@ C Clear properties.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         if(ACT_1.eq.'i')then
-          call usrmsg(' ',outs,'-')
+            call usrmsg(' ',outs,'-')
             call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)

@@ -31,7 +31,8 @@ C EDCASCTL - edit casual gain control data.
 C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
-      
+#include "CFC_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -190,8 +191,8 @@ C Rescan geometry file.
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
-C Rescan zone Construction and TMC file 
-C (need to test blind/ shuter control flags).
+C Rescan zone Construction and TMC / CFC file 
+C (need to test blind/ shutter control flags).
       call FINDFIL(LTHRM(ICOMP),XST)
       if(XST)then
         CALL ECONST(LTHRM(ICOMP),IUF,ICOMP,0,IUOUT,IER)
@@ -200,8 +201,10 @@ C (need to test blind/ shuter control flags).
      &                     ICOMP,' blind control tracking not possible!'
          call edisp(iuout,outs)
       endif
-      if(ITW(ICOMP).eq.1)then
+      if(ITW(ICOMP).eq.1) then
         CALL ERTWIN(0,IUOUT,IUF,LTWIN(ICOMP),ICOMP,IER)
+      elseif (icfc(icomp).eq.1) then
+         ! do what?
       else
         write(outs,'(A,I3,A)') ' WARNING: No TMC file for zone ',ICOMP,
      &                        ' blind control tracking not possible!'
@@ -320,7 +323,8 @@ C In special case...
         m=m+1   
         write(ITEM(m),'(A)') '  TMC number & DF(s) for each photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
+c          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ') THEN ! should generally work with CFC, also ...
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(ITEM(m),'(A,I4,2X,F6.4,a)')key,II,DFDAT(ICOMP,N,II,1),
@@ -809,10 +813,11 @@ C Calculation type.
         elseif(irt.eq.2)then
           IDFST(ICOMP,N)=2
           ldcoef=.false.
-C Loop through all surfaces and find out number of TMCs:
+C Loop through all surfaces and find out number of TMCs / CFCs:
           ICOUNT=0
           do 47 i = 1, NSUR
-            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
+c            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
+            if(SOTF(I)(1:4).NE.'OPAQ') THEN  ! should work with CFC, also ...
               ICOUNT=ICOUNT+1              
             endif
 47        continue 
@@ -1017,9 +1022,9 @@ C Daylight coef method (5).
           UH(ICOMP,N,J)=af
           IDCFID(ICOMP,N,J)=ig
 
-C Check if blind/ shuter control active for this thermal zone and if yes
+C Check if blind/ shutter control active for this thermal zone and if yes
 C then set daylight coefficient stage number to 2 otherwise set to 1.
-C Loop through all TMC in the zone and determine blind and shuter control 
+C Loop through all TMC / CFC in the zone and determine blind and shutter control 
 C status.
           NDCFS(ig) = 1  
           DO 51 I=1,NSUR
@@ -1031,6 +1036,16 @@ C              write(6,*) 'TMC No. =',NTMC
            
               IF(IBCMT(ICOMP,NTMC).EQ.1) NDCFS(ig) = 2
 
+C Debug.
+C              write(6,*) 'Suface No. =',I
+C              write(6,*) 'Blind flag = ',IBCMT(ICOMP,NTMC)
+C Check for CFC ...
+            else if (icfcfl(icomp,i).gt.0) then
+              NTMC=ITMCFL(ICOMP,I)
+C Debug.
+C              write(6,*) 'CFC No. =',NTMC 
+
+              IF(IBCMT(ICOMP,NTMC).EQ.1) NDCFS(ig) = 2
 C Debug.
 C              write(6,*) 'Suface No. =',I
 C              write(6,*) 'Blind flag = ',IBCMT(ICOMP,NTMC)
