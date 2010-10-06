@@ -1085,6 +1085,7 @@ C Help text for this menu.
       elseif(ino.eq.nitems-1)then
         CALL PHELPD('folders and files',19,'-',0,0,IER)
       elseif(ino.eq.4)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to zones folder.'
           H(2)='For example `../zones`.'
@@ -1116,7 +1117,9 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','zon','geo',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.5)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to controls folder.'
           H(2)='For example `../ctl`.'
@@ -1136,9 +1139,11 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','ctl','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.6)then
+
         if(.NOT.browse)then
-          H(1)='Give relative path from cfg to controls folder.'
+          H(1)='Give relative path from cfg to AIM2 folder.'
           H(2)='For example `../aim2`.'
           t24=aimpth
           CALL EASKS(t24,'Relative path from cfg',
@@ -1156,7 +1161,9 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','aim2','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.7)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to networks folder.'
           H(2)='For example `../nets`.'
@@ -1178,7 +1185,9 @@ C            write(6,*) 'iier is ',iier,nli
           call browsefilelist('p','net','afn',sfile,snpfile,nli,iier)
           call browsefilelist('p','net','gnf',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.8)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to images folder.'
           H(2)='For example `../images`.'
@@ -1198,7 +1207,9 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','img','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.9)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to documents folder.'
           H(2)='For example `../docs`.'
@@ -1218,7 +1229,9 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','doc','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.10)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to temporary folder.'
           H(2)='For example `../tmp`.'
@@ -1239,7 +1252,9 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.11)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to Radiance folder.'
           H(2)='For example `../rad`.'
@@ -1259,7 +1274,11 @@ C            write(6,*) 'iier is ',iier,nli
           snpfile=' '
           call browsefilelist('p','rad','fil',sfile,snpfile,nli,iier)
         endif
+
       elseif(ino.eq.12)then
+
+C Users (currently) cannot alter dbspth.
+C << interface for dbspath here >>
         subpath=' '
         lnod=lnblnk(odir)
         write(subpath,'(4a)') odir(1:lnod),fs,
@@ -1270,7 +1289,9 @@ C            write(6,*) 'iier is ',iier,nli
         call getfilelist(subpath,action,listf,nwlistf,nlistf)
         call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
         call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
-      elseif(ino.eq.12)then
+
+      elseif(ino.eq.13)then
+
         if(.NOT.browse)then
           H(1)='Give relative path from cfg to hvac folder.'
           H(2)='For example `../hvac`.'
@@ -1291,9 +1312,7 @@ C            write(6,*) 'iier is ',iier,nli
           call browsefilelist('p','hva','hvac',sfile,snpfile,nli,iier)
         endif
 
-C << interface for dbspath here >>
-
-      elseif(ino.eq.14)then
+      elseif(ino.eq.15)then
 
 C Zone file composition.
         IC=-1
@@ -1305,13 +1324,13 @@ C Loop back and see if another zone is requested.
         IC=-1
         GOTO 254
 
-      elseif(ino.eq.15)then
+      elseif(ino.eq.16)then
 
 C Option to scan in current model files and then write them out
 C again, updating the file format as per value of igupgrade.
 C << to be done >>
 
-      elseif(ino.eq.17)then
+      elseif(ino.eq.18)then
 
 C List out an ASCII file.
         H(1)='The specified ASCII file will be read and displayed'
@@ -1328,7 +1347,7 @@ C List out an ASCII file.
      &                ' ASCII file. Try again?',OK,dok,1)
           IF(OK)GOTO 6
         ENDIF
-      elseif(ino.eq.18)then
+      elseif(ino.eq.19)then
 
 C Allow user to edit a file. Append to path if necessary.
 C If vi then spawn a new window to do the editing in.
@@ -1353,7 +1372,7 @@ C and change any / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
-      elseif(ino.eq.19)then
+      elseif(ino.eq.20)then
 
 C List files in corporate databases folder.
         sfile=' '
@@ -1363,7 +1382,7 @@ C List files in corporate databases folder.
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
         endif
-      elseif(ino.eq.20)then
+      elseif(ino.eq.21)then
 
 C List files in corporate climate folder..
         sfile=' '
