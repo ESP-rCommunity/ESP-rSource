@@ -40,6 +40,8 @@ C ******************************************************************************
 
 C---------------------------------------------------------------------------------
 C Declare parameters - For a detailed description of each parameter see aim2_module
+C The naming convention here is to put an i (for input) infront of each aim2_input
+C parameter.
 C---------------------------------------------------------------------------------
       INTEGER :: iairtight_type
       INTEGER :: iblower_door_input_option
@@ -829,6 +831,20 @@ C Get Pressure difference in Pa
             ELA_cm = Temp
              WRITE(DisplayString,'(A, F8.2, A)')
      &              'Equivalent air leakage area ',ELA_cm,' cm^2'
+            CALL EDISP(IUOUT,DisplayString)
+          ELSE
+            ELA_given = 0 !no input
+          ENDIF
+          Temp = ELA_Cd
+          IF (REQUAL(Temp,0.,.001))Temp=0.611
+          CALL EASKR(Temp,' ',
+     &      'Discharge coefficient for ELA?',0.,'F',1.
+     &      ,'W',0.611,'Discharge coefficient',IER,3)
+          IF (IER.EQ.0) THEN
+            ELA_given = 1 !input given
+            ELA_Cd = Temp
+             WRITE(DisplayString,'(A, F8.2)')
+     &              'Discharge coefficient for ELA ',ELA_Cd
             CALL EDISP(IUOUT,DisplayString)
           ELSE
             ELA_given = 0 !no input
@@ -1637,8 +1653,9 @@ C Write air tightness type and supplementary blower door data
      &          blower_door_input_option, ACH_50Pa, ELA_deltaP,
      &          OutString
           ELSE IF (blower_door_input_option.EQ.3) THEN
-            WRITE(OutString,'(2A,F8.2,A)')
-     &          TempString(1:lnblnk(TempString)),'ELA=',ELA_cm,' cm^2'
+            WRITE(OutString,'(2A,F8.2,A, F8.2)')
+     &          TempString(1:lnblnk(TempString)),' ELA=',ELA_cm,
+     &           ' cm^2; Cd=',ELA_Cd
             WRITE(AIM2_FUnit,'(2I3,4F7.2,6x,A)') airtight_type,
      &          blower_door_input_option, ACH_50Pa,ELA_deltaP, ELA_cm,
      &          ELA_Cd,OutString
@@ -1664,12 +1681,12 @@ C Write shielding and terrain data.
       DO i=1,2
         IF (i.EQ.1) THEN
           TestCase = AIM2_terrain_weather
-          OutString = '# Weather station terrain:'
+          OutString = '# Weather station terrain: '
         ELSE
           TestCase = AIM2_terrain_building
           TempString = OutString
           WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
-     &         ';   Building site terrain:'
+     &         ';   Building site terrain: '
         END IF
         SELECT CASE (TestCase)
           CASE (1)
@@ -1703,13 +1720,13 @@ C Write shielding and terrain data.
 
       DO i=1,2
         IF (i.EQ.1) THEN
-          TestCase = AIM2_terrain_weather
-          OutString = '# Wall shielding:'
+          TestCase = AIM2_wall_shielding
+          OutString = '# Wall shielding: '
         ELSE
-          TestCase = AIM2_terrain_building
+          TestCase = AIM2_flue_shielding
           TempString = OutString
           WRITE(OutString,'(2A)') TempString(1:lnblnk(TempString)),
-     &         ';   flue shielding:'
+     &         ';   flue shielding: '
         END IF
         SELECT CASE (TestCase)
           CASE (1)
@@ -1740,7 +1757,7 @@ C Write building eaves height.
 C Write diameters of furnace, fireplace, and DHW flues.
       WRITE(AIM2_FUnit,'(A)')
      &  '#---Flue diameters (mm)--------------------------------------'
-      TempString = '# Furnace, fire#1, fire#2,,dhw#1,dhw#2'
+      TempString = '# Furnace, fire#1, fire#2, dhw#1, dhw#2'
       WRITE(AIM2_FUnit,'(5F7.2,5x,A)')AIM2_furnace_flue,
      &  AIM2_fire_flue1,AIM2_fire_flue2,AIM2_DHW_flue1,AIM2_DHW_flue2,
      &  TempString
