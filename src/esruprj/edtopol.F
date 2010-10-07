@@ -56,7 +56,6 @@ C espriou.h provides currentfile.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)

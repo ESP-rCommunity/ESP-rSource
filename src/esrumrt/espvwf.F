@@ -76,7 +76,6 @@ C IEEE callback (Solaris)
 C Path to model.
       common/user/browse
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Indicator of possible focus zone.
@@ -115,7 +114,7 @@ C Name of current application
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,upath*72,cfgroot*24
+      character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
 

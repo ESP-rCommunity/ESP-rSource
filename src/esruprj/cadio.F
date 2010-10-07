@@ -854,6 +854,7 @@ C useraction (char 8) is passed in to specify the task.
 C ier (integer) is returned as 1 if no exemplars file found.
       subroutine rexmpl(iexfil,exemplar,useraction,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       
@@ -867,7 +868,6 @@ C espriou.h provides currentfile, defdbfl exemfl.
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       INTEGER :: INDFCG
-      common/uhome/upath
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
@@ -886,7 +886,7 @@ C to quit the image browser.
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
-      character doit*248,upath*72
+      character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
 
@@ -1538,7 +1538,6 @@ C provides LRADCF
       common/FILEP/IFIL
       INTEGER :: ifil
       common/rpath/path
-      common/uhome/upath
       
       COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
@@ -1610,7 +1609,7 @@ C The string buffer doit is only used within ifdef code.
 #ifdef MINGW
       character doit*248
 #endif
-      character path*72,upath*72,cfgroot*24,curdir*72
+      character path*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32

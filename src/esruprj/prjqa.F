@@ -132,8 +132,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
@@ -2270,7 +2268,6 @@ C not browsing.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
-      common/CFGV/icfgv
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
       common/p3ver/ip3ver(MCOM)

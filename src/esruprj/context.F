@@ -64,7 +64,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -1068,7 +1067,6 @@ C model including view and add images (delete not yet working).
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
       common/user/browse
 

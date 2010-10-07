@@ -34,6 +34,7 @@ C IPVCMD acts on command line IPV directives. Allows model to be
 C altered based on information held in IPV definition.
       subroutine IPVCMD(act,inf)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
 #include "espriou.h"
 #include "control.h"
@@ -51,7 +52,6 @@ C is a logical flag, .true. restricts update/save options
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -281,6 +281,7 @@ C Define information used in generating IPV.
 C If act = 'i' then initialise variables.
       subroutine ipvdat(act)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
@@ -304,7 +305,6 @@ C seasons.h provides typper and typsea
 
 C IPV description.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C Simulation parameter sets.
 C      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh

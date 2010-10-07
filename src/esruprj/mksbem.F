@@ -7404,10 +7404,9 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
       common/rpath/path
-      common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
-      character path*72,upath*72,lupath*72
+      character path*72,lupath*72
       character fs*1, col*1
       character BATCHFL*72
 
@@ -8542,10 +8541,9 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/rpath/path
-      common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
-      character path*72,upath*72,lupath*72
+      character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
@@ -13552,9 +13550,6 @@ C G9 holds information on children of a surface.
       character outs*124 ! for feedback
       logical unixok
       logical newgeo
-
-C ICFGV   - version of the model configuration file.
-      common/CFGV/icfgv
 
 C For parameters:
       integer ier

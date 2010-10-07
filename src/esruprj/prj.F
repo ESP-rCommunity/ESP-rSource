@@ -84,7 +84,6 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
@@ -100,7 +99,6 @@ C Ground topology.
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -161,7 +159,7 @@ C Name of current application
       character inf*144,inz*16,inzone*16,act_16*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,upath*72,cfgroot*24,exemplar*144
+      character path*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
@@ -1456,8 +1454,6 @@ C to include the path and create a string to drive the modules.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C Temporal header (to get its time frequency)
-      common/CFGV/icfgv
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
@@ -2428,6 +2424,7 @@ C << the longer string used when commissioning a simulation.
 
       subroutine ipvactions(ier)
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 
       integer lnblnk  ! function definition
@@ -2441,9 +2438,7 @@ C to include the path and create a string to drive the modules.
       common/appw/iappw,iappx,iappy
       common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
-      common/uhome/upath
       common/exporttg/xfile,tg,delim
-      common/CFGV/icfgv
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -2466,7 +2461,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
-      character ltpath*72,filen*72,ltmp*72,upath*72
+      character ltpath*72,filen*72,ltmp*72
       character basefile*144,variantfile*144,outs*124
       character word1*20,word2*40,word3*20,outstr*124
       character xfile*144,tg*1,delim*1,tab*1,fs*1
@@ -3789,13 +3784,13 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -4393,7 +4388,6 @@ C Path to model and command line file (if any).
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),

@@ -56,7 +56,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/CFGV/icfgv
       common/user/browse
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)

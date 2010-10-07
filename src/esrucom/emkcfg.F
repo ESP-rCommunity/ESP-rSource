@@ -85,8 +85,6 @@ c      PARAMETER (MSTMC=20,MSGAL=40)
 C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG

@@ -193,9 +193,6 @@ C CPCALC description
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
 
-      common/CFGV/icfgv
-      INTEGER :: icfgv
-
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
 

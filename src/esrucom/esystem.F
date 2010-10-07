@@ -252,8 +252,6 @@ C LPNF (72 char) plant network file name.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
-      common/CFGV/icfgv
-      INTEGER :: icfgv
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
@@ -471,7 +469,6 @@ C CPCALC pressure coef.
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
-      common/uhome/upath
       common/user/browse
 
 C Path to SHOCC input files
@@ -546,7 +543,7 @@ C Simulation parameters
       character gcepfile*72
       character dllsubr*12,dllmesg*124
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
-      character path*72,upath*72,lupath*72
+      character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
       character NWKTYPSTR*12,bidirfile*72,bidirname*12

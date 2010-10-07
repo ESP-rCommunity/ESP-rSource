@@ -854,7 +854,6 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       COMMON/BTIME/BTIMEP,BTIMEF
 
-      common/uhome/upath
       common/expath/runpath,pathtype
       common/filep/ifil
       COMMON/TC/ITC,ICNT
@@ -926,7 +925,7 @@ C Average illuminance in lighting zone (for h3k output)
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124,cfgroot*24
 
-      character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
+      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
 	  character*72 runpath
 	  character*24 pathtype
 

@@ -86,9 +86,6 @@ C Function definition
       INTEGER :: IZSTOCN
 
       common/user/browse
-      common/uhome/upath
-      common/CFGV/icfgv
-      INTEGER :: icfgv
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -158,7 +155,7 @@ C Uncertainty.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72
+      character selres*72,entflnam*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -626,14 +623,14 @@ C If explicit plant model is desired, continue to define an explicit plant netwo
             CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
      &                       'dereference',clkok,72,DPNF,
      &                        'plant network file',iser,9)
-            if(clkok)iclkok=2   ! notice dereference button
-            if(iser.eq.-3) goto 3  ! notice GTK cancel button
-          else
+              if(clkok)iclkok=2   ! notice dereference button
+              if(iser.eq.-3) goto 3  ! notice GTK cancel button
+            else
               CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
      &          'cancel','dereference',iclkok,72,DPNF,
      &          'plant network file',iser,9)
               if(iclkok.eq.1) goto 3    ! notice X11 cancel option
-          endif
+            endif
 
 C If user wishes to deselect the current file, reset name to
 C blank and save the configuration file.
@@ -746,7 +743,7 @@ C Flow description.
         H(24)='Flow networks may be defined by selecting components'
         H(25)='from a menu or by graphical manipulation.'
         call EASKATOG('Define air flow via:',' ',
-     &    'empirical air inflitration model','schedule',
+     &    'empirical air infiltration model','schedule',
      &     'flow network (menu)','flow network (graphic)',
      &    'cancel',' ',' ',IW,25)
 
@@ -4140,25 +4137,23 @@ C << this duplicates opts within the model export facility >>
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act_1,ier)
 #include "building.h"
-#include "e2r_common.h"
-
+#include "model.h"
+#include "CFC_common.h"
+      
       integer lnblnk  ! function definition
 
 C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth,hvacpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character dradcf*72,LCFGF*72,OUTSTR*124
+      character lradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
       character doit*124,tmode*8,H*72,act_1*1
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
-     &          bsmpth*24,hvacpth*24
+      character fs*1
+      character longtfile*124
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -4260,9 +4255,9 @@ C files is ./ then update this to ../rad and create a folder.
           H(2)='model for Radiance as well as the purpose of various'
           H(3)='scenes (general viewing, daylight appraisal etc.).'
           ltmp=lradcf
-          dradcf='scene.rcf'
+          lradcf='scene.rcf'
           CALL EASKS(ltmp,' Radiance scene file for this model?',
-     &     '  ',72,dradcf,'Radiance scene file name',IER,3)
+     &     '  ',72,lradcf,'Radiance scene file name',IER,3)
           if(ltmp.eq.' ')goto 319 
 
 C rcf name OK, therefore save cfg file and start e2r.

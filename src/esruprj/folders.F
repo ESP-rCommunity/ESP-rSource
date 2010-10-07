@@ -54,7 +54,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/PREC8/SLAT,SLON
       common/rpath/path
       common/rcmd/LCMDFL
@@ -171,7 +170,7 @@ C which should not be cleared.
       endif
 
 C User did not cancel so instantiate data for new model.
-C At some point switch from default version 3 to v4.
+C Current default version is v4.
       icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
       if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
@@ -1523,7 +1522,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/pophelp/h(60)
       common/rpath/path
 
-      common/CFGV/icfgv
       common/user/browse
 
 C CFD

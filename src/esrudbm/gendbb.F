@@ -1509,12 +1509,13 @@ C ************* recongdb
 C recongdb reconfigure a generic db (change its length) via exporting to ascii 
 C and re-importing. If no errors it exits with IFB still open.
       subroutine recongdb(IAF,IFB,LFB,idbh,IER)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/uhome/upath
 
 C Backup of documentation (for editing).
       common/tmpdocc/bkascidb
@@ -1525,7 +1526,7 @@ C Backup of documentation (for editing).
      &              dbdoc(10)
 
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72,db*12
-      character bkascidb*72,fs*1,upath*72,tfile*72,LFB*72
+      character bkascidb*72,fs*1,tfile*72,LFB*72
       logical XST,unixok
 
 C First remove any existing temporary ascii file.

@@ -51,7 +51,6 @@ C espriou.h for parameter MFFOLD
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/uhome/upath
       common/rpath/path
 
 C Where ESP-r was installed (as recorded when it was compiled).
@@ -86,7 +85,7 @@ C   `hva` hvac files.
 
       dimension nwlistf(MFFOLD),ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
-      character*72 upath,path,odir
+      character*72 path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1,act*1
       character dinstpath*48

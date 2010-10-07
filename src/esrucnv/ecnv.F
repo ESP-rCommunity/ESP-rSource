@@ -63,14 +63,12 @@ C ESP-r commons.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/rpath/path
-      common/uhome/upath
       common/FILEP/IFIL
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C6/INDCFG
-      common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -99,7 +97,7 @@ C Name of current application
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      character path*72,upath*72
+      character path*72
       character upgcfg*72
 
       character cfgroot*24,dstmp*24,MODE*4
@@ -1413,7 +1411,6 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       COMMON/LOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
