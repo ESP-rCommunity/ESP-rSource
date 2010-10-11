@@ -1580,51 +1580,54 @@ C information.
               ZPL(K)=Z(JVN(J,K))
   201       CONTINUE
 
-C Continue only if this surface is vertical, is TMC or CFC, has 4 vertices
-C and is connected to either the exterior or another real zone.  
+C Continue only if this surface is (nearly) vertical, is TMC or CFC, 
+c === 11.10.2010 === comment out all the warnings (lines 1593 - 1628) which
+c   seem to be superfluous. No "bounding box" seems to be calculated in below
+c   code block, no "width" and "height" are calculated, either, it seems (A.G.).
+C has 4 vertices and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
             IF(ITMCFL(ICOMP,J).GT.0 .or. ICFCFL(ICOMP,J).gt.0) THEN
 c              call eclose(PELV(ICOMP,J),0.00,0.70,close)
 c Hack - allow tilt angles of up to 20° from the vertical
 c should be removed ...
               call eclose(PELV(ICOMP,J),0.00,20.00,close)
-              IF(close)THEN
-                IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
-                  WRITE(ITU,843) zname(icomp),J
-  843             format('Zone ',A,'TMC surf ',I2,' not 4 vertices!')
+              IF (close) THEN
+c                IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
+c                  WRITE(ITU,843) zname(icomp),J
+c  843             format('Zone ',A,'TMC surf ',I2,' not 4 vertices!')
 
 C This would be a good place to calculate an alternative bounding box
 C for use in width/height calculations.
 C << to be done >>
-                ENDIF
+c                ENDIF
 
 C Test if the TMC is rectangular and calculate window width
 C and high WIDTH, HIGH:
-                call eclose(XPL(1),XPL(2),0.01,closea)
-                call eclose(XPL(1),XPL(3),0.01,closeb)
-                call eclose(XPL(1),XPL(4),0.01,closec)
-                call eclose(YPL(1),YPL(2),0.01,closed)
-                call eclose(YPL(1),YPL(3),0.01,closee)
-                call eclose(YPL(1),YPL(4),0.01,closef)
-                call eclose(ZPL(1),ZPL(2),0.01,closeg)
-                call eclose(ZPL(1),ZPL(3),0.01,closeh)
-                call eclose(ZPL(1),ZPL(4),0.01,closei)
-                IF(closea.OR.closeb.OR.closec)THEN
-                  IF(closed.OR.closee.OR.closef)THEN
-                    IF(closeg.OR.closeh.OR.closei)THEN
-                      CONTINUE
-                    ELSE
-                      WRITE(ITU,842)ICOMP,J
-                    ENDIF      
-                  ELSE
-                    WRITE(ITU,842)ICOMP,J
-                  ENDIF
-                ELSE
-                  if(IDFST(ICOMP,N).ne.2)then
-                    WRITE(ITU,842) zname(icomp),J
-  842             format('Zone ',A,'TMC',I2,' may not be rectangular!')
-                  endif
-                ENDIF 
+c                call eclose(XPL(1),XPL(2),0.01,closea)
+c                call eclose(XPL(1),XPL(3),0.01,closeb)
+c                call eclose(XPL(1),XPL(4),0.01,closec)
+c                call eclose(YPL(1),YPL(2),0.01,closed)
+c                call eclose(YPL(1),YPL(3),0.01,closee)
+c                call eclose(YPL(1),YPL(4),0.01,closef)
+c                call eclose(ZPL(1),ZPL(2),0.01,closeg)
+c                call eclose(ZPL(1),ZPL(3),0.01,closeh)
+c                call eclose(ZPL(1),ZPL(4),0.01,closei)
+c                IF(closea.OR.closeb.OR.closec)THEN
+c                  IF(closed.OR.closee.OR.closef)THEN
+c                    IF(closeg.OR.closeh.OR.closei)THEN
+c                      CONTINUE
+c                    ELSE
+c                      WRITE(ITU,842)ICOMP,J
+c                    ENDIF      
+c                  ELSE
+c                    WRITE(ITU,842)ICOMP,J
+c                  ENDIF
+c                ELSE
+c                  if(IDFST(ICOMP,N).ne.2)then
+c                    WRITE(ITU,842) zname(icomp),J
+c  842             format('Zone ',A,'TMC',I2,' may not be rectangular!')
+c                  endif
+c                ENDIF 
 
                 IF((IES.EQ.0).OR.(IES.EQ.3))THEN
                   IF((IES.EQ.3).AND.(IDFST(ICOMP,N).NE.2))THEN
@@ -1743,12 +1746,12 @@ C glazing and get current visible transmission of glazing.
                   suma=suma+subT
                   sumJ=sumJ+subT
                 ENDIF
-              ELSE
+              ELSE ! not (close), i.e. not "vertical"
                 if(IDFST(ICOMP,N).ne.2)then
                   WRITE(ITU,844) zname(icomp),J
   844             format('Zone ',A,'TMC',I2,
      &               'is not vertical-no dir illum!')
-                  endif
+                endif
                 CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
                 suncon=0.
                 skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF
