@@ -2191,14 +2191,14 @@ C Calcalate the sums and statistics to display during relevant period.
         if(act(1:1).ne.'i') then
           write(outs,66)IZ,zname(IZ),ZHE,ZHTIME,ZCE,Zctime,ZLHE,
      &      ZLHTIME,ZLCE,zlctime
-   66     format(I3,1X,A12,4(F11.2,F7.1))
+   66     format(I3,1X,A12,4(F13.2,F7.1))
           call eddisp(itru,outs)
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
         write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &    tzlctime
-   67   format(1X,'   All',9X,4(F11.2,F7.1))
+   67   format(1X,'   All',9X,4(F15.2,F10.1))
         call edisp(itru,' ')
         call eddisp(itru,outs)
         call edisp(itru,' ')
