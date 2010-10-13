@@ -2221,7 +2221,7 @@ C do not allow this set name to be changed.
           isstupt=isstup
           CALL EASKI(isstupt,' ',
      &       'Pre-simulation start-up period (days)?',
-     &       0,'F',100,'W',ITCNST,'presimulation days',IERI,2)
+     &       0,'F',300,'W',ITCNST,'presimulation days',IERI,4)
           if(ieri.eq.-3)then
             continue
           else
