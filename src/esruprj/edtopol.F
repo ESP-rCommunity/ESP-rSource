@@ -197,41 +197,41 @@ C surface attribute.
       write(ITEMS1(1),'(a,i4,a)')' Connections (',ncon,')'
       ITEMS1(2)=   '  ______________________      '
       ITEMS1(3)=   'b set vertex `close` tolerance'
-      ITEMS1(4)=   '  confirm if (already):       '
+      ITEMS1(4)=   '  confirm if (already marked):'
       if(M1SKP)then
-        ITEMS1(5)= 'c   marked identical : No     '
+        ITEMS1(5)= 'c   marked as identical : No  '
       else
-        ITEMS1(5)= 'c   marked identical : Yes    '
+        ITEMS1(5)= 'c   marked as identical : Yes '
       endif
       if(M2SKP)then
-        ITEMS1(6)= 'd   marked constant  : No     '
+        ITEMS1(6)= 'd   marked as constant  : No  '
       else
-        ITEMS1(6)= 'd   marked constant  : Yes    '
+        ITEMS1(6)= 'd   marked as constant  : Yes '
       endif
       if(M3SKP)then
-        ITEMS1(7)= 'e   marked partition : No     '
+        ITEMS1(7)= 'e   marked as partition : No  '
       else
-        ITEMS1(7)= 'e   marked partition : Yes    '
+        ITEMS1(7)= 'e   marked as partition : Yes '
       endif
       if(M4SKP)then
-        ITEMS1(8)= 'f   marked ground    : No     '
+        ITEMS1(8)= 'f   marked as ground    : No  '
       else
-        ITEMS1(8)= 'f   marked ground    : Yes    '
+        ITEMS1(8)= 'f   marked as ground    : Yes '
       endif
       if(M5SKP)then
-        ITEMS1(9)= 'g   marked adiabatic : No     '
+        ITEMS1(9)= 'g   marked as adiabatic : No  '
       else
-        ITEMS1(9)= 'g   marked adiabatic : Yes    '
+        ITEMS1(9)= 'g   marked as adiabatic : Yes '
       endif
       if(M6SKP)then
-        ITEMS1(10)='h   marked BASESIMP  : No     '
+        ITEMS1(10)='h   marked as BASESIMP  : No  '
       else
-        ITEMS1(10)='h   marked BASESIMP  : Yes    '
+        ITEMS1(10)='h   marked as BASESIMP  : Yes '
       endif
       if(M7SKP)then
-        ITEMS1(11)='h   marked IDENT_CEN  : No    '
+        ITEMS1(11)='h   marked as IDENT_CEN : No  '
       else
-        ITEMS1(11)='h   marked IDENT_CEN  : Yes   '
+        ITEMS1(11)='h   marked as IDENT_CEN : Yes '
       endif
       if(M0SKP)then
         ITEMS1(12)='i   if no match found: No     '

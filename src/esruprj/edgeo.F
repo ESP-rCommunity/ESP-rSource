@@ -2861,7 +2861,7 @@ C surfaces are presented even if only ilimit can be copied.
 C Note: use display width of 41 char.
           H(1)='Pick one or more surfaces from the zone (up to'
           H(2)='the limit indicated).'
-          write(msg1,'(a,i2,a)') '(up to ',ilimit,')'
+          write(msg1,'(a,i3,a)') '(up to ',ilimit,')'
           write(msg2,'(2a)') 'surfaces in ',zname(izone)
           CALL EPICKS(INPIC,IVALS,'Which surfaces?',msg1,
      &      41,NZSUR(IZONE),STMP,msg2,IER,2)
@@ -5273,7 +5273,7 @@ C current zone.
 C Find distance and report.
           tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &      Y(IWHICH2),Z(IWHICH2))
-          write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v ',
+          write(outs,'(a,i3,a,i3,a,f9.4)') ' Distance between v ',
      &      IWHICH1,' & v ',IWHICH2,' =',tdis
           call edisp(itru,outs)
 
@@ -5319,7 +5319,7 @@ C Distance between two vertices (based on current G1 common block).
      &        Y(IWHICH2),Z(IWHICH2))
             call ln2az(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2),az,el)
-            write(outs,'(a,i2,a,i2,a,f9.4,a,f8.3,a,f7.3)')
+            write(outs,'(a,i3,a,i3,a,f9.4,a,f8.3,a,f7.3)')
      &        ' Distance between v ',IWHICH1,' & v ',IWHICH2,' =',vdis,
      &        ' @ aimuth ',az,' & elev ',el
             call edisp(itru,outs)
@@ -5543,7 +5543,7 @@ C Show the new point on the current wireframe.
 C Ask if it should be added.
                 if(NTV.lt.MTV)then
                   h(1)='This can become a new vertex. '
-                  write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
+                  write(outs,'(a,i3,a)') 'Make vertex ',NTV+1,' a:'
                   CALL EASKABC(' ',outs,'new vertex',
      &              'new vertex after editing','cancel',INVT,1)
                   if(INVT.eq.1)then
@@ -5561,7 +5561,7 @@ C Ask if it should be added.
                     WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
                     H(1)='The vertex coordinates should be in metres. '
                     H(2)='It is not advisable for Z to be negative.'
-                    write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z(m):'
+                    write(outs,'(a,i3,a)')' Vertex (',ntv,') X Y Z(m):'
   136               CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',
      &                IER,2)
                     K=0
@@ -5616,7 +5616,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 447
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',jwhich3,' @',X(jwhich3),Y(jwhich3),
      &                Z(jwhich3),' is close (',offset,') to edge ',
      &                jWHICH1,' &',jWHICH2,' of surface ',
@@ -5698,7 +5698,7 @@ C Distance between point and a line (based on current G1 common block).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
           call edisp(itru,outs)
@@ -5736,7 +5736,7 @@ C block data).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
            call edisp(itru,outs)
@@ -5798,7 +5798,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 347
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
@@ -5860,7 +5860,7 @@ C Find close vertices.
                   tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
                   if(tdis.lt.0.05)then
-                  write(outs,'(2a,i2,a,f9.4,a)') headv(1:lnblnk(headv)),
+                  write(outs,'(2a,i3,a,f9.4,a)') headv(1:lnblnk(headv)),
      &              ' is close to vert ',IWHICH2,' (',tdis,'m).'
                   call edisp(itru,outs)
                   endif
@@ -5882,7 +5882,7 @@ C Find close vertices.
                   tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
                   if(tdis.lt.0.05)then
-           write(outs,'(2a,i2,a,f9.4,a,3F10.4)') headv(1:lnblnk(headv)),
+           write(outs,'(2a,i3,a,f9.4,a,3F10.4)') headv(1:lnblnk(headv)),
      &       ' close to v ',IWHICH2,' (',tdis,'m) @ XYZ:',X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2)
                     call edisp(itru,outs)
@@ -5908,7 +5908,7 @@ C Move an existing vertex along an existing line.
             iwhich2=IVLST(2)
             tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2))
-            write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v',
+            write(outs,'(a,i3,a,i3,a,f9.4)') ' Distance between v',
      &        IWHICH1,' & v',IWHICH2,' =',tdis
             call edisp(itru,outs)
             call edisp(itru,' ')
@@ -5969,7 +5969,7 @@ C applied to the 'a' 'c' and 'f' options.
         if(ino.eq.1.or.ino.eq.3.or.ino.eq.5)then
           if(NTV.lt.MTV)then
             h(1)='This can become a new vertex. '
-            write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
+            write(outs,'(a,i3,a)') 'Make vertex ',NTV+1,' a:'
             CALL EASKABC(' ',outs,'new vertex',
      &        'new vertex after editing','cancel',INVT,1)
             if(INVT.eq.1)then
@@ -5987,7 +5987,7 @@ C applied to the 'a' 'c' and 'f' options.
               WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
-              write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z (m):'
+              write(outs,'(a,i3,a)')' Vertex (',ntv,') X Y Z (m):'
   43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
@@ -6034,7 +6034,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',X(NTV),Y(NTV),
      &                Z(NTV),' is close (',offset,') to edge ',
      &                IWHICH1,' &',IWHICH2,' of surface ',
@@ -6132,7 +6132,7 @@ C Tidy up the wireframe image.
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Alter vertex list by deleting/ copy / replicate / editing.
-        write(H(1),'(A,I2,A)')' Up to ',MTV-NTV,
+        write(H(1),'(A,I3,A)')' Up to ',MTV-NTV,
      &    ' vertices may be added or copied.'
         H(2)='If a new vertex is a minor variation of an existing '
         H(3)='point then it may be easier to copy and then edit. '
@@ -6274,7 +6274,7 @@ C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
-              write(outs,'(a,i2,a)')
+              write(outs,'(a,i3,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
  146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,2)
@@ -6309,7 +6309,7 @@ C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
-        write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
+        write(outs,'(a,i3,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
   42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
