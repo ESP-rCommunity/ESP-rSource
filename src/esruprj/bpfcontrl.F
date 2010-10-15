@@ -7368,7 +7368,7 @@ C the new menu structure return to the calling subroutine.
               cmlocal(1)=0.0        ! this swap is supported, major menu change.
               goto 90
             elseif(iclaw.eq.4)then
-              cmlocal(1)=4.0        ! this swap is supported, major menu change.
+              cmlocal(1)=5.0        ! this swap is supported, major menu change.
               cmlocal(2)=1000.0     ! reset to default values
               cmlocal(3)=1000.0
               cmlocal(4)=20.0
@@ -8117,8 +8117,10 @@ C Depending on the current number of miscel items also do humidity.
           H(7)='Heating (or cooling) may be disabled by setting a'
           H(8)='correspondingly low (or high) set point or by setting'
           H(9)='the corresponding capacity to zero.'
-          nctlhelp=9
-          nmenulines=5    ! set to the last cm index used.
+          H(10)=' '
+          H(11)='The capacity given can be either in W or in W/m2.'
+          nctlhelp=11
+          nmenulines=6    ! set to the last cm index used.
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -8134,10 +8136,14 @@ C Depending on the current number of miscel items also do humidity.
           prompt1(4)='Heating setpoint (C) below which heating will '
           prompt2(4)='be called for '
           ndec(4)=3; vmin(4)=0.0; vmax(4)=100.0; vdef(4)=20.0
-          menu(5)='Cooling setopoint (C) '
+          menu(5)='Cooling setpoint (C) '
           prompt1(5)='Cooling setopoint (C) above which cooling will '
           prompt2(5)='be called for '
           ndec(5)=3; vmin(5)=0.0; vmax(5)=100.0; vdef(5)=24.0
+          menu(6)='Flag: [W] (0) [W/m2] (1) '
+          prompt1(6)='Flag for injection unit W (0) or W/m2 (1) '
+          prompt2(6)='which is used '
+          ndec(6)=3; vmin(6)=0.0; vmax(6)=1.0; vdef(6)=0.0
         elseif(iclaw.eq.5)then
           h(1)='This implements an ideal proportional (P) controller'
           h(2)='with optional integral (I) and/or derivative (D)'

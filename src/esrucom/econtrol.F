@@ -2721,11 +2721,13 @@ C          call edisp248(6,message,80)
           cm(3)=bmiscd(II,JJ,KK,3)
           cm(4)=bmiscd(II,JJ,KK,4)
           cm(5)=bmiscd(II,JJ,KK,5)
-          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a)') 
+          cm(6)=bmiscd(II,JJ,KK,6) ! flag for W (0) or W/m2 (1)
+          write(lmsg,'(a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f9.1,a)') 
      &      ' fixed injection/extraction: heating injection ',cm(2),
      &      'W cooling extraction ',cm(3),
      &      'W. Heating setpoint ',cm(4),
-     &      'C cooling setpoint ',cm(5),'C.'
+     &      'C cooling setpoint ',cm(5),
+     &      'C flag W(0) or W/m2 (1) ',cm(6),'-.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.5)then

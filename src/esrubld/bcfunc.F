@@ -1678,6 +1678,7 @@ C A fixed heat injection/extraction controller.
 
       SUBROUTINE BCL04
 #include "building.h"
+#include "geometry.h" ! for zbasea()
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -1691,15 +1692,18 @@ C Description of zone control action.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
      &                         fHeatSetpoint, fCoolSetpoint
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM), close1
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 
+      real FLG
+	  
       CHARACTER OUTS*124
 
 C Fatal error test.
-      IF(BMISCD(ICF,IDTYP,IPER,1).LT.4.0)GOTO 99
+      IF(BMISCD(ICF,IDTYP,IPER,1).LT.5.0)GOTO 99
 
+      close1=.false.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
@@ -1728,15 +1732,24 @@ C Determine sensed temperature.
         return
       endif
 
-C QH  = heating capacity (W)
-C QC  = cooling capacity (W)
+C QH  = heating capacity (W) / (W/m2)
+C QC  = cooling capacity (W) / (W/m2)
 C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
+c FLG = flag for capacity data unit, 0 => W, 1 => W/m2
+      FLG=BMISCD(ICF,IDTYP,IPER,6)
 
       QH=BMISCD(ICF,IDTYP,IPER,2)
       QC=-BMISCD(ICF,IDTYP,IPER,3)
+
+      call eclose(FLG,1.0,0.01,close1)
+      if (close1) then
+        QH=QH*zbasea(IICOMP)
+        QC=QC*zbasea(IICOMP)
+      endif
       HSP=BMISCD(ICF,IDTYP,IPER,4)
       CSP=BMISCD(ICF,IDTYP,IPER,5)
+
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 
 C Is temp. too high ?
