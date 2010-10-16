@@ -1247,6 +1247,8 @@ C profile has not been defined.
                   do 21 igrdp=1,mgrdp
                     CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
                     if(.NOT.close)then
+                      WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+                      call edisp(iuout,outs)
                       WRITE(OUTS,'(I2,12F5.1)')igrdp,
      &                  (GRDTMP(JG,IGRDP),JG=1,12)
                       call edisp(iuout,outs)
@@ -1260,7 +1262,7 @@ C profile has not been defined.
                   H(6)='-3  a connection to a 3D ground model.'
                   iic2=ic2(IC)
   777             CALL EASKI(IIC2,' Monthly (standard) profile index?',
-     &              ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &              ' ',1,'F',mgrdp,'F',1,'ground profile',IER,7)
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=4

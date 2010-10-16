@@ -957,6 +957,8 @@ C profile has not been defined.
               do 21 igrdp=1,mgrdp
                 CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
                 if(.NOT.close)then
+                 WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+                 call edisp(iuout,outs)
                  WRITE(OUTS,'(I2,12F5.1)')igrdp,(GRDTMP(J,IGRDP),J=1,12)
                  call edisp(iuout,outs)
                 endif
@@ -969,7 +971,7 @@ C profile has not been defined.
               H(6)='     required.'
               H(7)=' =-3 connection to a 3D ground model.'
               CALL EASKI(IIC2,' ','Standard ground profile number?',
-     &                  1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  1,'F',mgrdp,'F',1,'ground profile',IERI,7)
               if(ieri.eq.-3) goto 3
             elseif(IOS.EQ.6)then
 
@@ -3758,6 +3760,8 @@ C profile has not been defined.
           do 21 igrdp=1,mgrdp
             CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
             if(.NOT.close)then
+              WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+              call edisp(iuout,outs)
               WRITE(OUTS,'(I2,12F5.1)')igrdp,(GRDTMP(J,IGRDP),J=1,12)
               call edisp(iuout,outs)
             endif
@@ -3775,7 +3779,7 @@ C the action make no changes and jump back to 13 (the menu creation code).
           H(7)=' =-3 connection to a 3D ground model.'
           iic2=ic2(IC)
   777     CALL EASKI(IIC2,' ','Standard ground profile number?',
-     &                  1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  1,'F',mgrdp,'F',1,'ground profile',IERI,7)
           IF(IIC2.GT.0)THEN
             if(ieri.eq.0)then
               IC2(IC)=iic2
@@ -4199,11 +4203,12 @@ C Setup array of menu strings.
         useopt(8) ='WINDOW DISPLAY '
         useopt(9) ='WINDOW SKYLIGHT'
         useopt(10)='WINDOW FRAME'
-        useopt(11)='something else'
+        useopt(11)='FLOOR (foundation/ground) '
+        useopt(12)='something else'
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,11,useopt,'surface USAGE options',IER,34)
+     &         32,12,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
         if(IOS.eq.1)then
@@ -4227,6 +4232,8 @@ C Setup array of menu strings.
         elseif(IOS.eq.10)then
           iuopt=8
         elseif(IOS.eq.11)then
+          iuopt=6
+        elseif(IOS.eq.12)then
           iuopt=23
         endif
 
@@ -4506,6 +4513,7 @@ C Do not need second tag if generating notional model
           continue
         endif
       endif
+
       if(iuopt.eq.6)then
         SUSE(IS,1)='FLOOR'
         SSUSE(IC,1)='FLOOR'
@@ -4524,6 +4532,11 @@ C Do not need second tag if generating notional model
       elseif(iuopt.eq.9)then
         SUSE(IS,1)='FRAME'
         SSUSE(IC,1)='FRAME'
+      endif
+      if(guesstype(1:8).eq.'notional')then
+        SUSE(IS,2)='-'
+        SSUSE(IC,2)='-'
+        goto 57
       endif
       if(iuopt.eq.8.or.iuopt.eq.9)then
         h(1)='Closed signals to other parts of ESP-r that air '
@@ -4558,7 +4571,7 @@ C Do not need second tag if generating notional model
         endif
       endif
 
-      if(iuopt.eq.10)then
+  57  if(iuopt.eq.10)then
         SUSE(IS,1)='FURNI'
         SSUSE(IC,1)='FURNI'
         SUSE(IS,2)='- '
@@ -8518,11 +8531,16 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "sbem.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+C bridgelen was calculated in subroutine uredgeadj
+      real bridglen ! Length of potential thermal bridges in each zone.
+      common/gbridge/bridgelen(MCOM,10)
 
 C Thermal bridge common block: 
 C nbrdg is the number of thermal bridge types in the zone
@@ -8573,6 +8591,8 @@ C   losspercent and is assumed to apply to all zones in the model.
       integer ISDN,INODA ! max items and current menu item
       real defpsi     ! default value for psi
       dimension defpsi(16)
+      real lenpsi     ! default value for length based on bridgelen.
+      dimension lenpsi(16)
       real zerolen,zeropsi  ! for bridge types that have yet to be used.
       logical foundit
 
@@ -8584,71 +8604,256 @@ C   losspercent and is assumed to apply to all zones in the model.
       zeropsi=0.0
       lookfor=0
 
+C Report on estimated lengths of thermal bridges from suredgeadj
+       call edisp(iuout,'Based on surface form & boundary conditions:')
+       write(outs,'(a,f7.2)')'bridge length roof-wall:',
+     &   bridgelen(icomp,1)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length wall-ground:',
+     &   bridgelen(icomp,2)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
+     &   bridgelen(icomp,3)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
+     &   bridgelen(icomp,4)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length ext floor downward facing:',
+     &   bridgelen(icomp,5)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length door & window lintels ',
+     &   bridgelen(icomp,6)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length door & window sills ',
+     &   bridgelen(icomp,7)
+       call edisp(iuout,outs)
+       write(outs,'(a,f7.2)')'bridge length door & window jambs ',
+     &   bridgelen(icomp,8)
+       call edisp(iuout,outs)
+       call edisp(iuout,
+     &   'Use these suggested lengths. You can also add more types.')
+
 C Setup phrases for the menu and for editing length and psi values.
       phrasemenu(1) ='a roof-wall                    :'
       phraselen(1)  ='roof-wall '
       phrasepsi(1)  ='roof-wall '
       defpsi(1)=0.12
+      lenpsi(1)=bridgelen(icomp,1)
       phrasemenu(2) ='b wall-ground floor            :'
       phraselen(2)  ='wall-ground floor '
       phrasepsi(2)  ='wall-ground floor '
       defpsi(2)=0.16
+      lenpsi(2)=bridgelen(icomp,2)
       phrasemenu(3) ='c wall-wall (convex corner)    :'
       phraselen(3)  ='wall-wall (convex corner) '
       phrasepsi(3)  ='wall-wall (convex corner) '
       defpsi(3)=0.09
+      lenpsi(3)=bridgelen(icomp,3)
       phrasemenu(4) ='d wall-wall (concave corner)   :'
       phraselen(4)  ='wall-wall (concave corner) '
       phrasepsi(4)  ='wall-wall (concave corner) '
       defpsi(4)= -0.09
+      lenpsi(4)=bridgelen(icomp,4)
       phrasemenu(5) ='e wall-floor (not ground floor):'
       phraselen(5)  ='wall-floor (not ground floor) '
       phrasepsi(5)  ='wall-floor (not ground floor) '
       defpsi(5)=0.07
+      lenpsi(5)=bridgelen(icomp,5)
       phrasemenu(6) ='f lintel above window or door  :'
       phraselen(6)  ='lintel above window or door '
       phrasepsi(6)  ='lintel above window or door '
       defpsi(6)=0.3
+      lenpsi(6)=bridgelen(icomp,6)
       phrasemenu(7) ='g Sill below window            :'
       phraselen(7)  ='Sill below window '
       phrasepsi(7)  ='Sill below window '
       defpsi(7)=0.04
+      lenpsi(7)=bridgelen(icomp,7)
       phrasemenu(8) ='h jamb at window or door       :'
       phraselen(8)  ='jamb at window or door '
       phrasepsi(8)  ='jamb at window or door '
       defpsi(8)=0.05
+      lenpsi(8)=bridgelen(icomp,8)
       phrasemenu(9) ='i roof-wall                    :'
       phraselen(9)  ='roof-wall-mc'
       phrasepsi(9)  ='roof-wall-mc'
-      defpsi(9)=0.6
+      defpsi(9)=0.28
+      lenpsi(9)=bridgelen(icomp,1)
       phrasemenu(10)='j wall-ground floor            :'
       phraselen(10) ='wall-ground floor-mc'
       phrasepsi(10) ='wall-ground floor-mc'
       defpsi(10)=1.15
+      lenpsi(10)=bridgelen(icomp,2)
       phrasemenu(11)='k wall-wall (corner)-          :'
       phraselen(11) ='wall-wall (corner)-mc'
       phrasepsi(11) ='wall-wall (corner)-mc'
       defpsi(11)=0.25
+      lenpsi(11)=bridgelen(icomp,3)+bridgelen(icomp,4)
       phrasemenu(12)='l wall-floor (not ground floor):'
       phraselen(12) ='wall-floor (not ground floor)-mc'
       phrasepsi(12) ='wall-floor (not ground floor)-mc'
       defpsi(12)=0.07
+      lenpsi(12)=bridgelen(icomp,5)
       phrasemenu(13)='m lintel above window or door  :'
       phraselen(13) ='lintel above window or door-mc'
       phrasepsi(13) ='lintel above window or door-mc'
       defpsi(13)=1.27
+      lenpsi(13)=bridgelen(icomp,6)
       phrasemenu(14)='n Sill below window            :'
       phraselen(14) ='Sill below window-mc'
       phrasepsi(14) ='Sill below window-mc'
       defpsi(14)=1.27
+      lenpsi(14)=bridgelen(icomp,7)
       phrasemenu(15)='o jamb at window or door       :'
       phraselen(15) ='jamb at window or door-mc'
       phrasepsi(15) ='jamb at window or door-mc'
       defpsi(15)=1.27
+      lenpsi(15)=bridgelen(icomp,8)
       phrasemenu(16)='p user-defined                 :'
       phraselen(16) ='user-defined'
       phrasepsi(16) ='user-defined'
       defpsi(16)=0.00
+      lenpsi(16)=1.0
+
+C If the UK NCM facility is active ask the user whether facade
+C has metal cladding or not and then set the relevant lengths.
+      if(nbrdg(icomp).eq.0)then
+        if(ISBEM.EQ.1)then
+          h(1)='The underlying assumptions about heat flows via'
+          h(2)='thermal bridges depend on whether the facade uses'
+          h(3)='metal cladding. '
+          h(4)=' '
+          h(5)='Initial values will be setup based on the geometry of'
+          h(6)='the room as well as the boundary conditions and the'
+          h(7)='surface use attributes.  IF YOU HAVE NOT YET set the'
+          h(8)='boundary conditions or the surface use attributes for'
+          h(9)='this zone you should do that first (choose exit). '
+          CALL EASKABC('This zone:','(see help)','uses metal cladding',
+     &                 'no metal cladding','exit',INVT,9)
+          if(INVT.eq.1)then
+            continue
+          elseif(INVT.eq.2)then
+            continue
+          elseif(INVT.eq.3)then
+            return
+          endif
+        else
+          h(1)='The underlying assumptions about heat flows via '
+          h(2)='thermal bridges depend on whether the facade uses'
+          h(3)='metal cladding. You can setup thermal bridge'
+          h(4)='definitions to fit the specifics of your design. '
+          h(5)=' '
+          h(6)='Initial values will be setup based on the geometry of'
+          h(7)='the room as well as the boundary conditions. IF YOU'
+          h(8)='HAVE NOT YET set the boundary conditions for this zone'
+          h(9)='you should do that first (choose exit). '
+          CALL EASKABC('This zone:','(see help)','uses metal cladding',
+     &                 'no metal cladding','exit',INVT,9)
+          if(INVT.eq.1)then
+            continue
+          elseif(INVT.eq.2)then
+            continue
+          elseif(INVT.eq.3)then
+            return
+          endif
+        endif
+
+C Fill in the initial values.
+        if(INVT.eq.1)then
+          if(bridgelen(icomp,9).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=9
+            psi(ICOMP,nbrdg(icomp))=defpsi(9)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
+          endif
+          if(bridgelen(icomp,10).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=10
+            psi(ICOMP,nbrdg(icomp))=defpsi(10)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
+          endif
+          if(bridgelen(icomp,11).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=11
+            psi(ICOMP,nbrdg(icomp))=defpsi(11)
+            lngth(ICOMP,nbrdg(icomp))=
+     &        bridgelen(icomp,3)+bridgelen(icomp,4)
+          endif
+          if(bridgelen(icomp,12).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=12
+            psi(ICOMP,nbrdg(icomp))=defpsi(12)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
+          endif
+          if(bridgelen(icomp,13).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=13
+            psi(ICOMP,nbrdg(icomp))=defpsi(13)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
+          endif
+          if(bridgelen(icomp,14).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=14
+            psi(ICOMP,nbrdg(icomp))=defpsi(14)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
+          endif
+          if(bridgelen(icomp,15).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=15
+            psi(ICOMP,nbrdg(icomp))=defpsi(15)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
+          endif
+        elseif(INVT.eq.2)then
+          if(bridgelen(icomp,1).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=1
+            psi(ICOMP,nbrdg(icomp))=defpsi(1)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
+          endif
+          if(bridgelen(icomp,2).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=2
+            psi(ICOMP,nbrdg(icomp))=defpsi(2)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
+          endif
+          if(bridgelen(icomp,3).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=3
+            psi(ICOMP,nbrdg(icomp))=defpsi(3)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,3)
+          endif
+          if(bridgelen(icomp,4).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=4
+            psi(ICOMP,nbrdg(icomp))=defpsi(4)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,4)
+          endif
+          if(bridgelen(icomp,5).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=5
+            psi(ICOMP,nbrdg(icomp))=defpsi(5)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
+          endif
+          if(bridgelen(icomp,6).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=6
+            psi(ICOMP,nbrdg(icomp))=defpsi(6)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
+          endif
+          if(bridgelen(icomp,7).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=7
+            psi(ICOMP,nbrdg(icomp))=defpsi(7)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
+          endif
+          if(bridgelen(icomp,8).gt.0.1)then
+            nbrdg(icomp)=nbrdg(icomp)+1
+            ibrdg(ICOMP,nbrdg(icomp))=8
+            psi(ICOMP,nbrdg(icomp))=defpsi(8)
+            lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
+          endif
+        endif
+      endif
 
 C Setup the editing phrases.
    33 TBRIDGE(1)=
@@ -8840,6 +9045,9 @@ C Add all the UA results together to get the zone's total UA value
         write(outs,*)' Total UA: ',
      &        t16b(1:lnb),' W/K'
         call edisp(iuout,outs)
+
+        call edisp(iuout,
+     &    'And remember SAVE this zone to record the t bridge data.')
 
 C jump back to the main geometry menu
         return
@@ -9076,12 +9284,21 @@ C nbrdg and edit.
      &        -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,1)
             psi(ICOMP,ibj)=psiv
 
-            lenv=lngth(ICOMP,ibj)
-            H(1)='define lentgh of thermal bridge in metres.'
-            CALL EASKR(lenv,phraselen(lookfor),
-     &        '(default length: 0 m)',
-     &        -0.1,'W',200.0,'W',0.0,'length',IER,1)
-            lngth(ICOMP,ibj)=lenv
+            if(ISBEM.EQ.1)then
+              continue  ! Do not allow editing of length if UK NCM
+            else
+              write(msg,'(a,F7.4,a)')'(suggested length:',
+     &          lenpsi(lookfor),' m)'
+              if(lngth(ICOMP,ibj).lt.0.01)then
+                lenv=lenpsi(lookfor)
+              else
+                lenv=lngth(ICOMP,ibj)
+              endif
+              H(1)='define length of thermal bridge in metres.'
+              CALL EASKR(lenv,phraselen(lookfor),msg,
+     &          -0.1,'W',200.0,'W',0.0,'length',IER,1)
+              lngth(ICOMP,ibj)=lenv
+            endif
           endif
   31    continue
         if(.NOT.foundit)then
@@ -9095,11 +9312,12 @@ C nbrdg and edit.
      &      -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,1)
           psi(ICOMP,nbrdg(icomp))=psiv
 
-          lenv=0.0
-          H(1)='define lentgh of thermal bridge in metres.'
-          CALL EASKR(lenv,phraselen(lookfor),
-     &      '(default length: 0 m)',
-     &      -0.1,'W',200.0,'W',0.0,'length',IER,1)
+          write(msg,'(a,F7.4,a)')'(suggested length:',
+     &      lenpsi(lookfor),' m)'
+          lenv=lenpsi(lookfor)
+          H(1)='define length of thermal bridge in metres.'
+          CALL EASKR(lenv,phraselen(lookfor),msg,
+     &      -0.1,'W',200.0,'W',lenpsi(lookfor),'length',IER,1)
           lngth(ICOMP,nbrdg(icomp))=lenv
 
         endif
