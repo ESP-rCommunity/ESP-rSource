@@ -119,5 +119,6 @@ C references to materials (index within materials database).
       integer LAYERS    ! number of layers in a MLC
       real DTHK         ! thickness of each layer (m)
       real DRAIR        ! air gap resistance at 1=vert 2=floor/ceil 3=other
+      real THKMLC       ! thickness (m) of the MLC
       COMMON/MLC/NMLC,DTHK(MMLC,ME),IPR(MMLC,ME),LAYERS(MMLC),
-     &           DRAIR(MMLC,ME,3)
+     &           DRAIR(MMLC,ME,3),THKMLC(MMLC)

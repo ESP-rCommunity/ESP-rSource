@@ -206,7 +206,9 @@ C see geometry.F for a full explanation). Not found in older geometry files
       real ssureqn ! equation of each polygon A*X + B*Y + C*Z = D
       real ssurcog ! vertex weighted COG of polygon,
       real ssurvn  ! unit normal vector from COG of polygon.
+      real ssthick ! thickness of surface (m) based on MLC and zero if no MLC
       common/g7/ssna(MCON),sspazi(MCON),sspelv(MCON),ssperim(MCON),
-     &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3)
+     &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3),
+     &          ssthick(MCON)
 
 

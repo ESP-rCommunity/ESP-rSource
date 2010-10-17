@@ -1,21 +1,29 @@
 Synopsis
  
-This is a synopsis of the model Basic 3 zone model with explicit infiltration.
-defined in bld_basic_af1.cfg generated on Fri Jul 23 15:42:07 2010. Notes
-associated with the model are in bld_basic_af1.log
+This is a synopsis of the model Basic 3 zone model with temperature matching
+control. defined in bld_basic_tm1.cfg generated on Fri Jul 23 16:18:40 2010.
+Notes associated with the model are in bld_basic_sns.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
- 
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 Calculated ground temp at 0.5m depth
@@ -26,7 +34,7 @@ Calculated ground temp at 2.0m depth
 7.1669 6.6455 6.8604 7.7780 9.1669 10.650 11.827 12.386 12.160 11.219 9.8221 8.3432
 Calculated ground temp at 4.0m depth
 9.4473 8.8816 8.4792 8.3374 8.5155 8.9626 9.5603 10.155 10.569 10.699 10.512 10.057
-  
+ 
 Primary energy conversions (demand kWhr to primary kWhr) are:
  heating   : 1.250
  cooling   : 3.600
@@ -51,87 +59,50 @@ Databases associated with the model:
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
- standard UK NCM data   : SBEM.db1
+ UK NCM data            : /usr/esru/esp-r/databases/SBEM.db1
  
  ____________________________________________________________
  
 The model includes ideal controls as follows:
 Control description:
-basic controls for a simple building (no control used in roof space)
+simple building
  
-Zones control includes  1 functions.
-convective heating to 20C at 7h00 on weekdays and free floating on Saturday
-and Sunday. Ideal control used with 1kw capacity..
+Zones control includes  2 functions.
+match zone temperatures (loop 2), control to 18C with 10kW h/c (loop 1) The
+temperature matching control sets the roof temperature to equal the outside
+ambient temperature.
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  4 periods.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   4 18.00 db temp   > flux      free floating
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+   1  0.00 db temp   > flux      basic control       10000.0 0.0 10000.0 0.0 10.0 10.0
+basic control: max heating capacity 10000.0W min heating capacity 0.0W max cooling
+capacity 10000.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
+10.00C. (missing 7th item)
+   2  9.00 db temp   > flux      basic control       10000.0 0.0 10000.0 0.0 18.0 18.0
+basic control: max heating capacity 10000.0W min heating capacity 0.0W max cooling
+capacity 10000.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+18.00C. (missing 7th item)
+   3 18.00 db temp   > flux      basic control       10000.0 0.0 10000.0 0.0 10.0 10.0
+basic control: max heating capacity 10000.0W min heating capacity 0.0W max cooling
+capacity 10000.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
+10.00C. (missing 7th item)
+ 
+ The sensor for function  2 senses dry bulb temperature in roof_space.
+ The actuator for function  2 is the air point in roof_space.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
+   1  0.00 db temp   > flux      senses ambient dry  10000.0 0.0 10000.0 0.0 1.0 1.0 -3.0 0.0 0.0
+match temperature (ideal): max heat cp 10000.W min heat cp 0.W max cool cp 10000.W min
+heat cp 0.W Aux sensors 1. greatest value @senses ambient db T. scale 1.00 offset 0.00
  
  Zone to contol loop linkages:
  zone ( 1) reception    << control  1
  zone ( 2) office       << control  1
- zone ( 3) roof_space   << control  0
- ____________________________________________________________
- 
-The model includes an air flow network.
- 
- Flow network description.
- 
-   7 nodes,   4 components,   6 connections;     wind reduction =  1.000
-   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
-   1 north        air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim   0.000
-   2 east         air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim  90.000
-   3 south        air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim 180.000
-   4 west         air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim 270.000
-   5 roof         air   internal & unknown    3.0000   20.000     (-)     0.000  vol   49.000
-   6 recep        air   internal & unknown    1.0000   20.000     (-)     0.000  vol  144.000
-   7 offic        air   internal & unknown    1.0000   20.000     (-)     0.000  vol   48.000
- 
- Component    Type C+ L+ Description
- 
- drcrk         120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0100 crack length (m)  1.000
- 
- wincrk        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0050 crack length (m)  3.000
- 
- soffit        110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.010
- 
- roofv         110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.020
- 
-    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
-    1 north         0.000   roof          0.000   roofv           2.000   3.000
-    2 south         0.000   roof          0.000   soffit          2.000   3.000
-    3 south         0.000   recep         0.000   wincrk          2.000   1.000
-    4 west          0.000   recep         0.000   drcrk           2.000   1.000
-    5 west          0.000   offic         0.000   wincrk          2.000   1.000
-    6 offic         0.000   recep         0.000   drcrk           1.000   1.000
-thermal zone to air flow node mapping:
-thermal zone -> air flow node
-reception    -> recep
-office       -> offic
-roof_space   -> roof
- 
+ zone ( 3) roof_space   << control  2
  
  ____________________________________________________________
  
@@ -177,8 +148,27 @@ ID Zone         Volume|          Surface
  
  
  
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: recep
+ 
+ Air schedule notes:
+reception space - one staff & two visitors (540W sens 300W lat 80%
+convec) weekdays, 84W lights (600W x0.14 rad gain from attic),
+800-1250W small power weekdays, 800W weekends..
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
  
 Notes:
 reception space - one staff & two visitors (540W sens 300W lat 80%
@@ -236,8 +226,26 @@ sunda  1 EquiptW    0-24    800.0      0.0       0.20       0.80
  
  
  
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: offic
+ 
+ Air schedule notes:
+office space with two people (180W sens, 100W lat) & 200W lights 9-5
+on weekdays. Nothing on weekends.
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
  
 Notes:
 office space with two people (180W sens, 100W lat) & 200W lights 9-5
@@ -280,8 +288,16 @@ Number of saturday     casual gains=  0
  No shading analysis requested.
  No insolation analysis requested.
  
- Ventilation & infiltration is assessed via network analysis
- and the associated network node is: roof
+ 
+ Air schedule notes:
+ceiling void with partial lighting gains from below on weekdays
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 ceiling void with partial lighting gains from below on weekdays
