@@ -190,6 +190,7 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
+#include "UserSimulationToggles.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -348,6 +349,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Initialize the system variables.
       GAM=0.5
+      fUserGAM = GAM
       BLDG3D=.FALSE.
       GRND3D=.FALSE.
       MSTROK=.FALSE.
