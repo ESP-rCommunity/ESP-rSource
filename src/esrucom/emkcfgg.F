@@ -79,7 +79,7 @@ C Plant network.
       INTEGER :: ifpnf
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf

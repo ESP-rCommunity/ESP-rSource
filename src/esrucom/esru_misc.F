@@ -80,6 +80,8 @@ C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
@@ -195,7 +197,7 @@ C CPCALC description
       INTEGER :: icpcon,irt
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images.
       common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
@@ -430,6 +432,15 @@ C Initial data for CPCALC.
       pad=0.00
       wvpe=0.00
 
+C Clear derived model areas and U-values.
+      xfloor = 0.0; xexposed = 0.0; xvexposed = 0.0
+      xvthk = 0.0; xtoground = 0.0; xuavgtran = 0.0
+      xuavwall = 0.0; xuavground = 0.0
+      xfndthkg = 0.0; xperimlength = 0.0
+      xuavslproof = 0.0; xuavfltroof = 0.0; xuavgsky = 0.0 
+      xareatran = 0.0; xareawall = 0.0
+      xareaslproof = 0.0; xareafltroof = 0.0; xareaskylt = 0.0
+
 C Initialize the indices.
       INTHPS=.FALSE.
       IGR1D=.FALSE.
@@ -476,6 +487,23 @@ C Season data.
 
 C Zone level common blocks.
       do 42 IX = 1,MCOM
+
+C Per-zone areas and U-values.
+        uavgtran(IX) = 0.0
+        uavwall(IX) = 0.0
+        uavslproof(IX) = 0.0
+        uavfltroof(IX) = 0.0
+        uavgsky(IX) = 0.0
+        uavground(IX) = 0.0
+        areatran(IX) = 0.0
+        areawall(IX) = 0.0
+        areaslproof(IX) = 0.0
+        areafltroof(IX) = 0.0
+        areaskylt(IX) = 0.0
+        areaground(IX) = 0.0
+        exposed(IX) = 0.0
+        vexposed(IX) = 0.0
+
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
           zboundarytype(IX,IXS,1)=0  ! clear surface boundary
@@ -791,7 +819,7 @@ C ***** Notice that an active description button has been pressed.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C23/IFPNF,LPNF
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/entfile/entflnam, ientxist

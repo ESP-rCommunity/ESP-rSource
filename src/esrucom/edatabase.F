@@ -1112,10 +1112,10 @@ C is zero then avoid divide by zero.
 C Calculate and (optionally) report.
   15  CONTINUE
 
-C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C ISO 6946 surface resistance assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow as well as
 C an inside wall to inside wall hc 0.13 both sides. For the case
-C of a foundation only the inside hc is used.
+C of a foundation only the inside surface resistance is used.
       RTH=RT+0.04+0.13
       UVH=1.0/RTH
       RTU=RT+0.04+0.10

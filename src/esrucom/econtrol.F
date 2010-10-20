@@ -4605,7 +4605,7 @@ C               endif
       call edisp(iuout,'TSCDTA: Fatal error - time rewind')
       call edisp(iuout,'control specified more than once in')
       call edisp(iuout,'System Control file!')
-      call epwait
+      call pauses(3)   ! pause for 3 seconds then abort program.
       call epagend
       stop
       end

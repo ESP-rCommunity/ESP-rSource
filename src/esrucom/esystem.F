@@ -278,7 +278,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with

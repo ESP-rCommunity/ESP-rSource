@@ -262,6 +262,9 @@ C Parse this item of the climatelist file.
               return
             elseif(actreturn.eq.'f')then
               CALL ERPFREE(idblfil,ISTAT)
+              call usrmsg('Climate list failed during scan.',
+     &          'Exiting from project manager','W')
+              call pauses(3)   ! pause for 3 seconds then abort program.
               CALL EPAGEND
               STOP
             endif

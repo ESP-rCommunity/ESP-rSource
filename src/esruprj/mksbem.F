@@ -1609,7 +1609,8 @@ C surface area
           CALL ECLOSE(0.,zonetotsurfacearea(IZ),0.000001,CLOSER)
           IF(.NOT.CLOSER)
      &    DF=(45.*VERT_GLZ+90.*HORZ_GLZ)/zonetotsurfacearea(IZ)
-          write(6,*)vert_glz,horz_glz,zonetotsurfacearea(IZ)
+C Debug.
+C          write(6,*)vert_glz,horz_glz,zonetotsurfacearea(IZ)
           DFFront(IZ)=1.75*DF
           DFRear(IZ) =0.25*DF
  160    CONTINUE
@@ -3951,8 +3952,10 @@ C controls can be created.
               isnotequal=.true.
 
 C Debug.
-C              write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C              if(unixok)then
+C                write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
 C     &                 iactiv_tdf_item(IZ-1)
+C              endif
             endif
           endif
           if(isnotequal)then
@@ -13926,6 +13929,7 @@ C Passed parameters.
 
       integer ID,II,ICLM,I,irec,istat,j,k
       integer idebug
+      logical unixok
 
       iclim=IFIL
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
@@ -14004,7 +14008,6 @@ C Calculate maximum and minimum tempreatures
         T_max=max(T_max,ttemp(k))
         T_min=min(T_min,ttemp(k))
  52   continue
-      call epagend
       CALL ERPFREE(ICLIM,ISTAT)
 
 C Calculate daily ground temperature
@@ -14052,11 +14055,14 @@ C Write to common depending on which mode it was called with.
 
 C Debug
       if(idebug.eq.1)then
-        write(6,*)ttemp
-        write(6,*)' '
-        write(6,*)t_avg,t_max,t_min,t_amp
-        write(6,*)' '
-        write(6,*)t_mnt
+        call isunix(unixok)
+        if(unixok)then
+          write(6,*)ttemp
+          write(6,*)' '
+          write(6,*)t_avg,t_max,t_min,t_amp
+          write(6,*)' '
+          write(6,*)t_mnt
+        endif
       endif
  103  return
       end
