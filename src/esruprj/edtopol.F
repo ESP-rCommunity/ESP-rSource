@@ -56,7 +56,6 @@ C espriou.h provides currentfile.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -93,6 +92,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character cfgroot*24
       character DCNN*72
       character bl*2
+      integer MITEM,INO ! max items and current menu item
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -2181,6 +2181,7 @@ C lstanchr = links for each anchor
       character CXITM*43,flag*9
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       logical found,ok,dok,foundone,okd,MODIFY,MODLEN,MODBND
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -2522,6 +2523,7 @@ C associated with a concept).
       DIMENSION AVERT(27)
       CHARACTER AVERT*36,KEY*1,H*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
+      integer MVERT,IVERT ! max items and current menu item
 
       iasel=0
 
@@ -2721,6 +2723,7 @@ C Select one or more connections from a list.
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER VERT*54,KEY*1,H*72,CXITM*43,flag*1,SEL*50
       logical found
+      integer MVERT,IVERT ! max items and current menu item
     
 C At this point bring up a menu with the string alternatives, assuming
 C there is more than one alternative to pick from.

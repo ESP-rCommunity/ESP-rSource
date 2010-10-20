@@ -35,6 +35,46 @@ Location is 52.0N and 0.0E. The solar radiation is Direct Normal.
  Typical winter week begins Monday 20 November,
 *help_end
 *item
+*name	Aberdeen - Dyce  GBR
+*aide	Aberdeen - Dyce (030910) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Aberdeen.Dyce
+*avail	ONLINE
+*winter_s  1  1  6  3  7 11 31 12 # seasons Sat-01-Jan--Sun-06-Mar & Mon-07-Nov--Sat-31-Dec
+*spring_s  7  3  8  5 29  8  6 11 # seasons Mon-07-Mar--Sun-08-May & Mon-29-Aug--Sun-06-Nov
+*summer_s  9  5 28  8 # summer season Mon-09-May--Sun-28-Aug
+*winter_t 22  1 28  1 21 11 27 11 # typical Sat-22-Jan--Fri-28-Jan & Mon-21-Nov--Sun-27-Nov
+*spring_t  4  4 10  4 19  9 25  9 # typical Mon-04-Apr--Sun-10-Apr & Mon-19-Sep--Sun-25-Sep
+*summer_t  8  8 14  8 # typical summer Mon-08-Aug--Sun-14-Aug
+*help_start
+Climate is ABERDEEN/DYCE - GBR
+ Location: 57.20N  2.22W : 1994
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -6.3 @ 5h00 Sat-01       11.3 @22h00 Thu-20     3.6
+ Feb     -5.1 @ 5h00 Tue-15       11.1 @14h00 Mon-28     4.3
+ Mar     -6.0 @ 7h00 Fri-04       17.3 @12h00 Thu-17     5.6
+ Apr     -3.8 @ 6h00 Wed-13       16.8 @13h00 Wed-06     6.5
+ May     -0.5 @ 5h00 Sun-08       19.3 @13h00 Sat-21     9.6
+ Jun      1.5 @ 4h00 Sat-04       26.0 @13h00 Mon-20    11.9
+ Jul      6.1 @ 1h00 Fri-15       22.0 @16h00 Thu-28    13.9
+ Aug      3.5 @ 5h00 Mon-15       25.0 @15h00 Fri-05    13.9
+ Sep     -0.4 @ 6h00 Fri-30       22.9 @13h00 Wed-14    11.8
+ Oct     -2.9 @ 6h00 Sat-22       17.8 @12h00 Mon-03     9.0
+ Nov     -2.2 @ 3h00 Sat-05       11.8 @ 6h00 Mon-14     6.1
+ Dec    -13.7 @ 7h00 Fri-30       13.1 @10h00 Fri-16     4.2
+ Annual -13.7 @ 7h00 Fri-30-Dec   26.0 @13h00 Mon-20-Jun     8.4
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-06-Mar
+Typical winter week begins Sat-22-Jan
+Spring season is Mon-07-Mar - Sun-08-May
+Typical spring week begins Mon-04-Apr
+Summer season is Mon-09-May - Sun-28-Aug
+Typical summer week begins Mon-08-Aug
+Autumn season is Mon-29-Aug - Sun-06-Nov
+Typical autumn week begins Mon-19-Sep
+Winter season is Mon-07-Nov - Sat-31-Dec
+Typical winter week begins Mon-21-Nov
+*help_end
+*item
 *name	ALBUQUERQUE NM USA iwec 723650
 *aide	ALBUQUERQUE NM USA iwec 723650 was sourced from US DoE web Sep 2005
 *dbfl	/usr/esru/esp-r/climate/USA_NM_Albuquerque_iwec
@@ -73,6 +113,46 @@ Autumn season is Mon  3 Sep - Sun  4 Nov
 Typical autumn week begins Mon  8 Oct
 Winter season is Mon  5 Nov - Mon 31 Dec
 Typical winter week begins Mon 26 Nov
+*help_end
+*item
+*name	Aughton - GBR (033220)
+*aide	Aughton - GBR (033220) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Aughton
+*avail	ONLINE
+*winter_s  1  1  5  3 30 10 31 12 # seasons Sun-01-Jan--Sun-05-Mar & Mon-30-Oct--Sun-31-Dec
+*spring_s  6  3 28  5 18  9 29 10 # seasons Mon-06-Mar--Sun-28-May & Mon-18-Sep--Sun-29-Oct
+*summer_s 29  5 17  9 # summer season Mon-29-May--Sun-17-Sep
+*winter_t 29  1  4  2 20 11 26 11 # typical Sun-29-Jan--Sat-04-Feb & Mon-20-Nov--Sun-26-Nov
+*spring_t 10  4 16  4  9 10 15 10 # typical Mon-10-Apr--Sun-16-Apr & Mon-09-Oct--Sun-15-Oct
+*summer_t 21  8 27  8 # typical summer Mon-21-Aug--Sun-27-Aug
+*help_start
+Climate is AUGHTON - GBR
+ Location: 53.55N  2.92W : 1995
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -2.3 @ 5h00 Tue-03       13.0 @16h00 Tue-31     4.7
+ Feb     -2.9 @ 6h00 Thu-16       11.8 @15h00 Sat-04     3.7
+ Mar     -0.9 @ 6h00 Wed-01       16.4 @15h00 Mon-13     6.6
+ Apr      0.7 @ 6h00 Sun-09       15.5 @12h00 Tue-18     8.3
+ May      5.5 @ 3h00 Tue-16       20.2 @15h00 Tue-02    10.7
+ Jun      7.8 @ 6h00 Fri-02       21.3 @12h00 Mon-19    13.3
+ Jul     10.0 @ 5h00 Fri-14       23.6 @15h00 Mon-31    15.5
+ Aug      8.1 @24h00 Mon-14       24.1 @15h00 Thu-03    15.1
+ Sep      5.5 @ 6h00 Sat-30       24.8 @15h00 Thu-07    12.7
+ Oct      1.3 @ 1h00 Wed-04       18.4 @15h00 Sun-15    10.2
+ Nov     -1.5 @ 6h00 Sun-26       14.8 @15h00 Sun-12     7.0
+ Dec     -3.8 @ 6h00 Sat-09       14.0 @18h00 Thu-28     5.9
+ Annual  -3.8 @ 6h00 Sat-09-Dec   24.8 @15h00 Thu-07-Sep     9.5
+ ---Seasons & typical periods---
+Winter season is Sun-01-Jan - Sun-05-Mar
+Typical winter week begins Sun-29-Jan
+Spring season is Mon-06-Mar - Sun-28-May
+Typical spring week begins Mon-10-Apr
+Summer season is Mon-29-May - Sun-17-Sep
+Typical summer week begins Mon-21-Aug
+Autumn season is Mon-18-Sep - Sun-29-Oct
+Typical autumn week begins Mon-09-Oct
+Winter season is Mon-30-Oct - Sun-31-Dec
+Typical winter week begins Mon-20-Nov
 *help_end
 *item
 *name	BALTIMORE MD USA iwec 724060
@@ -115,151 +195,84 @@ Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon  3 Dec
 *help_end
 *item
-*name	Belfast IWEC WMO 039170
-*aide	Belfast (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_belfast_iwec
+*name	Belfast NI GBR
+*aide	Belfast NI GBR (039170) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Belfast
 *avail	ONLINE
-*winter_s 3  1  27  2  31 10  31 12
-*spring_s 28 2   8  5  5   9  30 10
-*summer_s  9 5   4  9
-*winter_t 21 2  27  2   7  11  13  11
-*spring_t 4  4  10  4   19  9  25   9
-*summer_t 18 7  24  7 
+*winter_s  1  1  6  3  7 11 31 12 # seasons Sat-01-Jan--Sun-06-Mar & Mon-07-Nov--Sat-31-Dec
+*spring_s  7  3 22  5 29  8  6 11 # seasons Mon-07-Mar--Sun-22-May & Mon-29-Aug--Sun-06-Nov
+*summer_s 23  5 28  8 # summer season Mon-23-May--Sun-28-Aug
+*winter_t  5  2 11  2  5 12 11 12 # typical Sat-05-Feb--Fri-11-Feb & Mon-05-Dec--Sun-11-Dec
+*spring_t 25  4  1  5 19  9 25  9 # typical Mon-25-Apr--Sun-01-May & Mon-19-Sep--Sun-25-Sep
+*summer_t 18  7 24  7 # typical summer Mon-18-Jul--Sun-24-Jul
 *help_start
-Belfast is located at 54.7N and 6.0W.  The solar
-radiation is Direct Normal.  Dry bulb temperatures:
- Month       Minimum  Time           Maximum  Time         Mean
- Jan          -3.2 @ 6h00 Sun 16     9.2 @15h00 Sat 29     4.1
- Feb          -4.2 @ 3h00 Tue 15    12.4 @16h00 Sun 27     4.1
- Mar          -0.6 @ 6h00 Sat 26    12.6 @13h00 Tue 22     6.0
- Apr          -0.5 @ 2h00 Thu 28    16.4 @14h00 Mon 18     7.9
- May           1.1 @ 2h00 Thu 19    21.2 @17h00 Mon 16    10.8
- Jun           3.4 @ 4h00 Sun 12    23.0 @15h00 Mon 20    12.7
- Jul           7.7 @ 4h00 Sat  9    24.2 @16h00 Tue  5    14.9
- Aug           7.4 @ 5h00 Wed 10    23.6 @13h00 Mon  1    14.7
- Sep           2.1 @ 6h00 Fri 30    20.0 @23h00 Wed  7    12.0
- Oct           1.9 @ 4h00 Mon  3    16.8 @15h00 Sat 15     9.8
- Nov          -3.7 @ 4h00 Sat 26    11.7 @24h00 Tue  1     6.7
- Dec          -1.5 @ 7h00 Thu 22    13.0 @22h00 Sun  4     5.3
- All  -4.2 @ 3h00 Tue 15 Feb    24.2 @16h00 Tue  5 Jul     9.1
- Typical winter week begins Monday 21 Feb,
- Typical spring week begins Monday 4 April,
- Typical summer week begins Monday 18 July.
- Typical autumn week begins Monday 19 September.
- Typical winter week begins Monday 7 November,
-*help_end
-*item
-*name	Berlin Germany IWEC 103840
-*aide	Berlin Germany IWEC 103840 was sourced from US DoE
-*dbfl	/usr/esru/esp-r/climate/deu_berlin_iwec
-*avail	ONLINE
-*winter_s  1  1 25  2 22 10 31 12
-*spring_s 26  2 20  5 27  8 21 10
-*summer_s 21  5 26  8
-*winter_t 15  1 21  1 26 11  2 12
-*spring_t 30  4  6  5 24  9 30  9
-*summer_t  9  7 15  7
-*help_start
-Climate is Berlin Germany IWEC 103840
- Location: 52.47N  1.60W : 2001
+Climate is BELFAST - GBR
+ Location: 54.65N  6.22W : 1994
  Month    Minimum  Time          Maximum  Time         Mean
- Jan     -5.4 @ 4h00 Tue 23        8.9 @15h00 Mon  1     1.9
- Feb     -9.1 @ 7h00 Sun 18        9.3 @13h00 Mon  5     0.3
- Mar     -2.2 @ 4h00 Fri 30       15.2 @16h00 Thu  1     5.4
- Apr     -1.6 @ 5h00 Sat 21       19.3 @15h00 Sun 15     8.3
- May      2.3 @ 5h00 Wed  2       27.5 @17h00 Sun 27    14.0
- Jun      7.8 @ 4h00 Mon 18       32.8 @17h00 Tue  5    17.6
- Jul      9.4 @ 5h00 Thu 19       32.6 @16h00 Sat  7    19.1
- Aug      9.3 @ 5h00 Sat  4       29.3 @15h00 Wed 15    18.5
- Sep      6.9 @ 5h00 Sat 29       29.7 @15h00 Sat  1    15.0
- Oct     -1.6 @ 6h00 Fri 26       19.5 @14h00 Fri  5    10.2
- Nov     -3.2 @10h00 Fri 16       13.3 @ 4h00 Sat 24     4.4
- Dec     -5.1 @21h00 Fri 21       11.8 @17h00 Tue  4     2.4
- Annual  -9.1 @ 7h00 Sun 18 Feb   32.8 @17h00 Tue  5 Jun     9.8
-Winter season is Mon  1 Jan - Sun 25 Feb
-Typical winter week begins Mon 15 Jan
-Spring season is Mon 26 Feb - Sun 20 May
-Typical spring week begins Mon 30 Apr
-Summer season is Mon 21 May - Sun 26 Aug
-Typical summer week begins Mon  9 Jul
-Autumn season is Mon 27 Aug - Sun 21 Oct
-Typical autumn week begins Mon 24 Sep
-Winter season is Mon 22 Oct - Mon 31 Dec
-Typical winter week begins Mon 26 Nov
-*help_end
-*item
-*name	Birmingham IWEC WMO 035340
-*aide	Birmingham (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_birmingham_iwec
-*avail	ONLINE
-*winter_s 2  1  26  3  30  10  31 12
-*spring_s 27 3  14  5  28  9  29 10
-*summer_s 15 5  27  9
-*winter_t 27 2  5  3   4  12  10  12
-*spring_t 10 4  16 4   5  10  11  10
-*summer_t 19 6  25 6
-*help_start
-Birmingham is located at 52.5N and 1.7W.  The solar
-radiation is Direct Normal.  Dry bulb temperatures:
- Month       Minimum  Time           Maximum  Time         Mean
- Jan          -6.6 @ 5h00 Tue  3    11.9 @19h00 Tue 31     4.6
- Feb          -7.4 @ 6h00 Wed  1    12.7 @12h00 Tue 28     3.7
- Mar          -4.3 @ 6h00 Sun 26    17.7 @14h00 Wed 15     6.4
- Apr          -2.1 @ 3h00 Sun 23    17.4 @15h00 Wed 12     7.4
- May          -1.6 @ 5h00 Thu  4    23.1 @15h00 Wed 24    11.0
- Jun           5.5 @ 4h00 Mon 19    24.7 @16h00 Thu 22    14.2
- Jul           9.0 @ 5h00 Sat 22    28.0 @13h00 Sat 29    17.2
- Aug           5.4 @ 3h00 Fri  4    30.4 @14h00 Sat 19    16.3
- Sep           2.3 @ 4h00 Sat 30    20.3 @14h00 Mon 18    13.1
- Oct          -4.6 @ 7h00 Tue 31    17.6 @14h00 Thu 19     9.9
- Nov          -3.3 @ 4h00 Wed 22    15.1 @12h00 Mon 13     6.9
- Dec          -2.8 @ 8h00 Thu 28    12.9 @13h00 Tue  5     5.0
- All  -7.4 @ 6h00 Wed  1 Feb    30.4 @14h00 Sat 19 Aug     9.7
- Typical winter week begins Monday 27 Feb,
- Typical spring week begins Monday 10 April,
- Typical summer week begins Monday 19 June.
- Typical autumn week begins Monday 5 October.
- Typical winter week begins Monday 4 December,
-*help_end
-*item
-*name	BOISE ID USA iwec 726810
-*aide	BOISE ID USA iwec 726810 was sourced from US DoE web site Sep 2005
-*dbfl	/usr/esru/esp-r/climate/USA_ID_Boise_iwec
-*avail	ONLINE
-*winter_s  1  1 29  4 29 10 31 12
-*spring_s 30  4 10  6  3  9 28 10
-*summer_s 11  6  2  9
-*winter_t 16  4 22  4 24 12 30 12
-*spring_t 14  5 20  5  8 10 14 10
-*summer_t 13  8 19  8
-*help_start
-Climate is BOISE ID USA iwec 726810
- Location: 43.57N 11.22W : 2001
- Month    Minimum  Time          Maximum  Time         Mean
- Jan    -16.1 @ 4h00 Sat 13       11.7 @14h00 Wed 31    -1.7
- Feb     -6.7 @ 8h00 Tue  6       15.0 @17h00 Mon 12     2.8
- Mar     -3.3 @ 8h00 Fri  9       15.0 @17h00 Tue 13     5.2
- Apr     -5.0 @ 6h00 Thu  5       25.0 @14h00 Sun 29     9.1
- May     -1.1 @ 4h00 Sat  5       33.3 @14h00 Fri 25    14.5
- Jun      3.9 @ 6h00 Mon  4       34.4 @16h00 Thu 28    18.4
- Jul      9.2 @ 6h00 Sun  1       38.9 @17h00 Tue 10    24.7
- Aug      4.4 @ 6h00 Mon 27       37.8 @15h00 Fri 17    21.0
- Sep      3.9 @ 4h00 Wed 26       33.9 @16h00 Wed  5    17.1
- Oct     -8.9 @ 5h00 Mon 29       27.2 @14h00 Tue  9     9.3
- Nov     -9.4 @ 7h00 Sat 10       17.2 @15h00 Mon  5     4.6
- Dec    -15.0 @ 8h00 Fri 14       10.6 @14h00 Thu 27    -2.4
- Annual -16.1 @ 4h00 Sat 13 Jan   38.9 @17h00 Tue 10 Jul    10.3
+ Jan     -3.2 @ 6h00 Sun-16        9.2 @15h00 Sat-29     4.1
+ Feb     -4.2 @ 3h00 Tue-15       12.4 @16h00 Sun-27     4.1
+ Mar     -0.6 @ 6h00 Sat-26       12.6 @13h00 Tue-22     6.0
+ Apr     -0.5 @ 2h00 Thu-28       16.4 @14h00 Mon-18     7.9
+ May      1.1 @ 2h00 Thu-19       21.2 @17h00 Mon-16    10.8
+ Jun      3.4 @ 4h00 Sun-12       23.0 @15h00 Mon-20    12.7
+ Jul      7.7 @ 4h00 Sat-09       24.2 @16h00 Tue-05    14.9
+ Aug      7.4 @ 5h00 Wed-10       23.6 @13h00 Mon-01    14.7
+ Sep      2.1 @ 6h00 Fri-30       20.0 @23h00 Wed-07    12.0
+ Oct      1.9 @ 4h00 Mon-03       16.8 @15h00 Sat-15     9.8
+ Nov     -3.7 @ 4h00 Sat-26       11.7 @24h00 Tue-01     6.7
+ Dec     -1.5 @ 7h00 Thu-22       13.0 @22h00 Sun-04     5.3
+ Annual  -4.2 @ 3h00 Tue-15-Feb   24.2 @16h00 Tue-05-Jul     9.1
  ---Seasons & typical periods---
-Winter season is Mon  1 Jan - Sun 29 Apr
-Typical winter week begins Mon 16 Apr
-Spring season is Mon 30 Apr - Sun 10 Jun
-Typical spring week begins Mon 14 May
-Summer season is Mon 11 Jun - Sun  2 Sep
-Typical summer week begins Mon 13 Aug
-Autumn season is Mon  3 Sep - Sun 28 Oct
-Typical autumn week begins Mon  8 Oct
-Winter season is Mon 29 Oct - Mon 31 Dec
-Typical winter week begins Mon 24 Dec
+Winter season is Sat-01-Jan - Sun-06-Mar
+Typical winter week begins Sat-05-Feb
+Spring season is Mon-07-Mar - Sun-22-May
+Typical spring week begins Mon-25-Apr
+Summer season is Mon-23-May - Sun-28-Aug
+Typical summer week begins Mon-18-Jul
+Autumn season is Mon-29-Aug - Sun-06-Nov
+Typical autumn week begins Mon-19-Sep
+Winter season is Mon-07-Nov - Sat-31-Dec
+Typical winter week begins Mon-05-Dec
+*help_end
+*item
+*name	Birmingham - GBR
+*aide	Brimingham - GBR (03540) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Birmingham
+*avail	ONLINE
+*winter_s  1  1  5  3 30 10 31 12 # seasons Sun-01-Jan--Sun-05-Mar & Mon-30-Oct--Sun-31-Dec
+*spring_s  6  3 14  5 28  8 29 10 # seasons Mon-06-Mar--Sun-14-May & Mon-28-Aug--Sun-29-Oct
+*summer_s 15  5 27  8 # summer season Mon-15-May--Sun-27-Aug
+*winter_t 29  1  4  2  4 12 10 12 # typical Sun-29-Jan--Sat-04-Feb & Mon-04-Dec--Sun-10-Dec
+*spring_t  3  4  9  4 11  9 17  9 # typical Mon-03-Apr--Sun-09-Apr & Mon-11-Sep--Sun-17-Sep
+*summer_t 19  6 25  6 # typical summer Mon-19-Jun--Sun-25-Jun
+*help_start
+Climate is BIRMINGHAM - GBR
+ Location: 52.45N  1.73W : 1995
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -6.6 @ 5h00 Tue-03       11.9 @19h00 Tue-31     4.6
+ Feb     -7.4 @ 6h00 Wed-01       12.7 @12h00 Tue-28     3.7
+ Mar     -4.3 @ 6h00 Sun-26       17.7 @14h00 Wed-15     6.4
+ Apr     -2.1 @ 3h00 Sun-23       17.4 @15h00 Wed-12     7.4
+ May     -1.6 @ 5h00 Thu-04       23.1 @15h00 Wed-24    11.0
+ Jun      5.5 @ 4h00 Mon-19       24.7 @16h00 Thu-22    14.2
+ Jul      9.0 @ 5h00 Sat-22       28.0 @13h00 Sat-29    17.2
+ Aug      5.4 @ 3h00 Fri-04       30.4 @14h00 Sat-19    16.3
+ Sep      2.3 @ 4h00 Sat-30       20.3 @14h00 Mon-18    13.1
+ Oct     -4.6 @ 7h00 Tue-31       17.6 @14h00 Thu-19     9.9
+ Nov     -3.3 @ 4h00 Wed-22       15.1 @12h00 Mon-13     6.9
+ Dec     -2.8 @ 8h00 Thu-28       12.9 @13h00 Tue-05     5.0
+ Annual  -7.4 @ 6h00 Wed-01-Feb   30.4 @14h00 Sat-19-Aug     9.7
+ ---Seasons & typical periods---
+Winter season is Sun-01-Jan - Sun-05-Mar
+Typical winter week begins Sun-29-Jan
+Spring season is Mon-06-Mar - Sun-14-May
+Typical spring week begins Mon-03-Apr
+Summer season is Mon-15-May - Sun-27-Aug
+Typical summer week begins Mon-19-Jun
+Autumn season is Mon-28-Aug - Sun-29-Oct
+Typical autumn week begins Mon-11-Sep
+Winter season is Mon-30-Oct - Sun-31-Dec
+Typical winter week begins Mon-04-Dec
 *help_end
 *item
 *name	Brescia-Ghedi - ITA
@@ -535,37 +548,44 @@ Winter season is Mon-12-Nov - Mon-31-Dec
 Typical winter week begins Mon-19-Nov
 *help_end
 *item
-*name	Dublin Ireland IWEC WMO 039690
-*aide	Dublin (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/irl_dublin_iwec
+*name	Dublin Ireland (039690)
+*aide	Dublin Ireland (039690) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/IRL_Dublin
 *avail	ONLINE
-*winter_s 1  1  4  3  5  11  31 12
-*spring_s 5 3   6  5  17  9    4 11
-*summer_s 7 5  16  9
-*winter_t 5 2  11  2  19 11 25 11
-*spring_t 26 3  1  4   8 10 14 10
-*summer_t 13 8  19 8
+*winter_s  1  1  8  3  2 11 31 12 # seasons Thu-01-Jan--Sun-08-Mar & Mon-02-Nov--Thu-31-Dec
+*spring_s  9  3 24  5 31  8  1 11 # seasons Mon-09-Mar--Sun-24-May & Mon-31-Aug--Sun-01-Nov
+*summer_s 25  5 30  8 # summer season Mon-25-May--Sun-30-Aug
+*winter_t  5  2 11  2 30 11  6 12 # typical Thu-05-Feb--Wed-11-Feb & Mon-30-Nov--Sun-06-Dec
+*spring_t 23  3 29  3  5 10 11 10 # typical Mon-23-Mar--Sun-29-Mar & Mon-05-Oct--Sun-11-Oct
+*summer_t 22  6 28  6 # typical summer Mon-22-Jun--Sun-28-Jun
 *help_start
-Dublin is located at 53.4N and 6.25W.  The solar
-radiation is Direct Normal.  Dry bulb temperatures:
- Month       Minimum  Time         Maximum  Time         Mean
- Jan          -4.2 @ 5h00 Sat 20    16.1 @13h00 Wed 10     5.8
- Feb          -4.0 @ 7h00 Sun 18    11.6 @14h00 Mon 26     4.8
- Mar          -1.3 @ 7h00 Sun  4    13.0 @15h00 Tue 20     6.8
- Apr          -0.7 @ 2h00 Sat 28    16.5 @15h00 Mon 16     8.5
- May           1.0 @ 5h00 Fri  4    20.0 @14h00 Wed 30    10.5
- Jun           4.4 @ 5h00 Mon 11    21.6 @17h00 Thu 28    13.5
- Jul           7.7 @ 4h00 Mon  2    24.2 @16h00 Tue 10    15.6
- Aug           7.5 @ 5h00 Tue 21    21.0 @13h00 Wed  1    14.6
- Sep           6.1 @ 5h00 Sat 22    21.0 @15h00 Sun 23    13.2
- Oct          -0.6 @ 7h00 Fri 30    13.9 @11h00 Sun 18     7.2
- Dec          -2.0 @ 7h00 Sun  2    13.4 @24h00 Sat 22     6.2
- All period  -4.2 @ 5h00 Sat 20 Jan 24.2 @16h00 Tue 10 Jul 9.8
- Typical winter week begins Monday 5 Feb,
- Typical spring week begins Monday 9 April,
- Typical summer week begins Monday 14 May.
- Typical autumn week begins Monday 8 October.
- Typical winter week begins Monday 11 November,
+Climate is DUBLIN - IRL
+ Location: 53.43N  6.25W : 1998
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -4.2 @ 5h00 Tue-20       16.1 @13h00 Sat-10     5.8
+ Feb     -4.0 @ 7h00 Wed-18       11.6 @14h00 Thu-26     4.8
+ Mar     -1.3 @ 7h00 Wed-04       13.0 @15h00 Fri-20     6.8
+ Apr     -0.7 @ 2h00 Tue-28       16.5 @15h00 Thu-16     8.5
+ May      1.0 @ 5h00 Mon-04       20.0 @14h00 Sat-30    10.5
+ Jun      4.4 @ 5h00 Thu-11       21.6 @17h00 Sun-28    13.5
+ Jul      7.7 @ 4h00 Thu-02       24.2 @16h00 Fri-10    15.6
+ Aug      7.5 @ 5h00 Fri-21       21.0 @13h00 Sat-01    14.6
+ Sep      6.1 @ 5h00 Tue-22       21.0 @15h00 Wed-23    13.2
+ Oct     -0.1 @ 7h00 Thu-29       19.9 @14h00 Thu-01    10.5
+ Nov     -0.6 @ 7h00 Mon-30       13.9 @11h00 Wed-18     7.2
+ Dec     -2.0 @ 7h00 Wed-02       13.4 @24h00 Tue-22     6.2
+ Annual  -4.2 @ 5h00 Tue-20-Jan   24.2 @16h00 Fri-10-Jul     9.8
+ ---Seasons & typical periods---
+Winter season is Thu-01-Jan - Sun-08-Mar
+Typical winter week begins Thu-05-Feb
+Spring season is Mon-09-Mar - Sun-24-May
+Typical spring week begins Mon-23-Mar
+Summer season is Mon-25-May - Sun-30-Aug
+Typical summer week begins Mon-22-Jun
+Autumn season is Mon-31-Aug - Sun-01-Nov
+Typical autumn week begins Mon-05-Oct
+Winter season is Mon-02-Nov - Thu-31-Dec
+Typical winter week begins Mon-30-Nov
 *help_end
 *item
 *name	Dundee 1980
@@ -728,38 +748,44 @@ Winter season is Mon-01-Nov - Fri-31-Dec
 Typical winter week begins Sat-20-Nov
 *help_end
 *item
-*name	Jersey CH ISL IWEC WMO 038950
-*aide	Jersey (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_channel_islands_iwec
+*name	Jersey Channel Isles (038950)
+*aide	Jersey Channel Islands (038950) GBR was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Channel_Islands
 *avail	ONLINE
-*winter_s 2  1  18  3  29  10  31 12
-*spring_s 19 3  6  5  17  9  28 10
-*summer_s 7 5  16  9
-*winter_t 6  2  12  2  3 12   9 12
-*spring_t 9  4  15  4  8 10  14 10
-*summer_t 14 5  20  5
+*winter_s  1  1 24  3 11 11 31 12 # seasons Mon-01-Jan--Sun-24-Mar & Mon-11-Nov--Tue-31-Dec
+*spring_s 25  3 12  5  2  9 10 11 # seasons Mon-25-Mar--Sun-12-May & Mon-02-Sep--Sun-10-Nov
+*summer_s 13  5  1  9 # summer season Mon-13-May--Sun-01-Sep
+*winter_t 26  2  4  3  9 12 15 12 # typical Mon-26-Feb--Mon-04-Mar & Mon-09-Dec--Sun-15-Dec
+*spring_t 29  4  5  5 23  9 29  9 # typical Mon-29-Apr--Sun-05-May & Mon-23-Sep--Sun-29-Sep
+*summer_t  3  6  9  6 # typical summer Mon-03-Jun--Sun-09-Jun
 *help_start
-Jersey is located at 49.2N and 2.2W.  The solar
-radiation is Direct Normal.  Dry bulb temperatures:
- Month       Minimum  Time           Maximum  Time         Mean
- Jan           0.3 @ 8h00 Sat 21    10.9 @14h00 Fri 13     6.6
- Feb           0.2 @22h00 Mon 20    10.8 @14h00 Mon  6     6.3
- Mar           0.9 @ 1h00 Thu  8    13.9 @17h00 Fri 23     7.4
- Apr           3.2 @ 5h00 Thu 26    17.1 @15h00 Thu 19     8.8
- May           3.2 @ 5h00 Sun  6    24.2 @14h00 Sun 13    12.0
- Jun           5.9 @ 1h00 Mon 25    25.8 @14h00 Thu  7    14.2
- Jul          11.5 @ 2h00 Tue 17    27.6 @14h00 Sun  8    16.4
- Aug          11.4 @ 3h00 Sat  4    27.0 @14h00 Sat 18    17.2
- Sep           8.5 @ 5h00 Sat 29    20.3 @15h00 Sat  1    15.0
- Oct           7.1 @ 4h00 Thu 18    17.7 @14h00 Mon  1    12.9
- Nov           0.7 @ 1h00 Tue 20    16.0 @14h00 Sat 10     9.4
- Dec           0.8 @ 3h00 Fri 28    11.6 @15h00 Sun 23     7.3
- All    0.2 @22h00 Mon 20 Feb    27.6 @14h00 Sun  8 Jul    11.2
- Typical winter week begins Monday 6 Feb,
- Typical spring week begins Monday 9 April,
- Typical summer week begins Monday 14 May.
- Typical autumn week begins Monday 8 October.
- Typical winter week begins Monday 3 December,
+Climate is JERSEY/CHANNEL ISLANDS - GBR
+ Location: 49.22N  2.20W : 1996
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -1.1 @10h00 Sat-27       11.2 @13h00 Sun-07     6.5
+ Feb      0.2 @22h00 Tue-20       10.8 @14h00 Tue-06     6.3
+ Mar      0.9 @ 1h00 Fri-08       13.9 @17h00 Sat-23     7.4
+ Apr      3.2 @ 5h00 Fri-26       17.1 @15h00 Fri-19     8.8
+ May      3.2 @ 5h00 Mon-06       24.2 @14h00 Mon-13    12.0
+ Jun      8.2 @ 3h00 Sun-16       25.8 @14h00 Fri-07    14.2
+ Jul     11.5 @ 2h00 Wed-17       27.6 @14h00 Mon-08    16.4
+ Aug     11.4 @ 3h00 Sun-04       27.0 @14h00 Sun-18    17.2
+ Sep      8.5 @ 5h00 Sun-29       20.3 @15h00 Sun-01    15.0
+ Oct      7.1 @ 4h00 Fri-18       17.7 @14h00 Tue-01    12.9
+ Nov      0.7 @ 1h00 Wed-20       16.0 @14h00 Sun-10     9.4
+ Dec      0.8 @ 3h00 Sat-28       11.6 @15h00 Mon-23     7.3
+ Annual  -1.1 @10h00 Sat-27-Jan   27.6 @14h00 Mon-08-Jul    11.2
+ ---Seasons & typical periods---
+Winter season is Mon-01-Jan - Sun-24-Mar
+Typical winter week begins Mon-26-Feb
+Spring season is Mon-25-Mar - Sun-12-May
+Typical spring week begins Mon-29-Apr
+Summer season is Mon-13-May - Sun-01-Sep
+Typical summer week begins Mon-03-Jun
+Autumn season is Mon-02-Sep - Sun-10-Nov
+Typical autumn week begins Mon-23-Sep
+Winter season is Mon-11-Nov - Tue-31-Dec
+Typical winter week begins Mon-09-Dec
 *help_end
 *item
 *name	FAIRBANKS AK USA 702610
@@ -876,38 +902,84 @@ Winter season is Mon-03-Dec - Mon-31-Dec
 Typical winter week begins Mon-17-Dec
 *help_end
 *item
-*name	Gatwick IWEC WMO 037760
-*aide	London Gatwick UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_gatwick_iwec
+*name	London Gatwick (037769) GBR
+*aide	London Gatwick (037760) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_London_Gatwick
 *avail	ONLINE
-*winter_s 1  1  17  3  28  10  31 12
-*spring_s 18 3  12  5  19  8  27 10
-*summer_s 13 5  18  8
-*winter_t 7  1  13  1  11 11 17 11
-*spring_t 6  5  12  5  16 9  22 9
-*summer_t 1  7  7  7
+*winter_s  1  1  3  3 28 10 31 12 # seasons Tue-01-Jan--Sun-03-Mar & Mon-28-Oct--Tue-31-Dec
+*spring_s  4  3 12  5 26  8 27 10 # seasons Mon-04-Mar--Sun-12-May & Mon-26-Aug--Sun-27-Oct
+*summer_s 13  5 25  8 # summer season Mon-13-May--Sun-25-Aug
+*winter_t  8  1 14  1 18 11 24 11 # typical Tue-08-Jan--Mon-14-Jan & Mon-18-Nov--Sun-24-Nov
+*spring_t  1  4  7  4 16  9 22  9 # typical Mon-01-Apr--Sun-07-Apr & Mon-16-Sep--Sun-22-Sep
+*summer_t  1  7  7  7 # typical summer Mon-01-Jul--Sun-07-Jul
 *help_start
-Gatwick is located at 51.5N and 0.18W.  The solar
-radiation is Direct Normal. Dry bulb temperatures:
- Month     Minimum  Time           Maximum  Time         Mean
- Jan        -3.4 @ 7h00 Mon 14    12.0 @13h00 Wed  2     4.4
- Feb        -4.7 @ 9h00 Thu 14    11.0 @16h00 Wed 27     3.9
- Mar        -5.1 @ 6h00 Tue  5    13.1 @14h00 Sun 24     6.8
- Apr        -2.9 @ 5h00 Fri 26    18.9 @14h00 Fri 19     8.7
- May        -0.9 @ 3h00 Tue  7    24.8 @13h00 Fri 17    12.5
- Jun         6.1 @ 5h00 Sat  8    31.3 @15h00 Sun 30    15.0
- Jul         9.5 @ 4h00 Sat 20    26.5 @15h00 Tue 23    17.3
- Aug         5.7 @ 5h00 Thu 15    28.8 @14h00 Sat  3    16.9
- Sep         3.4 @ 5h00 Tue 24    21.4 @14h00 Sun 15    13.9
- Oct        -1.0 @ 5h00 Fri 25    19.5 @14h00 Wed  2    10.6
- Nov        -7.9 @ 8h00 Sat 23    15.5 @14h00 Sat  9     7.5
- Dec        -5.9 @ 8h00 Sat  7    12.4 @13h00 Tue 24     5.1
- All  -7.9 @ 8h00 Sat 23 Nov   31.3 @15h00 Sun 30 Jun   10.3
- Typical winter week begins Monday 7 Jan,
- Typical spring week begins Monday 6 May,
- Typical summer week begins Monday 1 July.
- Typical autumn week begins Monday 16 September.
- Typical winter week begins Monday 11 November.
+Climate is LONDON/GATWICK - GBR
+ Location: 51.15N  0.18W : 1991
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -3.4 @ 7h00 Mon-14       12.0 @13h00 Wed-02     4.4
+ Feb     -4.7 @ 9h00 Thu-14       11.0 @16h00 Wed-27     3.9
+ Mar     -5.1 @ 6h00 Tue-05       13.1 @14h00 Sun-24     6.8
+ Apr     -3.4 @ 5h00 Wed-10       17.8 @13h00 Thu-18     8.3
+ May     -0.9 @ 3h00 Tue-07       24.8 @13h00 Fri-17    12.5
+ Jun      6.1 @ 5h00 Sat-08       31.3 @15h00 Sun-30    15.0
+ Jul      9.5 @ 4h00 Sat-20       26.5 @15h00 Tue-23    17.3
+ Aug      7.0 @ 5h00 Wed-28       28.8 @14h00 Mon-19    16.7
+ Sep      3.4 @ 5h00 Tue-24       21.4 @14h00 Sun-15    13.8
+ Oct     -1.0 @ 5h00 Fri-25       19.5 @14h00 Wed-02    10.6
+ Nov     -5.0 @ 7h00 Wed-06       14.8 @14h00 Mon-11     7.8
+ Dec     -5.9 @ 8h00 Sat-07       12.4 @13h00 Tue-24     5.1
+ Annual  -5.9 @ 8h00 Sat-07-Dec   31.3 @15h00 Sun-30-Jun    10.2
+ ---Seasons & typical periods---
+Winter season is Tue-01-Jan - Sun-03-Mar
+Typical winter week begins Tue-08-Jan
+Spring season is Mon-04-Mar - Sun-12-May
+Typical spring week begins Mon-01-Apr
+Summer season is Mon-13-May - Sun-25-Aug
+Typical summer week begins Mon-01-Jul
+Autumn season is Mon-26-Aug - Sun-27-Oct
+Typical autumn week begins Mon-16-Sep
+Winter season is Mon-28-Oct - Tue-31-Dec
+Typical winter week begins Mon-18-Nov
+*help_end
+*item
+*name	London Heathrow GBR (037720)
+*aide	London Heathrow GBR (037720) TRY was sourced from CIBSE
+*dbfl	/usr/esru/esp-r/climate/GBR_London-Heathrow
+*avail	ONLINE
+*winter_s  1  1 13  3 24 10 31 12 # seasons Fri-01-Jan--Sun-13-Mar & Mon-24-Oct--Sat-31-Dec
+*spring_s 14  3 29  5 22  8 23 10 # seasons Mon-14-Mar--Sun-29-May & Mon-22-Aug--Sun-23-Oct
+*summer_s 30  5 21  8 # summer season Mon-30-May--Sun-21-Aug
+*winter_t  5  2 11  2 21 11 27 11 # typical Fri-05-Feb--Thu-11-Feb & Mon-21-Nov--Sun-27-Nov
+*spring_t 25  4  1  5 19  9 25  9 # typical Mon-25-Apr--Sun-01-May & Mon-19-Sep--Sun-25-Sep
+*summer_t  1  8  7  8 # typical summer Mon-01-Aug--Sun-07-Aug
+*help_start
+Climate is London-Heathrow England GBR
+ Location: 51.48N  0.45W : 1988
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -1.7 @ 5h00 Fri-08       13.1 @ 8h00 Sat-02     6.2
+ Feb     -4.6 @ 4h00 Sat-27       16.2 @14h00 Thu-04     6.3
+ Mar     -3.2 @ 4h00 Wed-02       19.3 @15h00 Thu-31     7.1
+ Apr      0.5 @ 4h00 Tue-05       18.0 @16h00 Mon-11     9.6
+ May      5.4 @ 5h00 Fri-20       26.4 @15h00 Sun-15    13.5
+ Jun      5.8 @ 5h00 Thu-09       31.8 @16h00 Sun-26    16.0
+ Jul     11.0 @ 5h00 Sun-17       28.5 @13h00 Fri-29    18.5
+ Aug      8.8 @ 7h00 Wed-31       31.0 @16h00 Fri-19    17.9
+ Sep      3.9 @ 7h00 Mon-26       24.3 @14h00 Sat-17    15.1
+ Oct      1.1 @ 6h00 Sun-30       18.9 @16h00 Tue-18    11.8
+ Nov      0.3 @ 3h00 Mon-14       16.5 @15h00 Sun-06     8.7
+ Dec     -2.9 @ 7h00 Fri-16       14.1 @15h00 Tue-13     6.2
+ Annual  -4.6 @ 4h00 Sat-27-Feb   31.8 @16h00 Sun-26-Jun    11.4
+ ---Seasons & typical periods---
+Winter season is Fri-01-Jan - Sun-13-Mar
+Typical winter week begins Fri-05-Feb
+Spring season is Mon-14-Mar - Sun-29-May
+Typical spring week begins Mon-25-Apr
+Summer season is Mon-30-May - Sun-21-Aug
+Typical summer week begins Mon-01-Aug
+Autumn season is Mon-22-Aug - Sun-23-Oct
+Typical autumn week begins Mon-19-Sep
+Winter season is Mon-24-Oct - Sat-31-Dec
+Typical winter week begins Mon-21-Nov
 *help_end
 *item
 *name	GENEVA - CHE
@@ -950,6 +1022,46 @@ Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
 *help_end
 *item
+*name	Glasgow-Abbotsinch Scotland GB
+*aide	Glasgow-Abbotsinch Scotland (031400) TRY was sourced from CIBSE
+*dbfl	/usr/esru/esp-r/climate/GBR_Glasgow_Abbotsinch
+*avail	ONLINE
+*winter_s  1  1 23  3 27 10 31 12 # seasons Wed-01-Jan--Sun-23-Mar & Mon-27-Oct--Wed-31-Dec
+*spring_s 24  3 18  5 18  8 26 10 # seasons Mon-24-Mar--Sun-18-May & Mon-18-Aug--Sun-26-Oct
+*summer_s 19  5 17  8 # summer season Mon-19-May--Sun-17-Aug
+*winter_t  5  2 11  2 17 11 23 11 # typical Wed-05-Feb--Tue-11-Feb & Mon-17-Nov--Sun-23-Nov
+*spring_t 21  4 27  4 22  9 28  9 # typical Mon-21-Apr--Sun-27-Apr & Mon-22-Sep--Sun-28-Sep
+*summer_t  4  8 10  8 # typical summer Mon-04-Aug--Sun-10-Aug
+*help_start
+Climate is Glasgow-Abbotsinch Scotland GB
+ Location: 55.87N  4.43W : 1986
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -7.7 @11h00 Mon-06       10.5 @ 7h00 Fri-10     3.0
+ Feb    -10.8 @ 8h00 Sun-16       11.2 @14h00 Mon-24     2.9
+ Mar     -3.2 @ 6h00 Wed-05       11.5 @17h00 Mon-10     5.9
+ Apr     -3.2 @ 7h00 Thu-10       15.5 @16h00 Tue-22     6.8
+ May     -2.5 @ 5h00 Tue-06       23.6 @16h00 Fri-30    10.4
+ Jun      4.5 @ 6h00 Mon-02       23.8 @17h00 Thu-19    13.1
+ Jul      4.6 @ 5h00 Tue-08       24.8 @16h00 Sat-19    14.5
+ Aug      3.6 @ 6h00 Wed-27       22.3 @16h00 Fri-08    14.2
+ Sep      0.9 @ 8h00 Thu-18       20.1 @16h00 Thu-25    12.3
+ Oct     -4.6 @ 8h00 Fri-31       15.7 @15h00 Wed-22     9.1
+ Nov     -4.4 @ 7h00 Sun-16       15.0 @ 5h00 Sun-09     6.0
+ Dec     -9.1 @ 7h00 Sat-27       13.0 @14h00 Tue-23     5.4
+ Annual -10.8 @ 8h00 Sun-16-Feb   24.8 @16h00 Sat-19-Jul     8.7
+ ---Seasons & typical periods---
+Winter season is Wed-01-Jan - Sun-23-Mar
+Typical winter week begins Wed-05-Feb
+Spring season is Mon-24-Mar - Sun-18-May
+Typical spring week begins Mon-21-Apr
+Summer season is Mon-19-May - Sun-17-Aug
+Typical summer week begins Mon-04-Aug
+Autumn season is Mon-18-Aug - Sun-26-Oct
+Typical autumn week begins Mon-22-Sep
+Winter season is Mon-27-Oct - Wed-31-Dec
+Typical winter week begins Mon-17-Nov
+*help_end
+*item
 *name	GUANGZHOU - CHN
 *aide	GUANGZHOU - CHN was sourced from US DoE web site
 *dbfl	/usr/esru/esp-r/climate/CHN_Guangzhou
@@ -990,38 +1102,44 @@ Winter season is Tue-05-Nov - Tue-31-Dec
 Typical winter week begins Tue-19-Nov
 *help_end
 *item
-*name	Hemsby UK IWEC WMO 034960
-*aide	Hemsby UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_hemsby_iwec
+*name	Hemsby - GBR (034960)
+*aide	Hemsby - GBR (034960) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Hemsby
 *avail	ONLINE
-*winter_s 2  1  19  3  30  10  31 12
-*spring_s 20 3  14  5  21  8  29 10
-*summer_s 15 5  20  8
-*winter_t 30  1  7  2    4 12 10 12
-*spring_t 10  4  16  4  25  9  1 10
-*summer_t  5  6  11  6
+*winter_s  1  1 19  3  6 11 31 12 # seasons Sun-01-Jan--Sun-19-Mar & Mon-06-Nov--Sun-31-Dec
+*spring_s 20  3 21  5 28  8  5 11 # seasons Mon-20-Mar--Sun-21-May & Mon-28-Aug--Sun-05-Nov
+*summer_s 22  5 27  8 # summer season Mon-22-May--Sun-27-Aug
+*winter_t 29  1  4  2  4 12 10 12 # typical Sun-29-Jan--Sat-04-Feb & Mon-04-Dec--Sun-10-Dec
+*spring_t 10  4 16  4  2 10  8 10 # typical Mon-10-Apr--Sun-16-Apr & Mon-02-Oct--Sun-08-Oct
+*summer_t  5  6 11  6 # typical summer Mon-05-Jun--Sun-11-Jun
 *help_start
-Hemsby is located at 52.7N and 1.7E (20km east of Norwich).  
-The solar radiation is Direct Normal. Dry bulb temperatures:
- Month     Minimum  Time           Maximum  Time         Mean
- Jan        -1.0 @23h00 Sun  1    11.5 @ 2h00 Thu 26     4.8
- Feb        -2.2 @ 3h00 Fri 24    13.3 @13h00 Tue 28     4.6
- Mar        -2.0 @ 4h00 Sun  5    13.5 @14h00 Mon 20     5.7
- Apr        -1.7 @ 5h00 Fri 21    17.8 @14h00 Fri 28     8.2
- May         2.5 @ 5h00 Thu  4    18.3 @12h00 Mon 29    11.1
- Jun         6.9 @ 3h00 Sun 18    22.7 @16h00 Wed  7    13.7
- Jul         8.3 @ 4h00 Fri 21    25.9 @13h00 Wed  5    15.9
- Aug         7.6 @ 5h00 Tue 15    26.5 @11h00 Fri  4    16.4
- Sep         5.0 @ 6h00 Thu 28    20.3 @13h00 Sun 10    14.0
- Oct        -0.4 @ 7h00 Wed 25    16.9 @14h00 Wed  4    11.1
- Nov        -1.6 @ 6h00 Wed 29    12.4 @12h00 Thu 16     7.1
- Dec        -0.7 @ 3h00 Thu 28    15.3 @12h00 Tue 19     5.5
- All  -2.2 @ 3h00 Fri 24 Feb   26.5 @11h00 Fri  4 Aug    9.9
- Typical winter week begins Monday 13 Feb,
- Typical spring week begins Monday 10 April,
- Typical summer week begins Monday 5 June.
- Typical autumn week begins Monday 25 September.
- Typical winter week begins Monday 4 December,
+Climate is HEMSBY - GBR
+ Location: 52.68N  1.68E : 1995
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -1.0 @23h00 Sun-01       11.5 @ 2h00 Thu-26     4.8
+ Feb     -2.2 @ 3h00 Fri-24       13.3 @13h00 Tue-28     4.6
+ Mar     -2.0 @ 4h00 Sun-05       13.5 @14h00 Mon-20     5.7
+ Apr     -1.7 @ 5h00 Fri-21       17.8 @14h00 Fri-28     8.2
+ May      2.5 @ 5h00 Thu-04       18.3 @12h00 Mon-29    11.1
+ Jun      6.9 @ 3h00 Sun-18       22.7 @16h00 Wed-07    13.7
+ Jul      8.3 @ 4h00 Fri-21       25.9 @13h00 Wed-05    15.9
+ Aug      7.6 @ 5h00 Tue-15       26.5 @11h00 Fri-04    16.4
+ Sep      5.0 @ 6h00 Thu-28       20.3 @13h00 Sun-10    14.0
+ Oct     -0.4 @ 7h00 Wed-25       16.9 @14h00 Wed-04    11.1
+ Nov     -1.6 @ 6h00 Wed-29       12.4 @12h00 Thu-16     7.1
+ Dec     -0.7 @ 3h00 Thu-28       15.3 @12h00 Tue-19     5.5
+ Annual  -2.2 @ 3h00 Fri-24-Feb   26.5 @11h00 Fri-04-Aug     9.9
+ ---Seasons & typical periods---
+Winter season is Sun-01-Jan - Sun-19-Mar
+Typical winter week begins Sun-29-Jan
+Spring season is Mon-20-Mar - Sun-21-May
+Typical spring week begins Mon-10-Apr
+Summer season is Mon-22-May - Sun-27-Aug
+Typical summer week begins Mon-05-Jun
+Autumn season is Mon-28-Aug - Sun-05-Nov
+Typical autumn week begins Mon-02-Oct
+Winter season is Mon-06-Nov - Sun-31-Dec
+Typical winter week begins Mon-04-Dec
 *help_end
 *item
 *name	HONG KONG SAR CHN
@@ -1304,6 +1422,46 @@ Winter season is Mon-12-Nov - Mon-31-Dec
 Typical winter week begins Mon-03-Dec
 *help_end
 *item
+*name	Malin Ireland (039800)
+*aide	Malin Ireland (039800) sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/IRL_Malin
+*avail	ONLINE
+*winter_s  1  1 27  3 14 11 31 12 # seasons Sat-01-Jan--Sun-27-Mar & Mon-14-Nov--Sat-31-Dec
+*spring_s 28  3  5  6 22  8 13 11 # seasons Mon-28-Mar--Sun-05-Jun & Mon-22-Aug--Sun-13-Nov
+*summer_s  6  6 21  8 # summer season Mon-06-Jun--Sun-21-Aug
+*winter_t 12  2 18  2 19 12 25 12 # typical Sat-12-Feb--Fri-18-Feb & Mon-19-Dec--Sun-25-Dec
+*spring_t 25  4  1  5  3 10  9 10 # typical Mon-25-Apr--Sun-01-May & Mon-03-Oct--Sun-09-Oct
+*summer_t 18  7 24  7 # typical summer Mon-18-Jul--Sun-24-Jul
+*help_start
+Climate is MALIN - IRL
+ Location: 55.37N  7.33W : 1994
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan      1.4 @22h00 Fri-28       10.4 @13h00 Sat-29     5.8
+ Feb      0.9 @ 9h00 Wed-16       11.6 @16h00 Sat-12     5.9
+ Mar      1.1 @ 6h00 Sat-26       11.8 @15h00 Mon-07     6.7
+ Apr      3.2 @24h00 Sun-24       13.4 @14h00 Wed-27     8.0
+ May      2.0 @ 4h00 Tue-03       15.8 @11h00 Sun-22     9.7
+ Jun      5.6 @ 5h00 Sun-12       20.9 @12h00 Sun-19    12.2
+ Jul      6.8 @ 3h00 Mon-04       20.5 @ 9h00 Fri-08    14.2
+ Aug      7.5 @ 3h00 Thu-25       20.6 @15h00 Fri-19    14.2
+ Sep      7.2 @ 2h00 Mon-26       19.8 @13h00 Sun-18    12.9
+ Oct      5.6 @19h00 Mon-03       17.0 @15h00 Mon-10    10.8
+ Nov      3.5 @ 9h00 Wed-16       15.1 @ 1h00 Wed-09     8.6
+ Dec      1.4 @24h00 Tue-13       13.0 @22h00 Fri-02     6.6
+ Annual   0.9 @ 9h00 Wed-16-Feb   20.9 @12h00 Sun-19-Jun     9.7
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-27-Mar
+Typical winter week begins Sat-12-Feb
+Spring season is Mon-28-Mar - Sun-05-Jun
+Typical spring week begins Mon-25-Apr
+Summer season is Mon-06-Jun - Sun-21-Aug
+Typical summer week begins Mon-18-Jul
+Autumn season is Mon-22-Aug - Sun-13-Nov
+Typical autumn week begins Mon-03-Oct
+Winter season is Mon-14-Nov - Sat-31-Dec
+Typical winter week begins Mon-19-Dec
+*help_end
+*item
 *name	MEMPHIS TN USA iwec 723340
 *aide	MEMPHIS TN USA iwec 723340 was sourced from US DoE web Sep 2005
 *dbfl	/usr/esru/esp-r/climate/USA_TN_Memphis_iwec
@@ -1418,38 +1576,44 @@ The solar radiation is Direct Normal. Dry bulb temperatures:
  Typical winter week begins Monday 29 November,
 *help_end
 *item
-*name	Oban UK IWEC WMO 034960
-*aide	Oban UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_oban_iwec
+*name	Oban - GBR (031140)
+*aide	Oban Scotland GBR (031140) was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/GBR_Oban
 *avail	ONLINE
-*winter_s 3  1  20  3  31  10  31 12
-*spring_s 21 3  15  5  19  9  30 10
-*summer_s 16 5  18  9
-*winter_t 14  2  20  2 14 11 20 11
-*spring_t 19  4  25  4  3 10  9 10
-*summer_t  6  6  12  6
+*winter_s  1  1 20  3 31 10 31 12 # seasons Sat-01-Jan--Sun-20-Mar & Mon-31-Oct--Sat-31-Dec
+*spring_s 21  3 15  5 22  8 30 10 # seasons Mon-21-Mar--Sun-15-May & Mon-22-Aug--Sun-30-Oct
+*summer_s 16  5 21  8 # summer season Mon-16-May--Sun-21-Aug
+*winter_t  5  2 11  2 14 11 20 11 # typical Sat-05-Feb--Fri-11-Feb & Mon-14-Nov--Sun-20-Nov
+*spring_t  4  4 10  4 12  9 18  9 # typical Mon-04-Apr--Sun-10-Apr & Mon-12-Sep--Sun-18-Sep
+*summer_t  6  6 12  6 # typical summer Mon-06-Jun--Sun-12-Jun
 *help_start
-Oban is located at 56.4N and 5.5W.  The solar
-radiation is Direct Normal. Dry bulb temperatures:
- Month     Minimum  Time           Maximum  Time         Mean
- Jan        -2.1 @ 3h00 Sun 16     9.5 @12h00 Thu 20     4.8
- Feb        -3.9 @24h00 Tue  8     9.9 @15h00 Sat  5     5.1
- Mar        -3.8 @ 4h00 Mon 14    11.4 @15h00 Mon 21     5.5
- Apr         0.2 @ 7h00 Sat  9    15.0 @16h00 Tue 19     8.1
- May         2.4 @ 5h00 Wed 11    19.6 @ 8h00 Sat 14    10.7
- Jun         2.5 @ 6h00 Wed  1    25.7 @13h00 Sun 19    12.7
- Jul         8.7 @ 4h00 Sun 17    22.5 @18h00 Thu 21    14.3
- Aug         4.6 @ 5h00 Fri  5    19.2 @14h00 Wed 17    13.7
- Sep         3.9 @ 7h00 Sun 11    19.8 @16h00 Mon 12    12.3
- Oct         1.6 @ 8h00 Mon 31    18.6 @15h00 Sat  1    10.6
- Nov        -1.0 @ 6h00 Wed 16    13.7 @ 3h00 Wed  9     7.3
- Dec        -2.5 @ 9h00 Wed 21    12.3 @12h00 Sun 11     6.2
- All  -3.9 @24h00 Tue  8 Feb   25.7 @13h00 Sun 19 Jun    9.3
- Typical winter week begins Monday 14 Feb,
- Typical spring week begins Monday 19 April,
- Typical summer week begins Monday 6 June.
- Typical autumn week begins Monday 3 October.
- Typical winter week begins Monday 14 November,
+Climate is OBAN - GBR
+ Location: 56.42N  5.47W : 1994
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -2.1 @ 3h00 Sun-16        9.5 @12h00 Thu-20     4.8
+ Feb     -3.9 @24h00 Tue-08        9.9 @15h00 Sat-05     5.1
+ Mar     -3.8 @ 4h00 Mon-14       11.4 @15h00 Mon-21     5.5
+ Apr      0.2 @ 7h00 Sat-09       15.0 @16h00 Tue-19     8.1
+ May      2.4 @ 5h00 Wed-11       19.6 @ 8h00 Sat-14    10.7
+ Jun      2.5 @ 6h00 Wed-01       25.7 @13h00 Sun-19    12.7
+ Jul      8.7 @ 4h00 Sun-17       22.5 @18h00 Thu-21    14.3
+ Aug      4.6 @ 5h00 Fri-05       19.2 @14h00 Wed-17    13.7
+ Sep      4.4 @ 5h00 Sun-25       17.1 @15h00 Thu-01    12.1
+ Oct      1.6 @ 8h00 Mon-31       18.6 @15h00 Sat-01    10.6
+ Nov     -1.0 @ 6h00 Wed-16       13.7 @ 3h00 Wed-09     7.3
+ Dec     -2.5 @ 9h00 Wed-21       12.3 @12h00 Sun-11     6.2
+ Annual  -3.9 @24h00 Tue-08-Feb   25.7 @13h00 Sun-19-Jun     9.3
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-20-Mar
+Typical winter week begins Sat-05-Feb
+Spring season is Mon-21-Mar - Sun-15-May
+Typical spring week begins Mon-04-Apr
+Summer season is Mon-16-May - Sun-21-Aug
+Typical summer week begins Mon-06-Jun
+Autumn season is Mon-22-Aug - Sun-30-Oct
+Typical autumn week begins Mon-12-Sep
+Winter season is Mon-31-Oct - Sat-31-Dec
+Typical winter week begins Mon-14-Nov
 *help_end
 *item
 *name	Ottawa CWEC 1997 IWMO 716280

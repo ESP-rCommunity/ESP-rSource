@@ -246,9 +246,7 @@ c     None. Sums up Monthly versions of energy Variables above..
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER IDAYN,iMonth
       INTEGER isystem        !System Number
@@ -318,10 +316,7 @@ C      USE Ventilation_Data
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
-#include "Ventilation_Data.h"
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER IDAYN,iMonth
       REAL    fHeating_load  !Sytstem Energy Joules
@@ -680,41 +675,18 @@ C     ndbph is number of data blocks/hr for monitor function.
       SUBROUTINE H3KSTORE_SAVELEVEL5(ICOMP,IDAY,ITSMUS,ndbph)
       IMPLICIT NONE
 #include "building.h"
-#include "geometry.h"
 #include "control.h"
-
-C     #include "cfd.h"
 #include "monitor.h"
 
 
-      COMMON/TC/ITC,ICNT
-      INTEGER ITC,ICNT
-
       COMMON/FILEP/IFIL
       INTEGER IFIL
-
-
-
-      COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
-      INTEGER ITCF
-      INTEGER ITRACE(MTRACE)
-      INTEGER IZNTRC(MCOM)
-      INTEGER ITU
 
       COMMON/BTIME/BTIMEP,BTIMEF
       REAL BTIMEP,BTIMEF
 
       COMMON/LIBREC/IRECPL
       INTEGER IRECPL
-
-      COMMON/SAVE/ISAVE
-      INTEGER ISAVE
-
-      COMMON/PREC1/SNA(MCOM,MS)
-      REAL SNA
-
-      common/prec7/itcnst
-      INTEGER itcnst
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -744,16 +716,7 @@ C     #include "cfd.h"
       COMMON/SETUQ/QPLTP,QPLTF,CONV
         REAL    QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
 
-      COMMON/COE32/QSOLI,QSOLE
-      REAL QSOLI(MS,2),QSOLE(MS,2)
-
-      COMMON/COE34/QCASRT,QCASCT
-      REAL QCASRT(MCOM),QCASCT
-
-      COMMON/COE39/CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
-        REAL    CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
-
-
+ 
 C     Commons for summary of solar (for results library)
       common/solsum/q1adjz,q1outs,q2adjz,q2lost,q2tmc,
      &     q2wall,q2rem,q2cfc
@@ -764,17 +727,6 @@ C     Commons for summary of solar (for results library)
 
       COMMON/CCTL/ICASCF
       INTEGER ICASCF(MCOM)
-
-      COMMON/PREC9/NCONST,NELTS,NGAPS,NPGAP
-        INTEGER NCONST(MCOM),NELTS(MCOM,MS)
-        INTEGER NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
-
-
-
-      COMMON/PRECTC/ITMCFL,TMCT,TMCA,TMCREF,TVTR
-        INTEGER ITMCFL(MCOM,MS)
-        REAL TMCT(MCOM,MTMC,5),TMCA(MCOM,MTMC,ME,5)
-        REAL TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
 
       COMMON/RHCTLDAT/ZLLDF,ZLLDP
@@ -808,41 +760,6 @@ C     Commons for summary of solar (for results library)
       COMMON/LS3A/TMIXP
       REAL TMIXP
 
-C THE DEFINITION OF LIGHTS common block HAS CHANGED. 
-      COMMON/LIGHTS/ICGCTL(MCOM)
-      INTEGER ICGCTL
-C      COMMON/LIGHTS/FRACP,FRACF,FRACS
-C      REAL FRACP,FRACF,FRACS(MCOM)
-
-      COMMON/ADJC/IE,ATP,ATF,ARP,ARF
-        INTEGER IE(MCOM,MS)
-        REAL    ATP(MCOM,MS),ATF(MCOM,MS)
-        REAL    ARP(MCOM,MS),ARF(MCOM,MS)
-
-
-C     Commons in support of surface energy balance trace feature.
-      COMMON/COE31/HRP,ZHRP,HRF,ZHRF
-        REAL    HRP(MS,MS)
-        REAL    ZHRP(MS)
-        REAL    HRF(MS,MS)
-        REAL    ZHRF(MS)
-
-
-      common/concoe/hcip,hcif,hcop,hcof
-        REAL    HCIP(MCOM,MS),HCIF(MCOM,MS)
-        REAL    HCOP(MCOM,MS),HCOF(MCOM,MS)
-
-
-C     T2S4 added for use with save option 4 save & trace.
-      COMMON/T2S4/CONI,CONE,DENI,DENE,SHTI,SHTE,THKI,THKE
-        REAL    CONI(MCOM,MS),CONE(MCOM,MS)
-        REAL    DENI(MCOM,MS),DENE(MCOM,MS)
-        REAL    SHTI(MCOM,MS),SHTE(MCOM,MS)
-        REAL    THKI(MCOM,MS),THKE(MCOM,MS)
-
-      common/enbal/nsurf,insurf
-        INTEGER nsurf,insurf(ms)
-
 
       common /bmontr/mnzn,mzone,montrb,yminb,ymaxb,
      &     ibplot,irecpb,mbstv
@@ -855,20 +772,6 @@ C     BEMS interaction time for results dump.
         REAL bemstime
         INTEGER ibems
         CHARACTER bresfil*72
-
-
-      COMMON/GR1D01/NNDS,NNDZ,NNDC,NNDL
-      INTEGER NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-
-      COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
-      REAL PEZON,QEZON
-
-
-      COMMON/ENETZONP/ZONPPP,ZONQPP
-      REAL ZONPPP(MCOM),ZONQPP(MCOM)
-
-      COMMON/ENETZONF/ZONPP,ZONQP
-      REAL ZONPP(MCOM),ZONQP(MCOM)
 
 
 C Common to store casual/radiative/latent gain injections
@@ -886,14 +789,6 @@ C - Alex, Feb 24, 2004.
         REAL Cas_Lat_dat(MCOM)
 
 
-C     CFD
-      COMMON/cfdfil/LCFD,IFCFD
-        CHARACTER*72 LCFD(MCOM)
-        INTEGER IFCFD(MCOM)
-
-      COMMON/CFDCNV/QCFDF,QCFDP
-      REAL QCFDF(MCOM,MS)
-      REAL QCFDP(MCOM,MS)
 
       COMMON/OUTIN/IUOUT,IUIN
         INTEGER IUOUT
@@ -903,34 +798,7 @@ C     Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
       INTEGER irdact
 
-C To match code in esrubld/blibsv.F
-      INTEGER irdcb
-      REAL sTMA,sTMCON,sQM,sTMS,sQSI,sQSE,sQV1,sQV2,sQW1,sQW2
-      REAL sZONPP,sZONQP,sQSA,sQCASR,sQCASC,sZRH,sFRAC
-      REAL sTMC,sZLL,sSPM1,sSPM2,sqswrdi,sqlwrdi,sqconvi
-      REAL sqcondi,sqstori,sqstore,sqconde,sqconve,sqlwrde
-      REAL sqlwrbd,sqlwrsk,sqswrde,soutopq,souttrn,sopqin,strnin
-      REAL sqair,sqbridge
-      common/rdcbld/irdcb(MCOM),sTMA(MCOM),sTMCON(MCOM),sQM(MCOM),
-     &            sTMS(MCOM,MS),sQSI(MCOM,MS),sQSE(MCOM,MS),
-     &            sQV1(MCOM),sQV2(MCOM),sQW1(MCOM),sQW2(MCOM),
-     &            sZONPP(MCOM),sZONQP(MCOM),sQSA(MCOM),sQCASR(MCOM),
-     &            sQCASC(MCOM),sZRH(MCOM),sFRAC(MCOM),
-     &            sTMC(MCOM,MS,MN),sZLL(MCOM),sSPM1(MCOM),sSPM2(MCOM),
-     &            sqswrdi(MCOM,MS),sqlwrdi(MCOM,MS),sqconvi(MCOM,MS),
-     &            sqcondi(MCOM,MS),sqstori(MCOM,MS),sqstore(MCOM,MS),
-     &            sqconde(MCOM,MS),sqconve(MCOM,MS),sqlwrde(MCOM,MS),
-     &            sqlwrbd(MCOM,MS),sqlwrsk(MCOM,MS),sqswrde(MCOM,MS),
-     &            soutopq(MCOM),souttrn(MCOM),sopqin(MCOM),
-     &            strnin(MCOM),sqair(MCOM),sqbridge(MCOM)
-
-
       character outs*144
-      CHARACTER LCFGF*72
-      CHARACTER cfgroot*24
-      CHARACTER ZSDES*28
-      CHARACTER ZSDESC*20
-      CHARACTER ZSDESS*16
 
       logical close
 
@@ -955,10 +823,6 @@ C Local Variables
         REAL DF
         REAL HP
         REAL HF
-        REAL TMS
-        REAL QSI
-        REAL QSE
-        REAL TMC
         INTEGER IPASS
         INTEGER ICNTB
         REAL Q1TOT
@@ -989,7 +853,6 @@ C Local Variables
         INTEGER NDAY
 
 
-      DIMENSION TMS(MS),QSI(MS),QSE(MS),TMC(MN)
       data ipass/0/,icntb/1/
 
 

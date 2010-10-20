@@ -88,6 +88,7 @@ C Backup of documentation (for editing).
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
       integer IWM  ! for radio button
+      integer NCO,ICO ! max items and current menu item
 
 C Read the header.
       IFB=igendbf(idbh)
@@ -714,6 +715,7 @@ C      common/gendb/LGENDB
       CHARACTER dstmp*24,catlist*32
       character ct*8,bl2*2
       integer IV  ! for radio button
+      integer NITMS,INOC,INO ! max items and current menu item
 
 C Assumes that the db file is open, gather the catg documentation.
       bl2='  '
@@ -1521,7 +1523,7 @@ C Backup of documentation (for editing).
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character dbnote*72,c8*8,outs*124
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
-      character t72*72,LGENDB*72,act*1,h*72,dstmp*24,t248*248
+      character LGENDB*72,act*1,h*72,dstmp*24,t248*248
 
 C Assumes that the db file is open, gather the catg documentation. 
       IAFIL=IFIL+1

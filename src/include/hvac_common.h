@@ -101,3 +101,21 @@ C.....Actual system capacity under given conditions at
 C.....current timestep (W)
 
       real fH3KActualCapacity(max_sys)
+      
+C Common for day/period information for Conventional Cooling
+      common/HVAC_Period_Information/
+     &        itotal_num_day_periods,
+     &        num_out_air_day_types(max_sys),
+     &        num_outside_air_day_periods(max_sys,10),
+     &        iend_hour_out_air_daytype(max_sys,8760),
+     &        iend_hour_out_air_dayperiod(max_sys,100),
+     &        day_period_out_air_flow(max_sys,100)
+
+C.....day/period information for Conventional Cooling
+      INTEGER num_out_air_day_types,
+     &        itotal_num_day_periods,
+     &        num_outside_air_day_periods,
+     &        iend_hour_out_air_daytype,
+     &        iend_hour_out_air_dayperiod
+     
+      REAL day_period_out_air_flow

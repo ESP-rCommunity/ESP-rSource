@@ -100,6 +100,7 @@ C this clash.
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
       integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Default value for GRTOOL file hourly flag = 0 (off).
       IHFLAG=0

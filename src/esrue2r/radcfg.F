@@ -41,6 +41,7 @@ C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -48,8 +49,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/FILEP/IFIL
       common/rpath/path
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
@@ -59,8 +59,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/radabs/NABS
       common/user/browse
 
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
       character LBSRIF*72,pfile*72,path*72,runpath*72,pathtype*24,fs*1
@@ -301,6 +299,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       LOGICAL SELECT,delzone,cpyzone,modscene
       integer IW  ! for radio button
+      integer MVERT,IVERT  ! max items and current menu item
 
  1    IER=0
       SELECT=.false.

@@ -29,8 +29,6 @@ C ********** exportcad
 C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
 
-      USE AIM2_InputData, ONLY: iAIM2,LAIM2
-
 #include "building.h"
 #include "model.h"
       
@@ -62,6 +60,8 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
+      integer NITMS,INO1 ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
@@ -150,8 +150,8 @@ C Help text for this menu.
       H(55)='This export facility supports testing of this file'
       H(56)='format and data structures.'
       H(57)=' '
- 
-      CALL EMENU('Export Model',ITEMS1,12,INO1)
+      NITMS=12
+      CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
 
@@ -553,12 +553,15 @@ C Parameter ichoice is currently not used.
       
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       common/rcmd/LCMDFL
 
 C Indicator of possible focus zone.
@@ -851,6 +854,7 @@ C useraction (char 8) is passed in to specify the task.
 C ier (integer) is returned as 1 if no exemplars file found.
       subroutine rexmpl(iexfil,exemplar,useraction,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       
@@ -863,7 +867,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
-      common/uhome/upath
+      INTEGER :: INDFCG
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
@@ -882,7 +886,7 @@ C to quit the image browser.
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
-      character doit*248,upath*72
+      character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
 
@@ -891,6 +895,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character dq*1,fs*1,thecfgis*72
       character useraction*8
       logical XST,unixok
+      integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -1508,6 +1513,8 @@ C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 
       USE AIM2_InputData, ONLY: iAIM2,LAIM2
+      
+      IMPLICIT NONE
 
 #include "building.h"
 #include "model.h"
@@ -1525,25 +1532,29 @@ C ICLIM,LCLIM (for climate file)
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/FILEP/IFIL
+      INTEGER :: ifil
       common/rpath/path
-      common/uhome/upath
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C6/INDCFG
+      INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       common/LOG/LPRJLG
       common/radcfg/LRADCF
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      INTEGER :: ifcfd
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
       common/user/browse
       common/IPVF/lipvdatf
       COMMON/GR1D05/LGRD1D
@@ -1551,15 +1562,19 @@ C ICLIM,LCLIM (for climate file)
       COMMON/GRND100/GRND3D
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL :: BLDG3D,ZONE3D
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/VTHP18/LNLTHP
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
       common/MOIST01/MSTROK,MSTRZN(MCOM)
+      LOGICAL :: MSTROK,MSTRZN
       common/MOIST02/LMOIST(MCOM)
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
+      INTEGER :: ispmxist,ientxist
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -1571,7 +1586,9 @@ C ICLIM,LCLIM (for climate file)
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
+      INTEGER :: ibsimp
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
       character LPRJLG*72,LPNF*72,LMOIST*72
@@ -1591,15 +1608,14 @@ C The string buffer doit is only used within ifdef code.
 #ifdef MINGW
       character doit*248
 #endif
-      character path*72,upath*72,cfgroot*24,curdir*72
+      character path*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72,aimpth*24,
-     &          bsmpth*24
+      character fs*1
+      character LTMPFL*72
       character LF*72,LFL*144
       CHARACTER spflnam*72,entflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
@@ -1608,7 +1624,6 @@ C The string buffer doit is only used within ifdef code.
 
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
-      LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,
@@ -1616,6 +1631,9 @@ C patroot is true if path is at root level.
       logical patdot,patcfg,patroot,pathome
       character WORDS(12)*32
 C      character WORDS*32
+
+      INTEGER :: lc,j,iw,iuf,iunit,ito,istat,ipid,img,ifold,i,ier
+      INTEGER :: iaccess,icerr,ios,lcd,llf,lr,ltp,ltr
 
       iunit=ifil+1
       patdot=.false.

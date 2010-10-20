@@ -114,6 +114,7 @@ C write it to the terminal.
       CHARACTER ZITEM(11)*24
       character LTMP*72,buffer*120,H*72
       CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      integer NITEMS,MNUPIK ! max items and current menu item
 
 C Check library is not empty.
       CALL EPAGE

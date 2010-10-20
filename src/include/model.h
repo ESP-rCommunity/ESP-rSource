@@ -2,10 +2,35 @@ C This header relates to high level model entities in ESP-r. It is
 C dependant on building.h and should follow building.h so that
 C parameters will have been defined.
 
+C Configuration file information.
+      integer icfgv  ! version of configuration file which determines
+                     ! the format and contents of the file:
+                     ! version 1 did not have *database section
+                     ! version 2 did not use tag data format (before 1996)
+                     ! version 3 used zone obstruction files and IPV files
+                     ! version 4 current version from May 2008
+      common/CFGV/icfgv
+
 C The title and summary of the model
       character modeltitle*72  ! title of the model (to replace LSNAM)
       character modeldocblock*248   ! text block of documentation for model
       common/modeltd/modeltitle,modeldocblock
+
+C Paths from model cfg file folder to other model file types. As the
+C folder names are in the form of ../nets the string length is short.
+      character zonepth*24,netpth*24  ! to zone files and flow network files
+      character ctlpth*24,imgpth*24   ! to control files and model images
+      character radpth*24,docpth*24    ! to radiance model files and documents
+      character tmppth*24,dbspth*24   ! to scratch files and local databases
+      character aimpth*24,bsmpth*24   ! to AIM2 files and BASIMP files
+      character hvacpth*24            ! to ideal HVAC files
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth,aimpth,bsmpth,hvacpth
+
+      character upath*72  ! Path to the users home folder (this is often
+                          ! combined with local path names to make up a
+                          ! longer (144 character) string.
+      common/uhome/upath
 
       character LPROJ*72 ! zone scheduling (operation files)
       character LGEOM*72 ! zone geometry file

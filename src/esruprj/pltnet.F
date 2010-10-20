@@ -50,6 +50,7 @@ C Plant network.
 
       CHARACTER*32 ITEM(7)
       character H*72,mode*1,LPNF*72
+      integer NITMS,INO ! max items and current menu item
 
 C Use next unit up from plant network file for the plant database.
       ifpnf=IFIL+1
@@ -497,6 +498,7 @@ C interaction is begun.
       character*(*) head
       CHARACTER H*72,VERT*44,KEY*1,MOD*1,ctype*16,desc*16
       LOGICAL SELECT,OK,dok
+      integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -712,6 +714,7 @@ C interaction is begun.
       character sendstr*20,sendnd*12,recvnd*12 
       CHARACTER H*72,VERT*88,KEY*1,MOD*1
       LOGICAL SELECT,OK,dok
+      integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -962,6 +965,7 @@ C interaction is begun.
       character*(*) head
       CHARACTER H*72,VERT*44,KEY*1,MOD*1,CNTSTR*20
       LOGICAL SELECT,OK,dok
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 

@@ -75,6 +75,7 @@ C Pre calculated data (filtered).
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
       integer IOT  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

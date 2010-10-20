@@ -132,7 +132,6 @@ C IEEE callback (Solaris)
 
 C Path to model and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/lcmdfl
 
 C Indicator of possible focus zone and action to take.
@@ -160,7 +159,7 @@ C Name of current application.
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
       character descrh*5,descrd*5,inf*144,lcmdfl*144
-      character path*72,upath*72,cfgroot*24,outstr*124
+      character path*72,cfgroot*24,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
       character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf
@@ -178,6 +177,8 @@ C Name of current application.
       integer lnshd   ! length of current shading file string.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer ier
+      integer nitems,inos ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else

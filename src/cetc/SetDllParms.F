@@ -57,6 +57,8 @@ C----------------------------------------------------
 
       subroutine SetDllParms(termtype,iappw,iappx,iappy,inf,sps,aut,
      &	actf)
+#include "building.h"
+#include "model.h"
 
       common/outin/iuout,iuin
       common/shout/icout
@@ -67,13 +69,11 @@ C----------------------------------------------------
      &           cCfgFile, cLogFile
       logical lBpsDebug
      
-      common/uhome/upath
       common/rcmd/LCMDFL
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
             
-      character*72 upath
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
  
       integer termtype,iappw,iappx,iappy

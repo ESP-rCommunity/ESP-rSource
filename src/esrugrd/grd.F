@@ -35,6 +35,7 @@ C << file names can be in place.
 
       program grd
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
@@ -66,7 +67,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C Path to problem
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       common/rzone/inzone
 
@@ -89,11 +89,12 @@ C Name of current application
       DIMENSION ITEM(12)
       CHARACTER H*72,LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
-      character upath*72,cfgroot*24,outs248*248,L144*144
+      character cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer MITEM,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero

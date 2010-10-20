@@ -524,6 +524,7 @@ C Generic db commons:
       logical primod
       real misc1,misc2
       logical showtags
+      integer MPLEM,IW ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -898,6 +899,7 @@ C Generic db commons:
       character ustr*12,unote*72,hold*32,kact*1,head*38
       character snote*248,outs*124,outs248*248
       logical primod,showtags
+      integer MPLEM,IW ! max items and current menu item
 
 C Scan the data from the common blocks. Check category type to see if
 C SYS or MAT also check first character of item name to see if it starts
@@ -1208,6 +1210,7 @@ C Generic db commons:
       character coltype*12,colptrn*72,hold*32,kact*1
       character snote*248,outs*124,outs248*248
       logical primod,showtags
+      integer MPLEM,IW  ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.

@@ -219,9 +219,7 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
 
 C Path to model and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
-      common/CFGV/icfgv
       common/user/browse
 
 C CFD output channels.
@@ -292,7 +290,7 @@ C      logical gopher  ! not references
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
-      character path*72,upath*72,bresfil*72
+      character path*72,bresfil*72
       character RFILE*72,PFILE*72,MSTRFILE*72
       character LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
@@ -309,6 +307,7 @@ C Variables used to configure h3kreports
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer NITMS,INO  ! max items and current menu item
 
 C (possibly) Enable floating point exception error handling on
 C gnu 3.X compilers

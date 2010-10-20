@@ -175,6 +175,7 @@ C Characters
 
       LOGICAL OK,DOK,BASEV
       integer INP  ! for radio button
+      integer NITEM,INO ! max items and current menu item
 
 C Give a message to user explaining they should have fully defined the 
 C building side and the plant network prior to defining the electrical
@@ -506,7 +507,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1071,7 +1072,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1257,7 +1258,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -2739,7 +2740,7 @@ C unit (a power-only component model)
 
 C Type casting (all varaiables and arrays cast explicitly)
       INTEGER NPOWCOM,POWCOMNO,POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,
-     &NPOWCDATS,IEPOW,NIT,NPOWITEM2,IMOUT,IMOUT2,NENOD,ENODPHTYP,ENODPH,
+     &NPOWCDATS,IEPOW,NIT,NENOD,ENODPHTYP,ENODPH,
      &ENODTYP,ENODNO
 
 C Characters
@@ -2755,6 +2756,7 @@ C Characters
       REAL POWCDAT,SPMISC,VAR,ENODBASEV,ENODBASEP 
 
       LOGICAL POREPT,PHCPT,OK,dok
+      integer NPOWITEM,IMOUT,NPOWITEM2,IMOUT2 ! max items and current menu item
 
       POREPT=.FALSE.
 
@@ -3240,6 +3242,7 @@ C Characters
       CHARACTER*72 SSTR,CNCDESC,DADESC,CCSTR,HYDESC,ENDESC,POWCDATS,
      &CONECOMDESC,POWCOMDESC,H,LNGSTR
       CHARACTER*124 OUTS
+      integer NCCITEM,IMOUT,NCCITEM2,IMOUT2 ! max items and current menu item
 
       LOGICAL OK,DOK,CCREPT
       CCREPT=.FALSE.

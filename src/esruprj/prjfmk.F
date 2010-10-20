@@ -86,8 +86,6 @@ C =2 with more than 3 day types allowed and sorted
       INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
@@ -105,13 +103,12 @@ C updated when the user exits).
       CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NIGU,IGU,NITEMS,INO ! max items and current menu item
        
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1320,6 +1317,7 @@ C      integer lnblnk  ! function definition
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY),ix,iy
       integer IW  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initial menu entry setup.
       idtyp = 1
@@ -1754,6 +1752,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY)
       integer IW   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Return if the version is not three.
       if(ip3ver(icomp).lt.3)then
@@ -2614,8 +2613,6 @@ C =2 with more than 3 day types allowed and sorted
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
 
 C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
@@ -2633,9 +2630,7 @@ C Scratch copy of air flow pattern from an operations file.
       character*(*) sfile
       character h*72
       CHARACTER oprdescc*248,ctlstrc*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,ltmp*72,aimpth*24,
-     &          bsmpth*24
+      character ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
@@ -3397,6 +3392,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
       integer ICGTS,IW  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72
@@ -4894,8 +4890,6 @@ C =2 with more than 3 day types allowed and sorted
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       common/loadlabelc/lodlabelc(7)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
@@ -4916,9 +4910,7 @@ C Descriptive label for a zone load or casual gain.
       character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,ltmp*72,aimpth*24,
-     &          bsmpth*24
+      character ltmp*72
       character lodlabel*6,lodlabelc*6
       character fs*1,GFILE*72,iwatt*8
       character actcas*8

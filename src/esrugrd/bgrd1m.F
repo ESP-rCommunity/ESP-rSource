@@ -59,6 +59,7 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
+      integer MITEM,INO ! max items and current menu item
 
       DIMENSION IVALZ(MCOM),IVALS(MS)
 
@@ -307,6 +308,7 @@ C *********************************************************************
       CHARACTER SURFNM*12
       CHARACTER H*72
       CHARACTER*72 MSG1,TXT,TEXT1,TEXT2
+      integer MITEM,INO  ! max items and current menu item
 
       DIMENSION IVALS(MS),IVALL(ME)
 

@@ -1509,12 +1509,13 @@ C ************* recongdb
 C recongdb reconfigure a generic db (change its length) via exporting to ascii 
 C and re-importing. If no errors it exits with IFB still open.
       subroutine recongdb(IAF,IFB,LFB,idbh,IER)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/uhome/upath
 
 C Backup of documentation (for editing).
       common/tmpdocc/bkascidb
@@ -1525,7 +1526,7 @@ C Backup of documentation (for editing).
      &              dbdoc(10)
 
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72,db*12
-      character bkascidb*72,fs*1,upath*72,tfile*72,LFB*72
+      character bkascidb*72,fs*1,tfile*72,LFB*72
       logical XST,unixok
 
 C First remove any existing temporary ascii file.
@@ -2380,6 +2381,7 @@ C and current items then lengths of each list.
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character dbnote*72,CLDES*38,KEY*1,head*37,h*72,ctype*8,ct*8
+      integer NCO,ICO ! max items and current menu item
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
@@ -2523,6 +2525,7 @@ C and current items then lengths of each list.
 
       character KEY*1,PDBM*34,head*42,h*72
       logical OK,dok
+      integer NITMS,INO ! max items and current menu item
 
 C Assumes that the db file is open, get gendb6 via scandbhd and
 C then gather the catg documentation. 

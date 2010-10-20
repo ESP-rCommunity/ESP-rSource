@@ -24,12 +24,10 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "espriou.h"
-
-C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
-      parameter (MIPVA=MSPS)
       
 #include "seasons.h"
 C seasons.h provides typper and typsea
@@ -65,7 +63,6 @@ C file associated with this action.
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Project journal on/off, unit number, cmd, file name.
@@ -92,7 +89,7 @@ C Name of current application
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
-      character path*72,upath*72,xfile*144,tg*1,delim*1
+      character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
@@ -101,6 +98,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ic,iwm  ! for radio buttons
+      integer NITEM,INO  ! max items and current menu item
 
 C Initial assumptions. Pass module name to C code structure.
       call ezero
@@ -898,32 +896,45 @@ C asking user which year to transfer.
           NTSPH=1
           H(1)='The year is required to find the day of the week '
           H(2)='for a given julian day. Korean Met off files can'
-          H(3)='have several years. '
-          CALL EASKI(IYEAR,' ',' Which year to import? ',
-     &             1900,'W',2020,'W',2000,'year',IER,3)
+          H(3)='include several years but standard ESP-r climate'
+          H(4)='files are setup for a single year. If your data '
+          H(5)='file starts on something other than 1 January '
+          H(6)='then data not matching the year you request will'
+          H(7)='be filled with zeros. '
+          CALL EASKI(IYEAR,' ','Which year to import? ',
+     &             1900,'W',2020,'W',2000,'year',IER,7)
           CLMLOC=' '
           H(1)='Site name (30 char) for descriptive purposes. '
-          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
+          CALL EASKS(CLMLOC,' ','Climate site name ? ',
      &      30,'North_Pole','climate site. ',IER,1)
 
           H(1)='The climate latitude does not necessarily have to '
           H(2)='match the site latitude.  However, the difference '
           H(3)='should not be great or simulation results may be '
           H(4)='open to question.'
-          CALL EASKR(CLAT,' ',' Climate latitude ? ',
-     &             -89.9,'W',89.9,'W',30.0,'climate latitude',IER,4)
+          H(5)=' '
+          H(6)='Longitude difference is typically +-15 degrees and'
+          H(7)='is the offset from the local time meridian. You will'
+          H(8)='also be asked (later) about the actual longitude. '
+          CALL EASKR(CLAT,' ','Climate latitude ? ',
+     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,8)
 
-          CALL EASKR(CLONG,' ',' Longitude diference ?',
-     &             -14.9,'W',14.9,'W',0.0,'climate long',IER,4)
+          CALL EASKR(CLONG,' ',
+     &      'Longitude diference from local time meridian?',
+     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,8)
 
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This ASCII Korean file is the source to be read in. '
-          h(2)='You can browse for the source location and then '
-          h(3)='add in a name or type in the whole name. Typically'
-          h(4)='you are looking for a file name XXXH.dat where '
-          h(5)='XXX is a three digit number. '
+          h(1)='This ASCII Korean file is the source to be read in.'
+          h(2)='You can browse for the source location and then'
+          h(3)='add in a name or type in the whole name.'
+          h(4)=' '
+          h(5)='NOTE: the Korean MET file can include data in a form'
+          h(6)='that is difficult for clm to read. Please check and'
+          h(7)='edit the file for places of two commas in sequence '
+          h(8)='(i.e. with no value between the commas). Ensure that'
+          h(9)='there is a number (typically zero) inserted. '
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -934,20 +945,20 @@ C name with the full path.
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',96,DCLIM,'Korean climate file name',IER,5)
+     &          ' ',96,DCLIM,'Korean climate file name',IER,9)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',124,DCLIM,'Korean climate file name',IER,5)
+     &          ' ',124,DCLIM,'Korean climate file name',IER,9)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',144,DCLIM,'Korean climate file name',IER,5)
+     &          ' ',144,DCLIM,'Korean climate file name',IER,9)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &        ' ',144,DCLIM,'Korean climate file name',IER,5)
+     &        ' ',144,DCLIM,'Korean climate file name',IER,9)
           else
             CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &        ' ',96,DCLIM,'Korean climate file name',IER,5)
+     &        ' ',96,DCLIM,'Korean climate file name',IER,9)
           endif
 
 C If user canceled loop show menu again.
@@ -958,7 +969,17 @@ C If user canceled loop show menu again.
 C Cast back to 72 char name and do the conversion.
           llt=MIN0(lnblnk(llasci),72)
           write(LASCI,'(a)') LLASCI(1:llt)
-          call MKOREANCLM(ITRU,LASCI,IUNIT,IER)
+
+C Ask if older or newer file format.
+          H(1)='The Korean met office older files are in a different'
+          H(2)='format than file after ~2006.'
+          CALL EASKABC('Korean met office file age options:',' ',
+     &     'older file','newer file','cancel',ICT,2)
+          if(ICT.eq.1)then
+            call MKOREANCLM(LASCI,IUNIT,'old',IER)
+          elseif(ICT.eq.2)then
+            call MKOREANCLM(LASCI,IUNIT,'new',IER)
+          endif
         endif
       ELSEIF(INO.EQ.15)THEN
 
@@ -1017,6 +1038,20 @@ C Delimiter.
 
 C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('clm ',0)
+        h(2)=' '
+        h(3)='Additional note: '
+        h(4)=' '
+        h(5)='If you plan to import data from US DoE EPW climate files'
+        h(6)='please read the relevant chapter in the ESP-r Cookbook.'
+        h(7)=' '
+        h(8)='If you plan to import data from a Korean MET file might'
+        h(9)='include data in a form that is difficult for clm to'
+        h(10)='read. Please check and edit the file for places of two'
+        h(11)='commas or || in sequence (i.e. with no value'
+        h(12)='between the separators). Ensure that there is a'
+        h(13)='number (typically zero) inserted. If the data item is'
+        h(14)='for RH then a zero is not an appropriate number! '
+        CALL PHELPD('climate import',14,'climate_import',0,0,IER)
       ELSE
         INO=-1
         goto 3
@@ -1165,6 +1200,7 @@ C SETUP provides the menus and control logic for the preferences menu.
 
       DIMENSION SETUPM(6)
       CHARACTER SETUPM*36,H*72
+      integer nitms,ISETUP  ! max items and current menu item
 
 C Present the preferences menu. ISETUP is the menu index returned.
     2 IER=0
@@ -1191,8 +1227,8 @@ C Display of time of day.
 
       SETUPM(4)=  '? Help                              '
       SETUPM(5)=  '- Exit to main menu                 '
-
-      CALL EMENU('clm preferences',SETUPM,5,ISETUP)
+      nitms=5
+      CALL EMENU('clm preferences',SETUPM,nitms,ISETUP)
 
       IF(ISETUP.EQ.1)THEN
 

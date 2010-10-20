@@ -98,6 +98,8 @@ C << what about including common zndata in this manipulation? >>
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
       integer IRT  ! for radio button
+      integer icmpall  ! to signal request to compare all names
+
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -112,8 +114,11 @@ C << what about including common zndata in this manipulation? >>
       valy=0.0
       valz=0.0
       angr=0.0
+      same=.true.
+      clkok=.false.
       IOK=0
       IRV=1
+      IZC=0
 
       IF(ACTION.EQ.'D')THEN
 
@@ -587,7 +592,6 @@ C Use pickssur to find up to ilimit surfaces to copy, returning
 C the selections via array ispk.
         CALL EDISP(iuout,'Please specify surface(s) to copy...')
         IS=1
-        IZ=1
         inpick=0
         if(same)then
           CALL EPMENSV
@@ -614,7 +618,7 @@ C Read the other zone and put selected surface data into temp storage.
           call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
         endif
         npick=1
-  191   continue
+  191   continue   ! jump back point for processing subsequent surfaces.
         is=ispk(npick)
         if(same)then
           write(outs,'(2a)') ' Copying attributes of ',SNAME(ICOMP,IS)
@@ -631,8 +635,6 @@ C Read the other zone and put selected surface data into temp storage.
 
 C Generate a new surface name and default, then check to see if
 C if is a duplicate. 
-C << note: does not check name against the most recently copied
-C << surface.
   141   if(same)then
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
           write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
@@ -640,7 +642,8 @@ C << surface.
           write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
           write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
         endif
-        call snamdup(SNAME1,icomp,0,nameok)
+        icmpall=0 ! force compare of all surfaces
+        call snamdup(SNAME1,icomp,icmpall,nameok)
         if(.NOT.nameok)then
 
 C Copy to a slightly longer buffer for editing and ensure that
@@ -998,8 +1001,9 @@ C copying the next surface.
             endif
             call edisp(iuout,' getting donor zone info...')
 
+C Rescan the other zone before returning.
             call eclose(gversion(IZC),1.1,0.01,newgeo)
-            call georead(IFIL+1,LGEOM(IZC),IZ,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
             write(outs,'(3a)') ' Repeat transforms for ',
      &        SNAME(IZC,ispk(npick)),' ?'
           else
@@ -1028,7 +1032,7 @@ C copying the next surface.
             h(7)='correctly and face the correct direction. '
             CALL ASKOK(outs,'(see help)',DDOK,dok,7)
           endif
-          goto 191
+          goto 191   ! jump back and process next surface
         endif
         MODBND=.TRUE.
         MODIFY=.TRUE.
@@ -1754,7 +1758,7 @@ C then parse into new vertex.
         H(1)='The vertex coordinates should be in metres. '
         H(2)='Exact duplicate vertices should be avoided.'
         H(3)='It is not advisable for Z to be negative.'
-        write(outs,'(a,i2,a,i2,a)')'Copied Vertex (',NUM,
+        write(outs,'(a,i3,a,i3,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
      &    36,' 0. 0. 0. ','vertex coord',IER,3)
@@ -2463,12 +2467,20 @@ C Assign parent name if in silent name, otherwise use placeholder.
         SPARENT(NSUR)='-'
       endif
 
-C New surface to inherit the general properties of the parent.
+C New surface to inherit the general properties of the parent. If
+C parent is already marked as ANOTHER then set to UNKNOWN
+C (otherwise there will be two surfaces point to the same other surface).
       SOTF(NSUR)=SOTF(IS)
       SVFC(NSUR)=SVFC(IS)
-      SOTHER(NSUR,1)=SOTHER(IS,1)
-      SOTHER(NSUR,2)=SOTHER(IS,2)
-      SOTHER(NSUR,3)=SOTHER(IS,3)
+      if(SOTHER(IS,1)(1:7).eq.'ANOTHER')then
+        SOTHER(NSUR,1)='UNKNOWN'
+        SOTHER(NSUR,2)='0'
+        SOTHER(NSUR,3)='0'
+      else
+        SOTHER(NSUR,1)=SOTHER(IS,1)
+        SOTHER(NSUR,2)=SOTHER(IS,2)
+        SOTHER(NSUR,3)=SOTHER(IS,3)
+      endif
       SUSE(NSUR,1)='-'
       SUSE(NSUR,2)='-'
 
@@ -2557,7 +2569,7 @@ C in the new surface.
      &      'corner of the new surface to connect to: ','lower left',
      &      'lower right',ICH,24)
 
-          WRITE(outs,'(32i3)')(JVN(IS,J),J=1,NVER(IS))
+          WRITE(outs,'(30i4)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
           call edisp(iuout,outs)
  8795     CALL EASKI(IVH,
@@ -2635,7 +2647,8 @@ C No other hole so link to first vertex of surface.
         endif
 
 C Since this rectangle is a new surface, add it to the connection list assuming
-C it has the same boundary conditions as the parent surface.
+C it has the same boundary conditions as the parent surface (but for a partition
+C set to unknown).
         NCON=NCON+1
         IX=NCON+1
 
@@ -2644,9 +2657,15 @@ C Update common blocks G6 & G7 (insert data into connections based list).
 
         IC1(ICONT)=ICOMP
         IE1(ICONT)=NSUR
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+        if(ICT(ICONO).eq.3)then
+          ICT(ICONT)=-1  ! if parent a partition set child to unknown
+          IC2(ICONT)=0
+          IE2(ICONT)=0
+        else
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
+        endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
@@ -2772,9 +2791,15 @@ C Update common blocks G6 & G7 (insert data into connections based list).
 
         IC1(ICONT)=ICOMP
         IE1(ICONT)=NSUR
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+        if(ICT(ICONO).eq.3)then
+          ICT(ICONT)=-1  ! if parent a partition set child to unknown
+          IC2(ICONT)=0
+          IE2(ICONT)=0
+        else
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
+        endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)

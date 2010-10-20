@@ -211,12 +211,12 @@ C simscene simulates daylight coefficients and coupling (called from bps)
 
       SUBROUTINE simscene
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/uhome/upath
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
@@ -236,7 +236,7 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       character outs*124,doit*124,doitl*256,tfile*72
       character zone*16,aim*12,act*72,LBSRIF*72
       character QT*1
-      character*72 LDFGRID,LTMPFL,LTMPFA,rn,upath
+      character*72 LDFGRID,LTMPFL,LTMPFA,rn
       character runpath*72,pathtype*24
 
       dimension npz(8),alt(8),azim(8),solid(8)

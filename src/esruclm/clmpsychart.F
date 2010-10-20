@@ -47,6 +47,8 @@ C esrures/psychart.F - revised to for plotting climate data.
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40
       logical close,colok,cscaleok,ok,dok
+      integer NITMS,INO  ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else

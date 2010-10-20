@@ -71,6 +71,7 @@ C user-specified variable.
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       integer jsur,jclm,ICI  ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
       DATA ITITLX/'Time-steps'/
       DATA ITITLZ/'Year day  '/

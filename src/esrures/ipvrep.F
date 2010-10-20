@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "model.h"
 #include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
@@ -53,7 +54,6 @@ C Write IPV report based on description held in common.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL2/dmdfla(7)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/CFGV/icfgv
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
@@ -104,6 +104,7 @@ C Pre calculated data (filtered).
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Remember the initial periods.
       jiod1=IOD1

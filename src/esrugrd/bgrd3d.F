@@ -62,6 +62,7 @@ C *********************************************************************
       CHARACTER ITEM(15)*26,SZN*15,H*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       integer ier
+      integer MITEM,INO ! max items and current menu item
 
       SZN=' '
       IZ=0
@@ -342,6 +343,7 @@ C *********************************************************************
       DIMENSION ITEM(8)
 
       CHARACTER H*72,ITEM*26,SZN*15
+      integer MITEM,INO  ! max items and current menu item
 
    10 INO=-3
       WRITE(ITEM(1),'(A,A)')'  zone : ',SZN

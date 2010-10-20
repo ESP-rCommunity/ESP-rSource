@@ -51,8 +51,6 @@ C geometry.h provides commons G0/G2/precz.
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -62,10 +60,9 @@ C geometry.h provides commons G0/G2/precz.
       CHARACTER*72 LTMP
       character HFILE*72,H*72,head*33
       CHARACTER ITEM(29)*33
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
+      integer NITEMS,INO ! max items and current menu item
 
 C Before presenting hc regime, make up a suitable file name
 C in case it is useful.
@@ -1050,6 +1047,7 @@ C IOPT: 1 = VAV with CV heating, 2 = VAV with VV heating, 3 = CV variable T.
       CHARACTER*25 ITEM(15)
       logical ok,dok
       real airflow   ! temprary value for editing
+      integer NITEMS,Ioa,Idiff,Ifor ! max items and current menu item
 
 C These approaches are active for all time-steps of the simulation
 C (i.e. there is only one convection-calculation control period).
@@ -1556,6 +1554,7 @@ C IOPT: 1 = VAV with CV heat, 2 = VAV with VV heating, 3 = CV with var temp.
       character*24 hcphrase(5)
       CHARACTER*25 ITEM(15)
       logical ok,dok
+      integer NITEMS,Ioa ! max items and current menu item
 
 C These approaches are active for all time-steps of the simulation
 C (i.e. there is only one convection-calculation control period).
@@ -1854,7 +1853,7 @@ C EHCMAN controls manual creation/editing of convection file.
 
       character H*72,outs*124,hcfpdescr*72
       CHARACTER*30 ITEM(12)
-
+      integer NITEMS,INO ! max items and current menu item
       integer ihcfpt    ! for local editing.
 
    20 INO = -2
@@ -2285,6 +2284,7 @@ C NS is the number of surface in the zone << why pass this value? >>
       character hcfpdescr*72
       logical close,ok,dok
       integer IW  ! for radio button
+      integer NITEMS,INO ! max items and current menu item
 
       NS=NZSUR(IZ)
 

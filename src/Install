@@ -186,14 +186,11 @@ if [ $# -ne 0 ]; then
                         extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
-        --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
-        --gcc3)         gnu_version="gcc3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --gcc3-fpe)     enableFPE="yes";           shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -301,19 +298,6 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --force: Overwrite a corrupted installation. "
   echo " "
-  echo "    --gcc3-fpe: Enable rudamentry gcc3 floating-point-exception"
-  echo "         handling procedures."
-  echo " "
-# Soon to be obsoleted option:  
-#   echo "    --gcc32: Use 3.2 version of GCC provided by the"
-#   echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
-#   echo "         and compat-libf2c-32 packages."
-#   echo " "
-  echo "    --gcc3: Use the GCC3 compilers (gcc, g++ and g77)."
-  echo "         NOTE: support for GCC3 is provided for legacy "
-  echo "         applications only, and will be discontinued in the"
-  echo "         future. Please use GCC4, Sun F90 or Intel if possible."
-  echo " "
   echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
   echo "         (this option is enabled by default)."
   echo " "
@@ -355,11 +339,9 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. While ESP-r compiles with the GCC 4 / gFortran compilers, the "
-  echo "    results obtained with ESP-r binaries built with GCC4 exhibit "
-  echo "    unexplained differences from the GCC3 versions. Until the "
-  echo "    GCC4 results have been verified, use GCC3-built versions of "
-  echo "    ESP-r for scientific research or consulting work."
+  echo " 1. The latest ESP-r release (11.9) no longer compiles with GCC3 / g77"
+  echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
+  echo "    instead. The current reference version is GCC 4.3.2"
   echo " "
   echo " 2. There are two versions of ESP-r - the standard full distribution"
   echo "    based on the X11 graphic libraries and a beta version which uses the"
@@ -988,8 +970,6 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc3)     CC=gcc;   CPL=g++;    FC=g77;      ;;
-           gcc32)    CC=gcc32; CPL=g++32;  FC=g77       ;;
            gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
@@ -1007,8 +987,6 @@ if [ "$extendedDebugging" == "yes" ]; then
   case $compiler in
     sunF90) ExtendedDebugFlags="$ExtendedDebugFlags";;
     GNU) case $gnu_version in
-            gcc3)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
-            gcc32)    ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
             gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check"  ;;
           esac;;
     intel)  ExtendedDebugFlags="$ExtendedDebugFlags -debug all -C -fp-stack-check -traceback -inline-debug-info -fpe0 "  ;;
@@ -1058,9 +1036,7 @@ case $compiler in
    sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag $ExtendedDebugFlags -C " ;;
    GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic ";
            case $gnu_version in
-             # set -finit-local-zero for gcc3
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
-             *)    FFLAGS="$FFLAGS -finit-local-zero" ;;
            esac ;;
    intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags -O0" ;;
 esac
@@ -1202,8 +1178,6 @@ if [ "$enableFPE" == "yes" ]; then
   case $compiler in
     sunF90)   ;;
     GNU) case $gnu_version in
-            gcc3)     gcc3_fpe_target="enableGccFPE"   ;;
-            gcc32)    gcc3_fpe_target="disableGccFPE"   ;;
             gcc4)     gcc3_fpe_target="disableGccFPE"  ;;
           esac;;
   esac

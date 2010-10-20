@@ -62,6 +62,7 @@ C *********************************************************************
       CHARACTER Promp*72,dinstpath*48
 
       logical VldOK,Vldtng
+      integer MITEM,INO ! max items and current menu item
 
       MonNod=1
       VldOK=.false.
@@ -316,6 +317,7 @@ C *********************************************************************
       character*32 item(11)
       CHARACTER*72 Msg
       integer NTimeT,NRootT,NIterT  ! local values for editing.
+      integer MITEM,INO ! max items and current menu item
       
    10 INO=-3
       WRITE(ITEM(1),'(A13,F8.1,A2)')'1 Time step: ',DTime,' s'
@@ -503,6 +505,7 @@ C *********************************************************************
 
       CHARACTER KEY*1,H*72
       character*47 ITEM(20)
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -853,12 +856,11 @@ C #include "geometry.h"
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       COMMON/Vld10/VlDirR,VlDirL
 
       character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
+      CHARACTER*72 path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
 
       logical xst

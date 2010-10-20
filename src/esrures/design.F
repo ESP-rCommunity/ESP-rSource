@@ -52,6 +52,7 @@ C design question facility.
       CHARACTER*10 LABEL
       CHARACTER*16 ITEM(10)
       logical close
+      integer NITMS,INO ! max items and current menu item
 
       ITEM(1) ='2 Result set    '
       ITEM(2) ='3 Define period '

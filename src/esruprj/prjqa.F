@@ -35,6 +35,8 @@ C      common/aim2def/iAIM2,LAIM2
       USE AIM2_InputData, ONLY:iAIM2,LAIM2
       USE AIM2, ONLY:AIM2_READIN, AIM2_report
       
+      IMPLICIT NONE
+      
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -63,51 +65,73 @@ C espriou.h provides currentfile.
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C6/INDCFG
+      INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
+      INTEGER :: ixopen,ixloc,ixunit
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      REAL :: TMCT,TMCREF,TMCT2,TMCA,TMCA2
+      INTEGER :: ITMCFL
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
      &              TVTR2(MCOM,MTMC,MBP)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
+      INTEGER :: NTMC,NGLAZ
       common/PRECT4/TOPTIC(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
+      INTEGER :: IBCMT,IBCST,IBCFT,IBCSUR,NBCTMC
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
+      INTEGER :: NBCTT
+      REAL :: BACTPT
       common/cctlnm/ctldoc,lctlf
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      INTEGER :: idwe1,idwe2
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      INTEGER :: ipconv
+      REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+
+      REAL :: phtco2,phtnox,phtsox,pclco2,pclnox,pclsox
+      REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
+      REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
@@ -135,6 +159,7 @@ C External folder browser.
 C A set of possible image formats (see config file) and
 C matching executables. For normal image viewing take the first option.
       common/showimg/imgtyp,fmttag(5),fmtexe(5)
+      INTEGER :: imgtyp
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
@@ -156,10 +181,14 @@ C Remember if each zone is fully attributed.
       logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
+      REAL :: uavfltroof,uavgsky,areatran
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
+      REAL :: areawall,areaslproof,areafltroof,areaskylt
+      REAL :: areamlc,flatroofper
       dimension areawall(MCOM),areaslproof(MCOM),areafltroof(MCOM)
       dimension areaskylt(MCOM),tranper(MCOM),skyper(MCOM)
       dimension wallper(MCOM),slproofper(MCOM),flatroofper(MCOM)
+      REAL :: exposed,vexposed
       dimension exposed(MCOM),vexposed(MCOM)
       dimension items(25)
 
@@ -208,7 +237,21 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical nameok  ! to use for testing if duplicate names in zone,
+      logical nameok  ! to use for testing if duplicate names in zone
+      integer NITMS   ! max items
+      
+      INTEGER :: ier,i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: ins4,inss1,inpic,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
+      INTEGER :: itb,istat,isc,is,ic,ins1,isel,ivals,iz,izo,izc,izz
+      INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
+      REAL :: opq,skyper,slproofper,tranper,totalarea,topq,tmp,tfla
+      REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
+      REAL :: uavgtran,uavslproof,uavwall,uvd,uvn,uvi,uvu,vtranper
+      REAL :: wallper,xareaskylt,xareaslproof,xareawall,xareatran
+      REAL :: xexposed,xflatroofper,xfloor,xskyper,uvh,xareafltroof
+      REAL :: xslproofper,xtranper,xuavfltroof,xuavgsky,xuavgtran
+      REAL :: xuavslproof,xuavwall,xvexposed,xwallper
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -217,23 +260,23 @@ C Check if Unix-based or DOS based.
       newgeo=.false.  ! assume older format geometry.
       IUF=IFIL+2
       siteinfo=2
-      databaseinfo=1
+      databaseinfo=2  ! assume verbose mode for database reporting
       contextinfo=2
       ICTLF=IUF
       CALL ERPFREE(ICTLF,ISTAT)
       call FINDFIL(LCTLF,XST)
       if(XST)then
-        controlinfo=2
+        controlinfo=2  ! if control used set to verbose
       else
         controlinfo=-1
       endif 
       if(IAIRN.ge.1)then
-        netinfo=2
+        netinfo=2      ! if a network included set to verbose
       else
         netinfo=-1
       endif
       if(indcfg.eq.2.or.indcfg.eq.3)then
-        plantinfo=2
+        plantinfo=2   ! if plant included in model set to verbose
       else
         plantinfo=-1
       endif
@@ -278,6 +321,8 @@ C Setup the selection menu.
         items(9)='b databases >> compact'
       elseif(databaseinfo.eq.2)then
         items(9)='b databases >> verbose'
+      elseif(databaseinfo.eq.3)then
+        items(9)='b databases >> verbose all'
       endif
       if(contextinfo.eq.0)then
         items(10)='c model context >> none'
@@ -402,8 +447,8 @@ C Help for menu.
       h(35)=' '
       h(36)='Once you generate a QA report file you can select the'
       h(37)='`edit QA report` option and an editor will be launched.'
-
-      call emenu('Model reports',items,25,ino)
+      NITMS=25
+      call emenu('Model reports',items,NITMS,ino)
 
       if(ino.eq.25)then
         if(changedit)then
@@ -548,8 +593,8 @@ C Execute image viewer (get tool via prior scan of default file).
         siteinfo=siteinfo+1
         if(siteinfo.gt.2)siteinfo=0
       elseif(ino.eq.9)then
-        databaseinfo=databaseinfo+1
-        if(databaseinfo.gt.2)databaseinfo=0
+        databaseinfo=databaseinfo+1  ! allow up to 3
+        if(databaseinfo.gt.3)databaseinfo=0
       elseif(ino.eq.10)then
         contextinfo=contextinfo+1
         if(contextinfo.gt.2)contextinfo=0
@@ -1051,7 +1096,7 @@ C Context of the model.
 C If there is an AIM-2 descritption scan the file and then report.
         if(iAIM2.eq.1)then
           call AIM2_READIN
-          call AIM2_report(itu,ier)
+          call AIM2_report(itu)
         endif
 
         if(ipconv.eq.1)then
@@ -1209,7 +1254,7 @@ C If temporal data associated with the model report it.
         endif
       endif
 
-C Databases associated with the model.
+C Databases associated with the model. First print the file names.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
@@ -2151,7 +2196,9 @@ C if the zones are fully attributed.
         endif
       endif
 
-C MLC database reporting.
+C MLC database reporting. If toggle set to 'verbose' only list out those
+C constructions which have been referenced in the model. If toggle is
+C set to 'verbose all' then include all of them.
    57 if(databaseinfo.ge.1)then
         call edisp(itu,' ')
         WRITE(outs,240)
@@ -2168,6 +2215,13 @@ C MLC database reporting.
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
             call edisp(itu,outs)
+          else
+            if(databaseinfo.eq.3)then
+              call etmldb(2,itu,imlc,imerr)
+              write(outs,'(3a)') ' Total area of ',
+     &          mlcname(1:lnblnk(mlcname)),' is zero (not referenced)'
+              call edisp(itu,outs)
+            endif
           endif
   342   continue
       endif
@@ -2212,7 +2266,6 @@ C not browsing.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
-      common/CFGV/icfgv
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
       common/p3ver/ip3ver(MCOM)

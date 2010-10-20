@@ -1918,6 +1918,8 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else
@@ -2189,6 +2191,8 @@ C Passed parameters.
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else
@@ -3670,19 +3674,20 @@ C Write this to standard text window.
 
 C ****** write current text buffer to an appropraite file
       subroutine proftxdump()
+#include "building.h"
+#include "model.h"
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/rpath/path
-      common/uhome/upath
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(360)
       common/textbufl/indexbuf,lnbuf(360)
 
       DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,upath*72,h*72,tfile*60,uname*24,fs*1
+      character path*72,h*72,tfile*60,uname*24,fs*1
       character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dispbuf*124,dh*72
       logical unixok,there
@@ -3755,13 +3760,8 @@ C        write(6,*)sstr(1)
         INQUIRE(FILE=tfile(1:ltf),EXIST=there)
         if(there)then
           close(iuf)
-#ifdef F90
           open(iuf,file=tfile(1:ltf),position='APPEND',
      &      status='UNKNOWN',err=1)
-#else
-          open(iuf,file=tfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
         else
           close(iuf)
           open(iuf,file=tfile,status='UNKNOWN',err=1)
@@ -3810,12 +3810,13 @@ C impx impy before recalling fprofma.
 
 C ****** invoke graphics capture proforma
       subroutine profgrdump()
+#include "building.h"
+#include "model.h"
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/rpath/path
-      common/uhome/upath
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -3824,7 +3825,7 @@ C Graphic capture, window dump: label, command.
       common/gxwd/gxwdlbl,gxwdcmd
 
       DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,upath*72,h*72,tfile*60,uname*24,fs*1
+      character path*72,h*72,tfile*60,uname*24,fs*1
       character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dh*72,gcmd*90
       character gprlbl*20,gprcmd*48
@@ -4360,6 +4361,8 @@ C ITPPSW current view - perspective/plan/south/west
       data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
       integer IW  ! for radio buttons
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild

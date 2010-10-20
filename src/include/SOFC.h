@@ -263,11 +263,9 @@ C-------------------------------------------------------------------------------
 C Variable and named constants indicating whether user has requested (through .pln)
 C that an ASCII file with time-step results be produced.
 C---------------------------------------------------------------------------------
-      INTEGER FC_timestep_output,
-     &        FC_timestep_output_no,
-     &        FC_timestep_output_yes
-      PARAMETER ( FC_timestep_output_no  = 1 )
-      PARAMETER ( FC_timestep_output_yes = 1 )
+      INTEGER :: FC_timestep_output
+      INTEGER , PARAMETER :: FC_timestep_output_no  = 1 
+      INTEGER , PARAMETER :: FC_timestep_output_yes = 1 
 
 
 C ************************************************************************************

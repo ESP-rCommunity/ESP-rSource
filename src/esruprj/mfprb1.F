@@ -40,6 +40,7 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -56,8 +57,6 @@ C LPRFDB,IPRODB (for event profile database)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -73,12 +72,11 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER LAPROB*72,LCFGF*72
       CHARACTER H*72,LTMP*72,outs*124,outstr*124
       character cfgroot*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer NITMS1,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -717,6 +715,7 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       integer IVV  ! for radio button
+      integer NITMS,IVERT ! max items and current menu item
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 

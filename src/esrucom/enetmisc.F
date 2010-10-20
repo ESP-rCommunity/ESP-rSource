@@ -323,7 +323,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
       NPK=0
@@ -462,7 +462,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
       NPK=0
@@ -603,6 +603,7 @@ C Characters
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,H
+      integer MVERT,IVERT ! max items and current menu item
 
 C Zero picked items. 
       NPK=0
@@ -742,6 +743,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
       NPK=0
@@ -880,6 +882,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Zero picked items. 
       NPK=0

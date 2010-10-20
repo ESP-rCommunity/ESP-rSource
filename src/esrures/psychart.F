@@ -55,6 +55,7 @@ C component status, act = 'u' for user supplied points.
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
       logical ok,dok,ask,unixok
+      integer NITMS,INO ! max items and current menu item
       
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -707,6 +708,7 @@ C interaction is begun.
       character*124 head
       CHARACTER H*72,SVERT*23,KEY*1
       LOGICAL SELECT
+      integer MSVERT,ISVERT ! max items and current menu item
 
       PATMOS=1013.25
 

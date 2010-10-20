@@ -83,6 +83,7 @@ C Backup of documentation (for editing).
       logical primod,ok,dok,bkdocok,modit,dmodit
       real misc1,misc2
       integer IWM   ! for radio button
+      integer MPLEM,IW,IWR ! max items and current menu item
 
 C Scan the data from the common blocks.
     9 primod=.false.

@@ -62,7 +62,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -111,6 +110,7 @@ C ITEMS is menu for site/context items.
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      integer nitms,INO ! max items and current menu item
       
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -1059,15 +1059,13 @@ C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -1088,10 +1086,9 @@ C and control of project images.
       character H*72,outs*124
       character limg*72,key*1,fs*1
       character iformat*4,ifocus*4
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
+      integer nimgitms,INOI  ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1323,8 +1320,6 @@ C temporal data to be associated with a model.
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
      
 C TDF related.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
@@ -1337,14 +1332,13 @@ C TDF related.
 
       character H*72,outs*124,ltmp*72,hold*40
       character cfgroot*24,LCFGF*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,aimpth*24,
-     &          bsmpth*24
+      character fs*1,msgl2*48
       character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       integer ier
+      integer nitms,irt ! max items and current menu item
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -2408,6 +2402,7 @@ C  phwco2,phwnox,phwsox = how water related emissions co2/nox/sox
       dimension ITEMS(18)
       character items*36,h*72,hold*40,act*1
       logical MODSIT
+      integer nitms,INO ! max items and current menu item
 
       MODSIT=.false.
 
@@ -2646,6 +2641,7 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       COMMON/FILEP/IFIL
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
+      integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.

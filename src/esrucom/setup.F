@@ -36,6 +36,7 @@ C file setup.F includes facilities for display of dates, time and files.
       character LFIL*72,SFILE*72,H*72,tfile*72,longtfile*144
       character OUTSTR*124,ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character PERST1*14,PERST2*44,PERST3*44,tmode*8
+      integer nitms,INO1 ! max items and current menu item
 
    33 INO1=-4
 
@@ -73,7 +74,8 @@ C Display of time of day.
       ITEMS1(9)  ='h miscellaneous tests   '
       ITEMS1(10) ='? help                  '
       ITEMS1(11) ='- exit this menu        '
-      CALL EMENU('Tool preferences',ITEMS1,11,INO1)
+      nitms=11
+      CALL EMENU('Tool preferences',ITEMS1,nitms,INO1)
       IF(INO1.EQ.1)THEN
 
 C Define the beginning and ending dates for simulation.

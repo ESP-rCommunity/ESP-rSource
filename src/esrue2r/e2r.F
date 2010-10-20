@@ -25,6 +25,7 @@ C blank or NONE not required and not yet defined.
 
       program e2r
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -58,10 +59,8 @@ C Defaults.
 
 C Path to model.
       common/rpath/path
-      common/uhome/upath
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+
       common/user/browse
 
       common/rcmd/LCMDFL
@@ -123,15 +122,13 @@ C Name of current application
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,upath*72,cfgroot*24
+      character path*72,cfgroot*24
       character crenrp*160,coconv*40
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
@@ -147,6 +144,7 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero
@@ -1149,6 +1147,7 @@ C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
+#include "model.h"
 #include "site.h"
 #include "prj3dv.h"
       
@@ -1160,7 +1159,6 @@ C MODLSU read in supplied configuration file and set up paths.
 
 C Path to model.
       common/rpath/path
-      common/uhome/upath
       common/expath/runpath,pathtype
       common/rcmd/LCMDFL
       common/user/browse
@@ -1180,14 +1178,9 @@ C Path to model.
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
-
       character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
-      character outs*124,fs*1,tldir*72,upath*72,MODE*4
+      character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL MODIFY,MODLEN,MODBND,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

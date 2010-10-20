@@ -67,6 +67,7 @@ C LPRFDB,IPRODB (for event profile database)
       integer lnwkg   ! for length of working file name
       integer IOW     ! for radio button
       logical unixok  ! to check for database path file separators
+      integer NITMS,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -638,6 +639,8 @@ C ilabs is string arry for layer insert/delet selection.
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
+      integer nitms,INO ! max items and current menu item
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -1215,7 +1218,8 @@ C Loop until start of "Optical Properties" section.
           goto 12
         endif
         goto 10
-      elseif(outstr(1:9).eq.'Window 5.')then
+      elseif(outstr(1:9).eq.'Window 5.'.or.
+     &       outstr(1:8).eq.'Window v')then
 
 C A newer format file.
  13     CALL STRIPC(iwin4,outstr,0,ND,1,'data',IER)
@@ -1319,7 +1323,7 @@ C Newer files do not have a # after air layers.
         ABED(IL,4)=v5
         CALL EGETWR(outstr,K,v6,0.0,0.999,'W','abs @80',IER)
         ABED(IL,5)=v6
-        write(outs,'(7f6.3,i2)')v1,v2,v3,v4,v5,v6,wdum,IL
+        write(outs,'(6f6.3,a,i2)')v1,v2,v3,v4,v5,v6,wdum,IL
         call edisp(iuout,outs)
 
 C If inserting air gaps do it here, except for the inside layer.
@@ -1595,6 +1599,7 @@ C   Limited to 0 or 1 at present.
       character bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND !,ok,dok
 C      character outs*124
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.

@@ -842,7 +842,6 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       COMMON/BTIME/BTIMEP,BTIMEF
 
-      common/uhome/upath
       common/filep/ifil
       COMMON/TC/ITC,ICNT
       common/trc/itrc
@@ -906,7 +905,7 @@ C Illuminance database.
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124,cfgroot*24
 
-      character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
+      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST

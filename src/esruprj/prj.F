@@ -82,7 +82,6 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
@@ -98,10 +97,8 @@ C Ground topology.
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
+
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Indicator of possible focus zone.
@@ -163,7 +160,7 @@ C Name of current application
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,upath*72,cfgroot*24,exemplar*144
+      character path*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
@@ -171,8 +168,6 @@ C      character outs248*248
       character journcmd*20,jfile*72,tfile*72,cjfile*72
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
@@ -180,6 +175,7 @@ C      character outs248*248
       CHARACTER dinstpath*48,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
+      character fs*1
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12
@@ -191,8 +187,10 @@ C Returned parameters from silentread.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -249,6 +247,7 @@ C Set folder separator (fs) to \ or / as required.
       write(docpth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
+      write(hvacpth,'(a1,a1)')'.',fs
       IYEAR=2007
       IBDOY=1
       IEDOY=365
@@ -1456,8 +1455,6 @@ C to include the path and create a string to drive the modules.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C Temporal header (to get its time frequency)
-      common/CFGV/icfgv
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
@@ -1505,6 +1502,8 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
+      integer MITEM,INO,ic,IRT ! max items and current menu item
+
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -2426,6 +2425,7 @@ C << the longer string used when commissioning a simulation.
 
       subroutine ipvactions(ier)
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 
       integer lnblnk  ! function definition
@@ -2439,9 +2439,7 @@ C to include the path and create a string to drive the modules.
       common/appw/iappw,iappx,iappy
       common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
-      common/uhome/upath
       common/exporttg/xfile,tg,delim
-      common/CFGV/icfgv
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -2464,7 +2462,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
-      character ltpath*72,filen*72,ltmp*72,upath*72
+      character ltpath*72,filen*72,ltmp*72
       character basefile*144,variantfile*144,outs*124
       character word1*20,word2*40,word3*20,outstr*124
       character xfile*144,tg*1,delim*1,tab*1,fs*1
@@ -3787,13 +3785,13 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -4029,6 +4027,7 @@ C of the same project that can later be modified.
       CHARACTER ITEMS*36,ITEMS2*36,APP*6
       CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
+      integer MITEM,INO,MITEMS2,KNO ! max items and current menu item
 
       IF(BROWSE)THEN
         CALL EDISP(IUOUT,
@@ -4390,7 +4389,6 @@ C Path to model and command line file (if any).
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -4398,8 +4396,6 @@ C Path to model and command line file (if any).
 
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth,bsmpth
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -4416,8 +4412,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
-      CHARACTER*24 dbspth,cfgroot,aimpth,bsmpth
+      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
