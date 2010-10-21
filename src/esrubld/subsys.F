@@ -472,7 +472,7 @@ C      is set at 10 W/m^2K.
       SHT=880.0
       CON=1.28
       GHTC=10.0
-      TIMSTP=3600.0/NTSTEP
+      TIMSTP=3600.0/real(NTSTEP)
 
 C Consider surface node (ie node 1).
       CAP=DEN*SHT*0.1
@@ -575,7 +575,7 @@ C Here provide the different sky temperature options
 C Use default Martin & Berdahl calculation
 C Clear sky condition:
         PI = 4.0 * ATAN(1.0)
-        TIM=2*PI*IHRF/24
+        TIM=2.0*PI*real(IHRF)/24.0
         E0=0.711+0.56*(TDP/100.0)+0.73*((TDP/100.0)**2)+
      &   0.013*COS(TIM)+(12.0E-05)*(PATM-1000.)
 
@@ -770,17 +770,17 @@ c are non-vertical.
         IAVE=1
         TAVE=TF
       ENDIF
-      TBAVE=(TAVE/IAVE)+ZEROK
+      TBAVE=(TAVE/real(IAVE))+ZEROK
       IF(IROOF.EQ.0)TBROOF=TBAVE
-      IF(IROOF.GT.0)TBROOF=(TROOF/IROOF)+ZEROK
+      IF(IROOF.GT.0)TBROOF=(TROOF/real(IROOF))+ZEROK
       IF(INORTH.EQ.0)TBNRTH=TBAVE
-      IF(INORTH.GT.0)TBNRTH=(TNORTH/INORTH)+ZEROK
+      IF(INORTH.GT.0)TBNRTH=(TNORTH/real(INORTH))+ZEROK
       IF(IEAST.EQ.0)TBEAST=TBAVE
-      IF(IEAST.GT.0)TBEAST=(TEAST/IEAST)+ZEROK
+      IF(IEAST.GT.0)TBEAST=(TEAST/real(IEAST))+ZEROK
       IF(ISOUTH.EQ.0)TBSUTH=TBAVE
-      IF(ISOUTH.GT.0)TBSUTH=(TSOUTH/ISOUTH)+ZEROK
+      IF(ISOUTH.GT.0)TBSUTH=(TSOUTH/real(ISOUTH))+ZEROK
       IF(IWEST.EQ.0)TBWEST=TBAVE
-      IF(IWEST.GT.0)TBWEST=(TWEST/IWEST)+ZEROK
+      IF(IWEST.GT.0)TBWEST=(TWEST/real(IWEST))+ZEROK
 
 C Calculate surrounding building temperature for each
 C vertical surface.
@@ -850,7 +850,7 @@ C re-enable previous 2.
 C Surrounding buildings component.
         IF(EE(ICOMP,I).LE.1.0)THEN
           QELWFB(I)=A1(ICOMP,I)*SBC*(TBLD(I)**4-(TFC(ICOMP,I,1)+
-     &              ZEROK)**4)/(2/EE(ICOMP,I)-1.0)
+     &              ZEROK)**4)/(2.0/EE(ICOMP,I)-1.0)
         ELSE
 C Modify equation if emissivity is artificially high (>1).
           QELWFB(I)=A1(ICOMP,I)*SBC*(TBLD(I)**4-(TFC(ICOMP,I,1)+
@@ -862,7 +862,7 @@ C Sky component.
      &            (TFC(ICOMP,I,1)+ZEROK)**4)
 
 C Sky component (original equation of Berdahl and Martin).
-        QELWFC(I)=B1(ICOMP,I)*4*EE(ICOMP,I)*SBC*((TF+ZEROK)**3)*
+        QELWFC(I)=B1(ICOMP,I)*4.0*EE(ICOMP,I)*SBC*((TF+ZEROK)**3)*
      &            (TFC(ICOMP,I,1)+ZEROK-TSKY)*(-1.0)
 
 C Angle of surface inclination
@@ -1118,6 +1118,8 @@ C                 external temperature (for use in MZLS3).
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 
+#include "aim2_common.h"
+
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1180,6 +1182,9 @@ C Save present values for possible iterations at this time step.
       INTEGER :: itsitr,itrpas
 
 
+C Declare local logical variable to check if the zone is actually modelled by AIM2
+      logical AIM2_infil_zone_indicator
+      
 c Mechanical ventilation systems
       Common /mechvdef/ iMech, LMech
       Integer iMech
@@ -1253,6 +1258,11 @@ C     This prevents the zone becoming too cold.
       REAL :: sum,t1,ta1,ta2,taf,tafl,tafu,trat,tx,val,xx
       REAL :: time
 
+      Character cZone*2
+      
+      LOGICAL AreWindowsOpen
+      Logical Lukas
+      
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
@@ -1552,14 +1562,35 @@ C without heat recovery.
         ZONE_mechvent_cond = 0.                    ! Reset mech vent conductance.
         IF( iMech.eq.1) THEN      ! f77 syntax since this file also used by bld.
           CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond) ! Conductance of mech vent returned.
+
         ENDIF
       
 C Calculate the infiltration load if the AIM-2 model is active (i.e. iAIM=1).
         ZONE_infil_cond = 0.      ! Reset infiltration conductance.
+        AIM2_infil_zone_indicator = .false. ! Reset the zone AIM2 modelling indicator. Note this relies on the fact that the CVS (mech ventilation) requires AIM2
+        
         IF( iAIM2.eq.1 ) THEN     ! f77 syntax since this file also used by bld. 
           CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond) ! Conductance of infiltration returned.
-        ENDIF
-      
+          
+C         Check to see that this zone is modelled by AIM2
+C         Check to see if it is declared as crawl space or attic zone
+          IF (ICOMP .eq. AIM2_Basement_zone
+     &            .or. ICOMP .eq. AIM2_CrawlSpace_zone
+     &            .or. ICOMP .eq. AIM2_attic_zone) THEN
+            AIM2_infil_zone_indicator = .true.
+C         Check to see if it is one of the infiltration zones
+          ELSE
+            DO I = 1, AIM2_num_zones_infil
+              IF (AIM2_zone_infil(I) .eq. ICOMP) THEN
+                AIM2_infil_zone_indicator = .true.   ! this is active AIM2 zone
+                EXIT ! jump out because we found this zone
+              ENDIF ! check of particular AIM2 infiltration zone  
+            END DO ! check of all AIM2 infiltration zones
+          ENDIF ! check for AIM2 defined zone
+        ENDIF ! check for iAIM2
+
+
+
 C If either the mechanical ventilation or AIM-2 infiltration models are active, then
 C add the conductances caused by the infiltration and the mechanical ventilation.
 C Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
@@ -1571,9 +1602,79 @@ C if cooling was required and the external air temperature could help with the l
 C which should have a open window model designed in it's afn configuration.
 
 C f77 syntax since this file also used by bld.
-        IF( (iMECH.eq.1 .or. iAIM2.eq.1 ) .and. 
-     &     .not. bWindowsAreOpen ) THEN  
-          CVIF = ZONE_infil_cond + ZONE_mechvent_cond
+
+C       Pad zone index to 'XX' in character form for xml_reporting
+        IF ( ICOMP .gt. 9 ) THEN
+           write (cZone,'(I2)') ICOMP
+        ELSE
+          write (cZone,'(A,I1)') '0', ICOMP
+        ENDIF
+
+
+C       If the CVS (mech vent) or AIM2 is being used, and this is a zone modelled by those routines, and the windows are closed,
+C       then overwrite the infiltration CVIF with these values
+        IF( (iMECH.eq.1 .or. iAIM2.eq.1 ) .and. ! check that the CVS or AIM2 is active
+     &    AIM2_infil_zone_indicator ) THEN ! check that this is modelled zone
+     
+                call add_to_xml_reporting (
+     &            ZONE_mechvent_cond,
+     &            'CHREM/zone_' // cZone // '/vent/mechvent_cond',
+     &            'units', 'conductance',
+     &            'CVS')
+                call add_to_xml_reporting (
+     &            ZONE_infil_cond,
+     &            'CHREM/zone_' // cZone // '/vent/infil_cond',
+     &            'units', 'conductance',
+     &            'AIM2')
+
+C           The CVS or AIM2 is active and we are in a modelled zone.
+C           Check whether the windows are open and then apply appropriate infiltration
+            IF ( AreWindowsOpen() ) THEN
+
+C             Windows are open, so substantially increase the AIM2 infiltration
+C               This is reasonable because the 'stack' effect component is low
+C               and the 'wind driven' infiltration is governing. By opening the
+C               windows the leakage area effectively increased substantially.
+C             Also, maintain the CVS (mech ventilation) infiltration as this system
+C             does not shut down.
+              
+              CVIF = 5.0 * ZONE_infil_cond + ZONE_mechvent_cond
+
+                 call add_to_xml_reporting (
+     &            CVIF,
+     &            'CHREM/zone_' // cZone // '/vent/CVIF',
+     &            'units', 'conductance',
+     &            'CVIF')
+     
+                 call add_to_xml_reporting (
+     &            1.,
+     &            'CHREM/zone_' // cZone // '/vent/bWindowsAreOpen',
+     &            'units', 'boolean',
+     &            'bWindowsAreOpen')
+              
+            ELSE
+
+C             Windows are closed so simply apply AIM2 and CVS
+
+              CVIF = ZONE_infil_cond + ZONE_mechvent_cond
+              
+                  call add_to_xml_reporting (
+     &            CVIF,
+     &            'CHREM/zone_' // cZone // '/vent/CVIF',
+     &            'units', 'conductance',
+     &            'CVIF')
+     
+                 call add_to_xml_reporting (
+     &            0.,
+     &            'CHREM/zone_' // cZone // '/vent/bWindowsAreOpen',
+     &            'units', 'boolean',
+     &            'bWindowsAreOpen')
+     
+     
+            ENDIF
+            
+            
+
         ENDIF
 
 C When there is an outdoor air flow through the HVAC system, this is accounted for 
@@ -1998,10 +2099,10 @@ C Last line of equation takes into account the effect of a
 C cooling coil on zone moisture balance.
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
      &    (VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)+
-     &    VSRCF(ICOMP))*3600./(2*NTSTEP)+
+     &    VSRCF(ICOMP))*3600./real(2*NTSTEP)+
      &    (VCIP(ICOMP)*GEXTP+VCCP(ICOMP)+VCMP(ICOMP)+VCLGP(ICOMP)+
-     &    VSRCP(ICOMP))*3600./(2*NTSTEP)-
-     &    GPA(ICOMP)*VCLP(ICOMP)*3600./(2.*NTSTEP)
+     &    VSRCP(ICOMP))*3600./real(2*NTSTEP)-
+     &    GPA(ICOMP)*VCLP(ICOMP)*3600./real(2*NTSTEP)
      &    + coil_moist_in(ICOMP) - coil_moist_out1(ICOMP)  
 
 C Equation modified to account for cooling coil operation effect on 
@@ -2009,7 +2110,7 @@ C zone moisture balance.
 C Calculate the future zone air moisture content. This is only correct if there
 C is no humidity control. Mass balance altered later if there is RH control.
 C      GFA(ICOMP)=RHS/(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-      GFA(ICOMP)=RHS/(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP) + 
+      GFA(ICOMP)=RHS/(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP) + 
      &                coil_moist_out2(ICOMP))
 
 C Set coil moisture parameters to zero for the current zone
@@ -2056,49 +2157,49 @@ C Right hand side
      &            (* indicates present timerow) '
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Infiltration in (kg) ',
-     &      VCIF(ICOMP)*GEXTF*3600./(2.*NTSTEP)
+     &      VCIF(ICOMP)*GEXTF*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Infiltration* in (kg) ',
-     &      VCIP(ICOMP)*GEXTP*3600./(2.*NTSTEP)
+     &      VCIP(ICOMP)*GEXTP*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Ventilation in (kg) ',
-     &      VCCF(ICOMP)*3600./(2.*NTSTEP)
+     &      VCCF(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Ventilation* in (kg) ',
-     &      VCCP(ICOMP)*3600./(2.*NTSTEP)
+     &      VCCP(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Mechanical in (kg) ',
-     &      VCMF(ICOMP)*3600./(2.*NTSTEP)
+     &      VCMF(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Mechanical* in (kg) ',
-     &      VCMP(ICOMP)*3600./(2.*NTSTEP)
+     &      VCMP(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Gains in (kg) ',
-     &      VCLGF(ICOMP)*3600./(2.*NTSTEP)
+     &      VCLGF(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Gains* in (kg) ',
-     &      VCLGP(ICOMP)*3600./(2.*NTSTEP)
+     &      VCLGP(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Evaporative gain in (kg) ',
-     &      VSRCF(ICOMP)*3600./(2.*NTSTEP)
+     &      VSRCF(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Evaporative gain* in (kg) ',
-     &      VSRCP(ICOMP)*3600./(2.*NTSTEP)
+     &      VSRCP(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Losses out (kg) ',
-     &      VCLF(ICOMP)*GFA(ICOMP)*3600./(2.*NTSTEP)
+     &      VCLF(ICOMP)*GFA(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
           WRITE(OUTS,'(A,F10.5)') ' Losses*out (kg) ',
-     &      VCLP(ICOMP)*GPA(ICOMP)*3600./(2.*NTSTEP)
+     &      VCLP(ICOMP)*GPA(ICOMP)*3600./real(2*NTSTEP)
           CALL EDISP(ITU,OUTS)
 
 C Sum of the RHS including outflow at future timerow, assuming no RH control.
           RHS2=(VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)
-     &    +VSRCF(ICOMP))*3600./(2*NTSTEP)+
+     &    +VSRCF(ICOMP))*3600./real(2*NTSTEP)+
      &    (VCIP(ICOMP)*GEXTP+VCCP(ICOMP)+VCMP(ICOMP)+VCLGP(ICOMP)
-     &    +VSRCP(ICOMP))*3600./(2*NTSTEP) -GPA(ICOMP)*VCLP(ICOMP)
-     &    *3600./(2.*NTSTEP)
-     &    -GFA(ICOMP)*VCLF(ICOMP)*3600./(2.*NTSTEP)
+     &    +VSRCP(ICOMP))*3600./real(2*NTSTEP) -GPA(ICOMP)*VCLP(ICOMP)
+     &    *3600./real(2*NTSTEP)
+     &    -GFA(ICOMP)*VCLF(ICOMP)*3600./real(2*NTSTEP)
           WRITE(OUTS,'(A,F10.5)') 'Total in - total out (kg)',RHS2
           CALL EDISP(ITU,OUTS)
 
@@ -2123,17 +2224,18 @@ C Calculate zone moisture content at the upper and lower RH set points.
 
 C Calculate amount of moisture (kg) to remove if dehumidification required.
           IF(GFA(ICOMP).GT.GCTU) THEN         
-            ADDMOIST=GCTU*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-     &              -RHS
+            ADDMOIST=
+     &        GCTU*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP))
+     &        -RHS
             GFA(ICOMP)=GCTU
 C Check that the maximum dehumidification is not exceeded (kg).
 C ADDMOIST will be negative for dehumidification.   
-            IF(ADDMOIST.LT.RHDC(ICOMP)*3600/NTSTEP) THEN
+            IF(ADDMOIST.LT.RHDC(ICOMP)*3600./real(NTSTEP)) THEN
 
 C At the maximum dehumidification, so undertake moisture mass balance with this quantity of moisture removed.
-              GFA(ICOMP)=(RHDC(ICOMP)*3600/NTSTEP+RHS)/
-     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-              ADDMOIST=RHDC(ICOMP)*3600/NTSTEP
+              GFA(ICOMP)=(RHDC(ICOMP)*3600./real(NTSTEP)+RHS)/
+     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP))
+              ADDMOIST=RHDC(ICOMP)*3600./real(NTSTEP)
             ENDIF
 C Enthalpy for final moisture content (J/kg). 
             ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
@@ -2141,21 +2243,23 @@ C Enthalpy if  humidification had not been applied.
             ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
      &             -ADDMOIST/ZMDAF(ICOMP))*1000.
 C Calculate the latent addition/extraction (W).
-            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)
+     &                         /(3600./real(NTSTEP))
 
           ELSEIF(GFA(ICOMP).LT.GCTL)THEN  
-            ADDMOIST=GCTL*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-     &              -RHS
+            ADDMOIST=
+     &           GCTL*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP))
+     &           -RHS
             GFA(ICOMP)=GCTL
 
 C Check that the maximum humidification is not exceeded (kg).
 C ADDMOIST will be positive for humidification.   
-            IF(ADDMOIST.GT.RHHC(ICOMP)*3600/NTSTEP) THEN
+            IF(ADDMOIST.GT.RHHC(ICOMP)*3600./real(NTSTEP)) THEN
 
 C At the maximum humidification, so undertake moisture mass balance with this quantity of moisture added.
-              GFA(ICOMP)=(RHHC(ICOMP)*3600/NTSTEP+RHS)/
-     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-              ADDMOIST=RHHC(ICOMP)*3600/NTSTEP
+              GFA(ICOMP)=(RHHC(ICOMP)*3600./real(NTSTEP)+RHS)/
+     &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP))
+              ADDMOIST=RHHC(ICOMP)*3600./real(NTSTEP)
             ENDIF
 C Enthalpy for final moisture content (J/kg) 
             ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
@@ -2163,7 +2267,8 @@ C Enthalpy if  humidification had not been applied
             ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
      &             -ADDMOIST/ZMDAF(ICOMP))*1000.
 C Calculate the latent addition/extraction (W)
-            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)
+     &                                  /(3600./real(NTSTEP))
           ENDIF
         ELSE
           ZLLDF(ICOMP)=0.0
