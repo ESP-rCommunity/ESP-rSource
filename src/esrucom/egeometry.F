@@ -4101,9 +4101,9 @@ C duplicate edge is found also remember it.
 
 C Debug.
               if(itrc.gt.1)then
-                write(outs,'(a,i3,a,4i3)') 'edges for conn ',icc,
-     &            ' are ',jes,jee,kes,kee
-                call edisp(iuout,outs)
+C                write(outs,'(a,i3,a,4i3)') 'edges for conn ',icc,
+C     &            ' are ',jes,jee,kes,kee
+C                call edisp(iuout,outs)
               endif
 
               if(jes.EQ.kes.AND.jee.EQ.kee)then
@@ -4172,9 +4172,9 @@ C If an edge matches, test if other surface is facing the same way.
 
 C Debug...
                   if(itrc.gt.1)then
-                    write(outs,'(a,i3,a,i3,a,2i3,a,2i3)')
-     &                'edges for conns ',icc,' & ',icco,
-     &                ' are ',j,k,' & ',jj,kk
+C                    write(outs,'(a,i3,a,i3,a,2i3,a,2i3)')
+C     &                'edges for conns ',icc,' & ',icco,
+C     &                ' are ',j,k,' & ',jj,kk
 C                    call edisp(iuout,outs)
                   endif
 
@@ -4337,11 +4337,11 @@ C other must face the ground
 
 C Debug.
                   if(itrc.gt.1)then
-                    write(outs,'(a,i3,a,2i3,2f6.1,2a,3f7.3)')
-     &                'type for conns ',icc,' & ',icco,
-     &                ibridgeshr(icc,i),SSPAZI(icc),SSPAZI(icco),
-     &                ':',ssparent(icc),dista,distb,distc
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,i3,a,2i3,2f6.1,2a,3f7.3)')
+C     &                'type for conns ',icc,' & ',icco,
+C     &                ibridgeshr(icc,i),SSPAZI(icc),SSPAZI(icco),
+C     &                ':',ssparent(icc),dista,distb,distc
+C                    call edisp(iuout,outs)
 C                    write(outs,'(a,8f7.2)') 'brl ',bridgelen(izone,1),
 C     &                bridgelen(izone,2),bridgelen(izone,3),
 C     &                bridgelen(izone,4),bridgelen(izone,5),

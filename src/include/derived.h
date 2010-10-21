@@ -43,6 +43,15 @@ C Aggregate areas (m^2).
      &  xtoground,xareatran,xareawall,xareaslproof,xareafltroof,
      &  xareaskylt
 
+C Percentages
+      real tranper     ! % of floor area which is facade transparent.
+      real skyper      ! % of floor area which is skylights
+      real wallper     ! % of floor area which is walls
+      real slproofper  ! % of floor area which is sloped roofs
+      real flatroofper ! % of floor area which is flat roofs
+      common/agreperc/tranper(MCOM),skyper(MCOM),wallper(MCOM),
+     &  slproofper(MCOM),flatroofper(MCOM)
+
 C Facade and foundation thickness and perimeter (foundation) length.
       real xvthk        ! max thickness of facade (vertical walls)
       real xfndthkg     ! max thickness of MLC connected to ground

@@ -1641,7 +1641,7 @@ C Radiance scene file.
 
 C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
-        ISBEM=1
+        ISBEM=2  ! to signal we have NCM description
         IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
@@ -2012,7 +2012,7 @@ C automatically and should not be modified through project manager
         IWARN=1
         OUTS=
      &  'This is a UK NCM stripped model and should not be modified'
-      ELSEIF(ISBEM.EQ.1.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
+      ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN

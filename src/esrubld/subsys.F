@@ -1445,6 +1445,10 @@ C If there is no system linked to the current zone then set SFPHS to zero.
                 iNatVentilatedFlag=1
               endif
             endif       
+
+C Reference building is always naturally ventilated, has radiators and
+C DX cooling so set ventilation flag
+            if(inoti.eq.2.or.idsmtestingflag.eq.2)iNatVentilatedFlag=1
           endif
           
 C If zone temperature for naturally ventilated buildigns is greater
@@ -2355,8 +2359,8 @@ C not/ref/typ models either. Otherwise use default of 2 and 3 respectively
       if(closeto0)then
         SFP=0.
       else
-        if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &  (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
           SFP=2.
         elseif(inoti.eq.3)then ! Typical model
           SFP=3.
@@ -2366,45 +2370,45 @@ C not/ref/typ models either. Otherwise use default of 2 and 3 respectively
 C Set specific fan power based on ventilation system associated with
 C each system
       if(IHLZ(ICOMP).eq.0)then ! No system linked to this zone
-        if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &  (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
           SFP=0.
         elseif(inoti.eq.3)then ! Typical model
           SFP=0.
         endif
       ELSE
         if(IVENT(IHLZ(ICOMP)).EQ.0.OR.IVENT(IHLZ(ICOMP)).EQ.10)THEN
-          if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
             SFP=0.
           elseif(inoti.eq.3)then ! Typical model
             SFP=0.
           endif
         elseif(IVENT(IHLZ(ICOMP)).EQ.1.OR.IVENT(IHLZ(ICOMP)).EQ.11)THEN
-          if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
             SFP=2.
           elseif(inoti.eq.3)then ! Typical model
             SFP=3.
           endif
         elseif(IVENT(IHLZ(ICOMP)).EQ.2.OR.IVENT(IHLZ(ICOMP)).EQ.12)THEN
-          if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
             SFP=1.2
           elseif(inoti.eq.3)then ! Typical model
             SFP=1.8
           endif
         elseif(IVENT(IHLZ(ICOMP)).EQ.3.OR.IVENT(IHLZ(ICOMP)).EQ.13)THEN
-          if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
             SFP=0.8
           elseif(inoti.eq.3)then ! Typical model
             SFP=1.1
           endif
         ENDIF
         IF(IVENT(IHLZ(ICOMP)).GE.10)THEN ! If there are local ventilation units present
-          if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+        if(inoti.eq.1.or. !notional
+     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
             SFP=SFP+0.5
           elseif(inoti.eq.3)then ! Typical model
             SFP=SFP+0.75
@@ -2413,8 +2417,8 @@ C each system
       endif
 
 C Set minimum auxiliary energy for ac and mech vent systems
-      if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
-     &(inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+      if(inoti.eq.1.or. !notional
+     &(inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
         MinAuxE=8.5
       elseif(inoti.eq.3)then ! Typical model
         MinAuxE=14.0
@@ -2456,11 +2460,13 @@ C The calculated values will be in Watts
      &    (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
             m2zonAuxil(imonth,ICOMP)=0.61*
      &      fMonthEstSysHrs(iactvalue,imonth)+m2zonAuxil(imonth,ICOMP)
+
             fmonthAuxil_ncm_Energy(imonth,icomp)=0.61*ZBASEA(ICOMP)*
      &      fMonthEstSysHrs(iactvalue,imonth)
           ELSEIF(INOTI.EQ.3)THEN ! Typical model
             m2zonAuxil(imonth,ICOMP)=1.23*
      &      fMonthEstSysHrs(iactvalue,imonth)+m2zonAuxil(imonth,ICOMP)
+
             fmonthAuxil_ncm_Energy(imonth,icomp)=1.23*ZBASEA(ICOMP)*
      &      fMonthEstSysHrs(iactvalue,imonth)
           ENDIF 
@@ -2481,11 +2487,16 @@ C has radiators for heating and direct expansion cooling but fan power
 C associated with cooling is taken into account in cooling load value
 C (NCM Modelling Guide October 2008 version)
         IF(INOTI.EQ.2.OR.iDsmTestingFlag.EQ.2)THEN
-          CONTINUE
+          m2zonAuxil(imonth,ICOMP)=0.61*
+     &    fMonthEstSysHrs(iactvalue,imonth)+m2zonAuxil(imonth,ICOMP)
+
+          fmonthAuxil_ncm_Energy(imonth,icomp)=0.61*ZBASEA(ICOMP)*
+     &    fMonthEstSysHrs(iactvalue,imonth)
         ELSE
           m2zonAuxil(imonth,ICOMP)=
      &    ValueToCalc*nonzerohours(iactvalue,1)/12.+
      &    m2zonAuxil(imonth,ICOMP)
+
           fmonthAuxil_ncm_Energy(imonth,icomp)=ValueToCalc*
      &    ZBASEA(ICOMP)*nonzerohours(iactvalue,1)/12.+
      &    fmonthAuxil_ncm_Energy(imonth,icomp)

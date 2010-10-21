@@ -1140,7 +1140,7 @@ C If lighting controls have been defined then read these in as well
           CALL EGETWI(OUTSTR,K,Ilightcontrol(IZ),0,0,'-',
      &    'lighting control type',IER)
           CALL EGETWI(OUTSTR,K,Idaylightzoning(IZ),0,0,'-',
-     &    'daylighting zoning for control',IER)
+     &    'daylighting sensor location front or front_back',IER)
           CALL EGETWI(OUTSTR,K,Ipe_control(IZ),0,0,'-',
      &    'photoelectric control',IER)
           CALL EGETWI(OUTSTR,K,IOcc_sensing(IZ),0,0,'-',
@@ -1525,9 +1525,9 @@ C lighting type
 
 C Also include lighting control information
         write(iuf,'(3A)')
-     &  '# Light control type, daylight zoning, photoelectric control',
-     &  'occupancy sensing, PEsensor & occupancy sensor parasitic power'
-     &  ,', approximate daylight factors for front and rear'
+     &  '# Light control type, daylight sensor, photoelectric control',
+     &  ' occupancy sensing, PEsensor & occupancy sensor parasitic ',
+     &  'power, approximate daylight factors for front and rear'
         write(iuf,'(4I4,4F5.2)')
      &  Ilightcontrol(IZ),Idaylightzoning(IZ),Ipe_control(IZ),
      &  IOcc_sensing(IZ),PE_sensor_PP(IZ),Occ_sensor_PP(IZ),
