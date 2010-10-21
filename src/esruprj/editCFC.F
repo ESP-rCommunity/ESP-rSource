@@ -818,11 +818,11 @@ C curvature ratio), slat thickness and slat apparent thickness
      &            'solar slat reflectance - back(top)',IER)
             rim_SolRb(icomp,icfctp,i)=rprop
 
-C Assign default visual properties until visual properies added 
+C Assign default visual=solar properties until visual properies added 
 C to GSLedit
-            rim_VisT(icomp,icfctp,i) =     0.600
-            rim_VisRf(icomp,icfctp,i)=     0.070
-            rim_VisRb(icomp,icfctp,i)=     0.070
+            rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
+            rim_VisRf(icomp,icfctp,i)= rim_SolRf(icomp,icfctp,i)
+            rim_VisRb(icomp,icfctp,i)= rim_SolRb(icomp,icfctp,i)
 
             CALL EGETWR(LOUTSTR,K,rprop,.001,0.30,'F',
      &            'slat width (m)',IER)
