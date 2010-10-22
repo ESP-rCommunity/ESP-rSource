@@ -1899,7 +1899,7 @@ C Note optional zone extensions.
 
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
-     &   'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+     &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
             DO 9995 I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
@@ -1907,9 +1907,9 @@ C Note optional zone extensions.
      &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
                 WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
-     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),
      &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
- 9994           FORMAT(I3,8F8.1,' ',a,' ',a)
+ 9994           FORMAT(I3,8F8.1,F5.2,' ',a,' ',a)
                 call edisp(itu,OUTS)
               else
                 WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',

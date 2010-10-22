@@ -2100,6 +2100,12 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             BANGOB(icomp,nbo,2)=VX
             CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
             BANGOB(icomp,nbo,3)=VX
+            if(ND.ge.13)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2125,6 +2131,12 @@ C standard obstruction block when converted into a GB1 common block.
             nbo=nbobs(icomp)
             CALL EGETWI(LOUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
             CALL EGETWI(LOUTSTR,K,ival,6,6,'F','obs nb faces',IER)
+            if(ND.ge.6)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2212,6 +2224,12 @@ C standard obstruction block when converted into a GB1 common block.
             BANGOB(icomp,nbo,1)=VX
             BANGOB(icomp,nbo,2)=0.0   ! there is no 2nd rotation
             BANGOB(icomp,nbo,3)=0.0   ! there is no 3rd rotation
+            if(ND.ge.11)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2681,17 +2699,18 @@ C geometry file also write the NOX and NOZ values.
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,9F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
-     &        BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+     &        OPOB(icomp,ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
-            WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &        '*obsp',' 8 6 ',BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+            WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib),
+     &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib,
@@ -2716,10 +2735,10 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,7F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &        BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
+     &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
      &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
