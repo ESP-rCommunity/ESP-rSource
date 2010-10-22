@@ -8544,7 +8544,7 @@ C derived.h are derived areas and U values for zones and the model
       common/pophelp/h(60)
 
 C bridgelen was calculated in subroutine suredgeadj
-      real bridglen ! Length of potential thermal bridges in each zone.
+      real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
 
 C Thermal bridge common block: 

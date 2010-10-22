@@ -4032,7 +4032,7 @@ C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCOM,MV)
 
-      real bridglen ! Length (m) of potential thermal bridges in each zone.
+      real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
       common/gbridge/bridgelen(MCOM,10)
       
@@ -4045,11 +4045,12 @@ C   where a surface such as a floor has been subdivided)
       logical closeazi,closeelv,foundone,ok,dok,same
 
 C iwhich is local variable to sort most often referenced adjacent surf.
-      dimension iwhich(MV),iwhichs(MV),iwhichc(MV)
+      dimension iwhich(MV),iwhichs(MV)
       real va,vb,pa,pb
       dimension va(3),vb(3),pa(3),pb(3),vaa(3),vbb(3)
       real ux,uy,uz  ! unit vector along the edge
-      real dista,distb,distc
+      real dista,distc
+C      real distb ! currently not used
       logical closeux,closeuy,closeuz
 
       if(izone.ne.0.and.izone.le.NCOMP)then
@@ -4136,7 +4137,6 @@ C last vertext is reached point the end to the start point.
           do 46 ijj=1,MV
             iwhich(ijj)=0
             iwhichs(ijj)=0
-            iwhichc(ijj)=0
   46      continue
           list=NVER(isurf)
           nbedgshr(icc)=0
@@ -4287,7 +4287,7 @@ C Use ratio calculation to get point 100mm away.
                         vbb(2) = ((r2 * PB(2)) + (r1 * VB(2)))/1.0
                         vbb(3) = ((r2 * PB(3)) + (r1 * VB(3)))/1.0
                         dista = crow(PA,PB)  ! dist cog-to-cog
-                        distb = crow(VA,VB)  ! dist offset-to-offset
+C                        distb = crow(VA,VB)  ! dist offset-to-offset
                         distc = crow(VAA,VBB)! dist slight offset-to-offset
 
 C Debug.

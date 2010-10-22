@@ -260,7 +260,7 @@ C in the current model. A -1 means not applicable
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
-      REAL :: uvd,uvn,uvi,uvu,vtranper
+      REAL :: UVD,UVI,UVU,vtranper
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -2729,27 +2729,13 @@ C Parameters passed in
       character act*1      ! 'c' clear and 'p' process
  
       common/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C bridgelen was calculated in subroutine suredgeadj
-      real bridglen ! Length of potential thermal bridges in each zone.
+      real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
 
-C losspercent is W/K for an alternative method  where the calculated heat flow
-C   is augmented by a fixed percentage of the UA (fabric loss)
-C totheatloss is W/K for all length*psi plus losspercent for the zone
-C thbrpercent is the user defined fraction for thermal bridges used by
-C   losspercent and is assumed to apply to all zones in the model.
-      integer nbrdg, ibrdg
-      real psi,lngth,losspercent,totheatloss,thbrpercent
-      real uavtotal
-      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)
       integer IUF   ! file unit
-      character outs*124,outs248*248
       character*72 LTMP
       character DESCRC*25
 
