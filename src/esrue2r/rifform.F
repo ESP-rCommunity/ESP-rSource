@@ -29,22 +29,15 @@ C ******* Setup of image quality and calculation options.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
-
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
 
       CHARACTER doit*124,VALT*32
       character runpath*72,pathtype*24
       character item*30,h*72,HOLD*24
-      character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
-      character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
+      character fil*80
+      character ltmp*72,ltmp60*60
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       integer NITEMS,INO  ! max items and current menu item
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
@@ -366,17 +359,9 @@ C If use = 'f' then force files to account for change in root/dir name.
 
       common/rad2/mono,intext,ifocz
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
 
       character pre*28
-      character vewcmds*124,rvewsh*10
-      character rscedes*72,rzoncmd*60,rupaxis*1
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
 
       character use*1
 

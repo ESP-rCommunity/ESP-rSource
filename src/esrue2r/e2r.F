@@ -74,21 +74,13 @@ C Radiance based commons are explained in e2r_common.h.
       common/rad2/mono,intext,ifocz
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/grdisk/grdd,grcx,grcy
-      common/radgt/iglzty
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
 
 C Scene configuration commons.
       common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      character vewcmds*124,rvewsh*10
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -105,13 +97,11 @@ C Name of current application
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
-      CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
+      CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
       character tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
-      character rscedes*72,rzoncmd*60,rupaxis*1
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28

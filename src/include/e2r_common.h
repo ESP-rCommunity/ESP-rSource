@@ -50,3 +50,40 @@ C Directives for images and image processing
       character penumb*5  ! penumbras False|True  Default is False
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
 
+C Radiance views
+      character vewcmds*124 ! first token of view commands is short name for
+                            ! the view followed by -vp and -vd data
+      character rvewsh*10   ! array of short view names for selection lists
+      integer indxvew       ! number of views (up to 20)
+      integer ipckvew       ! index of current view
+      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
+
+C Radiance scenes
+      integer indxscn  ! number of scene descriptors zero is the initial state, two
+                       ! indicates that sky and glazing files have been defined. Incremented
+                       ! as contents of rif file are scanned 
+      character rscedes*72  ! scene descriptor -  sky then glazing the the rest
+      character rzoncmd*60  ! used with the ZONE= radiance command
+      character rupaxis*1   ! up axis: single character Z (the default)
+      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
+
+      character SCENE*28    ! scene name (unsure how this differes from SCENERT)
+      character RIFNAME*72  ! radiance RIF file name (array of file names)
+      character SCENERT*28  ! scene root name (used to create other named entities)
+      character RIFDESC*72  ! user documentation of the scene
+      character RIFPURP*12  ! scene purpose UNKNOWN|External|Internal|Day_fact|Coupling
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+
+      integer NBSRIF      ! for each scene -1 if not defined, 1 if alternative rif defined
+      character LBSRIF*72 ! alternate rif file name
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+
+      integer NRIF     ! number of scenes and rif files
+      integer IRIFFOC  ! current scene index (in the array of scenes)
+      common/raddata2/NRIF,IRIFFOC
+
+      integer iglzty   ! glazing type 1 sets alt glazing scene= (default), type 2 sets the
+                       ! alt glazing illum= precalculated scene, type 3 (?)
+      common/radgt/iglzty
+

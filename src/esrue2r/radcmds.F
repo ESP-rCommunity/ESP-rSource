@@ -54,14 +54,9 @@ C  else simulate the scene by calling simscene
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character zone*16,aim*12,act*72,LBSRIF*72
+      character zone*16,aim*12,act*72
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
       LOGICAL fict,XST,OK,DOK
@@ -218,16 +213,11 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character outs*124,doit*124,doitl*256,tfile*72
-      character zone*16,aim*12,act*72,LBSRIF*72
+      character zone*16,aim*12,act*72
       character QT*1
       character*72 LDFGRID,LTMPFL,LTMPFA,rn
       character runpath*72,pathtype*24
@@ -555,21 +545,14 @@ C defview generates a new default view.
       SUBROUTINE defview
 #include "building.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
 
       COMMON/FILEP/IFIL
 
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
 
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character vewcmds*124,rvewsh*10,LBSRIF*72
 
       ITA2=IFIL+7
 
@@ -657,16 +640,10 @@ C ITP =1 - image only; =2 - glare info to display on image.
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character vewcmds*124,rvewsh*10,pf*72,h*72,outs*124,ltmp*72
-      character doit*256,LBSRIF*72,runpath*72,pathtype*24
+      character pf*72,h*72,outs*124,ltmp*72
+      character doit*256,runpath*72,pathtype*24
       integer lnrp  ! length of run path
       integer IWT,IWP   ! for radio buttons
 
@@ -1015,10 +992,8 @@ C Assumes that the path to the image is given.
       common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
 
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-
       character doit*124,pf*72,gf*72,ugrf*72,ltmp*72
-      character vewcmds*124,rvewsh*10,outs*124,outstr*124
+      character outs*124,outstr*124
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
       
@@ -1161,14 +1136,9 @@ C getglr recovers view information and runs glare calculation.
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
 
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character vewcmds*124,rvewsh*10,rendopt*200
+      character rendopt*200
       character word*12,doit*300,ltmp*200,gf*72,pf*72,glst*4
       character runpath*72,pathtype*24
 
@@ -1337,10 +1307,6 @@ C getdf runs daylight factor calculation and then displays them.
       common/expath/runpath,pathtype
       common/pophelp/h(60)
 
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
 
 C radgrpts: Daylight factor sensor common
@@ -1350,8 +1316,7 @@ C   DFDIR: direction that sensor is looking.
 C   DFVALS: Daylight factors.
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256,LBSRIF*72
+      CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256
       character QT*1,OUTSTR*124
       character tfile*72,outsl*160
       character runpath*72,pathtype*24

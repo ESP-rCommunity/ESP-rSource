@@ -299,18 +299,13 @@ C IERR=1 if a scene file is missing.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad2/mono,intext,ifocz
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      common/radgt/iglzty
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-
       common/expath/runpath,pathtype
 
-      character rscedes*72,rzoncmd*60,rupaxis*1
-      character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
+      character tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
       character tsc*72,tword*10,file*72,RVB*1
       character runpath*72,pathtype*24
@@ -476,13 +471,8 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/radgt/iglzty
       common/expath/runpath,pathtype
 
-      character rscedes*72,rzoncmd*60,rupaxis*1
-      character vewcmds*124,rvewsh*10
       character file*72,tfile*72
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path

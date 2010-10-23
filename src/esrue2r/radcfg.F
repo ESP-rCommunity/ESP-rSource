@@ -42,6 +42,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -51,17 +52,12 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/expath/runpath,pathtype
 
       common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
       common/radabs/NABS
       common/user/browse
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
-      character LBSRIF*72,pfile*72,path*72,runpath*72,pathtype*24,fs*1
+      character pfile*72,path*72,runpath*72,pathtype*24,fs*1
       integer lnrp  ! length of run path
 
       logical unixok
@@ -186,20 +182,16 @@ C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/expath/runpath,pathtype
       common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character LRADCF*72,OUTS*72,LDFGRID*72,LBSRIF*72
+      character LRADCF*72,OUTS*72,LDFGRID*72
       character dstmp*24,pfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
@@ -281,18 +273,14 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       SUBROUTINE whichrif(MODE)
 #include "building.h"
 #include "epara.h"
+#include "e2r_common.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
       common/cmddata/zone,aim,act
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character MODE*1, H*72, VERT*24, KEY*1, LBSRIF*72
+      character MODE*1, H*72, VERT*24, KEY*1
       character zone*16,aim*12,act*72
 
       dimension VERT(35)
@@ -535,20 +523,14 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
-      common/radgt/iglzty
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       dimension IVALS(MCOM)
 
       character cfgroot*24,LCFGF*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character h*72,MODE*1,outs*124,LBSRIF*72
+      character h*72,MODE*1,outs*124
       character zone*16,aim*12,act*72,dname*28,tname*28
       character dname72*72,tname72*72
 
@@ -882,6 +864,7 @@ C if MODE is not - then sensor points file name confirmation required.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -896,9 +879,6 @@ C if MODE is not - then sensor points file name confirmation required.
       common/C1/NCOMP,NCON
 
       common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
       common/radgrid/LDFGRID
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
@@ -908,7 +888,6 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character h*72,LDFGRID*72,DESCRC*25
       character outs*124,runpath*72,pathtype*24,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
@@ -1241,6 +1220,7 @@ C for use with a 'Coupling' scene purpose.
       SUBROUTINE SENLOC
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1257,13 +1237,9 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
       common/radgrid/LDFGRID
       common/rad2/mono,intext,ifocz
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       CHARACTER*72 LCGCINT,LDFGRID
       character outs*124,runpath*72,pathtype*24
 
@@ -1325,6 +1301,7 @@ C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1335,14 +1312,9 @@ C If filexst is 'o' then old file, 'n' then create a new file.
 
       common/rad2/mono,intext,ifocz
       common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character filexst*1,LRADCF*72,LBSRIF*72
+      character filexst*1,LRADCF*72
       character cfgroot*24,LCFGF*72
       character zone*16,aim*12,act*72,pfile*72,runpath*72,pathtype*24
 

@@ -140,29 +140,21 @@ C ******* Default views formation.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
       LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
       logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
-      character outs*124,LBSRIF*72
+      character outs*124
       character doit*124,ltmp*72,trvewsh*10
-      character vewcmds*124,rvewsh*10
       integer NITEMS,INO  ! max items and current menu item
 
 #ifdef OSI

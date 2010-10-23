@@ -34,15 +34,11 @@ C ******* Sky calculations. *******
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character skopt*3,outs*124,tfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
       integer NITEMS,INO ! max items and current menu item
@@ -561,11 +557,6 @@ C TMC data
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgt/iglzty
       common/radabs/NABS
       common/expath/runpath,pathtype
 
@@ -576,14 +567,12 @@ C TMC data
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
-      character*72 LBSRIF
       character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
       integer lnbm  ! length of block material
