@@ -27,6 +27,7 @@ C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
 #include "site.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -36,13 +37,11 @@ C ******* Sky calculations. *******
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skopt*3,outs*124,tfile*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
@@ -250,17 +249,17 @@ C ********************** wrtsky **********************
 C wrtsky calls radiance and writes sky info to file.
 
       SUBROUTINE wrtsky(skycmd)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
@@ -293,6 +292,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -304,9 +304,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/expath/runpath,pathtype
@@ -315,8 +312,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       DIMENSION ITEM(17)
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,tfile
+      character*72 tfile
       character runpath*72,pathtype*24
       character item*32,h*72,ACT*1,GTGEOM*72
       integer lnrp  ! length of run path
@@ -540,6 +536,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -562,10 +559,6 @@ C TMC data
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       common/grdisk/grdd,grcx,grcy
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -590,8 +583,7 @@ C TMC data
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,LBSRIF,aglzfil
+      character*72 LBSRIF
       character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25

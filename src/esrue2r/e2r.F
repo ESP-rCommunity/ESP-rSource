@@ -34,6 +34,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -69,16 +70,8 @@ C Path to model.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-C Radiance based commons.
-C rofil = `outside` objects, rzfil = is the zone (inside) composition.
-C rskyfil is the sky definition file,  matfil,rmmfil contain
-C materials and miscel geometries.
-C rmfil is for miscel descriptions.
-      common/e2rf/rambfil,optnfil
+C Radiance based commons are explained in e2r_common.h.
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/rad2/mono,intext,ifocz
       common/radrp/ipicx
@@ -86,7 +79,6 @@ C rmfil is for miscel descriptions.
       common/grdisk/grdd,grcx,grcy
       common/radgt/iglzty
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/radif/irofil,irzfil,imatfil,iglzfil
       common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
 
@@ -118,9 +110,7 @@ C Name of current application
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER LDFGRID*72
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character*72 matfil,rmmfil,glzfil,aglzfil
-      character rambfil*72,optnfil*72,tfile*72,runpath*72,pathtype*24
+      character tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character crenrp*160,coconv*40

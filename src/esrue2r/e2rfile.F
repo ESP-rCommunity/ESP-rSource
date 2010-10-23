@@ -282,10 +282,6 @@ C NOTE: Octree path/file.  Relitive to rif folder and root as in 'rif' file.
 C        'OCTREE= octree/lights.oct'
 C NOTE: Pict path/file root name.  Relative to rif file folder.
 C        'PICTURE= images/lights' get interpreted to images/lights_lit.pic
-C rambfil = Interreflection storage file, name should be based on rif root.  Used
-C        if ambient bounces >0.
-C optnfil = Options file for rpict and rview get stored here (for reference
-C        and to shorten the command line).
 
 C vewcmds(20) Structure giving view information. First column is interpreted as
 C          a short name for the view - examples below:
@@ -295,7 +291,9 @@ C RVB - reporting verbosity, 's'= silent.
 C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,file,RVB,IERR)
+#include "building.h"
 #include "espriou.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -303,9 +301,7 @@ C IERR=1 if a scene file is missing.
       common/rad2/mono,intext,ifocz
       common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rf/rambfil,optnfil
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -319,10 +315,8 @@ C IERR=1 if a scene file is missing.
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character crenrp*160,coconv*40
-      character rambfil*72,optnfil*72
       character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character tsc*72,tword*10,file*72,RVB*1
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
@@ -481,29 +475,24 @@ C ********************* MKRIF *********************
 C MKRIF - Write radiance RIF file.
 C IFC=4 ask before overwriting, IFC=3 overwrite.
       SUBROUTINE MKRIF(ITA2,file,IFC,IGL,IER)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
       common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/radrp/ipicx
-      common/e2rf/rambfil,optnfil
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/radgt/iglzty
       common/expath/runpath,pathtype
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character rscedes*72,rzoncmd*60,rupaxis*1,aglzfil*72
+      character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character rambfil*72,optnfil*72
       character crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10
-      character*72 matfil,rmmfil,glzfil
       character file*72,tfile*72
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
@@ -695,17 +684,15 @@ C ******* FIGSCEN
 C Attempt to judge the type of file in a scene description from the
 C terminating character (or later the contents).
       subroutine figscen(ITA3,cmdname,ier)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1m/matfil,rmmfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character*72 matfil,rmmfil,glzfil
       character cmdname*72,OUTSTR*124,runpath*72,pathtype*24,tfile*72
       integer lnrp  ! length of run path
 
