@@ -18,7 +18,7 @@ C Radiance model descriptive files:
       character glzfil*72   ! transparent materials definitions - root-glz.rad
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
 
-      character aglzfil*72  ! transparent ? definitions - root-glz_a.rad
+      character aglzfil*72  ! alternative transparent definitions - root-glz_a.rad
       common/rad1a/aglzfil
 
       character matfil*72   ! opaque materials definitions
@@ -28,3 +28,25 @@ C Radiance model descriptive files:
 C File unit numbers for radiance model files
       integer irofil,irzfil,imatfil,iglzfil
       common/radif/irofil,irzfil,imatfil,iglzfil
+
+C Logical states for model task completion. Set to fales if the
+C task is not complete.
+      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
+
+C Directives for images and image processing
+      integer ipicx  ! resolution or image width [X pixels] default is 512
+      common/radrp/ipicx
+
+      character crenrp*160  ! extra rendering commands for rpict
+      character coconv*40   ! extra rendering commands for oconv
+      common/e2rc/crenrp,coconv
+
+      integer indrcb  ! indirect calculation importance: 0-2
+      integer itrack  ! progress reporting in whole minutes
+      character imgqua*6  ! image quality directive Low|Medium|High
+      character detlvl*6  ! detail level  Low|Medium|High
+      character llvar*6   ! light level variability  Low|Medium|High
+      character penumb*5  ! penumbras False|True  Default is False
+      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
+

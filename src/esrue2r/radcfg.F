@@ -524,6 +524,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
 #include "building.h"
 #include "geometry.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -533,8 +534,6 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/e2rc/crenrp,coconv
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
@@ -542,16 +541,14 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgt/iglzty
-      common/radrp/ipicx
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       dimension IVALS(MCOM)
 
-      character crenrp*160,coconv*40,cfgroot*24,LCFGF*72
+      character cfgroot*24,LCFGF*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character h*72,MODE*1,outs*124,LBSRIF*72
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
       character zone*16,aim*12,act*72,dname*28,tname*28
       character dname72*72,tname72*72
 

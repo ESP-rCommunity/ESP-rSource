@@ -29,11 +29,9 @@ C ******* Setup of image quality and calculation options.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
-      common/radrp/ipicx
       common/expath/runpath,pathtype
 
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -43,7 +41,6 @@ C ******* Setup of image quality and calculation options.
       CHARACTER doit*124,VALT*32
       character runpath*72,pathtype*24
       character item*30,h*72,HOLD*24
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
       character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
       character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
 
@@ -368,12 +365,8 @@ C If use = 'f' then force files to account for change in root/dir name.
       integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
-      common/radrp/ipicx
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -381,13 +374,11 @@ C If use = 'f' then force files to account for change in root/dir name.
       common/raddata2/NRIF,IRIFFOC
 
       character pre*28
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character rscedes*72,rzoncmd*60,rupaxis*1,crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10
+      character rscedes*72,rzoncmd*60,rupaxis*1
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
 
       character use*1
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
 C Make the initial part of new file names to follow scene root name.
       write(pre,'(a)') SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC)))

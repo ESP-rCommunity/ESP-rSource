@@ -38,7 +38,6 @@ C ******* Sky calculations. *******
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
@@ -51,7 +50,6 @@ C ******* Sky calculations. *******
       DIMENSION ITEM(14)
 
       logical OK,DOK,XST
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -257,13 +255,11 @@ C wrtsky calls radiance and writes sky info to file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
       character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST
 
       lnrp=lnblnk(runpath)
@@ -304,12 +300,10 @@ C ACT = 's' silent, ACT = 'i' interactive.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/expath/runpath,pathtype
 
       LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       DIMENSION ITEM(17)
       character*72 tfile
@@ -560,7 +554,6 @@ C TMC data
 
       common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -596,7 +589,6 @@ C TMC data
       integer lnbm  ! length of block material
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7

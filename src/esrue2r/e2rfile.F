@@ -299,22 +299,17 @@ C IERR=1 if a scene file is missing.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad2/mono,intext,ifocz
-      common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       common/radgt/iglzty
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/radrp/ipicx
 
       common/expath/runpath,pathtype
 
       character rscedes*72,rzoncmd*60,rupaxis*1
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
       character tsc*72,tword*10,file*72,RVB*1
@@ -481,17 +476,12 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
-      common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/radrp/ipicx
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/radgt/iglzty
       common/expath/runpath,pathtype
 
       character rscedes*72,rzoncmd*60,rupaxis*1
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10
       character file*72,tfile*72
       character runpath*72,pathtype*24
@@ -690,14 +680,12 @@ C terminating character (or later the contents).
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
       character cmdname*72,OUTSTR*124,runpath*72,pathtype*24,tfile*72
       integer lnrp  ! length of run path
 
       logical XST
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ier=0
       lnrp=lnblnk(runpath)

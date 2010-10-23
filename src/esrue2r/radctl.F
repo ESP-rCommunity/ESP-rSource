@@ -36,9 +36,7 @@ C If VAL is < 0 then return current setting otherwise set par=VAL.
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
 
-      common/e2rc/crenrp,coconv
-
-      character crenrp*160,coconv*40,flag*8,PAR*2
+      character flag*8,PAR*2
       character OUTSTR*124,ltmp*72
       character runpath*72,pathtype*24
 

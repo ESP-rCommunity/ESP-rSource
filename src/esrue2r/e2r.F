@@ -71,15 +71,11 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/rad2/mono,intext,ifocz
-      common/radrp/ipicx
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/grdisk/grdd,grcx,grcy
       common/radgt/iglzty
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/e2rc/crenrp,coconv
       common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
 
 C Scene configuration commons.
@@ -113,9 +109,7 @@ C Name of current application
       character tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
-      character crenrp*160,coconv*40
       character rscedes*72,rzoncmd*60,rupaxis*1
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
@@ -127,7 +121,6 @@ C Name of current application
 
       LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
 

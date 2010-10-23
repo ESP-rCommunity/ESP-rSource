@@ -126,6 +126,7 @@ C ******* Default views formation.
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -138,7 +139,6 @@ C ******* Default views formation.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
@@ -153,7 +153,7 @@ C ******* Default views formation.
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
       LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
-      logical skydone,outdone,indone,misdone,vewdone,glzdone,redraw
+      logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 

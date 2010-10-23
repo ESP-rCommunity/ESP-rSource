@@ -54,7 +54,6 @@ C  else simulate the scene by calling simscene
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -65,7 +64,6 @@ C  else simulate the scene by calling simscene
       character zone*16,aim*12,act*72,LBSRIF*72
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL fict,XST,OK,DOK
 
       ITA2=IFIL+7
@@ -220,7 +218,6 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -237,7 +234,6 @@ C simscene simulates daylight coefficients and coupling (called from bps)
 
       dimension npz(8),alt(8),azim(8),solid(8)
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST,unixok
       integer lnrp  ! length of run path
 
@@ -661,8 +657,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/rad2/mono,intext,ifocz
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/radrp/ipicx
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -673,7 +667,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character vewcmds*124,rvewsh*10,pf*72,h*72,outs*124,ltmp*72
       character doit*256,LBSRIF*72,runpath*72,pathtype*24
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
       integer lnrp  ! length of run path
       integer IWT,IWP   ! for radio buttons
 
@@ -1356,12 +1349,11 @@ C   DFPTS: location to calculate DF at.
 C   DFDIR: direction that sensor is looking.
 C   DFVALS: Daylight factors.
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/e2rc/crenrp,coconv
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256,LBSRIF*72
       character QT*1,OUTSTR*124
-      character crenrp*160,coconv*40,tfile*72,outsl*160
+      character tfile*72,outsl*160
       character runpath*72,pathtype*24
       character h*72
       integer lnrp  ! length of run path
