@@ -127,12 +127,12 @@ C Read lines from file, header first.
 C Now read number of rif files contained.
       CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif line',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NRIF,1,MCOM+1,'W','no of rifs',IER)
+      CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of rifs',IER)
 
       
 C For each rif read 5 items of data
       IER=0
-      do 10 I=1,NRIF
+      do 10 I=1,NSCENE
 
 C Reset the number of modelled blind states to zero.
         NBSRIF(I)=-1
@@ -159,9 +159,9 @@ C this scene represent alternate blind states.
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
-            CALL EGETRM(OUTSTR,K,RIFDESC(I),'W','rif desc',IFLAG)
+            CALL EGETRM(OUTSTR,K,SCENEDESC(I),'W','rif desc',IFLAG)
           elseif (WORD(1:4).eq.'*rpu') then
-            CALL EGETW(OUTSTR,K,RIFPURP(I),'W','rif purp',IFLAG)
+            CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','rif purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
             CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
@@ -213,12 +213,12 @@ C Write header first.
       write(IRCFG,'(a,a)') dstmp,' # latest file modification.'
 
 C Now write number of rif files contained.
-      write(IRCFG,'(i3,a)') NRIF,' # No. of scenes'
+      write(IRCFG,'(i3,a)') NSCENE,' # No. of scenes'
       
 C For each rif write 1) name. 2) root identifier. 3) short description 
 C and 4) intended use/ purpose.
 
-      do 10 I=1,NRIF
+      do 10 I=1,NSCENE
 
 C Find the longest string in this scene.
         IML=10
@@ -230,9 +230,9 @@ C Find the longest string in this scene.
         IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(SCENERT(I))
         IF(ISLENG.GT.IML)IML=ISLENG
-        ISLENG=LNBLNK(RIFDESC(I))
+        ISLENG=LNBLNK(SCENEDESC(I))
         IF(ISLENG.GT.IML)IML=ISLENG
-        ISLENG=LNBLNK(RIFPURP(I))
+        ISLENG=LNBLNK(SCENEPURP(I))
         IF(ISLENG.GT.IML)IML=ISLENG
 
         write(IRCFG,'(a,i3)') '# Scene number',I
@@ -246,14 +246,14 @@ C Find the longest string in this scene.
         endif
         OUTS=SCENERT(I)
         write(IRCFG,'(a,a,a)')'*srt ',OUTS(1:IML),' # Scene prefix'
-        OUTS=RIFDESC(I)
+        OUTS=SCENEDESC(I)
         write(IRCFG,'(a,a,a)')'*rde ',OUTS(1:IML),' # Description'
-        OUTS=RIFPURP(I)
+        OUTS=SCENEPURP(I)
         write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
-        if (RIFPURP(I)(1:8).eq.'Day_fact') then
+        if (SCENEPURP(I)(1:8).eq.'Day_fact') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
-        elseif (RIFPURP(I)(1:8).eq.'Coupling') then
+        elseif (SCENEPURP(I)(1:8).eq.'Coupling') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
      &                                          ' # Sensor locations'
@@ -305,7 +305,7 @@ C Use shorter menu depending on what MOD is.
       ELSE
         MCTL=3
       endif
-      ILEN=NRIF
+      ILEN=NSCENE
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
@@ -379,48 +379,48 @@ C If delete or copy scene previously selected then new selection should
 C be deleted or copied, respectively.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         SELECT=.TRUE.
-        IRIFFOC=IFOC
+        ISCENE=IFOC
         if(delzone)then
-          do 1110 I=IFOC,NRIF
-            if (I.eq.NRIF) then
+          do 1110 I=IFOC,NSCENE
+            if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
               RIFNAME(I)='UNKNOWN'
               SCENERT(I)='UNKNOWN'
-              RIFDESC(I)='UNKNOWN'
-              RIFPURP(I)='UNKNOWN'
+              SCENEDESC(I)='UNKNOWN'
+              SCENEPURP(I)='UNKNOWN'
               LBSRIF(I)='NONE'
             else
               SCENE(I)=SCENE(I+1)
               RIFNAME(I)=RIFNAME(I+1)
               SCENERT(I)=SCENERT(I+1)
-              RIFDESC(I)=RIFDESC(I+1)
-              RIFPURP(I)=RIFPURP(I+1)
+              SCENEDESC(I)=SCENEDESC(I+1)
+              SCENEPURP(I)=SCENEPURP(I+1)
               LBSRIF(I)=LBSRIF(I+1)
             endif
  1110     continue
-          NRIF=NRIF-1
-          IRIFFOC=1
+          NSCENE=NSCENE-1
+          ISCENE=1
           modscene=.true.
         elseif(cpyzone)then
-          NRIF=NRIF+1
-          SCENE(NRIF)=SCENE(IFOC)
-          RIFNAME(NRIF)=RIFNAME(IFOC)
-          SCENERT(NRIF)=SCENERT(IFOC)
-          RIFDESC(NRIF)=RIFDESC(IFOC)
-          RIFPURP(NRIF)=RIFPURP(IFOC)
+          NSCENE=NSCENE+1
+          SCENE(NSCENE)=SCENE(IFOC)
+          RIFNAME(NSCENE)=RIFNAME(IFOC)
+          SCENERT(NSCENE)=SCENERT(IFOC)
+          SCENEDESC(NSCENE)=SCENEDESC(IFOC)
+          SCENEPURP(NSCENE)=SCENEPURP(IFOC)
           LBSRIF(I)=LBSRIF(IFOC)
-          IRIFFOC=NRIF
+          ISCENE=NSCENE
 
-C Check new scenes data by calling newscene.  As newscene adds one to NRIF 
+C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
 C subtract one just now, no other data will be effected.
-          NRIF=NRIF-1
+          NSCENE=NSCENE-1
           call usrmsg(' Edit copied scene.',' ','W')
           call newscene('-')
           modscene=.true.
         endif
 
 C If a zone has been deleted then redisplay menu, 
-C foremost to reset IRIFFOC.
+C foremost to reset ISCENE.
         if (delzone) then
           goto 1
         else
@@ -428,7 +428,7 @@ C foremost to reset IRIFFOC.
 C Re-scan rif file if not a new zone.
           ITA2 = IFIL+7
           ITA3 = IFIL+10
-          call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'r',ier)
+          call RRIF(ita2,ita3,RIFNAME(ISCENE),'r',ier)
           RETURN
         endif
       endif
@@ -595,10 +595,10 @@ C Reset glazing treatment to default.
       iglzty=1
 
 C Add new rif file data.
-      NRIF=NRIF+1
+      NSCENE=NSCENE+1
 
 C Set new scene to focus scene.
-      IRIFFOC=NRIF
+      ISCENE=NSCENE
 
 C Reset the number of chosen zones (nzg) to NCOMP.
       nzg=NCOMP
@@ -624,7 +624,7 @@ C Now ask for zone for internal and glare purposes.
 C Set assumptions for each scene purpose and gather any additional 
 C information.
       if (IRP.eq.1) then 
-        RIFPURP(IRIFFOC)='External'
+        SCENEPURP(ISCENE)='External'
         intext = 0
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -638,7 +638,7 @@ C information.
       elseif (IRP.eq.2) then 
 
 C Internal image selected.
-        RIFPURP(IRIFFOC)='Internal'
+        SCENEPURP(ISCENE)='Internal'
         intext = 1
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -651,7 +651,7 @@ C Internal image selected.
       elseif (IRP.eq.3) then 
 
 C Glare image selected.
-        RIFPURP(IRIFFOC)='Glare'
+        SCENEPURP(ISCENE)='Glare'
         intext = 1
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -664,7 +664,7 @@ C Glare image selected.
       elseif (IRP.eq.4) then 
 
 C Daylight factor calculation selected.
-        RIFPURP(IRIFFOC)='Day_fact'
+        SCENEPURP(ISCENE)='Day_fact'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -677,7 +677,7 @@ C Daylight factor calculation selected.
       elseif (IRP.eq.5) then 
 
 C Coupling calculation selected. (thermal/lighting simulation)
-        RIFPURP(IRIFFOC)='Coupling'
+        SCENEPURP(ISCENE)='Coupling'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -690,7 +690,7 @@ C Coupling calculation selected. (thermal/lighting simulation)
       elseif (IRP.eq.6) then 
 
 C Daylight coefficient calculation selected. (thermal/lighting simulation)
-        RIFPURP(IRIFFOC)='Day_coef'
+        SCENEPURP(ISCENE)='Day_coef'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -703,7 +703,7 @@ C Daylight coefficient calculation selected. (thermal/lighting simulation)
       elseif (IRP.eq.7) then 
 
 C Sun positions.
-        RIFPURP(IRIFFOC)='Sun_pos'
+        SCENEPURP(ISCENE)='Sun_pos'
         intext = 0
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -719,23 +719,23 @@ C Sun positions.
 C Set default names based on above.
       if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
         write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
-     &     '_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(5a)') 'Scene of ',
+     &     '_',SCENEPURP(ISCENE)(1:6)
+        write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',
      &     zname(ifocz)(1:lnzname(ifocz)),' for ',
-     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+     &     SCENEPURP(ISCENE)(1:lnblnk(SCENEPURP(ISCENE))),' analysis.'
       else
         IL=min(lnblnk(cfgroot),21)
-        write (outs,'(3a)') cfgroot(1:IL),'_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
+        write (outs,'(3a)') cfgroot(1:IL),'_',SCENEPURP(ISCENE)(1:6)
+        write (SCENEDESC(ISCENE),'(a,a,a,a,a)') 'Scene of ',
      &     cfgroot(1:lnblnk(cfgroot)),' for ',
-     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+     &     SCENEPURP(ISCENE)(1:lnblnk(SCENEPURP(ISCENE))),' analysis.'
       endif
-      write (SCENE(IRIFFOC),'(a)') outs(1:28)
-      write (SCENERT(IRIFFOC),'(a)') outs(1:28)
-      write (RIFNAME(IRIFFOC),'(a,a)') 
-     &              SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
-      write (LBSRIF(IRIFFOC),'(a,a)') 
-     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+      write (SCENE(ISCENE),'(a)') outs(1:28)
+      write (SCENERT(ISCENE),'(a)') outs(1:28)
+      write (RIFNAME(ISCENE),'(a,a)') 
+     &              SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
+      write (LBSRIF(ISCENE),'(a,a)') 
+     &            SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Additional details for specific purposes.
       if (IRP.eq.4) then
@@ -762,36 +762,36 @@ C Ask for scene name.
         H(3)='a scene, e.g. one scene may be of the buildings '
         H(4)='exterior and another could be an internal image of a'
         H(5)='zone. Each scene can have multiple viewpoints.'
-        tname=SCENE(IRIFFOC)
-        dname=SCENE(IRIFFOC)
+        tname=SCENE(ISCENE)
+        dname=SCENE(ISCENE)
         CALL EASKS(tname,'Scene name? ',' ',28,dname,'scene name',IER,5)
         IF(tname(1:2).EQ.'  ') GOTO 5
-        SCENE(IRIFFOC)=tname
+        SCENE(ISCENE)=tname
 
 C Ask for root name and use this for rif name.
  15     H(1)='The scene prefix (one word) is used in the creation of'
         H(2)='the rif file name and as a root name for the description,'
         H(3)='view, octree and image files. '
-        tname=SCENERT(IRIFFOC)
-        dname=SCENERT(IRIFFOC)
+        tname=SCENERT(ISCENE)
+        dname=SCENERT(ISCENE)
         CALL EASKS(tname,'Scene root name?',' ',28,dname,'root name',
      &    IER,3)
         IF(tname(1:2).EQ.'  ') GOTO 15
-        SCENERT(IRIFFOC)=tname
-        write (RIFNAME(IRIFFOC),'(a,a)') 
-     &               SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
-        write (LBSRIF(IRIFFOC),'(a,a)') 
-     &             SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+        SCENERT(ISCENE)=tname
+        write (RIFNAME(ISCENE),'(a,a)') 
+     &               SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
+        write (LBSRIF(ISCENE),'(a,a)') 
+     &             SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Ask for additional description.
  25     H(1)='The description is used as an additional aide to'
         H(2)='identify a scenes contents.'
-        tname72=RIFDESC(IRIFFOC)
-        dname72=RIFDESC(IRIFFOC)
+        tname72=SCENEDESC(ISCENE)
+        dname72=SCENEDESC(ISCENE)
         CALL EASKS(tname72,' Description ? ',' ',72,
      &                                     dname72,'scene desc',IER,2)
         IF(tname72(1:2).EQ.'  ') GOTO 25
-        RIFDESC(IRIFFOC)=tname72
+        SCENEDESC(ISCENE)=tname72
       endif
 
 C Call rifset to set up all remaining data.
@@ -1027,8 +1027,8 @@ C Calculate grid points.
       call ERPFREE(ITA1,ISTAT)
 
 C Get file name for grid points.
-      write (LDFGRID,'(a,a4)') SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
-     &                                                           '.grd'
+      write (LDFGRID,'(a,a4)') 
+     &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       H(1)=' Supply a local file name (i.e. without a path).'
       if (MODE.eq.'-') then
  55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
@@ -1269,7 +1269,7 @@ C Set local file name.
 
 C Open sensor info file (do not add path as radiance is run locally).
       write(LDFGRID,'(a,a)')
-     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.slc'
+     &            SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
@@ -1324,7 +1324,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       ITA2=IFIL+7
       ITA3=IFIL+10
       IER=0
-      IRIFFOC=0
+      ISCENE=0
       modscene=.false.
 
 C Clear rcf file unit no/ channel.
@@ -1344,8 +1344,8 @@ C Recover zone index from command line variable zone.
 
 C If rcf file does exist then search for existing rif file.
       if (filexst.eq.'o') then
-        do 10 i=1,NRIF
-          if (RIFPURP(I)(1:5).eq.aim(1:5)) then
+        do 10 i=1,NSCENE
+          if (SCENEPURP(I)(1:5).eq.aim(1:5)) then
 
 C Possible match, further check - look at rif file.
             ifocz=-1
@@ -1353,7 +1353,7 @@ C Possible match, further check - look at rif file.
             if (ifocz.eq.IZONE) then
 
 C Got match.
-              IRIFFOC=I
+              ISCENE=I
 
 C Update sensor information from cgc file.
               if(aim(1:8).eq.'Coupling'.or.aim(1:8).eq.'Day_coef')then
@@ -1386,9 +1386,9 @@ C If not an existing scene then create it.
       if (.not.modscene) then
         call newscene('s')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
 
 C Update rcf file and configuration file.

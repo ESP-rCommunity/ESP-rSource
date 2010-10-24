@@ -78,7 +78,7 @@ C Quit.
 
 C For each scene purpose generate typical sky file.
 C Process daylight coefficients seperately as sky file is artificial.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
 
 C Search for existing 'sky' file. (If found delete)
         write(tfile,'(2a)')runpath(1:lnblnk(runpath)),
@@ -105,23 +105,23 @@ C Search for existing 'sky' file. (If found delete)
       else
 
 C Generate sky command use a sun for all skys except for daylight factors.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &          RIFPURP(IRIFFOC)(1:8).eq.'Internal'.or.
-     &          RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           call settime(IRM,IRD,XRT)
           write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
      &      XRT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &      ' -m 0.0'
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
      &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C gendaylit -ang 60 0 -L QDIRILL QDIFILL
           write(outs,'(a,f5.2)')
      &                     'gendaylit -ang 60 0 -L 805 100 -g ',rgrfl
 
-        elseif (RIFPURP(IRIFFOC)(1:7).eq.'Sun_pos') then
+        elseif (SCENEPURP(ISCENE)(1:7).eq.'Sun_pos') then
 
 C Pick start and end time.
         endif
@@ -129,9 +129,9 @@ C Pick start and end time.
 C Now call Radiance with command stored in variable 'outs'.
         call wrtsky(outs)
         call RRSKY(ITA2,rskyfil,ga,IER)
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
           xga=ga/10.
           call RADPAR('av',xga)
         endif
@@ -143,9 +143,9 @@ C Create inside and outside files, first open databases.
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
       IFC=3
-      call mkrif(ita2,RIFNAME(IRIFFOC),IFC,0,ier)
-      if (NBSRIF(IRIFFOC).eq.1) then
-        call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+      call mkrif(ita2,RIFNAME(ISCENE),IFC,0,ier)
+      if (NBSRIF(ISCENE).eq.1) then
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
 
 C Update rcf file and configuration file.
@@ -153,15 +153,15 @@ C Update rcf file and configuration file.
       call RADCFGOUT(ICHK)
 
 C Generate new octree.
-      call touchrif(RIFNAME(IRIFFOC))
-      if (NBSRIF(IRIFFOC).gt.0) then
-        call touchrif(LBSRIF(IRIFFOC))
+      call touchrif(RIFNAME(ISCENE))
+      if (NBSRIF(ISCENE).gt.0) then
+        call touchrif(LBSRIF(ISCENE))
       endif
 
 C If scene purpose is coupling or daylight coefficients then return.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         return
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
         return
       endif
 
@@ -174,20 +174,20 @@ C Continue and run radiance simulation?
       call ASKOK('Scene description is now complete.',
      &           'Proceed with simulation?',OK,dok,4)
       if (OK) then
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
 C Generate default view information and then the image.
           call defview
           call genimage(1)
-        elseif (RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
 C Generate <<? default view information ?>> and then the image.
           call defview
           call genimage(2)
           call getglr
           call dispimage(2)
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
 
 C Calculate the daylight factors and then diplay them via dfgridlbl.
           call getdf
@@ -241,7 +241,7 @@ C There are 8 patch zones in the sky dome.
       lnrp=lnblnk(runpath)
 
 C Simulate scene as defined by aim argument.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C Read from transfer file defined as the argument for -act from
 C the users home folder.
@@ -291,15 +291,15 @@ C Create sky command and sky.
         call wrtsky(outs)
 
 C Recreate octree, setting rtrace options, and run rtrace.
-        if (IBLNDS.ne.0.and.NBSRIF(IRIFFOC).eq.0) then
+        if (IBLNDS.ne.0.and.NBSRIF(ISCENE).eq.0) then
 
 C Error can't simulate switched blinds.
           call usrmsg('Cannot simulate switched blinds.','  ','F')
         endif
         if (IBLNDS.eq.0) then
-          rn=RIFNAME(IRIFFOC)
+          rn=RIFNAME(ISCENE)
         else
-          rn=LBSRIF(IRIFFOC)
+          rn=LBSRIF(ISCENE)
         endif
 
 C Rebuild.
@@ -326,7 +326,7 @@ C Copy transfer file back to users homedir (bps is expecting it to be there).
         call runit(doit,'-')
 
 C Daylight coefficients.
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
 
 C Do for all blind states.
         IBLND=0
@@ -388,9 +388,9 @@ C End Debug
 
 C Generate new octree.
           if (IBLND.eq.0) then
-            rn=RIFNAME(IRIFFOC)
+            rn=RIFNAME(ISCENE)
           else
-            rn=LBSRIF(IRIFFOC)
+            rn=LBSRIF(ISCENE)
           endif
 
 C Recreate octree and get current file names.
@@ -456,9 +456,9 @@ C Remove temporary files.
         call edisp(IUOUT,'Daylight coefficient set complete')
 
 C Do other blind states.
-        if (NBSRIF(IRIFFOC).gt.0) then
+        if (NBSRIF(ISCENE).gt.0) then
           IBLND=IBLND+1
-          if (IBLND.le.NBSRIF(IRIFFOC)) then
+          if (IBLND.le.NBSRIF(ISCENE)) then
             call edisp(IUOUT,'Calculating next blind state.')
             goto 1234
           endif
@@ -564,7 +564,7 @@ C defview generates a new default view.
       ITA2=IFIL+7
 
 C External view point.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'External') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'External') then
 C Create a default view, set file name, set bounds for slightly
 C smaller than the ground disk. Save off zone bounds before
 C adding in the ground disk.
@@ -610,7 +610,7 @@ C and set the default viewing angles to 1.2 factor.
         indxvew=1
         ipckvew=1
 
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
 C Default internal view at max X average Y and Z, looking in -x dir.
         indxvew=0
@@ -623,9 +623,9 @@ C Default internal view at max X average Y and Z, looking in -x dir.
 C Update rif file. No use yet made of ier.
       IFC=3
       IER=0
-      call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-      if (NBSRIF(IRIFFOC).eq.1) then
-        call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+      call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+      if (NBSRIF(ISCENE).eq.1) then
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
 
       return
@@ -706,33 +706,33 @@ C not try and display.
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         elseif (ipckvew.eq.0) then 
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         else
           if(unixok)then
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 -v ',
      &               rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -v ',
      &               rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+     &               RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         endif
 
@@ -863,22 +863,22 @@ C file should be removed.
 
 C Save changes to RIF file
             IFC=3
-            call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-            if (NBSRIF(IRIFFOC).eq.1) then
-              call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+            call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+            if (NBSRIF(ISCENE).eq.1) then
+              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
             endif
 
 C call rad to create image(s) based on current setting of ipckvew.
             if (ipckvew.eq.-1) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
-     &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &          '; rad -e ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             elseif (ipckvew.eq.0) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
-     &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &          '; rad -e ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             else
               write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &        '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &        ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &        ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             endif
 
 C Debug.
@@ -946,9 +946,9 @@ C See if there is an existing pic file by this name.
                 goto 1111
               endif
               IFC=3
-              call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-              if (NBSRIF(IRIFFOC).eq.1) then
-                call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+              call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+              if (NBSRIF(ISCENE).eq.1) then
+                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
               endif
             elseif(IWR.eq.1)then
 
@@ -961,14 +961,14 @@ C Set file name including path and open.
         endif
         if (ipckvew.eq.-1) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
-     &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &          '; rad -e ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         elseif (ipckvew.eq.0) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
-     &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &          '; rad -e ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         else
           write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &                 ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
+     &                 ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         endif
 
 C Debug.
@@ -1154,7 +1154,7 @@ C getglr recovers view information and runs glare calculation.
       ITA3 = IFIL+10
 
       IER=0
-      call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'s',IER)
+      call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',IER)
 
 C Check if view info is in a file or kept in the rif file and set 
 C glare angle (set minimum angle to 90 degrees).
@@ -1391,7 +1391,7 @@ C Reset DFVALS to 0.0
       ICONV=0
 
 C Check octree up to date.
-      call touchrif(RIFNAME(IRIFFOC))
+      call touchrif(RIFNAME(ISCENE))
       
 C Check rendering parameters.  If the number of ambient bounces is 
 C greater than 1 then the simulation has probably been run before. 
@@ -1409,13 +1409,13 @@ C Ask if the parameters should be reset.
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
           write (crenrp,'(a)') outsl
           IFC=3
-          call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-          call touchrif(RIFNAME(IRIFFOC))
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call touchrif(RIFNAME(ISCENE))
         endif
       endif
 
 C Daylight factors output file.
-      write (df,'(2a)') SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),'.df'
+      write (df,'(2a)') SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.df'
       call ERPFREE(ITA1,ISTAT)
  1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FINDFIL(ltmp,XST)
@@ -1586,11 +1586,11 @@ C Save RIF file and update options file.
       if (RECALC) then
         call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        call touchrif(RIFNAME(IRIFFOC))
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
-          call touchrif(LBSRIF(IRIFFOC))
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call touchrif(RIFNAME(ISCENE))
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call touchrif(LBSRIF(ISCENE))
         endif
 
 C Move results file and recalculate DFs. Note this move creates

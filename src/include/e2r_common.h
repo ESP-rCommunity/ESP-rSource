@@ -76,18 +76,18 @@ C Radiance scenes
       character SCENE*28    ! scene name (unsure how this differes from SCENERT)
       character RIFNAME*72  ! radiance RIF file name (array of file names)
       character SCENERT*28  ! scene root name (used to create other named entities)
-      character RIFDESC*72  ! user documentation of the scene
-      character RIFPURP*12  ! scene purpose UNKNOWN|External|Internal|Day_fact|Coupling
+      character SCENEDESC*72  ! user documentation of the scene
+      character SCENEPURP*12  ! scene purpose UNKNOWN|External|Internal|Day_fact|Coupling
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
 
       integer NBSRIF      ! for each scene -1 if not defined, 1 if alternative rif defined
       character LBSRIF*72 ! alternate rif file name
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
-      integer NRIF     ! number of scenes and rif files
-      integer IRIFFOC  ! current scene index (in the array of scenes)
-      common/raddata2/NRIF,IRIFFOC
+      integer NSCENE  ! number of scenes and rif files
+      integer ISCENE  ! current scene index (in the array of scenes)
+      common/raddata2/NSCENE,ISCENE
 
       integer iglzty   ! glazing type 1 sets alt glazing scene= (default), type 2 sets the
                        ! alt glazing illum= precalculated scene, type 3 (?)

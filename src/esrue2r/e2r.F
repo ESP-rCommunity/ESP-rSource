@@ -174,13 +174,13 @@ C Make case insensitive.
       IFS=1
       ITFS=1
       IMFS=1
-      IRIFFOC=1
+      ISCENE=1
       do 9 I=1,MCOM+1
         SCENE(I)='UNDEFINED'
         RIFNAME(I)='UNKNOWN'
         SCENERT(I)='UNKNOWN'
-        RIFDESC(I)='UNKNOWN'
-        RIFPURP(I)='UNKNOWN'
+        SCENEDESC(I)='UNKNOWN'
+        SCENEPURP(I)='UNKNOWN'
         LBSRIF(I)='NONE'
         NBSRIF(I)=-1
  9    continue
@@ -556,13 +556,13 @@ C Check for command line information.
         call checkrif('o')
         if (act(1:4).ne.'NONE') call autorad
       else
-        if (NRIF.gt.1) then
+        if (NSCENE.gt.1) then
           call edisp(iuout,
      &      'There are existing scenes to select from...')
           call whichrif('m')
-        elseif (NRIF.eq.1) then
-          IRIFFOC=1
-          call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'r',ier)
+        elseif (NSCENE.eq.1) then
+          ISCENE=1
+          call RRIF(ita2,ita3,RIFNAME(ISCENE),'r',ier)
         else
           call edisp(iuout,
      &      'There are no existing scenes. Pleases create one.')
@@ -575,39 +575,39 @@ C Check for command line information.
       write(ITEM(2),'(2A)')   '   path: ',path(1:21)
       ITEM(3)=                '  ____________________________'
       write(ITEM(4),'(2A)')   'b scenes  : ',LRADCF(1:18)
-      write(ITEM(5),'(2A)')   'c name    : ',SCENE(IRIFFOC)(1:18)
-      write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(IRIFFOC)(1:18)
-      write(ITEM(7),'(2A)')   '   root   : ',SCENERT(IRIFFOC)(1:18)
-      write(ITEM(8),'(2A)')   '   purpose: ',RIFPURP(IRIFFOC)
+      write(ITEM(5),'(2A)')   'c name    : ',SCENE(ISCENE)(1:18)
+      write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(ISCENE)(1:18)
+      write(ITEM(7),'(2A)')   '   root   : ',SCENERT(ISCENE)(1:18)
+      write(ITEM(8),'(2A)')   '   purpose: ',SCENEPURP(ISCENE)
       ITEM(9)=                '   ___________________________'
       ITEM(10)=               'd  sky type, location & time  '
       ITEM(11)=               'e  zone & outside composition '
       ITEM(12)=               'f  other (furniture&fittings) '
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         ITEM(13)=             'g  edit/display grid          '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(13)=             'g                             '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
         ITEM(13)=             'g                             '
       else
         ITEM(13)=             'g  scene view points          '
       endif
       ITEM(14)=               '   ___________________________'
       ITEM(15)=               'h  scene parameter options    '
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         ITEM(16)=             'i  calculate daylight factors '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(16)=             'i  calculate sensor illum.    '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
         ITEM(16)=             'i  calculate daylight coeffs  '
       else
         ITEM(16)=             'i  render the scene           '
       endif
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         ITEM(17)=             'j  view daylight factor result'
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(17)=             'j  view calculated illuminance'
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
         ITEM(17)=             'j  view daylight coeffs       '
       else
         ITEM(17)=             'j  view visualisation results '
@@ -756,7 +756,7 @@ C or create a new one with reasonable defaults.
         H(5)='wheat there intended use is.'
         ltmp72=LRADCF
         dtmp72='scene.rcf'
-        CALL EASKS(ltmp72,' Scene configuration file (suggested name)?',
+        CALL EASKS(ltmp72,'Scene configuration file (suggested name)?',
      &    '  ',72,dtmp72,'scene file name',IER,5)
         if(ltmp72.eq.'  ')goto 319 
         LRADCF=ltmp72
@@ -774,9 +774,9 @@ C Sky type.
         call SKYFORM(IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
 
       elseif(INO.EQ.11)then
@@ -785,9 +785,9 @@ C Zone and outside composition, updating rif file upon return.
         call E2RFORM('i',IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
 
       elseif(INO.EQ.12)then
@@ -814,8 +814,8 @@ C Other descriptions.
 
       elseif(INO.EQ.13)then
 
-C Depending on value of rifpurp.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+C Depending on value of SCENEPURP.
+        if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(a,a)')runpath(1:lnrp),
      &                        LDFGRID(1:lnblnk(LDFGRID))
@@ -845,9 +845,9 @@ C Depending on value of rifpurp.
           CALL ASKOK('Edit grid points?','  ',OK,dok,1)
           izone=0
           if(OK)call setdfgrid('-',izone,ier)
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
           continue
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
           continue
         else
 
@@ -864,9 +864,9 @@ C Edit view points.  Save off current views.
           call VEWFORM(IER)
           call edisp(iuout,' updating RIF file to account for views.')
           IFC=3
-          call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-          if (NBSRIF(IRIFFOC).eq.1) then
-            call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          if (NBSRIF(ISCENE).eq.1) then
+            call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
           endif
 
 C Because of the site plan, recalculate perspective view.
@@ -912,16 +912,16 @@ C to remove it before proceeding.
           H(6)='recreate the octree (ie choose option 1).'
           CALL EASKABC(' The octree exists, do you want to',' ',
      &      'force update','let Radiance decide (default)','cancel',
-     &                                                        IOCTFL,6)
+     &      IOCTFL,6)
           if (IOCTFL.eq.3) then
             goto 10
           endif
         endif
 
 C Pull up a list of views and ask user for which one.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Internal'.or.
-     &      RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &      SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           if (indxvew.gt.0) then
             H(1)='Please select one view.'
             IX=1
@@ -936,17 +936,17 @@ C Pull up a list of views and ask user for which one.
           endif
         endif
 
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
 C Generate image if external or internal.
           call genimage(1)
-        elseif (RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
 C Extra calculations for glare.
           call genimage(2)
           call getglr
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
 
 C Daylight factors - calculate and display.
           call getdf
@@ -955,17 +955,18 @@ C Daylight factors - calculate and display.
       elseif(INO.eq.17)then
 
 C Based on purpose view DF or illuminance or daylight coef or image.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'Day_coef'.or.
+     &      SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
           call usrmsg('No results display for this option.','  ','W')
           goto 10
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         
 C Check for daylight factor results. Note: the results could have been
 C shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
           lnrp=lnblnk(runpath)
-          write(df,'(2a)')SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),'.df'
+          write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
+     &       '.df'
           write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
           call ERPFREE(ITA1,ISTAT)
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
@@ -976,7 +977,7 @@ C            write(6,*) 'found  ',ltmp
 
             continue
           else
-            write(df,'(2a)')SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
+            write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
      &        '.df-'
             write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
             call ERPFREE(ITA1,ISTAT)
@@ -1077,16 +1078,18 @@ C Check chosen image file name.
         CALL ERPFREE(ITA2,ISTAT)
         call FINDFIL(pf,XST)
         if (.not.XST) then
-          call usrmsg('Cannot find picture file: ',pf(1:lnblnk(pf)),'W')
+          call usrmsg('Cannot find picture file: ',pf(1:lnblnk(pf)),
+     &      'W')
           goto 10
         endif
 
 C Get glare info file name (if necessary) and display image.
-        if (RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        if (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           CALL ERPFREE(ITA2,ISTAT)
           call FINDFIL(gf,XST)
           if (.not.XST) then
-            call usrmsg('Cannot find glare file: ',gf(1:lnblnk(gf)),'W')
+            call usrmsg('Cannot find glare file: ',gf(1:lnblnk(gf)),
+     &        'W')
             goto 10
           endif
           call dispimage(2)
@@ -1098,9 +1101,9 @@ C Get glare info file name (if necessary) and display image.
 
 C Save scene information.
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
 
       ELSE
@@ -1357,7 +1360,7 @@ C (need to test blind/ shuter control flags).
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else
             write (outs,'(a,a)') ' Could not find construction file: ',
-     &                                                     LTHRM(ICOMP)
+     &        LTHRM(ICOMP)
             call usrmsg(outs,'blind control tracking not possible!','W')
           endif
 

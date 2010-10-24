@@ -808,9 +808,9 @@ C extend the list.
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
         WRITE(vewcmds(indxvew),'(a)') doit
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
         vewdone=.true.
       elseif(INO.EQ.(NITEMS-1))then
