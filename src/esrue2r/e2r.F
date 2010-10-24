@@ -1247,8 +1247,8 @@ C If user owns the model then use the ../rad or ./cfg folder so no
 C need to create a folder.
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
               pathtype='radincfg'
-            elseif(radpth(1:6).eq.'./rad '.or.
-     &             radpth(1:6).eq.'.\\rad ')then
+            elseif(radpth(1:7).eq.'../rad '.or.
+     &             radpth(1:7).eq.'..\\rad ')then
               pathtype='radinrad'
             endif
             write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
@@ -1257,8 +1257,8 @@ C need to create a folder.
         else
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
             pathtype='radincfg'
-          elseif(radpth(1:6).eq.'./rad '.or.
-     &           radpth(1:6).eq.'.\\rad ')then
+          elseif(radpth(1:7).eq.'../rad '.or.
+     &           radpth(1:7).eq.'..\\rad ')then
             pathtype='radinrad'
           endif
           write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs

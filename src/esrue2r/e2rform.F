@@ -50,7 +50,7 @@ C ******* Sky calculations. *******
 
 C Generate a default name for the sky file.
       write (rskyfil,'(a,a4)') 
-     &             SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.sky'
+     &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.sky'
 
 C Ask for name of the sky file.  If existing, attempt to
 C read it otherwise remember name.
@@ -59,7 +59,7 @@ C read it otherwise remember name.
       ltmp72=rskyfil
       dtmp72=rskyfil
       CALL EASKS(ltmp72,' Sky distribution file name ?',' ',72,
-     &                                    dtmp72,'sky file name',IER,2)
+     &  dtmp72,'sky file name',IER,2)
       if(ltmp72(1:2).eq.'  ')goto 142
       rskyfil=ltmp72
       write (tfile,'(a,a)') runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
@@ -241,7 +241,7 @@ C wrtsky calls radiance and writes sky info to file.
       SUBROUTINE wrtsky(skycmd)
 #include "building.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -538,11 +538,16 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
+C For obstruction blocks of type "obsp":
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
+
+      CHARACTER GSNAME*6,GMLCN*12
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       integer matarrayindex ! the indes within matdatarray
@@ -556,9 +561,9 @@ C TMC data
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
-      CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
+      CHARACTER ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72
-      character pfile*72,atfile*72,ltmp72*72,dtmp72*72
+      character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnbm  ! length of block material
 
       LOGICAL OK,DOK,fict,extern,XST,similar
@@ -997,11 +1002,18 @@ C Read in the zone geometry.
         else
           call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
         endif
+
+C Check if there is a legacy zone obstruction file scan it.
+        if(IOBS(newfoc).EQ.1)then
+          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,ITRC,ITRU,IER)
+        endif
+
+C Read zone constructions file.
         call FINDFIL(LTHRM(newfoc),XST)
         if(XST)then
           CALL ECONST(LTHRM(newfoc),ITA1,newfoc,0,IUOUT,IER)
           if (LTWIN(newfoc)(1:2).ne.'  '.and.
-     &                              LTWIN(newfoc)(1:4).ne.'UNKN') then
+     &        LTWIN(newfoc)(1:4).ne.'UNKN') then
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(newfoc),newfoc,IER)
           endif
         endif
@@ -1056,34 +1068,76 @@ C Confirm inclusion of obstructions.
 
           WRITE(irofil,'(a)') '# Obstruction defs... '
           WRITE(irofil,'(a)') '  '
+
           nobs=nobs+nbobs(newfoc)  ! increment count of obstructions
+
           do 43 ib=1,nbobs(newfoc)
 
-C Create a genbox command to match the obstruction.
+C Create a genrbox command to match the obstruction.
+C BLOCKTYP (4 char) type of block:
+C   'obs ' - standard block (origin, three dimensions, one rotation)
+C   'obs3' - general block (origin, three dimensions, three rotations)
+C   'obsp' - general polygon (six sides formed from 8 vertices)
 
-C << to be done - find out syntax for blocks with multiple rotations >>
+C Set material name
+            if (BLOCKMAT(newfoc,ib)(1:4).eq.'NONE') then
+              lnbm=7
+              ObsMatName='unknown'
+            else
+              lnbm=LNBLOCKMAT(newfoc,ib)
+              ObsMatName=BLOCKMAT(newfoc,ib)
+            endif
 
-            if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
-              WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox rc_ex_unknown ',
+            if (BLOCKTYP(newfoc,ib).eq.'obs ') then
+
+C Create a >genrbox< command to match the obstruction.
+              WRITE(irofil,'(4a,3f9.3,a,f9.3,a,3f9.3)')
+     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),'  ',        
      &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib,1),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
-            else
-              lnbm=LNBLOCKMAT(newfoc,ib)
-              WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
+            elseif (BLOCKTYP(newfoc,ib).eq.'obs3') then
+
+C Create a >genrbox< command to match the obstruction with 
+C rz, ry, rx rotations.
+              WRITE(irofil,'(4a,3f9.3,3(a,f9.3),a,3f9.3)')
+     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),
      &          '  ',        
      &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &          ' -ry ',-1.0*BANGOB(newfoc,ib,2),
+     &          ' -rx ',BANGOB(newfoc,ib,3),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
-            endif
- 43       continue
-        endif
+
+            elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
+
+C Create a >polygon< command for each of 6 faces
+              do 785 isf=1,6 ! hard-code this?
+                WRITE(irofil,'(5a,I1)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            '_', isf  ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C Write the coordinates for face isf.
+                do 784 iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for obstruction blocks?
+                  WRITE(irofil,'(3F11.5)')
+     &              XBP(newfoc,IB,K),YBP(newfoc,IB,K),ZBP(newfoc,IB,K)
+784             continue
+                WRITE(irofil,'(a)') '  '
+785           continue
+            else
+               ! error, shouldn't end up here ...
+            endif  ! check BLOCKTYP()
+ 43       continue ! loop through all obstructions of zone
+        endif      ! nbobs() .ge. 1
   61    continue
 
 C Now surface information.
