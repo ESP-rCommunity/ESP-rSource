@@ -299,7 +299,6 @@ C IERR=1 if a scene file is missing.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/rad2/mono,intext,ifocz
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -471,7 +470,6 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       
       integer lnblnk  ! function definition
 
-      common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
 
       character file*72,tfile*72

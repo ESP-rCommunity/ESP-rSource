@@ -54,9 +54,7 @@ C  else simulate the scene by calling simscene
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/cmddata/zone,aim,act
 
-      character zone*16,aim*12,act*72
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
       LOGICAL fict,XST,OK,DOK
@@ -66,7 +64,7 @@ C  else simulate the scene by calling simscene
 
 C Create a default scene based on current information - ask 
 C for additional info if necessary.
-      if (act(1:6).ne.'Create') then
+      if (cmdact(1:6).ne.'Create') then
         call simscene
 
 C Quit.
@@ -213,11 +211,9 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
 
       character outs*124,doit*124,doitl*256,tfile*72
-      character zone*16,aim*12,act*72
       character QT*1
       character*72 LDFGRID,LTMPFL,LTMPFA,rn
       character runpath*72,pathtype*24
@@ -247,22 +243,22 @@ C Read from transfer file defined as the argument for -act from
 C the users home folder.
         if(unixok)then
           write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
+     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
         else
           write(doit,'(6a)') 'copy /y ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
+     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
         endif
         call runit(doit,'-')
         ier=0
-        write (LTMPFL,'(a,a)') runpath(1:lnrp),act(1:lnblnk(act))
+        write (LTMPFL,'(2a)') runpath(1:lnrp),cmdact(1:lnblnk(cmdact))
         call FPOPEN(ITA1,ISTAT,1,1,LTMPFL)
         if (ier.ne.0) then 
-          call usrmsg('Cannot open transfer file:',act,'F')
+          call usrmsg('Cannot open transfer file:',cmdact,'F')
           return
         endif
         CALL STRIPC(ITA1,OUTS,0,ND,0,'transfer file',IER)
         if (ier.ne.0) then 
-          call usrmsg('Cannot read transfer file:',act,'F')
+          call usrmsg('Cannot read transfer file:',cmdact,'F')
           return
         endif
         K=0
@@ -311,17 +307,17 @@ C Run rtrace. << ?? what about pathtype?? >>
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
      &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',
-     &                                               act(1:lnblnk(act))
+     &      cmdact(1:lnblnk(cmdact))
         call runit(doitl,'-')
 
 C Copy transfer file back to users homedir (bps is expecting it to be there).
         call isunix(unixok)
         if(unixok)then
           write(doit,'(5a)') 'cp ',runpath(1:lnrp),
-     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
+     &      cmdact(1:lnblnk(cmdact)),'  ',upath(1:lnblnk(upath))
         else
           write(doit,'(5a)') 'copy /y ',runpath(1:lnrp),
-     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
+     &      cmdact(1:lnblnk(cmdact)),'  ',upath(1:lnblnk(upath))
         endif
         call runit(doit,'-')
 
@@ -649,7 +645,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/rad2/mono,intext,ifocz
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
       character pf*72,h*72,outs*124,ltmp*72
@@ -999,7 +994,6 @@ C Assumes that the path to the image is given.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
 
       character doit*124,pf*72,gf*72,ugrf*72,ltmp*72

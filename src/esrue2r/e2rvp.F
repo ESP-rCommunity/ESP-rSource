@@ -139,14 +139,15 @@ C ******* Default views formation.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-      common/rad2/mono,intext,ifocz
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
+      LOGICAL XST,OK,DOK,addview
       logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)

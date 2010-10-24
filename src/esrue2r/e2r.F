@@ -52,6 +52,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
@@ -71,13 +73,11 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
-      common/rad2/mono,intext,ifocz
       common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
 C Scene configuration commons.
       common/radcfg/LRADCF
-      common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
@@ -101,7 +101,7 @@ C Name of current application
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
-      character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
+      character LRADCF*72,OUTSTR*124
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
@@ -109,7 +109,7 @@ C Name of current application
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
       LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
+      LOGICAL XST,unixok,there
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
 
@@ -154,7 +154,7 @@ C Temporary ascii files ITA1 = IFIL+6, ITA2 = IFIL+7, ITA3 = IFIL+10.
       IFCFG=IFIL+8
       ITA3 = IFIL+10
 
-      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,act,brw)
+      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,cmdact,brw)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -169,7 +169,7 @@ C Make case insensitive.
       if (aim(1:8).eq.'External') zone='  '
       if (aim(1:8).eq.'coupling') aim='Coupling'
       if (aim(1:8).eq.'day_coef') aim='Day_coef'
-      if (act(1:6).eq.'create') act='Create'
+      if (cmdact(1:6).eq.'create') cmdact='Create'
 
       IFS=1
       ITFS=1
@@ -518,7 +518,7 @@ C          write(6,*) tfile
 C Ask user about the scene file. Begin by checking for command line information.
           if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
             call checkrif('n')
-            if (act(1:4).ne.'NONE') call autorad
+            if (cmdact(1:4).ne.'NONE') call autorad
           else
 
 C Create a default scene file name using the cfgroot.
@@ -554,7 +554,7 @@ C Scan the scene file.
 C Check for command line information.
       if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
         call checkrif('o')
-        if (act(1:4).ne.'NONE') call autorad
+        if (cmdact(1:4).ne.'NONE') call autorad
       else
         if (NSCENE.gt.1) then
           call edisp(iuout,
@@ -1147,7 +1147,9 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
@@ -1157,7 +1159,7 @@ C Path to model.
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,MODE*4
 
-      LOGICAL MODIFY,MODLEN,MODBND,unixok
+      LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
       integer lnrp  ! length of run path

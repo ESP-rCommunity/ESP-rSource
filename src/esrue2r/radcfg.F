@@ -278,10 +278,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/cmddata/zone,aim,act
-
       character MODE*1, H*72, VERT*24, KEY*1
-      character zone*16,aim*12,act*72
 
       dimension VERT(35)
 
@@ -455,13 +452,13 @@ C Allow a scene to be added or deleted.
      &        'interactively','cancel',IWDV,6)
             if (IWDV.eq.1) then
               call newscene('c')
-              act='Create'
+              cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
             elseif (IWDV.eq.1) then
               call newscene('-')
-              act='Create'
+              cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
@@ -522,16 +519,13 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/rad2/mono,intext,ifocz
-      common/cmddata/zone,aim,act
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       dimension IVALS(MCOM)
 
       character cfgroot*24,LCFGF*72
       character h*72,MODE*1,outs*124
-      character zone*16,aim*12,act*72,dname*28,tname*28
+      character dname*28,tname*28
       character dname72*72,tname72*72
 
 C Ask for purpose of scene if new scene.
@@ -751,7 +745,7 @@ C Get sensor information from cgc file.
 C Clear command line variables.
       zone='NONE'
       aim='NONE'
-      act='NONE'
+      cmdact='NONE'
 
 C If not in silent mode then confirm names with user.
       if (MODE.eq.'-') then
@@ -803,6 +797,8 @@ C Call rifset to set up all remaining data.
 C ********************** ADDSCENE **********************
 C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
       subroutine ADDSCENE(IRCFG)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -810,10 +806,8 @@ C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
 
       common/expath/runpath,pathtype
       common/radcfg/LRADCF
-      common/cmddata/zone,aim,act
 
       CHARACTER H*72,LRADCF*72,runpath*72,pathtype*24,pfile*72
-      character zone*16,aim*12,act*72
       integer lnrp  ! length of run path
 
 C Ask if a default image should be created.
@@ -835,7 +829,7 @@ C Check for command line information.
           call checkrif('n')
         else
           call newscene('a')
-          act='Create'
+          cmdact='Create'
           call autorad
           ICHK=4
           call radcfgout(ICHK)
@@ -848,7 +842,7 @@ C Create new scene file.
         call ERPFREE(IRCFG,ISTAT)
         call FPOPEN(IRCFG,ISTAT,1,3,pfile)
         call newscene('-')
-        act='Create'
+        cmdact='Create'
         call autorad
         ICHK=4
         call radcfgout(ICHK)
@@ -878,13 +872,14 @@ C if MODE is not - then sensor points file name confirmation required.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
-      common/rad2/mono,intext,ifocz
       common/radgrid/LDFGRID
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
@@ -894,7 +889,6 @@ C if MODE is not - then sensor points file name confirmation required.
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
-      LOGICAL MODIFY,MODLEN,MODBND
       integer lnrp  ! length of run path
 
 C New grid so set number of grid points to zero.
@@ -1097,6 +1091,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
       common/radgrid/LDFGRID
@@ -1108,7 +1104,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
-      LOGICAL MODIFY,MODLEN,MODBND
 #ifdef OSI
       integer iix,iiy,iid1,iid2
 #else
@@ -1238,7 +1233,6 @@ C for use with a 'Coupling' scene purpose.
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
       common/radgrid/LDFGRID
-      common/rad2/mono,intext,ifocz
 
       CHARACTER*72 LCGCINT,LDFGRID
       character outs*124,runpath*72,pathtype*24
@@ -1310,13 +1304,11 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       common/C21/IFCFG,cfgroot,LCFGF
       common/expath/runpath,pathtype
 
-      common/rad2/mono,intext,ifocz
       common/radcfg/LRADCF
-      common/cmddata/zone,aim,act
 
       character filexst*1,LRADCF*72
       character cfgroot*24,LCFGF*72
-      character zone*16,aim*12,act*72,pfile*72,runpath*72,pathtype*24
+      character pfile*72,runpath*72,pathtype*24
 
       LOGICAL modscene
 
@@ -1360,11 +1352,12 @@ C Update sensor information from cgc file.
                 call SENLOC
               endif
 
-C If daylight coefficients and act=create and model exists then issue warning.
-              if(aim(1:8).eq.'Day_coef'.and.act(1:6).eq.'Create')then
+C If daylight coefficients and cmdact=create and model exists then issue warning.
+              if(aim(1:8).eq.'Day_coef'.and.
+     &           cmdact(1:6).eq.'Create')then
                 call usrmsg('Model already exists!',
      &                      'Using existing model.','W')
-                act='Calculate'
+                cmdact='Calculate'
               endif
               modscene=.true.
             endif
@@ -1407,6 +1400,7 @@ C gain control file.
       SUBROUTINE RDCFTMP(LFTMP,ISET)
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1429,8 +1423,6 @@ C MDCFS - max no of alternative daylight coefficient data sets.
 C MDCFV - max no of sky patches.
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
-
-      common/rad2/mono,intext,ifocz
 
       CHARACTER*72 LCGCINT,LFTMP
       character outs*124

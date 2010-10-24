@@ -29,7 +29,6 @@ C ******* Setup of image quality and calculation options.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
 
       CHARACTER doit*124,VALT*32
@@ -357,7 +356,6 @@ C If use = 'f' then force files to account for change in root/dir name.
       
       integer lnblnk  ! function definition
 
-      common/rad2/mono,intext,ifocz
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       character pre*28

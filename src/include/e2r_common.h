@@ -50,6 +50,12 @@ C Directives for images and image processing
       character penumb*5  ! penumbras False|True  Default is False
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
 
+      integer mono   ! zero is mono display one is few colours two is full
+      integer intext ! zero is outside view one is inside a room
+      integer ifocz  ! -1 is outside view or if positive in a room
+      common/rad2/mono,intext,ifocz
+
+
 C Radiance views
       character vewcmds*124 ! first token of view commands is short name for
                             ! the view followed by -vp and -vd data
@@ -93,3 +99,7 @@ C Radiance scenes
                        ! alt glazing illum= precalculated scene, type 3 (?)
       common/radgt/iglzty
 
+      character zone*16 ! command line Def_ or an ESP-r thermal zone name
+      character aim*12  ! command line External|Coupling|Day_coef|Create
+      character cmdact*72  ! command line None|Create 
+      common/cmddata/zone,aim,cmdact

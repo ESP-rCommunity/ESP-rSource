@@ -296,10 +296,12 @@ C ACT = 's' silent, ACT = 'i' interactive.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/expath/runpath,pathtype
 
-      LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
+      LOGICAL OK,DOK,XST,fict
 
       DIMENSION ITEM(17)
       character*72 tfile
@@ -550,13 +552,14 @@ C TMC data
 
       common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
-      common/rad2/mono,intext,ifocz
       common/radabs/NABS
       common/expath/runpath,pathtype
 
@@ -577,7 +580,7 @@ C TMC data
       integer lnrp  ! length of run path
       integer lnbm  ! length of block material
 
-      LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
+      LOGICAL OK,DOK,fict,extern,XST,similar
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
