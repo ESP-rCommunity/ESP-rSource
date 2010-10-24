@@ -120,6 +120,14 @@ C Ground disk information
       real grcx,grcy ! ground disk centre X and Y (m)
       common/grdisk/grdd,grcx,grcy
 
+C Sky definitions
+      real rgrfl     ! ground reflection (equiv to groundrefl)
+      integer isky   ! 1 is -c 2 is -s 3 is +s 4 is +c
+      integer irdoy  ! julian day of year for computing sky values
+      real rtime     ! time (0-24) for use in computing sky values
+      integer iryear ! year for use in computing sky values
+      common/sky1/rgrfl,isky,irdoy,rtime,iryear
+
 C Daylight factors
       character LDFGRID*72  ! file containing df grid points
       common/radgrid/LDFGRID

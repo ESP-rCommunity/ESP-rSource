@@ -34,7 +34,6 @@ C ******* Sky calculations. *******
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character skopt*3,outs*124,tfile*72
@@ -538,8 +537,6 @@ C TMC data
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND

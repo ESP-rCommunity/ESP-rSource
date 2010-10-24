@@ -163,9 +163,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER ICPCON,IRT
       REAL ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
 
-      COMMON/radcfg/LRADCF
-      CHARACTER*72 LRADCF
-
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
       LOGICAL INTHPS,INTHPZ
 

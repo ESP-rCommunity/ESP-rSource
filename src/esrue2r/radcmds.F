@@ -52,8 +52,6 @@ C  else simulate the scene by calling simscene
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-
       character outs*124,tfile*72,h*72
 
       LOGICAL fict,XST,OK,DOK
@@ -208,8 +206,6 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-
       character outs*124,doit*124,doitl*256,tfile*72
       character QT*1
       character*72 LTMPFL,LTMPFA,rn
@@ -270,7 +266,7 @@ C Create sky command and sky.
           write(outs,'(a,2f7.1,a,2f7.1,a,f5.2)')'gendaylit -ang ',RSALT,
      &                         RSAZI,' -W ',QDIR,QDIF,' -g ',rgrfl
         else
-          if (QDIR.gt.0) then
+          if (QDIR.gt.0.0) then
             write(outs,'(a,2f7.1,2(a,f7.1),a,f5.2)')'gensky -ang ',
      &                RSALT,RSAZI,' -B ',QDIF,' -R ',QDIRH,' -g ',rgrfl
           else
@@ -463,10 +459,10 @@ C ********************** settime **********************
 C settime - user choice of standard times for sky generation
 
       SUBROUTINE settime(IRM,IRD,XRT)
+#include "building.h"
+#include "e2r_common.h"
 
       common/pophelp/h(60)
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-
       character H*72
 
 C Ask winter am/pm spring am/pm summer am/pm
@@ -632,8 +628,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
       character pf*72,h*72,outs*124,ltmp*72

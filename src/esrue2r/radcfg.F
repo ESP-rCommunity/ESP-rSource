@@ -50,10 +50,9 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/FILEP/IFIL
       common/rpath/path
 
-      common/radcfg/LRADCF
       common/user/browse
 
-      character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124
+      character WORD*124, OUTS*124, OUTSTR*124
       character pfile*72,path*72,fs*1
 
       logical unixok
@@ -119,13 +118,13 @@ C Read lines from file, header first.
      &                                         OUTSTR(1:lnblnk(OUTSTR))
       call edisp (iuout,outs)
 
-C Now read number of rif files contained.
-      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif line',IER)
+C Now read number of scenes contained.
+      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'scene nb line',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of rifs',IER)
+      CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of scenes',IER)
 
       
-C For each rif read 5 items of data
+C For each scene read at least 5 items of data.
       IER=0
       do 10 I=1,NSCENE
 
@@ -154,9 +153,9 @@ C this scene represent alternate blind states.
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
-            CALL EGETRM(OUTSTR,K,SCENEDESC(I),'W','rif desc',IFLAG)
+            CALL EGETRM(OUTSTR,K,SCENEDESC(I),'W','scene desc',IFLAG)
           elseif (WORD(1:4).eq.'*rpu') then
-            CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','rif purp',IFLAG)
+            CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','scene purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
             CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
@@ -177,14 +176,14 @@ C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/radcfg/LRADCF
 
-      character LRADCF*72,OUTS*72
+      character OUTS*72
       character dstmp*24,pfile*72
 
 C Check that ICHK is a sensible value.
@@ -203,10 +202,10 @@ C Write header first.
       write(IRCFG,'(a)')'*ESP-r visualisation scene configuration file.'
       write(IRCFG,'(a,a)') dstmp,' # latest file modification.'
 
-C Now write number of rif files contained.
+C Now write number of scenes contained.
       write(IRCFG,'(i3,a)') NSCENE,' # No. of scenes'
       
-C For each rif write 1) name. 2) root identifier. 3) short description 
+C For each scene write 1) name, 2) root identifier, 3) short description 
 C and 4) intended use/ purpose.
 
       do 10 I=1,NSCENE
@@ -241,6 +240,7 @@ C Find the longest string in this scene.
         write(IRCFG,'(a,a,a)')'*rde ',OUTS(1:IML),' # Description'
         OUTS=SCENEPURP(I)
         write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
+
         if (SCENEPURP(I)(1:8).eq.'Day_fact') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
@@ -344,7 +344,7 @@ C Display the menu.
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C If no selection has been made before exit then return.
-	IF(.NOT.SELECT)then
+        IF(.NOT.SELECT)then
           ICHK=4
           if(modscene)call RADCFGOUT(ICHK)
           RETURN
@@ -501,7 +501,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
 #include "building.h"
 #include "geometry.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
@@ -579,7 +579,7 @@ C Check for tmc file
 C Reset glazing treatment to default.
       iglzty=1
 
-C Add new rif file data.
+C Increment scene counter.
       NSCENE=NSCENE+1
 
 C Set new scene to focus scene.
@@ -789,15 +789,14 @@ C ********************** ADDSCENE **********************
 C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
       subroutine ADDSCENE(IRCFG)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
-      common/radcfg/LRADCF
-
-      CHARACTER H*72,LRADCF*72,pfile*72
+      CHARACTER H*72,pfile*72
 
 C Ask if a default image should be created.
       H(1)='Radiance desktop creates allows the creation of separate'
@@ -847,7 +846,7 @@ C if MODE is not - then sensor points file name confirmation required.
 #include "model.h"
 #include "geometry.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1267,6 +1266,7 @@ C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
@@ -1275,9 +1275,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/radcfg/LRADCF
-
-      character filexst*1,LRADCF*72
+      character filexst*1
       character cfgroot*24,LCFGF*72
       character pfile*72
 

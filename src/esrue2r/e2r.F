@@ -74,10 +74,6 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-
-C Scene configuration commons.
-      common/radcfg/LRADCF
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -98,7 +94,7 @@ C Name of current application
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
-      character LRADCF*72,OUTSTR*124
+      character OUTSTR*124
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
@@ -1132,7 +1128,6 @@ C Path to model.
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

@@ -118,7 +118,6 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       character OUTSTR*124,WORD*20,outs*124,CMDL*124,skopt*3
       character tfile*72
