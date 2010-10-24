@@ -22,6 +22,8 @@ C Routines to read in various radiance generated files.
 
 C ******* Default views formation.
       SUBROUTINE RRVEW(ITA2,rviewf,IER)
+#include "building.h"
+#include "e2r_common.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -29,7 +31,6 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/expath/runpath,pathtype
 
       character OUTSTR*124,WORD*20,rviewf*72,outs*124

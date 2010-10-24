@@ -557,7 +557,7 @@ C defview generates a new default view.
 
       real dvazim  ! default calculated viewing angle azimuth
       real dvelev  ! default calculated viewing angle elevation
-      real angv,angh ! vertical and horizontal viewing angles
+      real dvangv,dvangh ! vertical and horizontal default viewing angles
       integer ier  ! for use with call to mkrif
       integer ita2 ! file unit for use with mkrif
 
@@ -593,18 +593,19 @@ C adding in the ground disk.
           rvpz=EYEMI(3)
         endif
 
-C Given the eye point and the view point return azimuth & elevation.
+C Given the eye point and the view point return azimuth & elevation
+C and set the default viewing angles to 1.2 factor.
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
      &    dvazim,dvelev)
         call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &    OYMX,OZMX,eang)
-        angv=eang*1.2
-        angh=eang*1.2
+        dvangv=eang*1.2
+        dvangh=eang*1.2
 
         call AZ2UV(dvazim,dvelev,vdx,vdy,vdz)
         write(vewcmds(1),'(a,3F9.3,a,3F8.4,a,F6.1,a,F6.1,a)') 
      &       '-vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
-     &       ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
+     &       ' -vu 0 0 1 -vh ',dvangh,' -vv ',dvangv,' -vs 0 -vl 0 '
         rvewsh(1) = 'def'
         indxvew=1
         ipckvew=1
@@ -1144,8 +1145,6 @@ C getglr recovers view information and runs glare calculation.
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
-
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
 
       character rendopt*200
       character word*12,doit*300,ltmp*200,gf*72,pf*72,glst*4

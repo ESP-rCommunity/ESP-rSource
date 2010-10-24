@@ -72,7 +72,6 @@ C Path to model.
 
 C Radiance based commons are explained in e2r_common.h.
       common/rad2/mono,intext,ifocz
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 

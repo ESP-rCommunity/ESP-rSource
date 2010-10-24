@@ -58,6 +58,12 @@ C Radiance views
       integer ipckvew       ! index of current view
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
 
+      real rvpx,rvpy,rvpz ! radiance eyepoint X Y Z (m)
+      real vdx,vdy,vdz    ! radiance view vector X Y Z (-)
+      real angh,angv      ! horizontal and vertical angle of view (deg)
+      real azim,elev      ! view direc azimuth & elevation to match  vdx vdy vdz
+      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+
 C Radiance scenes
       integer indxscn  ! number of scene descriptors zero is the initial state, two
                        ! indicates that sky and glazing files have been defined. Incremented

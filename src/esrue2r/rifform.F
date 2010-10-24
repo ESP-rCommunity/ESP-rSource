@@ -358,7 +358,6 @@ C If use = 'f' then force files to account for change in root/dir name.
       integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
       character pre*28
