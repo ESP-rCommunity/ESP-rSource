@@ -262,6 +262,9 @@ C Ask for name of new viewpoint file and set eye point at centre.
           rvpy=YMN+0.1
           rvpz=VIEWM(3)
         endif
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
         H(1)='This is a tag used for reference.'
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
@@ -285,6 +288,9 @@ C If the default view.
           angv=90.0
           angh=90.0
         endif
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
         call AZ2UV(azim,elev,vdx,vdy,vdz)
       else
@@ -633,6 +639,8 @@ C convert into normal or take the direction from the perspective.
           if(IEE.eq.3)then
             goto 10
           elseif(IEE.eq.2)then
+
+C Update the viewing azimuth and elevation.
             call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &        VIEWM(3),az,el)
             write(outs,'(a,F7.1,a,F7.1)') 'The perspective azimuth is ',
