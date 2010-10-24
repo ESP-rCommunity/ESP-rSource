@@ -22,6 +22,7 @@ C Routines to read in various radiance generated files.
 
 C ******* Default views formation.
       SUBROUTINE RRVEW(ITA2,rviewf,IER)
+
 #include "building.h"
 #include "e2r_common.h"
 
@@ -31,14 +32,11 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/expath/runpath,pathtype
 
       character OUTSTR*124,WORD*20,rviewf*72,outs*124
-      character tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character tfile*72
 
       IER=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in rview file, note it is assumed to be one line.
       write (tfile,'(2a)') runpath(1:lnrp),rviewf(1:lnblnk(rviewf))
@@ -109,25 +107,23 @@ C Attempt to read in rview file, note it is assumed to be one line.
 C ************** RRSKY **************
 C RRSKY Read radiance sky file.
 
-      SUBROUTINE RRSKY(ITA2,rskyfil,ga,IER)
+      SUBROUTINE RRSKY(ITA2,ga,IER)
 #include "building.h"
 #include "site.h"
+#include "e2r_common.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/expath/runpath,pathtype
 
-      character OUTSTR*124,WORD*20,rskyfil*72,outs*124,CMDL*124,skopt*3
-      character tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character OUTSTR*124,WORD*20,outs*124,CMDL*124,skopt*3
+      character tfile*72
 
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in sky file.
       write (tfile,'(2a)') runpath(1:lnrp),
@@ -303,16 +299,11 @@ C IERR=1 if a scene file is missing.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      common/expath/runpath,pathtype
-
       character tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
       character tsc*72,tword*10,file*72,RVB*1
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
 
       IERR=0
-      lnrp=lnblnk(runpath)
 
 C Reset render and octree special options.
       crenrp='   '
@@ -416,7 +407,7 @@ C Run time files.
         CALL EGETRM(OUTSTR,K,picfil,'W','picture file',IER)
       elseif(word(1:6).eq.'scene='.or.word(1:6).eq.'illum=')then
 
-C Secne files.
+C Scene files.
 C << Still require to parse files in the rscedes based hopefully on
 C << the ending characters of the file.
         indxscn=indxscn+1
@@ -467,19 +458,14 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       SUBROUTINE MKRIF(ITA2,file,IFC,IGL,IER)
 #include "building.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
-      common/expath/runpath,pathtype
-
       character file*72,tfile*72
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
 
       logical XST
 
 C Open rif file.
-      lnrp=lnblnk(runpath)
       IER=0
       write(tfile,'(2a)')runpath(1:lnrp),file(1:lnblnk(file))
       CALL ERPFREE(ITA2,ISTAT)
@@ -665,19 +651,16 @@ C terminating character (or later the contents).
       subroutine figscen(ITA3,cmdname,ier)
 #include "building.h"
 #include "e2r_common.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/expath/runpath,pathtype
 
-      character cmdname*72,OUTSTR*124,runpath*72,pathtype*24,tfile*72
-      integer lnrp  ! length of run path
+      character cmdname*72,OUTSTR*124,tfile*72
 
       logical XST
 
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in file, note it is assumed to be one line.
       write(tfile,'(a,a)')runpath(1:lnrp),cmdname(1:lnblnk(cmdname))

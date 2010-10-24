@@ -29,10 +29,8 @@ C ******* Setup of image quality and calculation options.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/expath/runpath,pathtype
 
       CHARACTER doit*124,VALT*32
-      character runpath*72,pathtype*24
       character item*30,h*72,HOLD*24
       character fil*80
       character ltmp*72,ltmp60*60

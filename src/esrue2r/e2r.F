@@ -50,11 +50,13 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
 C Defaults.
@@ -62,7 +64,6 @@ C Defaults.
 
 C Path to model.
       common/rpath/path
-      common/expath/runpath,pathtype
 
       common/user/browse
 
@@ -73,13 +74,10 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
-      common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
 C Scene configuration commons.
       common/radcfg/LRADCF
-      common/radgrid/LDFGRID
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -95,9 +93,8 @@ C Name of current application
       character cAppName*12      
 
       CHARACTER H*72,outs*124,ITEM*30
-      CHARACTER LDFGRID*72
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
-      character tfile*72,runpath*72,pathtype*24
+      character tfile*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
@@ -114,7 +111,6 @@ C Name of current application
       logical browse  ! is true if parameter passed as yes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-      integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO ! max items and current menu item
 
@@ -258,8 +254,8 @@ C views and looking east.
       vdx=1.
       vdy=0.
       vdz=0.
-      azim=90.
-      elev=0.
+      azimuth=90.
+      elevtn=0.
 
 C Initial coords for eyepoint, viewing point, angle of view.
       EYEM(1)=-100.
@@ -424,7 +420,6 @@ C and then present the main menu.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
           call MODLSU
-          lnrp=lnblnk(runpath)
         endif
       endif
 
@@ -468,7 +463,6 @@ C name with the full path.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if (XST)then
           call MODLSU
-          lnrp=lnblnk(runpath)
         endif
       endif
 
@@ -491,7 +485,7 @@ C line as 'Coupling' or 'Day_coef' or 'Day_fact'.
       endif
 
 C Read RADIANCE configuration if it exists. If we are returning to a
-C model that was previously worked on then thescene file would be
+C model that was previously worked on then the scene file would be
 C in the cfg folder. If we are not browsing then that file should be
 C copied into the ../rad folder.
       XST=.FALSE.
@@ -504,7 +498,6 @@ C        write(6,*) tfile
 
         continue
       else
-        lnrp=lnblnk(runpath)
         write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
@@ -651,7 +644,7 @@ C Present the main menu.
 
 C Copy files back to radpth if necessary. If running native windows
 C then there is no need to copy all files back.
-        lnrp=lnblnk(runpath)
+C        lnrp=lnblnk(runpath)
         call isunix(unixok)
         if(unixok)then
           if(browse)then
@@ -689,7 +682,7 @@ C folder (the other files can stay where they are).
           call edisp(iuout,outs)
           KEEP=.false.
         endif
-        lnrp=lnblnk(runpath)
+C        lnrp=lnblnk(runpath)
         if (KEEP) then
 
 C Move the radiance configuration file and the other files in the
@@ -887,7 +880,7 @@ C Recover previous view.
       elseif(INO.EQ.15)then
 
 C Scene parameter options.
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if(IER.LT.0)then 
           CALL USRMSG(' ',' Please define the sky first!','W')
           GOTO 10
@@ -964,7 +957,7 @@ C Based on purpose view DF or illuminance or daylight coef or image.
 C Check for daylight factor results. Note: the results could have been
 C shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
-          lnrp=lnblnk(runpath)
+C          lnrp=lnblnk(runpath)
           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
      &       '.df'
           write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
@@ -1125,6 +1118,7 @@ C MODLSU read in supplied configuration file and set up paths.
 #include "model.h"
 #include "site.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1134,12 +1128,10 @@ C MODLSU read in supplied configuration file and set up paths.
 
 C Path to model.
       common/rpath/path
-      common/expath/runpath,pathtype
       common/rcmd/LCMDFL
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       integer ncomp,ncon
@@ -1155,14 +1147,13 @@ C Path to model.
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
+      character path*72,cfgroot*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
-      integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
@@ -1250,7 +1241,7 @@ C If unix and browsing get PID for use in /tmp directory structure.
             write (tldir,'((5a,i7,a))') upath(1:lnblnk(upath)),fs,
      &                                '.',fs,'.rad',ipid,fs
             call st2file(tldir,runpath)
-            lnrp=lnblnk(runpath)
+            lnrp=lnblnk(runpath)  ! remember this
             write (outs,'(a,a)') 'mkdir ',runpath(1:lnrp)
             call runit(outs,'-')
             pathtype='radinhome'
@@ -1266,7 +1257,7 @@ C need to create a folder.
               pathtype='radinrad'
             endif
             write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
-            lnrp=lnblnk(runpath)
+            lnrp=lnblnk(runpath)  ! remember this
           endif
         else
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
@@ -1276,7 +1267,7 @@ C need to create a folder.
             pathtype='radinrad'
           endif
           write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
-          lnrp=lnblnk(runpath)
+          lnrp=lnblnk(runpath)  ! remember this
         endif
         write(outs,'(2a)') 'The place where rad will be invoked is ',
      &     runpath(1:lnrp)
@@ -1331,6 +1322,7 @@ C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1338,7 +1330,6 @@ C inqu_tmc: Check if tmc control active.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
-      common/radabs/NABS
 
       character outs*124
 

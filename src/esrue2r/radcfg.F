@@ -49,16 +49,12 @@ C RADCFGIN reads the contents of the radiance configuration file.
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
-      common/expath/runpath,pathtype
 
       common/radcfg/LRADCF
-      common/radgrid/LDFGRID
-      common/radabs/NABS
       common/user/browse
 
-      character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
-      character pfile*72,path*72,runpath*72,pathtype*24,fs*1
-      integer lnrp  ! length of run path
+      character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124
+      character pfile*72,path*72,fs*1
 
       logical unixok
       logical browse
@@ -72,7 +68,6 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      lnrp=lnblnk(runpath)
 
 C Copy existing model to runpath (unix only).
       if(unixok)then
@@ -187,16 +182,12 @@ C RADCFGOUT writes the contents of the radiance configuration file.
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/expath/runpath,pathtype
       common/radcfg/LRADCF
-      common/radgrid/LDFGRID
 
-      character LRADCF*72,OUTS*72,LDFGRID*72
-      character dstmp*24,pfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character LRADCF*72,OUTS*72
+      character dstmp*24,pfile*72
 
 C Check that ICHK is a sensible value.
-      lnrp=lnblnk(runpath)
       IRCFG = IFIL+17
       if (ICHK.ne.3.and.ICHK.ne.4) ICHK=4
 
@@ -804,14 +795,11 @@ C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
 
       common/pophelp/h(60)
 
-      common/expath/runpath,pathtype
       common/radcfg/LRADCF
 
-      CHARACTER H*72,LRADCF*72,runpath*72,pathtype*24,pfile*72
-      integer lnrp  ! length of run path
+      CHARACTER H*72,LRADCF*72,pfile*72
 
 C Ask if a default image should be created.
-      lnrp=lnblnk(runpath)
       H(1)='Radiance desktop creates allows the creation of separate'
       H(2)='scenes each with a specific purpose. A modest scene can be'
       H(3)='created silently with assumed defaults. '
@@ -866,14 +854,9 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-      common/expath/runpath,pathtype
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-
-      common/radgrid/LDFGRID
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -883,16 +866,13 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-      character h*72,LDFGRID*72,DESCRC*25
-      character outs*124,runpath*72,pathtype*24,tfile*72
+      character h*72,DESCRC*25
+      character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
-      integer lnrp  ! length of run path
-
 C New grid so set number of grid points to zero.
-      lnrp=lnblnk(runpath)
       NDFP=0
 
 C Remember current graphics display options.
@@ -1080,12 +1060,12 @@ C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
 #include "building.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath,pathtype
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -1094,15 +1074,11 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/radgrid/LDFGRID
 
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER VT*5,act*1
-      character OUTSTR*124,tfile*72,LDFGRID*72
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character OUTSTR*124,tfile*72
 
 #ifdef OSI
       integer iix,iiy,iid1,iid2
@@ -1117,7 +1093,6 @@ C If there are no grid points warn the user and check if
 C there is a *.df file or a *.df- file that can be scanned again.
       if(NDFP.eq.0)then
         ITA1 = IFIL+6
-        lnrp=lnblnk(runpath)
 
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
@@ -1221,7 +1196,6 @@ C for use with a 'Coupling' scene purpose.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath,pathtype
 
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
@@ -1232,10 +1206,8 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      common/radgrid/LDFGRID
-
-      CHARACTER*72 LCGCINT,LDFGRID
-      character outs*124,runpath*72,pathtype*24
+      CHARACTER LCGCINT*72
+      character outs*124
 
       logical XST
 
@@ -1263,11 +1235,11 @@ C Set local file name.
 
 C Open sensor info file (do not add path as radiance is run locally).
       write(LDFGRID,'(a,a)')
-     &            SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
+     &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                      LDFGRID(1:lnblnk(LDFGRID))
+     &  LDFGRID(1:lnblnk(LDFGRID))
       call FINDFIL(outs,XST)
       if(XST)then
         call FPOPEN(ITA1,ISTAT,1,0,outs)
@@ -1302,13 +1274,12 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       COMMON/FILEP/IFIL
 
       common/C21/IFCFG,cfgroot,LCFGF
-      common/expath/runpath,pathtype
 
       common/radcfg/LRADCF
 
       character filexst*1,LRADCF*72
       character cfgroot*24,LCFGF*72
-      character pfile*72,runpath*72,pathtype*24
+      character pfile*72
 
       LOGICAL modscene
 
@@ -1370,7 +1341,7 @@ C Create a new rcf file.
 
 C Set file name including path and open.
         write(pfile,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                         LRADCF(1:lnblnk(LRADCF))
+     &    LRADCF(1:lnblnk(LRADCF))
         call ERPFREE(IRCFG,ISTAT)
         call FPOPEN(IRCFG,ISTAT,1,2,pfile)
       endif

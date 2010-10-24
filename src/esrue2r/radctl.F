@@ -34,11 +34,9 @@ C If VAL is < 0 then return current setting otherwise set par=VAL.
       integer iCountWords
 
       COMMON/FILEP/IFIL
-      common/expath/runpath,pathtype
 
       character flag*8,PAR*2
       character OUTSTR*124,ltmp*72
-      character runpath*72,pathtype*24
 
       ITA2 = IFIL+7
 

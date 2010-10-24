@@ -63,7 +63,7 @@ C two light lines at edge of view cone.
         iupdown=-302
         isym=0
         call etplot(rvpx+wxe,rvpy+wye,iupdown,isym)
-        astrt=azim+(angh/2.)
+        astrt=azimuth+(angh/2.)
         RYAZI = astrt*RAD
         xastrt = rvpx+(VCL*SIN(RYAZI))
         yastrt = rvpy+(VCL*COS(RYAZI))
@@ -265,7 +265,8 @@ C Ask for name of new viewpoint file and set eye point at centre.
 
 C Given view point and viewed point return and update common values
 C of the azimuth and elevation.
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
         H(1)='This is a tag used for reference.'
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &                                         'short view tag',IER,1)
@@ -291,8 +292,9 @@ C If the default view.
 
 C Given view point and viewed point return and update common values
 C of the azimuth and elevation.
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
-        call AZ2UV(azim,elev,vdx,vdy,vdz)
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
+        call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       else
 
 C Perhaps a referenced file.
@@ -312,7 +314,7 @@ C Perhaps a referenced file.
 C Read a radiance view point file and make sure that the
 C view point is within the bounds of the image.
               call RRVEW(ITA2,ltmp,IER)
-              call UV2AZ(vdx,vdy,vdz,azim,elev)
+              call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
               XMN=AMIN1(XMN,rvpx)
               YMN=AMIN1(YMN,rvpy)
               ZMN=AMIN1(ZMN,rvpz)
@@ -358,7 +360,7 @@ C Reflect eyepoint in the perspective view.
       EYEM(1)=rvpx
       EYEM(2)=rvpy
       EYEM(3)=rvpz
-      call AZ2UV(azim,elev,vdx,vdy,vdz)
+      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       if(intext.eq.0)then
         ITPPSW=3
         call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
@@ -382,7 +384,7 @@ C Reflect eyepoint in the perspective view.
 10    INO = -4
 
 C Reconstitute the viewing vector and eye angle.
-      call AZ2UV(azim,elev,vdx,vdy,vdz)
+      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
 
@@ -399,7 +401,7 @@ C Reconstitute the viewing vector and eye angle.
       endif
       ITEM(4) =                   '  __________________________  '
       write(ITEM(5),'(A,3F6.1)')  'e eye @ :',rvpx,rvpy,rvpz
-      write(ITEM(6),'(A,2F6.1)')  'f direc azi elv:',azim,elev
+      write(ITEM(6),'(A,2F6.1)')  'f direc azi elv:',azimuth,elevtn
       write(ITEM(7),'(A,3F6.2)')  '  (vector):',vdx,vdy,vdz
       if(ITPPSW.eq.3)then
         write(ITEM(8),'(A,F5.1,a,F5.1,a)')
@@ -574,8 +576,8 @@ C Transform back from mouse position to actual coordinate.
               rvpz=EYEM(3)
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
-              azim=az
-              elev=el
+              azimuth=az
+              elevtn=el
               vewdone=.false.
               redraw =.true.
               MODLEN=.true.
@@ -618,8 +620,8 @@ C Transform back from mouse position to actual coordinate.
               EYEM(3)=rvpz
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
-              azim=az
-              elev=el
+              azimuth=az
+              elevtn=el
               vewdone=.false.
               redraw =.true.
               MODLEN=.true.
@@ -649,9 +651,9 @@ C Update the viewing azimuth and elevation.
             h(1)='Pause to allow you to adjust the view. '
             CALL ASKOK(outs,' Is this view ok?',OK,dok,1)
             if(OK)then
-              azim=az
-              elev=el
-              call  AZ2UV(azim,elev,vdx,vdy,vdz)
+              azimuth=az
+              elevtn=el
+              call  AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
               vewdone=.false.
               redraw =.true.
               MODLEN=.TRUE.
@@ -668,11 +670,11 @@ C Update the viewing azimuth and elevation.
         if(IEE.eq.1)then
           call edisp(iuout,' ')
           H(1)='The view azimuth 0= looking north, 90 =looking east.'
-          CALL EASKR(azim,' ',' View azimuth (deg) ? ',
+          CALL EASKR(azimuth,' ',' View azimuth (deg) ? ',
      &      -359.,'W',359.,'W',90.,'view azimuth',IER,1)
-          CALL EASKR(elev,' ',' View elevation (deg) ? ',
+          CALL EASKR(elevtn,' ',' View elevation (deg) ? ',
      &      -89.,'W',89.,'W',0.,'view elevation',IER,1)
-          call AZ2UV(azim,elev,vdx,vdy,vdz)
+          call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
           vewdone=.false.
           redraw =.true.
         endif

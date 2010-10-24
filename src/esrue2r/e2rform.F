@@ -35,12 +35,10 @@ C ******* Sky calculations. *******
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character skopt*3,outs*124,tfile*72
-      character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
-      integer lnrp  ! length of run path
+      character ltmp72*72,dtmp72*72
       integer NITEMS,INO ! max items and current menu item
 
       DIMENSION ITEM(14)
@@ -50,7 +48,6 @@ C ******* Sky calculations. *******
       ITA1 = IFIL+6
       ITA2 = IFIL+7
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Generate a default name for the sky file.
       write (rskyfil,'(a,a4)') 
@@ -72,7 +69,7 @@ C read it otherwise remember name.
       IF(XST)THEN
 
 C Read a radiance sky file, taking info into commons.
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (ier.eq.0) skydone=.true.
       endif
       call usrmsg(' ',' ','-')
@@ -194,7 +191,7 @@ C which includes redirection of output to the sky definition file.
      &    RTIME,skopt,' -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &    ' -m 0.0'
         CALL wrtsky(outs)
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -251,14 +248,10 @@ C wrtsky calls radiance and writes sky info to file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/expath/runpath,pathtype
-
-      character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character skycmd*124,doit*124,tfile*72
 
       LOGICAL XST
 
-      lnrp=lnblnk(runpath)
       ITA3=IFIL+10
       call edisp(iuout,' creating sky description file.')
       write(tfile,'(a,a)')runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
@@ -299,15 +292,12 @@ C ACT = 's' silent, ACT = 'i' interactive.
 
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/expath/runpath,pathtype
 
       LOGICAL OK,DOK,XST,fict
 
       DIMENSION ITEM(17)
       character*72 tfile
-      character runpath*72,pathtype*24
       character item*32,h*72,ACT*1,GTGEOM*72
-      integer lnrp  ! length of run path
       integer NITEMS,INO ! max items and current menu item
 
       ITA1 = IFIL+6
@@ -318,7 +308,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
 C      GTGEOM = 'UNKNOWN'
 
 C Open the materials, mlc & optics db.
-      lnrp=lnblnk(runpath)
       call module_opendb(ier)
 
       icomp = nznog(1)
@@ -550,7 +539,6 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       LOGICAL MODIFY,MODLEN,MODBND
@@ -559,9 +547,6 @@ C TMC data
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-
-      common/radabs/NABS
-      common/expath/runpath,pathtype
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -575,9 +560,8 @@ C TMC data
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
-      character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
+      character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
-      integer lnrp  ! length of run path
       integer lnbm  ! length of block material
 
       LOGICAL OK,DOK,fict,extern,XST,similar
@@ -588,7 +572,6 @@ C TMC data
       nobs=0
       ISTAT=0
       IER=0
-      lnrp=lnblnk(runpath)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)

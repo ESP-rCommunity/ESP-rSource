@@ -67,8 +67,8 @@ C Radiance views
       real rvpx,rvpy,rvpz ! radiance eyepoint X Y Z (m)
       real vdx,vdy,vdz    ! radiance view vector X Y Z (-)
       real angh,angv      ! horizontal and vertical angle of view (deg)
-      real azim,elev      ! view direc azimuth & elevation to match  vdx vdy vdz
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+      real azimuth,elevtn ! view direc azimuth & elevation to match  vdx vdy vdz
+      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azimuth,elevtn
 
 C Radiance scenes
       integer indxscn  ! number of scene descriptors zero is the initial state, two
@@ -91,6 +91,9 @@ C Radiance scenes
       character LBSRIF*72 ! alternate rif file name
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
+      integer NABS    ! number of alternative blind states
+      common/radabs/NABS
+
       integer NSCENE  ! number of scenes and rif files
       integer ISCENE  ! current scene index (in the array of scenes)
       common/raddata2/NSCENE,ISCENE
@@ -99,7 +102,30 @@ C Radiance scenes
                        ! alt glazing illum= precalculated scene, type 3 (?)
       common/radgt/iglzty
 
+C Command line directives
       character zone*16 ! command line Def_ or an ESP-r thermal zone name
       character aim*12  ! command line External|Coupling|Day_coef|Create
       character cmdact*72  ! command line None|Create 
       common/cmddata/zone,aim,cmdact
+
+      character runpath*72  ! path for working radiance model 
+      character pathtype*24 ! is either radincfg or radinrad
+      common/expath/runpath,pathtype
+
+      integer lnrp  ! length of runpath
+      common/expathl/lnrp
+
+C Ground disk information
+      real grdd      ! ground disk diameter (m)
+      real grcx,grcy ! ground disk centre X and Y (m)
+      common/grdisk/grdd,grcx,grcy
+
+C Daylight factors
+      character LDFGRID*72  ! file containing df grid points
+      common/radgrid/LDFGRID
+
+      integer NDFP  ! number of locations for daylight factors
+      real DFPTS    ! location X Y Z to calculate DF
+      real DFDIR    ! direction sensor is looking
+      real DFVALS   ! df values
+      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
