@@ -48,7 +48,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit

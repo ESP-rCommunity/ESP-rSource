@@ -179,7 +179,7 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -768,7 +768,7 @@ C =2 with more than 3 day types allowed and sorted
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabelc*6
-      common/loadlabelc/lodlabelc(7)
+      common/loadlabelc/lodlabelc(MGTY)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -1319,7 +1319,7 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/Vld20/Vldtng
 
       character dstmp*24
@@ -1691,7 +1691,7 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       CHARACTER outs*124
       CHARACTER llbl*9
@@ -1802,9 +1802,9 @@ C Does each gain type on each day:
 C   start at zero load24(gaintype,daytype,1)=.true.
 C   and end at 24 hours (load24(gaintype,daytype,2)=.true.
 
-      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
-     &               loadmixed(mcom,7,MDTY)
-      common/loadall/load24(7,MDTY,2)
+      common/loadcnt/loadcount(mcom,MGTY,MDTY),
+     &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
+      common/loadall/load24(MGTY,MDTY,2)
       logical load24
 
 C Keep track of how many non-zero positive and negative casual
@@ -2119,8 +2119,8 @@ C loadm2count(zone,gaintype,daytype) - nb of each m2 gain types.
 C loadmixed(zone,gaintype,daytype) - if zero then nothing, if one
 C   then all non-zero are absolute, if two then all (non-zero) are in
 C   W/m2 or person/m2, if three then non-zero are mixed.
-      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
-     &               loadmixed(mcom,7,MDTY)
+      common/loadcnt/loadcount(mcom,MGTY,MDTY),
+     &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
 
       logical close,needtodivide,writeit
 
@@ -2514,14 +2514,14 @@ C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver(MCOM)
 
 C How many of each gain type is there each zone/gaintype/daytype.
-      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
-     &               loadmixed(mcom,7,MDTY)
+      common/loadcnt/loadcount(mcom,MGTY,MDTY),
+     &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
 
 C Does each gain type on each day:
 C   start at zero load24(gaintype,daytype,1)=.true.
 C   and end at 24 hours (load24(gaintype,daytype,2)=.true.
 
-      common/loadall/load24(7,MDTY,2)
+      common/loadall/load24(MGTY,MDTY,2)
       logical load24
       integer idty
 
@@ -2540,7 +2540,7 @@ C logical problem set to true if daytype might not be sorted.
 C Check how many casual gains there are for each type on each day type.
       call checkcascount(icomp)
 
-C How many occupant/lights/small power?
+C How many occupant/lights/small power? << revise for more gain types >>
       n1=loadcount(icomp,1,IDTY)
       n2=loadcount(icomp,2,IDTY)
       n3=loadcount(icomp,3,IDTY)

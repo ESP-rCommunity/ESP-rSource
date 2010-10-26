@@ -1337,7 +1337,7 @@ C =2 with more than 3 day types
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)

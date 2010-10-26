@@ -391,7 +391,7 @@ C above.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 

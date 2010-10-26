@@ -70,7 +70,7 @@ C =2 with more than 3 day types
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Peaks (loadcasp(mcom,7,1) sens)(loadcasp(mcom,7,2) latent) for each
 C possible gain type in each zone.

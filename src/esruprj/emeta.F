@@ -519,7 +519,7 @@ C =2 with more than 3 day types
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng

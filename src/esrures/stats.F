@@ -2236,7 +2236,7 @@ C << file does not need to be scanned to get the surface emissivity.
       common/recver/izver,ipver,iever
 
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 

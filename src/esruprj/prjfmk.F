@@ -89,7 +89,7 @@ C =2 with more than 3 day types allowed and sorted
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -3385,11 +3385,12 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C How many of each gain type is there each zone/gaintype/daytype.
-      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
-     &               loadmixed(mcom,7,MDTY)
+C << this common should be re-sized 7 -> MGTY >>
+      common/loadcnt/loadcount(mcom,MGTY,MDTY),
+     &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
       integer ICGTS,IW  ! for radio buttons
@@ -3995,7 +3996,7 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Profile database commons via profile.h.
 
@@ -4732,7 +4733,7 @@ C Electrical data flag and elctrical data.
 
 C Descriptive label for a zone load or casual gain.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       character h*72,VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
@@ -4897,8 +4898,9 @@ C =2 with more than 3 day types allowed and sorted
 
 C Descriptive label for a zone load or casual gain.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
-      common/loadlabelc/lodlabelc(7)
+      common/loadlabel/lodlabel(mcom,MGTY)
+      character lodlabelc*6
+      common/loadlabelc/lodlabelc(MGTY)
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
@@ -4920,7 +4922,6 @@ C Descriptive label for a zone load or casual gain.
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
       character ltmp*72
-      character lodlabelc*6
       character fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
@@ -5243,7 +5244,7 @@ C  ICOMP zone number
 
 C Descriptive label for a zone load or casual gain.
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 

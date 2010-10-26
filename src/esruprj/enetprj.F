@@ -2214,7 +2214,7 @@ C Plant commons
 
 C Descriptive label for a zone load or casual gain types.
       character LODLABEL*6
-      COMMON/LOADLABEL/LODLABEL(MCOM,7)
+      COMMON/LOADLABEL/LODLABEL(MCOM,MGTY)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER ICGT
 

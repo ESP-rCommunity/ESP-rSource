@@ -159,7 +159,7 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 
@@ -276,7 +276,7 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 

@@ -142,7 +142,7 @@ C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
       common/mfocup/iocpzone
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,7)
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 
