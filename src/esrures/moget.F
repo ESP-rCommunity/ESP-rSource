@@ -390,7 +390,7 @@ C above.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
@@ -433,7 +433,7 @@ C Comfort parameters and hash table.
       CHARACTER ITEMS(18)*23
       CHARACTER ITEMC(21)*24
       character H*72,xfile*144,tg*1,delim*1
-      character SLABEL*32,GLABEL*20,SUFFIX*8,lodlabel*6
+      character SLABEL*32,GLABEL*20,SUFFIX*8
       character ll1*8,ll2*8,ll3*8
       CHARACTER outs*124,pifltog*4,lpifl*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
@@ -2819,6 +2819,8 @@ C Occupancy filter (all types bar time series plot).
 C Casual gain type.  Ask user which constitutes occupancy.
 C Labels for loads, use first zones labels as examples. If time
 C based set iocut=-1, if always occup set iocut=0.
+
+C << revise for additional casual gain types >>
             write(ll1,'(1x,a6,1x)') lodlabel(NZNO(1),1)
             write(ll2,'(1x,a6,1x)') lodlabel(NZNO(1),2)
             write(ll3,'(1x,a6,1x)') lodlabel(NZNO(1),3)

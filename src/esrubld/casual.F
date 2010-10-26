@@ -148,6 +148,7 @@ C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
 C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
 
 C Adaptive comfort commons
@@ -185,7 +186,7 @@ C It excludes start-up timesteps
 
       DIMENSION QLATN(2),VAL(MBITS+2)
 
-      CHARACTER outs*124, lodlabel*6, DSTR*10
+      CHARACTER outs*124, DSTR*10
       character*10 wkd1, wkd2
       logical traceok,closea
       REAL PEZON,QEZON

@@ -47,6 +47,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
@@ -54,7 +55,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/SNAP/SNAPSH
       logical SNAPSH
       
-      character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
+      character outs*124,xfile*144,tg*1,delim*1
 
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
       CHARACTER*26 LABELS(17)
@@ -66,6 +67,8 @@ C Read in the geometry file to refresh surface attributes.
       idwins=0
 
 C Generate the labels for the interface and report.
+
+C << revise for additional casual gain types >>
       LABELS(1) =' Infiltration air load    '
       LABELS(2) =' Ventilation air load     '
       LABELS(3) =' N/A                      '

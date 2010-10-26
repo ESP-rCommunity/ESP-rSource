@@ -178,12 +178,13 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER outstr*124,outs*124,outs2*124,lodlabel*6
+      CHARACTER outstr*124,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
       logical havehi,dll
@@ -566,7 +567,10 @@ C Check if electrical data has also been saved.
         IF(IER.NE.0) goto 1002
  600  CONTINUE
 
-C Check to see if gain labels have been added to the end of the file
+C Check to see if gain labels have been added to the end of the file.
+
+C << This is hard-coded to 3 gain type labels. Revise code to check the
+C << number of items on the line and loop accordingly.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
       IF(ND.NE.3.OR.IERV.ne.0) THEN
         goto 1001
@@ -763,12 +767,13 @@ C =2 with more than 3 day types allowed and sorted
       common/p3verc/ip3verc
 
 C Descriptive label for a zone load or casual gain types.
+      character lodlabelc*6
       common/loadlabelc/lodlabelc(7)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124,lodlabelc*6
+      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124
       CHARACTER*(*) FILE
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248,outs2*124
       character dstmp*24,H*72
@@ -1001,7 +1006,10 @@ C Check if electrical data has also been saved.
    40   CONTINUE
   600 CONTINUE
 
-C Check to see if gain labels have been added to the end of the file
+C Check to see if gain labels have been added to the end of the file.
+
+C << Revise code to check number of items in the line and then loop
+C << acording to this.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
       IF(ND.NE.3.OR.IERV.ne.0) THEN
         goto 1001
@@ -1310,10 +1318,11 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character lodlabel*6,dstmp*24
+      character dstmp*24
       logical Vldtng
       
       IER=0
@@ -1441,6 +1450,9 @@ C Finally write the documentation for casual gains.
      &       ',',I2,',',F7.1,',',F7.1,',',I2)
 
 C Write out the type labels to the file for future reference
+
+C << revise to write out as many labels as are needed
+C << what tells us how many types?
       WRITE(IUO,'(a)')'# Labels for gain types '
       WRITE(IUO,'(3(1X,A6))',IOSTAT=IOS,ERR=1) 
      &  (lodlabel(icomp,I),I=1,3)
@@ -1678,10 +1690,11 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain types.
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
 
       CHARACTER outs*124
-      CHARACTER lodlabel*6,llbl*9
+      CHARACTER llbl*9
 
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')

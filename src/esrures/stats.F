@@ -2235,6 +2235,7 @@ C << file does not need to be scanned to get the surface emissivity.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -2254,7 +2255,7 @@ C =2 with more than 3 day types
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
-      character outs*124,lodlabel*6,act*1,prompt*124
+      character outs*124,act*1,prompt*124
       CHARACTER RSNAME*40,SLABEL*32,GLABEL*20
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)

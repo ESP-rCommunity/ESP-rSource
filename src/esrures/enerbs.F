@@ -158,15 +158,18 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
 
       DIMENSION IUSERD(MCOM,2)
 
       CHARACTER*18 LABELS(16)
       CHARACTER*9 TITLE1(16)
-      character outs*124,lodlabel*6
+      character outs*124
 
 C Initial labels using user defined labels if available.
+
+C << revise for additional casual gain types >>
       LABELS(1) =' Conductive flux  '
       LABELS(2) =' Convective flux  '
       LABELS(3) =' Longwave rad int '
@@ -272,14 +275,17 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
 
       DIMENSION IUSERD(MCOM,2)
 
       CHARACTER*18 LABELS(16)
-      character outs*124,lodlabel*6
+      character outs*124
 
 C Initial labels, 8-13 will be overwritten if user labels are available.
+
+C << revise for additional casual gain types >>
       LABELS(1)=' Conductive flux  '
       LABELS(2)=' Convective flux  '
       LABELS(3)=' Longwave rad int '

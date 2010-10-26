@@ -51,6 +51,7 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/C21/IFCFG,cfgroot,LCFGF
+      character lodlabel*6
       common/loadlabel/lodlabel(mcom,7)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -71,7 +72,6 @@ C Pre calculated data (filtered).
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
-      CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
       integer IOT  ! for radio button
@@ -176,6 +176,8 @@ C Assume default MET is equiv to 85W/m^2.
 
 C Set representative casual gain and then search all zones and build
 C up hash list of zone:time:occupancy.
+
+C << revise for additional casual gain types >>
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
         write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
@@ -374,6 +376,8 @@ C Air speed.
       elseif(ino.eq.8)then
 
 C Casual gain type.  Ask user which constitutes occupancy.
+
+C << revise for additional casual gain types >>
         call edisp(iuout,' ')
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
