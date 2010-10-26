@@ -543,7 +543,7 @@ C Write data to file.
         WRITE(IUNIT,'(f6.1,3f5.1,i3,A)',IOSTAT=ios,ERR=1)SETPT(ICOMP,N),
      &   SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),
      &   IOFFDT(ICOMP,N),' # Setpt, switch off lvl, min dim/el, delay'
-        WRITE(IUNIT,'(f5.1,2i3,A)',IOSTAT=ios,ERR=1) SYSPER(ICOMP,N),
+        WRITE(IUNIT,'(f5.2,2i3,A)',IOSTAT=ios,ERR=1) SYSPER(ICOMP,N),
      &   NDF(ICOMP,N),IDFST(ICOMP,N),
      &   ' # % casual, no of sensors, calc type' 
         IF(IDFST(ICOMP,N).EQ.5)THEN
@@ -598,6 +598,7 @@ C If daylight coefficient method write data.
           if (IDFST(ICOMP,N).EQ.5) then
             do 333 ISEN=1,NDF(ICOMP,N)
               JDC=IDCFID(ICOMP,N,ISEN)
+              if (JDC.le.0) JDC=1 ! bounds error check
               JST=NDCFS(JDC)
               write(IUNIT,'(2i3,a)') JDC,JST, 
      &               ' # Daylight coefficient No. & No. of stages '
