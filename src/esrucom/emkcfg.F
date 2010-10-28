@@ -633,7 +633,7 @@ C reflect whether the standard database folder is being used.
 
 C UK SBEM database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-C      IF(ISBEM.EQ.1)THEN
+C      IF(ISBEM.GE.1)THEN
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
@@ -869,7 +869,7 @@ C and used by various facilities.
 
 C If SBEM compliance checking is active write name of NCM file if
 C it is something other than UNKNOWN.
-      IF(ISBEM.EQ.1)THEN
+      IF(ISBEM.GE.1)THEN
         if(LASBEM(1:4).eq.'UNKN')then
           continue
         else

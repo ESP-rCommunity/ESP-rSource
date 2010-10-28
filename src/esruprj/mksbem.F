@@ -285,7 +285,7 @@ C Strip model of optional higher resolution
 
 C Dereference all files that are to be dereferenced and generate
 C stripped model. Define the simulation parameters for the run.
-      ISBEM=1
+      ISBEM=2    ! have description as well as SBEM db
       INOTI=4    ! mark explicitly as stripped model
       IYEAR=2008 ! match SBEM activities database version year
       H(1)='Assessment period choices allow you to do quick'
@@ -690,6 +690,7 @@ C For tdf to call arlist:
       integer ier,itrc,IAPROB,ISTAT,iw
       integer iuact  ! return state from sbmedit call
       integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
+      integer ivalue ! for editing integers
       CHARACTER*32 SURFOTF
       LOGICAL CLOSER
       CLOSER=.TRUE.
@@ -793,6 +794,8 @@ C Remember zone specific files
 
 C Read sbem db.
       call sbempr(ier)
+
+      ISBEM=2   ! signal that an NCM description will be available
 
 C Check if *.ncm file exists if it does then read.
       APE='_str  '
@@ -1500,23 +1503,7 @@ C control types
             CALL EASKABCD('Choose lighting control type for',
      &      zname(IZ)(1:lnzname(IZ)),
      &      'Local manual switching ','Photoelectric control',
-     &      'Both','Do not modify at this time',
-     &      Ilightcontrol(iz),2)
-
-C Ask for automatic daylight zoning for lighting controls
-            if(Ilightcontrol(iz).ne.4)then
-              IF(Idaylightzoning(iz).EQ.1)THEN
-                outs='Currently there is automatic daylight zoning'
-              ELSE
-                outs='Currently there is no automatic daylight zoning'
-              ENDIF
-              CALL EDISP(IUOUT,OUTS)
-              Idaylightzoning(iz)=0
-              CALL ASKOK(
-     &        'Is there automatic daylight zoning in zone',
-     &        zname(IZ)(1:lnzname(IZ)),OK,dok,2)
-              IF(OK)Idaylightzoning(iz)=1
-            endif
+     &      'Both','No control',Ilightcontrol(iz),2)
 
 C If photoelectric control then ask whether switching or dimming
             if(Ilightcontrol(iz).eq.2.or.Ilightcontrol(iz).eq.3)then
@@ -1528,6 +1515,7 @@ C If photoelectric control then ask whether switching or dimming
                 OUTS='Currently there is neither'
               endif
               call edisp(iuout,outs)
+
               Ipe_control(iz)=0
               CALL EASKAB('Type of photoelectric control in zone',
      &        zname(IZ)(1:lnzname(IZ)),
@@ -1537,18 +1525,44 @@ C If photoelectric control then ask whether switching or dimming
      &        zname(IZ)(1:lnzname(IZ)),
      &        'Standalone','Addresable',Ipe_sensor,2)
 
+C Confirm front sensor or front and back sensor.
+              h(1)='Photoelectric controls are based on one sensor at'
+              h(2)='the front of the room or front and back sensors '
+              h(3)='in the room. '
+              IF(Idaylightzoning(iz).EQ.1)THEN
+                outs='Currently there is a front of room sensor'
+              ELSEIF(Idaylightzoning(iz).EQ.2)THEN
+                outs='Currently there are front and back sensors'
+              ELSE
+                outs='Currently there is no sensor location defined'
+              ENDIF
+              CALL EDISP(IUOUT,OUTS)
+              Idaylightzoning(iz)=0   ! reset prior to edit
+              ivalue=0
+              CALL EASKABC('Choose lighting sensor location for',
+     &          zname(IZ)(1:lnzname(IZ)),
+     &          'Front of room','Front and back of room',
+     &          'continue',ivalue,3)
+              if(ivalue.eq.1.or.ivalue.eq.2)then
+                Idaylightzoning(iz)=ivalue
+              endif
+
 C Confirm photoelectric sensor parasitic power W/m2
-              write(outs,'(A,F5.3)')'Current parasitic power is ',
-     &        PE_sensor_PP(iz)
+              write(outs,'(A,F5.3,A)')'Current parasitic power is ',
+     &        PE_sensor_PP(iz),'W/m2.'
               call edisp(iuout,outs)
               IF(Ipe_sensor.EQ.1)THEN
                 PE_sensor_PP(iz)=0.3
               ELSEIF(Ipe_sensor.EQ.2)THEN
                 PE_sensor_PP(iz)=0.57
               ENDIF
+              h(1)='If you selected a standalone sensor then parasitic'
+              h(2)='power is assumed to be 0.3W/m2. If the sensor is '
+              h(3)='addressable (advanced) the PP is assumed to be 0.57'
+              h(4)='W/m2. If you have other data please supply it now. '
               CALL EASKR(PE_sensor_PP(iz),
      &        'Confirm photo-electric sensor parasitic power',
-     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,4)
             endif
 
 C Ask for occupancy sensing
@@ -1557,9 +1571,9 @@ C Ask for occupancy sensing
             CALL EDISP(IUOUT,
      &      'automatic sweeping extinction signal. The other options')
             CALL EDISP(IUOUT,
-     &      'are assumed to be clear.')
+     &      'are explained in the context help message.')
             IF(IOcc_sensing(iz).EQ.1)THEN
-              OUTS='Currently MAN-ON-OFF+EXT'
+              OUTS='Currently MAN-ON-OFF+EXTinction signal'
             ELSEIF(IOcc_sensing(iz).EQ.2)THEN
               OUTS='Currently AUTO-ON-DIMMED'
             ELSEIF(IOcc_sensing(iz).EQ.3)THEN
@@ -1572,11 +1586,30 @@ C Ask for occupancy sensing
               OUTS='Currently NONE'
             ENDIF
             CALL EDISP(IUOUT,OUTS)
+            h(1)='This is equivalent to the choices offered by the UK'
+            h(2)='iSBEM application which is minimally documented in'
+            h(3)='the UK SBEM technical manual table 20. Your choice'
+            h(4)='will set an occupancy modifier which is used in '
+            h(5)='the control.  '
+            h(6)=' '
+            h(7)='For systems without automatic presence or absence '
+            h(8)='detection the following options are allowed: '
+            h(9) =' Manual on/off switching  Foc=1.0 '
+            h(10)=' Manual on/off switching with additional automatic'
+            h(11)='   sweeping extinction signal  Foc=0.95'
+            h(12)=' '
+            h(13)='For systems with automatic presence and/or abscence'
+            h(14)='detection the following options are allowed: '
+            h(15)=' '
+            h(16)=' Auto On with dimming on absence   Foc=0.95'
+            h(17)=' Auto On with off on absence       Foc=0.90'
+            h(18)=' Manual On with dimming on absence Foc=0.90'
+            h(19)=' Manual On with off on absence     Foc=0.82'
             CALL EASKATOG(
      &      'Is there occupancy sensing in zone',
      &      zname(iz)(1:lnzname(IZ)),'MAN-ON-OFF+EXT','AUTO-ON-DIMMED',
      &      'AUTO-ON-OFF','MAN-ON-DIMMED','MAN-ON-AUTO-OFF','NONE',
-     &      ' ',IOcc_sensing(iz),2)
+     &      ' ',IOcc_sensing(iz),19)
 
 C Confirm occupancy sensor parasitic power W/m2
             if(IOcc_sensing(iz).ne.6)then
@@ -3827,7 +3860,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Proceed with setting up the stripped model. 
 C First get ground temperatures at depth Z
-      ZD=1.0
+      ZD=2.0
       CALL GTCALC(ZD,'s',IER)
 
 C Assume that geometry files are version 1.1. If not exit with ier set to 2.
@@ -3927,7 +3960,7 @@ C yet made that it is hourly and full year.
           write(6,*) 'error during supplyandcheck'
         endif
       endif
-      if(ISBEM.EQ.1)THEN
+      if(ISBEM.EQ.2)THEN
         icountnotequal=0
         DO 623 IZ=1,NCOMP
           iactiv_tdf_item(IZ)=0
@@ -4105,6 +4138,13 @@ C Write configuration file for stripped file (filename.ctl is
 C saved to filename_str.ctl)
         call edisp(iuout,'Generating stripped model configuration.')
         LCFGF=LCFGF_S
+
+C Variant connections file also required set up its name and
+C then use emkcfg to create it.
+        APE='_str'
+        EXT='.cnn'
+        CALL FNCNGR(LCNN,APE,EXT,NNAME)
+        LCNN=NNAME
         CALL EMKCFG('-',IER)
 
 C Write out the temporal header as well as hourly data for the
@@ -4504,7 +4544,7 @@ C Initialise variables
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
-      IF(ISBEM.NE.1)THEN
+      IF(ISBEM.NE.2)THEN
         H(1) = 'You have not defined NCM details about the building. '
         H(2) = 'These can be defined by choosing model context in the '
         H(3) = 'browse / edit / simulate menu and then choosing  '
@@ -4917,7 +4957,9 @@ C First put pedestrian door in
  7212         CONTINUE
               JVN(IS,NVER(IS)+1)=JVN(IS,1)
               JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-              NTV=NTV+NVER(IS)
+              NTV=NTV+NVER(IS) ! increment nb verts
+              NZTV(ICOMP)=NTV  ! update the zone array
+              NZSUR(ICOMP)=NSUR
               NVER(ISUR2)=NVER(IS)
               NVER(IS)=2*NVER(IS)+2
 
@@ -4998,6 +5040,8 @@ C Now put vehicle door in
               JVN(IS,NVER(IS)+1)=JVN(IS,1)
               JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
               NTV=NTV+NVER(IS)
+              NZTV(ICOMP)=NTV
+              NZSUR(ICOMP)=NSUR
               NVER(ISUR2)=NVER(IS)
               NVER(IS)=2*NVER(IS)+2
 
@@ -5076,7 +5120,9 @@ C Now put display glazing in
  7412         CONTINUE
               JVN(IS,NVER(IS)+1)=JVN(IS,1)
               JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-              NTV=NTV+NVER(IS)
+              NTV=NTV+NVER(IS)  ! increment nb of verts
+              NZTV(ICOMP)=NTV   ! update zone array
+              NZSUR(ICOMP)=NSUR
               NVER(ISUR2)=NVER(IS)
               NVER(IS)=2*NVER(IS)+2
 
@@ -5155,7 +5201,9 @@ C Now put glazing and frame
  7512         CONTINUE
               JVN(IS,NVER(IS)+1)=JVN(IS,1)
               JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-              NTV=NTV+NVER(IS)
+              NTV=NTV+NVER(IS)  ! increment nb of verts
+              NZTV(ICOMP)=NTV   ! update zone array
+              NZSUR(ICOMP)=NSUR
               NVER(ISUR2)=NVER(IS)
               NVER(IS)=2*NVER(IS)+2
 
@@ -5224,7 +5272,9 @@ C Now put frame
  7612         CONTINUE
               JVN(IS,NVER(IS)+1)=JVN(IS,1)
               JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
-              NTV=NTV+NVER(IS)
+              NTV=NTV+NVER(IS)  ! increment nb verts
+              NZTV(ICOMP)=NTV   ! update zone array
+              NZSUR(ICOMP)=NSUR
               NVER(ISUR2)=NVER(IS)
               NVER(IS)=2*NVER(IS)+2
 
@@ -7694,7 +7744,7 @@ C were scanned.
       MODE='ALL '
       ITRC=4 ! To skip warning message about notional model
       CALL ERSYS(LCFGF_N,IFCFG,IAPROB,MODE,itrc,IER)
-      build_UAN=0.0
+      build_UAN=0.0    ! for notional
       do 131 iz=1, ncomp
         build_UAN=uavtotal(iz)+build_UAN
  131  continue
@@ -7710,7 +7760,7 @@ C build_UA and b_totheatloss are building's UA values and heat loss coefficient
 C values due to thermal bridges in W/K
 C If users do not enter the thermal bridges menu the uavtotal will be 0 and
 C the overall build_UA will be less than usual
-      build_UA=0.0
+      build_UA=0.0    ! for other than notional
       b_totheatloss=0.0
       tot_floor_area=0.0
       do 31 iz=1, ncomp
@@ -8235,10 +8285,9 @@ C coefficient through all external/exposed envelopes"
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
-C due to thermal bridges out of the overall heat loss from the envelope
-C If users do not enter the thermal bridges menu the uavtotal will be 0 and
-C the overall build_UA will be less than usual and therefore b_alpha will be
-C greater than usual.
+C due to thermal bridges out of the overall heat loss from the envelope. build_UA
+C was made up from sum of uavtotal and b_totheatloss is the sum of thermal bridge 
+C psi and lengths.
       call eclose(build_UA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         b_alpha=(b_totheatloss/build_UA)*100.0
@@ -8494,18 +8543,11 @@ C BRUKL manual
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
-C due to thermal bridges out of the overall heat loss from the envelope
-C If users do not enter the thermal bridges menu the uavtotal will be 0 and
-C the overall build_UA will be less than usual and therefore b_alpha will be
-C greater than usual.
-C Thermal bridges are always 10% for notional building
-      call eclose(build_UAN,0.0,0.0001,ISNEAR)
-      if(.not.ISNEAR)then
-        b_alpha=(b_totheatloss/build_UAN)*100.0
-      else
-        b_alpha=0.0
-      endif
-      WRITE(IUF,'(a,f6.2)',iostat=ios)
+C due to thermal bridges out of the overall heat loss from the envelope.
+C Thermal bridges are always 10% for notional building so b_alpha is
+C always 10%.
+      b_alpha=10.0
+      WRITE(IUF,'(a,f6.2)',iostat=ios)   
      &  '  BUILDING-ALPHA             = ',b_alpha
 
 C Calculate loads for heating, cooling, DHW etc.
@@ -12578,16 +12620,13 @@ C coefficient through all external/exposed envelopes"
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
-C due to thermal bridges out of the overall heat loss from the envelope
-C If users do not enter the thermal bridges menu the uavtotal will be 0 and
-C the overall build_UA will be less than usual and therefore b_alpha will be
-C greater than usual.
-      call eclose(build_UA,0.0,0.0001,ISNEAR)
-      if(.not.ISNEAR)then
-        b_alpha=(b_totheatloss/build_UA)*100.0
-      else
+C due to thermal bridges out of the overall heat loss from the envelope.
+      call eclose(build_UA,0.0,0.001,ISNEAR)
+      if(ISNEAR)then      
         b_alpha=0.0
-      endif
+      else
+        b_alpha=(b_totheatloss/build_UA)*100.0
+      endif      
       WRITE(IUF,'(a,f6.2)',iostat=ios)
      &  '  BUILDING-ALPHA            = ',b_alpha
 
@@ -12818,17 +12857,9 @@ C BRUKL manual
 
 
 C Using info from common of thermal bridges to find the percentage of heat loss
-C due to thermal bridges out of the overall heat loss from the envelope
-C If users do not enter the thermal bridges menu the uavtotal will be 0 and
-C the overall build_UAN will be less than usual and therefore b_alpha will be
-C greater than usual.
+C due to thermal bridges out of the overall heat loss from the envelope.
 C Thermal bridges are always 10% for notional building
-      call eclose(build_UAN,0.0,0.0001,ISNEAR)
-      if(.not.ISNEAR)then
-        b_alpha=(b_totheatloss/build_UAN)*100.0
-      else
-        b_alpha=0.0
-      endif
+      b_alpha=10.0
       WRITE(IUF,'(a,f6.2)',iostat=ios)
      &  '  BUILDING-ALPHA             = ',b_alpha
 
@@ -13885,23 +13916,21 @@ C Subroutine GTCALC scans the climate file associated with the model and
 C writes out a ground temperature profile based on dry bulb temperature.
 C After calling this subroutine the cfg file should be saved in order to
 C make sure this information is written to file.
-C Refernces:
-C Ref 1: Marshall and Holmes 1988, Soil Physics, 2nd Ed. Cambridge 
-C        University Press, New York
-C Ref 2: Ground temperature estimations using simplified analytical
-C        and semi-empirical approaches. F. Droulia, S. Lykoudis, I. 
-C        Tsiros, N. Alvertos, E. Akylas, I. Garofalakis. 
-C        Solar Energy 83 (2009) 211-219
-C Ref 3: Soil Temperature Changes with Time and Depth. 
-C        Theory D. L. Nofziger
-      subroutine GTCALC(Z,act,IER)
+
+C Algorithm follows that in EPW calculation with references given as:
+C 1. T. Kusuda, "Earth Temperatures Beneath Five Different Surfaces"
+C    Institute for Applied Technology, NBS Report 10-373, 1971, NBS, Washington DC 20234.
+C 2. T. Kusuda, Least Squares Technique for the Analysis of Periodic Temperature of the Earth's Surface Region, 
+C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
+
+      subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
 #include "esprdbfile.h"
 #include "site.h"
 
 C Passed parameters.
-      real Z           ! Depth at which temperature required
+      real ZD           ! Depth at which temperature required
       character act*1  ! '-' to report, 's' sbem mode
       integer ier      ! non-zero is an error
 
@@ -13912,58 +13941,55 @@ C Passed parameters.
       INTEGER iExtLgRadFlag
       REAL eGrdTp
 
-      DIMENSION ICLM(24,6),ttemp(12)
+      integer ICLM(24,6)
       real T_max,T_min,T_avg ! Max, min and average annual air temperature
-      real ttemp ! monthly average air temperature from climate file
+      real tTEMP(12) ! monthly average air temperature from climate file
       real TEMP
       real T_amp       ! annual amplitude of air temperature
-      real DDepth      ! damping depth
-      real T_day(365)  ! average daily ground temperature
       real T_mnt(12)   ! average monthly ground temperature
-      real omega       ! frequency of temperature fluctuation
       real pi
       real D_therm     ! Thermal diffusivity of soil calculated as
                        ! conductivity/(density*specific heat) with time
                        ! converted according to frequency of calculation
-      real ZbyD
+      real YearHours   ! Hours in year (assuming not a leap year)
+      real PhaseLag, X, Beta, GM, Phi 
+      real Theta       ! Hour number of the 15th day of the month
+      integer II,I,irec,istat,j,k
+      integer I_coldmonth  !Month of the year with coldest average temperature
 
-      integer ID,II,ICLM,I,irec,istat,j,k
-      integer idebug
-      logical unixok
+      REAL MidMonthDay(12)
+      DATA MidMonthDay/
+     &   15.,46.,74.,95.,135.,166.,196.,227.,258.,288.,319.,349./
 
       iclim=IFIL
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.ne.0)return
 
 C Initialise
-      idebug=0
       DO 50 I=1,12
         TTEMP(I)=0.0
         T_mnt(I)=0.0
  50   CONTINUE
-      do 51 i=1,365
-        t_day(i)=0.0
- 51   continue
       T_max=-100.
       T_min=100.
       T_avg=0.0
       T_amp=0.0
       temp=0.0
-      ID=0
-      pi=3.14159
-      DDepth=0.
-      omega=0.0
-C      D_therm=0.0000005*3600.*24.
-      D_therm=0.0023*24.   ! as used by EnergyPlus
+      pi=4.0*ATAN(1.0)
+
+C Set ground diffusivity - could be made user modifiable in future.
+C As assumed in EPW (m2/day) - seems very low.
+      D_therm=2.3225760E-03   
+      YearHours=8760.0
+
       if(act(1:1).eq.'-')then
         continue
       else
         NGRDP=1  ! NCM methods need one NGRDP
       endif
 
-C Calculate average monthly air temperature from climate file
+C Calculate average monthly air temperature from climate file.
       DO 55 I=1,365
-        ID=ID+1
         II=I
         IREC=II
         READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=103)((ICLM(J,K),K=1,6),
@@ -13971,79 +13997,66 @@ C Calculate average monthly air temperature from climate file
         DO 656 J=1,24
           TEMP=REAL(ICLM(J,2))/10.
           IF(I.LE.31)THEN
-            tTEMP(1)=ttemp(1)+TEMP/(31.*24.)
+            tTEMP(1)=tTEMP(1)+TEMP/(31.*24.)
           ELSEIF(I.LE.59)THEN
-            tTEMP(2)=ttemp(2)+TEMP/(28.*24.)
+            tTEMP(2)=tTEMP(2)+TEMP/(28.*24.)
           ELSEIF(I.LE.90)THEN
-            tTEMP(3)=ttemp(3)+TEMP/(31.*24.)
+            tTEMP(3)=tTEMP(3)+TEMP/(31.*24.)
           ELSEIF(I.LE.120)THEN
-            tTEMP(4)=ttemp(4)+TEMP/(30.*24.)
+            tTEMP(4)=tTEMP(4)+TEMP/(30.*24.)
           ELSEIF(I.LE.151)THEN
-            tTEMP(5)=ttemp(5)+TEMP/(31.*24.)
+            tTEMP(5)=tTEMP(5)+TEMP/(31.*24.)
           ELSEIF(I.LE.181)THEN
-            tTEMP(6)=ttemp(6)+TEMP/(30.*24.)
+            tTEMP(6)=tTEMP(6)+TEMP/(30.*24.)
           ELSEIF(I.LE.212)THEN
-            tTEMP(7)=ttemp(7)+TEMP/(31.*24.)
+            tTEMP(7)=tTEMP(7)+TEMP/(31.*24.)
           ELSEIF(I.LE.243)THEN
-            tTEMP(8)=ttemp(8)+TEMP/(31.*24.)
+            tTEMP(8)=tTEMP(8)+TEMP/(31.*24.)
           ELSEIF(I.LE.273)THEN
-            tTEMP(9)=ttemp(9)+TEMP/(30.*24.)
+            tTEMP(9)=tTEMP(9)+TEMP/(30.*24.)
           ELSEIF(I.LE.304)THEN
-            tTEMP(10)=ttemp(10)+TEMP/(31.*24.)
+            tTEMP(10)=tTEMP(10)+TEMP/(31.*24.)
           ELSEIF(I.LE.334)THEN
-            tTEMP(11)=ttemp(11)+TEMP/(30.*24.)
+            tTEMP(11)=tTEMP(11)+TEMP/(30.*24.)
           ELSEIF(I.LE.365)THEN
-            tTEMP(12)=ttemp(12)+TEMP/(31.*24.)
+            tTEMP(12)=tTEMP(12)+TEMP/(31.*24.)
           ENDIF
           T_avg=T_avg+TEMP/(24.*365.)
-
-C Do not use daily averages to calculate temperature amplitude
-c          T_max=max(T_max,TEMP)
-c          T_min=min(T_min,TEMP)
   656   CONTINUE
    55 CONTINUE
 
-C Calculate maximum and minimum tempreatures
+C Calculate maximum and minimum monthly temperatures.
+      T_max=tTEMP(1)
+      T_min=tTEMP(1)
+      I_coldmonth=1
       do 52 k=1,12
-        T_max=max(T_max,ttemp(k))
-        T_min=min(T_min,ttemp(k))
+        T_max=max(T_max,tTEMP(k))
+        if(tTEMP(k).lt.T_min) I_coldmonth=k
+        T_min=min(T_min,tTEMP(k))
  52   continue
       CALL ERPFREE(ICLIM,ISTAT)
 
-C Calculate daily ground temperature
-      T_amp=(T_max-T_min)/2.
-      omega=2.*pi/365.
-      DDepth=sqrt(2.*D_therm/omega)
-      ZbyD=-1.*Z/DDepth
-      DO 200 I=1,365
-        T_day(I)=T_avg+T_amp*exp(ZbyD)*sin(omega*real(I)+ZbyD-pi/2.)
-	IF(I.LE.31)THEN
-	  T_mnt(1)=T_mnt(1)+T_day(I)/31.
-	ELSEIF(I.LE.59)THEN
-	  T_mnt(2)=T_mnt(2)+T_day(I)/28.
-	ELSEIF(I.LE.90)THEN
-	  T_mnt(3)=T_mnt(3)+T_day(I)/31.
-	ELSEIF(I.LE.120)THEN
-	  T_mnt(4)=T_mnt(4)+T_day(I)/30.
-	ELSEIF(I.LE.151)THEN
-	  T_mnt(5)=T_mnt(5)+T_day(I)/31.
-	ELSEIF(I.LE.181)THEN
-	  T_mnt(6)=T_mnt(6)+T_day(I)/30.
-	ELSEIF(I.LE.212)THEN
-	  T_mnt(7)=T_mnt(7)+T_day(I)/31.
-	ELSEIF(I.LE.243)THEN
-	  T_mnt(8)=T_mnt(8)+T_day(I)/31.
-	ELSEIF(I.LE.273)THEN
-	  T_mnt(9)=T_mnt(9)+T_day(I)/30.
-	ELSEIF(I.LE.304)THEN
-	  T_mnt(10)=T_mnt(10)+T_day(I)/31.
-	ELSEIF(I.LE.334)THEN
-	  T_mnt(11)=T_mnt(11)+T_day(I)/30.
-	ELSEIF(I.LE.365)THEN
-	  T_mnt(12)=T_mnt(12)+T_day(I)/31.
-	ENDIF
- 200  CONTINUE
+C Calculate monthly ground temperature.
 
+C First get the monthly amplitude swing.
+      T_amp=(T_max-T_min)/2.
+
+C Calculate phase lag from start of year to month with lowest air temperature.
+C Offset is 0.60 for locations where this month is January.
+      PhaseLag=MidMonthDay(I_coldmonth)*0.017214 + 0.341787
+
+      Beta=sqrt(pi/(D_therm*YearHours))*ZD
+      X=exp(-Beta)
+      GM=sqrt((X**2 -2.*X*cos(Beta) + 1.0) / (2.*Beta**2))
+      Phi=ATAN((1.0-X*(cos(Beta)+sin(Beta))) 
+     &        / (1.0-X*(cos(Beta)-sin(Beta))))
+
+      DO 200 k=1,12
+        Theta=MidMonthDay(k)*24.0
+        T_mnt(k)=T_avg - T_amp
+     &           *cos(Theta*2.0*pi/YearHours - PhaseLag - Phi)*GM
+ 200  CONTINUE
+      
 C Write to common depending on which mode it was called with.
       DO 27 I=1,12
         if(act(1:1).eq.'-')then
@@ -14053,16 +14066,5 @@ C Write to common depending on which mode it was called with.
         endif
   27  CONTINUE
 
-C Debug
-      if(idebug.eq.1)then
-        call isunix(unixok)
-        if(unixok)then
-          write(6,*)ttemp
-          write(6,*)' '
-          write(6,*)t_avg,t_max,t_min,t_amp
-          write(6,*)' '
-          write(6,*)t_mnt
-        endif
-      endif
  103  return
       end

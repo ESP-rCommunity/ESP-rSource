@@ -231,7 +231,7 @@ C Monthly heating and cooling demands.
   42  continue
 
 C DHW calculations for UK NCM data
-      if(ISBEM.EQ.1)then
+      if(ISBEM.EQ.2)then
 
 C NCM method assumes that DT (temper. difference) is always 50oC for
 C Domestic hot water. See SBEM Technical manual for additional info.
