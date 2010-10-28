@@ -208,13 +208,14 @@ C     HVAC equipment)
       INTEGER occupant_load 
       PARAMETER (occupant_load = 3)
 
-C.....Named constnats for timerows
+C.....Named constants for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
       logical closer
+      doubleprecision checkNAN
 
 C Trace output ?
       traceok = .true.
@@ -463,14 +464,17 @@ C Initialise
           FDF1=1. ; FDR1=1. ; FDF2=1. ; DFR2=1. ; FO=1. ; FD=1.
 
 C Get external illuminance E_ext
-          CALL MZSINT(ICOMP,QDIR,QDIF)
-          call REFILL(QDIF,QDIR,SALT,SAZI,IDYf,E_ext)
+          IF(ISUNUP.NE.0)THEN
+            CALL MZSINT(ICOMP,QDIR,QDIF)
+            call REFILL(QDIF,QDIR,SALT,SAZI,IDYf,E_ext)
 
 C Check the value of E_ext as NAN can be returned for first few
 C timesteps. In such a case set external illuminance to 0.0
-          if(E_ext.ne.E_ext)then
+            checkNAN=E_ext
+            if(checkNAN.ne.checkNAN)E_ext=0.0
+          ELSE
             E_ext=0.0
-          endif
+          ENDIF
           E_design=lighting_lux(theactivityindex(ICOMP))
 
 C Manual switching

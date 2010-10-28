@@ -293,9 +293,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
 #include "model.h"
-
-C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
       
       integer lnblnk  ! function definition
 

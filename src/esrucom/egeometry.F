@@ -597,7 +597,30 @@ C Interpret positional portion of the string.
 
 C Interpret the construction name.
         write(SMLCN(ISN),'(a)') loutstr(32:43)
-        if(havec24) write(SSMLCN(icn),'(a)') loutstr(32:43)
+
+C Check if there is a matching MLC name and which one it is.
+        ICF=-1
+        if(NMLC.gt.0)then                
+          lstr=lnblnk(SMLCN(ISN))
+          DO 20 IC=1,NMLC
+            if(lstr.lt.12)then
+              IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
+            else
+              IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
+            endif
+  20      CONTINUE
+        endif
+        if(havec24)then
+          write(SSMLCN(icn),'(a)') loutstr(32:43)
+          if(ICF.gt.0)then
+            ssthick(icn)=THKMLC(icf)
+
+C Debug.
+C            write(outs,'(a,2i3,f7.3)') 'set thick of ',icf,icn,
+C     &        ssthick(icn)
+C            call edisp(iuout,outs)
+          endif
+        endif
 
 C Now that we know the construction try and work out the optics.
         write(tmpsot,'(a)') loutstr(20:23)
@@ -610,22 +633,10 @@ C Now that we know the construction try and work out the optics.
         elseif(tmpsot(1:4).ne.'OPAQ'.and.tmpsot(1:4).ne.'CFC ')then
 
 C We need to find the name of the optical set for the construction.
-C If the construction database has been scanned then attempt to discover
+C If there is a matching MLC entry attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
           if(NMLC.gt.0)then                
-            ICF=-1
-            lstr=lnblnk(SMLCN(ISN))
-            DO 20 IC=1,NMLC
-              if(lstr.lt.12)then
-                IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
-              else
-                IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
-              endif
-  20        CONTINUE
-
-C Use logic similar to parsemlcdesc to find the optical name.
             if(ICF.gt.0)then
-            
               OPT=' '
               WRITE(OTF,'(A)') DESC(ICF)(15:18)
               IF(OTF.EQ.' ')OTF='OPAQ'
@@ -635,6 +646,7 @@ C Use logic similar to parsemlcdesc to find the optical name.
               ELSE
                 OPT='OPAQUE'
               ENDIF
+
             else
 
 C No matching database record. Use if file specifies 'TRAN', use that.
@@ -1685,7 +1697,31 @@ C Surface usage - two tokens.
 C Surface construction name, allow for spaces.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface construction',IER)
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
-            if(havec24) write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
+
+C Check if there is a matching MLC name find out which one it is.
+            ICF=-1
+            if(NMLC.gt.0)then                
+              lstr=lnblnk(SMLCN(NS))
+              DO 20 IC=1,NMLC
+                if(lstr.lt.12)then
+                  IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
+                else
+                  IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
+                endif
+  20          CONTINUE
+            endif
+
+            if(havec24)then
+              write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
+              if(ICF.gt.0)then
+                ssthick(icn)=THKMLC(icf)
+
+C Debug.
+C                write(outs,'(a,2i3,f7.2)') 'set thick of ',icf,icn,
+C     &            ssthick(icn)
+C                call edisp(iuout,outs)
+              endif
+            endif
 
 C Surface optics set name or OPAQ/TRAN, allow for spaces.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface optics',IER)
@@ -1702,15 +1738,6 @@ C matches then name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
-                ICF=-1
-                lstr=lnblnk(SMLCN(NS))
-                DO 20 IC=1,NMLC
-                  if(lstr.lt.12)then
-                    IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
-                  else
-                    IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
-                  endif
-  20            CONTINUE
 
 C Use logic similar to parsemlcdesc to find the optical name within
 C the constructions database.

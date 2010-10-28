@@ -212,6 +212,7 @@ C MMGFUN controls all UK NCM related tasks
       integer ier,iier,itrc,IAPROB,iecmoption,lns,iw,IYEAR_O
       integer iuact  ! return state from sbmedit call
       integer IROOTLEN ! length of cfgroot
+      INTEGER NGRDP_O
       character EXT*4,APE*6,MODE*4
       character LASBEM_O*72  ! to re-establish the ncm file name
       CHARACTER*72 LCNN_O
@@ -358,17 +359,18 @@ C Dereference optional higher resolution information
       ITDFLG=0                          ! temporal data file
       LIPVDATF='UNKNOWN'                ! IPV data
       nipvassmt=0                       ! IPV data
-      NGRDP=0                           ! ground information
       GRND3D=.FALSE.                    ! 3D ground information
       GTGEOM='UNKNOWN'                  ! ground topology
       NALOC=0                           ! anchor
       INDCFG=1                          ! Building only model
       IAIRN=0                           ! disconnect any air flow network
+      iExtLgRadFlag=0                   ! external longwave radiation flag
 
 C Define ground temperature flag to be 1 in order to include ground
 C temperatures defined from climate file.
 C Uncomment following line when ground temperature averaging is complete
-c      iExtLgRadFlag=1                   ! external longwave radiation flag
+      NGRDP_O=NGRDP
+      NGRDP=0                           ! ground information
 
 C Check if the model is sufficiently attributed for NCM purposes.
       call okforncm('w',ier)
@@ -612,6 +614,7 @@ C Generate EPC information
 C Clear the commons, restore file names and reload the original model
 C before returning.
         call clrprb
+        NGRDP=NGRDP_O
         LCFGF   = LCFGF_O
         CFGROOT = CFGROOT_O
         LCNN    = LCNN_O
@@ -3732,6 +3735,7 @@ C required models ') which returned iuact=1.
       common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3808,6 +3812,7 @@ C For tdf to call arlist:
       REAL COLUMNWRITE
       integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
       REAL val_converted
+      real zd  ! depth
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3820,8 +3825,9 @@ C Set folder separator (fs) to \ or / as required.
       cfgroot=cfgroot_s  ! set to stripped
 
 C Proceed with setting up the stripped model. 
-C First get ground temperatures
-      CALL GTCALC(IER)
+C First get ground temperatures at depth Z
+      ZD=1.0
+      CALL GTCALC(ZD,'s',IER)
 
 C Assume that geometry files are version 1.1. If not exit with ier set to 2.
       APE='_str  '
@@ -3848,6 +3854,15 @@ C surface also knowns its children
 C For each surface in this zone
         DO 552 ISUR=1,NZSUR(ICOMP)
           ICN=IZSTOCN(ICOMP,ISUR)
+
+C If surface is ground then specify ground temperature profile as
+C calculated in GTCALC
+          IF(SSOTHER(ICN,1)(1:8).EQ.'GROUND')THEN
+            SSOTHER(ICN,2)='00'
+            SSOTHER(ICN,3)='01'
+            IC2(ICN)=0
+            IE2(ICN)=1
+          ENDIF
 
 C If surface is exterior then check if use is specified if not then ask
           IF(SSOTHER(ICN,1)(1:8).EQ.'EXTERIOR')THEN
@@ -7825,7 +7840,7 @@ c      EXP_COND=0.   ! External envelope conductance W/K
 C Recover the ISO 6946 U values as in prjqa.F.
             do 7511 ii=1,nmlc
               if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))then
-                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
+                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
               endif
  7511       continue
             TMPSTR2=SSUSE(ICC,1)
@@ -13867,25 +13882,82 @@ C Subroutine GTCALC scans the climate file associated with the model and
 C writes out a ground temperature profile based on dry bulb temperature.
 C After calling this subroutine the cfg file should be saved in order to
 C make sure this information is written to file.
-      subroutine GTCALC(IER)
+C Refernces:
+C Ref 1: Marshall and Holmes 1988, Soil Physics, 2nd Ed. Cambridge 
+C        University Press, New York
+C Ref 2: Ground temperature estimations using simplified analytical
+C        and semi-empirical approaches. F. Droulia, S. Lykoudis, I. 
+C        Tsiros, N. Alvertos, E. Akylas, I. Garofalakis. 
+C        Solar Energy 83 (2009) 211-219
+C Ref 3: Soil Temperature Changes with Time and Depth. 
+C        Theory D. L. Nofziger
+      subroutine GTCALC(Z,act,IER)
+      implicit none
 #include "building.h"
 #include "esprdbfile.h"
+#include "site.h"
+
+C Passed parameters.
+      real Z           ! Depth at which temperature required
+      character act*1  ! '-' to report, 's' sbem mode
+      integer ier      ! non-zero is an error
 
       common/FILEP/IFIL
-      integer ifil      
+      integer ifil   
+
+      COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
+      INTEGER iExtLgRadFlag
+      REAL eGrdTp
+
       DIMENSION ICLM(24,6),ttemp(12)
+      real T_max,T_min,T_avg ! Max, min and average annual air temperature
+      real ttemp ! monthly average air temperature from climate file
+      real TEMP
+      real T_amp       ! annual amplitude of air temperature
+      real DDepth      ! damping depth
+      real T_day(365)  ! average daily ground temperature
+      real T_mnt(12)   ! average monthly ground temperature
+      real omega       ! frequency of temperature fluctuation
+      real pi
+      real D_therm     ! Thermal diffusivity of soil calculated as
+                       ! conductivity/(density*specific heat) with time
+                       ! converted according to frequency of calculation
+      real ZbyD
+
+      integer ID,II,ICLM,I,irec,istat,j,k
+      integer idebug
 
       iclim=IFIL
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.ne.0)return
 
 C Initialise
+      idebug=0
       DO 50 I=1,12
         TTEMP(I)=0.0
+        T_mnt(I)=0.0
  50   CONTINUE
-      T_max=0.
-      T_min=0.
+      do 51 i=1,365
+        t_day(i)=0.0
+ 51   continue
+      T_max=-100.
+      T_min=100.
+      T_avg=0.0
+      T_amp=0.0
+      temp=0.0
+      ID=0
+      pi=3.14159
+      DDepth=0.
+      omega=0.0
+C      D_therm=0.0000005*3600.*24.
+      D_therm=0.0023*24.   ! as used by EnergyPlus
+      if(act(1:1).eq.'-')then
+        continue
+      else
+        NGRDP=1  ! NCM methods need one NGRDP
+      endif
 
+C Calculate average monthly air temperature from climate file
       DO 55 I=1,365
         ID=ID+1
         II=I
@@ -13919,17 +13991,72 @@ C Initialise
           ELSEIF(I.LE.365)THEN
             tTEMP(12)=ttemp(12)+TEMP/(31.*24.)
           ENDIF
-          t_avg=t_avg+TEMP/(24.*365.)
-          T_max=max(T_max,TEMP)
-          T_min=min(T_min,TEMP)
+          T_avg=T_avg+TEMP/(24.*365.)
+
+C Do not use daily averages to calculate temperature amplitude
+c          T_max=max(T_max,TEMP)
+c          T_min=min(T_min,TEMP)
   656   CONTINUE
    55 CONTINUE
-c       write(6,*)'ttemp',ttemp,t_avg,t_max,t_min
+
+C Calculate maximum and minimum tempreatures
+      do 52 k=1,12
+        T_max=max(T_max,ttemp(k))
+        T_min=min(T_min,ttemp(k))
+ 52   continue
       call epagend
       CALL ERPFREE(ICLIM,ISTAT)
 
-C Get average soil temperature
-      T_avg=T_avg/365.
- 103  continue
-      return
+C Calculate daily ground temperature
+      T_amp=(T_max-T_min)/2.
+      omega=2.*pi/365.
+      DDepth=sqrt(2.*D_therm/omega)
+      ZbyD=-1.*Z/DDepth
+      DO 200 I=1,365
+        T_day(I)=T_avg+T_amp*exp(ZbyD)*sin(omega*real(I)+ZbyD-pi/2.)
+	IF(I.LE.31)THEN
+	  T_mnt(1)=T_mnt(1)+T_day(I)/31.
+	ELSEIF(I.LE.59)THEN
+	  T_mnt(2)=T_mnt(2)+T_day(I)/28.
+	ELSEIF(I.LE.90)THEN
+	  T_mnt(3)=T_mnt(3)+T_day(I)/31.
+	ELSEIF(I.LE.120)THEN
+	  T_mnt(4)=T_mnt(4)+T_day(I)/30.
+	ELSEIF(I.LE.151)THEN
+	  T_mnt(5)=T_mnt(5)+T_day(I)/31.
+	ELSEIF(I.LE.181)THEN
+	  T_mnt(6)=T_mnt(6)+T_day(I)/30.
+	ELSEIF(I.LE.212)THEN
+	  T_mnt(7)=T_mnt(7)+T_day(I)/31.
+	ELSEIF(I.LE.243)THEN
+	  T_mnt(8)=T_mnt(8)+T_day(I)/31.
+	ELSEIF(I.LE.273)THEN
+	  T_mnt(9)=T_mnt(9)+T_day(I)/30.
+	ELSEIF(I.LE.304)THEN
+	  T_mnt(10)=T_mnt(10)+T_day(I)/31.
+	ELSEIF(I.LE.334)THEN
+	  T_mnt(11)=T_mnt(11)+T_day(I)/30.
+	ELSEIF(I.LE.365)THEN
+	  T_mnt(12)=T_mnt(12)+T_day(I)/31.
+	ENDIF
+ 200  CONTINUE
+
+C Write to common depending on which mode it was called with.
+      DO 27 I=1,12
+        if(act(1:1).eq.'-')then
+          eGrdTp(I)=T_mnt(I)
+        else
+          UGRDTP(I,1)=T_mnt(I)
+        endif
+  27  CONTINUE
+
+C Debug
+      if(idebug.eq.1)then
+        write(6,*)ttemp
+        write(6,*)' '
+        write(6,*)t_avg,t_max,t_min,t_amp
+        write(6,*)' '
+        write(6,*)t_mnt
+      endif
+ 103  return
       end

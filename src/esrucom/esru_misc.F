@@ -616,6 +616,11 @@ C Clear the connection list.
         SSOTHER(icc,3)='0'
         SSUSE(icc,1)='-'
         SSUSE(icc,2)='-'
+        ssna(icc)=0.0
+        sspazi(icc)=0.0
+        sspelv(icc)=0.0
+        ssperim(icc)=0.0
+        ssthick(icc)=0.0
    32 CONTINUE
       icfgv=4  ! set cfg file version to latest type
       NCON=0
