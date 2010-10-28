@@ -482,7 +482,7 @@ C If we have a plant only file go straight to the plant results menu.
 
 C Free all assigned files.
         call erpfree(iunitp,istat)
-        call usrmsg(' Closing results analysis...',' ','P')
+        call usrmsg('Closing results analysis...',' ','P')
         CALL MOFREE
         CALL EPAGEND
         STOP         

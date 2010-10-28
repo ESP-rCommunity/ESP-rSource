@@ -1568,9 +1568,12 @@ C *action,new,boxer,single,/tmp/boxer
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
-          write(6,*)  's action ',actions,' root ',root
-          write(6,*)  's folder ',folder
-          write(6,*)  's mpath ',mpath
+          call isunix(unixok)
+          if(unixok)then
+            write(6,*)  's action ',actions,' root ',root
+            write(6,*)  's folder ',folder
+            write(6,*)  's mpath ',mpath
+          endif
         endif
         goto 43
       elseif(WORD(1:7).eq.'*zonpth')then

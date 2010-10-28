@@ -62,7 +62,7 @@ C Plant network.
       COMMON/C23/IFPNF,LPNF
 
 C Project log file.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG

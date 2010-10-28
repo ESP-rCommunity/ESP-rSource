@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model office building, summer operation defined in
-office_sum.cfg generated on Fri Jul 23 16:04:19 2010. Notes associated with
+office_sum.cfg generated on Thu Jul 29 16:25:38 2010. Notes associated with
 the model are in office.log
  
 The model is located at latitude   59.00 with a longitude difference of   0.00
@@ -9,42 +9,25 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
+ 
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
-Calculated ground temp at 0.5m depth
-3.8923 4.7350 6.8034 9.6438 12.450 14.471 15.151 14.293 12.151 9.2975 6.5030 4.5250
-Calculated ground temp at 1.0m depth
-5.0774 5.2557 6.5264 8.6182 10.954 12.905 13.939 13.773 12.455 10.343 8.0097 6.0850
-Calculated ground temp at 2.0m depth
-7.1669 6.6455 6.8604 7.7780 9.1669 10.650 11.827 12.386 12.160 11.219 9.8221 8.3432
-Calculated ground temp at 4.0m depth
-9.4473 8.8816 8.4792 8.3374 8.5155 8.9626 9.5603 10.155 10.569 10.699 10.512 10.057
- 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
  standard materials     : material.db3.a
- standard constructions : multicon.db3
+Simulationist postcode: not yet defined
+ 
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
- UK NCM data            : /usr/esru/esp-r/databases/SBEM.db1
  
  ____________________________________________________________
  
@@ -632,7 +615,6 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  There is 101.72m2 of exposed surface area, 101.72m2 of which is vertical.
  Outside walls are 36.563 % of floor area & avg U of 0.461 & UA of 13.963
  Glazing is 86.177 % of floor & 70.211 % facade with avg U of 2.811 & UA of 200.72
- Ground contact is 99.998 % of floor area & avg U of 1.294 & perimeter 0.00
  
  A summary of the surfaces in corid_g( 2) follows:
  
@@ -670,7 +652,6 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
  Outside walls are 28.347 % of floor area & avg U of 0.461 & UA of 36.151
  Glazing is 16.043 % of floor & 36.142 % facade with avg U of 2.811 & UA of 124.79
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in Unit_f( 3) follows:
  
@@ -747,7 +728,6 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 25.650m2 of exposed surface area, 25.650m2 of which is vertical.
  Outside walls are 9.0110 % of floor area & avg U of 0.461 & UA of 8.5022
  Glazing is 3.5165 % of floor & 28.070 % facade with avg U of 2.811 & UA of 20.237
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in Unit_g( 4) follows:
  
@@ -820,7 +800,6 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
  Outside walls are 28.312 % of floor area & avg U of 0.461 & UA of 35.944
  Glazing is 16.279 % of floor & 36.508 % facade with avg U of 2.811 & UA of 126.06
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in Unit_j( 5) follows:
  
@@ -963,7 +942,6 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 58.050m2 of exposed surface area, 58.050m2 of which is vertical.
  Outside walls are 8.6421 % of floor area & avg U of 0.461 & UA of 20.530
  Glazing is 2.6188 % of floor & 23.256 % facade with avg U of 2.811 & UA of 37.944
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in Unit_hi( 9) follows:
  
@@ -1208,7 +1186,6 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  stair_abfg describes a...
  There is 32.500m2 of exposed surface area, 32.500m2 of which is vertical.
  Outside walls are 144.44 % of floor area & avg U of 0.608 & UA of 19.773
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in stair_abfg(14) follows:
  
@@ -1246,7 +1223,6 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  stair_deij describes a...
  There is 32.500m2 of exposed surface area, 32.500m2 of which is vertical.
  Outside walls are 130.00 % of floor area & avg U of 0.608 & UA of 19.773
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in stair_deij(15) follows:
  
@@ -1282,7 +1258,6 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  It encloses a volume of 312.m^3 of space, with a total surface
  area of 304.m^2 & approx floor area of 48.0m^2
  toilets describes a...
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
  
  A summary of the surfaces in toilets(16) follows:
  
@@ -1375,15 +1350,14 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  Sloped roof area is 1536.8m2, flat roof area is 0.00m2, skylight area is 0.00m2.
  There is 2664.8m2 of outside surface area, 1102.9m2 of which is vertical.
  
- Outside walls are 14.140 % of floor area & avg U of 0.474 & UA of 356.54 & max MLC thickness 0.088
+ Outside walls are 14.140 % of floor area & avg U of 0.474 & UA of 356.54
  Sloped roof is 28.862 % of floor area & avg U of 0.427 & UA of 656.74
  Glazing is 7.0450 % of floor & 34.013 % facade with avg U of 2.811 & UA of 1054.3
- Ground contact is 27.248 % of floor area & avg U of 0.888 & perimeter 0.00 & max MLC thickness 0.625
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: insul_mtl_p and overall thickness  0.088
+ Details of opaque construction: insul_mtl_p
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1393,7 +1367,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  Total area of insul_mtl_p is    749.52
  
- Details of opaque construction: door and overall thickness  0.025
+ Details of opaque construction: door
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1401,7 +1375,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  Total area of door is     46.56
  
- Details of opaque construction: mass_part and overall thickness  0.240
+ Details of opaque construction: mass_part
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1409,7 +1383,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
  Total area of mass_part is    408.50
  
- Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
+ Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1428,7 +1402,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is    442.32
  
- Details of opaque construction: roof and overall thickness  0.111
+ Details of opaque construction: roof
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1439,20 +1413,22 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  Total area of roof is   1536.80
  
- Details of opaque construction: grnd_floor and overall thickness  0.625
+ Details of opaque construction: grnd_floor
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
+    5   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    6    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    7   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.699  0.714  0.680 (partition)  0.657
  Total area of grnd_floor is   1368.00
  
- Details of opaque construction: entry_floor and overall thickness  0.574
+ Details of opaque construction: entry_floor
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1463,7 +1439,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.294  1.346  1.230 (partition)  1.159
  Total area of entry_floor is     82.87
  
- Details of opaque construction: susp_ceil and overall thickness  0.013
+ Details of opaque construction: susp_ceil
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1471,7 +1447,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
  Total area of susp_ceil is   5612.48
  
- Details of opaque construction: susp_floor and overall thickness  0.219
+ Details of opaque construction: susp_floor
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1483,7 +1459,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_floor is   1355.37
  
- Details of opaque construction: susp_flr_re and overall thickness  0.219
+ Details of opaque construction: susp_flr_re
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
@@ -1495,7 +1471,7 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_flr_re is   1355.37
  
- Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
+ Details of opaque construction: gyp_blk_ptn
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W

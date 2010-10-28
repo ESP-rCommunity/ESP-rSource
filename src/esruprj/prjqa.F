@@ -48,12 +48,7 @@ C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "tdf2.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IAPRES (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
+C database file names and unit numbers and path types
 #include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -61,6 +56,8 @@ C espriou.h provides currentfile.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
       
       integer lnblnk  ! function definition
 
@@ -142,7 +139,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Project log file.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -178,32 +175,21 @@ C Thermal bridges.
       INTEGER iExtLgRadFlag
       REAL eGrdTp
 
+C bridgelen was calculated in subroutine uredgeadj
+      real bridgelen ! Length of potential thermal bridges in each zone.
+      common/gbridge/bridgelen(MCOM,10)
+
+      real plen  ! combined length of standard and metal facade perimeter
+
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
       logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension IVALS(MCOM),areamlc(MCOM)
-      REAL :: uavfltroof,uavgsky,uavground,areatran
-      REAL :: areawall,areaslproof,areafltroof,areaskylt,areaground
-      REAL :: areamlc,flatroofper
-      dimension uavgtran(MCOM)   ! average U value of windows
-      dimension uavwall(MCOM)    ! average U value of walls
-      dimension uavslproof(MCOM) ! average U value of sloped roofs
-      dimension uavfltroof(MCOM) ! average U value of flat roof
-      dimension uavgsky(MCOM)    ! average U value of skylights
-      dimension uavground(MCOM)  ! average U value at ground
-      dimension areatran(MCOM)   ! m2 of windows
-      dimension areawall(MCOM)   ! m2 of walls
-      dimension areaslproof(MCOM) ! m2 of sloped roofs
-      dimension areafltroof(MCOM) ! m2 of flat roofs
-      dimension areaskylt(MCOM)  ! m2 of skylights
-      dimension areaground(MCOM)  ! m2 of ground contact
       dimension tranper(MCOM),skyper(MCOM)
+      real areamlc,wallper,flatroofper
       dimension wallper(MCOM),slproofper(MCOM),flatroofper(MCOM)
-      REAL :: exposed,vexposed
-      dimension exposed(MCOM)    ! m2 of outside surface area
-      dimension vexposed(MCOM)   ! m2 of outside vertical surface
       dimension items(25)
 
       character*72 LTMP
@@ -252,28 +238,17 @@ C in the current model. A -1 means not applicable
       integer itrunc     ! to signal truncation
       integer ipos       ! position indicator when calling arlist
       real ZD           ! depth for ground temp calc
-      real grper        ! length of ground perimeter in a zone
-      real xfloor       ! m2 project floor area based on basearea
-      real xexposed     ! m2 of outside surface area (any orientation)
-      real xvexposed    ! m2 of outside vertical surfaces
-      real xvthk        ! max thickness of facade (vertical walls)
-      real xtoground    ! m2 of ground connected surfaces
-      real xuavgtran    ! average U value of windows (transparent surfaces)
-      real xuavwall     ! average U value of walls
-      real xuavground   ! average U value of surfaces connected to ground
-      real xfndthkg     ! max thickness of MLC connected to ground
-      real xperimlength ! length of edges at wall - foundation joins (perimeter)
-      real xuavslproof  ! average U value of sloped roofs
-      real xuavfltroof  ! average U value of flat roof
-      real xuavgsky     ! average U value of skylights
-      real xareatran    ! m2 of windows (transparent surfaces)
-      real xareawall    ! m2 of walls
-      real xareaslproof ! m2 of sloped roofs
-      real xareafltroof ! m2 of flat roofs
-      real xareaskylt   ! m2 of skylights
+      real grper        ! % length of ground perimeter in a zone
       real xtranper,xskyper,xwallper,xslproofper,xflatroofper,xgrper ! % of project floor area for each
       real UVG          ! assumed U value at ground connection
       real UVH          ! U value for horizontal flow
+      real betaprime    ! for CIBSE ground calcs
+      real deltathick   ! dt value for CIBSE ground calcs
+      real foundUv      ! U value for foundation for CIBSE ground calcs
+      real Ufleft,Ufright  ! two parts of CIBSE Uf calculation std case
+      real Ufall        ! sum of Ufleft and Ufright
+      real Pi
+      real foundRextra  ! extra CIBSE resistance for foundation
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -287,8 +262,7 @@ C in the current model. A -1 means not applicable
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
       REAL :: opq,skyper,slproofper,tranper,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
-      REAL :: uavgtran,uavslproof,uavwall,uvd,uvn,uvi,uvu,vtranper
-      REAL :: wallper
+      REAL :: uvd,uvn,uvi,uvu,vtranper
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1644,7 +1618,8 @@ C Zero zone code complence data. xfloor is project floor area,
 C tranper() skyper() wallper() slproofper() flatroofper() are % of
 C floor area for each.
         xfloor = xfloor + ZBASEA(IZZ)
-        xperimlength = xperimlength + lngth(IZZ,2)+lngth(IZZ,10) ! based on surface edge data
+        plen = bridgelen(IZZ,2)+bridgelen(IZZ,10) ! ground edge std and metal facade
+        xperimlength = xperimlength + plen ! based on surface edge data
         uavgtran(IZZ) = 0.0
         uavwall(IZZ) = 0.0
         uavslproof(IZZ) = 0.0
@@ -1723,7 +1698,7 @@ C For ceilings.
                 xuavfltroof = xuavfltroof + (SSNA(icc) * UVH)
               else
 
-C For floors.
+C For floors facing outside.
                 areawall(IZZ) = areawall(IZZ) + SSNA(icc)
                 uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
                 xareawall = xareawall + SSNA(icc)
@@ -1888,7 +1863,8 @@ C If there is external glazing or skylights then report.
               grper = 1.0
             endif
             call rel16str(grper,t16a,lna,ier)
-            call rel16str(lngth(IZZ,2),t16b,lnb,ier)
+            plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
+            call rel16str(plen,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Ground contact is ',
      &        t16a(1:lna),' % of floor area & avg U of ',
      &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
@@ -2250,6 +2226,10 @@ C if the zones are fully attributed.
      &      'm2, flat roof area is ',t16b(1:lnb),
      &      'm2, skylight area is ',t16c(1:lnc),'m2.'
           call edisp(itu,outs)
+          call rel16str(xtoground,t16a,lna,ier)
+          write(outs,'(3a)') ' In contact with ground ',t16a(1:lna),
+     &      'm2.'
+          call edisp(itu,outs)
           if(xexposed.gt.0.1)then
             call rel16str(xexposed,t16a,lna,ier)
             call rel16str(xvexposed,t16b,lnb,ier)
@@ -2315,13 +2295,27 @@ C if the zones are fully attributed.
           endif
           if(xtoground.gt.0.1)then
             xgrper = (xtoground/xfloor) * 100.
+            foundUv = xuavground/xtoground
             call rel16str(xgrper,t16a,lna,ier)
             call rel16str(xperimlength,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Ground contact is ',
      &        t16a(1:lna),' % of floor area & avg U of ',
-     &        xuavground/xtoground,' & perimeter ',t16b(1:lnb),
+     &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
+            betaprime= xtoground/(xperimlength*0.5)
+            deltathick= xvthk + 1.5 * ((1.0/foundUv)+0.04)
+            PI = 4.0 * ATAN(1.0)
+            Ufleft = (2.0 * 1.5)/ ((Pi * betaprime) + deltathick)
+            Ufright = log ((Pi * betaprime / deltathick)+1.0)
+            Ufall = Ufleft * Ufright
+            foundRextra = (1.0/Ufall) - (1.0/foundUv)
+            write(outs,'(a,f6.3,a,f6.3,a,f6.3,a,f6.3,a,f6.3,a,f6.3)')
+     &        ' CIBSE ground beta!',betaprime,' dt',deltathick,
+     &        ' Ufleft',Ufleft,' Ufright',Ufright,' Uf',Ufall,
+     &        ' R extra @ virtual layer',foundRextra
+            call edisp(itu,outs)
+
           endif
         endif
       endif

@@ -88,7 +88,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 C Project log file, journal on/off, unit number, cmd, file name.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
