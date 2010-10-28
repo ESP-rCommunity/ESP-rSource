@@ -937,7 +937,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,32i4)') 'now jvn is ',
+C                      write(6,'(a,42i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -1138,9 +1138,12 @@ C User has specified clicking from mouse so just do that.
 
 C Clear the string buffer, write into it the list of vertices that were
 C selected by the user so that errors and duplicates can be corrected.
+C If the user was clicking with a mouse then they might have duplicated
+C some vertices and thus be beyond the normal limit of edges. If MV is
+C updated reflect this in the write(t248 statement).
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
-              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
+              WRITE(t248,'(42I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               NV = iCountWords(t248)
@@ -1735,7 +1738,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,32i4)') 'now jvn is ',
+C                      write(6,'(a,42i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -2074,6 +2077,7 @@ C door width and height.
       DIMENSION  SBBOX(3,2)
 
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
+      character t248*248
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
 
@@ -2569,9 +2573,10 @@ C in the new surface.
      &      'corner of the new surface to connect to: ','lower left',
      &      'lower right',ICH,24)
 
-          WRITE(outs,'(30i4)')(JVN(IS,J),J=1,NVER(IS))
+C If parameter MV changes reflect this in the write(t248 statement.
+          WRITE(t248,'(42i4)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
-          call edisp(iuout,outs)
+          call edisp248(iuout,t248,100)
  8795     CALL EASKI(IVH,
      &      ' Which vertex in the bounding surface to tie to:',
      &      ' ( usually at lower right corner of bounding surface) ? ',
@@ -2909,7 +2914,7 @@ C inserting the new vertex index.
                   JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                  write(6,'(a,32i4)') 'now jvn is ',
+C                  write(6,'(a,42i4)') 'now jvn is ',
 C     &              (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
