@@ -2476,13 +2476,20 @@ C AND fresh air requirement * SFP and 14.0 W/m2 (typical building)
 C For systems with any active ventilation at all (mechanical ventilation
 C without cooling or full air conditioning systems)
 C Auxiliary energy is calculated in addition to the 0.61W/m2
-C calculated above. (NCM Modelling Guide October 2008 version)
-        m2zonAuxil(imonth,ICOMP)=
-     &  ValueToCalc*nonzerohours(iactvalue,1)/12.+
-     &  m2zonAuxil(imonth,ICOMP)
-        fmonthAuxil_ncm_Energy(imonth,icomp)=ValueToCalc*
-     &  ZBASEA(ICOMP)*nonzerohours(iactvalue,1)/12.+
-     &  fmonthAuxil_ncm_Energy(imonth,icomp)
+C calculated above but not for the reference building because it always
+C has radiators for heating and direct expansion cooling but fan power
+C associated with cooling is taken into account in cooling load value
+C (NCM Modelling Guide October 2008 version)
+        IF(INOTI.EQ.2.OR.iDsmTestingFlag.EQ.2)THEN
+          CONTINUE
+        ELSE
+          m2zonAuxil(imonth,ICOMP)=
+     &    ValueToCalc*nonzerohours(iactvalue,1)/12.+
+     &    m2zonAuxil(imonth,ICOMP)
+          fmonthAuxil_ncm_Energy(imonth,icomp)=ValueToCalc*
+     &    ZBASEA(ICOMP)*nonzerohours(iactvalue,1)/12.+
+     &    fmonthAuxil_ncm_Energy(imonth,icomp)
+        ENDIF
 
 C zonAuxil=Occupants density (pers/m2)*fresh air requirements l/s/pers*
 C         SpecificFanPower* zone Area

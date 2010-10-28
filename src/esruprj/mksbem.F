@@ -36,7 +36,7 @@ C  EDSBMASSOR Edits the assessor contact definition within the UK NCM file.
 C  EDSBMREGS Edits the building regs definition within the UK NCM file.
 
 C Model generation subroutines
-C  EMKNOTIONAL first pass for notional model creation
+C  EMKSTRIPPED first pass for notional model creation
 C  EMKSBM   generates notional model
 C  EMKREF   Generates reference model
 C  EMKTYP   Generates typical model
@@ -361,10 +361,14 @@ C Dereference optional higher resolution information
       NGRDP=0                           ! ground information
       GRND3D=.FALSE.                    ! 3D ground information
       GTGEOM='UNKNOWN'                  ! ground topology
-      iExtLgRadFlag=0                   ! external longwave radiation flag
       NALOC=0                           ! anchor
       INDCFG=1                          ! Building only model
       IAIRN=0                           ! disconnect any air flow network
+
+C Define ground temperature flag to be 1 in order to include ground
+C temperatures defined from climate file.
+C Uncomment following line when ground temperature averaging is complete
+c      iExtLgRadFlag=1                   ! external longwave radiation flag
 
 C Check if the model is sufficiently attributed for NCM purposes.
       call okforncm('w',ier)
@@ -430,7 +434,7 @@ C Offer choice to generate stripped model and running assessments.
 
 C Generate all the model variants and run assessments and generate EPC.
         iuact = 1 ! signal generation of notional requested
-        call emknotional(iuact,ier)
+        call EMKSTRIPPED(iuact,ier)
         call edisp(iuout,'Initial pass completed...')
 
         iuact = 2
@@ -644,6 +648,7 @@ C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       integer ncomp,ncon
@@ -682,6 +687,9 @@ C For tdf to call arlist:
       integer ier,itrc,IAPROB,ISTAT,iw
       integer iuact  ! return state from sbmedit call
       integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
+      CHARACTER*32 SURFOTF
+      LOGICAL CLOSER
+      CLOSER=.TRUE.
 
 C Change cfgroot to have only 20 characters instead of the usual 24 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
@@ -926,7 +934,7 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(6) = 'Link HVAC systems and zones '
       ITEMX(7) = 'Link separate DHW systems and zones '
       ITEMX(8) = 'Link standard activities and zones '
-      ITEMX(9) = 'Link lighting systems and zones'
+      ITEMX(9) = 'Define lighting systems'
       ITEMX(10)= 'Renewables information (optional)'
       ITEMX(11)= 'HVAC controls for EPC recommendations (optional)'
       ITEMX(12)= 'Advanced (only for DSM testing)'
@@ -954,10 +962,13 @@ C        call mksbem2
 C Enter building, owner and verifier information
         call edsbmbld()  ! edit the contact information
         h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        h(2)='recent changes in the model configuration say yes.'
         dok=.true.
         CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-        if(ok) call mksbem
+        if(ok)then
+          call mksbem
+          call emkcfg('-',IER) ! the cfg file holds this info
+        endif
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.2)THEN
@@ -1421,14 +1432,25 @@ C with tdf). Also set iactytyp to itemfromactivity (i.e.1-65)
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.9)THEN
+        ISaveChanges=0
 
 C Link lighting systems with zones
         DO 160 IZ=1,NCOMP
+          CALL EDISP(IUOUT,' ')
+          IF(ILIGHTUSER(IZ).EQ.1)THEN
+            CALL EDISP(IUOUT,'Currently user defined W/m2 per 100 lux')
+            WRITE(OUTS,'(A,F7.3)')' with a value of ',LIGHTWATTAGE(IZ)
+            CALL EDISP(IUOUT,OUTS)
+          ELSEIF(ILITYP(IZ).GT.0)THEN
+            CALL EDISP(IUOUT,'Currently set as (pick from list):')
+            CALL EDISP(IUOUT,TLIGHT(ILITYP(iz)))
+          ENDIF
           ILIGHTUSER(IZ)=0
           CALL EASKABC(
-     &      'Options for defining lighting heat gains from lights for:',
+     &      'Options for defining lighting heat gains for zone:',
      &      zname(IZ)(1:lnzname(IZ)),
-     &      'user defined W/m2 per 100 lux','pick from list','continue',
+     &      'user defined W/m2 per 100 lux','pick from list',
+     &      'do not modify at this time',
      &      Iwaylight,2)
           IF(Iwaylight.EQ.1)THEN
 
@@ -1436,6 +1458,8 @@ C flag needed for the casual.F to account for lighting gains
 C depending on the way they are specified by the user.
             ILIGHTUSER(IZ)=1
 
+            ISaveChanges=1
+            
 C If users pick this then they have to demonstrate that this
 C value is a realistic one
             light_input_watt=LIGHTWATTAGE(IZ)
@@ -1445,16 +1469,148 @@ C value is a realistic one
      &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)
             LIGHTWATTAGE(IZ)=light_input_watt
           ELSEIF(Iwaylight.EQ.2)THEN
-            WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
+            WRITE(OUTS,'(2A)')'Choose lighting for zone ',
      &      zname(IZ)(1:lnzname(IZ))
             CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &        70,MILS,TLIGHT,'lighting type for zone',IER,2)
+     &        70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
             ILITYP(IZ)=LSYS(1)
+            ISaveChanges=1
           ELSEIF(Iwaylight.EQ.3)THEN
             continue
           ENDIF
+
+C Now choose lighting control -- Note this is different from standard
+C lighting control and is much more simplistic in that it just
+C multiplies annual lighting power with coefficients representing
+C control types
+          if(Iwaylight.ne.3)then
+            IF(Ilightcontrol(iz).EQ.1)THEN
+              OUTS='Currently control is local manual switching'
+            ELSEIF(Ilightcontrol(iz).EQ.2)THEN
+              OUTS='Currently control is photo-electric'
+            ELSEIF(Ilightcontrol(iz).EQ.3)THEN
+              OUTS='Currently control is both'
+            ELSE
+              OUTS='Currently there is no control'
+            ENDIF
+            CALL EDISP(IUOUT,OUTS)
+            CALL EASKABCD('Choose lighting control type for',
+     &      zname(IZ)(1:lnzname(IZ)),
+     &      'Local manual switching ','Photoelectric control',
+     &      'Both','Do not modify at this time',
+     &      Ilightcontrol(iz),2)
+
+C Ask for automatic daylight zoning for lighting controls
+            if(Ilightcontrol(iz).ne.4)then
+              IF(Idaylightzoning(iz).EQ.1)THEN
+                outs='Currently there is automatic daylight zoning'
+              ELSE
+                outs='Currently there is no automatic daylight zoning'
+              ENDIF
+              CALL EDISP(IUOUT,OUTS)
+              Idaylightzoning(iz)=0
+              CALL ASKOK(
+     &        'Is there automatic daylight zoning in zone',
+     &        zname(IZ)(1:lnzname(IZ)),OK,dok,2)
+              IF(OK)Idaylightzoning(iz)=1
+            endif
+
+C If photoelectric control then ask whether switching or dimming
+            if(Ilightcontrol(iz).eq.2.or.Ilightcontrol(iz).eq.3)then
+              IF(Ipe_control(iz).EQ.1)THEN
+                OUTS='Currently there is photo-electric switching'
+              elseif(Ipe_control(iz).EQ.2)THEN
+                OUTS='Currently there is photo-electric dimming'
+              else
+                OUTS='Currently there is neither'
+              endif
+              call edisp(iuout,outs)
+              Ipe_control(iz)=0
+              CALL EASKAB('Type of photoelectric control in zone',
+     &        zname(IZ)(1:lnzname(IZ)),
+     &        'Switching','Dimming',Ipe_control(iz),2)
+              Ipe_sensor=0
+              CALL EASKAB('Type of photoelectric control sensor',
+     &        zname(IZ)(1:lnzname(IZ)),
+     &        'Standalone','Addresable',Ipe_sensor,2)
+
+C Confirm photoelectric sensor parasitic power W/m2
+              write(outs,'(A,F5.3)')'Current parasitic power is ',
+     &        PE_sensor_PP(iz)
+              call edisp(iuout,outs)
+              IF(Ipe_sensor.EQ.1)THEN
+                PE_sensor_PP(iz)=0.3
+              ELSEIF(Ipe_sensor.EQ.2)THEN
+                PE_sensor_PP(iz)=0.57
+              ENDIF
+              CALL EASKR(PE_sensor_PP(iz),
+     &        'Confirm photo-electric sensor parasitic power',
+     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+            endif
+
+C Ask for occupancy sensing
+            CALL EDISP(IUOUT,
+     &      'MAN-ON-OFF+EXT = Manual ON/OFF switching with additional')
+            CALL EDISP(IUOUT,
+     &      'automatic sweeping extinction signal. The other options')
+            CALL EDISP(IUOUT,
+     &      'are assumed to be clear.')
+            IF(IOcc_sensing(iz).EQ.1)THEN
+              OUTS='Currently MAN-ON-OFF+EXT'
+            ELSEIF(IOcc_sensing(iz).EQ.2)THEN
+              OUTS='Currently AUTO-ON-DIMMED'
+            ELSEIF(IOcc_sensing(iz).EQ.3)THEN
+              OUTS='Currently AUTO-ON-OFF'
+            ELSEIF(IOcc_sensing(iz).EQ.4)THEN
+              OUTS='Currently MAN-ON-DIMMED'
+            ELSEIF(IOcc_sensing(iz).EQ.5)THEN
+              OUTS='Currently MAN-ON-AUTO-OFF'
+            ELSE
+              OUTS='Currently NONE'
+            ENDIF
+            CALL EDISP(IUOUT,OUTS)
+            CALL EASKATOG(
+     &      'Is there occupancy sensing in zone',
+     &      zname(iz)(1:lnzname(IZ)),'MAN-ON-OFF+EXT','AUTO-ON-DIMMED',
+     &      'AUTO-ON-OFF','MAN-ON-DIMMED','MAN-ON-AUTO-OFF','NONE',
+     &      ' ',IOcc_sensing(iz),2)
+
+C Confirm occupancy sensor parasitic power W/m2
+            if(IOcc_sensing(iz).ne.6)then
+              write(outs,'(A,F5.3)')'Current parasitic power is ',
+     &        Occ_sensor_PP(iz)
+              call edisp(iuout,outs)
+              Occ_sensor_PP(iz)=0.3
+              CALL EASKR(Occ_sensor_PP(iz),
+     &        'Confirm occupancy sensor parasitic power',
+     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+            endif
+          endif
+
+C Generate daylight factors (approximate value)
+C Figure out vertical and horizontal glazed surface area and also total
+C surface area
+          VERT_GLZ=0.0
+          HORZ_GLZ=0.0
+          DO 20 ISURF=1,NZSUR(IZ)
+            ICC=IZSTOCN(IZ,ISURF)       
+            SURFOTF=SSOTF(ICC)
+            IF(SURFOTF(1:4).NE.'OPAQ')THEN
+              IF(SSVFC(icc)(1:4).eq.'CEIL')THEN
+                HORZ_GLZ=HORZ_GLZ+SSNA(ICC)
+              ELSE
+                VERT_GLZ=VERT_GLZ+SSNA(ICC)
+              ENDIF
+            ENDIF
+ 20       CONTINUE
+          CALL ECLOSE(0.,zonetotsurfacearea(IZ),0.000001,CLOSER)
+          IF(.NOT.CLOSER)
+     &    DF=(45.*VERT_GLZ+90.*HORZ_GLZ)/zonetotsurfacearea(IZ)
+          write(6,*)vert_glz,horz_glz,zonetotsurfacearea(IZ)
+          DFFront(IZ)=1.75*DF
+          DFRear(IZ) =0.25*DF
  160    CONTINUE
-        if(Iwaylight.ne.3)then
+        if(ISaveChanges.ne.0)then
           h(1)='You have been editing NCM data. If you want to save'
           h(2)='recent changes say yes. '
           dok=.true.
@@ -2661,6 +2817,53 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
       integer nitms,INO ! max items and current menu item
 
 C Enter building, owner and verifier information
+      call edisp(iuout,' ')          
+      call edisp(iuout,'Details for code complience...')
+      write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+      call edisp(iuout,outs)
+      write(outs,'(2a)')'Building address: ',
+     &  baddress(1:lnblnk(baddress))
+      call edisp(iuout,outs)
+      write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+      call edisp(iuout,outs)
+      write(outs,'(2a)')'Building Postcode: ',
+     &  buildingPC(1:lnblnk(buildingPC))   
+      call edisp(iuout,outs)
+      call edisp(iuout,' ')          
+      call edisp(iuout,'Details of client/owner...')
+      write(outs,'(2a)')'Building owner name: ',
+     &  ownername(1:lnblnk(ownername))
+      call edisp(iuout,outs)   
+      write(outs,'(2a)')'Building owner telephone: ',
+     &  ownertel(1:lnblnk(ownertel))
+      call edisp(iuout,outs)   
+      write(outs,'(2a)')'Building owner address: ',
+     &  owneraddr(1:lnblnk(owneraddr)) 
+      call edisp(iuout,outs) 
+      write(outs,'(2a)')'Building owner city: ',
+     &  ownercity(1:lnblnk(ownercity)) 
+      call edisp(iuout,outs) 
+      write(outs,'(2a)')'Building owner Postcode: ',
+     &  ownerPC(1:lnblnk(ownerPC))
+      call edisp(iuout,outs)     
+      call edisp(iuout,' ')          
+      call edisp(iuout,'Details of simulationist...')
+      write(outs,'(2a)')'Simulationist name: ',
+     &  certifname(1:lnblnk(certifname)) 
+      call edisp(iuout,outs)     
+      write(outs,'(2a)')'Simulationist telephone: ',
+     &  certTel(1:lnblnk(certTel))  
+      call edisp(iuout,outs)     
+      write(outs,'(2a)')'Simulationist address: ',
+     &  certaddress(1:lnblnk(certaddress))    
+      call edisp(iuout,outs)   
+      write(outs,'(2a)')'Simulationist city: ',
+     &  certcity(1:lnblnk(certcity))   
+      call edisp(iuout,outs)    
+      write(outs,'(2a)')'Simulationist postcode: ',
+     &  certPC(1:lnblnk(certPC))   
+      call edisp(iuout,outs)          
+    
   15  CALL EDISP(IUOUT,
      &  'Enter/Confirm building, owner and certifier details')
       INO=-1
@@ -3331,11 +3534,13 @@ C Enter building permeability
         APCHK='YES'
       ENDIF
 
-C Ask user if CIBSE data is to be used
-      CALL EASKABC(
-     &  'Infer air changes per hour from permeability',
-     &  'value using CIBSE data',
-     &  'yes','no','Do not know',IW,2)
+C Use CIBSE data until SBEM approach to prediction of infiltration is
+C communicated by AECOM
+c      CALL EASKABC(
+c     &  'Infer air changes per hour from permeability',
+c     &  'value using CIBSE data',
+c     &  'yes','no','Do not know',IW,2)
+      IW=1
  4252 IF(IW.EQ.1)THEN
         ICIBSE1=1 ; ICIBSE2=1 ; ICIBSE3=1 ! initialise
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
@@ -3504,12 +3709,12 @@ C After setting up echo back what was selected.
       return
       end
 
-C ********************* EMKNOTIONAL
-C EMKNOTIONAL is the first pass for creating stripped & notional model after
-C all of the NCM details have been defined. Initially part of the
+C ********************* EMKSTRIPPED
+C EMKSTRIPPED is the first pass for creating stripped model 
+C after all of the NCM details have been defined. Initially part of the
 C fall-though from choice 14 in sbmedit ('Proceed with setting up
 C required models ') which returned iuact=1.
-      subroutine emknotional(iuact,ier)
+      subroutine EMKSTRIPPED(iuact,ier)
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
@@ -3547,6 +3752,13 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
+
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent,uavtotal(MCOM)
 
       CHARACTER DFILE*72,LIMP*72,LEXP*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
@@ -3607,11 +3819,14 @@ C Set folder separator (fs) to \ or / as required.
       tab=','
       cfgroot=cfgroot_s  ! set to stripped
 
-C Proceed with setting up the notional model. Assumes that geometry files
-C are version 1.1. If not exit with ier set to 2.
+C Proceed with setting up the stripped model. 
+C First get ground temperatures
+      CALL GTCALC(IER)
+
+C Assume that geometry files are version 1.1. If not exit with ier set to 2.
       APE='_str  '
       call edisp(iuout,
-     &  'Processing zones for notional building variant.')
+     &  'Processing zones for stripped building variant.')
       GUESS='notional'
       DO 551 ICOMP=1,NCOMP
         IUF=IFIL+2
@@ -3655,6 +3870,11 @@ C If surface is exterior then check if use is specified if not then ask
         EXT='.geo'
         CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
+
+C Add 10% thermal bridge by silently calling appropriate subroutine if
+c none have been defined
+        if(losspercent(icomp).le.0.0)CALL LINTHBRDG(ICOMP,'s',0.1)
+
         CALL GEOWRITE(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
  551  CONTINUE
 
@@ -7539,9 +7759,9 @@ C Building, owner, certifier detail...
 C Calculation engine and interface detail...
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'  CENGINE            = ',
      &  '"ESP-r"'
-      WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3)'  CENGINE-VERSION    = ',
-     &  cBranch(1:lnblnk(cBranch)),'@r',
-     &  cRevision(1:lnblnk(cRevision)),' ',cState(1:lnblnk(cState))
+      WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  CENGINE-VERSION    = ',
+     &  cBranch(1:lnblnk(cBranch)),'@',
+     &  cRelease_num(1:lnblnk(cRelease_num))
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'  INTERFACE          = ',
      &  '"ESP-r Project Manager"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  INTERFACE-VERSION  = ',
@@ -8806,8 +9026,8 @@ C For trying the export, change ESP-r to "Not Approved"
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' CENGINE-VAL         = ',
      &  'Not Approved'
       WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3)' CENGINE-VERSION     = ',
-     &  cBranch(1:lnblnk(cBranch)),'@r',
-     &  cRevision(1:lnblnk(cRevision)),' ',
+     &  cBranch(1:lnblnk(cBranch)),'@',
+     &  cRelease_num(1:lnblnk(cRelease_num)),' ',
      &  cState(1:lnblnk(cState))
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' INTERFACE           = ',
      &  '"ESP-r Project Manager"'
@@ -13641,3 +13861,75 @@ C << to be done >>
       return
       end
 
+
+C ************** GTCALC ********************
+C Subroutine GTCALC scans the climate file associated with the model and
+C writes out a ground temperature profile based on dry bulb temperature.
+C After calling this subroutine the cfg file should be saved in order to
+C make sure this information is written to file.
+      subroutine GTCALC(IER)
+#include "building.h"
+#include "esprdbfile.h"
+
+      common/FILEP/IFIL
+      integer ifil      
+      DIMENSION ICLM(24,6),ttemp(12)
+
+      iclim=IFIL
+      call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+      IF(ier.ne.0)return
+
+C Initialise
+      DO 50 I=1,12
+        TTEMP(I)=0.0
+ 50   CONTINUE
+      T_max=0.
+      T_min=0.
+
+      DO 55 I=1,365
+        ID=ID+1
+        II=I
+        IREC=II
+        READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=103)((ICLM(J,K),K=1,6),
+     &         J=1,24)
+        DO 656 J=1,24
+          TEMP=REAL(ICLM(J,2))/10.
+          IF(I.LE.31)THEN
+            tTEMP(1)=ttemp(1)+TEMP/(31.*24.)
+          ELSEIF(I.LE.59)THEN
+            tTEMP(2)=ttemp(2)+TEMP/(28.*24.)
+          ELSEIF(I.LE.90)THEN
+            tTEMP(3)=ttemp(3)+TEMP/(31.*24.)
+          ELSEIF(I.LE.120)THEN
+            tTEMP(4)=ttemp(4)+TEMP/(30.*24.)
+          ELSEIF(I.LE.151)THEN
+            tTEMP(5)=ttemp(5)+TEMP/(31.*24.)
+          ELSEIF(I.LE.181)THEN
+            tTEMP(6)=ttemp(6)+TEMP/(30.*24.)
+          ELSEIF(I.LE.212)THEN
+            tTEMP(7)=ttemp(7)+TEMP/(31.*24.)
+          ELSEIF(I.LE.243)THEN
+            tTEMP(8)=ttemp(8)+TEMP/(31.*24.)
+          ELSEIF(I.LE.273)THEN
+            tTEMP(9)=ttemp(9)+TEMP/(30.*24.)
+          ELSEIF(I.LE.304)THEN
+            tTEMP(10)=ttemp(10)+TEMP/(31.*24.)
+          ELSEIF(I.LE.334)THEN
+            tTEMP(11)=ttemp(11)+TEMP/(30.*24.)
+          ELSEIF(I.LE.365)THEN
+            tTEMP(12)=ttemp(12)+TEMP/(31.*24.)
+          ENDIF
+          t_avg=t_avg+TEMP/(24.*365.)
+          T_max=max(T_max,TEMP)
+          T_min=min(T_min,TEMP)
+  656   CONTINUE
+   55 CONTINUE
+c       write(6,*)'ttemp',ttemp,t_avg,t_max,t_min
+      call epagend
+      CALL ERPFREE(ICLIM,ISTAT)
+
+C Get average soil temperature
+      T_avg=T_avg/365.
+ 103  continue
+      return
+      end

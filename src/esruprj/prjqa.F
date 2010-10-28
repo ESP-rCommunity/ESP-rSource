@@ -1079,7 +1079,6 @@ C Jump back point if err=1000 called when reading climate.
           WRITE(outs248,'(5A)') 'The model includes ground topology ',
      &      GTNAME(1:lnblnk(GTNAME)),' which is defined in ',
      &      GTGEOM(1:lnblnk(GTGEOM)),'.'
-            call edisp(itu,outs)
           call edisp248(itu,outs248,80)
           call edisp(itu,' ')
         endif
@@ -1281,11 +1280,11 @@ C Databases associated with the model. First print the file names.
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           WRITE(outs248,'(2A)')' constructions          : ',
      &      LFMUL(1:lnblnk(LFMUL))
-          call edisp248(itu,outs,100)
+          call edisp248(itu,outs248,100)
         elseif(ipathmul.eq.2)then
           WRITE(outs248,'(2A)')' standard constructions : ',
      &      LFMUL(1:lnblnk(LFMUL))
-          call edisp248(itu,outs,100)
+          call edisp248(itu,outs248,100)
         endif
 
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -1316,7 +1315,17 @@ C Databases associated with the model. First print the file names.
           WRITE(outs248,'(2A)')' standard optical prop  : ',
      &      LOPTDB(1:lnblnk(LOPTDB))
           call edisp248(itu,outs248,100)
-        endif 
+        endif
+
+        if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+          WRITE(outs248,'(2a)')' UK NCM data            : ',
+     &      LSBEM(1:lnblnk(LSBEM))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathsbem.eq.2)then
+          WRITE(outs248,'(2a)')' standard UK NCM data   : ',
+     &      LSBEM(1:lnblnk(LSBEM))
+          call edisp248(itu,outs248,100)   
+        endif
       endif
 
 C Control in the model

@@ -659,7 +659,7 @@ C Clear sbem string arrays (from sbem.h).
       certPC=' not yet defined'
       UPRN='000000000000'
       Accr_Scheme=' not yet defined'
-      assessRegNumber=' not yet defined'
+      assessRegNumber='ABCD123456'
       empl_Trading_name=' not yet defined'
       addr_empl_Trading=' not yet defined'
       party_disclosure=' not yet defined'
@@ -675,13 +675,13 @@ C Clear sbem string arrays (from sbem.h).
  4    continue
 
 C Also integers from sbem.h
-      Y_inspect=2009
+      Y_inspect=2010
       M_inspect=1
       D_inspect=1
-      S_Yinsur=2009
+      S_Yinsur=2010
       S_Minsur=1
       S_Dinsur=1
-      E_Yinsur=2010
+      E_Yinsur=2011
       E_Minsur=1
       E_Dinsur=1
       pi_limit=0

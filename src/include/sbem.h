@@ -526,3 +526,31 @@ C      REAL RERE     ! total annual energy for reference building
                               !if equal to 2: stripped follows the rules of the reference building
       integer iNatVentilatedFlag !flag to indicate that the building is naturally ventilated
       common/dsmtests/iDsmTestingFlag,iNatVentilatedFlag
+
+C Common blocks for lighting control
+      real PE_sensor_PP       ! Photoelectric sensor parasitic power W/m2
+      real Occ_sensor_PP      ! Occupancy sensor parasitic power W/m2
+      real DFFront            ! Front daylight factor
+      real DFRear             ! Rear daylight factor
+      common/sbem15/PE_sensor_PP(MNS),Occ_sensor_PP(MNS),
+     &DFFront(MNS),DFRear(MNS)
+
+
+      integer IOcc_sensing    ! Occupancy sensing flag 
+      integer Ilightcontrol   ! lighting control type
+      integer Idaylightzoning ! daylighting zoning for control
+      integer Ipe_control     ! photoelectric control (switching or dimming)
+      common/sbem16/IOcc_sensing(MNS),Ilightcontrol(MNS),
+     &Idaylightzoning(MNS),Ipe_control(MNS)
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

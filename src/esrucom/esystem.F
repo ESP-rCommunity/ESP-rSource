@@ -594,7 +594,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
-      LSBEM =DSBEM  ! assign default SBEM db
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
 C Clear the model common blocks.

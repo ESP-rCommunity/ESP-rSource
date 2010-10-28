@@ -528,6 +528,8 @@ C Temporal information on channel IFIL+7.
 C Special materials/miscel component database.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
+
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 

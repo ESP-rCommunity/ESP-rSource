@@ -58,6 +58,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
       common/outin/iuout,iuin
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
 
       common/btime/btimep,btimef
 
@@ -213,6 +214,7 @@ C.....Named constnats for timerows
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
+      logical closer
 
 C Trace output ?
       traceok = .true.
@@ -275,16 +277,6 @@ C        write(6,*) 'btimef.gt.24'
         btimef=btimef-24.
         ID=IDWF
       endif
-*      IF(NBDAYTYPE.LE.3)THEN
-*        IDAY=1
-*        DSTR='weekdays'
-*        IF(ID.EQ.6)THEN
-*          IDAY=2
-*          DSTR='saturdays'
-*        ELSEIF(ID.EQ.7)THEN
-*          IDAY=3
-*          DSTR='sundays'
-*        ENDIF
       DSTR='       '
       if(ID.EQ.IDWE1)then
         DSTR=wkd1
@@ -296,7 +288,6 @@ C        write(6,*) 'btimef.gt.24'
         DSTR='weekdays'
         IDAY=1
       endif
-*      ELSE
       IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -465,7 +456,114 @@ C Also display lighting TMAR(IFOC,7) is added for 24hrs every day
      &      TMAR(IFOC,7)*ZBASEA(ICOMP)
         ELSE
 
-C Fall to here if INOTI is 4 or INOTI is zero. Need type of light and then a value
+C Fall to here if INOTI is 4 (stripped UKNCM model) or 
+c INOTI is ZERO (not a UKNCM model)
+C Apply UKNCM lighting control to the stripped model
+C Initialise
+          FDF1=1. ; FDR1=1. ; FDF2=1. ; DFR2=1. ; FO=1. ; FD=1.
+
+C Get external illuminance E_ext
+          CALL MZSINT(ICOMP,QDIR,QDIF)
+          call REFILL(QDIF,QDIR,SALT,SAZI,IDYf,E_ext)
+
+C Check the value of E_ext as NAN can be returned for first few
+C timesteps. In such a case set external illuminance to 0.0
+          if(E_ext.ne.E_ext)then
+            E_ext=0.0
+          endif
+          E_design=lighting_lux(theactivityindex(ICOMP))
+
+C Manual switching
+          IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+            FDF1=0.5
+          ELSE
+            FDF1=1.0
+          ENDIF
+          IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+            FDR1=0.5
+          ELSE
+            FDR1=1.0
+          ENDIF
+          FD1=0.5*(FDF1+FDR1)
+
+C Photoelectric switching
+          IF(Ipe_control(ICOMP).EQ.1)THEN
+            IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+              FDF2=0.0
+            ELSEIF((E_ext*DFFront(Icomp)*10.).GT.(0.5*E_design))THEN
+              FDF2=0.5
+            ELSE
+              FDF2=1.0
+            ENDIF
+            IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+              FDR2=0.0
+            ELSEIF((E_ext*DFRear(Icomp)*10.).GT.(0.5*E_design))THEN
+              FDR2=0.5
+            ELSE
+              FDR2=1.0
+            ENDIF
+
+C Photoelectric dimming
+          ELSEIF(Ipe_control(ICOMP).EQ.2)THEN
+            IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+              FDF2=0.0
+            ELSE
+              call eclose(E_design,0.0,0.0001,closer)
+              IF(.NOT.CLOSER)FDF2=1.-E_ext*DFFront(Icomp)*10./E_design
+            ENDIF
+            IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+              FDR2=0.0
+            ELSE
+              call eclose(E_design,0.0,0.0001,closer)
+              IF(.NOT.CLOSER)FDR2=1.-E_ext*DFFront(Icomp)*10./E_design
+            ENDIF
+          ENDIF
+          FD2=0.5*(FDF2+FDR2)
+
+C Calculate daylight correction factor FD
+C If manual switching or both manual switching and photoelectric control
+          IF(Ilightcontrol(ICOMP).EQ.1)THEN
+            FD=FD1
+
+C If photoelectric control
+          ELSEIF(Ilightcontrol(ICOMP).EQ.2)THEN         
+            FD=FD2
+
+C Both photoelectric and manual
+          ELSEIF(Ilightcontrol(ICOMP).EQ.3)THEN
+            FD=min(FD1,FD2)
+
+C No control
+          ELSE
+            FD=1.
+          ENDIF
+
+C Range error trap
+          IF(FD.LT.1..and.FD.GT.0.)then
+            continue
+          ELSE
+            FD=1.
+          ENDIF
+
+C Calculate Occupancy correction factor FO
+          IF(IOcc_sensing(ICOMP).EQ.1)THEN
+            FO=0.95
+          ELSEIF(IOcc_sensing(ICOMP).EQ.2)THEN
+            FO=0.95
+          ELSEIF(IOcc_sensing(ICOMP).EQ.3)THEN
+            FO=0.90
+          ELSEIF(IOcc_sensing(ICOMP).EQ.4)THEN
+            FO=0.90
+          ELSEIF(IOcc_sensing(ICOMP).EQ.5)THEN
+            FO=0.82
+          ELSE
+            FO=1.0
+          ENDIF
+
+C Calculate parasitic power PP
+          PP=PE_sensor_PP(ICOMP)+Occ_sensor_PP(ICOMP)
+
+C Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
           IF(ILIGHTUSER(ICOMP).EQ.0)THEN
             ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
@@ -481,7 +579,8 @@ C Also display lighting TMAR(IFOC,7) is added for 24hrs every day
             else            
               QTOTLIGHT=
      &        PDRL(ILIGHT_IN_SBEMDB,2)*(real(ITMAR(IFOC,6))/100.0)*
-     &        VAL(ISD+1)*ZBASEA(ICOMP)+TMAR(IFOC,7)*ZBASEA(ICOMP)
+     &        VAL(ISD+1)*ZBASEA(ICOMP)*FD*FO+
+     &        (TMAR(IFOC,7)+PP)*ZBASEA(ICOMP)
             endif
           ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
@@ -489,10 +588,11 @@ C User specfied gains from lights (NCM purposes) in W/m2 per 100 lux
 C Gains=W/m2per100lux*fraction lights on*area*(required lux level/100lux)+
 C DisplaylightingW/m2*Area
             QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)*ZBASEA(ICOMP)*
-     &         (real(ITMAR(IFOC,6)/100.0))+TMAR(IFOC,7)*ZBASEA(ICOMP)
+     &         (real(ITMAR(IFOC,6)/100.0))*FO*FD+
+     &         (PP+TMAR(IFOC,7))*ZBASEA(ICOMP)
           ENDIF
         ENDIF
-
+ 
 C Convective and radiative lighting gains are the same at the moment (50%)
         QLIGHTCASC=QTOTLIGHT/2.
         QLIGHTCASR=QLIGHTCASC
