@@ -2100,6 +2100,12 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             BANGOB(icomp,nbo,2)=VX
             CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
             BANGOB(icomp,nbo,3)=VX
+            if(ND.ge.13)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2125,6 +2131,12 @@ C standard obstruction block when converted into a GB1 common block.
             nbo=nbobs(icomp)
             CALL EGETWI(LOUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
             CALL EGETWI(LOUTSTR,K,ival,6,6,'F','obs nb faces',IER)
+            if(ND.ge.6)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2212,6 +2224,12 @@ C standard obstruction block when converted into a GB1 common block.
             BANGOB(icomp,nbo,1)=VX
             BANGOB(icomp,nbo,2)=0.0   ! there is no 2nd rotation
             BANGOB(icomp,nbo,3)=0.0   ! there is no 3rd rotation
+            if(ND.ge.11)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2681,17 +2699,18 @@ C geometry file also write the NOX and NOZ values.
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,9F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
-     &        BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+     &        OPOB(icomp,ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
-            WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &        '*obsp',' 8 6 ',BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+            WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib),
+     &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib,
@@ -2716,10 +2735,10 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,7F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &        BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
+     &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
      &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
@@ -4032,7 +4051,7 @@ C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCOM,MV)
 
-      real bridglen ! Length (m) of potential thermal bridges in each zone.
+      real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
       common/gbridge/bridgelen(MCOM,10)
       
@@ -4045,11 +4064,12 @@ C   where a surface such as a floor has been subdivided)
       logical closeazi,closeelv,foundone,ok,dok,same
 
 C iwhich is local variable to sort most often referenced adjacent surf.
-      dimension iwhich(MV),iwhichs(MV),iwhichc(MV)
+      dimension iwhich(MV),iwhichs(MV)
       real va,vb,pa,pb
       dimension va(3),vb(3),pa(3),pb(3),vaa(3),vbb(3)
       real ux,uy,uz  ! unit vector along the edge
-      real dista,distb,distc
+      real dista,distc
+C      real distb ! currently not used
       logical closeux,closeuy,closeuz
 
       if(izone.ne.0.and.izone.le.NCOMP)then
@@ -4136,7 +4156,6 @@ C last vertext is reached point the end to the start point.
           do 46 ijj=1,MV
             iwhich(ijj)=0
             iwhichs(ijj)=0
-            iwhichc(ijj)=0
   46      continue
           list=NVER(isurf)
           nbedgshr(icc)=0
@@ -4287,7 +4306,7 @@ C Use ratio calculation to get point 100mm away.
                         vbb(2) = ((r2 * PB(2)) + (r1 * VB(2)))/1.0
                         vbb(3) = ((r2 * PB(3)) + (r1 * VB(3)))/1.0
                         dista = crow(PA,PB)  ! dist cog-to-cog
-                        distb = crow(VA,VB)  ! dist offset-to-offset
+C                        distb = crow(VA,VB)  ! dist offset-to-offset
                         distc = crow(VAA,VBB)! dist slight offset-to-offset
 
 C Debug.
