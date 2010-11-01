@@ -67,8 +67,6 @@ C ************************************************************
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/radcfg/LRADCF
-
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).
@@ -112,7 +110,7 @@ C Uncertainty.
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
       character*72 LCFGF,LPRJLG
-      character LCTLF*72,ctldoc*248,lradcf*72
+      character LCTLF*72,ctldoc*248
       character LAPROB*72 
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat

@@ -314,9 +314,6 @@ C ICPCON set to one if there is a CPCALC definition.
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
 
-C Radiance scenes file.
-      common/radcfg/LRADCF
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: IFCFD
@@ -477,7 +474,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
-      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15

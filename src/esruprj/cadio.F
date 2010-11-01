@@ -1546,7 +1546,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
       common/LLOG/LPRJLG
-      common/radcfg/LRADCF
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
@@ -1610,7 +1609,7 @@ C The string buffer doit is only used within ifdef code.
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
-      character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
+      character ctldoc*248,LCTLF*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
       character fs*1
       character LTMPFL*72

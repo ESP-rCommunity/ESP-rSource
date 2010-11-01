@@ -25,8 +25,8 @@ C  VEWFORM: View control and definition.
 C ******* View cone for plan/elevation.
       SUBROUTINE VCONE(direc)
 #include "building.h"
+#include "e2r_common.h"
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
@@ -63,7 +63,7 @@ C two light lines at edge of view cone.
         iupdown=-302
         isym=0
         call etplot(rvpx+wxe,rvpy+wye,iupdown,isym)
-        astrt=azim+(angh/2.)
+        astrt=azimuth+(angh/2.)
         RYAZI = astrt*RAD
         xastrt = rvpx+(VCL*SIN(RYAZI))
         yastrt = rvpy+(VCL*COS(RYAZI))
@@ -126,6 +126,7 @@ C ******* Default views formation.
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -138,31 +139,22 @@ C ******* Default views formation.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/rad2/mono,intext,ifocz
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
-      LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
-      logical skydone,outdone,indone,misdone,vewdone,glzdone,redraw
+      LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+
+      LOGICAL XST,OK,DOK,addview
+      logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
-      character outs*124,LBSRIF*72
+      character outs*124
       character doit*124,ltmp*72,trvewsh*10
-      character vewcmds*124,rvewsh*10
       integer NITEMS,INO  ! max items and current menu item
 
 #ifdef OSI
@@ -270,7 +262,11 @@ C Ask for name of new viewpoint file and set eye point at centre.
           rvpy=YMN+0.1
           rvpz=VIEWM(3)
         endif
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
         H(1)='This is a tag used for reference.'
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &                                         'short view tag',IER,1)
@@ -293,8 +289,12 @@ C If the default view.
           angv=90.0
           angh=90.0
         endif
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),azim,elev)
-        call AZ2UV(azim,elev,vdx,vdy,vdz)
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
+        call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       else
 
 C Perhaps a referenced file.
@@ -314,7 +314,7 @@ C Perhaps a referenced file.
 C Read a radiance view point file and make sure that the
 C view point is within the bounds of the image.
               call RRVEW(ITA2,ltmp,IER)
-              call UV2AZ(vdx,vdy,vdz,azim,elev)
+              call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
               XMN=AMIN1(XMN,rvpx)
               YMN=AMIN1(YMN,rvpy)
               ZMN=AMIN1(ZMN,rvpz)
@@ -360,7 +360,7 @@ C Reflect eyepoint in the perspective view.
       EYEM(1)=rvpx
       EYEM(2)=rvpy
       EYEM(3)=rvpz
-      call AZ2UV(azim,elev,vdx,vdy,vdz)
+      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       if(intext.eq.0)then
         ITPPSW=3
         call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
@@ -384,7 +384,7 @@ C Reflect eyepoint in the perspective view.
 10    INO = -4
 
 C Reconstitute the viewing vector and eye angle.
-      call AZ2UV(azim,elev,vdx,vdy,vdz)
+      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
 
@@ -401,7 +401,7 @@ C Reconstitute the viewing vector and eye angle.
       endif
       ITEM(4) =                   '  __________________________  '
       write(ITEM(5),'(A,3F6.1)')  'e eye @ :',rvpx,rvpy,rvpz
-      write(ITEM(6),'(A,2F6.1)')  'f direc azi elv:',azim,elev
+      write(ITEM(6),'(A,2F6.1)')  'f direc azi elv:',azimuth,elevtn
       write(ITEM(7),'(A,3F6.2)')  '  (vector):',vdx,vdy,vdz
       if(ITPPSW.eq.3)then
         write(ITEM(8),'(A,F5.1,a,F5.1,a)')
@@ -576,8 +576,8 @@ C Transform back from mouse position to actual coordinate.
               rvpz=EYEM(3)
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
-              azim=az
-              elev=el
+              azimuth=az
+              elevtn=el
               vewdone=.false.
               redraw =.true.
               MODLEN=.true.
@@ -620,8 +620,8 @@ C Transform back from mouse position to actual coordinate.
               EYEM(3)=rvpz
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
-              azim=az
-              elev=el
+              azimuth=az
+              elevtn=el
               vewdone=.false.
               redraw =.true.
               MODLEN=.true.
@@ -641,6 +641,8 @@ C convert into normal or take the direction from the perspective.
           if(IEE.eq.3)then
             goto 10
           elseif(IEE.eq.2)then
+
+C Update the viewing azimuth and elevation.
             call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &        VIEWM(3),az,el)
             write(outs,'(a,F7.1,a,F7.1)') 'The perspective azimuth is ',
@@ -649,9 +651,9 @@ C convert into normal or take the direction from the perspective.
             h(1)='Pause to allow you to adjust the view. '
             CALL ASKOK(outs,' Is this view ok?',OK,dok,1)
             if(OK)then
-              azim=az
-              elev=el
-              call  AZ2UV(azim,elev,vdx,vdy,vdz)
+              azimuth=az
+              elevtn=el
+              call  AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
               vewdone=.false.
               redraw =.true.
               MODLEN=.TRUE.
@@ -668,11 +670,11 @@ C convert into normal or take the direction from the perspective.
         if(IEE.eq.1)then
           call edisp(iuout,' ')
           H(1)='The view azimuth 0= looking north, 90 =looking east.'
-          CALL EASKR(azim,' ',' View azimuth (deg) ? ',
+          CALL EASKR(azimuth,' ',' View azimuth (deg) ? ',
      &      -359.,'W',359.,'W',90.,'view azimuth',IER,1)
-          CALL EASKR(elev,' ',' View elevation (deg) ? ',
+          CALL EASKR(elevtn,' ',' View elevation (deg) ? ',
      &      -89.,'W',89.,'W',0.,'view elevation',IER,1)
-          call AZ2UV(azim,elev,vdx,vdy,vdz)
+          call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
           vewdone=.false.
           redraw =.true.
         endif
@@ -809,9 +811,9 @@ C extend the list.
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
         WRITE(vewcmds(indxvew),'(a)') doit
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
         vewdone=.true.
       elseif(INO.EQ.(NITEMS-1))then

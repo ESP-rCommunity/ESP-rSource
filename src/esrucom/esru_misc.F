@@ -133,9 +133,6 @@ C HOT3000: BASESIMP.
       COMMON/PREC8/SLAT,SLON
       REAL :: slat,slon
 
-C Radiance scenes file.
-      common/radcfg/LRADCF
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
@@ -271,7 +268,6 @@ C door width and height.
       character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
