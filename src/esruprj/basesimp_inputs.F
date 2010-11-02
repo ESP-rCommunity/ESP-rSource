@@ -49,7 +49,7 @@ C COMMONS FOR BASEREAD
       CHARACTER*72 H,bsmFile,newFile
       CHARACTER*27 strHeight,strDepth,strLength,strWidth,strOverlap,
      &        strRSI,strSoil,strWater,strTGavg,strTGamp,strTGps
-      CHARACTER :: delimiter
+C      CHARACTER :: delimiter
       CHARACTER*72 sfile,snpfile,LBSIMP
 
       INTEGER iBSIMP ! iBSIMP flag to talk to cfg
@@ -100,20 +100,31 @@ C Declares initial default values for basesimp inputs.
 
 C FOLDER CHECK
 C Determines whether to use / or \ depending on system.
-      CALL get_environment_variable('DELIMITER',delimiter)
+C      CALL get_environment_variable('DELIMITER',delimiter)
 
 C Define the basesimp relative path (assuming user is in cfg folder).
 C This variable has been added to the COMMON/bsmt block also.
-      bsmpth = '../bsm'
+      if(bsmpth(1:2).eq.'  ') bsmpth = '../bsm'
 
-C Creates a folder in the same directory as the standard set of folders
-C called /bsm if it does not already exist.
-      INQUIRE(FILE=bsmpth//delimiter//'.',EXIST=exists)
+C Check if the zone bsm file already exists. If not it might be
+C necessary to create a folder in the same directory as the
+C standard set of folders called /bsm if it does not already exist.
+      call FINDFIL(LBSIMP(ICOMP),exists)
+C      INQUIRE(FILE=LBSIMP(ICOMP),EXIST=exists)
       IF(exists)THEN
+        CALL EDISP(IUOUT,
+     &    'The zone includes an existing BASESIMP file:')
+        CALL EDISP(IUOUT,LBSIMP(ICOMP))
         CONTINUE
       ELSE
-        CALL system('mkdir ../bsm')
-        CONTINUE
+        INQUIRE(FILE=bsmpth,EXIST=exists)
+        if(exists)then
+          continue
+        else
+
+C << use the pattern in folders.F to issue mkdir command >>
+          CALL system('mkdir ../bsm')
+        endif
       END IF !
 
 C HELP CONTENT

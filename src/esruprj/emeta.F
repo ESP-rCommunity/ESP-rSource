@@ -1604,6 +1604,12 @@ C Debug.
       elseif(WORD(1:7).eq.'*dbspth')then
         CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
         goto 43
+      elseif(WORD(1:8).eq.'*hvacpth')then
+        CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*bsmpth')then
+        CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
+        goto 43
 
 C Databases
       elseif(WORD(1:4).eq.'*prm')then

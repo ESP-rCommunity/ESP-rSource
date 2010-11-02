@@ -304,6 +304,8 @@ C Initial assumption is no SHOCC files.
       imgpth='./'
       radpth='./'
       dbspth='./'
+      bsmpth='./'
+      hvacpth='./'
       lradcf='UNKNOWN'
       cfgroot=' '
       LCTLF='UNKNOWN'
