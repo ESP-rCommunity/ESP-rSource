@@ -105,9 +105,6 @@ C Initial view.
       REAL :: angi,EYEMI,VIEWMI
       INTEGER :: initvt
 
-C Radiance scene file.
-      common/radcfg/LRADCF
-
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
@@ -293,7 +290,6 @@ C If 0 then the calculation includes diffuse shading.
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72

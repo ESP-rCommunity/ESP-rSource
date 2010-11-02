@@ -133,9 +133,6 @@ C HOT3000: BASESIMP.
       COMMON/PREC8/SLAT,SLON
       REAL :: slat,slon
 
-C Radiance scenes file.
-      common/radcfg/LRADCF
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
@@ -271,7 +268,6 @@ C door width and height.
       character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -531,6 +527,7 @@ C Clear obstructions in all zones.
           BANGOB(ix,ibu,1) = 0.0
           BANGOB(ix,ibu,2) = 0.0
           BANGOB(ix,ibu,3) = 0.0
+          OPOB(ix,ibu)=0.0
           BLOCKNAME(ix,ibu) = ' '
           LNBLOCKNAME(ix,ibu) = 0
           BLOCKMAT(ix,ibu) = ' '
@@ -1003,11 +1000,12 @@ C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
 
 C Note: legacy zone obstruction files only contain the single type
-C of obstruction with one angle of rotation.
+C of obstruction with one angle of rotation. Remember the number
+C of tokens in variable ND.
       DO 10 I=1,nbobs(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
-        IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
+        IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9.OR.ND.eq.10)THEN
           K=0
           CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
           CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
@@ -1024,6 +1022,7 @@ C of obstruction with one angle of rotation.
           CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
           BANGOB(icomp,I,1)=VX
           IF(ND.EQ.7)THEN
+            OPOB(icomp,I)=1.0
             IF(I.LE.9)THEN
               WRITE(BLOCKNAME(ICOMP,I),77)I
    77         FORMAT('B',I1)
@@ -1037,6 +1036,7 @@ C of obstruction with one angle of rotation.
             LNBLOCKMAT(ICOMP,I)=4
             BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.8)THEN
+            OPOB(icomp,I)=1.0
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
             LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
@@ -1047,6 +1047,20 @@ C of obstruction with one angle of rotation.
 
 C Get name of obstruction block and its construction (which might
 C contain spaces).
+            OPOB(icomp,I)=1.0
+            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,i)=lnblnk(BLOCKMAT(icomp,i))
+            BLOCKTYP(ICOMP,I)='obs '
+          ELSEIF(ND.GE.10)THEN
+
+C Get opacity and name of obstruction block and its construction (which might
+C contain spaces).
+            CALL EGETWR(OUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+            OPOB(icomp,I)=VX
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
             LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
@@ -1088,15 +1102,15 @@ C Trace.
      &         ' obstructions associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
-     &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+     &  'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
         DO 9995 I=1,nbobs(icomp)
           llbm=LNBLOCKMAT(ICOMP,I)
           llbn=LNBLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
      &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),
-     &      BANGOB(ICOMP,I,1),BLOCKNAME(ICOMP,I)(1:llbn),
+     &      BANGOB(ICOMP,I,1),OPOB(ICOMP,I),BLOCKNAME(ICOMP,I)(1:llbn),
      &      BLOCKMAT(ICOMP,I)(1:llbm)
- 9994     FORMAT(I3,7F8.1,' ',a,' ',a)
+ 9994     FORMAT(I3,7F8.1,F5.2,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
         CALL EDISP(ITRU,' ')
@@ -1146,15 +1160,15 @@ C Write number of blocks.
 
 C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
-     &'# origin X Y Z, width, depth, height, rot angle, descr, material'
+     &'# origin X Y Z, width, depth, height, rot ang, opac descr, cons'
       DO 10 I=1,nbobs(icomp)
         llbm=LNBLOCKMAT(ICOMP,I)
         llbn=LNBLOCKNAME(ICOMP,I)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
-     &    BANGOB(icomp,I,1),
+     &    BANGOB(icomp,I,1),OPOB(icomp,I),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
+  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE

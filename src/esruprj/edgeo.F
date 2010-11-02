@@ -2090,17 +2090,17 @@ C format for each type of obstruction.
                 if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
                   WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &              DZOB(icomp,I),BANGOB(icomp,I,1),
+     &              DZOB(icomp,I),BANGOB(icomp,I,1),OPOB(icomp,I),
      &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994             FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
+ 9994             FORMAT(I3,6F8.2,2F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
                   WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
      &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
      &              DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
-     &              BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
-     &              BLOCKMAT(icomp,I)(1:lnbm)
- 9993             FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
+     &              BANGOB(icomp,I,3),OPOB(icomp,I),
+     &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
+ 9993             FORMAT(I3,6F8.2,4F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
                   WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
@@ -8544,7 +8544,7 @@ C derived.h are derived areas and U values for zones and the model
       common/pophelp/h(60)
 
 C bridgelen was calculated in subroutine suredgeadj
-      real bridglen ! Length of potential thermal bridges in each zone.
+      real bridgelen ! Length of potential thermal bridges in each zone.
       common/gbridge/bridgelen(MCOM,10)
 
 C Thermal bridge common block: 

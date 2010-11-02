@@ -23,21 +23,20 @@ C Routines to read in various radiance generated files.
 C ******* Default views formation.
       SUBROUTINE RRVEW(ITA2,rviewf,IER)
 
+#include "building.h"
+#include "e2r_common.h"
+
 C espriou.h provides current file.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/expath/runpath,pathtype
 
       character OUTSTR*124,WORD*20,rviewf*72,outs*124
-      character tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character tfile*72
 
       IER=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in rview file, note it is assumed to be one line.
       write (tfile,'(2a)') runpath(1:lnrp),rviewf(1:lnblnk(rviewf))
@@ -108,25 +107,22 @@ C Attempt to read in rview file, note it is assumed to be one line.
 C ************** RRSKY **************
 C RRSKY Read radiance sky file.
 
-      SUBROUTINE RRSKY(ITA2,rskyfil,ga,IER)
+      SUBROUTINE RRSKY(ITA2,ga,IER)
 #include "building.h"
 #include "site.h"
+#include "e2r_common.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/expath/runpath,pathtype
 
-      character OUTSTR*124,WORD*20,rskyfil*72,outs*124,CMDL*124,skopt*3
-      character tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
+      character OUTSTR*124,WORD*20,outs*124,CMDL*124,skopt*3
+      character tfile*72
 
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in sky file.
       write (tfile,'(2a)') runpath(1:lnrp),
@@ -282,10 +278,6 @@ C NOTE: Octree path/file.  Relitive to rif folder and root as in 'rif' file.
 C        'OCTREE= octree/lights.oct'
 C NOTE: Pict path/file root name.  Relative to rif file folder.
 C        'PICTURE= images/lights' get interpreted to images/lights_lit.pic
-C rambfil = Interreflection storage file, name should be based on rif root.  Used
-C        if ambient bounces >0.
-C optnfil = Options file for rpict and rview get stored here (for reference
-C        and to shorten the command line).
 
 C vewcmds(20) Structure giving view information. First column is interpreted as
 C          a short name for the view - examples below:
@@ -295,40 +287,22 @@ C RVB - reporting verbosity, 's'= silent.
 C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,file,RVB,IERR)
+#include "building.h"
 #include "espriou.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/rad2/mono,intext,ifocz
-      common/e2rc/crenrp,coconv
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rf/rambfil,optnfil
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      common/radgt/iglzty
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/radrp/ipicx
-
-      common/expath/runpath,pathtype
-
-      character rscedes*72,rzoncmd*60,rupaxis*1
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character crenrp*160,coconv*40
-      character rambfil*72,optnfil*72
-      character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
+      character tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character tsc*72,tword*10,file*72,RVB*1
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
 
       IERR=0
-      lnrp=lnblnk(runpath)
 
 C Reset render and octree special options.
       crenrp='   '
@@ -432,7 +406,7 @@ C Run time files.
         CALL EGETRM(OUTSTR,K,picfil,'W','picture file',IER)
       elseif(word(1:6).eq.'scene='.or.word(1:6).eq.'illum=')then
 
-C Secne files.
+C Scene files.
 C << Still require to parse files in the rscedes based hopefully on
 C << the ending characters of the file.
         indxscn=indxscn+1
@@ -481,37 +455,16 @@ C ********************* MKRIF *********************
 C MKRIF - Write radiance RIF file.
 C IFC=4 ask before overwriting, IFC=3 overwrite.
       SUBROUTINE MKRIF(ITA2,file,IFC,IGL,IER)
-      
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
-      common/rad2/mono,intext,ifocz
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
-      common/e2rc/crenrp,coconv
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/radrp/ipicx
-      common/e2rf/rambfil,optnfil
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/radgt/iglzty
-      common/expath/runpath,pathtype
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character rscedes*72,rzoncmd*60,rupaxis*1,aglzfil*72
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character rambfil*72,optnfil*72
-      character crenrp*160,coconv*40
-      character vewcmds*124,rvewsh*10
-      character*72 matfil,rmmfil,glzfil
       character file*72,tfile*72
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
 
       logical XST
 
 C Open rif file.
-      lnrp=lnblnk(runpath)
       IER=0
       write(tfile,'(2a)')runpath(1:lnrp),file(1:lnblnk(file))
       CALL ERPFREE(ITA2,ISTAT)
@@ -695,25 +648,18 @@ C ******* FIGSCEN
 C Attempt to judge the type of file in a scene description from the
 C terminating character (or later the contents).
       subroutine figscen(ITA3,cmdname,ier)
-      
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1m/matfil,rmmfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath,pathtype
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character*72 matfil,rmmfil,glzfil
-      character cmdname*72,OUTSTR*124,runpath*72,pathtype*24,tfile*72
-      integer lnrp  ! length of run path
+      character cmdname*72,OUTSTR*124,tfile*72
 
       logical XST
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Attempt to read in file, note it is assumed to be one line.
       write(tfile,'(a,a)')runpath(1:lnrp),cmdname(1:lnblnk(cmdname))

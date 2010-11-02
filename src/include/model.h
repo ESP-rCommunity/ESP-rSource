@@ -74,3 +74,7 @@ C Temporal file units and file types
       integer itdflg  ! 0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       integer iutdfa  ! file unit for ascii version of temporal file
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+
+C Radiance rcf scene file associated with the model.
+      character LRADCF*72
+      common/radcfg/LRADCF

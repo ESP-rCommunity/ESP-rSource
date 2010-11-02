@@ -136,8 +136,10 @@ C Obstruction block commons (whole model)
       real XOB,YOB,ZOB  ! coordinates of each block origin.
       real DXOB,DYOB,DZOB  ! width depth and height of each block
       real BANGOB       ! three rotation angles of block
+      real OPOB         ! opacity of obstruction 0.0 is transparent 1.0 is opaque
       common/GS7/nbobs(MCOM),XOB(MCOM,MB),YOB(MCOM,MB),ZOB(MCOM,MB),
-     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB,3)
+     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB,3),
+     &  OPOB(MCOM,MB)
 
 C Eight coordinates for general polygon obstruction 'obsp'. If an
 C obstruction is of type 'obsp' then the XOB,YOB,ZOB and DXOB,DYOB

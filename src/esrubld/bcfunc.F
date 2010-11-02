@@ -5730,19 +5730,19 @@ C to reflect the highest heating setpoint in the activities timestep
 C data. (the original static heating setpoint in SBEM.db1 was for use
 C only in iSbem.
       if(INOTI.eq.1.or.(inoti.eq.4.and.iDsmTestingFlag.eq.1))then
-	iitdi=IACTIV(IICOMP)
-	if(iNatVentilatedFlag.eq.1)then
+        iitdi=IACTIV(IICOMP)
+        if(iNatVentilatedFlag.eq.1)then
 
-	  HSPTest=TMAR(iitdi,IATDF(iitdi,15)) ! static high HSP
-	  CSP=HSPTest+1.0   ! the official NCM logic
-	  cmsg=' stat hsp+1'
+          HSPTest=TMAR(iitdi,IATDF(iitdi,15)) ! static high HSP
+          CSP=HSPTest+1.0   ! the official NCM logic
+          cmsg=' stat hsp+1'
 
 C Set up maximum cooling to equivalent of 5 air changes
           QCM=-1.*0.333*5.*vol(iicomp)*(tfa(iicomp)-TFLWF)
 
 C If ambient is hotter than interior no cooling can be achieved
-	  if(QCM.gt.0.)QCM=0.
-	endif
+          if(QCM.gt.0.)QCM=0.
+        endif
       endif
 
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)then
@@ -6217,7 +6217,7 @@ C Find version of materials database. If 1.1 then use material arrays.
         else
           call edisp(iuout,'BCL99: Materials arrays are incomplete.')
         endif
-	
+
 C Reset properties by reading in zone descriptor files.
 
 C Debug.
