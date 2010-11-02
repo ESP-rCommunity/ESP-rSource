@@ -121,6 +121,7 @@ C ********* chgazi
 C CHGAZI is called from C code in esp-r.c or esru_x.c with an increment or 
 C decrement to the viewing azimuth (icazi). If not needed then provide a dummy. 
       subroutine chgazi(icazi)
+#include "building.h"
 #include "prj3dv.h"
 
 C Passed paremter.
@@ -160,6 +161,7 @@ C ********* chgelev
 C CHGELEV is called from C code in esp-r.c or esru_x.c with an increment or 
 C decrement to the viewing elevation (icelev). If not needed then provide a dummy. 
       subroutine chgelev(icelev)
+#include "building.h"
 #include "prj3dv.h"
 
 C Passed paramter.
@@ -273,8 +275,6 @@ C Passed parameters.
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -287,8 +287,6 @@ C Local arrays.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
       CHARACTER btemp*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSI
       integer iix,iiy,iixlast,iiylast
@@ -897,13 +895,11 @@ C Passed parameters.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       LOGICAL OK,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
@@ -912,7 +908,6 @@ C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
 
       IER=0
       IUF=IFIL+1
-      newgeo=.false.  ! assume older format geometry.
 
 C Write to previously opened viewer file.
 
@@ -948,12 +943,7 @@ C << task to be done >>
       IF(INPIC.EQ.0)GOTO 105
       DO 83 IZ=1,INPIC
         IF(IVALS(IZ).GT.0)THEN
-          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,iuout,IER)
-          else
-            call egomin(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
-          endif
+          call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,iuout,IER)
           IF(IER.NE.0)THEN
             dok=.false.
             h(1)='While scanning the model`s zone geometry a problem'

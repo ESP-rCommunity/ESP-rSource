@@ -25,7 +25,7 @@ C Revised to take in configuration file and zone focus.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G1/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -52,7 +52,6 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/pophelp/h(60)
@@ -77,10 +76,7 @@ C IEEE callback (Solaris)
 C Path to model.
       common/user/browse
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -109,7 +105,6 @@ C Name of current application
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
@@ -119,14 +114,13 @@ C Name of current application
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,upath*72,cfgroot*24
+      character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO ! max items and current menu item
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -191,7 +185,6 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
       ITFS=0
       IMFS=1
       ATR=.TRUE.
-      newgeo=.false.  ! assume older format geometry.
       ZN='UNKNOWN'
       LCFGF='UNKNOWN'
       ICOMP=-1
@@ -757,12 +750,7 @@ C Process a zone....
 C On entry refresh geometry, determine its bounds, force it
 C drawn and remember number of surfaces to pass to sensor file.
       ICOMP=IC
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.

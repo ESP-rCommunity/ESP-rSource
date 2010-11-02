@@ -82,14 +82,13 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 C Project log file, journal on/off, unit number, cmd, file name.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -98,10 +97,8 @@ C Ground topology.
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Indicator of possible focus zone.
@@ -120,10 +117,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 
 C Radiance RIF file.
       common/radcfg/LRADCF
-
-C Temporal definitions.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
@@ -159,7 +152,6 @@ C Name of current application
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
@@ -168,16 +160,14 @@ C Name of current application
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,upath*72,cfgroot*24,exemplar*144
+      character path*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
-      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
-      character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
+      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72
+      character journcmd*20,jfile*72,tfile*72,cjfile*72
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
@@ -185,6 +175,7 @@ C      character outs248*248
       CHARACTER dinstpath*48,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
+      character fs*1
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12
@@ -196,8 +187,10 @@ C Returned parameters from silentread.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -229,9 +222,13 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
-      matver=0.0   ! initial assumption of binary materials database
-      newgeo=.false.  ! assume older format geometry.
 
+C Initial assumptions about databases (prior to configuration file scan
+C that the default database files will be defined explicitly).
+      matver=0.0   ! initial assumption of binary materials database
+      ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
+      ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -244,11 +241,13 @@ C Set folder separator (fs) to \ or / as required.
       write(zonepth,'(a1,a1)')'.',fs
       write(netpth,'(a1,a1)')'.',fs
       write(ctlpth,'(a1,a1)')'.',fs
+      write(aimpth,'(a1,a1)')'.',fs
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
+      write(hvacpth,'(a1,a1)')'.',fs
       IYEAR=2007
       IBDOY=1
       IEDOY=365
@@ -529,6 +528,8 @@ C Temporal information on channel IFIL+7.
 C Special materials/miscel component database.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
+
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
@@ -555,6 +556,9 @@ C and if so do what it says.
             if(theprimedirective(1:3).eq.'new')then
               call usrmsg('Processing of silent file complete.',
      &          'Exiting from project manager','P')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             else
@@ -577,6 +581,8 @@ C We assume that the user owns the model to be transformed.
             if(ier.eq.-3)then
               call usrmsg('Configuration file could not be loaded.',
      &          'Exiting from project manager','W')
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             endif
@@ -589,6 +595,8 @@ C Open core of databases if not already done so.
               if(ier.ne.0)then
                 call usrmsg('Possible problem with the Constructions',
      &               'or Optical Properties db. Exiting.','W')
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
                 CALL EPAGEND
                 STOP
               endif
@@ -624,6 +632,9 @@ C Perform either the transform or rotation.
               call usrmsg(
      &          'Processing of transform or rotate complete.',
      &          'Exiting from project manager','W')
+
+C Clear allocatable arrays
+              CALL DeallocateAllArrays
               CALL EPAGEND
               STOP
             else
@@ -821,12 +832,7 @@ C Pass information to C library code if running in graphic mode.
             endif
           else
             itru=iuout
-            call eclose(gversion(index),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
-            else
-              call egomin(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
-            endif
+            call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
             IF(IER.NE.0)goto 3
 
             CALL EDZONE(ITRC,index,IER)
@@ -994,6 +1000,9 @@ C If there is a temporary optical file remove it.
           CALL EFOPSEQ(IUF,topt,1,IER)
           CALL EFDELET(IUF,ISTAT)
         endif
+
+C Clear allocatable arrays
+        CALL DeallocateAllArrays
         CALL EPAGEND
         STOP
       ELSEIF(INO.EQ.1)THEN
@@ -1427,9 +1436,11 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
+#include "tdf2.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       
@@ -1446,11 +1457,6 @@ C to include the path and create a string to drive the modules.
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C Temporal header (to get its time frequency)
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      common/CFGV/icfgv
       common/IPVF/lipvdatf
 
 C Typical seasons and default simulation periods. Isset is the
@@ -1498,6 +1504,8 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
+      integer MITEM,INO,ic,IRT ! max items and current menu item
+
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -2419,6 +2427,7 @@ C << the longer string used when commissioning a simulation.
 
       subroutine ipvactions(ier)
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 
       integer lnblnk  ! function definition
@@ -2432,9 +2441,7 @@ C to include the path and create a string to drive the modules.
       common/appw/iappw,iappx,iappy
       common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
-      common/uhome/upath
       common/exporttg/xfile,tg,delim
-      common/CFGV/icfgv
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -2457,7 +2464,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
-      character ltpath*72,filen*72,ltmp*72,upath*72
+      character ltpath*72,filen*72,ltmp*72
       character basefile*144,variantfile*144,outs*124
       character word1*20,word2*40,word3*20,outstr*124
       character xfile*144,tg*1,delim*1,tab*1,fs*1
@@ -2465,6 +2472,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
+      integer IWM   ! for radio button
 
 C   anu_ht_m2 - annual heat kWh/m2/a
 C   anu_ht_bld - annual heat for building kWh/a
@@ -2855,6 +2863,7 @@ C Toggle delimeter.
         H(5) ='  - comma separator (e.g. for excel);'
         H(6) ='  - tab separator (e.g. for excel);'
         H(7) ='  - tagged (marked up data).'
+        IWM=1
         CALL EASKATOG('Column delimeter:',' ',
      &    'spaces','single space','tab','comma','tagged',
      &    'cancel',' ',IWM,7)
@@ -3245,18 +3254,12 @@ C to include the path and create a string to drive the modules.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
       character H*72,CXSTR*78
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
       CHARACTER*72 LAPROB
@@ -3266,10 +3269,8 @@ C to include the path and create a string to drive the modules.
       logical tmcok,shdok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       asked=.false.
-      newgeo=.false.  ! assume older format geometry.
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
@@ -3488,12 +3489,7 @@ C Check contiguity.
       ICC=0
       prob=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(iz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
         do 289 IS=1,NSUR
           ICC=ICC+1
           CALL ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
@@ -3658,12 +3654,7 @@ C Do cursory check to see if the file is sorted.
           else
 
 C Zone construction file exists so attempt to scan it.
-            call eclose(gversion(i),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(I),I,0,iuout,IER)
-            else
-              call egomin(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
-            endif
+            call georead(IFIL+1,LGEOM(I),I,0,iuout,IER)
             CALL ECONST(LTHRM(I),IFIL+1,I,0,IUOUT,IER)
             if(ier.ne.0)then
               if(lh.lt.60)then
@@ -3796,13 +3787,13 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -4038,6 +4029,7 @@ C of the same project that can later be modified.
       CHARACTER ITEMS*36,ITEMS2*36,APP*6
       CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
+      integer MITEM,INO,MITEMS2,KNO ! max items and current menu item
 
       IF(BROWSE)THEN
         CALL EDISP(IUOUT,
@@ -4399,7 +4391,6 @@ C Path to model and command line file (if any).
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -4407,8 +4398,6 @@ C Path to model and command line file (if any).
 
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -4425,8 +4414,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
-      CHARACTER*24 dbspth,cfgroot
+      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
@@ -4437,6 +4425,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
+      integer IW  ! for radio button
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -4488,11 +4477,7 @@ C geometry and attribution
             ICOMP=ivals(IC)
             EXT='.geo'
             call eclose(gversion(icomp),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-            else
-              call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
-            endif
+            call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
             LGEOM(ICOMP)=NNAME
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -4837,6 +4822,7 @@ C << formats e.g. to remove obstructions from within geometry file.
           h(23)='Selecting continue at this point you will be asked'
           h(24)='if you want to make any other changes to the model'
           h(25)='before the information is written out. '
+          IW=1
           CALL EASKATOG(
      &      'The model includes detailed shading/insolation.',' ',
      &      'dereference shading','dereference obstructions',
@@ -5160,11 +5146,7 @@ C Check if geometry file has already been updated.
             if(.NOT.donegeo)then
               EXT='.geo'
               call eclose(gversion(icomp),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
-              else
-                call egomin(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
-              endif
+              call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
               CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
               LGEOM(ICOMP)=NNAME
               if(igupgrade.eq.2.and.(.NOT.newgeo))then

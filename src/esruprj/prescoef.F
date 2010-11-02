@@ -43,6 +43,7 @@ C a building.
       common/pophelp/h(60)
       dimension ITEMS(15)
       character items*36,h*72,hold*32
+      integer nitms,INO ! max items and current menu item
 
       logical moddb,close
 
@@ -341,14 +342,10 @@ C should calculate pressure coefficients.
 #include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
       common/pophelp/h(60)
       common/FILEP/IFIL
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -363,7 +360,6 @@ C should calculate pressure coefficients.
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION VERT(35),COMPS(MPCP),IVAL(MPCP)
       CHARACTER VERT*75,KEY*1,H*72,DESCRC*25
@@ -372,13 +368,12 @@ C should calculate pressure coefficients.
       character*72 LTMP,FICOCP
       CHARACTER OUTSTR*124,RSTR*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,t28*28
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
       real DX1,DZ1  ! to avoid name clash in geometry.h
+      integer MVERT,IVERT ! max items and current menu item
       
 #ifdef OSI
       integer iix,iiy
@@ -388,7 +383,6 @@ C should calculate pressure coefficients.
 
 C Initialise facade coordinates menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
-      newgeo=.false.  ! assume older format geometry.
       IUM=IFIL+7
  92   MHEAD=1
       MCTL=7
@@ -581,12 +575,7 @@ C Add/generate coordinates.
 C Manual input of cordinates. 
           CALL EASKGEOF('Select a zone for coords:',CFGOK,IC,'-',IER)
           IUF=IFIL+1
-          call eclose(gversion(IC),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
-          else
-            call egomin(IUF,LGEOM(IC),IC,1,0,iuout,IER)
-          endif
+          call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
           nzg=1
           nznog(1)=IC
           izgfoc=IC
@@ -709,12 +698,7 @@ C Ask whether user wants to define another point.
 C Open geometry file for surface property check. 
           IUF=IFIL+1
           do 46 IZU=1,NCOMP
-            call eclose(gversion(IZU),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
-            else
-              call egomin(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
-            endif
+            call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
 
 C  Check whether zone has external transparent surface(s)
             do 42 IZW=1,NZSUR(izu)
@@ -1468,7 +1452,9 @@ C IER=0 OK, IER=1 problem.
       LOGICAL OK,dok,moddb
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
+      integer iw      ! for radio button
       logical unixok  ! to check for database path file separators
+      integer NITMS,IVERT,INOO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1617,6 +1603,7 @@ C List pressure coefficients.
 
 C The next section is to add/delete/copy a set.
         H(1)='The continue option allows you to cancel choice. '
+        iw=1
         call easkatog('Modify sets:',' ','add (manually)',
      &    'add (via caluclation)','delete','copy','continue',' ',' ',
      &    iw,1)

@@ -44,10 +44,7 @@ C creates a grey-scale VRML 2.0 world.
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/GTFIL/GTGEOM
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -61,19 +58,15 @@ C creates a grey-scale VRML 2.0 world.
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       CHARACTER cfgroot*24,LCFGF*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer llbm    ! length of block material
       
 C Setup standard assumptions.
       IFIL=11
-      newgeo=.false.  ! assume older format geometry.
 
 C Ftr is cut-off point for deciding visual trans is high enough
 C for surface to be considered fictitious.
@@ -186,12 +179,7 @@ C For each zone in the model create an anchor.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-        call eclose(gversion(newfoc),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-        else
-          call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
-        endif
+        call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa

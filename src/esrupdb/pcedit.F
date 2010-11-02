@@ -59,6 +59,7 @@ C            for this component.
       character buffer*120,ltmp*80,H*72
       character zitem(9)*20
       LOGICAL OK,dok
+      integer nitems,ino ! max items and current menu item
       
 C The following statement writes a dummy variable on the last record
 C of the binary file so that end-of-file marker is anchored there. 

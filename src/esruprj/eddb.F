@@ -70,9 +70,11 @@ C Default esp-r distribution path.
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,browse,modcon,QUIET
       logical haveconstr
+      integer ihd  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
       character H*72,path*72
-      character*72 ITEMS(16)
+      character*72 ITEMS(15)
       character dinstpath*48
       
 C Strings for dos version of source and destination of db file.
@@ -99,49 +101,51 @@ C Begin with menu of default dbs.
       
       WRITE(ITEMS(1),'(2A)')'  model path: ',path(1:56)
       ITEMS(2) ='  _______________________________ '
-      WRITE(ITEMS(3),'(2A)')'a annual climate         : ',LCLIM(1:44)
-      WRITE(ITEMS(4),'(2A)')'b multi-year climate     : ',cTemp(1:44)
+      WRITE(ITEMS(3),'(2A)')  'a annual climate         : ',LCLIM(1:43)
+      WRITE(ITEMS(4),'(2A)')  'b multi-year climate     : ',cTemp(1:43)
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
-        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:44)
+        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:43)
       elseif(ipathapres.eq.2)then
-        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:44)
+        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:43)
       endif
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
-        WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:44)
+        WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:43)
       elseif(ipathmat.eq.2)then
-        WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:44)
+        WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:43)
       endif
 
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
-        WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
+        WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:43)
       elseif(ipathmul.eq.2)then
-        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:44)
+        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:43)
       endif
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-        WRITE(ITEMS(8),'(2A)') 'f plant components       : ',LPCDB(1:44)
+        WRITE(ITEMS(8),'(2A)')'f plant components       : ',LPCDB(1:43)
       elseif(ipathpcdb.eq.2)then
-        WRITE(ITEMS(8),'(2A)') 'f std plant components   : ',LPCDB(1:44)
+        WRITE(ITEMS(8),'(2A)')'f std plant components   : ',LPCDB(1:43)
       endif
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-        WRITE(ITEMS(9),'(2A)')'g event profiles         : ',LPRFDB(1:44)
+        WRITE(ITEMS(9),'(2A)')'g event profiles         : ',
+     &    LPRFDB(1:43)
       elseif(ipathprodb.eq.2)then
-        WRITE(ITEMS(9),'(2A)')'g std event profiles     : ',LPRFDB(1:44)
+        WRITE(ITEMS(9),'(2A)')'g std event profiles     : ',
+     &    LPRFDB(1:43)
       endif
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(ITEMS(10),'(2A)')'h optical properties     : ',
-     &    LOPTDB(1:44)
+     &    LOPTDB(1:43)
       elseif(ipathoptdb.eq.2)then
         WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
-     &    LOPTDB(1:44)
+     &    LOPTDB(1:43)
       endif
       WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
 
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
-        WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
-     &    MCMPDBFL(1:44)
+        WRITE(ITEMS(12),'(2A)')'j miscel components      : ',
+     &    MCMPDBFL(1:43)
       elseif(ipathmsc.eq.2)then
-        WRITE(ITEMS(12),'(2A)')  'j std miscel components  : ',
-     &    MCMPDBFL(1:44)
+        WRITE(ITEMS(12),'(2A)')'j std miscel components  : ',
+     &    MCMPDBFL(1:43)
       endif
       ITEMS(13)='  _______________________________ '
       ITEMS(14)='? help                            '
@@ -174,15 +178,15 @@ C Help text for this menu.
       H(17)='are not found, the most likely reason is that they'
       H(18)='have not been correctly installed in folders'
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
-
+      NITMS=15
       if(MMOD.EQ.8)then
         impx=0
         impy=0
         iwe=iw
-        CALL VWMENU('Database Maintenance',ITEMS,15,impx,impy,iwe,
+        CALL VWMENU('Database Maintenance',ITEMS,NITMS,impx,impy,iwe,
      &    irpx,irpy,INO)
       else
-        CALL EMENU('Database Maintenance',ITEMS,15,INO)
+        CALL EMENU('Database Maintenance',ITEMS,NITMS,INO)
       endif
       IF(INO.EQ.15)THEN
         if(browse)return
@@ -332,6 +336,7 @@ C Manage miscellaneous componens database.
 
 C Menu help text.
         H(1)='Information on each databases is provided.'
+        ihd=1
         call easkatog(' ','Help options:','overview','climate',
      &   'materials','constructions','optics','plant','cancel',ihd,1)
         if(ihd.eq.1)then
@@ -642,6 +647,7 @@ C     if blank then no file name change implied.
 
       SUBROUTINE EDDBMATERIAL(moddb,modcon,APP)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
       
@@ -653,8 +659,6 @@ C     if blank then no file name change implied.
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Default ESP-r distribution path.
       common/deflt4/dinstpath
@@ -666,8 +670,6 @@ C Default ESP-r distribution path.
       logical closemat1,closemat2
 
       character H*72,LLTMP*144,LTMP*92,lguess*144
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character fs*1,message*48
       character doit*300,LCOPY*144
       character DFILE*144,LLASCI*144,LLTMPFL*144
@@ -1538,6 +1540,8 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 
       SUBROUTINE EDDBPCDB(moddb,APP)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "plantdb.h"
       
@@ -1545,8 +1549,6 @@ C     if blank then no file name change implied.
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/rpath/path
@@ -1556,8 +1558,6 @@ C     if blank then no file name change implied.
       character longtfile*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,outs248*248,APP*4,ext*4
-      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
-      CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,tmode*8
@@ -2092,6 +2092,8 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 C
       SUBROUTINE EDDBPROFILE(moddb,APP)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "profile.h"
 
@@ -2108,8 +2110,6 @@ C << introduce concept of types of profiles
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -2119,8 +2119,6 @@ C << introduce concept of types of profiles
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
-      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
-      CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2808,6 +2806,7 @@ C     if blank then no file name change implied.
 
       SUBROUTINE EDDBMLCON(moddb,modcon,APP)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
       
@@ -2815,8 +2814,6 @@ C     if blank then no file name change implied.
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
@@ -2832,8 +2829,6 @@ C Default esp-r distribution path.
       character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER outs248*248
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -3345,11 +3340,10 @@ C     if blank then no file name change implied.
 C This facility offers browsing for GTK version.
       SUBROUTINE EDDBOPT(moddb,APP)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -3361,8 +3355,6 @@ C This facility offers browsing for GTK version.
       character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER outs248*248
-      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
-      CHARACTER*24 DOCPTH,TMPPTH
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
@@ -3861,6 +3853,7 @@ C     if blank then no file name change implied.
 C This facility offers browsing for GTK version.
       SUBROUTINE EDDBPRES(moddb,APP)
 #include "building.h"
+#include "model.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
       
@@ -3869,8 +3862,6 @@ C This facility offers browsing for GTK version.
       common/pophelp/h(60)
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
@@ -3883,8 +3874,6 @@ C This facility offers browsing for GTK version.
       character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
-      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
-      CHARACTER*24 DOCPTH,TMPPTH
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
@@ -4409,8 +4398,6 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
 
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       
       integer ncomp,ncon
@@ -4431,8 +4418,6 @@ C Calendar.
       character longtfile*144,longtafile*144,message*48,longtmp*144
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
-      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
-      CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48,path*72
@@ -5178,6 +5163,7 @@ C working option for creating a new database and editing of the database
 C is via a text editor.
       SUBROUTINE EDDBMSC(moddb,APP)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -5185,10 +5171,6 @@ C is via a text editor.
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
 
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20

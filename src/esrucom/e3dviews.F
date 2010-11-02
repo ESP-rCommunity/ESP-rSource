@@ -41,6 +41,7 @@ C BNDOBJ:  Does range checking on objects to be displayed.
 C-----------------------------------------------------------------------
 C     LENS - initialise viewing parameters
       SUBROUTINE LENS(IER)
+#include "building.h"
 #include "prj3dv.h"
 C prj3dv.h provides common blocks drwmat clip and image
 
@@ -289,6 +290,7 @@ C     ISTAT =  1 ALL THE POLYGON IS OUTSIDE THE VIEW FRUSTRUM
 C     ISTAT = -1 THE POLYGON STRADDLES THE VIEW FRUSTRUM
 
       SUBROUTINE CLIPFL(NAP,AX,AY,AZ,ISTAT)
+#include "building.h"
 #include "prj3dv.h"
 C prj3dv.h provides common block clip.
 
@@ -468,6 +470,7 @@ C Find equation of plane (as in PLNBX) but for AX(MV),AY(MV,AZ(MV).
 C------- CUTPOL ------------------------------------------------------
 C CUTPOL: cuts a polygon within a viewing frustrum.
       SUBROUTINE  CUTPOL(NA,NAP,IAPNT,AX,AY,AZ,IANXT,ISTAT)
+#include "building.h"
 #include "prj3dv.h"
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
@@ -778,21 +781,17 @@ C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5/GS6.
+C geometry.h provides commons G0,G1 G2, GS5/GS6.
 #include "geometry.h"
 #include "prj3dv.h"
 
 C XMN,YMN,ZMN are the model minimum bounds.
 C XMX,YMX,ZMX are the model maximum bounds.
-C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
-C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
-C ZBFLG()=0 bounds must be recalculated, ZBFLG()=1 use current value.
+C iZBFLG()=0 bounds must be recalculated, iZBFLG()=1 use current value.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Ground geometry.
@@ -852,8 +851,7 @@ C Process selected zones.
         IVZ=nznog(IZ)
 
 C If bounds ok then update project bounds with saved zone values.
-        call eclose(ZBFLG(IVZ),1.0,0.001,CLOSE)
-        if(CLOSE)then
+        if(iZBFLG(IVZ).eq.1)then
           XMN=AMIN1(XMN,ZXMN(IVZ))
           YMN=AMIN1(YMN,ZYMN(IVZ))
           ZMN=AMIN1(ZMN,ZZMN(IVZ))
@@ -907,8 +905,7 @@ C Update the overall model bounds to include any obstructions.
         endif
 
 C If zone bounds known jump to next zone.
-        call eclose(ZBFLG(IVZ),1.0,0.001,CLOSE)
-        if(CLOSE)goto 100
+        if(iZBFLG(IVZ).eq.1)goto 100
 
 C If in single zone mode recover common data from memory. 
       ENDIF
@@ -935,7 +932,7 @@ C (No centre of gravity required if this is the site origin).
 
 C Set flag to denote that the zone bounds have been calculated.
         IVZ=nznog(IZ)
-        ZBFLG(IVZ)=1.0
+        iZBFLG(IVZ)=1
 
         call eclose(ZXMN(IVZ),0.0,0.001,CLOSE)
         if(ZXMN(IVZ).LT.0..AND.ZXMX(IVZ).GE.0.0)then

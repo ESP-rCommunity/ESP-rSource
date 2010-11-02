@@ -1,7 +1,7 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs the X11 or GTK ESP-r distribution version 11.8"
+echo "This script installs the X11 or GTK ESP-r distribution version 11.9"
 echo "on a Windows computer which already has the Cygwin emulation"
 echo "environment up and running."
 echo " "
@@ -131,12 +131,12 @@ fi
 cd /usr/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.8_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_X11_11.9_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.8_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.9_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "

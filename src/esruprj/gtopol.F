@@ -58,6 +58,8 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+      integer nitms,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -417,6 +419,9 @@ C IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
+      integer IRT  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy
 #else
@@ -1198,6 +1203,7 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(14)='clicking on the wire-frame image. '
         h(15)=' '
         h(16)='A cancel request leaves the model unchanged. '
+        IRT=1
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
      &    'replicate','edit (several)','do nothing',' ',IRT,14)
         if(IRT.eq.1)then
@@ -1382,6 +1388,8 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -1894,6 +1902,7 @@ C show attributes in list.
       CHARACTER H*72,VERT*20,VERTS*33,KEY*1,MOD*1,title*29
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
       IER=0
       write(title,'(2a)') 'Surface attributes in ',
@@ -2048,6 +2057,7 @@ C Method checks for minimally linked vertices.
       CHARACTER GMLCN*12,GSNAME*6
       CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -2135,6 +2145,7 @@ C Up the surface count.
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         if(.NOT.DOK)then
+          IRT=1
           CALL EASKATOG(' ','Surface action options:',
      &      'shift along normal','transform X Y Z','rotate','invert',
      &      'combination','cancel',' ',IRT,7)
@@ -2466,8 +2477,6 @@ C IER=1 problem.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6G/LINSTYG(MGRT)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       DIMENSION  COG1(3),COG2(3),COG3(3)
       DIMENSION  XXW(4),YYW(4),ZZW(4)
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
@@ -2481,6 +2490,9 @@ C IER=1 problem.
       CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+      integer IRT   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
@@ -2599,6 +2611,7 @@ C Miscel. geometric transforms. Ask which surface and setup temp array.
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         write(outs,'(a,a)') ' Actions to take on ',GSNAME(is)
+        IRT=1
         CALL EASKATOG(outs,' :','shift along normal','transform xyz',
      &    'rotate','invert ','combination','continue ?',' ',IRT,7)
         if(IRT.eq.1.or.IRT.eq.5)then

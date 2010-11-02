@@ -20,7 +20,6 @@ C Boston, MA 02111-1307 USA.
 
 C edcondb.F comprising:
 C  ELISTMAT: Controls display and editing of materials commons.
-C  EDPELEM: Controls listing of materials.
 C  EDONEMAT: Edits a material in the common block at array index index.
 C  EDMLDB: Display/edit a constructions db.
 C  EDWALL: Edit construction common block data.
@@ -65,6 +64,10 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       logical closemat1,closemat2
       logical mod   ! to signal whether an item has been altered.
       logical unixok
+      real per1,per2   ! percentages of material for non-homogeneous layer
+      integer iwhich2  ! 2nd material array index
+      integer idb,idb2 ! the two legacy indices selected
+      integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -79,6 +82,8 @@ C Assume no changes to db amd user has not entered password.
       chgdb=.false.
       t32 = ' '
       IAF=IFIL+1
+      iwhich=1   ! initial material selections
+      iwhich2=1
 
 C Check that the material db is not empty.
     4 IER=0
@@ -257,6 +262,21 @@ C Add another category to the database << not yet tested >>
           matprandtl(ILNE,2)=0.0
           matgapsht(ILNE,1)=0.0
           matgapsht(ILNE,2)=0.0
+          matcatitems(matcats)=matcatitems(matcats)+1 ! increment nb of cat items
+          matcatindex(ILNE)=matcats  ! remember its category
+          matdbitems=matdbitems+1    ! increment nb of db items
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices.
+          lastcatitem=2
+          ip=matlegindex(lastcatitem)
+          call getnextascislot(ip,inext)
+          if(inext.le.600)then 
+            matlegindex(ILNE)=inext
+            mathash(inext)=ILNE
+          else
+            matlegindex(ILNE)=-99
+          endif
           chgdb=.true.
         endif
         goto 40
@@ -323,8 +343,8 @@ C Remember the array index that goes with the menu position (m).
         NC=M
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          PDBM(NC+2)='1 add/ delete material            '
-          PDBM(NC+3)='2 copy material                   '
+          PDBM(NC+2)='1 add/ delete material           '
+          PDBM(NC+3)='2 copy material                  '
           PDBM(NC+4)='! save materials database        '
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
@@ -347,10 +367,14 @@ C Help text for this menu.
         H(7)='  '
         H(8)='Adding or Deleting a material is supported. The'
         H(9)='former creates a material at the end of the current'
-        H(10)='classification which may then be edited. '
-        H(11)=' '
-        H(12)='You may copy an existing material into a new item at'
-        H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+        H(10)='classification which may then be edited.  You have'
+        H(11)='the choice of manually supplying the data or to'
+        H(12)='select two materials and give each a weighting'
+        H(13)='(useful for approximating ISO 6946 non-homogeneous'
+        H(14)='layers in constructions).'
+        H(15)=' '
+        H(16)='You may copy an existing material into a new item at'
+        H(17)='the end of the list. BE SURE TO ALTER ITS NAME! '
  
         CALL EMENU('Materials Database',PDBM,NITMS,INO)
 
@@ -394,7 +418,7 @@ C              call delfiledosorunix(lltmp,ider)
      &            LFMAT(1:lnblnk(LFMAT))
               endif
 C Debug.
-              write(6,*) 'working materials ',lworking
+C              write(6,*) 'working materials ',lworking
               CALL mkascimat(IAF,lworking,IER)
             endif
 
@@ -442,7 +466,7 @@ C Also edit classification documentation.
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
           GOTO 2
         ELSEIF(INO.EQ.NITMS-1)THEN
-          CALL PHELPD('materials database',13,'-',0,0,IER)
+          CALL PHELPD('materials database',17,'-',0,0,IER)
         ELSEIF(INO.EQ.NITMS-2)THEN
 
 C Save materials db with all materials. First delete the
@@ -565,10 +589,27 @@ C If there is room add a note about its origin.
         ELSEIF(INO.EQ.NITMS-4)THEN
 
 C Add or delete and material from db.
-          h(1)='You cannot recover a deleted material.  After you '
-          h(2)='copy it, be sure to give it a unique name. '
-          CALL EASKABC(' ','Options: ',' Delete existing material',
-     &      ' Insert material','continue',IW,2)
+          h(1)='You cannot recover a deleted material. You can add a'
+          h(2)='homogeneous or non-homogeneous material (type in the'
+          h(3)='new thermophysical values or you can derive a new'
+          h(4)='non-homogeneous material (repeating thermal bridges)'
+          h(5)='based on percentages of two existing materials for '
+          h(6)='use with ISO 6946:2007 section 6.2.4 lower limit '
+          h(7)='calculations. '
+          h(8)=' '
+          h(9)='Note: currently the derivation only works with two'
+          h(10)='solid materials. If air is in the layer then its'
+          h(11)='air gap resistance needs to be converted into an'
+          h(12)='equivalent thermal conductivity. The 6946 spec'
+          h(13)='applies to pairs of materials which do not differ'
+          h(14)='greatly in conductivity and thus is not applicable'
+          h(15)='for metal & insulation combinations. '
+          h(16)=' '
+          h(17)='The conductivity, density, spedific heat and vapour'
+          h(18)='properties will be weighted from the two sources.'
+          CALL EASKABCD(' ','Options: ','Delete existing material',
+     &      'Add material','Derive non-homogeneous material',
+     &      'continue',IW,18)
           IF(IW.EQ.1)THEN
 
 C Ask the user which one to remove then loop through materials and
@@ -712,6 +753,156 @@ C and then resetn MODDB and chgdb if mod is true.
               GOTO 3
             ENDIF
           ELSEIF(IW.EQ.3)THEN
+
+C Derive non-homogeneous properties from two solid materials.
+C Copy info from first existing material.  
+            CALL USRMSG(' ','Select first material?','-')
+            call allmat(imatarrayindex,ier)
+            if(imatarrayindex.gt.0)then
+              IWHICH=imatarrayindex
+            else
+              CALL USRMSG(' ','No first material selected!','W')
+              GOTO 3
+            endif
+          
+            H(1)='Assuming there are two materials used in a layer of'
+            H(2)='a construction you will be asked for the percentage'
+            H(3)='(1-99%) for the first and second materials. '
+            PER1=90.0
+            CALL EASKR(PER1,' ','First material % in the layer: ',
+     &            0.1,'W',99.9,'W',1.,'1st material %',IER,3)
+            PER1=PER1*0.01
+
+            call edisp(iuout,'First material: ')
+            call edisp(iuout,
+     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
+            call edisp(iuout,
+     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+            IDB=matlegindex(IWHICH)
+            WRITE(outs,46)IDB,matdbcon(IWHICH),matdbden(IWHICH),
+     &        matdbsht(IWHICH),
+     &        matdboute(IWHICH),matdbouta(IWHICH),matdbdrv(IWHICH),
+     &        matname(IWHICH)(1:lnblnk(matname(IWHICH)))
+            call edisp(iuout,outs)
+
+            CALL USRMSG(' ','Select second material?','-')
+            call allmat(imatarrayindex,ier)
+            if(imatarrayindex.gt.0)then
+              IWHICH2=imatarrayindex
+            else
+              CALL USRMSG(' ','No second material selected!','W')
+              GOTO 3
+            endif
+          
+            H(1)='Assuming there are two materials used in a layer of'
+            H(2)='a construction you will be asked for the percentage'
+            H(3)='(1-99%) for the first and second materials. '
+            PER2=10.0
+            CALL EASKR(PER2,' ','Second material % in the layer: ',
+     &            0.1,'W',99.9,'W',1.,'2nd material %',IER,3)
+            PER2=PER2*0.01
+
+            call edisp(iuout,'Second material: ')
+            IDB=matlegindex(IWHICH2)
+            WRITE(outs,46)IDB,matdbcon(IWHICH2),matdbden(IWHICH2),
+     &        matdbsht(IWHICH2),
+     &        matdboute(IWHICH2),matdbouta(IWHICH2),matdbdrv(IWHICH2),
+     &        matname(IWHICH2)(1:lnblnk(matname(IWHICH2)))
+            call edisp(iuout,outs)
+
+            ILNE=matdbitems+1  ! one more item for list
+
+C Add a material, initiate it to the weighted values of materials.
+C See if there is an available slot in the 0-600 list of legacy
+C indices based on the prior item in this category.
+            lastcatitem=0
+            DO 794 J=1,matdbitems
+              if(matcatindex(J).eq.IC)then
+                lastcatitem=J
+              endif
+  794       continue
+            if(lastcatitem.gt.0)then
+              ip=matlegindex(lastcatitem)
+              call getnextascislot(ip,inext)
+
+C Make up the initial name based on the two legacy
+C indices but allow the user to edit it. If not within 0-600 then
+C assign -99 and make up initial name based on the original.
+              if(inext.le.600)then 
+                IDB=matlegindex(IWHICH)
+                IDB2=matlegindex(IWHICH2)
+                write(matname(ILNE),'(a,2i3.3)') 'non-h_',idb,idb2
+                matlegindex(ILNE)=inext
+                mathash(inext)=ILNE
+              else
+                write(matname(ILNE),'(2a)') 
+     &            matname(IWHICH)(1:lnblnk(matname(IWHICH))),'_non-h'
+                matlegindex(ILNE)=-99
+              endif
+
+C If there is room add a note about its origin.
+              ils=lnblnk(matdoc(IWHICH))
+              iln=lnblnk(matname(IWHICH))
+              iln2=lnblnk(matname(IWHICH2))
+              if(ils.le.200)then
+                write(matdoc(ILNE),'(5a,2f5.2,a)') ' Derived from ',
+     &            matname(IWHICH)(1:iln),' & ',
+     &            matname(IWHICH2)(1:iln2),' (',PER1,PER2,')'
+              else
+                matdoc(ILNE)=matdoc(IWHICH)
+              endif
+
+C Apply weighting for each contributing material.
+              matdbcon(ILNE)=matdbcon(IWHICH)*PER1+
+     &                       matdbcon(IWHICH2)*PER2
+              matdbden(ILNE)=matdbden(IWHICH)*PER1+
+     &                       matdbden(IWHICH2)*PER2
+              matdbsht(ILNE)=matdbsht(IWHICH)*PER1+
+     &                       matdbsht(IWHICH2)*PER2
+              matdboute(ILNE)=matdboute(IWHICH)*PER1+
+     &                        matdboute(IWHICH2)*PER2
+              matdbine(ILNE)=matdbine(IWHICH)*PER1+
+     &                       matdbine(IWHICH2)*PER2
+              matdbouta(ILNE)=matdbouta(IWHICH)*PER1+
+     &                        matdbouta(IWHICH2)*PER2
+              matdbina(ILNE)=matdbina(IWHICH)*PER1+
+     &                       matdbina(IWHICH2)*PER2
+              matdbdrv(ILNE)=matdbdrv(IWHICH)*PER1+
+     &                       matdbdrv(IWHICH2)*PER2
+              matdbthick(ILNE)=matdbthick(IWHICH)
+
+C The additional properties just use the 1st material (change this later).
+              matopaq(ILNE)=matopaq(IWHICH)
+              matirtran(ILNE)=matirtran(IWHICH)
+              matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+              matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+              matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+              matvistran(ILNE)=matvistran(IWHICH)
+              matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+              matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+              matrender(ILNE)=matrender(IWHICH)
+
+              matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+              matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+              matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+              matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+              matvisco(ILNE,1)=matvisco(IWHICH,1)
+              matvisco(ILNE,2)=matvisco(IWHICH,2)
+              matvisco(ILNE,3)=matvisco(IWHICH,3)
+              matvisco(ILNE,4)=matvisco(IWHICH,4)
+              matgapden(ILNE,1)=matgapden(IWHICH,1)
+              matgapden(ILNE,2)=matgapden(IWHICH,2)
+              matgapden(ILNE,3)=matgapden(IWHICH,3)
+              matgapden(ILNE,4)=matgapden(IWHICH,4)
+              matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+              matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+              matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+              matgapsht(ILNE,2)=matgapsht(IWHICH,2)
+              matdbitems=matdbitems+1   ! increment nb of db items
+              matcatitems(IC)=matcatitems(IC)+1 ! increment nb of cat items
+              matcatindex(ILNE)=IC      ! keep in current category
+            endif
+          ELSEIF(IW.EQ.4)THEN
             GOTO 3
           ENDIF
         ELSEIF(INO.EQ.NITMS-5)THEN
@@ -775,86 +966,6 @@ C and then resetn MODDB and chgdb if mod is true.
       END
 
 
-C ************* EDPELEM 
-C EDPELEM: Edits a material within material database.
-      SUBROUTINE EDPELEM(DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
-      common/pophelp/h(60)
-      DIMENSION PELM(11)
-      CHARACTER H*72,PELM*34,tnam*72
-
-C Parameters
-      real DBCON,DBDEN,DBSHT,E,A,DRV
-      character NAM*72
-
-C Work with local name.
-      tnam = NAM
-
-   3  IW=-4
-      WRITE(PELM(1),'(A,1X,A)')    'a Descr :',tnam(1:24)
-      WRITE(PELM(2),'(A,1X,A)')    '  ...',tnam(25:52)
-      WRITE(PELM(3),'(A,2X,F9.3)') 'b Conductivity :',DBCON
-      WRITE(PELM(4),'(A,2X,F8.2)') 'c Density      :',DBDEN
-      WRITE(PELM(5),'(A,2X,F8.2)') 'd Specific Heat:',DBSHT
-      WRITE(PELM(6),'(A,2X,F8.2)') 'e Emissivity   :',E
-      WRITE(PELM(7),'(A,2X,F8.2)') 'f Absorptivity :',A
-      WRITE(PELM(8),'(A,F10.2)')   'g Vapour resis :',DRV
-      PELM(9) =' _____________________ '
-      PELM(10)='? Help                 '
-      PELM(11)='- Exit                 '
-
-C Help text for this menu.
-   2  continue
-      h(1)='This display shows the attributes of this material. '
-      h(2)='Edit by selecting an item. '
-      CALL EMENU('Material details',PELM,11,IW)
-      IF(IW.EQ.0.OR.IW.EQ.11)THEN
-        RETURN
-      ELSEIF(IW.EQ.9)THEN
-        GOTO 3
-      ELSEIF(IW.EQ.1)THEN
-        H(1)='A descriptive name (up to 72 char) is required.'
-        H(2)='Usually only the first 24 characters are displayed.'
-        CALL EASKS(tnam,' ',' Description of material? ',
-     &    72,' ','material name',IER,2)
-        if(tnam(1:2).ne.'  ')NAM=tnam
-      ELSEIF(IW.EQ.3)THEN
-        H(1)='Conductivity units are W/(m deg.C) '
-        CALL EASKR(DBCON,' ',' Conductivity : ',
-     &            0.001,'W',300.,'W',1.,'conductivity',IER,1)
-      ELSEIF(IW.EQ.4)THEN
-        H(1)='Density units are  kg/m**3 '
-        CALL EASKR(DBDEN,' ',' Density  : ',
-     &             1.0,'W',9000.,'W',100.,'density',IER,1)
-      ELSEIF(IW.EQ.5)THEN
-        H(1)='Specific Heat units are J/(kg deg.C) '
-        CALL EASKR(DBSHT,' ',' Specific heat : ',
-     &             1.0,'W',2000.,'W',100.,'specific heat',IER,1)
-      ELSEIF(IW.EQ.6)THEN
-        H(1)='Surface emissivity is based on infrared band. '
-        H(2)='It is specified as fraction 0.01 < x < 0.99 '
-        CALL EASKR(E,' ',' Surface emissivity : ',
-     &             0.01,'W',0.99,'W',0.9,'emissivity',IER,2)
-      ELSEIF(IW.EQ.7)THEN
-        H(1)='Surface absorptance is based on solar band. '
-        H(2)='It is specified as fraction 0.01 < x < 0.99 '
-            CALL EASKR(A,' ',' Surface absorptance : ',
-     &             0.01,'W',0.99,'W',0.9,'absorptance',IER,2)
-      ELSEIF(IW.EQ.8)THEN
-        H(1)='Vapour resistvity for vapour transfer has units'
-        H(2)='of MNs g^-1m^-1. Used to support assessments of'
-        H(3)='condensation within constructions. '
-        CALL EASKR(DRV,' ','Vapour resistvity (MNs g^-1m^-1):',
-     &         1.0,'W',20000.,'W',1.,'vapour resistvity',IER,3)
-      ELSEIF(IW.EQ.10)THEN
-        CALL PHELPD('material attributes',2,'-',0,0,IER)
-      ELSE
-        IW=-1
-        GOTO 2
-      ENDIF
-      GOTO 3
-
-      END
-
 C ************* EDONEMAT 
 C EDONEMAT: Edits a material in the common block at array index index.
 C mod is returned as true if data has changed.
@@ -865,6 +976,11 @@ C mod is returned as true if data has changed.
       
       integer lnblnk  ! function definition
 
+C Passed parameters.
+      integer index  ! material array index
+      logical mod    ! set to true if modified
+      integer ier    ! non-zero if there is an issue
+
       common/pophelp/h(60)
 
       DIMENSION PELM(29)
@@ -872,11 +988,12 @@ C mod is returned as true if data has changed.
       real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
       real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
       real visotrfl,visinrfl,render
-      logical modify,dok,ok,mod
+      logical modify,dok,ok
 
 C Local variables for gas materials.
       real gapcnd,visco,gapden,prandtl,gapsht
       dimension gapcnd(4),visco(4),gapden(4),prandtl(2),gapsht(2)
+      integer jsur   ! for radio button
 
 C If index is outwith range just return.
       if(index.gt.0.and.index.le.matdbitems)then
@@ -1231,6 +1348,7 @@ C Offer to toggle between different types.
         h(12)=' '
         h(13)=' Data (viscosity, conductivity, density, CP at'
         h(14)=' 4 temperature points.'
+        jsur=1
         CALL EASKATOG('Material options:',message,
      &    'legacy opaque','opaque','transparent',
      &    'gas data+correction ','gas data @4 temps','leave un-changed',
@@ -1378,6 +1496,8 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
+      integer IW   ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1588,6 +1708,7 @@ C Manage the list of constructions.
         h(8)='of the room the carpet is on the inside face and from the'
         h(9)='point of view of the floor void the carpet should be on '
         h(10)='the outside face. '
+        IW=1
         call easkatog('Constructions options:',' ',
      &    'add (at end of list)','delete','copy','copy & invert',
      &    'continue',' ',' ',IW,10)
@@ -2003,7 +2124,7 @@ C assumes that -99 entities may be gasses.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G7/precz.
+C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -2024,10 +2145,6 @@ C Paramters
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -2050,8 +2167,8 @@ C Note: size of MLED supports a dozen layers in a construction.
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
       character PNAM*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,SN*12,SSPARENT*12
+      character ZN*12,SN*12
+      integer NLED,ILED  ! max items and current menu item
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -2728,17 +2845,12 @@ C << than G1 common blocks then there is no need to scan the
 C << geometry file before writing it out. 
         if(ncomp.gt.0)then
           do 96 iz=1,ncomp
-            call eclose(gversion(iz),1.1,0.01,newgeo)
             write(zn,'(A)') zname(IZ)
             write(outs,'(3a)') ' Checking: ',zn(1:lnblnk(zn)),
      &         ' attributes...'
             CALL USRMSG(' ',outs,'-')
             LTMP=LGEOM(IZ)
-            if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IZ,1,iuout,IER)
 
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
@@ -3184,7 +3296,7 @@ C prepended.
      &    LFMAT(1:lnblnk(LFMAT))
 
 C Debug.
-        write(6,*) 'working materials ',lworking
+C        write(6,*) 'working materials ',lworking
         call EFOPRAN(IFMAT,lworking,40,1,IER)
       endif
       if(ier.ne.0)return
@@ -3256,11 +3368,8 @@ C so that partitions are counted as half area).
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character mlcname*12,SSPARENT*12
+      character mlcname*12
       logical found
       dimension areamlc(MCOM)
 
@@ -3375,4 +3484,144 @@ C properties and not simply assuming symmetry
       ENDIF
       RETURN
       END
+
+C ************* allmat
+C allmat presents a list of all materials to select from.
+      subroutine allmat(imatarrayindex,ier)
+#include "epara.h"
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Parameters
+      integer imatarrayindex ! is the index in matdatarray
+
+C      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      character h*72
+      DIMENSION VERT(35)
+      CHARACTER VERT*68,KEY*1
+C      character outs*124
+      integer MVERT,IVERT ! max items and current menu item
+
+C Set to zero first.
+      imatarrayindex=0
+
+C Initialise materials menu size variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+      MHEAD=2
+      MCTL=3
+      ILEN=matdbitems
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92 IER=0
+      ILEN=matdbitems
+      IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+    3 M=MHEAD
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(L,KEY,IER)
+          if(matopaq(L).eq.'o')then
+            WRITE(VERT(M),24)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:24)
+   24       FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+          elseif(matopaq(L).eq.'-')then
+            WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+   25       FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
+          elseif(matopaq(L).eq.'t')then
+            WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+          elseif(matopaq(L).eq.'g')then
+            WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+          elseif(matopaq(L).eq.'h')then
+            WRITE(VERT(M),25)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:8),': ',matdoc(L)(1:17)
+          else
+            WRITE(VERT(M),24)KEY,matdbcon(L),matdbden(L),
+     &        matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+     &        matname(L)(1:24)
+          endif
+        ENDIF
+   10 CONTINUE
+
+      VERT(1)=
+     &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
+      VERT(2)=
+     &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        VERT(M+1)='  ______________________________ '
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 page: ',I2,' of ',I2,' --------')
+      ENDIF
+      VERT(M+2)  ='? help                           '
+      VERT(M+3)  ='- exit this menu                 '
+
+C Help text for this menu.
+      H(1)='This menu allows existing materials to be viewed and'
+      H(2)='one of them selected.'
+
+C Now display the menu.
+      CALL EMENU(' Materials in all categories',VERT,MVERT,IVERT)
+      IF(IVERT.LE.MHEAD)THEN
+
+C Within the header so skip request.
+        IVERT=-1
+        goto 3
+      ELSEIF(IVERT.EQ.MVERT)THEN
+        RETURN
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C List help text for the vertex menu.
+        CALL PHELPD('materials section',2,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Material identified by KEYIND as ifoc.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        imatarrayindex=ifoc
+C        L=ifoc
+C        call edisp(iuout,'Selected:')
+C        WRITE(outs,27)L,matdbcon(L),matdbden(L),
+C     &    matdbsht(L),matdboute(L),matdbouta(L),matdbdrv(L),
+C     &    matname(L)(1:24)
+C   27   FORMAT(I3,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+C        call edisp(iuout,outs)
+
+        return
+
+      ELSE
+
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      ENDIF
+      IVERT=-2
+      goto 3
+
+      END 
 

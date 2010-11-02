@@ -37,12 +37,8 @@ C will have been defined prior to calling edmrt.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
-      common/CFGV/icfgv
 
       common/pophelp/h(60)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -52,25 +48,21 @@ C will have been defined prior to calling edmrt.
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/appw/iappw,iappx,iappy
 
       DIMENSION VERT(35)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character doit*248,tmode*8,tfile*72,ZN*12
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1
+      character act*1
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -80,7 +72,6 @@ C will have been defined prior to calling edmrt.
 #endif
 
       cfgmod=.false.
-      newgeo=.false.  ! assume older format geometry.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -106,12 +97,7 @@ C matching geometry file.
       write(ZN,'(A)') zname(ICOMP)
 
 C Set VEWF array in preparation for editing or silent creation.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
@@ -485,7 +471,8 @@ C If there are enough items allow paging control via EKPAGE.
         ENDIF
       ELSEIF(IVERT.EQ.3)THEN
 
-C Manual editing of viewfactors.
+C Manual editing of viewfactors. Keep track of the sum and
+C offer the user a chance to re-edit if not close to one.
         A=0.0
         IS=1
         CALL EPMENSV
@@ -495,8 +482,8 @@ C Manual editing of viewfactors.
           if(MM.NE.IS)then
             ICNI=IZSTOCN(ICOMP,IS)
             ICNJ=IZSTOCN(ICOMP,MM)
-            write(outs,'(A,A15,A,A15)') ' For ',SSNAME(ICNI),' to ',
-     &                                   SSNAME(ICNJ)
+            write(outs,'(4A)') ' For ',SSNAME(ICNI),' to ',
+     &        SSNAME(ICNJ)
             V=VEWF(IS,MM)
             CALL EASKR(V,outs,' view factor: ',
      &        0.,'F',0.999,'F',0.,'viewfactors',IER,1)
@@ -505,14 +492,19 @@ C Manual editing of viewfactors.
             VEWF(IS,IS)=0.
           endif
           A=A+VEWF(IS,MM)
+          write(outs,'(A,F8.5)') ' Current total is ',A
+          call edisp(iuout,outs)
   33    continue
-        IF(ABS(A).LT.0.9888.OR.ABS(A).GT.1.002)then
-          write(outs,'(A,F8.5)')' currently the total is ',A,
-     &                          ' please re-edit...'
-          call usrmsg(
-     &    ' The sum of all viewfactors to this surface must equal 1.0',
-     &    outs,'W')
-          goto 31
+        IF(ABS(A).LT.0.9.OR.ABS(A).GT.1.002)then
+          write(outs,'(A,F8.5,A)')' currently the total is ',A,
+     &      ' and should be close to zero...please re-edit...'
+          h(1)='If the total is not close to one then we suggest'
+          h(2)='that you re-edit the values.'
+          call easkab(outs,' ','re-edit','continue',IW,2)
+          if(iw.eq.1)then
+            A=0.0  ! clear the accumulator
+            goto 31
+          endif
         endif
         CALL EPMENRC
       ELSEIF(IVERT.EQ.4)THEN
@@ -626,7 +618,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -638,6 +629,8 @@ C EDMRTS: Edit details of a MRT sensor block.
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
+      integer NITMS,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -697,7 +690,8 @@ C Help text for this menu.
       H(7)='from the X axis.'
 
 C Now display the menu.
-      CALL EMENU(head,VERT,11,IVERT)
+      NITMS=11
+      CALL EMENU(head,VERT,NITMS,IVERT)
       IF(IVERT.EQ.1)THEN
         H(1)='The origin of the sensor is in site coords. '
         WRITE(MSG,'(a,I3)')'For sensor ',ICUB

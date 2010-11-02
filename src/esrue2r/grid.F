@@ -29,8 +29,7 @@ C PEQN - equation of plane - does this need to be passed back???
 C IER - error counter - used??
       SUBROUTINE GRID(IS,igmaj,igmin,IVS,IVE,TFRM,GPTS,NGRID,PEQN,ier)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       DIMENSION  GPTS(500,3)
 

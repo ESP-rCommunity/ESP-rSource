@@ -63,18 +63,14 @@ C ESP-r commons.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/rpath/path
-      common/uhome/upath
       common/FILEP/IFIL
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C6/INDCFG
-      common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -101,10 +97,9 @@ C Name of current application
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      character path*72,upath*72
+      character path*72
       character upgcfg*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+
       character cfgroot*24,dstmp*24,MODE*4
       character buffer*144
 
@@ -383,7 +378,7 @@ C Find the path and local file name.
 
         if(oformat(1:6).eq.'viewer'.or.oformat(1:3).eq.'dxf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
-          call e2vdxf(itrc,incobs,ichop)
+          call e2vdxf(incobs,ichop)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
@@ -407,7 +402,7 @@ C Create THF (THINGS) file.
           WRITE(ioout,'(a)') ' '
           WRITE(ioout,'(a)') 'ESP'
           WRITE(ioout,'(a)') 'ANT'
-          call e2zip(itrc,incobs,ichop)
+          call e2zip(incobs,ichop)
           CALL ERPFREE(ioout,ISTAT)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
@@ -941,10 +936,12 @@ C Error messages.
       end
 
 C **** wegeom
-C write esp geometry file.
+C write esp-r (older style) geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
 #include "geometry.h"
+
+C << update this to generate v1.1 geometry file >>
       
       integer lnblnk  ! function definition
 
@@ -958,7 +955,7 @@ C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
-      character lf*72,SN*12,SOTF*4,louts*248
+      character lf*72,SN*12,OTF*4,louts*248
       integer lnzn
        
       ier=0
@@ -1018,9 +1015,9 @@ C << surfaces.
       do 60 is=1,NZSUR(iv)
         IF(is.LE.9)WRITE(SN,'(a5,i1)')'Surf-',is
         IF(is.GT.9)WRITE(SN,'(a5,i2)')'Surf-',is
-        SOTF='OPAQ'
-        if(itmcfl(iv,is).eq.1)SOTF='TRAN'
-        write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',SOTF,
+        OTF='OPAQ'
+        if(itmcfl(iv,is).eq.1)OTF='TRAN'
+        write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',OTF,
      &        '  UNKN  UNKNOWN      UNKNOWN'
   60  continue
   
@@ -1093,10 +1090,10 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       logical match
       integer nbofsurf  ! to pass to matchv
 
-C Multiply current x,y,z by transformation matrix
-      x = coorx*amat(1,1) + coory*amat(1,2) + coorz*amat(1,3)
-      y = coorx*amat(2,1) + coory*amat(2,2) + coorz*amat(2,3)
-      z = coorx*amat(3,1) + coory*amat(3,2) + coorz*amat(3,3)
+C Multiply current xx,yy,zz by transformation matrix
+      xx = coorx*amat(1,1) + coory*amat(1,2) + coorz*amat(1,3)
+      yy = coorx*amat(2,1) + coory*amat(2,2) + coorz*amat(2,3)
+      zz = coorx*amat(3,1) + coory*amat(3,2) + coorz*amat(3,3)
 
       llay=lnblnk(layname(currlay))
 
@@ -1107,18 +1104,18 @@ C For both file formats convert from mm to metres.
       if(oformat(1:6).eq.'viewer')then
         if (flagins.eq.0) then      
           if(head.eq.'BLK_')then
-            write(ioblk,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else
-            write(ioout,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioout,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           endif
         else        
-          x = x-blkxorg
-          y = y-blkyorg        
-          z = z-blkzorg      
+          xx = xx-blkxorg
+          yy = yy-blkyorg        
+          zz = zz-blkzorg      
           if(head.eq.'BLK_')then
-            write(ioblk,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv        
+            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           else
-            write(ioout,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv        
+            write(ioout,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           endif
         endif  
       elseif(oformat(1:3).eq.'esp')then
@@ -1128,17 +1125,17 @@ C For both file formats convert from mm to metres.
 C Currently writing to temporary block file so do this in viewer
 C format (for later recovery as an obstruction block).
           if (flagins.eq.0) then      
-            write(ioblk,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else        
-            x = x-blkxorg
-            y = y-blkyorg        
-            z = z-blkzorg      
-            write(ioblk,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv  
+            xx = xx-blkxorg
+            yy = yy-blkyorg        
+            zz = zz-blkzorg      
+            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv  
           endif      
         else
-          x1=x*dxfconv
-          y1=y*dxfconv
-          z1=z*dxfconv
+          x1=xx*dxfconv
+          y1=yy*dxfconv
+          z1=zz*dxfconv
 
 C If on layer "0" or "1" do not bother to match vertex if there are
 C named layers. If there are no named layers then accept '0'. 
@@ -1414,10 +1411,7 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
-      COMMON/LOG/LPRJLG
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+      COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -1451,8 +1445,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+
       character dstmp*24
 
       IER=0
@@ -1479,6 +1472,8 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to networks'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',aimpth,
+     &  '  # path to aim2'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,

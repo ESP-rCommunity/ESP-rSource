@@ -2244,8 +2244,6 @@ C control file sensors, actuator, control types, control laws.
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -2256,8 +2254,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character disp_constr*12
 
       dimension icsn(5)   ! for passing sensor location to decodesensor
@@ -3775,8 +3771,6 @@ C SSTRB is brief string (48 char) returned
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -3791,8 +3785,6 @@ C SSTRB is brief string (48 char) returned
       CHARACTER ZN*12,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       sstr=' '
       sstrb=' '
@@ -4613,7 +4605,7 @@ C               endif
       call edisp(iuout,'TSCDTA: Fatal error - time rewind')
       call edisp(iuout,'control specified more than once in')
       call edisp(iuout,'System Control file!')
-      call epwait
+      call pauses(3)   ! pause for 3 seconds then abort program.
       call epagend
       stop
       end

@@ -90,9 +90,9 @@ c Part 2 : "Other" fans (point exhaust/supply)
 c
          Integer iOtherFans !  Code 1 = None,  2 = Other
 c
-         Integer OtherFansSupplyRate  ! L/s
-         Integer OtherFansExhaustRate ! L/s
-         Integer OtherFansTotalPower ! watts
+         Integer OtherFansSupplyRate  ! L/s   ** REAL ** ???
+         Integer OtherFansExhaustRate ! L/s   ** REAL ** ???
+         Integer OtherFansTotalPower ! watts  ** REAL ** ???
 c ---
 c If there is a crawl space defined, this is the zone number assigned to
 c it (else = zero)

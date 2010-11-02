@@ -34,6 +34,7 @@ C IPVCMD acts on command line IPV directives. Allows model to be
 C altered based on information held in IPV definition.
       subroutine IPVCMD(act,inf)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
 #include "espriou.h"
 #include "control.h"
@@ -51,7 +52,6 @@ C is a logical flag, .true. restricts update/save options
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -281,6 +281,7 @@ C Define information used in generating IPV.
 C If act = 'i' then initialise variables.
       subroutine ipvdat(act)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
@@ -304,7 +305,6 @@ C seasons.h provides typper and typsea
 
 C IPV description.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C Simulation parameter sets.
 C      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -325,6 +325,7 @@ C ITMM is menu for metric sets.
       character t12*12,key*1
       character simact*6,ipvaction*3
       logical MODSIT,XST,OK
+      integer nitms,INO,nitmms,INOM,nitmget,INOG,nitmes,INOE ! max items and current menu item
 
 C If act = 'i' then initialise variables. Initial assumption
 C is for an annual assessment.
@@ -1603,11 +1604,12 @@ C ipvseasons presents a list of typical seasons/assessments and
 C returns a string which sumarizes the choice (see list of values
 C in subroutine ipvdatinit.
       subroutine ipvseasons(simact)
+      character h*72
       common/pophelp/h(60)
       DIMENSION ITM(22)
       character ITM*33
       character simact*6
-      character h*72
+      integer nitms,INO ! max items and current menu item
 
       simact='ias   '   ! assume annual assessment
 

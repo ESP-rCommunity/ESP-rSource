@@ -64,13 +64,14 @@ C while we have information on where esp-r was installed.
 
       SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)  
 C Use espriou.h for climatelist file name and defdbfl.
+#include "building.h"
+#include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/uhome/upath
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -135,7 +136,6 @@ C Where validation tests are kept.
 C Altdot is an alternative location for the esprc file in
 C the installation folder.
       character altdot*144
-      character upath*72
 #include "espinstalldir.h"
 
 C Check if running in dll mode, if so clear most of the

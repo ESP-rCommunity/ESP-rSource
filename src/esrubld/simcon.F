@@ -242,6 +242,7 @@ C and information on the saved result set.
       CHARACTER*72 H,vsnam
       CHARACTER*29 ITEM(18)
       character outs*124
+      integer NITMS,INO  ! max items and current menu item
 
 C Intialise timestep controller flag. By default, timestep controller
 C is disabled.  Also initialise number of TSC operations to zero.
@@ -572,6 +573,7 @@ c This common block is used to define the sky temperature calculation method
 
       logical MSTROK,MSTRZN
       logical WATERZ,VTSOL
+      integer NITMS,INO  ! max items and current menu item
 
 C Make up strings for the current set of toggles.
   92  ino= -4
@@ -1144,7 +1146,8 @@ C Set moisture flow toggles.
       COMMON/MOIST13/RLXln,RRLXln,RLXlnF,RRLXlnF,RLXlnT,RRLXlnT
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
-      CHARACTER H*72,ITEMG(11)*40 
+      CHARACTER H*72,ITEMG(11)*40
+      integer NITMS,INO  ! max items and current menu item
 
   10  INO=-4
       WRITE(ITEMG(1),'(A,F5.2)')
@@ -1238,7 +1241,8 @@ C Set building construction structured mesh toggles.
       COMMON/GRSD121/InSSlv,MSItrn,TSCrSM,QSCrSM
       COMMON/GRSD122/InSvST,ISTemp
 
-      CHARACTER H*72,ITEMG(10)*40 
+      CHARACTER H*72,ITEMG(10)*40
+      integer NITMS,INO  ! max items and current menu item
 
    10 INO=-4
       IF(InSSlv.EQ.1)THEN
@@ -1754,6 +1758,7 @@ C Common for libsv3 trace
       character outs*124,h*72,dtrace*72,ltrace*72
       character cfgroot*24,LCFGF*72
       logical OK,dok
+      integer NITEMS,INO  ! max items and current menu item
 
       ITEM(1) ='a electrical calculations    '
       ITEM(2) ='b temporal file items & assoc'

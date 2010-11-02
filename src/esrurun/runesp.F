@@ -67,22 +67,16 @@ C ************************************************************
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/radcfg/LRADCF
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/GTFIL/GTGEOM
 
 C Name of current application
@@ -108,20 +102,18 @@ C Uncertainty.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       
       CHARACTER INTER*144,INF*144
-      character path*72,upath*72,cfgroot*24
+      character path*72,cfgroot*24
       character outs*124,outs248*248
       character doit*248,longtfile*144,longtfiledos*144
       character fs*1
       character act*16
       character LUALF*72,LCNG*15,LLOC*15
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
       character*72 LCFGF,LPRJLG
-      character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
-      character LTDF*72,LAPROB*72 
+      character LCTLF*72,ctldoc*248,lradcf*72
+      character LAPROB*72 
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -181,6 +173,7 @@ C Set folder separator (fs) to \ or / as required.
       write(zonepth,'(a1,a1)')'.',fs
       write(netpth,'(a1,a1)')'.',fs
       write(ctlpth,'(a1,a1)')'.',fs
+      write(aimpth,'(a1,a1)')'.',fs
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
@@ -390,11 +383,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -1051,16 +1039,12 @@ C small power in W/m2. Occupied times are 9-21h each day.
 #include "model.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Array of occupant, lighting, sp density.
       real densityof(3)
       character name*12   ! name given to the zone
       character opfil*72
       character dstmp*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character fs*1
       logical unixok
 
@@ -1301,17 +1285,14 @@ C The current implemented pattern is three periods in a
 C typical day with free float outside of occupied period.
       subroutine setcontrol(setpoints)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
 
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character cfgroot*24,LCFGF*72
       character LCTLF*72,ctldoc*248
       character fs*1

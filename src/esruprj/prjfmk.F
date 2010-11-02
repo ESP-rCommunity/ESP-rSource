@@ -86,8 +86,6 @@ C =2 with more than 3 day types allowed and sorted
       INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
@@ -105,13 +103,12 @@ C updated when the user exits).
       CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NIGU,IGU,NITEMS,INO ! max items and current menu item
        
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -211,12 +208,12 @@ C Operations file not known, allow user to give name or browse.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.2)then
           CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
-     &      'browse',clkok,72,GFILE,'operations file',ISER,10)
+     &      'browse another',clkok,72,GFILE,'operations file',ISER,16)
           if(clkok)iclkok=1   ! notice browse button
           if(iser.eq.-3)iclkok=2  ! notice cancel button
         else
           CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
-     &      'browse','cancel',iclkok,72,GFILE,
+     &      'browse another','cancel',iclkok,72,GFILE,
      &      'operations file',IER,16)
         endif
         call usrmsg(' ',' ','-')   ! clear the display
@@ -1319,6 +1316,8 @@ C      integer lnblnk  ! function definition
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY),ix,iy
+      integer IW  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initial menu entry setup.
       idtyp = 1
@@ -1494,6 +1493,7 @@ C Add delete copy period or import from another zone.
         H(33)=' b) preserve the volume of air implied by the ac/h in'
         H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
         H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        IW=1
         CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern','cancel',' ',IW,35)
@@ -1751,6 +1751,8 @@ C of one signals m3/h and a value of 2 signals m3/s.
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY)
+      integer IW   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Return if the version is not three.
       if(ip3ver(icomp).lt.3)then
@@ -1934,6 +1936,7 @@ C Add delete copy period or import from another zone.
         H(33)=' b) preserve the volume of air implied by the ac/h in'
         H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
         H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        IW=1
         CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern','cancel',' ',IW,35)
@@ -2610,8 +2613,6 @@ C =2 with more than 3 day types allowed and sorted
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
@@ -2629,8 +2630,7 @@ C Scratch copy of air flow pattern from an operations file.
       character*(*) sfile
       character h*72
       CHARACTER oprdescc*248,ctlstrc*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,ltmp*72
+      character ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
@@ -3391,6 +3391,8 @@ C How many of each gain type is there each zone/gaintype/daytype.
      &               loadmixed(mcom,7,MDTY)
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
+      integer ICGTS,IW  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72
@@ -3403,7 +3405,7 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
-      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,IOPT,ICGTS,IDTYP
+      integer kstr,ILLEN,IQ,IX,I,IDU,IDT,IOPT,IDTYP
       dimension kstr(MDTY),ILLEN(MDTY)
 
 C If not browsing, take the information from loadcnt
@@ -3665,6 +3667,7 @@ C If different period, update the menu length.
         h(3)='studies on profiles which have been imported).'
         H(4)='If you are not scaling gains choose all gains and then'
         H(5)='choose a factor of 1.0'
+        ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &     'All gain types','Cancel',' ',' ',ICGTS,5)
@@ -3735,6 +3738,7 @@ C Add delete copy period or import full set of casual gains.
         H(23)='    destination zone base areas e.g. 123W in source'
         H(24)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
         H(25)='    zone.'
+        IW=1
         CALL EASKATOG('Casual gain period options:','(see help)',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern ','cancel',' ',IW,25)
@@ -4546,7 +4550,7 @@ C Ask for rad/ conv split.
      &        ' ',24,' 0.5  0.5  ','casual gn info',IER,26)
       K=0
       call EGETWR(HOLD,K,RAD,0.,1.0,'F','rad frac',IER)
-      CMAX=1.00-RAD
+      CMAX=(1.00-RAD)+0.02  ! allow for small rounding errors
       call EGETWR(HOLD,K,CON,0.,CMAX,'F','conv frac',IER)
       if (IER.ne.0) goto 70
       if(rad+con.lt.0.9)then
@@ -4886,8 +4890,6 @@ C =2 with more than 3 day types allowed and sorted
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       common/loadlabelc/lodlabelc(7)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
@@ -4908,8 +4910,7 @@ C Descriptive label for a zone load or casual gain.
       character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,ltmp*72
+      character ltmp*72
       character lodlabel*6,lodlabelc*6
       character fs*1,GFILE*72,iwatt*8
       character actcas*8

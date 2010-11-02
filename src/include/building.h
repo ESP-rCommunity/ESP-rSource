@@ -97,7 +97,7 @@ C Simulation control.
       PARAMETER (MTRACE=60)	!- Trace parameters.
       PARAMETER (MTMS=1440)
       PARAMETER (MTS=1440)
-      PARAMETER (MGRDP=10)	!- Ground temperature profiles.
+      PARAMETER (MGRDP=43)	!- Ground temperature profiles.
 
 C Time-step control.
       PARAMETER (MCVT1=6)

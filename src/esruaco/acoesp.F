@@ -170,41 +170,28 @@ C ZoneDisp - displays zone based information and allows....
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
+C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER outs*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero
-      logical close,context
-      logical newgeo  ! to use for testing if new/old geometry file.
+      logical context
 
 C Initialisation
       zbzero=.FALSE.
-      newgeo=.false.  ! assume older format geometry.
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      else
-        call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
-      endif
+      call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
       nzg=1
@@ -216,8 +203,6 @@ C Recover zone data (read only, no display).
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
-      FLA=0.
-      IFLA=0
       OPQ=0.
       TRN=0.
       DO 41 I=1,NSUR
@@ -369,10 +354,6 @@ C          1 = textual feedback or 2 = File
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -388,17 +369,13 @@ C          1 = textual feedback or 2 = File
      &            SurfEquP(MaxPub,MNbAbs), SurfEquF(MaxFur,MNbAbs),
      &            SurfEquT(MNbAbs), SurfTot, TReverb(MNbAbs), Tmean
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
       CHARACTER extraouts*189, outs*156
       CHARACTER CalName*12,ACOName*72
       CHARACTER*4 LabFreq
       CHARACTER PubType*12, FurType*12, FurCat*4, CovSurf*12
-      logical newgeo  ! to use for testing if new/old geometry file.
 
-      newgeo=.false.  ! assume older format geometry.
       ITMP=IFIL+1
       RevLabA = ' '
       RevLabB = ' '
@@ -577,14 +554,7 @@ C for each surface in the zone according to the frequency band
                  WRITE(outs,'(a,a)') 'zone: ', ZNAME(nZnog(J))
                  call edisp(Ichanel,outs)
               endif
-              call eclose(gversion(nZnog(J)),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,
-     &           IER)
-              else
-                call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
-     &           IER)
-              endif
+              call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,IER)
               CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
@@ -767,13 +737,7 @@ C Display equivalent surface for MATERIAL
                 call edisp(Ichanel,outs)
                 call edisp(Ichanel,'-----')
               endif
-              call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              else
-                call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
-              endif
+              call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
@@ -1023,13 +987,7 @@ C Display equivalent surface for Air absorption
 
 C Should any way compute the equivalent area
             DO 691 k =1,NZG 
-              call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
-              else
-                call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
-              endif
+              call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE

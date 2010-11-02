@@ -30,6 +30,7 @@ C MZHCFV reads the convection regime file.
 
       SUBROUTINE MZHCFV(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "model.h"
 
       COMMON/ER/IER
@@ -43,7 +44,6 @@ C MZHCFV reads the convection regime file.
 
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
@@ -322,6 +322,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
 
       SUBROUTINE MZHCFV2(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "model.h"
 #include "espriou.h"
       
@@ -338,7 +339,6 @@ C MZHCFV2 reads the convection-regime file (version 2)
 
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
@@ -691,7 +691,6 @@ c later within the simulation time-stepping.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)
 
       CHARACTER LS*72
@@ -891,14 +890,13 @@ c        or not.
 
       SUBROUTINE MZVFIN(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "model.h"
 
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/FILEP/IFIL
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/V2/CFB(MCOM,MST,MST)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)

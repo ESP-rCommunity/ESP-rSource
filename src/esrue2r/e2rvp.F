@@ -163,6 +163,8 @@ C ******* Default views formation.
       character outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
+      integer NITEMS,INO  ! max items and current menu item
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot

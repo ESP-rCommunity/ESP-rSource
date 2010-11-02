@@ -42,8 +42,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -57,8 +55,7 @@ C *********************************************************************
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
       CHARACTER H*72,TEXT*40,LGRD1D*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
+      integer MITEM,INO ! max items and current menu item
 
       DIMENSION IVALSZ(MCOM),IVALSC(MS),IVALSL(ME)
 
@@ -110,7 +107,7 @@ C Help text for menu.
       H(25)=' -   return to the main simulator menu.'
 
       CALL USRMSG(' ',' ','-')
-      CALL EMENU('        Nodes Distribution',ITEM,MITEM,INO)
+      CALL EMENU('  Nodes Distribution',ITEM,MITEM,INO)
       IF(INO.EQ.3)THEN
 
 C Assign two nodes per each layer in the building.
@@ -311,6 +308,7 @@ C *********************************************************************
       COMMON/GR1D04/GAM,RGAM
 
       CHARACTER ITEM(14)*30,H*72,TEXT2*120,ONFF*3
+      integer NITMS,INO ! max items and current menu item
 
       DIMENSION FRN(MS,ME)
 
@@ -384,7 +382,8 @@ C Help text for menu.
       H(39)='     updated if the dynamic gridding was ON. '
 
       CALL USRMSG(' ',' ','-')
-      CALL EMENU('  Automatic Node Distribution',ITEM,14,INO)
+      NITMS=14
+      CALL EMENU('  Automatic Node Distribution',ITEM,NITMS,INO)
       IF(INO.EQ.2.AND.IVAR.EQ.1)THEN
 
 C Switching the dynamic gridding index.
@@ -528,8 +527,6 @@ C *********************************************************************
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -547,8 +544,7 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
+      integer NITMS,INO ! max items and current menu item
 
 C Initialise the external and internal convective heat transfer 
 C coefficient.
@@ -604,7 +600,8 @@ C Help text for this menu.
       H(26)=' -   return to the nodes distribution menu. '
 
       CALL USRMSG(' ',' ','-')
-      CALL EMENU(' Lumped Constructions',ITEM,15,INO)
+      NITMS=15
+      CALL EMENU(' Lumped Constructions',ITEM,NITMS,INO)
       IF(INO.EQ.3)THEN
 
 C Assign the (hc) value for a surface.

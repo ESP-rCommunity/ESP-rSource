@@ -139,6 +139,7 @@ C a subroutine rather than as an application.
       subroutine SubBps
 
 #include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -218,9 +219,7 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
 
 C Path to model and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
-      common/CFGV/icfgv
       common/user/browse
 
 C CFD output channels.
@@ -243,8 +242,6 @@ C Project journal on/off, unit number, cmd, file name.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -293,11 +290,11 @@ C      logical gopher  ! not references
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
-      character path*72,upath*72,bresfil*72
+      character path*72,bresfil*72
       character RFILE*72,PFILE*72,MSTRFILE*72
       character LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
-      character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
+      character dllsubr*12,dllmesg*124
       character t16*16,outs248*248
       
 C Flags for multi-year simulation menus
@@ -310,6 +307,7 @@ C Variables used to configure h3kreports
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer NITMS,INO  ! max items and current menu item
 
 C (possibly) Enable floating point exception error handling on
 C gnu 3.X compilers
@@ -735,7 +733,7 @@ C Increment input flag if no input data errors detected.
               INPOK=.TRUE.
             elseif(iw.eq.3)then
               call tstamp('>','SIM: abort after error scan problem')
-              call epagend
+              call pauses(2)   ! pause for 2 seconds then abort program.
               if( dll ) then
                 dllsubr='bps MAIN'
                 dllmesg='IER1 flag set while scanning the model.'
@@ -983,17 +981,19 @@ C Set flag: climate data ok
             goto 20
           ELSE
             call tstamp('>','SIM: abort after error scanning climate')
-            call epagend
+            call pauses(2)   ! pause for 2 seconds then abort program.
             CALL ERPFREE(ICLIM,ISTAT)
             if( dll ) return
 C There's no reason to stop the simulator here - 
 C Let's just return to the menu and let the user decide what to do!
+C            call epagend
+C            stop
           ENDIF
         ENDIF
 
 C Close & free file (it will be opened again before the start
 C of the simulation         
-        CALL EPAGEND
+C        CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
 
       ELSEIF(INO.EQ.2 .and. bMY_sim_enabled ) then
@@ -1182,9 +1182,10 @@ C Close moisture result library.
         IF(MSTROK)CALL ERPFREE(IMSTR,ISTAT)
         call tstamp('>','Finish simulator')
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL EPAGEND
         if( dll ) return
 
+C Clear allocatable arrays
+	CALL DeallocateAllArrays
         call epagend
         STOP
       else
@@ -1210,7 +1211,6 @@ C Error.
       IF(OK)THEN
         goto 20
       ELSE
-        CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
         if( dll ) return
         call epagend

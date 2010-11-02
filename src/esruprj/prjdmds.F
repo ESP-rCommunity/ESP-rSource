@@ -38,6 +38,7 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 #include "schedule.h"
       
@@ -50,8 +51,6 @@ C file unit for the demands file. IER=0 is OK.
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Floor area (optionally) associated with each demand type in an IPV.
@@ -71,10 +70,9 @@ C Flags noting whether casual gain periods are currently sorted.
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
       character cfgroot*24,LCFGF*72,hold*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
+      integer NITEMS,INO ! max items and current menu item
 
 C GFILE is the default file name for project gains file.
       if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
@@ -508,6 +506,8 @@ C Local editing arrays.
 C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
+      integer IEBCGTS,IWM  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)
@@ -647,6 +647,7 @@ C Now display the menu.
         h(1)='You can apply a scaling factor to all entries of a '
         h(2)='particular casual gain type (useful for parametric '
         h(3)='studies on profiles which have been imported).'
+        IEBCGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IEBCGTS,3)
         VAL=1.0
@@ -751,6 +752,7 @@ C Edit block identified by KEYIND.
 C Establish the nature of the casual gain
         H(1)='The type of demand can be one of those listed in the '
         H(2)='selections. '
+        IWM=1
         CALL EASKATOG('Which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IWM,2)
 
@@ -846,6 +848,7 @@ C Profile database commons via profile.h.
       character lltmp*144
       character fs*1   ! file separator
       logical unixok  ! to check for database path file separators
+      integer ICGT    ! for radio button
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -923,6 +926,7 @@ C Identify nature of demands
       H(3)='pump demands can be separately tracked from that of '
       H(4)='other equipment.  Values from 1 to 4 are accepted'
       H(5)='and can have any meaning that the user chooses. '
+      ICGT=1
       CALL EASKATOG(' ','Type of casual gain: ',ll1,ll2,ll3,ll4,ll5,
      &  ll6,ll7,ICGT,5)
 

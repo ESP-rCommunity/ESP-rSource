@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -36,8 +37,7 @@ C ******* Setup of image quality and calculation options.
       common/rad2/mono,intext,ifocz
       common/radrp/ipicx
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -51,9 +51,9 @@ C ******* Setup of image quality and calculation options.
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
       character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      integer NITEMS,INO  ! max items and current menu item
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
 
@@ -367,6 +367,7 @@ C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -383,8 +384,6 @@ C If use = 'f' then force files to account for change in root/dir name.
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -400,15 +399,13 @@ C If use = 'f' then force files to account for change in root/dir name.
 
       character use*1
       logical skydone,outdone,indone,misdone,vewdone,glzdone
-      logical close
 
 C Make the initial part of new file names to follow scene root name.
       write(pre,'(a)') SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC)))
 
 C Have information on ground disk ready. << ? case of external view with ifocz -1 >>
       if(ifocz.gt.0)then
-        call eclose(ZBFLG(ifocz),0.0,0.001,CLOSE)
-        if (CLOSE) call BNDOBJ(0,IER)
+        if (iZBFLG(ifocz).eq.0) call BNDOBJ(0,IER)
       endif
       XD=(XMX-XMN)**2 + (YMX-YMN)**2
       DD=SQRT(XD)*1.5

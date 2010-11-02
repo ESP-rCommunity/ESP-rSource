@@ -20,6 +20,8 @@ C Boston, MA 02111-1307 USA.
 
       program pdb
 
+#include "building.h"
+#include "model.h"
 #include "plantdb.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -45,7 +47,6 @@ C Defaults.
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       common/appw/iappw,iappx,iappy
 
@@ -74,11 +75,12 @@ C Name of current application
       CHARACTER PZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character path*72,upath*72,fs*1
+      character path*72,fs*1
       character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialise output device, assume minimal trace, and a smallish
 C display.  If passed zero size and offsets use default, if size

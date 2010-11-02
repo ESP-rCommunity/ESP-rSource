@@ -41,6 +41,7 @@ C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -48,8 +49,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/FILEP/IFIL
       common/rpath/path
       common/expath/runpath,pathtype
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
@@ -59,8 +59,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/radabs/NABS
       common/user/browse
 
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
       character LBSRIF*72,pfile*72,path*72,runpath*72,pathtype*24,fs*1
@@ -300,6 +298,8 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       dimension VERT(35)
 
       LOGICAL SELECT,delzone,cpyzone,modscene
+      integer IW  ! for radio button
+      integer MVERT,IVERT  ! max items and current menu item
 
  1    IER=0
       SELECT=.false.
@@ -452,6 +452,7 @@ C Allow a scene to be added or deleted.
         IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
           H(1)='As with other entities a standard set of add/delete'
           H(2)='and copy functions is provided. '
+          IW=1
           CALL EASKATOG(' ','Action: ','add scene','delete scene',
      &      'copy scene','cancel',' ',' ',' ',IW,2)
           if(IW.EQ.1)then
@@ -893,8 +894,6 @@ C if MODE is not - then sensor points file name confirmation required.
       common/pophelp/h(60)
 
       common/expath/runpath,pathtype
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -920,13 +919,11 @@ C if MODE is not - then sensor points file name confirmation required.
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer lnrp  ! length of run path
 
 C New grid so set number of grid points to zero.
       lnrp=lnblnk(runpath)
       NDFP=0
-      newgeo=.false.  ! assume older format geometry.
 
 C Remember current graphics display options.
       call SVDSOPT
@@ -990,13 +987,7 @@ C Ask for surface and highlight.
 
 C Now read zone geometry file to enable edge selection.
       ITA1 = IFIL+6
-      ITRC=0
-      call eclose(gversion(ifocz),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
-      else
-        call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
-      endif
+      call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
 
 C Generate a list of edges. JVN(MS,MV)
       NI=0
@@ -1117,6 +1108,7 @@ C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
+#include "building.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition

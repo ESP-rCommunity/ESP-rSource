@@ -28,7 +28,7 @@ C EDCASCTL - edit casual gain control data.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -41,18 +41,12 @@ C geometry.h provides commons G0/G2/c20/precz.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/user/browse
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
@@ -82,19 +76,17 @@ C TMC common block:
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
       LOGICAL XST,lcouple,ldcoef
       logical MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical browse
 
       character H*72,outs*124,LTMP*72,DTMP*64
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN,LCFGF
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
+      integer IRT  ! for radio button
+      integer NITEMS,INO ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy
 #else
@@ -103,7 +95,6 @@ C TMC common block:
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
-      newgeo=.false.  ! assume older format geometry.
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -195,12 +186,7 @@ C Read existing file.
 
 C Rescan geometry file.
       IUF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -697,6 +683,7 @@ C Control type.
         H(6)='* Dimming   - three dimming control algorithms are'
         H(7)='              supported'
         H(8)='* Probab    - user probability switching algorithm'
+        IRT=1
         call EASKATOG(' Control type:',' ',
      &    'Alway On','Alway Off','On-Off','Step','Dimming','Probab',
      &    'cancel',IRT,8)
@@ -720,6 +707,7 @@ C Control type.
           H(9)='  algorithm requiring night-time and day-time '
           H(10)='  calibration of photocell. Usually photocell is'
           H(11)='  located at ceiling.'
+          IRT=1
           call EASKATOG(' Dimming control type:',' ',
      &        'Ideal','Integral reset','Close loop',
      &        'cancel',' ',' ',' ',IRT,11)
@@ -808,7 +796,9 @@ C Calculation type.
         H(31)='  daylight coeff. THIS IS AN EXPERT LEVEL AND CAN BE'
         H(32)='  COMPUTATIONALY INTENSIVE!'
         CALL PHELPD('cgs calct type',32,'photocell   ',0,0,IER)
+
         h(1)='See the previously displayed summary. '
+        IRT=1
         call EASKATOG(' Calculation type:',' ',
      &      'Analyt DF','User DF','Extern','Coupling','DayCoeff',
      &      'cancel',' ',IRT,1)

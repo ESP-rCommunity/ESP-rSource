@@ -54,6 +54,7 @@ C           - Principle use is for function button facility on workstations.
 C For operational details refer to the ESP-r program user's manual.
       program res
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
 C esprdbfile.h supplies the following:
@@ -99,7 +100,6 @@ C Simulator parameters and performance information requested data.
 
 C Path to model and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
@@ -115,8 +115,6 @@ C CFD commons.
 
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C Optional title for graph and up to 5 other labels and their positions.
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
@@ -150,15 +148,16 @@ C IEEE callback (Solaris)
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
-      character path*72,upath*72,spsname*8,paction*16
+      character path*72,spsname*8,paction*16
       character cfgroot*24,fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
-      character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
+      character graftitle*64,grlbl*24
       character firstbit*72,secondbit*72
       character longtmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NITMS,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero
@@ -483,7 +482,7 @@ C If we have a plant only file go straight to the plant results menu.
 
 C Free all assigned files.
         call erpfree(iunitp,istat)
-        call usrmsg(' Closing results analysis...',' ','P')
+        call usrmsg('Closing results analysis...',' ','P')
         CALL MOFREE
         CALL EPAGEND
         STOP         
@@ -732,11 +731,11 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within

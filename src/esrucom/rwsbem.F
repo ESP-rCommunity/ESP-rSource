@@ -734,64 +734,103 @@ C espriou.h provides currentfile.
       CHARACTER OUTSTR*124,loutstr*248
       CHARACTER WORD*48
       LOGICAL NEAR
+      integer nlinks  ! for use in scanning repeating sections
 
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,LASBEM,1,IER)
 
       write(currentfile,'(a)') LASBEM(1:lnblnk(LASBEM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'ncm file',IER)
-      IF(OUTSTR(1:9).NE.'*SBEM 1.0')THEN
+
+C Get version number
+      IF(OUTSTR(1:9).EQ.'*SBEM 1.0')THEN
+        IVERSION=1
+      ELSEIF(OUTSTR(1:9).EQ.'*SBEM 1.1')THEN
+        IVERSION=2
+      ELSEIF(OUTSTR(1:9).EQ.'*SBEM 1.2')THEN
+
+C Version 1.2 assumes that the project owner simulationist contacts
+C are already known from the model cfg file.
+        IVERSION=3
+      ENDIF
+
+      IF(OUTSTR(1:6).NE.'*SBEM ')THEN
         CONTINUE ! WARNING MSG TO GO HERE
       ELSE
 
 C This logic assumes that the SBEM file is formatted in
 C a specific format and the data is in a specific order.
 C If this is not the case then some data corruption can happen.
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM pjname',IER)
-        K=14
-        CALL EGETRM(OUTSTR,K,pjname,'W','pjname',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM baddress',IER)
-        K=18
-        CALL EGETRM(OUTSTR,K,baddress,'W','NCM baddress',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'bcity',IER)
-        K=15
-        CALL EGETRM(OUTSTR,K,bcity,'W','NCM bcity',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'buildingPC',IER)
-        K=19
-        CALL EGETRM(OUTSTR,K,buildingPC,'W','NCM buildingPC',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'ownername',IER)
-        K=21
-        CALL EGETRM(OUTSTR,K,ownername,'W','NCM ownername',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'ownertel',IER)
-        K=26
-        CALL EGETRM(OUTSTR,K,ownertel,'W','NCM ownertel',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'owneraddr',IER)
-        K=24
-        CALL EGETRM(OUTSTR,K,owneraddr,'W','NCM owneraddr',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'ownercity',IER)
-        K=21
-        CALL EGETRM(OUTSTR,K,ownercity,'W','NCM ownercity',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'ownerPC',IER)
-        K=25
-        CALL EGETRM(OUTSTR,K,ownerPC,'W','NCM ownerPC',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'certifname',IER)
-        K=16
-        CALL EGETRM(OUTSTR,K,certifname,'W','NCM certifname',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'certTel',IER)
-        K=21
-        CALL EGETRM(OUTSTR,K,certTel,'W','NCM certTel',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'certaddress',IER)
-        K=19
-        CALL EGETRM(OUTSTR,K,certaddress,'W','NCM certaddress',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'certcity',IER)
-        K=16
-        CALL EGETRM(OUTSTR,K,certcity,'W','NCM certcity',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'certPC',IER)
-        K=20
-        CALL EGETRM(OUTSTR,K,certPC,'W','NCM certPC',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'UPRN',IER)
-        K=12
-        CALL EGETRM(OUTSTR,K,UPRN,'W','NCM UPRN',IER)
+C Newer files will have the UPR number as the 2nd line but older
+C files will include the contact information lines before this.
+
+C The contents of the file were written for a specific number of
+C zones and if the model is updated only data for the number of
+C items held in the file will be scanned.
+   42   CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM data line',IER)
+        if(OUTSTR(1:12).eq.'Project name')then
+          K=14
+          CALL EGETRM(OUTSTR,K,pjname,'W','pjname',IER)
+          goto 42
+        elseif(OUTSTR(1:16).eq.'Building address')then
+          K=18
+          CALL EGETRM(OUTSTR,K,baddress,'W','NCM baddress',IER)
+          goto 42
+        elseif(OUTSTR(1:13).eq.'Building city')then
+          K=15
+          CALL EGETRM(OUTSTR,K,bcity,'W','NCM bcity',IER)
+          goto 42
+        elseif(OUTSTR(1:17).eq.'Building Postcode')then
+          K=19
+          CALL EGETRM(OUTSTR,K,buildingPC,'W','NCM buildingPC',IER)
+          goto 42
+        elseif(OUTSTR(1:19).eq.'Building owner name')then
+          K=21
+          CALL EGETRM(OUTSTR,K,ownername,'W','NCM ownername',IER)
+          goto 42
+        elseif(OUTSTR(1:24).eq.'Building owner telephone')then
+          K=26
+          CALL EGETRM(OUTSTR,K,ownertel,'W','NCM ownertel',IER)
+          goto 42
+        elseif(OUTSTR(1:22).eq.'Building owner address')then
+          K=24
+          CALL EGETRM(OUTSTR,K,owneraddr,'W','NCM owneraddr',IER)
+          goto 42
+        elseif(OUTSTR(1:19).eq.'Building owner city')then
+          K=21
+          CALL EGETRM(OUTSTR,K,ownercity,'W','NCM ownercity',IER)
+          goto 42
+        elseif(OUTSTR(1:23).eq.'Building owner Postcode')then
+          K=25
+          CALL EGETRM(OUTSTR,K,ownerPC,'W','NCM ownerPC',IER)
+          goto 42
+        elseif(OUTSTR(1:14).eq.'Certifier name')then
+          K=16
+          CALL EGETRM(OUTSTR,K,certifname,'W','NCM certifname',IER)
+          goto 42
+        elseif(OUTSTR(1:19).eq.'Certifier telephone')then
+          K=21
+          CALL EGETRM(OUTSTR,K,certTel,'W','NCM certTel',IER)
+          goto 42
+        elseif(OUTSTR(1:17).eq.'Certifier address')then
+          K=19
+          CALL EGETRM(OUTSTR,K,certaddress,'W','NCM certaddress',IER)
+          goto 42
+        elseif(OUTSTR(1:14).eq.'Certifier city')then
+          K=16
+          CALL EGETRM(OUTSTR,K,certcity,'W','NCM certcity',IER)
+          goto 42
+        elseif(OUTSTR(1:18).eq.'Certifier postcode')then
+          K=20
+          CALL EGETRM(OUTSTR,K,certPC,'W','NCM certPC',IER)
+          goto 42
+        elseif(OUTSTR(1:10).eq.'UPR number')then
+
+C If the 2nd line of the file is the UPR then do not jump back to 42.
+          K=12
+          CALL EGETRM(OUTSTR,K,UPRN,'W','NCM UPRN',IER)
+        endif
+
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'insp_date',IER)
         K=26
         CALL EGETWI(OUTSTR,K,D_inspect,1,31,'W','NCM insp_day',IER)
@@ -964,6 +1003,9 @@ C            write(6,*) 'ncmrd: ',duct_tDLd(ICMSYS),' ',AHU_tDLd(ICMSYS)
           endif
  101    CONTINUE   ! end of the loop for each system
       ELSEIF(OUTSTR(1:23).EQ.'*Zone to system linkage')THEN
+        nlinks=0
+        K=24
+        CALL EGETWI(OUTSTR,K,nlinks,0,NCOMP,'-','nb HVAC-Zn links',IER)
         GOTO 1002   ! drop down to label 1002 to read zone lines
       ELSE
         GOTO 5     ! loop back for another scan
@@ -973,7 +1015,11 @@ C Section linking systems and zones. This section of the file
 C is fixed format. Manual editing can easily corrupt it. The
 C line contains one item of interest beginning after column 44.
  1001 CALL STRIPC(IUF,OUTSTR,99,ND,1,'*Zone to systems linkage',IER)
- 1002 DO 201 IZ=1,NCOMP
+      nlinks=0
+      K=24
+      CALL EGETWI(OUTSTR,K,nlinks,0,NCOMP,'-','nb HVAC-Zn links',IER)
+
+ 1002 DO 201 IZ=1,nlinks
         CALL STRIPC(IUF,OUTSTR,99,ND,1,
      &    'Zone to systems linkage data line',IER)
         K=44
@@ -1014,7 +1060,10 @@ C Get DHW system supplementary information
 C This section defines links between zones and DHW 
 C (line is written even when there is none)
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'DHW zone links',IER)
-      DO 203 IZ=1,NCOMP
+      nlinks=0
+      K=21
+      CALL EGETWI(OUTSTR,K,nlinks,0,NCOMP,'-','nb DHW-Zn links',IER)
+      DO 203 IZ=1,nlinks
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to DHW linkage',IER)
         K=13
         CALL EGETWR(OUTSTR,K,DEADLEG(IZ),0.,0.,'-',
@@ -1024,9 +1073,17 @@ C (line is written even when there is none)
  203  CONTINUE
 
 C This section defines links between zones and activities.
-C (line is written even when there is none)
+C If there are more than 5 tokens on the line the 6th is the
+C number of lines of data.
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'activities zone links',IER)
-      DO 204 IZ=1,NCOMP
+      if(ND.gt.4)then
+        nlinks=0
+        K=26
+        CALL EGETWI(OUTSTR,K,nlinks,0,NCOMP,'-','nb Act-Zn links',IER)
+      else
+        nlinks=NCOMP
+      endif
+      DO 204 IZ=1,nlinks
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to activity linkage',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','Zone',IER)
@@ -1041,8 +1098,17 @@ C (line is written even when there is none)
 C This section defines links between zones and lighting. There can be
 C some long strings in this section so use LSTRIPC calls. This section
 C is also fixed format looking for data after column 86 or 66 or 52.
+C If there are more than 5 tokens on the line the number if links is
+C given otherwise assume there is one for each zone.
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting type zone links',IER)
-      DO 205 IZ=1,NCOMP
+      if(ND.gt.5)then
+        nlinks=0
+        K=30
+        CALL EGETWI(OUTSTR,K,nlinks,0,NCOMP,'-','nb Act-Zn links',IER)
+      else
+        nlinks=NCOMP
+      endif
+      DO 205 IZ=1,nlinks
         CALL LSTRIPC(IUF,LOUTSTR,99,ND,1,'Zone-lighting type linkage',
      &   IER)
         IF(LOUTSTR(1:12).EQ.'User_defined')THEN
@@ -1065,6 +1131,28 @@ C goto is avoided here by just using the same code as the "default_type"
           K=52
           CALL EGETWI(LOUTSTR,K,ILITYP(IZ),0,0,'-',
      &    'zone-light type links',IER)
+        ENDIF
+
+C If lighting controls have been defined then read these in as well
+        IF(IVERSION.EQ.2)THEN
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting controls',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,Ilightcontrol(IZ),0,0,'-',
+     &    'lighting control type',IER)
+          CALL EGETWI(OUTSTR,K,Idaylightzoning(IZ),0,0,'-',
+     &    'daylighting sensor location front or front_back',IER)
+          CALL EGETWI(OUTSTR,K,Ipe_control(IZ),0,0,'-',
+     &    'photoelectric control',IER)
+          CALL EGETWI(OUTSTR,K,IOcc_sensing(IZ),0,0,'-',
+     &    'Occupancy sensing',IER)
+          CALL EGETWR(OUTSTR,K,PE_sensor_PP(IZ),0.0,0.0,'-',
+     &    'Photoelectric sensor parasitic power',IER)  
+          CALL EGETWR(OUTSTR,K,Occ_sensor_PP(IZ),0.0,0.0,'-',
+     &    'Occupancy sensor parasitic power',IER)  
+          CALL EGETWR(OUTSTR,K,DFFront(IZ),0.0,0.0,'-',
+     &    'Front daylight factor',IER)  
+          CALL EGETWR(OUTSTR,K,DFRear(IZ),0.0,0.0,'-',
+     &    'Rear daylight factor',IER)  
         ENDIF
  205  CONTINUE
 
@@ -1122,36 +1210,39 @@ C<< Create facility to read/write file with user defined name
       WRITE(LASBEM,'(2a)')CFGROOT_O(1:LNBLNK(CFGROOT_O)),'_str.ncm'
       CALL EFOPSEQ(IUF,LASBEM,3,IER)
 
-C Write high level project specific detail
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '*SBEM 1.0'
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Project name, ',
-     &  pjname(1:lnblnk(pjname))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building address, ',
-     &  baddress(1:lnblnk(baddress))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building city, ',
-     &  bcity(1:lnblnk(bcity)) 
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building Postcode, ',
-     &  buildingPC(1:lnblnk(buildingPC))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Building owner name, ',ownername(1:lnblnk(ownername))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Building owner telephone, ',ownertel(1:lnblnk(ownertel))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Building owner address, ',owneraddr(1:lnblnk(owneraddr))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Building owner city, ',ownercity(1:lnblnk(ownercity))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Building owner Postcode, ',ownerPC(1:lnblnk(ownerPC))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier name, ',
-     &  certifname(1:lnblnk(certifname))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier telephone, ',
-     &  certTel(1:lnblnk(certTel))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &  'Certifier address, ',certaddress(1:lnblnk(certaddress))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier city, ',
-     &  certcity(1:lnblnk(certcity))
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier postcode, ',
-     &  certPC(1:lnblnk(certPC))
+C Write high level project specific detail. 
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '*SBEM 1.1'
+
+C Model cfg file holds the building and owner and simulationist info.
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Project name, ',
+C     &  pjname(1:lnblnk(pjname))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building address, ',
+C     &  baddress(1:lnblnk(baddress))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building city, ',
+C     &  bcity(1:lnblnk(bcity)) 
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building Postcode, ',
+C     &  buildingPC(1:lnblnk(buildingPC))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Building owner name, ',ownername(1:lnblnk(ownername))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Building owner telephone, ',ownertel(1:lnblnk(ownertel))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Building owner address, ',owneraddr(1:lnblnk(owneraddr))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Building owner city, ',ownercity(1:lnblnk(ownercity))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Building owner Postcode, ',ownerPC(1:lnblnk(ownerPC))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier name, ',
+C     &  certifname(1:lnblnk(certifname))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier telephone, ',
+C     &  certTel(1:lnblnk(certTel))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
+C     &  'Certifier address, ',certaddress(1:lnblnk(certaddress))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier city, ',
+C     &  certcity(1:lnblnk(certcity))
+C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier postcode, ',
+C     &  certPC(1:lnblnk(certPC))
+
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'UPR number, ',
      &  UPRN(1:lnblnk(UPRN))
    
@@ -1235,6 +1326,7 @@ C Insurance section.
      &'Compliance check to be performed on air permeability value? ',
      &  APCHK(1:lnblnk(APCHK)) 
 
+C For every current zone in the model write permeability.
       DO 205 IZ=1,NCOMP
         WRITE(IUF,'(2A,F6.4,A)',IOSTAT=IOS,ERR=3)
      &    'Zone_permeability ',zname(iz),ACH(IZ),' # ach'
@@ -1331,7 +1423,8 @@ C Set BRUKL cooling value if no cooling generator is present in HVAC system
         endif
  101  CONTINUE
 
-C Write building zone to HVAC system linkage information
+C Write building zone to HVAC system linkage information for all current
+C zones in the model.
       WRITE(IUF,'(A,I4,A)',IOSTAT=IOS,ERR=3)'*Zone to system linkage',
      &     NCOMP,' # total number of zones'
       DO 102 IZ=1,NCOMP
@@ -1387,8 +1480,11 @@ C Write building zone to DHW system linkage information
  104  CONTINUE
 
 C Write building zone to activity type linkage information. Note
-C use only the first 40 characters of roomactname.
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to activity linkage'
+C use only the first 40 characters of roomactname. Write for all
+C current zones even if there is no activity associated with the
+c zone yet.
+      WRITE(IUF,'(A,I4,A)',IOSTAT=IOS,ERR=3)
+     &  '*Zone to activity linkage',NCOMP,' # total number of zones'
       DO 105 IZ=1,NCOMP
         ireadactivityindex=theactivityindex(IZ)
         if(ireadactivityindex.gt.0)then
@@ -1402,7 +1498,8 @@ C use only the first 40 characters of roomactname.
         endif
  105  CONTINUE
 
-C Write building zone to lighting type linkage information
+C Write building zone to lighting type linkage information. Write for
+C all current zones even if no lighting has been defined.
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to lighting type linkage'
       DO 106 IZ=1,NCOMP
 
@@ -1425,6 +1522,16 @@ C lighting type
      &       ' is linked to lighting type number     0 (undefined type)'
           endif
         endif
+
+C Also include lighting control information
+        write(iuf,'(3A)')
+     &  '# Light control type, daylight sensor, photoelectric control',
+     &  ' occupancy sensing, PEsensor & occupancy sensor parasitic ',
+     &  'power, approximate daylight factors for front and rear'
+        write(iuf,'(4I4,4F5.2)')
+     &  Ilightcontrol(IZ),Idaylightzoning(IZ),Ipe_control(IZ),
+     &  IOcc_sensing(IZ),PE_sensor_PP(IZ),Occ_sensor_PP(IZ),
+     &  DFFront(IZ),DFRear(IZ)
  106  CONTINUE
 
 C Write renewable energy systems information

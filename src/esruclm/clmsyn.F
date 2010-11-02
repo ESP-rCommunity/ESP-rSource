@@ -40,6 +40,7 @@ C CHARACTERISTICS OF THE CHOSEN CLIMATIC COLLECTION.
       CHARACTER*24 ITEM(23)
       character outs*124,VNAME*32,H*72
       logical ok,dok
+      integer NITMS,INO  ! max items and current menu item
 
       call usrmsg('  ','  ','-')
       ITEM(1) ='p set period            '

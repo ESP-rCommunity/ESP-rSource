@@ -19,6 +19,8 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       SUBROUTINE TMPLOT(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
 C Parameters for eline calls.
@@ -29,27 +31,17 @@ C Parameters for eline calls.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/tdset/itdyear,itdbdoy,itdedoy
       COMMON/GDPER/igbdoy,igedoy
 
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,LABEL1*16,LABEL2*72
-      CHARACTER temp*32,temp2*14,FOCUS*8
-      CHARACTER*72 LTDF,LTDFA,ETEXT
+      CHARACTER LABEL1*16,LABEL2*72
+      CHARACTER temp*32,temp2*14,temp3*9,FOCUS*8
+      CHARACTER*72 ETEXT
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok
+      logical use14
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -92,17 +84,27 @@ C Draw a sets of labels and line types at top of the graph.
 C Must generalise this for various numbers of period fields.
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1
+      if(ieflds-isflds.lt.8)then
+        use14=.true.
+      else
+        use14=.false.
+      endif
       M=0
       DO 60 J=ISFLDS,IEFLDS
         M=M+1
         WRITE(temp,'(A)')TDFDES(IFOC,J)
         temp2=temp(1:14)
+        temp3=temp(1:9)
 
 C If plotting colours for different lines set this.
         if(colok)call winscl('z',M)
         IF(M.EQ.1)THEN
           iid1=50; iid2=igt-15;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=20; iid2=igt-20;
           call eline (iid1,iid2, LNMVAB)
           iid1=45; iid2=igt-20;
@@ -112,7 +114,11 @@ C If plotting colours for different lines set this.
           IFSYM(1)=0
         ELSEIF(M.EQ.2)THEN
           iid1=50; iid2=igt-35;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=20; iid2=igt-40;
           call eline (iid1,iid2, LNMVAB)
           iid1=45; iid2=igt-40;
@@ -122,7 +128,11 @@ C If plotting colours for different lines set this.
           IFSYM(2)=1
         ELSEIF(M.EQ.3)THEN
           iid1=170; iid2=igt-15;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=140; iid2=igt-20;
           call eline (iid1,iid2, LNMVAB)
           iid1=165; iid2=igt-20;
@@ -132,7 +142,11 @@ C If plotting colours for different lines set this.
           IFSYM(3)=2
         ELSEIF(M.EQ.4)THEN
           iid1=170; iid2=igt-35;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=140; iid2=igt-40;
           call eline (iid1,iid2, LNMVAB)
           iid1=165; iid2=igt-40;
@@ -142,7 +156,11 @@ C If plotting colours for different lines set this.
           IFSYM(4)=3
         ELSEIF(M.EQ.5)THEN
           iid1=290; iid2=igt-15;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=260; iid2=igt-20;
           call eline (iid1,iid2, LNMVAB)
           iid1=285; iid2=igt-20;
@@ -152,7 +170,11 @@ C If plotting colours for different lines set this.
           IFSYM(5)=4
         ELSEIF(M.EQ.6)THEN
           iid1=290; iid2=igt-35;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=260; iid2=igt-40;
           call eline (iid1,iid2, LNMVAB)
           iid1=285; iid2=igt-40;
@@ -162,7 +184,11 @@ C If plotting colours for different lines set this.
           IFSYM(6)=5
         ELSEIF(M.EQ.7)THEN
           iid1=410; iid2=igt-15;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=380; iid2=igt-20;
           call eline (iid1,iid2, LNMVAB)
           iid1=405; iid2=igt-20;
@@ -172,7 +198,11 @@ C If plotting colours for different lines set this.
           IFSYM(7)=6
         ELSEIF(M.EQ.8)THEN
           iid1=410; iid2=igt-35;
-          CALL wstxpt(iid1,iid2,temp2)
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
           iid1=380; iid2=igt-40;
           call eline (iid1,iid2, LNMVAB)
           iid1=405; iid2=igt-40;
@@ -180,6 +210,20 @@ C If plotting colours for different lines set this.
           iid1=390; iid2=igt-40;
           call esymbol(iid1,iid2,7,0)
           IFSYM(8)=7
+        ELSEIF(M.EQ.9)THEN
+          iid1=530; iid2=igt-15;
+          if(use14)then
+            CALL wstxpt(iid1,iid2,temp2)
+          else
+            CALL wstxpt(iid1,iid2,temp3)
+          endif
+          iid1=500; iid2=igt-20;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=525; iid2=igt-20;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=510; iid2=igt-20;
+          call esymbol(iid1,iid2,8,0)
+          IFSYM(9)=8
         ENDIF
 
 C Reset colour to black.

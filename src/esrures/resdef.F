@@ -218,7 +218,8 @@ C          call EFOPRAN(iunit,LTMP,nzrl,1,IER)
 C          write(outs,'(A,I3)')' Opening file with record length',nzrl
 C          call edisp(iuout,outs)
           call usrmsg(
-     &      ' Unable to open library (record width to large).',LTMP,'W')
+     &      'Unable to open library (record width to large). Stopping!',
+     &      LTMP,'W')
           CALL EPAGEND
           STOP
         else
@@ -247,7 +248,7 @@ C Establish if this database contains result-sets.
         H(1)='Take extreme caution in using incomplete or corrupt '
         H(2)='results libraries. '
         call easkab('Library is incomplete or corrupt...  Do you want',
-     &    ' to:',' attempt to continue (DANGEROUS)','give up  ? ',IW,2)
+     &    ' to:','attempt to continue (DANGEROUS)','give up?',IW,2)
         if(IW.eq.2)then
           CALL EPAGEND
           STOP
@@ -261,7 +262,7 @@ C Establish if this database contains result-sets.
         H(4)='You will then have to recompile the results analysis '
         H(5)='module - good luck ! '
         call easkab('Library has more than 30 result sets! Do you want',
-     &    ' to:',' attempt to continue (DANGEROUS)','give up ? ',IW,5)
+     &    ' to:','attempt to continue (DANGEROUS)','give up?',IW,5)
         if(IW.eq.2)then
           CALL EPAGEND
           STOP
@@ -978,8 +979,8 @@ C << of the database file
 C Jump over header block records containing data not
 C required at present.
       IF(IBP.EQ.2)RETURN
-      X=FLOAT(NCON)/20.
-      IJ=INT(X)+1
+      XX=FLOAT(NCON)/20.
+      IJ=INT(XX)+1
       DO 1030 I=1,NCOMP
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LPROJ(I)
       IREC=IREC+1

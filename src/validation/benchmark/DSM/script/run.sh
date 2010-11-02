@@ -5,12 +5,9 @@ m
 r
 u
 e
-c
-y
-n
--
 a
 y
+e
 -
 -
 -

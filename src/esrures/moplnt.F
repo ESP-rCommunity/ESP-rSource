@@ -99,6 +99,8 @@ C this clash.
       character pcname*15,pcnam1(mpcom)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
+      integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Default value for GRTOOL file hourly flag = 0 (off).
       IHFLAG=0
@@ -319,6 +321,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)

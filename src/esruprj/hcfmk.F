@@ -51,8 +51,6 @@ C geometry.h provides commons G0/G2/precz.
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -62,17 +60,13 @@ C geometry.h provides commons G0/G2/precz.
       CHARACTER*72 LTMP
       character HFILE*72,H*72,head*33
       CHARACTER ITEM(29)*33
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
-      logical newgeo  ! to use for testing if new/old geometry file.
-
+      integer NITEMS,INO ! max items and current menu item
 
 C Before presenting hc regime, make up a suitable file name
 C in case it is useful.
       modcfg=.false.
-      newgeo=.false.  ! assume older format geometry.
       IHCFP=0
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
@@ -248,12 +242,7 @@ C and jump back if hc facility entered in error.
   43  if(modcfg)CALL EMKCFG('-',IER)
 
 C Display the reference zone.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -504,16 +493,12 @@ C IOPT: 1 = in-floor heating, 2 = heated wall panel, 3 = other.
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       logical OK,dok
 
@@ -783,16 +768,12 @@ C IOPT: 1 = heater under a window, 2 = heater not under a window.
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       logical OK,dok
 
@@ -1066,6 +1047,7 @@ C IOPT: 1 = VAV with CV heating, 2 = VAV with VV heating, 3 = CV variable T.
       CHARACTER*25 ITEM(15)
       logical ok,dok
       real airflow   ! temprary value for editing
+      integer NITEMS,Ioa,Idiff,Ifor ! max items and current menu item
 
 C These approaches are active for all time-steps of the simulation
 C (i.e. there is only one convection-calculation control period).
@@ -1416,16 +1398,12 @@ C        intentional supply or extract of air from the room.
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
       logical OK,dok
 
@@ -1576,6 +1554,7 @@ C IOPT: 1 = VAV with CV heat, 2 = VAV with VV heating, 3 = CV with var temp.
       character*24 hcphrase(5)
       CHARACTER*25 ITEM(15)
       logical ok,dok
+      integer NITEMS,Ioa ! max items and current menu item
 
 C These approaches are active for all time-steps of the simulation
 C (i.e. there is only one convection-calculation control period).
@@ -1874,7 +1853,7 @@ C EHCMAN controls manual creation/editing of convection file.
 
       character H*72,outs*124,hcfpdescr*72
       CHARACTER*30 ITEM(12)
-
+      integer NITEMS,INO ! max items and current menu item
       integer ihcfpt    ! for local editing.
 
    20 INO = -2
@@ -2295,18 +2274,17 @@ C NS is the number of surface in the zone << why pass this value? >>
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/HCCEN/CENLOC(MP,14)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      character H*72,outs*124,SN*12,ITEM(MS+5)*30,KEY*1,SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character H*72,outs*124,SN*12,ITEM(MS+5)*30,KEY*1
       CHARACTER stuff*10
       character hcfpdescr*72
       logical close,ok,dok
+      integer IW  ! for radio button
+      integer NITEMS,INO ! max items and current menu item
 
       NS=NZSUR(IZ)
 
@@ -2349,6 +2327,7 @@ C Determine type of control over calculations.
       h(20)='Note that the `outside` surface of a mlc may be interior'
       h(21)='to the building, ie. it may face the air-point of an '
       h(22)='adjacent zone. '
+      IW=1
       CALL EASKATOG('calculation control (see help):',' ',
      &  'fixed coefficients','fixed correlations','adaptive cor',
      &  'CEN coef','cancel',' ',' ',IW,22)
@@ -2935,9 +2914,6 @@ C As well as documentation based on the last edit by the user.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       COMMON/HCCEN/CENLOC(MP,14)
@@ -2950,8 +2926,6 @@ C As well as documentation based on the last edit by the user.
       character*12 sn(MS)
       character hcfpdescr*72,dstmp*24,t117*117,FILE*72
       CHARACTER louts*248
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       logical Vldtng
 
       if(Vldtng)then
@@ -3063,7 +3037,7 @@ C Control laws and associated data for each surface
 C  Additional information for air channels
           WRITE(IUF,'(I3,F6.3,F6.3,A)',IOSTAT=ISTAT,ERR=990)
      &      IAORZ,CWIDTH,CHEIGHT,
-     & '# Air origin zone (+ chan. width and height if Bar-Cohen corr.)'
+     &  ' # Air origin zone (+ chan. width & height if Bar-Cohen cor.)'
         elseif(ICTL(I).eq.4) then
 
 C CEN 13791 mode sets values for specific locations.
@@ -3305,16 +3279,12 @@ C held in a *.htc file.
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/HCCEN/CENLOC(MP,14)
 
       character H*72,outs*124
-      CHARACTER SSPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character hcfpdescr*72
 
 C Check if there is a *.htc file for this zone.

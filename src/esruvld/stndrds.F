@@ -50,6 +50,8 @@ C gh() is array of help entries.
       character exfil*72,group*42,tgroup*42,key*1
       character H*72,separ*42
       logical XST
+      integer irpt  ! for radio button
+      integer NCOG,ICOG ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -192,6 +194,7 @@ C Automatically run all of the available models.
         h(1)=' Results can be either dispayed or saved in'
         h(2)=' a text file.'
         h(3)=' Cancel to quit analysis.'
+        irpt=1
         CALL EASKATOG(' Reporting to:',' ','file',
      &     'screen','cancel',' ',' ',' ',' ',irpt,3)
         if(irpt.ne.3)then
@@ -269,6 +272,7 @@ C irecdata - zone and surface number for results recovery (=0 if all)
       character chkresult*8
       
       logical XST,ok,dok,CLOSE,unixok
+      integer irpt  ! for radio button
       
 C Debug.
 C      write(6,*) 'Debug: call pars:',LVFILE,LGROUP,iflg,irpt
@@ -447,6 +451,7 @@ C Process selected models.
         h(1)=' Results can be either dispayed or saved in'
         h(2)=' a text file.'
         h(3)=' Cancel to quit analysis.'
+        irpt=1
         CALL EASKATOG(' Reporting to:',' ','file',
      &     'screen','cancel',' ',' ',' ',' ',irpt,3)
       endif

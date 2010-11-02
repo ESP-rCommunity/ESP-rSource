@@ -55,8 +55,6 @@ C                             data for validity.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -80,11 +78,12 @@ C ipeerptbk is pointer from position in display to day type.
       CHARACTER*56 VERT(35)
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
       CHARACTER outs*124,H*72,LASCI*72,cfgroot*24
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*96
+      character t248*248,SSTR*96
       character sfile*72,snpfile*72,fs*1
       logical LINKED,OK,dok,XST,browse,unixok
       integer icomp
+      integer IW   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
       logical CFCfilexists,CFCcontrolOK
       
 C Zeroize all control data.
@@ -863,6 +862,7 @@ C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
         h(1)='Delete/add/copy a control loop'
         h(2)='(unless wkd:sat:sun control).'
+        IW=1
         CALL EASKATOG(' ','Options:','delete control loop',
      &     'add control loop','copy control loop',
      &     'cancel',' ',' ',' ',IW,2)
@@ -1365,6 +1365,7 @@ C Plant common required for building/plant flux linkage
       dimension icsn(5)! for passing sensor location to
       integer icsn,nn
       integer lastndx  ! to keep track of last data position used.
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -2822,6 +2823,7 @@ C      DIMENSION IGVAL(60)
       integer LL
       logical bNumsAreEqual
       integer isetp_displayCM,idat_displayCM !for display purposes to be combatible with gcc4
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of optical functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -3229,6 +3231,7 @@ C ********************************************************************
       integer iclawt   ! control law index passed back from editctlperiod
       integer icfoc
       integer icurrentctltype
+      integer MVERT,IVERT ! max items and current menu item
       
       icfoc = 6
       
@@ -3520,7 +3523,6 @@ C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
 #include "building.h"
-#include "DG_controller_include.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3534,6 +3536,7 @@ C Edit plant control function II.
 
       CHARACTER hold*60
       logical close1
+      integer MVERT,IVERT ! max items and current menu item
 
 
 C Number of plant loops and day type must be > 0.
@@ -4570,6 +4573,7 @@ C Portions of multi-sensor feedback message.
       character msg1*24,msg2*24,msg3*24,msg4*24
       logical close1,OK,DOK
       real ocli
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -5199,6 +5203,8 @@ C Edit global control function II.
       character hold*42
       CHARACTER*84 VERT(20)
       logical close1
+      integer IADR  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Number of global functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -5513,9 +5519,10 @@ C upon whether the last output from the loop was on/off respectively.
                   CALL EDISP(IUOUT,'Current action is MIN')
                   IONE=1
                 ENDIF
+                IADR=1
                 CALL EASKATOG('Logical action variable',
      &          'with next sensor','AND','OR','NOT','SLAVE',
-     &          'MAX','MIN',' ',iadR,28)
+     &          'MAX','MIN',' ',IADR,28)
                 CM(ICLP*3+1)=REAL(IADR)
               ELSE
                 CM(ICLP*3+1)=CM((ICLP-1)*3+1)
@@ -5595,6 +5602,7 @@ C flow connections.It is assumed that the user will make one selection only.
       CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,SALT*40
       integer isn1T,isn2T,isn3T,isn4T,ilayt   ! temporary values for editing.
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -5624,7 +5632,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-      M=MHEAD
+   33 M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
         WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
@@ -5740,6 +5748,8 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 33
         ELSE
           goto 92
         ENDIF
@@ -6370,6 +6380,7 @@ C flow connections.It is assumed that the user will make one selection only.
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
       logical vb_xst ! local variable to check if slat type blind exists in CFC
       logical shd_xst ! local variable to check if shading alyer exists in CFC
+      integer MVERT,IVERT ! max items and current menu item
       
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -6429,7 +6440,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-      M=MHEAD
+   33 M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)')'a at current zone air point           '
         WRITE(VERT(2),'(a)')'b mix of convection and radiation     '
@@ -6506,6 +6517,8 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 33
         ENDIF
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
@@ -6530,6 +6543,7 @@ C Decode from the potentially long list to the zone number via KEYIND.
      &      'at inside face','node within surface','continue',IWN,2)
           if(IWN.eq.1)then
             ian3=0
+            goto 33
           elseif(IWN.eq.2)then
 
 C Work with local variables and only instanciate if ier is zero.
@@ -6539,24 +6553,26 @@ C Work with local variables and only instanciate if ier is zero.
             if(ier.eq.0)then
               ilay=ilayt
               ian3=ian3t
+              goto 33
             else
-              goto 3
+              goto 3   ! reset select
             endif
           elseif(IWN.eq.3)then
-            goto 3
+            goto 3   ! reset select
           endif
         elseif(IW.eq.3)then
-          goto 3
+          goto 3   ! reset select
         endif
       elseif(ivert.eq.1.and.(icfoc.eq.0))then 
 
-C Actuates current zone air point.
+C Actuates current zone air point (fall though to exit).
         ian1=0
         ian2=0
         ian3=0
       elseif(ivert.eq.1.and.(icfoc.eq.1))then
 
-C Within a plant component (offer the user a cancel option).
+C Within a plant component (offer the user a cancel option)
+C otherwise fall through to exit.
         ian1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
@@ -6841,6 +6857,7 @@ C Not one of the legal menu choices.
         goto 92
       endif
 
+C If fell though to this point exit the subroutine.
       return
       END
 
@@ -6931,6 +6948,7 @@ C   for control law one.
       integer imasctlindex    ! index of master control used by slave controller.
       integer iclawcurrent    ! to remember the current control law
       integer ivalue,imini,imaxi,idefa  ! local values for editing as integer
+      integer MVERT,IVERT ! max items and current menu item
 
 C Set initial logical values.
       close=.true.

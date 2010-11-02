@@ -53,6 +53,7 @@ C time-dependent variables to be plotted for one or more zones.
 
       CHARACTER*24 ITEM(42)
       character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1,h*72
+      integer NITMS,INO ! max items and current menu item
 
       MODIFY=.FALSE.
       VITEM=' '

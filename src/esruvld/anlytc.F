@@ -62,6 +62,7 @@ C *********************************************************************
       CHARACTER Promp*72,dinstpath*48
 
       logical VldOK,Vldtng
+      integer MITEM,INO ! max items and current menu item
 
       MonNod=1
       VldOK=.false.
@@ -316,6 +317,7 @@ C *********************************************************************
       character*32 item(11)
       CHARACTER*72 Msg
       integer NTimeT,NRootT,NIterT  ! local values for editing.
+      integer MITEM,INO ! max items and current menu item
       
    10 INO=-3
       WRITE(ITEM(1),'(A13,F8.1,A2)')'1 Time step: ',DTime,' s'
@@ -503,6 +505,7 @@ C *********************************************************************
 
       CHARACTER KEY*1,H*72
       character*47 ITEM(20)
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -843,7 +846,7 @@ C *********************************************************************
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -853,16 +856,14 @@ C geometry.h provides commons G0 and G2.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
       COMMON/Vld10/VlDirR,VlDirL
 
       character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
+      CHARACTER*72 path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
 
       logical xst
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if the root validation directory is available.
       IER=0
@@ -875,7 +876,6 @@ C Check if the root validation directory is available.
       endif
 
 C Copy the default validation model.
-      newgeo=.false.  ! assume older format geometry.
       VlDirL='Validation'
       H(1)=' Enter the name of the directory within which the'
       H(2)=' Validation model will be defined, and results will be'
@@ -902,12 +902,7 @@ C Copy the default validation model.
       NZONES=NCOMP
       ISFSUM=0
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
-      call eclose(gversion(IComp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUnit,LGEOM(IComp),IComp,1,IUOUT,IER)
-      else
-        call egomin(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IUnit,LGEOM(IComp),IComp,1,IUOUT,IER)
       CALL ECONST(LTHRM(IComp),IUnit,IComp,ITRC,IUOUT,IER)
       CALL EROPER(ITRC,IUOUT,IUnit,IComp,IER)
       CALL EZCTLR(IUnit,ITRC,IUOUT,IER)
@@ -921,12 +916,12 @@ C VMP111  modifies the variables of the validation model.
 C *********************************************************************
       SUBROUTINE VMP111
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -999,7 +994,7 @@ C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1011,10 +1006,8 @@ C *********************************************************************
       CHARACTER ctldoc*248,LCTLF*72
 
       logical QUIET,IGR1D,XST
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       QUIET=.true.
-      newgeo=.false.  ! assume older format geometry.
       ITRC=0
       IComp=1
 
@@ -1034,12 +1027,7 @@ C Save control file.
 
 C Save geometry file.
       IUF=IFIL+2
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
-      else
-        call emkgeo(IUF,LGEOM(ICOMP),IComp,3,IER)
-      endif
+      call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
 
 C Save construction file.
       CALL EMKCON(LTHRM(ICOMP),IUF,IComp,QUIET,IER)

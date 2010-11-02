@@ -186,8 +186,6 @@ c   icont  - >0 if shaded surfaces were found
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
@@ -206,8 +204,6 @@ C isurfinso list of insolation sources.
      &       nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension iva(ms)
-      character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
-      character ssparent*12
       character act*1,paction*16
       logical newgeo  ! Used to test for new/old geometry file.
 

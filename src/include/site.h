@@ -43,4 +43,8 @@ C Monthly profiles of temperatures defined by the user and standard profiles.
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
       real grdtmp ! standard (compiled in) monthly temperature profiles
+                  ! as defined in esru_blk.F
       common/ground/grdtmp(12,mgrdp)
+
+      character grdtmpname*24  ! short name to go with each grdtmp
+      common/grounddoc/grdtmpname(mgrdp)
