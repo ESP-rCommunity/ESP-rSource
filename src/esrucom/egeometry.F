@@ -2065,8 +2065,8 @@ C be incremented to iobs() = 2.
 C Following the tag *block_start will be the grid for X and Z. If
 C there are insufficient tokens on line set both to 20.
           if(ND.gt.2)then
-            CALL EGETWI(LOUTSTR,K,NOX(icomp),4,20,'F','opq grid X',IER)
-            CALL EGETWI(LOUTSTR,K,NOZ(icomp),4,20,'F','opq grid Z',IER)
+            CALL EGETWI(LOUTSTR,K,NOX(icomp),4,MOX,'F','opq grid X',IER)
+            CALL EGETWI(LOUTSTR,K,NOZ(icomp),4,MOZ,'F','opq grid Z',IER)
           else
             NOX(icomp)=20
             NOZ(icomp)=20
@@ -2695,7 +2695,7 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# block entities:'
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
-        write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
+        write(ifilg,'(2a,i3,i3,a)',IOSTAT=IOS,ERR=13) 
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
@@ -2705,14 +2705,14 @@ C geometry file also write the NOX and NOZ values.
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
      &        OPOB(icomp,ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
             WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib),
      &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib,
      &        ' coords follow:'
 
@@ -2741,7 +2741,7 @@ C geometry file also write the NOX and NOZ values.
      &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
      &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           endif
   89    continue
