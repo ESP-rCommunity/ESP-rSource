@@ -524,49 +524,6 @@ C Generate EPC information
         endif
         goto 42
 
-      elseif(iecmoption.eq.2)then
-
-C Use existing models and run assessments and generate EPC.
-        iuact = 2
-C        CFGROOT = CFGROOT_O ! re-establish the initial root name
-C        CALL EMKSBM(iier)   ! generate Notional model
-C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
-C        CALL EMKREF  ! Reference model
-C        CALL EMKTYP  ! Typical model
-
-        H(1)='You are using existing UK NCM stripped, notional,'
-        H(2)='reference and typical models. In order to generate'
-        H(3)='EPC and BRUKL (UK building regulations) specific'
-        H(4)='information annual simulations for all these models'
-        H(5)='need to run and may take some time. If you picked this'
-        H(6)='choice in error just say no.'
-        CALL ASKOK(
-     &    'Run NCM simulations based on existing models (see help)',
-     &    ' ',OK,dok,6)
-
-C Run simulation and recover information from save level 6 results file
-        if(ok)then
-          CALL SIMRUN(2) ! Notional model
-          CALL SIMRUN(1) ! Stripped model
-
-C To save time in formal NCM testing comment out the next two lines.
-          CALL SIMRUN(3) ! Reference model
-          CALL SIMRUN(4) ! Typical model
-
-C Generate BER and TER - if doing DSM testing the call is made from 
-C RSL6TF
-          IF(iDsmTestingFlag.LE.0.OR.iDsmTestingFlag.GE.3)then
-            CALL BERTER(IER)
-          ENDIF
-
-C Generate BRUKL information
-          CALL NCMCAL(IER)
-
-C Generate EPC information
-          CALL EPCCAL(IER)
-        endif
-        goto 42
-
       elseif(iecmoption.eq.3)then
 
 C Recover information from save level 6 results file
@@ -1548,7 +1505,10 @@ C Confirm photoelectric sensor parasitic power W/m2
               write(outs,'(A,F5.3,A)')'Current parasitic power is ',
      &        PE_sensor_PP(iz),'W/m2.'
               call edisp(iuout,outs)
-              IF(Ipe_sensor.EQ.1)THEN
+              IF(Ipe_sensor.EQ.0)THEN
+                PE_sensor_PP(iz)=0.0
+                PE_sensor_PP(iz)=0.0
+              ELSEIF(Ipe_sensor.EQ.1)THEN
                 PE_sensor_PP(iz)=0.3
               ELSEIF(Ipe_sensor.EQ.2)THEN
                 PE_sensor_PP(iz)=0.57
@@ -1560,6 +1520,11 @@ C Confirm photoelectric sensor parasitic power W/m2
               CALL EASKR(PE_sensor_PP(iz),
      &        'Confirm photo-electric sensor parasitic power',
      &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,4)
+            else
+
+C Set sensor parasitic power to zero
+              PE_sensor_PP(iz)=0.0
+              PE_sensor_PP(iz)=0.0
             endif
 
 C Ask for occupancy sensing
@@ -1617,6 +1582,8 @@ C Confirm occupancy sensor parasitic power W/m2
               CALL EASKR(Occ_sensor_PP(iz),
      &        'Confirm occupancy sensor parasitic power',
      &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+            else
+              Occ_sensor_PP(iz)=0.0
             endif
           endif
 
@@ -3257,7 +3224,6 @@ C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers).
         D64='000000000000'
-        D64='000000000000'
         H(1)='Input the Unique Property Reference Number (UPRN) here.'
         H(2)='Applicable only for England, Wales & Northern Ireland.'
         CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
@@ -3843,7 +3809,7 @@ C For tdf to call arlist:
       REAL COLUMNWRITE
       integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
       REAL val_converted
-      real zd  ! depth
+      real ZD  ! depth for ground temp calc
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3861,7 +3827,6 @@ C First get ground temperatures at depth Z
       CALL GTCALC(ZD,'s',IER)
 
 C Assume that geometry files are version 1.1. If not exit with ier set to 2.
-      APE='_str  '
       call edisp(iuout,
      &  'Processing zones for stripped building variant.')
       GUESS='notional'
@@ -3913,14 +3878,16 @@ C If surface is exterior then check if use is specified if not then ask
             ENDIF
           ENDIF
  552    CONTINUE
-        EXT='.geo'
-        CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
-        LGEOM(ICOMP)=NNAME
 
 C Add 10% thermal bridge by silently calling appropriate subroutine if
 c none have been defined
         if(losspercent(icomp).le.0.0)CALL LINTHBRDG(ICOMP,'s',0.1)
 
+C Write new geometry file for the stripped model zonename_str.geo
+        APE='_str  '
+        EXT='.geo'
+        CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
+        LGEOM(ICOMP)=NNAME
         CALL GEOWRITE(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
  551  CONTINUE
 
@@ -8544,7 +8511,7 @@ C due to thermal bridges out of the overall heat loss from the envelope.
 C Thermal bridges are always 10% for notional building so b_alpha is
 C always 10%.
       b_alpha=10.0
-      WRITE(IUF,'(a,f6.2)',iostat=ios)   
+      WRITE(IUF,'(a,f6.2)',iostat=ios)
      &  '  BUILDING-ALPHA             = ',b_alpha
 
 C Calculate loads for heating, cooling, DHW etc.
@@ -13927,7 +13894,7 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
 #include "site.h"
 
 C Passed parameters.
-      real ZD           ! Depth at which temperature required
+      real ZD          ! Depth at which temperature required
       character act*1  ! '-' to report, 's' sbem mode
       integer ier      ! non-zero is an error
 
