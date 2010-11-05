@@ -6782,3 +6782,160 @@ control period finish hour                                            0.0000
 open(1) shut(0) outside period                                        0.0000
 index for the sensed property                                         0.0000
 signal set point                                                      0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    103
+
+ Component Description
+    Generic type     : Stratified storage tank with 1 immersed heat exchanger
+    Description      : Stratified tank with 1 immersed HX; 2 node model
+    Insertion date   : 05 Jun 2009
+    Type: Single component                    Component code :   1260          
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  18    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.2730         Range (Min Max):    0.0100         10.0000
+    2 Tank height (m)
+      Value =   1.5000         Range (Min Max):    0.1000         10.0000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =  -1.0000         Range (Min Max):   -1.0000          5.0000
+    4 Height of flow inlet (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    5 Height of flow outlet (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    6 Tank heat loss coefficient (W/m2-K)
+      Value =    0.1000        Range (Min Max):    0.0000         100.000
+    7 Additional destratification conductivity (W/m-K)
+      Value =   0.0000         Range (Min Max):    0.0000         100.000
+    8 Number of nodes 
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+    9 Internal time steps per simulation time step
+      Value =   5.0000         Range (Min Max):    1.0000         100.000
+   10 Initial temperature of tank (C)
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+   11 Boiling temperature of fluid (C)
+      Value =  100.0000        Range (Min Max):   50.0000         200.000
+   12 Height of immersed HX inlet (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+   13 Height of immersed HX outlet (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+   14 Inside diameter of immersed HX coil (m)            
+      Value =   0.0340         Range (Min Max):    0.0000          0.1000
+   15 Outside diameter of immersed HX coil (m)            
+      Value =   0.0380         Range (Min Max):    0.0000          0.1000
+   16 Diameter of immersed HX coil (m)            
+      Value =   0.3510         Range (Min Max):    0.0000          1.5000
+   17 Pitch of immersed HX coil (distance from one loop to the next) (m)            
+      Value =   0.0560         Range (Min Max):    0.0000          0.5000
+   18 Thermal conductivity of immersed HX coil material (W/m/K)
+      Value =  40.0000         Range (Min Max):    0.1000        320.0000
+
+ Number of additional output parameters:     6
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+    6 Heat transf. from imm. HX      Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    104
+
+ Component Description
+    Generic type     : Stratified storage tank with 2 immersed heat exchangers
+    Description      : Stratified tank with 2 immersed HXs; 3 node model
+    Insertion date   : 05 Jun 2009
+    Type: Single component                    Component code :   1270
+
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      3
+    Matrix positions :   1,   5,   9,
+    Node connections :   1,   1,   1,
+    Variable type    :  20,  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  25    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.2730         Range (Min Max):    0.0100         10.0000
+    2 Tank height (m)
+      Value =   1.5000         Range (Min Max):    0.1000         10.0000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =  -1.0000         Range (Min Max):   -1.0000          5.0000
+    4 Height of flow inlet (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    5 Height of flow outlet (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    6 Tank heat loss coefficient (W/m2-K)
+      Value =    0.1000        Range (Min Max):    0.0000         100.000
+    7 Additional destratification conductivity (W/m-K)
+      Value =   0.0000         Range (Min Max):    0.0000         100.000
+    8 Number of nodes 
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+    9 Internal time steps per simulation time step
+      Value =   5.0000         Range (Min Max):    1.0000         100.000
+   10 Initial temperature of tank (C)
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+   11 Boiling temperature of fluid (C)
+      Value =  100.0000        Range (Min Max):   50.0000         200.000
+   12 Height of first immersed HX inlet (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+   13 Height of first immersed HX outlet (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+   14 Inside diameter of first immersed HX coil (m)            
+      Value =   0.0340         Range (Min Max):    0.0000          0.1000
+   15 Outside diameter of first immersed HX coil (m)            
+      Value =   0.0380         Range (Min Max):    0.0000          0.1000
+   16 Diameter of first immersed HX coil (m)            
+      Value =   0.3510         Range (Min Max):    0.0000          1.5000
+   17 Pitch of first immersed HX coil (distance from one loop to the next) (m)            
+      Value =   0.0560         Range (Min Max):    0.0000          0.5000
+   18 Thermal conductivity of first immersed HX coil material (W/m/K)
+      Value =  40.0000         Range (Min Max):    0.1000        320.0000
+   19Height of second immersed HX inlet (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+   20 Height of second immersed HX outlet (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+   21 Inside diameter of second immersed HX coil (m)            
+      Value =   0.0340         Range (Min Max):    0.0000          0.1000
+   22 Outside diameter of second immersed HX coil (m)            
+      Value =   0.0380         Range (Min Max):    0.0000          0.1000
+   23 Diameter of second immersed HX coil (m)            
+      Value =   0.3510         Range (Min Max):    0.0000          1.5000
+   24 Pitch of second immersed HX coil (distance from one loop to the next) (m)            
+      Value =   0.0560         Range (Min Max):    0.0000          0.5000
+   25 Thermal conductivity of second immersed HX coil material (W/m/K)
+      Value =  40.0000         Range (Min Max):    0.1000        320.0000
+ 
+ Number of additional output parameters:     6
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+    6 Heat transf. from imm. HXs     Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+

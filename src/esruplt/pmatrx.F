@@ -1466,10 +1466,16 @@ C 1-node mains monthly draw profile
      &     mains_draw_daily_profile_coeff_gen(IPCOMP,OUT,ISTATS)
          ELSE IF (ITYPE .EQ. 123) THEN
 C 2-node stratified storage tank model
-            CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
+           CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
         ELSE IF (ITYPE .EQ. 124) THEN
 C 2-node NCHE (natural convection heat exchanger) model
-            CALL NCHE_coeff_gen(IPCOMP,OUT,ISTATS)
+           CALL NCHE_coeff_gen(IPCOMP,OUT,ISTATS)
+        ELSE IF (ITYPE .EQ. 126) THEN
+C 2-node stratified storage tank model with 1 immersed heat exchanger
+           CALL stratified_tank_1HX_coeff_gen(IPCOMP,OUT,ISTATS)
+        ELSE IF (ITYPE .EQ. 127) THEN
+C 3-node stratified storage tank model with 2 immersed heat exchangers
+           CALL stratified_tank_2HX_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 
