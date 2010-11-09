@@ -1201,11 +1201,13 @@ C mechanical ventilation and infiltration.
       character outs*124
       logical close
 
-C Common block for the window model.           
+C Common block for the window model. 
+      LOGICAL AreWindowsOpen
+
       COMMON/WindowControl/
      &     fWindowSetpoint, fACSetPoint, bWindowControlFlag,
      &     iWindowControlZone, bWindowsAreOpen, fDeltaTInttoExt,
-     &     fWindowLowSetpoint          
+     &     fWindowLowSetpoint
 
 C     Exterior Temperature at which and below the windows could open.  
       REAL fWindowSetpoint
@@ -1258,10 +1260,6 @@ C     This prevents the zone becoming too cold.
       REAL :: sum,t1,ta1,ta2,taf,tafl,tafu,trat,tx,val,xx
       REAL :: time
 
-      Character cZone*2
-      
-      LOGICAL AreWindowsOpen
-      Logical Lukas
       
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1521,6 +1519,13 @@ C entry in tdf
         XX=0. 
         XX3=CVIF*TF+SUM*XX
         CVVFM=0.
+
+
+C Neither the tdf or UK FRESH AIR model were used above.
+C So default to the infiltration specified in the common block
+C for the day time, zone, and time type (CVIN)
+C These values were either specified in the *.opr file or are the
+C result of overriding these values using the air flow network called above.
       else
 
 C By interpolation determine the conductances at 'TIME':
@@ -1549,135 +1554,63 @@ C infiltration first.
         ENDIF
         CV1=CVIN(ID1,ICOMP,IT1)
         CV2=CVIN(ID2,ICOMP,IT2)
+C The CVIF is the infiltration due to either the *.opr or air flow network
         CVIF=CV1+(TRAT*(CV2-CV1))
-      
-C If the mechanical ventilation model or the AIM-2 infiltration model is active
-C then override the infiltration conductance set in the block of code above. In other words,
-C the infiltration rate specified in the .opr file is overridden when either of these models
-C are active in HOT3000.
 
-C Calculate the mechanical ventilation load if the mechanical ventilation model
-C is active (i.e. iMECH=1). This includes the load caused by both HRVs and mechanical supply
-C without heat recovery.
+!         write(*,*) "Zone ", ICOMP, "; Before AIM ", CVIF
+
+C If the AIM-2 infiltration model is active and the windows are closed
+C then override the infiltration conductance set in the block of code above. In other words,
+C the infiltration rate specified in the .opr file or due to the air flow network
+C is overridden using the AIM-2 model
+
+C Calculate the infiltration load if the AIM-2 model is active (i.e. iAIM=1)
+C and this is a modeled zone and the windows are closed
+
+        ZONE_infil_cond = 0.      ! Reset infiltration conductance.
+        IF( iAIM2.eq.1 ) THEN     ! Check if the model is active 
+          ! Conductance of infiltration returned for that zone
+          ! If the zone was not specified in the AIM-2 file then it will return a zero
+          CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
+          
+          ! Check that this zone was specified in the AIM-2 file (actively modelled) and 
+          ! that the windows are closed for the model to be valid
+          ! This check that the zone is active is important so that zones not described with AIM-2
+          ! will still recieve infiltration as described by the *.opr or air flow network
+          
+          ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
+          ! loads are reflected in ESP-r's zonal energy balances. Note that in this way, the combined
+          ! loads due to infiltration and mechanical ventilation are treated as infiltration in
+          ! ESP-r's energy balance.
+          ! An added logic was to check to see if the windows are open. This feature was added for the FCT project to allow windows opening 
+          ! if cooling was required and the external air temperature could help with the load. This will default to the standard esp-r esp-r flow network,
+          ! which should have a open window model designed in it's afn configuration.
+          IF (AIM2_active_zones(ICOMP) .and.
+     &     .not. AreWindowsOpen()) THEN
+            ! Replace the infiltration described in the *opr or air flow network with that of AIM-2
+            CVIF = ZONE_infil_cond
+!             write(*,*) "Zone ", ICOMP, "; After AIM ", CVIF
+          ENDIF
+        ENDIF
+
+C If the mechanical ventilation model is active
+C then add this infiltration conductance to the CVIF.
+C Note that this mechanical ventilation is added to the CVIF regardless of 
+C weather it is from the *.opr, air flow network, or AIM-2.
+C This is because the mechanical ventilation continues to run in all cases,
+C even when the windows are open.
+C The mechanical ventilation model has its own logic to determine its rates (e.g. HRV)
+C or whether it is on/off
+
         ZONE_mechvent_cond = 0.                    ! Reset mech vent conductance.
         IF( iMech.eq.1) THEN      ! f77 syntax since this file also used by bld.
           CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond) ! Conductance of mech vent returned.
-
-        ENDIF
-      
-C Calculate the infiltration load if the AIM-2 model is active (i.e. iAIM=1).
-        ZONE_infil_cond = 0.      ! Reset infiltration conductance.
-        AIM2_infil_zone_indicator = .false. ! Reset the zone AIM2 modelling indicator. Note this relies on the fact that the CVS (mech ventilation) requires AIM2
-        
-        IF( iAIM2.eq.1 ) THEN     ! f77 syntax since this file also used by bld. 
-          CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond) ! Conductance of infiltration returned.
-          
-C         Check to see that this zone is modelled by AIM2
-C         Check to see if it is declared as crawl space or attic zone
-          IF (ICOMP .eq. AIM2_Basement_zone
-     &            .or. ICOMP .eq. AIM2_CrawlSpace_zone
-     &            .or. ICOMP .eq. AIM2_attic_zone) THEN
-            AIM2_infil_zone_indicator = .true.
-C         Check to see if it is one of the infiltration zones
-          ELSE
-            DO I = 1, AIM2_num_zones_infil
-              IF (AIM2_zone_infil(I) .eq. ICOMP) THEN
-                AIM2_infil_zone_indicator = .true.   ! this is active AIM2 zone
-                EXIT ! jump out because we found this zone
-              ENDIF ! check of particular AIM2 infiltration zone  
-            END DO ! check of all AIM2 infiltration zones
-          ENDIF ! check for AIM2 defined zone
-        ENDIF ! check for iAIM2
-
-
-
-C If either the mechanical ventilation or AIM-2 infiltration models are active, then
-C add the conductances caused by the infiltration and the mechanical ventilation.
-C Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
-C loads are reflected in ESP-r's zonal energy balances. Note that in this way, the combined
-C loads due to infiltration and mechanical ventilation are treated as infiltration in
-C ESP-r's energy balance.
-C An added logic was to check to see if the windows are open. This feature was added for the FCT project to allow windows opening 
-C if cooling was required and the external air temperature could help with the load. This will default to the standard esp-r esp-r flow network,
-C which should have a open window model designed in it's afn configuration.
-
-C f77 syntax since this file also used by bld.
-
-C       Pad zone index to 'XX' in character form for xml_reporting
-        IF ( ICOMP .gt. 9 ) THEN
-           write (cZone,'(I2)') ICOMP
-        ELSE
-          write (cZone,'(A,I1)') '0', ICOMP
+          CVIF = CVIF + ZONE_mechvent_cond
+!           write(*,*) "Zone ", ICOMP, "; After MVNT ", CVIF
         ENDIF
 
 
-C       If the CVS (mech vent) or AIM2 is being used, and this is a zone modelled by those routines, and the windows are closed,
-C       then overwrite the infiltration CVIF with these values
-        IF( (iMECH.eq.1 .or. iAIM2.eq.1 ) .and. ! check that the CVS or AIM2 is active
-     &    AIM2_infil_zone_indicator ) THEN ! check that this is modelled zone
-     
-                call add_to_xml_reporting (
-     &            ZONE_mechvent_cond,
-     &            'CHREM/zone_' // cZone // '/vent/mechvent_cond',
-     &            'units', 'conductance',
-     &            'CVS')
-                call add_to_xml_reporting (
-     &            ZONE_infil_cond,
-     &            'CHREM/zone_' // cZone // '/vent/infil_cond',
-     &            'units', 'conductance',
-     &            'AIM2')
-
-C           The CVS or AIM2 is active and we are in a modelled zone.
-C           Check whether the windows are open and then apply appropriate infiltration
-            IF ( AreWindowsOpen() ) THEN
-
-C             Windows are open, so substantially increase the AIM2 infiltration
-C               This is reasonable because the 'stack' effect component is low
-C               and the 'wind driven' infiltration is governing. By opening the
-C               windows the leakage area effectively increased substantially.
-C             Also, maintain the CVS (mech ventilation) infiltration as this system
-C             does not shut down.
-              
-              CVIF = 5.0 * ZONE_infil_cond + ZONE_mechvent_cond
-
-                 call add_to_xml_reporting (
-     &            CVIF,
-     &            'CHREM/zone_' // cZone // '/vent/CVIF',
-     &            'units', 'conductance',
-     &            'CVIF')
-     
-                 call add_to_xml_reporting (
-     &            1.,
-     &            'CHREM/zone_' // cZone // '/vent/bWindowsAreOpen',
-     &            'units', 'boolean',
-     &            'bWindowsAreOpen')
-              
-            ELSE
-
-C             Windows are closed so simply apply AIM2 and CVS
-
-              CVIF = ZONE_infil_cond + ZONE_mechvent_cond
-              
-                  call add_to_xml_reporting (
-     &            CVIF,
-     &            'CHREM/zone_' // cZone // '/vent/CVIF',
-     &            'units', 'conductance',
-     &            'CVIF')
-     
-                 call add_to_xml_reporting (
-     &            0.,
-     &            'CHREM/zone_' // cZone // '/vent/bWindowsAreOpen',
-     &            'units', 'boolean',
-     &            'bWindowsAreOpen')
-     
-     
-            ENDIF
-            
-            
-
-        ENDIF
-
-C When there is an outdoor air flow through the HVAC system, this is accounted for 
+C When there is an outdoor air flow through the HVAC  (air source heat pump) system, this is accounted for 
 c through its effect on space infiltration. Initially the conductance for outdoor air flow
 c is set to zero, then when this value is greater than 0., it's effect on the infiltration of the
 c space is accounted for here.
