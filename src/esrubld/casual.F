@@ -474,6 +474,20 @@ C Manual switching
         ENDIF
         FD1=0.5*(FDF1+FDR1)
 
+C Do not apply local manual switching if floor area is more than 30m2 
+        IF(ZBASEA(ICOMP).ge.30.0)FD1=1.0
+
+C Apply local manual switching if activity is not one of the following:
+C corridors or other circulation areas, dry sports/fitness, ice rinks,
+C changing rooms, swimming pools, sales areas, baggage reclaim areas,
+C security check areas, eating/drinking areas, halls, lecture theatres,
+C cold stores, display areas, A&E, industrial process areas, warehouse 
+C storage, and performance areas (stages) for which FD=1
+        IF(IACTYTYP(ICOMP).GT.0)THEN ! Error trap zero array index
+          IF(loc_man_sw(IACTYTYP(ICOMP)).eq.1)FD1=1.0
+        ENDIF
+
+C Apply local manual switching to notional, reference and typical models
         IF(INOTI.EQ.1.OR.INOTI.EQ.2)THEN ! Notional and reference models
           QTOTLIGHT=fNotionalLighting(theactivityindex(ICOMP))*
      &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)*FD1+
