@@ -2575,7 +2575,7 @@ C << using an array writing call instead >>
      &      (lstsfcalc(ICOMP,J),J=1,nsurfcalc(icomp))
         elseif(iaplic(icomp,1).eq.0)then
           write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
-     &      '*shad_directive,list',nsurfcalc(icomp),
+     &      '*shad_calc,list',nsurfcalc(icomp),
      &      ' # list of surfs'
           write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
      &      (lstsfcalc(ICOMP,J),J=1,nsurfcalc(icomp))

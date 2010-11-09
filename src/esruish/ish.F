@@ -224,7 +224,7 @@ C ifcfg  - system configuration file
 
 C Set sky type to isotropic as default (idifc = 0): diffuse shading
 C is then calculated only once per day rather than at each time step
-C if the sky id anisotropic (idifc = 1).
+C if the sky is anisotropic (idifc = 1).
       idifc=0
 
 C Set folder separator (fs) to \ or / as required.
