@@ -54,8 +54,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
@@ -64,7 +64,6 @@ C Defaults.
 
 C Path to model.
       common/rpath/path
-      common/expath/runpath,pathtype
 
       common/user/browse
 
@@ -73,6 +72,8 @@ C Path to model.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+
+C Radiance based commons are explained in e2r_common.h.
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -89,7 +90,7 @@ C Name of current application
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
-      character tfile*72,runpath*72,pathtype*24
+      character tfile*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
@@ -106,7 +107,6 @@ C Name of current application
       logical browse  ! is true if parameter passed as yes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-      integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
       integer irif ! loop variable for more than one rif in a scene
       integer NITEMS,INO ! max items and current menu item
@@ -147,7 +147,7 @@ C Temporary ascii files ITA1 = IFIL+6, ITA2 = IFIL+7, ITA3 = IFIL+10.
       IFCFG=IFIL+8
       ITA3 = IFIL+10
 
-      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,act,brw)
+      call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,cmdact,brw)
 
 C Set ifocz to zone number (which is passed as "character <zone number>")
       if (zone(1:4) .eq. 'NONE') then
@@ -169,7 +169,7 @@ C Make case insensitive.
       if (aim(1:8).eq.'External') zone='  '
       if (aim(1:8).eq.'coupling') aim='Coupling'
       if (aim(1:8).eq.'day_coef') aim='Day_coef'
-      if (act(1:6).eq.'create') act='Create'
+      if (cmdact(1:6).eq.'create') cmdact='Create'
 
       IFS=1
       ITFS=1
@@ -430,7 +430,6 @@ C and then present the main menu.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
           call MODLSU
-          lnrp=lnblnk(runpath)
         endif
       endif
 
@@ -483,7 +482,6 @@ C name with the full path.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if (XST)then
           call MODLSU
-          lnrp=lnblnk(runpath)
         endif
       endif
 
@@ -520,7 +518,6 @@ C        write(6,*) tfile
 
         continue
       else
-        lnrp=lnblnk(runpath)
         write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
@@ -534,7 +531,7 @@ C          write(6,*) tfile
 C Ask user about the scene file. Begin by checking for command line information.
           if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
             call checkrif('n')
-            if (act(1:4).ne.'NONE') call autorad
+            if (cmdact(1:4).ne.'NONE') call autorad
           else
 
 C Create a default scene file name using the cfgroot.
@@ -570,7 +567,7 @@ C Scan the scene file.
 C Check for command line information.
       if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
         call checkrif('o')
-        if (act(1:4).ne.'NONE') call autorad
+        if (cmdact(1:4).ne.'NONE') call autorad
       else
         if (NSCENE.gt.1) then
           call edisp(iuout,
@@ -668,7 +665,7 @@ C Present the main menu.
 
 C Copy files back to radpth if necessary. If running native windows
 C then there is no need to copy all files back.
-        lnrp=lnblnk(runpath)
+C        lnrp=lnblnk(runpath)
         call isunix(unixok)
         if(unixok)then
           if(browse)then
@@ -706,7 +703,7 @@ C folder (the other files can stay where they are).
           call edisp(iuout,outs)
           KEEP=.false.
         endif
-        lnrp=lnblnk(runpath)
+C        lnrp=lnblnk(runpath)
         if (KEEP) then
 
 C Move the radiance configuration file and the other files in the
@@ -773,7 +770,7 @@ C or create a new one with reasonable defaults.
         H(5)='wheat there intended use is.'
         ltmp72=LRADCF
         dtmp72='scene.rcf'
-        CALL EASKS(ltmp72,' Scene configuration file (suggested name)?',
+        CALL EASKS(ltmp72,'Scene configuration file (suggested name)?',
      &    '  ',72,dtmp72,'scene file name',IER,5)
         if(ltmp72.eq.'  ')goto 319 
         LRADCF=ltmp72
@@ -835,7 +832,7 @@ C Other descriptions.
 
       elseif(INO.EQ.13)then
 
-C Depending on value of scenepurp.
+C Depending on value of SCENEPURP.
         if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(a,a)')runpath(1:lnrp),
@@ -935,7 +932,7 @@ C to remove it before proceeding.
           H(6)='recreate the octree (ie choose option 1).'
           CALL EASKABC(' The octree exists, do you want to',' ',
      &      'force update','let Radiance decide (default)','cancel',
-     &                                                        IOCTFL,6)
+     &      IOCTFL,6)
           if (IOCTFL.eq.3) then
             goto 10
           endif
@@ -987,9 +984,9 @@ C Based on purpose view DF or illuminance or daylight coef or image.
 C Check for daylight factor results. Note: the results could have been
 C shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
-          lnrp=lnblnk(runpath)
+C          lnrp=lnblnk(runpath)
           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
-     &      '.df'
+     &       '.df'
           write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
           call ERPFREE(ITA1,ISTAT)
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
@@ -1101,7 +1098,8 @@ C Check chosen image file name.
         CALL ERPFREE(ITA2,ISTAT)
         call FINDFIL(pf,XST)
         if (.not.XST) then
-          call usrmsg('Cannot find picture file: ',pf(1:lnblnk(pf)),'W')
+          call usrmsg('Cannot find picture file: ',pf(1:lnblnk(pf)),
+     &      'W')
           goto 10
         endif
 
@@ -1110,7 +1108,8 @@ C Get glare info file name (if necessary) and display image.
           CALL ERPFREE(ITA2,ISTAT)
           call FINDFIL(gf,XST)
           if (.not.XST) then
-            call usrmsg('Cannot find glare file: ',gf(1:lnblnk(gf)),'W')
+            call usrmsg('Cannot find glare file: ',gf(1:lnblnk(gf)),
+     &        'W')
             goto 10
           endif
           call dispimage(2)
@@ -1158,7 +1157,6 @@ C MODLSU read in supplied configuration file and set up paths.
 
 C Path to model.
       common/rpath/path
-      common/expath/runpath,pathtype
       common/rcmd/LCMDFL
       common/user/browse
 
@@ -1169,23 +1167,20 @@ C Path to model.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
+      character path*72,cfgroot*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
-      integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
@@ -1273,7 +1268,7 @@ C If unix and browsing get PID for use in /tmp directory structure.
             write (tldir,'((5a,i7,a))') upath(1:lnblnk(upath)),fs,
      &                                '.',fs,'.rad',ipid,fs
             call st2file(tldir,runpath)
-            lnrp=lnblnk(runpath)
+            lnrp=lnblnk(runpath)  ! remember this
             write (outs,'(a,a)') 'mkdir ',runpath(1:lnrp)
             call runit(outs,'-')
             pathtype='radinhome'
@@ -1284,22 +1279,22 @@ C If user owns the model then use the ../rad or ./cfg folder so no
 C need to create a folder.
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
               pathtype='radincfg'
-            elseif(radpth(1:6).eq.'./rad '.or.
-     &             radpth(1:6).eq.'.\\rad ')then
+            elseif(radpth(1:7).eq.'../rad '.or.
+     &             radpth(1:7).eq.'..\\rad ')then
               pathtype='radinrad'
             endif
             write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
-            lnrp=lnblnk(runpath)
+            lnrp=lnblnk(runpath)  ! remember this
           endif
         else ! not unixok
           if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\')then
             pathtype='radincfg'
-          elseif(radpth(1:6).eq.'./rad '.or.
-     &           radpth(1:6).eq.'.\\rad')then
+          elseif(radpth(1:7).eq.'../rad '.or.
+     &           radpth(1:7).eq.'..\\rad ')then
             pathtype='radinrad'
           endif
           write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
-          lnrp=lnblnk(runpath)
+          lnrp=lnblnk(runpath)  ! remember this
         endif
         write(outs,'(2a)') 'The place where rad will be invoked is ',
      &     runpath(1:lnrp)
@@ -1354,6 +1349,7 @@ C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
 
 C geometry.h provides commons G0 and G2.
 C #include "geometry.h"
@@ -1398,7 +1394,7 @@ C (need to test blind/ shuter control flags).
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else
             write (outs,'(a,a)') ' Could not find construction file: ',
-     &                                                     LTHRM(ICOMP)
+     &        LTHRM(ICOMP)
             call usrmsg(outs,'blind control tracking not possible!','W')
           endif
 

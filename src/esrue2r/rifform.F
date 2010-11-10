@@ -22,6 +22,7 @@ C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
 #include "e2r_common.h"
 
@@ -30,11 +31,8 @@ C ******* Setup of image quality and calculation options.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/expath/runpath,pathtype
-
 
       CHARACTER doit*124,VALT*32
-      character runpath*72,pathtype*24
       character item*30,h*72,HOLD*24
       character fil*80
       character ltmp*72,ltmp60*60
@@ -357,9 +355,11 @@ C If use = 'f' then force files to account for change in root/dir name.
 #include "prj3dv.h"
 #include "e2r_common.h"
       
+      integer lnblnk  ! function definition
+
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
-      integer lnblnk  ! function definition
+      character pre*28
 
       character pre*28
       character use*1

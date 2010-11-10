@@ -4149,7 +4149,7 @@ C      common/OUTIN/IUOUT,IUIN
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character lradcf*72,LCFGF*72,OUTSTR*124
+      character dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
       character doit*124,tmode*8,H*72,act_1*1
       character fs*1

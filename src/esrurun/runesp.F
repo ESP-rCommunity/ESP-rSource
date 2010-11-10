@@ -68,7 +68,6 @@ C ************************************************************
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).

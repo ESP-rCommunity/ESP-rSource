@@ -26,6 +26,7 @@ C ******* View cone for plan/elevation.
       SUBROUTINE VCONE(direc)
 #include "building.h"
 #include "e2r_common.h"
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -128,7 +129,7 @@ C ******* Default views formation.
 #include "geometry.h"
 #include "prj3dv.h"
 #include "e2r_common.h"
-
+      
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -138,18 +139,19 @@ C ******* Default views formation.
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-     
-      LOGICAL XST,OK,DOK,addview,redraw
+      LOGICAL XST,OK,DOK,addview
+      logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
@@ -265,8 +267,11 @@ C Ask for name of new viewpoint file and set eye point at centre.
           rvpy=YMN+0.1
           rvpz=VIEWM(3)
         endif
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),
-     &                            VIEWM(3),azimuth,elevtn)
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
         H(1)='This is a tag used for reference.'
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
      &                                         'short view tag',IER,1)
@@ -289,8 +294,11 @@ C If the default view.
           angv=90.0
           angh=90.0
         endif
-        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),
-     &                            VIEWM(3),azimuth,elevtn)
+
+C Given view point and viewed point return and update common values
+C of the azimuth and elevation.
+        call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
+     &    azimuth,elevtn)
         call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       else
 
@@ -638,6 +646,8 @@ C convert into normal or take the direction from the perspective.
           if(IEE.eq.3)then
             goto 10
           elseif(IEE.eq.2)then
+
+C Update the viewing azimuth and elevation.
             call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &        VIEWM(3),az,el)
             write(outs,'(a,F7.1,a,F7.1)') 'The perspective azimuth is ',

@@ -42,6 +42,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
 #include "e2r_common.h"
 #include "control.h"
@@ -51,14 +52,13 @@ C RADCFGIN reads the contents of the radiance configuration file.
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/rpath/path
-      common/expath/runpath,pathtype
 
       common/user/browse
 
       character tmp_rifname*72
 
       character WORD*124, OUTS*124, OUTSTR*124
-      character pfile*72,path*72,runpath*72,pathtype*24,fs*1
+      character pfile*72,path*72,fs*1
       integer lnrp  ! length of run path
 
       integer ifocz_tmp(MBP+1)
@@ -80,7 +80,6 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      lnrp=lnblnk(runpath)
 
 C Copy existing model to runpath (unix only).
       if(unixok)then
@@ -137,9 +136,11 @@ C Now read number of scenes contained.
       K=0
       CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of scenes',IER)
 
-C For each scene read (at least) 5 items of data
+      
+C For each scene read at least 5 items of data.
       IER=0
       do 10 I=1,NSCENE
+
         irif=0 ! initialize rif counter for current scene
  30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
         if (OUTSTR(1:9).eq.'*sceneEND') goto 20
@@ -200,23 +201,24 @@ C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
+      
+      integer lnblnk  ! function definition
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       common/FILEP/IFIL
-      common/expath/runpath,pathtype
 
       character OUTS*72
-      character dstmp*24,pfile*72,runpath*72,pathtype*24
+      character dstmp*24,pfile*72
       integer lnrp  ! length of run path
       integer irif ! loop variable for more than one rif per scene
 
       integer lnblnk  ! function definition
 
 C Check that ICHK is a sensible value.
-      lnrp=lnblnk(runpath)
       IRCFG = IFIL+17
       if (ICHK.ne.3.and.ICHK.ne.4) ICHK=4
 
@@ -232,7 +234,7 @@ C Write header first.
       write(IRCFG,'(a)')'*ESP-r visualisation scene configuration file.'
       write(IRCFG,'(a,a)') dstmp,' # latest file modification.'
 
-C Now write number of rif files contained.
+C Now write number of scenes contained.
       write(IRCFG,'(i3,a)') NSCENE,' # No. of scenes'
       
 C For each scene write 1) name, 2) rif name(s), 3) root identifier. 4) short description 
@@ -499,13 +501,13 @@ C Allow a scene to be added or deleted.
      &        'interactively','cancel',IWDV,6)
             if (IWDV.eq.1) then
               call newscene('c')
-              act='Create'
+              cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
             elseif (IWDV.eq.1) then
               call newscene('-')
-              act='Create'
+              cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
@@ -796,7 +798,7 @@ C Get sensor information from cgc file.
 C Clear command line variables.
       zone='NONE'
       aim='NONE'
-      act='NONE'
+      cmdact='NONE'
 
 C If not in silent mode then confirm names with user.
       if (MODE.eq.'-') then
@@ -849,19 +851,18 @@ C ********************** ADDSCENE **********************
 C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
       subroutine ADDSCENE(IRCFG)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
-      common/expath/runpath,pathtype
+      CHARACTER H*72,pfile*72
 
-      CHARACTER H*72,runpath*72,pathtype*24,pfile*72
       integer lnrp  ! length of run path
 
 C Ask if a default image should be created.
-      lnrp=lnblnk(runpath)
       H(1)='Radiance desktop creates allows the creation of separate'
       H(2)='scenes each with a specific purpose. A modest scene can be'
       H(3)='created silently with assumed defaults. '
@@ -879,7 +880,7 @@ C Check for command line information.
           call checkrif('n')
         else
           call newscene('a')
-          act='Create'
+          cmdact='Create'
           call autorad
           ICHK=4
           call radcfgout(ICHK)
@@ -892,7 +893,7 @@ C Create new scene file.
         call ERPFREE(IRCFG,ISTAT)
         call FPOPEN(IRCFG,ISTAT,1,3,pfile)
         call newscene('-')
-        act='Create'
+        cmdact='Create'
         call autorad
         ICHK=4
         call radcfgout(ICHK)
@@ -917,31 +918,22 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/expath/runpath,pathtype
-
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/RAY6/LINSTY(MCON)
 
-      integer ncomp,ncon
-      common/C1/NCOMP,NCON
-
-      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
       character h*72,DESCRC*25
-      character outs*124,runpath*72,pathtype*24,tfile*72
+      character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
-      integer lnrp  ! length of run path
-
 C New grid so set number of grid points to zero.
-      lnrp=lnblnk(runpath)
       NDFP=0
 
 C Remember current graphics display options.
@@ -1070,8 +1062,8 @@ C Calculate grid points.
       call ERPFREE(ITA1,ISTAT)
 
 C Get file name for grid points.
-      write (LDFGRID,'(a,a4)')
-     &          SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
+      write (LDFGRID,'(a,a4)') 
+     &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       H(1)=' Supply a local file name (i.e. without a path).'
       if (MODE.eq.'-') then
  55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
@@ -1136,7 +1128,6 @@ C the daylight factor (act = d|D).
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath,pathtype
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -1144,15 +1135,13 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       DIMENSION COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*5,act_1*1
+      CHARACTER VT*5,act*1
       character OUTSTR*124,tfile*72
-      character runpath*72,pathtype*24
-      integer lnrp  ! length of run path
 
 #ifdef OSI
       integer iix,iiy,iid1,iid2
@@ -1167,7 +1156,6 @@ C If there are no grid points warn the user and check if
 C there is a *.df file or a *.df- file that can be scanned again.
       if(NDFP.eq.0)then
         ITA1 = IFIL+6
-        lnrp=lnblnk(runpath)
 
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
@@ -1265,6 +1253,7 @@ C for use with a 'Coupling' scene purpose.
       SUBROUTINE SENLOC
 #include "building.h"
 #include "model.h"
+#include "e2r_common.h"
       
 #include "e2r_common.h"
 
@@ -1272,7 +1261,6 @@ C for use with a 'Coupling' scene purpose.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath,pathtype
 
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
@@ -1283,8 +1271,8 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      CHARACTER*72 LCGCINT
-      character outs*124,runpath*72,pathtype*24
+      CHARACTER LCGCINT*72
+      character outs*124
 
       logical XST
 
@@ -1313,11 +1301,11 @@ C Set local file name.
 
 C Open sensor info file (do not add path as radiance is run locally).
       write(LDFGRID,'(a,a)')
-     &    SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
+     &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                     LDFGRID(1:lnblnk(LDFGRID))
+     &  LDFGRID(1:lnblnk(LDFGRID))
       call FINDFIL(outs,XST)
       if(XST)then
         call FPOPEN(ITA1,ISTAT,1,0,outs)
@@ -1345,6 +1333,7 @@ C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
@@ -1352,11 +1341,10 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       COMMON/FILEP/IFIL
 
       common/C21/IFCFG,cfgroot,LCFGF
-      common/expath/runpath,pathtype
 
       character filexst*1
       character cfgroot*24,LCFGF*72
-      character pfile*72,runpath*72,pathtype*24
+      character pfile*72
 
       LOGICAL modscene
 
@@ -1399,7 +1387,8 @@ C Update sensor information from cgc file.
                 endif
 
 C If daylight coefficients and act=create and model exists then issue warning.
-                if(aim(1:8).eq.'Day_coef'.and.act(1:6).eq.'Create')then
+                if(aim(1:8).eq.'Day_coef'.and.
+     &              cmdact(1:6).eq.'Create')then
                   call usrmsg('Model already exists!',
      &                         'Using existing model.','W')
                   act='Calculate'
@@ -1417,7 +1406,7 @@ C Create a new rcf file.
 
 C Set file name including path and open.
         write(pfile,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                         LRADCF(1:lnblnk(LRADCF))
+     &    LRADCF(1:lnblnk(LRADCF))
         call ERPFREE(IRCFG,ISTAT)
         call FPOPEN(IRCFG,ISTAT,1,2,pfile)
       endif
