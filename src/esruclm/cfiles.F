@@ -277,9 +277,10 @@ C confirm whether it should be overwritten. Open can be local or remote.
         WRITE(IAF,'(A)',IOSTAT=ISTAT,ERR=1003)'*CLIMATE'
 
 C Create a header section with site name, period etc.
-        WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
+        if(IDNGH.eq.0)then
+          WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
      &            LASCI(1:lnblnk(LASCI))
-  30    FORMAT('# ascii climate file from ',a,' binary db,',/,
+  30      FORMAT('# ascii climate file from ',a,' binary db,',/,
      &    '# defined in: ',a,/,
      &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
      &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
@@ -287,7 +288,18 @@ C Create a header section with site name, period etc.
      &    '# col 4: Prevailing wind speed           (Tenths m/s) ',/,
      &    '# col 5: Wind direction     (clockwise deg from north) ',/,
      &    '# col 6: Relative humidity               (Percent)')
-
+        else
+          WRITE(IAF,31,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
+     &            LASCI(1:lnblnk(LASCI))
+  31      FORMAT('# ascii climate file from ',a,' binary db,',/,
+     &    '# defined in: ',a,/,
+     &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
+     &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
+     &    '# col 3: Global horizontal solar intensity   (W/m**2)',/,
+     &    '# col 4: Prevailing wind speed           (Tenths m/s) ',/,
+     &    '# col 5: Wind direction     (clockwise deg from north) ',/,
+     &    '# col 6: Relative humidity               (Percent)')
+        endif
         WRITE(IAF,'(A,A)',IOSTAT=ISTAT,ERR=1003)CLMLOC,'  # site name'
         outs=' '
         WRITE(outs,'(I6,2F8.2,I4)',IOSTAT=ISTAT,ERR=1002)IYEAR,CLAT,

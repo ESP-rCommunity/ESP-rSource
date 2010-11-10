@@ -90,7 +90,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 C Project log file, journal on/off, unit number, cmd, file name.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -526,6 +526,8 @@ C Temporal information on channel IFIL+7.
 
 C Special materials/miscel component database.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9

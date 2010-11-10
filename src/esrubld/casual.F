@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 
 C   MZCASI: Returns total convective and radiant casual gains.
-C   INTLUM: Timestep determination of controled casual gains.
+C   INTLUM: Timestep determination of controlled casual gains.
 C   DWINVT: Returns the visible transmission of a TMC window and
 C        visible diffuse and beam-beam transmissions of a CFC window.
 C   HUNTA:  See if current hour has scheduled casual gains to control.
@@ -59,6 +59,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
       common/outin/iuout,iuin
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
 
       common/btime/btimep,btimef
 
@@ -213,12 +214,14 @@ C     HVAC equipment)
       INTEGER occupant_load 
       PARAMETER (occupant_load = 3)
 
-C.....Named constnats for timerows
+C.....Named constants for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
+      logical closer
+      doubleprecision checkNAN
 
 C Trace output ?
       traceok = .true.
@@ -281,16 +284,6 @@ C        write(6,*) 'btimef.gt.24'
         btimef=btimef-24.
         ID=IDWF
       endif
-*      IF(NBDAYTYPE.LE.3)THEN
-*        IDAY=1
-*        DSTR='weekdays'
-*        IF(ID.EQ.6)THEN
-*          IDAY=2
-*          DSTR='saturdays'
-*        ELSEIF(ID.EQ.7)THEN
-*          IDAY=3
-*          DSTR='sundays'
-*        ENDIF
       DSTR='       '
       if(ID.EQ.IDWE1)then
         DSTR=wkd1
@@ -302,7 +295,6 @@ C        write(6,*) 'btimef.gt.24'
         DSTR='weekdays'
         IDAY=1
       endif
-*      ELSE
       IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -424,7 +416,7 @@ C Using again the percentage of latent gains for the occupants' latent heat gain
         QOCCLATN=((QTOTOCCUP*ITMAR(IFOC,3))/100.0)
 
 C For UK NCM calculations, check for overheating: call RegOveheat
-        if(isbem.eq.1)then
+        if(isbem.eq.2)then
 
 C Count and increment timesteps to store overheating and lighting
 C results that do not include start-up days
@@ -466,23 +458,142 @@ C Additional logic in the future should separate office/storage/industrial space
 C for notional building that take 3.75 W/m2 per 100 lux from "other spaces 
 C that take 5.2 W/m2 per 100 lux.     
 C Also display lighting TMAR(IFOC,7) is added for 24hrs every day   
-        IF(INOTI.EQ.1.OR.INOTI.EQ.2)THEN ! Notional and refernce models
+
+C Establish solar data.
+        CALL MZSINT(ICOMP,QDIR,QDIF)
+        CALL LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+        PI = 4.0 * ATAN(1.0)
+        E_ext=QDIF*skyeff + QDIR *suneff*sin(salt*PI/180.0)
+
+C Convert units to klux (DF are in %) following SBEM manual units.
+        E_ext=E_ext/1000.
+        E_design=lighting_lux(theactivityindex(ICOMP))
+
+C Initialise.
+          FDF1=1. ; FDR1=1. ; FDF2=1. ; FDR2=1. ; FO=1. ; FD=1.
+     
+C Manual switching
+        IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+          FDF1=0.5
+        ELSE
+          FDF1=1.0
+        ENDIF
+        IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+          FDR1=0.5
+        ELSE
+          FDR1=1.0
+        ENDIF
+        FD1=0.5*(FDF1+FDR1)
+
+        IF(INOTI.EQ.1.OR.INOTI.EQ.2)THEN ! Notional and reference models
           QTOTLIGHT=fNotionalLighting(theactivityindex(ICOMP))*
-     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)+
+     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)*FD1+
      &     TMAR(IFOC,7)*ZBASEA(ICOMP)
         ELSEIF(INOTI.EQ.3)THEN ! Typical model
           QTOTLIGHT=fTypicalLighting(theactivityindex(ICOMP))*
-     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)+
+     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)*FD1+
      &      TMAR(IFOC,7)*ZBASEA(ICOMP)
         ELSE
 
-C Fall to here if INOTI is 4 or INOTI is zero. Need type of light and then a value
+C Fall to here if INOTI is 4 (stripped UKNCM model) or 
+c INOTI is ZERO (not a UKNCM model)
+C Apply UKNCM lighting control to the stripped model
+
+C Photoelectric switching
+          IF(Ipe_control(ICOMP).EQ.1)THEN
+            IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+              FDF2=0.0
+            ELSEIF((E_ext*DFFront(Icomp)*10.).GT.(0.5*E_design))THEN
+              FDF2=0.5
+            ELSE
+              FDF2=1.0
+            ENDIF
+            IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+              FDR2=0.0
+            ELSEIF((E_ext*DFRear(Icomp)*10.).GT.(0.5*E_design))THEN
+              FDR2=0.5
+            ELSE
+              FDR2=1.0
+            ENDIF
+
+C Photoelectric dimming
+          ELSEIF(Ipe_control(ICOMP).EQ.2)THEN
+            IF((E_ext*DFFront(Icomp)*10.).GT.E_design)THEN
+              FDF2=0.0
+            ELSE
+              call eclose(E_design,0.0,0.0001,closer)
+              IF(.NOT.CLOSER)FDF2=1.-E_ext*DFFront(Icomp)*10./E_design
+              IF(FDF2.LT.0.0)FDF2=0.0
+            ENDIF
+            IF((E_ext*DFRear(Icomp)*10.).GT.E_design)THEN
+              FDR2=0.0
+            ELSE
+              call eclose(E_design,0.0,0.0001,closer)
+              IF(.NOT.CLOSER)FDR2=1.-E_ext*DFRear(Icomp)*10./E_design
+              IF(FDR2.LT.0.0)FDR2=0.0
+            ENDIF
+          ENDIF
+
+C need to add code and interface here to switch depending on whether photosensor is front and back or front only.
+C If front only
+          if(Idaylightzoning(Icomp).eq.1)then
+            FD2=0.5*(FDF2+1.0)
+          elseif(Idaylightzoning(Icomp).eq.2)then
+
+C If front and back
+            FD2=0.5*(FDF2+FDR2)
+          endif
+
+C Calculate daylight correction factor FD
+C If manual switching
+          IF(Ilightcontrol(ICOMP).EQ.1)THEN
+            FD=FD1
+
+C If photoelectric control
+          ELSEIF(Ilightcontrol(ICOMP).EQ.2)THEN         
+            FD=FD2
+
+C Both photoelectric and manual
+          ELSEIF(Ilightcontrol(ICOMP).EQ.3)THEN
+            FD=min(FD1,FD2)
+
+C No control
+          ELSE
+            FD=1.
+          ENDIF
+
+C Range error trap
+          IF(FD.LE.1.0.and.FD.GE.0.0)then
+            continue
+          ELSE
+            FD=1.
+          ENDIF
+
+C Calculate occupancy sensing correction factor FO
+          IF(IOcc_sensing(ICOMP).EQ.1)THEN
+            FO=0.95
+          ELSEIF(IOcc_sensing(ICOMP).EQ.2)THEN
+            FO=0.95
+          ELSEIF(IOcc_sensing(ICOMP).EQ.3)THEN
+            FO=0.90
+          ELSEIF(IOcc_sensing(ICOMP).EQ.4)THEN
+            FO=0.90
+          ELSEIF(IOcc_sensing(ICOMP).EQ.5)THEN 
+            FO=0.82
+          ELSE
+            FO=1.0
+          ENDIF
+
+C Calculate parasitic power PP
+          PP=PE_sensor_PP(ICOMP)+Occ_sensor_PP(ICOMP)
+
+C Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
           IF(ILIGHTUSER(ICOMP).EQ.0)THEN
             ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 
 C Multiply lux levels (static tdf) with fraction schedule and 
-C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
+C a value (in W/m2/100lux) taken from ncm file for the specific type of lights
 C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only option
 C for the moment. Additional logic required to add: 1, which is for industrial
 C buildings in the NCM methodology
@@ -492,7 +603,8 @@ C Also display lighting TMAR(IFOC,7) is added for 24hrs every day
             else            
               QTOTLIGHT=
      &        PDRL(ILIGHT_IN_SBEMDB,2)*(real(ITMAR(IFOC,6))/100.0)*
-     &        VAL(ISD+1)*ZBASEA(ICOMP)+TMAR(IFOC,7)*ZBASEA(ICOMP)
+     &        VAL(ISD+1)*ZBASEA(ICOMP)*FD*FO+
+     &        (TMAR(IFOC,7)+PP)*ZBASEA(ICOMP)
             endif
           ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
@@ -500,10 +612,11 @@ C User specfied gains from lights (NCM purposes) in W/m2 per 100 lux
 C Gains=W/m2per100lux*fraction lights on*area*(required lux level/100lux)+
 C DisplaylightingW/m2*Area
             QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)*ZBASEA(ICOMP)*
-     &         (real(ITMAR(IFOC,6)/100.0))+TMAR(IFOC,7)*ZBASEA(ICOMP)
+     &         (real(ITMAR(IFOC,6)/100.0))*FO*FD+
+     &         (PP+TMAR(IFOC,7))*ZBASEA(ICOMP)
           ENDIF
         ENDIF
-
+ 
 C Convective and radiative lighting gains are the same at the moment (50%)
         QLIGHTCASC=QTOTLIGHT/2.
         QLIGHTCASR=QLIGHTCASC
@@ -516,7 +629,7 @@ C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
         QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
         QLATN(2)=QOCCLATN+QEQUIPLATN+QLIGHTLATN
 
-C Instanciate the future value of each casual gain so that
+C Instantiate the future value of each casual gain so that
 C it can be used within MZLS3.
         ctlperocupc(icomp,2)=QOCCCASC
         ctlperlightc(icomp,2)=QLIGHTCASC
@@ -531,7 +644,7 @@ C it can be used within MZLS3.
 C Using LGHT_ncm_Energy(icomp) for the results of the UK's NCM method
 C This will be in Wh units. It will also need to be divided with NTSTEP
 C (number of timesteps) to use it in results.
-        if(isbem.eq.1)then
+        if(isbem.eq.2)then
 
 C Initialise LGHT_ncm_Energy(icomp)
           if(i_countsteps(icomp).eq.1)then

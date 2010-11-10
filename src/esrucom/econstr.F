@@ -807,9 +807,9 @@ C if the surface attribute should be updated.
             call edisp(itru,' Check your zone files.')
 	  ENDIF
         else
-          WRITE(OUTS,'(a,i3,a,i3,a)')
-     &      'While rebulding optics found surface ',i,'in zone ',icomp,
-     &      ' does not exist in master connections list.'
+          WRITE(OUTS,'(a,i3,a,i2,a)')
+     &      'While rebulding optics found surface ',i,' in zone ',
+     &      icomp,' does not exist in master connections list.'
           call edisp(itru,outs)
         endif
         IF(ITMCFL(ICOMP,I).GT.NTMC)NTMC=ITMCFL(ICOMP,I)

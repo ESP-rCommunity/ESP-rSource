@@ -48,12 +48,7 @@ C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "tdf2.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IAPRES (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
+C database file names and unit numbers and path types
 #include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -61,6 +56,8 @@ C espriou.h provides currentfile.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
       
       integer lnblnk  ! function definition
 
@@ -142,7 +139,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Project log file.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -174,22 +171,23 @@ C Thermal bridges.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
 
+      COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
+      INTEGER iExtLgRadFlag
+      REAL eGrdTp
+
+C bridgelen was calculated in subroutine suredgeadj
+      real bridgelen ! Length of potential thermal bridges in each zone.
+      common/gbridge/bridgelen(MCOM,10)
+
+      real plen  ! combined length of standard and metal facade perimeter
+
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
       logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension IVALS(MCOM),areamlc(MCOM)
-      dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
-      REAL :: uavfltroof,uavgsky,areatran
-      dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
-      REAL :: areawall,areaslproof,areafltroof,areaskylt
-      REAL :: areamlc,flatroofper
-      dimension areawall(MCOM),areaslproof(MCOM),areafltroof(MCOM)
-      dimension areaskylt(MCOM),tranper(MCOM),skyper(MCOM)
-      dimension wallper(MCOM),slproofper(MCOM),flatroofper(MCOM)
-      REAL :: exposed,vexposed
-      dimension exposed(MCOM),vexposed(MCOM)
+      real areamlc
       dimension items(25)
 
       character*72 LTMP
@@ -234,6 +232,21 @@ C in the current model. A -1 means not applicable
       integer llbm,llbn  ! string lengths for obstructions
       integer ivz        ! index of current zone in list
       integer ins2,ins3  ! for radio buttons
+      integer loutln     ! length of string returned
+      integer itrunc     ! to signal truncation
+      integer ipos       ! position indicator when calling arlist
+      real ZD           ! depth for ground temp calc
+      real grper        ! % length of ground perimeter in a zone
+      real xtranper,xskyper,xwallper,xslproofper,xflatroofper,xgrper ! % of project floor area for each
+      real UVG          ! assumed U value at ground connection
+      real UVH          ! U value for horizontal flow
+      real betaprime    ! for CIBSE ground calcs
+      real deltathick   ! dt value for CIBSE ground calcs
+      real foundUv      ! U value for foundation for CIBSE ground calcs
+      real Ufleft,Ufright  ! two parts of CIBSE Uf calculation std case
+      real Ufall        ! sum of Ufleft and Ufright
+      real Pi
+      real foundRextra  ! extra CIBSE resistance for foundation
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -245,13 +258,9 @@ C in the current model. A -1 means not applicable
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,ivals,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
-      REAL :: opq,skyper,slproofper,tranper,totalarea,topq,tmp,tfla
+      REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
-      REAL :: uavgtran,uavslproof,uavwall,uvd,uvn,uvi,uvu,vtranper
-      REAL :: wallper,xareaskylt,xareaslproof,xareawall,xareatran
-      REAL :: xexposed,xflatroofper,xfloor,xskyper,uvh,xareafltroof
-      REAL :: xslproofper,xtranper,xuavfltroof,xuavgsky,xuavgtran
-      REAL :: xuavslproof,xuavwall,xvexposed,xwallper
+      REAL :: UVD,UVI,UVU,vtranper
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1057,6 +1066,61 @@ C Tell about climate taking note of timing of solar data.
         endif
         call edisp248(itu,outs248,80)
 
+C List out the estimated ground temperatures based on the
+C current weather data at 0.5m, 1m, 2m, 4m depth.
+C First get ground temperatures at depth ZD.
+        if(siteinfo.ge.2)then
+          ZD=0.5
+          CALL GTCALC(ZD,'-',IER)
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
+            call edisp(itu,'Calculated ground temp at 0.5m depth')
+            call edisp248(itu,outs248,90)
+            ipos=itrunc+1
+          end do
+          ZD=1.0
+          CALL GTCALC(ZD,'-',IER)
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
+            call edisp(itu,'Calculated ground temp at 1.0m depth')
+            call edisp248(itu,outs248,90)
+            ipos=itrunc+1
+          end do
+          ZD=2.0
+          CALL GTCALC(ZD,'-',IER)
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
+            call edisp(itu,'Calculated ground temp at 2.0m depth')
+            call edisp248(itu,outs248,90)
+            ipos=itrunc+1
+          end do
+          ZD=4.0
+          CALL GTCALC(ZD,'-',IER)
+          itrunc=1
+          ipos=1
+          do while (itrunc.ne.0)
+            call arlist(ipos,12,eGrdTp,12,'S',outs248,loutln,itrunc)
+            call edisp(itu,'Calculated ground temp at 4.0m depth')
+            call edisp248(itu,outs248,90)
+            ipos=itrunc+1
+          end do
+          call edisp(itu,' ')
+        endif
+
+C List out the maximum and minimum thickness of constructions in
+C contact with the ground.
+C << to be done >>
+
+C List out the minimum and maximum thickness of the facade (walls
+C marked as WALL surface use).
+C << to be done >>
+
         if(NGRDP.gt.0.and.siteinfo.ge.1)then
           call edisp(itu,' ')  
           write(outs,'(a,i2,a)')'There are currently ',NGRDP,
@@ -1081,7 +1145,6 @@ C Jump back point if err=1000 called when reading climate.
           WRITE(outs248,'(5A)') 'The model includes ground topology ',
      &      GTNAME(1:lnblnk(GTNAME)),' which is defined in ',
      &      GTGEOM(1:lnblnk(GTGEOM)),'.'
-            call edisp(itu,outs)
           call edisp248(itu,outs248,80)
           call edisp(itu,' ')
         endif
@@ -1283,11 +1346,11 @@ C Databases associated with the model. First print the file names.
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           WRITE(outs248,'(2A)')' constructions          : ',
      &    LFMUL(1:lnblnk(LFMUL))
-          call edisp248(itu,outs,100)
+          call edisp248(itu,outs248,100)
         elseif(ipathmul.eq.2)then
           WRITE(outs248,'(2A)')' standard constructions : ',
      &      LFMUL(1:lnblnk(LFMUL))
-          call edisp248(itu,outs,100)
+          call edisp248(itu,outs248,100)
         endif
 
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -1318,7 +1381,17 @@ C Databases associated with the model. First print the file names.
           WRITE(outs248,'(2A)')' standard optical prop  : ',
      &      LOPTDB(1:lnblnk(LOPTDB))
           call edisp248(itu,outs248,100)
-        endif 
+        endif
+
+        if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+          WRITE(outs248,'(2a)')' UK NCM data            : ',
+     &      LSBEM(1:lnblnk(LSBEM))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathsbem.eq.2)then
+          WRITE(outs248,'(2a)')' standard UK NCM data   : ',
+     &      LSBEM(1:lnblnk(LSBEM))
+          call edisp248(itu,outs248,100)   
+        endif
       endif
 
 C Control in the model
@@ -1495,31 +1568,16 @@ c     &            SSOTF(icc)(1:4).NE.'CFC ')then
      &   TOPQ,TTRN,TFLA
       call edisp(itu,outs)
 
-C For each selected zone, scan geometry and produce reports.
-C Zero project code complence data. xfloor is project floor area,
-C xexposed is m2 of outside surface area, xvexposed is m2 of
-C outside vertical surface, xuavgtran is average U value of windows,
-C xuavwall is average U value of walls,
-C xuavslproof is average U value of sloped roofs, xuavfltroof is
-C average U value of flat roof, xuavgsky is average U value of skylights,
-C xareatran m2 of windows, xareawall m2 of walls, xareaslproof m2 of
-C sloped roofs, xareafltroof m2 of flat roofs, xareaskylt m2 of skylights,
-C and xtranper xskyper xwallper xslproofper xflatroofper are % of
-C project floor area for each.
+C For each selected zone produce reports.
+C Zero project code complence data. 
       if(zoneextrainfo.gt.0)then
-        xfloor = 0.0
-        xexposed = 0.0
-        xvexposed = 0.0
-        xuavgtran = 0.0
-        xuavwall = 0.0
-        xuavslproof = 0.0
-        xuavfltroof = 0.0
-        xuavgsky = 0.0
-        xareatran = 0.0
-        xareawall = 0.0
-        xareaslproof = 0.0
-        xareafltroof = 0.0
-        xareaskylt = 0.0
+
+C Clear derived values (variables in derived.h).
+        call findua(IVALS,inpic,'c')
+
+C Process derived values (in derived.h).
+        call findua(IVALS,inpic,'p')
+
         xtranper = 0.0
         xskyper = 0.0
         xwallper = 0.0
@@ -1544,130 +1602,9 @@ C Jump if no zones or no zone info requested.
 
         call ZINFOREP(itu,IZZ)  ! not dependant on georead.
 
-C If there are external opaque and transparent surfaces report.
-C Zero zone code complence data. xfloor is project floor area,
-C exposed() is m2 of outside surface area, vexposed() is m2 of
-C outside vertical surface, uavgtran() is average U value of windows,
-C uavwall() is average U value of walls,
-C uavslproof() is average U value of sloped roofs, uavfltroof() is
-C average U value of flat roof, uavgsky() is average U value of skylights,
-C areatran() m2 of windows, areawall() m2 of walls, areaslproof() m2 of
-C sloped roofs, areafltroof() m2 of flat roofs, areaskylt() m2 of skylights,
-C and tranper() skyper() wallper() slproofper() flatroofper() are % of
-C floor area for each.
-        xfloor = xfloor + ZBASEA(IZZ)
-        uavgtran(IZZ) = 0.0
-        uavwall(IZZ) = 0.0
-        uavslproof(IZZ) = 0.0
-        uavfltroof(IZZ) = 0.0
-        uavgsky(IZZ) = 0.0
-        areatran(IZZ) = 0.0
-        areawall(IZZ) = 0.0
-        areaslproof(IZZ) = 0.0
-        areafltroof(IZZ) = 0.0
-        areaskylt(IZZ) = 0.0
-        tranper(IZZ) = 0.0
-        skyper(IZZ) = 0.0
-        wallper(IZZ) = 0.0
-        slproofper(IZZ) = 0.0
-        flatroofper(IZZ) = 0.0
-        exposed(IZZ) = 0.0
-        vexposed(IZZ) = 0.0
         do 111 ij=1,nzsur(izz)
           icc=izstocn(izz,ij)
           CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
-          if(IE.eq.0)then 
-
-C Check the U value for each external surface.
-C exposed walls and floors, pitched roofs, flat roofs
-            UVH = 0.0
-            UVU = 0.0
-            UVD = 0.0
-            do 511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
-
-C Recover the ISO 6946 U values for horizontal, upwards and downwards
-C flow as well as internal partition (horizontal 0.13 both sides).
-C Note: ISO 6946 advises use of horizontal hc value for surfaces where
-C heat flow direction is unknown. This assumption is used in
-C the U and UA reporting below.
-                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
-
-C Debug.
-C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
-C     &            ii,UVH,UVU,UVD,UVI
-
-              else
-                continue
-              endif
-  511       continue
-            exposed(IZZ) = exposed(IZZ) + SSNA(icc)
-            xexposed = xexposed + SSNA(icc)
-            if(SSOTF(icc)(1:4).eq.'OPAQ')then
-              if(SSVFC(icc)(1:4).eq.'VERT')then
-
-C For vertical walls assume horizontal hc coef.
-                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UVH)
-              elseif(SSVFC(icc)(1:4).eq.'SLOP')then
-
-C For sloped surfaces.
-                areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
-                uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVH)
-                xareaslproof = xareaslproof + SSNA(icc)
-                xuavslproof = xuavslproof + (SSNA(icc) * UVH)
-              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-
-C For ceilings.
-                areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
-                uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UVH)
-                xareafltroof = xareafltroof + SSNA(icc)
-                xuavfltroof = xuavfltroof + (SSNA(icc) * UVH)
-              else
-
-C For floors.
-                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
-                xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UVH)
-              endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ') then ! .and.
-c     &            SSOTF(icc)(1:4).ne.'CFC ')then
-              if(SSVFC(icc)(1:4).eq.'CEIL'.or.
-     &           SSVFC(icc)(1:4).eq.'SLOP')then
-
-C Consider glazing on ceiling or sloped to be a skylight.
-                areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
-                uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVH) 
-                xareaskylt = xareaskylt + SSNA(icc)
-                xuavgsky = xuavgsky + (SSNA(icc) * UVH)
-              elseif(SSVFC(icc)(1:4).eq.'VERT')then
-
-C Consider glazing on walls to be a part of facade.
-                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
-                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareatran = xareatran + SSNA(icc)
-                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
-              else
-                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
-                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareatran = xareatran + SSNA(icc)
-                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
-              endif
-            else
-              continue
-            endif
-          else
-            continue
-          endif
 
 C Check for duplicate surface names in this zone. Report is
 C duplicates are found.
@@ -1686,12 +1623,23 @@ C Write out UA information if extra information requested.
         if(zoneextrainfo.gt.0)then
 
 C Debug...
-C         write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
-C         write(itu,*) 'area flat roof = ',areafltroof(IZZ)
-C         write(itu,*) 'area sloped roof = ',areaslproof(IZZ)
-C         write(itu,*) 'area skylights = ',areaskylt(IZZ)
-C         write(itu,*) 'area windows = ',areatran(IZZ)
-C         write(itu,*) 'floor area = ',ZBASEA(IZZ)
+C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
+C          write(itu,*) 'area flat roof = ',areafltroof(IZZ)
+C          write(itu,*) 'area sloped roof = ',areaslproof(IZZ)
+C          write(itu,*) 'area skylights = ',areaskylt(IZZ)
+C          write(itu,*) 'area windows = ',areatran(IZZ)
+C          write(itu,*) 'floor area = ',ZBASEA(IZZ)
+C          write(itu,*) 'to ground = ',areaground(IZZ)
+C          write(itu,*) 'exposed = ',exposed(IZZ)
+C          write(itu,*) 'uavgtran = ',uavgtran(IZZ)
+C          write(itu,*) 'uavwall = ',uavwall(IZZ)
+C          write(itu,*) 'uavslproof = ',uavslproof(IZZ)
+C          write(itu,*) 'uavfltroof = ',uavfltroof(IZZ)
+C          write(itu,*) 'uavgsky = ',uavgsky(IZZ)
+          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
+     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
+          write(itu,*) 'UA total = ',uavtotal(IZZ)
+          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 
           if(exposed(IZZ).gt.0.1)then
 
@@ -1776,6 +1724,21 @@ C If there is external glazing or skylights then report.
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
      &        t16a(1:lna),' % of floor area & avg U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
+            if(attribok(IVALS(IZ)))call edisp(itu,outs)
+          endif
+          if(areaground(IZZ).gt.0.1)then
+            if(ZBASEA(IZZ).gt.0.01)then
+              grper = (areaground(IZZ)/ZBASEA(IZZ)) * 100.
+            else
+              grper = 1.0
+            endif
+            call rel16str(grper,t16a,lna,ier)
+            plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
+            call rel16str(plen,t16b,lnb,ier)
+            write(outs,'(3a,F5.3,2a)')' Ground contact is ',
+     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
+     &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
         endif
@@ -1938,7 +1901,7 @@ C Note optional zone extensions.
 
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
-     &   'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+     &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
             DO 9995 I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
@@ -1946,9 +1909,9 @@ C Note optional zone extensions.
      &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
                 WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
      &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
-     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),OPOB(ivz,I),
      &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
- 9994           FORMAT(I3,8F8.1,' ',a,' ',a)
+ 9994           FORMAT(I3,8F8.1,F5.2,' ',a,' ',a)
                 call edisp(itu,OUTS)
               else
                 WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',
@@ -2133,6 +2096,10 @@ C if the zones are fully attributed.
      &      'm2, flat roof area is ',t16b(1:lnb),
      &      'm2, skylight area is ',t16c(1:lnc),'m2.'
           call edisp(itu,outs)
+          call rel16str(xtoground,t16a,lna,ier)
+          write(outs,'(3a)') ' In contact with ground ',t16a(1:lna),
+     &      'm2.'
+          call edisp(itu,outs)
           if(xexposed.gt.0.1)then
             call rel16str(xexposed,t16a,lna,ier)
             call rel16str(xvexposed,t16b,lnb,ier)
@@ -2151,9 +2118,10 @@ C if the zones are fully attributed.
             xwallper = (xareawall/xfloor) * 100.
             call rel16str(xwallper,t16a,lna,ier)
             call rel16str(xuavwall,t16b,lnb,ier)
-            write(outs,'(3a,F5.3,2a)')' Outside walls are ',
+            write(outs,'(3a,F5.3,3a,F5.3)')' Outside walls are ',
      &        t16a(1:lna),' % of floor area & avg U of ',
-     &        xuavwall/xareawall,' & UA of ',t16b(1:lnb)
+     &        xuavwall/xareawall,' & UA of ',t16b(1:lnb),
+     &        ' & max MLC thickness ',xvthk
             call edisp(itu,outs)
           endif
           if(xareaslproof.gt.0.1)then
@@ -2194,6 +2162,30 @@ C if the zones are fully attributed.
      &        t16a(1:lna),' % of floor area & avg U of ',
      &        xuavgsky/xareaskylt,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
+          endif
+          if(xtoground.gt.0.1)then
+            xgrper = (xtoground/xfloor) * 100.
+            foundUv = xuavground/xtoground
+            call rel16str(xgrper,t16a,lna,ier)
+            call rel16str(xperimlength,t16b,lnb,ier)
+            write(outs,'(3a,F5.3,3a,F5.3)')' Ground contact is ',
+     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        foundUv,' & perimeter ',t16b(1:lnb),
+     &        ' & max MLC thickness ',xfndthkg
+            call edisp(itu,outs)
+            betaprime= xtoground/(xperimlength*0.5)
+            deltathick= xvthk + 1.5 * ((1.0/foundUv)+0.04)
+            PI = 4.0 * ATAN(1.0)
+            Ufleft = (2.0 * 1.5)/ ((Pi * betaprime) + deltathick)
+            Ufright = log ((Pi * betaprime / deltathick)+1.0)
+            Ufall = Ufleft * Ufright
+            foundRextra = (1.0/Ufall) - (1.0/foundUv)
+            write(outs,'(a,f6.3,a,f6.3,a,f6.3,a,f6.3,a,f6.3,a,f6.3)')
+     &        ' CIBSE ground beta!',betaprime,' dt',deltathick,
+     &        ' Ufleft',Ufleft,' Ufright',Ufright,' Uf',Ufall,
+     &        ' R extra @ virtual layer',foundRextra
+            call edisp(itu,outs)
+
           endif
         endif
       endif
@@ -2718,6 +2710,206 @@ C as the command line.
 
       return
 
+      end
+
+C ******************* FINDUA ******************
+C FindUA scans the current model common blocks and derives the overall
+C UA values and areas for different elements of the facade.
+      subroutine FINDUA(IVALS,nz,act)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "sbem.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
+
+C Parameters passed in
+      integer IVALS(MCOM)  ! the array of zones to include
+      integer NZ           ! number of zones to include
+      character act*1      ! 'c' clear and 'p' process
+ 
+      common/FILEP/IFIL
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+C bridgelen was calculated in subroutine suredgeadj
+      real bridgelen ! Length of potential thermal bridges in each zone.
+      common/gbridge/bridgelen(MCOM,10)
+
+      integer IUF   ! file unit
+      character*72 LTMP
+      character DESCRC*25
+
+      IUF=IFIL+2   ! set file unit for scanning geometry files
+
+C Zero the counters.
+      if(act.eq.'c')then
+        xfloor = 0.0
+        xexposed = 0.0
+        xtoground = 0.0
+        xvexposed = 0.0
+        xvthk = 0.0
+        xuavgtran = 0.0
+        xuavwall = 0.0
+        xuavground = 0.0
+        xfndthkg = 0.0
+        xperimlength = 0.0
+        xuavslproof = 0.0
+        xuavfltroof = 0.0
+        xuavgsky = 0.0
+        xareatran = 0.0
+        xareawall = 0.0
+        xareaslproof = 0.0
+        xareafltroof = 0.0
+        xareaskylt = 0.0
+        return
+      endif
+
+C Loop through the selected zones.
+      do 98 IZ=1,NZ
+        IZZ=IVALS(IZ)
+        if(IZZ.eq.0)goto 98
+        LTMP=LGEOM(IZZ)
+        call georead(IUF,LTMP,IZZ,1,itu,IER)
+
+C If there are external opaque and transparent surfaces report.
+C Zero zone code complence data. xfloor is project floor area,
+C tranper() skyper() wallper() slproofper() flatroofper() are % of
+C floor area for each.
+        xfloor = xfloor + ZBASEA(IZZ)
+        plen = bridgelen(IZZ,2) ! ground edge at facade
+        xperimlength = xperimlength + plen ! based on surface edge data
+        uavgtran(IZZ) = 0.0
+        uavwall(IZZ) = 0.0
+        uavslproof(IZZ) = 0.0
+        uavfltroof(IZZ) = 0.0
+        uavgsky(IZZ) = 0.0
+        uavground(IZZ) = 0.0
+        areatran(IZZ) = 0.0
+        areawall(IZZ) = 0.0
+        areaslproof(IZZ) = 0.0
+        areafltroof(IZZ) = 0.0
+        areaskylt(IZZ) = 0.0
+        areaground(IZZ) = 0.0
+        tranper(IZZ) = 0.0
+        skyper(IZZ) = 0.0
+        wallper(IZZ) = 0.0
+        slproofper(IZZ) = 0.0
+        flatroofper(IZZ) = 0.0
+        exposed(IZZ) = 0.0
+        vexposed(IZZ) = 0.0
+        do 111 ij=1,nzsur(izz)
+          icc=izstocn(izz,ij)
+          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
+
+C Check the U value for each surface.
+          UVH = 0.0
+          UVU = 0.0
+          UVD = 0.0
+          do 511 ii=1,nmlc
+            if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+
+C Recover the ISO 6946 U values for horizontal, upwards and downwards
+C flow as well as internal partition (horizontal 0.13 both sides).
+C Note: ISO 6946 advises use of horizontal hc value for surfaces where
+C heat flow direction is unknown. This assumption is used in
+C the U and UA reporting below.
+              call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
+
+C Debug.
+C              write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI UVG',
+C     &          ii,UVH,UVU,UVD,UVI,UVG
+
+            else
+              continue
+            endif
+  511     continue
+
+          if(IE.eq.0)then
+
+C For surfaces connected to the outside.
+            exposed(IZZ) = exposed(IZZ) + SSNA(icc)
+            xexposed = xexposed + SSNA(icc)
+            if(SSOTF(icc)(1:4).eq.'OPAQ')then
+              if(SSVFC(icc)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
+                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
+                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
+                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                xvexposed = xvexposed + SSNA(icc)
+                xareawall = xareawall + SSNA(icc)
+                xuavwall = xuavwall + (SSNA(icc) * UVH)
+                if(ssthick(icc).gt.xvthk) xvthk = ssthick(icc) ! keep track of thickest
+              elseif(SSVFC(icc)(1:4).eq.'SLOP')then
+
+C For sloped surfaces assume upward hc coef.
+                areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
+                uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVU)
+                xareaslproof = xareaslproof + SSNA(icc)
+                xuavslproof = xuavslproof + (SSNA(icc) * UVU)
+              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+
+C For ceilings assume upward hc coef.
+                areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
+                uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UVU)
+                xareafltroof = xareafltroof + SSNA(icc)
+                xuavfltroof = xuavfltroof + (SSNA(icc) * UVU)
+              else
+
+C For floors facing outside assume downward hc coef.
+                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
+                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVD)
+                xareawall = xareawall + SSNA(icc)
+                xuavwall = xuavwall + (SSNA(icc) * UVD)
+              endif
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &             SSOTF(icc)(1:4).ne.'CFC ')then
+              if(SSVFC(icc)(1:4).eq.'CEIL'.or.
+     &           SSVFC(icc)(1:4).eq.'SLOP')then
+
+C Consider glazing on ceiling or sloped to be a skylight.
+                areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
+                uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVU) 
+                xareaskylt = xareaskylt + SSNA(icc)
+                xuavgsky = xuavgsky + (SSNA(icc) * UVU)
+              elseif(SSVFC(icc)(1:4).eq.'VERT')then
+
+C Consider glazing on walls to be a part of facade.
+                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
+                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
+                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                xvexposed = xvexposed + SSNA(icc)
+                xareatran = xareatran + SSNA(icc)
+                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
+              else
+                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
+                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVD)
+                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                xvexposed = xvexposed + SSNA(icc)
+                xareatran = xareatran + SSNA(icc)
+                xuavgtran = xuavgtran + (SSNA(icc) * UVD)
+              endif
+            else
+              continue
+            endif
+          elseif(IE.eq.4)then
+
+C For surfaces connected to the ground.
+            xtoground = xtoground + SSNA(icc)   ! increment area to ground
+            areaground(IZZ) = areaground(IZZ) + SSNA(icc) ! increment area to ground
+            xuavground = xuavground + (SSNA(icc) * UVG)
+            uavground(IZZ) = uavground(IZZ) + (SSNA(icc) * UVG)
+            if(ssthick(icc).gt.xfndthkg) xfndthkg = ssthick(icc)
+          else
+            continue
+          endif
+ 111    continue
+
+ 98   continue
+
+      return
       end
       
 C ******************* ADMIT *******************

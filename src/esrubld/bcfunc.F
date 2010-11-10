@@ -5739,8 +5739,8 @@ C the heating set point by 1degC for the UKNCM notional model (and
 C associated DSM testing models)
 
       character dllsubr*12,dllmesg*124,outs*124,cmsg*12
-      logical dll,near
-      DIMENSION VAL(MTABC+2)
+      logical dll,near,closer
+      DIMENSION VAL(MTABC+2), VALO(MTABC+2)
       integer COLUMNSETP ! column from control 23
 
 C Check to see if running in dll mode.
@@ -5822,12 +5822,23 @@ C Now get the column for cooling.
         cmsg=' via column'
       endif
         
+C Call RCTCFB to find occupancy fraction and return in VALO (to be used
+C for filtering cooling in UKNCM reference building)
+      CALL RCTDFB(itrc,btimef,VALO,ISDO,itdi,IER)       
+
 C If UK NCM reference building (or stripped with DSM testing flag equal to 2)
 C then cooling set point is always 27degC
       if(INOTI.EQ.2.OR.(INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
         CSP=27.0
         cmsg=' via test'
-        QCM=-999999.0
+
+C Only allow cooling if there is occupancy
+        call eclose(valo(isdo),0.0,0.001,closer)
+        if(closer)then
+          QCM=0.0
+        else
+          QCM=-999999.0
+        endif
       endif
 
 C If notional model or DSM testing then set cooling set point to 1degC
@@ -5837,29 +5848,13 @@ C in the header is based on information in SBEM.db1 which has been edited
 C to reflect the highest heating setpoint in the activities timestep
 C data. (the original static heating setpoint in SBEM.db1 was for use
 C only in iSbem.
-
-      if(INOTI.eq.1.or.iDsmTestingFlag.ge.1)then
+      if(INOTI.eq.1.or.(inoti.eq.4.and.iDsmTestingFlag.eq.1))then
         iitdi=IACTIV(IICOMP)
         if(iNatVentilatedFlag.eq.1)then
 
           HSPTest=TMAR(iitdi,IATDF(iitdi,15)) ! static high HSP
           CSP=HSPTest+1.0   ! the official NCM logic
           cmsg=' stat hsp+1'
-
-C Test commented out, use highest heating setpoint for the activity.
-C          if(HSPTest.ge.HSP)then
-C            CSP=HSPTest+1.0
-C            cmsg=' stat hsp+1'
-C          else
-C            CSP=HSP+1.0
-C            cmsg=' step hsp+1'
-C          endif
-
-C Test commented out. 
-C          if(CSP.lt.21.0)then
-C            CSP=21.0
-C            cmsg=' step hsp++'
-C          endif
 
 C Set up maximum cooling to equivalent of 5 air changes
           QCM=-1.*0.333*5.*vol(iicomp)*(tfa(iicomp)-TFLWF)
@@ -6341,7 +6336,7 @@ C Find version of materials database. If 1.1 then use material arrays.
         else
           call edisp(iuout,'BCL99: Materials arrays are incomplete.')
         endif
-      
+
 C Reset properties by reading in zone descriptor files.
 
 C Debug.

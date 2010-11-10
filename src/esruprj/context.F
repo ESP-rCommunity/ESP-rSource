@@ -106,7 +106,6 @@ C ITEMS is menu for site/context items.
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
-      character D64*64,D20*20  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
@@ -162,9 +161,9 @@ C Begin with high level menu.
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
       ITEMS(8) =                'g calendar (holidays)            '
-      ITEMS(9) =                'h building address               '
-      ITEMS(10)=                'i client address                 '
-      ITEMS(11)=                'j simulationist address          '
+      ITEMS(9) =                'h building and client address    '
+      ITEMS(10)=                'i simulationist address          '
+      ITEMS(11)=                'j                                '
       ITEMS(12)=                '  ___________________________    '
       if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
         ITEMS(13)=              'k ground topology                '
@@ -626,114 +625,18 @@ C to define holidays.
 
       ELSEIF(INO.EQ.9)THEN
 
-C The address of the model (same data fields as entered in the ncm file.
-        call edisp(iuout,'Details for code complience...')
-        write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building address: ',baddress
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building Postcode: ',buildingPC  
-        call edisp(iuout,outs)    
-        DOK=.FALSE.
-        CALL ASKOK('Edit these code complience details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Input a succinct description of the project name here.'
-          write(D64,'(a)') 'notional model not named'
-          CALL EASKS(pjname,'Code compliance project name?',
-     &      '(20 characters maximum)',20,D20,'project name',IER,1)
-          H(1)='Input first line of building address here'
-          write(D64,'(a)') 'address not provided'
-          CALL EASKS(baddress,'building address?','(<64 characters)',
-     &      64,D64,'build address',IER,1)
-          H(1)='Input the building city here'
-          write(D64,'(a)') 'city not provided'
-          CALL EASKS(bcity,'building city?','(<64 characters)',
-     &      64,D64,'city building',IER,1)
-          H(1)='Input for: building post code'
-          write(D64,'(a)') 'postcode not provided'
-          CALL EASKS(buildingPC,'building post code ?',
-     &      '(<64 characters)',64,D64,'building PC',IER,1)
-        endif
+C The address of the model and client (as entered in the ncm file).
+        call edsbmbld()
 
       ELSEIF(INO.EQ.10)THEN
 
-C The address of the client (same data fields as entered in the ncm file.
-        call edisp(iuout,'Details of client/owner...')
-        write(outs,'(2a)')'Building owner name: ',ownername
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Building owner telephone: ',ownertel
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Building owner address: ',owneraddr 
-        call edisp(iuout,outs) 
-        write(outs,'(2a)')'Building owner city: ',ownercity 
-        call edisp(iuout,outs) 
-        write(outs,'(2a)')'Building owner Postcode: ',ownerPC
-        call edisp(iuout,outs)     
-        DOK=.FALSE.
-        CALL ASKOK('Edit these owner/client details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Input a succinct description of the owner name here'
-          write(D64,'(a)') 'owner/client not named'
-          CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &      64,D64,'owner name',IER,1)
-          H(1)='telephone number of the owner'
-          write(D64,'(a)') 'owner/client phone not given'
-          CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
-     &       64,D64,'owner tel',IER,1)
-          H(1)='Address of the owner'
-          write(D64,'(a)') 'owner/client address not entered'
-          CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &      64,D64,'owner address',IER,1)
-          H(1)='City (for owner)'
-          write(D64,'(a)') 'owner/client city not named'
-          CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &      64,D64,'owner city',IER,1)
-          H(1)='Post code (for owner)'
-          write(D64,'(a)') 'owner/client postcode not entered'
-          CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &      64,D64,'owner post code',IER,1)
-        endif
+C The address of the simulation team (as entered in the ncm file).
+        call edsbmbld()
 
       ELSEIF(INO.EQ.11)THEN
 
-C Address of simulationist.
-        call edisp(iuout,'Details of simulationist...')
-        write(outs,'(2a)')'Simulationist name: ',certifname 
-        call edisp(iuout,outs)     
-        write(outs,'(2a)')'Simulationist telephone: ',certTel 
-        call edisp(iuout,outs)     
-        write(outs,'(2a)')'Simulationist address: ',certaddress   
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Simulationist city: ',certcity  
-        call edisp(iuout,outs)    
-        write(outs,'(2a)')'Simulationist postcode: ',certPC  
-        call edisp(iuout,outs)          
-        DOK=.FALSE.
-        CALL ASKOK('Edit the simulationist details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Person or team preforming the assessment.'
-          write(D64,'(a)') 'simulationist not named'
-          CALL EASKS(certifname,'Name of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier name',IER,1)
-          H(1)='Simulationist/certifier telephone number'
-          write(D64,'(a)') 'simulationist phone not given'
-          CALL EASKS(certTel,'Telephone of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier tel',IER,1)
-          H(1)='Simulationist/certifier address'
-          write(D64,'(a)') 'simulationist address not given'
-          CALL EASKS(certaddress,'Address of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier address',IER,1)
-          H(1)='Simulationist/certifier city'
-          write(D64,'(a)') 'simulationist city not given'
-          CALL EASKS(certcity,'City of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier city',IER,1)
-          H(1)='Simulationist/certifier post code'
-          write(D64,'(a)') 'simulationist postcode not given'
-          CALL EASKS(certPC,'Post code of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier Post code',IER,1)
-        endif
+C Future option.
+        continue
 
       ELSEIF(INO.EQ.13)THEN
 

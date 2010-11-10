@@ -107,6 +107,7 @@ C an object has been saved the set justentered to false.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer IWM,IWMG ! for radio buttons
       integer MITEM,INO ! max items and current menu item
+      real blkopaq      ! opacity of obstruction
 
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
@@ -2536,6 +2537,11 @@ C Ask for name.
           H(2)='from base to top). '
           CALL EASKR(Z2,' ',' Height of the obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,2)
+          H(1)='The opaticy of the obstruction 0.0 transparent to'
+          H(2)='1.0 opaque (for future shading facility). '
+          CALL EASKR(blkopaq,' ',
+     &     'Opacity of the obstruction 0=tran 1=opaque?',
+     &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,2)
           CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
@@ -2552,6 +2558,7 @@ C Ask for name.
           BANGOB(IC,nbo,1)=RO
           BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
+          OPOB(IC,nbo)=blkopaq
           BLOCKTYP(IC,nbo)='obs '
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')

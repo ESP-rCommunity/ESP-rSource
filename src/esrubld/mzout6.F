@@ -220,7 +220,7 @@ C Find diversifide totals for heating and cooling and occurance.
         bInitialized = .true.
       endif
 
-      if(ISBEM.EQ.1)then
+      if(ISBEM.EQ.2)then
 
 C DHW calculations for UK NCM data
 C NCM method assumes that DT (temper. difference) is always 50oC for

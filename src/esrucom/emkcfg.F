@@ -87,7 +87,7 @@ C Plant network.
       INTEGER :: ifpnf
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -632,7 +632,7 @@ C reflect whether the standard database folder is being used.
 
 C UK SBEM database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-      IF(ISBEM.EQ.1)THEN
+C      IF(ISBEM.GE.1)THEN
         if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
@@ -640,7 +640,7 @@ C reflect whether the standard database folder is being used.
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdsbem  ',
      &      LSBEM(1:lnblnk(LSBEM))
         endif
-      ENDIF
+C      ENDIF
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -868,7 +868,7 @@ C and used by various facilities.
 
 C If SBEM compliance checking is active write name of NCM file if
 C it is something other than UNKNOWN.
-      IF(ISBEM.EQ.1)THEN
+      IF(ISBEM.GE.1)THEN
         if(LASBEM(1:4).eq.'UNKN')then
           continue
         else
@@ -1141,34 +1141,38 @@ C Annual ipv report (if description included within cfg or external file).
 
 C Building and client address tokens (as in UK national calculation method).
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &  '# Address of building, owner and certifier'
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-NAME      ',
+     &  '# Name and address of building'
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-NAME ',
      &  pjname(1:lnblnk(pjname))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-ADDRESS   ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-ADDRESS ',
      &  baddress(1:lnblnk(baddress))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-CITY      ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-CITY ',
      &  bcity(1:lnblnk(bcity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-POSTCODE  ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-POSTCODE ',
      &  buildingPC(1:lnblnk(buildingPC))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-NAME      ',
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &  '# Contact information for building owner'
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-NAME ',
      &  ownername(1:lnblnk(ownername))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-ADDRESS   ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-ADDRESS ',
      &  owneraddr(1:lnblnk(owneraddr))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-CITY      ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-CITY ',
      &  ownercity(1:lnblnk(ownercity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-POSTCODE  ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-POSTCODE ',
      &  ownerPC(1:lnblnk(ownerPC))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-TELEPHONE ',
      &  ownertel(1:lnblnk(ownertel))
 
 C Write out contact details of simulation team.
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-NAME      ',
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &  '# Contact information for simulation team'
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-NAME ',
      &  certifname(1:lnblnk(certifname))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-ADDRESS   ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-ADDRESS ',
      &  certaddress(1:lnblnk(certaddress))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-CITY      ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-CITY ',
      &  certcity(1:lnblnk(certcity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-POSTCODE  ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-POSTCODE ',
      &  certPC(1:lnblnk(certPC))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-TELEPHONE ',
      &  certTel(1:lnblnk(certTel))

@@ -80,6 +80,8 @@ C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
 
 #include "e2r_common.h"
 C provides LRADCF
@@ -194,7 +196,7 @@ C CPCALC description
       INTEGER :: icpcon,irt
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images.
       common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
@@ -429,6 +431,15 @@ C Initial data for CPCALC.
       pad=0.00
       wvpe=0.00
 
+C Clear derived model areas and U-values.
+      xfloor = 0.0; xexposed = 0.0; xvexposed = 0.0
+      xvthk = 0.0; xtoground = 0.0; xuavgtran = 0.0
+      xuavwall = 0.0; xuavground = 0.0
+      xfndthkg = 0.0; xperimlength = 0.0
+      xuavslproof = 0.0; xuavfltroof = 0.0; xuavgsky = 0.0 
+      xareatran = 0.0; xareawall = 0.0
+      xareaslproof = 0.0; xareafltroof = 0.0; xareaskylt = 0.0
+
 C Initialize the indices.
       INTHPS=.FALSE.
       IGR1D=.FALSE.
@@ -475,6 +486,23 @@ C Season data.
 
 C Zone level common blocks.
       do 42 IX = 1,MCOM
+
+C Per-zone areas and U-values.
+        uavgtran(IX) = 0.0
+        uavwall(IX) = 0.0
+        uavslproof(IX) = 0.0
+        uavfltroof(IX) = 0.0
+        uavgsky(IX) = 0.0
+        uavground(IX) = 0.0
+        areatran(IX) = 0.0
+        areawall(IX) = 0.0
+        areaslproof(IX) = 0.0
+        areafltroof(IX) = 0.0
+        areaskylt(IX) = 0.0
+        areaground(IX) = 0.0
+        exposed(IX) = 0.0
+        vexposed(IX) = 0.0
+
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
           zboundarytype(IX,IXS,1)=0  ! clear surface boundary
@@ -502,6 +530,7 @@ C Clear obstructions in all zones.
           BANGOB(ix,ibu,1) = 0.0
           BANGOB(ix,ibu,2) = 0.0
           BANGOB(ix,ibu,3) = 0.0
+          OPOB(ix,ibu)=0.0
           BLOCKNAME(ix,ibu) = ' '
           LNBLOCKNAME(ix,ibu) = 0
           BLOCKMAT(ix,ibu) = ' '
@@ -615,6 +644,11 @@ C Clear the connection list.
         SSOTHER(icc,3)='0'
         SSUSE(icc,1)='-'
         SSUSE(icc,2)='-'
+        ssna(icc)=0.0
+        sspazi(icc)=0.0
+        sspelv(icc)=0.0
+        ssperim(icc)=0.0
+        ssthick(icc)=0.0
    32 CONTINUE
       icfgv=4  ! set cfg file version to latest type
       NCON=0
@@ -658,7 +692,7 @@ C Clear sbem string arrays (from sbem.h).
       certPC=' not yet defined'
       UPRN='000000000000'
       Accr_Scheme=' not yet defined'
-      assessRegNumber=' not yet defined'
+      assessRegNumber='ABCD123456'
       empl_Trading_name=' not yet defined'
       addr_empl_Trading=' not yet defined'
       party_disclosure=' not yet defined'
@@ -674,13 +708,13 @@ C Clear sbem string arrays (from sbem.h).
  4    continue
 
 C Also integers from sbem.h
-      Y_inspect=2009
+      Y_inspect=2010
       M_inspect=1
       D_inspect=1
-      S_Yinsur=2009
+      S_Yinsur=2010
       S_Minsur=1
       S_Dinsur=1
-      E_Yinsur=2010
+      E_Yinsur=2011
       E_Minsur=1
       E_Dinsur=1
       pi_limit=0
@@ -785,7 +819,7 @@ C ***** Notice that an active description button has been pressed.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C23/IFPNF,LPNF
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/entfile/entflnam, ientxist
@@ -969,11 +1003,12 @@ C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
 
 C Note: legacy zone obstruction files only contain the single type
-C of obstruction with one angle of rotation.
+C of obstruction with one angle of rotation. Remember the number
+C of tokens in variable ND.
       DO 10 I=1,nbobs(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
-        IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
+        IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9.OR.ND.eq.10)THEN
           K=0
           CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
           CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
@@ -990,6 +1025,7 @@ C of obstruction with one angle of rotation.
           CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
           BANGOB(icomp,I,1)=VX
           IF(ND.EQ.7)THEN
+            OPOB(icomp,I)=1.0
             IF(I.LE.9)THEN
               WRITE(BLOCKNAME(ICOMP,I),77)I
    77         FORMAT('B',I1)
@@ -1003,6 +1039,7 @@ C of obstruction with one angle of rotation.
             LNBLOCKMAT(ICOMP,I)=4
             BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.8)THEN
+            OPOB(icomp,I)=1.0
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
             LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
@@ -1013,6 +1050,20 @@ C of obstruction with one angle of rotation.
 
 C Get name of obstruction block and its construction (which might
 C contain spaces).
+            OPOB(icomp,I)=1.0
+            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,i)=lnblnk(BLOCKMAT(icomp,i))
+            BLOCKTYP(ICOMP,I)='obs '
+          ELSEIF(ND.GE.10)THEN
+
+C Get opacity and name of obstruction block and its construction (which might
+C contain spaces).
+            CALL EGETWR(OUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+            OPOB(icomp,I)=VX
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
             LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
@@ -1054,15 +1105,15 @@ C Trace.
      &         ' obstructions associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
-     &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+     &  'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
         DO 9995 I=1,nbobs(icomp)
           llbm=LNBLOCKMAT(ICOMP,I)
           llbn=LNBLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
      &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),
-     &      BANGOB(ICOMP,I,1),BLOCKNAME(ICOMP,I)(1:llbn),
+     &      BANGOB(ICOMP,I,1),OPOB(ICOMP,I),BLOCKNAME(ICOMP,I)(1:llbn),
      &      BLOCKMAT(ICOMP,I)(1:llbm)
- 9994     FORMAT(I3,7F8.1,' ',a,' ',a)
+ 9994     FORMAT(I3,7F8.1,F5.2,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
         CALL EDISP(ITRU,' ')
@@ -1112,15 +1163,15 @@ C Write number of blocks.
 
 C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
-     &'# origin X Y Z, width, depth, height, rot angle, descr, material'
+     &'# origin X Y Z, width, depth, height, rot ang, opac descr, cons'
       DO 10 I=1,nbobs(icomp)
         llbm=LNBLOCKMAT(ICOMP,I)
         llbn=LNBLOCKNAME(ICOMP,I)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
-     &    BANGOB(icomp,I,1),
+     &    BANGOB(icomp,I,1),OPOB(icomp,I),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I3)
+  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I3)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE

@@ -892,9 +892,9 @@ C Error.
         IF(OK)THEN
           goto 35
         ELSE
+          call pauses(2)   ! pause for 2 seconds then abort program.
           CALL EPAGEND
           CALL ERPFREE(ICLIM,ISTAT)
-          call pauses(2)   ! pause for 2 seconds then abort program.
           call epagend
           STOP
         ENDIF

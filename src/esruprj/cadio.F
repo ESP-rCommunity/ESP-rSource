@@ -538,9 +538,7 @@ C Pop up the help text.
 
 C Error.
  901  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
-      endif
+      if(unixok)write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
       return
      
       END
@@ -1549,7 +1547,7 @@ C provides LRADCF
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM

@@ -281,7 +281,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
       common/expath/runpath,pathtype
       character*72 runpath
@@ -605,7 +605,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
-      LSBEM =DSBEM  ! assign default SBEM db
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
 C Clear the model common blocks.
@@ -1653,7 +1653,7 @@ C Radiance scene file.
 
 C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
-        ISBEM=1
+        ISBEM=2  ! to signal we have NCM description
         IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
@@ -2024,7 +2024,7 @@ C automatically and should not be modified through project manager
         IWARN=1
         OUTS=
      &  'This is a UK NCM stripped model and should not be modified'
-      ELSEIF(ISBEM.EQ.1.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
+      ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN

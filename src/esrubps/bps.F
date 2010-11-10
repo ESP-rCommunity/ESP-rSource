@@ -734,7 +734,7 @@ C Increment input flag if no input data errors detected.
               INPOK=.TRUE.
             elseif(iw.eq.3)then
               call tstamp('>','SIM: abort after error scan problem')
-              call epagend
+              call pauses(2)   ! pause for 2 seconds then abort program.
               if( dll ) then
                 dllsubr='bps MAIN'
                 dllmesg='IER1 flag set while scanning the model.'
@@ -982,17 +982,19 @@ C Set flag: climate data ok
             goto 20
           ELSE
             call tstamp('>','SIM: abort after error scanning climate')
-            call epagend
+            call pauses(2)   ! pause for 2 seconds then abort program.
             CALL ERPFREE(ICLIM,ISTAT)
             if( dll ) return
 C There's no reason to stop the simulator here - 
 C Let's just return to the menu and let the user decide what to do!
+C            call epagend
+C            stop
           ENDIF
         ENDIF
 
 C Close & free file (it will be opened again before the start
 C of the simulation         
-        CALL EPAGEND
+C        CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
 
       ELSEIF(INO.EQ.2 .and. bMY_sim_enabled ) then
@@ -1181,7 +1183,6 @@ C Close moisture result library.
         IF(MSTROK)CALL ERPFREE(IMSTR,ISTAT)
         call tstamp('>','Finish simulator')
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL EPAGEND
         if( dll ) return
 
 C Clear allocatable arrays
@@ -1211,7 +1212,6 @@ C Error.
       IF(OK)THEN
         goto 20
       ELSE
-        CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
         if( dll ) return
         call epagend

@@ -418,7 +418,7 @@ C              call delfiledosorunix(lltmp,ider)
      &            LFMAT(1:lnblnk(LFMAT))
               endif
 C Debug.
-              write(6,*) 'working materials ',lworking
+C              write(6,*) 'working materials ',lworking
               CALL mkascimat(IAF,lworking,IER)
             endif
 
@@ -3296,7 +3296,7 @@ C prepended.
      &    LFMAT(1:lnblnk(LFMAT))
 
 C Debug.
-        write(6,*) 'working materials ',lworking
+C        write(6,*) 'working materials ',lworking
         call EFOPRAN(IFMAT,lworking,40,1,IER)
       endif
       if(ier.ne.0)return

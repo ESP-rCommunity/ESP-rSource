@@ -11,6 +11,7 @@ rem=$1"*txt" ; rm -f $rem
 rem=$1"libb" ; rm -f $rem
 rem=$1"*res" ; rm -f $rem
 rem=$1"*not*cnn" ; rm -f $rem
+rem=$1"*str*cnn" ; rm -f $rem
 rem=$1"fort*" ; rm -f $rem
 #rem=$1"*inp" ; rm -f $rem
 rem=$1"../ctl/*ctl" ; rm -f $rem

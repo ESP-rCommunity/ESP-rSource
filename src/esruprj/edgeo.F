@@ -957,6 +957,8 @@ C profile has not been defined.
               do 21 igrdp=1,mgrdp
                 CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
                 if(.NOT.close)then
+                 WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+                 call edisp(iuout,outs)
                  WRITE(OUTS,'(I2,12F5.1)')igrdp,(GRDTMP(J,IGRDP),J=1,12)
                  call edisp(iuout,outs)
                 endif
@@ -969,7 +971,7 @@ C profile has not been defined.
               H(6)='     required.'
               H(7)=' =-3 connection to a 3D ground model.'
               CALL EASKI(IIC2,' ','Standard ground profile number?',
-     &                  1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  1,'F',mgrdp,'F',1,'ground profile',IERI,7)
               if(ieri.eq.-3) goto 3
             elseif(IOS.EQ.6)then
 
@@ -1119,6 +1121,7 @@ C Reset all line widths to normal and redraw (if last surface in list).
 C Associate mlc with each selected surface.
               WRITE(SMLCN(ISS),'(A12)')DESC(ISEL)(1:12)
               WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
+              ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
 C Use logic similar to parsemlcdesc to find the optical name.
               OPT=' '
@@ -1193,6 +1196,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
 
 C Assign new MLC name to the icoth surface.
                       SSMLCN(icoth)=TOSMLCN
+                      ssthick(icoth)=THKMLC(isel)  ! update the thermophysical thickness
                       call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                       if(igupgrade.eq.2.and.(.NOT.newgeo))then
                         gversion(IC2(ioc)) =1.1
@@ -2086,17 +2090,17 @@ C format for each type of obstruction.
                 if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
                   WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &              DZOB(icomp,I),BANGOB(icomp,I,1),
+     &              DZOB(icomp,I),BANGOB(icomp,I,1),OPOB(icomp,I),
      &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994             FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
+ 9994             FORMAT(I3,6F8.2,2F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
                   WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
      &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
      &              DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
-     &              BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
-     &              BLOCKMAT(icomp,I)(1:lnbm)
- 9993             FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
+     &              BANGOB(icomp,I,3),OPOB(icomp,I),
+     &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
+ 9993             FORMAT(I3,6F8.2,4F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
                   WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
@@ -2145,7 +2149,7 @@ C exposed walls and floors, pitched roofs, flat roofs
              if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
 
 C Recover the ISO 6946 U values as in prjqa.F.
-               call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
+               call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
              else
                continue
              endif
@@ -2861,7 +2865,7 @@ C surfaces are presented even if only ilimit can be copied.
 C Note: use display width of 41 char.
           H(1)='Pick one or more surfaces from the zone (up to'
           H(2)='the limit indicated).'
-          write(msg1,'(a,i2,a)') '(up to ',ilimit,')'
+          write(msg1,'(a,i3,a)') '(up to ',ilimit,')'
           write(msg2,'(2a)') 'surfaces in ',zname(izone)
           CALL EPICKS(INPIC,IVALS,'Which surfaces?',msg1,
      &      41,NZSUR(IZONE),STMP,msg2,IER,2)
@@ -2998,7 +3002,8 @@ C Check perimeter.
      &  SSPELV(ioc)
       WRITE(ISD(6),'(A,f8.3)') '  perimeter length:',ssperim(ioc)
       if(newgeo)then
-        WRITE(ISD(7),'(A)')      'd (N/A)               '
+        WRITE(ISD(7),'(A,F6.3)') 'd thermophysical thickness ',
+     &    ssthick(ioc)
       else
         WRITE(ISD(7),'(A,F7.4)') 'd surface indentation:',Y0S(IS)
       endif
@@ -3346,6 +3351,7 @@ C << properties and the optical name.
             ioc=IZSTOCN(ICOMP,is)
             WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
             SSMLCN(ioc)=SMLCN(is)
+            ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
 C Use logic similar to parsemlcdesc to find the optical name.
             OPT=' '
@@ -3758,6 +3764,8 @@ C profile has not been defined.
           do 21 igrdp=1,mgrdp
             CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
             if(.NOT.close)then
+              WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+              call edisp(iuout,outs)
               WRITE(OUTS,'(I2,12F5.1)')igrdp,(GRDTMP(J,IGRDP),J=1,12)
               call edisp(iuout,outs)
             endif
@@ -3775,7 +3783,7 @@ C the action make no changes and jump back to 13 (the menu creation code).
           H(7)=' =-3 connection to a 3D ground model.'
           iic2=ic2(IC)
   777     CALL EASKI(IIC2,' ','Standard ground profile number?',
-     &                  1,'F',12,'F',1,'ground profile',IERI,7)
+     &                  1,'F',mgrdp,'F',1,'ground profile',IERI,7)
           IF(IIC2.GT.0)THEN
             if(ieri.eq.0)then
               IC2(IC)=iic2
@@ -4054,7 +4062,7 @@ C Set local working variables.
 C Set use type to a subset of all usage if UK NCM model
 C This superceeds the value of guesstype that was set in 
 C the calling code so inform the user.
-      if(ISBEM.EQ.1)then
+      if(ISBEM.EQ.2)then
         if(guesstype(1:8).ne.'notional')then
           call edisp(iuout,'Switching to UK notional surface uses.')
         endif
@@ -4199,11 +4207,12 @@ C Setup array of menu strings.
         useopt(8) ='WINDOW DISPLAY '
         useopt(9) ='WINDOW SKYLIGHT'
         useopt(10)='WINDOW FRAME'
-        useopt(11)='something else'
+        useopt(11)='FLOOR (foundation/ground) '
+        useopt(12)='something else'
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,11,useopt,'surface USAGE options',IER,34)
+     &         32,12,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
         if(IOS.eq.1)then
@@ -4227,6 +4236,8 @@ C Setup array of menu strings.
         elseif(IOS.eq.10)then
           iuopt=8
         elseif(IOS.eq.11)then
+          iuopt=6
+        elseif(IOS.eq.12)then
           iuopt=23
         endif
 
@@ -4506,6 +4517,7 @@ C Do not need second tag if generating notional model
           continue
         endif
       endif
+
       if(iuopt.eq.6)then
         SUSE(IS,1)='FLOOR'
         SSUSE(IC,1)='FLOOR'
@@ -4524,6 +4536,11 @@ C Do not need second tag if generating notional model
       elseif(iuopt.eq.9)then
         SUSE(IS,1)='FRAME'
         SSUSE(IC,1)='FRAME'
+      endif
+      if(guesstype(1:8).eq.'notional')then
+        SUSE(IS,2)='-'
+        SSUSE(IC,2)='-'
+        goto 57
       endif
       if(iuopt.eq.8.or.iuopt.eq.9)then
         h(1)='Closed signals to other parts of ESP-r that air '
@@ -4558,7 +4575,7 @@ C Do not need second tag if generating notional model
         endif
       endif
 
-      if(iuopt.eq.10)then
+  57  if(iuopt.eq.10)then
         SUSE(IS,1)='FURNI'
         SSUSE(IC,1)='FURNI'
         SUSE(IS,2)='- '
@@ -4706,7 +4723,7 @@ C Parameters
 C Set use type to a subset of all usage if UK NCM model
 C This superceeds the value of guesstype that was set in 
 C the calling code so inform the user.
-      if(ISBEM.EQ.1)then
+      if(ISBEM.EQ.2)then
         if(guesstype(1:8).ne.'notional')then
           call edisp(iuout,'Switching to UK notional surface uses.')
         endif
@@ -5271,11 +5288,11 @@ C current zone.
           endif
 
 C Find distance and report.
-            tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &        Y(IWHICH2),Z(IWHICH2))
-            write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v ',
-     &        IWHICH1,' & v ',IWHICH2,' =',tdis
-            call edisp(itru,outs)
+          tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
+     &      Y(IWHICH2),Z(IWHICH2))
+          write(outs,'(a,i3,a,i3,a,f9.4)') ' Distance between v ',
+     &      IWHICH1,' & v ',IWHICH2,' =',tdis
+          call edisp(itru,outs)
 
             H(1)='Distance along the line in metres.'
             CALL EASKR(vdis,' ','Distance along line?',0.001,
@@ -5319,7 +5336,7 @@ C Distance between two vertices (based on current G1 common block).
      &        Y(IWHICH2),Z(IWHICH2))
             call ln2az(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2),az,el)
-            write(outs,'(a,i2,a,i2,a,f9.4,a,f8.3,a,f7.3)')
+            write(outs,'(a,i3,a,i3,a,f9.4,a,f8.3,a,f7.3)')
      &        ' Distance between v ',IWHICH1,' & v ',IWHICH2,' =',vdis,
      &        ' @ aimuth ',az,' & elev ',el
             call edisp(itru,outs)
@@ -5543,7 +5560,7 @@ C Show the new point on the current wireframe.
 C Ask if it should be added.
                 if(NTV.lt.MTV)then
                   h(1)='This can become a new vertex. '
-                  write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
+                  write(outs,'(a,i3,a)') 'Make vertex ',NTV+1,' a:'
                   CALL EASKABC(' ',outs,'new vertex',
      &              'new vertex after editing','cancel',INVT,1)
                   if(INVT.eq.1)then
@@ -5561,7 +5578,7 @@ C Ask if it should be added.
                     WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
                     H(1)='The vertex coordinates should be in metres. '
                     H(2)='It is not advisable for Z to be negative.'
-                    write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z(m):'
+                    write(outs,'(a,i3,a)')' Vertex (',ntv,') X Y Z(m):'
   136               CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',
      &                IER,2)
                     K=0
@@ -5616,7 +5633,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 447
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',jwhich3,' @',X(jwhich3),Y(jwhich3),
      &                Z(jwhich3),' is close (',offset,') to edge ',
      &                jWHICH1,' &',jWHICH2,' of surface ',
@@ -5698,7 +5715,7 @@ C Distance between point and a line (based on current G1 common block).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
           call edisp(itru,outs)
@@ -5736,7 +5753,7 @@ C block data).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
            call edisp(itru,outs)
@@ -5798,7 +5815,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 347
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
@@ -5860,7 +5877,7 @@ C Find close vertices.
                   tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
                   if(tdis.lt.0.05)then
-                  write(outs,'(2a,i2,a,f9.4,a)') headv(1:lnblnk(headv)),
+                  write(outs,'(2a,i3,a,f9.4,a)') headv(1:lnblnk(headv)),
      &              ' is close to vert ',IWHICH2,' (',tdis,'m).'
                   call edisp(itru,outs)
                   endif
@@ -5882,7 +5899,7 @@ C Find close vertices.
                   tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
                   if(tdis.lt.0.05)then
-           write(outs,'(2a,i2,a,f9.4,a,3F10.4)') headv(1:lnblnk(headv)),
+           write(outs,'(2a,i3,a,f9.4,a,3F10.4)') headv(1:lnblnk(headv)),
      &       ' close to v ',IWHICH2,' (',tdis,'m) @ XYZ:',X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2)
                     call edisp(itru,outs)
@@ -5908,7 +5925,7 @@ C Move an existing vertex along an existing line.
             iwhich2=IVLST(2)
             tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2))
-            write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v',
+            write(outs,'(a,i3,a,i3,a,f9.4)') ' Distance between v',
      &        IWHICH1,' & v',IWHICH2,' =',tdis
             call edisp(itru,outs)
             call edisp(itru,' ')
@@ -5969,7 +5986,7 @@ C applied to the 'a' 'c' and 'f' options.
         if(ino.eq.1.or.ino.eq.3.or.ino.eq.5)then
           if(NTV.lt.MTV)then
             h(1)='This can become a new vertex. '
-            write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
+            write(outs,'(a,i3,a)') 'Make vertex ',NTV+1,' a:'
             CALL EASKABC(' ',outs,'new vertex',
      &        'new vertex after editing','cancel',INVT,1)
             if(INVT.eq.1)then
@@ -5987,7 +6004,7 @@ C applied to the 'a' 'c' and 'f' options.
               WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
-              write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z (m):'
+              write(outs,'(a,i3,a)')' Vertex (',ntv,') X Y Z (m):'
   43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
@@ -6034,7 +6051,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',X(NTV),Y(NTV),
      &                Z(NTV),' is close (',offset,') to edge ',
      &                IWHICH1,' &',IWHICH2,' of surface ',
@@ -6132,7 +6149,7 @@ C Tidy up the wireframe image.
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Alter vertex list by deleting/ copy / replicate / editing.
-        write(H(1),'(A,I2,A)')' Up to ',MTV-NTV,
+        write(H(1),'(A,I3,A)')' Up to ',MTV-NTV,
      &    ' vertices may be added or copied.'
         H(2)='If a new vertex is a minor variation of an existing '
         H(3)='point then it may be easier to copy and then edit. '
@@ -6274,7 +6291,7 @@ C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
-              write(outs,'(a,i2,a)')
+              write(outs,'(a,i3,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
  146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,2)
@@ -6309,7 +6326,7 @@ C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
-        write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
+        write(outs,'(a,i3,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
   42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
@@ -7284,6 +7301,7 @@ C Ask user about the use of the new surface.
           CALL EPMENRC
           IF(ISEL.GT.0)then
             WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
+            ssthick(icon)=THKMLC(isel)  ! update the thermophysical thickness
 
 C Use logic similar to parsemlcdesc to find the optical name.
             OPT=' '
@@ -8515,14 +8533,19 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
  
       SUBROUTINE LINTHBRDG(ICOMP,act,THPER)
 #include "building.h"
-#include "geometry.h"
+C #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
+C #include "material.h"
+#include "sbem.h"
+C derived.h are derived areas and U values for zones and the model
+#include "derived.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C24/IZSTOCN(MCOM,MS)
+
+C bridgelen was calculated in subroutine suredgeadj
+      real bridgelen ! Length of potential thermal bridges in each zone.
+      common/gbridge/bridgelen(MCOM,10)
 
 C Thermal bridge common block: 
 C nbrdg is the number of thermal bridge types in the zone
@@ -8548,7 +8571,7 @@ C thbrpercent is the user defined fraction for thermal bridges used by
 C   losspercent and is assumed to apply to all zones in the model.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
-      real uavtotal
+      real uavtotal  ! estimated UA for exposed parts of building
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
@@ -8556,23 +8579,24 @@ C   losspercent and is assumed to apply to all zones in the model.
       LOGICAL context
 
       DIMENSION TBRIDGE(30)
+      integer IVALS(MCOM)  ! the array of zones to include
       CHARACTER H*72
       CHARACTER outs*124
-      character SIGSTR*12,t16a*16,t16b*16,act*1
+      character SIGSTR*12,t16b*16,act*1
       character TBRIDGE*58
       dimension phraselen(16),phrasepsi(16),phrasemenu(16)
       character phraselen*42,phrasepsi*42,phrasemenu*34
       character msg*48  ! to use for default prompt.
 
-      real exposed,vexposed,areawall  ! local values for QA
-      real areaslproof,areafltroof,THPER
-      real uavwall,uavfltroof,uavslproof
+      real THPER
 
-      integer lna,lnb
+      integer lnb
       real psiv,lenv  ! local variables for psi and length.
       integer ISDN,INODA ! max items and current menu item
       real defpsi     ! default value for psi
       dimension defpsi(16)
+      real lenpsi     ! default value for length based on bridgelen.
+      dimension lenpsi(16)
       real zerolen,zeropsi  ! for bridge types that have yet to be used.
       logical foundit
 
@@ -8584,71 +8608,279 @@ C   losspercent and is assumed to apply to all zones in the model.
       zeropsi=0.0
       lookfor=0
 
+C Do call to FINDUA for this zone in order to get derived areas.
+      IVALS(1)=icomp
+      NZ=1
+      call FINDUA(IVALS,nz,'p')
+
+C Report on estimated lengths of thermal bridges from suredgeadj
+      if(act(1:1).eq.'-')then
+        call edisp(iuout,'Based on surface form & boundary condition:')
+        write(outs,'(a,f7.2)')'bridge length roof-wall:',
+     &    bridgelen(icomp,1)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length wall-ground:',
+     &    bridgelen(icomp,2)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
+     &    bridgelen(icomp,3)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
+     &    bridgelen(icomp,4)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length ext floor down facing:',
+     &   bridgelen(icomp,5)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length door & window lintels ',
+     &    bridgelen(icomp,6)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length door & window sills ',
+     &    bridgelen(icomp,7)
+        call edisp(iuout,outs)
+        write(outs,'(a,f7.2)')'bridge length door & window jambs ',
+     &    bridgelen(icomp,8)
+        call edisp(iuout,outs)
+        call edisp(iuout,
+     &    'Use these suggested lengths. You can also add more types.')
+      endif
+
 C Setup phrases for the menu and for editing length and psi values.
       phrasemenu(1) ='a roof-wall                    :'
       phraselen(1)  ='roof-wall '
       phrasepsi(1)  ='roof-wall '
       defpsi(1)=0.12
+      lenpsi(1)=bridgelen(icomp,1)
       phrasemenu(2) ='b wall-ground floor            :'
       phraselen(2)  ='wall-ground floor '
       phrasepsi(2)  ='wall-ground floor '
       defpsi(2)=0.16
+      lenpsi(2)=bridgelen(icomp,2)
       phrasemenu(3) ='c wall-wall (convex corner)    :'
       phraselen(3)  ='wall-wall (convex corner) '
       phrasepsi(3)  ='wall-wall (convex corner) '
       defpsi(3)=0.09
+      lenpsi(3)=bridgelen(icomp,3)
       phrasemenu(4) ='d wall-wall (concave corner)   :'
       phraselen(4)  ='wall-wall (concave corner) '
       phrasepsi(4)  ='wall-wall (concave corner) '
       defpsi(4)= -0.09
+      lenpsi(4)=bridgelen(icomp,4)
       phrasemenu(5) ='e wall-floor (not ground floor):'
       phraselen(5)  ='wall-floor (not ground floor) '
       phrasepsi(5)  ='wall-floor (not ground floor) '
       defpsi(5)=0.07
+      lenpsi(5)=bridgelen(icomp,5)
       phrasemenu(6) ='f lintel above window or door  :'
       phraselen(6)  ='lintel above window or door '
       phrasepsi(6)  ='lintel above window or door '
       defpsi(6)=0.3
+      lenpsi(6)=bridgelen(icomp,6)
       phrasemenu(7) ='g Sill below window            :'
       phraselen(7)  ='Sill below window '
       phrasepsi(7)  ='Sill below window '
       defpsi(7)=0.04
+      lenpsi(7)=bridgelen(icomp,7)
       phrasemenu(8) ='h jamb at window or door       :'
       phraselen(8)  ='jamb at window or door '
       phrasepsi(8)  ='jamb at window or door '
       defpsi(8)=0.05
+      lenpsi(8)=bridgelen(icomp,8)
       phrasemenu(9) ='i roof-wall                    :'
       phraselen(9)  ='roof-wall-mc'
       phrasepsi(9)  ='roof-wall-mc'
-      defpsi(9)=0.6
+      defpsi(9)=0.28
+      lenpsi(9)=bridgelen(icomp,1)
       phrasemenu(10)='j wall-ground floor            :'
       phraselen(10) ='wall-ground floor-mc'
       phrasepsi(10) ='wall-ground floor-mc'
       defpsi(10)=1.15
+      lenpsi(10)=bridgelen(icomp,2)
       phrasemenu(11)='k wall-wall (corner)-          :'
       phraselen(11) ='wall-wall (corner)-mc'
       phrasepsi(11) ='wall-wall (corner)-mc'
       defpsi(11)=0.25
+      lenpsi(11)=bridgelen(icomp,3)+bridgelen(icomp,4)
       phrasemenu(12)='l wall-floor (not ground floor):'
       phraselen(12) ='wall-floor (not ground floor)-mc'
       phrasepsi(12) ='wall-floor (not ground floor)-mc'
       defpsi(12)=0.07
+      lenpsi(12)=bridgelen(icomp,5)
       phrasemenu(13)='m lintel above window or door  :'
       phraselen(13) ='lintel above window or door-mc'
       phrasepsi(13) ='lintel above window or door-mc'
       defpsi(13)=1.27
+      lenpsi(13)=bridgelen(icomp,6)
       phrasemenu(14)='n Sill below window            :'
       phraselen(14) ='Sill below window-mc'
       phrasepsi(14) ='Sill below window-mc'
       defpsi(14)=1.27
+      lenpsi(14)=bridgelen(icomp,7)
       phrasemenu(15)='o jamb at window or door       :'
       phraselen(15) ='jamb at window or door-mc'
       phrasepsi(15) ='jamb at window or door-mc'
       defpsi(15)=1.27
+      lenpsi(15)=bridgelen(icomp,8)
       phrasemenu(16)='p user-defined                 :'
       phraselen(16) ='user-defined'
       phrasepsi(16) ='user-defined'
       defpsi(16)=0.00
+      lenpsi(16)=1.0
+
+C If the UK NCM facility is active ask the user whether facade
+C has metal cladding or not and then set the relevant lengths.
+C If in silent model for the so-called stripped model then do
+C not involve the user, jump straight to the 10%.
+      if(act(1:1).eq.'-')then
+        if(nbrdg(icomp).eq.0)then
+          if(ISBEM.EQ.2)then
+            h(1)='The underlying assumptions about heat flows via'
+            h(2)='thermal bridges depend on whether the facade uses'
+            h(3)='metal cladding. '
+            h(4)=' '
+            h(5)='Initial values will be based on the geometry of the'
+            h(6)='room as well as the boundary conditions and the'
+            h(7)='surface use attributes. IF YOU HAVE NOT YET set the'
+            h(8)='boundary conditions or surface use attributes for'
+            h(9)='this zone you should do that first (choose exit).'
+            h(10)=' '
+            h(11)='The fixed % option sets thermal bridges equivalent'
+            h(12)='to a percentage of the overall UA value. '
+            CALL EASKABCD('This zone:','(see help)',
+     &        'uses metal cladding','no metal cladding','fixed %',
+     &        'exit',INVT,12)
+            if(INVT.eq.1)then
+              continue
+            elseif(INVT.eq.2)then
+              continue
+            elseif(INVT.eq.3)then
+              continue
+            elseif(INVT.eq.4)then
+              return
+            endif
+          else
+            h(1)='The underlying assumptions about heat flows via'
+            h(2)='thermal bridges depend on whether the facade uses'
+            h(3)='metal cladding. You can setup thermal bridge'
+            h(4)='definitions to fit the specifics of your design.'
+            h(5)=' '
+            h(6)='Initial values will be based on the geometry of the'
+            h(7)='room as well as the boundary conditions. IF YOU'
+            h(8)='HAVE NOT YET set the boundary conditions for this'
+            h(9)='zone you should do that first (choose exit). '
+            h(10)=' '
+            h(11)='The fixed % option sets thermal bridges equivalent'
+            h(12)='to a percentage of the overall UA value. '
+            CALL EASKABCD('This zone:','(see help)',
+     &        'uses metal cladding','no metal cladding','fixed %',
+     &        'exit',INVT,12)
+            if(INVT.eq.1)then
+              continue
+            elseif(INVT.eq.2)then
+              continue
+            elseif(INVT.eq.3)then
+              continue
+            elseif(INVT.eq.4)then
+              return
+            endif
+          endif
+
+C Fill in the initial values.
+          if(INVT.eq.1)then
+            if(bridgelen(icomp,1).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=9
+              psi(ICOMP,nbrdg(icomp))=defpsi(9)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
+            endif
+            if(bridgelen(icomp,2).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=10
+              psi(ICOMP,nbrdg(icomp))=defpsi(10)
+               lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
+            endif
+            if((bridgelen(icomp,3)+bridgelen(icomp,4)).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=11
+              psi(ICOMP,nbrdg(icomp))=defpsi(11)
+              lngth(ICOMP,nbrdg(icomp))=
+     &          bridgelen(icomp,3)+bridgelen(icomp,4)
+            endif
+            if(bridgelen(icomp,5).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=12
+              psi(ICOMP,nbrdg(icomp))=defpsi(12)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
+            endif
+            if(bridgelen(icomp,6).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=13
+              psi(ICOMP,nbrdg(icomp))=defpsi(13)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
+            endif
+            if(bridgelen(icomp,7).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=14
+              psi(ICOMP,nbrdg(icomp))=defpsi(14)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
+            endif
+            if(bridgelen(icomp,8).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=15
+              psi(ICOMP,nbrdg(icomp))=defpsi(15)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
+            endif
+          elseif(INVT.eq.2)then
+            if(bridgelen(icomp,1).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=1
+              psi(ICOMP,nbrdg(icomp))=defpsi(1)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,1)
+            endif
+            if(bridgelen(icomp,2).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=2
+              psi(ICOMP,nbrdg(icomp))=defpsi(2)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,2)
+            endif
+            if(bridgelen(icomp,3).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=3
+              psi(ICOMP,nbrdg(icomp))=defpsi(3)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,3)
+            endif
+            if(bridgelen(icomp,4).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=4
+              psi(ICOMP,nbrdg(icomp))=defpsi(4)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,4)
+            endif
+            if(bridgelen(icomp,5).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=5
+              psi(ICOMP,nbrdg(icomp))=defpsi(5)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,5)
+            endif
+            if(bridgelen(icomp,6).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=6
+              psi(ICOMP,nbrdg(icomp))=defpsi(6)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,6)
+            endif
+            if(bridgelen(icomp,7).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=7
+              psi(ICOMP,nbrdg(icomp))=defpsi(7)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,7)
+            endif
+            if(bridgelen(icomp,8).gt.0.1)then
+              nbrdg(icomp)=nbrdg(icomp)+1
+              ibrdg(ICOMP,nbrdg(icomp))=8
+              psi(ICOMP,nbrdg(icomp))=defpsi(8)
+              lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
+            endif
+          endif
+        endif
+      endif
 
 C Setup the editing phrases.
    33 TBRIDGE(1)=
@@ -8739,107 +8971,8 @@ C totheatloss is the total heat loss when all linear thermal bridges are added
         write(outs,*) 'total losses: ',totheatloss(icomp),' W/K'
         call edisp(iuout,outs)
 
-C Calculate the total UA heat loss coefficient in W/K:
-C Find the area of external surfaces
-        exposed = 0.0
-        vexposed = 0.0
-        areawall = 0.0
-        areaslproof = 0.0
-        areafltroof = 0.0
-        uavwall = 0.0
-        uavfltroof = 0.0
-        uavslproof = 0.0
-        uavtotal(icomp) =0.0
-        DO 2242 IS=1,NZSUR(icomp)
-          icc=IZSTOCN(icomp,is)
-          if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
-
-C Check the U value for each external surface.
-C exposed walls and floors, pitched roofs, flat roofs
-            UVH = 0.0
-            UVU = 0.0
-            UVD = 0.0
-            do 1510 ii=1,nmlc
-              if((SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))
-     &            .OR.(ACT.EQ.'s'.and.(SSMLCN(icc)(1:12).eq.
-     &             DESC(ii)(1:12))))then
-
-C Recover the ISO 6946 U values as in prjqa.F.
-                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
-              else
-                continue
-              endif
- 1510       continue
-            exposed = exposed + SSNA(icc)
-            if(SSVFC(icc)(1:4).eq.'VERT')then
-
-C For vertical walls assume horizontal hc coef.
-              areawall = areawall + SSNA(icc)
-              uavwall = uavwall + (SSNA(icc) * UVH)
-              vexposed = vexposed + SSNA(icc) 
-
-            elseif(SSVFC(icc)(1:4).eq.'SLOP')then
-
-C For sloped surfaces.
-              areaslproof = areaslproof + SSNA(icc)
-              uavslproof = uavslproof + (SSNA(icc) * UVU)
-            elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-
-C For ceilings.
-              areafltroof = areafltroof + SSNA(icc)
-              uavfltroof = uavfltroof + (SSNA(icc) * UVU)
-            else
-
-C For floors.
-              areawall = areawall + SSNA(icc)
-              uavwall = uavwall + (SSNA(icc) * UVD)
-            endif
-          else
-            continue
-          endif
- 2242   continue       
-
-        if(exposed.gt.0.1)then        
-
-C report UA values
-          call rel16str(exposed,t16a,lna,ier)
-          call rel16str(vexposed,t16b,lnb,ier)
-          if(vexposed.gt.0.1)then
-            write(outs,'(4a)')t16a(1:lna),
-     &      'm2 of exposed (to outside or to ground) surface area, ',
-     &      t16b(1:lnb),'m2 of which is vertical.'
-          else
-            write(outs,'(3a)')' There is ',
-     &        t16a(1:lna),'m2 of exposed surface area.'
-          endif
-          call edisp(iuout,outs)
-        endif        
-
-        if(areawall.gt.0.1)then
-          call rel16str(uavwall,t16b,lnb,ier)
-          write(outs,'(3a)')' Exposed floor and vertical walls UA: ',
-     &      t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-        if(areaslproof.gt.0.1)then
-          call rel16str(uavslproof,t16b,lnb,ier)
-          write(outs,'(3a)')' Sloped roof UA: ',
-     &        t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-        if(areafltroof.gt.0.1)then
-          call rel16str(uavfltroof,t16b,lnb,ier)
-          write(outs,'(3a)')' Flat roof UA: ',
-     &      t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-        
-C Add all the UA results together to get the zone's total UA value
-        uavtotal(icomp) = uavwall + uavslproof + uavfltroof
-        call rel16str(uavtotal(icomp),t16b,lnb,ier)
-        write(outs,*)' Total UA: ',
-     &        t16b(1:lnb),' W/K'
-        call edisp(iuout,outs)
+        call edisp(iuout,
+     &    'And remember SAVE this zone to record the t bridge data.')
 
 C jump back to the main geometry menu
         return
@@ -8940,108 +9073,9 @@ C Is any one of the current thermal bridges type 16 (other type)?
           CALL SURINFO(ICOMP,iuout,context)
         ENDIF
 
-C Find the area of external surfaces
-        exposed = 0.0
-        vexposed = 0.0
-        areawall = 0.0
-        areaslproof = 0.0
-        areafltroof = 0.0
-        uavwall = 0.0
-        uavfltroof = 0.0
-        uavslproof = 0.0
-        uavtotal(icomp) =0.0
-        DO 2243 IS=1,NZSUR(icomp)
-          icc=IZSTOCN(icomp,is)
-          if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
-
-C Check the U value for each external surface.
-C exposed walls and floors, pitched roofs, flat roofs
-            UVH = 0.0
-            UVU = 0.0
-            UVD = 0.0
-            do 1511 ii=1,nmlc
-              if((SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))
-     &            .OR.(ACT.EQ.'s'.and.(SSMLCN(icc)(1:12).eq.
-     &             DESC(ii)(1:12))))then
-
-C Recover the ISO 6946 U values as in prjqa.F.
-                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
-              else
-                continue
-              endif
- 1511       continue
-            exposed = exposed + SSNA(icc)
-            if(SSVFC(icc)(1:4).eq.'VERT')then
-
-C For vertical walls assume horizontal hc coef.
-              areawall = areawall + SSNA(icc)
-              uavwall = uavwall + (SSNA(icc) * UVH)
-              vexposed = vexposed + SSNA(icc) 
-
-            elseif(SSVFC(icc)(1:4).eq.'SLOP')then
-
-C For sloped surfaces.
-              areaslproof = areaslproof + SSNA(icc)
-              uavslproof = uavslproof + (SSNA(icc) * UVU)
-            elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-
-C For ceilings.
-              areafltroof = areafltroof + SSNA(icc)
-              uavfltroof = uavfltroof + (SSNA(icc) * UVU)
-            else
-
-C For floors.
-              areawall = areawall + SSNA(icc)
-              uavwall = uavwall + (SSNA(icc) * UVD)
-            endif
-          else
-            continue
-          endif
- 2243   continue       
-
-        if(exposed.gt.0.1)then        
-
-C report UA values
-          call rel16str(exposed,t16a,lna,ier)
-          call rel16str(vexposed,t16b,lnb,ier)
-          if(vexposed.gt.0.1)then
-            write(outs,'(5a)')' There is ',t16a(1:lna),
-     &      'm2 of exposed (to outside or to ground) surface area, ',
-     &      t16b(1:lnb),'m2 of which is vertical.'
-          else
-            write(outs,'(3a)')' There is ',
-     &        t16a(1:lna),'m2 of exposed surface area.'
-          endif
-          call edisp(iuout,outs)
-        endif        
-
-        if(areawall.gt.0.1)then
-          call rel16str(uavwall,t16b,lnb,ier)
-          write(outs,'(3a)')' Exposed floor and vertical walls UA: ',
-     &      t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-        if(areaslproof.gt.0.1)then
-          call rel16str(uavslproof,t16b,lnb,ier)
-          write(outs,'(3a)')' Sloped roof UA: ',
-     &        t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-        if(areafltroof.gt.0.1)then
-          call rel16str(uavfltroof,t16b,lnb,ier)
-          write(outs,'(3a)')' Flat roof UA: ',
-     &      t16b(1:lnb),' W/K'
-          call edisp(iuout,outs)
-        endif
-
-C Add all the UA results together to get the zone's total UA value
-        uavtotal(icomp) = uavwall + uavslproof + uavfltroof
-        call rel16str(uavtotal(icomp),t16b,lnb,ier)
-        write(outs,'(3a)')' Total UA: ',
-     &        t16b(1:lnb),' W/K'
-        call edisp(iuout,outs)
-
 C Include the user defined percentage to get the zone's total fabric loss
+        uavtotal(ICOMP) = uavgtran(ICOMP) + uavwall(ICOMP) + 
+     &    uavslproof(ICOMP) + uavfltroof(ICOMP) + uavgsky(ICOMP)
         losspercent(ICOMP) = thbrpercent * uavtotal(ICOMP)
         call rel16str(losspercent(ICOMP),t16b,lnb,ier)
         write(outs,'(3a)')' Total percentage loss: ',
@@ -9076,12 +9110,21 @@ C nbrdg and edit.
      &        -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,1)
             psi(ICOMP,ibj)=psiv
 
-            lenv=lngth(ICOMP,ibj)
-            H(1)='define lentgh of thermal bridge in metres.'
-            CALL EASKR(lenv,phraselen(lookfor),
-     &        '(default length: 0 m)',
-     &        -0.1,'W',200.0,'W',0.0,'length',IER,1)
-            lngth(ICOMP,ibj)=lenv
+            if(ISBEM.EQ.2)then
+              continue  ! Do not allow editing of length if UK NCM
+            else
+              write(msg,'(a,F7.4,a)')'(suggested length:',
+     &          lenpsi(lookfor),' m)'
+              if(lngth(ICOMP,ibj).lt.0.01)then
+                lenv=lenpsi(lookfor)
+              else
+                lenv=lngth(ICOMP,ibj)
+              endif
+              H(1)='define length of thermal bridge in metres.'
+              CALL EASKR(lenv,phraselen(lookfor),msg,
+     &          -0.1,'W',200.0,'W',0.0,'length',IER,1)
+              lngth(ICOMP,ibj)=lenv
+            endif
           endif
   31    continue
         if(.NOT.foundit)then
@@ -9095,11 +9138,12 @@ C nbrdg and edit.
      &      -2.0,'W',2.0,'W',defpsi(lookfor),'psi',IER,1)
           psi(ICOMP,nbrdg(icomp))=psiv
 
-          lenv=0.0
-          H(1)='define lentgh of thermal bridge in metres.'
-          CALL EASKR(lenv,phraselen(lookfor),
-     &      '(default length: 0 m)',
-     &      -0.1,'W',200.0,'W',0.0,'length',IER,1)
+          write(msg,'(a,F7.4,a)')'(suggested length:',
+     &      lenpsi(lookfor),' m)'
+          lenv=lenpsi(lookfor)
+          H(1)='define length of thermal bridge in metres.'
+          CALL EASKR(lenv,phraselen(lookfor),msg,
+     &      -0.1,'W',200.0,'W',lenpsi(lookfor),'length',IER,1)
           lngth(ICOMP,nbrdg(icomp))=lenv
 
         endif

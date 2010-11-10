@@ -235,7 +235,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -2859,7 +2859,7 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
+C      write(6,*) file
       if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
@@ -2870,8 +2870,8 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       endif
 
       return

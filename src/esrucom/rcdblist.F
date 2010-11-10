@@ -48,7 +48,7 @@ C seasons.h provides typper and typsea
       character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
-      dimension name(60), mitem(35)
+      dimension name(80), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character group*32,key*1,look*32,tlook*32
       character clmdb*144,llclmdb*144,h*72,actreturn*1
@@ -262,6 +262,9 @@ C Parse this item of the climatelist file.
               return
             elseif(actreturn.eq.'f')then
               CALL ERPFREE(idblfil,ISTAT)
+              call usrmsg('Climate list failed during scan.',
+     &          'Exiting from project manager','W')
+              call pauses(3)   ! pause for 3 seconds then abort program.
               CALL EPAGEND
               STOP
             endif
@@ -293,7 +296,7 @@ C Scan list of climate databases for name and return database.
       character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
-      dimension name(60)
+      dimension name(80)
       character name*32,OUTSTR*124,WORD*20
       character group*32,tlook*32,outs*124,louts*248
       character clmdb*144,avail*10,alias*32

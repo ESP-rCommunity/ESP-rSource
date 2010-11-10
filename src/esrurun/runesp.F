@@ -76,7 +76,7 @@ C Path to problem and command line file (if any).
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/GTFIL/GTGEOM
 
 C Name of current application

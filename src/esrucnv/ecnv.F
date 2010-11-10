@@ -1411,7 +1411,7 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
