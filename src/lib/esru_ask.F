@@ -38,21 +38,22 @@ C First copy any existing help into dh array.
    50 continue
 
       H(1)='This module is part of the ESP-r system. Copyright'
-      H(2)='Energy Systems Research Unit, University of Strathclyde'
-      H(3)='2001-2010.'
-      H(4)=' '
-      H(5)='ESP-r is free software. You can redistribute it and/or'
-      H(6)='modify it under the terms of the GNU General Public'
-      H(7)='License as published by the Free Software Foundation'
-      H(8)='(version 2 or later).'
-      H(9)=' '
-      H(10)='ESP-r is distributed in the hope that it will be useful'
-      H(11)='but WITHOUT ANY WARRANTY; without even the implied'
-      H(12)='warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR'
-      H(13)='PURPOSE. See the GNU General Public License for more'
-      H(14)='details (available from Free Software Foundation, Inc.,'
-      H(15)='59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.'
-      CALL PHELPD('ESP-r copyright notice',15,'-',0,0,IER)
+      H(2)='resides with the member organisations of the ESP-r'
+      H(3)='development consortium as listed at:'
+      H(4)='http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm'
+      H(5)=' '
+      H(6)='ESP-r is free software. You can redistribute it and/or'
+      H(7)='modify it under the terms of the GNU General Public'
+      H(8)='License as published by the Free Software Foundation'
+      H(9)='(version 2 or later).'
+      H(10)=' '
+      H(11)='ESP-r is distributed in the hope that it will be useful'
+      H(12)='but WITHOUT ANY WARRANTY; without even the implied'
+      H(13)='warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR'
+      H(14)='PURPOSE. See the GNU General Public License for more'
+      H(15)='details (available from Free Software Foundation, Inc.,'
+      H(16)='59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.'
+      CALL PHELPD('ESP-r copyright notice',16,'-',0,0,IER)
 
 C Recover previous help via dh array.
       do 51 i=1,60
