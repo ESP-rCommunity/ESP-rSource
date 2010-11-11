@@ -707,7 +707,7 @@ C ip is 3 if the interior coverage is greater than the exterior coverage.
 
 C Calculate sumuo.
       rpart1 = (BSa1+BSb1*(height-depth)+BSc1/soilk)/rsi**BSd1
-      rpart2 = 1/
+      rpart2 = 1.0/
      &      (BSe1+BSi1*(overlp**BSf1)*(rsi**BSg1)*(height-depth)**BSh1)
       rpart3 = BSj1
       sumuo = rpart1*rpart2 + rpart3

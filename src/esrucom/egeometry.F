@@ -4053,7 +4053,7 @@ C   where a surface such as a floor has been subdivided)
 
       real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
-      common/gbridge/bridgelen(MCON,10)
+      common/gbridge/bridgelen(MCOM,10)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

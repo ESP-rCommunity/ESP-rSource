@@ -47,8 +47,6 @@ C  else simulate the scene by calling simscene
 #include "site.h"
 #include "e2r_common.h"
       
-#include "e2r_common.h"
-
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
@@ -650,7 +648,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character tpic*72,tpicd*72,tgif*72,tgifd*72
       character pf*72,h*72,outs*124,ltmp*72
       character doit*256
-      integer lnrp  ! length of run path
       integer IWT,IWP   ! for radio buttons
 
       integer irifnamelen ! length of rif file name
@@ -1013,8 +1010,6 @@ C Assumes that the path to the image is given.
       character doit*124,pf*72,gf*72,ugrf*72,ltmp*72
       character outs*124,outstr*124
       
-      integer lnrp  ! length of run path
-
       dimension UGRV(72),UGRANG(72)
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale

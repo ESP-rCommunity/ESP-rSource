@@ -24,8 +24,6 @@ C ******* Setup of image quality and calculation options.
 #include "model.h"
 #include "e2r_common.h"
       
-#include "e2r_common.h"
-
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -358,8 +356,6 @@ C If use = 'f' then force files to account for change in root/dir name.
       integer lnblnk  ! function definition
 
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
-      character pre*28
 
       character pre*28
       character use*1

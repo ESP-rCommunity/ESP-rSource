@@ -508,31 +508,20 @@ C model that was previously worked on then the scene file would be
 C in the cfg folder. If we are not browsing then that file should be
 C copied into the ../rad folder.
       XST=.FALSE.
-      write(tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+      write(tfile,'(a,a)') runpath(1:lnrp),
      &                         LRADCF(1:lnblnk(LRADCF))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
-
 C Debug.
 C        write(6,*) tfile
-
         continue
       else
-        write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
-        INQUIRE (FILE=tfile,EXIST=XST)
-        if(XST)then
-
-C Debug.
-C          write(6,*) tfile
-
-          continue
-        else
 
 C Ask user about the scene file. Begin by checking for command line information.
-          if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
+        if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
             call checkrif('n')
             if (cmdact(1:4).ne.'NONE') call autorad
-          else
+        else
 
 C Create a default scene file name using the cfgroot.
             write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
@@ -557,9 +546,9 @@ C File does not exist, ask for another/ new file.
             else
               call ADDSCENE(IRCFG)
             endif
-          endif
         endif
       endif
+c      endif
 
 C Scan the scene file.
       call RADCFGIN
@@ -1353,7 +1342,6 @@ C inqu_tmc: Check if tmc control active.
 
 C geometry.h provides commons G0 and G2.
 C #include "geometry.h"
-#include "e2r_common.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN

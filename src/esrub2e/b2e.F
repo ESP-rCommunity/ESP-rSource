@@ -111,7 +111,7 @@ C size of window display.
         if(iappx.le.0)iappx=80
         if(iappy.le.0)iappy=100
         if(iappw.le.200)then
-          iappwi=int(570*iappw*0.01)
+          iappwi=int(570.0*real(iappw)*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -123,9 +123,9 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       iappwi=int(real(iappw)*(1024.0/780.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(24*iappw*0.01),12)
-        LIMTTY= MAX0(int(8*iappw*0.01),4)
-        LIMIT = MAX0(int(8*iappw*0.01),4)
+        menuchw = MAX0(int(24.*real(iappw)*0.01),12)
+        LIMTTY= MAX0(int(8.*real(iappw)*0.01),4)
+        LIMIT = MAX0(int(8.*real(iappw)*0.01),4)
       else
         menuchw = 24
         LIMTTY=8

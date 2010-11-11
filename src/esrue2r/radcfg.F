@@ -44,7 +44,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
 #include "model.h"
 #include "e2r_common.h"
       
-#include "e2r_common.h"
 #include "control.h"
 
       integer lnblnk  ! function definition
@@ -59,7 +58,6 @@ C RADCFGIN reads the contents of the radiance configuration file.
 
       character WORD*124, OUTS*124, OUTSTR*124
       character pfile*72,path*72,fs*1
-      integer lnrp  ! length of run path
 
       integer ifocz_tmp(MBP+1)
 
@@ -213,10 +211,7 @@ C RADCFGOUT writes the contents of the radiance configuration file.
 
       character OUTS*72
       character dstmp*24,pfile*72
-      integer lnrp  ! length of run path
       integer irif ! loop variable for more than one rif per scene
-
-      integer lnblnk  ! function definition
 
 C Check that ICHK is a sensible value.
       IRCFG = IFIL+17
@@ -860,8 +855,6 @@ C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
 
       CHARACTER H*72,pfile*72
 
-      integer lnrp  ! length of run path
-
 C Ask if a default image should be created.
       H(1)='Radiance desktop creates allows the creation of separate'
       H(2)='scenes each with a specific purpose. A modest scene can be'
@@ -1140,7 +1133,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*5,act*1
+      CHARACTER VT*5,act_1*1
       character OUTSTR*124,tfile*72
 
 #ifdef OSI
@@ -1253,8 +1246,6 @@ C for use with a 'Coupling' scene purpose.
       SUBROUTINE SENLOC
 #include "building.h"
 #include "model.h"
-#include "e2r_common.h"
-      
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
@@ -1391,7 +1382,7 @@ C If daylight coefficients and act=create and model exists then issue warning.
      &              cmdact(1:6).eq.'Create')then
                   call usrmsg('Model already exists!',
      &                         'Using existing model.','W')
-                  act='Calculate'
+                  cmdact='Calculate'
                 endif
                 modscene=.true.
                 return ! one match should be enough ...

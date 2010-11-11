@@ -127,10 +127,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C Scene configuration commons.
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      common/radcfg/LRADCF
+c      common/radcfg/LRADCF
 C      common/radcfg/LRADCF(MCOM)
-      character LRADCF*72
-C     LRADCF is the ESP-r radiance configuration file .rcf
+C      character LRADCF*72
+C     LRADCF is the ESP-r radiance configuration file .rcf, it is defined in model.h
 
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM,MNSCN,MBP+1),
      &               SCENERT(MCOM+1),
@@ -163,12 +163,19 @@ C     NBSRIF is the number of RIF files defined for the corresponding scene
 C     NABS is the number of alternative blind states (use IBCMT instead?)
 
 
-      common/cmddata/zone,aim,act
-C      common/cmddata/zone,aim,act
-      character zone*16,aim*12,act*72
+      common/cmddata/zone,aim,cmdact
+C      common/cmddata/zone,aim,cmdact
+      character zone*16,aim*12,cmdact*72
 C     zone is the zone number as string
 C     aim is the Radiance model result type "Day_coeff", "Coupling", "Create", "External"
-C     act is the transfer file, typically ".<ESP-r PID>.dat"
+C     cmdact is the transfer file, typically ".<ESP-r PID>.dat"
+
+      character runpath*72  ! path for working radiance model 
+      character pathtype*24 ! is either radincfg or radinrad
+      common/expath/runpath,pathtype
+
+      integer lnrp  ! length of runpath
+      common/expathl/lnrp
 
 
       common/radgrid/LDFGRID

@@ -421,7 +421,7 @@ C then we need to know the name of the connections file.
 
 C Also check about connections file if in interactive mode.
         if(ncon.gt.1)then
-          if(act.eq.'-'.and.LCNN(1:4).eq.'UNKN')then
+          if(act_1.eq.'-'.and.LCNN(1:4).eq.'UNKN')then
   292       H(1)='The surface topology of the model is held'
             H(2)='in a connections file.'
             write(LCNN,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'

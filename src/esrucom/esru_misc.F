@@ -1656,7 +1656,7 @@ C Find the center of gravity.
         CG(3)=CG(3)+Z(I)
  10   continue
       do 20 I=1,3
-        CG(I)=CG(I)/NP
+        CG(I)=CG(I)/real(NP)
  20   continue
 
 C Loop through vertices calculating cross product.
@@ -3599,7 +3599,7 @@ C Knowing IE establish TMP, IZC,ISC.
         WRITE(DESCR,142)ISC,IZC
   142   FORMAT(' surface',I3,' in zone',I3)
       ELSEIF(IE.EQ.2)THEN
-        TMP=IC2(I)
+        TMP=real(IC2(I))
         WRITE(DESCR,143)TMP
   143   FORMAT(' a constant temp= ',F6.2)
       ELSEIF(IE.EQ.1)THEN

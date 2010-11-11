@@ -550,11 +550,6 @@ C For obstruction blocks of type "obsp":
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       character GSNAME*6,GMLCN*12
 
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
-
-      COMMON/RAY6/LINSTY(MCON)
-
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
@@ -566,7 +561,7 @@ C For obstruction blocks of type "obsp":
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
-      CHARACTER ACT*1,doit*144
+      CHARACTER ACT_1*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnbm  ! length of block material name

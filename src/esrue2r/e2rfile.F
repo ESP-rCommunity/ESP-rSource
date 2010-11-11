@@ -290,7 +290,6 @@ C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,filepar,RVB,IERR)
 #include "building.h"
-#include "building.h"
 #include "espriou.h"
 #include "e2r_common.h"
       
@@ -303,7 +302,7 @@ C IERR=1 if a scene file is missing.
 
       character tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
-      character tsc*72,tword*10,file*72,RVB*1
+      character tsc*72,tword*10,filepar*72,RVB*1
 
       IERR=0
 

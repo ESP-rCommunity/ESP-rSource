@@ -283,10 +283,6 @@ C lctlf (72 char) - model control file name.
 C LPRJLG (72 char) model log file.
       COMMON/LLOG/LPRJLG
 
-      common/expath/runpath,pathtype
-      character*72 runpath
-	  character*24 pathtype
-
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
 C         the model, it must match one of the known fmttag.
