@@ -481,7 +481,8 @@ C---- Arguments
 
 C---- Local variables
 
-      LOGICAL CLOSEA,CLOSEB     ! Auxiliary variable 
+      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED
+                                ! Auxiliary variables 
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
       REAL HIN2                 ! Height of inlet 2 [m]
@@ -566,8 +567,9 @@ C---- Identify variables
 C---- Check that tank fluid does not have glycol
 C     Enabling the tank to be filled with glycol would not be difficult to implement, 
 C     however this is not done for now as such systems are probably very infrequent
-
-      IF ((CONVAR(ICON1,3) /= 0.) .OR. (CONVAR(ICON2,3) /= 0.)) THEN
+      CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSEC)
+      CALL ECLOSE(CONVAR(ICON2,3),0.0,1.0e-15,CLOSED)
+      IF ((.NOT.CLOSEC) .OR. (.NOT.CLOSED)) THEN
         WRITE(ITU,*) 'Error in stratified tank model'
         WRITE(ITU,*) 'Tank can be filled with water only - no glycol'
         WRITE(ITU,*) 'Aborting simulation'
@@ -1142,7 +1144,8 @@ C---- Local variables
       REAL QLoss_step          ! tank heat loss during one internal step
       REAL TOutHX0step         ! outlet temperature of HX0 at end of internal time step
       REAL TOutHX1step         ! outlet temperature of HX0 at end of internal time step
-      LOGICAL CLOSEA           ! auxiliary variable
+      LOGICAL CLOSEA,CLOSEB,CLOSEC
+                               ! auxiliary variables
 
 C     ALPHA is the parameter of the Crank-Nicholson integration scheme
 C     0.0 = Euler explicit, order 1, conditionally stable
@@ -1329,8 +1332,9 @@ C     otherwise an explicit scheme has to be used (alpha = 0)
 
 C---- Force alpha to 0.5 if no flow rate through immersed HXs, since
 C     in that case the higher order semi-implicit scheme can be used
-
-      if (MdotHX0 == 0. .AND. MdotHX1 == 0.) ALPHA = 0.5
+      CALL ECLOSE(MdotHX0,0.0,1.0E-15,CLOSEB)
+      CALL ECLOSE(MdotHX1,0.0,1.0E-15,CLOSEC)
+      if ( CLOSEB .AND. CLOSEC ) ALPHA = 0.5
 
 C---- Iteration util time step is covered
 C---- p is the step counter, goes from 1 to StepCount
@@ -1802,14 +1806,11 @@ C---- Local variables
       REAL    THXin        ! input  temperature of a segment of HX
       REAL    THXout       ! output temperature of a segment of HX
       REAL    THXout_last  ! last calculated temperature of a segment of HX
-      REAL    QHXs         ! heat transfer from segment of HX to node of tank
       REAL    Cp_avg       ! average specific heat of fluid in HX [J/kgK]
       REAL    Ts           ! average temperature of node of tank (C)
       REAL    Twall_i      ! internal wall temperature
       REAL    Twall_o      ! external wall temperature
       REAL    DcurvHX      ! curvature of coil [m]
-      REAL    DeltaTHXin   ! temperature differential at input of HX
-      REAL    DeltaTHXout  ! temperature differential at output of HX
       REAL    LMTD         ! Log Mean Temperature Difference of HX
       REAL    THX          ! average temperature of segment of HX
       REAL    THX_tol      ! tolerance on calculation of temperature of segment of HX
@@ -1817,7 +1818,6 @@ C     Thermophysical properties fluid inside HX
       REAL    mu           ! dynamic viscosity [Pa新 or kg/m/s]
       REAL    Cp           ! specific heat [J/kg/K]
       REAL    k            ! thermal conductivity [W/m/K]
-      REAL    rho          ! density [kg/m3]
       REAL    mu_wall_i    ! dynamic viscosity at inside wall temperature [N新/m or kg/s]
       REAL    Cp_wall_i    ! specific heat at inside wall temperature [J/kg/K]
       REAL    k_wall_i     ! thermal conductivity at inside wall temperature [W/m/K]
@@ -1838,9 +1838,8 @@ C     Heat transfer coefficients between HX fluid and tank fluid
       REAL    U_wall       ! heat transfer coefficient through pipe [W/m/K]
       REAL    U_ext        ! heat transfer coefficient, outside of pipe [W/m/K]
       REAL    U            ! overall heat transfer coefficient [W/m/K]
-      REAL    DeltaQHX     ! difference between heat transfer estimated from convective heat transfer
-                           ! and heat transfer extimated from HX fluid energy balance:
-                           ! QHXs - MdotHX*Cp_avg*(THXin-THXout)
+      LOGICAL CLOSEA       ! Auxiliary variable
+
 C     Thermophysical properties of tank fluid
       REAL    mu_s         ! dynamic viscosity [Pa新 or kg/m/s]
       REAL    Cp_s         ! specific heat [J/g/K]
@@ -1875,7 +1874,6 @@ C     Coil characteristics
 C---- Functions
 
       INTEGER Bound                ! Bound a number by two others
-      REAL GetArrayAverage         ! Calculate average of array
       REAL glycol_water_density    ! Function for density of glycol-water mixture [kg/m3]
       REAL glycol_water_viscosity  ! Function for dynamic viscosity of glycol-water mixture [Pa新]
       REAL glycol_water_cond       ! Function for thermal conductivity of glycol [W/m/K]
@@ -1887,8 +1885,8 @@ C     Preparatory work
 C-----------------------------------------------------------------------
 
 C---- There is no flow: nothing to do
-
-      if (MdotHX == 0.) then
+      CALL ECLOSE(MdotHX,0.0,1.0E-15,CLOSEA) 
+      if (CLOSEA) then
         TOutHX = TInHX
         RETURN
       endif
@@ -1943,7 +1941,6 @@ C---- Start of the loop
       do 900 i= NInHX,NOutHX,NStepHX
 
         THXin = THXout        ! Inlet temperature is outlet temperature of previous segment
-        QHXs = 0              ! Heat transfer to current node of tank
 
 C----   Get average temperature of node at end of previous internal time step
 
@@ -1974,7 +1971,6 @@ C----     Fluid properties of HX liquid are determined at THX
           mu = glycol_water_viscosity(GlycolFracHX,THX)
           Cp = glycol_water_cp(GlycolFracHX,THX)
           k = glycol_water_cond(GlycolFracHX,THX)
-          rho = glycol_water_density(GlycolFracHX,THX)
           mu_wall_i = glycol_water_viscosity(GlycolFracHX,Twall_i)
           Cp_wall_i = glycol_water_cp(GlycolFracHX,Twall_i)
           k_wall_i = glycol_water_cond(GlycolFracHX,Twall_i)
@@ -1998,7 +1994,7 @@ C           Hemisphere (1990), eq. 9
 C----       Turbulent flow correlation
 C           Gnielinski, cited in Incropera & DeWitt (1990), eq 8.63a, 8.63b
           else if (Re >= Re_turb) then
-            f = (0.79*log(Re)-1.64)**-2.
+            f = 1.0 / (0.79*log(Re)-1.64)**2.
             Nu = (f/8.) * (Re-1000.)
      &         * Pr/(1 + 12.7*sqrt(f/8.)*(Pr**(2./3.)-1.))
 C----       Transition area
@@ -2007,7 +2003,7 @@ C           Hemisphere (1990) eq. 12 and 13
             m = 0.5 + 0.2903*(DinHX/DcurvHX)**0.194
             Nu_crit = 3.65 + 0.08*(1. + 0.8*(DinHX/DcurvHX)**0.9)
      &        *(Re_crit**m)*(Pr**(1./3.))*((Pr/Pr_wall_i)**0.14)
-            f = (0.79*log(Re_turb)-1.64)**-2.
+            f = 1.0 / (0.79*log(Re_turb)-1.64)**2.
             Nu_turb = (f/8.)*(Re_turb-1000.)*Pr
      &        /(1+12.7*sqrt(f/8.)*(Pr**(2./3.)-1.))
             A = (Re_turb-Re)/(Re_turb-Re_crit)

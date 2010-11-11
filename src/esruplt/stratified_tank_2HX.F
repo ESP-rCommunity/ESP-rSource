@@ -103,16 +103,10 @@ C---- Local variables
       REAL HOUTHX1              ! Height of inlet of HX1 (m)
       REAL DINHX1               ! Internal diameter of HX1 (m)
       REAL DOUTHX1              ! External diameter of HX1 (m)
-      REAL DCOILHX1             ! Diameter of the coil of HX1 (m)
-      REAL PITCHHX1             ! Pitch of the coil of HX1 (m)
-      REAL KHX1                 ! Thermal conductivity of HX1 (W/m/C)
       REAL HINHX2               ! Height of inlet of HX2 (m)
       REAL HOUTHX2              ! Height of inlet of HX2 (m)
       REAL DINHX2               ! Internal diameter of HX2 (m)
       REAL DOUTHX2              ! External diameter of HX2 (m)
-      REAL DCOILHX2             ! Diameter of the coil of HX2 (m)
-      REAL PITCHHX2             ! Pitch of the coil of HX2 (m)
-      REAL KHX2                 ! Thermal conductivity of HX2 (W/m/C)
 
 C---- Set error flag to false
       ERROR_FLAG = .false.
@@ -141,16 +135,10 @@ C---- Check value of parameters
       HOUTHX1 = ADATA(IPCOMP,13)  ! Height of inlet of HX1 (m)
       DINHX1 = ADATA(IPCOMP,14)   ! Internal diameter of HX1 (m)
       DOUTHX1 = ADATA(IPCOMP,15)  ! External diameter of HX1 (m)
-      DCOILHX1 = ADATA(IPCOMP,16) ! Diameter of the coil of HX1 (m)
-      PITCHHX1 = ADATA(IPCOMP,17) ! Pitch of the coil of HX1 (m)
-      KHX1 = ADATA(IPCOMP,18)     ! Thermal conductivity of HX1 (W/m/C)
       HINHX2 = ADATA(IPCOMP,19)   ! Height of inlet of HX2 (m)
       HOUTHX2 = ADATA(IPCOMP,20)  ! Height of inlet of HX2 (m)
       DINHX2 = ADATA(IPCOMP,21)   ! Internal diameter of HX2 (m)
       DOUTHX2 = ADATA(IPCOMP,22)  ! External diameter of HX2 (m)
-      DCOILHX2 = ADATA(IPCOMP,23) ! Diameter of the coil of HX2 (m)
-      PITCHHX2 = ADATA(IPCOMP,24) ! Pitch of the coil of HX2 (m)
-      KHX2 = ADATA(IPCOMP,25)     ! Thermal conductivity of HX2 (W/m/C)
 
 C---- Check that number of nodes is within acceptable range
       IF (NNodes .GT. MAX_NNODES .OR. NNodes .LT. 1) THEN
@@ -538,8 +526,6 @@ C---- Local variables
       REAL AUX                  ! Auxiliary variable
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
-      REAL HIN2                 ! Height of inlet 2 [m] (dummy variable)
-      REAL HOUT2                ! Height of outlet 2 [m] (dummy variable)
       REAL MDOT1                ! Flow rate at inlet 1 [kg/s]
       REAL MDOT2                ! Flow rate at inlet 1 [kg/s] (always zero)
       REAL TIN1                 ! Temperature at inlet 1 [C]
