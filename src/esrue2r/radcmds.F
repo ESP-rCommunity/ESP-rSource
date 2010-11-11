@@ -240,8 +240,8 @@ C Simulate scene as defined by aim argument.
 C Read from transfer file defined as the argument for -act from
 C the users home folder.
         if(unixok)then
-          write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
-     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
+c          write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
+c     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
         else
           write(doit,'(6a)') 'copy /y ',upath(1:lnblnk(upath)),'/',
      &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
