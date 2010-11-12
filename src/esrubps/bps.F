@@ -565,11 +565,11 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
-      CALL EDISP(IUOUT,' ')
+c      CALL EDISP(IUOUT,' ')
 
 C Write version.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      CALL EDISP(IUOUT,' ')
+c      CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

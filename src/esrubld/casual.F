@@ -1562,16 +1562,22 @@ C Debug.
 C              write(*,'(3a,i3,3a)')'e2r -file ',
 C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
 C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+              write(outs,'(a,i2,a,i2,a,i3)') 
+     &         'Lighting simulation for zone ',ICOMP,
+     &         ' has now commenced for hour ',IHRP,
+     &         ' of day ',IDYP
+              call edisp(iuout,outs)
+              write(outs,*)' '
+c              call edisp(icout,'Lighting simulation has now commenced.')
 
-              call edisp(icout,'Lighting simulation has now commenced.')
               call runit(doit,'-')
 
 C Create new entry in illuminance database if MILDB is not exceeded - otherwise, give
 C warning and overwrite last entry from now on ...
               NDBENT(ICOMP)=NDBENT(ICOMP)+1
               if (NDBENT(ICOMP) .gt. MILDB) then
-                write(*,*)' *** DBILLA full in zone ',
-     &             zname(ICOMP),' - Runtime increase!! ***'
+                write(6,*)' *** DBILLA full in zone ',
+     &             zname(ICOMP),' - Runtime increase!! *** '
                 NDBENT(ICOMP)=MILDB
               endif
               DBILLA(ICOMP,NDBENT(ICOMP),1)=SALT
