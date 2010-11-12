@@ -494,8 +494,7 @@ C ------Coefficient of thermal expansion of fluid inside tank
         tank_fluid_beta = 1 / tank_fluid_temp_degK       
 C ------Thermal conductivity
         tank_fluid_thermal_cond = 
-     &  glycol_water_cond(tank_glycol_vol_fraction,tank_fluid_temp_degC,
-     &  tank_fluid_density) 
+     &  glycol_water_cond(tank_glycol_vol_fraction,tank_fluid_temp_degC)
 C ------Dynamic viscosity of fluid inside tank
         tank_fluid_vis = 
      &  glycol_water_viscosity(tank_glycol_vol_fraction,
@@ -538,7 +537,7 @@ C-------Temperature of fluid leaving tube
 
 C-------Mean tube side fluid temperature 
         tube_mean_temp = 0.5 * (tube_inlet_temp + tube_exit_temp)
-	
+      
 C-------Estimate volume fraction of glycol based on mass fraction
         tube_glycol_vol_fraction = 
      &  glycol_vol_fraction_find(tube_glycol_mass_fraction,
@@ -549,10 +548,10 @@ C-------Boiling point of glycol-water mixture
 
 C-------Freezing point of glycol-water mixture
         tfreeze = glycol_water_tfreeze(tube_glycol_vol_fraction)
-	
+      
 C-------Set value for mean temperature inside tube using lower and upper bounds
         tube_temp = AMAX1(tfreeze,AMIN1(tboil,tube_mean_temp))
-	
+      
 C ------Density of fluid inside tubes based on mean fluid temperature
         tube_fluid_density = 
      &  glycol_water_density(tube_glycol_vol_fraction,tube_temp)
@@ -563,8 +562,7 @@ C ------Dynamic viscosity of fluid on tube side
 
 C ------Thermal conductivity of tube side fluid
         tube_fluid_thermal_cond = 
-     &  glycol_water_cond(tube_glycol_vol_fraction,tube_temp,
-     &  tube_fluid_density) 
+     &  glycol_water_cond(tube_glycol_vol_fraction,tube_temp)
     
 C ------Specific heat of tube side fluid at mean temperature
         tube_fluid_cp = 

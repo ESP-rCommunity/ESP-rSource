@@ -1257,6 +1257,9 @@ C     This prevents the zone becoming too cold.
       INTEGER :: itrc,ifunit,iv,ival
       REAL :: sum,t1,ta1,ta2,tafl,tafu,trat,tx,val,xx
       REAL :: time
+      COMMON/AIRWAT/WATERZ(MCOM),WATCAP
+      logical WATERZ
+      real WATCAP,cvair,cvwater,xmod
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1353,6 +1356,7 @@ C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
         CVVF=0.
         SUM=0.
         CVIF=0.33*VOL(ICOMP)*ACI
+        
         IF(ACI.LE.0.)CVIF=0.
 
 C Fill ZMBI(*,2) = zone coupling mass flow times moisture content
@@ -1457,14 +1461,16 @@ C DX cooling so set ventilation flag
             if(inoti.eq.2.or.idsmtestingflag.eq.2)iNatVentilatedFlag=1
           endif
           
-C If zone temperature for naturally ventilated buildigns is greater
-C than setpoint+1oC, add 5 ach (according to UK NCM guidance)          
-C Naturally ventilated buildings with mech. supply/extract are treated
-C as mechanically ventilated in SBEM. So, they are not included in
-C this overheating rule (as per NCM modelling guide)
+C If zone temperature for naturally ventilated building is greater
+C than setpoint+1oC, add 5 air changes per hour (according to UK NCM
+C guidance).          
+C
+C Naturally ventilated buildings with mechanical supply/extract are
+C treated as mechanically ventilated in SBEM and so they are not
+C included in this overheating rule (as per NCM modelling guide).
 C This NCM modelling guide rule has now been implemented as a control
-C law because that gives better control so over cooling is avoided to
-C some extent. Uncomment code to re-implement the 5ach rule
+C law because that avoids overcooling to some extent. Uncomment the
+C following code to re-implement the 5 air changes per hour rule.
 c          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
 c          ICOMPP=-1*ICOMP  !!!cmix
 c          call MZMIXT(ICOMPP,TMRTT,TMIXX) !!!cmix
@@ -1485,10 +1491,10 @@ C Trap 0 volumes in case notional building is not properly generated
               call edisp(itu,outs)
             else
             
-C Notional building has 10 m3/h/m2 according to UK's NCM instructions
-C Multiply 10 by floor area and divide by Volume and divide by 20
-C Use 15 instead of 10m3/h/m2 if typical building
-C << EXP_AREA is currently zero needs to be calculated
+C Notional building has 10 m3/h/m2 according to UK's NCM instructions.
+C Multiply 10 by floor area and divide by volume and by 20.
+C Use 15 in place of 10 m^3/h/m^2 if typical building.
+C << EXP_AREA is currently zero and needs to be calculated.
               IF(INOTI.eq.1.OR.INOTI.eq.2.OR.
      &          (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN
 c                ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
@@ -1497,12 +1503,12 @@ c                ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
               ENDIF
 
 C Alternatively use 0.167 ach - this will help to avoid high ach in cases
-C where sloped roofs are used, etc.
+C where sloped roofs are used etc.
             endif
           call NOTVENTAUX(ICOMP)
         else      
 
-C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
+C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file.
           if(i_countsteps(icomp).eq.1)then
             CALL RSBEM
           endif
@@ -1515,9 +1521,9 @@ C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
         CVIF=0.33*VOL(ICOMP)*ACI        
         IF(ACI.LE.0.)CVIF=0.
 
-C set xx=0 for now. Not used at the moment but attempting
+C Set xx=0 for now. Not used at the moment but attempting
 C to follow similar pattern as the classic ventilation
-C entry in tdf
+C entry in tdf.
         XX=0. 
         XX3=CVIF*TF+SUM*XX
         CVVFM=0.
@@ -1593,13 +1599,23 @@ c space is accounted for here.
         CVIF = CVIF + outdoor_air_inf_cond(ICOMP)
 
 C Now zone-coupling advection.
-C NB TIA? holds the normalised (to external air temperature)
+C N.B. TIA? holds the normalised (to external air temperature)
 C ventilation conductance in case an air flow network exists.
-        CV1=CVVN(ID1,ICOMP,IT1)
-        CV2=CVVN(ID2,ICOMP,IT2)
-        IC2=ICCN(ID2,ICOMP,IT2)
-        TA1=TIAN(ID1,ICOMP,IT1)
-        TA2=TIAN(ID2,ICOMP,IT2)
+C for use in zone-coupled flow calculation only.
+
+C At this stage the ventilation conductance as determined in
+C subroutine mzvenc of precal.F assumes that zones are air
+C filled. These conductances C need to be modified for any zone
+C that is water filled.
+        cvair=0.33
+        cvwater=1000.0*WATCAP/3600.0
+        xmod=1.
+        IF(WATERZ(ICOMP))xmod=cvwater/cvair	 ! zone is water filled 
+	CV1=CVVN(ID1,ICOMP,IT1)*xmod
+	CV2=CVVN(ID2,ICOMP,IT2)*xmod
+	IC2=ICCN(ID2,ICOMP,IT2)
+	TA1=TIAN(ID1,ICOMP,IT1)
+	TA2=TIAN(ID2,ICOMP,IT2)
         CF=CV1+(TRAT*(CV2-CV1))
         ICF=IC2
         TAF=TA2
@@ -1878,7 +1894,7 @@ C Save future-time values for use at next time-step.
 
 C Trace output ?
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
-      IF(ITRACE(25).EQ.0.OR.NSINC.GT.ITCF.OR.
+      IF(ITRACE(11).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
       write(outs,'(A,I4,A,A)')' Subroutine MZVENT Trace output',ICNT,
      &  ' Zone ',zname(ICOMP)
@@ -1897,10 +1913,9 @@ C Output computed results.
      &  ' ZMBI,1=',ZMBI(ICOMP,1),' ZMBI,2=',ZMBI(ICOMP,2),
      &  ' ZMBI,3=',ZMBI(ICOMP,3),' ZMBI,4=',ZMBI(ICOMP,4)
       call edisp(itu,outs)
-      write(outs,'(a,f10.5,a,f10.5)')' ZCVENT=',ZCVENT(ICOMP),
+   30 write(outs,'(a,f10.5,a,f10.5)')' ZCVENT=',ZCVENT(ICOMP),
      & ' ACH=',ACH(ICOMP)
       call edisp(itu,outs)
-
  9999 RETURN
       END
 

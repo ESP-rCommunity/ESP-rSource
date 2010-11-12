@@ -56,7 +56,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o
+	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_timestep.mod
 
@@ -659,6 +659,12 @@ editCFC.F:
 NCHE.F:
 	rm -f NCHE.F
 	ln -s $(PLTdir)/NCHE.F .
+stratified_tank_1HX.F:
+	rm -f stratified_tank_1HX.F
+	ln -s $(PLTdir)/stratified_tank_1HX.F .
+stratified_tank_2HX.F:
+	rm -f stratified_tank_2HX.F
+	ln -s $(PLTdir)/stratified_tank_2HX.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -703,4 +709,4 @@ clean:
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
-	complex_fenestration.F editCFC.F NCHE.F
+	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F 

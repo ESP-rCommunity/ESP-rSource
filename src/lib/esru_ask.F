@@ -39,7 +39,7 @@ C First copy any existing help into dh array.
 
       H(1)='This module is part of the ESP-r system. Copyright'
       H(2)='Energy Systems Research Unit, University of Strathclyde'
-      H(3)='2001-2007.'
+      H(3)='2001-2010.'
       H(4)=' '
       H(5)='ESP-r is free software. You can redistribute it and/or'
       H(6)='modify it under the terms of the GNU General Public'
@@ -52,7 +52,7 @@ C First copy any existing help into dh array.
       H(13)='PURPOSE. See the GNU General Public License for more'
       H(14)='details (available from Free Software Foundation, Inc.,'
       H(15)='59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.'
-      CALL PHELPD('clm copyright',15,'-',0,0,IER)
+      CALL PHELPD('ESP-r copyright notice',15,'-',0,0,IER)
 
 C Recover previous help via dh array.
       do 51 i=1,60

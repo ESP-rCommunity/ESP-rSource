@@ -49,7 +49,7 @@ C Glazing.
 C Shading/insolation.
       PARAMETER (MB=180)	!- Site obstruction blocks.
       PARAMETER (MOX=210)	!- Grid lines in x-direction.
-      PARAMETER (MOZ=80)	!- Grid lines in z-direction.
+      PARAMETER (MOZ=120)	!- Grid lines in z-direction.
       PARAMETER (MISUR=10)	!- Surfaces insolated from one source.
       PARAMETER (MBP=8)		!- TMC blind control periods.
 

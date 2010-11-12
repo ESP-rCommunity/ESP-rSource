@@ -119,6 +119,7 @@ C and computes the overall direct and diffuse shading factors.
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
+      common/shad4/oshd(mox,moz)
       common/find/irecl
       common/ihtime/ihour
       common/data2/pso(ms,mt),psof(ms,mt)
@@ -221,10 +222,10 @@ C initialised in shadc before direct and diffuse processing).
     1 do 40 k=1,nox(icomp)
          do 50 l=1,noz(icomp)
             if(ioshd(k,l).eq.-1)goto 50
-            if(mode.eq.'dir')gssa=gssa+ioshd(k,l)*ogrida(is)
+            if(mode.eq.'dir') gssa=gssa+oshd(k,l)*ogrida(is)
 
 C Next line only reached after all sky patches have been processed.
-            if(mode.eq.'dif')gssa=gssa+foshd(k,l)*ogrida(is)
+            if(mode.eq.'dif') gssa=gssa+foshd(k,l)*ogrida(is)
   50     continue
   40  continue
 

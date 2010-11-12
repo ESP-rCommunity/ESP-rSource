@@ -485,6 +485,20 @@ C Manual switching
         ENDIF
         FD1=0.5*(FDF1+FDR1)
 
+C Do not apply local manual switching if floor area is more than 30m2 
+        IF(ZBASEA(ICOMP).ge.30.0)FD1=1.0
+
+C Apply local manual switching if activity is not one of the following:
+C corridors or other circulation areas, dry sports/fitness, ice rinks,
+C changing rooms, swimming pools, sales areas, baggage reclaim areas,
+C security check areas, eating/drinking areas, halls, lecture theatres,
+C cold stores, display areas, A&E, industrial process areas, warehouse 
+C storage, and performance areas (stages) for which FD=1
+        IF(IACTYTYP(ICOMP).GT.0)THEN ! Error trap zero array index
+          IF(loc_man_sw(IACTYTYP(ICOMP)).eq.1)FD1=1.0
+        ENDIF
+
+C Apply local manual switching to notional, reference and typical models
         IF(INOTI.EQ.1.OR.INOTI.EQ.2)THEN ! Notional and reference models
           QTOTLIGHT=fNotionalLighting(theactivityindex(ICOMP))*
      &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)*FD1+
@@ -1027,7 +1041,7 @@ C Illuminance database.
 C Average illuminance in lighting zone (for h3k output)
       common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
       real AveLtzIllum
-	  integer NLITZ2
+      integer NLITZ2
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
@@ -1039,8 +1053,8 @@ C Average illuminance in lighting zone (for h3k output)
       character outs*124,doit*124,outstr*124,cfgroot*24
 
       character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
-	  character*72 runpath
-	  character*24 pathtype
+      character*72 runpath
+      character*24 pathtype
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1520,13 +1534,13 @@ C Calculate regression coefficients GRADQR and GRADQF and then selum()
 
 C If no reuse possible, call e2r to calculate illuminances.
             if (ILLDBM.eq.0) then
+C          write (77,'(a)') "  ---  "
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
 C to e2r) and  LTMPFLA is the absolute path/ file name.
               call esppid(ipid)
               write(LTMPFLA,'(a,i7,a)') '.',ipid,'.dat'
               call st2file(LTMPFLA,LTMPFL)
-c              write (LTMPFLA,'(a,a,a)')upath(1:lnblnk(upath)),'/',
               write (LTMPFLA,'(a,a,a)')runpath(1:lnblnk(runpath)),'/',
      &          LTMPFL(1:lnblnk(LTMPFL))
               INQUIRE (FILE=LTMPFLA(1:lnblnk(LTMPFLA)),EXIST=XST)
@@ -1537,7 +1551,7 @@ c              write (LTMPFLA,'(a,a,a)')upath(1:lnblnk(upath)),'/',
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
               write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
-c          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+C          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',
@@ -1573,7 +1587,8 @@ C Open transfer file.
               if(ISTAT.lt.0)then
                 IER=1
                 write(outs,7) zname(icomp),N
-    7           format(' Zone ',A,'light zone',I1,' time var illum err')
+    7           format(' Zone ',A,
+     &                 'light zone ',I1,' time var illum err')
                 call edisp(iuout,outs)
                 CALL EPWAIT
                 CALL EPAGEND
@@ -1582,9 +1597,12 @@ C Open transfer file.
 
 C Loop through till 'OUTCMD' string found.
  777          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'trn file line',IER)
+C          write (77,'(a,a)') "*STR ",OUTSTR
+C          write (77,'(a,a)') "*CMD ",OUTCMD
               if (IER.ne.0) then
                 write(outs,17) zname(icomp),N
-   17           format(' Zone ',A,'light zone',I1,'trns file read err')
+   17           format(' Zone ',A,
+     &                 'light zone ',I1,' trns file read err')
                 call edisp(iuout,outs)
                 CALL EPWAIT
                 CALL EPAGEND
@@ -1594,7 +1612,7 @@ C Loop through till 'OUTCMD' string found.
 
 C Now read sensor data for all lighting zones
               DO 199 NN=1,NLITZ(ICOMP)
-			          suma=0.
+                suma=0.
                 DO 19 I=1,NDF(ICOMP,NN)
                   CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
                   if (IER.ne.0) then

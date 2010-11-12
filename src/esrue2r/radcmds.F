@@ -317,8 +317,8 @@ C Run rtrace. << ?? what about pathtype?? >>
 C Copy transfer file back to users homedir (bps is expecting it to be there).
         call isunix(unixok)
         if(unixok)then
-          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
-     &      cmdact(1:lnblnk(cmdact)),'  ',upath(1:lnblnk(upath))
+c          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
+c     &      cmdact(1:lnblnk(cmdact)),'  ',upath(1:lnblnk(upath))
         else
           write(doit,'(5a)') 'copy /y ',runpath(1:lnrp),
      &      cmdact(1:lnblnk(cmdact)),'  ',upath(1:lnblnk(upath))

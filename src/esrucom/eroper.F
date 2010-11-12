@@ -2357,6 +2357,8 @@ C calculate apparent power and reactive power.
                   iphasA(IP,ITYP)= IPHAS(IDTY,I)
                 endif
               elseif (ICGT(IDTY,I).eq.-1) then
+
+C If -1 and m2/person is zero, the intention is no occupancy.
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
                   PERSN(IP,ITYP)=0.0
