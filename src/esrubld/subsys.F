@@ -1138,6 +1138,17 @@ C                 external temperature (for use in MZLS3).
       INTEGER :: ITCTL,IVL,IVU,IVH
       REAL :: TLO,TUP,THI,ACIL,ACVL,TAL,ACIU,ACVU,TAU,ACIH,ACVH,TAH
 
+C Delete?
+C TDF commons.
+C      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+C
+C      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
+C      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+C      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+C     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+C     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+C     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+C     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
       REAL :: CVIN,CVVN,TIAN
@@ -1195,6 +1206,13 @@ C mechanical ventilation and infiltration.
       REAL ZONE_mechvent_cond,ZONE_infil_cond
 
       REAL, PARAMETER :: SMALL=1.0E-15
+C     Declare a common to store CHREM ambient-zone heat advection conductances
+C     These are intended to seperate the uncontrolled (i.e infiltration) and 
+C     controlled (i.e. mechanical ventilation) for energy constituent analysis
+      Common /CHREM_AF/ 
+     &  fAF_AZ_Infil_Cond(MCOM,2), fAF_AZ_MechVent_Cond(MCOM,2)
+      Real fAF_AZ_Infil_Cond, fAF_AZ_MechVent_Cond
+
       DIMENSION VAL(MBITS+2)
 
       CHARACTER LAPROB*72
@@ -1252,7 +1270,7 @@ C     This prevents the zone becoming too cold.
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
       real BB1,BB2,BB3,TNP,QFUT,TFUT
-      
+
       REAL :: acc,acc1,acc2,aci,acr,amh,amn
       REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
       INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
@@ -1260,6 +1278,7 @@ C     This prevents the zone becoming too cold.
       REAL :: sum,t1,ta1,ta2,taf,tafl,tafu,trat,tx,val,xx
       REAL :: time
 
+      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
       
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1487,16 +1506,16 @@ C Notional building has 10 m3/h/m2 according to UK's NCM instructions
 C Multiply 10 by floor area and divide by Volume and divide by 20
 C Use 15 instead of 10m3/h/m2 if typical building
 C << EXP_AREA is currently zero needs to be calculated
-            IF(INOTI.eq.1.OR.INOTI.eq.2.OR.
-     &        (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN
-c              ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
-            ELSEIF(INOTI.EQ.3)THEN
-c              ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
-            ENDIF
+              IF(INOTI.eq.1.OR.INOTI.eq.2.OR.
+     &          (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN
+c                ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
+              ELSEIF(INOTI.EQ.3)THEN
+c                ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
+              ENDIF
 
 C Alternatively use 0.167 ach - this will help to avoid high ach in cases
 C where sloped roofs are used, etc.
-          endif
+            endif
           call NOTVENTAUX(ICOMP)
         else      
 
@@ -1568,30 +1587,42 @@ C Calculate the infiltration load if the AIM-2 model is active (i.e. iAIM=1)
 C and this is a modeled zone and the windows are closed
 
         ZONE_infil_cond = 0.      ! Reset infiltration conductance.
-        IF( iAIM2.eq.1 ) THEN     ! Check if the model is active 
+
+        ! Check if the AIM model is active
+        ! Check that this zone was specified in the AIM-2 file (actively modelled) and 
+        ! that the windows are closed for the model to be valid
+        ! This check that the zone is active is important so that zones not described with AIM-2
+        ! will still recieve infiltration as described by the *.opr or air flow network
+          
+        ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
+        ! loads are reflected in ESP-r's zonal energy balances. Note that in this way, the combined
+        ! loads due to infiltration and mechanical ventilation are treated as infiltration in
+        ! ESP-r's energy balance.
+        
+        ! An added logic was to check to see if the windows are open. This feature was added for the FCT project to allow windows opening 
+        ! if cooling was required and the external air temperature could help with the load. This will default to the standard esp-r esp-r flow network,
+        ! which should have a open window model designed in it's afn configuration.
+        IF( iAIM2.eq.1 .and. AIM2_active_zones(ICOMP) .and.
+     &     .not. AreWindowsOpen(ICOMP) ) THEN      
+          
           ! Conductance of infiltration returned for that zone
           ! If the zone was not specified in the AIM-2 file then it will return a zero
           CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-          
-          ! Check that this zone was specified in the AIM-2 file (actively modelled) and 
-          ! that the windows are closed for the model to be valid
-          ! This check that the zone is active is important so that zones not described with AIM-2
-          ! will still recieve infiltration as described by the *.opr or air flow network
-          
+
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
-          ! loads are reflected in ESP-r's zonal energy balances. Note that in this way, the combined
-          ! loads due to infiltration and mechanical ventilation are treated as infiltration in
-          ! ESP-r's energy balance.
-          ! An added logic was to check to see if the windows are open. This feature was added for the FCT project to allow windows opening 
-          ! if cooling was required and the external air temperature could help with the load. This will default to the standard esp-r esp-r flow network,
-          ! which should have a open window model designed in it's afn configuration.
-          IF (AIM2_active_zones(ICOMP) .and.
-     &     .not. AreWindowsOpen()) THEN
-            ! Replace the infiltration described in the *opr or air flow network with that of AIM-2
-            CVIF = ZONE_infil_cond
-!             write(*,*) "Zone ", ICOMP, "; After AIM ", CVIF
-          ENDIF
+          ! loads are reflected in ESP-r's zonal energy balances.
+          CVIF = ZONE_infil_cond
+
         ENDIF
+
+C        ! For CHREM use only - at this point the AFN or AIM2 has been used to determine the uncontrolled 
+C        ! ambient-zone heat advection (i.e. infiltration)
+C        ! either through AFN open windows or AIM2 cracks
+C        ! Now store this information as such
+C        ! Set the present equal to the previous timestep's future
+C        fAF_AZ_Infil_Cond(iComp,1) = fAF_AZ_Infil_Cond(iComp,2)
+C        ! Set the future equal to the future infiltration conductance CVIF
+C        fAF_AZ_Infil_Cond(iComp,2) = CVIF
 
 C If the mechanical ventilation model is active
 C then add this infiltration conductance to the CVIF.
@@ -1606,8 +1637,16 @@ C or whether it is on/off
         IF( iMech.eq.1) THEN      ! f77 syntax since this file also used by bld.
           CALL MECH_VENT_CONTROL(ICOMP,ZONE_mechvent_cond) ! Conductance of mech vent returned.
           CVIF = CVIF + ZONE_mechvent_cond
-!           write(*,*) "Zone ", ICOMP, "; After MVNT ", CVIF
+
         ENDIF
+
+C        ! For CHREM use only - at this point the Mechanical Ventilation model has been used to 
+C        ! calculate controlled ambient-zone heat advection (mechanical ventilation)
+C        ! Now store this information as such
+C        ! Set the present equal to the previous timestep's future
+C        fAF_AZ_MechVent_Cond(iComp,1) = fAF_AZ_MechVent_Cond(iComp,2)
+C        ! Set the future equal to the future mechanical ventilation conductance
+C        fAF_AZ_MechVent_Cond(iComp,2) = ZONE_mechvent_cond
 
 
 C When there is an outdoor air flow through the HVAC  (air source heat pump) system, this is accounted for 
@@ -1615,6 +1654,14 @@ c through its effect on space infiltration. Initially the conductance for outdoo
 c is set to zero, then when this value is greater than 0., it's effect on the infiltration of the
 c space is accounted for here.
         CVIF = CVIF + outdoor_air_inf_cond(ICOMP)
+
+C        ! For CHREM use only
+C        ! Add this HVAC conductance to the controlled ambient-zone heat advection (mechanical ventilation)
+C        ! as it is intended by the HVAC system as opposed to cracks or leaks
+C        fAF_AZ_MechVent_Cond(iComp,2) = fAF_AZ_MechVent_Cond(iComp,2)
+C     &    + outdoor_air_inf_cond(ICOMP)
+C
+C
 
 C Now zone-coupling advection.
 C NB TIA? holds the normalised (to external air temperature)
