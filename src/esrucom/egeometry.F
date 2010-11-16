@@ -4049,7 +4049,7 @@ C   oriented) which has the same material. Zero denotes this does not
 C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCOM,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
       real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
