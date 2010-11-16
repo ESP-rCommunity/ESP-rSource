@@ -4726,7 +4726,7 @@ C      2: venetian blind
 C The following logic assumes that there are not more than 3 consecutive 
 C glass layers - interspersed with gas layers, of course - in the CFC ...
             if ( icfcltp(icomp,icfctp,l).eq.0 
-     &           .and. rmlr_mass(icomp,icfctp,l).gt.0.295E+02) then
+     &           .and. rmlr_mass(icomp,icfctp,l).gt.0.2905E+02) then
               ! this is a non-air gas layer and no IGU has been identified, yet,
               if (icfcltp(icomp,icfctp,l-1) .eq. 1) then
                 ! the previous layer is glass, 
