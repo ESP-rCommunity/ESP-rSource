@@ -3586,7 +3586,7 @@ C If user request cancel then return after resetting ixopen to zero.
             elseif(act.eq.'a'.or.act.eq.'A')then
 
 C If appending check and see if it exists. If so close it and then
-C open it with APPEND option. Use ifdef for F77 or F90.
+C open it with APPEND option.
               longtfile=' '
               if(unixok)then
                 call addpath(xfile,longtfile,concat)
@@ -3604,13 +3604,8 @@ C and change any / to \.
               INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
               if(there)then
                 close(ixunit)
-#ifdef F90
                open(ixunit,file=longtfile(1:ltf),position='APPEND',
      &           status='UNKNOWN',err=1)
-#else
-               open(ixunit,file=longtfile(1:ltf),ACCESS='APPEND',
-     &           status='UNKNOWN',err=1)
-#endif
               else
                 call efopseq(ixunit,xfile,4,IER)
               endif
@@ -3626,19 +3621,14 @@ C and change any / to \.
             elseif(act.eq.'a'.or.act.eq.'A')then
 
 C If appending check and see if it exists. If so close it and then
-C open it with APPEND option. Ifedf for F77 or F90.
+C open it with APPEND option.
               ltf=max(1,LNBLNK(xfile))
               there=.false.
               INQUIRE(FILE=xfile(1:ltf),EXIST=there)
               if(there)then
                 close(ixunit)
-#ifdef F90
                open(ixunit,file=xfile(1:ltf),position='APPEND',
      &           status='UNKNOWN',err=1)
-#else
-                open(ixunit,file=xfile(1:ltf),ACCESS='APPEND',
-     &            status='UNKNOWN',err=1)
-#endif
               else
                 call efopseq(ixunit,xfile,4,IER)
               endif

@@ -1417,7 +1417,7 @@ C If problem in opening then report difficulty. F90 ISTAT
 C values can be positive numbers, but F77 ISTAT tend to be
 C negative values.
       IF(ISTAT.ne.0)THEN
-        write(outs,'(a,i3,a)') 'Error (',ISTAT,') opening the file'
+        write(outs,'(a,i5,a)') 'Error (',ISTAT,') opening the file'
         CALL LUSRMSG(outs,longtfile,'W')
         IER=ISTAT
       ENDIF
