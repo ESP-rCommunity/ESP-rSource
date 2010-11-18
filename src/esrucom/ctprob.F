@@ -59,7 +59,7 @@ C Definitions of most variables is given in ctread.F
       COMMON/CONTM6/CNCNI(MCONTM,MNOD)
 
       CHARACTER*10 SOUTS
-      CHARACTER*124 CNTMDESC,LOUTS,TOUTS
+      CHARACTER*124 CNTMDESC,LOUTS,TOUTS,OUTSTR
       CHARACTER CNTMFIL*72,LAPROB*72
       CHARACTER*12 CONTMNAM,SSNAME,NDNAM,CMNAM
       CHARACTER LTPCMP*60,MOUTS*12
@@ -77,19 +77,22 @@ C Write airflow network file, number of contaminants
  1001 FORMAT(A,1X,'#fluid flow file for which this file is defined')
       WRITE(IFCTM,1002,IOSTAT=ISTAT,ERR=99)
  1002 FORMAT('SECTION_1')
-      WRITE(IFCTM,1003,IOSTAT=ISTAT,ERR=99)
- 1003 FORMAT('#no. of contaminants,timesteps/hour')
+      WRITE(OUTSTR,'(3a)')'#no. of contaminants, timesteps/hour ',
+     & '(should be significantly higher than building side number ',
+     & 'of timesteps)'
+      WRITE(IFCTM,1003,IOSTAT=ISTAT,ERR=99)OUTSTR
+ 1003 FORMAT(a)
       WRITE(IFCTM,1004,IOSTAT=ISTAT,ERR=99)NCONTM,NTSTEPC
  1004 FORMAT(I5,4X,I3)
       WRITE(IFCTM,1005,IOSTAT=ISTAT,ERR=99)
  1005 FORMAT('SECTION_2')
       WRITE(IFCTM,1006,IOSTAT=ISTAT,ERR=99)
- 1006 FORMAT('#name and ambient concentrations (kg/kg) of contaminants')
+ 1006 FORMAT('# name and ambient concentrations (kg/kg) of ')
       WRITE(IFCTM,1056,IOSTAT=ISTAT,ERR=99)
 c 1056 FORMAT('#(max conc, min conc, hour at which max conc occurs)')
- 1056 FORMAT('#(24 values, one for each hour of the day (??))')
+ 1056 FORMAT('# contaminants (24 values, one for each hour of the day)')
       WRITE(IFCTM,1007,IOSTAT=ISTAT,ERR=99)
- 1007 FORMAT('#followed by no. of source/sink models and model no.s')
+ 1007 FORMAT('# followed by no. of source/sink models and model no.s')
 
 C Write name, ambient concentrations, source/sink models
       DO 500 ICONTM=1,NCONTM
@@ -126,7 +129,7 @@ C Write out first order chemical rate constants
       WRITE(IFCTM,1009,IOSTAT=ISTAT,ERR=99)
  1009 FORMAT('SECTION_3')
       WRITE(IFCTM,1010,IOSTAT=ISTAT,ERR=99)
- 1010 FORMAT('#first order rate constants (if defined)')
+ 1010 FORMAT('# first order rate constants (if defined)')
 
 C Determine how many rates are defined and write contaminants and rates
       NCHEMRR=0
@@ -146,13 +149,13 @@ C Write out node based information
       WRITE(IFCTM,1012,IOSTAT=ISTAT,ERR=99)
  1012 FORMAT('SECTION_4')
       WRITE(IFCTM,1013,IOSTAT=ISTAT,ERR=99)
- 1013 FORMAT('#node based information for contaminant')
+ 1013 FORMAT('# node based information for contaminant')
 
       DO 505 ICONTM=1,NCONTM
         WRITE(IFCTM,1014,IOSTAT=ISTAT,ERR=99)CONTMNAM(ICONTM)
  1014   FORMAT(A)
         WRITE(IFCTM,1015,IOSTAT=ISTAT,ERR=99)
- 1015   FORMAT('#node,node no.,initial conc.')
+ 1015   FORMAT('# node,node no.,initial conc.')
         DO 506 INOD=1,NNOD
           IF(NDTYP(INOD).GT.1)GOTO 506
           WRITE(IFCTM,1016,IOSTAT=ISTAT,ERR=99)
@@ -165,9 +168,9 @@ C Write component based information
       WRITE(IFCTM,1017,IOSTAT=ISTAT,ERR=99)
  1017 FORMAT('SECTION_5')
       WRITE(IFCTM,1018,IOSTAT=ISTAT,ERR=99)
- 1018 FORMAT('#component based information')
+ 1018 FORMAT('# component based information')
       WRITE(IFCTM,1019,IOSTAT=ISTAT,ERR=99)
- 1019 FORMAT('#all filter efficiencies other than nought are listed')
+ 1019 FORMAT('# all filter efficiencies other than nought are listed')
 
 C Find number of components having efficiencies other than nought
       NFILEFA=0
@@ -179,9 +182,9 @@ C Find number of components having efficiencies other than nought
  508  CONTINUE
       WRITE(IFCTM,1020,IOSTAT=ISTAT,ERR=99)NFILEFA
  1020 FORMAT(I4,1X,
-     & '#no. of components having efficiency other than nought')
+     & '# no. of components having efficiency other than nought')
       WRITE(IFCTM,1021,IOSTAT=ISTAT,ERR=99)
- 1021 FORMAT('#contaminant name and no.,component,filter efficiency')
+ 1021 FORMAT('# contaminant name and no.,component,filter efficiency')
 
 C Write component name and filter efficiency
       DO 510 ICONTM=1,NCONTM
@@ -200,9 +203,9 @@ C Write source/sink models data
       WRITE(IFCTM,1023,IOSTAT=ISTAT,ERR=99)
  1023 FORMAT('SECTION_6')
       WRITE(IFCTM,1024,IOSTAT=ISTAT,ERR=99)
- 1024 FORMAT('#source and sink models')
+ 1024 FORMAT('# source and sink models')
       WRITE(IFCTM,1025,IOSTAT=ISTAT,ERR=99)
- 1025 FORMAT('#number of sources and sinks')
+ 1025 FORMAT('# number of sources and sinks')
       WRITE(IFCTM,1026,IOSTAT=ISTAT,ERR=99)NSPMNO
  1026 FORMAT(I3)
       WRITE(IFCTM,'(A)',IOSTAT=ISTAT,ERR=99)
@@ -245,9 +248,11 @@ C Write source/sink models linkage with nodes
       WRITE(IFCTM,1028,IOSTAT=ISTAT,ERR=99)
  1028 FORMAT('SECTION_7')
       WRITE(IFCTM,1029,IOSTAT=ISTAT,ERR=99)
- 1029 FORMAT('#source/sink linkage with nodes')
-      WRITE(IFCTM,1030,IOSTAT=ISTAT,ERR=99)
- 1030 FORMAT('#node,node no.,no. of source/sink models linked,model no')
+ 1029 FORMAT('# source/sink linkage with nodes')
+      WRITE(OUTSTR,'(2a)')'# node, node no., no. of source/sink ',
+     & 'models linked, model no'
+      WRITE(IFCTM,1030,IOSTAT=ISTAT,ERR=99)OUTSTR
+ 1030 FORMAT(a)
       DO 514 INOD=1,NNOD
         IF(NDTYP(INOD).GT.1)GOTO 514
         NSSLINC=0

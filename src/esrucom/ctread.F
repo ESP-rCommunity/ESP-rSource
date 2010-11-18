@@ -31,8 +31,9 @@ C RECCOA: Recovery coefficient within each INOD kg/s
 C FILEFA: Filter efficiency
 C FORCAB: First order chemical reaction rate constant /s
 C CONTMNAM: Array holding names of contaminants
-C NTSTEPC: Timestep at which contaminant simulation runs (should be
-C significantly lower than building side timestep)
+C NTSTEPC: Number of timesteps per hour at which contaminant 
+C          simulation runs (should be significantly higher than 
+C          building side timestep)
 C NSPMNO: Number of sources/sinks
 C SSLINK1: Holds sources/sinks associated with contaminants
 C SSLINK2: Holds sources/sinks associated with nodes
@@ -111,7 +112,7 @@ C Read number of contaminants
 C Read number of timesteps per hour
       CALL EGETWI(OUTSTR,K,NTSTEPC,1,120,'F','no of timesteps',IER)
       IF(IER.NE.0) GOTO 1009
-C      IF(NTSTEPC.EQ.0) GOTO 1013
+c      IF(NTSTEPC.eq.0) GOTO 1013
 
 C Set flag indicating presence of contaminant file
       NOCNTM=1
