@@ -24,7 +24,6 @@ C USER-SPECIFIED PERIOD.
 
       SUBROUTINE CLMGRF
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/RADTYP/IDNGH
@@ -35,7 +34,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
-      character hold*72,h*72
+      character hold*72
       DIMENSION IPICK(6)
       LOGICAL mxmn
       integer onleft  ! number of left axis
@@ -47,6 +46,14 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 #else
       integer*8 igwid,igheight  ! for use with axiscale
 #endif
+
+C For help messages
+      character app*24   ! application name
+      character sub*24   ! subroutine name
+      character topic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+
+      app='clm'; sub='CLMGRF'  ! set for cfiles
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -225,9 +232,11 @@ C    6= rh (at igr+100 farthest at right)
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(1x,4f7.1)')YMAX(1),YMIN(1),YMAX(2),YMIN(2)
-        H(1)='Both direct and diffuse solar share an axis. '
+        topic='clm_solar_graph'
+        call gethelptext(app,sub,topic,nbhelp)
+C        H(1)='Both direct and diffuse solar share an axis. '
   42    CALL EASKS(HOLD,' Max & Min for solar radiation & db temp:',
-     &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,1)
+     &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,YMAX(1),0.,0.,'-','dif sol mx',IER)
         CALL EGETWR(HOLD,K,YMIN(1),0.,0.,'-','dif sol mn',IER)
@@ -240,9 +249,11 @@ C Present vertex coords for editing then parse data from HOLD.
 C Second set of axis.
         WRITE(HOLD,'(1x,6f7.1)')YMAX(4),YMIN(4),YMAX(5),YMIN(5),
      &    YMAX(6),YMIN(6)
-        H(1)='Wind is in m/sec, direction in degrees. '
+        topic='clm_wind_graph'
+        call gethelptext(app,sub,topic,nbhelp)
+C        H(1)='Wind is in m/sec, direction in degrees. '
   43    CALL EASKS(HOLD,' Max & Min for wind speed, wind dir, rh:',' :',
-     &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,1)
+     &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,YMAX(4),0.,0.,'-','wind spd mx',IER)
         CALL EGETWR(HOLD,K,YMIN(4),0.,0.,'-','wind spd mn',IER)
@@ -362,20 +373,22 @@ C Clear selections.
         INEW=1
       elseif(ino.eq.15)then
 C Help.
-        H(1)='The graph facilities work by selecting items '
-        H(2)='(from 1-6) to draw and then the `! Draw` command.'
-        H(3)=' '
-        H(4)='You may alter the scaling of the various axis, to '
-        H(5)='clarify or separate lines by choosing the `a Axis` '
-        H(6)='command. '
-        H(7)=' '
-        H(8)='If you have changed the size of the graphic or text '
-        H(9)='feedback areas or the application window then use the'
-        H(10)=' `r Refresh` command '
-        H(11)=' '
-        H(12)='You must `c Clear` the selections to look at another'
-        H(13)='set of lines. '
-        CALL PHELPD('clm graphics',13,'-',0,0,IER)
+        topic='clm_graph_facilities'
+        call gethelptext(app,sub,topic,nbhelp)
+C        H(1)='The graph facilities work by selecting items '
+C        H(2)='(from 1-6) to draw and then the `! Draw` command.'
+C        H(3)=' '
+C        H(4)='You may alter the scaling of the various axis, to '
+C        H(5)='clarify or separate lines by choosing the `a Axis` '
+C        H(6)='command. '
+C        H(7)=' '
+C        H(8)='If you have changed the size of the graphic or text '
+C        H(9)='feedback areas or the application window then use the'
+C        H(10)=' `r Refresh` command '
+C        H(11)=' '
+C        H(12)='You must `c Clear` the selections to look at another'
+C        H(13)='set of lines. '
+        CALL PHELPD('clm graphics',nbhelp,'-',0,0,IER)
       else
         ino=-1
         goto 6

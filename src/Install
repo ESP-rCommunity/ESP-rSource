@@ -1728,6 +1728,8 @@ echo -n " Installing esprc and default (configuration files) into ${ESPdir}..."
 # Write out default ESP-r file
 #-----------------------------
 
+  echo -n "   - Installing help files..."
+  cp -r ${SRCdir}/tutorial/*.help ${ESPdir}/lib
 
 # Header tag for default file 
 echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1743,6 +1745,7 @@ echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
 echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
 echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
 echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+
 
 # Will we install databases?
 case "${install_dbs}" in
@@ -2048,7 +2051,7 @@ zzz
   echo -n "   - Installing tutorial files..."
   rm -rf ${ESPdir}/tutorial
   mkdir ${ESPdir}/tutorial
-  cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
+  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
   echo " Done."
   
   
