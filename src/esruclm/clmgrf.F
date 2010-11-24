@@ -234,7 +234,6 @@ C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(1x,4f7.1)')YMAX(1),YMIN(1),YMAX(2),YMIN(2)
         topic='clm_solar_graph'
         call gethelptext(app,sub,topic,nbhelp)
-C        H(1)='Both direct and diffuse solar share an axis. '
   42    CALL EASKS(HOLD,' Max & Min for solar radiation & db temp:',
      &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,nbhelp)
         K=0
@@ -251,7 +250,6 @@ C Second set of axis.
      &    YMAX(6),YMIN(6)
         topic='clm_wind_graph'
         call gethelptext(app,sub,topic,nbhelp)
-C        H(1)='Wind is in m/sec, direction in degrees. '
   43    CALL EASKS(HOLD,' Max & Min for wind speed, wind dir, rh:',' :',
      &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,nbhelp)
         K=0
@@ -375,19 +373,6 @@ C Clear selections.
 C Help.
         topic='clm_graph_facilities'
         call gethelptext(app,sub,topic,nbhelp)
-C        H(1)='The graph facilities work by selecting items '
-C        H(2)='(from 1-6) to draw and then the `! Draw` command.'
-C        H(3)=' '
-C        H(4)='You may alter the scaling of the various axis, to '
-C        H(5)='clarify or separate lines by choosing the `a Axis` '
-C        H(6)='command. '
-C        H(7)=' '
-C        H(8)='If you have changed the size of the graphic or text '
-C        H(9)='feedback areas or the application window then use the'
-C        H(10)=' `r Refresh` command '
-C        H(11)=' '
-C        H(12)='You must `c Clear` the selections to look at another'
-C        H(13)='set of lines. '
         CALL PHELPD('clm graphics',nbhelp,'-',0,0,IER)
       else
         ino=-1

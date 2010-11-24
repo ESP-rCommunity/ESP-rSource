@@ -98,10 +98,6 @@ C Open the ASCII file for reading.
         dok=.true.
         topic='confirm_marker_line'
         call gethelptext(app,sub,topic,nbhelp)
-C        h(1)='If the ASCII file was exported from the climate'
-C        h(2)='module it will have a marker line at the start of'
-C        h(3)='each day. If the file does not have these markers'
-C        h(4)='then say no. '
         CALL ASKOK(' ',
      &    'Does ASCII file have day demarcation lines?',OK,dok,nbhelp)
         IF(OK)IREAD=1
@@ -144,29 +140,22 @@ C such questions now.
 C Define the year if not already done.
           topic='confirm_year'
           call gethelptext(app,sub,topic,nbhelp)
-C          H(1)='The year is required to find the day of the week '
-C          H(2)='for a given julian day.'
           CALL EASKI(IYEAR,' ',' What is the year ? ',
      &             1900,'W',2005,'W',2003,'year',IER,nbhelp)
 
           CLMLOC=' '
           topic='confirm_site_name'
           call gethelptext(app,sub,topic,nbhelp)
-C          H(1)='Site name (30 char) for descriptive purposes. '
           CALL EASKS(CLMLOC,' ',' Climate site name ? ',
      &      30,'North_Pole','climate site. ',IER,nbhelp)
 
           topic='confirm_lat_log_diff'
           call gethelptext(app,sub,topic,nbhelp)
-C          H(1)='The climate latitude does not necessarily have to '
-C          H(2)='match the site latitude.  However, the difference '
-C          H(3)='should not be great or simulation results may be '
-C          H(4)='open to question.'
           CALL EASKR(CLAT,' ',' Climate latitude ? ',
-     &             -89.9,'W',89.9,'W',30.0,'climate latitude',IER,4)
+     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
           CALL EASKR(CLONG,' ',' Longitude diference ?',
-     &             -14.9,'W',14.9,'W',0.0,'climate long',IER,4)
+     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
         endif
       endif
 
@@ -556,18 +545,12 @@ C Set the radiation flag to Global horizontal
       IDNGH=123
       topic='confirm_lat_log_diff'
       call gethelptext(app,sub,topic,nbhelp)
-C      H(1)='The climate longitude does not necessarily have to '
-C      H(2)='match the site latitude.  However, the difference '
-C      H(3)='should not be great or simulation results may be '
-C      H(4)='open to question.'
       CALL EASKR(longit_for_diffuse_calcs,' ',
      &   ' Climate longitude (actual)? (west: positive) ',
      &   -180.0,'W',180.0,'W',30.0,'climate longitude',IER,nbhelp)
 
       topic='local_time_difference'
       call gethelptext(app,sub,topic,nbhelp)
-C      H(1)='The local time difference from Greenwich is needed.'
-C      H(2)='Assume west is positive (e.g. use -2 for Greece) '
       CALL EASKR(differ_from_Greenwich,' ',
      &  ' Time difference from Greenwich? (west: positive) ',
      &  -24.0,'W',24.0,'W',0.0,'time_difference',IER,nbhelp)
@@ -575,26 +558,6 @@ C      H(2)='Assume west is positive (e.g. use -2 for Greece) '
 C Export climate data to ASCII file (with similar name).
       topic='korea_met_conversion'
       call gethelptext(app,sub,topic,nbhelp)
-C      h(1)='The default conversion model is based on a publication'
-C      h(2)='from Muneer: Solar Radiation and Daylight models (1997)'
-C      h(3)='ISBN: 0-7506-2495-7.'
-C      h(4)=' '
-C      h(5)='The Maxwell model is equation 3.4.2a and 3.4.2b of '
-C      h(6)='Muneer book on page 102. '
-C      h(7)='The Erbs, Klein and Duffie model is based on empirical '
-C      h(8)='correlations, documented in: Erbs D.G., Klein S.A., '
-C      h(9)='Duffie J.A. 1982. Estimation of the diffuse radiation'
-C      h(10)='fraction for hourly, daily and monthly-average global '
-C      h(11)='radiation. Solar Energy 28: pp.293-302.'
-C      h(12)=' '
-C      h(13)='The three methods tend to give different estimates of'
-C      h(14)='diffuse radiation for a given global horizontal solar'
-C      h(15)='radiation value. The default method tends to give higher'
-C      h(16)='diffuse values. '
-C      h(17)=' '
-C      h(18)='If in doubt, create a climate file for each of the'
-C      h(19)='methods and visually inspect the predictions.'
-C      h(20)=' '
       call easkabc
      &  ('There are three available models to approximate diffuse:',
      &  ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
@@ -934,21 +897,6 @@ C For help messages
 C Get help message set.
       topic='clm_file_contents'
       call gethelptext(app,sub,topic,nbhelp)
-C      H(1)='A climate file holds hourly values for diffuse solar'
-C      H(2)='intensity in W/m^2, dry bulb temp in tenths degrees C, '
-C      H(3)='direct normal or global horizontal solar intensity'
-C      H(4)='in W/m^2, wind speed in tenths m/s, wind direction deg'
-C      H(5)='from north (clockwise), and relative humidity in '
-C      H(6)='percent.  It also holds latitude, longitude difference'
-C      H(7)='from the nearest time zone and the year represented.'
-C      H(8)=' '
-C      H(9)='The normal location for climate files is:'
-C      H(10)=' /usr/esru/esp-r/climate '
-C      H(11)=' '
-C      H(12)='and any of these files may be analysed with clm.'
-C      H(13)=' '
-C      H(14)='Climate files are either test reference years, actual'
-C      H(15)='climate data or synthetic data.'
       rescan=.false.
       IUF=ifil+1
 
