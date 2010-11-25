@@ -201,18 +201,20 @@ C Insert Climatic Year.
       WRITE(ICLIM,REC=IREC)CLAT,CLONG
 
 C Close ASCIIfile.
-   19 CALL ERPFREE(IUNIT,ISTAT)
+      CALL ERPFREE(IUNIT,ISTAT)
       RETURN
 
  1001 WRITE(outs,775)ISTAT
   775 FORMAT(' Error ',I7,' writing climate database year')
       call edisp(iuout,outs)
-      GOTO 19
+      CALL ERPFREE(IUNIT,ISTAT)
+      RETURN
 
  1002 WRITE(outs,777)ISTAT
   777 FORMAT(' Error ',I7,' writing climate database')
       call edisp(iuout,outs)
-      GOTO 19
+      CALL ERPFREE(IUNIT,ISTAT)
+      RETURN
 
       END
 
@@ -414,27 +416,32 @@ C location description is for the site.
    10 CONTINUE
 
 C Close ASCII file.
-   15 CALL ERPFREE(IAF,ISTAT)
+      CALL ERPFREE(IAF,ISTAT)
       RETURN
 
  1000 WRITE(outs,776)ISTAT,IREC
   776 FORMAT(' Error ',I4,' reading binary file record ',I4)
       call edisp(iuout,outs)
-      GOTO 15
+      CALL ERPFREE(IAF,ISTAT)
+      RETURN
+
  1001 WRITE(outs,775)ISTAT
   775 FORMAT(' Error ',I4,' writing demarcation')
       call edisp(iuout,outs)
-      GOTO 15
+      CALL ERPFREE(IAF,ISTAT)
+      RETURN
 
  1002 WRITE(outs,777)ISTAT
   777 FORMAT(' Error ',I4,' writing hourly data')
       call edisp(iuout,' ')
-      GOTO 15
+      CALL ERPFREE(IAF,ISTAT)
+      RETURN
 
  1003 WRITE(outs,778)ISTAT
   778 FORMAT(' Error ',I7,' writing site data')
       call edisp(iuout,outs)
-      GOTO 15
+      CALL ERPFREE(IAF,ISTAT)
+      RETURN
 
       END
 
@@ -1076,59 +1083,53 @@ C set in clm.F will be used.
       WRITE(outs,'(a,a30)')' Climate data: ',CLMLOC
       call edisp(iuout,outs)
 
-C If IDNGH = 0 then direct normal, otherwise global horizontal
-      IF(IDNGH.GT.0)goto 8
-      IF(CLAT.LT.0.0)goto 11
-      IF(CLONG.LT.0.0)goto 12
-      WRITE(outs,103)CLAT,CLONG,IYEAR
- 103  FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'DN')
-      call edisp(iuout,outs)
-      RETURN
-
-   12 ACLONG=ABS(CLONG)
-      WRITE(outs,104)CLAT,ACLONG,IYEAR
- 104  FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'DN')
-      call edisp(iuout,outs)
-      RETURN
-
-   11 ACLAT=ABS(CLAT)
-      IF(CLONG.LT.0.0)goto 13
-      WRITE(outs,105)ACLAT,CLONG,IYEAR
- 105  FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'DN')
-      call edisp(iuout,outs)
-      RETURN
-
-   13 ACLONG=ABS(CLONG)
-      WRITE(outs,106)ACLAT,ACLONG,IYEAR
- 106  FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'DN')
-      call edisp(iuout,outs)
-      RETURN
-
-    8 IF(CLAT.LT.0.0)goto 14
-      IF(CLONG.LT.0.0)goto 15
-      WRITE(outs,102)CLAT,CLONG,IYEAR
- 102  FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'GH')
-      call edisp(iuout,outs)
-      RETURN
-
-   15 ACLONG=ABS(CLONG)
-      WRITE(outs,107)CLAT,ACLONG,IYEAR
- 107  FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'GH')
-      call edisp(iuout,outs)
-      RETURN
-
-   14 ACLAT=ABS(CLAT)
-      IF(CLONG.LT.0.0)goto 16
-      WRITE(outs,108)ACLAT,CLONG,IYEAR
- 108  FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'GH')
-      call edisp(iuout,outs)
-      RETURN
-
-   16 ACLONG=ABS(CLONG)
-      WRITE(outs,109)ACLAT,ACLONG,IYEAR
- 109  FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'GH')
-      call edisp(iuout,outs)
-      RETURN
+      if(IDNGH.GT.0)then       ! Global horizontal.
+        if(CLAT.LT.0.0)then    ! if south
+          ACLAT=ABS(CLAT)
+          if(CLONG.LT.0.0)then ! if west
+            ACLONG=ABS(CLONG)
+            WRITE(outs,109)ACLAT,ACLONG,IYEAR
+ 109        FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'GH')
+          else                 ! if east
+            WRITE(outs,108)ACLAT,CLONG,IYEAR
+ 108        FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'GH')
+          endif
+        else                   ! if north
+          if(CLONG.LT.0.0)then ! if west
+            ACLONG=ABS(CLONG)
+            WRITE(outs,107)CLAT,ACLONG,IYEAR
+ 107        FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'GH')
+          else                 ! if east
+            WRITE(outs,102)CLAT,CLONG,IYEAR
+ 102        FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'GH')
+          endif
+        endif
+        call edisp(iuout,outs)
+        RETURN
+      else                     ! Direct normal.
+        if(CLAT.LT.0.0)then    ! if south
+          ACLAT=ABS(CLAT)
+          if(CLONG.LT.0.0)then ! if west
+            ACLONG=ABS(CLONG)
+            WRITE(outs,106)ACLAT,ACLONG,IYEAR
+ 106        FORMAT(1X,F7.1,'S',F7.1,'W',': ',I4,2X,'DN')
+          else                 ! if east
+            WRITE(outs,105)ACLAT,CLONG,IYEAR
+ 105        FORMAT(1X,F7.1,'S',F7.1,'E',': ',I4,2X,'DN')
+          endif
+        else                   ! if north
+          if(CLONG.LT.0.0)then ! if west
+            ACLONG=ABS(CLONG)
+            WRITE(outs,104)CLAT,ACLONG,IYEAR
+ 104        FORMAT(1X,F7.1,'N',F7.1,'W',': ',I4,2X,'DN')
+          else                 ! if east
+            WRITE(outs,103)CLAT,CLONG,IYEAR
+ 103        FORMAT(1X,F7.1,'N',F7.1,'E',': ',I4,2X,'DN')
+          endif
+        endif
+        call edisp(iuout,outs)
+        RETURN
+      endif
 
 C New climate file
  1000 call edisp(IUOUT,' No data in file')
@@ -1598,18 +1599,20 @@ C IREC=376 ??
 C IREC=377 ??
 
 C Close ASCIIfile.
-   19 CALL ERPFREE(IUNIT,ISTAT)
+      CALL ERPFREE(IUNIT,ISTAT)
       RETURN
 
  1001 WRITE(outs,775)ISTAT
   775 FORMAT(' Error ',I7,' writing climate database year')
       call edisp(iuout,outs)
-      GOTO 19
+      CALL ERPFREE(IUNIT,ISTAT)
+      RETURN
 
  1002 WRITE(outs,777)ISTAT
   777 FORMAT(' Error ',I7,' writing climate database')
       call edisp(iuout,outs)
-      GOTO 19
+      CALL ERPFREE(IUNIT,ISTAT)
+      RETURN
 
       END
 
