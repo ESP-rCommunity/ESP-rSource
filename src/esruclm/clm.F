@@ -1497,74 +1497,75 @@ C Check the header to see if this is a help text file.
       endif
 
 C If we reached this point then we can go looking for a
-C subroutine and topic match.
-   42 continue
-      read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan line
-      if(ios.ne.0) goto 1   ! jump if EOF
-      lno=lnblnk(outstr)
-      if(lno.le.1)goto 42  ! jump if a blank line
+C subroutine and topic match on each new line.
+      scan: do
+        read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan line
+        if(ios.ne.0)  exit scan   ! jump if EOF
+        lno=lnblnk(outstr)
+        if(lno.le.1) cycle  ! jump if a blank line
 
-      if(outstr(1:5).eq.'*item')then
-        if(lno.le.6)goto 42  ! jump if no other token
-        K=6
-        CALL EGETW(outstr,K,WORD,'W','sub',IER)
-        if(WORD(1:3).eq.'sub')then
-          CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
-          if(WORD(1:lns).eq.sub(1:lns))then
+        if(outstr(1:5).eq.'*item')then
+          if(lno.le.6) cycle  ! jump if no other token
+          K=6
+          CALL EGETW(outstr,K,WORD,'W','sub',IER)
+          if(WORD(1:3).eq.'sub')then
+            CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
+            if(WORD(1:lns).eq.sub(1:lns))then
 
 C We have a matching subroutine name
-            havesub = .true.  ! set true subroutine matches
-            goto 42   ! keep scanning
-          else
-            goto 42   ! keep scanning
+              havesub = .true.  ! set true subroutine matches
+              cycle   ! keep scanning
+            else
+              cycle   ! keep scanning
+            endif
           endif
-        endif
-      elseif(outstr(1:6).eq.'*topic')then
-        if(lno.le.7)goto 42  ! jump if no other token
-        K=7
-        CALL EGETW(outstr,K,WORD,'W','topic',IER)
-        if(WORD(1:lnt).eq.topic(1:lnt))then
-          havetopic = .true.     ! set true topic matches
-          goto 42   ! keep scanning
-        else
-          goto 42   ! keep scanning
-        endif
-      elseif(outstr(1:8).eq.'*enditem')then
+        elseif(outstr(1:6).eq.'*topic')then
+          if(lno.le.7) cycle  ! jump if no other token
+          K=7
+          CALL EGETW(outstr,K,WORD,'W','topic',IER)
+          if(WORD(1:lnt).eq.topic(1:lnt))then
+            havetopic = .true.     ! set true topic matches
+            cycle   ! keep scanning
+          else
+            cycle   ! keep scanning
+          endif
+        elseif(outstr(1:8).eq.'*enditem')then
 
-C Reached end of item, if this was the correct sub and topic then
+C Reached end of item exit scan, if this was the correct sub and topic then
 C set number of help lines.
-        if(havesub.and.havetopic)then
-          CALL ERPFREE(ihfil,ISTAT) ! free it
-          return
-        else
-          goto 42   ! keep scanning
-        endif
-      elseif(outstr(1:11).eq.'*subroutine')then
-        goto 42   ! keep scanning
-      elseif(outstr(1:1).eq.sq)then
+          if(havesub.and.havetopic)then
+            CALL ERPFREE(ihfil,ISTAT) ! free it
+            return
+          else
+            cycle  ! keep scanning
+          endif
+        elseif(outstr(1:11).eq.'*subroutine')then
+          cycle   ! keep scanning
+        elseif(outstr(1:1).eq.sq)then
 
 C We have a line that starts with a quote. If we have reached the
 C correct topic then read it otherwise scan another line.
-        if(havesub.and.havetopic)then
-          K=0
-          call EGETDQ(outstr,K,helpline,'W','phrase',IER)
-          lnhl=lnblnk(helpline)
-          call edisp(iuout,helpline)
-          nbhelp=nbhelp+1
-          if(lnhl.le.1)then
-            h(nbhelp)='  '
+          if(havesub.and.havetopic)then
+            K=0
+            call EGETDQ(outstr,K,helpline,'W','phrase',IER)
+            lnhl=lnblnk(helpline)
+            call edisp(iuout,helpline)
+            nbhelp=nbhelp+1
+            if(lnhl.le.1)then
+              h(nbhelp)='  '
+            else
+              write(h(nbhelp),'(a)') helpline(1:lnhl)
+            endif
+            cycle   ! keep scanning
           else
-            write(h(nbhelp),'(a)') helpline(1:lnhl)
+            cycle   ! keep scanning
           endif
-          goto 42   ! keep scanning
         else
-          goto 42   ! keep scanning
-        endif
-      else
  
 C Does not match expectations.
-        goto 42   ! keep scanning
-      endif
+          cycle   ! keep scanning
+        endif
+      end do scan
 
 C The end of file reached. If there has not been a match make up a
 C standard message.
