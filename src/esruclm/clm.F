@@ -100,9 +100,9 @@ C Name of current application
       integer NITEM,INO  ! max items and current menu item
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
                          ! because default message will be created
 
@@ -110,7 +110,7 @@ C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
       cAppName = 'clm'
-      app='clm'; sub='clm'  ! set for MAIN
+      helpinapp='clm'; helpinsub='clm'  ! set for MAIN
       tab = CHAR(9)
       ITRC=1
       IUOUT=6
@@ -503,16 +503,16 @@ C        write(6,*)outs248(1:lnblnk(outs248))
         CALL EPAGEND
         STOP
       ELSEIF(INO.EQ.1)THEN
-        topic='select_db_opt'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='select_db_opt'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL EASKABCD('Climate database options:',' ',
      &   'new db','use current db','select db','cancel',ICT,nbhelp)
         if(ICT.eq.1)then
 
 C Confirm that this is a new file and clear memory if necessary.
           dok=.true.
-          topic='ok_to_clear_data'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='ok_to_clear_data'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL ASKOK('As part of changing climate file do you wish',
      &      'to clear any current data held in memory?',OK,dok,2)
           CALL ASKOK('As part of changing climate file do you wish',
@@ -628,8 +628,8 @@ C Tabular analysis.
       ELSEIF(INO.EQ.9)THEN
 
 C Change radiation type.
-        topic='rad_change_password'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='rad_change_password'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         IANS=0
         CALL EASKI(IANS,' ',' Password ? ',
      &    0,'-',0,'-',0,'passowrd',IER,nbhelp)
@@ -638,8 +638,8 @@ C Change radiation type.
           goto 3
         endif
 
-        topic='rad_type_choice'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='rad_type_choice'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL EASKAB(' Solar radiation type in file: ',' ',
      &    'direct normal','global horizontal',IRADT,nbhelp)
         IRTYP=0
@@ -660,8 +660,8 @@ C Edit site attributes.
       ELSEIF(INO.EQ.12)THEN
 
 C Creation of climate file from manual editing.
-        topic='clm_data_creation_opt'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_data_creation_opt'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         IC=1
         CALL EASKATOG(' Creation of data via: ',' ',
      &    'keyboard entry','prediction','transforms','curve fitting',
@@ -688,8 +688,8 @@ C Creation of climate file from manual editing.
       ELSEIF(INO.EQ.13)THEN
 
 C Export climate data to ASCII file (with similar name).
-        topic='clm_export_options'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_export_options'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call easkabc(' Climate export options:',' ','ASCII esp-r file',
      &    'SQL tab separated','continue',IICT,nbhelp)
         if(IICT.eq.3) goto 3
@@ -697,8 +697,8 @@ C Export climate data to ASCII file (with similar name).
 C Prepend a .a to the current binary name and allow for browsing.
         call tstamp('>','CLM: export climate data')
         write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        topic='clm_file_browse_options'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_file_browse_options'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -737,8 +737,8 @@ C Confirm the period to transfer.
 
         write(outs,'(A,A)') PERST3(1:lnblnk(PERST3)),' ?'
         dok=.true.
-        topic='clm_export_inclusive'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_export_inclusive'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Export the data inclusive of',outs,OK,dok,nbhelp)
         IF(.NOT.OK)THEN
           CALL selper(ier)
@@ -752,8 +752,8 @@ C Confirm the period to transfer.
       ELSEIF(INO.EQ.14)THEN
 
 C Check whether it is an esp-r climate file or an EPW file.
-        topic='clm_esp_or_epw'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_esp_or_epw'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL EASKABCD(' Climate import options:',' ',
      &   'EPW climate file','ASCII esp-r file','Korean MET',
      &   'continue',IICT,nbhelp)
@@ -762,8 +762,8 @@ C Check whether it is an esp-r climate file or an EPW file.
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          topic='clm_epw_source'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_epw_source'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -809,8 +809,8 @@ C to overwrite site information. Confirm the period to transfer.
 
           write(outs,'(2A)') PERST3(1:lnblnk(PERST3)),' ?'
           dok=.true.
-          topic='clm_import_inclusive'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_import_inclusive'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL ASKOK('Import the data inclusive of',outs,OK,dok,nbhelp)
           IF(.NOT.OK)THEN
             CALL selper(ier)
@@ -819,8 +819,8 @@ C to overwrite site information. Confirm the period to transfer.
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          topic='clm_import_ascii_esp'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_import_ascii_esp'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -857,8 +857,8 @@ C Cast back to 72 char name and do the conversion.
           write(LASCI,'(a)') LLASCI(1:llt)
 
           dok=.true.
-          topic='clm_also_update_site'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_also_update_site'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL ASKOK(' ','Update the site info as well?',OK,dok,nbhelp)
           silent=.false.
           WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
@@ -876,18 +876,18 @@ C Cast back to 72 char name and do the conversion.
 C Import climate data from Korean Met Office XXXH.dat ASCII file
 C asking user which year to transfer.
           NTSPH=1
-          topic='clm_year_is_required'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_year_is_required'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ','Which year to import? ',
      &             1900,'W',2020,'W',2000,'year',IER,nbhelp)
           CLMLOC=' '
-          topic='clm_site_name'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_site_name'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKS(CLMLOC,' ','Climate site name ? ',
      &      30,'North_Pole','climate site. ',IER,nbhelp)
 
-          topic='clm_latitude_match'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_latitude_match'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKR(CLAT,' ','Climate latitude ? ',
      &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
@@ -898,8 +898,8 @@ C asking user which year to transfer.
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          topic='clm_korea_met_file_name'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='clm_korea_met_file_name'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -936,8 +936,8 @@ C Cast back to 72 char name and do the conversion.
           write(LASCI,'(a)') LLASCI(1:llt)
 
 C Ask if older or newer file format.
-          topic='korea_met_file_old_new'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='korea_met_file_old_new'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKABC('Korean met office file age options:',' ',
      &     'older file','newer file','cancel',ICT,nbhelp)
           if(ICT.eq.1)then
@@ -980,8 +980,8 @@ C Feedback channel. Suggest an initial name for the export file.
       ELSEIF(INO.EQ.20)THEN
 
 C Delimiter.
-        topic='clm_delimiter_choice'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_delimiter_choice'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
@@ -1001,8 +1001,8 @@ C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('clm ',0)
 
 C Get additional text to dislay.
-        topic='clm_additional_notes'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_additional_notes'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL PHELPD('climate import',nbhelp,'climate_import',0,0,IER)
       ELSE
         INO=-1
@@ -1046,13 +1046,13 @@ C hour in any specified day.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
                          ! because default message will be created
 
-      app='clm'; sub='CLMTOT'  ! set for this subroutine
+      helpinapp='clm'; helpinsub='CLMTOT'  ! set for this subroutine
 
 C If in type 8 terminal make the text display area larger before
 C displaying the following data.
@@ -1141,8 +1141,8 @@ C Output all values in tabular form.
    10 CONTINUE
 
 C Consider another day?
-      topic='confirm_another_period'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='confirm_another_period'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       dok=.true.
       CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
       IF(OK)GOTO 5
@@ -1163,13 +1163,13 @@ C SETUP provides the menus and control logic for the preferences menu.
       integer nitms,ISETUP  ! max items and current menu item
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
 C Present the preferences menu. ISETUP is the menu index returned.
-      app='clm'; sub='SETUP'  ! set for this subroutine
+      helpinapp='clm'; helpinsub='SETUP'  ! set for this subroutine
     2 IER=0
       ISETUP=-2
 
@@ -1212,8 +1212,8 @@ C allow decimal day representation if day format is DOY.
       ELSEIF(ISETUP.EQ.4)THEN
 
 C Produce help text for the  menu.
-        topic='clm_setup_help'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_setup_help'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL PHELPD('clm preferences',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.5)THEN
 

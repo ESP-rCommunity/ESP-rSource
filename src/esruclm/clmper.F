@@ -37,13 +37,12 @@ C puropses.
       CHARACTER hold*24
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
-      app='clm'; sub='CLMDAY'  ! set for cfiles
-
-      topic='period_at_least'
-      call gethelptext(app,sub,topic,nbhelp)
+      helpinapp='clm'; helpinsub='CLMDAY'  ! set for cfiles
+      helptopic='period_at_least'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       write(HOLD,'(I6,I4)') KDS,KDF
  10   CALL EASKS(HOLD,' ',' Start and end hour: ',
      &     24,' 1  24 ','start and end hour',IER,1)
@@ -66,14 +65,14 @@ C returns ID based on the current settings of IFDAY.
       CHARACTER hold*24
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
-      app='clm'; sub='ONEDAY'  ! set for cfiles
+      helpinapp='clm'; helpinsub='ONEDAY'  ! set for cfiles
 
       IER=0
-      topic='period_within_calendar'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='period_within_calendar'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
   281 IF(IFDAY.EQ.0)THEN
         CALL EASKI(IDAY,' ',' d-o-y ? ',
      &             1,'F',365,'F',1,'start day',IER,nbhelp)
@@ -120,10 +119,10 @@ C seasons.h provides typper and typsea
       integer NITEM,INO  ! max items and current menu item
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
-      app='clm'; sub='SELPER'  ! set for cfiles
+      helpinapp='clm'; helpinsub='SELPER'  ! set for cfiles
 
 C Assume whole day requested.
       ier=0
@@ -279,8 +278,8 @@ C Adjust display if in southern hemisphere.
       elseif(INO.EQ.28)then
 
 C Help.
-        topic='period_user_defined'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='period_user_defined'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL PHELPD('clm periods',nbhelp,'-',0,0,IER)
         ino=-1
         goto 4
@@ -322,14 +321,14 @@ C returns IDS and IDF based on the current settings of IFDAY.
       integer ifday  ! indicates the format for days.
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
-      app='clm'; sub='CLMPER'  ! set for cfiles
+      helpinapp='clm'; helpinsub='CLMPER'  ! set for cfiles
 
       IER=0
-      topic='period_output_time'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='period_output_time'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
   281 IF(IFDAY.EQ.0)THEN
         write(HOLD,'(I6,I4)') IDS,IT1
@@ -446,7 +445,7 @@ C ITM is main item editing menu.
       integer nitms,INO  ! max items and current menu item
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
      
@@ -455,7 +454,7 @@ C For help messages
       DATA DAYNAM/'Mon','Tue','Wed','Thu','Fri','Sat','Sun'/
 
 C Check if Unix-based or DOS based.
-      app='clm'; sub='editemclimatelist'  ! set for clmper
+      helpinapp='clm'; helpinsub='editemclimatelist'  ! set for clmper
       call isunix(unixok)
       havedrawn = .false.
       altered = .false.
@@ -591,8 +590,8 @@ C     &      igl,igr,igt,igb,igw,igwh
       endif
 
 C Context help
-      topic='climate_list_facility'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='climate_list_facility'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Climate list item',ITM,nitms,INO)
       if(INO.EQ.nitms)then
@@ -614,8 +613,8 @@ C        endif
       elseif(INO.eq.1)then
 
 C String for the selection menu.
-        topic='climate_list_menu_txt'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_list_menu_txt'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         t32=clmlnam
         if(t32(1:15).eq.'not yet entered')write(t32,'(2a)') CLMLOC,'  '
         write(d32,'(2a)') CLMLOC,'  '
@@ -625,8 +624,8 @@ C String for the selection menu.
       elseif(INO.eq.2)then
 
 C Aide memorie for the menu.
-        topic='climate_list_menu_aide'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_list_menu_aide'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         t72=clmlaid
         if(t72(1:15).eq.'not yet entered')then
           write(t72,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
@@ -640,8 +639,8 @@ C Aide memorie for the menu.
       elseif(INO.eq.3)then
 
 C Installed location of climate file. If GTK then use file browser.
-        topic='climate_list_loc'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_list_loc'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
 
 C Debug.
@@ -684,8 +683,8 @@ C Toggle for available
      &      'so check it prior to marking it as ONLINE','P')
         endif
 
-        topic='climate_item_offline'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_item_offline'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call easkabc('Choices:',' ','online','offline','continue',IW,
      &    nbhelp)
         if(iw.eq.1) clmlavail = 'ONLINE'
@@ -696,8 +695,8 @@ C 1st winter season
 C Edit the current period in terms of day and month. Also check to
 C see if next period overlaps and correct.
    91   hold = ' '
-        topic='climate_winter_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_winter_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1wins,descr,descrst)
         call stdate(iyear,is1winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 1st winter ',descrst,' - ',descrfn
@@ -734,8 +733,8 @@ C If first season is not 1 Jan then warn user.
 C Spring season.
 C Edit the current period in terms of day and month.
    92   hold = ' '
-        topic='climate_spring_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_spring_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1sprs,descr,descrst)
         call stdate(iyear,is1sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Spring ',descrst,' - ',descrfn
@@ -788,8 +787,8 @@ C Edit the current period in terms of day and month.
 C Summer season.
 C Edit the current period in terms of day and month.
    93   hold = ' '
-        topic='climate_summer_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_summer_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1sums,descr,descrst)
         call stdate(iyear,is1sumf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Summer ',descrst,' - ',descrfn
@@ -842,8 +841,8 @@ C Edit the current period in terms of day and month.
 C Autumn season.
 C Edit the current period in terms of day and month.
    94   hold = ' '
-        topic='climate_autumn_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_autumn_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,is2sprs,descr,descrst)
         call stdate(iyear,is2sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Autumn ',descrst,' - ',descrfn
@@ -896,8 +895,8 @@ C Edit the current period in terms of day and month.
 C 2nd winter season.
 C Edit the current period in terms of day and month.
    95   hold = ' '
-        topic='climate_winter2_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_winter2_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,is2wins,descr,descrst)
         call stdate(iyear,is2winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 2nd winter ',descrst,' - ',descrfn
@@ -945,8 +944,8 @@ C Edit the current period in terms of day and month.
 C 1st winter period
 C Edit the current period in terms of day and month.
    96   hold = ' '
-        topic='climate_winter1_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_winter1_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia1wins,descr,descrst)
         call stdate(iyear,ia1winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 1st winter typical ',descrst,' - ',
@@ -970,8 +969,8 @@ C Edit the current period in terms of day and month.
 C Spring period.
 C Edit the current period in terms of day and month.
    97   hold = ' '
-        topic='climate_spring_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_spring_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia1sprs,descr,descrst)
         call stdate(iyear,ia1sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Spring typical ',descrst,' - ',
@@ -995,8 +994,8 @@ C Edit the current period in terms of day and month.
 C Summer period.
 C Edit the current period in terms of day and month.
    98   hold = ' '
-        topic='climate_summer_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_summer_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,iasums,descr,descrst)
         call stdate(iyear,iasumf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Summer typical ',descrst,' - ',
@@ -1020,8 +1019,8 @@ C Edit the current period in terms of day and month.
 C Autumn period.
 C Edit the current period in terms of day and month.
    99   hold = ' '
-        topic='climate_autumn_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_autumn_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia2sprs,descr,descrst)
         call stdate(iyear,ia2sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Autumn typical ',descrst,' - ',
@@ -1045,8 +1044,8 @@ C Edit the current period in terms of day and month.
 C 2nd winter period.
 C Edit the current period in terms of day and month.
   100   hold = ' '
-        topic='climate_winter2_season'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_winter2_season'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia2wins,descr,descrst)
         call stdate(iyear,ia2winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 2nd winter typical ',descrst,' - ',
@@ -1073,8 +1072,8 @@ C Scan climate for best-fit weeks.
       elseif(INO.eq.19)then
 
 C Documentations text option.
-        topic='climate_list_doc'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_list_doc'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         call easkabcd('Documentation options:',' ','List','Initialise',
      &    'Edit','Continue',idw,nbhelp)
         if(idw.eq.1)then
@@ -1325,8 +1324,8 @@ C Save climatelist text block to file, confirm file name and open,
 C call mkitemclimatelist and then close file.
         write(llitem,'(2a)') lclim(1:lnblnk(lclim)),'.block'
         write(DFILE,'(2a)') lclim(1:lnblnk(lclim)),'.block'
-        topic='climate_current_info'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_current_info'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         llt=lnblnk(llitem)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
@@ -1411,8 +1410,8 @@ C     &      igl,igr,igt,igb,igw,igwh
           havedrawn = .true.
         endif
       elseif(INO.eq.24)then
-        topic='climate_list_facility'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='climate_list_facility'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL PHELPD('clm list mgt',nbhelp,'-',0,0,IER)
       else
         INO=-4
@@ -1560,10 +1559,10 @@ C seasons.h provides typper, typsea, sea* variables
       real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
 C For help messages
-      character app*24,sub*24,topic*24 ! strings for help
+      character helpinapp*24,helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
 
-      app='clm'; sub='DDRADSUM'  ! set for cfiles
+      helpinapp='clm'; helpinsub='DDRADSUM'  ! set for cfiles
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -1576,8 +1575,8 @@ C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h
       cddw=1.0
       radw=1.0
 
-      topic='dd_base_temp'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='dd_base_temp'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       if(hddbaset.lt.0.1)then
         hddbaset=17.0
       endif

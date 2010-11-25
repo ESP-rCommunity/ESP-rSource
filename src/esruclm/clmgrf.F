@@ -48,12 +48,12 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 #endif
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      app='clm'; sub='CLMGRF'  ! set for cfiles
+      helpinapp='clm'; helpinsub='CLMGRF'  ! set for cfiles
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -232,8 +232,8 @@ C    6= rh (at igr+100 farthest at right)
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(1x,4f7.1)')YMAX(1),YMIN(1),YMAX(2),YMIN(2)
-        topic='clm_solar_graph'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_solar_graph'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
   42    CALL EASKS(HOLD,' Max & Min for solar radiation & db temp:',
      &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,nbhelp)
         K=0
@@ -248,8 +248,8 @@ C Present vertex coords for editing then parse data from HOLD.
 C Second set of axis.
         WRITE(HOLD,'(1x,6f7.1)')YMAX(4),YMIN(4),YMAX(5),YMIN(5),
      &    YMAX(6),YMIN(6)
-        topic='clm_wind_graph'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_wind_graph'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
   43    CALL EASKS(HOLD,' Max & Min for wind speed, wind dir, rh:',' :',
      &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,nbhelp)
         K=0
@@ -371,8 +371,8 @@ C Clear selections.
         INEW=1
       elseif(ino.eq.15)then
 C Help.
-        topic='clm_graph_facilities'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='clm_graph_facilities'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL PHELPD('clm graphics',nbhelp,'-',0,0,IER)
       else
         ino=-1

@@ -56,7 +56,6 @@ C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKBCLM(ITRU,ICDESC,LASCI,IUNIT,IDS,IDF,silent,IER)
 #include "esprdbfile.h"
 
-C      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
@@ -67,16 +66,15 @@ C      common/pophelp/h(60)
       dimension ICLM(24,6)
 
       CHARACTER CLMLOC*30
-C      CHARACTER H*72
       CHARACTER LASCI*72,outs*124,OUTSTR*124
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24 ! application name
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      app='clm'; sub='MKBCLM'  ! set for cfiles
+      helpinapp='clm'; helpinsub='MKBCLM'  ! set for cfiles
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -96,8 +94,8 @@ C Open the ASCII file for reading.
         IREAD=1
       else
         dok=.true.
-        topic='confirm_marker_line'
-        call gethelptext(app,sub,topic,nbhelp)
+        helptopic='confirm_marker_line'
+        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
         CALL ASKOK(' ',
      &    'Does ASCII file have day demarcation lines?',OK,dok,nbhelp)
         IF(OK)IREAD=1
@@ -138,19 +136,19 @@ C such questions now.
         IF(ICDESC.EQ.1)then
 
 C Define the year if not already done.
-          topic='confirm_year'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='confirm_year'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ',' What is the year ? ',
      &             1900,'W',2005,'W',2003,'year',IER,nbhelp)
 
           CLMLOC=' '
-          topic='confirm_site_name'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='confirm_site_name'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKS(CLMLOC,' ',' Climate site name ? ',
      &      30,'North_Pole','climate site. ',IER,nbhelp)
 
-          topic='confirm_lat_log_diff'
-          call gethelptext(app,sub,topic,nbhelp)
+          helptopic='confirm_lat_log_diff'
+          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
           CALL EASKR(CLAT,' ',' Climate latitude ? ',
      &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
@@ -516,12 +514,12 @@ C Parameters
       integer IDRAD
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      app='clm'; sub='MKOREANCLM'  ! set for cfiles
+      helpinapp='clm'; helpinsub='MKOREANCLM'  ! set for cfiles
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -543,21 +541,21 @@ C Initialiase defaults for easkr
       
 C Set the radiation flag to Global horizontal      
       IDNGH=123
-      topic='confirm_lat_log_diff'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='confirm_lat_log_diff'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       CALL EASKR(longit_for_diffuse_calcs,' ',
      &   ' Climate longitude (actual)? (west: positive) ',
      &   -180.0,'W',180.0,'W',30.0,'climate longitude',IER,nbhelp)
 
-      topic='local_time_difference'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='local_time_difference'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       CALL EASKR(differ_from_Greenwich,' ',
      &  ' Time difference from Greenwich? (west: positive) ',
      &  -24.0,'W',24.0,'W',0.0,'time_difference',IER,nbhelp)
 
 C Export climate data to ASCII file (with similar name).
-      topic='korea_met_conversion'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='korea_met_conversion'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       call easkabc
      &  ('There are three available models to approximate diffuse:',
      &  ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
@@ -886,17 +884,17 @@ C or passed into clm module).
       character LCMDFL*144,clmdb*144,L144*144
 
 C For help messages
-      character app*24   ! application name
-      character sub*24   ! subroutine name
-      character topic*24 ! string (unique) for topic
+      character helpinapp*24   ! application name
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      app='clm'; sub='CFILIN'  ! set for cfiles
+      helpinapp='clm'; helpinsub='CFILIN'  ! set for cfiles
       tab = CHAR(9)
 
 C Get help message set.
-      topic='clm_file_contents'
-      call gethelptext(app,sub,topic,nbhelp)
+      helptopic='clm_file_contents'
+      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
       rescan=.false.
       IUF=ifil+1
 
