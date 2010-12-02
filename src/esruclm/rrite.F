@@ -28,7 +28,6 @@ C climate file.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RADTYP/IDNGH
-      common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -43,7 +42,7 @@ C climate file.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       DIMENSION item(31),holdd(24)
       CHARACTER*30 CLMLOC
-      CHARACTER H*72,outs*124,item*40,holdd*34,hold*36,key*1
+      CHARACTER outs*124,item*40,holdd*34,hold*36,key*1
       character head*16
       logical ok,dok,altered
       integer onleft  ! number of left axis
@@ -119,9 +118,6 @@ C Check if user wishes to edit another day.
           dok=.true.
           helptopic='ok_to_update'
           call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C          h(1)='Changes were detected in the climate data. These'
-C          h(2)='may be lost if they are not saved back into the '
-C          h(3)='file. '
           CALL ASKOK(' ','Update database?',OK,dok,nbhelp)
           if(OK)then
             call CLMPUT(IDAY)
@@ -138,9 +134,6 @@ C          h(3)='file. '
         dok=.false.
         helptopic='one_day_at_a_time'
         call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C        h(1)='Editing of climate data is done one day at a time.'
-C        h(2)='If you want to continue editing a different day '
-C        h(3)='say yes. '
         CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
         IF(OK)GOTO 31
 
@@ -169,8 +162,6 @@ C Reset to the normal graphics area before exiting.
       elseif(INO.eq.mitem-1)then
         helptopic='edit_hourly_menu'
         call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C        H(1)='This menu allows climatic data for each hour of a day to'
-C        H(2)='be edited. Edit by selecting an item or -Exit to escape.'
         CALL PHELPD('clm data edit',nbhelp,'-',0,0,IER)
       elseif(INO.eq.mitem-2)then
 
@@ -189,9 +180,6 @@ C Check if user wishes to edit another day.
         dok=.false.
         helptopic='one_day_at_a_time'
         call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C        h(1)='Editing of climate data is done one day at a time.'
-C        h(2)='If you want to continue editing a different day '
-C        h(3)='say yes. '
         CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
         IF(OK)GOTO 31
       elseif(INO.gt.3.and.INO.lt.29)then
@@ -206,10 +194,6 @@ C        h(3)='say yes. '
         ENDIF
         helptopic='one_day_data_summary'
         call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C        h(1)='Data are: '
-C        h(2)=' diffuse rad (W/m^2), glob hor rad (W/m^2), db temp (C),'
-C        h(3)='Relative Humidity (%), wind direc (deg from north),'
-C        h(4)='and speed (m/sec)'
   42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 10. 10 0 0.0 ','clm data',
      &    IER,nbhelp)
         K=0
@@ -242,12 +226,11 @@ C SITEDIT edits site related data in a climate file.
 #include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/RADTYP/IDNGH
-      common/pophelp/h(60)
 
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      CHARACTER CLMLOC*30,T30*30,H*72,outs*124
+      CHARACTER CLMLOC*30,T30*30,outs*124
       logical ok
 
 C For help messages
@@ -259,9 +242,6 @@ C For help messages
 C Ask for the year (2001 convenintly has monday on 1 Jan).
       helptopic='what_is_the_year'
       call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C      H(1)='The year is required to find the day of the week'
-C      H(2)='for a given julian day. The year 2001 has 1 Jan'
-C      H(3)='as a Monday.'
       CALL EASKI(IYEAR,' ',' What is the year ? ',
      &         1900,'F',2005,'W',2001,'year',IER,nbhelp)
       ICYEAR=IYEAR
@@ -275,7 +255,6 @@ C Determine the climate location.
       T30=CLMLOC
       helptopic='what_is_descr'
       call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C      h(1)='This description (<=30 char) is used in reporting.'
       CALL EASKS(T30,' ',' Climate site name ? ',
      &    30,'North_Pole','climate site. ',IER,nbhelp)
       if(T30(1:2).ne.'  ') CLMLOC=T30
@@ -284,17 +263,11 @@ C      h(1)='This description (<=30 char) is used in reporting.'
 
       helptopic='what_is_latitude'
       call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C      H(1)='The climate latitude does not necessarily have to match'
-C      H(2)='the site latitude, however, the difference should not be'
-C      H(3)='great or simulation results may be open to question.'
       CALL EASKR(CLAT,' ',' Climate latitude ? ',
      &  -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
       helptopic='what_is_long_diff'
       call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
-C      H(1)='The climate longitude difference does not necessarily'
-C      H(2)='have to match the site, however, it should be'
-C      H(3)='close for best results.'
       CALL EASKR(CLONG,' ',' Climate longitude diff ?',
      &           -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
       IREC=368

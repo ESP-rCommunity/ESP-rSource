@@ -1555,44 +1555,6 @@ C In case there are some old *topic lines in the help f
             cycle   ! keep scanning
           endif
 
-C        if(outstr(1:5).eq.'*item')then
-C          if(lno.le.6) cycle  ! jump if no other token
-C          K=6
-C          CALL EGETW(outstr,K,WORD,'W','sub',IER)
-C          if(WORD(1:3).eq.'sub')then
-C            CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
-C            if(WORD(1:lns).eq.sub(1:lns))then
-
-C We have a matching subroutine name
-C              havesub = .true.  ! set true subroutine matches
-C              cycle   ! keep scanning
-C            else
-C              cycle   ! keep scanning
-C            endif
-C          endif
-C        elseif(outstr(1:6).eq.'*topic')then
-C          if(lno.le.7) cycle  ! jump if no other token
-C          K=7
-C          CALL EGETW(outstr,K,WORD,'W','topic',IER)
-C          if(WORD(1:lnt).eq.topic(1:lnt))then
-C            havetopic = .true.     ! set true topic matches
-C            cycle   ! keep scanning
-C          else
-C            cycle   ! keep scanning
-C          endif
-C        elseif(outstr(1:8).eq.'*enditem')then
-
-C Reached end of item exit scan, if this was the correct sub and topic then
-C set number of help lines.
-C          if(havesub.and.havetopic)then
-C            CALL ERPFREE(ihfil,ISTAT) ! free it
-C            return
-C          else
-C            cycle  ! keep scanning
-C          endif
-C        elseif(outstr(1:11).eq.'*subroutine')then
-C          cycle   ! keep scanning
-
         elseif(outstr(1:1).eq.sq)then
 
 C We have a line that starts with a quote. If we have reached the
