@@ -50,10 +50,10 @@ C climate file.
       integer mitem,INO  ! max items and current menu item
 
 C For help messages
-      character helpinapp*24,helpinsub*24,helptopic*24
+      character helpinsub*24,helptopic*24
       integer nbhelp     ! number of help lines found
 
-      helpinapp='clm'; helpinsub='RRITE'  ! set for MAIN
+      helpinsub='RRITE'  ! set for MAIN
       altered=.false.
       onleft = 2      ! assume all axes to be drawn
       onright = 3
@@ -117,7 +117,7 @@ C Check if user wishes to edit another day.
         if(altered)then
           dok=.true.
           helptopic='ok_to_update'
-          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' ','Update database?',OK,dok,nbhelp)
           if(OK)then
             call CLMPUT(IDAY)
@@ -133,7 +133,7 @@ C Check if user wishes to edit another day.
         endif
         dok=.false.
         helptopic='one_day_at_a_time'
-        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
         IF(OK)GOTO 31
 
@@ -161,7 +161,7 @@ C Reset to the normal graphics area before exiting.
         return
       elseif(INO.eq.mitem-1)then
         helptopic='edit_hourly_menu'
-        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('clm data edit',nbhelp,'-',0,0,IER)
       elseif(INO.eq.mitem-2)then
 
@@ -179,7 +179,7 @@ C Transfer all climatic data to file.
 C Check if user wishes to edit another day.
         dok=.false.
         helptopic='one_day_at_a_time'
-        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
         IF(OK)GOTO 31
       elseif(INO.gt.3.and.INO.lt.29)then
@@ -193,7 +193,7 @@ C Check if user wishes to edit another day.
      &     ' diff rad, glob hor rad, db temp, RH %, wind direc & speed'
         ENDIF
         helptopic='one_day_data_summary'
-        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+        call gethelptext(helpinsub,helptopic,nbhelp)
   42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 10. 10 0 0.0 ','clm data',
      &    IER,nbhelp)
         K=0
@@ -234,14 +234,14 @@ C SITEDIT edits site related data in a climate file.
       logical ok
 
 C For help messages
-      character helpinapp*24,helpinsub*24,helptopic*24
+      character helpinsub*24,helptopic*24
       integer nbhelp     ! number of help lines found
 
-      helpinapp='clm'; helpinsub='SITEDIT'  ! set for MAIN
+      helpinsub='SITEDIT'  ! set for MAIN
 
 C Ask for the year (2001 convenintly has monday on 1 Jan).
       helptopic='what_is_the_year'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IYEAR,' ',' What is the year ? ',
      &         1900,'F',2005,'W',2001,'year',IER,nbhelp)
       ICYEAR=IYEAR
@@ -254,7 +254,7 @@ C Now transfer to the climate file.
 C Determine the climate location.
       T30=CLMLOC
       helptopic='what_is_descr'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(T30,' ',' Climate site name ? ',
      &    30,'North_Pole','climate site. ',IER,nbhelp)
       if(T30(1:2).ne.'  ') CLMLOC=T30
@@ -262,12 +262,12 @@ C Determine the climate location.
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
 
       helptopic='what_is_latitude'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(CLAT,' ',' Climate latitude ? ',
      &  -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
       helptopic='what_is_long_diff'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(CLONG,' ',' Climate longitude diff ?',
      &           -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
       IREC=368

@@ -42,12 +42,11 @@ C component data is given for both isotropic and anisotropic skies.
       logical ok,dok
 
 C For help messages
-      character helpinapp*24 ! application name
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      helpinapp='clm'; helpinsub='CLMINT'  ! set for cfiles
+      helpinsub='CLMINT'  ! set for cfiles
 
     6 FHSUM=0.
       GHSUM=0.
@@ -67,7 +66,7 @@ C Confirm the period to transfer.
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
       dok=.true.
       helptopic='clm_just_in_case'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' Is the analysis period (see below) correct?',
      &  PERST3,OK,dok,nbhelp)
       IF(.NOT.OK)THEN
@@ -239,7 +238,7 @@ C Isotropic case.
 C CONSIDER ANOTHER PERIOD ?
       dok=.true.
       helptopic='clm_another_say_no'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
       IF(OK)GOTO 6
       RETURN

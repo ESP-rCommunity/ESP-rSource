@@ -49,12 +49,11 @@ C of the user-specified time-dependant variable.
 #endif
 
 C For help messages
-      character helpinapp*24   ! application name
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      helpinapp='clm'; helpinsub='HISCLM'  ! set for cfiles
+      helpinsub='HISCLM'  ! set for cfiles
 
 C Identify specific variable to examine
 C and set up relevant label type for axis.
@@ -65,7 +64,7 @@ C Call MODFRQ to set up bin sizes and fill bins with data.
       CALL HISFRQ (IGET)
       IF(IFLAGF.EQ.1)GOTO 9999
    75 helptopic='clm_frq_distr_choice'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       INPIC=1
       FDC(1)='frequency bins      '
@@ -83,7 +82,7 @@ C Set tabular output.
         if(graph_ok)then
           dok=.true.
           helptopic='clm_numb_below_graph'
-          call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok(' ','Add table below existing graph?',ok,dok,
      &      nbhelp)
           if(.NOT.ok)CALL CHEAD(30)
@@ -190,19 +189,18 @@ C falls inside each bin.
       logical ok,dok
 
 C For help messages
-      character helpinapp*24   ! application name
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found (will be non-zero
 
-      helpinapp='clm'; helpinsub='HISFRQ'  ! set for cfiles
+      helpinsub='HISFRQ'  ! set for cfiles
 
 C Reset the number of bins, the maximum hits in one bin etc.
       DXBIN=0.0
       NBINS=0
       IFREQ=0
       helptopic='clm_frq_distr_choice'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easki(NBINS,' ',' Number of bins (0 for fixed width)?',
      &  0,'F',MF,'F',1,'no of bins',IER,nbhelp)
       IF (NBINS .GT. 0 .AND. NBINS .LE. MF) GOTO 110
@@ -211,7 +209,7 @@ C Reset the number of bins, the maximum hits in one bin etc.
       DXBIN=1.0
       CHA='  1   '
       helptopic='clm_frq_distr_bins'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(CHA,' ',' Bin width [d] ? ',20,
      &    '1','bin width',IER,5)
       IF(CHA(1:1).EQ.'d'.OR.CHA(1:1).EQ.'D')then
@@ -227,7 +225,7 @@ C Reset the number of bins, the maximum hits in one bin etc.
       CALL EGETWR(CHA,K,DXBIN,0.,0.,'-','bin width',IER)
 
  110  helptopic='clm_frq_distr_bins'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.true.
       call  askok('  ','Default bins?',OK,dok,5)
       if(ok)then
@@ -239,23 +237,23 @@ C Reset the number of bins, the maximum hits in one bin etc.
 C Get bin sizes from user.
   200 IF(NBINS.EQ.0)goto 210
       helptopic='clm_frq_min_bin'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easkr(XBIN1,' ','Minimum parameter value for bin ?',
      &  0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
 
       helptopic='clm_frq_max_bin'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easkr(XBINN,' ','Maximum parameter value for bin ?',
      &  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nbhelp)
 
       DXBIN = (XBINN-XBIN1) / NBINS
   210 dok=.false.
       helptopic='clm_frq_max_hit'
-      call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call askok('  ','Fix maximum height of bins?',OK,dok,nbhelp)
       if(ok)then
         helptopic='clm_frq_max_hight'
-        call gethelptext(helpinapp,helpinsub,helptopic,nbhelp)
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easki(IFREQ,' ',' Maximim height ? ',
      &          0,'W',0,'-',1,'max bin height',IER,nbhelp)
         goto 500
