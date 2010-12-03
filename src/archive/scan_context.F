@@ -31,7 +31,6 @@ C of subroutine gethelptext for specifics.
       character fileinput*72
       character fileoutput*72
       character outs*124
-      character sq*1,dq*1
       CHARACTER*42 WORDS(24)
       integer lnl  ! length of outs
       integer lneq ! position of equals
@@ -39,17 +38,15 @@ C of subroutine gethelptext for specifics.
       integer ij   ! loop counter
       CHARACTER B*124,C*1
       character head*72    ! the *item line
-      integer lnhead       ! length of *item line
       character buffer*124 ! to remember the help lines
       dimension buffer(100)
       integer buflen(100)  ! length of each line in the buffer
       integer buflines     ! number of buffer lines recorded
       character cursub*24  ! name of most recent subroutine
       integer lncursub     ! length of most recent subroutine
-      integer nexttok      1 position of next token in CALL
+      integer nexttok      ! position of next token in CALL
 
-      dq=char(34)   ! assign double quote
-      sq=char(39)   ! assign single quote
+C Initial values and clear arrays.
       write(6,'(a)') 'Assumes input file is source.F and that the'
       write(6,'(a)') 'output file is source.FH'
       IUOUT=6
@@ -63,199 +60,191 @@ C of subroutine gethelptext for specifics.
    21 continue
       head = ' '      ! clear heading
 
+C Setup input and output file names.
       write(fileinput,'(a)') 'source.F'    ! assumed name of input source file.
       write(fileoutput,'(a)') 'source.FH' ! assumed file with help text.
       open(1,file=fileinput,status='old')
       open(2,file=fileoutput,status='unknown')
+
+C Opening line of the file. Must be edited by user to insert
+C the name of the ESP-r module.
       write(2,'(a)') '*help_text'    ! header of the file
 
-  20  continue
-      read(1,'(a)',IOSTAT=IOS,ERR=1) outs
-      if(ios.eq.-1) goto 1
-      lnl=lnblnk(outs)
-      if(lnl.le.1)goto 20  ! jump if a blank line
+C Loop through all the lines in the input file.
+      scanlines: do
+        read(1,'(a)',IOSTAT=IOS,ERR=1) outs
+        if(ios.eq.-1) exit scanlines
+        lnl=lnblnk(outs)
+        if(lnl.le.1) cycle  ! jump if a blank line
 
-      call GETTOKENS(outs,IW,WORDS)
-      if(IW.le.1) goto 20  ! if only one token jump
+        call GETTOKENS(outs,IW,WORDS)
+        if(IW.le.1) cycle  ! if only one token jump
 
-      write(6,*) 'first token ',IW,' ',words(1)
-      if(IW.gt.1) write(6,*) '2nd token ',words(2)
-      if(WORDS(1)(1:2).eq.'h('.or.
-     &   WORDS(1)(1:2).eq.'H(')then
+C Find lines which included h(?)=' ' even if there is a
+C label prior to the h(?)=.
+C Debug.
+C       write(6,*) 'first token ',IW,' ',words(1)
+C        if(IW.gt.1) write(6,*) '2nd token ',words(2)
+        if(WORDS(1)(1:2).eq.'h('.or.
+     &     WORDS(1)(1:2).eq.'H('.or.
+     &     WORDS(2)(1:2).eq.'h('.or.
+     &     WORDS(2)(1:2).eq.'H(')then
 
 C Find position of the = and print from that point.
-        lastcc = MIN0(LNBLNK(outs),123)
-        WRITE(B,'(A)',IOSTAT=ios,ERR=11) outs(1:lastcc+1)
+          lastcc = MIN0(LNBLNK(outs),123)
+          WRITE(B,'(A)',IOSTAT=ios,ERR=11) outs(1:lastcc+1)
 
 C Loop through B and see what position is =
-C        lneq=0
-C        DO 100 I=1,LNBLNK(B)+1
-C          C=B(I:I)
-C          IF(C.EQ.'=') lneq=I
-C  100   CONTINUE
-        lneq=0; i=0
-        scane: do
-          i=i+1
-          if(I.gt.LNBLNK(B)) exit scane
-          C=B(I:I)
-          if(C.EQ.'=')then
-            lneq=I
-            exit scane
-          endif
-          cycle
-        end do scane
+          lneq=0
+          scane: do I=1,LNBLNK(B)+1
+            C=B(I:I)
+            if(C.EQ.'=')then
+              lneq=I
+              exit scane
+            endif
+            cycle
+          end do scane
 
 C Write the single quoted string, remember it in buffer as well
 C as its length.
-        if(lneq.eq.0.or.lneq.eq.1)then
-          buflines=buflines+1
-          buflen(buflines)=lnblnk(outs)
-C          write(2,'(a)') outs(1:buflen(buflines))
-          write(buffer(buflines),'(a)') outs(1:buflen(buflines))
-        else
-          buflines=buflines+1
-C          write(2,'(a)') outs(lneq+1:lnblnk(outs))
-          write(buffer(buflines),'(a)') outs(lneq+1:lnblnk(outs))
-          buflen(buflines)=lnblnk(buffer(buflines))  ! find actual
-        endif
+          if(lneq.eq.0.or.lneq.eq.1)then
+            buflines=buflines+1
+            buflen(buflines)=lnblnk(outs)
+            write(buffer(buflines),'(a)') outs(1:buflen(buflines))
+          else
+            buflines=buflines+1
+            write(buffer(buflines),'(a)') outs(lneq+1:lnblnk(outs))
+            buflen(buflines)=lnblnk(buffer(buflines))  ! find actual
+          endif
 
 C If the 1st or 2nd token is CALL the proceed.
-      elseif(WORDS(1)(1:4).eq.'CALL'.or.
-     &       WORDS(1)(1:4).eq.'call'.or.
-     &       WORDS(2)(1:4).eq.'CALL'.or.
+        elseif(WORDS(1)(1:4).eq.'CALL'.or.
+     &         WORDS(1)(1:4).eq.'call'.or.
+     &         WORDS(2)(1:4).eq.'CALL'.or.
+     &         WORDS(2)(1:4).eq.'call')then
+          if(WORDS(1)(1:4).eq.'CALL'.or.
+     &       WORDS(1)(1:4).eq.'call')then
+             nexttok=2
+          elseif(WORDS(2)(1:4).eq.'CALL'.or.
      &       WORDS(2)(1:4).eq.'call')then
-        if(WORDS(1)(1:4).eq.'CALL'.or.
-     &     WORDS(1)(1:4).eq.'call')then
-           nexttok=2
-        elseif(WORDS(2)(1:4).eq.'CALL'.or.
-     &     WORDS(2)(1:4).eq.'call')then
-           nexttok=3
-        endif        
-        if(WORDS(nexttok)(1:6).eq.'PHELPD'.or.
-     &     WORDS(nexttok)(1:6).eq.'phelpd')then
-C We reached the next subroutine so dump out the head and buffer.
-          if(lncursub.le.1)then
-C            write(2,'(a)') '*item'
-            write(head,'(a)') '*item'
-          else
-C            write(2,'(2a)') '*item ',cursub(1:lncursub)
-            write(head,'(2a)') '*item ',cursub(1:lncursub)
-          endif
-          write(2,'(a)') head(1:lnblnk(head))
-          if(buflines.gt.0)then
-            do 22 ij=1,buflines
-              write(2,'(a)') buffer(ij)(1:buflen(ij))
-   22       continue
-          endif
-          write(2,'(a)') '*enditem'  ! mark end of help text block
-          write(2,'(a)') outs(1:lnblnk(outs))
-          head=' '     ! reset
-          buflines=0
+             nexttok=3
+          endif        
+          if(WORDS(nexttok)(1:6).eq.'PHELPD'.or.
+     &       WORDS(nexttok)(1:6).eq.'phelpd')then
 
-        elseif(WORDS(nexttok)(1:4).eq.'EASK'.or.
-     &         WORDS(nexttok)(1:4).eq.'eask')then
-          if(lncursub.le.1)then
-C            write(2,'(a)') '*item'
-            write(head,'(a)') '*item'
-          else
-C            write(2,'(2a)') '*item ',cursub(1:lncursub)
-            write(head,'(2a)') '*item ',cursub(1:lncursub)
+C We reached the next subroutine so dump out the head and buffer.
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 22 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   22         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
+
+          elseif(WORDS(nexttok)(1:4).eq.'EASK'.or.
+     &           WORDS(nexttok)(1:4).eq.'eask')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 23 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   23         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
+          elseif(WORDS(nexttok)(1:3).eq.'ASK'.or.
+     &           WORDS(nexttok)(1:3).eq.'ask')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 24 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   24         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
           endif
-          write(2,'(a)') head(1:lnblnk(head))
-          if(buflines.gt.0)then
-            do 23 ij=1,buflines
-              write(2,'(a)') buffer(ij)(1:buflen(ij))
-   23       continue
-          endif
-          write(2,'(a)') '*enditem'  ! mark end of help text block
-          write(2,'(a)') outs(1:lnblnk(outs))
-          head=' '     ! reset
-          buflines=0
-        elseif(WORDS(nexttok)(1:3).eq.'ASK'.or.
-     &         WORDS(nexttok)(1:3).eq.'ask')then
-          if(lncursub.le.1)then
-C            write(2,'(a)') '*item'
-            write(head,'(a)') '*item'
-          else
-C            write(2,'(2a)') '*item ',cursub(1:lncursub)
-            write(head,'(2a)') '*item ',cursub(1:lncursub)
-          endif
-          write(2,'(a)') head(1:lnblnk(head))
-          if(buflines.gt.0)then
-            do 24 ij=1,buflines
-              write(2,'(a)') buffer(ij)(1:buflen(ij))
-   24       continue
-          endif
-          write(2,'(a)') '*enditem'  ! mark end of help text block
-          write(2,'(a)') outs(1:lnblnk(outs))
-          head=' '     ! reset
-          buflines=0
-        endif
-        goto 20    ! loop back for more
-      elseif(WORDS(1)(1:10).eq.'SUBROUTINE'.or.
-     &       WORDS(1)(1:10).eq.'subroutine')then
+          cycle    ! loop back for more
+        elseif(WORDS(1)(1:10).eq.'SUBROUTINE'.or.
+     &         WORDS(1)(1:10).eq.'subroutine')then
 
 C Find position of the ( in 2nd token and print up to that point.
-        lastcc = LNBLNK(WORDS(2))
-        WRITE(B,'(A)',IOSTAT=ios,ERR=11) WORDS(2)(1:lastcc+1)
+          lastcc = LNBLNK(WORDS(2))
+          WRITE(B,'(A)',IOSTAT=ios,ERR=11) WORDS(2)(1:lastcc+1)
 
 C Loop through B and see what position is (
-C        lnparen=0
-C        DO 101 I=1,LNBLNK(B)+1
-C          C=B(I:I)
-C          IF(C.EQ.'(') lnparen=I
-C  101   CONTINUE
-        lnparen=0; i=0
-        scanp: do
-          i=i+1
-          if(I.gt.LNBLNK(B)) exit scanp
-          C=B(I:I)
-          if(C.EQ.'(')then
-            lnparen=I
-            exit scanp
-          endif
-          cycle
-        end do scanp
+          lnparen=0
+          scanp: do I=1,LNBLNK(B)+1
+            C=B(I:I)
+            if(C.EQ.'(')then
+              lnparen=I
+              exit scanp
+            endif
+            cycle
+          end do scanp
 
-        if(lnparen.eq.0.or.lnparen.eq.1)then
+          if(lnparen.eq.0.or.lnparen.eq.1)then
 
 C If ( not found then just write out subroutine name.
-          write(2,'(2a)') '*subroutine ',WORDS(2)(1:lnblnk(WORDS(2)))
-          lncursub=lnblnk(WORDS(2))
-          write(cursub,'(a)') WORDS(2)(1:lncursub)
-          lncursub=lnblnk(cursub)
-        else
+            write(2,'(2a)') '*subroutine ',WORDS(2)(1:lnblnk(WORDS(2)))
+            lncursub=lnblnk(WORDS(2))
+            write(cursub,'(a)') WORDS(2)(1:lncursub)
+            lncursub=lnblnk(cursub)
+          else
 
 C If ( found then write out characters prior to (
-          lncursub = lnparen-1
-          write(2,'(2a)') '*subroutine ',WORDS(2)(1:lncursub)
-          write(cursub,'(a)') WORDS(2)(1:lncursub)
-        endif
-      elseif(WORDS(1)(1:7).eq.'PROGRAM'.or.
-     &       WORDS(1)(1:7).eq.'program')then
+            lncursub = lnparen-1
+            write(2,'(2a)') '*subroutine ',WORDS(2)(1:lncursub)
+            write(cursub,'(a)') WORDS(2)(1:lncursub)
+          endif
+        elseif(WORDS(1)(1:7).eq.'PROGRAM'.or.
+     &         WORDS(1)(1:7).eq.'program')then
 
 C If we find a line like program clm remember the clm part.
-        lastcc = LNBLNK(WORDS(2))
-        write(cursub,'(a)') WORDS(2)(1:lastcc)
-        lncursub=lnblnk(cursub)
-      else
-        goto 20    ! loop back for more
-      endif
-      goto 20    ! loop back for more
+          lastcc = LNBLNK(WORDS(2))
+          write(cursub,'(a)') WORDS(2)(1:lastcc)
+          lncursub=lnblnk(cursub)
+        else
+          cycle    ! loop back for more
+        endif
+        cycle    ! loop back for more
+      end do scanlines
 
+C The jump out point.
   1   close(1)
       close(2)
       write(6,'(a)') 'Reached the end of the file'
       stop
 
   11  if(IOS.eq.2)then
-        write(outs,*) 'GETTOKENS: internal wreite permission error: ',A
+        write(outs,*) 'GETTOKENS: internal write permission error: ',B
         call edisp(iuout,outs)
       else
-        write(outs,*) 'GETTOKENS: error in internal write: ',A
+        write(outs,*) 'GETTOKENS: error in internal write: ',B
         call edisp(iuout,outs)
       endif
-      return
+      stop   ! after writing the error message
+
       end
 
 C ********************* GETTOKENS
@@ -269,17 +258,10 @@ C overwriting the string passed, deal with a copy.
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) A
       CHARACTER*42 WORDS(24)
-      CHARACTER B*124,C*1,fs*1,outs*248
-      logical unixok
+      CHARACTER B*124,C*1,outs*248
       integer ier
 
 C Determine the file separator and clear the WORDS to return.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
       do 9 i=1,24
         WORDS(i)='  '
   9   continue
@@ -373,7 +355,6 @@ C     LW     - maximum length of WORD
 
       CHARACTER*(*) WORD, STRING, MSG
       CHARACTER ACT*1,A*1,loutstr*248,outs*124
-      character currentfile*124
       logical unixok
 
       WORD=' '
@@ -447,12 +428,8 @@ C Use egdispclr to clear the display window on a new page.
 C The maximum width of text which can be accommodated to a graphic
 C context is 124 characters.
       SUBROUTINE EDISP(ITRU,MSG)
-      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) MSG
       logical unixok
-
-C Temporarily set ICOUT.
-      ICOUT=0
 
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.

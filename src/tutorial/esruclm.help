@@ -92,8 +92,7 @@
 'to the (user specified) width of each bin.'
 *enditem
       call easki(NBINS,' ',' Number of bins (0 for fixed width)?',
-*item HISFRQ
-*topi clm_frq_distr_bins
+*item HISFRQ clm_frq_distr_bins
 'Priority can be given to either the number of frequency'
 'bins or the width of each bin. Specifying the number of'
 'frequency bins adjusts the width of each bin, while'
@@ -485,25 +484,20 @@
 'chart will reveal userful patterns. '
 *enditem
         call easkabcd('Options:',' ','display data',
-*item DDRADSUM
-*topic 
+*item PSYCHART
 *enditem
         call easkr(val,'Min temp C','for chart ',-10.0,'F',30.,'-',
-*item DDRADSUM
-*topic 
+*item PSYCHART
 *enditem
         call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-*item DDRADSUM
-*topic 
+*item PSYCHART
 *enditem
         call easkr(val,'Max moisture content g/kg','for chart '
-*item DDRADSUM
-*topic 
+*item PSYCHART
 'You have to redraw the chart to see any changes. '
 *enditem
         call askok('Redraw the chart to apply changes?',' ',ok,dok,1)
-*item DDRADSUM
-*topic 
+*item PSYCHART
 *enditem
         CALL PHELPD('Psychrometric chart',7,'-',0,0,IER)
 *item DDRADSUM
@@ -523,86 +517,75 @@
 'can also be recorded in the <climatelist> file.'
 *enditem
         CALL PHELPD('climate synopsis',12,'-',0,0,IER)
-*item CLMSEQ
-*topic 
+*item CLMSYN
 'If a number of months are selected you can get a'
 'weekly or monthly summary.'
 *enditem
         CALL EASKABC(' Degree day reporting: ',' ','daily','weekly',
-*item CLMSEQ
-*topic 
+*item CLMSYN
 'The lower range is... '
 *enditem
         CALL EASKR(XL,outs,' Lower value for range:  ',
-*item CLMSEQ
-*topic 
+*item CLMSYN
 'The upper range is ... '
 *enditem
         CALL EASKR(XU,outs,' Upper value for range:  ',
-*item CLMSEQ
-*topic 
+*item CLMSYN
 'If a number of months are selected you can get a'
 'monthly summary.'
 *enditem
         CALL EASKABCD(' Degree day reporting: ',' ','daily','weekly',
-*item CLMSEQ
-*topic 
+*item CLMSYN
 'If you answer yes the best-fit weeks that are found'
 'will be presented in additional detail and with pauses'
 'so that you can decide whether the weeks are correct. '
 *enditem
         call askok('Do you want to record the best-fit weeks (for',
 *item CLMDEG
-*topic 
+'The CSI house types (1 to 30). '
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
 *enditem
       CALL EASKR(BT,' ',' Base temperature ? ',
-*item CLMAV
-*topic 
 *subroutine SYNOPDEG
+*item SYNOPDEG
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item CLMAV
-*topic 
+*item SYNOPDEG
 *enditem
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-*item CLMAV
-*topic 
 *subroutine SYNOPDEGS
+*item SYNOPDEGS
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item CLMAV
-*topic 
+*item SYNOPDEGS
 *enditem
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-*item CLMAV
-*topic 
 *subroutine SYNOPWDEG
+*item SYNOPWDEG
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item CLMAV
-*topic 
+*item SYNOPWDEG
 *enditem
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-*item CLMAV
-*topic 
+*item SYNOPWDEG
 'Pause point so you can study the data. '
 *enditem
           call askok(' continue listing?',' ',OK,dok,1)
-*item CLMAV
-*topic 
+*subroutine CLMGT1
+*subroutine CLMXMN
 *subroutine CLPRED
+*item CLPRED
 *enditem
       CALL EASKS(STR,'On changing climate data it is usual to change'
 *item CLPRED
-*topic 
+'This menu allows climate data to be changed. In order to '
 'make a change choose one of the climate parameters (direct'
 '/diffuse radiation, temperature etc.)'
  ' '
@@ -693,14 +676,13 @@
 *enditem
             CALL ASKOK(' Do you want to make any more changes before',
 *item CLPRED
-*topic 
+ 'A data i/o error has occured in the program'
  'and it is probably best not to go on. '
  'Program is taking one step back.'
 *enditem
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
-*item CLPRED
-*topic 
 *subroutine POLYTR
+*item POLYTR
 'A climate parameter can either be set to a constant value'
 'for the chosen period of time. Or it can be increased or'
 'decreased by a constant value (e.g. to increase all temp-'
@@ -711,11 +693,11 @@
 'increasing the temperature by two degrees or making the '
 'humdity 75% etc.) '
 'The polynomial fit asks for the degree of polynomial e.g.'
-' a0                    has degree 0 and can be '
+'     Y = a0                    has degree 0 and can be '
 'used to set the climate parameter to a constant value'
-' a1*X + a0             has degree 1 and can be'
+'     Y = a1*X + a0             has degree 1 and can be'
 'used to increase/decrease by a factor of a1'
-' a2*X^2 + a1*X + a0    has degree 2 and can be '
+'     Y = a2*X^2 + a1*X + a0    has degree 2 and can be '
 'used in more complex transforms.'
 'Relevant number of coefficients a0, a1 etc. are also'
 'required as input'
@@ -744,15 +726,14 @@
 *enditem
         CALL EASKS(COEFFS,STR,' ',72,' ','polynom coeff',IER,2)
 *item POLYTR
-*topic 
-'and it is probably best not to go on. '
-'Program is taking one step back.'
+ 'A data i/o error has occured in the program'
+ 'and it is probably best not to go on. '
+ 'Program is taking one step back.'
 *enditem
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
-*item POLYTR
-*topic 
 *subroutine PDRAW
 *subroutine PSOLRD
+*item PSOLRD
 'North is positive, South is negative.'
 *enditem
       CALL EASKR(RLATIT,' Latitude (North +ve: South -ve) ',
