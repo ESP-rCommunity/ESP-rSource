@@ -578,13 +578,8 @@
 'Pause point so you can study the data. '
 *enditem
           call askok(' continue listing?',' ',OK,dok,1)
-*subroutine CLMGT1
-*subroutine CLMXMN
 *subroutine CLPRED
-*item CLPRED
-*enditem
-      CALL EASKS(STR,'On changing climate data it is usual to change'
-*item CLPRED
+*item CLPRED curve_fitting_overview
 'This menu allows climate data to be changed. In order to '
 'make a change choose one of the climate parameters (direct'
 '/diffuse radiation, temperature etc.)'
@@ -616,25 +611,21 @@
 'can be specified. Each hour in the data is checked and '
 'modified depending on which wind direction segment it '
 'falls into.'
+*enditem
+*item CLPRED reminder_on_saving
 'Any changes you might have made will only be '
 'written to THE CURRENT file if you agree. '
 ' '
 'If you have not made any changes then just say no.'
 *enditem
           CALL ASKOK('Changes have not yet been saved to file. Save',
-*item CLPRED
-*topic 
-*enditem
-        CALL PHELPD('climate prediction',31,'clm_predict',0,0,IER)
-*item CLPRED
-*topic 
+*item CLPRED interdependant_rh_temp
 'Temperature and RH are interdependant and some'
 'unrealistic combination may cause problems at'
 'simulation time. No checks are currently made.'
 *enditem
           CALL PHELPD('RH prediction',3,'RH changing',0,0,IER)
-*item CLPRED
-*topic 
+*item CLPRED jk_page_direct_normal
 'This model is based on the work of J K Page'
 '(Sheffield). It is used to predict the direct normal'
 'and the horizontal diffuse solar irradiance for any'
@@ -642,47 +633,25 @@
 'atmospheric turbidity and precipitable water content'
 *enditem
             CALL PHELPD('rad prediction',5,'rad prediction',0,0,IER)
-*item CLPRED
-*topic 
+*item CLPRED hour_max_min
 'You are asked for the hour at maximum as well as the'
 'maximum value and the minimum value for the day. '
 *enditem
           CALL EASKR(HOUR,'At which hour does the maximum ',PRML
-*item CLPRED
-*topic 
-*enditem
-          CALL EASKR(VALMAX,'Maximum ',PRM,
-*item CLPRED
-*topic 
-*enditem
-          CALL EASKR(VALMIN,'Minimum ',PRM,
-*item CLPRED
-*topic 
-*enditem
-            CALL EASKI(NSEG,' How many angular segments to divide into?'
-*item CLPRED
-*topic 
-*enditem
-              CALL EASKI(IANGF,STR,
-*item CLPRED
-*topic 
-*enditem
-              CALL EASKR(REDF,STR,'i.e. fraction of original speed?',
-*item CLPRED
-*topic 
+*item CLPRED specify_more_variables
 'You did not specify all of the variables that '
 'are allowed. Say yes to include the remaining '
 'variables. '
 *enditem
             CALL ASKOK(' Do you want to make any more changes before',
-*item CLPRED
+*item CLPRED io_error_message
  'A data i/o error has occured in the program'
  'and it is probably best not to go on. '
  'Program is taking one step back.'
 *enditem
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
 *subroutine POLYTR
-*item POLYTR
+*item POLYTR polynomial_fit_overview
 'A climate parameter can either be set to a constant value'
 'for the chosen period of time. Or it can be increased or'
 'decreased by a constant value (e.g. to increase all temp-'
@@ -703,29 +672,12 @@
 'required as input'
 *enditem
       CALL EASKATOG('Change original climate value ','(see help)'
-*item POLYTR
-*topic 
-*enditem
-        CALL EASKS(COEFFS,'What is the constant value','(see help)',
-*item POLYTR
-*topic 
-*enditem
-        CALL EASKS(COEFFS,'Change by what constant value','(see help)',
-*item POLYTR
-*topic 
-*enditem
-        CALL EASKS(COEFFS,'Change by what fraction','(see help)',
-*item POLYTR
-*topic 
-*enditem
-        CALL EASKI(NORD,' What is the order of polynomial?','(see help)'
-*item POLYTR
-*topic 
+*item POLYTR polynomial_coef
 'For the polynomial a1X + a0 enter a1 and a0 '
 'in that order and separated by a space'
 *enditem
         CALL EASKS(COEFFS,STR,' ',72,' ','polynom coeff',IER,2)
-*item POLYTR
+*item POLYTR polyr_io_error_message
  'A data i/o error has occured in the program'
  'and it is probably best not to go on. '
  'Program is taking one step back.'
@@ -733,22 +685,13 @@
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
 *subroutine PDRAW
 *subroutine PSOLRD
-*item PSOLRD
+*item PSOLRD north_is_positive
 'North is positive, South is negative.'
+'East is positive, West is negative. '
+'Mass is used in determining air mass and turbidity. '
 *enditem
       CALL EASKR(RLATIT,' Latitude (North +ve: South -ve) ',
-*item PSOLRD
-*topic 
-'East is positive, West is negative. '
-*enditem
-      CALL EASKR(RLONGT,' Longitude (East +ve: West -ve) ',
-*item PSOLRD
-*topic 
-'Used in determining air mass and turbidity. '
-*enditem
-      CALL EASKR(HTSITE,
-*item PSOLRD
-*topic 
+*item PSOLRD recommended_turbidity
 '     Recommended Turbidity Values:'
 ' '
 ' Clear weather in winter            0.09'
@@ -758,15 +701,13 @@
 ' Heavy warm hazy weather            0.45'
 *enditem
       CALL EASKR(ATTURB,'Value of atmospheric turbidity?','(see help)',
-*item PSOLRD
-*topic 
+*item PSOLRD review_derived_value
 'You have been presented with a derived value. Plese '
 'review the value to see if it correct. If you say'
 'no you will be asked for precipitable water content. '
 *enditem
       CALL ASKOK(outs,'Is this value satisfactory?',OK,dok,3)
-*item PSOLRD
-*topic 
+*item PSOLRD precip_water_content
 'Water content is in mm. '
 *enditem
       CALL EASKR(PRECWC,' Average precipitable water content',
