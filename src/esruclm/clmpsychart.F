@@ -26,7 +26,6 @@ C esrures/psychart.F - revised to for plotting climate data.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -43,7 +42,7 @@ C esrures/psychart.F - revised to for plotting climate data.
       common/pixhist/ipixhist(8760,2)
      
       CHARACTER*26 ITEM(7)
-      CHARACTER H*72,puts*12,etext*72,gtext*72
+      CHARACTER puts*12,etext*72,gtext*72
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40
       logical close,colok,cscaleok,ok,dok
@@ -54,6 +53,13 @@ C esrures/psychart.F - revised to for plotting climate data.
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+
+      helpinsub='PSYCHART'  ! set for cfiles
 
       PATMOS=1013.25
 
@@ -120,12 +126,12 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
       call viewtext(gtext,iside,isize,ifont)
 
 C Setup menu text.
-      ITEM(1) ='1 plot data            '
+      ITEM(1) ='1 select plot data     '
       ITEM(2) ='2 change scales        '
       ITEM(3) ='3 re-draw chart        '
       ITEM(4) ='  ____________________ '
       ITEM(5) ='                       '
-      ITEM(6) ='h help                 '
+      ITEM(6) ='? help                 '
       ITEM(7) ='- exit                 '
 
 C Display menu.
@@ -133,20 +139,15 @@ C Display menu.
       INO=-2
 
 C Instanciate h() strings for the menu.
-      H(1)='This psychrometric plotting facility support'
-      H(2)='vieweing the psycrometric state of the ambient'
-      H(3)='air.'
-      H(4)=' '
-      H(5)='<to be done>'
-      H(6)='clicking on a point will indicate the time of the'
-      H(7)='occurrance.'
+      helptopic='psychrometric_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  5    CALL EMENU('Ambient conditions',ITEM,NITMS,INO)
       IF(INO.EQ.1)THEN
 
 C Ask whether user supplied points or from system components.
-        h(1)='Sometimes the display of climate data on a psychrometric'
-        h(2)='chart will reveal userful patterns. '
+        helptopic='psychrometric_useful'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabcd('Options:',' ','display data',
      &    'colour by temperature','colour by RH','continue',iwhich,2)
 
@@ -219,26 +220,30 @@ C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
       ELSEIF(INO.EQ.2)THEN
 
 C Change the scales on the axis and re-calculated enthalph for the chart.
+        helptopic='psychrometric_min_max'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         val=YMIN(2)
         call easkr(val,'Min temp C','for chart ',-10.0,'F',30.,'-',
-     &  0.0,'min temp',IER,0)
+     &    0.0,'min temp',IER,nbhelp)
         Xmin=val
         YMIN(2)=val
         val=YMAX(2)
         call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-     &  60.0,'max temp',IER,0)
+     &    60.0,'max temp',IER,nbhelp)
         Xmax=val
         YMAX(2)=val
-        call easkr(val,'Max moisture content g/kg','for chart '
-     &  ,0.0,'F',30.,'-',30.0,'max mcnt',IER,0)
+        call easkr(val,'Max moisture content g/kg','for chart ',
+     &    0.0,'F',30.,'-',30.0,'max mcnt',IER,nbhelp)
         Ytmax=val
         enthmax=(enthp2(Xmax,Ytmax/1000.))
         enthminx= (enthp2(Xmin,Ytmax/1000.))    
         enthminy= (enthp2(Xmin,Ytmin/1000.)) 
         enthmaxy= (enthp2(Xmin,Ytmax/1000.))
         dok=.true.
-        h(1)='You have to redraw the chart to see any changes. ' 
-        call askok('Redraw the chart to apply changes?',' ',ok,dok,1)
+        helptopic='psychrometric_redraw'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call askok('Redraw the chart to apply changes?',' ',
+     &    ok,dok,nbhelp)
         if(ok)then
           goto 10
         else
@@ -252,7 +257,9 @@ C Change the scales on the axis and re-calculated enthalph for the chart.
         enthmaxy= (enthp2(Xmin,Ytmax/1000.)) 
         GOTO 10       
       ELSEIF(INO.EQ.6)THEN
-        CALL PHELPD('Psychrometric chart',7,'-',0,0,IER)
+        helptopic='psychrometric_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Psychrometric chart',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.7)THEN
 
 C Reset original screen size values on exit.

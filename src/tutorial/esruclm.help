@@ -473,33 +473,28 @@
 'base temperature (deg C). '
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item PSYCHART
-*topic 
+*item PSYCHART psychrometric_overview
 'This psychrometric plotting facility support'
 'vieweing the psycrometric state of the ambient'
-' '
-'<to be done>'
-'clicking on a point will indicate the time of the'
+'temperature and humidity for the selected period'
+'of the display. You have options to limit the'
+'temperature range or the maximum moisture content.'
+*enditem
+        call easkabcd('Options:',' ','display data',
+*item PSYCHART psychrometric_useful
 'Sometimes the display of climate data on a psychrometric'
 'chart will reveal userful patterns. '
 *enditem
-        call easkabcd('Options:',' ','display data',
-*item PSYCHART
+*item PSYCHART psychrometric_min_max
+'You are asked to provide a range of temperatures for inclusion'
+'in the chart. You can also specify the maximum moisture content'
+'for the chart. This allows you to focus your plot.'
 *enditem
         call easkr(val,'Min temp C','for chart ',-10.0,'F',30.,'-',
-*item PSYCHART
-*enditem
-        call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-*item PSYCHART
-*enditem
-        call easkr(val,'Max moisture content g/kg','for chart '
-*item PSYCHART
+*item PSYCHART psychrometric_redraw
 'You have to redraw the chart to see any changes. '
 *enditem
         call askok('Redraw the chart to apply changes?',' ',ok,dok,1)
-*item PSYCHART
-*enditem
-        CALL PHELPD('Psychrometric chart',7,'-',0,0,IER)
 *subroutine CLMSYN
 *item CLMSYN typical_week_overview
 'Typical weeks are found by scanning the climate data'
