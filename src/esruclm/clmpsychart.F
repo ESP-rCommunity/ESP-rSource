@@ -57,7 +57,7 @@ C esrures/psychart.F - revised to for plotting climate data.
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found (will be non-zero
+      integer nbhelp     ! number of help lines found
 
       helpinsub='PSYCHART'  ! set for cfiles
 

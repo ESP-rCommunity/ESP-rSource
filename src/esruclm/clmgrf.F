@@ -50,7 +50,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found (will be non-zero
+      integer nbhelp     ! number of help lines found
 
       helpinsub='CLMGRF'  ! set for cfiles
 

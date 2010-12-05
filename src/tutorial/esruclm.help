@@ -321,9 +321,8 @@
 'Say no to stop looking at the data. '
 *enditem
       CALL ASKOK(' ',' Continue with another period?',OK,dok,1)
-*item PCGRF
-*topic 
 *subroutine CLMMMSYNOP
+*item CLMMMSYNOP pause_to_study_listing
 'Pause point so you can study the listing. '
 *enditem
           call askok(' continue listing?',' ',OK,dok,1)
@@ -441,33 +440,12 @@
 'option is not yet enabled (save and use a text editor).'
 *enditem
         call easkabcd('Documentation options:',' ','List','Initialise',
-*item editemclimatelist
-*topic 
+*item editemclimatelist climate_current_info
 'Information on the current climate file (seasons etc.)'
 'will be written to a small ASCII file which can be'
 'copied into /usr/esru/esp-r/climatelist file. '
 *enditem
             CALL EASKF(llitem,' Climatelist entry text block?',
-*item editemclimatelist
-*topic 
-*enditem
-            CALL EASKF(llitem,' Climatelist entry text block?',
-*item editemclimatelist
-*topic 
-*enditem
-            CALL EASKF(llitem,' Climatelist entry text block?',
-*item editemclimatelist
-*topic 
-*enditem
-          CALL EASKF(llitem,' Climatelist entry text block?',
-*item editemclimatelist
-*topic 
-*enditem
-          CALL EASKF(llitem,' Climatelist entry text block?',
-*item editemclimatelist
-*topic 
-*enditem
-        CALL PHELPD('clm list mgt',33,'-',0,0,IER)
 *item DDRADSUM dd_base_temp
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
