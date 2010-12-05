@@ -500,9 +500,8 @@
 *item PSYCHART
 *enditem
         CALL PHELPD('Psychrometric chart',7,'-',0,0,IER)
-*item DDRADSUM
-*topic 
 *subroutine CLMSYN
+*item CLMSYN typical_week_overview
 'Typical weeks are found by scanning the climate data'
 'for a week in each season which has the least deviation'
 'in heating degree days (DD), cooling degree days, and'
@@ -517,64 +516,57 @@
 'can also be recorded in the <climatelist> file.'
 *enditem
         CALL PHELPD('climate synopsis',12,'-',0,0,IER)
-*item CLMSYN
+*item CLMSYN dd_day_week_month
 'If a number of months are selected you can get a'
 'weekly or monthly summary.'
 *enditem
         CALL EASKABC(' Degree day reporting: ',' ','daily','weekly',
-*item CLMSYN
-'The lower range is... '
+*item CLMSYN days_in_range_limits
+'The days within range option requires that you set a lower range'
+'limit as well as an upper range limit. Only values which fall'
+'within this range are reported.
 *enditem
         CALL EASKR(XL,outs,' Lower value for range:  ',
-*item CLMSYN
-'The upper range is ... '
-*enditem
-        CALL EASKR(XU,outs,' Upper value for range:  ',
-*item CLMSYN
-'If a number of months are selected you can get a'
-'monthly summary.'
-*enditem
-        CALL EASKABCD(' Degree day reporting: ',' ','daily','weekly',
-*item CLMSYN
+*item CLMSYN best_fit_pause
 'If you answer yes the best-fit weeks that are found'
 'will be presented in additional detail and with pauses'
 'so that you can decide whether the weeks are correct. '
 *enditem
         call askok('Do you want to record the best-fit weeks (for',
-*item CLMDEG
-'The CSI house types (1 to 30). '
+*item CSIEQN climate_severity_types
+'The CSI house types (1 to 30). Each variant is a combination'
+'of the thermal capacity of the building (low medium high),'
+'the position of the thermal capacity (inside middle outside)'
+'as well as window size (standard large), infiltration level'
+'(tight standard), insultation level (standard high).'
+*enditem
+*item CLMDEG dd_base_temperature
 'Degree day calculations are derived from a specific '
 'base temperature (deg C). '
 *enditem
       CALL EASKR(BT,' ',' Base temperature ? ',
 *subroutine SYNOPDEG
-*item SYNOPDEG
+*item SYNOPDEG dd_base_temperatures
 'Degree day calculations are derived from a specific '
-'base temperature (deg C). '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item SYNOPDEG
-*enditem
-      CALL EASKR(CBT,' ',' Cooling base temperature ? ',
 *subroutine SYNOPDEGS
-*item SYNOPDEGS
+*item SYNOPDEGS dd_base_temperature
 'Degree day calculations are derived from a specific '
-'base temperature (deg C). '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item SYNOPDEGS
-*enditem
-      CALL EASKR(CBT,' ',' Cooling base temperature ? ',
 *subroutine SYNOPWDEG
-*item SYNOPWDEG
+*item SYNOPWDEG dd_base_temperature
 'Degree day calculations are derived from a specific '
-'base temperature (deg C). '
+'base temperature (deg C). One base is for heating and'
+'the other is for cooling degree days.'
 *enditem
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item SYNOPWDEG
-*enditem
-      CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-*item SYNOPWDEG
+*item SYNOPWDEG dd_reporting_pause
 'Pause point so you can study the data. '
 *enditem
           call askok(' continue listing?',' ',OK,dok,1)
