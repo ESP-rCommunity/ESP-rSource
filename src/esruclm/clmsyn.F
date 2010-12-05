@@ -768,7 +768,7 @@ C If output to file alter the edisp unit number.
   12  FORMAT(' Degree day analysis at',F6.1,' Deg C')
       call edisp(itru,outs)
       WRITE(outs,16)
-  16  FORMAT(1H ,' D  M  T   ',5X,'<',8X,'>')
+  16  FORMAT(' D  M  T   ',5X,'<',8X,'>')
       call edisp(itru,outs)
 
 C INITIALISE PARAMETERS FOR WHOLE PERIOD
@@ -824,10 +824,10 @@ C AV DEGDAYS PER DAY OVER MONTH
       YDN=XHR*XDN
       YUP=XHR*XUP
       WRITE(outs,102)YDN,YUP
- 102  FORMAT(1H ,'Month:av/day',2F8.2)
+ 102  FORMAT(' Month:av/day',2F8.2)
       call edisp(itru,outs)
       WRITE(outs,101)XDN,XUP
- 101  FORMAT(1H ,'Month:total ',2F8.2)
+ 101  FORMAT(' Month:total ',2F8.2)
       call edisp(itru,outs)
 
       CALL CHEAD(30)
@@ -854,7 +854,7 @@ C CONVERT TO DEG-DAYS PER DAY
 
 C WRITE THEM OUT
       WRITE(outs,100)IDD,IMM,JS,JF,XDN,XUP
- 100  FORMAT(1H ,I2,',',I2,1X,I2,'-',I2,2F8.2)
+ 100  FORMAT(I2,',',I2,1X,I2,'-',I2,2F8.2)
       call eddisp(itru,outs)
 
 C   UPDATE PARAMETERS FOR THIS MONTH
@@ -895,10 +895,10 @@ C AV DEGDAYS PER DAY OVER PERIOD
       YDN=XHR*XDN
       YUP=XHR*XUP
       WRITE(outs,104)YDN,YUP
- 104  FORMAT(1H ,'Total:av/day',2F8.2)
+ 104  FORMAT(' Total:av/day',2F8.2)
       call eddisp(itru,outs)
       WRITE(outs,103)XDN,XUP
- 103  FORMAT(1H ,'Period total',2F8.2)
+ 103  FORMAT(' Period total',2F8.2)
       call eddisp(itru,outs)
 
       RETURN
