@@ -374,10 +374,10 @@ C hold 62 indices before it hits an overflow state.
      &                        '24 hour internal surface insolation'
             write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
      &        ' # to each insolation source (marked by non-zero)'
-            if(nzsur(icomp).lt.99)then
-              write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
-            else
+            if(nzsur(icomp).le.62)then
               write(outl,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
+            else
+              write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
             endif
             call sdelim(outl,outld,'S',iw)
             write(iuj,'(a)',iostat=istat,err=1002)
@@ -1048,15 +1048,20 @@ C Generate packed list of names of insolation sources.
 
 C Write insolation factors. Note the record offset line is
 C sensitive to the number of surfaces in the zone.
+
+C << ioffs can be gt 200 if there are lots of windows so
+C << test ioffs prior to writing might be needed.
+C << could switch to larger text buffer
+
       if(ishd(mnth).eq.2.or.ishd(mnth).eq.3)then
          write(iuj,'(a)',iostat=istat,err=1002) 
      &                     '24 hour internal surface insolation'
          write(iuj,'(2a)',iostat=istat,err=1002) 'record offsets',
      &     ' # to each insolation source (marked by non-zero)'
-         if(nzsur(icomp).lt.99)then
-           write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
-         else
+         if(nzsur(icomp).le.62)then
            write(outl,'(62i4)') (ioffs(i),i=1,nzsur(icomp))
+         else
+           write(outl,'(80i3)') (ioffs(i),i=1,nzsur(icomp))
          endif
          call sdelim(outl,outld,'S',iw)
          write(iuj,'(a)',iostat=istat,err=1002)
