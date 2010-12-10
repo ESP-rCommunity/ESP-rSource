@@ -59,7 +59,7 @@ C << what about including common zndata in this manipulation? >>
       common/pophelp/h(60)
 
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCOM,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3049,7 +3049,7 @@ C   where a surface such as a floor has been subdivided)
 
 C << potential place to track edges which might fall into specific
 C << thermal bridge categories. ? extend G8 ?
-C << ibridgeshr(MCOM,MV) is:
+C << ibridgeshr(MCON,MV) is:
 C <<   zero is not a thermal bridge, one is roof-wall,
 C <<   two is wall-ground floor, three is wall-wall (convex corner)
 C <<   four is wall-wall (concave corner), five is wall-floor (not ground),
@@ -3057,7 +3057,7 @@ C <<   six is lintel above window or door, seven is Sill below window
 C <<   eight is jamb at window or door
 
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCOM,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

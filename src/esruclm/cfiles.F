@@ -730,7 +730,7 @@ C Read 24 hours of dry bulb temperature and assign to ICLM.
  243      continue
 
 C Debug.
-          write(*,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
+C          write(*,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
 
 C Read 24 hours of humidity and assign to ICLM.
           do 246 ih=1,24
@@ -739,7 +739,7 @@ C Read 24 hours of humidity and assign to ICLM.
  246      continue
 
 C Debug.
-          write(*,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
+C          write(*,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
 
 C Read 24 hours of wind direction, decode and assign to IDIR.
 C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
@@ -788,7 +788,7 @@ C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
  244      continue
 
 C Debug.
-          write(*,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
+C          write(*,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
 
 C Read 24 hours of wind velocity and assign to ICLM.
           do 245 ih=1,24
@@ -797,7 +797,7 @@ C Read 24 hours of wind velocity and assign to ICLM.
  245      continue
 
 C Debug.
-          write(*,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
+C          write(*,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
 
 C Clear solar values.
           idif=0

@@ -3716,7 +3716,7 @@ C Also check the other side construction and see if it matches.
                     elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
-C used for a partition (and db does not have a linked MLC - inform the user.
+C used for a partition if db does not have a linked MLC - inform the user.
                       write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &                 ' has a nonsymmetric construction ',
      &                 SMLCN(is)(1:lnblnk(SMLCN(is))),'.'
@@ -3739,10 +3739,10 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                     endif
                   endif
   8             continue
-                icoth=ICO
+                icoth=ICO  ! remember the connection for the other surface
 
 C At this point the other zone surface attributes are known. They
-C be written out with code at ~line 3770 in the if(updoth)then section.
+C be written out with code at ~line 3962 in the if(updoth)then section.
               endif
               showother=.true.
             else
@@ -3970,12 +3970,13 @@ C other zone) and write out that zones geometry.
             else
               call egomin(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,0,iuout,IER)
             endif
-            write(SSOTHER(IE2(IC),1),'(a)') 'ANOTHER'
-            write(SSOTHER(IE2(IC),2),'(i2.2)') IC1(IC)
-            write(SSOTHER(IE2(IC),3),'(i2.2)') IE1(IC)
 
-C Assign new MLC name to the icoth surface.
+C Assign new MLC name and connexion info to the icoth surface.
             SSMLCN(icoth)=TOSMLCN
+            SSOTHER(icoth,1)='ANOTHER'
+            write(SSOTHER(icoth,2),'(i2.2)') IC2(icoth)
+            write(SSOTHER(icoth,3),'(i2.2)') IE2(icoth)
+
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(IC2(IC)) =1.1
