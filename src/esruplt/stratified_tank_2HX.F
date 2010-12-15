@@ -522,7 +522,8 @@ C---- Arguments
 
 C---- Local variables
 
-      LOGICAL CLOSEA,CLOSEB     ! Auxiliary variable 
+      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED,CLOSEE     
+                                ! Auxiliary variable 
       REAL AUX                  ! Auxiliary variable
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
@@ -585,7 +586,6 @@ C     Outputs of model
 C     Dummy variables
       LOGICAL HASHX1            ! Indicates presence of HX1 (.TRUE.)
       LOGICAL HASHX2            ! Indicates presence of HX2 (.TRUE.)
-      REAL DUMMY                ! Dummy variable
 
 C---- Functions
       REAL SHTFLD
@@ -650,13 +650,15 @@ C---- Identify variables
 C---- Calculate mass percentage of glycol in HX fluids
 
       AUX = CONVAR(ICON2,2)+CONVAR(ICON2,3)
-      if (AUX /= 0.) THEN
+      CALL ECLOSE(AUX,0.0,1.0e-15,CLOSEC)
+      IF (.NOT.CLOSEC) THEN
         GLYCOLHX1 = 100.*CONVAR(ICON2,3)/AUX
       ELSE
         GLYCOLHX1 = 0.
       ENDIF
       AUX = CONVAR(ICON3,2)+CONVAR(ICON3,3)
-      if (AUX /= 0.) THEN
+      CALL ECLOSE(AUX,0.0,1.0e-15,CLOSEE)
+      if (.NOT.CLOSEE) THEN
         GLYCOLHX2 = 100.*CONVAR(ICON3,3)/AUX
       ELSE
         GLYCOLHX2 = 0.
@@ -665,8 +667,8 @@ C---- Calculate mass percentage of glycol in HX fluids
 C---- Check that tank fluid does not have glycol
 C     Enabling the tank to be filled with glycol would not be difficult to implement, 
 C     however this is not done for now as such systems are probably very infrequent
-
-      IF (CONVAR(ICON1,3) /= 0.) THEN
+      CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSED)
+      IF (.NOT.CLOSED) THEN
         WRITE(ITU,*) 'Error in stratified tank model'
         WRITE(ITU,*) 'Tank can be filled with water only - no glycol'
         WRITE(ITU,*) 'Aborting simulation'
@@ -718,7 +720,6 @@ C     Use average temperature of tank at previous time step
 C---- Call stratified tank function
       HASHX1=.TRUE.
       HASHX2=.TRUE.
-      DUMMY=0.
       CALL stratified_tank_calc(VOL, H, P,
      &  HIN1, 0., HOUT1, H, U, K_DESTRAT, NSTEPS, NNODES,
      &  HASHX1, 

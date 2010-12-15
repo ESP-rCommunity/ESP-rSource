@@ -484,8 +484,8 @@ C changing rooms, swimming pools, sales areas, baggage reclaim areas,
 C security check areas, eating/drinking areas, halls, lecture theatres,
 C cold stores, display areas, A&E, industrial process areas, warehouse 
 C storage, and performance areas (stages) for which FD=1
-        IF(IACTYTYP(ICOMP).GT.0)THEN ! Error trap zero array index
-          IF(loc_man_sw(IACTYTYP(ICOMP)).eq.1)FD1=1.0
+        IF(theactivityindex(ICOMP).GT.0)THEN ! Error trap zero array index
+          IF(loc_man_sw(theactivityindex(ICOMP)).eq.1)FD1=1.0
         ENDIF
 
 C Apply local manual switching to notional, reference and typical models

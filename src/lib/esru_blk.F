@@ -22,7 +22,6 @@ C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 
       subroutine EZERO
 #include "building.h"
-#include "site.h"
 
 C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 #include "epara.h"
@@ -55,13 +54,55 @@ C later recovery.
         IPFLG1(i)=0
   42  continue
 
+      ips=1
+
+C Clear fortran side text buffer.
+      call clrtextbuf
+      return
+      END
+
+C----------------------------------------------------------
+C     Initialization of ground-temperature profile names 
+C     and data. Should these really be hard coded in the 
+C     esru-lib library? A *much* better approach would be
+C     to include them in a text-input file. Otherwise the 
+C     ground temperature list will always be UK-centric, or
+C     grow unmanagably long.  Target redesign 
+C     for version 11.11?
+C----------------------------------------------------------
+      BLOCK DATA InitGrdTmpName 
+      implicit none 
+      include "building.h"
+      include "site.h"
+C Names for each ground temperature.
+      data grdtmpname/'UK monthly mean via Lacy','unknown',  !<- Should we really have 'unknown' profiles?
+     &'unknown','UK Paisley 0.3m',
+     &'UK Paisley 1.2m','GBR_Abbotsinch at 0.5m',
+     &'GBR_Abbotsinch at 2.0m','GBR_Abbotsinch at 4.0m',
+     &'GBR_London.Gatwick 0.5m','GBR_London.Gatwick 2.0m',
+     &'GBR_London.Gatwick 4.0m','GBR_Aberdeen at 0.5m',
+     &'GBR_Aberdeen at 2.0m','GBR_Aberdeen at 4.0m',
+     &'GBR_Birmingham at 0.5m','GBR_Birmingham at 2.0m',
+     &'GBR_Birmingham at 4.0m','IRL_Dublin at 0.5m',
+     &'IRL_Dublin at 2.0m','IRL_Dublin at 4.0m',
+     &'IRL_Kilkenny at 0.5m','IRL_Kilkenny at 2.0m',
+     &'IRL_Kilkenny at 4.0m','IRL_Malin at 0.5m',
+     &'IRL_Malin at 2.0m','IRL_Malin at 4.0m',
+     &'FRA_Dijon at 0.5m','FRA_Dijon at 2.0m',
+     &'FRA_Dijon at 4.0m','FRA_Nice at 0.5m',
+     &'FRA_Nice at 2.0m','FRA_Nice at 4.0m',
+     &'FRA_Paris_Orly at 0.5m','FRA_Paris_Orly at 2.0m',
+     &'FRA_Paris_Orly at 4.0m','DEU_Berlin at 0.5m',
+     &'DEU_Berlin at 2.0m','DEU_Berlin at 4.0m',
+     &'DEU_Koln at 0.5m','DEU_Koln at 2.0m',
+     &'DEU_Koln at 4.0m','all zeros','all zeros'/  !<- Why are there two sets of 'all-zeros'?
+
 C The following assumes that grdtmp is sized for 43 sets of 12 months.
       data grdtmp/
 C Profile 1 is the UK monthly mean ground temps at 1.2m depth as given by Lacy.
      &7.28,6.5,6.56,7.33,9.06,11.39,13.5,14.33,14.11,11.72,10.72,8.67,
      &6.0,8.0,10.0,12.0,13.0,14.0,15.0,14.0,13.0,12.0,10.0,8.0,
      &4.9,4.4,4.1,6.4,9.0,12.9,15.5,15.5,16.4,15.2,9.4,8.7,
-
 C Next two monthly mean daily ground temperature profiles are based
 C on earth temperature readings made once daily at 09:00 GMT at
 C depths of 0.305m and 1.219m respectively under a short grass surface
@@ -144,33 +185,4 @@ C Add new ground temperature profiles here (space for 2*12 months).
      &0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,
      &0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0/
 
-C Names for each ground temperature.
-      data grdtmpname/'UK monthly mean via Lacy','unknown',
-     &'unknown','UK Paisley 0.3m',
-     &'UK Paisley 1.2m','GBR_Abbotsinch at 0.5m',
-     &'GBR_Abbotsinch at 2.0m','GBR_Abbotsinch at 4.0m',
-     &'GBR_London.Gatwick 0.5m','GBR_London.Gatwick 2.0m',
-     &'GBR_London.Gatwick 4.0m','GBR_Aberdeen at 0.5m',
-     &'GBR_Aberdeen at 2.0m','GBR_Aberdeen at 4.0m',
-     &'GBR_Birmingham at 0.5m','GBR_Birmingham at 2.0m',
-     &'GBR_Birmingham at 4.0m','IRL_Dublin at 0.5m',
-     &'IRL_Dublin at 2.0m','IRL_Dublin at 4.0m',
-     &'IRL_Kilkenny at 0.5m','IRL_Kilkenny at 2.0m',
-     &'IRL_Kilkenny at 4.0m','IRL_Malin at 0.5m',
-     &'IRL_Malin at 2.0m','IRL_Malin at 4.0m',
-     &'FRA_Dijon at 0.5m','FRA_Dijon at 2.0m',
-     &'FRA_Dijon at 4.0m','FRA_Nice at 0.5m',
-     &'FRA_Nice at 2.0m','FRA_Nice at 4.0m',
-     &'FRA_Paris_Orly at 0.5m','FRA_Paris_Orly at 2.0m',
-     &'FRA_Paris_Orly at 4.0m','DEU_Berlin at 0.5m',
-     &'DEU_Berlin at 2.0m','DEU_Berlin at 4.0m',
-     &'DEU_Koln at 0.5m','DEU_Koln at 2.0m',
-     &'DEU_Koln at 4.0m','all zeros','all zeros'/
-
-      ips=1
-
-C Clear fortran side text buffer.
-      call clrtextbuf
-      return
-      END
-
+      END BLOCK DATA InitGrdTmpName 

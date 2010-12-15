@@ -1748,7 +1748,8 @@ C Reporting of all periods in this day type (compacted data list):
           IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ)
   200   CONTINUE
   100 CONTINUE
-
+      goto 15
+        
 C Complex fenestration control
   
 C  Establish complex fenestration control regime notes (CFCctldoc) 

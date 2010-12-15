@@ -496,7 +496,8 @@ C---- Arguments
 
 C---- Local variables
 
-      LOGICAL CLOSEA,CLOSEB     ! Auxiliary variable 
+      LOGICAL CLOSEA,CLOSEB,CLOSEC,CLOSED     
+                                ! Auxiliary variable 
       REAL AUX                  ! Auxiliary variable
       REAL HIN1                 ! Height of inlet 1 [m]
       REAL HOUT1                ! Height of outlet 1 [m]
@@ -599,9 +600,9 @@ C     (secondary fluid is for glycol)
       MDOTHX1=PCONDR(ICON2)*(CONVAR(ICON2,2)+CONVAR(ICON2,3))
 
 C---- Calculate mass percentage of glycol in HX fluid
-
       AUX = CONVAR(ICON2,2)+CONVAR(ICON2,3)
-      if (AUX /= 0.) THEN
+      CALL ECLOSE(AUX,0.0,1.0e-15,CLOSEC)
+      if (.NOT.CLOSEC) THEN
         GLYCOLHX1 = 100.*CONVAR(ICON2,3)/AUX
       ELSE
         GLYCOLHX1 = 0.
@@ -610,8 +611,8 @@ C---- Calculate mass percentage of glycol in HX fluid
 C---- Check that tank fluid does not have glycol
 C     Enabling the tank to be filled with glycol would not be difficult to implement, 
 C     however this is not done for now as such systems are probably very infrequent
-
-      IF (CONVAR(ICON1,3) /= 0.) THEN
+      CALL ECLOSE(CONVAR(ICON1,3),0.0,1.0e-15,CLOSED)
+      IF (.NOT.CLOSED) THEN
         WRITE(ITU,*) 'Error in stratified tank model'
         WRITE(ITU,*) 'Tank can be filled with water only - no glycol'
         WRITE(ITU,*) 'Aborting simulation'

@@ -6,39 +6,7 @@
 # databases, training and reference materials.
 #
 # This script is a work in progress, and is undergoing
-# continual improvement. It has been tested on the following
-# platform/compiler/graphics library configurations:
-#
-# =====================================================================================
-# OS      Distribution / Host       User         rev   Compiler   x11   GTK   noX   XML
-# =====================================================================================
-# Linux   Gentoo / NRCan:c.monster  aferguso     578   gcc3.4.6    P     P     P     P
-#                                                      gcc4.1.1    P     P     P     P
-#                                                      gcc32       P     P     P     P
-#         Mandrake 10.0             jhand        578   gcc3.4      P     P     -     P
-#         -----------------------------------------------------------------------------
-#         Fedora Core 5             A.Horsford   489   gcc32       P     -     -     -
-#                                                480   gcc4.1.0    X     -     -     -
-#         -----------------------------------------------------------------------------
-#         Linspire (2.6.14) (a)     C.Jones      480   gcc3.3.5    X     X     -     -
-# -------------------------------------------------------------------------------------
-# CYGWIN  NT5.1                     aferguso     578   gcc3.4.4    P     P     P     -
-# -------------------------------------------------------------------------------------
-# MINGW   NT5.1                     aferguso     578   gcc3.4.2    -     P     P     -
-# -------------------------------------------------------------------------------------
-# Solaris SunOS 4 / NRCan:nrn7      aferguso     578   sunCC       X (b) -     P     -
-# Solaris SunOS 5.10                jhand        578   sunCC       P     -     -     -
-# Solaris SunOS 5.10                jhand        578   gcc3.4      P     P     -     -
-# -------------------------------------------------------------------------------------
-# Mac OSX 10.4                      jhand        578   gcc3.3      P     P     -     -
-# =====================================================================================
-# Notes:
-#  P  : pass - all ESP-r binaries compiled successfully, ancillary files installed
-#  X  : fail - one or more of the ESP-r binaries failed to compile
-#  -  : not applicable / not tested
-#  (a): Linspire seems to be an extrodinarly non-standard linux system.
-#  (b): nrn7 appears to have non-standard X11 header files.
-#
+# continual improvement.
 
 #=====================================================================
 clim_convert()  # converts climate dbs from iwec.a to binary formats
@@ -369,16 +337,21 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
     # Add XML include files to include paths
     xml_libs_found="yes"
     LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt"
-
+    echo " "
+    echo " XML output support enabled."
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
     #
     # This code has only been tested with GNU ld.
     #
-    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
+    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^.*ld.*: cannot find .*$//g"`
     case $ld_output in
-      "") xsl_libs_available="no";;
-      *)  xsl_libs_available="yes";;
+      "") xsl_libs_available="no";
+          echo " ";
+          echo " Warning: Library libxslt could not be found.";
+          echo " XSLT formatting support disabled. ";;
+      *)  xsl_libs_available="yes";
+          echo " XSLT formatting support enabled."
     esac
     
    fi
