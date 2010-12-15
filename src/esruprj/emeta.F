@@ -3273,7 +3273,7 @@ C *shad_calc,all_applic,20 # list of surfs
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
             elseif(iaplic(nsz,1).eq.0)then
               write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
-     &        '*shad_directive,list',nsurfcalc(nsz),
+     &        '*shad_calc,list',nsurfcalc(nsz),
      &        ' # list of surfs'
               write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
