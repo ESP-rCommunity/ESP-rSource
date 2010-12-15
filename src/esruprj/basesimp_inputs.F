@@ -207,6 +207,7 @@ C User requested a new file be created.
           return
         endif
       elseif(IWHICH.EQ.3)then
+        sfile=' '
         CALL browsefilelist('?','bsm','fil',sfile,snpfile,
      &    nfile,iier)
         IF(nfile.gt.0)THEN
