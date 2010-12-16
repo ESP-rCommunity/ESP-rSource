@@ -358,9 +358,6 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                  !Array holding help text
       CHARACTER :: H*72                     !Strings for help text
-C Function defenition
-      LOGICAL :: CheckForChanges
-
 
       IF (.NOT.AIM2_Initialized) THEN
 C Initialze all input parameters

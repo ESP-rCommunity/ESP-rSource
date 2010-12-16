@@ -1638,8 +1638,8 @@ C          write(itu,*) 'uavfltroof = ',uavfltroof(IZZ)
 C          write(itu,*) 'uavgsky = ',uavgsky(IZZ)
           uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
      &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
-          write(itu,*) 'UA total = ',uavtotal(IZZ)
-          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
+C          write(itu,*) 'UA total = ',uavtotal(IZZ)
+C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 
           if(exposed(IZZ).gt.0.1)then
 

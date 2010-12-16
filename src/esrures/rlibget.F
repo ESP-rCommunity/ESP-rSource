@@ -1812,7 +1812,8 @@ C Pre calculated data (filtered).
 
 C Check save level.
       if (ISAVE.lt.2.or.ISAVE.gt.4) then
-        call edisp(iuout,' MMAPER: Save option does not allow access.')
+        call edisp(iuout,'MMAPER: Save option does not allow access')
+        call edisp(iuout,'so some graph axis will not be correct.')
         return
       endif
 

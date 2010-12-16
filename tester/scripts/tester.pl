@@ -493,6 +493,7 @@ my @Env_Paths = split /:|;/, "./;".$ENV{PATH};
 
 # add empty array location to allow absolute paths to be specified too!
 push @Env_Paths, $gTest_paths{'master'};
+push @Env_Paths, "";
 push @Env_Paths, " ";
 
 #-------------------------------------------------------------------
