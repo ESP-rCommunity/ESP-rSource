@@ -48,9 +48,12 @@ C prj3dv.h provides common blocks drwmat clip and image
 C Viewing transformation matrices TEMAT is:
       COMMON/OUTIN/IUOUT,IUIN
 
+C Local variables
+      real T1MAT,T2MAT,R1MAT
       DIMENSION T1MAT(4,4),T2MAT(4,4),R1MAT(4,4)
+      real SKALE,PI,T,SH,CH
 
-      SKALE = 1000.0
+      SKALE = 1000.0        ! we are looking from 1km
       PI = 4.0 * ATAN(1.0)
 
       CALL EYEMAT(EYEM,VIEWM,1.0,T1MAT,R1MAT)
@@ -731,7 +734,15 @@ C found in common block RAY5.
 #include "building.h"
 #include "prj3dv.h"
 
+C Parameters
+      real SXMX,SXMN,SYMX,SYMN
+      integer ier
+
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
+      real X1,X2,X3,X4,X5,X6,X7,X8 ! use with orttrn calls
+      real Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8
+      integer ierr   ! to trap errors 
 
       SXMX=-1.E+7
       SYMX=-1.E+7

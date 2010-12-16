@@ -67,6 +67,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical havesaved  ! to signal zone file written
       integer IW  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
+      real angr   ! rotation angle
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -142,7 +143,7 @@ C the model will not have been changed so just return.
 
 
 C Initial rotation values.
-      ANG=0.
+      ANGR=0.
       x1=0.
       y1=0.
 
@@ -375,9 +376,9 @@ C Rotate an obstruction.
           CALL EPMENRC
           H(1)='The rotation is applied at the obstruction origin,'
           H(2)='with the anticlockwise direction positive. '
-          CALL EASKR(ANG,' ',' Rotation (degrees, anticlockwise +ve)?',
+          CALL EASKR(ANGR,' ','Rotation (degrees, anticlockwise +ve)?',
      &      -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
 
 C Rotation choices.
             H(1)='Rotate obstruction about the site origin or about'
@@ -397,7 +398,7 @@ C Rotation choices.
             endif
 
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             do 86 ij=1,INPIC
@@ -408,7 +409,7 @@ C Rotation choices.
               YR=YYY*CA-XXX*SA
               XOB(ICOMP,IFOC)=XR+X1
               YOB(ICOMP,IFOC)=YR+Y1
-              BANGOB(ICOMP,IFOC,1)=BANGOB(ICOMP,IFOC,1)+ANG
+              BANGOB(ICOMP,IFOC,1)=BANGOB(ICOMP,IFOC,1)+ANGR
               do 89 ibe=1,8
                 XXX=XBP(icomp,IFOC,ibe)-X1
                 YYY=YBP(icomp,IFOC,ibe)-Y1

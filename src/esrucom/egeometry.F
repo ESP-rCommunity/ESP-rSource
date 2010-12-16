@@ -3420,12 +3420,20 @@ C X1,Y1 is the point to rotate about.
 
 C << consider zone index so no longer necessary to use G1 >>
 
-      SUBROUTINE ESCROT(ANG,X1,Y1)
+      SUBROUTINE ESCROT(ANGR,X1,Y1)
 #include "building.h"
 #include "geometry.h"
 
+C Parameters
+      real ANGR  ! angle of rotation
+      real X1    ! X point for rotation
+      real Y1    ! Y point for rotation
+
+C Local variables
+      real PI,A,CA,SA,XXX,YYY,XR,YR
+
       PI = 4.0 * ATAN(1.0)
-      A=-ANG*PI/180.
+      A=-ANGR*PI/180.
       CA=COS(A)
       SA=SIN(A)
       DO 10 I=1,NTV
