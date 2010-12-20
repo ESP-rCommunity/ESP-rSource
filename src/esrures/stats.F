@@ -46,7 +46,11 @@ C results. Available at present:
       COMMON/DEFLT/IDEFLT
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -68,7 +72,6 @@ C SNAPSH is a logical flag to request variation in header.
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
       dimension ITEM(24)
       CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*144
-      character SLABEL*32,GLABEL*20
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -959,7 +962,11 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -973,7 +980,6 @@ C act='p' iget parameters already set.
       dimension TMAX(MZS), TMIN(MZS)
       character xfile*144,tg*1,delim*1
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -1469,7 +1475,11 @@ C Get common precz from geometry.h
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -1479,7 +1489,7 @@ C Get common precz from geometry.h
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
 
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20,prompt*124
+      character prompt*124
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       logical display
@@ -1667,14 +1677,17 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20
       character prompt*124,outs*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -2025,7 +2038,11 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -2034,7 +2051,7 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20,prompt*124,outs*124,prompte*124
+      character prompt*124,outs*124,prompte*124
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
@@ -2237,7 +2254,11 @@ C << file does not need to be scanned to get the surface emissivity.
 
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -2256,7 +2277,7 @@ C =2 with more than 3 day types
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,act*1,prompt*124
-      CHARACTER RSNAME*40,SLABEL*32,GLABEL*20
+      CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)

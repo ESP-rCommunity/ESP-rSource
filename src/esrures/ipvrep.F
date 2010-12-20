@@ -60,7 +60,11 @@ C Comfort parameters and hash table.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -94,7 +98,7 @@ C Pre calculated data (filtered).
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
-      character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
+      character SUFFIX*8,paction*16
       CHARACTER ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       CHARACTER selres*72,CLMLOC*30
@@ -3139,7 +3143,11 @@ C      common/OUTIN/IUOUT,IUIN
       COMMON/BL2/dmdfla(7)
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       common/exporttg/xfile,tg,delim
@@ -3153,7 +3161,6 @@ C << is this required? >>
 
       dimension edput(7,MTS)
       character tab*1,outs*124,xfile*144,tg*1,delim*1
-      character SLABEL*32,GLABEL*20
       logical pvok
 
 C Set separator as in rest of seasonal report.

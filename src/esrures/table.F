@@ -229,7 +229,11 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -243,7 +247,7 @@ C act='m' called from ipv metric with parameters already set.
       character outs*124,outs248*248 ! string buffers
       character outs400*400,outs400d*400  ! really long string buffers
       character act*1,sq*1,unit*7,t20*20,dg*1
-      character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8
+      character LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -689,7 +693,11 @@ C gains and losses.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -703,7 +711,6 @@ C gains and losses.
       character outs*124,prompt*124,outsl*144
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character SLABEL*32,GLABEL*20
 
       DIMENSION VAL(12),TVAL(12,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)

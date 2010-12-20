@@ -45,7 +45,11 @@ C READPIF - read performance information file and gather data.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       
@@ -65,7 +69,7 @@ C       by calling eddisp (as opposed to edisp).
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       character xfile*144,tg*1,delim*1,outs*124
-      character SLABEL*32,GLABEL*20,outfile*72
+      character outfile*72
       character TSLABEL*32,TLLABEL*64,TGLABEL*20
       character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8
 
@@ -509,12 +513,15 @@ C current menu (moget) selections.
 
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
       common/exporttg/xfile,tg,delim
 
       character xfile*144,tg*1,delim*1
-      character SLABEL*32,GLABEL*20
       character lpifl*72,pifltog*4,lname*24,ldisc*64
 
       logical XST

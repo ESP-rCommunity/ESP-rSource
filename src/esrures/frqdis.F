@@ -51,7 +51,11 @@ C index is the goget index.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
@@ -67,7 +71,7 @@ C Selection menu for graphs and/or tables.
       character item*24
       character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
-      character SLABEL*32,GLABEL*20,TLABEL*60,trange*20,tab*1
+      character TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
