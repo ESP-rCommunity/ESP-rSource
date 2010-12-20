@@ -227,8 +227,11 @@ C Reset to no choices and current result set.
         IGETNO(I,8)=0
         IGETNO(I,9)=0
         SLABEL(I)='  '
+        LNSLABEL(I)=0
         GLABEL(I)='  '
+        LNGLABEL(I)=0
         TABLABEL(I)='  '
+        LNTABLABEL(I)=0
  10   continue
       ialstused=0
 
@@ -514,8 +517,7 @@ C        MNGET=1
         IGETNO(NGET,1)=61
         IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
         IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
-        SLABEL(NGET)='Zone energy balance (kWhr)'
-        LNSLABEL(NGET)=26
+        SLABEL(NGET)='Zone energy balance (kWhr)'; LNSLABEL(NGET)=26
       elseif (MENUTYPE.eq.10) then
 
 C IGET = 60 and MENUTYPE 10:  Energy demands.
@@ -525,8 +527,7 @@ C IGET = 60 and MENUTYPE 10:  Energy demands.
         IGETNO(NGET,1)=60
         IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
         IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
-        SLABEL(NGET)='Zone energy demands (kWhrs)'
-        LNSLABEL(NGET)=27
+        SLABEL(NGET)='Zone energy demands (kWhrs)'; LNSLABEL(NGET)=27
       elseif (MENUTYPE.eq.11) then
 
 C IGET = 63 and MENUTYPE 11: Zone casual gains distribution.
@@ -562,8 +563,7 @@ C IGET = 64 Monthly gains & losses. Use IGETNO(NGET,4) = 1 as 100Wh & 2 as kWh.
         IGETNO(NGET,4)=IR
         IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
         IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
-        SLABEL(NGET)='Monthly zonal gains/losses'
-        LNSLABEL(NGET)=26
+        SLABEL(NGET)='Monthly zonal gains/losses'; LNSLABEL(NGET)=26
       elseif (MENUTYPE.eq.14) then
 
 C IGET = 65 Surface condensation. Use IGETNO(NGET,3) to denote fixed
@@ -596,8 +596,7 @@ C IGETNO(NGET,4)=1 denote verbose and 0 to be summary.
         IGETNO(NGET,1)=64
         IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
         IGETNO(NGET,8)=4;  IGETNO(NGET,9)=20
-        SLABEL(NGET)='Surface condensation'
-        LNSLABEL(NGET)=20
+        SLABEL(NGET)='Surface condensation'; LNSLABEL(NGET)=20
       else
         MNGET=1
         MTITLE='  '
@@ -1007,14 +1006,11 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Ambient RH'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Ambient RH (%)'
-            LNSLABEL(NGET)=14
+            SLABEL(NGET)='Ambient RH (%)'; LNSLABEL(NGET)=14
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Ambient RH change (%/hr)'
-            LNSLABEL(NGET)=24
+            SLABEL(NGET)='Ambient RH change (%/hr)'; LNSLABEL(NGET)=24
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Ambient RH hours (%.hr)'
-            LNSLABEL(NGET)=23
+            SLABEL(NGET)='Ambient RH hours (%.hr)'; LNSLABEL(NGET)=23
           endif
         elseif(inoc.eq.7)then
           IGETNO(NGET,1)=26
@@ -1022,8 +1018,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=10
           GLABEL(NGET)='Sky illum'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Sky illuminance (lux)'
-            LNSLABEL(NGET)=21
+            SLABEL(NGET)='Sky illuminance (lux)'; LNSLABEL(NGET)=21
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Sky illuminance change (lux/hr)'
             LNSLABEL(NGET)=31
@@ -1304,42 +1299,35 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Comfort PMV (-)'
-            LNSLABEL(NGET)=15
+            SLABEL(NGET)='Comfort PMV (-)'; LNSLABEL(NGET)=15
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Comfort PMV change/hr (-)'
-            LNSLABEL(NGET)=25
+            SLABEL(NGET)='Comfort PMV change/hr (-)'; LNSLABEL(NGET)=25
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Comfort (PMV hours) (-)'
-            LNSLABEL(NGET)=23
+            SLABEL(NGET)='Comfort (PMV hours) (-)'; LNSLABEL(NGET)=23
           endif
         elseif(inoc.eq.2)then
           IGETNO(NGET,3)=2
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Comfort PMV (set)'
-            LNSLABEL(NGET)=17
+            SLABEL(NGET)='Comfort PMV (set)'; LNSLABEL(NGET)=17
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Comfort PMV (set) (change/hr)'
             LNSLABEL(NGET)=29
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Comfort (PMV set hours)'
-            LNSLABEL(NGET)=23
+            SLABEL(NGET)='Comfort (PMV set hours)'; LNSLABEL(NGET)=23
           endif
         elseif(inoc.eq.3)then
           IGETNO(NGET,3)=3
           IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Comfort PPD (%)'
-            LNSLABEL(NGET)=15
+            SLABEL(NGET)='Comfort PPD (%)'; LNSLABEL(NGET)=15
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Comfort PPD (% change/hr)'
             LNSLABEL(NGET)=25
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Comfort (PPD % hours)'
-            LNSLABEL(NGET)=21
+            SLABEL(NGET)='Comfort (PPD % hours)'; LNSLABEL(NGET)=21
           endif
         elseif(inoc.eq.4) then
           IGETNO(NGET,1)=50
@@ -1360,8 +1348,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Comfort PD floor (%)'
-            LNSLABEL(NGET)=20
+            SLABEL(NGET)='Comfort PD floor (%)'; LNSLABEL(NGET)=20
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Comfort PD floor (% change/hr)'
             LNSLABEL(NGET)=30
@@ -1376,8 +1363,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PDceil'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Ceiling discomf PD (%)'
-            LNSLABEL(NGET)=22
+            SLABEL(NGET)='Ceiling discomf PD (%)'; LNSLABEL(NGET)=22
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Ceiling discomf PD (% change/hr)'
             LNSLABEL(NGET)=32
@@ -1397,8 +1383,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,4)=ICF
           SUFFIX=' PDwall'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Wall discomf PD (%)'
-            LNSLABEL(NGET)=19
+            SLABEL(NGET)='Wall discomf PD (%)'; LNSLABEL(NGET)=19
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Wall discomf PD (% change/hr)'
             LNSLABEL(NGET)=29
@@ -1540,14 +1525,12 @@ C IGET = 11  Infiltration.
           IGETNO(NGET,7)=4
           SUFFIX=' Inf'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Infiltration (W)'
-            LNSLABEL(NGET)=16
+            SLABEL(NGET)='Infiltration (W)'; LNSLABEL(NGET)=16
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Infiltration change (W/hr)'
             LNSLABEL(NGET)=26
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Infiltration (Whr)'
-            LNSLABEL(NGET)=18
+            SLABEL(NGET)='Infiltration (Whr)'; LNSLABEL(NGET)=18
           endif
         elseif(inoc.eq.2)then
 
@@ -1556,14 +1539,12 @@ C IGET = 12  Ventilation.
           IGETNO(NGET,7)=9
           SUFFIX=' Vent'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Ventilation (W)'
-            LNSLABEL(NGET)=15
+            SLABEL(NGET)='Ventilation (W)'; LNSLABEL(NGET)=15
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Ventilation change (W/hr)'
             LNSLABEL(NGET)=25
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Ventilation (Whr)'
-            LNSLABEL(NGET)=17
+            SLABEL(NGET)='Ventilation (Whr)'; LNSLABEL(NGET)=17
           endif
         elseif(inoc.eq.3)then
 C IGET = 15  Casual gains by type.
@@ -1572,8 +1553,7 @@ C IGET = 15  Casual gains by type.
           IGETNO(NGET,7)=13
           SUFFIX=' OccCasG'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Total occupant gain (W)'
-            LNSLABEL(NGET)=23
+            SLABEL(NGET)='Total occupant gain (W)'; LNSLABEL(NGET)=23
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Total occupant gain chg (W/hr)'
             LNSLABEL(NGET)=30
@@ -1587,14 +1567,12 @@ C IGET = 15  Casual gains by type.
           IGETNO(NGET,7)=14
           SUFFIX=' LitCasG'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Total lighting gain (W)'
-            LNSLABEL(NGET)=23
+            SLABEL(NGET)='Total lighting gain (W)'; LNSLABEL(NGET)=23
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Total lighting gain chg (W/hr)'
             LNSLABEL(NGET)=30
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Total lighting gain (Whr)'
-            LNSLABEL(NGET)=25
+            SLABEL(NGET)='Total lighting gain (Whr)'; LNSLABEL(NGET)=25
           endif
         elseif(inoc.eq.5)then
           IGETNO(NGET,1)=15
@@ -1700,11 +1678,9 @@ C IGET = 45 Zone balance transparent partitions conv.
             SLABEL(NGET)='Total surf convection (W)'
             LNSLABEL(NGET)=25
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Total surf conv (W/hr)'
-            LNSLABEL(NGET)=22
+            SLABEL(NGET)='Total surf conv (W/hr)'; LNSLABEL(NGET)=22
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Total surf conv (Whr)'
-            LNSLABEL(NGET)=21
+            SLABEL(NGET)='Total surf conv (Whr)'; LNSLABEL(NGET)=21
           endif
         endif
       elseif(INO.EQ.11)then
@@ -2272,20 +2248,26 @@ C Report flux/m^2.
           if(IROC.eq.0)then
             if (ISM.eq.0) then
               SLABEL(NGET)='Heat stored @ other face (W)'  
+              LNSLABEL(NGET)=28
             else                    
               SLABEL(NGET)='Heat stored @ other face (W/m^2)'
+              LNSLABEL(NGET)=32
             endif
           elseif(IROC.eq.1)then
             if (ISM.eq.0) then
               SLABEL(NGET)='Ht str chng @ other face (W/hr)'
+              LNSLABEL(NGET)=31
             else                   
               SLABEL(NGET)='Ht str chng @oth face W/(hr*m^2)'
+              LNSLABEL(NGET)=32
             endif
           elseif(IROC.eq.-1)then
             if (ISM.eq.0) then
               SLABEL(NGET)='Heat stored @ other face (Whr)'
+              LNSLABEL(NGET)=30
             else                      
               SLABEL(NGET)='Heat str @ other face (Whr/m^2)'
+              LNSLABEL(NGET)=31
             endif
           endif
         endif
@@ -2322,10 +2304,13 @@ C IGET = 8   Zone-side sensible heating load.
           SUFFIX=' HeatInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Sensible heating load (kW)'
+            LNSLABEL(NGET)=26
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Sensible heating load ch (kW/hr)'
+            LNSLABEL(NGET)=32
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Sensible heating load (kWhr)'
+            LNSLABEL(NGET)=28
           endif
         elseif(inoc.eq.2)then
 
@@ -2335,10 +2320,13 @@ C IGET = 9 Zone-side sensible cooling load.
           SUFFIX=' CoolInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Sensible cooling load (kW)'
+            LNSLABEL(NGET)=26
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Sensible cooling load ch (kW/hr)'
+            LNSLABEL(NGET)=32
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Sensible cooling load (kWhr)'
+            LNSLABEL(NGET)=28
           endif
         elseif(inoc.eq.3)then
 
@@ -2348,10 +2336,13 @@ C IGET = 30   Dehumidification load.
           SUFFIX=' LatExt'
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent dehumidification (kW)'
+            LNSLABEL(NGET)=28
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Latent dehumidification (kW/hr)'
+            LNSLABEL(NGET)=31
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Latent dehumidification (kWhr)'
+            LNSLABEL(NGET)=30
           endif
         elseif(inoc.eq.4)then
 
@@ -2361,10 +2352,13 @@ C IGET = 31   Humidification load.
           SUFFIX=' LatInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent humidification (kW)'
+            LNSLABEL(NGET)=26
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Latent humidification (kW/hr)'
+            LNSLABEL(NGET)=29
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Latent humidification (kWhr)'
+            LNSLABEL(NGET)=28
           endif
         elseif(inoc.eq.5)then
 
@@ -2374,10 +2368,13 @@ C IGET = 10  Total sensible zone loads.
           SUFFIX=' TotSens'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible load (kW)'
+            LNSLABEL(NGET)=23
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Zone sensible load chg (kW/hr)'
+            LNSLABEL(NGET)=30
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Zone sensible load (kWhr)'
+            LNSLABEL(NGET)=25
           endif
         elseif(inoc.eq.6)then
 
@@ -2386,11 +2383,12 @@ C IGET = 32  All latent zone loads.
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' TotLat'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Zone latent load (kW)'
+            SLABEL(NGET)='Zone latent load (kW)'; LNSLABEL(NGET)=21
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Zone latent load change (kW/hr)'
+            LNSLABEL(NGET)=31
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Zone latent load (kWhr)'
+            SLABEL(NGET)='Zone latent load (kWhr)'; LNSLABEL(NGET)=23
           endif
         elseif(inoc.eq.7)then
 
@@ -2400,10 +2398,13 @@ C IGET = 33  All sensible+latent zone loads.
           SUFFIX=' TotSenL'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible + latent load (kW)'
+            LNSLABEL(NGET)=32
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Zn sens+latent load chng (kW/hr)'
+            LNSLABEL(NGET)=32
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Zn sens+latent load (kWhr)'
+            LNSLABEL(NGET)=26
           endif
         endif
       elseif(INO.EQ.13)then
@@ -2416,10 +2417,13 @@ C IGET = 13  Zone RH.
         SUFFIX=' RH'
         if(IROC.eq.0)then
           SLABEL(NGET)='Zone relative humidity (%)'
+          LNSLABEL(NGET)=26
         elseif(IROC.eq.1)then
           SLABEL(NGET)='Zn relative humidity chg (%/hr)'
+          LNSLABEL(NGET)=31
         elseif(IROC.eq.-1)then
           SLABEL(NGET)='Zn relative humidity (%hr)'
+          LNSLABEL(NGET)=26
         endif
       elseif(INO.EQ.14)then
 
@@ -2492,11 +2496,13 @@ C IGET = 15  Casual gains.
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=12
             SUFFIX=' TotCasG'
             if(IROC.eq.0)then
-              SLABEL(NGET)='Total casual gain (W)'
+              SLABEL(NGET)='Total casual gain (W)'; LNSLABEL(NGET)=21
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total casual gain change (W/hr)'
-            elseif(IROC.eq.-1)then
+              LNSLABEL(NGET)=31
+              elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total casual gain (Whr)'
+              LNSLABEL(NGET)=23
             endif
           elseif(inoc.eq.2)then
             IGETNO(NGET,3)=2   ! same as for izver <4
@@ -2504,10 +2510,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CnvCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain convective (W)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Tot casual gain conv chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Tot casual gain convective (Whr)'
+              LNSLABEL(NGET)=32
             endif
           elseif(inoc.eq.3)then
             IGETNO(NGET,3)=3   ! same as for izver <4
@@ -2515,10 +2524,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' RadCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain radiant (W)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Tot casual gn radiant chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total casual gain radiant (Whr)'
+              LNSLABEL(NGET)=31
             endif
           elseif(inoc.eq.4)then
             IGETNO(NGET,3)=9   ! not avail for izver <4
@@ -2526,10 +2538,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LatCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain latent (W)'
+              LNSLABEL(NGET)=28
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Tot casual gn latent chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total casual gain latent (Whr)'
+              LNSLABEL(NGET)=30
             endif
           elseif(inoc.eq.5)then
             IGETNO(NGET,3)=4  ! same as for izver <4
@@ -2537,10 +2552,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' OccCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total occupant gain (W)'
+              LNSLABEL(NGET)=23
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total occupant gain chg (W/hr)'
+              LNSLABEL(NGET)=30
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total occupant gain (Whr)'
+              LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.6)then
             IGETNO(NGET,3)=10   ! not avail for izver <4
@@ -2548,10 +2566,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' OccCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant convec gain (W)'
+              LNSLABEL(NGET)=24
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Occupant convec gain chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Occupant convec gain (Whr)'
+              LNSLABEL(NGET)=26
             endif
           elseif(inoc.eq.7)then
             IGETNO(NGET,3)=11   ! not avail for izver <4
@@ -2559,10 +2580,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' OccRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant radiant gain (W)'
+              LNSLABEL(NGET)=25
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Occupant radiant gain chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Occupant radiant gain (Whr)'
+              LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.8)then
             IGETNO(NGET,3)=12   ! not avail for izver <4
@@ -2570,10 +2594,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' OccLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant latent gain (W)'
+              LNSLABEL(NGET)=24
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Occupant latent gain chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Occupant latent gain (Whr)'
+              LNSLABEL(NGET)=26
             endif
           elseif(inoc.eq.9)then
             IGETNO(NGET,3)=5  ! same as for izver <4
@@ -2581,10 +2608,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LitCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total lighting gain (W)'
+              LNSLABEL(NGET)=23
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total lighting gain chg (W/hr)'
+              LNSLABEL(NGET)=30
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total lighting gain (Whr)'
+              LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.10)then
             IGETNO(NGET,3)=13   ! not avail for izver <4
@@ -2592,10 +2622,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LitCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting convec gain (W)'
+              LNSLABEL(NGET)=24
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Lighting convec gain chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Lighting convec gain (Whr)'
+              LNSLABEL(NGET)=26
             endif
           elseif(inoc.eq.11)then
             IGETNO(NGET,3)=14   ! not avail for izver <4
@@ -2603,10 +2636,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LitRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting radiant gain (W)'
+              LNSLABEL(NGET)=25
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Lighting radiant gain chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Lighting radiant gain (Whr)'
+              LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.12)then
             IGETNO(NGET,3)=15   ! not avail for izver <4
@@ -2614,10 +2650,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LitLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting latent gain (W)'
+              LNSLABEL(NGET)=24
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Lighting latent gain chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Lighting latent gain (Whr)'
+              LNSLABEL(NGET)=24
             endif
           elseif(inoc.eq.13)then
             IGETNO(NGET,3)=6  ! same as for izver <4
@@ -2625,10 +2664,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' EqpCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total small power gain (W)'
+              LNSLABEL(NGET)=26
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total small power gain (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total small power gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.14)then
             IGETNO(NGET,3)=16   ! not avail for izver <4
@@ -2636,10 +2678,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' EqpCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr convec gain (W)'
+              LNSLABEL(NGET)=25
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Small pwr convec gain chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Small pwr convec gain (Whr)'
+              LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.15)then
             IGETNO(NGET,3)=17   ! not avail for izver <4
@@ -2647,10 +2692,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' EqpRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr radiant gain (W)'
+              LNSLABEL(NGET)=26
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Sml pwr radiant gain chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Small pwr radiant gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.16)then
             IGETNO(NGET,3)=18   ! not avail for izver <4
@@ -2658,10 +2706,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' EqpLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr latent gain (W)'
+              LNSLABEL(NGET)=25
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Small pwr latent gain chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Small pwr latent gain (Whr)'
+              LNSLABEL(NGET)=27
             endif
           elseif(inoc.eq.17)then
             IGETNO(NGET,3)=8  ! same as for izver <4
@@ -2669,10 +2720,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Frac of ctld casual gain (%)'
+              LNSLABEL(NGET)=28
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Frac of ctld casual gain (%/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Frac of ctld casual gain (%hr)'
+              LNSLABEL(NGET)=30
             endif
           elseif(inoc.eq.18)then
             IGETNO(NGET,3)=7  ! same as for izver <4
@@ -2680,10 +2734,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total controled casual gain (W)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total ctld casual gain (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total ctld casual gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.19)then
             IGETNO(NGET,3)=19   ! not avail for izver <4
@@ -2691,10 +2748,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled convec gain (W)'
+              LNSLABEL(NGET)=26
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Cntrld convec gain chg (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Controlled convec gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.20)then
             IGETNO(NGET,3)=20   ! not avail for izver <4
@@ -2702,10 +2762,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled radiant gain (W)'
+              LNSLABEL(NGET)=27
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Cntrld radiant gain chg (W/hr)'
+              LNSLABEL(NGET)=30
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Controlled radiant gain (Whr)'
+              LNSLABEL(NGET)=29
             endif
           elseif(inoc.eq.21)then
             IGETNO(NGET,3)=21   ! not avail for izver <4
@@ -2713,10 +2776,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled latent gain (W)'
+              LNSLABEL(NGET)=26
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Cntrld latent gain chg (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Controlled latent gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           endif
         else
@@ -2744,11 +2810,13 @@ C IGET = 15  Casual gains.
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=12
             SUFFIX=' TotCasG'
             if(IROC.eq.0)then
-              SLABEL(NGET)='Total casual gain (W)'
+              SLABEL(NGET)='Total casual gain (W)'; LNSLABEL(NGET)=21
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total casual gain change (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total casual gain (Whr)'
+              LNSLABEL(NGET)=23
             endif
           elseif(inoc.eq.2)then
             IGETNO(NGET,3)=2
@@ -2756,10 +2824,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CnvCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain convective (W)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Tot casual gain conv chg (W/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Tot casual gain convective (Whr)'
+              LNSLABEL(NGET)=32
             endif
           elseif(inoc.eq.3)then
             IGETNO(NGET,3)=3
@@ -2767,10 +2838,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' RadCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain radiant (W)'
+              LNSLABEL(NGET)=28
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Tot casual gn radiant chg (W/hr)'
+              LNSLABEL(NGET)=32
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total casual gain radiant (Whr)'
+              LNSLABEL(NGET)=31
             endif
           elseif(inoc.eq.4)then
             IGETNO(NGET,3)=4
@@ -2778,10 +2852,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' OccCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total occupant gain (W)'
+              LNSLABEL(NGET)=23
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total occupant gain chg (W/hr)'
+              LNSLABEL(NGET)=30
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total occupant gain (Whr)'
+              LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.5)then
             IGETNO(NGET,3)=5
@@ -2789,10 +2866,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' LitCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total lighting gain (W)'
+              LNSLABEL(NGET)=23
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total lighting gain chg (W/hr)'
+              LNSLABEL(NGET)=30
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total lighting gain (Whr)'
+              LNSLABEL(NGET)=25
             endif
           elseif(inoc.eq.6)then
             IGETNO(NGET,3)=6
@@ -2800,10 +2880,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' EqpCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total small power gain (W)'
+              LNSLABEL(NGET)=26
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total small power gain (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total small power gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.7)then
             IGETNO(NGET,3)=7
@@ -2811,10 +2894,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total controled casual gain (W)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Total ctld casual gain (W/hr)'
+              LNSLABEL(NGET)=29
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Total ctld casual gain (Whr)'
+              LNSLABEL(NGET)=28
             endif
           elseif(inoc.eq.8)then
             IGETNO(NGET,3)=8
@@ -2822,10 +2908,13 @@ C IGET = 15  Casual gains.
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Frac of ctld casual gain (%)'
+              LNSLABEL(NGET)=28
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Frac of ctld casual gain (%/hr)'
+              LNSLABEL(NGET)=31
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Frac of ctld casual gain (%hr)'
+              LNSLABEL(NGET)=30
             endif
           elseif(inoc.eq.9)then
 
@@ -2835,10 +2924,13 @@ C Test.
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Various casual gains (%)'
+              LNSLABEL(NGET)=24
             elseif(IROC.eq.1)then
               SLABEL(NGET)='Various casual gains (%/hr)'
+              LNSLABEL(NGET)=27
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Various casual gain (%hr)'
+              LNSLABEL(NGET)=25
             endif
           endif
         endif
@@ -2862,10 +2954,13 @@ C and node logic below.
           SUFFIX=' RealPwr'
           if(IROC.eq.0)then
             SLABEL(NGET)='Real power consumption (W)'
+            LNSLABEL(NGET)=26
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Real power consump chg (W/hr)'
+            LNSLABEL(NGET)=29
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Real power consumption (Whr)'
+            LNSLABEL(NGET)=28
           endif
         elseif (jpwr.eq.2) then
           IGETNO(NGET,1)=28
@@ -2873,10 +2968,13 @@ C and node logic below.
           SUFFIX=' ReacPwr'
           if(IROC.eq.0)then
             SLABEL(NGET)='Reactive power consumption (W)'
+            LNSLABEL(NGET)=30
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Reactive power consmp chg (W/hr)'
+            LNSLABEL(NGET)=32
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Reactive power consmption (Whr)'
+            LNSLABEL(NGET)=31
           endif
         endif
 
@@ -2904,11 +3002,11 @@ C and node logic below.
           IGETNO(NGET,6)=-4; IGETNO(NGET,7)=5
           SUFFIX=' Output'
           if(IROC.eq.0)then
-            SLABEL(NGET)=' Output (W)'
+            SLABEL(NGET)=' Output (W)'; LNSLABEL(NGET)=11
           elseif(IROC.eq.1)then
-            SLABEL(NGET)=' Output chg (W/hr)'
+            SLABEL(NGET)=' Output chg (W/hr)'; LNSLABEL(NGET)=18
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)=' Output (Whr)'
+            SLABEL(NGET)=' Output (Whr)'; LNSLABEL(NGET)=13
           endif
         elseif (ispm.eq.2) then
           IGETNO(NGET,8)=4
@@ -2916,11 +3014,13 @@ C and node logic below.
           IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
           SUFFIX=' Secndry'
           if(IROC.eq.0)then
-            SLABEL(NGET)=' Misc. output (-)'
+            SLABEL(NGET)=' Misc. output (-)'; LNSLABEL(NGET)=17
           elseif(IROC.eq.1)then
             SLABEL(NGET)=' Misc. output chg (-/hr)'
+            LNSLABEL(NGET)=24
           elseif(IROC.eq.-1)then
             SLABEL(NGET)=' Misc. output hours (-.hr)'
+            LNSLABEL(NGET)=26
           endif
         endif
 
@@ -2969,10 +3069,13 @@ C << then it could be automatically selected
           GLABEL(NGET)='Measured db Tmp'
           if(IROC.eq.0)then
             SLABEL(NGET)='Measured zone db T (degC)'
+            LNSLABEL(NGET)=25
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Meas zone db T change (degC/hr)'
+            LNSLABEL(NGET)=31
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Meas zone db T hours (degC.hr)'
+            LNSLABEL(NGET)=30
           endif
         elseif(ir.eq.2)then
           call ASKZON(IZONE)
@@ -2986,10 +3089,13 @@ C << then it could be automatically selected
           GLABEL(NGET)='Measured surf T'
           if(IROC.eq.0)then
             SLABEL(NGET)='Measured surf T (degC)'
+            LNSLABEL(NGET)=22
           elseif(IROC.eq.1)then
             SLABEL(NGET)='Meas surf T change (degC/hr)'
+            LNSLABEL(NGET)=28
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Meas surf T hours (degC.hr)'
+            LNSLABEL(NGET)=27
           endif
 
         endif
@@ -3491,6 +3597,7 @@ C specific information.
                 IGETNO(NGET,8)=IGETNO((NGET-1),8)
                 IGETNO(NGET,9)=IGETNO((NGET-1),9)
                 SLABEL(NGET)=SLABEL(NGET-1)
+                LNSLABEL(NGET)=LNSLABEL(NGET-1)
                 if (MENUTYPE.eq.3.or.MENUTYPE.eq.4) then
                   if (SLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
@@ -3564,7 +3671,9 @@ C              write(6,*) ' found match, NGET = ',I,J
                 IGETNO(K,8)=IGETNO(K+1,8)
                 IGETNO(K,9)=IGETNO(K+1,9)
                 SLABEL(K)=SLABEL(K+1)
+                LNSLABEL(K)=LNSLABEL(K+1)
                 GLABEL(K)=GLABEL(K+1)
+                LNGLABEL(K)=LNGLABEL(K+1)
  920          continue
               IGETNO(NGET,1)=0; IGETNO(NGET,2)=0
               IGETNO(NGET,3)=0; IGETNO(NGET,4)=0
@@ -3572,7 +3681,9 @@ C              write(6,*) ' found match, NGET = ',I,J
               IGETNO(NGET,6)=1; IGETNO(NGET,7)=0
               IGETNO(NGET,8)=0; IGETNO(NGET,9)=0
               SLABEL(NGET)='  '
+              LNSLABEL(NGET)=0
               GLABEL(NGET)='  '
+              LNGLABEL(NGET)=0
               NGET=NGET-1
               goto 901
             endif
@@ -3593,8 +3704,8 @@ C *** user selections have now finished ***
 C Debug.
 C        do 9999 I=1,NGET
 C          write(6,*) (IGETNO(I,K),K=1,9)
-C          write(6,*) SLABEL(I)
-C          write(6,*) GLABEL(I)
+C          write(6,*) SLABEL(I)(1:lnslabel(I))
+C          write(6,*) GLABEL(I)(1:lnglabel(I))
 C          write(6,*) '  '
 C 9999   continue
 
