@@ -327,7 +327,9 @@ C Labels read into temp variables then copy below.
 
 C Copy label names to common area.
         SLABEL(NGET)=TSLABEL
+        LNSLABEL(NGET)=lnblnk(TSLABEL)
         GLABEL(NGET)=TGLABEL
+        LNGLABEL(NGET)=lnblnk(TGLABEL)
         goto 100
       else
         goto 200
@@ -562,7 +564,7 @@ C Open file for appending.
       write(IUNIT,'(a)') '*metlist'
       do 10 I=1,NGET
         write (IUNIT,'(a,8i5)') '*data ',(IGETNO(I,J),J=1,9)
-        write (IUNIT,'(2a)') '*slab ',SLABEL(I)
+        write (IUNIT,'(2a)') '*slab ',SLABEL(I)(1:LNSLABEL(I))
         write (IUNIT,'(2a)') '*glab ',GLABEL(I)
  10   continue
       write (IUNIT,'(a)') '*end '

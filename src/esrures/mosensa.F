@@ -192,6 +192,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=ISET
         endif
@@ -221,7 +222,7 @@ C starting Y are set based.
 
 C Write header information.
       call edisp(itru,'  ')
-      write (outs,'(a)') SLABEL(1)
+      write (outs,'(a)') SLABEL(1)(1:LNSLABEL(1))
       call edisp(itru,outs)
       write (outs,'(a,a)') 'For zone: ',zname(IGETNO(1,2))
       call edisp(itru,outs)
@@ -531,6 +532,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=NSNO(ISET)
         endif

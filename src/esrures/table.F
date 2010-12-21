@@ -319,7 +319,7 @@ C Write general header information (skip if IPV mode).
 C If requested or writing to file start lines with a '#'.
         if (IHFLAG.eq.1.or.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),36)
+          lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
             write(outs248,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
      &      ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -335,7 +335,7 @@ C If requested or writing to file start lines with a '#'.
             if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
-              call edisp248(itru,outs248,lnb)
+              call edisp248(itru,outs248,124)
             endif
           endif
           WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
@@ -346,7 +346,7 @@ C If requested or writing to file start lines with a '#'.
 C Writing to the screen. It would be great to figure out how wide
 C we can write to << ?? to be done >>
           call edisp(itru,'Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),36)
+          lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
             write(outs248,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',
      &        ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -362,7 +362,7 @@ C we can write to << ?? to be done >>
             if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
-              call edisp248(itru,outs248,lnb)
+              call edisp248(itru,outs248,124)
             endif
           endif
           WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
@@ -504,7 +504,7 @@ C demarcations are omitted.
                 if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
-                  call edisp248(itru,outs248,lnb)
+                  call edisp248(itru,outs248,124)
                 endif
               endif
             else
@@ -516,7 +516,7 @@ C demarcations are omitted.
                 if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
-                  call edisp248(itru,outs248,lnb)
+                  call edisp248(itru,outs248,124)
                 endif
               else
                 continue
@@ -650,7 +650,7 @@ C Writing to screen so use shorter file buffer.
             if(lnb.lt.124)then
               call eddisp(itru,outs248(1:lnb))
             else
-              call eddisp248(itru,outs248,lnb)
+              call eddisp248(itru,outs248,124)
             endif
           endif
  421    CONTINUE

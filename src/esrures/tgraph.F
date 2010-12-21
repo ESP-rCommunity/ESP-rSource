@@ -164,8 +164,6 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOWLIN(act)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -230,8 +228,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif

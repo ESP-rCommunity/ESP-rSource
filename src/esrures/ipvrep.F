@@ -669,6 +669,7 @@ C If no zones, continue with the storage arrays at zero.
             IGETNO(I,4)=0
             IGETNO(I,5)=ISET
             SLABEL(I)='Heating flux injection (W)'
+            LNSLABEL(I)=26
    50     CONTINUE
           CALL MOSMSD('i',XMAX(1),XMIN(1),XAVE(1),XTOT(1),DMAX(1),
      &      DMIN(1),XMSUM(1),XMINSUM(1))
@@ -681,6 +682,7 @@ C cooling is reported as positive values.
             IGETNO(I,1)=9
             IGETNO(I,2)=izedg(ij,I)
             SLABEL(I)='Cooling flux (W)'
+            LNSLABEL(I)=16
    51     CONTINUE
           CALL MOSMSD('i',XMAX(2),XMIN(2),XAVE(2),XTOT(2),DMAX(2),
      &      DMIN(2),XMSUM(2),XMINSUM(2))
@@ -691,6 +693,7 @@ C Get Max Min lighting casual gains and then integrated lighting.
             IGETNO(I,1)=15
             IGETNO(I,3)=5
             SLABEL(I)='Lighting (unctld) gains (W)'
+            LNSLABEL(I)=27
    52     CONTINUE
           CALL MOSMSD('i',XMAX(3),XMIN(3),XAVE(3),XTOT(3),DMAX(3),
      &      DMIN(3),XMSUM(3),XMINSUM(3))
@@ -700,6 +703,7 @@ C Get Max Min lighting casual gains and then integrated lighting.
             IGETNO(I,1)=15
             IGETNO(I,3)=7
             SLABEL(I)='Lighting (ctld) gains (W)'
+            LNSLABEL(I)=25
    53     CONTINUE
           CALL MOSMSD('i',XMAX(4),XMIN(4),XAVE(4),XTOT(4),DMAX(4),
      &      DMIN(4),XMSUM(4),XMINSUM(4))
@@ -711,6 +715,7 @@ C Use the (5) part of arrays for fans and pumps.
             IGETNO(I,1)=15
             IGETNO(I,3)=6
             SLABEL(I)='Small Power (W)'
+            LNSLABEL(I)=15
    54     CONTINUE
           CALL MOSMSD('i',XMAX(6),XMIN(6),XAVE(6),XTOT(6),DMAX(6),
      &      DMIN(6),XMSUM(6),XMINSUM(6))
@@ -873,7 +878,7 @@ C not know about idmdinc() so this needs to be applied.
         call aggregpv(iseas,pvok,pvmax,totpv,iier)
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         call edisp(itru,' ')
         write(outs,'(9a)') '*report',tab,'71',tab,'maximum',
      &    tab,'capacity',tab,'Dispersed'
@@ -908,7 +913,7 @@ C The IGET number is fixed at 71.
         call edisp(itru,' ')
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         write(outs,'(9a)') '*report',tab,'71',tab,'minimum',
      &    tab,'capacity',tab,'Dispersed'
         call edisp(itru,outs)
@@ -941,7 +946,7 @@ C The IGET number is fixed at 71.
         call edisp(itru,' ')
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         write(outs,'(9a)') '*report',tab,'71',tab,'average',
      &    tab,'capacity',tab,'Dispersed'
         call edisp(itru,outs)
@@ -1073,7 +1078,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=6
                 IGETNO(I,8)=1
-                SLABEL(I)='Dry bulb temperature,degC'
+                SLABEL(I)='Dry bulb temperature,degC'; LNSLABEL(I)=25
               elseif(imetget(ig).eq.6)then
                 IGETNO(I,1)=6
                 IGETNO(I,2)=izmg(ig,I)
@@ -1083,7 +1088,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=5
                 IGETNO(I,8)=1
-                SLABEL(I)='Resultant temperature,degC'
+                SLABEL(I)='Resultant temperature,degC'; LNSLABEL(I)=26
               elseif(imetget(ig).eq.11)then
                 IGETNO(I,1)=11
                 IGETNO(I,2)=izmg(ig,I)
@@ -1093,7 +1098,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=4
                 IGETNO(I,8)=2
-                SLABEL(I)='Infiltration load,W'
+                SLABEL(I)='Infiltration load,W'; LNSLABEL(I)=19
               elseif(imetget(ig).eq.12)then
                 IGETNO(I,1)=12
                 IGETNO(I,2)=izmg(ig,I)
@@ -1103,7 +1108,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=9
                 IGETNO(I,8)=2
-                SLABEL(I)='Ventilation load,W'
+                SLABEL(I)='Ventilation load,W'; LNSLABEL(I)=18
               elseif(imetget(ig).eq.13)then
                 IGETNO(I,1)=13
                 IGETNO(I,2)=izmg(ig,I)
@@ -1113,7 +1118,7 @@ C Set up selections.
                 IGETNO(I,6)=-202
                 IGETNO(I,7)=4
                 IGETNO(I,8)=4
-                SLABEL(I)='Relative humidity,%'
+                SLABEL(I)='Relative humidity,%'; LNSLABEL(I)=19
               elseif(imetget(ig).eq.15)then
                 IGETNO(I,1)=15
                 IGETNO(I,2)=izmg(ig,I)
@@ -1123,7 +1128,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=12
                 IGETNO(I,8)=2
-                SLABEL(I)='Total casual gains,W'
+                SLABEL(I)='Total casual gains,W'; LNSLABEL(I)=20
               elseif(imetget(ig).eq.38)then
                 IGETNO(I,1)=38
                 IGETNO(I,2)=izmg(ig,I)
@@ -1134,6 +1139,7 @@ C Set up selections.
                 IGETNO(I,7)=7
                 IGETNO(I,8)=2
                 SLABEL(I)='Solar entering from outside,W'
+                LNSLABEL(I)=29
               elseif(imetget(ig).eq.40)then
                 IGETNO(I,1)=40
                 IGETNO(I,2)=izmg(ig,I)
@@ -1143,7 +1149,7 @@ C Set up selections.
                 IGETNO(I,6)=-104
                 IGETNO(I,7)=9
                 IGETNO(I,8)=2
-                SLABEL(I)='Total solar absorbed,W'
+                SLABEL(I)='Total solar absorbed,W'; LNSLABEL(I)=22
               elseif(imetget(ig).eq.73)then
                 IGETNO(I,1)=73
                 IGETNO(I,2)=izmg(ig,I)
@@ -1153,7 +1159,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=6
                 IGETNO(I,8)=1
-                SLABEL(I)='Guth comfort index,-'
+                SLABEL(I)='Guth comfort index,-'; LNSLABEL(I)=20
               elseif(imetget(ig).eq.74)then
                 IGETNO(I,1)=74
                 IGETNO(I,2)=izmg(ig,I)
@@ -1163,7 +1169,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=12
                 IGETNO(I,8)=2
-                SLABEL(I)='Plnt cnv+rad&latent,Wh'
+                SLABEL(I)='Plnt cnv+rad&latent,Wh'; LNSLABEL(I)=22
               endif
   250       CONTINUE
 
@@ -1192,7 +1198,7 @@ C Next grab the stats for current metric.
      &          'stats',tab,msdoc(ig)(1:lnblnk(msdoc(ig))),tab,
      &          metgroup(ig)
               call edisp(itru,outs)
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               if(imetmsc(ig,1).eq.2)then
 
@@ -1251,7 +1257,7 @@ C Write stats for current metric.
      &          metgroup(ig)
               call edisp(itru,outs)
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
               call edisp(itru,outs)
@@ -1276,7 +1282,7 @@ C Write stats for current metric.
      &          metgroup(ig)
               call edisp(itru,outs)
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               if(imetget(ig).eq.1.or.imetget(ig).eq.6)then
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'3'
@@ -1403,7 +1409,7 @@ C uncontrolled and controlled lighting.
    61       continue
             DO 63 I=1,NZ
               IGETNO(I,1)=9
-              SLABEL(I)='Cooling flux (W)'
+              SLABEL(I)='Cooling flux (W)'; LNSLABEL(I)=16
    63       CONTINUE
             call GOGET(IDAY)
             DO 64 I=1,NZ
@@ -1415,6 +1421,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=5
               SLABEL(I)='Lighting (unctld) gains (W)'
+              LNSLABEL(I)=27
    66       CONTINUE
             call GOGET(IDAY)
             DO 67 I=1,NZ
@@ -1425,7 +1432,7 @@ C uncontrolled and controlled lighting.
             DO 70 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=7
-              SLABEL(I)='Lighting (ctld) gains (W)'
+              SLABEL(I)='Lighting (ctld) gains (W)'; LNSLABEL(I)=25
    70       CONTINUE
             call GOGET(IDAY)
             DO 71 I=1,NZ
@@ -1443,7 +1450,7 @@ C Small power (assumed to be equipment casual gains)
             DO 74 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=6
-              SLABEL(I)='Small power (W)'
+              SLABEL(I)='Small power (W)'; LNSLABEL(I)=15
    74       CONTINUE
             call GOGET(IDAY)
             DO 75 I=1,NZ
@@ -1713,6 +1720,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=6
                   IGETNO(I,8)=1
                   SLABEL(I)='Dry bulb temperature,degC'
+                  LNSLABEL(I)=25
                 elseif(imetget(ig).eq.6)then
                   SUFFIX=' Res T'
                   IGETNO(I,1)=6
@@ -1724,6 +1732,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=5
                   IGETNO(I,8)=1
                   SLABEL(I)='Resultant temperature,degC'
+                  LNSLABEL(I)=25
                 elseif(imetget(ig).eq.11)then
                   SUFFIX=' Inf'
                   IGETNO(I,1)=11
@@ -1734,7 +1743,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=4
                   IGETNO(I,8)=2
-                  SLABEL(I)='Infiltration load,W'
+                  SLABEL(I)='Infiltration load,W'; LNSLABEL(I)=19
                 elseif(imetget(ig).eq.12)then
                   SUFFIX=' Vent'
                   IGETNO(I,1)=12
@@ -1745,7 +1754,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
-                  SLABEL(I)='Ventilation load,W'
+                  SLABEL(I)='Ventilation load,W'; LNSLABEL(I)=18
                 elseif(imetget(ig).eq.13)then
                   SUFFIX=' RH'
                   IGETNO(I,1)=13
@@ -1756,7 +1765,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-202
                   IGETNO(I,7)=4
                   IGETNO(I,8)=4
-                  SLABEL(I)='Relative humidity,%'
+                  SLABEL(I)='Relative humidity,%'; LNSLABEL(I)=19
                 elseif(imetget(ig).eq.15)then
                   SUFFIX=' TotCnv'
                   IGETNO(I,1)=15
@@ -1767,7 +1776,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=12
                   IGETNO(I,8)=2
-                  SLABEL(I)='Total casual gains,W'
+                  SLABEL(I)='Total casual gains,W'; LNSLABEL(I)=20
                 elseif(imetget(ig).eq.38)then
                   SUFFIX=' SolinEx'
                   IGETNO(I,1)=38
@@ -1779,6 +1788,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=7
                   IGETNO(I,8)=2
                   SLABEL(I)='Solar entering from outside,W'
+                  LNSLABEL(I)=29
                 elseif(imetget(ig).eq.40)then
                   SUFFIX=' TSolabs'
                   IGETNO(I,1)=40
@@ -1789,7 +1799,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-104
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
-                  SLABEL(I)='Total solar absorbed,W'
+                  SLABEL(I)='Total solar absorbed,W'; LNSLABEL(I)=22
                 elseif(imetget(ig).eq.73)then
                   SUFFIX=' Guth'
                   IGETNO(I,1)=73
@@ -1800,14 +1810,14 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=1
                   IGETNO(I,7)=6
                   IGETNO(I,8)=1
-                  SLABEL(I)='Guth comfort index,-'
+                  SLABEL(I)='Guth comfort index,-'; LNSLABEL(I)=20
                 endif
                 lnz=lnzname(izmg(ig,i))
                 write (GLABEL(I),'(a,a)')ZNAME(izmg(ig,i))(1:lnz),
      &            SUFFIX
   350         CONTINUE
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
 
               write(outs,'(6a,i2)') '*format',tab,'tabular',
@@ -3277,6 +3287,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,4)=0
               IGETNO(I,5)=ISET
               SLABEL(I)='Heating flux injection (W)'
+              LNSLABEL(I)=26
    60       CONTINUE
             call GOGET(IDAY)
             DO 161 I=1,NZ
@@ -3288,6 +3299,7 @@ C uncontrolled and controlled lighting.
             DO 63 I=1,NZ
               IGETNO(I,1)=9
               SLABEL(I)='Cooling flux (W)'
+              LNSLABEL(I)=16
    63       CONTINUE
             call GOGET(IDAY)
             DO 64 I=1,NZ
@@ -3300,6 +3312,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=5
               SLABEL(I)='Lighting (unctld) gains (W)'
+              LNSLABEL(I)=27
    66       CONTINUE
             call GOGET(IDAY)
             DO 67 I=1,NZ
@@ -3311,6 +3324,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=7
               SLABEL(I)='Lighting (ctld) gains (W)'
+              LNSLABEL(I)=25
    70       CONTINUE
             call GOGET(IDAY)
             DO 71 I=1,NZ
@@ -3324,6 +3338,7 @@ C Small power (assumed to be equipment casual gains)
               IGETNO(I,1)=15
               IGETNO(I,3)=6
               SLABEL(I)='Small power (W)'
+              LNSLABEL(I)=15
    74       CONTINUE
             call GOGET(IDAY)
             DO 75 I=1,NZ

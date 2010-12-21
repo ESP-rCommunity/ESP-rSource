@@ -297,8 +297,6 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-C            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-C     &      ' >> file.'
             write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
