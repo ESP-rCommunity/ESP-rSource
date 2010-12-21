@@ -1292,14 +1292,14 @@ C Generate and display column headings.
           call eddisp(itru,outs)
         else
           if (IROC.eq.-1) then
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard   Total'
           else
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard'
           endif
           call eddisp(itru,outs)
-          write(outs,'(2a)')  '                    value   occurrence',
+          write(outs,'(2a)')  '                     value   occurrence',
      & '        value   occurrence        value        deviation'
           call eddisp(itru,outs)
         endif
@@ -1311,8 +1311,8 @@ C Write tag line if tagged output requested.
             call eddisp(itru,outs)
           endif
           if (NY(I).eq.0) then
-            write (outs,'(a20,a)') GLABEL(I),
-     &           'No data: probably due to filtering.'
+            write (outs,'(a,a)') GLABEL(I)(1:LNGLABEL(I)),
+     &           ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.
@@ -1330,27 +1330,21 @@ C Create string description for time of minimum occurrance.
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
 
 C Build up string for displaying.
-            if(IGETNO(NGET,9).ge.15)then
-              write (outs,'(a)') GLABEL(I)(1:20)
-            elseif(IGETNO(NGET,9).le.12)then
-              write (outs,'(a,8x)') GLABEL(I)(1:12)
-            else
-              write (outs,'(a,5x)') GLABEL(I)(1:15)
-            endif
+            write (outs,'(a)') GLABEL(I)(1:20)
             
-C Write out results to 5 significant figures.
+C Write out results to 5 significant figures starting at col 22.
             NSIG=5
             call sigfig(YMAX(I),NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),XT
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),XT
             call sigfig(YMIN(I),NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),NT
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),NT
             call sigfig(YAVE(I),NSIG,RNO,t12,LSTR)
-            write (outs(73:85),'(a,1x)') t12
+            write (outs(74:86),'(a,1x)') t12
             call sigfig(YSTD(I),NSIG,RNO,t12,LSTR)
-            write (outs(86:98),'(a,1x)') t12
+            write (outs(87:99),'(a,1x)') t12
             if (IROC.eq.-1) then
               call sigfig(YTOT(I),NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
           call eddisp(itru,outs)
@@ -1410,19 +1404,19 @@ C Write out results to 5 significant figures.
           else
           
 C Build up string for displaying.
-            write (outs,'(3x,a,14x)') 'All'
+            write (outs,'(3x,a,15x)') 'All'
             
 C Write out results to 5 significant figures.
             NSIG=5
             call sigfig(XMAX,NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XMIN,NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XAVE,NSIG,RNO,t12,LSTR)
-            write (outs(73:98),'(a,1x,a)') t12,'     -- '
+            write (outs(74:99),'(a,1x,a)') t12,'     -- '
             if (IROC.eq.-1) then
               call sigfig(XTOT,NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
         endif
@@ -1928,8 +1922,8 @@ C Generate and display column headings.
         endif
         do 30 I=1,NGET
           if (NY(I).eq.0) then
-            write (outs,1000) GLABEL(I)
- 1000       format (a20,'No data: probably due to filtering.')
+            write (outs,'(2a)') GLABEL(I)(1:LNGLABEL(I)),
+     &       ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.

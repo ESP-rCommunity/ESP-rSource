@@ -565,7 +565,7 @@ C Open file for appending.
       do 10 I=1,NGET
         write (IUNIT,'(a,8i5)') '*data ',(IGETNO(I,J),J=1,9)
         write (IUNIT,'(2a)') '*slab ',SLABEL(I)(1:LNSLABEL(I))
-        write (IUNIT,'(2a)') '*glab ',GLABEL(I)
+        write (IUNIT,'(2a)') '*glab ',GLABEL(I)(1:LNGLABEL(I))
  10   continue
       write (IUNIT,'(a)') '*end '
       write (IUNIT,'(a)') '# --------------------------------- '
