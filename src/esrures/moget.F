@@ -470,6 +470,9 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer IAC        ! for user selection
       integer IOT,IWM    ! for radio buttons
       integer NITMS,INO  ! max items and current menu item
+      integer IZLEN      ! length of ZSDESS
+      integer ISLEN      ! length of SUFFIX
+      integer ITLEN      ! length of ZSDES
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
 #ifdef OSI
@@ -925,7 +928,7 @@ C IGET = 2 outside temperature.
           IGETNO(NGET,1)=2
           IGETNO(NGET,6)=-302; IGETNO(NGET,7)=4
           IGETNO(NGET,8)=1;    IGETNO(NGET,9)=14
-          GLABEL(NGET)='Ambient db Tmp'
+          GLABEL(NGET)='Ambient db Tmp'; LNGLABEL(NGET)=14
           if(IROC.eq.0)then
             SLABEL(NGET)='Ambient db temperature (degC)'
             LNSLABEL(NGET)=29
@@ -943,7 +946,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,6)=-104; IGETNO(NGET,7)=9
           IGETNO(NGET,8)=3;    IGETNO(NGET,9)=14
           if(irtype.eq.0)then
-            GLABEL(NGET)='Direct nor solar'
+            GLABEL(NGET)='Direct nor solar'; LNGLABEL(NGET)=16
             if(IROC.eq.0)then
               SLABEL(NGET)='DN solar intensity (W/m^2)'
               LNSLABEL(NGET)=26
@@ -955,7 +958,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
               LNSLABEL(NGET)=25
             endif
           else
-            GLABEL(NGET)='Glo horiz solar'
+            GLABEL(NGET)='Glo horiz solar'; LNGLABEL(NGET)=15
             if(IROC.eq.0)then
               SLABEL(NGET)='Glo hor solar intensity (W/m^2)'
               LNSLABEL(NGET)=31
@@ -971,7 +974,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=20
           IGETNO(NGET,6)=-104; IGETNO(NGET,7)=5
           IGETNO(NGET,8)=3;    IGETNO(NGET,9)=14
-          GLABEL(NGET)='Diffuse solar'
+          GLABEL(NGET)='Diffuse solar'; LNGLABEL(NGET)=13
           if(IROC.eq.0)then
             SLABEL(NGET)='Diffuse solar intensity (W/m^2)'
             LNSLABEL(NGET)=31
@@ -986,7 +989,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=21
           IGETNO(NGET,6)=-203; IGETNO(NGET,7)=6
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
-          GLABEL(NGET)='Wind speed'
+          GLABEL(NGET)='Wind speed'; LNGLABEL(NGET)=10
           if(IROC.eq.0)then
             SLABEL(NGET)='Wind speed (m/sec)'
             LNSLABEL(NGET)=18
@@ -1001,7 +1004,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=34
           IGETNO(NGET,6)=-203; IGETNO(NGET,7)=4
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
-          GLABEL(NGET)='Wind direc'
+          GLABEL(NGET)='Wind direc'; LNGLABEL(NGET)=10
           if(IROC.eq.0)then
             SLABEL(NGET)='Wind direction (deg)'
             LNSLABEL(NGET)=20
@@ -1016,7 +1019,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=22
           IGETNO(NGET,6)=-202; IGETNO(NGET,7)=7
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
-          GLABEL(NGET)='Ambient RH'
+          GLABEL(NGET)='Ambient RH'; LNGLABEL(NGET)=10
           if(IROC.eq.0)then
             SLABEL(NGET)='Ambient RH (%)'; LNSLABEL(NGET)=14
           elseif(IROC.eq.1)then
@@ -1028,7 +1031,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=26
           IGETNO(NGET,6)=-202; IGETNO(NGET,7)=8
           IGETNO(NGET,8)=4;    IGETNO(NGET,9)=10
-          GLABEL(NGET)='Sky illum'
+          GLABEL(NGET)='Sky illum'; LNGLABEL(NGET)=9
           if(IROC.eq.0)then
             SLABEL(NGET)='Sky illuminance (lux)'; LNSLABEL(NGET)=21
           elseif(IROC.eq.1)then
@@ -3078,7 +3081,7 @@ C << then it could be automatically selected
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' db T'
-          GLABEL(NGET)='Measured db Tmp'
+          GLABEL(NGET)='Measured db Tmp'; LNGLABEL(NGET)=15
           if(IROC.eq.0)then
             SLABEL(NGET)='Measured zone db T (degC)'
             LNSLABEL(NGET)=25
@@ -3098,7 +3101,7 @@ C << then it could be automatically selected
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' surf T'
-          GLABEL(NGET)='Measured surf T'
+          GLABEL(NGET)='Measured surf T'; LNGLABEL(NGET)=15
           if(IROC.eq.0)then
             SLABEL(NGET)='Measured surf T (degC)'
             LNSLABEL(NGET)=22
@@ -3324,13 +3327,13 @@ C Toggle delimeter.
       elseif(INO.eq.28.and.nl.ne.0) then
 
 C Debug...
-        do 999 I=1,NGET
-          write(6,'(12i3)') (IGETNO(I,K),K=1,9)
-          lns=lnblnk(SLABEL(I))
-          write(6,*) lns,LNSLABEL(I),' ',SLABEL(I)
-          write(6,*) LNGLABEL(I),' ',GLABEL(I)
-          write(6,*) '  '
- 999    continue
+C        do 999 I=1,NGET
+C          write(6,'(12i3)') (IGETNO(I,K),K=1,9)
+C          write(6,*) LNSLABEL(I),' ',SLABEL(I)(1:lnslabel(I))
+C          write(6,*) LNGLABEL(I),' ',GLABEL(I)(1:lnglabel(I))
+C          write(6,*) LNTABLABEL(I),' ',TABLABEL(I)(1:lntablabel(I))
+C          write(6,*) '  '
+C 999    continue
 
         if (NGET.lt.1) then
           call usrmsg('No data to list/ plot!',
@@ -3556,32 +3559,60 @@ C Copy new data into IGETNO array if a selection has been made.
                 if (MENUTYPE.eq.3.or.MENUTYPE.eq.4) then
                   if (SLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnblnk(ZSDESS)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.20) IZLEN=20-ISLEN
                     write (GLABEL(NGET),'(a,a)')
-     &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
+     &                ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
+                    LNGLABEL(NGET)=IZLEN+ISLEN
+                    write (TABLABEL(NGET),'(a,a)')
+     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=ITLEN+ISLEN
                   elseif (MRTLIST) then
+                    call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write (TABLABEL(NGET),'(a,a)')
+     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=ITLEN+ISLEN
                   else
+                    ISLEN=lnblnk(SUFFIX)
                     write(GLABEL(NGET),'(2a)')ZNAME(IZ)(1:lnzname(IZ)),
      &                SUFFIX
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(2a)')
+     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   endif
                 else
                   if (SLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
+                    LNGLABEL(NGET)=IZLEN
+                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    LNTABLABEL(NGET)=ITLEN
                   elseif (MRTLIST) then
+                    call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnzname(IZ)
                     write(GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
      &                ' S',ISFSEL(IG)
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    LNTABLABEL(NGET)=ITLEN
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   endif
                 endif
               else
@@ -3614,32 +3645,60 @@ C specific information.
                 if (MENUTYPE.eq.3.or.MENUTYPE.eq.4) then
                   if (SLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnblnk(ZSDESS)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.20) IZLEN=20-ISLEN
                     write (GLABEL(NGET),'(a,a)')
-     &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
+     &                ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
+                    LNGLABEL(NGET)=IZLEN+ISLEN
+                    write (TABLABEL(NGET),'(a,a)')
+     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=ITLEN+ISLEN
                   elseif (MRTLIST) then
+                    call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write (TABLABEL(NGET),'(a,a)')
+     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=ITLEN+ISLEN
                   else
+                    ISLEN=lnblnk(SUFFIX)
                     write (GLABEL(NGET),'(a,a)')
-     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX
+     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX(1:ISLEN)
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(2a)')
+     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   endif
                 else
                   if (SLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
+                    LNGLABEL(NGET)=IZLEN
+                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    LNTABLABEL(NGET)=ITLEN
                   elseif (MRTLIST) then
+                    call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
+                    ITLEN=lnblnk(ZSDES)
                     IZLEN=lnzname(IZ)
                     write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
      &                                                  ' S',ISFSEL(IG)
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    LNTABLABEL(NGET)=ITLEN
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   endif
                 endif
               endif
@@ -3687,6 +3746,8 @@ C              write(6,*) ' found match, NGET = ',I,J
                 LNSLABEL(K)=LNSLABEL(K+1)
                 GLABEL(K)=GLABEL(K+1)
                 LNGLABEL(K)=LNGLABEL(K+1)
+                TABLABEL(K)=TABLABEL(K+1)
+                LNTABLABEL(K)=LNTABLABEL(K+1)
  920          continue
               IGETNO(NGET,1)=0; IGETNO(NGET,2)=0
               IGETNO(NGET,3)=0; IGETNO(NGET,4)=0
@@ -3697,6 +3758,8 @@ C              write(6,*) ' found match, NGET = ',I,J
               LNSLABEL(NGET)=0
               GLABEL(NGET)='  '
               LNGLABEL(NGET)=0
+              TABLABEL(NGET)='  '
+              LNTABLABEL(NGET)=0
               NGET=NGET-1
               goto 901
             endif
@@ -3716,9 +3779,10 @@ C *** user selections have now finished ***
 
 C Debug.
 C        do 9999 I=1,NGET
-C          write(6,*) (IGETNO(I,K),K=1,9)
-C          write(6,*) SLABEL(I)(1:lnslabel(I))
-C          write(6,*) GLABEL(I)(1:lnglabel(I))
+C          write(6,'(12i3)') (IGETNO(I,K),K=1,9)
+C          write(6,*) LNSLABEL(I),' ',SLABEL(I)(1:lnslabel(I))
+C          write(6,*) LNGLABEL(I),' ',GLABEL(I)(1:lnglabel(I))
+C          write(6,*) LNTABLABEL(I),' ',TABLABEL(I)(1:lntablabel(I))
 C          write(6,*) '  '
 C 9999   continue
 

@@ -246,12 +246,14 @@ C act='m' called from ipv metric with parameters already set.
 
       character outs*124,outs248*248 ! string buffers
       character outs400*400,outs400d*400  ! really long string buffers
-      character act*1,sq*1,unit*7,t20*20,dg*1
+      character act*1,sq*1,unit*7,t28*28,dg*1
       character LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      integer lnb   ! length of buffer to write to
+      integer lnb    ! length of buffer to write to
+      integer K,K4   ! counters
+      integer KE,KE4 ! current end points
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -397,9 +399,9 @@ C Write day of results and column headings information (skip if IPV mode).
             call edisp(itru,outs)
           endif
           
-C If printing to screen then split column headings over three rows 
+C If printing to screen then split column headings over four rows 
 C   don't do this if printing to file.
-          irows=3
+          irows=4
           if (ixopen.eq.1) irows=1
           is=1
           do 100 ir=1,irows
@@ -451,21 +453,21 @@ C Define units.
               endif
               
 C Set end character for output string (KE or KE4) and for section of 
-C  glabel (ie) to be printed (if to screen).
-              KE=K+(33/irows)   ! set for 248
-              KE4=K4+(33/irows) ! set for 400
+C  tablabel (ie) to be printed (if to screen).
+              KE=K+(44/irows)   ! set for 248
+              KE4=K4+(44/irows) ! set for 400
               ie=is+9
               if(KE.le.248)then
                 
 C If writing to file remove blanks from label.
                 if (ixopen.eq.1) then
-                  call SDELIM(GLABEL(IL),t20,'N',IW)
-                  write (outs248(K:KE),'(3a)') ' ',t20(1:lnblnk(t20)),
-     &              unit
-                  K=K+lnblnk(t20)+lnblnk(unit)+1
+                  call SDELIM(TABLABEL(IL),t28,'N',IW)
+                  write(outs248(K:KE),'(3a)') ' ',
+     &              t28(1:lnblnk(t28)),unit
+                  K=K+lnblnk(t28)+lnblnk(unit)+1
                 else
-                  if (ir.lt.3) then
-                    write (outs248(K:KE),'(2a)') '|',GLABEL(IL)(is:ie)
+                  if (ir.lt.4) then
+                    write (outs248(K:KE),'(2a)') '|',TABLABEL(IL)(is:ie)
                   else
                     write (outs248(K:KE),'(2a)') '| ',unit
                   endif
@@ -476,13 +478,14 @@ C If writing to file remove blanks from label.
 C For writing to file also fill the 400 char buffer
               if(KE4.le.400)then
                 if (ixopen.eq.1) then
-                  call SDELIM(GLABEL(IL),t20,'N',IW)
-                  write (outs400(K4:KE4),'(3a)') ' ',t20(1:lnblnk(t20)),
-     &              unit
-                  K4=K4+lnblnk(t20)+lnblnk(unit)+1
+                  call SDELIM(TABLABEL(IL),t28,'N',IW)
+                  write(outs400(K4:KE4),'(3a)') ' ',
+     &              t28(1:lnblnk(t28)),unit
+                  K4=K4+lnblnk(t28)+lnblnk(unit)+1
                 else
-                  if (ir.lt.3) then
-                    write (outs400(K4:KE4),'(2a)') '|',GLABEL(IL)(is:ie)
+                  if (ir.lt.4) then
+                    write (outs400(K4:KE4),'(2a)') '|',
+     &                TABLABEL(IL)(is:ie)
                   else
                     write (outs400(K4:KE4),'(2a)') '| ',unit
                   endif
@@ -494,6 +497,12 @@ C For writing to file also fill the 400 char buffer
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
+C Debug.
+C            write(6,*) outs248(1:lnblnk(outs248))
+C            write(6,*) ' '
+C            write(6,*) outs400(1:lnblnk(outs400))
+C            write(6,*) ' '
+
             lnb=lnblnk(outs248)+1   ! ensure we do not warp line
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
