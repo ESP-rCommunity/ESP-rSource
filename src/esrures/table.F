@@ -334,7 +334,7 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
               call edisp248(itru,outs248,lnb)
@@ -344,6 +344,9 @@ C If requested or writing to file start lines with a '#'.
      &      SDESCR(11:lnblnk(SDESCR))
           call edisp(itru,outs)
         else
+
+C Writing to the screen. It would be great to figure out how wide
+C we can write to << ?? to be done >>
           call edisp(itru,'Timestep performance metrics.')
           lsn1=MIN0(lnblnk(RFILE),36)
           if(NSIM.gt.1)then
@@ -358,7 +361,7 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
               call edisp248(itru,outs248,lnb)
@@ -500,7 +503,7 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               else
                 lnb=MIN0(lnblnk(outs248),124)
-                if(lnb.lt.72)then
+                if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
                   call edisp248(itru,outs248,lnb)
@@ -512,7 +515,7 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 lnb=MIN0(lnblnk(outs248),124)
-                if(lnb.lt.72)then
+                if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
                   call edisp248(itru,outs248,lnb)
@@ -646,7 +649,7 @@ C If using X delimeter (tagged data) then set the delimeter to a comma.
 
 C Writing to screen so use shorter file buffer.
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call eddisp(itru,outs248(1:lnb))
             else
               call eddisp248(itru,outs248,lnb)
