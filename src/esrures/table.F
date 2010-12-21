@@ -258,8 +258,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -277,8 +276,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &       ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -741,15 +739,14 @@ C Call the menu of choices (this also sets some default options).
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &    ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
         call usrmsg(prompt,'Scanning for range of values...','-')
       else
         write(prompt,'(3a)') 'Scanning for ',
-     &    SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &    SLABEL(1)(1:LNSLABEL(1)),'...'
         itru = icout
         call usrmsg(prompt,'  ','-')
       endif

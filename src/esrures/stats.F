@@ -222,7 +222,7 @@ C Comparison to CEN statistics (if implemented)
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
-C data for all the zones chosen.  
+C data for all the zones chosen.
         NGET=9
         do 11 I=1,9
           IGETNO(I,1)=6
@@ -231,6 +231,7 @@ C data for all the zones chosen.
           IGETNO(I,4)=0
           IGETNO(I,5)=ISIM
           SLABEL(I)='Resultant temperature (degC)'
+          LNSLABEL(I)=28
  11     continue
         CALL MOSMSDCEN('s')
       elseif(INO.EQ.11)then
@@ -296,15 +297,16 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+C            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
+C     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -418,15 +420,14 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -487,15 +488,14 @@ C scanning data. Call MOSURC for each selected zone in turn.
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -1017,7 +1017,7 @@ C data for all the zones chosen.
         if(ixopen.eq.1)then
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),' >> file...'
+     &        SLABEL(1)(1:LNSLABEL(1)),' >> file...'
           else
             write(prompt,'(a)') ' Scanning data >> file...' 
           endif
@@ -1025,7 +1025,7 @@ C data for all the zones chosen.
         else
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &        SLABEL(1)(1:LNSLABEL(1)),'...'
           else
             write(prompt,'(a)') 'Scanning...' 
           endif
@@ -1035,7 +1035,7 @@ C data for all the zones chosen.
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -1459,8 +1459,6 @@ C standard.
 C Get common precz from geometry.h
 #include "geometry.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1499,8 +1497,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -1662,8 +1659,6 @@ C act='p' iget parameters already set.
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
@@ -1717,8 +1712,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -2030,7 +2024,6 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -2054,7 +2047,7 @@ C Also called by recovert if act = 'p' << needs checking >>
       character prompt*124,outs*124,prompte*124
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
+      CHARACTER PDESCR*60,SDESCR*44,act*1
       DIMENSION YDUM(MTS)
 
 C If output to file alter the edisp unit number.
@@ -2092,8 +2085,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -2104,7 +2096,7 @@ C Call the menu of choices (this also sets some default options).
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -2306,8 +2298,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif

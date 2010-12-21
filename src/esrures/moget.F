@@ -3324,12 +3324,13 @@ C Toggle delimeter.
       elseif(INO.eq.28.and.nl.ne.0) then
 
 C Debug...
-C        do 999 I=1,NGET
-C          write(6,*) (IGETNO(I,K),K=1,9)
-C          write(6,*) SLABEL(I)
-C          write(6,*) GLABEL(I)
-C          write(6,*) '  '
-C 999    continue
+        do 999 I=1,NGET
+          write(6,'(12i3)') (IGETNO(I,K),K=1,9)
+          lns=lnblnk(SLABEL(I))
+          write(6,*) lns,LNSLABEL(I),' ',SLABEL(I)
+          write(6,*) LNGLABEL(I),' ',GLABEL(I)
+          write(6,*) '  '
+ 999    continue
 
         if (NGET.lt.1) then
           call usrmsg('No data to list/ plot!',

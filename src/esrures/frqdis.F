@@ -84,14 +84,14 @@ C If output to file alter the edisp unit number.
         itru = ixunit
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),' >> file...'
+     &      SLABEL(1)(1:LNSLABEL(1)),' >> file...'
         else
           write(prompt,'(a)') ' Scanning data >> file...' 
         endif
       elseif(ixopen.eq.0)then
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -124,7 +124,7 @@ C First recover bounds of selected data.
         XMIN=MIN(XMIN,DMIN)
  40   continue
       write(outs,'(a,a,a,f11.2,a,f11.2)')'The ',
-     &  SLABEL(NGET)(1:lnblnk(SLABEL(NGET))),' data range is',
+     &  SLABEL(NGET)(1:LNSLABEL(NGET)),' data range is',
      &  XMIN,' to',XMAX
       call edisp(iuout,outs)
 
@@ -529,7 +529,7 @@ C after image and advise user.
           CALL MODHED('g',zlist,iocupf,ialstused)
           TLABEL='  '
           write (TLABEL,'(a,a13,f5.1)')
-     &       SLABEL(NGET)(1:lnblnk(SLABEL(NGET))),', Bin width =',DXBIN
+     &       SLABEL(NGET)(1:LNSLABEL(NGET)),', Bin width =',DXBIN
           if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
           if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
         else
