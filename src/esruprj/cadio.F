@@ -1592,19 +1592,8 @@ C ICLIM,LCLIM (for climate file)
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
-C The string buffer doit is only used within ifdef code.
-#ifdef SUN
+C The string buffer doit and option used for tar command.
       character doit*248,option*4
-#endif
-#ifdef LIN
-      character doit*248,option*4
-#endif
-#ifdef CIGW
-      character doit*248,option*4
-#endif
-#ifdef MINGW
-      character doit*248,option*4
-#endif
       character path*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
@@ -2215,18 +2204,10 @@ C Depending on current folder invoke tar with list of file names and
 C create a tar file which includes root name of the project and the
 C current pid number (to prevent overwriting).
 C Use ifdef compiler variable passed into Make to identify which
-C tar option to use.
+C tar option to use. Most typical is -T but Sun uses -I.
+      option=' -T '
 #ifdef SUN
       option=' -I '
-#endif
-#ifdef LIN
-      option=' -T '
-#endif
-#ifdef CIGW
-      option=' -T '
-#endif
-#ifdef MINGW
-      option=' -T '
 #endif
 
 C Unix/Linux/Cygwin versions of tar.
