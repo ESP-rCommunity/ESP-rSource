@@ -1336,7 +1336,8 @@ C =2 with more than 3 day types
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1373,7 +1374,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82
-      character sfile*72,snpfile*72,fs*1,lodlabel*6
+      character sfile*72,snpfile*72,fs*1
       CHARACTER LAPROB*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -2293,7 +2294,7 @@ C Also update lodlabel commons before writing out.
               IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
               ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
               IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
-              lodlabel(ncomp,1)=lodlabel(ic,1)
+              lodlabel(ncomp,1)=lodlabel(ic,1)  ! revise to be in a loop
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
               CALL ERPFREE(IUF,ISTAT)
