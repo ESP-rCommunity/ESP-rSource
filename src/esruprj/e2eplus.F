@@ -138,6 +138,7 @@ C surface can be resolved into a quad).
       character T25*25,T25a*25,t12a*12
       character*10 wkday(7)
       character*9 RAMONTH(12)
+      character*4 indent   ! for indentation
 
       logical found,close,close1,foundmlc
       logical closea,closeb,closec,closed,closee
@@ -165,18 +166,25 @@ C simicolon.
       sim=';'
       newgeo=.false.  ! assume older format geometry.
 
-C Check the version number and set iver.
+C Check the version number and set iver as well as a character variable
+C to represent a 2 char or 4 char indentation.
       iver = 00
       call eclose(ver,1.2,0.001,closea)
       call eclose(ver,1.3,0.001,closeb)
       call eclose(ver,1.4,0.001,closec)
       call eclose(ver,2.0,0.001,closed)
       call eclose(ver,3.0,0.001,closee)
-      if(closea) iver = 12
-      if(closeb) iver = 13
-      if(closec) iver = 14
-      if(closed) iver = 20
-      if(closee) iver = 30
+      if(closea)then
+        iver = 12; indent = '  '
+      elseif(closeb)then
+        iver = 13; indent = '  '
+      elseif(closec)then
+        iver = 14; indent = '  '
+      elseif(closed)then
+        iver = 20; indent = '  '
+      elseif(closee)then
+        iver = 30; indent = '    '
+      endif
 
 C Open the material and mlc db. Check that the materials arrays
 C have been filled (warn user if not).
@@ -238,52 +246,52 @@ C Write header of file.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(iver.le.20)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 'BUILDING',com
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    cfgroot(1:lnblnk(cfgroot)),com,'   !- Building (root) name.'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.000',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'0.000',com,
      &    '   !- North Axis {deg}'
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  Building',com
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    cfgroot(1:lnblnk(cfgroot)),com,'   !- Name'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','0.000',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'0.000',com,
      &    '   !- North Axis {deg}'
       endif
 
 C Interpret site position.
       if(siteexposureindex.eq.1)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','City',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'City',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.2)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','Suburbs',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Suburbs',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.3)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','Country',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Country',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.4)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','City',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'City',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.5)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','City',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'City',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.6)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','Country',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Country',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.7)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','City',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'City',com,
      &    '   !- Terrain'
       elseif(siteexposureindex.eq.8)then
-        WRITE(ioout,'(3a)',iostat=ios,err=2) '    ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=2) indent,com,
      &    '   !- Terrain (user specified in ESP-r)'
       endif
       if(iver.le.20)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','0.04',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'0.04',com,
      &    '   !- Loads Convergence Tolerance Value (frac of load)'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','0.04',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'0.04',com,
      &    '   !- Loads Convergence Tolerance Value'
       endif
-      WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','0.4',com,
+      WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'0.4',com,
      &  '   !- Temperature Convergence Tolerance Value {deltaC}'
 
 C Interpret solar distribution field. If any of the ESP-r zones
@@ -301,14 +309,14 @@ C blocks, otherwise set to `MinimalShadowing`.
         if(IHC(iz).eq.1)havehc=.true.
   19  continue
       if(haveish)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    'FullInteriorAndExterior',com,'   !- Solar Distribution'
       else
         if(haveobs)then
-          WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','FullExterior',
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'FullExterior',
      &      com,'   !- Solar Distribution'
         else
-          WRITE(ioout,'(4a)',iostat=ios,err=2) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &      'MinimalShadowing',com,'   !- Solar Distribution'
         endif
       endif
@@ -316,11 +324,11 @@ C blocks, otherwise set to `MinimalShadowing`.
 C Interpret warmup days. Use simulation parameter set value or calculate
 C via call to scntcnst.
       if(nsset.gt.0)then
-        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) '    ',isstup,sim,
+        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isstup,sim,
      &    '   !- Maximum Number of Warmup Days (from sim param set)'
       else
          call scntcnst(TDM,istd,TCM,ISTC)
-        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) '    ',ISTC,sim,
+        WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,ISTC,sim,
      &      '   !- Maximum Number of Warmup Days (from MLC TCM)'
       endif
 
@@ -333,14 +341,14 @@ C Interpret timesteps. Use simulation parameter set value if <= 6 or set to one.
       endif
       if(nsset.gt.0)then
         if(isbnstep.gt.6)then
-          WRITE(ioout,'(3a,i2,a)',iostat=ios,err=2) '   6',sim,
+          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'6',sim,
      &      '   !- Time Step in Hour (sim param set was ',isbnstep,')'
         else
-          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) '  ',isbnstep,sim,
-     &      '   !- Time Step in Hour (from sim param set)'
+          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isbnstep,
+     &      sim,'   !- Time Step in Hour (from sim param set)'
         endif
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','4',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'4',sim,
      &    '   !- Time Step in Hour (default)'
       endif
 
@@ -356,10 +364,10 @@ C << note there is also a zone field to over-ride >>
      &    '  SurfaceConvectionAlgorithm:Inside',com
       endif
       if(havehc)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Detailed',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- [please check equivalent ESP-r HC regime]'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','Detailed',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- Algorithm (default)'
       endif
 
@@ -367,12 +375,12 @@ C << note there is also a zone field to over-ride >>
       if(iver.le.20)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &    'OUTSIDE CONVECTION ALGORITHM',com
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Detailed',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- Algorithm (default)'
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
      &    'SurfaceConvectionAlgorithm:Outside',com
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','Detailed',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'Detailed',sim,
      &    '   !- Algorithm (default)'
       endif
 
@@ -380,7 +388,7 @@ C Solution - assume no moisture solution.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(iver.le.20)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 'SOLUTION ALGORITHM',com
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','CTF',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'CTF',sim,
      &    '   !- [CTF|MTF|EMPD])'
       elseif(iver.eq.30)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
@@ -397,10 +405,10 @@ C set to 28 days, otherwise set zero=default.
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  ShadowCalculation',com
       endif
       if(haveish)then
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','28',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'28',sim,
      &    '   !- (to match ESP-r ish period)'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','20',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'20',sim,
      &    '   !- (default frequency of calculation)'
       endif
 
@@ -411,9 +419,9 @@ C Run control - set all fields to no so only run period is assessed.
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  SimulationControl',com
       endif
-      WRITE(ioout,'(8a)',iostat=ios,err=2) '    ','No',com,'No',com,
+      WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'No',com,'No',com,
      & 'No',com,'   !- no zone sizing or system sizing or plant sizing'
-      WRITE(ioout,'(6a)',iostat=ios,err=2) '    ','No',com,'Yes',sim,
+      WRITE(ioout,'(6a)',iostat=ios,err=2) indent,'No',com,'Yes',sim,
      &  '   !- no design day - use weather file'
 
 C Interpret run period. Use simulation parameter set values or set default.
@@ -424,48 +432,48 @@ C Interpret run period. Use simulation parameter set values or set default.
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  RunPeriod',com
       endif
       if(nsset.gt.0)then
-        WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) '  ',isstmon(1),
-     &    com,isstday(1),com,
+        WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) indent,
+     &    isstmon(1),com,isstday(1),com,
      &    '   !- Begin Month & Day Of Month (from sim param set)'
-        WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) '  ',isfnmon(1),
-     &    com,isfnday(1),com,
+        WRITE(ioout,'(a,i2,a,i2,2a)',iostat=ios,err=2) indent,
+     &    isfnmon(1),com,isfnday(1),com,
      &    '   !- End Month & Day Of Month (from sim param set)'
         CALL EWEEKD(isstday(1),isstmon(1),IYEAR,IDWK)
 
 C Interpret day of week for start day from project year.
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    wkday(idwk)(1:lnblnk(wkday(idwk))),com,
      &    '   !- Day Of Week For Start Day'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile Holidays/Special Days'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile DaylightSavingPeriod'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Apply Weekend Holiday Rule'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile Rain Indicators'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','No',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',sim,
      &    '   !- Use WeatherFile Snow Indicators'
       else
-        WRITE(ioout,'(5a)',iostat=ios,err=2) '    ','1',com,'1',com,
+        WRITE(ioout,'(5a)',iostat=ios,err=2) indent,'1',com,'1',com,
      &    '   !- Begin Month & Day Of Month (default)'
-        WRITE(ioout,'(5a)',iostat=ios,err=2) '    ','12',com,
+        WRITE(ioout,'(5a)',iostat=ios,err=2) indent,'12',com,
      &    '30',com,'   !- End Month & Day Of Month (default)'
         CALL EWEEKD(1,1,IYEAR,IDWK)
 
 C Interpret day of week for start day from project year.
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    wkday(idwk)(1:lnblnk(wkday(idwk))),com,
      &    '   !- Day Of Week For Start Day'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile Holidays/Special Days'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile DaylightSavingPeriod'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Apply Weekend Holiday Rule'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','No',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',com,
      &    '   !- Use WeatherFile Rain Indicators'
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','No',sim,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'No',sim,
      &    '   !- Use WeatherFile Snow Indicators'
       endif
 
@@ -483,16 +491,16 @@ C the configuration file data for lat and long.
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
         CALL ERPFREE(ICLIM,ISTAT)
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ',
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,
      &    CLMLOC(1:lnblnk(CLMLOC)),com,'   !- LocationName'
       else
-        WRITE(ioout,'(4a)',iostat=ios,err=2) '    ','not_yet_set',com,
+        WRITE(ioout,'(4a)',iostat=ios,err=2) indent,'not_yet_set',com,
      &    '   !- LocationName'
       endif
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '    ',sitelat,com,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) indent,sitelat,com,
      &  '   !- Latitude {deg}'
 
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '    ',sitelongdif,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) indent,sitelongdif,
      &  com,'   !- Longitude {deg} [check this value]'
 
 C Ask user where the current time meridian is.
@@ -510,7 +518,7 @@ C Ask user where the current time meridian is.
      &    '   !- TimeZone {hr} [not yet supplied]'
       else
         iic2=iic2t
-        WRITE(ioout,'(a,i3,2a)',iostat=ios,err=2) '    ',iic2,com,
+        WRITE(ioout,'(a,i3,2a)',iostat=ios,err=2) indent,iic2,com,
      &    '   !- TimeZone {hr} [supplied by user]'
       endif
 
@@ -519,7 +527,7 @@ C Ask user where the current time meridian is.
       SLM=10.0
       CALL EASKR(SLM,' Site elevation above sea level (m) ',
      &  ' ',-100.0,'F',10000.0,'F',10.0,'site elevation',IER,2)
-      WRITE(ioout,'(a,f7.1,2a)',iostat=ios,err=2) '    ',SLM,sim,
+      WRITE(ioout,'(a,f7.1,2a)',iostat=ios,err=2) indent,SLM,sim,
      &  '   !- Elevation {m} [supplied by user]'
 
 C Interpret ground temperatures. Loop through each connection
@@ -533,7 +541,7 @@ C calculation module in EnergyPlus.
         WRITE(ioout,'(2a)',iostat=ios,err=2) 'GROUNDTEMPERATURES',com
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) 
-     &    'Site:GroundTemperature:BuildingSurface',com
+     &    '  Site:GroundTemperature:BuildingSurface',com
       endif
       haveusrgrnd=.false.
       havestdgrnd=.false.
@@ -569,21 +577,21 @@ C Check if there are user defined ground temps.
       else
         do 16 im=1,11
           if(haveusrgrnd)then
-            WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) '  ',
+            WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) indent,
      &        UGRDTP(im,igrp),com,'   !- ',RAMONTH(im),
      &        ' Ground Temperature {C}'
           else
-            WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) '  ',
+            WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) indent,
      &        GRDTMP(im,igrp),com,'   !- ',RAMONTH(im),
      &        ' Ground Temperature {C}'
           endif
   16    continue
         if(haveusrgrnd)then
-          WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) '  ',
+          WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) indent,
      &      UGRDTP(12,igrp),sim,'   !- ',RAMONTH(12),
      &      ' Ground Temperature {C}'
         else
-          WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) '  ',
+          WRITE(ioout,'(a,f7.4,4a)',iostat=ios,err=2) indent,
      &      GRDTMP(12,igrp),sim,'   !- ',RAMONTH(12),
      &      ' Ground Temperature {C}'
         endif
@@ -755,115 +763,115 @@ C Take up to 12 char from NAM and the remove any blanks via st2name.
           write(t25,'(3a)') NAM(1:ln),':',t12a(1:7)
           call st2name(T25,T25a)
           write(nameiprndx(iy),'(a)') T25a
-          WRITE(ioout,'(4a)',iostat=ios,err=3) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
      &      T25a(1:lnblnk(T25a)),com,'   !- Name'
           if(iglassndx(iy).eq.0)then
-            WRITE(ioout,'(4a)',iostat=ios,err=3) '    ','Rough',com,
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Rough',com,
      &        '   !- Roughness'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &        thkiprndx(iy),com,'   !- Thickness {m}'
             if(dbcon.gt.99.0)then
-              WRITE(ioout,'(a,f9.2,2a)',iostat=ios,err=3) '    ',DBCON,
+              WRITE(ioout,'(a,f9.2,2a)',iostat=ios,err=3) indent,DBCON,
      &          com,'   !- Conductivity {W/m-K}'
             else
-              WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3) '    ',DBCON,
+              WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3) indent,DBCON,
      &          com,'   !- Conductivity {W/m-K}'
             endif
-            WRITE(ioout,'(a,f9.4,2a)',iostat=ios,err=3) '    ',DBDEN,
+            WRITE(ioout,'(a,f9.4,2a)',iostat=ios,err=3) indent,DBDEN,
      &        com,'   !- Density {kg/m3}'
-            WRITE(ioout,'(a,f7.2,2a)',iostat=ios,err=3) '    ',DBSHT,
+            WRITE(ioout,'(a,f7.2,2a)',iostat=ios,err=3) indent,DBSHT,
      &        com,'   !- Specific Heat {J/kg-K}'
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',E,com,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,com,
      &          '   !- Absorptance:Thermal'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',A,com,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,com,
      &          '   !- Absorptance:Solar'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',A,sim,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,sim,
      &          '   !- Absorptance:Visible'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',E,com,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,com,
      &          '   !- Thermal Absorptance'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',A,com,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,com,
      &          '   !- Solar Absorptance'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',A,sim,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,A,sim,
      &          '   !-  Visible Absorptance'
             endif
           else
-            WRITE(ioout,'(4a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
      &        'SpectralAverage',com,'   !- Optical Data Type'
             if(iver.le.20)then
-              WRITE(ioout,'(3a)',iostat=ios,err=3) '  ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=3) indent,com,
      &          '   !- Name of Window Glass Spectral Data Set'
             else
-              WRITE(ioout,'(3a)',iostat=ios,err=3) '    ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=3) indent,com,
      &          '   !- Window Glass Spectral Data Set Name'
             endif
-            WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3) indent,
      &        thkiprndx(iy),com,'   !- Thickness {m}'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &        soltrn(iy),com,
      &        '   !- Solar Transmittance at Normal Incidence'
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         solrefl(iy),com,
      &         '   !- Solar Reflectance at Normal Incidence: Front'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         solrefl(iy),com,
      &         '   !- Front Side Solar Reflectance at Normal Incidence'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         solrefl(iy),com,
      &         '   !- Solar Reflectance at Normal Incidence: Back'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         solrefl(iy),com,
      &         '   !- Back Side Solar Reflectance at Normal Incidence'
             endif
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &        vistrn(iy),com,
      &        '   !- Visible Transmittance at Normal Incidence'
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         visrefl(iy),com,
      &         '   !- Visible Reflectance at Normal Incidence: Front'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         visrefl(iy),com,
      &       '   !- Front Side Visible Reflectance at Normal Incidence'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         visrefl(iy),com,
      &         '   !- Visible Reflectance at Normal Incidence: Back'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &         visrefl(iy),com,
      &       '   !- Back Side Visible Reflectance at Normal Incidence'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(4a)',iostat=ios,err=3) '  ','0.00',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'0.00',com,
      &          '   !- IR Transmittance at Normal Incidence'
             else
-              WRITE(ioout,'(4a)',iostat=ios,err=3) '    ','0.00',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'0.00',com,
      &          '   !- Infrared Transmittance at Normal Incidence'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',E,com,
-     &          '   !- IR Hemispherical Emissivity: Front'
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,
+     &          com,'   !- IR Hemispherical Emissivity: Front'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',E,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,
      &         com,'   !- Front Side Infrared Hemispherical Emissivity'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',E,com,
-     &          '   !- IR Hemispherical Emissivity: Back'
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,
+     &          com,'   !- IR Hemispherical Emissivity: Back'
             else
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',E,
+              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,E,
      &         com,'   !- Back Side Infrared Hemispherical Emissivity'
             endif
-            WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3)   '    ',DBCON,
+            WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3)   indent,DBCON,
      &        sim,'   !- Conductivity {W/m-K}'
           endif
         else
@@ -882,17 +890,10 @@ C as a string w/o leading blanks (use only first 7 char of t12a).
             write(t25,'(3a)') 'Air-gap',':',t12a(1:7)
             call st2name(T25,T25a)
             write(nameiprndx(iy),'(a)') T25a
-            if(iver.le.20)then
-              WRITE(ioout,'(4a)',iostat=ios,err=3) '  ',
-     &          T25a(1:lnblnk(T25a)),com,'   !- Name'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '  ',
-     &          riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
-            else
-              WRITE(ioout,'(4a)',iostat=ios,err=3) '    ',
-     &          T25a(1:lnblnk(T25a)),com,'   !- Name'
-              WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
-     &          riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
-            endif
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
+     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
+     &        riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
           else
 
 C For the case of an air gap in a window, assume air is the gas and
@@ -910,11 +911,11 @@ C the first 7 characters of t12a).
             write(t25,'(3a)') 'Air-win',':',t12a(1:7)
             call st2name(T25,T25a)
             write(nameiprndx(iy),'(a)') T25a
-            WRITE(ioout,'(4a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
      &        T25a(1:lnblnk(T25a)),com,'   !- Name'
-            WRITE(ioout,'(4a)',iostat=ios,err=3) '    ','Air',com,
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Air',com,
      &        '   !- Gas Type'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) '    ',
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
      &        thkiprndx(iy),sim,'   !- Thickness {m}'
           endif
         endif
@@ -994,7 +995,7 @@ C Now for each construction.
         else
           WRITE(ioout,'(2a)',iostat=ios,err=4) '  Construction',com
         endif
-        WRITE(ioout,'(4a)',iostat=ios,err=4) '    ',
+        WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
      &    mlcname(1:lnblnk(mlcname)),com,'   !- Name'    
         do 37 il = 1,LAYERS(INO)
           ilamat=iconmatpointer(ino,IL)
@@ -1006,26 +1007,26 @@ C Now for each construction.
           layl=lnblnk(layname)   
           if(il.eq.1)then
             if(il.eq.LAYERS(INO))then
-              WRITE(ioout,'(4a)',iostat=ios,err=4) '    ',
+              WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
      &          layname(1:layl),sim,'   !- Outside Layer' 
             else                          
-              WRITE(ioout,'(4a)',iostat=ios,err=4) '    ',
+              WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
      &          layname(1:layl),com,'   !- Outside Layer'
             endif
           elseif(il.eq.LAYERS(INO))then
             if(iver.le.20)then
-              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) '  ',
+              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) indent,
      &          layname(1:layl),sim,'   !- Layer #',IL
             else
-              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) '    ',
+              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) indent,
      &          layname(1:layl),sim,'   !- Layer ',IL
             endif
           else
             if(iver.le.20)then
-              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) '  ',
+              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) indent,
      &          layname(1:layl),com,'   !- Layer #',IL
             else
-              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) '    ',
+              WRITE(ioout,'(4a,i2)',iostat=ios,err=4) indent,
      &          layname(1:layl),com,'   !- Layer ',IL
             endif
           endif
@@ -1184,78 +1185,78 @@ C No schedules for this zone, write out place-holders and continue.
           WRITE(ioout,'(a)',iostat=ios,err=7) ' '
           if(iver.le.20)then
             WRITE(ioout,'(2a)',iostat=ios,err=7) 'LIGHTS',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+            WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &        zname(mz)(1:lnzname(mz)),'Lights',com,'   !- Name'
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &        zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
             WRITE(ioout,'(6a)',iostat=ios,err=5) '  NOTHING',com,
      &        '   !- SCHEDULE Name'
             totcgnsl=0.0
-            WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) '  ',
+            WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) indent,
      &        totcgnsl,com,'   !- Design level (W)'
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &        '0.0',com,'   !- Return air fraction'
           else
             WRITE(ioout,'(2a)',iostat=ios,err=7) '  Lights',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    ',
+            WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &        zname(mz)(1:lnzname(mz)),'Lights',com,'   !- Name'
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &        zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
             WRITE(ioout,'(6a)',iostat=ios,err=5) '    NOTHING',com,
      &        '   !- SCHEDULE Name'
             totcgnsl=0.0
             WRITE(ioout,'(3a)',iostat=ios,err=7) '    LightingLevel',
      &        com,'   !- Design Level Calculation Method'
-            WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) '    ',
+            WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) indent,
      &        totcgnsl,com,'   !- Lighting Level {W}'
-            WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+            WRITE(ioout,'(3a)',iostat=ios,err=7) indent,com,
      &        '   !- Watts per Zone Floor Area {W/m2}'
-            WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+            WRITE(ioout,'(3a)',iostat=ios,err=7) indent,com,
      &        '   !- Watts per Person {W/person}'
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &        '0.0',com,'   !- Return Air Fraction'
           endif
 
           radsplit=0.5
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      radsplit,com,'   !- Fraction Radiant'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction Visible'
           if(iver.le.20)then
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction Replaceable'
 
 C V1.4 and 2.0 have an end-use subcategory here
-            WRITE(ioout,'(3a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
      &        sim,'   !- LightsEndUseKey'
           else
 
 C V3.0 ends with
-            WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',sim,'   !- Fraction Replaceable'
           endif
 
 C Write out a place-holder small power for the zone.
           WRITE(ioout,'(a)',iostat=ios,err=7) ' '
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
           WRITE(ioout,'(6a)',iostat=ios,err=5) '  NOTHING',com,
      &      '   !- Schedule Name'
           totcgnsl=0.0
-          WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) '  ',
+          WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
      &      totcgnsl,com
           fraclatent = 0.0
-          WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) indent,
      &      fraclatent,com,'   !- Fraction latent'
           radsplit=0.5
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      radsplit,com,'   !- Radiant fraction'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction lost'
 
 C << V2.0 includes General as the End-Use Subcategory
-          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
      &      sim,'   !- EndUse Subcategory'
           goto 13
         ENDIF
@@ -1394,7 +1395,7 @@ C Write out the initial portion of lighting compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &      '   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
@@ -1404,7 +1405,7 @@ C Write out the initial portion of lighting compact schedule.
         else
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',
      &      com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &      '   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
@@ -1618,25 +1619,25 @@ C Write the light objects for this zone.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'LIGHTS',com
-          WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+          WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &      zname(mz)(1:lnzname(mz)),'Lights',com,'   !- Name'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &      '   !- Schedule Name'
           totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
-          WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) '  ',
+          WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) indent,
      &      totcgnsl,com,'   !- Design level (W)'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Return air fraction'
         else
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Lights',com
-          WRITE(ioout,'(5a)',iostat=ios,err=7) '    ',
+          WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &      zname(mz)(1:lnzname(mz)),'  Lights',com,'   !- Name'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &      '   !- Schedule Name'
           totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
@@ -1656,24 +1657,24 @@ C Write the light objects for this zone.
 C Further logic required if there is more than one radiant/convective split.
         radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
         if(iver.le.20)then
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      radsplit,com,'   !- Radiant fraction'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction visible'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction Replaceable'
 
 C V1.4 and 2.0 have an end-use subcategory here
-          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
      &      sim,'   !- LightsEndUseKey'
         else
 
 C V3.0 ends with
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      radsplit,com,'   !- Fraction Radiant'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction visible'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',sim,'   !- Fraction Replaceable'
         endif
 
@@ -1681,14 +1682,14 @@ C Write out the initial portion of small power compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &     zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,'   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &     '   !- ScheduleType' 
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Through: 12/31',com
         else
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,'   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &     '   !- Schedule Type Limits Name' 
@@ -1887,16 +1888,16 @@ C the only write a brief note and jump to people.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
 
-        WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+        WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &    zname(mz)(1:lnzname(mz)),'EQUIPMENT',com,'   !- Name'
 
-        WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-        WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
      &    '   !- Schedule Name'
         totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) '  ',
+        WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
      &    totcgnsl,com
         call eclose(loadcasp(mz,3,2),0.0,0.001,close)
         if(close)then
@@ -1906,16 +1907,16 @@ C the only write a brief note and jump to people.
 C << check this out, it might be inverted >>
           fraclatent = (totcgnsl/loadcasp(mz,3,2))*0.01
         endif
-        WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) indent,
      &    fraclatent,com,'   !- Fraction latent'
 
 C Further logic required if there is more than one radiant/convective split.
         radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
-        WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &    radsplit,com,'   !- Radiant fraction'
-        WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    '0.0',com,'   !- Fraction lost'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
      &    sim,'   !- EndUse Category'
 
 C --------------------------------------
@@ -1927,14 +1928,14 @@ C Write out the initial portion of people compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &     zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,'   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &      '   !- ScheduleType' 
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Through: 12/31',com
         else
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,'   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &      '   !- Schedule Type Limits Name' 
@@ -2153,7 +2154,7 @@ C for one person as oneperson.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
-          WRITE(ioout,'(5a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(5a)',iostat=ios,err=5) indent,
      &      'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &      '   !- Name'
           WRITE(ioout,'(3a)',iostat=ios,err=7) '  Any Number',com,
@@ -2199,14 +2200,14 @@ C Now write out the people.
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'PEOPLE',com
 
-          WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
+          WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
      &      zname(mz)(1:lnzname(mz)),'People',com,'   !- Name'
 
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-          WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '  ',vpeople,com,
-     &      '   !- Number of people'
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) indent,vpeople,
+     &      com,'   !- Number of people'
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,
      &      '   !- Number of people schedule'
         else
@@ -2227,12 +2228,12 @@ C Now write out the people.
 C Further logic required if there is more than one radiant/convective split.
         radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
         if(iver.le.20)then
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      radsplit,com,'   !- Radiant fraction'
-          WRITE(ioout,'(5a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(5a)',iostat=ios,err=5) indent,
      &      'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &      '   !- Activity level schedule name (W/person)'
-          WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+          WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &      '  !- MRT Calculation Type'
         else
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
@@ -2243,19 +2244,19 @@ C Further logic required if there is more than one radiant/convective split.
           WRITE(ioout,'(3a)',iostat=ios,err=5) '    ZoneAveraged',com,
      &      '  !- MRT Calculation Type'
         endif
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Surface Name/Angle Factor List Name'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Work Efficiency SCHEDULE Name (0.0-1.0,real)'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Clothing Insulation SCHEDULE Name (real)'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Air Velocity SCHEDULE Name (units m/s, real)'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Thermal Comfort Report Type R1'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Thermal Comfort Report Type R2'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) '  ',com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Thermal Comfort Report Type R3'
 
 C Include the sensible fraction of the total.
@@ -2263,7 +2264,7 @@ C Include the sensible fraction of the total.
         sensfrac=1.0
         if(totcgnsl.gt.0.1)sensfrac=loadcasp(mz,1,1)/totcgnsl
         if(iver.le.20)then
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
      &      sensfrac,sim,'   !- user specified sensible fraction'
         else
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
@@ -2304,13 +2305,13 @@ C Read in the zone geometry.
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         if(iver.le.20)then
           WRITE(ioout,'(2a)',iostat=ios,err=5) 'ZONE',com
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-          WRITE(ioout,'(4a)',iostat=ios,err=5) '  ','0.0',com,
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,'0.0',com,
      &      '0.0',com,'   !- Origin {m}'
-          WRITE(ioout,'(8a)',iostat=ios,err=5) '  ','0.0',com,'0.0',com,
-     &      '   !- Relative North (to building) {deg}'
-          WRITE(ioout,'(6a)',iostat=ios,err=5) '  ','1',com,'1',com,
+          WRITE(ioout,'(8a)',iostat=ios,err=5) indent,'0.0',com,'0.0',
+     &      com,'   !- Relative North (to building) {deg}'
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,'1',com,'1',com,
      &      '   !- Type and Muitiplier'
         else
           WRITE(ioout,'(2a)',iostat=ios,err=5) '  Zone',com
@@ -2588,28 +2589,28 @@ C  << this logic to be updated >>
           endif
           call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
           if(iver.le.20)then
-            WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+            WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,
      &        '   !- User Supplied Surface Name'
           else
-            WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+            WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Name'
           endif
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
      &      SSOTF(icc)(1:4).NE.'CFC ')then
             if(iver.le.20)then
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WINDOW',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'WINDOW',com,
      &          '   !- Surface Type!'
             else
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','Window',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Window',com,
      &          '   !- Surface Type!'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &          '   !- Construction Name of the Surface'
             else
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &          '   !- Construction Name'
             endif
@@ -2618,17 +2619,17 @@ C  << this logic to be updated >>
             WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
      &        SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
             if(iver.le.20)then
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &          ZSDES(1:lnblnk(ZSDES)),com,'   !- Base Surface Name'
             else
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &          ZSDES(1:lnblnk(ZSDES)),com,'   !- Building Surface Name'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !- OutsideFaceEnvironment Object'
             else
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !- Outside Boundary Condition Object'
             endif
 
@@ -2637,7 +2638,7 @@ C and site exposure.
             if(siteexposureindex.ne.8)then
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 if(iver.le.20)then
-                  WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
+                  WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) indent,
      &              PROPG(siteexposureindex),com,
      &              '   !- View Factor to Ground'
                 else
@@ -2646,107 +2647,72 @@ C and site exposure.
      &              '   !- View Factor to Ground'
                 endif
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','0.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &            com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &               SSVFC(icc)(1:4).eq.'UNKN')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','0.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &            com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','1.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
+     &            com,'   !- View Factor to Ground'
               endif
             else
               if(SSVFC(icc)(1:4).eq.'VERT')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &             groundview,com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '    ',
-     &             groundview,com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) indent,
+     &           groundview,com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','0.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &            com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &               SSVFC(icc)(1:4).eq.'UNKN')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','0.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &            com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',
-     &              com,'   !- View Factor to Ground'
-                else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','1.0',
-     &              com,'   !- View Factor to Ground'
-                endif
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
+     &            com,'   !- View Factor to Ground'
               endif
             endif      
             if(iver.le.20)then
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !-   Name of shading control'
             else
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !-   Shading Control Name'
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !-   WindowFrameAndDivider Name'
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',com,
      &          '   !-   Multiplier'
             else
-              WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+              WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &          '   !-   Frame and Divider Name'
-              WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','1.0',com,
+              WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',com,
      &          '   !-   Multiplier'
            endif
           else
             if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
               if(iver.le.20)then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &            SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &            '   !- Construction Name of the Surface'
               else
-                WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &            SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &            '   !- Construction Name'
               endif
               if(iver.eq.14)then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &            zname(mz)(1:lnzname(mz)),
      &            com,'   !- InsideFaceEnvironment'
-                WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) '  ',
+                WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) indent,
      &            SSNA(icc),sim,'   !-  Area {m2}'
               elseif(iver.ge.20)then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &            zname(mz)(1:lnzname(mz)),
      &            com,'   !- Zone Name'
-                WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) '    ',
+                WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) indent,
      &            SSNA(icc),sim,'   !-  Surface Area {m2}'
               endif
               goto 60
@@ -2757,74 +2723,74 @@ C Check if parent surface name is a blank or just a dash.
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 if(SSVFC(icc)(1:4).eq.'VERT')then
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WALL',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'WALL',
      &                com,'   !- Surface Type'
                   else
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','Wall',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Wall',
      &                com,'   !- Surface Type'
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &                 SSVFC(icc)(1:4).eq.'UNKN')then
                   if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
                     if(iver.le.20)then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','ROOF',
-     &                  com,'   !- Surface Type'
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  'ROOF',com,'   !- Surface Type'
                     else
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  'Roof',com,'   !- Surface Type'
                     endif
                   elseif(ICT(icc).eq.3)then
                     if(iver.le.20)then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WALL',
-     &                  com,'   !- Surface Type'
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  'WALL',com,'   !- Surface Type'
                     else
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  'Wall',com,'   !- Surface Type'
                     endif
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                   if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
                     if(iver.le.20)then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','ROOF',
-     &                  com,'   !- Surface Type'
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  'ROOF',com,'   !- Surface Type'
                     else
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  'Roof',com,'   !- Surface Type'
                     endif
                   elseif(ICT(icc).eq.3)then
                     if(iver.le.20)then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  'CEILING',com,'   !- Surface Type'
                     else
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  'Ceiling',com,'   !- Surface Type'
                     endif
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'FLOR')then
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','FLOOR',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'FLOOR',
      &                com,'   !- Surface Type'
                   else
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Floor',com,'   !- Surface Type'
                   endif
                 endif
 
                 if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &              '   !- Construction Name of the Surface'
                 else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &              '   !- Construction Name'
                 endif
                 if(iver.eq.14)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              zname(mz)(1:lnzname(mz)),
      &              com,'  !- InsideFaceEnvironment'
                 elseif(iver.ge.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              zname(mz)(1:lnzname(mz)),
      &              com,'   !- Zone Name'
                 endif
@@ -2832,102 +2798,60 @@ C Check if parent surface name is a blank or just a dash.
 C Other face environment.
                 if(ICT(icc).eq.0)then
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'ExteriorEnvironment',
      &                com,'   !-  OutsideFaceEnvironment'
                   else
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Outdoors',
      &                com,'   !-  Outside Boundary Condition'
                   endif
                   if(iver.le.20)then
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- OutsideFaceEnvironment Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'SunExposed',com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'WindExposed',com,'   !- Wind Exposure'
                   else
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- Outside Boundary Condition Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'SunExposed',com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'WindExposed',com,'   !- Wind Exposure'
                   endif
                   if(siteexposureindex.ne.8)then
                     if(SSVFC(icc)(1:4).eq.'VERT')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                    '  ',PROPG(siteexposureindex),com,
-     &                    '   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                    '    ',PROPG(siteexposureindex),com,
-     &                    '   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
+     &                  indent,PROPG(siteexposureindex),com,
+     &                  '   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '0.0',com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &                     SSVFC(icc)(1:4).eq.'UNKN')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '0.0',com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '1.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '1.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '1.0',com,'   !- View Factor to Ground'
                     endif
                   else
                     if(SSVFC(icc)(1:4).eq.'VERT')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                    '  ',groundview,com,
-     &                    '   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                    '    ',groundview,com,
-     &                    '   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
+     &                  indent,groundview,com,
+     &                  '   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '0.0',com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &                     SSVFC(icc)(1:4).eq.'UNKN')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '0.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '0.0',com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                      if(iver.le.20)then
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &                    '1.0',com,'   !- View Factor to Ground'
-                      else
-                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
-     &                    '1.0',com,'   !- View Factor to Ground'
-                      endif
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                  '1.0',com,'   !- View Factor to Ground'
                     endif
                   endif
                 elseif(ICT(icc).eq.1)then
@@ -2940,57 +2864,57 @@ C A constant connection still has to be resolved.
                   continue
                 elseif(ICT(icc).eq.3)then
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'OtherZoneSurface',com,
      &                '   !-  OutsideFaceEnvironment'
                   else
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Surface',com,'   !-  Outside Boundary Condition'
                   endif
                   call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                ZSDES(1:lnblnk(ZSDES)),com,
      &                '   !- OutsideFaceEnvironment Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoSun',
-     &                com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoWind',
-     &                com,'   !- Wind Exposure'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoSun',com,'   !- Sun Exposure'
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoWind',com,'   !- Wind Exposure'
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- View Factor to Ground'
                   else
                     WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
      &                ZSDES(1:lnblnk(ZSDES)),com,
      &                '   !- Outside Boundary Condition Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','NoSun',
-     &                com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoSun',com,'   !- Sun Exposure'
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'NoWind',com,'   !- Wind Exposure'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- View Factor to Ground'
                  endif
                 elseif(ICT(icc).eq.4.or.ICT(icc).eq.6)then
                   if(iver.le.20)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','Ground',
-     &                com,'   !-  OutsideFaceEnvironment'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'Ground',com,'   !-  OutsideFaceEnvironment'
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- OutsideFaceEnvironment Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoSun',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'NoSun',
      &                com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','NoWind',
-     &                com,'   !- Wind Exposure'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoWind',com,'   !- Wind Exposure'
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- View Factor to Ground'
                   else
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Ground',com,'   !-  Outside Boundary Condition'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- Outside Boundary Condition Object'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','NoSun',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'NoSun',
      &                com,'   !- Sun Exposure'
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'NoWind',com,'   !- Wind Exposure'
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- View Factor to Ground'
                   endif
                 endif
@@ -2998,18 +2922,18 @@ C A constant connection still has to be resolved.
 
 C There is a parent for this surface.
                 if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','DOOR',com,
-     &              '   !- Surface Type!'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'DOOR',
+     &              com,'   !- Surface Type!'
                 else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','Door',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Door',
      &              com,'   !- Surface Type!'
                 endif
                 if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &              '   !- Construction Name of the Surface'
                 else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &              '   !- Construction Name'
                 endif
@@ -3018,11 +2942,11 @@ C There is a parent for this surface.
                 WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
      &            SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
                 if(iver.le.20)then
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              ZSDES(1:lnblnk(ZSDES)),com,
      &              '   !- Base Surface Name'
                 else
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              ZSDES(1:lnblnk(ZSDES)),com,
      &              '   !- Building Surface Name'
                 endif
@@ -3031,51 +2955,51 @@ C If external environment (external door) then OutsideFaceEnvironment Object mus
 C Otherwise give name of the other side surface. (suggested by Georgios)
                 if(ICT(icc).eq.0)then
                   if(iver.le.20)then
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- OutsideFaceEnvironment Object'
                   else
-                    WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                '   !- Outside Boundary Condition Object'
                   endif
                 else
                   if(ic2(icc).eq.0.or.ie2(icc).eq.0)then  ! if unknown zone & surface
                     if(iver.le.20)then
-                      WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                      WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                  '   !- OutsideFaceEnvironment Object'
                     else
-                      WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                      WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &                  '   !- Outside Boundary Condition Object'
                     endif
                   else  ! if known zone & surface
                     call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
                     if(iver.le.20)then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  ZSDES(1:lnblnk(ZSDES)),com,
      &                  '   !- OutsideFaceEnvironment Object'
                     else
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                  ZSDES(1:lnblnk(ZSDES)),com,
      &                  '   !- Outside Boundary Condition Object'
                     endif
                   endif
                 endif 
                 if(iver.le.20)then
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !- View Factor to Ground'
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !-   Name of shading control'
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '  ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !-   WindowFrameAndDivider Name'
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','1.0',com,
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',com,
      &              '   !-   Multiplier'
                 else
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !- View Factor to Ground'
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !-   Shading Control Name'
-                  WRITE(ioout,'(3a)',iostat=ios,err=6) '    ',com,
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !-   Frame and Divider Name'
-                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ','1.0',
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
      &              com,'   !-   Multiplier'
                 endif
               endif
@@ -3090,21 +3014,21 @@ C << move towards no space between coordinates >>
           if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
             nvertex=iedgcnt
             if(iver.le.20)then
-              WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) '  ',nvertex,
+              WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) indent,nvertex,
      &          com,'   !- Number of Surface Vertex Groups'
             else
-              WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) '    ',nvertex,
+              WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) indent,nvertex,
      &          com,'   !- Number of Vertices'
             endif
             do 42 iss=1,nvertex
               if(iss.lt.nvertex)then
                 WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) '  ',COORD(iss,1),com,
+     &            iostat=ios,err=6) indent,COORD(iss,1),com,
      &            COORD(iss,2),com,COORD(iss,3),
      &            com,'   !- X Y Z [m]'
               else
                 WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) '  ',COORD(iss,1),com,
+     &            iostat=ios,err=6) indent,COORD(iss,1),com,
      &            COORD(iss,2),com,COORD(iss,3),
      &            sim,'   !- X Y Z [m]'
               endif
@@ -3122,21 +3046,21 @@ C << a door in a wall or as a surface with two windows in it
               nvertex=NVER(IS)
             endif
             if(iver.le.20)then
-              WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) '  ',nvertex,
+              WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) indent,nvertex,
      &          com,'   !- Number of Surface Vertex Groups'
             else
-              WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) '    ',nvertex,
+              WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) indent,nvertex,
      &          com,'   !- Number of Vertices'
             endif
             do 43 iss=1,nvertex
               if(iss.lt.nvertex)then
                 WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) '  ',X(JVN(is,iss)),com,
+     &            iostat=ios,err=6) indent,X(JVN(is,iss)),com,
      &            Y(JVN(is,iss)),com,Z(JVN(is,iss)),
      &            com,'   !- X Y Z [m]'
               else
                 WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) '  ',X(JVN(is,iss)),com,
+     &            iostat=ios,err=6) indent,X(JVN(is,iss)),com,
      &            Y(JVN(is,iss)),com,Z(JVN(is,iss)),
      &            sim,'   !- X Y Z [m]'
               endif
@@ -3170,28 +3094,28 @@ C depending on whether 'obs' or 'obs3'.
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:Shading:Detached:Building',com
-              WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) '  ',
+              WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) indent,
      &          BLOCKNAME(mz,ib)(1:LNBLOCKNAME(mz,ib)),ibs,com,
      &          '   !- User Supplied Surface Name'
-              WRITE(ioout,'(5a)',iostat=ios,err=6) '  ',com,
+              WRITE(ioout,'(5a)',iostat=ios,err=6) indent,com,
      &          '   !- TransSchedShadowSurf'
               nvertex=4
               if(iver.le.20)then
-                WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) '  ',nvertex,
-     &            com,'   !- Number of Surface Vertex Groups'
+                WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) indent,
+     &            nvertex,com,'   !- Number of Surface Vertex Groups'
               else
-                WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) '    ',
+                WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) indent,
      &            nvertex,com,'   !- Number of Vertices'
               endif
               do 44 iss=1,nvertex
                 if(iss.lt.nvertex)then
                   WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &              iostat=ios,err=6) '  ',XB(JVNB(ibs,iss)),com,
+     &              iostat=ios,err=6) indent,XB(JVNB(ibs,iss)),com,
      &              YB(JVNB(ibs,iss)),com,ZB(JVNB(ibs,iss)),com,
      &              '   !- X Y Z [m]'
                 else
                   WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &              iostat=ios,err=6) '  ',XB(JVNB(ibs,iss)),com,
+     &              iostat=ios,err=6) indent,XB(JVNB(ibs,iss)),com,
      &              YB(JVNB(ibs,iss)),com,ZB(JVNB(ibs,iss)),sim,
      &            '   !- X Y Z [m]'
                 endif
@@ -3206,12 +3130,12 @@ C Reports - report details and dxf for surfaces
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(iver.le.20)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 'Report',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) '  ','Surfaces',com,
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
      &    'DETAILS',com,'Thick Polyline',sim,
      &    '   !- Type, Name and Specifications for reports'
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) '  ','Surfaces',com,
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
      &    'Details',com,'ThickPolyline',sim,
      &    '   !- Type, Name and Specifications for reports'
       endif
@@ -3219,12 +3143,12 @@ C Reports - report details and dxf for surfaces
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       if(iver.le.20)then
         WRITE(ioout,'(2a)',iostat=ios,err=2) 'Report',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) '  ','Surfaces',com,
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
      &    'DXF',com,'Thick Polyline',sim,
      &    '   !- Type, Name and Specifications for reports'
       else
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  Output:Reports',com
-        WRITE(ioout,'(8a)',iostat=ios,err=2) '  ','Surfaces',com,
+        WRITE(ioout,'(8a)',iostat=ios,err=2) indent,'Surfaces',com,
      &    'DXF',com,'ThickPolyline',sim,
      &    '   !- Type, Name and Specifications for reports'
       endif
