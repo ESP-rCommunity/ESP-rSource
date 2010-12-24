@@ -440,11 +440,11 @@ C Export to EnergyPlus IDF file (work in progress)
 
         ever=1.2
         h(1)='EnergyPlus input files have several versions.'
-        h(2)='Version 1.4 is the current; 1.2 & 1.3 are options.'
-        h(3)='Version 2.0 is for testing purposes only.'
+        h(2)='Version 1.4 is the current; 2.0 & 3.0 are options.'
+        h(3)='Version 2.0 and 3.0 are for testing.'
         evert=ever
-        CALL EASKR(evert,' ','Input file version?',
-     &      1.2,'F',2.0,'F',1.4,'file version',IERI,3)
+        CALL EASKR(evert,'Input file version?','(1.4 2.0 3.0)',
+     &    1.4,'F',3.0,'F',1.4,'file version',IERI,3)
         if(ieri.eq.-3)then
           continue
         else
