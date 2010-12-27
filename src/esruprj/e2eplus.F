@@ -72,20 +72,28 @@ C Descriptive label for a zone load or casual gain types.
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
 
-C Peaks (loadcasp(mcom,7,1) sens)(loadcasp(mcom,7,2) latent) for each
+C Peaks (loadcasp(z,ty,1) sens)(loadcasp(z,ty,2) latent) for each
 C possible gain type in each zone.
-      common/loadcas/loadcasp(mcom,7,2)
+C Radiant fraction loadradfrac(z,ty) for each possible gain type
+C in each zone
+      real loadcasp,loadradfrac
+      common/loadcas/loadcasp(mcom,7,2),loadradfrac(mcom,7)
 
 C loadonday(zone,daytype,gaintype) is true if there is a gain
 C of a particular type on a particular day. Needed to ensure that
 C compact schedule is correctly written out.
-      common/loadday/loadonday(mcom,7,7)
+      common/loadday/loadonday(mcom,MDTY,7)
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -130,7 +138,8 @@ C of the material that was created or found for it.
 C To hold coordinates at the corners of surfaces (in case a complex
 C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
-      real loadcasp,ver  ! file version passed to subroutine
+      real ver  ! file version passed to subroutine
+      real rfr   ! local var for radiant fraction
       integer iver    ! file version as integer
       integer ier
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
@@ -1261,6 +1270,7 @@ C << V2.0 includes General as the End-Use Subcategory
           goto 13
         ENDIF
 
+
 C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(3a)',iostat=ios,err=7) 
@@ -1271,125 +1281,72 @@ C Start with a comment about zone schedule documentation.
 
 C Scan each days gains and calculate maximum gain.
 C First clear loadcasp, looping for each gain type.
-        do 9 I=1,7
-          loadcasp(mz,i,1)=0.0
+        do 9 I=1,NBDAYTYPE
+          if(I.le.7)loadcasp(mz,i,1)=0.0
+          if(I.le.7)loadradfrac(mz,i)=0.0
           loadcasp(mz,i,2)=0.0
           do 8 JD=1,7
             loadonday(mz,jd,i)=.false.
   8       continue
   9     continue
 
-C Looping through weekdays. 
-        if(ncas1.eq.0)then
-          CGNS=0.
-          CGNL=0.
-        else
-          do 87 J=1,NCAS1
-            CGNS=0.
+C Looping through day types figure out the sensible and latent peak
+C values in the current zone.
+        do 10 ID=1,NBDAYTYPE
+          if(ncas(ID).eq.0)then
+            CGNS=0.   ! nothing on this day
             CGNL=0.
-            ity=iabs(ICGT1(J))
-            if (ICGT1(J).eq.-1) then
+          else
+            do 87 J=1,NCAS(ID)
+              CGNS=0.
+              CGNL=0.
+              ity=iabs(ICGT(ID,J))  ! remember this gains type
 
-C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              if(CMGS1(J).lt.0.001)then
-                continue   ! to avoid division by zero.
+C Detect radiant fraction.
+              rfr=RADC(ID,J)
+              if(loadradfrac(mz,ity).lt.rfr) loadradfrac(mz,ity)=rfr
+
+              if (ICGT(ID,J).eq.-1) then
+
+C For case of m2/person CMGL(ID,J) remains zero so use cmgs(ID,J) instead.
+                if(CMGS(ID,J).lt.0.001)then
+                  continue   ! to avoid division by zero.
+                else
+                  CGNS=real(int((ZBASEA(mz)/CMGS(ID,J))))*95.
+                  CGNL=real(int((ZBASEA(mz)/CMGS(ID,J))))*45.
+                endif
+              elseif (ICGT(ID,J).lt.-1) then
+                CGNS=CMGS(ID,J)*ZBASEA(mz)
+                CGNL=CMGL(ID,J)*ZBASEA(mz)
               else
-                CGNS=real(int((ZBASEA(mz)/CMGS1(J))))*95.
-                CGNL=real(int((ZBASEA(mz)/CMGS1(J))))*45.
+                CGNS=CMGS(ID,J)
+                CGNL=CMGL(ID,J)
               endif
-            elseif (ICGT1(J).lt.-1) then
-              CGNS=CMGS1(J)*ZBASEA(mz)
-              CGNL=CMGL1(J)*ZBASEA(mz)
-            else
-              CGNS=CMGS1(J)
-              CGNL=CMGL1(J)
-            endif
 
 C If the current periods gain is a new max for the type then update loadcasp.
 C If nonzero for the day for this type set loadonday() true.
-            if(CGNS.gt.loadcasp(mz,ity,1)) loadcasp(mz,ity,1)=CGNS
-            if(CGNL.gt.loadcasp(mz,ity,2)) loadcasp(mz,ity,2)=CGNL
-            if(CGNS.gt.0.0.or.CGNL.gt.0.0)then
-              loadonday(mz,1,ity)=.true.
-            endif
- 87       continue
-        endif
-        if(ncas2.eq.0)then
-          CGNS=0.
-          CGNL=0.
-        else
-          do 86 J=1,NCAS2
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT2(J))
-            if (ICGT2(J).eq.-1) then
-
-C For case of m2/person CMGL2()J remains zero so use cmgs2(J) instead.
-              if(CMGS2(J).lt.0.001)then
-                continue   ! to avoid division by zero.
-              else
-                CGNS=real(int((ZBASEA(mz)/CMGS2(J))))*95.
-                CGNL=real(int((ZBASEA(mz)/CMGS2(J))))*45.
+              if(CGNS.gt.loadcasp(mz,ity,1)) loadcasp(mz,ity,1)=CGNS
+              if(CGNL.gt.loadcasp(mz,ity,2)) loadcasp(mz,ity,2)=CGNL
+              if(CGNS.gt.0.0.or.CGNL.gt.0.0)then
+                loadonday(mz,1,ity)=.true.
               endif
-            elseif (ICGT2(J).lt.-1) then
-              CGNS=CMGS2(J)*ZBASEA(mz)
-              CGNL=CMGL2(J)*ZBASEA(mz)
-            else
-              CGNS=CMGS2(J)
-              CGNL=CMGL2(J)
-            endif
-
-C If the current periods gain is a new max for the type then update loadcasp.
-            if(CGNS.gt.loadcasp(mz,ity,1)) loadcasp(mz,ity,1)=CGNS
-            if(CGNL.gt.loadcasp(mz,ity,2)) loadcasp(mz,ity,2)=CGNL
-            if(CGNS.gt.0.0.or.CGNL.gt.0.0)then
-              loadonday(mz,2,ity)=.true.
-            endif
- 86       continue
-        endif
-        if(ncas3.eq.0)then
-          CGNS=0.
-          CGNL=0.
-        else
-          do 85 J=1,NCAS3
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT3(J))
-            if (ICGT3(J).eq.-1) then
-              if(CMGS3(J).lt.0.001)then
-                continue   ! to avoid division by zero.
-              else
-                CGNS=real(int((ZBASEA(mz)/CMGS3(J))))*95.
-                CGNL=real(int((ZBASEA(mz)/CMGS3(J))))*45.
-              endif
-            elseif (ICGT3(J).lt.-1) then
-              CGNS=CMGS3(J)*ZBASEA(mz)
-              CGNL=CMGL3(J)*ZBASEA(mz)
-            else
-              CGNS=CMGS3(J)
-              CGNL=CMGL3(J)
-            endif
-
-C If the current periods gain is a new max for the type then update loadcasp.
-            if(CGNS.gt.loadcasp(mz,ity,1)) loadcasp(mz,ity,1)=CGNS
-            if(CGNL.gt.loadcasp(mz,ity,2)) loadcasp(mz,ity,2)=CGNL
-            if(CGNS.gt.0.0.or.CGNL.gt.0.0)then
-              loadonday(mz,3,ity)=.true.
-            endif
- 85       continue
-        endif
+ 87         continue
+          endif
+ 10     continue
 
 C Debug.
-C        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
-C     &    loadcasp(mz,3,1)
-C        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
-C     &    loadcasp(mz,3,2)
-C        write(6,*)'loadonday wss ocup',loadonday(mz,1,1),
-C     &    loadonday(mz,2,1),loadonday(mz,3,1)
-C        write(6,*)'loadonday wss lts',loadonday(mz,1,2),
-C     &    loadonday(mz,2,2),loadonday(mz,3,2)
-C        write(6,*)'loadonday wss eqp',loadonday(mz,1,3),
-C     &    loadonday(mz,2,3),loadonday(mz,3,3)
+        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
+     &    loadcasp(mz,3,1)
+        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
+     &    loadcasp(mz,3,2)
+        write(6,*)'loadonday wss ocup',loadonday(mz,1,1),
+     &    loadonday(mz,2,1),loadonday(mz,3,1)
+        write(6,*)'loadonday wss lts',loadonday(mz,1,2),
+     &    loadonday(mz,2,2),loadonday(mz,3,2)
+        write(6,*)'loadonday wss eqp',loadonday(mz,1,3),
+     &    loadonday(mz,2,3),loadonday(mz,3,3)
+        write(6,*)' loadfrac 1 2 3 ',loadradfrac(mz,1),
+     &    loadradfrac(mz,2),loadradfrac(mz,3)
 
 C Write out the initial portion of lighting compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
@@ -1401,7 +1358,6 @@ C Write out the initial portion of lighting compact schedule.
           WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &      '   !- ScheduleType' 
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Through: 12/31',com
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Weekdays',com
         else
           WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',
      &      com
@@ -1411,208 +1367,110 @@ C Write out the initial portion of lighting compact schedule.
           WRITE(ioout,'(3a)',iostat=ios,err=7) '    Fraction',com,
      &      '   !- Schedule Type Limits Name' 
           WRITE(ioout,'(2a)',iostat=ios,err=7) '    Through: 12/31',com
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Weekdays',com
         endif
 
-C Go through loops for weekdays, saturdays and sundays for lighting gains.
-C If there are no weekday periods or no lights write standard placeholder.
+C Go through loops for each day type for lighting gains.
+C If there are no day periods or no lights write standard placeholder.
 C Also do placeholder of there are no gains of this type on this day.
-        totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas1.eq.0.or.close.or.(.NOT.loadonday(mz,1,2)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
+        do 11 ID=1,NBDAYTYPE
+          totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
+          call eclose(totcgnsl,0.0,0.001,close)
+          if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,ID,2)))then
+            if(iver.le.20)then
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '  For: Weekdays',com
+              elseif(ID.eq.2)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '  For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '  For: Sunday',com
+              endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &          '24:00',com,'0.0',com
+            else
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Weekdays',com
+              elseif(ID.eq.2)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '    For: Sunday',com
+              endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &          '24:00',com,'0.0',com
+            endif
           else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 77 J=1,NCAS1
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT1(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.2)then
-              if (ICGT1(J).lt.-1) then
-                CGNS=CMGS1(J)*ZBASEA(mz)
-                CGNL=CMGL1(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS1(J)
-                CGNL=CMGL1(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
+            do 77 J=1,NCAS(ID)
+              CGNS=0.
+              CGNL=0.
+              ity=iabs(ICGT(ID,J))
+              totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
+              if(ity.eq.2)then
+                if (ICGT(ID,J).lt.-1) then
+                  CGNS=CMGS(ID,J)*ZBASEA(mz)
+                  CGNL=CMGL(ID,J)*ZBASEA(mz)
+                else
+                  CGNS=CMGS(ID,J)
+                  CGNL=CMGL(ID,J)
+                endif
+                call eclose(totcgnsl,0.0,0.001,close)
+                if(close)then
+                  totfrac=0.0
+                else
+                  totfrac=(CGNS+CGNL)/totcgnsl
+                endif
 C Debug
-C              write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
+                write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
+     &            CGNS,CGNL,totcgnsl,totfrac
 
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF1(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF1(J),':00',com,totfrac,com
-              endif
-            endif
- 77       continue
-        endif
-
-C If there are no saturday periods or no lights write standard placeholder.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Saturday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Saturday',com
-        endif
-        totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas2.eq.0.or.close.or.(.NOT.loadonday(mz,2,2)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 76 J=1,NCAS2
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT2(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.2)then
-              if (ICGT2(J).lt.-1) then
-                CGNS=CMGS2(J)*ZBASEA(mz)
-                CGNL=CMGL2(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS2(J)
-                CGNL=CMGL2(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug.
-C              write(6,*) 'Lights sat CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF2(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF2(J),':00',com,totfrac,com
-              endif
-            endif
- 76       continue
-        endif
-
-C Again for sunday.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Sunday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Sunday',com
-        endif
-        totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas3.eq.0.or.close.or.(.NOT.loadonday(mz,3,2)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: AllOtherDays',
-     &        com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',sim
-         else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &        '    For: AllOtherDays',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',sim
-         endif
-        else
-          do 75 J=1,NCAS3
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT3(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.2)then
-              if (ICGT3(J).lt.-1) then
-                CGNS=CMGS3(J)*ZBASEA(mz)
-                CGNL=CMGL3(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS3(J)
-                CGNL=CMGL3(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug.
-C              write(6,*) 'Lights sun CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(j.lt.NCAS3)then
-
-C If the next period is of the same casual gain type then write
-C just this period. If the next period is a different gain type
-C then write the AllOtherDays line as well.
-                ityn=iabs(ICGT3(J+1))
-                if(ity.eq.ityn)then
-                  if(iver.le.20)then
-                    WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &                '  Until: ',ICGF3(J),':00',com,totfrac,com
-                  else
-                    WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &                '    Until: ',ICGF3(J),':00',com,totfrac,com
-                  endif
-                else
-                  if(iver.le.20)then
-                    WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &                '  Until: ',ICGF3(J),':00',com,totfrac,com
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: AllOtherDays',com
-                    WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &                '24:00',com,'0.0',sim
-                  else
-                    WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &                '    Until: ',ICGF3(J),':00',com,totfrac,com
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '    For: AllOtherDays',com
-                    WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &                '24:00',com,'0.0',sim
-                  endif
-                endif
-              else
+C Need to update to substitute day type name for hard-coded
                 if(iver.le.20)then
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '  For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Sunday',com
+                  endif
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '  Until: ',ICGF3(J),':00',com,totfrac,com
-                  WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &              '  For: AllOtherDays',com
-                  WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &              '24:00',com,'0.0',sim
+     &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '    For: Sunday',com
+                  endif
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '    Until: ',ICGF3(J),':00',com,totfrac,com
-                  WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &              '    For: AllOtherDays',com
-                  WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &              '24:00',com,'0.0',sim
+     &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
               endif
-            endif
- 75       continue
+ 77         continue
+          endif
+ 11     continue
+
+C Write the AllOtherDays line as well.
+        if(iver.le.20)then
+          WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &      '  For: AllOtherDays',com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &      '24:00',com,'0.0',sim
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &      '    For: AllOtherDays',com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &      '24:00',com,'0.0',sim
         endif
 
 C Write the light objects for this zone.
@@ -1653,12 +1511,12 @@ C Write the light objects for this zone.
      &      '0.0',com,'   !- Return Air Fraction'
         endif
  
-
+C Set radiant for this gain type based on the max value from earlier
+C scan of the operation file data.
 C Further logic required if there is more than one radiant/convective split.
-        radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
         if(iver.le.20)then
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &      radsplit,com,'   !- Radiant fraction'
+     &      loadradfrac(mz,2),com,'   !- Radiant fraction'
           WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction visible'
           WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
@@ -1671,12 +1529,13 @@ C V1.4 and 2.0 have an end-use subcategory here
 
 C V3.0 ends with
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &      radsplit,com,'   !- Fraction Radiant'
+     &      loadradfrac(mz,2),com,'   !- Fraction Radiant'
           WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',com,'   !- Fraction visible'
           WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &      '0.0',sim,'   !- Fraction Replaceable'
         endif
+
 
 C Write out the initial portion of small power compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
@@ -1696,185 +1555,106 @@ C Write out the initial portion of small power compact schedule.
           WRITE(ioout,'(2a)',iostat=ios,err=7) '    Through: 12/31',com
         endif
 
-C Go through loops for weekdays, saturdays and sundays for small power gains.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Weekdays',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Weekdays',com
-        endif
-        totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas1.eq.0.or.close.or.(.NOT.loadonday(mz,1,3)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
+C Go through loops for each day type for small power gains.
+        do 133 ID=1,NBDAYTYPE
+          totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
+          call eclose(totcgnsl,0.0,0.001,close)
+          if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,1,3)))then
+            if(iver.le.20)then
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '  For: Weekdays',com
+              elseif(ID.eq.2)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '  For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '  For: Sunday',com
+              endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &          '24:00',com,'0.0',com
+            else
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Weekdays',com
+              elseif(ID.eq.2)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '    For: Sunday',com
+              endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &          '24:00',com,'0.0',com
+            endif
           else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 67 J=1,NCAS1
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT1(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.3)then
-              if (ICGT1(J).lt.-1) then
-                CGNS=CMGS1(J)*ZBASEA(mz)
-                CGNL=CMGL1(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS1(J)
-                CGNL=CMGL1(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
+            do 67 J=1,NCAS(ID)
+              CGNS=0.
+              CGNL=0.
+              ity=iabs(ICGT(ID,J))
+              totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
+              if(ity.eq.3)then
+                if (ICGT(ID,J).lt.-1) then
+                  CGNS=CMGS(ID,J)*ZBASEA(mz)
+                  CGNL=CMGL(ID,J)*ZBASEA(mz)
+                else
+                  CGNS=CMGS(ID,J)
+                  CGNL=CMGL(ID,J)
+                endif
+                call eclose(totcgnsl,0.0,0.001,close)
+                if(close)then
+                  totfrac=0.0
+                else
+                  totfrac=(CGNS+CGNL)/totcgnsl
+                endif
 
 C Debug.
-C              write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
+                write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
+     &            CGNS,CGNL,totcgnsl,totfrac
 
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF1(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF1(J),':00',com,totfrac,com
-              endif
-            endif
- 67       continue
-        endif
-
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Saturday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Saturday',com
-        endif
-        totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas2.eq.0.or.close.or.(.NOT.loadonday(mz,2,3)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 66 J=1,NCAS2
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT2(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.3)then
-              if (ICGT2(J).lt.-1) then
-                CGNS=CMGS2(J)*ZBASEA(mz)
-                CGNL=CMGL2(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS2(J)
-                CGNL=CMGL2(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug.
-C              write(6,*) 'SmP sat CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF2(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF2(J),':00',com,totfrac,com
-              endif
-            endif
- 66       continue
-        endif
-
-C And small power for Sunday.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Sunday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Sunday',com
-        endif
-        totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas3.eq.0.or.close.or.(.NOT.loadonday(mz,3,3)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: AllOtherDays',
-     &        com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',sim
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &        '    For: AllOtherDays',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',sim
-          endif
-        else
-          do 65 J=1,NCAS3
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT3(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.3)then
-              if (ICGT3(J).lt.-1) then
-                CGNS=CMGS3(J)*ZBASEA(mz)
-                CGNL=CMGL3(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS3(J)
-                CGNL=CMGL3(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug
-C              write(6,*) 'SmP sun CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(j.lt.NCAS3)then
                 if(iver.le.20)then
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '  For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Sunday',com
+                  endif
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '  Until: ',ICGF3(J),':00',com,totfrac,com
+     &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '    For: Sunday',com
+                  endif
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '    Until: ',ICGF3(J),':00',com,totfrac,com
-                endif
-              else
-                if(iver.le.20)then
-                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '  Until: ',ICGF3(J),':00',com,totfrac,com
-                  WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &              '  For: AllOtherDays',com
-                  WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &              '24:00',com,'0.0',sim
-                else
-                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '    Until: ',ICGF3(J),':00',com,totfrac,com
-                  WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &              '    For: AllOtherDays',com
-                  WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &              '24:00',com,'0.0',sim
+     &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
               endif
-            endif
- 65       continue
+ 67         continue
+          endif
+ 133    continue
+
+C Write the AllOtherDays line as well.
+        if(iver.le.20)then
+          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: AllOtherDays',
+     &      com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &      '24:00',com,'0.0',sim
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &      '    For: AllOtherDays',com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &      '24:00',com,'0.0',sim
         endif
 
 C Write the electrical equipment objects for this zone, if none
@@ -1886,19 +1666,42 @@ C the only write a brief note and jump to people.
           goto 12
         endif
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
-        WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
+        if(iver.le.20)then
+          WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
 
-        WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
-     &    zname(mz)(1:lnzname(mz)),'EQUIPMENT',com,'   !- Name'
+          WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
+     &      zname(mz)(1:lnzname(mz)),'EQUIPMENT',com,'   !- Name'
 
-        WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-        WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
-     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
-     &    '   !- Schedule Name'
-        totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
-        WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
-     &    totcgnsl,com
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
+     &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
+     &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
+     &      '   !- Schedule Name'
+          totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
+          WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
+     &      totcgnsl,com
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=7) 'ElectricEquipment',com
+
+          WRITE(ioout,'(5a)',iostat=ios,err=7) indent,
+     &      zname(mz)(1:lnzname(mz)),'Equipment',com,'   !- Name'
+
+          WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
+     &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
+          WRITE(ioout,'(6a)',iostat=ios,err=5) indent,
+     &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
+     &      '   !- Schedule Name'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    EquipmentLevel',
+     &      com,'   !- Design Level Calculation Method'
+          totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
+          WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) indent,
+     &      totcgnsl,com
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+     &      '   !- Watts per Zone Floor Area {W/m2}'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+     &      '   !- Watts per Person {W/person}'
+        endif
+
         call eclose(loadcasp(mz,3,2),0.0,0.001,close)
         if(close)then
           fraclatent = 0.0
@@ -1910,16 +1713,20 @@ C << check this out, it might be inverted >>
         WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=5) indent,
      &    fraclatent,com,'   !- Fraction latent'
 
+C Set radiant from initial scan.
 C Further logic required if there is more than one radiant/convective split.
-        radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
         WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &    radsplit,com,'   !- Radiant fraction'
+     &    loadradfrac(mz,3),com,'   !- Radiant fraction'
         WRITE(ioout,'(4a)',iostat=ios,err=5) indent,
      &    '0.0',com,'   !- Fraction lost'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,
      &    sim,'   !- EndUse Category'
 
+
 C --------------------------------------
+C << what this is really writing out is ??
+C << need a variant for number of people
+
 C Write out the initial portion of people compact schedule.
   12    continue
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
@@ -1942,185 +1749,109 @@ C Write out the initial portion of people compact schedule.
           WRITE(ioout,'(2a)',iostat=ios,err=7) '    Through: 12/31',com
         endif
 
-C Go through loops for weekdays, saturdays and sundays for occupants.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Weekdays',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Weekdays',com
-        endif
-        totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas1.eq.0.or.close.or.(.NOT.loadonday(mz,1,1)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 57 J=1,NCAS1
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT1(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.1)then
-              if (ICGT1(J).lt.-1) then
-                CGNS=CMGS1(J)*ZBASEA(mz)
-                CGNL=CMGL1(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS1(J)
-                CGNL=CMGL1(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug.
-C              write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF1(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF1(J),':00',com,totfrac,com
-              endif
-            endif
- 57       continue
-        endif
-
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Saturday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Saturday',com
-        endif
-        totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas2.eq.0.or.close.or.(.NOT.loadonday(mz,2,1)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-          endif
-        else
-          do 56 J=1,NCAS2
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT2(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.1)then
-              if (ICGT2(J).lt.-1) then
-                CGNS=CMGS2(J)*ZBASEA(mz)
-                CGNL=CMGL2(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS2(J)
-                CGNL=CMGL2(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug
-C              write(6,*) 'People sat CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(iver.le.20)then
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF2(J),':00',com,totfrac,com
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '    Until: ',ICGF2(J),':00',com,totfrac,com
-              endif
-            endif
- 56       continue
-        endif
-
-C And for Sunday.
-        if(iver.le.20)then
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '  For: Sunday',com
-        else
-          WRITE(ioout,'(2a)',iostat=ios,err=7) '    For: Sunday',com
-        endif
-        totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
-        call eclose(totcgnsl,0.0,0.001,close)
-        if(ncas3.eq.0.or.close.or.(.NOT.loadonday(mz,3,1)))then
-          if(iver.le.20)then
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &        '  For: AllOtherDays',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &        '24:00',com,'0.0',sim
-          else
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',com
-            WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &        '    For: AllOtherDays',com
-            WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
-     &        '24:00',com,'0.0',sim
-          endif
-        else
-          do 55 J=1,NCAS3
-            CGNS=0.
-            CGNL=0.
-            ity=iabs(ICGT3(J))
-            totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
-            if(ity.eq.1)then
-              if (ICGT3(J).lt.-1) then
-                CGNS=CMGS3(J)*ZBASEA(mz)
-                CGNL=CMGL3(J)*ZBASEA(mz)
-              else
-                CGNS=CMGS3(J)
-                CGNL=CMGL3(J)
-              endif
-              call eclose(totcgnsl,0.0,0.001,close)
-              if(close)then
-                totfrac=0.0
-              else
-                totfrac=(CGNS+CGNL)/totcgnsl
-              endif
-
-C Debug.
-C              write(6,*) 'People sun CGNS CGNL totcgnsl totfrac',
-C     &          CGNS,CGNL,totcgnsl,totfrac
-
-              if(j.lt.NCAS3)then
-
-C If the next period is of the same casual gain type then write
-C just this period. If the next period is a different gain type
-C then write the AllOtherDays line as well.
-                ityn=iabs(ICGT3(J+1))
-                if(ity.eq.ityn)then
-                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '  Until: ',ICGF3(J),':00',com,totfrac,com
-                else
-                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &              '  Until: ',ICGF3(J),':00',com,totfrac,com
-                  WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &              '  For: AllOtherDays',com
-                  WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &              '24:00',com,'0.0',sim
-                 endif
-              else
-                WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
-     &            '  Until: ',ICGF3(J),':00',com,totfrac,com
+C Go through loops for each day type for occupants.
+C If there are no day periods or no people write standard placeholder.
+C Also do placeholder of there are no gains of this type on this day.
+        do 144 ID=1,NBDAYTYPE
+          totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
+          call eclose(totcgnsl,0.0,0.001,close)
+          if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,1,1)))then
+            if(iver.le.20)then
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '  For: Weekdays',com
+              elseif(ID.eq.2)then
                 WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: AllOtherDays',com
-                WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
-     &            '24:00',com,'0.0',sim
+     &            '  For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '  For: Sunday',com
               endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &          '24:00',com,'0.0',com
+            else
+              if(ID.eq.1)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Weekdays',com
+              elseif(ID.eq.2)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &            '    For: Saturday',com
+              elseif(ID.eq.3)then
+                WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &            '    For: Sunday',com
+              endif
+              WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &          '24:00',com,'0.0',com
             endif
- 55       continue
+          else
+            do 57 J=1,NCAS(ID)
+              CGNS=0.
+              CGNL=0.
+              ity=iabs(ICGT(ID,J))
+              totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
+              if(ity.eq.1)then
+                if (ICGT(ID,J).lt.-1) then
+                  CGNS=CMGS(ID,J)*ZBASEA(mz)
+                  CGNL=CMGL(ID,J)*ZBASEA(mz)
+                else
+                  CGNS=CMGS(ID,J)
+                  CGNL=CMGL(ID,J)
+                endif
+                call eclose(totcgnsl,0.0,0.001,close)
+                if(close)then
+                  totfrac=0.0
+                else
+                  totfrac=(CGNS+CGNL)/totcgnsl
+                endif
+
+C Debug.
+                write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
+     &            CGNS,CGNL,totcgnsl,totfrac
+
+                if(iver.le.20)then
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '  For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '  For: Sunday',com
+                  endif
+                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
+     &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
+                else
+                  if(ID.eq.1)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Weekdays',com
+                  elseif(ID.eq.2)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &                '    For: Saturday',com
+                  elseif(ID.eq.3)then
+                    WRITE(ioout,'(2a)',iostat=ios,err=7)
+     &                '    For: Sunday',com
+                  endif
+                  WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
+     &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
+                endif
+              endif
+ 57         continue
+          endif
+ 144    continue
+
+C Write the AllOtherDays line as well.
+
+        if(iver.le.20)then
+          WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &      '  For: AllOtherDays',com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
+     &      '24:00',com,'0.0',sim
+        else
+          WRITE(ioout,'(2a)',iostat=ios,err=7) 
+     &      '    For: AllOtherDays',com
+          WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
+     &      '24:00',com,'0.0',sim
         endif
 
 C Write out matching activity level schedule for people, but first
@@ -2147,6 +1878,10 @@ C There are occupant casual gains.
 
 C Initial guess of 140W sensible+latent per person. Remember the gains
 C for one person as oneperson.
+
+C << Currently write the activity schedule as if one period in the day
+C << and with the value for oneperson.
+
         vpeople=totcgnsl/140.0
         CALL EASKR(vpeople,' Number of people in room (see report): ',
      &    ' ',0.0,'F',99.999,'W',1.0,'people in room',IER,4)
@@ -2218,18 +1953,24 @@ C Now write out the people.
 
           WRITE(ioout,'(4a)',iostat=ios,err=5) '    ',
      &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
-          WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '    ',vpeople,
-     &      com,'   !- Number of people'
           WRITE(ioout,'(6a)',iostat=ios,err=5) '    ',
      &      zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,
      &      '   !- Number of people schedule'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    people',com,
+     &      '   !- Number of people calculation method'
+          WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '    ',vpeople,
+     &      com,'   !- Number of people'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+     &      '   !- People per Zone Floor Area {person/m2}'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+     &      '   !- Zone Floor Area per person {m2/person}'
         endif
 
+C Set radiant as earlier scan
 C Further logic required if there is more than one radiant/convective split.
-        radsplit=amax1(RADC1(1),RADC1(2),RADC1(3),RADC1(4),RADC1(5))
         if(iver.le.20)then
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &      radsplit,com,'   !- Radiant fraction'
+     &      loadradfrac(mz,1),com,'   !- Radiant fraction'
           WRITE(ioout,'(5a)',iostat=ios,err=5) indent,
      &      'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &      '   !- Activity level schedule name (W/person)'
@@ -2237,7 +1978,9 @@ C Further logic required if there is more than one radiant/convective split.
      &      '  !- MRT Calculation Type'
         else
           WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
-     &      radsplit,com,'   !- Radiant fraction'
+     &      loadradfrac(mz,1),com,'   !- Fraction Radiant'
+          WRITE(ioout,'(3a)',iostat=ios,err=5) '    Autocalculate',com,
+     &      '  !- Sensible Heat Fraction'
           WRITE(ioout,'(5a)',iostat=ios,err=5) '    ',
      &      'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &      '   !- Activity level schedule name (W/person)'
