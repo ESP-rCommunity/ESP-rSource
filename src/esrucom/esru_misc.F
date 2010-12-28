@@ -506,8 +506,8 @@ C Per-zone areas and U-values.
         areaground(IX) = 0.0
         exposed(IX) = 0.0
         vexposed(IX) = 0.0
-        izsfloor(IX) = 0.0
-        izsceil(IX) = 0.0
+        izsfloor(IX) = 0
+        izsceil(IX) = 0
 
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
