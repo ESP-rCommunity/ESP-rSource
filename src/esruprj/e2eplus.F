@@ -349,8 +349,11 @@ C Interpret timesteps. Use simulation parameter set value if <= 6 or set to one.
         WRITE(ioout,'(2a)',iostat=ios,err=2) '  Timestep',com
       endif
       if(nsset.gt.0)then
-        if(isbnstep.gt.6)then
-          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'6',sim,
+        if(isbnstep.gt.8)then
+          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'8',sim,
+     &      '   !- Time Step in Hour (sim param set was ',isbnstep,')'
+        elseif(isbnstep.lt.4)then
+          WRITE(ioout,'(4a,i2,a)',iostat=ios,err=2) indent,'4',sim,
      &      '   !- Time Step in Hour (sim param set was ',isbnstep,')'
         else
           WRITE(ioout,'(a,i2,2a)',iostat=ios,err=2) indent,isbnstep,
@@ -1377,29 +1380,13 @@ C Also do placeholder of there are no gains of this type on this day.
           call eclose(totcgnsl,0.0,0.001,close)
           if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,ID,2)))then
             if(iver.le.20)then
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '  For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
      &          '24:00',com,'0.0',com
             else
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '    For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
      &          '24:00',com,'0.0',com
             endif
@@ -1429,29 +1416,13 @@ C Debug
 
 C Need to update to substitute day type name for hard-coded
                 if(iver.le.20)then
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '  For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &              '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '    For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -1561,29 +1532,13 @@ C Go through loops for each day type for small power gains.
           call eclose(totcgnsl,0.0,0.001,close)
           if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,1,3)))then
             if(iver.le.20)then
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '  For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
      &          '24:00',com,'0.0',com
             else
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '    For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
      &          '24:00',com,'0.0',com
             endif
@@ -1613,29 +1568,13 @@ C Debug.
      &            CGNS,CGNL,totcgnsl,totfrac
 
                 if(iver.le.20)then
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '  For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &            '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '    For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -1757,29 +1696,13 @@ C Also do placeholder of there are no gains of this type on this day.
           call eclose(totcgnsl,0.0,0.001,close)
           if(ncas(ID).eq.0.or.close.or.(.NOT.loadonday(mz,1,1)))then
             if(iver.le.20)then
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '  For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '  For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '  Until: ',
      &          '24:00',com,'0.0',com
             else
-              if(ID.eq.1)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Weekdays',com
-              elseif(ID.eq.2)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &            '    For: Saturday',com
-              elseif(ID.eq.3)then
-                WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &            '    For: Sunday',com
-              endif
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &        '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
               WRITE(ioout,'(5a)',iostat=ios,err=7) '    Until: ',
      &          '24:00',com,'0.0',com
             endif
@@ -1809,29 +1732,13 @@ C Debug.
      &            CGNS,CGNL,totcgnsl,totfrac
 
                 if(iver.le.20)then
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '  For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '  For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &            '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  if(ID.eq.1)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Weekdays',com
-                  elseif(ID.eq.2)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &                '    For: Saturday',com
-                  elseif(ID.eq.3)then
-                    WRITE(ioout,'(2a)',iostat=ios,err=7)
-     &                '    For: Sunday',com
-                  endif
+                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -2906,6 +2813,18 @@ C for geometry.
         WRITE(ioout,'(5a)',iostat=ios,err=2) '  Output:Diagnostics',
      &    com,'DisplayExtraWarnings',sim,'   !- Extra diagnostics'
       endif
+
+C Include minimal meters: ambient db and zone air temperatures.
+      WRITE(ioout,'(a)',iostat=ios,err=2) ' '
+      if(iver.le.20)then
+        continue
+      else
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &    '*',com,'outdoor dry bulb',com,'hourly',sim
+        WRITE(ioout,'(8a)',iostat=ios,err=2) '  Output:Variable',com,
+     &    '*',com,'Zone Mean Air Temperature',com,'hourly',sim
+      endif
+
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
      
       return
