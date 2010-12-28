@@ -102,6 +102,23 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+      integer nbedgdup  ! number of duplicate edges in surface edge list
+      integer iedgdup   ! for each edge, the connection and edge duplicated
+      integer nbedgshr  ! nb surface which share an edge
+      integer iedgshr   ! for each edge, the adjacent surface
+      integer imatshr   ! for each edge, the adjacent material
+      integer ibridgeshr ! for each edge likely type of thermal bridge
+      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
+
+C G9 holds information on children of a surface.
+      integer nbchild   ! how many children (up to 4)
+      integer nbgchild  ! how many grand children (up to 4)
+      integer ichild    ! list of children
+      integer igchild   ! list of grand children
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
+     &igchild(MCON,4)
+
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -2005,6 +2022,25 @@ C will describe a quad that can be used with EnergyPlus. We know
 C that most surfaces with 8 edges will be a wall with a door in it.
         DO 60 IS=1,NSUR
           icc=izstocn(mz,is)
+
+C << is there one or more children of this surface
+C <<   is the child totally surounded by this surface
+C <<     if so ??
+C <<     if not ??
+C <<   if not a true child
+C <<     then ??
+C Info about children of this surface.
+C Debug.
+          write(6,*) ' nb children ',nbchild(icc),
+     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
+     &      ' cnn is ',igchild(icc,1)
+          if(ichild(icc,1).gt.0) then
+            write(6,*) ' child named ',SSNAME(ichild(icc,1))
+          endif
+          if(nbgchild(icc).gt.0.and.igchild(icc,1).gt.0)then
+            write(6,*) ' gchild named ',SSNAME(igchild(icc,1))
+          endif
+
           if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
 
 C Patch for 10/11/12 edges might represent wall with window or an
@@ -2671,7 +2707,7 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
           endif
 
 C Vertex information. If there were more than 4 vertices, but
-C not a wall with a hole in it then write them out.
+C not a wall with sub-surfaces then write out verticies.
 
 C << move towards no space between coordinates >>
 

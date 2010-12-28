@@ -4044,8 +4044,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-C nbedgdup(MCON) number of duplicate edges in surface edge list.
-C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
 C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
 C   if only one then that single other surface must be parent, if two
 C   other surfaces referenced then we might have a door which shares
@@ -4057,6 +4055,12 @@ C imatshr(MCON,MV) for each edge, the connection of surface (similarly
 C   oriented) which has the same material. Zero denotes this does not
 C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
+      integer nbedgdup  ! number of duplicate edges in surface edge list
+      integer iedgdup   ! for each edge, the connection and edge duplicated
+      integer nbedgshr  ! nb surface which share an edge
+      integer iedgshr   ! for each edge, the adjacent surface
+      integer imatshr   ! for each edge, the adjacent material
+      integer ibridgeshr ! for each edge likely type of thermal bridge
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
