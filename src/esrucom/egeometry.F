@@ -4047,8 +4047,9 @@ C act is '-' derive geometric data or 'c' also determine parent
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
 C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
-C   if only one then it must be parent, if two then it might be the
-C   case of a door so determine which is primary.
+C   if only one then that single other surface must be parent, if two
+C   other surfaces referenced then we might have a door which shares
+C   edges with a wall and the floor - so determine which is primary.
 C iedgshr(MCON,MV) for each edge, the connection of surface (similarly
 C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
 C   this does not apply.
@@ -4166,7 +4167,7 @@ C last vertext is reached point the end to the start point.
             iwhichs(ijj)=0
   46      continue
           list=NVER(isurf)
-          nbedgshr(icc)=0
+          nbedgshr(icc)=0   ! reset for this connection
           do 42 i=1,list
             iedgshr(icc,i)=0
             imatshr(icc,i)=0
@@ -4427,11 +4428,14 @@ C            call edisp(iuout,outs)
           endif
 
 C If most the edges are shared with other similarly facing surfaces
-C then if act='c' and the call surrel did not find it ask the user
-C what to do.  If there are duplicate surfaces in the zone then
-C the other surface might have exactly the same number of edges.
+C then if act='c' (check for parent/child) and the call surrel did
+C not find it ask the user what to do.
+C If there are duplicate surfaces in the zone then the other
+C surface might have exactly the same number of edges.
           if(act.eq.'c')then
             if(SSPARENT(icc)(1:2).eq.'  ')then
+
+C Parent attribute has not yet been defined so do some checking.
               if(nbedgshr(icc).eq.NVER(isurf).or.
      &           nbedgshr(icc).eq.(NVER(isurf)-1))then
 
@@ -4504,7 +4508,7 @@ C bother the user. If ibinval was set to zero then clear SSPARENT.
               endif
             endif
           endif
- 43     continue
+ 43     continue    ! outer loop of surfaces in the zone
 
 C Report on likely thermal bridge lengths. Reduce the concave and
 C convex bridge lengths because they will have been counted from
@@ -4649,7 +4653,7 @@ C must be >= nver(jsur).
             if(ICOMVER(JSUR).GE.NVER(JSUR))then
               continue
             else
-              goto 105
+              goto 105   ! jump to just before 102
             endif
           elseif(NVER(JSUR).gt.3)then
 
@@ -4663,7 +4667,7 @@ C so as to pick up the door-in-corner.
             elseif(act.eq.'s'.and.(ICOMVER(JSUR).GE.NVER(JSUR)))then
               continue
             else
-              goto 105
+              goto 105   ! jump to just before 102
             endif
 
 C If isur and jsur both have the same number of edges then it is likely
@@ -4674,7 +4678,7 @@ C Debug.
 C              write(6,*) 'Probable dup surfaces ',jsur,isur,
 C     &          NVER(jsur),NVER(isur)
 
-              goto 105
+              goto 105   ! jump to just before 102
             endif
           endif
 
@@ -4709,7 +4713,7 @@ C Debug...
 c            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
 c     &        childname(isur,1)
           endif
- 105      continue
+ 105      continue    ! jump point in case of dups
  102    CONTINUE
  101  CONTINUE
 

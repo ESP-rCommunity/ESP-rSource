@@ -2946,6 +2946,15 @@ C << possible to alter the inside/outside hc from this interface? >>
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
+
+C G9 holds information on children of a surface.
+      integer nbchild   ! how many children (up to 4)
+      integer nbgchild  ! how many grand children (up to 4)
+      integer ichild    ! list of children
+      integer igchild   ! list of grand children
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
+     &igchild(MCON,4)
+
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2955,7 +2964,7 @@ C << possible to alter the inside/outside hc from this interface? >>
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
-      CHARACTER*33 ISD(22)
+      CHARACTER*33 ISD(23)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,H*72,SN*12,SN2*12,T14*14
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12
@@ -3023,55 +3032,89 @@ C Check perimeter.
 
 C If newgeo include a line for ssparent and one for ssuse.
       if(newgeo)then
-        WRITE(ISD(10),'(2A)')   'g child of     : ',SSPARENT(ioc)(1:12)
+
+C Info about children of this surface.
+C Debug.
+C        write(6,*) ' nb children ',nbchild(ioc),
+C     &    ' cnn is ',ichild(ioc,1)
+C        if(ichild(ioc,1).gt.0) then
+C          write(6,*) ' named ',SSNAME(ichild(ioc,1))
+C        endif
+        if(nbchild(ioc).gt.0)then
+          if(nbchild(ioc).eq.1.and.ichild(ioc,1).gt.0)then
+            WRITE(ISD(10),'(2A)') 'g parent of    : ',
+     &        SSNAME(ichild(ioc,1))
+          elseif(nbchild(ioc).gt.1)then
+            WRITE(ISD(10),'(A,i1,A)') 'g parent of    : ',
+     &        nbchild(ioc),' surfaces'
+          else
+            WRITE(ISD(10),'(A)')  'g parent of    : -'
+          endif
+        else
+          WRITE(ISD(10),'(A)')  'g parent of    : -'
+        endif
+        WRITE(ISD(11),'(2A)')   'g child of     : ',SSPARENT(ioc)(1:12)
         if(SSUSE(ioc,1)(1:2).eq.'- '.or.
      &     SSUSE(ioc,1)(1:2).eq.'  ')then
-          WRITE(ISD(11),'(A)')  'h use type   : ordinary surface'
-          WRITE(ISD(12),'(A)')  '  use subtype: '
+          WRITE(ISD(12),'(A)')  'h use type   : ordinary surface'
+          WRITE(ISD(13),'(A)')  '  use subtype: '
         else
-          WRITE(ISD(11),'(2A)') 'h use type   : ',SSUSE(ioc,1)
-          WRITE(ISD(12),'(2A)') '  use subtype: ',SSUSE(ioc,2)
+          WRITE(ISD(12),'(2A)') 'h use type   : ',SSUSE(ioc,1)
+          WRITE(ISD(13),'(2A)') '  use subtype: ',SSUSE(ioc,2)
         endif
       else
-        WRITE(ISD(10),'(2A)')   '  child of     : ',SSPARENT(ioc)(1:12)
-        WRITE(ISD(11),'(A)')    '  use type   : (NA)'
-        WRITE(ISD(12),'(A)')    '  use subtype: (NA)'
+        if(nbchild(ioc).gt.0)then
+          if(nbchild(ioc).eq.1.and.ichild(ioc,1).gt.0)then
+            WRITE(ISD(10),'(2A)') 'g parent of    : ',
+     &        SSNAME(ichild(ioc,1))
+          elseif(nbchild(ioc).gt.1)then
+            WRITE(ISD(10),'(A,i1,A)') 'g parent of    : ',
+     &        nbchild(ioc),' surfaces'
+          else
+            WRITE(ISD(10),'(A)')  'g parent of    : -'
+          endif
+        else
+          WRITE(ISD(10),'(A)')  'g parent of    : -'
+        endif
+        WRITE(ISD(11),'(2A)')   '  child of     : ',SSPARENT(ioc)(1:12)
+        WRITE(ISD(12),'(A)')    '  use type   : (NA)'
+        WRITE(ISD(13),'(A)')    '  use subtype: (NA)'
       endif
 
 C << report inside and outside hc regime here >>
 
-      ISD(13)        ='  ___ @ other face____________ '
+      ISD(14)        ='  ___ @ other face____________ '
       if(showother)then
         if(IC2(ioc).ne.0.and.IE2(ioc).ne.0)then
-          WRITE(ISD(14),'(2A)')'   surface name: ',SSNAME(icoth)
+          WRITE(ISD(15),'(2A)')'   surface name: ',SSNAME(icoth)
           write(ozn,'(a)') zname(IC2(ioc))
         else
-          WRITE(ISD(14),'(A)')'   surface name: IS NOT KNOWN'
+          WRITE(ISD(15),'(A)')'   surface name: IS NOT KNOWN'
           write(ozn,'(a)') 'IS NOT KNOWN'
         endif
-        WRITE(ISD(15),'(2A)') '   surface type: ',SSOTF(icoth)(1:12)
-        WRITE(ISD(16),'(2A)') '   location    : ',SSVFC(icoth)
-        WRITE(ISD(17),'(2A)') '   construction: ',SSMLCN(icoth)(1:12)
-        WRITE(ISD(18),'(2A)') '   in zone     : ',ozn(1:lnblnk(ozn))
+        WRITE(ISD(16),'(2A)') '   surface type: ',SSOTF(icoth)(1:12)
+        WRITE(ISD(17),'(2A)') '   location    : ',SSVFC(icoth)
+        WRITE(ISD(18),'(2A)') '   construction: ',SSMLCN(icoth)(1:12)
+        WRITE(ISD(19),'(2A)') '   in zone     : ',ozn(1:lnblnk(ozn))
 
 C << report other faces inside and outside hc regime here >>
 
-        ISD(19)=      '  ____________________________ '
-        ISD(20)=      '+ add glazing/door/opening     '
-        ISD(21)=      '? help                         '
-        ISD(22)=      '- exit this menu               '
-        ISDN=22
+        ISD(20)=      '  ____________________________ '
+        ISD(21)=      '+ add glazing/door/opening     '
+        ISD(22)=      '? help                         '
+        ISD(23)=      '- exit this menu               '
+        ISDN=23
       else
 
 C << add in additional menu line for external viewfactors >>
 C << add in additional menu line for external diffuse shading >>
 C << add in additional menu line for external hc correlation >>
 
-        ISD(13)=      '  ____________________________ '
-        ISD(14)=      '+ add glazing/door/opening     '
-        ISD(15)=      '? help                         '
-        ISD(16)=      '- exit to zone description     '
-        ISDN=16
+        ISD(14)=      '  ____________________________ '
+        ISD(15)=      '+ add glazing/door/opening     '
+        ISD(16)=      '? help                         '
+        ISD(17)=      '- exit to zone description     '
+        ISDN=17
       endif
       INODA=-4
 
@@ -4012,10 +4055,18 @@ C Read current zone back in and then update the configuration file.
 
 C Version 1.1 geometry holds information on child pararent
 C relationship. What is shown here is result of geometric
-C scan.
+C scan and mentions if there are children and the name of
+C the first child.
 C << manual editing to be done >>
 
       ELSEIF(INODA.EQ.11)THEN
+
+C Version 1.1 geometry holds information on child pararent
+C relationship. What is shown here is result of geometric
+C scan and mentions the name of the parent surface.
+C << manual editing to be done >>
+
+      ELSEIF(INODA.EQ.12)THEN
 
 C Version 1.1 geometry holds SEMANTIC tags for surfaces.
 C << perhaps this will need to be called from several
@@ -4029,7 +4080,7 @@ C << this code could be in a separate subroutine?
           icon=ic
           call edituse(iz,isur,icon,guesstype)
         endif
-      ELSEIF(INODA.EQ.12)THEN
+      ELSEIF(INODA.EQ.13)THEN
 
 C Usage subtype is handled by 11th menu item.
         continue

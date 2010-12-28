@@ -1948,7 +1948,7 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
       INPIC=NCOMP
       do 14 mz=1,inpic
 
-C Read in the zone geometry.
+C Loop through the zones, read in each zone geometry.
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=5) '! ',
      &    zdesc(mz)(1:lnzdesc(mz))
@@ -2131,6 +2131,7 @@ C            write(6,*) COORD(4,1),COORD(4,2),COORD(4,3)
           endif
 
 C Have not yet worked out equivalent to a constant boundary condition.
+C << recent versions of EnergyPlus have a way to do it >>
           if(ICT(icc).eq.2)then
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
             write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
@@ -2139,7 +2140,7 @@ C Have not yet worked out equivalent to a constant boundary condition.
             WRITE(ioout,'(a)') ' '
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          '!- ',outs(1:lnblnk(outs))
-            goto 60
+            goto 60  ! jump to next surface
           endif
 
 C If a surface is transparent, it must have a non-blank
@@ -2174,7 +2175,7 @@ C parent, if not ask the user for a suggestion.
                 WRITE(ioout,'(a)') ' '
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &            '!- ',outs(1:lnblnk(outs))
-                goto 60
+                goto 60  ! jump to next surface
               endif
             else
               SSPARENT(icc)=' '
@@ -2184,7 +2185,7 @@ C parent, if not ask the user for a suggestion.
               WRITE(ioout,'(a)') ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          '!- ',outs(1:lnblnk(outs))
-              goto 60
+              goto 60   ! jump to next surface
             endif
           endif
 
@@ -2199,6 +2200,8 @@ C  << this logic to be updated >>
 
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
      &      SSOTF(icc)(1:4).NE.'CFC ')then
+
+C A transparent surface.
             if(iver.le.20)then
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:HeatTransfer:sub',com
@@ -2208,6 +2211,11 @@ C  << this logic to be updated >>
             endif
           else
             if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
+
+C If similar or CEN similar then currently treat as Internal mass.
+C << update to point to another surface in the zone which has an
+C << appropriate orientation e.g. the a similar condition for a ceiling
+C << is the floor in the room.
               if(iver.le.20)then
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &            'Surface:HeatTransfer:InternalMass',com
@@ -2216,6 +2224,8 @@ C  << this logic to be updated >>
      &            '  InternalMass',com
               endif
             else
+
+C Opaque surface without or with a parent.
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 if(iver.le.20)then
@@ -2246,8 +2256,11 @@ C  << this logic to be updated >>
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Name'
           endif
+
           if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
      &      SSOTF(icc)(1:4).NE.'CFC ')then
+
+C We have a transparent surface.
             if(iver.le.20)then
               WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'WINDOW',com,
      &          '   !- Surface Type!'
@@ -2340,7 +2353,7 @@ C and site exposure.
      &          '   !-   Frame and Divider Name'
               WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',com,
      &          '   !-   Multiplier'
-           endif
+            endif
           else
             if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
               if(iver.le.20)then
@@ -2365,10 +2378,11 @@ C and site exposure.
                 WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) indent,
      &            SSNA(icc),sim,'   !-  Surface Area {m2}'
               endif
-              goto 60
+              goto 60   ! jump to next surface
             else
 
-C Check if parent surface name is a blank or just a dash.
+C Check if parent surface name is a blank or just a dash. Which says
+C that this surface has no parent (ESP-r geometric rules).
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 if(SSVFC(icc)(1:4).eq.'VERT')then
@@ -2716,7 +2730,7 @@ C << a door in a wall or as a surface with two windows in it
               endif
   43        continue
           endif
-  60    continue
+  60    continue   ! end of surface loop
 
 C Check where obstructions are located. Details are in common.
         IF(IOBS(mz).EQ.2)THEN
@@ -2773,7 +2787,7 @@ C depending on whether 'obs' or 'obs3'.
  302        continue
  301      continue
         endif
-  14  continue
+  14  continue  ! end of zone loop
       call edisp(iuout,'Completed export of data to EnergyPlus.')
 
 C Reports - report details and dxf for surfaces
