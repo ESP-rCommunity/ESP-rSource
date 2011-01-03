@@ -4465,7 +4465,7 @@ C If all of iwhich is the same number (excluding zero) then use it.
                     endif
   442             continue
                   if(same)then
-                    ibinval=iwhich(1)
+                    ibinval=iwhich(1)  ! << also remember parent index>>
                   else
                     ibinval=0
                   endif
@@ -4501,7 +4501,7 @@ C bother the user. If ibinval was set to zero then clear SSPARENT.
                       call easksur(izz,iss,'-',outs,' ',ier)
                       ibinval=izstocn(izz,iss)
                       if(ibinval.ne.0)then
-                        SSPARENT(icc)=ssname(ibinval)
+                        SSPARENT(icc)=ssname(ibinval)  ! << also remember parent index>>
                       else
                         SSPARENT(icc)=' '
                       endif
@@ -4558,13 +4558,15 @@ C be duplicates.
 #include "building.h"
 #include "geometry.h"
 
-C G9 holds information on children of a surface.
+C G9 holds information on children of a surface and its parent.
       integer nbchild   ! how many children (up to 4)
       integer nbgchild  ! how many grand children (up to 4)
       integer ichild    ! list of children
       integer igchild   ! list of grand children
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &igchild(MCON,4)
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -4596,6 +4598,8 @@ C Initialise various variables
  21     continue
         nbchild(iCC)=0     ! assume no children
         nbgchild(iCC)=0    ! assume no grand children
+        iparent(iCC)=0     ! assume no parent
+        igparent(iCC)=0     ! assume no grandparent
         next=0  ! counter to update to get to 2nd dimension.
 
 C First identify any surfaces with vertices that are
@@ -4688,8 +4692,8 @@ C     &          NVER(jsur),NVER(isur)
           endif
 
 C If there are the same shared vertices check orientation as well.
-          icc=IZSTOCN(icomp,isur)
-          jcc=IZSTOCN(icomp,jsur)
+          icc=IZSTOCN(icomp,isur)  ! parent connection
+          jcc=IZSTOCN(icomp,jsur)  ! possible child connection
 
 C Parent and child must have the same azimuth and elevation angles,
 C allow tolerance of 2deg and possible rotation of 360deg. 
@@ -4704,19 +4708,21 @@ C<< Division mod 360 may be a more generic way for angle checking
 
             SSPARENT(JCC)=SSNAME(ICC)
 C Debug.
-C            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
-C     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
-C     &        ' No of vertices in child= ',NVER(JSUR)
-C            write(6,*)' '
+            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
+     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
+     &        ' No of vertices in child= ',NVER(JSUR)
+            write(6,*)' '
 
-C << Having found a child add it to the list of children of
-C << the parent surface.
+C Having found a child add it to the list of children of
+C the parent surface.
             nbchild(iCC)=nbchild(iCC)+1
-            ichild(iCC,nbchild(iCC))=jCC
+            ichild(iCC,nbchild(iCC))=jCC ! remember child connection
+            iparent(JCC)=icc   ! remember childs parent connection
 
 C Debug...
-C            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
-C     &        childname(isur,1)
+            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
+     &        jcc,' parent of ',SSNAME(JCC),' is ',
+     &        SSNAME(iparent(JCC))
           endif
  105      continue    ! jump point in case of dups
  102    CONTINUE
@@ -4795,14 +4801,19 @@ C not contained in the child. Use these to work out parent of parent
  110  CONTINUE
 
 C Now fill grand children commons
-      DO 201 ISUR=1,NZSUR(ICOMP)
-        icc=IZSTOCN(icomp,isur)
-        DO 202 ICHL=1,NBCHILD(ICC)
-          JCC=ICHILD(ICC,ICHL)
-          DO 203 IGCD=1,NBCHILD(JCC)
-            KCC=ICHILD(JCC,IGCD)
-            IGCHILD(ICC,IGCD)=KCC
-             NBGCHILD(ICC)=NBGCHILD(ICC)+1
+      DO 201 ISUR=1,NZSUR(ICOMP)     ! for every surface in zone
+        icc=IZSTOCN(icomp,isur)      ! connection of the surface
+        DO 202 ICHL=1,NBCHILD(ICC)   ! for every child of that surface
+          JCC=ICHILD(ICC,ICHL)       ! connection of the child
+          DO 203 IGCD=1,NBCHILD(JCC) ! for every child of a child
+            KCC=ICHILD(JCC,IGCD)     ! connection for that as well
+            IGCHILD(ICC,IGCD)=KCC    ! remember grandchild connection
+            NBGCHILD(ICC)=NBGCHILD(ICC)+1  ! increment nb granchildren
+            igparent(KCC)=icc   ! remember grandchilds grandparent connection
+
+C Debug.
+            write(6,*) ' parent ',icc,' child ',JCC,' childs child ',
+     &        KCC,' grandparent is ',igparent(KCC)
  203      CONTINUE
  202    CONTINUE
  201  CONTINUE

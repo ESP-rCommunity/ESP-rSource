@@ -2947,13 +2947,15 @@ C << possible to alter the inside/outside hc from this interface? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-C G9 holds information on children of a surface.
+C G9 holds information on children of a surface and its parent.
       integer nbchild   ! how many children (up to 4)
       integer nbgchild  ! how many grand children (up to 4)
       integer ichild    ! list of children
       integer igchild   ! list of grand children
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &igchild(MCON,4)
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       common/user/browse
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)

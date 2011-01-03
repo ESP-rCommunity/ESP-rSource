@@ -111,13 +111,15 @@ C Simulation parameter presets.
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
-C G9 holds information on children of a surface.
+C G9 holds information on children of a surface and its parent.
       integer nbchild   ! how many children (up to 4)
       integer nbgchild  ! how many grand children (up to 4)
       integer ichild    ! list of children
       integer igchild   ! list of grand children
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &igchild(MCON,4)
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
