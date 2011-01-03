@@ -157,20 +157,28 @@ C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
       real ver  ! file version passed to subroutine
       real rfr   ! local var for radiant fraction
-      integer iver    ! file version as integer
+      integer iver     ! file version as integer
       integer ier
+      integer ich,iedg ! loop variable
+      integer icc,iccc ! array index
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
       character act*1,layname*25
       character T25*25,T25a*25,t12a*12
       character*10 wkday(7)
       character*9 RAMONTH(12)
       character*4 indent   ! for indentation
+      logical usethisone   ! array if true then surface can be used
+      logical truechild    ! array if true then E+ child
+      dimension usethisone(MCON),truechild(MCON)
+      integer jvn1,iduploop,foundone ! for use in avoiding child duplicate vertices
+      dimension jvn1(MV)
 
       logical found,close,close1,foundmlc
       logical closea,closeb,closec,closed,closee
       logical haveobs,haveish,havehc,haveusrgrnd,havestdgrnd,XST
       logical loadonday,ok,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
+      logical newgeo  ! to use for testing if new/old geometry file
+      logical findchildvert  ! to remember child vertices
 
 C Viewfactor to ground.
       dimension PROPG(8)
@@ -1408,6 +1416,15 @@ C Also do placeholder of there are no gains of this type on this day.
      &          '24:00',com,'0.0',com
             endif
           else
+
+C Write day type name if start of the day type.
+            if(iver.le.20)then
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            else
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            endif
             do 77 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
@@ -1431,15 +1448,11 @@ C Debug
                 write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
      &            CGNS,CGNL,totcgnsl,totfrac
 
-C Need to update to substitute day type name for hard-coded
+C Write day type name if start of the day type.
                 if(iver.le.20)then
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &              '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -1560,6 +1573,15 @@ C Go through loops for each day type for small power gains.
      &          '24:00',com,'0.0',com
             endif
           else
+
+C Write day type name if start of the day type.
+            if(iver.le.20)then
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            else
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            endif
             do 67 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
@@ -1585,13 +1607,9 @@ C Debug.
      &            CGNS,CGNL,totcgnsl,totfrac
 
                 if(iver.le.20)then
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &            '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -1724,6 +1742,15 @@ C Also do placeholder of there are no gains of this type on this day.
      &          '24:00',com,'0.0',com
             endif
           else
+
+C Write day type name if start of the day type.
+            if(iver.le.20)then
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            else
+              WRITE(ioout,'(3a)',iostat=ios,err=7) 
+     &          '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
+            endif
             do 57 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
@@ -1749,13 +1776,9 @@ C Debug.
      &            CGNS,CGNL,totcgnsl,totfrac
 
                 if(iver.le.20)then
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &            '  For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '  Until: ',ICGF(ID,J),':00',com,totfrac,com
                 else
-                  WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &            '    For: ',calentag(ID)(1:lnblnk(calentag(ID))),com
                   WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &              '    Until: ',ICGF(ID,J),':00',com,totfrac,com
                 endif
@@ -1908,6 +1931,8 @@ C Further logic required if there is more than one radiant/convective split.
           WRITE(ioout,'(5a)',iostat=ios,err=5) '    ',
      &      'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &      '   !- Activity level schedule name (W/person)'
+          WRITE(ioout,'(3a)',iostat=ios,err=7) '    ',com,
+     &      '   !- Enable ASHRAE 55 Comfort Warnings'
           WRITE(ioout,'(3a)',iostat=ios,err=5) '    ZoneAveraged',com,
      &      '  !- MRT Calculation Type'
         endif
@@ -1919,24 +1944,21 @@ C Further logic required if there is more than one radiant/convective split.
      &    '  !- Clothing Insulation SCHEDULE Name (real)'
         WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
      &    '  !- Air Velocity SCHEDULE Name (units m/s, real)'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
+        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,sim,
      &    '  !- Thermal Comfort Report Type R1'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
-     &    '  !- Thermal Comfort Report Type R2'
-        WRITE(ioout,'(3a)',iostat=ios,err=5) indent,com,
-     &    '  !- Thermal Comfort Report Type R3'
 
-C Include the sensible fraction of the total.
-        totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
-        sensfrac=1.0
-        if(totcgnsl.gt.0.1)sensfrac=loadcasp(mz,1,1)/totcgnsl
-        if(iver.le.20)then
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
-     &      sensfrac,sim,'   !- user specified sensible fraction'
-        else
-          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
-     &      sensfrac,sim,'   !- user specified sensible fraction'
-        endif
+C Include the sensible fraction of the total.  If using this put it just
+C after the Fraction Radiant line in place of auto.
+C        totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
+C        sensfrac=1.0
+C        if(totcgnsl.gt.0.1)sensfrac=loadcasp(mz,1,1)/totcgnsl
+C        if(iver.le.20)then
+C          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) indent,
+C     &      sensfrac,sim,'   !- user specified sensible fraction'
+C        else
+C          WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '    ',
+C     &      sensfrac,sim,'   !- user specified sensible fraction'
+C        endif
 
  13   continue
 
@@ -2012,159 +2034,183 @@ C Test edge adjacencies and subsurfaces.
         act = 'c'
         call suredgeadj(0,act,mz,ier)
 
-C << this process failed for a surface with 11 edges, see if there
-C << is some logic that will get around this. What we really want
-C << to know is if this surface has one or more holes in it.
+C Loop through the surfaces to see which can be reliably passed to E+
+C e.g. identify which surfaces are recognized as child surfaces by E+
+C and exclude child surfaces which themselves have children (but include
+C the grandchild surface).
 
-C For each surface write out data. We know that most
-C surfaces with a hole in them will have 10 edges and the first 4
-C will describe a quad that can be used with EnergyPlus. We know
-C that most surfaces with 8 edges will be a wall with a door in it.
-        DO 60 IS=1,NSUR
+C Begin by clearing the assumptions.
+        DO 164 IS=1,NSUR
+          icc=izstocn(mz,is)
+          usethisone(icc)=.true.  ! initial assumption to use
+          truechild(icc)=.true.
+ 164    continue
+
+C Next pass is to identify surfaces to ignore (e.g. if grandchildren exist).
+        DO 165 IS=1,NSUR
+          icc=izstocn(mz,is)
+          if(nbgchild(icc).gt.0.and.igchild(icc,1).gt.0)then
+            write(6,*) ' gchild named ',SSNAME(igchild(icc,1))
+            usethisone(ichild(icc,1))=.false.  ! use only granchchild
+          endif
+ 165    continue
+
+C Next pass to identify whether a surface is a true child in E+ context.
+        DO 166 IS=1,NSUR
           icc=izstocn(mz,is)
 
-C << is there one or more children of this surface
-C <<   is the child totally surounded by this surface
-C <<     if so ??
-C <<     if not ??
-C <<   if not a true child
-C <<     then ??
+C See if this surface happens to be a child in the strict sense.
+          mentioned=0
+          do 778 iprr=1,NZNVER(icc)   ! loop to see only parent mentioned
+            if(iedgshr(icc,iprr).eq.0)then
+              truechild(icc)=.false.
+            endif
+            if(iedgshr(icc,iprr).ne.0.and.mentioned.eq.0)then
+              mentioned=iedgshr(icc,iprr)
+            elseif(iedgshr(icc,iprr).ne.0.and.mentioned.ne.0)then
+              if(iedgshr(icc,iprr).ne.mentioned)then
+                truechild(icc)=.false.  ! edge to more than one
+              endif
+            endif
+ 778      continue
+          write(6,*) 'self truechild is ',truechild(icc)
+ 166    continue
+
+        DO 64 IS=1,NSUR
+          icc=izstocn(mz,is)
 C Info about children of this surface.
 C Debug.
-          write(6,*) ' nb children ',nbchild(icc),
+          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
+     &      SSNAME(icc),' nb children ',nbchild(icc),
      &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
      &      ' cnn is ',igchild(icc,1)
           if(ichild(icc,1).gt.0) then
             write(6,*) ' child named ',SSNAME(ichild(icc,1))
+          else
+            usethisone(icc)=.true.  ! no children so use
           endif
-          if(nbgchild(icc).gt.0.and.igchild(icc,1).gt.0)then
-            write(6,*) ' gchild named ',SSNAME(igchild(icc,1))
-          endif
+C          write(6,*) ' edge dup ',nbedgdup(icc)
+C          write(6,*) ' edge share ',nbedgshr(icc)
+          write(6,'(a,10i4)') 'p share ',iedgshr(icc,1),iedgshr(icc,2),
+     &    iedgshr(icc,3),iedgshr(icc,4),iedgshr(icc,5),iedgshr(icc,6),
+     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 
-          if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
+C Now report on any possible children
+C          iccc=ichild(icc,1)  ! connection for child
+C          if(iccc.ne.0)then
+C            write(6,'(a,10i4)') 'c share ',iedgshr(iccc,1),
+C     &        iedgshr(iccc,2),iedgshr(iccc,3),iedgshr(iccc,4),
+C     &        iedgshr(iccc,5),iedgshr(iccc,6),iedgshr(iccc,7),
+C     &        iedgshr(iccc,8),iedgshr(iccc,9),iedgshr(iccc,10)
 
-C Patch for 10/11/12 edges might represent wall with window or an
-C extra vertex or wall with joined windows in one hole.
-C          if((NVER(IS).gt.4.and.NVER(IS).lt.10).or.NVER(IS).gt.12)then
+C Does the child surface have a zero iedgshr (ie it has a edge with
+C an non parallel surface (like at a subsurface at an edge or a door)?
+C Does the child surface only reference the parent connection?
+C            truechild=.true.
+C            do 777 iprr=1,NZNVER(iccc)   ! loop to see if mentioned
+C              if(iedgshr(iccc,iprr).eq.0)then
+C                truechild=.false.
+C              endif
+C              if(iedgshr(iccc,iprr).ne.0.and.
+C     &           iedgshr(iccc,iprr).ne.icc)then
+C                truechild=.false.  ! edge to something other than parent
+C              endif
+C 777        continue
+C            write(6,*) 'truechild is ',truechild
+C          endif
+  64    continue
 
-C Check how many corners there are in the surface by looping through
-C all the edges and checking for angles greater than 5 degrees. Do the
-C corner at the 1st vertex first.
+C For each surface write out data.
+        DO 60 IS=1,NSUR
+          icc=izstocn(mz,is)
+          write(6,*) 'use this for surf ',is,usethisone(icc)
+          if(.NOT.usethisone(icc))goto 60  ! jump past this
 
-C << so why are we trying to reduce the number of edges in a surface? >>
-            iedgcnt=0
-            iwhich1=JVN(IS,NVER(IS))
-            iwhich2=JVN(IS,1)
-            iwhich3=JVN(IS,2)
-            iedglim=NVER(IS)-1
-            call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &        Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &        ang)
-            call eclose(ang,0.00,5.00,closea)
-            call eclose(ang,180.00,5.00,closeb)
-            if(closea.or.closeb)then
-              continue
-            else
-              iedgcnt=iedgcnt+1
-              COORD(iedgcnt,1)=X(IWHICH2)
-              COORD(iedgcnt,2)=Y(IWHICH2)
-              COORD(iedgcnt,3)=Z(IWHICH2)
+          findchildvert=.false.  ! do not bother remembering
+          if(nbchild(icc).eq.0)then
+
+C If there are no children just write coords.
+            do 62 iedg=1,NVER(IS)
+              COORD(iedg,1)=X(JVN(IS,iedg))
+              COORD(iedg,2)=Y(JVN(IS,iedg))
+              COORD(iedg,3)=Z(JVN(IS,iedg))
+  62        continue
+            iedgcnt=NVER(IS)
+            findchildvert=.false.  ! child verts not relevant
+          elseif(nbgchild(icc).gt.0)then
+
+C There one or more grand children of this surface. Warn
+C the user.
+            if(ichild(icc,1).gt.0.and.igchild(icc,1).gt.0)then
+              write(outs,*) 'Surface ',SSNAME(icc),
+     &          ' has a child named ',SSNAME(ichild(icc,1)),
+     &          ' and a gchild named ',SSNAME(igchild(icc,1)),
+     &          ' E+ does not do gc.'
+              call edisp(iuout,outs)
+
+C ignore child vert + dup vert
+              findchildvert=.true.  ! do remember child verts
             endif
-            do 61 iedg=1,iedglim
-              if(iedg.lt.iedglim)then
-                iwhich1=JVN(IS,iedg)
-                iwhich2=JVN(IS,iedg+1)
-                iwhich3=JVN(IS,iedg+2)
-              elseif(iedg.eq.iedglim)then
-                iwhich1=JVN(IS,iedg)
-                iwhich2=JVN(IS,iedg+1)
-                iwhich3=JVN(IS,1)
-              endif
-              call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &          Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &          ang)
-              call eclose(ang,0.00,5.00,closea)
-              call eclose(ang,180.00,5.00,closeb)
-              if(closea.or.closeb)then
-                continue
+          elseif(nbchild(icc).gt.0)then
+          
+C There one or more children of this surface. If the child surface
+C is a true child then ignore child vert + dup vert.
+            do 63 ich=1,nbchild(icc)
+              if(truechild(ichild(icc,1)))then
+                findchildvert=.true.  ! do remember child verts
               else
-                iedgcnt=iedgcnt+1
-                COORD(iedgcnt,1)=X(IWHICH2)
-                COORD(iedgcnt,2)=Y(IWHICH2)
-                COORD(iedgcnt,3)=Z(IWHICH2)
+                do 69 iedg=1,NVER(IS)
+                  COORD(iedg,1)=X(JVN(IS,iedg))
+                  COORD(iedg,2)=Y(JVN(IS,iedg))
+                  COORD(iedg,3)=Z(JVN(IS,iedg))
+  69            continue
+                iedgcnt=NVER(IS)
+                findchildvert=.false. ! use all verts
               endif
-  61        continue
-
-            if(iedgcnt.eq.8)then
-
-C << but this fails if there are any extra vertices in the parent
-C << surface - one more argument for recording the topology when
-C << surface was first added.
-
-C 8 corners is typcial of a wall with a door in it. Double check
-C if the angle between the first two edges is ~90 and between the
-C 2nd and 3rd (going around the top of the door) is ~90
-              iwhich1=JVN(IS,1)
-              iwhich2=JVN(IS,2)
-              iwhich3=JVN(IS,3)
-              call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &          Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &          ang1)
-              call eclose(ang1,90.00,5.00,closea)
-              iwhich1=JVN(IS,2)
-              iwhich2=JVN(IS,3)
-              iwhich3=JVN(IS,4)
-              call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &          Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &          ang2)
-              call eclose(ang2,90.00,5.00,closeb)
-
-C Debug.
-C              write(6,*) '2nd & 3rd angles are ',ang1,ang2
-
-C Because 8 edged surfaces can also exist in other contexts the logic
-C for surfaces surrounding doors should probably not be applied to
-C floor and ceiling locations.
-              closec=.false.
-              if(SSVFC(icc)(1:4).eq.'VERT') closec = .true.
-              if(SSVFC(icc)(1:4).eq.'UNKN') closec = .true.
-              if(closea.and.closeb.and.closec)then
-
-C If first edge and 5th edge are at same height then a door.
-                call eclose(Z(JVN(IS,1)),Z(JVN(IS,2)),0.01,closea)
-                call eclose(Z(JVN(IS,1)),Z(JVN(IS,5)),0.01,closeb)
-                call eclose(Z(JVN(IS,5)),Z(JVN(IS,6)),0.01,closec)
-                if(closea.and.closeb.and.closec)then
-                  call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-                  write(outs,'(3a,a)') 'Surface ',
-     &              ZSDES(1:lnblnk(ZSDES)),
-     &              ' probably wraps around a door'
-                  call edisp(iuout,outs)
-                  COORD(1,1)=X(JVN(IS,1))
-                  COORD(1,2)=Y(JVN(IS,1))
-                  COORD(1,3)=Z(JVN(IS,1))
-                  COORD(2,1)=X(JVN(IS,6))
-                  COORD(2,2)=Y(JVN(IS,6))
-                  COORD(2,3)=Z(JVN(IS,6))
-                  COORD(3,1)=X(JVN(IS,7))
-                  COORD(3,2)=Y(JVN(IS,7))
-                  COORD(3,3)=Z(JVN(IS,7))
-                  COORD(4,1)=X(JVN(IS,8))
-                  COORD(4,2)=Y(JVN(IS,8))
-                  COORD(4,3)=Z(JVN(IS,8))
-                  iedgcnt=4
-                endif
-              endif
-            endif
-
-C Debug.
-C            write(6,*) 'for surface ',is,' corners resolve to...'
-C            write(6,*) COORD(1,1),COORD(1,2),COORD(1,3)
-C            write(6,*) COORD(2,1),COORD(2,2),COORD(2,3)
-C            write(6,*) COORD(3,1),COORD(3,2),COORD(3,3)
-C            write(6,*) COORD(4,1),COORD(4,2),COORD(4,3)
-
+   63       continue
           endif
+
+C If we have been asked to exclude the child vertices and dup vertices
+C then make up the list now.
+          if(findchildvert)then
+            iccc=ichild(icc,1) ! connection for child
+            do 774 iprr=1,MV   ! loop to identify child verts
+              if(iprr.le.NZNVER(iccc))then
+                jvn1(iprr)=NZJVN(iccc,iprr)
+              else
+                jvn1(iprr)=0
+              endif
+  774       continue
+            iedgcnt=0
+            foundone=0                         ! where the logic beings
+            do 748 iedg=1,NZNVER(icc)          ! loop this surface edges
+              do 749 ichildloop=1,NZNVER(iccc) ! loop child surface edges
+                if(jvn1(ichildloop).eq.jvn(is,iedg))then
+                  foundone=jvn1(ichildloop)    ! found shared vertex
+                endif
+  749         continue
+              if(iedg.gt.1)then               ! also check for duplicate vertex
+                do 750 iduploop=1,iedg-1
+                  if(JVN(IS,iedg).eq.JVN(IS,iduploop))then
+                    foundone=JVN(IS,iduploop)   ! found duplicate vertex
+                  endif
+  750           continue
+              endif
+              if(foundone.eq.0)then  ! no child match or duplicate so include
+                COORD(iedg,1)=X(JVN(IS,iedg))
+                COORD(iedg,2)=Y(JVN(IS,iedg))
+                COORD(iedg,3)=Z(JVN(IS,iedg))
+                iedgcnt=iedgcnt+1
+              endif
+  748       continue
+            write(6,*) 'for surf ',icc,' count is ',iedgcnt,NZNVER(icc)
+          endif
+
+C Debug.
+          write(6,*) 'for surface ',is,' corners resolve to...',iedgcnt
+          do 747 iedg=1,iedgcnt
+            write(6,*) COORD(iedg,1),COORD(iedg,2),COORD(iedg,3)
+  747     continue
 
 C Have not yet worked out equivalent to a constant boundary condition.
 C << recent versions of EnergyPlus have a way to do it >>

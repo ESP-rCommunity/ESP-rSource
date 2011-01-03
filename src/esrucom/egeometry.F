@@ -4057,7 +4057,7 @@ C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
       integer nbedgdup  ! number of duplicate edges in surface edge list
       integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb surface which share an edge
+      integer nbedgshr  ! nb of surfaces which share edges with this surf
       integer iedgshr   ! for each edge, the adjacent surface
       integer imatshr   ! for each edge, the adjacent material
       integer ibridgeshr ! for each edge likely type of thermal bridge
@@ -4075,6 +4075,7 @@ C   where a surface such as a floor has been subdivided)
 
       CHARACTER outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
+      logical notmentioned  ! to see if surf at edge mentioned earlier
 
 C iwhich is local variable to sort most often referenced adjacent surf.
       dimension iwhich(MV),iwhichs(MV)
@@ -4151,8 +4152,8 @@ C     &              iedgdup(icc,m),' m n ',m,n
 C                  call edisp(iuout,outs)
                 endif
               endif
-  41        continue
-  40      continue
+  41        continue   ! inner loop vertices in surf
+  40      continue     ! outer loop vertices in surf
 
 C Debug...
           if(itrc.gt.1)then
@@ -4171,8 +4172,8 @@ C last vertext is reached point the end to the start point.
             iwhichs(ijj)=0
   46      continue
           list=NVER(isurf)
-          nbedgshr(icc)=0   ! reset for this connection
-          do 42 i=1,list
+          nbedgshr(icc)=0     ! reset for this connection
+          do 42 i=1,list      ! loop through each vertex
             iedgshr(icc,i)=0
             imatshr(icc,i)=0
             ibridgeshr(icc,i)=0 ! begin by assuming no bridge locations
@@ -4413,7 +4414,7 @@ C increment nbedgshr once even if other surface shares several edges).
                   endif
                 endif
   45          continue
-  44        continue
+  44        continue     ! loop surfaces in zone
 
 C Debug...
             if(itrc.gt.1)then
@@ -4421,14 +4422,14 @@ C              write(outs,*) 'iedgshr ',iedgshr(icc,i),
 C     &          ' shared construction ',imatshr(icc,i)
 C              call edisp(iuout,outs)
             endif
-  42      continue
+  42      continue  ! loop vertices in surface
 
 C Debug...
           if(itrc.gt.1)then
-C            write(outs,*) 'nbedgshr for ',
-C     &        ssname(icc)(1:lnblnk(ssname(icc))),
-C     &        ' is ',nbedgshr(icc)
-C            call edisp(iuout,outs)
+            write(outs,*) 'nbedgshr for ',
+     &        ssname(icc)(1:lnblnk(ssname(icc))),
+     &        ' is ',nbedgshr(icc)
+            call edisp(iuout,outs)
           endif
 
 C If most the edges are shared with other similarly facing surfaces
@@ -4703,10 +4704,10 @@ C<< Division mod 360 may be a more generic way for angle checking
 
             SSPARENT(JCC)=SSNAME(ICC)
 C Debug.
-c            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
-c     &        SSPARENT(JCC)!,' Matched vertices= ',ICOMVER(JSUR),
-c     &        ' No of vertices in child= ',NVER(JSUR)
-c            write(6,*)' '
+C            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
+C     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
+C     &        ' No of vertices in child= ',NVER(JSUR)
+C            write(6,*)' '
 
 C << Having found a child add it to the list of children of
 C << the parent surface.
@@ -4714,8 +4715,8 @@ C << the parent surface.
             ichild(iCC,nbchild(iCC))=jCC
 
 C Debug...
-c            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
-c     &        childname(isur,1)
+C            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
+C     &        childname(isur,1)
           endif
  105      continue    ! jump point in case of dups
  102    CONTINUE
