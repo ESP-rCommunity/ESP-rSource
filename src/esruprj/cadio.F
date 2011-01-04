@@ -438,23 +438,24 @@ C Export to EnergyPlus IDF file (work in progress)
         CALL EASKS(LFIL,' ','EnergyPlus input file name?',
      &        72,' ','EnergyPlus export file',IER,1)
 
-        ever=1.2
+        ever=3.0
         h(1)='EnergyPlus input files have several versions.'
-        h(2)='Version 1.4 is the current; 2.0 & 3.0 are options.'
-        h(3)='Version 2.0 and 3.0 are for testing.'
+        h(2)='Version 3.0 is the current'
+        h(3)='Version 4.0 is in testing.'
         evert=ever
-        CALL EASKR(evert,'Input file version?','(1.4 2.0 3.0)',
-     &    1.4,'F',3.0,'F',1.4,'file version',IERI,3)
+        CALL EASKR(evert,'EnergyPlus IDF file version?','(3.0)',
+     &    3.0,'F',3.0,'F',1.4,'file version',IERI,3)
         if(ieri.eq.-3)then
           continue
         else
-C          call edisp(iuout,' Performing model conversion.')
+          call edisp(iuout,' Performing model conversion.')
           itrcc=2
           ioout=2
           ever=evert
           open(ioout,file=lfil,status='UNKNOWN',err=901)
           call e2eplus(itrcc,ioout,ever,ier)
           close(ioout)
+          call edisp(iuout,' Completed model conversion.')
         endif
 
       ELSEIF(INO1.EQ.8)THEN
