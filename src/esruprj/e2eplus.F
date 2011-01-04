@@ -2103,57 +2103,24 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
             endif
           endif
 
-C Vertex information. If there were more than 4 vertices, but
-C not a wall with sub-surfaces then write out verticies.
-
-C << TAKE AWAY THE NVER TEST and see what happens.... >>
-C << move towards no space between coordinates >>
-
-          if(NVER(IS).gt.4.and.NVER(IS).ne.10)then
-            nvertex=iedgcnt
-            WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) indent,nvertex,
-     &        com,'   !- Number of Vertices'
-            do 42 iss=1,nvertex
-              if(iss.lt.nvertex)then
-                WRITE(ioout,'(f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) COORD(iss,1),com,
-     &            COORD(iss,2),com,COORD(iss,3),
-     &            com,'   !- X Y Z [m]'
-              else
-                WRITE(ioout,'(f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) COORD(iss,1),com,
-     &            COORD(iss,2),com,COORD(iss,3),
-     &            sim,'   !- X Y Z [m]'
-              endif
-  42        continue
-          else
-
-C For the case of a surface with a window in it.
-
-C << there should be a data structure that remembers that when
-C << the surface was created it was as a hole in a wall or as
-C << a door in a wall or as a surface with two windows in it
-            if(NVER(IS).eq.10)then
-              nvertex=4
+C Vertex information. The logic above will have sorted out the number
+C of edges to write.
+          nvertex=iedgcnt
+          WRITE(ioout,'(a,i2,2a)',iostat=ios,err=6) indent,nvertex,
+     &      com,'   !- Number of Vertices'
+          do 42 iss=1,nvertex
+            if(iss.lt.nvertex)then
+              WRITE(ioout,'(f10.4,a,f10.4,a,f10.4,2a)',
+     &          iostat=ios,err=6) COORD(iss,1),com,
+     &          COORD(iss,2),com,COORD(iss,3),
+     &          com,'   !- X Y Z [m]'
             else
-              nvertex=NVER(IS)
+              WRITE(ioout,'(f10.4,a,f10.4,a,f10.4,2a)',
+     &          iostat=ios,err=6) COORD(iss,1),com,
+     &          COORD(iss,2),com,COORD(iss,3),
+     &          sim,'   !- X Y Z [m]'
             endif
-            WRITE(ioout,'(a,i1,2a)',iostat=ios,err=6) indent,nvertex,
-     &        com,'   !- Number of Vertices'
-            do 43 iss=1,nvertex
-              if(iss.lt.nvertex)then
-                WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) indent,X(JVN(is,iss)),com,
-     &            Y(JVN(is,iss)),com,Z(JVN(is,iss)),
-     &            com,'   !- X Y Z [m]'
-              else
-                WRITE(ioout,'(a,f10.4,a,f10.4,a,f10.4,2a)',
-     &            iostat=ios,err=6) indent,X(JVN(is,iss)),com,
-     &            Y(JVN(is,iss)),com,Z(JVN(is,iss)),
-     &            sim,'   !- X Y Z [m]'
-              endif
-  43        continue
-          endif
+  42      continue
   60    continue   ! end of surface loop
 
 C Check where obstructions are located. Details are in common.
