@@ -1160,18 +1160,18 @@ C If nonzero for the day for this type set loadonday() true.
  10     continue
 
 C Debug.
-        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
-     &    loadcasp(mz,3,1)
-        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
-     &    loadcasp(mz,3,2)
-        write(6,*)'loadonday wss ocup',loadonday(mz,1,1),
-     &    loadonday(mz,2,1),loadonday(mz,3,1)
-        write(6,*)'loadonday wss lts',loadonday(mz,1,2),
-     &    loadonday(mz,2,2),loadonday(mz,3,2)
-        write(6,*)'loadonday wss eqp',loadonday(mz,1,3),
-     &    loadonday(mz,2,3),loadonday(mz,3,3)
-        write(6,*)' loadfrac 1 2 3 ',loadradfrac(mz,1),
-     &    loadradfrac(mz,2),loadradfrac(mz,3)
+C        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
+C     &    loadcasp(mz,3,1)
+C        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
+C     &    loadcasp(mz,3,2)
+C        write(6,*)'loadonday wss ocup',loadonday(mz,1,1),
+C     &    loadonday(mz,2,1),loadonday(mz,3,1)
+C        write(6,*)'loadonday wss lts',loadonday(mz,1,2),
+C     &    loadonday(mz,2,2),loadonday(mz,3,2)
+C        write(6,*)'loadonday wss eqp',loadonday(mz,1,3),
+C     &    loadonday(mz,2,3),loadonday(mz,3,3)
+C        write(6,*)' loadfrac 1 2 3 ',loadradfrac(mz,1),
+C     &    loadradfrac(mz,2),loadradfrac(mz,3)
 
 C Write out the initial portion of lighting compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
@@ -1220,8 +1220,8 @@ C Write day type name if start of the day type.
                   totfrac=(CGNS+CGNL)/totcgnsl
                 endif
 C Debug
-                write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
-     &            CGNS,CGNL,totcgnsl,totfrac
+C                write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
+C     &            CGNS,CGNL,totcgnsl,totfrac
 
 C Write day type name if start of the day type.
                 WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
@@ -1316,8 +1316,8 @@ C Write day type name if start of the day type.
                 endif
 
 C Debug.
-                write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
-     &            CGNS,CGNL,totcgnsl,totfrac
+C                write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
+C     &            CGNS,CGNL,totcgnsl,totfrac
 
                 WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &            '    Until: ',ICGF(ID,J),':00',com,totfrac,com
@@ -1436,8 +1436,8 @@ C Write day type name if start of the day type.
                 endif
 
 C Debug.
-                write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
-     &            CGNS,CGNL,totcgnsl,totfrac
+C                write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
+C     &            CGNS,CGNL,totcgnsl,totfrac
 
                 WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &            '    Until: ',ICGF(ID,J),':00',com,totfrac,com
@@ -1631,7 +1631,6 @@ C Next pass is to identify surfaces to ignore (e.g. if grandchildren exist).
         DO 165 IS=1,NSUR
           icc=izstocn(mz,is)
           if(nbgchild(icc).gt.0.and.igchild(icc,1).gt.0)then
-            write(6,*) ' gchild named ',SSNAME(igchild(icc,1))
             usethisone(ichild(icc,1))=.false.  ! use only granchchild
           endif
  165    continue
@@ -1670,11 +1669,13 @@ C Debug.
           else
             usethisone(icc)=.true.  ! no children so use
           endif
+
+C Debug.
 C          write(6,*) ' edge dup ',nbedgdup(icc)
 C          write(6,*) ' edge share ',nbedgshr(icc)
-          write(6,'(a,10i4)') 'p share ',iedgshr(icc,1),iedgshr(icc,2),
-     &    iedgshr(icc,3),iedgshr(icc,4),iedgshr(icc,5),iedgshr(icc,6),
-     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
+C          write(6,'(a,10i4)') 'p share ',iedgshr(icc,1),iedgshr(icc,2),
+C     &    iedgshr(icc,3),iedgshr(icc,4),iedgshr(icc,5),iedgshr(icc,6),
+C     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 
   64    continue
 
@@ -1763,7 +1764,6 @@ C then make up the list now.
                 iedgcnt=iedgcnt+1
               endif
   748       continue
-            write(6,*) 'for surf ',icc,' count is ',iedgcnt,NZNVER(icc)
           endif
 
 C Debug.
@@ -1786,6 +1786,9 @@ C << recent versions of EnergyPlus have a way to do it >>
 
 C If a surface is transparent, it must have a non-blank
 C parent, if not ask the user for a suggestion.
+
+C << add logic to check if a true child >>
+
           if(SSOTF(icc)(1:4).NE.'OPAQ'.and.SSOTF(icc)(1:4).NE.'CFC '
      &      .and.(SSPARENT(icc)(1:2).eq.'  '.or.
      &        SSPARENT(icc)(1:2).eq.'- '))then
@@ -1831,10 +1834,7 @@ C parent, if not ask the user for a suggestion.
           endif
 
 C The initial tag is dependant on whether the surface is
-C opaque or transparent and whether it is adiabetic.
-C Treat surfaces to an esp-r similar boundary condition as
-C internal mass.
-C Generate combined zone & generate surface names as identifiers.
+C opaque or transparent and whether it is adiabetic or similar.
 
 C  << this logic to be updated >>
           WRITE(ioout,'(a)') ' '
@@ -1846,9 +1846,12 @@ C A transparent surface.
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &        '  FenestrationSurface:Detailed',com
           else
+
+C Opaque surface.
             if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
 
 C If similar or CEN similar then currently treat as Internal mass.
+
 C << update to point to another surface in the zone which has an
 C << appropriate orientation e.g. the a similar condition for a ceiling
 C << is the floor in the room.
@@ -1869,6 +1872,7 @@ C Opaque surface without or with a parent.
             endif
           endif
 
+C Generate a unique name (zone + surface).
           call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
           WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &      ZSDES(1:lnblnk(ZSDES)),com,'   !- Name'
@@ -1892,7 +1896,7 @@ C We have a transparent surface.
      &        '   !- Outside Boundary Condition Object'
 
 C Also include viewfactor to ground value depending on orientation
-C and site exposure.
+C and site exposure. An index of 8 signals user defined values.
             if(siteexposureindex.ne.8)then
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '    ',
@@ -1932,6 +1936,9 @@ C and site exposure.
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',com,
      &        '   !-   Multiplier'
           else
+
+C We have an opaque surface. Depending on connection type generate an
+C abstract or an explicit surface.
             if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
 
 C CEN or Dynamic Similar connection.
@@ -1948,8 +1955,13 @@ C CEN or Dynamic Similar connection.
 
 C Check if parent surface name is a blank or just a dash. Which says
 C that this surface has no parent (ESP-r geometric rules).
+
+C << add logic taking into account whether a true child or not. >>
+
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
+
+C Depending on the surface orientation write out Wall Roof Floor tag.
                 if(SSVFC(icc)(1:4).eq.'VERT')then
                   WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Wall',
      &              com,'   !- Surface Type'
@@ -1994,6 +2006,8 @@ C Other face environment.
                   WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              'WindExposed',com,'   !- Wind Exposure'
                   if(siteexposureindex.ne.8)then
+
+C Standard exposure on the site.
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
      &                  indent,PROPG(siteexposureindex),com,
@@ -2010,6 +2024,8 @@ C Other face environment.
      &                  '1.0',com,'   !- View Factor to Ground'
                     endif
                   else
+
+C User defined exposure on the site.
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
      &                  indent,groundview,com,
@@ -2035,6 +2051,8 @@ C Continue because this has been considered internal mass.
 C A constant connection still has to be resolved.
                   continue
                 elseif(ICT(icc).eq.3)then
+
+C A partition to another room.
                   WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              'Surface',com,'   !-  Outside Boundary Condition'
                   call zsid(ic2(icc),ie2(icc),ZSDES,ZSDESC,ZSDESS)
@@ -2048,6 +2066,8 @@ C A constant connection still has to be resolved.
                   WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.4.or.ICT(icc).eq.6)then
+
+C A ground connection.
                   WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              'Ground',com,'   !-  Outside Boundary Condition'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
@@ -2061,7 +2081,9 @@ C A constant connection still has to be resolved.
                 endif
               else
 
-C There is a parent for this surface.
+C There is a parent for this surface. Before writing the tag check that
+C this is a true child in terms of EnergyPlus.
+C << to be done >>
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Door',
      &            com,'   !- Surface Type!'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
@@ -2099,9 +2121,9 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
      &            '   !-   Frame and Divider Name'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
      &            com,'   !-   Multiplier'
-              endif
-            endif
-          endif
+              endif ! of test for ESP-r parent or not
+            endif   ! of test for CEN Dynamic or other type of connection
+          endif     ! of test for opaque or transparent
 
 C Vertex information. The logic above will have sorted out the number
 C of edges to write.
