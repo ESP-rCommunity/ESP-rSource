@@ -93,7 +93,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOMF,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec16/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -132,13 +132,6 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
@@ -1346,13 +1339,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
@@ -4971,13 +4957,6 @@ C Parameters
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
 

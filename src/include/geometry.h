@@ -213,4 +213,11 @@ C see geometry.F for a full explanation). Not found in older geometry files
      &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3),
      &          ssthick(MCON)
 
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero if no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
 

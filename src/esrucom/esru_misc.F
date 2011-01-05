@@ -133,11 +133,6 @@ C HOT3000: BASESIMP.
       COMMON/PREC8/SLAT,SLON
       REAL :: slat,slon
 
-C izsfloor is the index (within the zone) of a floor surface.
-C izsceil is the index (within the zone) of a ceiling surface.
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd

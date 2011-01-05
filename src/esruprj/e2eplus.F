@@ -121,13 +121,6 @@ C G9 holds information on children of a surface and its parent.
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
      &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2

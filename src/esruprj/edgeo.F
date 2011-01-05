@@ -9252,13 +9252,6 @@ C been made.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
       logical MODGEO
 
 C Loop through each surface and detect whether orientation of
