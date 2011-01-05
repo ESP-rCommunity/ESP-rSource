@@ -96,6 +96,31 @@ C number of items in the list.
       common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
+C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
+C   if only one then it must be parent, if two then it might be the
+C   case of a door so determine which is primary.
+C iedgshr(MCON,MV) for each edge, the connection of surface (similarly
+C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
+C   this does not apply.
+C imatshr(MCON,MV) for each edge, the connection of surface (similarly
+C   oriented) which has the same material. Zero denotes this does not
+C   apply. Used to enhance wire frame drawings of discritized zones (e.g.
+C   where a surface such as a floor has been subdivided)
+C ibridgeshr(MCON,MV) is:
+C   zero is not a thermal bridge, one is roof-wall,
+C   two is wall-ground floor, three is wall-wall (convex corner)
+C   four is wall-wall (concave corner), five is wall-floor (not ground),
+C   six is lintel above window or door, seven is Sill below window
+C   eight is jamb at window or door
+      integer nbedgdup  ! number of duplicate edges in surface edge list
+      integer iedgdup   ! for each edge, the connection and edge duplicated
+      integer nbedgshr  ! nb surface which share an edge
+      integer iedgshr   ! for each edge, the adjacent surface
+      integer imatshr   ! for each edge, the adjacent material
+      integer ibridgeshr ! for each edge likely type of thermal bridge
+      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
+
 C Global coordinates for whole model (connection based).
       real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
       integer NZNVER ! number of vertices associated with each connection.
