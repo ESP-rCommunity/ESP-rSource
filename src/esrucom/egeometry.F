@@ -133,6 +133,13 @@ C Save total transparent surface area for surfaces connected to external BC.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero if no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       
@@ -590,9 +597,11 @@ C Interpret positional portion of the string.
         ELSEIF(tmpvfc(1:4).EQ.'CEIL')then
           write(SVFC(ISN),'(a)') 'CEIL'
           if(havec24) write(SSVFC(icn),'(a)') 'CEIL'
+          izsceil(icomp)=ISN   ! identify as a ceiling
         ELSEIF(tmpvfc(1:4).EQ.'FLOR')then
           write(SVFC(ISN),'(a)') 'FLOR'
           if(havec24) write(SSVFC(icn),'(a)') 'FLOR'
+          izsfloor(icomp)=ISN ! identify as a floor
         ENDIF
 
 C Interpret the construction name.
@@ -1338,6 +1347,13 @@ C Thermal bridge common block is described in esruprj/edgeo.F
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
 
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero if no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
 C to hold such information in the zone geometry file. Common GS5/GS6
@@ -1676,9 +1692,11 @@ C Surface position
             ELSEIF(tmpvfc(1:4).EQ.'CEIL')then
               write(SVFC(NS),'(a)') 'CEIL'
               if(havec24) write(SSVFC(icn),'(a)') 'CEIL'
+              izsceil(icomp)=NS   ! identify as a ceiling
             ELSEIF(tmpvfc(1:4).EQ.'FLOR')then
               write(SVFC(NS),'(a)') 'FLOR'
               if(havec24) write(SSVFC(icn),'(a)') 'FLOR'
+              izsfloor(icomp)=NS  ! identify as a floor
             ENDIF
 
 C Parent name, allow for future spaces in parent name.
@@ -4953,6 +4971,14 @@ C Parameters
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
+
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero if no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
 
 C Begin with default assumptions for each surface then overwrite
@@ -4975,10 +5001,12 @@ C logic as in subroutine updatesvfc.
             SVFC(I)='CEIL'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
+            izsceil(icomp)=I   ! identify as a ceiling
           elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
             SVFC(I)='FLOR'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
+            izsfloor(icomp)=I  ! identify as a floor
           else
             SVFC(I)='SLOP'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
@@ -5014,10 +5042,12 @@ C Set flags for wall/celing/floor
           SVFC(I)='CEIL'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
+          izsceil(icomp)=I   ! identify as a ceiling
         elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
           SVFC(I)='FLOR'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
+          izsfloor(icomp)=I  ! identify as a floor
         else
           SVFC(I)='SLOP'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I

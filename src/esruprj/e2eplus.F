@@ -121,6 +121,13 @@ C G9 holds information on children of a surface and its parent.
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
      &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
+C izsfloor is the index (within the zone) of a floor surface in each zone
+C  (zero if no surface is close to horizontal facing up).
+C izsceil is the index (within the zone) of a ceiling surface in each zone 
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -173,6 +180,7 @@ C surface can be resolved into a quad).
       logical truechild    ! array if true then E+ child
       dimension usethisone(MCON),truechild(MCON)
       integer jvn1,iduploop,foundone ! for use in avoiding child duplicate vertices
+      integer iccsimilar   ! connection to use in case of similar
       dimension jvn1(MV)
 
       logical found,close,close1,foundmlc
@@ -181,6 +189,7 @@ C surface can be resolved into a quad).
       logical loadonday,ok,dok
       logical newgeo  ! to use for testing if new/old geometry file
       logical findchildvert  ! to remember child vertices
+      logical treatasmass    ! if true treat surface as internal mass
 
 C Viewfactor to ground.
       dimension PROPG(8)
@@ -1653,6 +1662,8 @@ C See if this surface happens to be a child in the strict sense.
               endif
             endif
  778      continue
+
+C Debug.
           write(6,*) 'self truechild is ',truechild(icc)
  166    continue
 
@@ -1682,7 +1693,6 @@ C     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 C For each surface write out data.
         DO 60 IS=1,NSUR
           icc=izstocn(mz,is)
-          write(6,*) 'use this for surf ',is,usethisone(icc)
           if(.NOT.usethisone(icc))goto 60  ! jump past this
 
           findchildvert=.false.  ! do not bother remembering
@@ -1835,6 +1845,8 @@ C << add logic to check if a true child >>
 
 C The initial tag is dependant on whether the surface is
 C opaque or transparent and whether it is adiabetic or similar.
+          treatasmass=.false.  ! initial assumption
+          iccsimilar=0         ! connection in case of similar
 
 C  << this logic to be updated >>
           WRITE(ioout,'(a)') ' '
@@ -1848,18 +1860,49 @@ C A transparent surface.
           else
 
 C Opaque surface.
-            if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
+            if(ICT(icc).eq.5)then
+              treatasmass=.true.  ! CEN similar is internal mass
 
-C If similar or CEN similar then currently treat as Internal mass.
+            elseif(ICT(icc).eq.1)then
 
-C << update to point to another surface in the zone which has an
-C << appropriate orientation e.g. the a similar condition for a ceiling
-C << is the floor in the room.
+C If similar check if there is an opposing surface.
+              if(SSVFC(icc)(1:4).eq.'CEIL')then
+                if(izsfloor(mz).ne.0)then
+                  iccsimilar=izstocn(mz,izsfloor(mz)) ! get connection for floor
+                  treatasmass=.false.  ! we have an opposing surface to use
+                else
+                  treatasmass=.true.  ! treat as internal mass
+                endif
+              elseif(SSVFC(icc)(1:4).eq.'FLOR')then
+                if(izsceil(mz).ne.0)then
+                  iccsimilar=izstocn(mz,izsceil(mz)) ! get connection for ceiling
+                  treatasmass=.false.  ! we have an opposing surface to use
+                else
+                  treatasmass=.true.  ! treat as internal mass
+                endif
+              else
+
+C Logic not yet in place to find an opossing partition so point it to the ceiling.
+                if(izsceil(mz).ne.0)then
+                  iccsimilar=izstocn(mz,izsceil(mz)) ! get connection for ceiling
+                  treatasmass=.false.  ! we have an opposing surface to use
+                else
+                  treatasmass=.true.  ! treat as internal mass
+                endif
+              endif
+C Debug.
+              write(6,*) 'reverse ',iccsimilar,izsfloor(mz),izsceil(mz)
+            endif
+
+            if(treatasmass)then
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          '  InternalMass',com
             else
 
 C Opaque surface without or with a parent.
+
+C << test for true child here >>
+
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
@@ -1939,9 +1982,9 @@ C and site exposure. An index of 8 signals user defined values.
 
 C We have an opaque surface. Depending on connection type generate an
 C abstract or an explicit surface.
-            if(ICT(icc).eq.5.or.ICT(icc).eq.1)then
+            if(treatasmass)then
 
-C CEN or Dynamic Similar connection.
+C CEN or a Dynamic Similar connection that does not have an opposite.
               WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &          '   !- Construction Name'
@@ -1973,12 +2016,18 @@ C Depending on the surface orientation write out Wall Roof Floor tag.
                   elseif(ICT(icc).eq.3)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Wall',com,'   !- Surface Type'
+                  elseif(ICT(icc).eq.1)then
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'Wall',com,'   !- Surface Type'
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                   if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Roof',com,'   !- Surface Type'
                   elseif(ICT(icc).eq.3)then
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'Ceiling',com,'   !- Surface Type'
+                  elseif(ICT(icc).eq.1)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Ceiling',com,'   !- Surface Type'
                   endif
@@ -2045,7 +2094,47 @@ C User defined exposure on the site.
                 elseif(ICT(icc).eq.1)then
 
 C Continue because this has been considered internal mass.
-                  continue
+                  if(treatasmass)then
+                    continue
+                  else
+
+C Another surface in this room (to represent similar). If the current
+C construction is the same as that used by the opposite then this will
+C work, otherwise we are going to have to point back to the original
+C surface.
+ 
+C << for later actions, keep a list of the symmetric tag for
+C << each MLC. This might save some searching...
+
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'Surface',com,'   !-  Outside Boundary (similar)'
+                    if(iccsimilar.ne.0)then
+                      if(SSMLCN(icc)(1:8).eq.
+     &                   SSMLCN(iccsimilar)(1:8))then
+                        call zsid(ic1(iccsimilar),ie1(iccsimilar),ZSDES,
+     &                    ZSDESC,ZSDESS)
+                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+     &                    ZSDES(1:lnblnk(ZSDES)),com,
+     &                    '   !- Outside Boundary Condition other surf'
+                      else  ! pont back at itself
+                        call zsid(ic1(icc),ie1(icc),ZSDES,ZSDESC,ZSDESS)
+                        WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+     &                    ZSDES(1:lnblnk(ZSDES)),com,
+     &                    '   !- Outside Boundary Condition to self'
+                      endif
+                    else
+                      ZSDES='UNKNOWN:UNKNOWN'
+                      WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+     &                  ZSDES(1:lnblnk(ZSDES)),com,
+     &                  '   !- Outside Boundary Condition unresolved'
+                    endif
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoSun',com,'   !- Sun Exposure'
+                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &                'NoWind',com,'   !- Wind Exposure'
+                    WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &                '   !- View Factor to Ground'
+                  endif
                 elseif(ICT(icc).eq.2)then
 
 C A constant connection still has to be resolved.
@@ -2078,6 +2167,10 @@ C A ground connection.
      &              'NoWind',com,'   !- Wind Exposure'
                   WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !- View Factor to Ground'
+                elseif(ICT(icc).eq.5)then
+
+C A EN connection is internal mass.
+                  continue
                 endif
               else
 

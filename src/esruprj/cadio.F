@@ -150,7 +150,7 @@ C Help text for this menu.
       H(55)='This export facility supports testing of this file'
       H(56)='format and data structures.'
       H(57)=' '
-      NITMS=12
+      NITMS=11
       CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
