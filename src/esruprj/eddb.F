@@ -158,17 +158,16 @@ C Try to compact the width of the menu.
  141  continue
 
 C Help text for this menu.
-      H(1)='ESP-r is provided with a number of corporate (standard)'
-      write(h(2),'(3a)') 'databases located in ',
-     &  dinstpath(1:lnblnk(dinstpath)),'/databases'
-      H(3)='databases.  For some simulation models a user may'
+      H(1)='ESP-r is provided with standard databases located at'
+      write(h(2),'(2a)')dinstpath(1:lnblnk(dinstpath)),'/databases'
+      H(3)='For some simulation models a user may'
       H(4)='require a bespoke version of a database.  In such a'
-      H(5)='case the user may either copy a corporate database'
+      H(5)='case the user may either copy a standard database'
       H(6)='into a local directory for modification or simply begin'
       H(7)='from scratch.'
       H(8)=' '
       H(9)='In most cases a bespoke database may be created by'
-      H(10)='copying a corporate database into the project'
+      H(10)='copying a standard database into the project'
       H(11)='directory (hint: give it a name identifiable with' 
       H(12)='the project) and then modifying it to fit the needs'
       H(13)='of the project.'
@@ -176,8 +175,8 @@ C Help text for this menu.
       H(15)='Initially the database names will correspond to'
       H(16)='the defaults supplied by ESRU.  If these defaults'
       H(17)='are not found, the most likely reason is that they'
-      H(18)='have not been correctly installed in folders'
-      H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
+      H(18)='have not been correctly installed in the file path'
+      H(19)='given at the top of this message.'
       NITMS=15
       if(MMOD.EQ.8)then
         impx=0
@@ -335,13 +334,14 @@ C Manage miscellaneous componens database.
       ELSEIF(INO.EQ.14)THEN
 
 C Menu help text.
+        call phelpd('databases overview',19,'-',0,0,IER)
         H(1)='Information on each databases is provided.'
         ihd=1
         call easkatog(' ','Help options:','overview','climate',
      &   'materials','constructions','optics','plant','cancel',ihd,1)
         if(ihd.eq.1)then
-          H(1)='ESP-r is provided with a number of standard databases'
-          H(2)='and these are located in `/usr/esru/esp-r/databases`.'
+          H(1)='ESP-r is provided with standard databases located at'
+          write(h(2),'(2a)')dinstpath(1:lnblnk(dinstpath)),'/databases'
           H(3)='Where a model requires a bespoke version of a'
           H(4)='database, the user may either copy a standard database'
           H(6)='into a local directory and modify it or create a new'
@@ -2169,13 +2169,13 @@ C Generate file name lltmp taking into account ipathprodb for use later.
       llt=lnblnk(lltmp)
 
       H(1)= '   Events Database '
-      H(3)= ' '
-      H(4)= 'Profiles in this database are currently used to'
-      H(5)= 'assist in the defintion of zone operations.  The'
-      H(6)= 'standard db are found in /usr/esru/esp-r/databases'
+      H(2)= ' '
+      H(3)= 'Profiles in this database are currently used to'
+      H(4)= 'assist in the defintion of zone operations.  The'
+      H(5)= 'standard db are found in '
+      write(h(6),'(2a)')dinstpath(1:lnblnk(dinstpath)),'/databases'
       H(7)= 'as either ASCII versions (ends with .a) or a binary'
-      H(7)= 'version (depreciated).'
-      H(8)= ' '
+      H(8)= 'version (depreciated).'
       H(9)= ' The data requirements are summarised below :- '
       H(10)=' '
       H(11)=' for each profile - number of events.'

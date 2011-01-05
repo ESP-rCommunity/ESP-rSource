@@ -123,8 +123,12 @@ C Test for illegal menu pick.
         CALL MOOPER
       elseif(INO.EQ.3)then
         CALL MOZDFN
-      elseif(INO.EQ.5.AND.ISAVE.GT.1)then
-        CALL ZONTAB('-')
+      elseif(INO.EQ.5)then
+        if(ISAVE.GT.1)then
+          CALL ZONTAB('-')
+        else
+          call edisp(iuout,'Not available with save level 1')
+        endif
       elseif(INO.EQ.6)then
 
 C Special material output. << use alternative data recovery >>.

@@ -358,9 +358,6 @@ C Common blocks
       INTEGER :: IUOUT,IUIN
       COMMON/POPHELP/H(60)                  !Array holding help text
       CHARACTER :: H*72                     !Strings for help text
-C Function defenition
-      LOGICAL :: CheckForChanges
-
 
       IF (.NOT.AIM2_Initialized) THEN
 C Initialze all input parameters
@@ -1285,7 +1282,11 @@ C *********************************************************************
       SUBROUTINE InfiltrationZonesMenu()
 
       IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+
 C Declare local variables
+      INTEGER, DIMENSION(MCOM) :: ivals
       CHARACTER, DIMENSION(8) :: ITEM*34            !Array holding strings for menu items
       CHARACTER :: DisplayString*248                !data selection display string
       CHARACTER :: TempString*128                   !data selection display string
@@ -1417,8 +1418,10 @@ C Zone number of basement
             IF (OK) AIM2_basement_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            CALL ASKZONE(Zone,Zone,'Select the basement zone ',
-     &        'Basement Zone','-','Please select a zone',IER)
+            H(1)='Select the basement zone '
+            CALL EPICKS(1,IVALS,' ','Basement Zone?',
+     &                12,NCOMP,zname,'zone list',IER,1)
+            Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (IER.EQ.0) THEN
               IF (Zone.EQ.AIM2_CrawlSpace_zone) THEN
@@ -1445,8 +1448,10 @@ C Zone number of Crawl Space
             IF (OK) AIM2_CrawlSpace_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            CALL ASKZONE(Zone,0,'Select the crawl space zone ',
-     &        'Crawl space Zone','-','Please select a zone',IER)
+            H(1)='Select the crawl space zone '
+            CALL EPICKS(1,IVALS,' ','Crawl space Zone?',
+     &                12,NCOMP,zname,'zone list',IER,1)
+            Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (Zone.EQ.AIM2_basement_zone) THEN
               CALL USRMSG(' ',
@@ -1470,8 +1475,10 @@ C Zone number of attic.
             IF (OK) AIM2_attic_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            CALL ASKZONE(Zone,0,'Select the attic zone ',
-     &        'Attic Zone','-','Please select a zone',IER)
+            H(1)='Select the attic zone '
+            CALL EPICKS(1,IVALS,' ','Attic Zone?',
+     &                12,NCOMP,zname,'zone list',IER,1)
+            Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (Zone.EQ.AIM2_basement_zone) THEN
               CALL USRMSG('',

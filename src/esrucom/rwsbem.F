@@ -453,7 +453,7 @@ C s) occupant latent percentage (of the whole gain) (latent_ocup_percent)
 C t) equipment latent percentage (of the whole gain) (latent_equip_percent)
 C u) lighting display W/m2  (display_lighting)
 
-C << attitional data items to be documented below >>
+C << additional data items to be documented below >>
 C 13 items fMonthEstSysHrs for each month assumed hours of env sys use
 C    with 13th value as annual assumed hours of env systems use      
 C v) hours of year with non-zero occupancy
@@ -465,6 +465,7 @@ C 1) days which have (at least some) lighting
 C 2) hours of year with non-zero equipment
 C 3) summation of hourly equipment fraction
 c 4) days which have (at least some) equipment
+C 5) local manual switching flag, (if 1 then local manual switching does not apply to this activity)
       DO 130 ICBTP=1,NCBTP
         CALL STRIPC1K(IUF,LOUTSTR,0,ND,1,'Activity types',IER)
         lnbl=lnblnk(LOUTSTR)  ! remember how long the line is
@@ -516,7 +517,8 @@ C Database version 1.1 includes values for lighting for the notional building
         display_lighting(iactindex)=VAL
 
 C Gather the fMonthEstSysHrs(MACL,13) and nonzerohours(MACL,3),
-C and atleastonehour(MACL,3) and casualfracsum(MACL,3) if we have
+C and atleastonehour(MACL,3) and casualfracsum(MACL,3) and 
+C local manual switching flag loc_man_sw(MACL) if we have
 C not yet reached the end of the data line.
         if(K.ge.lnbl.or.K+1.ge.lnbl)then
           fMonthEstSysHrs(iactindex,1)=0.0  ! jan estimated system run hours
@@ -541,6 +543,7 @@ C not yet reached the end of the data line.
           nonzerohours(iactindex,3)=0.0
           casualfracsum(iactindex,3)=0.0
           atleastonehour(iactindex,3)=0.0
+          loc_man_sw(iactindex)=0
         else
           CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
           fMonthEstSysHrs(iactindex,1)=VAL  ! jan estimated system run hours
@@ -583,15 +586,16 @@ C gains fill these with zeros.
             nonzerohours(iactindex,3)=0.0
             casualfracsum(iactindex,3)=0.0
             atleastonehour(iactindex,3)=0.0
+            loc_man_sw(iactindex)=0
           else
             CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
-     &        'non-zero hours with ocupant',IER)
+     &        'non-zero hours with occupant',IER)
             nonzerohours(iactindex,1)=VAL
             CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
      &        'summation of occupant fractions',IER)
             casualfracsum(iactindex,1)=VAL
             CALL EGETWR(LOUTSTR,K,VAL,0.,370.,'W',
-     &        'days with at least some ocupants',IER)
+     &        'days with at least some occupants',IER)
             atleastonehour(iactindex,1)=VAL
 
             CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
@@ -612,6 +616,9 @@ C gains fill these with zeros.
             CALL EGETWR(LOUTSTR,K,VAL,0.,370.,'W',
      &        'days with at least some equipment',IER)
             atleastonehour(iactindex,3)=VAL
+            CALL EGETWI(LOUTSTR,K,IVAL,0,1,'W',
+     &        'local manual switching flag',IER)
+              loc_man_sw(iactindex)=IVAL
           endif
         endif
         IATYPNDX(IAT,IBTN)=1

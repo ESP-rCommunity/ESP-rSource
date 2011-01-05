@@ -121,7 +121,7 @@ C Read existing file.
           call edisp(iuout,'Could not find casual gain control file:')
           call edisp(iuout,LCGCIN(ICOMP))
         endif
-        N=1
+        N=1   ! set N to signal cgc
       endif
       if((ICGC(ICOMP).eq.0).or.(.not.xst))then
 
@@ -159,7 +159,7 @@ C Read existing file.
           UY(ICOMP,1,1)=0.0
           UH(ICOMP,1,1)=1.0
           IDCFID(ICOMP,1,1)=1
-          N=1
+          N=1  ! set N
           NLITZ(ICOMP)=1
           NUDWIN(ICOMP)=1
           do 48 I = 1, NSUR
@@ -229,6 +229,9 @@ C Reset all surface lines to standard width and redraw if revised data.
      &                            ICGCF(ICOMP)
       write(ITEM(5),'(A,I3)')  '  Lighting zones   : ',NL
       ITEM(6)=            '  _______________________________________'
+
+C If we got to this point and no lighting zone then there should be at least one.
+      if (N.le.0) N=1 ! bounds error fix
       write(ITEM(7),'(A,I2)')    'c Lighting zone >> ',N
       info='unknown control'
       if(ICGCFL(ICOMP,N).eq.-1) info='Always On'
@@ -253,7 +256,7 @@ C Reset all surface lines to standard width and redraw if revised data.
       endif
       write(ITEM(10),'(A,4F6.1,I3)') 'f Control data  :',SETPT(ICOMP,N),
      & SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
-      write(ITEM(11),'(A,F6.1,I3)') 'g Photocell data:',SYSPER(ICOMP,N),
+      write(ITEM(11),'(A,F6.2,I3)') 'g Photocell data:',SYSPER(ICOMP,N),
      &                              NDF(ICOMP,N)
 
       if(IDFST(ICOMP,N).EQ.1.OR.IDFST(ICOMP,N).EQ.2.OR.

@@ -480,14 +480,19 @@ C U Value maximums - calculated in BRUKL and it is also used in EPCGen
 
 C Activities global list
       INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
-      REAL occupant_dens      ! occupant density people/m2
+      INTEGER loc_man_sw      ! local manual switching flag (if 1 then local manual switching not allowed)
       INTEGER metabolic_rate  ! metabolic rate W/person/m2
-      REAL fresh_air          ! outside air per person litres/sec/person
       INTEGER lighting_lux    ! lighting lux
-      REAL equip_gain         ! equipment W/m2 
-      REAL dhw_litres         ! domestic hot water litres/day/m2
       INTEGER latent_ocup_percent  ! occupant latent percentage (of the whole gain)
       INTEGER latent_equip_percent ! equipment latent percentage (of the whole gain)
+      common/actglobint/bld_order_index(MACL),loc_man_sw(MACL),
+     &  metabolic_rate(MACL),lighting_lux(MACL),
+     &  latent_ocup_percent(MACL),latent_equip_percent(MACL)
+
+      REAL occupant_dens      ! occupant density people/m2
+      REAL fresh_air          ! outside air per person litres/sec/person
+      REAL equip_gain         ! equipment W/m2 
+      REAL dhw_litres         ! domestic hot water litres/day/m2
       REAL display_lighting        ! lighting display W/m2
       REAL Hmainsetpoint,Cmainsetpoint  
       REAL fNotionalLighting
@@ -497,14 +502,12 @@ C Activities global list
       REAL nonzerohours          ! hours of year with non-zero occupancy/lights/equipemt
       REAL atleastonehour        ! days which have (at least some) occupancy/lights/equipment
       REAL casualfracsum         ! summation of the hourly occupant/lighting/equipment fractions
-      common/actglob/bld_order_index(MACL),occupant_dens(MACL),
-     &  metabolic_rate(MACL),fresh_air(MACL),lighting_lux(MACL),
-     &  equip_gain(MACL),dhw_litres(MACL),latent_ocup_percent(MACL),
-     &  latent_equip_percent(MACL),display_lighting(MACL),
+      common/actglobreal/occupant_dens(MACL),fresh_air(MACL),
+     &  equip_gain(MACL),dhw_litres(MACL),display_lighting(MACL),
      &  Hmainsetpoint(MACL),Cmainsetpoint(MACL),fNotionalLighting(MACL),
      &  fTypicalLighting(MACL),fMonthEstSysHrs(MACL,13),
      &  nonzerohours(MACL,3),atleastonehour(MACL,3),
-     &  casualfracsum(MACL,3) 
+     &  casualfracsum(MACL,3)
                 
 C Reals not in common
 C      REAL TyERE    ! total annual energy for typical building

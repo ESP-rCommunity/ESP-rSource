@@ -441,7 +441,11 @@ c save level 5
         ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
-      ITEM(6)=   'm Monitor state variables    '
+      if(ISAVE.eq.0)then
+        ITEM(6)= '  Monitor (not available)'
+      else
+        ITEM(6)= 'm Monitor state variables    '
+      endif
       ITEM(7)=   't Invoke time-step controller'
       ITEM(8)=   's Invoke simulation          '
       ITEM(9)=   '                             '
@@ -462,26 +466,29 @@ C Help text for this menu.
       H(4) =' b: specify the simulation period.'
       H(5) =' '
       H(6) =' *: Options which dictate what is saved in the library:'
-      H(7) ='     SAVE >>0 no results saved (summary only)'
-      H(8) ='     SAVE >>1 minimum save option'
-      H(9) ='     SAVE >>2 moderate save option - the default'
-      H(10)='     SAVE >>3 maximum save option'
-      H(11)='     SAVE >>4 surface energy balance save option.'
+      H(7) ='     SAVE >>0 summary text report only (see option o)'
+      H(8) ='     SAVE >>1 minimum data collection (for small files)'
+      H(9) ='     SAVE >>2 moderate data collection'
+      H(10)='     SAVE >>3 as save 2 plus all node temperatures'
+      H(11)='     SAVE >>4 as save 2 plus surface energy balance'
 c Save level 5
-      H(12)='     SAVE >>5 Hot3000 output only'
-      H(13)='     SAVE >>6  no results saved (summary only in '
-      H(14)='     database freindly format)'      
-      H(15)=' m: monitor plots zone temperatures, plant flux and'
-      H(16)='    plant state variables as the simulation progresses.'
-      H(17)=' '
-      H(18)=' t: select zone-side time-step control option.'
-      H(19)=' s: invoke simulation. '
-      H(20)=' <: deletes the last saved simulation result set. '
-      H(21)=' g: sets simulation parameter toggles '
-      H(22)=' '
-      H(23)=' i: outputs the current simulation period and'
-      H(24)='    information on the saved result set.'
-      H(25)=' o: gives summary results if SAVE O option selected.'
+      H(12)='     SAVE >>5 Hot3000 output (XML) based on directives'
+      H(13)='              in input.xml file in model cfg folder'
+      H(14)='     SAVE >>6  no results saved (summary only in '
+      H(15)='               database freindly text format)'      
+      H(16)=' m: monitor plots zone temperatures, plant flux and'
+      H(17)='    plant state variables as the simulation progresses.'
+      H(18)=' '
+      H(19)=' t: select zone-side time-step control option.'
+      H(20)=' s: invoke simulation. '
+      H(21)=' <: deletes the last saved simulation result set. '
+      H(22)=' g: sets simulation parameter toggles '
+      H(23)=' '
+      H(24)=' i: outputs the current simulation period and'
+      H(25)='    information on the saved result set.'
+      H(26)=' o: gives summary results if SAVE O option selected'
+      H(27)='    with option to write to a text file after the'
+      H(28)='    simulation has completed.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -512,7 +519,7 @@ C Set simulation period.
 C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
-C Save Level 5
+C Save Level reset to zero if toggle set would be greater than 6.
          if(ISAVE.gt.6)ISAVE=0
       elseif(ino.eq.6)then
 
@@ -578,9 +585,9 @@ c calculation approaches.
         call tstamp('>','SIM: enter simulate')
         call SIMCON
         if(isave.eq.6)then
-
-C Output from 6 save.
-          call MZOUT6
+          call MZOUT6  ! Output from 6 save
+        elseif(isave.eq.0)then
+          call edisp(iuout,'To see save zero output select option o')
         endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
@@ -640,12 +647,12 @@ C Info on current parameters.
         CALL MZINFO(IUOUT)
       elseif(ino.eq.14)then
 
-C Output from 0 save.
+C Output from 0 save (with option to write data to file).
         CALL MZOUTP
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',28,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.

@@ -68,14 +68,20 @@ C tzph,tzpc are zone heating/cooling use over time.
 C Test save option selected.
 C [for NRCan]      tab=','
       tab=' '
-      IF(LSAVE.NE.0)goto 2
+      IF(LSAVE.NE.0)then
+
+C Output for save options 1,2 3 and 4.
+        CALL edisp(iuout,' Results analysis is done via module res.')
+        RETURN
+      endif
       IF(ICOUT.EQ.99) THEN
          IWU=IUOUT
       ELSE
          IWU=ICOUT
       END IF
 
-c Save option is zero.
+C Save option is zero so generate the report strings and write them
+C to the feedback area or file as required.
    16 SHTG=0.0
       SCLG=0.0
       VA=-1000.0
@@ -272,26 +278,28 @@ C In kWh:
         call edisp(IWU,outs)
       endif
       
-C Close output file after writing.
-      IF(IWU.NE.ICOUT)goto 17
+C Close output file after writing and exit.
+      if(IWU.NE.ICOUT)then
+        CALL ERPFREE(IWU,ISTAT)
+        RETURN
+      endif
 
       dok=.true.
       h(1)='The terse performance report is only written if you'
       h(2)='answer yes. '
       CALL ASKOK(' ','Write save option 0 data to file?',OK,dok,2)
-      IF(.NOT.OK)goto  11
+      IF(.NOT.OK) return
    14 IWU=IFIL+1
-      H(1)='Supply a file name for this report. '
-      CALL EASKS(LTMP,' Save option 0 data file name ?',
-     &   ' ',72,'report','save0 file name',IER,1)
-      CALL EFOPSEQ(IWU,LTMP,2,IER)
+      H(1)='Supply a file name for this report. The initial suggestion'
+      H(2)='is the same as the binary file - you should slightly'
+      H(3)='the file name. Note that the simulator creates a binary'
+      H(4)='which is incomplete and can be removed.'
+      LTMP=RFILE  ! start with zone results library file name
+      CALL EASKS(LTMP,'Save option 0 data file name (see help)?',
+     &   ' ',72,'report','save0 file name',IER,4)
+      CALL EFOPSEQ(IWU,LTMP,4,IER)
       IF(IER.LT.0)GOTO 14
-      goto 16
+      goto 16   ! loop back to generate the report
 
-   17 CALL ERPFREE(IWU,ISTAT)
-      goto 11
-
-c Output for save options 1,2 and 3.
-    2 CALL edisp(iuout,' Results analysis is done via module res.')
-   11 RETURN
+      RETURN
       END

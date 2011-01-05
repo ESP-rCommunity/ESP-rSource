@@ -518,8 +518,8 @@ C =2 with more than 3 day types
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      common/loadlabel/lodlabel(mcom,7)
-      CHARACTER*6 lodlabel
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng
@@ -2099,8 +2099,8 @@ C Applicable surfaces are the current exterior facing surfaces.
 
 C If there will be shading or insulation then the density of the
 C grid is found after the token *solar_grid.
-        CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
-        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
+        CALL EGETWI(OUTSTR,K,NOX(nsz),4,MOX,'F','opq grid X',IER)
+        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,MOZ,'F','opq grid Z',IER)
         goto 43
       elseif(WORD(1:5).eq.'*obs3')then
 
@@ -3267,7 +3267,7 @@ C *shad_calc,all_applic,20 # list of surfs
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
             elseif(iaplic(nsz,1).eq.0)then
               write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
-     &        '*shad_directive,list',nsurfcalc(nsz),
+     &        '*shad_calc,list',nsurfcalc(nsz),
      &        ' # list of surfs'
               write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))

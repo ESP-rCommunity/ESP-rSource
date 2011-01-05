@@ -1095,7 +1095,7 @@ C Trace.
         CALL EDISP(ITRU,'Details of obstruction blocks:')
         WRITE(OUTSTR,997)NOX(icomp),NOZ(icomp)
   997   FORMAT('Shading based on a grid of ',
-     &           I2,' by ',I2,' for surfaces.')
+     &           I3,' by ',I3,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
         WRITE(OUTSTR,9996)nbobs(icomp)
  9996   FORMAT('There are ',I2,
