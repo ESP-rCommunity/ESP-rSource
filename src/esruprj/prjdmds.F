@@ -1347,43 +1347,26 @@ C Calendar commons.
 C ************* dmdcheckcascount
 C checkcascount scans current P3 & P3TYPE commons and refreshes 
 C dmdloadcount() & dmdload24() in common blocks dmdloadcnt & dmdloadall
+C in schedule.h
+
 C Parameters:
-C   ier - set to 1 if there was a problem
+C   ier - set to 1 if there was a problem.
       subroutine dmdcheckcascount(ier)
 #include "building.h"
 #include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C dmdloadcount(gaintype,daytype) - nb of each gain type (whether
-C   absolute or W/m2).
-C dmdloadm2count(gaintype,daytype) - nb of each m2 gain types.
-C dmdloadmixed(gaintype,daytype) - if zero then nothing, if one
-C   then all non-zero are absolute, if two then all (non-zero) are in
-C   W/m2 or person/m2, if three then non-zero are mixed.
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
-     &               dmdloadmixed(7,MDTY)
-
-      common/dmdloadall/dmdload24(7,MDTY,2)
-      logical dmdload24
-
-C Keep track of how many non-zero positive and negative casual
-C gain types - in order to figure out value of loadmixed.
-      integer dmdloadnonzero,dmdloadm2nonzero
-      dimension dmdloadnonzero(7,10),dmdloadm2nonzero(7,10)
+      integer dmdloadnonzero   ! now many non-zero demand gain types
+      integer dmdloadm2nonzero ! now many m2 demand gain types
+      dimension dmdloadnonzero(MGTY,MDTY),dmdloadm2nonzero(MGTY,MDTY)
 
       integer ij,ik   ! for counters
       integer idtype  ! for the type of dispersed demand
       integer idindex ! for neagtive types of dispersed demand
 
 C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
-      do 40 ij=1,7
+      do 40 ij=1,MGTY
         do 41 ik=1,MDTY
           dmdloadcount(ij,ik)=0
           dmdloadm2count(ij,ik)=0
@@ -1398,11 +1381,11 @@ C Debug..
 C      write(6,*) 'Nb of daytype periods for dispersed demands...'
 
 C Loope through each possible day type (ik) and period (ij).
-      do 42 ik=1,10
+      do 42 ik=1,MDTY
         if(NBCAS(ik).gt.0)then
           do 43 ij=1,NBCAS(ik)
-            idtype=IBCGT(ik,ij)
-            if(idtype.gt.0.and.idtype.le.7)then
+            idtype=IBCGT(ik,ij)  ! find dispersed demand type
+            if(idtype.gt.0.and.idtype.le.MGTY)then
               dmdloadcount(idtype,ik)=dmdloadcount(idtype,ik)+1
               if(CBMGS(ik,ij).gt.0.0)then
                 dmdloadnonzero(idtype,ik)=dmdloadnonzero(idtype,ik)+1
@@ -1480,17 +1463,6 @@ C not extensive, but should catch most issues.
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
-     &               dmdloadmixed(7,MDTY)
-
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-      common/dmdloadall/dmdload24(7,MDTY,2)
-      logical dmdload24
 
 C logical problem set to true if daytype might not be sorted.
       logical problem

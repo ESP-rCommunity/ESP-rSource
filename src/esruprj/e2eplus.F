@@ -69,7 +69,8 @@ C =2 with more than 3 day types
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Peaks (loadcasp(mcom,7,1) sens)(loadcasp(mcom,7,2) latent) for each
 C possible gain type in each zone.
@@ -105,7 +106,6 @@ C Simulation parameter presets.
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
       CHARACTER LAPROB*72
-      CHARACTER*6 lodlabel
 
 C iprndx saves unique materials references,
 C thkiprndx holds the thickness of each unique materials reference,
