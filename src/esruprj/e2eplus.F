@@ -33,7 +33,7 @@ C ver (real) should be 1.4 or 2.0 or 3.0
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/G9/prec2/prec17/precz/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -101,16 +101,6 @@ C Simulation parameter presets.
      &               isfnmon(MSPS)
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
-C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
-      integer iparent   ! parent surface connection (zero is no parent)
-      integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray

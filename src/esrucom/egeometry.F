@@ -4542,16 +4542,6 @@ C be duplicates.
 #include "building.h"
 #include "geometry.h"
 
-C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
-      integer iparent   ! parent surface connection (zero is no parent)
-      integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
-
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)

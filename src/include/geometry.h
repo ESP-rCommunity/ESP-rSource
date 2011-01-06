@@ -121,6 +121,16 @@ C   eight is jamb at window or door
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
+C G9 holds information on children of a surface and its parent.
+      integer nbchild   ! how many children (up to 4) for each connection
+      integer nbgchild  ! how many grand children (up to 4) for each connection
+      integer ichild    ! list of children for each connection
+      integer igchild   ! list of grand children for each connection
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
+
 C Global coordinates for whole model (connection based).
       real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
       integer NZNVER ! number of vertices associated with each connection.
