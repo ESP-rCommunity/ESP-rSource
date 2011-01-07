@@ -41,7 +41,6 @@ C   AIM2_sumover_DT          Calculates average air flow rate from outdoors over
 C                            separate calculations are performed for furnace on and off cycles.
 C   AIM2_split2zones         Apportions infiltration to individual zones in model.
 C   AIM2_inf2attic           Set the infiltration rate for the attic zone.
-C   AIM2_inf2crawl           Set the infiltration rate for the crawl space zone.
 C   AIM2_airflow_to_conduct  Expresses infiltration air flow rate in terms of a conductance between
 C                            indoor-outdoor temperature difference.
 
@@ -129,6 +128,8 @@ C Declarations for local variables.
       REAL AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs,AIM2_Ps,
      &     AIM2_Qstack,AIM2_Fw,AIM2_Sw,AIM2_Pw,AIM2_Qwind,AIM2_natural,
      &     AIM2_unbal_mech,AIM2_total,AIM2_total_sum
+      
+      LOGICAL bNumsAreClose ! For close-to-zero comparisons
 
 C The AIM-2 model calculates the infiltration rate for the whole house but
 C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
@@ -153,7 +154,13 @@ C is performed only once for the time-step.
 C First determine whether the infiltration rate needs to be calculated separately
 C for furnace on and off cycles. If two calculations are necessary then establish
 C the weightings for the infiltration summation that will be performed later.
-        IF(furnON_flue_diam.eq.furnOFF_flue_diam)THEN
+C
+C Check to see if flue diameters are the same (within .1 mm)
+
+        call eClose (furnON_flue_diam,furnOFF_flue_diam, 0.1,
+     &               bNumsAreClose)
+
+        IF ( bNumsAreClose ) THEN
           num_inf_regimes = 1 ! Furnace operation does not affect infiltration.
         ELSE
           num_inf_regimes = 2             ! Infiltration affected by furnace operation.
@@ -210,9 +217,8 @@ C apportioned to individual zones.
         CALL AIM2_split2zones(AIM2_total)
 
 C The above calculated the infiltration to the occupied portion of the house. Now determine
-C the infiltration to the attic zone and crawl space zone (if they exist).
+C the infiltration to the attic zone (if it exists).
         CALL AIM2_inf2attic
-        CALL AIM2_inf2crawl
 
 C End of AIM-2 calculations for first zone in model. By this point the infiltration
 C air flow to each zone of the model has been calculated for the current time-step.
@@ -222,8 +228,6 @@ C For the zone called, assign the zone's calculated infiltration conductance
 C to ESP-r's standard infiltration variable, CVIF. CVIF is incorporated into the
 C zone's energy balance by ESP-r's normal approach, so no further
 C interactions with the zone matrix processor and solver are required.
-C Note that both AIM (natural) [/cetc/aim2_timestep.F] and CVS (forced) [/cetc/CentralVentSys.F]
-C infiltration exist and as such the values are summed in /esrubld/subsys.F.
       CALL AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)
 
 C Record the infiltration rate for use in creating the results file that will be passed
@@ -666,7 +670,7 @@ C  Calculate the wind flow factor depending on the foundation type
       IF ( foundation_type .ge.4 .and. foundation_type .le.6 ) THEN  ! Crawl spaces
       
 C       Calculate X_S according to Equation 24 from Walker & Wilson (1998)
-        X_S = (1-AIM2_R)/5. - 1.5*AIM2_Y
+        X_S = (1.0 - AIM2_R)/5.0 - 1.5*AIM2_Y
         
 C       Calculate the wind flow factor using Equation 20 from Walker & Wilson (1998)
         part1 = 1. - ( (AIM2_X-X_S)/(2.-AIM2_R) )**1.5  ! Term X_star
@@ -1061,11 +1065,11 @@ C differently in the future.
      &    ALLOCATED(AIM2_infil_to_zones)) THEN
 
         DO ICOMP=1,NCOMP                    ! Examine each zone in the model.
-	  AIM2_infil_to_zones(ICOMP) = 0.       ! Initialize infil to zone.
+          AIM2_infil_to_zones(ICOMP) = 0.   ! Initialize infil to zone.
           DO i=1,AIM2_num_zones_infil       ! Check if there is infil to this zone.
 c Note: Not including the crawl space BB
             if( AIM2_zone_infil(i) .eq. ICOMP .and. 
-     &          ICOMP .ne. AIM2_CrawlSpace_zone )then
+     &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
               AIM2_infil_to_zones(ICOMP) =                        ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
               exit                                                ! Processing of this zone complete.
@@ -1073,7 +1077,7 @@ c Note: Not including the crawl space BB
           end do
         END DO
       ELSE
-	CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
+      CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
       END IF
 
 
@@ -1103,10 +1107,9 @@ C    ZONE_infil_cond  The zone's infiltration, expressed in terms of
 C                     a conductance (W/K).
 C --------------------------------------------------------------------------------
 
-      SUBROUTINE AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)
-
+      SUBROUTINE AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)          
       IMPLICIT NONE
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
@@ -1157,8 +1160,8 @@ C OUTPUTS:
 C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `i'.
 C --------------------------------------------------------------------------------
 
-      SUBROUTINE AIM2_inf2attic
-
+      SUBROUTINE AIM2_inf2attic 
+      
       IMPLICIT NONE
 
 #include "building.h"
@@ -1184,67 +1187,14 @@ C treatment should be used in the future.
         attic_ach = 0.5
       
         IF (ALLOCATED(AIM2_infil_to_zones)) THEN
-           AIM2_infil_to_zones(AIM2_attic_zone) =
+          AIM2_infil_to_zones(AIM2_attic_zone) =
      &             attic_ach * VOL(AIM2_attic_zone) / 3600.
         ELSE
-	  CALL EDISP(IUOUT,
+           CALL EDISP(IUOUT,
      &         ' Warning: AIM2_infil_to_zones array not allocated (c)')
         END IF
       END IF
 
       RETURN
       END SUBROUTINE AIM2_inf2attic
-
-
-C ********************************************************************************
-C ******************************* AIM2_inf2crawl *********************************
-C Created by: Lukas Swan based on AIM2_inf2attic
-C Initial Creation Date: Feb 14, 2009
-C Copyright 2009: Dalhousie University/CETC/NRCan
-
-C The AIM-2 model calculates the infiltration rate for the occupied portion of the house.
-C The infiltration to the crawl zone is treated separately in this subroutine.
-
-C INPUTS:
-C    AIM2_CrawlSpace_zone   The zone number of the crawl space
-
-C OUTPUTS:
-C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `i'.
-C --------------------------------------------------------------------------------
-
-      SUBROUTINE AIM2_inf2crawl
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
-
-      IMPLICIT NONE
-
-#include "building.h"
-
-
-      REAL VOL	! volume of the zone
-      COMMON/PREC2/VOL(MCOM)
-
-
-C Declarations for local variables.
-      REAL crawl_ach
-
-C If user has specified that one of the zones in the model is an crawl space, then
-C set the infiltration rate for the crawl space. IF an crawl space has not been specified,
-C then AIM2_CrawlSpace_zone' will have defaulted to zero. In this case, no action
-C is taken here.
-      IF(AIM2_CrawlSpace_zone.gt.0)THEN
-
-C Assume the crawl space receives 0.5 ac/h of infiltration from the outdoors and no infiltration
-C from the occupied portion of the house.
-        crawl_ach = 0.5
-
-        AIM2_infil_to_zones(AIM2_CrawlSpace_zone) =
-     &             crawl_ach * VOL(AIM2_CrawlSpace_zone) / 3600.
-
-
-      END IF
-
-      RETURN
-      END SUBROUTINE AIM2_inf2crawl
-
       END MODULE AIM2_TIMESTEP

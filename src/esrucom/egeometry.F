@@ -597,7 +597,30 @@ C Interpret positional portion of the string.
 
 C Interpret the construction name.
         write(SMLCN(ISN),'(a)') loutstr(32:43)
-        if(havec24) write(SSMLCN(icn),'(a)') loutstr(32:43)
+
+C Check if there is a matching MLC name and which one it is.
+        ICF=-1
+        if(NMLC.gt.0)then                
+          lstr=lnblnk(SMLCN(ISN))
+          DO 20 IC=1,NMLC
+            if(lstr.lt.12)then
+              IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
+            else
+              IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
+            endif
+  20      CONTINUE
+        endif
+        if(havec24)then
+          write(SSMLCN(icn),'(a)') loutstr(32:43)
+          if(ICF.gt.0)then
+            ssthick(icn)=THKMLC(icf)
+
+C Debug.
+C            write(outs,'(a,2i3,f7.3)') 'set thick of ',icf,icn,
+C     &        ssthick(icn)
+C            call edisp(iuout,outs)
+          endif
+        endif
 
 C Now that we know the construction try and work out the optics.
         write(tmpsot,'(a)') loutstr(20:23)
@@ -610,22 +633,10 @@ C Now that we know the construction try and work out the optics.
         elseif(tmpsot(1:4).ne.'OPAQ'.and.tmpsot(1:4).ne.'CFC ')then
 
 C We need to find the name of the optical set for the construction.
-C If the construction database has been scanned then attempt to discover
+C If there is a matching MLC entry attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
           if(NMLC.gt.0)then                
-            ICF=-1
-            lstr=lnblnk(SMLCN(ISN))
-            DO 20 IC=1,NMLC
-              if(lstr.lt.12)then
-                IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
-              else
-                IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
-              endif
-  20        CONTINUE
-
-C Use logic similar to parsemlcdesc to find the optical name.
             if(ICF.gt.0)then
-            
               OPT=' '
               WRITE(OTF,'(A)') DESC(ICF)(15:18)
               IF(OTF.EQ.' ')OTF='OPAQ'
@@ -635,6 +646,7 @@ C Use logic similar to parsemlcdesc to find the optical name.
               ELSE
                 OPT='OPAQUE'
               ENDIF
+
             else
 
 C No matching database record. Use if file specifies 'TRAN', use that.
@@ -1685,7 +1697,31 @@ C Surface usage - two tokens.
 C Surface construction name, allow for spaces.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface construction',IER)
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
-            if(havec24) write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
+
+C Check if there is a matching MLC name find out which one it is.
+            ICF=-1
+            if(NMLC.gt.0)then                
+              lstr=lnblnk(SMLCN(NS))
+              DO 20 IC=1,NMLC
+                if(lstr.lt.12)then
+                  IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
+                else
+                  IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
+                endif
+  20          CONTINUE
+            endif
+
+            if(havec24)then
+              write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
+              if(ICF.gt.0)then
+                ssthick(icn)=THKMLC(icf)
+
+C Debug.
+C                write(outs,'(a,2i3,f7.2)') 'set thick of ',icf,icn,
+C     &            ssthick(icn)
+C                call edisp(iuout,outs)
+              endif
+            endif
 
 C Surface optics set name or OPAQ/TRAN, allow for spaces.
             CALL EGETP(LOUTSTR,K,WORD,'W','surface optics',IER)
@@ -1702,15 +1738,6 @@ C matches then name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
-                ICF=-1
-                lstr=lnblnk(SMLCN(NS))
-                DO 20 IC=1,NMLC
-                  if(lstr.lt.12)then
-                    IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
-                  else
-                    IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
-                  endif
-  20            CONTINUE
 
 C Use logic similar to parsemlcdesc to find the optical name within
 C the constructions database.
@@ -2038,8 +2065,8 @@ C be incremented to iobs() = 2.
 C Following the tag *block_start will be the grid for X and Z. If
 C there are insufficient tokens on line set both to 20.
           if(ND.gt.2)then
-            CALL EGETWI(LOUTSTR,K,NOX(icomp),4,20,'F','opq grid X',IER)
-            CALL EGETWI(LOUTSTR,K,NOZ(icomp),4,20,'F','opq grid Z',IER)
+            CALL EGETWI(LOUTSTR,K,NOX(icomp),4,MOX,'F','opq grid X',IER)
+            CALL EGETWI(LOUTSTR,K,NOZ(icomp),4,MOZ,'F','opq grid Z',IER)
           else
             NOX(icomp)=20
             NOZ(icomp)=20
@@ -2073,6 +2100,12 @@ C formats depending on whether the key is '*obs' or '*obs3'.
             BANGOB(icomp,nbo,2)=VX
             CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
             BANGOB(icomp,nbo,3)=VX
+            if(ND.ge.13)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2098,6 +2131,12 @@ C standard obstruction block when converted into a GB1 common block.
             nbo=nbobs(icomp)
             CALL EGETWI(LOUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
             CALL EGETWI(LOUTSTR,K,ival,6,6,'F','obs nb faces',IER)
+            if(ND.ge.6)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2185,6 +2224,12 @@ C standard obstruction block when converted into a GB1 common block.
             BANGOB(icomp,nbo,1)=VX
             BANGOB(icomp,nbo,2)=0.0   ! there is no 2nd rotation
             BANGOB(icomp,nbo,3)=0.0   ! there is no 3rd rotation
+            if(ND.ge.11)then  ! if enough items for opacity
+              CALL EGETWR(LOUTSTR,K,VX,0.,1.,'W','obs opacity',IER)
+              OPOB(icomp,nbo)=VX
+            else
+              OPOB(icomp,nbo)=1.0  ! set to opaque if not specified
+            endif
             CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2530,7 +2575,7 @@ C << using an array writing call instead >>
      &      (lstsfcalc(ICOMP,J),J=1,nsurfcalc(icomp))
         elseif(iaplic(icomp,1).eq.0)then
           write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
-     &      '*shad_directive,list',nsurfcalc(icomp),
+     &      '*shad_calc,list',nsurfcalc(icomp),
      &      ' # list of surfs'
           write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
      &      (lstsfcalc(ICOMP,J),J=1,nsurfcalc(icomp))
@@ -2650,23 +2695,24 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# block entities:'
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
-        write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
+        write(ifilg,'(2a,i3,i3,a)',IOSTAT=IOS,ERR=13) 
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
-            WRITE(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,9F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
      &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
-     &        BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+     &        OPOB(icomp,ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
-            WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &        '*obsp',' 8 6 ',BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+            WRITE(outs,'(2a,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obsp',' 8 6 ',OPOB(icomp,ib),BLOCKNAME(icomp,ib),
+     &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib,
      &        ' coords follow:'
 
@@ -2689,13 +2735,13 @@ C geometry file also write the NOX and NOZ values.
      &        outsd(1:lnblnk(outsd)),'  # 5-8 '
 
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
-            WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+            WRITE(outs,'(2a,7F9.3,F6.2,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &        BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
+     &        BANGOB(icomp,ib,1),OPOB(icomp,ib),BLOCKNAME(icomp,ib),
      &        BLOCKMAT(icomp,ib)
             call SDELIM(outs,outsd,'C',IW)
-            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+            write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
           endif
   89    continue
@@ -4003,7 +4049,11 @@ C   oriented) which has the same material. Zero denotes this does not
 C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
+
+      real bridgelen ! Length (m) of potential thermal bridges in each zone.
+                    ! See code below for what each means.
+      common/gbridge/bridgelen(MCOM,10)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -4014,7 +4064,13 @@ C   where a surface such as a floor has been subdivided)
       logical closeazi,closeelv,foundone,ok,dok,same
 
 C iwhich is local variable to sort most often referenced adjacent surf.
-      dimension iwhich(MV),iwhichs(MV),iwhichc(MV)
+      dimension iwhich(MV),iwhichs(MV)
+      real va,vb,pa,pb
+      dimension va(3),vb(3),pa(3),pb(3),vaa(3),vbb(3)
+      real ux,uy,uz  ! unit vector along the edge
+      real dista,distc
+C      real distb ! currently not used
+      logical closeux,closeuy,closeuz
 
       if(izone.ne.0.and.izone.le.NCOMP)then
         if(act.eq.'c')then
@@ -4024,6 +4080,11 @@ C relationships. Use strict test.
 C          call surrel('-',izone,ier)
           call surrel('s',izone,ier)
         endif
+
+C Zero the lengths of various thermal bridge type lengths.
+        do 644 ij=1,10
+          bridgelen(izone,ij)=0.0
+ 644    continue
 
         do 43 isurf=1,NZSUR(izone)
           icc=izstocn(izone,isurf)
@@ -4035,6 +4096,7 @@ C          call surrel('-',izone,ier)
             return
           endif
 
+C Clear assumptions.
           nbedgdup(icc)=0
 
 C Confirm whether there are any duplicate references to vertices
@@ -4058,8 +4120,11 @@ C duplicate edge is found also remember it.
               kee=JVN(isurf,n)
 
 C Debug.
-C              write(6,*) 'edges for conn ',icc,' are ',
-C     &          jes,jee,kes,kee
+              if(itrc.gt.1)then
+C                write(outs,'(a,i3,a,4i3)') 'edges for conn ',icc,
+C     &            ' are ',jes,jee,kes,kee
+C                call edisp(iuout,outs)
+              endif
 
               if(jes.EQ.kes.AND.jee.EQ.kee)then
                 nbedgdup(icc)=nbedgdup(icc)+2
@@ -4091,13 +4156,13 @@ C last vertext is reached point the end to the start point.
           do 46 ijj=1,MV
             iwhich(ijj)=0
             iwhichs(ijj)=0
-            iwhichc(ijj)=0
   46      continue
           list=NVER(isurf)
           nbedgshr(icc)=0
           do 42 i=1,list
             iedgshr(icc,i)=0
             imatshr(icc,i)=0
+            ibridgeshr(icc,i)=0 ! begin by assuming no bridge locations
             iwhich(i)=0
             j=JVN(isurf,i)
             if(i.lt.NVER(isurf))then
@@ -4123,10 +4188,184 @@ C If an edge matches, test if other surface is facing the same way.
                   kk=JVN(iosurf,1)
                 endif
                 if(j.eq.kk.and.k.eq.jj)then
+
 C Debug...
-                  if(itrc.gt.0)then
-C                    write(outs,*) 'edges for conns ',icc,' & ',icco,
+                  if(itrc.gt.1)then
+C                    write(outs,'(a,i3,a,i3,a,2i3,a,2i3)')
+C     &                'edges for conns ',icc,' & ',icco,
 C     &                ' are ',j,k,' & ',jj,kk
+C                    call edisp(iuout,outs)
+                  endif
+
+C Find length of the current edge.
+                  edgelen= crowxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k))
+
+C Tests for ibridgeshr (edges that might represent thermal bridges.
+                  if(ICT(icc).eq.0.and.ICT(icco).eq.0)then
+
+                    if(SSVFC(icc)(1:4).eq.'VERT'.and.(
+     &                 SSVFC(icco)(1:4).eq.'CEIL'.or.
+     &                 SSVFC(icco)(1:4).eq.'SLOP'))then
+
+C One is roof-wall so both surfaces must face the outside, first must
+C be roughly vertical and the other flat (up) or sloped.
+                      ibridgeshr(icc,i)=1
+                      bridgelen(izone,1)= bridgelen(izone,1)+edgelen
+
+                    elseif(SSVFC(icc)(1:4).eq.'VERT'.and.
+     &                     SSVFC(icco)(1:4).eq.'VERT')then
+
+C Test if azimuth are within two degrees. For the special case of the
+C difference between the two being ~360deg call it closeazi
+                      call eclose(SSPAZI(icc),SSPAZI(icco),2.0,closeazi)
+                      if(.NOT.closeazi)then
+                        zazi = abs(SSPAZI(icc)-SSPAZI(icco))
+                        call eclose(zazi,360.0,2.0,closeazi)
+                      endif
+                      if(closeazi)then
+
+C Find which of the unit vector components (ux uy uz) are near zero
+C in order to see if edge if vertical or horizontal.
+                        call uvxyz(X(j),Y(j),Z(j),X(k),Y(k),Z(k),
+     &                    ux,uy,uz)
+                        call eclose(ux,0.00,0.002,closeux)
+                        call eclose(uy,0.00,0.002,closeuy)
+                        call eclose(uz,0.00,0.002,closeuz)
+C Debug.
+C                        write(outs,*) ux,closeux,uy,closeuy,uz,closeuz
+C                        call edisp(iuout,outs)
+
+C Six is lintel above window or door so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly horizontal and above the
+C centre of the surface (and marked as a door or window)
+                        if(closeuz)then
+                          if(Z(j).gt.SSURCOG(icc,3))then
+                            if(ssparent(icc)(1:2).eq.'-')then
+                              continue
+                            else
+                              ibridgeshr(icc,i)=6
+                              bridgelen(izone,6)= bridgelen(izone,6)+
+     &                          edgelen
+                            endif
+
+C Seven is Sill below window so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly horizontal and below the
+C centre of the surface (and marked as a door or window)
+                          else
+                            if(ssparent(icc)(1:2).eq.'-')then
+                              continue
+                            else
+                              ibridgeshr(icc,i)=7
+                              bridgelen(izone,7)= bridgelen(izone,7)+
+     &                          edgelen
+                            endif
+                          endif
+                        endif
+
+C Eight is jamb at window or door so both surfaces must face
+C the outside and face the same direction and one must be the
+C parent and the edge must be roughly vertical (and marked as
+C a door or window)
+                        if(closeux.and.closeuy)then
+                          if(ssparent(icc)(1:2).eq.'-')then
+                            continue
+                          else
+                            ibridgeshr(icc,i)=8  ! is vertical
+                            bridgelen(izone,8)= bridgelen(izone,8)+
+     &                        edgelen
+                          endif
+                        endif
+                      else
+
+C Determin concave or convex between the two surfaces based on the distance
+C between points on the two surfaces and points a slight distance
+C away from the two surraces.
+                        PA(1)=SSURCOG(icc,1)  ! point on plane
+                        PA(2)=SSURCOG(icc,2)
+                        PA(3)=SSURCOG(icc,3)
+                        VA(1)=SSURVN(icc,1)   ! point 1m away
+                        VA(2)=SSURVN(icc,2)
+                        VA(3)=SSURVN(icc,3)
+
+C Use ratio calculation to get point 100mm away.
+                        r2 = 1.0 - 0.1
+                        r1 = 0.1
+                        vaa(1) = ((r2 * PA(1)) + (r1 * VA(1)))/1.0
+                        vaa(2) = ((r2 * PA(2)) + (r1 * VA(2)))/1.0
+                        vaa(3) = ((r2 * PA(3)) + (r1 * VA(3)))/1.0
+
+                        PB(1)=SSURCOG(icco,1)  ! point on plane
+                        PB(2)=SSURCOG(icco,2)
+                        PB(3)=SSURCOG(icco,3)
+                        VB(1)=SSURVN(icco,1)   ! point 1m away
+                        VB(2)=SSURVN(icco,2)
+                        VB(3)=SSURVN(icco,3)
+                        vbb(1) = ((r2 * PB(1)) + (r1 * VB(1)))/1.0
+                        vbb(2) = ((r2 * PB(2)) + (r1 * VB(2)))/1.0
+                        vbb(3) = ((r2 * PB(3)) + (r1 * VB(3)))/1.0
+                        dista = crow(PA,PB)  ! dist cog-to-cog
+C                        distb = crow(VA,VB)  ! dist offset-to-offset
+                        distc = crow(VAA,VBB)! dist slight offset-to-offset
+
+C Debug.
+C                        write(outs,'(9f7.2)') dista,distb,distc,
+C     &                    pa(1),va(1),vaa(1),pb(1),vb(1),vbb(1)
+C                        call edisp(iuout,outs)
+
+C If dista is greater than distc then concave.
+                        if(dista.lt.distc)then
+
+C Three is wall-wall (convex corner) so both must face the outside
+C and the angle between the surface normals is greater than zero.
+                          ibridgeshr(icc,i)=3
+                          bridgelen(izone,3)= bridgelen(izone,3)+
+     &                      edgelen
+                        else
+
+C Four is wall-wall (concave corner) so both must face the outside
+C and the angle between the surface normals less than zero
+                          ibridgeshr(icc,i)=4
+                          bridgelen(izone,4)= bridgelen(izone,4)+
+     &                      edgelen
+                        endif
+                      endif
+
+                    elseif(SSVFC(icc)(1:4).eq.'VERT'.and.
+     &                     SSVFC(icco)(1:4).eq.'FLOR')then
+
+C Five is wall-floor (not ground) so both surfaces must face the 
+C outside one roughly vertical and the other flat (down)
+                      ibridgeshr(icc,i)=5
+                      bridgelen(izone,5)= bridgelen(izone,5)+
+     &                  edgelen
+                    endif
+
+                  elseif(ICT(icc).eq.4.and.ICT(icco).eq.0)then
+                    if(SSVFC(icc)(1:4).eq.'FLOR'.and.
+     &                 SSVFC(icco)(1:4).eq.'VERT')then
+
+C Two is wall-ground floor so one surface must face outside and the
+C other must face the ground
+                      ibridgeshr(icc,i)=2
+                      bridgelen(izone,2)= bridgelen(izone,2)+
+     &                  edgelen
+                    endif
+                  endif
+
+C Debug.
+                  if(itrc.gt.1)then
+C                    write(outs,'(a,i3,a,2i3,2f6.1,2a,3f7.3)')
+C     &                'type for conns ',icc,' & ',icco,
+C     &                ibridgeshr(icc,i),SSPAZI(icc),SSPAZI(icco),
+C     &                ':',ssparent(icc),dista,distb,distc
+C                    call edisp(iuout,outs)
+C                    write(outs,'(a,8f7.2)') 'brl ',bridgelen(izone,1),
+C     &                bridgelen(izone,2),bridgelen(izone,3),
+C     &                bridgelen(izone,4),bridgelen(izone,5),
+C     &                bridgelen(izone,6),bridgelen(izone,7),
+C     &                bridgelen(izone,8)
 C                    call edisp(iuout,outs)
                   endif
 
@@ -4258,6 +4497,20 @@ C bother the user. If ibinval was set to zero then clear SSPARENT.
             endif
           endif
  43     continue
+
+C Report on likely thermal bridge lengths. Reduce the concave and
+C convex bridge lengths because they will have been counted from
+C the edges going in both directions.
+        bridgelen(izone,3)=bridgelen(izone,3)*0.5
+        bridgelen(izone,4)=bridgelen(izone,4)*0.5
+        if(itrc.ge.1)then
+          write(outs,'(a,9f7.2)') 'bridge len ',bridgelen(izone,1),
+     &      bridgelen(izone,2),bridgelen(izone,3),
+     &      bridgelen(izone,4),bridgelen(izone,5),
+     &      bridgelen(izone,6),bridgelen(izone,7),
+     &      bridgelen(izone,8),bridgelen(izone,9)
+          call edisp(iuout,outs)
+        endif
       endif
       return
       end

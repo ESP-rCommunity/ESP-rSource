@@ -143,6 +143,7 @@ C If YES, they must enter the basesimp parameters below.
           IF(IWHICH.EQ.1)THEN
             x=0
           ELSEIF(IWHICH.EQ.2)THEN
+            sfile=' '
             CALL browsefilelist('?','bsm','fil',sfile,snpfile,
      &              nfile,iier)
             IF(nfile.gt.0)THEN

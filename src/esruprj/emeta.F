@@ -518,8 +518,8 @@ C =2 with more than 3 day types
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      common/loadlabel/lodlabel(mcom,7)
-      CHARACTER*6 lodlabel
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng
@@ -1463,6 +1463,7 @@ C For each of the META specific arrays, clear values.
             BANGOB(iz,ibu,1) = 0.0
             BANGOB(iz,ibu,2) = 0.0
             BANGOB(iz,ibu,3) = 0.0
+            OPOB(iz,ibu) = 1.0
             BLOCKNAME(iz,ibu) = ' '
             LNBLOCKNAME(iz,ibu) = 0
             BLOCKMAT(iz,ibu) = ' '
@@ -1568,9 +1569,12 @@ C *action,new,boxer,single,/tmp/boxer
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
-          write(6,*)  's action ',actions,' root ',root
-          write(6,*)  's folder ',folder
-          write(6,*)  's mpath ',mpath
+          call isunix(unixok)
+          if(unixok)then
+            write(6,*)  's action ',actions,' root ',root
+            write(6,*)  's folder ',folder
+            write(6,*)  's mpath ',mpath
+          endif
         endif
         goto 43
       elseif(WORD(1:7).eq.'*zonpth')then
@@ -2095,12 +2099,13 @@ C Applicable surfaces are the current exterior facing surfaces.
 
 C If there will be shading or insulation then the density of the
 C grid is found after the token *solar_grid.
-        CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
-        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
+        CALL EGETWI(OUTSTR,K,NOX(nsz),4,MOX,'F','opq grid X',IER)
+        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,MOZ,'F','opq grid Z',IER)
         goto 43
       elseif(WORD(1:5).eq.'*obs3')then
 
 C A 3 rotation obstruction block to be associated with the current zone.
+C << how do we detect OPOB? >>
         nbobs(nsz)=nbobs(nsz)+1
         nob=nbobs(nsz)
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
@@ -2138,6 +2143,7 @@ C followed by number of faces and the name and material.
 C The 2nd line has the first 4 coordinates and the 3rd line has the
 C next 4 coordinates. The surface and edge ordering is as in a
 C standard obstruction block when converted into a GB1 common block.
+C << how do we detect OPOB? >>
         nbobs(nsz)=nbobs(nsz)+1
         nob=nbobs(nsz)
         CALL EGETWI(OUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
@@ -2211,6 +2217,7 @@ C standard obstruction block when converted into a GB1 common block.
       elseif(WORD(1:5).eq.'*obs ')then
 
 C An obstruction block to be associated with the current zone.
+C << how do we detect OPOB? >>
         nbobs(nsz)=nbobs(nsz)+1
         nob=nbobs(nsz)
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
@@ -3260,7 +3267,7 @@ C *shad_calc,all_applic,20 # list of surfs
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
             elseif(iaplic(nsz,1).eq.0)then
               write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
-     &        '*shad_directive,list',nsurfcalc(nsz),
+     &        '*shad_calc,list',nsurfcalc(nsz),
      &        ' # list of surfs'
               write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
      &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))

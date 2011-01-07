@@ -88,7 +88,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
 C Project log file, journal on/off, unit number, cmd, file name.
-      common/LOG/LPRJLG
+      common/LLOG/LPRJLG
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -114,9 +114,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
-
-C Radiance RIF file.
-      common/radcfg/LRADCF
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
@@ -164,7 +161,7 @@ C      character outs248*248
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
-      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72
+      character ctldoc*248,lctlf*72,ETEXT*82
       character journcmd*20,jfile*72,tfile*72,cjfile*72
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
@@ -527,6 +524,8 @@ C Temporal information on channel IFIL+7.
 
 C Special materials/miscel component database.
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9

@@ -277,9 +277,10 @@ C confirm whether it should be overwritten. Open can be local or remote.
         WRITE(IAF,'(A)',IOSTAT=ISTAT,ERR=1003)'*CLIMATE'
 
 C Create a header section with site name, period etc.
-        WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
+        if(IDNGH.eq.0)then
+          WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
      &            LASCI(1:lnblnk(LASCI))
-  30    FORMAT('# ascii climate file from ',a,' binary db,',/,
+  30      FORMAT('# ascii climate file from ',a,' binary db,',/,
      &    '# defined in: ',a,/,
      &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
      &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
@@ -287,7 +288,18 @@ C Create a header section with site name, period etc.
      &    '# col 4: Prevailing wind speed           (Tenths m/s) ',/,
      &    '# col 5: Wind direction     (clockwise deg from north) ',/,
      &    '# col 6: Relative humidity               (Percent)')
-
+        else
+          WRITE(IAF,31,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
+     &            LASCI(1:lnblnk(LASCI))
+  31      FORMAT('# ascii climate file from ',a,' binary db,',/,
+     &    '# defined in: ',a,/,
+     &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
+     &    '# col 2: External dry bulb temperature   (Tenths DEG.C)',/,
+     &    '# col 3: Global horizontal solar intensity   (W/m**2)',/,
+     &    '# col 4: Prevailing wind speed           (Tenths m/s) ',/,
+     &    '# col 5: Wind direction     (clockwise deg from north) ',/,
+     &    '# col 6: Relative humidity               (Percent)')
+        endif
         WRITE(IAF,'(A,A)',IOSTAT=ISTAT,ERR=1003)CLMLOC,'  # site name'
         outs=' '
         WRITE(outs,'(I6,2F8.2,I4)',IOSTAT=ISTAT,ERR=1002)IYEAR,CLAT,
@@ -718,7 +730,7 @@ C Read 24 hours of dry bulb temperature and assign to ICLM.
  243      continue
 
 C Debug.
-          write(*,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
+C          write(*,*) 'db t tenths degC ',ICLM(1,2),ICLM(2,2),ICLM(3,2)
 
 C Read 24 hours of humidity and assign to ICLM.
           do 246 ih=1,24
@@ -727,7 +739,7 @@ C Read 24 hours of humidity and assign to ICLM.
  246      continue
 
 C Debug.
-          write(*,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
+C          write(*,*) 'RH % ',ICLM(1,6),ICLM(2,6),ICLM(3,6)
 
 C Read 24 hours of wind direction, decode and assign to IDIR.
 C         02=22, 05=45, 07=67, 09=90, 11=112, 14=135,
@@ -776,7 +788,7 @@ C         27=270, 29=292, 27=270, 29=292, 32=315, 34=337, 36=0
  244      continue
 
 C Debug.
-          write(*,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
+C          write(*,*) 'wind dir deg ',ICLM(1,5),ICLM(2,5),ICLM(3,5)
 
 C Read 24 hours of wind velocity and assign to ICLM.
           do 245 ih=1,24
@@ -785,7 +797,7 @@ C Read 24 hours of wind velocity and assign to ICLM.
  245      continue
 
 C Debug.
-          write(*,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
+C          write(*,*) 'wind vel tenths ms ',ICLM(1,4),ICLM(2,4),ICLM(3,4)
 
 C Clear solar values.
           idif=0

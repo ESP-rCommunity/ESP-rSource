@@ -48,7 +48,6 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
 #include "SOFC.h"
-#include "UserSimulationToggles.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -61,13 +60,6 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       INTEGER :: ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
-      COMMON/SOLOFF/ISOLAR
-      INTEGER ISOLAR
-      
-      COMMON/GR1D04/GAM,RGAM
-      REAL GAM, RGAM
-      
       COMMON/SAVE/ISAVE
       INTEGER :: isave
       COMMON/SAVE1/LSAVE
@@ -133,14 +125,9 @@ C Are uncertainties defined?
         call SENRNS(IER)
         if (IER.eq.1) return
       endif
-      
 
-C Reimpose any user-specified simulation toggles as needed 
-      if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
-      if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
-      print*, ".... ", bUserSolar, iUserSolar
 C Run the necessary number of simulations.
-      do 100, I=1,NRSIM 
+      do 100, I=1,NRSIM
         ISIM=I
 
 C Write info to sensitivity trace file.
@@ -163,7 +150,7 @@ C Re-scan the model description files silently.
           call MZCSTR(IER)
           write (36,*) '** Edits for changes in set:',ISIM,NTSTEP
         endif
-        
+
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
 
@@ -380,7 +367,6 @@ C based on time-step evaluation; if mixed then impl/expl = 0.5
 
 C Default solar treatment, solar ON, Perez model.
       ISOLAR=0
-      iUserSolar = iSolar
       ISKYFL=3
 
 C Default mass flow simulation iteration parameters are set in MFLWSU
@@ -455,7 +441,11 @@ c save level 5
         ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
-      ITEM(6)=   'm Monitor state variables    '
+      if(ISAVE.eq.0)then
+        ITEM(6)= '  Monitor (not available)'
+      else
+        ITEM(6)= 'm Monitor state variables    '
+      endif
       ITEM(7)=   't Invoke time-step controller'
       ITEM(8)=   's Invoke simulation          '
       ITEM(9)=   '                             '
@@ -476,26 +466,29 @@ C Help text for this menu.
       H(4) =' b: specify the simulation period.'
       H(5) =' '
       H(6) =' *: Options which dictate what is saved in the library:'
-      H(7) ='     SAVE >>0 no results saved (summary only)'
-      H(8) ='     SAVE >>1 minimum save option'
-      H(9) ='     SAVE >>2 moderate save option - the default'
-      H(10)='     SAVE >>3 maximum save option'
-      H(11)='     SAVE >>4 surface energy balance save option.'
+      H(7) ='     SAVE >>0 summary text report only (see option o)'
+      H(8) ='     SAVE >>1 minimum data collection (for small files)'
+      H(9) ='     SAVE >>2 moderate data collection'
+      H(10)='     SAVE >>3 as save 2 plus all node temperatures'
+      H(11)='     SAVE >>4 as save 2 plus surface energy balance'
 c Save level 5
-      H(12)='     SAVE >>5 Hot3000 output only'
-      H(13)='     SAVE >>6  no results saved (summary only in '
-      H(14)='     database freindly format)'      
-      H(15)=' m: monitor plots zone temperatures, plant flux and'
-      H(16)='    plant state variables as the simulation progresses.'
-      H(17)=' '
-      H(18)=' t: select zone-side time-step control option.'
-      H(19)=' s: invoke simulation. '
-      H(20)=' <: deletes the last saved simulation result set. '
-      H(21)=' g: sets simulation parameter toggles '
-      H(22)=' '
-      H(23)=' i: outputs the current simulation period and'
-      H(24)='    information on the saved result set.'
-      H(25)=' o: gives summary results if SAVE O option selected.'
+      H(12)='     SAVE >>5 Hot3000 output (XML) based on directives'
+      H(13)='              in input.xml file in model cfg folder'
+      H(14)='     SAVE >>6  no results saved (summary only in '
+      H(15)='               database freindly text format)'      
+      H(16)=' m: monitor plots zone temperatures, plant flux and'
+      H(17)='    plant state variables as the simulation progresses.'
+      H(18)=' '
+      H(19)=' t: select zone-side time-step control option.'
+      H(20)=' s: invoke simulation. '
+      H(21)=' <: deletes the last saved simulation result set. '
+      H(22)=' g: sets simulation parameter toggles '
+      H(23)=' '
+      H(24)=' i: outputs the current simulation period and'
+      H(25)='    information on the saved result set.'
+      H(26)=' o: gives summary results if SAVE O option selected'
+      H(27)='    with option to write to a text file after the'
+      H(28)='    simulation has completed.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -526,7 +519,7 @@ C Set simulation period.
 C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
-C Save Level 5
+C Save Level reset to zero if toggle set would be greater than 6.
          if(ISAVE.gt.6)ISAVE=0
       elseif(ino.eq.6)then
 
@@ -592,9 +585,9 @@ c calculation approaches.
         call tstamp('>','SIM: enter simulate')
         call SIMCON
         if(isave.eq.6)then
-
-C Output from 6 save.
-          call MZOUT6
+          call MZOUT6  ! Output from 6 save
+        elseif(isave.eq.0)then
+          call edisp(iuout,'To see save zero output select option o')
         endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
@@ -654,12 +647,12 @@ C Info on current parameters.
         CALL MZINFO(IUOUT)
       elseif(ino.eq.14)then
 
-C Output from 0 save.
+C Output from 0 save (with option to write data to file).
         CALL MZOUTP
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',28,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.
@@ -681,7 +674,6 @@ C Set simulation toggles.
 #include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
-#include "UserSimulationToggles.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -771,7 +763,7 @@ C Make up strings for the current set of toggles.
         ITEMG(1)=   'a Timestep averaging >> OFF             '
       endif
       WRITE(ITEMG(2),'(A,F5.2)')
-     &              'b Bldng eqns implicitness degree: ',fUserGAM
+     &              'b Bldng eqns implicitness degree: ',GAM
       if(IMPEXP.eq.1)then
         ITEMG(3)=   'c Plant equations    >> implicit        '
       elseif(IMPEXP.eq.2)then
@@ -781,9 +773,9 @@ C Make up strings for the current set of toggles.
       elseif(IMPEXP.eq.4)then
         ITEMG(3)=   'c Plant equations    >> steady state    '
       endif
-      if(iUserSolar.eq.0)then
+      if(ISOLAR.eq.0)then
         ITEMG(4)=   'd Solar calculations >> processing on   '
-      elseif(iUserSolar.eq.1)then
+      elseif(ISOLAR.eq.1)then
         ITEMG(4)=   'd Solar calculations >> processing off  '
       endif
       if(ISKYFL.eq.-1)then
@@ -922,11 +914,8 @@ C Averaging on/off.
       elseif(INO.eq.2)then
 
 C Zone side equations implicitness degree.
-        
-        CALL EASKR(fUserGAM,
-     &         ' ',' Zone side equations implicitness degree: ',
+        CALL EASKR(GAM,' ',' Zone side equations implicitness degree: ',
      &         0.,'F',1.,'F',0.5,' implicitness degree',IER,0)
-        bUserGAM = .true. 
         call tstamp('>','SIM: edit implicitness degree')
       elseif(INO.eq.3)then
 
@@ -970,10 +959,8 @@ C Solar ON/OFF option.
         H(2) ='zone a toggle switch on the simulator solar '
         H(3) ='processing algorithms has been installed. If '
         H(4) ='required solar processing can be switched off. '
-        CALL EASKI(iUserSolar,' ',
-     &    ' Solar processing  0) On,  1) Off ? ',
+        CALL EASKI(ISOLAR,' ',' Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,4)
-        bUserSolar = .true.
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
       elseif(INO.eq.5)then
@@ -2109,6 +2096,7 @@ C If appropriate, output special features invoked.
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
+
 C Zone equations implicitness degree.
       IF(ABS(GAM-0.5).GT.1.E-4)THEN
         WRITE(OUTS,'(A,F5.2)')

@@ -619,9 +619,8 @@ C espriou.h provides currentfile.
      &     bWindowControlFlag,
      &     iWindowControlZone,
      &     bWindowsAreOpen,
-     &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint,
-     &     fWndmMultAIM
+     &    fDeltaTInttoExt,
+     &     fWindowLowSetpoint
 
       REAL fWindowSetpoint
       REAL fACSetPoint
@@ -630,10 +629,6 @@ C espriou.h provides currentfile.
       LOGICAL bWindowsAreOpen
       REAL  fDeltaTInttoExt
       REAL fWindowLowSetpoint
-      
-      !-LUKAS: Variable added.
-      REAL fWndmMultAIM
-      
       CHARACTER WORD*128
 
 C Declarations for local variables and variables passed in common blocks.
@@ -1175,7 +1170,7 @@ c The crawl space zone is not part of the living space
         END DO
         ELSE
           CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
-      END IF
+	END IF
 
       RETURN
       END SUBROUTINE AIM2_HOUSE_VOLUME
@@ -1691,11 +1686,9 @@ C its fuel.
 
         CASE DEFAULT
           call edisp(IUOUT,' Warning in AIM2_flue_size.')
-          call edisp(IUOUT,'   AIM2_flue_size expects a .hvac '//
-     &     'file for flue on/off.')
-          call edisp(IUOUT,'   This file was likely not supplied.')
-          
-          
+          call edisp(IUOUT,' Ignore this warning if building is heated')
+          call edisp(IUOUT,' by an explicit plant network.')
+
       END SELECT
 
       RETURN

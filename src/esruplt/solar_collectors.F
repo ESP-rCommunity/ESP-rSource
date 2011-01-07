@@ -1317,14 +1317,13 @@ C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
       REAL FUNCTION 
-     &GLYCOL_WATER_COND(GLYCOL_VOL_FRACTION,TEMP,DENSITY)
+     &GLYCOL_WATER_COND(GLYCOL_VOL_FRACTION,TEMP)
 
       REAL GLYCOL_VOL_FRACTION     ! Volume fraction in the mixture (%)
       REAL TEMP                    ! Temperature of mixture (Deg C)
       REAL TEMP_DEGK               ! Temperature (Deg K)
-      REAL DENSITY                 ! Density of glycol-water mixture (kg/m3)
-      REAL FUNCOND                 ! Function for determining dynamic viscosity of
-                                   ! glycol-water mixture (W/m-K)
+      REAL DENSITY                 ! Density of water (kg/m3)
+      REAL FUNCOND                 ! Function for determining thermal conductivity of water
 
       LOGICAL close0,close50
 
@@ -1336,6 +1335,7 @@ C---- Check whether volume fraction is 0 or 50%
 
 C---- This is the function for pure water      
         TEMP_DEGK = TEMP + 273.15
+        DENSITY = RHOFLD(3,TEMP)
         GLYCOL_WATER_COND = FUNCOND(TEMP_DEGK,DENSITY)
 
       ELSE
@@ -1349,4 +1349,56 @@ C---- Following correlation is for 50% vol. glycol in mixture
 
       RETURN
 
+      END
+
+C===================== GLYCOL_WATER_THERMEXP ===========================
+C     Created by: Didier Thevenard
+C     Created on: June 2009
+C     Copyright:  CETC 2009
+C-----------------------------------------------------------------------
+C     ABSTRACT:
+C     This function returns coefficient of thermal expansion (beta)
+C     for glycol-water mixture for a given volume fraction of glycol 
+C     and mixture temperature
+C     Note: Only glycol fractions of 0 and 50% are currently supported
+C
+C References:
+C Calculated from first principles, beta = -(1/Rho)·(dRho/dT) where Rho 
+C is the density and T the temperature. See Incropera and DeWitt, 
+C Fundamentals of Heat and Mass Transfer, 3rd edition, John Wiley & Sons,
+C 1990, eq. 9.4.
+C=======================================================================
+
+      REAL FUNCTION 
+     &     GLYCOL_WATER_THERMEXP(GLYCOL_VOL_FRACTION,TEMP)
+
+      IMPLICIT NONE
+
+      REAL GLYCOL_VOL_FRACTION       ! Volume fraction of glycol in mixture (%)
+      REAL TEMP                      ! Temperature of mixture (Deg C)
+      REAL GLYCOL_WATER_DENSITY      ! Function for density of water glycol (kg/m3)
+
+      REAL DELTATEMP
+      PARAMETER (DELTATEMP=1.)       ! Parameter for numerical derivation
+
+      REAL VTEMP                     ! Temperature constrained between 0 and 100 °C
+      REAL TEMPINF                   ! Lower bound for numerical derivation
+      REAL TEMPSUP                   ! Upper bound for numerical derivation
+
+C     Define lower and upper values for numerical derivation
+C     The values are constrained between 0. and 100 °C
+
+      VTEMP   = MIN(MAX(TEMP, 0.), 100.)
+      TEMPINF = MAX(VTEMP-DELTATEMP,0.)
+      TEMPSUP = MIN(VTEMP+DELTATEMP, 100.)
+
+C     Numerical derivation
+
+      GLYCOL_WATER_THERMEXP =
+     &  ( GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,TEMPSUP) -
+     &    GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,TEMPINF) ) /
+     &  ( TEMPINF - TEMPSUP) /
+     &  GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,VTEMP) 
+
+      RETURN
       END

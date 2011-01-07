@@ -416,99 +416,10 @@ facilities improved. To guarantee the reliability of ESP-r
 results, a quality assurance procedure is performed prior
 to each release.
 
-The quality assurance procedure is designed to assure
-that no differences in ESP-r functionality or simulation
-results are introduced between releases. If modifications
-to ESP-r have caused differences in simulation results,
-the release testing assures that the differences are 
-attributable to the changes introduced by the developer, 
-and not the result of an unintended bug.
+A comprehensive discussion of ESP-r prelease testing and 
+results for version 11.10 is available online:
 
-The quality assurance procedure contains two principle
-components:
-
-  a) Regression testing, which compares the predictions
-     from two successive versions of ESP-r and determines
-     if differences exist in the results.
-
-  b) Cross-platform testing, which compares the predictions
-     from the most recent version of ESP-r running on
-     different platforms and compilers, and determines
-     if differences exist in the results.
-
-Since ESP-r is most commonly used on Linux systems and
-has proven robust on this platform, regression testing is
-performed on linux systems.  When possible, cross-platform
-testing is performed using each of the other supported
-platforms (Solaris, Cygwin, MinGW and OS X). However,
-limited access to these platforms and the greater variety
-of configurations exhibited by these systems limits the
-amount of testing that can be performed, and ESP-r may
-not install or function correctly on some machines.
-
-The following table summarizes the most recent test results
-on the stability of ESP-r Release 11.9 on various compilers:
-
-                 Testing for ESP-r Release 11.9
-      (2010-06-25, svn revision r5445 on pre-release_patches branch)
-      
-------------------------------------------------------------------------
-Compiler          Status        Notes 
-........................................................................
-GCC   3.X         Obsolete      GCC3 was depreciated in release 11.6, and we now
-                                regard it as obsolete. NRCan no longer tests 
-                                ESP-r with GCC3, and recommends any developers
-                                still using GCC3 move to GCC4. 
-                        
-      4.1.2       Supported     Formerly the reference compiler, GCC 4.1.2 builds
-                                remain stable, and continue to show good agreement
-                                with the Intel compiler (v 10.0). Version 4.1.2 
-                                also agrees well with more recent versions of 
-                                GCC4 (4.3.2 and 4.4.1). 
-                        
-      4.2.X       Unsupported   We observed substantial instability when using 
-                                GCC 4.2, and the GCC community regarded this 
-                                release as less robust than the 4.1 version. 
-                                We have not undertaken comprehensive testing 
-                                with GCC 4.2, and recommend developers use more
-                                recent versions of the GCC 4 compiler.
-                          
-      4.3.2       Reference     Version 4.3.2 has proven robust and its results
-                                agree well very well with the previous reference
-                                compiler (4.1.2), as well as with gcc 4.4.1 and 
-                                Intel v 10. Given the wide availability of GCC4.3.2,
-                                we recommend designating it as the reference compiler
-                                for ESP-r release 11.9. 
-                          
-      4.4.1       Supported     Version 4.4.1 also incorporates enhanced exception 
-                                handling. When enabled, bps reports fatal divide-by-zero
-                                errors, but preliminary investigation of these errors 
-                                suggests they reside in low-level GNU libraries and not
-                                in ESP-r related code. Thus, the utility of these 
-                                improvements remains to be seen.
-                          
-      4.5.X       Unsupported   GNU has designated GCC 4.5.0 as stable, but it is not
-                                yet available on our test systems (ubuntu & gentoo). 
-                                It remains unsupported for this test cycle. 
-
-Intel 10.0.032    Supported     Version 10 of the Intel compiler continues to be robust
-                                as long as the default optimizations (-O2) are suppressed.
-                                One test case (bld_hc_ISO15099) continues to produce small,
-                                but non trivial differences for unknown reasons. 
-
-      11.1.072    Beta          Version 11 of ifort exhibits trace differences from version
-                                10 over many test cases, enhanced floating point exception
-                                handling. When run with this exception handling enabled,
-                                this bps produces fatal errors on models not previously
-                                known to cause problems. These errors will be investigated
-                                in the next release cycle. 
-
-SUN   Std. 12     Unsupported   ORACLE now offers the SUN C, C++ and Fortran compilers free.
-                                We have not tested ESP-r with these compilers, but plant
-                                to explore their use in the next test cycle. 
-                            
-Complete discussion of these results is provided on the ESP-r wiki: 
-http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.9
+http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.10
 
 ===========================================================
 11. SUPPORT

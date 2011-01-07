@@ -538,9 +538,7 @@ C Pop up the help text.
 
 C Error.
  901  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
-      endif
+      if(unixok)write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
       return
      
       END
@@ -1547,8 +1545,7 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      common/LOG/LPRJLG
-      common/radcfg/LRADCF
+      common/LLOG/LPRJLG
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
@@ -1612,7 +1609,7 @@ C The string buffer doit is only used within ifdef code.
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
-      character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
+      character ctldoc*248,LCTLF*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
       character fs*1
       character LTMPFL*72

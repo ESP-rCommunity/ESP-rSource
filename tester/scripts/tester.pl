@@ -494,6 +494,8 @@ my @Env_Paths = split /:|;/, "./;".$ENV{PATH};
 # add empty array location to allow absolute paths to be specified too!
 push @Env_Paths, $gTest_paths{'master'};
 push @Env_Paths, "";
+push @Env_Paths, " ";
+
 #-------------------------------------------------------------------
 # Set default options
 #-------------------------------------------------------------------
@@ -610,7 +612,7 @@ $gTolerance{"relative"}        = $gTolerance{"%"};
 
 # dump text, if no arguement given
 if (!@ARGV){
-  system("echo \"$Help_msg\" ");
+  print $Help_msg;
   die;
 }
 
@@ -665,7 +667,7 @@ foreach $arg (@processed_args){
   {
     if ( $arg =~/^--help/ ){
       # Dump help messages and quit.
-      system("echo \"$Help_msg\" ");
+      print $Help_msg;
       die;
       last SWITCH;
     }

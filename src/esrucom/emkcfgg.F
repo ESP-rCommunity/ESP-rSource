@@ -79,7 +79,7 @@ C Plant network.
       INTEGER :: ifpnf
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -99,9 +99,6 @@ C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       REAL :: angi,EYEMI,VIEWMI
       INTEGER :: initvt
-
-C Radiance scene file.
-      common/radcfg/LRADCF
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
@@ -251,7 +248,6 @@ C Generic databases from esprdbfile.h.
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72

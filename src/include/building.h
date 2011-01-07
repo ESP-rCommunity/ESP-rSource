@@ -47,9 +47,9 @@ C Glazing.
       PARAMETER (MGOPT=90)	!- Set size in optics database.
 
 C Shading/insolation.
-      PARAMETER (MB=80)		!- Site obstruction blocks.
-      PARAMETER (MOX=50)	!- Grid lines in x-direction.
-      PARAMETER (MOZ=50)	!- Grid lines in z-direction.
+      PARAMETER (MB=180)	!- Site obstruction blocks.
+      PARAMETER (MOX=120)	!- Grid lines in x-direction.
+      PARAMETER (MOZ=120)	!- Grid lines in z-direction.
       PARAMETER (MISUR=10)	!- Surfaces insolated from one source.
       PARAMETER (MBP=8)		!- TMC blind control periods.
 
@@ -97,7 +97,7 @@ C Simulation control.
       PARAMETER (MTRACE=60)	!- Trace parameters.
       PARAMETER (MTMS=1440)
       PARAMETER (MTS=1440)
-      PARAMETER (MGRDP=10)	!- Ground temperature profiles.
+      PARAMETER (MGRDP=43)	!- Ground temperature profiles.
 
 C Time-step control.
       PARAMETER (MCVT1=6)

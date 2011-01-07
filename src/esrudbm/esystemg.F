@@ -232,7 +232,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -313,9 +313,6 @@ C ICPCON set to one if there is a CPCALC definition.
      &              sbh,pad,wvpe
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
-
-C Radiance scenes file.
-      common/radcfg/LRADCF
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -477,7 +474,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
-      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15
@@ -2860,7 +2856,7 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
+C      write(6,*) file
       if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
@@ -2871,8 +2867,8 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       endif
 
       return

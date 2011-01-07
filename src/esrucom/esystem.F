@@ -183,10 +183,8 @@ C espriou.h provides currentfile and defdbfl.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
-#include "UserSimulationToggles.h"
-
       INTEGER, PARAMETER :: MSTMC=20
-     
+      
       integer lnblnk  ! function definition
 
 C Parameters
@@ -280,7 +278,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -360,9 +358,6 @@ C ICPCON set to one if there is a CPCALC definition.
      &              sbh,pad,wvpe
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
-
-C Radiance scenes file.
-      common/radcfg/LRADCF
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -528,7 +523,6 @@ C Simulation parameters
       CHARACTER WORD*20,NODID*12,CXSTR*78
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character WORD2*20,msgl2*48
-      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72
@@ -572,15 +566,6 @@ C Simulation parameters
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
-C Flags & storage for parsing *sim-toggle tags
-      logical bError
-      integer iWordCount
-      integer iEGetArrW
-      character*248 cLnWords(124)
-C Function references used to parse *sim-toggle tags.      
-      real fCtoR_err 
-      logical bStringsMatch
-     
       newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
@@ -605,17 +590,12 @@ C Note: escdef must come after scan of .esprc file.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
-      LSBEM =DSBEM  ! assign default SBEM db
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
-
 
 C Clear the model common blocks.
       call clrprb
 
-C Initialize simulation toggle flags 
-      bUserGAM = .false.       
-      bUserSolar = .false. 
-      
       LUALF='UNKNOWN'
       bidirfile='UNKNOWN'
       CALENAME='UNKNOWN'
@@ -919,6 +899,7 @@ C so LSTRIPC and LOUTSTR are used.
   44  continue
       lndbp=lnblnk(standarddbpath)
       call isunix(unixok)
+
       CALL LSTRIPC(IUC,LOUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
@@ -1656,7 +1637,7 @@ C Radiance scene file.
 
 C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
-        ISBEM=1
+        ISBEM=2  ! to signal we have NCM description
         IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
@@ -1679,58 +1660,8 @@ C Flag to check if UK NCM stripped model
 C Non-linear thermophysical properties configuration file.
         INTHPS=.TRUE.
         CALL EGETRM(LOUTSTR,K,LNLTHP,'W','non-linear prop',IER)
-
-
-C Simulation presets: Optionally parameters normally hidden in the password-
-C protected simulation toggles directory.
-      elseif ( loutstr(1:11).eq. '*sim-toggle' ) then
-        
-C Count number of words on this line. Should be three:
-C         *sim-toggle KEYWORD VALUE    
-        iWordCount = iEGetArrW ( loutstr, cLnWords )
-        
-        bError = .false. 
-        
-        RightWordCount: if ( iWordCount == 3 ) then 
-C Matck keyword against known list        
-          
-          MatchKeywords: 
-     &    if ( bStringsMatch(cLnWords(2),'bld-soln-implicitness')) then
-C Token describes building implicitness-explicitness value.             
-            bUserGAM = .true. 
-            fUserGAM = fCtoR_err( cLnWords(3),
-     &                           'Building solution implicitness',
-     &                           bError ) 
-            if ( fUserGAM < 0. .or. fUserGAM > 1. ) bError = .true. 
-            print*, 'READ: ',fUserGAM      
-C Token describes flag for solar processing
-          elseif ( 
-     &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
-     
-             bUserSolar = .true. 
-             
-             if ( bStringsMatch(cLnWords(3),'enabled' )) iUserSolar = 0
-             if ( bStringsMatch(cLnWords(3),'disabled')) iUserSolar = 1
-                          
-          endif MatchKeywords
-        
-        endif RightWordCount
-        
-        SimToggleError: if ( bError ) then 
-          
-          if ( .not. bSilent ) then 
-            call usrmsg(
-     &           ' Could not parse simulation toggle ',outstr,'W')
-          else 
-            ier=1 
-            return
-          endif 
-          
-        endif SimToggleError   
-        
       elseif(WORD(1:4).eq.'*g1d')then
-  
-      
+
 C Building 1D node distribution.
         IGR1D=.TRUE.
         CALL EGETRM(LOUTSTR,K,LGRD1D,'W','bldng 1D gridding',IER)
@@ -2022,8 +1953,6 @@ C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
         LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
-        
-      
       elseif ( .not. bSilent ) then
 
         call usrmsg(' Unknown entry format... ',outstr,'W')
@@ -2041,10 +1970,6 @@ C Project log file, read and then go on to fabric/plant description.
         endif
 
       else
-
-        call edisp ( iuout, 'Unknown entry in .cfg file:' )
-        call edisp ( iuout, outstr )
-        
           ier=1
           return
       endif
@@ -2083,7 +2008,7 @@ C automatically and should not be modified through project manager
         IWARN=1
         OUTS=
      &  'This is a UK NCM stripped model and should not be modified'
-      ELSEIF(ISBEM.EQ.1.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
+      ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN

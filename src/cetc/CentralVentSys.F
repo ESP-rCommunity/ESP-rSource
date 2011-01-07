@@ -42,8 +42,7 @@ c ---
 c
 c In HOT2000, the specific heat of air has been 1005 J/Kg Deg C, and the air density
 c has been 1.177 Kg/m3.  These values are also used here.
-!     Changed value of air Cp to 1006 to reflect AIM
-      MCP = FlowRate * 1006. * 1.177
+      MCP = FlowRate * 1005. * 1.177
 c
       If ( iCVSType .eq. 2 ) Then ! HRV
 c
@@ -78,7 +77,6 @@ c ---
 #include "building.h"
 #include "geometry.h"
 #include "Ventilation_Data.h"
-
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -111,7 +109,7 @@ c     Implicit None
      
       Data iCycle / 9990 /
 
-
+     
       If ( iCycle .lt. 1 ) Then
          Write (Msg,'(a,6f8.2)') 'MECH_VENT_CONTROL - ZF',
      & ( VOL(i), i = 1, 6 )
@@ -141,8 +139,7 @@ c
 c
          T = TF ! "future" outdoor air temp
 
-c If a CVS exists,call the appropriate subroutine to
-C determine temperatures and flowrates
+c ---
          If ( iCVSType .eq. 2 ) Then ! HRV
 c
             i = Max ( 1, IntDD(1,1) ) ! Zone in which supply duct is located
@@ -160,8 +157,7 @@ c ---
          Endif
 c
       Endif ! End of Zone 1 calculations
-c If the zone is connected to the CVS then distribute the air flow based on volume
-C Otherwise follow the final else which sets it to zero
+c ---
       If ( iComp .ne.  AIM2_CrawlSpace_zone .and.
      &     iComp .ne.  AIM2_attic_zone      ) Then
 c
@@ -184,16 +180,11 @@ C Check to ensure memory has been allocated
 c
 c --- Air heat loss rate for zone
 c
+
          HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction
 
 c
 c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
-C For the zone called, assign the zone's calculated CVS infiltration conductance
-C to ESP-r's standard infiltration variable, CVIF. CVIF is incorporated into the
-C zone's energy balance by ESP-r's normal approach, so no further
-C interactions with the zone matrix processor and solver are required.
-C Note that both AIM (natural) [/cetc/aim2_timestep.F] and CVS (forced) [/cetc/CentralVentSys.F]
-C infiltration exist and as such the values are summed in /esrubld/subsys.F.
 c
          DeltaT = TFA(iComp) - T
 
@@ -744,4 +735,4 @@ c Sum up monthly energies
 
          return
       ENDIF
-      END
+      END 

@@ -88,7 +88,8 @@ C =2 with more than 3 day types allowed and sorted
       common/user/browse
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -102,7 +103,6 @@ C updated when the user exits).
 
       CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
-      CHARACTER*6 lodlabel
       character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
@@ -3384,18 +3384,20 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C How many of each gain type is there each zone/gaintype/daytype.
-      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
-     &               loadmixed(mcom,7,MDTY)
+C << this common should be re-sized 7 -> MGTY >>
+      common/loadcnt/loadcount(mcom,MGTY,MDTY),
+     &  loadm2count(mcom,MGTY,MDTY),loadmixed(mcom,MGTY,MDTY)
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
       integer ICGTS,IW  ! for radio buttons
       integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
-      character lodlabel*6,typstr*8,H*72
+      character typstr*8,H*72
       character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3745,6 +3747,8 @@ C Add delete copy period or import full set of casual gains.
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
+
+C << revise to support more casual gain types >>
           CALL EASKABCD('New casual gain of which type?',' ',
      &        lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &        'Cancel',ICGTS,3)
@@ -3991,13 +3995,14 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Profile database commons via profile.h.
 
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
-      CHARACTER H*72,hold*40,lodlabel*6
+      CHARACTER H*72,hold*40
       character*8 ll1,ll2,ll3
       character lltmp*144
       character fs*1  ! file separator
@@ -4015,6 +4020,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Labels for loads.
+C << revise for more loads >>
       write(ll1,'(1x,a6,1x)') lodlabel(icomp,1)
       write(ll2,'(1x,a6,1x)') lodlabel(icomp,2)
       write(ll3,'(1x,a6,1x)') lodlabel(icomp,3)
@@ -4726,9 +4732,10 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
-      character lodlabel*6,h*72,VERT(3*MC)*35
+      character h*72,VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
       integer ilistlen
 
@@ -4749,6 +4756,8 @@ C Choose day type to delete/copy period from
       IDT=kstr(1)
       M=0
       ilistlen=NCAS(IDT)
+
+C << Revise to work with more casual gain types >>
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
@@ -4888,8 +4897,10 @@ C =2 with more than 3 day types allowed and sorted
       REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
-      common/loadlabel/lodlabel(mcom,7)
-      common/loadlabelc/lodlabelc(7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
+      character lodlabelc*6
+      common/loadlabelc/lodlabelc(MGTY)
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
@@ -4911,7 +4922,6 @@ C Descriptive label for a zone load or casual gain.
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
       character ltmp*72
-      character lodlabel*6,lodlabelc*6
       character fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
@@ -5154,6 +5164,8 @@ C << separate documentation string for air flows and casual gains.
      &      ' ',72,'base_case','operation notes',IER,3)
           if(oprdescc(1:2).ne.'  ')oprdesc(idest)=oprdescc
         endif
+
+C << revise to loop >>
         if(isource.eq.0)then
           lodlabel(idest,1)=lodlabelc(1)
           lodlabel(idest,2)=lodlabelc(2)
@@ -5231,11 +5243,12 @@ C  ICOMP zone number
       REAL CMGS,CMGL,RADC,CONC
 
 C Descriptive label for a zone load or casual gain.
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
-      character lodlabel*6, outs*124
+      character outs*124
 
 #ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
@@ -5275,9 +5288,14 @@ C Scan each days gains and calculate maximum gain.
 
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
 C is the m^2 per person instead. Base graphed value on fractional 
-C persons per m^2.
-              CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*95.
-              CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
+C persons per m^2. For case of CMGS zero assume no people.
+              if (CMGS(IDAY,J).gt.0.0) then
+                CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*95.
+                CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
+              else
+                CGNS=0.0
+                CGNL=0.0
+              endif
             elseif (ICGT(IDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
@@ -5295,8 +5313,13 @@ C persons per m^2.
         do 22 J=1,NCAS(JDAY)
           if (I.gt.ICGS(JDAY,J).and.I.le.ICGF(JDAY,J)) then
             if (ICGT(JDAY,J).eq.-1) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+              if (CMGS(JDAY,J).gt.0.0) then
+                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*95.
+                CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+              else
+                CGNS=0.0
+                CGNL=0.0
+              endif
             elseif (ICGT(JDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
@@ -5314,8 +5337,13 @@ C persons per m^2.
         do 24 J=1,NCAS(KDAY)
           if (I.gt.ICGS(KDAY,J).and.I.le.ICGF(KDAY,J)) then
             if (ICGT(KDAY,J).eq.-1) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+              if (CMGS(KDAY,J).gt.0.0) then
+                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*95.
+                CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+              else
+                CGNS=0.0  ! avoid divide by zero 
+                CGNL=0.0
+              endif
             elseif (ICGT(KDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(KDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(KDAY,J)*ZBASEA(ICOMP)
@@ -5407,8 +5435,13 @@ C first day type requested
           if (ICGT(IDAY,IP).eq.-1) then
 
 C For case of m2/person CMGL is zero so use CMGS to get CGNL
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+            if (CMGS(IDAY,IP).gt.0.0) then
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*95.
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+            else
+              CGNS=0.0  ! to avoid divide by zero
+              CGNL=0.0
+            endif
           elseif (ICGT(IDAY,IP).lt.-1) then
             CGNS=CMGS(IDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(IDAY,IP)*ZBASEA(ICOMP)
@@ -5473,8 +5506,13 @@ C second day type requested
         ICG=iabs(ICGT(JDAY,IP))
         do 165 IHR=ICGS(JDAY,IP),ICGF(JDAY,IP)-1
           if (ICGT(JDAY,IP).eq.-1) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+            if (CMGS(JDAY,IP).gt.0.0) then
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*95.
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+            else
+              CGNS=0.0  ! to avoid division by zero
+              CGNL=0.0
+            endif
           elseif (ICGT(JDAY,IP).lt.-1) then
             CGNS=CMGS(JDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(JDAY,IP)*ZBASEA(ICOMP)
@@ -5539,8 +5577,13 @@ C third day type requested
         ICG=iabs(ICGT(KDAY,IP))
         do 265 IHR=ICGS(KDAY,IP),ICGF(KDAY,IP)-1
           if (ICGT(KDAY,IP).eq.-1) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+            if (CMGS(KDAY,IP).gt.0.0) then
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*95.
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+            else
+              CGNS=0.0   ! avoiding divide by zero
+              CGNL=0.0
+            endif
           elseif (ICGT(KDAY,IP).lt.-1) then
             CGNS=CMGS(KDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(KDAY,IP)*ZBASEA(ICOMP)
@@ -5611,6 +5654,8 @@ C Title and labels.
       call pixel2u(igr-180,igt-69,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
+
+C << Hard coded casual gain types revise >>
       do 300 I=1,3
         write(outs,'(2a)')
      &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'

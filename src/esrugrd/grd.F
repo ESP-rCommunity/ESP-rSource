@@ -497,8 +497,6 @@ C *********************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 

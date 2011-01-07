@@ -59,7 +59,7 @@ C << what about including common zndata in this manipulation? >>
       common/pophelp/h(60)
 
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -249,6 +249,7 @@ C update IE1 for surfaces > IWHICH otherwise just compact IC1 & IE1.
           SSNAME(ix)=SSNAME(IX+1)
           SSOTF(IX)=SSOTF(IX+1)
           SSMLCN(IX)=SSMLCN(IX+1)
+          SSTHICK(IX)=SSTHICK(IX+1)
           SSVFC(IX)=SSVFC(IX+1)
           SSOTHER(IX,1)=SSOTHER(IX+1,1)
           SSOTHER(IX,2)=SSOTHER(IX+1,2)
@@ -937,7 +938,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,32i4)') 'now jvn is ',
+C                      write(6,'(a,42i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -1138,9 +1139,12 @@ C User has specified clicking from mouse so just do that.
 
 C Clear the string buffer, write into it the list of vertices that were
 C selected by the user so that errors and duplicates can be corrected.
+C If the user was clicking with a mouse then they might have duplicated
+C some vertices and thus be beyond the normal limit of edges. If MV is
+C updated reflect this in the write(t248 statement).
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
-              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
+              WRITE(t248,'(42I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               NV = iCountWords(t248)
@@ -1735,7 +1739,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,32i4)') 'now jvn is ',
+C                      write(6,'(a,42i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -2074,6 +2078,7 @@ C door width and height.
       DIMENSION  SBBOX(3,2)
 
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
+      character t248*248
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
 
@@ -2569,9 +2574,10 @@ C in the new surface.
      &      'corner of the new surface to connect to: ','lower left',
      &      'lower right',ICH,24)
 
-          WRITE(outs,'(30i4)')(JVN(IS,J),J=1,NVER(IS))
+C If parameter MV changes reflect this in the write(t248 statement.
+          WRITE(t248,'(42i4)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
-          call edisp(iuout,outs)
+          call edisp248(iuout,t248,100)
  8795     CALL EASKI(IVH,
      &      ' Which vertex in the bounding surface to tie to:',
      &      ' ( usually at lower right corner of bounding surface) ? ',
@@ -2670,6 +2676,7 @@ C Update common blocks G6 & G7 (insert data into connections based list).
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
+        SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
         SSOTHER(ICONT,2)=SOTHER(NSUR,2)
@@ -2804,6 +2811,7 @@ C Update common blocks G6 & G7 (insert data into connections based list).
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
+        SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
         SSOTHER(ICONT,2)=SOTHER(NSUR,2)
@@ -2909,7 +2917,7 @@ C inserting the new vertex index.
                   JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                  write(6,'(a,32i4)') 'now jvn is ',
+C                  write(6,'(a,42i4)') 'now jvn is ',
 C     &              (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -3036,10 +3044,20 @@ C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
 C   this does not apply.
 C imatshr(MCON,MV) for each edge, the connection of surface (similarly
 C   oriented) which has the same material. Zero denotes this does not
-C   apply.used to enhance wire frame drawings of discritized zones (e.g.
+C   apply. Used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
+
+C << potential place to track edges which might fall into specific
+C << thermal bridge categories. ? extend G8 ?
+C << ibridgeshr(MCON,MV) is:
+C <<   zero is not a thermal bridge, one is roof-wall,
+C <<   two is wall-ground floor, three is wall-wall (convex corner)
+C <<   four is wall-wall (concave corner), five is wall-floor (not ground),
+C <<   six is lintel above window or door, seven is Sill below window
+C <<   eight is jamb at window or door
+
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV)
+     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3059,6 +3077,7 @@ C Typically the mark 234 has been used with this code.
         SSNAME(IX)=SSNAME(IX-1)
         SSOTF(IX)=SSOTF(IX-1)
         SSMLCN(IX)=SSMLCN(IX-1)
+        SSTHICK(IX)=SSTHICK(IX-1)
         SSVFC(IX)=SSVFC(IX-1)
         SSOTHER(IX,1)=SSOTHER(IX-1,1)
         SSOTHER(IX,2)=SSOTHER(IX-1,2)
@@ -3128,6 +3147,7 @@ C Update common blocks G6 & G7
         SSNAME(ICON)=SNAME(ICOMP,NSUR)
         SSOTF(ICON)=SOTF(NSUR)
         SSMLCN(ICON)=SMLCN(NSUR)
+        SSTHICK(ICON)=SSTHICK(NSUR)
         SSVFC(ICON)=SVFC(NSUR)
         SSOTHER(ICON,1)=SOTHER(NSUR,1)
         SSOTHER(ICON,2)=SOTHER(NSUR,2)

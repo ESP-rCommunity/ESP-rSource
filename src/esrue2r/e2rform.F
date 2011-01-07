@@ -27,41 +27,30 @@ C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
 #include "site.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skopt*3,outs*124,tfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
-      integer lnrp  ! length of run path
+      character ltmp72*72,dtmp72*72
       integer NITEMS,INO ! max items and current menu item
 
       DIMENSION ITEM(14)
 
       logical OK,DOK,XST
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
       ier=0
-      lnrp=lnblnk(runpath)
 
 C Generate a default name for the sky file.
       write (rskyfil,'(a,a4)') 
-     &             SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.sky'
+     &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.sky'
 
 C Ask for name of the sky file.  If existing, attempt to
 C read it otherwise remember name.
@@ -70,7 +59,7 @@ C read it otherwise remember name.
       ltmp72=rskyfil
       dtmp72=rskyfil
       CALL EASKS(ltmp72,' Sky distribution file name ?',' ',72,
-     &                                    dtmp72,'sky file name',IER,2)
+     &  dtmp72,'sky file name',IER,2)
       if(ltmp72(1:2).eq.'  ')goto 142
       rskyfil=ltmp72
       write (tfile,'(a,a)') runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
@@ -79,13 +68,13 @@ C read it otherwise remember name.
       IF(XST)THEN
 
 C Read a radiance sky file, taking info into commons.
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (ier.eq.0) skydone=.true.
       endif
       call usrmsg(' ',' ','-')
 
 C If daylight factors then set sky to CIE overcast.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') isky=1
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') isky=1
 
 10    INO = -4
       write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',sitelat
@@ -186,7 +175,7 @@ C Sky Toggle.
       elseif(INO.EQ.8)then
 
 C If daylight factors then check if sky is CIE overcast.
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         if (isky.ne.1) then 
           CALL EASKAB(' The sky is not a CIE standard overcast sky.',
      &            'Do you want to: ','proceed','change sky type',IW,0)
@@ -201,10 +190,10 @@ C which includes redirection of output to the sky definition file.
      &    RTIME,skopt,' -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &    ' -m 0.0'
         CALL wrtsky(outs)
-        call RRSKY(ITA2,rskyfil,ga,IER)
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External') then
+        call RRSKY(ITA2,ga,IER)
+        if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
           xga=ga/10.
           call RADPAR('av',xga)
         endif
@@ -250,24 +239,18 @@ C ********************** wrtsky **********************
 C wrtsky calls radiance and writes sky info to file.
 
       SUBROUTINE wrtsky(skycmd)
-      
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath,pathtype
+      character skycmd*124,doit*124,tfile*72
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
-      integer lnrp  ! length of run path
-
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST
 
-      lnrp=lnblnk(runpath)
       ITA3=IFIL+10
       call edisp(iuout,' creating sky description file.')
       write(tfile,'(a,a)')runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
@@ -293,9 +276,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
 #include "model.h"
-
-C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -307,22 +288,15 @@ C #include "geometry.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/expath/runpath,pathtype
 
-      LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+
+      LOGICAL OK,DOK,XST,fict
 
       DIMENSION ITEM(17)
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,tfile
-      character runpath*72,pathtype*24
+      character*72 tfile
       character item*32,h*72,ACT*1,GTGEOM*72
-      integer lnrp  ! length of run path
       integer NITEMS,INO ! max items and current menu item
 
       ITA1 = IFIL+6
@@ -333,7 +307,6 @@ C #include "geometry.h"
 C      GTGEOM = 'UNKNOWN'
 
 C Open the materials, mlc & optics db.
-      lnrp=lnblnk(runpath)
       call module_opendb(ier)
 
       icomp = nznog(1)
@@ -543,6 +516,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -564,27 +538,17 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      common/grdisk/grdd,grcx,grcy
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
+C For obstruction blocks of type "obsp":
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+
+      LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
-      COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
-      common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgt/iglzty
-      common/radabs/NABS
-      common/expath/runpath,pathtype
+      CHARACTER GSNAME*6,GMLCN*12
+      COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -593,21 +557,16 @@ C TMC data
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,LBSRIF,aglzfil
       character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
-      CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
-      character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character pfile*72,atfile*72,ltmp72*72,dtmp72*72
-      integer lnrp  ! length of run path
+      CHARACTER ACT*1,doit*144
+      character outsn*124,outsd*124, tfile*72
+      character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnbm  ! length of block material
 
-      LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      LOGICAL OK,DOK,fict,extern,XST,similar
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -615,7 +574,6 @@ C TMC data
       nobs=0
       ISTAT=0
       IER=0
-      lnrp=lnblnk(runpath)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
@@ -655,7 +613,7 @@ C Ask for alternative glazing file.
           call ASKOK('Blind shutter control is active.',
      &      'Create model with blinds closed as well?',OK,dok,3)
           if (OK) then
-            NBSRIF(IRIFFOC)=NABS
+            NBSRIF(ISCENE)=NABS
  12         H(1)=' Supply a local file name (i.e. without a path).'
             H(2)=' This file holds alternative glazed surface details,'
             H(3)=' e.g. representing closed blinds. '
@@ -674,7 +632,7 @@ C Ask for alternative glazing file.
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
         if (NABS.gt.0) then
-          NBSRIF(IRIFFOC)=NABS
+          NBSRIF(ISCENE)=NABS
           write(atfile,'(a,a)')runpath(1:lnrp),
      &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)
@@ -878,8 +836,8 @@ C Check for blind shutter control.
 
         else
           WRITE(imatfil,'(a)') '# External MLC Colours... '
-          if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &        RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_ex plastic rc_ex_',
      &        MLCN(1:lnblnk(MLCN))
           else
@@ -893,8 +851,8 @@ C Check for blind shutter control.
           WRITE(imatfil,'(a)') '  '
 
           WRITE(imatfil,'(a)') '# Internal MLC Colours... '
-          if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &        RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
      &        MLCN(1:lnblnk(MLCN))
           else
@@ -939,7 +897,7 @@ C Open the outsite geometry/composition file.
       WRITE(irofil,'(a)') '#   definitions must integrate to one.'
 
 C Do not use sky for Day_coef purpose.
-      if (RIFPURP(IRIFFOC)(1:8).ne.'Day_coef') then
+      if (SCENEPURP(ISCENE)(1:8).ne.'Day_coef') then
         WRITE(irofil,'(a)') '# define sky... '
         WRITE(irofil,'(a)') '  '
         WRITE(irofil,'(a)') 'skyfunc glow sky_glow'
@@ -1044,11 +1002,18 @@ C Read in the zone geometry.
         else
           call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
         endif
+
+C Check if there is a legacy zone obstruction file scan it.
+        if(IOBS(newfoc).EQ.1)then
+          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,ITRC,ITRU,IER)
+        endif
+
+C Read zone constructions file.
         call FINDFIL(LTHRM(newfoc),XST)
         if(XST)then
           CALL ECONST(LTHRM(newfoc),ITA1,newfoc,0,IUOUT,IER)
           if (LTWIN(newfoc)(1:2).ne.'  '.and.
-     &                              LTWIN(newfoc)(1:4).ne.'UNKN') then
+     &        LTWIN(newfoc)(1:4).ne.'UNKN') then
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(newfoc),newfoc,IER)
           endif
         endif
@@ -1103,34 +1068,76 @@ C Confirm inclusion of obstructions.
 
           WRITE(irofil,'(a)') '# Obstruction defs... '
           WRITE(irofil,'(a)') '  '
+
           nobs=nobs+nbobs(newfoc)  ! increment count of obstructions
+
           do 43 ib=1,nbobs(newfoc)
 
-C Create a genbox command to match the obstruction.
+C Create a genrbox command to match the obstruction.
+C BLOCKTYP (4 char) type of block:
+C   'obs ' - standard block (origin, three dimensions, one rotation)
+C   'obs3' - general block (origin, three dimensions, three rotations)
+C   'obsp' - general polygon (six sides formed from 8 vertices)
 
-C << to be done - find out syntax for blocks with multiple rotations >>
+C Set material name
+            if (BLOCKMAT(newfoc,ib)(1:4).eq.'NONE') then
+              lnbm=7
+              ObsMatName='unknown'
+            else
+              lnbm=LNBLOCKMAT(newfoc,ib)
+              ObsMatName=BLOCKMAT(newfoc,ib)
+            endif
 
-            if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
-              WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox rc_ex_unknown ',
+            if (BLOCKTYP(newfoc,ib).eq.'obs ') then
+
+C Create a >genrbox< command to match the obstruction.
+              WRITE(irofil,'(4a,3f9.3,a,f9.3,a,3f9.3)')
+     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),'  ',        
      &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib,1),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
-            else
-              lnbm=LNBLOCKMAT(newfoc,ib)
-              WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
+            elseif (BLOCKTYP(newfoc,ib).eq.'obs3') then
+
+C Create a >genrbox< command to match the obstruction with 
+C rz, ry, rx rotations.
+              WRITE(irofil,'(4a,3f9.3,3(a,f9.3),a,3f9.3)')
+     &          '!genrbox rc_ex_',ObsMatName(1:lnbm),
      &          '  ',        
      &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &          ' -ry ',-1.0*BANGOB(newfoc,ib,2),
+     &          ' -rx ',BANGOB(newfoc,ib,3),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
-            endif
- 43       continue
-        endif
+
+            elseif (BLOCKTYP(newfoc,ib).eq.'obsp') then
+
+C Create a >polygon< command for each of 6 faces
+              do 785 isf=1,6 ! hard-code this?
+                WRITE(irofil,'(5a,I1)')'rc_ex_',
+     &            ObsMatName,'  polygon ',
+     &            BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &            '_', isf  ! add face number to block name
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(a)') '0 '
+                WRITE(irofil,'(I3)') 12 ! NGVER(???)*3 
+
+C Write the coordinates for face isf.
+                do 784 iv=1,4 ! NGVER(???)
+                  K = JVNB(isf,iv) ! variable for obstruction blocks?
+                  WRITE(irofil,'(3F11.5)')
+     &              XBP(newfoc,IB,K),YBP(newfoc,IB,K),ZBP(newfoc,IB,K)
+784             continue
+                WRITE(irofil,'(a)') '  '
+785           continue
+            else
+               ! error, shouldn't end up here ...
+            endif  ! check BLOCKTYP()
+ 43       continue ! loop through all obstructions of zone
+        endif      ! nbobs() .ge. 1
   61    continue
 
 C Now surface information.
@@ -1201,11 +1208,11 @@ C  Partition - create if not already created or focus zone.
               IANS=1
 C Logic - only allow precalc of illum in focus zone.
 C              if ((newfoc.eq.ifocz).and. 
-C     &            ((RIFPURP(IRIFFOC)(1:8).eq.'Internal').or.
-C     &             (RIFPURP(IRIFFOC)(1:5).eq.'Glare'))) then
+C     &            ((SCENEPURP(ISCENE)(1:8).eq.'Internal').or.
+C     &             (SCENEPURP(ISCENE)(1:5).eq.'Glare'))) then
 C Logic - ask about precalc in all internal zones.
-              if (((RIFPURP(IRIFFOC)(1:8).eq.'Internal').or.
-     &             (RIFPURP(IRIFFOC)(1:5).eq.'Glare'))) then
+              if (((SCENEPURP(ISCENE)(1:8).eq.'Internal').or.
+     &             (SCENEPURP(ISCENE)(1:5).eq.'Glare'))) then
 
 C Highlight surface on image.
                 if(ACT.eq.'i')then

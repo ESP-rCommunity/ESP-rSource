@@ -471,7 +471,8 @@ C If there are enough items allow paging control via EKPAGE.
         ENDIF
       ELSEIF(IVERT.EQ.3)THEN
 
-C Manual editing of viewfactors.
+C Manual editing of viewfactors. Keep track of the sum and
+C offer the user a chance to re-edit if not close to one.
         A=0.0
         IS=1
         CALL EPMENSV
@@ -481,8 +482,8 @@ C Manual editing of viewfactors.
           if(MM.NE.IS)then
             ICNI=IZSTOCN(ICOMP,IS)
             ICNJ=IZSTOCN(ICOMP,MM)
-            write(outs,'(A,A15,A,A15)') ' For ',SSNAME(ICNI),' to ',
-     &                                   SSNAME(ICNJ)
+            write(outs,'(4A)') ' For ',SSNAME(ICNI),' to ',
+     &        SSNAME(ICNJ)
             V=VEWF(IS,MM)
             CALL EASKR(V,outs,' view factor: ',
      &        0.,'F',0.999,'F',0.,'viewfactors',IER,1)
@@ -491,14 +492,19 @@ C Manual editing of viewfactors.
             VEWF(IS,IS)=0.
           endif
           A=A+VEWF(IS,MM)
+          write(outs,'(A,F8.5)') ' Current total is ',A
+          call edisp(iuout,outs)
   33    continue
-        IF(ABS(A).LT.0.9888.OR.ABS(A).GT.1.002)then
-          write(outs,'(A,F8.5)')' currently the total is ',A,
-     &                          ' please re-edit...'
-          call usrmsg(
-     &    ' The sum of all viewfactors to this surface must equal 1.0',
-     &    outs,'W')
-          goto 31
+        IF(ABS(A).LT.0.9.OR.ABS(A).GT.1.002)then
+          write(outs,'(A,F8.5,A)')' currently the total is ',A,
+     &      ' and should be close to zero...please re-edit...'
+          h(1)='If the total is not close to one then we suggest'
+          h(2)='that you re-edit the values.'
+          call easkab(outs,' ','re-edit','continue',IW,2)
+          if(iw.eq.1)then
+            A=0.0  ! clear the accumulator
+            goto 31
+          endif
         endif
         CALL EPMENRC
       ELSEIF(IVERT.EQ.4)THEN

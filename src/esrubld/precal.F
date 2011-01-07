@@ -584,7 +584,7 @@ C latent per person.
           TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
           call eclose(CMGS(IDAY,I),0.00,0.001,close)
           if (close) then
-            PERSN=1.0  ! if m^2/person was close to zero set to one.
+            PERSN=0.0  ! if m^2/person was close to zero set to no occup.
           else
             PERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
           endif
