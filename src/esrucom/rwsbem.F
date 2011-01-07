@@ -76,7 +76,7 @@ C to the logic used for the optics database which is also ASCII.
         write(lworking,'(a)') DSBEM(1:lnblnk(DSBEM))
         call findwhichdbpath('sbm',lworking,ier)
       endif
-      IUF=IFIL+1
+      IUF=IFIL+2
       if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
         CALL EFOPSEQ(IUF,LSBEM,1,IER)
         if(IER.ne.0)then

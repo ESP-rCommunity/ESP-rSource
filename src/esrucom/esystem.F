@@ -2928,7 +2928,7 @@ C as many pairs of lines as needed.
             ipos=itrunc+1
           end do
         ENDIF
-      ENDIF
+      ENDIF ! air flow network (line 2760)
 
 C If a flow network and contaminant file have been defined then call the
 C subroutine to fill in contaminant common blocks
@@ -2968,7 +2968,7 @@ C the plant components db, pltcfg assumes that ifpnf exists and is open.
 C Identify plant file; skip if this is '* Plant' record.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'* plant',IER)
         IF(IER.NE.0)then
-          outs='Problem reading * PLANT line'
+          outs='Problem reading * PLANT line (1)'
           if(dll)then
             dllsubr='ersys'
             dllmesg=outs
@@ -2983,7 +2983,7 @@ C Identify plant file; skip if this is '* Plant' record.
         IF(LPNF(1:7).EQ.'* Plant'.OR.LPNF(1:7).EQ.'* PLANT') THEN
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'* plant',IER)
           if(IER.NE.0)then
-            call edisp(iuout,'Problem reading * PLANT line')
+            call edisp(iuout,'Problem reading * PLANT line (2)')
             goto 1
           endif
           LPNF=OUTSTR(1:72)
@@ -3053,12 +3053,12 @@ C Pass information about the current model to the C interface.
 C Error handling
   1   if(dll)then
         dllsubr='ersys'
-        write(dllmesg,'(2a)')'Probelm scanning cfg line: ',OUTSTR(1:40)
+        write(dllmesg,'(2a)')'Problem scanning cfg line: ',OUTSTR(1:40)
         ier=2
         return
       else
         CALL USRMSG('Problem with configuration line:',OUTSTR,'W')
-        call edisp(iuout,' Plese check your configuration file.')
+        call edisp(iuout,' Please check your configuration file.')
         IER=1
         GOTO 6
       endif
