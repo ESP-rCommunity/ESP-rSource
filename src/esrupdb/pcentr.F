@@ -54,7 +54,6 @@ C Build menu items.
       if(irt.eq.1.or.irt.eq.3)then
 
 C Read from file, get filename
-        CALL EPAGE
         h(1)='The ACII file holds plant component entries.'
         h(2)='If found, components data is read in and inserted'
         h(3)='in plant component database.'
@@ -110,12 +109,10 @@ C Fill the generic header.
       elseif(irt.eq.2)then
 
 C Read component data from user.
-        CALL EPAGE
         CALL PCRD
         IF (INDXPC .LE. 0)   GOTO 100
 
 C Check if user accepts data.
-        CALL EPAGE
         CALL PCWRT (IUOUT)
         dok=.true.
         h(1)='Pause to review data. No returns to editing.'

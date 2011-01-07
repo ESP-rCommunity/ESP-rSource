@@ -115,13 +115,15 @@ C write it to the terminal.
       character LTMP*72,buffer*120,H*72
       CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
       integer NITEMS,MNUPIK ! max items and current menu item
+      integer lastmmod      ! so can restore display
 
 C Check library is not empty.
-      CALL EPAGE
       IF (NPC .EQ. 0) THEN
         call usrmsg(' No components in library',' ','W')
         RETURN
       ENDIF
+
+      lastmmod=mmod   ! remember the display mode
 
 C Initialize print list.
       DO 100 I = 1, NPC
@@ -165,7 +167,6 @@ C Clear dialogue box.
         if(mnupik.eq.1)then
 
 C Output to file.
-          CALL EPAGE
           h(1)='The ACII file will hold plant component entries'
           h(2)='when a sorted list option is selected from the menu.'
           ltmp=' '
@@ -195,22 +196,22 @@ C Output to file.
           ENDIF
 
 C Write to file
-          WRITE (IUCHAN,'(a)')' PLANT COMPONENT DATABASE Listing'
+          call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
           CALL USRMSG(' ',' Please select listing type from menu','-')
           GOTO 120
         elseif(mnupik.eq.3)then
 
 C Output in numerical order
-          CALL EPAGE
           DO 108 I = 1, NPC
             INDXPR(I) = I
   108     CONTINUE
-         IF(NPC.GE.100) WRITE(IUOUT,'(a)')' PCLIST: sorting database...'
+          if(NPC.GE.100)then
+            call usrmsg(' PCLIST: sorting database...',' ','-')
+          endif
           CALL PSHELL (NPC,COMPNO,PCEXCH)
           DO 310 I = 1, NPC
             CALL PCGET (INDXPR(I))
             IF (INDXPC .EQ. INDXPR(I)) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)   then
                 dok=.true.
@@ -220,20 +221,21 @@ C Output in numerical order
               endif
             ENDIF
   310     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.4)then
 
 C Output in alphabetical order.
-          CALL EPAGE
           DO 107 I = 1, NPC
             INDXPR(I) = I
   107     CONTINUE
-          IF(NPC.GE.100) WRITE(IUOUT,*) ' PCLIST: sorting database ...'
+          IF(NPC.GE.100)then
+            call usrmsg(' PCLIST: sorting database...',' ','-')
+          endif
           CALL PSHELL (NPC,COMPDS,PCEXCH)
           DO 410 I = 1, NPC
             CALL PCGET (INDXPR(I))
             IF (INDXPC .EQ. INDXPR(I)) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)  then
                 dok=.true.
@@ -243,6 +245,7 @@ C Output in alphabetical order.
               endif
             ENDIF
   410     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.5)then
 
@@ -255,7 +258,6 @@ C Dsiplay components lilst and get selection.
             do 510 i=1,ix
               call pcget(ival(i))
               if (indxpc.gt.0) then
-                CALL EPAGE
                 call pcwrt(iuchan)
                 if(iuchan.eq.iuout) then
                   dok=.true.
@@ -266,15 +268,14 @@ C Dsiplay components lilst and get selection.
               endif
   510       continue
           endif
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.6)then
 
 C Output unordered.
-          CALL EPAGE
           DO 810 I = 1, NPC
             CALL PCGET (I)
             IF (INDXPC .GT. 0) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)  then
                 dok=.true.
@@ -284,12 +285,15 @@ C Output unordered.
               endif
             ENDIF
   810     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.8)then
 
 C Output summary.
-          CALL EPAGE
-          if(iuchan.eq.(ifil+1)) mmod=-1
+          if(iuchan.eq.(ifil+1))then
+            lastmmod=mmod
+            mmod=-1
+          endif
           call edisp(IUCHAN,' Entry  Model Description')
           DO 910 I = 1,NPC
             CALL PCGET (I)
@@ -299,6 +303,7 @@ C Output summary.
               call edisp(iuchan,buffer)
             ENDIF
   910     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.10)then
           CALL PHELPD('pdb lists',10,'-',0,0,IER)
