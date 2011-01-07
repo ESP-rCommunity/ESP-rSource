@@ -15,7 +15,7 @@
  51.700   -0.500   # Latitude & Longitude (diff from meridian)
       2   0.200   # Site exposure & ground reflectivity
 * DATABASES
-*stdmat  constr.db2
+*stdmat  material.db3.a
 *stdmlc  multicon.db2
 *stdopt  optics.db2
 *stdprs  pressc.db1
