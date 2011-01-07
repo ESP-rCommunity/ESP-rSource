@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Basic multi-zone model with on-off plant
-controller and network flow. defined in bld_basic.cfg-onoff generated on Fri
-Jan  7 10:33:59 2011. Notes associated with the model are in bld_basic.log
+This is a synopsis of the model Basic multi-zone model with PID plant control
+and network flow. defined in bld_basic.cfg-pid generated on Fri Jan  7
+12:44:13 2011. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -107,7 +107,7 @@ Databases associated with the model:
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
- standard UK NCM data   : SBEM.db1
+ UK NCM data            : /usr/esru/esp-r/databases/SBEM.db1
  
  ____________________________________________________________
  
@@ -134,16 +134,16 @@ component 5 and extract node 1.
  zone ( 3) roof_space   << control  0
  
  Plant control includes  1 loops.
-no descrip
+senses condition in extract duct
  
  The sensor for function  1 senses var in compt.  5:extract_duct @ node no.  1
  The actuator for function  1 is plant component   3:heating_coil @ node no.  1
  There have been  1 day types defined.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     On-Off control.     1.0 18.0 14.0 7000.0 0.0 0.0 0.0
-   2  7.00 dry bulb   > flux     On-Off control.     1.0 23.0 19.0 10000.0 0.0 0.0 0.0
-   3 18.00 dry bulb   > flux     On-Off control.     1.0 18.0 14.0 7000.0 0.0 0.0 0.0
+   1  0.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 16.0 8.0 1.0 1080.0 1.0 70.0
+   2  7.00 dry bulb   > flux     PID flux control.   1.0 10000.0 0.0 21.0 8.0 1.0 1080.0 1.0 70.0
+   3 18.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 16.0 8.0 1.0 1080.0 1.0 70.0
  ____________________________________________________________
  
 The model includes an air flow network.

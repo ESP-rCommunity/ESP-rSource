@@ -1,5 +1,5 @@
-*connections for bld_basic_pid
-*Date Fri Jan  7 12:36:35 2011
+*connections for bld_basic_onoff
+*Date Fri Jan  7 12:49:03 2011
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External
