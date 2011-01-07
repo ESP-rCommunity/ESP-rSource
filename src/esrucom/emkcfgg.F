@@ -229,7 +229,7 @@ C GCEP(begin)
 C GCEP(end)
 
 C Bidirectional raw optical data file.
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 

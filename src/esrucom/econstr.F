@@ -1227,7 +1227,7 @@ C Parameters
       character LUA*72  ! optical data file name
       integer ier   ! error state to return zero is ok
 
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C NGNTL number of layers in each TMC type.
@@ -1331,7 +1331,8 @@ C Initiate all parameters needed for simulation to 0
   
 C Read header.
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic header',IER)
-      if(outstr(1:14).eq.'*BIDIRECTIONAL')then
+      if(outstr(1:14).eq.'*BIDIRECTIONAL'.or.
+     &  outstr(1:16).eq.'*v2BIDIRECTIONAL')then
         ibitype=0
       else
         write(outs,'(2a)') 'The file ',LUA(1:lnblnk(LUA))
@@ -1352,11 +1353,11 @@ C Read header.
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','bi-optic tags',IFLAG)
       if(WORD(1:6).eq.'*types')then
-        CALL EGETWI(OUTSTR,K,IFLAGBI,1,MSTMC,'W','bi-type',IER)
+        CALL EGETWI(OUTSTR,K,IFLAGBI(MSTMC),1,MSTMC,'W','bi-type',IER)
+        ibitype=IFLAGBI(MSTMC)
         goto 42
       elseif(WORD(1:5).eq.'*item')then
-        CALL EGETW(OUTSTR,K,WORD,'W','bi-type name',IFLAG)
-        ibitype=ibitype+1
+        CALL EGETW(OUTSTR,K,WORD,'W','bi-type name',IFLAG) 
         ibset=0
         bidirname(ibitype)=WORD(1:12)
         goto 42

@@ -442,7 +442,7 @@ C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepfile/gcepfile
 
 C Bidirectional raw optical data file.
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
 C Calendar commons.
@@ -1674,7 +1674,7 @@ C a connection-based list on the next line(s).
         CALL EGETWI(LOUTSTR,K,ncn,0,0,'-','nb items/connections',IER)
         CALL EGETRM(LOUTSTR,K,bidirfile,'W','bioptical file',IER)
         IF(NCN.GT.0) THEN
-          CALL EGETWIA(IUC,IRVC,NCN,0,1,'W','bi-optical list',IER)
+          CALL EGETWIA(IUC,IRVC,NCN,0,100,'W','bi-optical list',IER)
           DO 114 KV=1,NCN
             NSTMCFL(KV)=IRVC(KV)
   114     CONTINUE

@@ -399,7 +399,7 @@ C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepfile/gcepfile
 
 C Bidirectional raw optical data file.
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
 

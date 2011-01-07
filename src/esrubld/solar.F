@@ -295,13 +295,13 @@ C a particular surface has bi-directional information.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C First, add a flag whether original (=0) or bi-directional (=1)
+C First, add a flag whether original (=0) or bi-directional (>1)
 C data is available. Check on this flag***********
-C IFLAGBI is set to 1 if the model contains bidirectional component; otherwise 0.
-C Change IFLAGBI to be an array of ITMC - probably don't need IFLAGBI
+C IFLAGBI is set to greater than 1 if the model contains bidirectional
+C component; otherwise 0. IFLAGBI is now an array of mstmc.
 C INTVALBI is the interval for the bidirectional data - 5deg at present.
 C
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
 
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
@@ -2466,7 +2466,7 @@ C the bidirectional case.
       SUBROUTINE MZSCAI(ICOMP,II,CAI,ANGI,IND1,IND2,PSAZI2,
      &           PSELV2,IANGBI1,IANGBI2)
 #include "building.h"
-
+      PARAMETER (MSTMC=20)
 C Next line and the related common block were existing here but not used anywhere
 C      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
 
@@ -2474,7 +2474,7 @@ C      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
 C      COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
 C     &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
 C     &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
@@ -2942,8 +2942,8 @@ C Linear interpolation is assumed.
 
       SUBROUTINE MZWINP2(X1,X2,X3,X4,IANGBI1,IANGBI2,PSAZI2,PSELV2,Y)
 #include "building.h"
-
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      PARAMETER (MSTMC=20)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       
 C Interpolate azimuth first.
       F1=(PSAZI2-REAL(IANGBI1))/REAL(INTVALBI)

@@ -1591,7 +1591,7 @@ C      COMMON/C24/IZSTOCN(MCOM,MS)
 C NSTMCFL flag for each model surface (connection). A non-zero
 C   number indicates bi-directional information is available.
 C   Limited to 0 or 1 at present.
-      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
@@ -1600,6 +1600,9 @@ C   Limited to 0 or 1 at present.
       logical MODIFY,MODLEN,MODBND !,ok,dok
 C      character outs*124
       integer MVERT,IVERT ! max items and current menu item
+      integer iBiTypeInTheSameFile ! the number of bidirectional sets (types of optics) in the same
+                                              ! file. This is to allow a number of different optic
+                                              ! sets to be used in the same model.
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1631,7 +1634,7 @@ C Initial menu entry setup.
 C Set menu header text.
    3  continue
       write(VERT(1),'(2a)')   'a bi-data file: ',bidirfile(1:24)
-      write(VERT(2),'(a,i2)') '  bi-data types: ',iflagbi
+      write(VERT(2),'(a,i2)') '  bi-data types: ',iflagbi(mstmc)
       VERT(3)='  ___________________________________________    '
       VERT(4)=' conn|  connection      |    connection     |bi- '
       VERT(5)=' no. | inside face      | other side data   |type'
@@ -1646,7 +1649,7 @@ C current menu line index. Build up text strings for the menu.
           call CONXMENU(L,CXITM)
           VERT(M)=' '
           if(NSTMCFL(L).ne.0)then
-            WRITE(VERT(M),'(A1,1x,A42,a,i1)')KEY,CXITM(1:42),'|',
+            WRITE(VERT(M),'(A1,1x,A42,a,i2)')KEY,CXITM(1:42),'|',
      &        NSTMCFL(L)
           else
             WRITE(VERT(M),'(A1,1x,A42,a)')KEY,CXITM(1:42),'| -'
@@ -1800,32 +1803,20 @@ C Enquire about connection identified by KEYIND.
 
 C Display information about the anchors associated with connection.
         call CONXMENU(ifocc,CXITM)
+        iBiTypeInTheSameFile=0
         if(NSTMCFL(ifocc).eq.0)then
-          NSTMCFL(ifocc)=1
-C          dok=.false.
-C          h(1)='If this surface fits your critera then proceed.'
-C          CALL ASKOK(
-C     &      'Use bi-directional attributes with this surface?',
-C     &      '(only apply to transparent surfaces)',OK,dok,1)
-C          if(OK)then
-C            if(IFLAGBI.eq.1)then
-C              NSTMCFL(ifocc)=1
-C            else
-C              nl=1
-C              h(1)='There are a limited number of types. '
-C              h(2)=' '
-C              h(3)='A cancel request leaves the model unchanged.'
-C              CALL EASKI(nl,' ',' Which bi-directional type?',
-C     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
-C              if(ieri.eq.-3)then
-C                continue
-C              else
-C                NSTMCFL(ifocc)=nl
-C              endif
-C            endif
-C          endif
-        else
-          NSTMCFL(ifocc)=0
+          iBiTypeInTheSameFile=NSTMCFL(ifocc)
+          h(1)='This item should match the *types item in the'
+          h(2)='bidirectional data file. It can be used to assign'
+          h(3)='different bidirectional data sets at different surfaces'
+          h(4)='of the same model.'
+          CALL EASKI(iBiTypeInTheSameFile,
+     &            ' number of type of bidirectional data?'
+     &           ,' ',0,'F',100,'F',100,'*types item',IER,4)
+          NSTMCFL(ifocc)=iBiTypeInTheSameFile
+
+C!        else
+C!         NSTMCFL(ifocc)=0
 
 C          write(outs,'(a,a,i2)') CXITM(1:lnblnk(CXITM)),
 C     &      ' is associated with bi-type',NSTMCFL(ifocc)
