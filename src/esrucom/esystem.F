@@ -183,8 +183,10 @@ C espriou.h provides currentfile and defdbfl.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
+#include "UserSimulationToggles.h"
+
       INTEGER, PARAMETER :: MSTMC=20
-      
+     
       integer lnblnk  ! function definition
 
 C Parameters
@@ -566,6 +568,15 @@ C Simulation parameters
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
+C Flags & storage for parsing *sim-toggle tags
+      logical bError
+      integer iWordCount
+      integer iEGetArrW
+      character*248 cLnWords(124)
+C Function references used to parse *sim-toggle tags.      
+      real fCtoR_err 
+      logical bStringsMatch
+     
       newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
@@ -593,9 +604,14 @@ C Note: escdef must come after scan of .esprc file.
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
+
 C Clear the model common blocks.
       call clrprb
 
+C Initialize simulation toggle flags 
+      bUserGAM = .false.       
+      bUserSolar = .false. 
+      
       LUALF='UNKNOWN'
       bidirfile='UNKNOWN'
       CALENAME='UNKNOWN'
@@ -899,7 +915,6 @@ C so LSTRIPC and LOUTSTR are used.
   44  continue
       lndbp=lnblnk(standarddbpath)
       call isunix(unixok)
-
       CALL LSTRIPC(IUC,LOUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
@@ -1660,8 +1675,58 @@ C Flag to check if UK NCM stripped model
 C Non-linear thermophysical properties configuration file.
         INTHPS=.TRUE.
         CALL EGETRM(LOUTSTR,K,LNLTHP,'W','non-linear prop',IER)
-      elseif(WORD(1:4).eq.'*g1d')then
 
+
+C Simulation presets: Optionally parameters normally hidden in the password-
+C protected simulation toggles directory.
+      elseif ( loutstr(1:11).eq. '*sim-toggle' ) then
+        
+C Count number of words on this line. Should be three:
+C         *sim-toggle KEYWORD VALUE    
+        iWordCount = iEGetArrW ( loutstr, cLnWords )
+        
+        bError = .false. 
+        
+        RightWordCount: if ( iWordCount == 3 ) then 
+C Matck keyword against known list        
+          
+          MatchKeywords: 
+     &    if ( bStringsMatch(cLnWords(2),'bld-soln-implicitness')) then
+C Token describes building implicitness-explicitness value.             
+            bUserGAM = .true. 
+            fUserGAM = fCtoR_err( cLnWords(3),
+     &                           'Building solution implicitness',
+     &                           bError ) 
+            if ( fUserGAM < 0. .or. fUserGAM > 1. ) bError = .true. 
+            print*, 'READ: ',fUserGAM      
+C Token describes flag for solar processing
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
+     
+             bUserSolar = .true. 
+             
+             if ( bStringsMatch(cLnWords(3),'enabled' )) iUserSolar = 0
+             if ( bStringsMatch(cLnWords(3),'disabled')) iUserSolar = 1
+                          
+          endif MatchKeywords
+        
+        endif RightWordCount
+        
+        SimToggleError: if ( bError ) then 
+          
+          if ( .not. bSilent ) then 
+            call usrmsg(
+     &           ' Could not parse simulation toggle ',outstr,'W')
+          else 
+            ier=1 
+            return
+          endif 
+          
+        endif SimToggleError   
+        
+      elseif(WORD(1:4).eq.'*g1d')then
+  
+      
 C Building 1D node distribution.
         IGR1D=.TRUE.
         CALL EGETRM(LOUTSTR,K,LGRD1D,'W','bldng 1D gridding',IER)
@@ -1953,6 +2018,8 @@ C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
         LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
+        
+      
       elseif ( .not. bSilent ) then
 
         call usrmsg(' Unknown entry format... ',outstr,'W')
@@ -1970,6 +2037,10 @@ C Project log file, read and then go on to fabric/plant description.
         endif
 
       else
+
+        call edisp ( iuout, 'Unknown entry in .cfg file:' )
+        call edisp ( iuout, outstr )
+        
           ier=1
           return
       endif

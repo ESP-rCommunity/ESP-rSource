@@ -1197,15 +1197,15 @@ C     ensure that the AC is not used. Note: if window model not active the resul
 C     AreWindowsOpen()  will be false. 
 C     Also the window control is only used in tandem with a cooling 
 C     stratagy. 
-         if ( AreWindowsOpen() 
-     &        .and. (BMISCD(ICF,IDTYP,IPER,4) .gt. 0.)  ) then
-            QCM = 0.
-            QCN = 0.
-         else
+!          if ( AreWindowsOpen() 
+!      &        .and. (BMISCD(ICF,IDTYP,IPER,4) .gt. 0.)  ) then
+!             QCM = 0.
+!             QCN = 0.
+!          else
             QCM = - cont_fun_cool_cap(IICOMP)
 C     Ensure windows are closed.
-            bWindowsAreOpen = .false.
-         endif
+!             bWindowsAreOpen = .false.
+!          endif
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
