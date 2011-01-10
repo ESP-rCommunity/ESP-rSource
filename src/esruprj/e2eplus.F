@@ -151,6 +151,7 @@ C surface can be resolved into a quad).
       character*9 RAMONTH(12)
       character*4 indent   ! for indentation
       character sitestring*48  ! for view factor to ground
+      character conststring*48 ! for use with constant boundary
       logical usethisone   ! array if true then surface can be used
       logical truechild    ! array if true then E+ child
       dimension usethisone(MCON),truechild(MCON)
@@ -1664,7 +1665,8 @@ C     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 
   64    continue
 
-C For each surface write out data.
+C For each surface determine appropriate coordinates prior to
+C writing out any data.
         DO 60 IS=1,NSUR
           icc=izstocn(mz,is)
           if(.NOT.usethisone(icc))goto 60  ! jump past this
@@ -1672,7 +1674,7 @@ C For each surface write out data.
           findchildvert=.false.  ! do not bother remembering
           if(nbchild(icc).eq.0)then
 
-C If there are no children just write coords.
+C If there are no children remember all coordinates.
             do 62 iedg=1,NVER(IS)
               COORD(iedg,1)=X(JVN(IS,iedg))
               COORD(iedg,2)=Y(JVN(IS,iedg))
@@ -1755,17 +1757,30 @@ C          do 747 iedg=1,iedgcnt
 C            write(6,*) COORD(iedg,1),COORD(iedg,2),COORD(iedg,3)
 C  747     continue
 
-C Have not yet worked out equivalent to a constant boundary condition.
-C << recent versions of EnergyPlus have a way to do it >>
+C A constant boundary condition is defined with an OtherSideCoefficients
+C entity. This should be uniquely named e.g. for the zone and surface.
+C Generate this entity.
+          conststring=' '   ! initial state
           if(ICT(icc).eq.2)then
+            WRITE(ioout,'(a)',iostat=ios,err=5) ' '
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-            write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
-     &        ' faces a constant boundary so skipping.'
-            call edisp(iuout,outs)
-            WRITE(ioout,'(a)') ' '
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
-     &          '!- ',outs(1:lnblnk(outs))
-            goto 60  ! jump to next surface
+     &        '  SurfaceProperty:OtherSideCoefficients',com
+            WRITE(ioout,'(5a)',iostat=ios,err=6) indent,'Const', 
+     &        ZSDES(1:lnblnk(ZSDES)),com,'   !- OtherSideCoeff Name'
+            WRITE(conststring,'(2a)') 'Const',ZSDES(1:lnblnk(ZSDES))
+            WRITE(ioout,'(4a)') indent,'0.0000',com,'   !- trigger'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,'   !- OSC temp'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC Temp Coef'
+            WRITE(ioout,'(a,f6.2,2a)') indent,real(IC2(icc)),com,
+     &        '   !- OSC outside Dry-Bulb'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC GrndTemp'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC WindSpdCoef'
+            WRITE(ioout,'(4a)') indent,'0.0000',sim,
+     &        '   !- OSC ZoneAirTemp'
           endif
 
 C If a surface is transparent, it must have a non-blank parent
@@ -1847,7 +1862,7 @@ C A transparent surface.
           else
 
 C Opaque surface.
-            if(ICT(icc).eq.5)then
+            if(ICT(icc).eq.7)then
               treatasmass=.true.  ! CEN similar is internal mass
 
             elseif(ICT(icc).eq.1)then
@@ -2025,24 +2040,20 @@ C Depending on the surface orientation write out Wall Roof Floor tag.
      &              com,'   !- Surface Type'
                 elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &                 SSVFC(icc)(1:4).eq.'UNKN')then
-                  if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
+                  if(ICT(icc).eq.0.or.ICT(icc).eq.4.or.
+     &               ICT(icc).eq.6)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Roof',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.3)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                'Wall',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.1)then
+                  else
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Wall',com,'   !- Surface Type'
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                  if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
+                  if(ICT(icc).eq.0.or.ICT(icc).eq.4.or.
+     &               ICT(icc).eq.6)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Roof',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.3)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                'Ceiling',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.1)then
+                  else
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Ceiling',com,'   !- Surface Type'
                   endif
@@ -2119,8 +2130,19 @@ C << each MLC. This might save some searching...
                   endif
                 elseif(ICT(icc).eq.2)then
 
-C A constant connection still has to be resolved.
-                  continue
+C A constant connection makes reference to conststring.
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'OtherSideCoefficients',com,
+     &              '   !-  OutsideFaceEnvironment (constant)'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent, 
+     &              conststring(1:lnblnk(conststring)),com,
+     &              '   !-  OutsideFaceEnvironment Object'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoSun',com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoWind',com,'   !- Wind Exposure'
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.3)then
 
 C A partition to another room.
@@ -2150,6 +2172,20 @@ C A ground connection.
                   WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.5)then
+
+C Adiabatic in E+ points back to itself.
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'Surface',com,'   !-  Outside Boundary (Adiabatic)'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+     &              ZSDES(1:lnblnk(ZSDES)),com,
+     &              '   !- Outside Boundary Condition to self'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoSun',com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoWind',com,'   !- Wind Exposure'
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &              '   !- View Factor to Ground'
+                elseif(ICT(icc).eq.7)then
                   continue  ! a CEN connection is internal mass
                 endif
               else
