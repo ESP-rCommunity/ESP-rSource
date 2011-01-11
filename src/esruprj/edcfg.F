@@ -3920,6 +3920,12 @@ C copy # of plant component nodes from bps to prj commons
             goto 289
           endif
         ENDIF
+
+C We know how many zone so use ZDATA to finish instanciating the
+C common blocks for:
+C   VCOORD : X,Y & Z coordinates of each vertice in zone.
+C   NZNVER : number of vertices associated with each connection.
+C   NZJVN : topology of vertices associated with each connection.
         NZONES=NCOMP
         ISFSUM=0
         CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
