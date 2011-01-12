@@ -1048,6 +1048,7 @@ C ------------------------------------------------------------------------------
 
 #include "building.h"
 #include "geometry.h"
+#include "blc25_open_windows.h"
 
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
@@ -1068,18 +1069,32 @@ C differently in the future.
       IF (ALLOCATED(AIM2_zone_infil).AND.
      &    ALLOCATED(AIM2_infil_to_zones)) THEN
 
-        DO ICOMP=1,NCOMP                    ! Examine each zone in the model.
-          AIM2_infil_to_zones(ICOMP) = 0.   ! Initialize infil to zone.
-          DO i=1,AIM2_num_zones_infil       ! Check if there is infil to this zone.
+        ZoneLoop: DO ICOMP=1,NCOMP               ! Examine each zone in the model.
+          AIM2_infil_to_zones(ICOMP) = 0.        ! Initialize infil to zone.
+          AIM2Zones: DO i=1,AIM2_num_zones_infil ! Check if there is infil to this zone.
 c Note: Not including the crawl space BB
             if( AIM2_zone_infil(i) .eq. ICOMP .and. 
      &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
-              AIM2_infil_to_zones(ICOMP) =                        ! There is infil to this zone:
+     
+C Operable window model: Are windows open and is aim2 model specified 
+C during this period?
+              if ( bWindowsOpen(iComp) .and. 
+     &             iAirFlowModel(iComp) == iAIM2model ) then 
+                
+                AIM2_infil_to_zones(ICOMP) =   VOL(ICOMP) 
+     &                                       * fACH_when_windows_open
+              
+              else 
+     
+                AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
+     
+              endif 
+              
               exit                                                ! Processing of this zone complete.
             endif
-          end do
-        END DO
+          end do AIM2Zones
+        END DO ZoneLoop
       ELSE
       CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
       END IF
@@ -1225,11 +1240,8 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "building.h"
-
-
-      REAL VOL	! volume of the zone
-      COMMON/PREC2/VOL(MCOM)
+      include "building.h"
+      include "geometry.h"
 
 
 C Declarations for local variables.

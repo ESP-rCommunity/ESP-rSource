@@ -68,6 +68,7 @@ C*******************************************************************************
 #include "model.h"
 #include "geometry.h"
 #include "control.h"
+#include "blc25_open_windows.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -385,6 +386,8 @@ C                                           ! per m2 of floor area
 
       real fZoneRH                   ! Zone relative humidity (%)
 
+      real fWindowPosition           ! Position of windows in zone. 
+      
 C.....Misc Zone parameters returned by zoneinfo
 C      real fSurfArea(MS)          ! Area of each surface`
 C      real fTotalZoneArea         ! Total Zone area
@@ -467,13 +470,13 @@ C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
 C----------------------------------------------------------------------
 
-      logical bWindowsOpen                    ! Are windows open?
+      logical bPSwindowsOpen                    ! Are windows open?
       real fSwingTemperature                  ! Max permissible
                                               !    swing temp. (oC)
       logical bBuildingHeated                 ! Is building heated?
       ! ( These need to be picked up from other parts of esp-r.
       !   Hard-coded for now. )
-      parameter ( bWindowsOpen      = .false. )
+      parameter ( bPSwindowsOpen      = .false. )
       parameter ( fSwingTemperature = 5.0     )
 
 
@@ -581,7 +584,7 @@ C-----------------------------------------------------------------------
 C     Determine if flux is injection or extraction.
 C-----------------------------------------------------------------------
 
-      if ( Q_ZONE .GT. 0) then
+      if ( Q_ZONE .GT. 0.) then
 
          Q_Heat = Q_ZONE
          Q_Cool = 0.
@@ -1000,7 +1003,7 @@ C     ventilated).
 C-----------------------------------------------------------------------
 
       are_gains_useful:
-     &if ( .not. bWindowsOpen .and.
+     &if ( .not. bPSwindowsOpen .and.
      &           bZoneHeated(iZone)  .and.
      &     TFA(iZone) <= fHeatSetpoint(iZone) + fSwingTemperature ) then
 
@@ -1135,6 +1138,21 @@ C.....AIR POINT TEMPERATURE
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
 
+C.....Window position from BCL25 controller
+
+      if ( bWindowsOpen(iZone) ) then 
+        fWindowPosition = 1.0
+      else 
+        fWindowPosition = 0.0
+      endif 
+
+      call add_to_xml_reporting (
+     &         fWindowPosition,
+     &         H3K_rep_NAME(1:16)// '/windows/position',
+     &         'units', '(-)',
+     &         'Window position as per BCL25 controller (0->1)' )     
+     
+     
 C.....Zone relative humidity
       fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
 
@@ -1911,8 +1929,8 @@ C........->Report data
 C     &         ZHRS(iZone,iSurface)/(TFS(iZone,iSurface)-trsum), ! <= problems with DT approx. zero !
 C          Incropera et. al., page 10:
      &        EI(iZone,iSurface)*SBC*
-     &            (TFS(iZone,iSurface)+trsum+2*273.15)*
-     &            ((TFS(iZone,iSurface)+273.15)**2+(trsum+273.15)**2),
+     &            (TFS(iZone,iSurface)+trsum+2.*273.15)*
+     &            ((TFS(iZone,iSurface)+273.15)**2.+(trsum+273.15)**2.),
      &         H3K_rep_NAME,
      &         'units', '(W/(m2 K))',
      &         'Radiant heat transfer coef. (inside face)' )

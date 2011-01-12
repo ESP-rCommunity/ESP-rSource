@@ -1942,10 +1942,15 @@ C Error!
 C Set up day type and period for nested control loop.    
    11 if(ibsn(icf,4).eq.0)goto 12
       jcf=ibsn(icf,4)
-      if(nbcdt(jcf).eq.0)ndt=nbdaytype
+      if ( nbcdt(jcf).eq.0 ) then 
+        ndt=nbdaytype
+      else 
+        ndt = nbcdt(jcf)
+      endif      
       do 71 i=1,ndt
       idtypx=i
-      if(iday.le.ibcdv(icf,i,2).and.iday.ge.ibcdv(icf,i,1))goto 72
+      if(iday.le.ibcdv(jcf,i,2).and.iday.ge.ibcdv(jcf,i,1))goto 72
+
    71 continue
 
 C Error: issue warning and set day type 1.

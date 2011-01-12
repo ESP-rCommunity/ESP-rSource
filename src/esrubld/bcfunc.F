@@ -88,7 +88,7 @@ C For the special case of current zone, mixed node control only.
    77 CALL BCL00
       return
 
-C 17 control functions active at present + thermo-physical
+C 25 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
@@ -213,6 +213,11 @@ C CL23 sensed setpoint based controller
 C CL24 Adaptive human comfort model
    24 call BCL24(ier)
       goto 99
+
+C Simple window opening model      
+   25 call BCL25_open_windows(ICOMP,ICF,IDTYP,IPER,IER)
+      goto 99
+
       
 C New control laws should be inserted here.
    98 continue
@@ -229,14 +234,25 @@ C New control laws should be inserted here.
         call epagend
         STOP
       endif
-
+C Nested conrol functions:
 C CL99 will modify the thermo-physical properties of
-C the specified multi-layered constructions.
+C the specified multi-layered constructions. BCL25 will 
+C switch between air flow methods.
    99 ifunc=ibsn(icf,4)
       if(ifunc.gt.0)then
-        if(ibsn(ifunc,1).ne.-99)then
+        
+        if(ibsn(ifunc,1).eq.-99)then
+C Set ICALL to zero to signal nested control property substitution.
+          ICALL=0
+          call bcl99(ICALL)
+        
+        elseif ( IBCLAW(ifunc,IDTYP,IPER) .eq. 25 ) then
+        
+          call BCL25_open_windows(ICOMP,IFUNC,IDTYP,IPER,IER)        
+          
+        else
           write(outs,'(2a)')' Error: Nested control functions must',
-     &      ' refer to control function -99.'
+     &      ' refer to control functions -99 or 25.'
           if(dll)then
             dllsubr='MZBCTL'
             dllmesg=outs
@@ -248,11 +264,7 @@ C the specified multi-layered constructions.
             call epagend
             stop
           endif
-        else
 
-C Set ICALL to zero to signal nested control property substitution.
-          ICALL=0
-          call bcl99(ICALL)
         endif
       endif
       RETURN
@@ -1079,7 +1091,8 @@ C control.
 
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance.
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
      &                         fHeatSetpoint, fCoolSetpoint
 
@@ -6067,6 +6080,161 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
       RETURN
       END
+      
+C ******************** BCL25_open_windows
+C This is a fairly simple algorithm that sets a flag approximating
+C window operation in residential houses. It's primary purpose is 
+C to approximate occupant-response to overheating in passive-solar 
+C designs, ensuring that they don't recieve undue credit for solar 
+C gains during overheated hours. While it provides a crude estimation
+C of free cooling benifits, it should not be used in place of more 
+C detailed methods (e.g. FCL04-Nicol Control algorithm ). 
+C
+C This control is primarely intended to switch between the AIM-2 model
+C and other methods of computing interzone air flow when windows are 
+C open/closed. 
+C 
+C At present, this code only works with the simple ideal controller. 
+C on-off and plant network cotnrollers will are not compatable with BLC25.
+
+      subroutine BCL25_open_windows(iComp,iCF,iDTyp,iPer,iER)
+      implicit none 
+      
+      include "building.h"
+      include "control.h"
+      include "blc25_open_windows.h"
+      
+C Passed variables 
+      
+      integer iComp    ! Index of current zone 
+      integer iCF      ! Index of current control function 
+      integer iDTyp    ! Index of current day type 
+      integer iPer     ! Index of period in day 
+      integer iER      ! Error flag. 
+      
+C ESP commons: 
+C - Zone characteristics 
+      real tfa(mcom)   ! Future time-row zone temperaturte (oC) 
+      real qfa(mcom)   ! Future time-row zone energy injection 
+                       ! /extraction (W, not used)
+      
+      common/fvala/tfa,qfa
+      
+C - Environment characteristics 
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real TP, TF          ! Present & Future time-row temperatures       
+      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
+      
+     
+      !COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      !COMMON/BTIME/BTIMEP,BTIMEF
+
+      !integer iHRP, iHRF, IDYP, IDYF, IDWP, IDWF, NSINC, ITSC
+      !real bTimeP, bTimeF
+      
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)      
+      
+C Flags indicating how flow should be determined when windows are 
+C open, closed
+      integer iClosedFlowMethod ! Method for determining air flow when 
+                                ! windows are closed
+      integer iOpenFlowMethod   ! Method for determining air flow when 
+                                ! windows are open
+      
+C Window control setpoints (oC)
+      real fWindowLowerSetpoint  ! Temperature at which windows are 
+                                 ! closed       
+      
+      real fWindowUpperSetpoint  ! Temperaturte at which windows are 
+                                 ! opened.
+      
+C Temperature data 
+
+      real fZoneTemperature      ! Temperature in zone (oC)
+      real fAmbientTemperature   ! Ambient temperature (oC)
+      
+     
+C-----------------------------------------------------------------------
+C Get data from control spec.
+C-----------------------------------------------------------------------     
+      
+C Get setpoints from input data 
+      fWindowLowerSetpoint = BMISCD(ICF,IDTYP,IPER,1)  ! (oC)
+      fWindowUpperSetpoint = BMISCD(ICF,IDTYP,IPER,2)  ! (oC) 
+      
+C Determine how air flow should be determined when windows are open/
+C closed.
+      iClosedFlowMethod = int( BMISCD(ICF,IDTYP,IPER,3) ) ! (oC)
+      iOpenFlowMethod   = int( BMISCD(ICF,IDTYP,IPER,4) ) ! (oC)
+
+
+C Get environment data 
+C 1. Determine zone temperature (future time row). 
+      
+      fZoneTemperature    = tfa(iComp) 
+      fAmbientTemperature = tf
+      
+C Determine if windows are open or closed. 
+C 1. Is AC system operational? If so, close windows if AC setpoint 
+C    is exceeded.
+       
+      AreWindowsOpen: 
+     & if ( bZoneCooled(iComp) .and. 
+     &      fZoneTemperature .ge. fCoolSetpoint(iComp) ) then 
+     
+        bWindowsOpen(iComp) = .false. 
+        
+C 2. Is heating system operational? If so, close windows if heating 
+C    setpoint is exceeded.
+
+      elseif ( bZoneHeated(iComp) .and. 
+     &     fZoneTemperature .le. fHeatSetpoint(iComp) ) then
+     
+        bWindowsOpen(iComp) = .false. 
+        
+C 3. Is zone temperatue above upper window control setpoint? If so, 
+C    open windows to try to use free cooling. (Note: we presently don't
+C    consider what should happen if the OA temp is above the zone temp...
+
+      elseif ( fZoneTemperature .ge. fWindowUpperSetpoint ) then 
+      
+        bWindowsOpen(iComp) = .true.
+        
+C 4. Is zone temperature below lower window control setpoint? If so, 
+C    close windows to retain the heat. 
+
+      elseif ( fZoneTemperature .le. fWindowLowerSetpoint ) then 
+      
+        bWindowsOpen(iComp) = .false. 
+        
+      else 
+      
+C 5. Leave the windows where they are. 
+
+      endif AreWindowsOpen
+      
+C Flag which method should be used to determine if windows are open, 
+C closed.    
+      if ( bWindowsOpen(iComp) ) then 
+        iAirFlowModel(iComp) = iOpenFlowMethod
+      else 
+        iAirFlowModel(iComp) = iClosedFlowMethod
+      endif 
+      
+     
+      return 
+      end subroutine BCL25_open_windows
+      
 
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 

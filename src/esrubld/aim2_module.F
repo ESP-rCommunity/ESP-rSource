@@ -217,6 +217,9 @@ C File version (used in report functions)
 C Initialization flag	
       LOGICAL :: AIM2_Initialized 
 
+C Air flow when windows open (ACH)
+      REAL :: fACH_when_windows_open      
+      
       END MODULE AIM2_InputData
 
 C ********************************************************************************
@@ -644,11 +647,25 @@ C Declarations for local variables and variables passed in common blocks.
       REAL val
       LOGICAL CLOSE
       
+C Some variables for fancy parsing functions      
+      integer iFile_read_err   ! flag indicating that error was
+                               ! encountered while reading from a file
+      integer iFile_write_err  ! Flag indicating that error was encountered
+                               ! while writing to a file
+
+
+      character*248 cLnBuffer     ! Line buffer
+      character*248 cLnWords(124) ! words on the line
+      integer iWordCount          ! # of words in a string
+      integer iDummy
+      integer iEGetArrW           ! Function processing a string.
+      
+      
       INTEGER :: allocate_status   !returns 0 for sucessful memory allocation
       
 C Initialise H2K Defaults
       CALL AIM2_H2KDefaults()
-      
+      clnbuffer = '';
 
 C Open AIM-2 input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
@@ -1006,7 +1023,38 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
          endif
       Endif
       AIM2_attic_zone = IVAL
-      IF (fAIM2VersionNumber .ge. 2.00 ) THEN
+      
+      newversions: IF (fAIM2VersionNumber .ge. 3.00 ) THEN 
+C----------------------------------------------------------------------
+C        Get first line
+C          -> stripc: stips comments from line. Synopsys:
+C             stripc ( file #     (input),
+C                      line data (output),
+C                      # items expected (input, 0 to disable checking),
+C                      Error handling (input, 0 for silent)
+C                      Contextual message (input)
+C                      error status (output)
+C                    )
+C----------------------------------------------------------------------
+         call LStripc (IUNIT, cLnBuffer, 0, iDummy, 0,
+     &                 'AIM-2 window operation',
+     &                 IER)
+C----------------------------------------------------------------------
+C        Get space/comma/tab separated words
+C          -> iEGetArrW: returns the number of words encountered
+C             and a character array containing the words. Synopsys
+C             # of words = ( string, array of words)
+C
+C----------------------------------------------------------------------
+         iWordCount = iEGetArrW ( cLnBuffer, cLnWords )
+         if (iWordCount == 2 .and. 
+     &       cLnWords(1)(1:lnblnk(cLnWords(1))) == '*ach_windows_open'
+     &      ) then 
+     
+           read (cLnWords(2),*, IOSTAT=IER) fACH_when_windows_open      
+         endif 
+         
+      elseIF (fAIM2VersionNumber >= 2.00 ) THEN
 
 C Read data inputs for window controls :
 C    - Window Control flag (0,1) 
@@ -1068,8 +1116,8 @@ C     if the window control model is active get the setpoint and actuating zone.
          endif
          fDeltaTInttoExt = VAL
 
-      ENDIF
-      ENDIF
+        ENDIF
+      ENDIF newversions
 
 C Close AIM-2 input data file.
       CALL ERPFREE(IUNIT,ISTAT)
