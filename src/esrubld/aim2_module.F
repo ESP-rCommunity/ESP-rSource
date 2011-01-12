@@ -598,7 +598,7 @@ C    AIM2_attic_zone = Zone number of attic.
       
       SUBROUTINE AIM2_READIN
       IMPLICIT NONE
-
+#include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 
@@ -667,6 +667,7 @@ C Obtain version number of AIM file.
       if(WORD(1:11).eq.'FileVersion')then
          CALL EGETWR(OUTSTR,K,fAIM2VersionNumber,0.,100.00,'F',
      &        'Version Number',IER)
+        
          if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read AIM-2 Version Number.')
             goto 1000
@@ -998,6 +999,7 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
          IVAL = 0
       Else ! Read it
          CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' attic zone',IER)
+         
          if(IER.NE.0)then
            call edisp(IUOUT,' Cannot read attic zone.')
            goto 1000
@@ -1006,12 +1008,19 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
       AIM2_attic_zone = IVAL
       IF (fAIM2VersionNumber .ge. 2.00 ) THEN
 
-C Read Blind control and Window control and Zone which temperature  controls the windows.
+C Read data inputs for window controls :
+C    - Window Control flag (0,1) 
+C    - Location of temperature control 
+C    - Hot (upper?) setpoint (oC)
+C    - Cold (lower?) setpoint (oC)
+C    - Temperature difference control (oC, min temp difference needed 
+C      to open windows?)
+C    ( All on the same line !)
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
          IF(IER.NE.0)goto 1000
          K=0
          CALL EGETWI(OUTSTR,K,IVAL,0,1,'F',
-     &        ' Zone actuator for window control',IER)
+     &        ' Flag for window control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,'Cannot read window Control Flag')
             goto 1000
@@ -1025,7 +1034,7 @@ C Set logical flag for window control.
 C     if the window control model is active get the setpoint and actuating zone.
          IF (bWindowControlFlag ) THEN
  
-         CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
+         CALL EGETWI(OUTSTR,K,IVAL,1,MCOM,'F',
      &           ' Zone actuator for window control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
