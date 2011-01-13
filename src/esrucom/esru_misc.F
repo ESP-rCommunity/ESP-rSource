@@ -1172,7 +1172,7 @@ C For each block write info, use space as item separation.
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
      &    BANGOB(icomp,I,1),OPOB(icomp,I),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I2)
+  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I3)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE

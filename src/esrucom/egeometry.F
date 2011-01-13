@@ -4682,10 +4682,10 @@ C<< Division mod 360 may be a more generic way for angle checking
 
             SSPARENT(JCC)=SSNAME(ICC)
 C Debug.
-            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
-     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
-     &        ' No of vertices in child= ',NVER(JSUR)
-            write(6,*)' '
+C            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
+C     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
+C     &        ' No of vertices in child= ',NVER(JSUR)
+C            write(6,*)' '
 
 C Having found a child add it to the list of children of
 C the parent surface.
@@ -4694,9 +4694,9 @@ C the parent surface.
             iparent(JCC)=icc   ! remember childs parent connection
 
 C Debug...
-            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
-     &        jcc,' parent of ',SSNAME(JCC),' is ',
-     &        SSNAME(iparent(JCC))
+C            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
+C     &        jcc,' parent of ',SSNAME(JCC),' is ',
+C     &        SSNAME(iparent(JCC))
           endif
  105      continue    ! jump point in case of dups
  102    CONTINUE
@@ -4786,8 +4786,8 @@ C Now fill grand children commons
             igparent(KCC)=icc   ! remember grandchilds grandparent connection
 
 C Debug.
-            write(6,*) ' parent ',icc,' child ',JCC,' childs child ',
-     &        KCC,' grandparent is ',igparent(KCC)
+C            write(6,*) ' parent ',icc,' child ',JCC,' childs child ',
+C     &        KCC,' grandparent is ',igparent(KCC)
  203      CONTINUE
  202    CONTINUE
  201  CONTINUE
