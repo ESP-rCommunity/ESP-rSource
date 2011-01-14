@@ -1698,7 +1698,7 @@ C Token describes building implicitness-explicitness value.
      &                           'Building solution implicitness',
      &                           bError ) 
             if ( fUserGAM < 0. .or. fUserGAM > 1. ) bError = .true. 
-            print*, 'READ: ',fUserGAM      
+      
 C Token describes flag for solar processing
           elseif ( 
      &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
