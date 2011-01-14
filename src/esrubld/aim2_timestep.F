@@ -1083,7 +1083,7 @@ c Note: Not including the crawl space BB
      &                      iAirFlowModel(iComp) .eq. iAIM2model ) then 
 !                
               AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
-     &                 VOL(ICOMP)  * fACH_when_windows_open
+     &                 VOL(ICOMP)  * fACH_when_windows_open / 3600.
               print*, "open:", fACH_when_windows_open, 
      &                         AIM2_infil_to_zones(ICOMP)
 !     
