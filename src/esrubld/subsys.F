@@ -1612,8 +1612,8 @@ C and this is a modeled zone and the windows are closed
         ! An added logic was to check to see if the windows are open. This feature was added for the FCT project to allow windows opening 
         ! if cooling was required and the external air temperature could help with the load. This will default to the standard esp-r esp-r flow network,
         ! which should have a open window model designed in it's afn configuration.
-        IF( iAIM2.eq.1 .and. AIM2_active_zones(ICOMP) .and.
-     &     .not. AreWindowsOpen(ICOMP) ) THEN      
+
+        IF( iAIM2.eq.1 .and. .not. AreWindowsOpen(ICOMP) ) THEN      
           
           ! Conductance of infiltration returned for that zone
           ! If the zone was not specified in the AIM-2 file then it will return a zero
