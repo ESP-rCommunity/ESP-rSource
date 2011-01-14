@@ -137,9 +137,8 @@ C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
 C only for the model's first zone. This will calculate the infiltration rate for
 C the whole house. Following this, apportion the infiltration air flow to
 C the individual zones.
-
+      
       IF( ICOMP.eq.1 ) THEN  ! First zone, perform AIM-2 calcs.
-
 C If the furnace's flue affects the house's infiltration, then the infiltration rate
 C will be calculated twice: once for the case when the furnace is operating and once
 C for the case when it is off. A weighted sum of these two calculations will be used
@@ -1066,6 +1065,7 @@ C Declarations for local variables.
 C Apportion infiltration to each zone. For now just distribute the air flow
 C in proportion to each room's volume. The basement should be treated somewhat
 C differently in the future.
+
       IF (ALLOCATED(AIM2_zone_infil).AND.
      &    ALLOCATED(AIM2_infil_to_zones)) THEN
 
@@ -1073,26 +1073,34 @@ C differently in the future.
           AIM2_infil_to_zones(ICOMP) = 0.        ! Initialize infil to zone.
           AIM2Zones: DO i=1,AIM2_num_zones_infil ! Check if there is infil to this zone.
 c Note: Not including the crawl space BB
-            if( AIM2_zone_infil(i) .eq. ICOMP .and. 
+            rightzone: if( AIM2_zone_infil(i) .eq. ICOMP .and. 
      &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
-     
-C Operable window model: Are windows open and is aim2 model specified 
-C during this period?
-              if ( bWindowsOpen(iComp) .and. 
-     &             iAirFlowModel(iComp) == iAIM2model ) then 
-                
-                AIM2_infil_to_zones(ICOMP) =   VOL(ICOMP) 
-     &                                       * fACH_when_windows_open
-              
+!     
+!C Operable window model: Are windows open and is aim2 model specified 
+!C during this period?
+!              !print*, icomp, bWindowsOpen(iComp), iAirFlowModel(iComp)
+              winopen: if ( bWindowsOpen(iComp) .and. 
+     &                      iAirFlowModel(iComp) .eq. iAIM2model ) then 
+!                
+              AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
+     &                 VOL(ICOMP)  * fACH_when_windows_open
+              print*, "open:", fACH_when_windows_open, 
+     &                         AIM2_infil_to_zones(ICOMP)
+!     
+!                !print*, 'windows:', icomp, AIM2_infil_to_zones(ICOMP),
+
+!              
               else 
-     
+!     
                 AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-     
-              endif 
-              
-              exit                                                ! Processing of this zone complete.
-            endif
+!     
+              endif winopen
+!              
+!                                                             ! Processing of this zone complete.
+            exit
+            endif rightzone
+             
           end do AIM2Zones
         END DO ZoneLoop
       ELSE

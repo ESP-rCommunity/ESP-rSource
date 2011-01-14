@@ -666,7 +666,7 @@ C Some variables for fancy parsing functions
 C Initialise H2K Defaults
       CALL AIM2_H2KDefaults()
       clnbuffer = '';
-
+      
 C Open AIM-2 input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
       IUNIT=IFIL+10
@@ -1024,7 +1024,8 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
       Endif
       AIM2_attic_zone = IVAL
       
-      newversions: IF (fAIM2VersionNumber .ge. 3.00 ) THEN 
+      newversions: IF (fAIM2VersionNumber .ge. 3.0 ) THEN 
+
 C----------------------------------------------------------------------
 C        Get first line
 C          -> stripc: stips comments from line. Synopsys:
@@ -1050,10 +1051,8 @@ C----------------------------------------------------------------------
          if (iWordCount == 2 .and. 
      &       cLnWords(1)(1:lnblnk(cLnWords(1))) == '*ach_windows_open'
      &      ) then 
-     
            read (cLnWords(2),*, IOSTAT=IER) fACH_when_windows_open      
          endif 
-         
       elseIF (fAIM2VersionNumber >= 2.00 ) THEN
 
 C Read data inputs for window controls :
