@@ -138,7 +138,6 @@ C Are uncertainties defined?
 C Reimpose any user-specified simulation toggles as needed 
       if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
       if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
-      print*, ".... ", bUserSolar, iUserSolar
 C Run the necessary number of simulations.
       do 100, I=1,NRSIM 
         ISIM=I
