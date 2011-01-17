@@ -1,6 +1,6 @@
 simple building
 * Building
-convective heating, ideal control
+convective heating, via component heater with an onoff controller
    1  # No. of functions
 * Control function    1
 # senses dry bulb temperature in reception.
@@ -12,11 +12,11 @@ convective heating, ideal control
      1  # No. of periods in day: weekday     
     0    6   0.000  # ctl type, law (flux zone/plant), start @
       7.  # No. of data items
-  4.000 1.000 1.000 99000.000 99000.000 5.000 1.000
+  4.000 1.000 1.000 5000.000 1000.000 5.000 1.000
 # Function:Zone links
  1,0,0
 * Plant
-no descrip
+convective heating via component heater with onoff controller (fan runs continuous)
    1  # No. of loops
 * Control loops    1
 # senses var in compt.  5:extract_duct @ node no.  1

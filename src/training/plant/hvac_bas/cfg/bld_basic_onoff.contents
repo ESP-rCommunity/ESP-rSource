@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Basic multi-zone model with on-off plant
-controller and network flow. defined in bld_basic.cfg-onoff generated on Fri
-Jan  7 10:33:59 2011. Notes associated with the model are in bld_basic.log
+controller and network flow. defined in bld_basic.cfg-onoff generated on Mon
+Jan 17 13:40:13 2011. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -48,8 +48,6 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  small pr:  612.00   2.06   7.50
  hot water: 190.00   0.20   0.10
 An Integrated Performance View has been defined:
-The climatelist was incomplete or missing so the
-IPV details might be incorrect.
 Title : Basic 3 zone model for hvac.
 Version   : Version bld_basic_c more metrics
 synopsis:
@@ -68,9 +66,9 @@ display day Wed-05-Jul.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
-  start  00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
-  finish 00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
-  days      1        1       1       1       1
+  start  02-Jan  13-Mar  15-May  04-Sep  30-Oct
+  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
+  days     70       63     112      56      63
  
 Ratios between assessments and winter transition summer:
  heating      17.07  12.90  23.47
@@ -116,16 +114,16 @@ Control description:
 simple building
  
 Zones control includes  1 functions.
-convective heating, ideal control
+convective heating, via component heater with an onoff controller
  
  The sensor for function  1 senses dry bulb temperature in reception.
  The actuator for function  1 is the air point in reception.
  There have been  1 day types defined.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      flux zone/plant     4.0 1.0 1.0 99000.0 99000.0 5.0 1.0
+   1  0.00 db temp   > flux      flux zone/plant     4.0 1.0 1.0 5000.0 1000.0 5.0 1.0
 plant/zone coupling: source plant component 1 plant component node 1 coupling type
-mCp(0s-0a) sequential. Max heating 99000.00W max cooling 99000.00W. Extract plant
+mCp(0s-0a) sequential. Max heating 5000.00W max cooling 1000.00W. Extract plant
 component 5 and extract node 1.
  
  Zone to contol loop linkages:
@@ -134,7 +132,8 @@ component 5 and extract node 1.
  zone ( 3) roof_space   << control  0
  
  Plant control includes  1 loops.
-no descrip
+convective heating via component heater with onoff controller (fan runs
+continuous)
  
  The sensor for function  1 senses var in compt.  5:extract_duct @ node no.  1
  The actuator for function  1 is plant component   3:heating_coil @ node no.  1
@@ -412,9 +411,7 @@ sunda  1 EquiptW    0-24    800.0      0.0       0.20       0.80
  
 Notes:
 Office has 2 occup office hours and 200W lighting. Nothing on Sat or
-Sun. Office has 0.3 ach infil and 1ach vent from reception              
-                                                                        
-                        
+Sun. Office has 0.3 ach infil and 1ach vent from reception
 Number of weekday      casual gains=  6
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -460,9 +457,7 @@ Number of saturday     casual gains=  0
  
 Notes:
 Some lighting heat from below 800W during office hours.  No infil or
-ven                                                                     
-                                                                        
-                        
+ventilation.
 Number of weekday      casual gains=  3
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
