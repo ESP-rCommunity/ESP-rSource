@@ -57,8 +57,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      integer indutl
-      CHARACTER*72 TEMPSTR
+
+
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
@@ -237,8 +237,8 @@ C If there was a change in location, but no zones defined just return.
           endif
           do 42 iz=1,ncomp
             if(ISI(iz).eq.1)then
-              TEMPSTR=LSHAD(iz)
-              call FINDFIL(TEMPSTR,XST)
+
+              call FINDFIL(LSHAD(iz),XST)
               if(XST)then
                 write(outs,'(3a)') 'Shading for ',
      &            zname(iz)(1:lnzname(iz)),' is out of date.'
@@ -2771,7 +2771,7 @@ C Edit calendar day tag and name.
               endif
 
 C Update operations and control data for all zones to include this new day type
-              ICTLF=-1*ICTLF
+
               CALL CTLWRT(ICTLF,IER)
               CALL UPDOPR
               modify=.true.
@@ -3387,8 +3387,9 @@ C Also include list of day types.
           endif
  151    continue
         call winscl('-',0)
+
+        call forceflush()
       endif
-      call forceflush()
       return
 
 C Errors for debug printing.
