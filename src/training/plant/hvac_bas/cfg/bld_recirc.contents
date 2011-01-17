@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Basic multi-zone model with PID system ctl,
-recirc fan. defined in bld_recirc.cfg-pid generated on Mon Jan 17 13:44:19
+recirc fan. defined in bld_recirc.cfg-pid generated on Mon Jan 17 16:37:28
 2011. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -140,8 +140,14 @@ implements a component heater over 3 periods
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 14.0 8.0 1.0 1080.0 1.0 70.0
+non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 14.00C
+Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
    2  7.00 dry bulb   > flux     PID flux control.   1.0 10000.0 0.0 21.0 8.0 1.0 1080.0 1.0 70.0
+non-recursive postnl mode 1.0 max capacity 10000.0W min capacity 0.00W setpoint 21.00C
+Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
    3 18.00 dry bulb   > flux     PID flux control.   1.0 7000.0 0.0 14.0 8.0 1.0 1080.0 1.0 70.0
+non-recursive postnl mode 1.0 max capacity 7000.0W min capacity 0.00W setpoint 14.00C
+Tmp range 8.00C Intrg act [s] 1080.0 Deriv act [s] 70.0
  
  Flow control includes  3 loops.
 implements a damper via control of two separate paths
@@ -496,6 +502,7 @@ sunda  1 EquiptW    0-24    800.0      0.0       0.20       0.80
 Notes:
 Office has 2 occup office hours and 200W lighting. Nothing on Sat or
 Sun. Office has 0.3 ach infil and 1ach vent from reception
+(overwritten by flow network)
 Number of weekday      casual gains=  6
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -541,7 +548,7 @@ Number of saturday     casual gains=  0
  
 Notes:
 Some lighting heat from below 800W during office hours.  No infil or
-ventilation.
+ventilation
 Number of weekday      casual gains=  3
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac

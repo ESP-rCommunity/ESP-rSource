@@ -2,7 +2,7 @@ Synopsis
  
 This is a synopsis of the model Basic multi-zone model with on-off plant
 controller and network flow. defined in bld_basic.cfg-onoff generated on Mon
-Jan 17 13:40:13 2011. Notes associated with the model are in bld_basic.log
+Jan 17 16:13:51 2011. Notes associated with the model are in bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -141,8 +141,14 @@ continuous)
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb   > flux     On-Off control.     1.0 18.0 14.0 7000.0 0.0 0.0 0.0
+OnOff std mode 1.0 on setpt 18.00C off setpt 14.00C output @ hi 7000.00W output @ lo
+0.00W sensor lag 0.0s actuator lag 0.0s.
    2  7.00 dry bulb   > flux     On-Off control.     1.0 23.0 19.0 10000.0 0.0 0.0 0.0
+OnOff std mode 1.0 on setpt 23.00C off setpt 19.00C output @ hi 10000.00W output @ lo
+0.00W sensor lag 0.0s actuator lag 0.0s.
    3 18.00 dry bulb   > flux     On-Off control.     1.0 18.0 14.0 7000.0 0.0 0.0 0.0
+OnOff std mode 1.0 on setpt 18.00C off setpt 14.00C output @ hi 7000.00W output @ lo
+0.00W sensor lag 0.0s actuator lag 0.0s.
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -456,8 +462,7 @@ Number of saturday     casual gains=  0
  and the associated network node is: roof
  
 Notes:
-Some lighting heat from below 800W during office hours.  No infil or
-ventilation.
+Some lighting heat from below 800W during office hours.  No infil or ventilation.
 Number of weekday      casual gains=  3
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac

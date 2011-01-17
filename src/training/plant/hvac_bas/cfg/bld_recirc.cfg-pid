@@ -1,7 +1,7 @@
 * CONFIGURATION4.0
 # ESRU system configuration defined by file 
 # bld_recirc.cfg-pid
-*date Mon Jan 17 13:44:26 2011  # latest file modification 
+*date Mon Jan 17 16:37:37 2011  # latest file modification 
 *root bld_recirc
 *zonpth  ../zones                  # path to zones
 *netpth  ../nets                   # path to networks
@@ -51,7 +51,7 @@
 *ipv  4,2,        # IPV data follows
 *title,Basic 3 zone model for hvac.            
 *version,Version bld_basic_c more metrics        
-*date,Mon Jan 17 13:44:26 2011
+*date,Mon Jan 17 16:37:37 2011
 *synop,General plant test model for use in training courses
 *images,0
 *simulations,3

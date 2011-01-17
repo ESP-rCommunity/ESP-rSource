@@ -1,6 +1,6 @@
 simple building
 * Building
-convective heating, ideal control
+convective heating via system components with PID controller and bypass
    1  # No. of functions
 * Control function
 # senses dry bulb temperature in reception.
@@ -12,11 +12,11 @@ convective heating, ideal control
      1  # No. of periods in day
     0    6   0.000  # ctl type, law (flux zone/plant), start @
       7.  # No. of data items
-  4.000 1.000 1.000 99000.000 99000.000 5.000 1.000
+  4.000 1.000 1.000 5000.000 1000.000 5.000 1.000
 # Function:Zone links
  1,0,0
 * Plant
-no descrip
+implements a component heater over 3 periods
    1  # No. of loops
 * Control loops
 # senses dry bulb temperature in reception.
