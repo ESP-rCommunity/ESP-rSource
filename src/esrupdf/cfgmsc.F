@@ -211,7 +211,7 @@ C Write mass flow network information.
  1002    format('# Mass flow network definition.')
          write(IFPNF,'(I5)') iflwn
          write(IFPNF,1010)
- 1010    format('Mapping of mass flow network connections to',/,
+ 1010    format('# Mapping of mass flow network connections to',/,
      &          'plant network connections.')
          write(IFPNF,1011)
      &               (icffs(jj),jj=1,npcon)

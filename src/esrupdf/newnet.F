@@ -121,7 +121,7 @@ C controls the format of the plant network file --- and will always
 C be defaulted to 'short'. The user may switch it to 'long', and this
 C setting will persist for the current prj session.
       if ( .not. bInitialized ) then
-        bPLN_format_long = .false.
+        bPLN_format_long = .true.
         bInitialized = .true.
       endif 
 
