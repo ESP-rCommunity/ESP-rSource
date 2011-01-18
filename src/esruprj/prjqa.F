@@ -2864,8 +2864,9 @@ C For floors facing outside assume downward hc coef.
                 xareawall = xareawall + SSNA(icc)
                 xuavwall = xuavwall + (SSNA(icc) * UVD)
               endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &             SSOTF(icc)(1:4).ne.'CFC ')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ' !.and.
+c     &             SSOTF(icc)(1:4).ne.'CFC '
+     &             )then
               if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &           SSVFC(icc)(1:4).eq.'SLOP')then
 
