@@ -3280,14 +3280,58 @@ C Plant control law.
             write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
             write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(8)
           endif
-          write(lmsg,'(2a,f9.1,a,f9.1,a,f7.2,a,f7.2,a,f7.2,4a)') 
+          write(lmsg,'(2a,f5.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,4a)') 
      &    msg1,' mode ',cm(2),' max capacity ',cm(3),
      &    'W min capacity ',cm(4),'W setpoint ',
      &    cm(5),'C Tmp range ',cm(6),'C ',msg2,' ',msg3
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
+
+        elseif(IPCLAW(II,JJ,KK).EQ.2)then
+          SSTR='PID flow control. '
+          msg1=' '; msg2=' '; msg3=' '
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          cm(7)=pmiscd(II,JJ,KK,7)
+          cm(8)=pmiscd(II,JJ,KK,8)
+          cm(9)=pmiscd(II,JJ,KK,9)
+          cm(10)=pmiscd(II,JJ,KK,10)
+          I2=INT(cm(2))
+          if(I2.eq.1.or.I2.eq.-1) msg1='non-recursive postnl'
+          if(I2.eq.2.or.I2.eq.-2) msg1='recursive postnl'
+          if(I2.eq.3.or.I2.eq.-3) msg1='recursive vel rect'
+          if(I2.eq.4.or.I2.eq.-4) msg1='recursive vel rect'
+          if(I2.eq.5.or.I2.eq.-5) msg1='recursive vel trapez'
+          I7=INT(cm(7))
+          I8=INT(cm(8))
+          I9=INT(cm(9))
+          if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+            if(I7.eq.1)then
+              write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(8)
+              if(I9.eq.1)then
+                write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(10)
+              endif
+            else
+              if(I8.eq.1)then
+                write(msg2,'(a,f7.1)') ' Deriv act [s]',cm(9)
+              endif
+            endif
+          elseif(I2.eq.3.or.I2.eq.-3)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+            write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(8)
+          endif
+          write(lmsg,'(2a,f4.1,a,f9.5,a,f9.5,a,f7.2,a,f7.2,4a)') 
+     &    msg1,' mode ',cm(2),' max flow ',cm(3),
+     &    'kg/s min flow ',cm(4),'kg/s setpoint ',
+     &    cm(5),'C throt range ',cm(6),'C ',msg2,' ',msg3
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
         endif
-        IF(IPCLAW(II,JJ,KK).EQ.2) SSTR='PID flow control. '
         IF(IPCLAW(II,JJ,KK).EQ.3) SSTR='Prop numerical ctrl.'
         IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
         IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
