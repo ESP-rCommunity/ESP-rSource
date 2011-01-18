@@ -1,11 +1,16 @@
+*HC_CTL for zone west
+*Date,Tue Jan 18 10:59:23 2011
    1 # number control intervals
-   7 # number of constructions
+   7 # number of surfaces
+# (west south internal north ceiling floor glazing)
   0.00    24.00 # start and end time of interval
-   3 # calculation control type
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
-   4. 6.0  43.  13.   2.   99.   4.  -1. # Mixed convection, OA from AHU
+   3 # adaptive calculation control type
+*Doc,Sets HC so that when AHU is active increased hc are used. Mixed convection, OA from AHU
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+   4.   6.  43.  13.   2.  99.   4.  -1.
+  0 0.000 0.000 # Air origin zone (+ chan. width & height if Bar-Cohen cor.)
