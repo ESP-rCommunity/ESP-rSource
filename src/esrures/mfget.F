@@ -141,7 +141,8 @@ C Comfort parameters and hash table.
 C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
       common/mfocup/iocpzone
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 
@@ -156,13 +157,15 @@ C air flow reporting.
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
-      character ll1*8,ll2*8,ll3*8,lodlabel*6
+      character ll1*8,ll2*8,ll3*8
       character zn*12
 
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
 
       integer YAXSET, ADDLIN
       integer lcname  ! length of contaminate string
+      integer IOT,IWM  ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSI
@@ -719,6 +722,8 @@ C a thermal zone.
 C Casual gain type.  Ask user which constitutes occupancy.
 C Labels for loads, use first zones labels as examples. If time
 C based set iocut=-1, if always occup set iocut=0.
+
+C << revise for additional casual gain types >>
             write(ll1,'(1x,a6,1x)') lodlabel(1,1)
             write(ll2,'(1x,a6,1x)') lodlabel(1,2)
             write(ll3,'(1x,a6,1x)') lodlabel(1,3)
@@ -728,6 +733,7 @@ C based set iocut=-1, if always occup set iocut=0.
             H(3)='list. Type 1 usually represents casual gains from '
             H(4)='people,although any of the three casual gain types'
             H(5)='can be used. '
+            IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
             if (IOT.gt.1.and.IOT.lt.5) then
@@ -855,6 +861,7 @@ C Toggle delimeter.
           H(5) ='  comma separator (for excel)'
           H(6) ='  tab separator (for excel)'
           H(7) ='  tagged - marked up data'
+          IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','tagged',
      &      'continue',' ',IWM,7)
@@ -2455,6 +2462,7 @@ C glmflabel char*32 is longer label for flow item
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       integer ORDER,OGET
       dimension INCGET(MFRS),ORDER(MFRS),OGET(MFRS)
+      integer MVERT,IVERT ! max items and current menu item
 
 C Sort ORDER of IMFGETNO array for display purposes.
       do 100 I=1,NMFGET

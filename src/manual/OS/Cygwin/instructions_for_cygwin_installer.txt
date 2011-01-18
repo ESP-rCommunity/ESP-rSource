@@ -1,6 +1,6 @@
 
         Steps to create or use the ESP-r self extractor on Cygwin
-                            November 2009
+                            July 2010
 
 There are two patterns used to create an installer for ESP-r for use
 on Cygwin emulators within Windows computers.  One is via a single-file 
@@ -70,9 +70,9 @@ Then create a tar file of the esp-r folders (the example below
 includes a version in the name of the tar file which you may
 wish to change to reflect the current version number).
 
-  tar cf esp-r_X11_11.8_cygwin.tar esp-r
-  gzip -9 esp-r_X11_11.8_cygwin.tar
-  mv esp-r_X11_11.8_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_X11_11.9_cygwin.tar esp-r
+  gzip -9 esp-r_X11_11.9_cygwin.tar
+  mv esp-r_X11_11.9_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
@@ -93,9 +93,9 @@ Again remove the subversion files from the /usr/esru folders.
 Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_cygwin folder (as above). 
 
-  tar cf esp-r_GTK_11.8_cygwin.tar esp-r
-  gzip -9 esp-r_GTK_11.8_cygwin.tar
-  mv esp-r_GTK_11.8_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_GTK_11.9_cygwin.tar esp-r
+  gzip -9 esp-r_GTK_11.9_cygwin.tar
+  mv esp-r_GTK_11.9_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 Remember to remove any older *.tar.gz files from the precompiled_for_cygwin
 folder so that are not included in the installer run file.
@@ -118,7 +118,7 @@ files are helper applications that setup is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.8_cygwin_precomp.run "ESP-r V11.8 distribution" ./setup
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.9_cygwin_precomp.run "ESP-r V11.9 distribution" ./setup
 
 The tokens in the above command are as follows:
 

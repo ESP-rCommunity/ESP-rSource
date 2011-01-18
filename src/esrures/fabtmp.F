@@ -36,7 +36,7 @@ C the results database.
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -47,17 +47,10 @@ C the results database.
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
       CHARACTER outs*124
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Read (silently) in the zone geometry data.
-      newgeo=.false.  ! assume older format geometry.
       IUNITF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
-      else
-        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
-      endif
+      call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')
@@ -139,9 +132,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
@@ -149,8 +139,6 @@ C IPRZ is material db ref for each layer.
       logical closemat1,closemat2
 
       CHARACTER outs*124,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Use material arrays if available. This also assumes that constructions will
 C have been filled after the model cfg file was scanned.
@@ -403,14 +391,10 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character TSTR*6,ZN*12,RSNAME*40,SN*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
 #ifdef OSI
@@ -564,13 +548,13 @@ C Draw construction section.
       iid1=igr; iid2=igt-10;
       call wstxpt(iid1,iid2,ZN)
       igr=13
-      X=0.
+      XX=0.
       YD=TMAX-TMIN
       NE=NELTS(ICOMP,ISUR)
       DO 101 L=1,NE
-        XL=X
+        XL=XX
         XD=ETHK(L)
-        X=X+ETHK(L)
+        XX=XX+ETHK(L)
         if(IPRZ(ISUR,L).ne.0)call egrbox(XL,TMIN,XD,YD,igr)
   101 CONTINUE
 
@@ -596,16 +580,16 @@ C Placing them in XVAL1 and then into VAL2.
 C Commence drawing. Remember that everything shifted over 1
 C to allow for outside temp to be in VAL2(1,?)
           icnt=icnt+1
-          X=THKMIN
+          XX=THKMIN
           iupdown=0
           isym=0
-          call etplot(X,VAL2(1,J),iupdown,isym)
-          X=0.
+          call etplot(XX,VAL2(1,J),iupdown,isym)
+          XX=0.
           iupdown=1
           DO 90 L=1,NNT
-            call etplot(X,VAL2(L+1,J),iupdown,isym)
+            call etplot(XX,VAL2(L+1,J),iupdown,isym)
             M=((L-1)/2)+1
-            X=X+ETHK(M)/2.
+            XX=XX+ETHK(M)/2.
    90     CONTINUE
           iupdown=1
           call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
@@ -637,16 +621,16 @@ C each timestep. Pause 200msec at each timestep.
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
               call winscl('i',nifgrey-1)
-              X=THKMIN
+              XX=THKMIN
               iupdown=0
               isym=0
-              call etplot(X,VAL2(1,J),iupdown,isym)
-              X=0.
+              call etplot(XX,VAL2(1,J),iupdown,isym)
+              XX=0.
               iupdown=1
               DO 91 L=1,NNT
-                call etplot(X,VAL2(L+1,J),iupdown,isym)
+                call etplot(XX,VAL2(L+1,J),iupdown,isym)
                 M=((L-1)/2)+1
-                X=X+ETHK(M)/2.
+                XX=XX+ETHK(M)/2.
    91         CONTINUE
               iupdown=1
               call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
@@ -660,13 +644,13 @@ C Re-Draw construction section.
             iid1=igr; iid2=igt-10;
             call wstxpt(iid1,iid2,ZN)
             igr=13
-            X=0.
+            XX=0.
             YD=TMAX-TMIN
             NE=NELTS(ICOMP,ISUR)
             DO 102 L=1,NE
-              XL=X
+              XL=XX
               XD=ETHK(L)
-              X=X+ETHK(L)
+              XX=XX+ETHK(L)
               if(IPRZ(ISUR,L).ne.0)call egrbox(XL,TMIN,XD,YD,igr)
   102       CONTINUE
             call forceflush

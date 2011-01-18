@@ -51,7 +51,8 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/C21/IFCFG,cfgroot,LCFGF
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -71,9 +72,10 @@ C Pre calculated data (filtered).
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,H*72,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
-      CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
+      integer IOT  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -174,6 +176,8 @@ C Assume default MET is equiv to 85W/m^2.
 
 C Set representative casual gain and then search all zones and build
 C up hash list of zone:time:occupancy.
+
+C << revise for additional casual gain types >>
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
         write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
@@ -195,6 +199,7 @@ C up hash list of zone:time:occupancy.
         H(16)='within the zone operations file the first Type is for'
         H(17)='occupants the second Type is lights and the third Type'
         H(18)='is Equipment (small power).'
+        IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,18)
         if (IOT.gt.1.and.IOT.lt.5) then
@@ -371,6 +376,8 @@ C Air speed.
       elseif(ino.eq.8)then
 
 C Casual gain type.  Ask user which constitutes occupancy.
+
+C << revise for additional casual gain types >>
         call edisp(iuout,' ')
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
@@ -380,6 +387,7 @@ C Casual gain type.  Ask user which constitutes occupancy.
         H(3)='list. Type 1 usually represents casual gains from '
         H(4)='people,although any of the three casual gain types can '
         H(5)='be used. '
+        IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
         if (IOT.gt.1.and.IOT.lt.5) then
@@ -770,21 +778,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
       common/c1/ncomp,ncon
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
 C.........END: USED FOR ACTIVITY TDF DATA.....................

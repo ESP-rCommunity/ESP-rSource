@@ -46,15 +46,12 @@ C ********************************************************************
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER ITEM(9)*29,DPNDC*20
       CHARACTER H*72,TEXT*50,MSGSET*70
+      integer NITEM,INO ! max items and current menu item
 
       LOGICAL     OK,DOK
 
@@ -228,6 +225,7 @@ C *******************************************************************
 
       CHARACTER*25 ITEM(6)
       CHARACTER TEXT*50,H*72
+      integer NITEM,INO ! max items and current menu item
 
    10 ITEM(1)='a select zone            '
       ITEM(2)='b select constructions   '
@@ -322,12 +320,8 @@ C ******************************************************************
 
       common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       DIMENSION IVALS(MS)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*20 ITEM(MS)
       CHARACTER TEXT*50,H*72
 
@@ -482,12 +476,8 @@ C *********************************************************************
       integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       CHARACTER NAMELYR*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer lnsn
 
       ioc=IZSTOCN(icomp,icnst)

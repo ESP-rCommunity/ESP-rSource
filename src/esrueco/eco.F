@@ -40,6 +40,7 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 
       PROGRAM eco
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -93,14 +94,11 @@ C Zone information
 
 C Composites information
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C For exporting to file
@@ -159,15 +157,13 @@ C Name of current application
       CHARACTER H*72,outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER path*72,upath*72,L144*144
+      CHARACTER path*72,L144*144
       CHARACTER NAM*72
 C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8, Oldunit*8
       CHARACTER xfile*144,tg*1,delim*1,MODE*4
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       INTEGER IWHICH
       LOGICAL close
@@ -181,6 +177,7 @@ C      CHARACTER tab*1
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO ! max items and current menu item
 
 C Initial assumptions (summary reporting).
       call ezero

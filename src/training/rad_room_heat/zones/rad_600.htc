@@ -1,0 +1,10 @@
+*HC_CTL for zone rad_600
+*Date,Thu Jan 11 10:33:29 2007
+   1 # number control intervals
+   7 # number of surfaces
+# (front_edge right_edge back_edge left_edge join_400 upper base)
+  0.00    24.00 # start and end time of interval
+   1 # fixed coef. calculation control type
+*Doc,User supplied hc values
+ -1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,50.000
+ -1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000

@@ -53,7 +53,7 @@ C  appearing graphs comprising the results of the simulation.
       LOGICAL IZEROT,IZanKE,IMITZ
       logical photon,matlab,textout,flwvis,xslice,yslice,zslice
 
-      character q*1,outs*124
+      character q*1
 
       q=CHAR(39)
 

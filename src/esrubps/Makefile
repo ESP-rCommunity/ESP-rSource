@@ -23,14 +23,14 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o bctlf.o \
-	  blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
+	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
 	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
-	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o g3dfac.o \
+	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
@@ -39,8 +39,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
-	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
-	  MechVentIN.o CentralVentSys.o \
+	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
 	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o\
 	  FC_components.o FC_functions.o gshpinput.o gshpsim.o \
@@ -56,10 +55,12 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o
+	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o
+
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_timestep.mod
 
 $(PROG): $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags) 
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -79,6 +80,9 @@ ascii_mat.F:
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
 bcfunc.F:
 	rm -f bcfunc.F
 	ln -s $(BLDdir)/bcfunc.F .
@@ -226,6 +230,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 g3dfac.F:
 	rm -f g3dfac.F
 	ln -s $(BLDdir)/g3dfac.F .
@@ -315,7 +322,7 @@ mzoutp.F:
 	ln -s $(BLDdir)/mzoutp.F .
 ncm_overheating.F:
 	rm -f ncm_overheating.F
-	ln -s $(BLDdir)/ncm_overheating.F .        
+	ln -s $(BLDdir)/ncm_overheating.F .
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
@@ -415,12 +422,12 @@ tscon.F:
 utilf.F:
 	rm -f utilf.F
 	ln -s $(BLDdir)/utilf.F .
-aim2_pretimestep.F:
-	rm -f aim2_pretimestep.F
-	ln -s $(CETCdir)/aim2_pretimestep.F .
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 aim2_timestep.F:
 	rm -f aim2_timestep.F
-	ln -s $(CETCdir)/aim2_timestep.F .
+	ln -s $(BLDdir)/aim2_timestep.F .
 MechVentIN.F:
 	rm -f MechVentIN.F
 	ln -s $(CETCdir)/MechVentIN.F .
@@ -563,8 +570,8 @@ Hydrogen_MH_store.F:
 	rm -f Hydrogen_MH_store.F
 	ln -s $(PLTdir)/Hydrogen_MH_store.F
 enet_state_variable_manipulate.F:
-	rm -f enet_state_variable_manipulate.F 
-	ln -s $(PFSdir)/enet_state_variable_manipulate.F 
+	rm -f enet_state_variable_manipulate.F
+	ln -s $(PFSdir)/enet_state_variable_manipulate.F
 Hydrogen_demand_controller.F:
 	rm -f Hydrogen_demand_controller.F
 	ln -s $(PLTdir)/Hydrogen_demand_controller.F
@@ -648,6 +655,12 @@ editCFC.F:
 NCHE.F:
 	rm -f NCHE.F
 	ln -s $(PLTdir)/NCHE.F .
+stratified_tank_1HX.F:
+	rm -f stratified_tank_1HX.F
+	ln -s $(PLTdir)/stratified_tank_1HX.F .
+stratified_tank_2HX.F:
+	rm -f stratified_tank_2HX.F
+	ln -s $(PLTdir)/stratified_tank_2HX.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -657,9 +670,9 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) \
-	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
-	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F bcfunc.F bctlf.F \
+	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES)\
+	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
+	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
@@ -669,7 +682,7 @@ clean:
 	drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
 	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F \
-	esru_misc.F esystem.F fan.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
+	esru_misc.F esystem.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
 	gshpinput.F gshpsim.F h2_components.F h2_comps.F h2_matrix_library.F h3koutput.F \
 	h3kstore.F hvacinput.F hvac_output.F hvacsim.F Hydrogen_appliances.F \
 	Hydrogen_demand_controller.F Hydrogen_MH_store.F Hydrogen_PEMFC.F \
@@ -692,4 +705,4 @@ clean:
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
-	complex_fenestration.F editCFC.F NCHE.F
+	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F 

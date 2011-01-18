@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -33,13 +33,13 @@ C << and instanciation of data edited in a sequence should be
 C << done only after all of the dialogs have been accepted.
 
 C ******************** CTWRIT ********************
-C Dump contaminant model to file 
+C Dump contaminant model to file
 C Definitions of most variables is given in ctread.F
 
       SUBROUTINE CTWRIT(IFCTM)
 #include "net_flow.h"
 #include "building.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -208,17 +208,17 @@ C Write source/sink models data
      &'# Source/sink name, number, type, supplementary data items'
       DO 512 ISPMNO=1,NSPMNO
         LOUTS=' '
-        IF(SPMTYP(ISPMNO).EQ.1)THEN        
+        IF(SPMTYP(ISPMNO).EQ.1)THEN
           NCSD=1
-        ELSEIF(SPMTYP(ISPMNO).EQ.2)THEN        
+        ELSEIF(SPMTYP(ISPMNO).EQ.2)THEN
           NCSD=2
-        ELSEIF(SPMTYP(ISPMNO).EQ.3)THEN        
+        ELSEIF(SPMTYP(ISPMNO).EQ.3)THEN
           NCSD=5
-        ELSEIF(SPMTYP(ISPMNO).EQ.4)THEN        
+        ELSEIF(SPMTYP(ISPMNO).EQ.4)THEN
           NCSD=6
-        ELSEIF(SPMTYP(ISPMNO).EQ.5)THEN        
+        ELSEIF(SPMTYP(ISPMNO).EQ.5)THEN
           NCSD=7
-        ELSEIF(SPMTYP(ISPMNO).EQ.6)THEN        
+        ELSEIF(SPMTYP(ISPMNO).EQ.6)THEN
           NCSD=9
         ENDIF
         DO 513 ICSD=1,NCSD
@@ -292,14 +292,13 @@ C Definitions of most variables is given in ctread.F
       SUBROUTINE CTPROB
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/USER/BROWSE
       COMMON/FILEP/IFIL
-      COMMON/PATHS/ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DOCPTH,TMPPTH,
-     &             DBSPTH
       COMMON/C21/IFCFG,CFGROOT,LCFGF
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -315,8 +314,6 @@ C Definitions of most variables is given in ctread.F
       COMMON/CONTM5/SPMSUP(MSPMNO,MCSD),SSLINK2(MSPMNO,MNOD),
      &SPMTYP(MSPMNO),SSNAME(MSPMNO),NSPMNO,SSLINK1(MSPMNO,MCONTM)
 
-      CHARACTER ZONEPTH*24,NETPTH*24,CTLPTH*24,IMGPTH*24,RADPTH*24
-      CHARACTER DOCPTH*24,TMPPTH*24,DBSPTH*24
       CHARACTER*124 CNTMDESC
       CHARACTER*72 CNTMFIL,H,CTMF,LCFGF
       CHARACTER CONTMNAM*12,CMNAM*12,LTPCMP*60,SSNAME*12
@@ -329,8 +326,9 @@ C Definitions of most variables is given in ctread.F
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,BROWSE
 
       integer NTSTEPCT   ! for local editing.
+      integer NITEMS,NITEML,INO,INNO,ISO ! max items and current menu item
 
-C set contaminant file 
+C set contaminant file
       IUNIT=IFIL+72
 
 C Display a help message to user explaining they should have defined a
@@ -346,7 +344,7 @@ C flow network prior to defining a contaminant model
       H(9) = 'a contaminant model had been defined then that'
       H(10)= 'contaminant model will need to be modified accordingly.'
       IF(NOCNTM.LE.0) THEN
-        CALL PHELPD('contamn model def',10,'-',0,0,IER)                  
+        CALL PHELPD('contamn model def',10,'-',0,0,IER)
         DOK=.false.
         CALL ASKOK(' ',
      &    'Proceed with contaminant model definition?',OK,DOK,10)
@@ -369,8 +367,8 @@ C Check if a file has been defined previously
         CTMF='  '
       ENDIF
 
-C Attempt to read in a contaminant file. If file has yet to be named 
-C then base it on cfgroot and place it in the netpth folder 
+C Attempt to read in a contaminant file. If file has yet to be named
+C then base it on cfgroot and place it in the netpth folder
 C (differienciate between unix and non-unix machine types).
       IF(CTMF(1:2).EQ.'  '.OR.CTMF(1:4).EQ.'UNKN')THEN
         IF(UNIXOK)THEN
@@ -497,7 +495,7 @@ C Setup Contaminant Model network
         H(2) = 'ambient concentrations and initial concentrations'
         H(3) = 'at each air point node'
         INNO=-2
-        ITEMS(1) =' name:   ambient (max) conc:'       
+        ITEMS(1) =' name:   ambient (max) conc:'
         ITEMS(2) ='              (kg/kg)    '
         DO 20 ICONTM=1,NCONTM
           AMBCONC=0.0
@@ -725,7 +723,7 @@ C Now put in filter efficiencies if any
         H(3) ='these cannot be deleted or added but only the values'
         H(4) ='may be modified'
         INNO=-2
-        ITEMS(1) =' name:   ambient (max) conc:'       
+        ITEMS(1) =' name:   ambient (max) conc:'
         ITEMS(2) ='              (kg/kg)    '
         DO 722 ICONTM=1,NCONTM
           AMBCONC=0.0
@@ -808,7 +806,7 @@ C Now put in filter efficiencies if any
         H(2) =' than building side timestep.  For a one hour building'
         H(3) =' timestep a five minute timestep is usually appropriate.'
         H(4) =' Contaminant timestep should be integer multiple of '
-        H(5) =' building timestep.' 
+        H(5) =' building timestep.'
         H(6)=' '
         H(7)='A cancel request leaves the model unchanged. '
         NTSTEPCT=NTSTEPC
@@ -929,7 +927,7 @@ C Get contaminant 1 and 2 for the chemical reaction
 
       IF(IADC.EQ.1)THEN
  2015   INNO=-2
-        ITEML(1) =' name:   ambient (max) conc:'       
+        ITEML(1) =' name:   ambient (max) conc:'
         ITEML(2) ='              (kg/kg)    '
         DO 720 ICONTM=1,NCONTM
           AMBCONC=0.0
@@ -1047,7 +1045,7 @@ C Get contaminant for the chemioal reaction
           GOTO 2021
         ENDIF
       ENDIF
-      
+
       RETURN
       END
 
@@ -1121,7 +1119,7 @@ C Get source/sink to be linked
 
 C Get contaminant to be linked
  702    INNO=-2
-        ITEMS(1) =' name:   ambient (max) conc:'       
+        ITEMS(1) =' name:   ambient (max) conc:'
         DO 20 ICONTM=1,NCONTM
           AMBCONC=0.0
           AMBMAX=0.0
@@ -1261,7 +1259,7 @@ C not be edited (just allow add copy delete).
         h(1)='This is your chance to backup and not change the details'
         h(2)='of this contaminant source. '
         CALL ASKOK('Edit this source/sink?',' ',OK,DOK,2)
-        IF(.NOT.OK)RETURN        
+        IF(.NOT.OK)RETURN
       ELSE
         EDIT=.FALSE.
         IADC=NADC
@@ -1351,7 +1349,7 @@ C Remind the user what the current source/sink type is!
         H(30)='a sequence of edits may have been restored so please'
         H(31)='check your model description. '
 
-        ITEMS(1) ='a constant coefficient           '       
+        ITEMS(1) ='a constant coefficient           '
         ITEMS(2) ='b cut-off concentration          '
         ITEMS(3) ='c exponential decay/increase     '
         ITEMS(4) ='d bndry layer diffusion          '
@@ -1368,7 +1366,7 @@ C Remind the user what the current source/sink type is!
           GOTO 2007
         ELSEIF(INNO.GE.1.AND.INNO.LE.6)THEN
 
-C OK source name is unique,add it to the list of names and 
+C OK source name is unique,add it to the list of names and
 C increment NSPMNO
           IF(.NOT.EDIT) THEN
             IF(NSPMNO.GE.MSPMNO)THEN
@@ -1772,7 +1770,7 @@ C To delete a source/sink model
           h(1)='Just in case you selected delete by mistake this is '
           h(2)='a chance to back out of the decision. '
           CALL ASKOK('Delete this source/sink model?',' ',OK,DOK,2)
-          IF(.NOT.OK)RETURN        
+          IF(.NOT.OK)RETURN
           ISSDEL=IIO-1
 
 C Remove this source/sink from common block elements and
@@ -1825,7 +1823,7 @@ C Move remaining source/sink models 'up' in relevant arrays
  35         CONTINUE
           ENDIF
           NSPMNO=NSPMNO-1
-        ELSE 
+        ELSE
 
           GOTO 2011
         ENDIF
@@ -1853,7 +1851,7 @@ C Copy a source/sink
           h(1)='In case you selected copy by mistake, here is your '
           h(2)='chance to back out of the decision. '
           CALL ASKOK('Copy this contaminant',' ',OK,DOK,2)
-          IF(.NOT.OK)RETURN        
+          IF(.NOT.OK)RETURN
           ISSCPY=IIO-1
 
 C Get source/sink name
@@ -1875,7 +1873,7 @@ C Get source/sink name
             ENDIF
  9       CONTINUE
 
-C OK source name is unique,add it to the list of names and 
+C OK source name is unique,add it to the list of names and
 C increment NSPMNO
           NSPMNO=NSPMNO+1
           SSNAME(NSPMNO)=SSID(1:12)
@@ -1928,6 +1926,7 @@ C MEDIT is ??
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP,WCONCA(MT)
       LOGICAL OK,DOK,EDIT
+      integer IW  ! for radio button
 
       IF(MEDIT.NE.0)THEN
         EDIT=.TRUE.
@@ -1936,7 +1935,7 @@ C MEDIT is ??
         h(1)='Just in case you selected edit by mistake, here is '
         h(2)='a chance to go back. '
         CALL ASKOK('Edit this contaminant',' ',OK,DOK,2)
-        IF(.NOT.OK)RETURN        
+        IF(.NOT.OK)RETURN
         IADC=1
       ELSE
         IADC=NADC
@@ -1969,7 +1968,7 @@ C Get Contaminant name and check to be unique
           ENDIF
  10     CONTINUE
 
-C OK contaminant name is unique,add it to the list of names and 
+C OK contaminant name is unique,add it to the list of names and
 C increment NCONTM
         IF(EDIT)THEN
           CONTMNAM(ICONTAM)=CNTMID(1:12)
@@ -2017,13 +2016,13 @@ C << to be done - return data to previous value before exit >>
  1754   CONTINUE
         ITIM=NTIM+1
         IF(NTIM.LT.24)GOTO 4
-        GOTO 3  
+        GOTO 3
  2      VAL=CNCAA(ICONTAM,1)
         H(1) = 'Contaminant ambient concentration (kg/kg of air)'
         H(2) = 'values to be between 0 and 1'
         CALL EASKR(VAL,' ','Ambient concentration kg/kg ? ',
      &    0.0,'F',1.0,'F',0.01,'amb conc of contaminant',IER,2)
- 3      DO 256 IT=1,MT  
+ 3      DO 256 IT=1,MT
           IF(IHORC.EQ.2)THEN
             IF(EDIT)THEN
               CNCAA(ICONTAM,IT)=VAL
@@ -2042,6 +2041,7 @@ C << to be done - return data to previous value before exit >>
 C Ask for concentration of this contaminant at all internal airpoints
         H(1) = 'You can also set the initial contaminant concentrations'
         H(2) = 'for each node separately by choosing no'
+        IW=1
         CALL EASKATOG('Is initial conc at each node equal to ambient?',
      & ' ','yes','no','default (yes)',' ',' ',' ',' ',IW,NHL)
         IF(IW.EQ.1.OR.IW.EQ.3)THEN
@@ -2079,10 +2079,10 @@ C Ask for concentration of this contaminant at all internal airpoints
         ENDIF
       ELSEIF(IADC.EQ.2) THEN
 
-C To delete a contaminant 
+C To delete a contaminant
  2013   IIO=-2
         H(1) = 'Choose contaminant to be deleted'
-        ITEMS(1) =' name:  ambient (max) conc:'       
+        ITEMS(1) =' name:  ambient (max) conc:'
         ITEMS(2) ='              (kg/kg)    '
         DO 21 ICONTM=1,NCONTM
           AMBCONC=0.0
@@ -2108,7 +2108,7 @@ C To delete a contaminant
           h(1)='If you selected delete by mistake this is a chance to'
           h(2)='back out of the decision. '
           CALL ASKOK('Delete this contaminant',' ',OK,DOK,2)
-          IF(.NOT.OK)RETURN        
+          IF(.NOT.OK)RETURN
           ICTDEL=IIO-2
           CONTMNAM(ICTDEL)=' '
           DO 70 IT=1,MT
@@ -2136,7 +2136,7 @@ C Shift remaining contaminants 'up' if deleted contaminant is not last
  27           CONTINUE
               DO 23 ICNN=1,NCNN
                 FILEFA(I,ICNN)=FILEFA(I+1,ICNN)
- 23           CONTINUE     
+ 23           CONTINUE
               DO 24 ICONTM=1,NCONTM
                 FORCAB(I,ICONTM)=FORCAB(I+1,ICONTM)
  24           CONTINUE
@@ -2151,13 +2151,13 @@ C Shift remaining contaminants 'up' if deleted contaminant is not last
           NCONTM=NCONTM-1
         ELSE
           GOTO 2013
-        ENDIF        
+        ENDIF
 
 C Copy a contaminant
       ELSEIF(IADC.EQ.3) THEN
  2014   IIO=-2
         H(1) = 'Choose contaminant to be copied'
-        ITEMS(1) =' name:   ambient (max) conc:'       
+        ITEMS(1) =' name:   ambient (max) conc:'
         ITEMS(2) ='              (kg/kg)    '
         DO 41 ICONTM=1,NCONTM
           AMBCONC=0.0
@@ -2183,7 +2183,7 @@ C Copy a contaminant
           h(1)='In case you requested copy by mistake, this is a chance'
           h(2)='to back out without changing anything. '
           CALL ASKOK('Copy this contaminant',' ',OK,DOK,2)
-          IF(.NOT.OK)RETURN        
+          IF(.NOT.OK)RETURN
           ICTCPY=IIO-2
 
 C Get Contaminant name and check to be unique
@@ -2205,7 +2205,7 @@ C Get Contaminant name and check to be unique
             ENDIF
  43       CONTINUE
 
-C OK contaminant name is unique,add it to the list of names and 
+C OK contaminant name is unique,add it to the list of names and
 C increment NCONTM
           NCONTM=NCONTM+1
           CONTMNAM(NCONTM)=CNTMID(1:12)

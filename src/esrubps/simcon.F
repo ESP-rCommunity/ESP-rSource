@@ -35,33 +35,44 @@ C SIMCON sets the final parameters before executing a simulation.  MZNUMA is
 C called the required number of times, saving results after each simulation. 
 
       subroutine SIMCON
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2, ONLY: AIM2_SETVARS
+      
+      IMPLICIT NONE
+
 C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 #include "building.h"
 #include "uncertainty.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
+#include "SOFC.h"
 
-      common/outin/iuout,iuin
       common/filep/ifil
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
 
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
+      INTEGER :: NSCVP,IPS
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
+      INTEGER :: ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SAVE/ISAVE
+      INTEGER :: isave
       COMMON/SAVE1/LSAVE
+      INTEGER :: lsave
 
       COMMON/C6/INDCFG
+      INTEGER :: indcfg
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA5/IMET,ISIM,NRSIM
+      INTEGER :: imet,isim,nrsim
 
-C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character*72 LAIM2
 
 c Mechanical ventilation system activator
       Integer iMech
@@ -74,6 +85,10 @@ C Simulator parameter.
       logical PBYFIL,OK,dok
 
       character LUALF*72,LCNG*15,LLOC*15,outs*124,h*72
+      
+      INTEGER :: i,ier,irep,isimn1,isimn2,istat,iualf,iunit
+      INTEGER :: nstep
+      REAL :: tstep
 
       OK=.FALSE.
 
@@ -322,7 +337,7 @@ C Tolerance for iteration of hydrogen flow matrix
       CHARACTER*72 H,vsnam
       CHARACTER*29 ITEM(18)
       character outs*124
-
+      integer NITMS,INO  ! max items and current menu item
 
 C Intialise timestep controller flag. By default, timestep controller
 C is disabled.  Also initialise number of TSC operations to zero.
@@ -426,7 +441,11 @@ c save level 5
         ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
-      ITEM(6)=   'm Monitor state variables    '
+      if(ISAVE.eq.0)then
+        ITEM(6)= '  Monitor (not available)'
+      else
+        ITEM(6)= 'm Monitor state variables    '
+      endif
       ITEM(7)=   't Invoke time-step controller'
       ITEM(8)=   's Invoke simulation          '
       ITEM(9)=   '                             '
@@ -447,26 +466,29 @@ C Help text for this menu.
       H(4) =' b: specify the simulation period.'
       H(5) =' '
       H(6) =' *: Options which dictate what is saved in the library:'
-      H(7) ='     SAVE >>0 no results saved (summary only)'
-      H(8) ='     SAVE >>1 minimum save option'
-      H(9) ='     SAVE >>2 moderate save option - the default'
-      H(10)='     SAVE >>3 maximum save option'
-      H(11)='     SAVE >>4 surface energy balance save option.'
+      H(7) ='     SAVE >>0 summary text report only (see option o)'
+      H(8) ='     SAVE >>1 minimum data collection (for small files)'
+      H(9) ='     SAVE >>2 moderate data collection'
+      H(10)='     SAVE >>3 as save 2 plus all node temperatures'
+      H(11)='     SAVE >>4 as save 2 plus surface energy balance'
 c Save level 5
-      H(12)='     SAVE >>5 Hot3000 output only'
-      H(13)='     SAVE >>6  no results saved (summary only in '
-      H(14)='     database freindly format)'      
-      H(15)=' m: monitor plots zone temperatures, plant flux and'
-      H(16)='    plant state variables as the simulation progresses.'
-      H(17)=' '
-      H(18)=' t: select zone-side time-step control option.'
-      H(19)=' s: invoke simulation. '
-      H(20)=' <: deletes the last saved simulation result set. '
-      H(21)=' g: sets simulation parameter toggles '
-      H(22)=' '
-      H(23)=' i: outputs the current simulation period and'
-      H(24)='    information on the saved result set.'
-      H(25)=' o: gives summary results if SAVE O option selected.'
+      H(12)='     SAVE >>5 Hot3000 output (XML) based on directives'
+      H(13)='              in input.xml file in model cfg folder'
+      H(14)='     SAVE >>6  no results saved (summary only in '
+      H(15)='               database freindly text format)'      
+      H(16)=' m: monitor plots zone temperatures, plant flux and'
+      H(17)='    plant state variables as the simulation progresses.'
+      H(18)=' '
+      H(19)=' t: select zone-side time-step control option.'
+      H(20)=' s: invoke simulation. '
+      H(21)=' <: deletes the last saved simulation result set. '
+      H(22)=' g: sets simulation parameter toggles '
+      H(23)=' '
+      H(24)=' i: outputs the current simulation period and'
+      H(25)='    information on the saved result set.'
+      H(26)=' o: gives summary results if SAVE O option selected'
+      H(27)='    with option to write to a text file after the'
+      H(28)='    simulation has completed.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -497,7 +519,7 @@ C Set simulation period.
 C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
-C Save Level 5
+C Save Level reset to zero if toggle set would be greater than 6.
          if(ISAVE.gt.6)ISAVE=0
       elseif(ino.eq.6)then
 
@@ -563,9 +585,9 @@ c calculation approaches.
         call tstamp('>','SIM: enter simulate')
         call SIMCON
         if(isave.eq.6)then
-
-C Output from 6 save.
-          call MZOUT6
+          call MZOUT6  ! Output from 6 save
+        elseif(isave.eq.0)then
+          call edisp(iuout,'To see save zero output select option o')
         endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
@@ -625,12 +647,12 @@ C Info on current parameters.
         CALL MZINFO(IUOUT)
       elseif(ino.eq.14)then
 
-C Output from 0 save.
+C Output from 0 save (with option to write data to file).
         CALL MZOUTP
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',28,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.
@@ -663,6 +685,7 @@ C Set simulation toggles.
       COMMON/SKYFLG/ISKYFL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
@@ -683,6 +706,7 @@ C Tolerance for iteration of hydrogen flow matrix
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
+      INTEGER :: ispmxist,ientxist
 
       COMMON/GR1D04/GAM,RGAM
       COMMON/GRSD100/IndxSt
@@ -691,6 +715,7 @@ C Common for electrical file
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       common/filep/ifil
       COMMON/Vld30/Tinitial
+      REAL :: Tinitial
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -727,6 +752,7 @@ c This common block is used to define the sky temperature calculation method
 
       logical MSTROK,MSTRZN
       logical WATERZ,VTSOL
+      integer NITMS,INO  ! max items and current menu item
 
 
 C Make up strings for the current set of toggles.
@@ -1348,6 +1374,7 @@ C Set moisture flow toggles.
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
       CHARACTER H*72,ITEMG(11)*40 
+      integer NITMS,INO  ! max items and current menu item
 
   10  INO=-4
       WRITE(ITEMG(1),'(A,F5.2)')
@@ -1442,6 +1469,7 @@ C Set building construction structured mesh toggles.
       COMMON/GRSD122/InSvST,ISTemp
 
       CHARACTER H*72,ITEMG(10)*40 
+      integer NITMS,INO  ! max items and current menu item
 
    10 INO=-4
       IF(InSSlv.EQ.1)THEN
@@ -1829,8 +1857,8 @@ C prior to each simulation commencing.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1856,6 +1884,7 @@ C prior to each simulation commencing.
 
       COMMON/WARN/IWARN
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
 
 C TSC data.
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
@@ -1865,6 +1894,7 @@ C TSC data.
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR1D06/IGR1D
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL :: BLDG3D,ZONE3D
       COMMON/GRND100/GRND3D
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/GRSD100/IndxSt
@@ -1875,6 +1905,7 @@ C Once per hour storage of results, averaged over that hour.
 
 C Uncertainty.
       COMMON/UA5/IMET,ISIM,NRSIM
+      INTEGER :: imet,isim,nrsim
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -1885,7 +1916,7 @@ C Simulator parameters.
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,louts*248,cfgroot*24,h*72
 
-      LOGICAL OK,dok,IGR1D,BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
+      LOGICAL OK,dok,IGR1D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
 
       ISAV1=ISAVE+1
@@ -2197,6 +2228,7 @@ C Common for libsv3 trace
       character outs*124,h*72,dtrace*72,ltrace*72
       character cfgroot*24,LCFGF*72
       logical OK,dok
+      integer NITEMS,INO  ! max items and current menu item
 
       ITEM(1) ='a electrical calculations    '
       ITEM(2) ='b temporal file items & assoc'

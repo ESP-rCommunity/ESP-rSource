@@ -45,6 +45,7 @@ C                           furniture
 
       PROGRAM RevTime
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "acoustic.h"
 #include "esprdbfile.h"
@@ -97,7 +98,6 @@ C Zone information
 C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
-      common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/C21/IFCFG,cfgroot,LCFGF
@@ -128,7 +128,7 @@ C Name of current application
       
       character cAppName*12
 
-      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
 
       DIMENSION ITEM(26) 
@@ -138,7 +138,7 @@ C Name of current application
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER*72 path,upath
+      CHARACTER*72 path
       CHARACTER fs*1,outsd*124
       CHARACTER TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
@@ -147,12 +147,12 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO  ! max items and current menu item
 
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('aco ')
       cAppName = 'aco'
-      ITRC=1
       IUIN = 5
       IUOUT = 6
       ixunit = 7
@@ -201,7 +201,6 @@ C Set folder separator (fs) to \ or / as required.
       write(path,'(a1,a1)')'.',fs
 
 C Set defaults.
-      OK=.FALSE.
       CFGOK=.FALSE.
       MLDBOK=.FALSE.
       MATDBOK=.FALSE.

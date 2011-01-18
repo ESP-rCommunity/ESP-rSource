@@ -129,7 +129,7 @@ c Read type of casual gain to be controlled during each day type.
         if(OUTSTR(1:5).eq.'*desc')then
           k=6
           CALL EGETRM(OUTSTR,K,cgcdesc(icomp),'W','descr',IER)
-          CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'cgc line 3',IER)
+          CALL STRIPC(IUNIT,OUTSTR,NBDAYTYPE,ND,1,'cgc line 3',IER)
         endif
       endif
       K=0
@@ -482,8 +482,6 @@ C ACT - 's' do not ask the user for confirmation of file write.
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
@@ -505,8 +503,6 @@ C Daylight coefficient common block data definition:
      & IDCFID(MCOM,MLCOM,MDF)
 
       character cgcdesc*64,outs*128
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER tmp*16,LCGCIN*72,ACT*1
       DIMENSION NCGTCX(MDTY)
       INTEGER ILEN,NCGTCX,LENGTHX,ITRUNCX
@@ -547,7 +543,7 @@ C Write data to file.
         WRITE(IUNIT,'(f6.1,3f5.1,i3,A)',IOSTAT=ios,ERR=1)SETPT(ICOMP,N),
      &   SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),
      &   IOFFDT(ICOMP,N),' # Setpt, switch off lvl, min dim/el, delay'
-        WRITE(IUNIT,'(f5.1,2i3,A)',IOSTAT=ios,ERR=1) SYSPER(ICOMP,N),
+        WRITE(IUNIT,'(f5.2,2i3,A)',IOSTAT=ios,ERR=1) SYSPER(ICOMP,N),
      &   NDF(ICOMP,N),IDFST(ICOMP,N),
      &   ' # % casual, no of sensors, calc type' 
         IF(IDFST(ICOMP,N).EQ.5)THEN
@@ -602,6 +598,7 @@ C If daylight coefficient method write data.
           if (IDFST(ICOMP,N).EQ.5) then
             do 333 ISEN=1,NDF(ICOMP,N)
               JDC=IDCFID(ICOMP,N,ISEN)
+              if (JDC.le.0) JDC=1 ! bounds error check
               JST=NDCFS(JDC)
               write(IUNIT,'(2i3,a)') JDC,JST, 
      &               ' # Daylight coefficient No. & No. of stages '

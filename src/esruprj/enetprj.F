@@ -174,6 +174,8 @@ C Characters
       CHARACTER*124 OUTS
 
       LOGICAL OK,DOK,BASEV
+      integer INP  ! for radio button
+      integer NITEM,INO ! max items and current menu item
 
 C Give a message to user explaining they should have fully defined the 
 C building side and the plant network prior to defining the electrical
@@ -334,6 +336,7 @@ C Assign new network type
         H(4)='Balanced - a balanced 3-phase system '
         H(5)='Mixed    - Mix of 1,2,3-phase elements and possibly d.c.'
         H(6)='                         <the default> '
+        INP=1
         CALL EASKATOG('Select network type:',' ',
      &'d.c.','1-phase','2-phase','3-phase','Balanced','Mixed',
      &'Continue',INP,6)
@@ -470,7 +473,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -505,7 +507,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -667,7 +669,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected hybrid components
       COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
@@ -853,7 +854,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected power only components
       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
@@ -1042,7 +1042,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The connecting components
       COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
@@ -1073,7 +1072,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1231,7 +1230,6 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
-      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
@@ -1260,7 +1258,7 @@ C Characters
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
-
+      integer MVERT,IVERT,ID ! max items and current menu item
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1486,6 +1484,7 @@ C Characters
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
      &H
       CHARACTER*124 OUTS
+      integer INODT  ! for radio button
 
 C Set up the local phase string endings
       STREN(1)='_1'
@@ -1510,6 +1509,7 @@ C Ask the user how many nodes they want to add.
         H(10)='For example: generator_1, generator_2, generator_3 '
         H(11)='or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
         NANOD=0
+        INODT=1
         CALL EASKATOG
      &  ('What type of node(s) do you want to add (see help)? ',
      &'(No. in brackets = No. of nodes added).',
@@ -2213,7 +2213,8 @@ C Plant commons
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
 C Descriptive label for a zone load or casual gain types.
-      COMMON/LOADLABEL/LODLABEL(MCOM,7)
+      character LODLABEL*6
+      COMMON/LOADLABEL/LODLABEL(MCOM,MGTY)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER ICGT
 
@@ -2265,7 +2266,6 @@ C Type casting (all varaiables and arrays cast explicitly)
 
 C Characters
       CHARACTER*3 MODE
-      CHARACTER*6 LODLABEL
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR,TMPTYPSTR,SHSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
@@ -2740,7 +2740,7 @@ C unit (a power-only component model)
 
 C Type casting (all varaiables and arrays cast explicitly)
       INTEGER NPOWCOM,POWCOMNO,POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,
-     &NPOWCDATS,IEPOW,NIT,NPOWITEM2,IMOUT,IMOUT2,NENOD,ENODPHTYP,ENODPH,
+     &NPOWCDATS,IEPOW,NIT,NENOD,ENODPHTYP,ENODPH,
      &ENODTYP,ENODNO
 
 C Characters
@@ -2756,6 +2756,7 @@ C Characters
       REAL POWCDAT,SPMISC,VAR,ENODBASEV,ENODBASEP 
 
       LOGICAL POREPT,PHCPT,OK,dok
+      integer NPOWITEM,IMOUT,NPOWITEM2,IMOUT2 ! max items and current menu item
 
       POREPT=.FALSE.
 
@@ -3241,6 +3242,7 @@ C Characters
       CHARACTER*72 SSTR,CNCDESC,DADESC,CCSTR,HYDESC,ENDESC,POWCDATS,
      &CONECOMDESC,POWCOMDESC,H,LNGSTR
       CHARACTER*124 OUTS
+      integer NCCITEM,IMOUT,NCCITEM2,IMOUT2 ! max items and current menu item
 
       LOGICAL OK,DOK,CCREPT
       CCREPT=.FALSE.

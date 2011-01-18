@@ -56,6 +56,8 @@ C VISOUT - define the parameters for the visualization of results.
 
       CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24,Lflpar*72
+      integer IWM,IWE   ! for radio buttons
+      integer NITMS,INO ! max items and current menu item
 
 C Check for visualidsation data.
       if (Lflpar(ICOMP)(1:7).ne.'UNKNOWN') call rdFVP(ICOMP,ier)
@@ -222,6 +224,7 @@ C Add new image definition.
           h(1)='Please supply the direction from which the view is'
           h(2)='made e.g. Chose North if you wist a view from the North'
           h(3)='looking South.'
+          IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
      &                    'North','West','Top','Bottom','  ',IWM,3)
           ISURvw(ICOMP,NV)=IWM
@@ -321,6 +324,7 @@ C be deleted or copied, respectively.
         NV=INO-MHEAD
  200    write (outs,'(a,a,a)') 'For image definition ',
      &        LBITrt(ICOMP,NV)(1:lnblnk(LBITrt(ICOMP,NV))),' edit:'
+        IWE=1
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',
      &           'Customise arrows','Frequency','Continue','  ',IWE,3)
         if (IWE.eq.1) then
@@ -341,6 +345,7 @@ C View direction and layer.
           h(1)='Please supply the direction from which the view is'
           h(2)='made e.g. Chose North if you wist a view from the North'
           h(3)='looking South.'
+          IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
      &                    'North','West','Top','Bottom','  ',IWM,3)
           ISURvw(ICOMP,NV)=IWM
@@ -557,6 +562,8 @@ C imgtyp  Output image type.
       LOGICAL CALPOL,CALLMA
       character name*12,BITITL*5,LBITrt*12,H*72,outs*124,t24*24
       CHARACTER POLNAM*12,ITEM(MCTM+2)*18
+      integer ISCALAR  ! for radio button
+      integer NITMS,INO  ! max items and current menu item
 
 C Set the geometry for the CFD domain in terms of ESP-r's standard
 C geometry model.
@@ -599,8 +606,8 @@ C Ask for scalar to asign to colour.
      &         'metric for view ',
      &         LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,')?'
             CALL EASKATOG(outs,' ','Air speed','Temperature',
-     &                 'Local mean age of air','Concentration',
-     &                 ' ',' ',' ',ISCALAR,2)
+     &        'Local mean age of air','Concentration',
+     &        ' ',' ',' ',ISCALAR,2)
 
 C Write title for pixmap scale.
             ISCALAR=ISCALAR-1

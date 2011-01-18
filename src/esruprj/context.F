@@ -62,7 +62,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/CFGV/icfgv
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -105,12 +104,12 @@ C ITEMS is menu for site/context items.
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
-      character D64*64,D20*20  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      integer nitms,INO ! max items and current menu item
       
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -160,9 +159,9 @@ C Begin with high level menu.
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
       ITEMS(8) =                'g calendar (holidays)            '
-      ITEMS(9) =                'h building address               '
-      ITEMS(10)=                'i client address                 '
-      ITEMS(11)=                'j simulationist address          '
+      ITEMS(9) =                'h building and client address    '
+      ITEMS(10)=                'i simulationist address          '
+      ITEMS(11)=                'j                                '
       ITEMS(12)=                '  ___________________________    '
       if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
         ITEMS(13)=              'k ground topology                '
@@ -623,114 +622,18 @@ C to define holidays.
 
       ELSEIF(INO.EQ.9)THEN
 
-C The address of the model (same data fields as entered in the ncm file.
-        call edisp(iuout,'Details for code complience...')
-        write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building address: ',baddress
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
-        call edisp(iuout,outs)
-        write(outs,'(2a)')'Building Postcode: ',buildingPC  
-        call edisp(iuout,outs)    
-        DOK=.FALSE.
-        CALL ASKOK('Edit these code complience details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Input a succinct description of the project name here.'
-          write(D64,'(a)') 'notional model not named'
-          CALL EASKS(pjname,'Code compliance project name?',
-     &      '(20 characters maximum)',20,D20,'project name',IER,1)
-          H(1)='Input first line of building address here'
-          write(D64,'(a)') 'address not provided'
-          CALL EASKS(baddress,'building address?','(<64 characters)',
-     &      64,D64,'build address',IER,1)
-          H(1)='Input the building city here'
-          write(D64,'(a)') 'city not provided'
-          CALL EASKS(bcity,'building city?','(<64 characters)',
-     &      64,D64,'city building',IER,1)
-          H(1)='Input for: building post code'
-          write(D64,'(a)') 'postcode not provided'
-          CALL EASKS(buildingPC,'building post code ?',
-     &      '(<64 characters)',64,D64,'building PC',IER,1)
-        endif
+C The address of the model and client (as entered in the ncm file).
+        call edsbmbld()
 
       ELSEIF(INO.EQ.10)THEN
 
-C The address of the client (same data fields as entered in the ncm file.
-        call edisp(iuout,'Details of client/owner...')
-        write(outs,'(2a)')'Building owner name: ',ownername
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Building owner telephone: ',ownertel
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Building owner address: ',owneraddr 
-        call edisp(iuout,outs) 
-        write(outs,'(2a)')'Building owner city: ',ownercity 
-        call edisp(iuout,outs) 
-        write(outs,'(2a)')'Building owner Postcode: ',ownerPC
-        call edisp(iuout,outs)     
-        DOK=.FALSE.
-        CALL ASKOK('Edit these owner/client details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Input a succinct description of the owner name here'
-          write(D64,'(a)') 'owner/client not named'
-          CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &      64,D64,'owner name',IER,1)
-          H(1)='telephone number of the owner'
-          write(D64,'(a)') 'owner/client phone not given'
-          CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
-     &       64,D64,'owner tel',IER,1)
-          H(1)='Address of the owner'
-          write(D64,'(a)') 'owner/client address not entered'
-          CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &      64,D64,'owner address',IER,1)
-          H(1)='City (for owner)'
-          write(D64,'(a)') 'owner/client city not named'
-          CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &      64,D64,'owner city',IER,1)
-          H(1)='Post code (for owner)'
-          write(D64,'(a)') 'owner/client postcode not entered'
-          CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &      64,D64,'owner post code',IER,1)
-        endif
+C The address of the simulation team (as entered in the ncm file).
+        call edsbmbld()
 
       ELSEIF(INO.EQ.11)THEN
 
-C Address of simulationist.
-        call edisp(iuout,'Details of simulationist...')
-        write(outs,'(2a)')'Simulationist name: ',certifname 
-        call edisp(iuout,outs)     
-        write(outs,'(2a)')'Simulationist telephone: ',certTel 
-        call edisp(iuout,outs)     
-        write(outs,'(2a)')'Simulationist address: ',certaddress   
-        call edisp(iuout,outs)   
-        write(outs,'(2a)')'Simulationist city: ',certcity  
-        call edisp(iuout,outs)    
-        write(outs,'(2a)')'Simulationist postcode: ',certPC  
-        call edisp(iuout,outs)          
-        DOK=.FALSE.
-        CALL ASKOK('Edit the simulationist details?',' ',OK,DOK,2)
-        if(OK)then
-          H(1)='Person or team preforming the assessment.'
-          write(D64,'(a)') 'simulationist not named'
-          CALL EASKS(certifname,'Name of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier name',IER,1)
-          H(1)='Simulationist/certifier telephone number'
-          write(D64,'(a)') 'simulationist phone not given'
-          CALL EASKS(certTel,'Telephone of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier tel',IER,1)
-          H(1)='Simulationist/certifier address'
-          write(D64,'(a)') 'simulationist address not given'
-          CALL EASKS(certaddress,'Address of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier address',IER,1)
-          H(1)='Simulationist/certifier city'
-          write(D64,'(a)') 'simulationist city not given'
-          CALL EASKS(certcity,'City of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier city',IER,1)
-          H(1)='Simulationist/certifier post code'
-          write(D64,'(a)') 'simulationist postcode not given'
-          CALL EASKS(certPC,'Post code of simulationist?',
-     &      '(<64 characters)',64,D64,'certifier Post code',IER,1)
-        endif
+C Future option.
+        continue
 
       ELSEIF(INO.EQ.13)THEN
 
@@ -1059,15 +962,13 @@ C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -1088,10 +989,9 @@ C and control of project images.
       character H*72,outs*124
       character limg*72,key*1,fs*1
       character iformat*4,ifocus*4
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
+      integer nimgitms,INOI  ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1311,6 +1211,7 @@ C temporal data to be associated with a model.
 
       SUBROUTINE setuptemporal(MODSIT,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
@@ -1322,20 +1223,9 @@ C temporal data to be associated with a model.
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
      
 C TDF related.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
@@ -1345,16 +1235,13 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
 
       character H*72,outs*124,ltmp*72,hold*40
       character cfgroot*24,LCFGF*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
-      character*72 LTDF,LTDFA,DLTDF
+      character fs*1,msgl2*48
+      character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       integer ier
+      integer nitms,irt ! max items and current menu item
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -1442,7 +1329,7 @@ C and present a different interface depending on file type.
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
       H(34)=' DBTZNM  - measured zone db temperature'
-      H(35)=' '
+      H(35)=' SURTM   - measured surface temperature'
       H(36)=' '
       H(37)='manage associations - you can add and delete associations'
       H(38)='  that have been previously defined. Note this does not'
@@ -2351,6 +2238,21 @@ C Measured db T (probably associated with a zone).
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:5).eq.'SURTM')then
+
+C Measured surface T (associated with a zone and up to 6 surfaces).
+            IC=-1
+ 355        izdef=0
+            call askzone(ic,izdef,'Related zone for measured surf T?',
+     &        'Related zone','-',
+     &        'Measured surface T within which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 355
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &        'Select surface associated with measured temperature',
+     &        ' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -2403,6 +2305,7 @@ C  phwco2,phwnox,phwsox = how water related emissions co2/nox/sox
       dimension ITEMS(18)
       character items*36,h*72,hold*40,act*1
       logical MODSIT
+      integer nitms,INO ! max items and current menu item
 
       MODSIT=.false.
 
@@ -2638,6 +2541,10 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      COMMON/FILEP/IFIL
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
+      integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2657,7 +2564,7 @@ C 31
       character h*72,vert*33,DS*7,DS1*10,act*1,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
-      logical modify,browse
+      logical modify,browse,XST
       INTEGER IHL
 
 C If user requested initial calendar.
@@ -2826,6 +2733,13 @@ C Add or delete a day type.
             CALL EASKABC(' Options:',' ',
      &        'add','delete (not available)','continue',IRT,5)
             if(irt.eq.1)then
+
+C Update control file before increasing day types
+              ICTLF=IFIL+1
+              CALL ERPFREE(ICTLF,ISTAT)
+              call FINDFIL(LCTLF,XST)
+              IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+
               nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
               calentag(nbdaytype)='new'
@@ -2853,7 +2767,8 @@ C Edit calendar day tag and name.
                 endif
               endif
 
-C Update operations data for all zones to include this new day type
+C Update operations and control data for all zones to include this new day type
+              CALL CTLWRT(ICTLF,IER)
               CALL UPDOPR
               modify=.true.
               goto 73

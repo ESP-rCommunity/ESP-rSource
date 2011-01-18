@@ -138,11 +138,21 @@ C           network need not be matched.
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
+
+C AIM-2.
+C IAIM2 set to 1 if AIM-2 infiltration model active.
+C LAIM2 (72 char) file holding AIM-2 infiltration model data.
+C      common/aim2def/iAIM2,LAIM2
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
+      IMPLICIT NONE
+
 #include "building.h"
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/prec2/precz/c20.
+C geometry.h provides commons G0/G1/G2/prec2/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -173,7 +183,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "ipvdata.h"
 #include "seasons.h"
 #include "schedule.h"
-      PARAMETER (MSTMC=20)
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
 
@@ -187,78 +197,72 @@ C Parameters
       logical bSilent    ! Flag indicating verbosity.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      INTEGER :: mmod,limit,limtty
       COMMON/POPHELP/H(60)
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
+      INTEGER :: ifil
       COMMON/ER1/IER1
+      INTEGER :: ier1
       COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C skyview viewfactor from external surfaces to the sky (site.h)
 C groundview viewfactor from external surfaces to the ground
 C buildingview viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
+      INTEGER :: INDCFG
 
 C Seasons.
-      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
-      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
+      INTEGER :: nbclmlhelp
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 C VCOORD, NZNVER & NZJVN (from geometry.h)
-
-C For use with MODE=ALL to setup ZNDATA arrays.
-C X,Y & Z   - coordinates of the vertices defining the zone
-C NSUR      - Number of faces comprising zone
-C JVN       - contains an ordered description (anticlockwise) of the
-C             vertices in each face
-C NTV       - total number of vertices in zone
-C NVER      - contains the number of vertices in each face
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating
 C   system files.
 C LCFGF (72 char) model configuration file name.
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
+      INTEGER :: IFPNF
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/CFGV/icfgv
+      INTEGER :: IZSTOCN
       COMMON/PREC8/SLAT,SLON
+      REAL :: SLAT,SLON
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: IAIRN,ICAAS
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
+      INTEGER :: NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
-
-C Temporal definition commons.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C ITEMSTD: Number of temporal items associated/used in this model.
-      COMMON/TDFFLG/ITEMSTD
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
@@ -274,18 +278,7 @@ C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
 C LPRJLG (72 char) model log file.
-      COMMON/LOG/LPRJLG
-
-C ZONEPTH (24 char) relative path to the model zones folder.
-C NETPTH (24 char) relative path to the model networks folder
-C CTLPTH (24 char) relative path to the model control folder
-C IMGPTH (24 char) relative path to the model images folder
-C RADPTH (24 char) relative path to the model Radiance folder
-C DOCPTH (24 char) relative path to the model documents folder
-C TMPPTH (24 char) relative path to scratch folder
-C dbspth (24 char) relative path to model specific databases folder
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -309,10 +302,13 @@ C         '****' is a general image displayed at startup
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
+      REAL :: angi,EYEMI,VIEWMI
+      INTEGER :: initvt
 
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
+      INTEGER :: ispmxist,ientxist
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -336,6 +332,7 @@ C Moisture.
 
 C Structured mesh.
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
 
 C Ground topology.
@@ -343,25 +340,34 @@ C Ground topology.
 
 C Primary energy conversions and emissions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      INTEGER :: ipconv
+      REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+
+      REAL :: phtco2,phtnox,phtsox,pclco2,pclnox,pclsox
+      REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
+      REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+      
+
 
 C CPCALC description
 C ICPCON set to one if there is a CPCALC definition.
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
-
-C Radiance scenes file.
-      common/radcfg/LRADCF
+      REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
+      INTEGER :: icpcon,irt
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
+      INTEGER :: icfdnd,NCONF,IFCFD,ncfdnd
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      INTEGER :: idwe1,idwe2
 
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -372,34 +378,38 @@ C IPV data is from ipvdata.h.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: ialoc,lstanchr,naloc
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
+      INTEGER :: NCONTM,NOCNTM,NTSTEPC
 
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
+      INTEGER :: isstday,isstmon,isfnday,isfnmon
+
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+      character :: selres*72,spfdescr*8
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-
-C AIM-2.
-C IAIM2 set to 1 if AIM-2 infiltration model active.
-C LAIM2 (72 char) file holding AIM-2 infiltration model data.
-      common/aim2def/iAIM2,LAIM2
+      INTEGER :: ibsimp
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
+      INTEGER :: iFClds
 
 C Mechanical Ventilation systems
       Integer iMech
@@ -417,25 +427,28 @@ C GSHP
 C Flag indicating presence of GSHP models:
 C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
       common/gshpinfo/igshp
+      INTEGER :: igshp
       common/gshpfile/gshpfile
-
 
 C Wind-generated electricity
       common/H2wind/LWndSupp,iWndSupp
+      INTEGER :: iWndSupp
 
 C GCEP
 C Flag indicating presence of GCEP models:
 C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepinfo/igcep
+      INTEGER :: igcep
       common/gcepfile/gcepfile
 
 C Bidirectional raw optical data file.
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
-
+      INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C DLLSUBR (12 char) name of current subroutine, used in dll silent reporting
 C dllmesg (124 char) tells the details of the DLLSUBR error.
@@ -444,11 +457,11 @@ C dllmesg (124 char) tells the details of the DLLSUBR error.
 C CPCALC pressure coef.
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
-
+      REAL :: azim,elev,zcoab,ycoab,xcoab
+      INTEGER :: nuco
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
-      common/uhome/upath
       common/user/browse
 
 C Path to SHOCC input files
@@ -503,31 +516,27 @@ C Simulation parameters
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER LCFD*72
-      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LPNF
       character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,CXSTR*78,ZN*12
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
+      CHARACTER WORD*20,NODID*12,CXSTR*78
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character WORD2*20,msgl2*48
-      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spfdescr*8
-      character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
+      character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
-      character path*72,upath*72,lupath*72
+      character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
       character NWKTYPSTR*12,bidirfile*72,bidirname*12
@@ -540,11 +549,20 @@ C Simulation parameters
       integer INDU    ! to detect old zone utility files
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
-
+      integer itru    ! unit for output
+      integer iflag   ! for error traps
+      
+      INTEGER :: id1,id2,id3,id4,icon,icomp,icc,i,ia,ibrowse,ierv
+      INTEGER :: im1,im2,im3,im4,iier,irec,ipos,ios,inod,inisz,igrdp
+      INTEGER :: irva,is,iset_start,k,kv,iwarn,j,iv,iva,iunit,iunit1,lc
+      INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
+      INTEGER :: lcfgl,lcfgr,louts,ncn,nd
+      
+      REAL :: gva
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
-      dimension IRVC(mcon),IRCC(365)
+      INTEGER, dimension(mcon) :: IRVC
+      INTEGER, dimension(365) :: IRCC
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
@@ -552,6 +570,8 @@ C Simulation parameters
 
 C Check if running in dll mode.
       call isadll(dll)
+      itru=iuout   ! set trace unit to use in subroutine calls
+      iflag=0      ! initial value
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
@@ -570,7 +590,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
-      LSBEM =DSBEM  ! assign default SBEM db
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
 C Clear the model common blocks.
@@ -744,6 +764,10 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,ctlpth,'W','path to ctl',IER)
           IF(IER.NE.0)goto 1
           goto 34
+        elseif(WORD(1:7).eq.'*aimpth')then
+          CALL EGETRM(OUTSTR,K,aimpth,'W','path to aim2',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
         elseif(WORD(1:7).eq.'*imgpth')then
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
@@ -762,6 +786,10 @@ C embedded in the configuration file.
           goto 34
         elseif(WORD(1:7).eq.'*dbspth')then
           CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:8).eq.'*hvacpth')then
+          CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:5).eq.'*indx')then
@@ -842,7 +870,7 @@ C Range checking.
       ENDIF
 
 C Reporting.
-      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(iuout)
+      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(itru)
 
 C If initial configuration format (without database sections then
 C skip to building/plant section.
@@ -853,7 +881,7 @@ C If '* CONFIGURATION' found then read in the databases.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'* DATABASES',IER)
         if(IER.NE.0)return
         if(OUTSTR(1:7).ne.'* DATAB')then
-          call edisp(iuout,' Did not find `* DATABASES` ')
+          call edisp(itru,' Did not find `* DATABASES` ')
           ier=1
           return
         endif
@@ -1036,6 +1064,7 @@ c bSHOCCed true and then check and see if the file exists.
           write(outs,'(3a)') 'SHOCC project library file ',
      &      SHOCCshlFile(1:lnblnk(SHOCCshlFile)),
      &      ' was referenced but not found.'
+          call edisp(iuout,outs)
         endif
 
       elseif(WORD(1:5).eq.'*hvac')then
@@ -1608,7 +1637,7 @@ C Radiance scene file.
 
 C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
-        ISBEM=1
+        ISBEM=2  ! to signal we have NCM description
         IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
@@ -1979,7 +2008,7 @@ C automatically and should not be modified through project manager
         IWARN=1
         OUTS=
      &  'This is a UK NCM stripped model and should not be modified'
-      ELSEIF(ISBEM.EQ.1.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
+      ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
@@ -2326,78 +2355,17 @@ C Warn user about old utility file.
    20   CONTINUE
       endif
 
-C Geometry file, get or derive the zone name via reading the first
-C line. Make temporary use of file unit IUF. 
+C Geometry file, get or derive the zone name via reading the file.
+C Make temporary use of file unit IUF. 
  142  do 22 ICOMP=1,NCOMP
         zname(ICOMP)='UNKNOWN'
         call FINDFIL(LGEOM(ICOMP),XST)
 
-C Quick read, if version 1.1 or newer then the file must be
-C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL ERPFREE(IUF,ios)
-          CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
-          IF(IER.NE.0)goto 1
-          CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
-          if(OUTSTR(1:13).eq.'*Geometry 1.1')then
-            K=13
-            CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-            zname(ICOMP)=' '
-            CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-            ZN=WORD(1:12)
-            call st2name(ZN,zname(ICOMP))
-            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
-            CALL ERPFREE(IUF,ios)
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-            gversion(icomp) = 1.1   ! set the version number.
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          else
-
-C Quick read, get the zone name and the number of surfaces if the
-C file version is prior to version 1.1.
-            K=0
-            IF(ND.EQ.1)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              zname(ICOMP)=' '
-              lnzname(ICOMP)=0
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.EQ.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.gt.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              call egetrm(outstr,K,phrase,'W','Z description',IER)
-              ZDESC(ICOMP)=phrase
-              lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
-            ENDIF
-            CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
-            K=0
-            CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no verts',IER)
-            CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no surfs',IER)
-            NZSUR(ICOMP)=NSUR
-            NZTV(ICOMP)=NTV
-            IF(IFLAG.NE.0)GOTO 1
-
-C Close geometry file and set version number.
-            gversion(icomp) = 1.0   ! set the version number.
-            CALL ERPFREE(IUF,ISTAT)
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          endif
+          call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
+          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
           write(outs,'(a)')LGEOM(ICOMP)
@@ -2644,13 +2612,13 @@ C If MODE='ALL ' we also want to fill obstruction data structures
 C but there is a case where a version 1.1 geometry file might
 C not yet include obstruction blocks that were in legacy zone
 C obstructions files. If this is the case then scan them.
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2660,13 +2628,13 @@ C obstructions files. If this is the case then scan them.
 	    
 C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
-            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2676,8 +2644,10 @@ C obstruction file if older model.
           DO 243 IS=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,is)
             if(icc.eq.0)then
-              write(iuout,*)'zero icc associated with zn ',icomp,
-     &          ' & sur',is
+              write(outs,'(a,i3,a,i3)')
+     &          'zero icc associated with zone ',
+     &          icomp,' & surface',is
+              call edisp(itru,outs)
               goto 243
             endif
  243      continue
@@ -2710,11 +2680,11 @@ C Instanciate the vcoord and nzjvn nzvner arrays.
 C Trace geometry related information. Because not all zones will have
 c beeen read in do not include the extended surface `context`.
           if(ITRC.ne.0.and.ITRC.lt.4)then
-            call ZINFOREP(iuout,icomp)
+            call ZINFOREP(itru,icomp)
             context=.false.
-            CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(iuout)
-            CALL INSINFO(ICOMP,iuout)
+            CALL SURINFO(ICOMP,itru,context)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(icomp,itru)
+            CALL INSINFO(ICOMP,itru)
           endif
         endif
  242  continue
@@ -3194,12 +3164,8 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer ICM  ! connection for current surface.
 
       if(ICON.EQ.0.AND.ICF.GT.0)then

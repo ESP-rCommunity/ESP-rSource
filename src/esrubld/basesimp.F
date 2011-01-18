@@ -1018,7 +1018,7 @@ C-----------------------------------------
      &  'basesimp',
      &  '/bsTGavg'
       call add_to_xml_reporting(
-     &   bsTGavg(icomp),
+     &   basesimp_grd_temp_avg,
      &   H3Kname,
      &   'units', '(oC)',
      &   'Basesimp: Average ground temperature'

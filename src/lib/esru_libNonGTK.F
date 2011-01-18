@@ -1918,6 +1918,8 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else
@@ -2174,16 +2176,23 @@ C passed within the parameter list text.
       SUBROUTINE MENUATOL(prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
      &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,index,idindex,nhelp)
 
+C Passed parameters.
+      CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
+      integer index   ! current index
+      integer idindex ! default index
+      integer nhelp   ! number of help lines to display
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       character h*72
       common/pophelp/h(60)
       LOGICAL SELECT
-      CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
-      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else
@@ -2388,6 +2397,7 @@ C If NHELP=-1 there is no default option.
       CHARACTER*(*) MSG1,MSG2
       CHARACTER ANS*2,MSG3*124,H*72,outs*124
       logical ok,dok,DEFLT
+      integer IWI  ! for radio button
 
 C Check if a default defined and use local var for NHELP.
       DEFLT=.true.
@@ -2440,21 +2450,22 @@ C Querry yes or no.
       ELSEIF(MMOD.EQ.8)THEN
 
 C Querry yes or no or default.
+        IWI=1
         if (DEFLT) then
           if(DOK)then
             call EASKATOG(MSG1,MSG2,'yes (default)','no',' ',' ',' ',
-     &      ' ',' ',IW,NHL)
+     &      ' ',' ',IWI,NHL)
           else
             call EASKATOG(MSG1,MSG2,'yes','no (default)',' ',' ',' ',
-     &      ' ',' ',IW,NHL)
+     &      ' ',' ',IWI,NHL)
           endif
         else
           call EASKATOG(MSG1,MSG2,'yes','no',' ',' ',' ',
-     &      ' ',' ',IW,NHL)
+     &      ' ',' ',IWI,NHL)
         endif
-        IF(IW.eq.1)THEN
+        IF(IWI.eq.1)THEN
           OK=.TRUE.
-        ELSEIF(IW.eq.2)THEN
+        ELSEIF(IWI.eq.2)THEN
           OK=.FALSE.
         ELSEIF(DEFLT)THEN
           if(DOK)then
@@ -2493,10 +2504,14 @@ C graphic window.
       SUBROUTINE EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
      &  IWHICH,NHELP)
 
+C Parameters passed.
+      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      integer IWHICH ! selection passed back
+      integer NHELP  ! number of help lines to display
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER ANS*2,MSG3*248,H*72
 
 C Generate custom help text and copy NHELP to local variable.
@@ -3090,6 +3105,14 @@ C INO is the number of the item chosen.
       CHARACTER*(*) NAME,ITEMS(NITMS)
       CHARACTER*80 tmpa
       logical odd
+      integer irpx,irpy
+
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+#ifdef OSI
+      integer impx,impy
+#else
+      integer*8 impx,impy
+#endif
 
       tmpa='                                                          '
 
@@ -3114,7 +3137,9 @@ C Bitmapped screen :  do calls for raster menu, 0,0 are passed
 C to define std upper right position, IRPX,IRPY not used.
         irpx=0
         irpy=0
-        CALL EWMENU(NAME,ITEMS,NITMS,0,0,irpx,irpy,INO)
+        impx=0
+        impy=0
+        CALL EWMENU(NAME,ITEMS,NITMS,impx,impy,irpx,irpy,INO)
         return
       else
         IF(INO.GE.-1)GO TO 20
@@ -3204,6 +3229,7 @@ C allows the string widths to be variable widths. Uses width of
 C items in call to evwmenu.
       SUBROUTINE EWMENU(name,items,nitms,impx,impy,irpx,irpy,ino)
       character*(*) name, items(*)
+      integer irpx,irpy
       character itypes*40
 
 C To conform to Fortran -> C passing conventions on 32bit and 64bit
@@ -3211,9 +3237,11 @@ C computers cast the parameters passed into ewmenu to local variables
 C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
 #ifdef OSI
-      integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer impx,impy
 #else
-      integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer*8 iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer*8 impx,impy
 #endif
 
 C Append a null terminator to the title string if possible.
@@ -3222,11 +3250,9 @@ C Append a null terminator to the title string if possible.
    9  format(40('-'))
       call updmenu(items,itypes,nitms,iw)
       inoe=ino   ! assign to local passed parameters
-      impxe=impx   
-      impye=impy   
       irpxe=irpx
       irpye=irpy
-      call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
+      call evwmenu (name,impx,impy,iw,irpxe,irpye,inoe,ipflg,iuresp)
 #ifdef OSI
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
@@ -3244,7 +3270,8 @@ C x pixel and the last 4 the y pixel.
         ino=-100000000*iuresp-10000*irpx-irpy
       endif
 C Debug...
-C      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C      write(6,'(a,7i10)') 'EWMENU (fortran) ',iw,irpx,irpy,ino,inoe,
+C     &  ipflg,iuresp
       return
       end
 
@@ -3647,19 +3674,20 @@ C Write this to standard text window.
 
 C ****** write current text buffer to an appropraite file
       subroutine proftxdump()
+#include "building.h"
+#include "model.h"
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/rpath/path
-      common/uhome/upath
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(360)
       common/textbufl/indexbuf,lnbuf(360)
 
       DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,upath*72,h*72,tfile*60,uname*24,fs*1
+      character path*72,h*72,tfile*60,uname*24,fs*1
       character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dispbuf*124,dh*72
       logical unixok,there
@@ -3732,13 +3760,8 @@ C        write(6,*)sstr(1)
         INQUIRE(FILE=tfile(1:ltf),EXIST=there)
         if(there)then
           close(iuf)
-#ifdef F90
           open(iuf,file=tfile(1:ltf),position='APPEND',
      &      status='UNKNOWN',err=1)
-#else
-          open(iuf,file=tfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
         else
           close(iuf)
           open(iuf,file=tfile,status='UNKNOWN',err=1)
@@ -3787,12 +3810,13 @@ C impx impy before recalling fprofma.
 
 C ****** invoke graphics capture proforma
       subroutine profgrdump()
+#include "building.h"
+#include "model.h"
 
 C Path to model and command line file (if any).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/rpath/path
-      common/uhome/upath
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -3801,7 +3825,7 @@ C Graphic capture, window dump: label, command.
       common/gxwd/gxwdlbl,gxwdcmd
 
       DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,upath*72,h*72,tfile*60,uname*24,fs*1
+      character path*72,h*72,tfile*60,uname*24,fs*1
       character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
       character LCFGF*72,dh*72,gcmd*90
       character gprlbl*20,gprcmd*48
@@ -4320,8 +4344,6 @@ C ITPPSW current view - perspective/plan/south/west
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
@@ -4338,6 +4360,9 @@ C ITPPSW current view - perspective/plan/south/west
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
+      integer IW  ! for radio buttons
+      integer MVERT,IVERT  ! max items and current menu item
+
 #ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
@@ -4567,6 +4592,7 @@ C Present viewpoint coords for editing then parse data from HOLD.
       ELSEIF(IVERT.EQ.4)THEN
         H(1)='In plan view you can change the viewing parameters;'
         H(2)='the elevations are primarily for checking.'
+        IW=1
         CALL EASKABCD(' ','View options:','perspective',
      &    'plan','south elevation','west elevation',IW,2)
         if(IW-1.ne.ITPPSW)then
@@ -4608,6 +4634,7 @@ C Allow this selection by text string.
 C Hilight control.
         h(1)='Display of surfaces can be limited to surfaces which'
         h(1)='match the given filter. '
+        IW=1
         CALL EASKATOG(' ','Highlight options:','normal','composition',
      &    'opaque:transp.','partial attrib.','cancel ?',' ',' ',IW,2)
         ITHLS=IW-1
@@ -4714,7 +4741,7 @@ C Refresh the image.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         do 444,ix=1,ncomp
-          ZBFLG(ix)=0.
+          iZBFLG(ix)=0
   444   continue
         CALL ADJVIEW(IER)
         IF(ier.NE.0)RETURN

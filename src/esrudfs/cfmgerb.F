@@ -30,12 +30,11 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       SUBROUTINE CFMNGE(ICOMP,IND)
 #include "cfd.h"
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -66,8 +65,6 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       DIMENSION HC(MNSBZ),SFNAM(MNSBZ)
 
       CHARACTER NBCHAR*10,SFNAM*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*72 TITLE,outfil,CFTRFL,LPHI,LCFD,out
       LOGICAL INITFL,CONVER,GGDH
 

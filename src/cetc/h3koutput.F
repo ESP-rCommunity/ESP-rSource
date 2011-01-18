@@ -72,17 +72,12 @@ c     NTSTEP is used to norlamlise the values to one hour.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 c     RFILE is the the results library filename.
       
-      common/C21/IFCFG,cfgroot,LCFGF
       character*72 LBSIMP
       character LTMP*72,h*72,outs*124
       character PFILE*72,MSTRFILE*72,LAFRES*72
-      character cfgroot*24,tab*1
-      character*72 lcfgf,rfile
-      DIMENSION MTHNAM(12)
-      CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
-      logical OK
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &     'Sep','Oct','Nov','Dec'/
+      character tab*1
+      character*72 rfile
+      CHARACTER DS*7,DS1*10,DE*7,DE1*10
       
       CALL EFDELET(101,ISTAT) !DELETES DECEMBER file from progress subroutine.
       write(outs,'(a)')' '
@@ -650,23 +645,23 @@ C**********************************************************************
       
       
       SUBROUTINE H3KOUTPUT_AIMSDATA(IWU)
-C      USE AIM2_CALC_DATA
+
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_CalcData, ONLY:AIM2_HOUSE_VOL
+
       IMPLICIT NONE
 #include "building.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 #include "h3kstore_common.h"
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      common/aim2def/iAIM2,LAIM2
       DIMENSION MTHNAM(12)
-      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,iAIM2,IWU,IMONTH
+      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,IWU,IMONTH
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       DATA MTHNAM/'JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG',
      &     'SEP','OCT','NOV','DEC'/ 
       CHARACTER OUTS*124
-      CHARACTER LAIM2*72
+      
       
       IF (iAIM2 == 1) THEN
       WRITE(OUTS,'(A)')' '

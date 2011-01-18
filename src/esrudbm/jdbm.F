@@ -30,6 +30,8 @@ C << c)
 C <<
 
       program dbm
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
 
@@ -56,12 +58,9 @@ C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
 
       common/C21/IFCFG,cfgroot,LCFGF
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Path to problem and command line file (if any).
       common/rpath/path
-      common/uhome/upath
       common/rcmd/LCMDFL
 
 C Generic db commons.
@@ -105,15 +104,14 @@ C Name of current application
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72
       character outs248*248,LTMP*144
-      character path*72,upath*72,pass*12,H*72,outs*124
+      character path*72,pass*12,H*72,outs*124
       character xfile*144,tg*1,delim*1,cfgroot*24
       character dba*12,act*1,action*12
 C      character curfile*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer mitm,INO  ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iw
@@ -971,6 +969,8 @@ C    most dependant
 C ier returned as non-zero if a problem in scanning files.
 
       subroutine dealwithgdb(act,ier)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
@@ -981,8 +981,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
@@ -993,8 +991,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       dimension idpendord(MGDB),dba(MGDB)
 
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
@@ -1539,11 +1535,11 @@ C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within
@@ -1741,6 +1737,8 @@ C browse restricts user options, moddb is returned as true
 C if database names have changed.
 
       subroutine modifygdb(act,db,jdbhash,browse,moddb,ier)
+#include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -1748,8 +1746,6 @@ C if database names have changed.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -1762,8 +1758,6 @@ C      common/gendb/LGENDB
 
       dimension dba(MGDB)
 
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72

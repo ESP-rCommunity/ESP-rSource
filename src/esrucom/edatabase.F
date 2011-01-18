@@ -215,6 +215,10 @@ C the number of layers & construction name.
       DO 10 I = 1,NMLC
         CALL STRIPC(IFMUL,OUTSTR,0,ND,1,'mlc descr',IER)
         IF(IER.NE.0)RETURN
+
+C Set MLC thickness to zero.
+        THKMLC(I) =0.0
+
         K=0
         CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','layrs',IER)
 
@@ -243,6 +247,9 @@ C material properties.
      &        'materials db index',IER)
           CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,0.5,'W',
      &        'layer thickness',IER)
+
+C Increment thickness of MLC.
+          THKMLC(I)=THKMLC(I)+DTHK(I,IL)
 
 C Current MLDB also include the name of the layer from the materials
 C db. If the layer is air then this name contains the R values for
@@ -796,15 +803,19 @@ C Pick up general description of the composite.
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-          WRITE(OUTSTR,'(5a)')' Details of transparent construction: ',
-     &      MLCN,' with ',OPT,' optics.'
+          WRITE(OUTSTR,'(5a,f6.3)')
+     &      ' Details of transparent construction: ',
+     &      MLCN(1:lnblnk(MLCN)),' with ',OPT(1:lnblnk(OPT)),
+     &      ' optics and overall thickness ',THKMLC(ifoc)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(OTF(1:4).EQ.'CFC ')THEN
           WRITE(OUTSTR,'(3a)')' ',
      &      'Details of complex fenestration construction: ',MLCN
           CALL EDISP(ITRU,OUTSTR)
         ELSE
-          WRITE(OUTSTR,'(2a)')' Details of opaque construction: ',MLCN
+          WRITE(OUTSTR,'(3a,f6.3)')
+     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
+     &      ' and overall thickness ',THKMLC(ifoc)
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
       ENDIF
@@ -982,12 +993,22 @@ C QPAQ.
 C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
 C on contents of common MLC. Logic is a variant of ETMLDB.
-      SUBROUTINE ETMLDBU(ITRC,ITRU,IFOC,UVH,UVU,UVD,UVI)
+      SUBROUTINE ETMLDBU(ITRC,ITRU,IFOC,UVH,UVU,UVD,UVI,UVG)
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
       
       integer lnblnk  ! function definition
+
+C Parameters passed
+      integer itrc  ! trace level
+      integer itru  ! unit to write to
+      integer ifoc  ! which MLC construction (array index)
+      real UVH      ! U value for horizontal flow
+      real UVU      ! U value for inside upward flow
+      real UVD      ! U value for inside downward flow
+      real UVI      ! U value for inside partition
+      real UVG      ! U value for inside downward flow to ground
 
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
@@ -996,6 +1017,12 @@ C Material properties.
       CHARACTER OUTSTR*124,NAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
+
+      real RTH  ! sum of surface coef for horiz flow at wall
+      real RTU  ! sum of surface coef for upward flow at ceiling
+      real RTD  ! sum of surface coef for downward flow at floor
+      real RTI  ! sum of surface coef for horiz flow at partition
+      real RTG  ! sum of surface coef at foundation
 
 C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
@@ -1089,9 +1116,10 @@ C is zero then avoid divide by zero.
 C Calculate and (optionally) report.
   15  CONTINUE
 
-C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C ISO 6946 surface resistance assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow as well as
-C an inside wall to inside wall hc 0.13 both sides.
+C an inside wall to inside wall hc 0.13 both sides. For the case
+C of a foundation only the inside surface resistance is used.
       RTH=RT+0.04+0.13
       UVH=1.0/RTH
       RTU=RT+0.04+0.10
@@ -1100,21 +1128,23 @@ C an inside wall to inside wall hc 0.13 both sides.
       UVD=1.0/RTD
       RTI=RT+0.13+0.13
       UVI=1.0/RTI
+      RTG=RT+0.17
+      UVG=1.0/RTG
       write(OUTSTR,'(A,4F7.3)')
      &  ' ISO 6946 U values (horiz/upward/downward/partition)= ',
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-          WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3)')
+          WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3,a,f6.3)')
      &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
-     &    ' (downwards flow)',UVD,' (partition) ',UVI
+     &    ' (downwards flow)',UVD,' (partition) ',UVI,' (fndtn) ',UVG
         ELSE
-          WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3)')
+          WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3,a,f6.3)')
      &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),
      &    ' are (horiz flow)',UVH,' (upwards flow)',UVU,
-     &    ' (downwards flow)',UVD,' partition ',UVI
+     &    ' (downwards flow)',UVD,' partition ',UVI,' (fndtn) ',UVG
         ENDIF
         call edisp(itru,OUTSTR)
       endif

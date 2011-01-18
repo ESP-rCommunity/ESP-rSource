@@ -186,8 +186,6 @@ c   icont  - >0 if shaded surfaces were found
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
@@ -206,8 +204,6 @@ C isurfinso list of insolation sources.
      &       nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension iva(ms)
-      character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
-      character ssparent*12
       character act*1,paction*16
       logical newgeo  ! Used to test for new/old geometry file.
 
@@ -325,6 +321,7 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/prec8/slat,slon
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
+      common/shad4/oshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/contr/mon,isc(ms),iyd
       common/ihtime/ihour
@@ -463,11 +460,12 @@ C step. gssa, the overall shading on target surface, is initialised
 C here for use in shdtst.
             do 40 ip=1,146
 
-C Reset ioshd before each sun or sky patch loop, setting any
+C Reset ioshd and oshd before each sun or sky patch loop, setting any
 C grid point not within target surface to -1.
               do 403 i=1,nox(icomp)
                  do 404 j=1,noz(icomp)
                     call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
+                    oshd(i,j)=0.0
                     ioshd(i,j)=0
                     if(ians.eq.0)ioshd(i,j)=-1
   404            continue
@@ -497,7 +495,7 @@ C Trace output.
      &               '*** SHADC: calculating diffuse shading at hour ',
      &               ihour,' for patch ',ip-1
                      call edisp(icout,outs)
-                  endif
+                   endif
 
 C Test whether to calculate diffuse shading again after first sun-up hour.
                   if(idifc.eq.0.and.init.eq.1)then
@@ -532,7 +530,7 @@ C calculation.
                   sazi1=ptazi
                   salt1=ptalt
                endif
-
+               
 C Compute pseudo solar angles relative to the local surface
 C coordinate system.
                call trnsf2(ihour)
@@ -551,12 +549,12 @@ C relative to the original site coordinate system.
                  call cornr(icomp,ibn)
 
 C Project obstruction block surface, form intersection with plane
-C of target surface if necessary, then determine target surface
-C shading.
+C of target surface if necessary, then determine if target surface
+C is shaded (and summate related opacities).
                  do 60 ibs=1,6
                    call trnsf3(ihour,ibn,ibs)
                    call decomp(ibn,ibs,itsur)
-                   call shdtst(icomp,itsur)
+                   call shdtst(icomp,itsur,opob(icomp,ibn))
    60            continue 
    50          continue         ! obstruction block loop
 
@@ -574,7 +572,7 @@ C considered (psof).
                   do 70 i=1,nox(icomp)
                      do 80 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 80
-                        foshd(i,j)=foshd(i,j)+float(ioshd(i,j))/145.0
+                        foshd(i,j)=foshd(i,j)+oshd(i,j)/145.0
    80                continue
    70             continue
                   if(iptch.eq.145)call tfile3(icomp,itsur,mode)
@@ -586,8 +584,7 @@ C Surface cannot see sun or sky patch.
                   do 90 i=1,nox(icomp)
                      do 100 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 100
-                        if(mode.eq.'dir')ioshd(i,j)=1
-C                       if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
+                        ioshd(i,j)=1
   100                continue
    90             continue
                elseif(mode.eq.'dif')then
@@ -930,13 +927,14 @@ C ********** SHDTST **********
 C Tests each grid centre point of a user-specified grid to
 C establish if it is within the target surface and shadow polygon.
 
-      subroutine shdtst(izone,itsur)
+      subroutine shdtst(izone,itsur,op)
 #include "building.h"
 #include "geometry.h"
 
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
+      common/shad4/oshd(mox,moz)
 
       if(ishd.eq.0)return
 
@@ -945,13 +943,20 @@ C the target surface. If it is, then test whether also within
 C the shadow polygon.
       do 10 i=1,nox(izone)
          do 20 j=1,noz(izone)
-C Is point within surface itsur?
+C Do nothing if point is not within surface itsur.
             if(ioshd(i,j).eq.-1)goto 20
 
-C Is point within shadow polygon held in shad2?
+C Do nothing if point is not within the shadow polygon as held in common/shad2/.
             call point2(xop(i,j),zop(i,j),ians)
             if(ians.eq.0)goto 20
-            ioshd(i,j)=1
+
+C Point obscured by current obstruction block.
+             ioshd(i,j)=1
+
+C Summate the related obstruction block opacity factors, op,
+C and constrain to a maximum of 1 (totally shaded).
+             oshd(i,j)=oshd(i,j)+op
+             if(oshd(i,j).gt.1.0)oshd(i,j)=1.0
    20    continue
    10 continue
 

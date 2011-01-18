@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model office building, winter operation defined in
-office_win.cfg generated on Thu Aug 23 18:35:18 2007. Notes associated with
+office_win.cfg generated on Thu Jul 29 16:28:43 2010. Notes associated with
 the model are in office.log
  
 The model is located at latitude   59.00 with a longitude difference of   0.00
@@ -9,16 +9,25 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/material.db3.a
- constructions          : /usr/esru/esp-r/databases/multicon.db2
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+Simulationist postcode: not yet defined
+ 
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
  
  ____________________________________________________________
  
@@ -226,7 +235,7 @@ ID Zone         Volume|          Surface
  7 Unit_b        552.8   9   564.3     7.2   204.8  Unit_b describes a...
  8 Unit_e        743.9  12   701.0    44.4   275.5  Unit_e describes a...
  9 Unit_hi      1391.9  13  1357.4    30.3   515.5  Unit_hi describes a...
-10 Unit_cd      1391.9  13  1357.4    30.3   515.5  Unit_cd describes a...
+10 Unit_cd      1391.9  13  1357.3    30.3   515.5  Unit_cd describes a...
 11 ceil_fg       529.7  16  1078.5     0.0   481.5  ceil_fg describes a...
 12 ceil_chi      658.2  18  1317.7    12.8   598.4  ceil_chi describes a...
 13 ceil_j        303.1   9   630.2     0.0   275.5  ceil_j describes a...
@@ -241,6 +250,8 @@ ID Zone         Volume|          Surface
  It encloses a volume of 224.m^3 of space, with a total surface
  area of 375.m^2 & approx floor area of 82.9m^2
  corid_1 describes a...
+Surface door has a duplicate name. Names must be unique!
+Surface door has a duplicate name. Names must be unique!
  There is 101.72m2 of exposed surface area, 101.72m2 of which is vertical.
  Outside walls are 36.563 % of floor area & avg U of 0.461 & UA of 13.963
  Glazing is 86.177 % of floor & 70.211 % facade with avg U of 2.811 & UA of 200.72
@@ -269,24 +280,31 @@ ID Zone         Volume|          Surface
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: corid1
  
 Notes:
 entry
- Number of Weekday Sat Sun casual gains=  6  2  2
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    1 - 24    100.0     70.0       0.20       0.80
-Wkd  3 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  4 LightsW    1 -  8     50.0      0.0       0.60       0.40
-Wkd  5 LightsW    8 - 18    250.0      0.0       0.60       0.40
-Wkd  6 LightsW   18 - 24     50.0      0.0       0.60       0.40
-Sat  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
-Sun  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
+Number of weekday      casual gains=  6
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    1-24    100.0     70.0       0.20       0.80
+weekd  3 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  4 LightsW    1- 8     50.0      0.0       0.60       0.40
+weekd  5 LightsW    8-18    250.0      0.0       0.60       0.40
+weekd  6 LightsW   18-24     50.0      0.0       0.60       0.40
+Number of saturday     casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  2 LightsW    1-24     50.0      0.0       0.60       0.40
+Number of sunday       casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -302,7 +320,7 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  30.3    270.  -0. west_cor     OPAQUE   VERT -     insul_mtl_p  ||< external
+  1  30.3    270.   0. west_cor     OPAQUE   VERT -     insul_mtl_p  ||< external
   2  5.40    180.   0. door         OPAQUE   VERT -     door         ||< door:Unit_j
   3  48.0     90.   0. prt_i_cor    OPAQUE   VERT -     mass_part    ||< passg:Unit_hi
   4  32.4     90.   0. prt_t_cor    OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tcor:toilets
@@ -322,6 +340,7 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  No insolation analysis requested.
  
  
+ 
  Uses same operations as zone corid_1
  
  ____________________________________________________________
@@ -339,11 +358,11 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  10.8    180.   0. prt_f-t      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ft:toilets
-  2  36.5    180.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_g
+  2  36.4    180.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_g
   3  6.75     90.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f1:stair_abfg
   4  12.2    180.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f:stair_abfg
-  5  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  6  44.1      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  6  44.1    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   7  15.9    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
   8  277.      0.  90. ceil_f       OPAQUE   CEIL -     susp_ceil    ||< ceil_f:ceil_fg
   9  277.      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
@@ -358,40 +377,47 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: unit_f
  
 Notes:
 ocup_off
- Number of Weekday Sat Sun casual gains= 12  7  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    1 -  8      0.0      0.0       0.50       0.50
-Wkd  3 OccuptW    8 - 18   1343.0    637.0       0.20       0.80
-Wkd  4 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Wkd  5 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  6 LightsW    1 -  8    100.0      0.0       0.60       0.40
-Wkd  7 LightsW    8 - 18   2650.0      0.0       0.60       0.40
-Wkd  8 LightsW   18 - 24    100.0      0.0       0.60       0.40
-Wkd  9 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd 10 EquiptW    1 -  8    100.0     40.0       0.50       0.50
-Wkd 11 EquiptW    8 - 18    700.0     40.0       0.50       0.50
-Wkd 12 EquiptW   18 - 24    100.0     40.0       0.50       0.50
-Sat  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    8 - 18    100.0     70.0       0.20       0.80
-Sat  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sat  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  5 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Sat  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sat  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
-Sun  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  2 OccuptW    8 - 18    100.0     70.0       0.20       0.80
-Sun  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sun  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  5 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Sun  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
+Number of weekday      casual gains= 12
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    1- 8      0.0      0.0       0.50       0.50
+weekd  3 OccuptW    8-18   1343.0    637.0       0.20       0.80
+weekd  4 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekd  5 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  6 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekd  7 LightsW    8-18   2650.0      0.0       0.60       0.40
+weekd  8 LightsW   18-24    100.0      0.0       0.60       0.40
+weekd  9 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekd 10 EquiptW    1- 8    100.0     40.0       0.50       0.50
+weekd 11 EquiptW    8-18    700.0     40.0       0.50       0.50
+weekd 12 EquiptW   18-24    100.0     40.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+satur  2 OccuptW    8-18    100.0     70.0       0.20       0.80
+satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  5 LightsW    1-24    100.0      0.0       0.60       0.40
+satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+satur  7 EquiptW    1-24    100.0     40.0       0.50       0.50
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunda  2 OccuptW    8-18    100.0     70.0       0.20       0.80
+sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  5 LightsW    1-24    100.0      0.0       0.60       0.40
+sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -408,8 +434,8 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  48.6    180.   0. prt_g-h      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gh:Unit_hi
-  2  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  12.2      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g1:stair_abfg
+  2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  12.2    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g1:stair_abfg
   4  6.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g:stair_abfg
   5  36.5      0.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_f
   6  32.4    270.   0. prt_t        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tg:toilets
@@ -423,43 +449,47 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: unit_g
  
 Notes:
-Each unit has similar occupancy lighting patterns to the other units.   
-                                                                        
-                                                                        
-          
- Number of Weekday Sat Sun casual gains= 12  7  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    1 -  8      0.0      0.0       0.50       0.50
-Wkd  3 OccuptW    8 - 18   1032.0    500.0       0.20       0.80
-Wkd  4 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Wkd  5 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  6 LightsW    1 -  8    100.0      0.0       0.60       0.40
-Wkd  7 LightsW    8 - 18   2040.0      0.0       0.60       0.40
-Wkd  8 LightsW   18 - 24    100.0      0.0       0.60       0.40
-Wkd  9 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd 10 EquiptW    1 -  8    100.0     40.0       0.50       0.50
-Wkd 11 EquiptW    8 - 18    700.0     40.0       0.50       0.50
-Wkd 12 EquiptW   18 - 24    100.0     40.0       0.50       0.50
-Sat  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    8 - 18    100.0     70.0       0.20       0.80
-Sat  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sat  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  5 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Sat  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sat  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
-Sun  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  2 OccuptW    8 - 18    100.0     70.0       0.20       0.80
-Sun  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sun  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  5 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Sun  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
+Each unit has similar occupancy lighting patterns to the other units.
+Number of weekday      casual gains= 12
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    1- 8      0.0      0.0       0.50       0.50
+weekd  3 OccuptW    8-18   1032.0    500.0       0.20       0.80
+weekd  4 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekd  5 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  6 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekd  7 LightsW    8-18   2040.0      0.0       0.60       0.40
+weekd  8 LightsW   18-24    100.0      0.0       0.60       0.40
+weekd  9 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekd 10 EquiptW    1- 8    100.0     40.0       0.50       0.50
+weekd 11 EquiptW    8-18    700.0     40.0       0.50       0.50
+weekd 12 EquiptW   18-24    100.0     40.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+satur  2 OccuptW    8-18    100.0     70.0       0.20       0.80
+satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  5 LightsW    1-24    100.0      0.0       0.60       0.40
+satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+satur  7 EquiptW    1-24    100.0     40.0       0.50       0.50
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunda  2 OccuptW    8-18    100.0     70.0       0.20       0.80
+sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  5 LightsW    1-24    100.0      0.0       0.60       0.40
+sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -477,7 +507,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  44.1    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
   2  18.0     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  13.5      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j1:stair_deij
+  3  13.5    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j1:stair_deij
   4  6.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j:stair_deij
   5  45.9      0.   0. prt_i-j      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ij:Unit_hi
   6  5.40      0.   0. door         OPAQUE   VERT -     door         ||< door:corid_g
@@ -492,6 +522,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  
  
  Uses same operations as zone Unit_f
@@ -514,8 +545,8 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
   2  36.5    180.   0. prt_a-b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a-b:Unit_b
   3  6.75     90.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a1:stair_abfg
   4  12.2    180.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a:stair_abfg
-  5  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  6  44.1      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  6  44.1    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   7  15.9    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
   8  277.      0.  90. ceil_a       OPAQUE   CEIL -     susp_ceil    ||< ceil_a:roof
   9  277.      0. -90. floor        OPAQUE   FLOR -     susp_floor   ||< floor_a:ceil_fg
@@ -528,6 +559,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  
  
  Uses same operations as zone Unit_f
@@ -547,8 +579,8 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  48.6    180.   0. prt_b-c      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_bc:Unit_cd
-  2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  12.2      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b1:stair_abfg
+  2  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  12.2    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b1:stair_abfg
   4  6.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b:stair_abfg
   5  36.5      0.   0. prt_a-b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a-b:Unit_a
   6  32.4    270.   0. prt_t_b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tb:toilets
@@ -562,6 +594,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  No insolation analysis requested.
  
  
+ 
  Uses same operations as zone Unit_g
  
  ____________________________________________________________
@@ -571,7 +604,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  area of 745.m^2 & approx floor area of 276.m^2
  Unit_e describes a...
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
- Outside walls are 28.475 % of floor area & avg U of 0.461 & UA of 36.151
+ Outside walls are 28.476 % of floor area & avg U of 0.461 & UA of 36.151
  Glazing is 16.116 % of floor & 36.142 % facade with avg U of 2.811 & UA of 124.79
  
  A summary of the surfaces in Unit_e( 8) follows:
@@ -580,7 +613,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  44.1    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
   2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  13.5      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e1:stair_deij
+  3  13.5    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e1:stair_deij
   4  6.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e:stair_deij
   5  45.9      0.   0. prt_d-e      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_de:Unit_cd
   6  5.40      0.   0. door         OPAQUE   VERT -     door         ||< door:corid_1
@@ -595,6 +628,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  
  
  Uses same operations as zone Unit_f
@@ -625,7 +659,7 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  10  16.8    270.   0. door         DCF7671_ VERT -     dbl_glz      ||< door_icor:corid_g
  11  13.5     90.   0. w_glaz       DCF7671_ VERT -     dbl_glz      ||< external
  12  54.1    180.   0. inner_p1     OPAQUE   VERT -     mass_part    ||< adiabatic
- 13  54.1      0.   0. inner_p2     OPAQUE   VERT -     mass_part    ||< adiabatic
+ 13  54.1    360.   0. inner_p2     OPAQUE   VERT -     mass_part    ||< adiabatic
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -633,37 +667,41 @@ Sun  7 EquiptW    1 - 24    100.0     40.0       0.50       0.50
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: unt_hi
  
 Notes:
-Unit g has similar patterns to the other units.                         
-                                                                        
-                                                                        
-          
- Number of Weekday Sat Sun casual gains=  6  7  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    1 - 24      0.0      0.0       0.50       0.50
-Wkd  3 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  4 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Wkd  5 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  6 EquiptW    1 - 24    100.0     40.0       0.50       0.50
-Sat  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    8 - 18     50.0     70.0       0.20       0.80
-Sat  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sat  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  5 LightsW    1 - 24     50.0      0.0       0.60       0.40
-Sat  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sat  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
-Sun  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  2 OccuptW    8 - 18     50.0     70.0       0.20       0.80
-Sun  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Sun  4 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  5 LightsW    1 - 24     50.0      0.0       0.60       0.40
-Sun  6 EquiptW    0 -  1      0.0      0.0       0.50       0.50
-Sun  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
+Unit g has similar patterns to the other units.
+Number of weekday      casual gains=  6
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    1-24      0.0      0.0       0.50       0.50
+weekd  3 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  4 LightsW    1-24    100.0      0.0       0.60       0.40
+weekd  5 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekd  6 EquiptW    1-24    100.0     40.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+satur  2 OccuptW    8-18     50.0     70.0       0.20       0.80
+satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  5 LightsW    1-24     50.0      0.0       0.60       0.40
+satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+satur  7 EquiptW    1-24     50.0     40.0       0.50       0.50
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunda  2 OccuptW    8-18     50.0     70.0       0.20       0.80
+sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  5 LightsW    1-24     50.0      0.0       0.60       0.40
+sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunda  7 EquiptW    1-24     50.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -683,7 +721,7 @@ Sun  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
   2  45.9    180.   0. prt_de       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d-e:Unit_e
   3  6.75     90.   0. str_2        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d1:stair_deij
   4  13.5    180.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d:stair_deij
-  5  44.6     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  44.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
   6  48.6      0.   0. prt_bc       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b-c:Unit_b
   7  10.8      0.   0. prt_tc       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ctc:toilets
   8  516.      0.  90. ceil         OPAQUE   CEIL -     susp_ceil    ||< ceil_c:roof
@@ -697,6 +735,7 @@ Sun  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  
  
  Uses same operations as zone Unit_hi
@@ -715,13 +754,13 @@ Sun  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  19.8    180.   0. prt_g-h      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gh:ceil_chi
-  2  10.4     90.   0. east_s       OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  4.95      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc1:stair_abfg
+  2  10.5     90.   0. east_s       OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  4.95    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc1:stair_abfg
   4  2.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc:stair_abfg
   5  2.75     90.   0. str_6        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ac1:stair_abfg
   6  4.95    180.   0. str_7        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ac:stair_abfg
   7  10.5     90.   0. east_n       OPAQUE   VERT -     insul_mtl_p  ||< external
-  8  26.4      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  8  26.4    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   9  13.2    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
  10  2.20    180.   0. cor_d        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_fcor:ceil_chi
  11  4.40    180.   0. prt_t1       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cat:toilets
@@ -736,23 +775,36 @@ Sun  7 EquiptW    1 - 24     50.0     40.0       0.50       0.50
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+ Air schedule notes:
+ceilings
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 ceilings
- Number of Weekday Sat Sun casual gains=  4  2  2
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 LightsW    1 -  8     50.0      0.0       0.60       0.40
-Wkd  3 LightsW    8 - 18   1325.0    700.0       0.60       0.40
-Wkd  4 LightsW   18 - 24     50.0      0.0       0.60       0.40
-Sat  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
-Sun  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
+Number of weekday      casual gains=  4
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 LightsW    1- 8     50.0      0.0       0.60       0.40
+weekd  3 LightsW    8-18   1325.0    700.0       0.60       0.40
+weekd  4 LightsW   18-24     50.0      0.0       0.60       0.40
+Number of saturday     casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  2 LightsW    1-24     50.0      0.0       0.60       0.40
+Number of sunday       casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -778,8 +830,8 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
   8  2.75     90.   0. str_2        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ci1:stair_deij
   9  5.50    180.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ci:stair_deij
  10  23.7     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
- 11  19.8    360.   0. prt_gh       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g-h:ceil_fg
- 12  4.40    360.   0. prt_th       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cth:toilets
+ 11  19.8      0.   0. prt_gh       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g-h:ceil_fg
+ 12  4.40      0.   0. prt_th       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cth:toilets
  13  13.2     90.   0. prt_tcor     OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tcorc:toilets
  14  2.20      0.   0. prt_fcor     OPAQUE   VERT -     gyp_blk_ptn  ||< cor_d:ceil_fg
  15  516.      0.  90. upper        OPAQUE   CEIL -     susp_flr_re  ||< floor:Unit_cd
@@ -791,6 +843,7 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  
  
  Uses same operations as zone ceil_fg
@@ -809,8 +862,8 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  26.4    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
-  2  10.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  5.50      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj1:stair_deij
+  2  10.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  5.50    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj1:stair_deij
   4  2.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj:stair_deij
   5  18.7      0.   0. prt_i-j      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ij:ceil_chi
   6  2.20      0.   0. cor_dj       OPAQUE   VERT -     gyp_blk_ptn  ||< cor_j:ceil_chi
@@ -822,13 +875,14 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Uses same operations as zone ceil_fg
  
  ____________________________________________________________
  
  Zone stair_abfg (14) is composed of 16 surfaces and 24 vertices.
  It encloses a volume of 146.m^3 of space, with a total surface
- area of 169.m^2 & approx floor area of 22.5m^2
+ area of 168.m^2 & approx floor area of 22.5m^2
  stair_abfg describes a...
  There is 32.500m2 of exposed surface area, 32.500m2 of which is vertical.
  Outside walls are 144.44 % of floor area & avg U of 0.608 & UA of 19.773
@@ -858,6 +912,7 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Uses same operations as zone corid_1
  
  ____________________________________________________________
@@ -887,13 +942,14 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  12  2.75    270.   0. prt_ci1      OPAQUE   VERT -     gyp_blk_ptn  ||< str_2:ceil_chi
  13  6.75    270.   0. prt_d1       OPAQUE   VERT -     gyp_blk_ptn  ||< str_2:Unit_cd
  14  5.50      0.   0. prt_ci       OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:ceil_chi
- 15  13.5    360.   0. prt_d        OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:Unit_cd
+ 15  13.5      0.   0. prt_d        OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:Unit_cd
  16  1.68     90.   0. door         OPAQUE   VERT -     door         ||< external
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Uses same operations as zone corid_1
  
  ____________________________________________________________
@@ -926,6 +982,7 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Uses same operations as zone corid_1
  
  ____________________________________________________________
@@ -963,22 +1020,29 @@ Sun  2 LightsW    1 - 24     50.0      0.0       0.60       0.40
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: roof
  
 Notes:
 roof
- Number of Weekday Sat Sun casual gains=  4  2  2
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Wkd  2 LightsW    1 -  8    100.0      0.0       0.60       0.40
-Wkd  3 LightsW    8 - 18   6100.0    700.0       0.60       0.40
-Wkd  4 LightsW   18 - 24    100.0      0.0       0.60       0.40
-Sat  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sat  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
-Sun  1 LightsW    0 -  1      0.0      0.0       0.50       0.50
-Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
+Number of weekday      casual gains=  4
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekd  2 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekd  3 LightsW    8-18   6100.0    700.0       0.60       0.40
+weekd  4 LightsW   18-24    100.0      0.0       0.60       0.40
+Number of saturday     casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+satur  2 LightsW    1-24    100.0      0.0       0.60       0.40
+Number of sunday       casual gains=  2
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -995,7 +1059,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: insul_mtl_p
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
     2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
@@ -1005,7 +1069,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: door
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
@@ -1013,7 +1077,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: mass_part
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 block white ptd : block white painted inner
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
@@ -1021,7 +1085,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
@@ -1040,7 +1104,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: roof
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
     2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
@@ -1051,23 +1115,25 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: grnd_floor
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
+    5   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    6    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    7   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.699  0.714  0.680 (partition)  0.657
  Total area of grnd_floor is   1368.00
  
  Details of opaque construction: entry_floor
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel : Gravel based
+    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
     3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
  Int    83   24.0     2.000  2500.   880. 0.90 0.46    38.  0.01 white marble : White marble
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.294  1.346  1.230 (partition)  1.159
@@ -1075,7 +1141,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: susp_ceil
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1  104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
@@ -1083,7 +1149,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: susp_floor
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
     2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
@@ -1095,7 +1161,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: susp_flr_re
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
     2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
@@ -1107,7 +1173,7 @@ Sun  2 LightsW    1 - 24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: gyp_blk_ptn
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17

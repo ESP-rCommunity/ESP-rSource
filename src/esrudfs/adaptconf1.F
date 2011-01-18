@@ -190,6 +190,7 @@ C           Supporting routine for CFD `adaptive conflation controller'.
       SUBROUTINE CFDLENS
 #include "cfd.h"
 #include "building.h"
+#include "geometry.h"
       COMMON/CONST/GREAT,small,GRAV
       COMMON/ICFNOD/ICFD,ICP
       COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
@@ -198,7 +199,6 @@ C           Supporting routine for CFD `adaptive conflation controller'.
      &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
      &              SSBHC(MNSBZ,MNZ),
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/CFDlen/rlengW,rlengE,rlengS,rlengN,rlengL,rlengH
 
 

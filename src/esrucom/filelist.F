@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C filelist.F contains:
 C  browsefilelist: presents user with list of files recovered from
-C    a call to getfilelist to select from. 
+C    a call to getfilelist to select from.
 C  clearfilelist: clears a string array (char*72 listf(100))
 C    used before call to getfilelist.
 C  copyfilelist: takes string array returned from getfilelist and copies
@@ -30,7 +30,7 @@ C    recovered from call to C function getfilelist.
 
 C ********* browsefilelist
 C browsefilelist presents user with list of files recovered from
-C a call to getfilelist to select from. 
+C a call to getfilelist to select from.
 C Parameter act (chr*1) 'p' print packet list, 'l' line by line
 C   list, 'b' browse (popup menu), '?' find if any files exist.
 C Parameter `where` (char*3) says where to look for the file,
@@ -44,15 +44,14 @@ C parameter ier returned as 2 if problem writing file name path.
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
 #include "espriou.h"
 C espriou.h for parameter MFFOLD
-      
+#include "building.h"
+#include "model.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/uhome/upath
       common/rpath/path
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -64,12 +63,13 @@ C   `rad` (looks in ../rad), `doc` (looks in ../doc),
 C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
-C   `dbm` (looks in {where esp-r installed}/databases).
+C   `dba` (looks in {where esp-r installed}/databases).
+C   `hva`(looks in ../hvac).
 
 C what can be: `dir` list of folders, `fil` any files in the folders,
 C   `cfg` configuration files, `ctl` control files,
 C   `afn` air flow networks, `gnf` graphic network files,
-C   `res` results files, `mfr` mass flow results 
+C   `res` results files, `mfr` mass flow results
 C   `geo` geometry files, `opr` operation files,
 C   `con` construction files, `obs` obstruction files,
 C   `vwf` viewfactor files, `tmc` optics files,
@@ -80,14 +80,14 @@ C   `dba` ascii database,
 C   `dbb` binary database or climate file (for future use),
 C   `xbm` X bitmap files, `gif` gif image files,
 C   `ipv` IPV definition file, `rep` IPV report file
-C   `qac` QA contents file, `zip` cflo3 zip (geometry) file. 
+C   `qac` QA contents file, `zip` cflo3 zip (geometry) file, 
+C   `hva` hvac files.
 
       dimension nwlistf(MFFOLD),ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
-      character*72 upath,path,odir
+      character*72 path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,act*1
+      character fs*1,act*1
       character dinstpath*48
 
 C Array for browse menu.
@@ -112,7 +112,7 @@ C Save back any file name passed into the subroutine.
 
 C Make up the path (usually relative to the cfg folder of the
 C model. odir is the current working directory (which is where the
-C project manager was started from). 
+C project manager was started from).
       subpath=' '
       call usrdir(odir)
       if(where(1:3).eq.'cfg')then
@@ -124,6 +124,11 @@ C project manager was started from).
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    dbspth(1:lnblnk(dbspth))
+      elseif(where(1:3).eq.'hva')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),hvacpth(1:lnblnk(hvacpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    hvacpth(1:lnblnk(hvacpth))
       elseif(where(1:3).eq.'zon')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),zonepth(1:lnblnk(zonepth))
@@ -139,6 +144,11 @@ C project manager was started from).
      &    path(1:lnblnk(path)),ctlpth(1:lnblnk(ctlpth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    ctlpth(1:lnblnk(ctlpth))
+      elseif(where(1:3).eq.'aim')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),ctlpth(1:lnblnk(aimpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    aimpth(1:lnblnk(aimpth))
       elseif(where(1:3).eq.'img')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
@@ -179,6 +189,11 @@ C project manager was started from).
      &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
         write(relative,'(4a)',iostat=ios,err=2)
      &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+      elseif(where(1:3).eq.'bsm')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    bsmpth(1:lnblnk(bsmpth))
       endif
 
 #ifdef OSX
@@ -199,6 +214,13 @@ C (just use the relative path defined above).
         continue
       endif
 #endif
+
+#ifdef MINGW
+C In DOS no need to prepend odir (just use the relative path defined above).
+      write(subpath,'(a)',iostat=ios,err=2)
+     &  relative(1:lnblnk(relative))
+#endif
+
       if(what(1:3).eq.'dir')then
         action='dir'
         write(outs,*) 'folders in ',subpath
@@ -211,6 +233,12 @@ C (just use the relative path defined above).
       elseif(what(1:3).eq.'ctl')then
         action='ctl'
         write(outs,*) 'control files in ',subpath
+      elseif(what(1:3).eq.'aim')then
+        action='aim'
+        write(outs,*) 'aim2 files in ',subpath
+      elseif(what(1:3).eq.'hva')then
+        action='hva'
+        write(outs,*) 'hvac models in ',subpath
       elseif(what(1:3).eq.'afn')then
         action='afn'
         write(outs,*) 'network files in ',subpath
@@ -282,6 +310,8 @@ C (just use the relative path defined above).
         write(outs,*) 'ZIP/cflo3 files in ',subpath
       endif
 
+      call edisp(iuout,outs) 
+
 C Clear the list of files and recover a list of files matching
 C the current criteria. Copy this list into listfc for use by
 C fortran code.
@@ -322,7 +352,7 @@ C Try to use information gathered from file scan.
 C Debug.
 C            write(6,*) sfile
 
-            write(snpfile,'(a)') 
+            write(snpfile,'(a)')
      &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
@@ -360,7 +390,7 @@ C Errors when creating string buffers.
       return
 
    2  if(IOS.eq.2)then
-        write(outs,*) 
+        write(outs,*)
      &    'browsefilelist: no permission to create relative path: ',
      &    relative
         call edisp(iuout,outs)
@@ -407,7 +437,7 @@ C ********* copyfilelist
 C copyfilelist takes string array of size iasize which should
 C be equivalent to MFFOLD (char*72 listf(iasize)) returned
 C from call to getfilelist and copies it into another string
-C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of 
+C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of
 C each string (returned from getfilelist call).
 C maxw is the maximum width of any string in the list of file
 C names.
@@ -415,7 +445,7 @@ C names.
       character*72 listf(iasize),listfc(iasize)
       dimension nwlistf(iasize)
       integer loop
-      
+
       loop=iasize-1  ! loop is one less than the size
       maxw=0
       do 42 i=1,loop

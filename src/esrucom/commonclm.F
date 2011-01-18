@@ -209,10 +209,11 @@ C in north or south hemispheres.
 
    14 dok=.true.
       h(1)='There are some limits that should not be exceeded.'
-      h(2)='If you say no the the program will stop. '
+      h(2)='If you say no the the program will STOP. '
       CALL ASKOK('Lat was outwith +-90.0 or Long difference more than',
      &  '+- 15 deg. Continue with default Lat/Long?',OK,dok,2)
       if(.NOT.OK)then
+        call pauses(3)   ! pause for 3 seconds then abort program.
         CALL EPAGEND
         STOP
       endif

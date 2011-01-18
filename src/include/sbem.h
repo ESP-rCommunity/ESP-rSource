@@ -136,7 +136,7 @@ C Integers
                         ! 10+IVENT = local ventilation only units (notional SFP=0.5) present
                         ! Default value 0. See NCM modelling guide 2008 version 
                         ! tables 7 and 12 for more details 
-      INTEGER ISBEM     ! a value of 1 signals that isbem data exists
+      INTEGER ISBEM     ! a value of 1 signals that isbem db exists 2 signals NCM file exists
       INTEGER IBUSERTYP ! this matches the list of buildings in isbem.
       INTEGER IBSS      ! building service strategy
       INTEGER IRGG      ! building regulations to follow
@@ -480,14 +480,19 @@ C U Value maximums - calculated in BRUKL and it is also used in EPCGen
 
 C Activities global list
       INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
-      REAL occupant_dens      ! occupant density people/m2
+      INTEGER loc_man_sw      ! local manual switching flag (if 1 then local manual switching not allowed)
       INTEGER metabolic_rate  ! metabolic rate W/person/m2
-      REAL fresh_air          ! outside air per person litres/sec/person
       INTEGER lighting_lux    ! lighting lux
-      REAL equip_gain         ! equipment W/m2 
-      REAL dhw_litres         ! domestic hot water litres/day/m2
       INTEGER latent_ocup_percent  ! occupant latent percentage (of the whole gain)
       INTEGER latent_equip_percent ! equipment latent percentage (of the whole gain)
+      common/actglobint/bld_order_index(MACL),loc_man_sw(MACL),
+     &  metabolic_rate(MACL),lighting_lux(MACL),
+     &  latent_ocup_percent(MACL),latent_equip_percent(MACL)
+
+      REAL occupant_dens      ! occupant density people/m2
+      REAL fresh_air          ! outside air per person litres/sec/person
+      REAL equip_gain         ! equipment W/m2 
+      REAL dhw_litres         ! domestic hot water litres/day/m2
       REAL display_lighting        ! lighting display W/m2
       REAL Hmainsetpoint,Cmainsetpoint  
       REAL fNotionalLighting
@@ -497,14 +502,12 @@ C Activities global list
       REAL nonzerohours          ! hours of year with non-zero occupancy/lights/equipemt
       REAL atleastonehour        ! days which have (at least some) occupancy/lights/equipment
       REAL casualfracsum         ! summation of the hourly occupant/lighting/equipment fractions
-      common/actglob/bld_order_index(MACL),occupant_dens(MACL),
-     &  metabolic_rate(MACL),fresh_air(MACL),lighting_lux(MACL),
-     &  equip_gain(MACL),dhw_litres(MACL),latent_ocup_percent(MACL),
-     &  latent_equip_percent(MACL),display_lighting(MACL),
+      common/actglobreal/occupant_dens(MACL),fresh_air(MACL),
+     &  equip_gain(MACL),dhw_litres(MACL),display_lighting(MACL),
      &  Hmainsetpoint(MACL),Cmainsetpoint(MACL),fNotionalLighting(MACL),
      &  fTypicalLighting(MACL),fMonthEstSysHrs(MACL,13),
      &  nonzerohours(MACL,3),atleastonehour(MACL,3),
-     &  casualfracsum(MACL,3) 
+     &  casualfracsum(MACL,3)
                 
 C Reals not in common
 C      REAL TyERE    ! total annual energy for typical building
@@ -525,4 +528,33 @@ C      REAL RERE     ! total annual energy for reference building
                               !if equal to 1: stripped follows the rules of the notional building
                               !if equal to 2: stripped follows the rules of the reference building
       integer iNatVentilatedFlag !flag to indicate that the building is naturally ventilated
+                                 ! =1 means naturally ventilated
       common/dsmtests/iDsmTestingFlag,iNatVentilatedFlag
+
+C Common blocks for lighting control
+      real PE_sensor_PP       ! Photoelectric sensor parasitic power W/m2
+      real Occ_sensor_PP      ! Occupancy sensor parasitic power W/m2
+      real DFFront            ! Front daylight factor
+      real DFRear             ! Rear daylight factor
+      common/sbem15/PE_sensor_PP(MNS),Occ_sensor_PP(MNS),
+     &DFFront(MNS),DFRear(MNS)
+
+
+      integer IOcc_sensing    ! Occupancy sensing flag 
+      integer Ilightcontrol   ! lighting control type
+      integer Idaylightzoning ! daylighting zoning for control
+      integer Ipe_control     ! photoelectric control (switching or dimming)
+      common/sbem16/IOcc_sensing(MNS),Ilightcontrol(MNS),
+     &Idaylightzoning(MNS),Ipe_control(MNS)
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      

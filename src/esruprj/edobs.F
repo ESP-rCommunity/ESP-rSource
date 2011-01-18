@@ -45,8 +45,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/pophelp/h(60)
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -58,8 +56,6 @@ C LPRFDB,IPRODB (for event profile database)
       dimension IVALB(MB)
       CHARACTER*33 VERT(35)
       character*32 PICK(MB)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER KEY*1,H*72,HOLD*24
       character blkroot*8,mat*12,tbn*12
       character holds*36
@@ -69,6 +65,8 @@ C LPRFDB,IPRODB (for event profile database)
       logical silent  ! to signal quiet dependency resolution
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
+      integer IW  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -183,7 +181,7 @@ C Present a list of the existing blocks and options. If we reached
 C this point with zero gridding then assign a default value.
       if(NOX(icomp).eq.0) NOX(icomp)=20
       if(NOZ(icomp).eq.0) NOZ(icomp)=20
-      WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX(icomp),
+      WRITE(VERT(1),'(A,2I4)')  'a Surface X&Z grid:',NOX(icomp),
      &  NOZ(icomp)
       WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbobs(icomp)
       VERT(3)    =              '  __________________________  '
@@ -268,8 +266,8 @@ C List details of obstructions.
      &      NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
           call edisp(iuout,outs)
           write(outs,'(2a)')
-     &      'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. ',
-     &      'Orientation Name Material'
+     &      'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity ',
+     &      'Name Material'
 	  call edisp(iuout,outs)
           DO 9995 I=1,nbobs(icomp)
             lnbn=LNBLOCKNAME(icomp,I)
@@ -277,17 +275,17 @@ C List details of obstructions.
             if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
               WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &          ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &          DZOB(icomp,I),BANGOB(icomp,I,1),
+     &          DZOB(icomp,I),BANGOB(icomp,I,1),OPOB(icomp,I),
      &          BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994         FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
+ 9994         FORMAT(I3,6F8.2,2F7.2,' ',a,' ',a)
               call edisp(iuout,outs)
             elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
               WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
      &          ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
      &          DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
-     &          BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
-     &          BLOCKMAT(icomp,I)(1:lnbm)
- 9993         FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
+     &          BANGOB(icomp,I,3),OPOB(icomp,I),
+     &          BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
+ 9993         FORMAT(I3,6F8.2,4F7.2,' ',a,' ',a)
               call edisp(iuout,outs)
             elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
               WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
@@ -460,6 +458,7 @@ C Rotation choices.
 
 C +- Obstruction.
         h(1)='Use this to add / delete / copy obstructions. '
+        IW=1
         CALL EASKATOG('Modify obstruction list:',' ',
      &    'add','delete','copy','continue',' ',' ',' ',IW,1)
         IF(IW.EQ.2)THEN
@@ -504,6 +503,7 @@ C To delete the last obstruction, dereference the file and exit.
                 BANGOB(icomp,IDV,1)=BANGOB(icomp,IDV+1,1)
                 BANGOB(icomp,IDV,2)=BANGOB(icomp,IDV+1,2)
                 BANGOB(icomp,IDV,3)=BANGOB(icomp,IDV+1,3)
+                OPOB(icomp,IDV)=OPOB(icomp,IDV+1)
                 BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
                 LNBLOCKNAME(icomp,IDV)=LNBLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
@@ -533,6 +533,7 @@ C To delete the last obstruction, dereference the file and exit.
             BANGOB(icomp,nbo,1)=0.0
             BANGOB(icomp,nbo,2)=0.0
             BANGOB(icomp,nbo,3)=0.0
+            OPOB(icomp,nbo)=1.0
             BLOCKNAME(icomp,nbo)='new_blk'
             LNBLOCKNAME(icomp,nbo)=7
             BLOCKMAT(icomp,nbo)='NONE'
@@ -612,6 +613,7 @@ C Ask for transform distance for obstruction and then apply.
             BANGOB(icomp,nbo,1)=BANGOB(icomp,IFOC,1)
             BANGOB(icomp,nbo,2)=BANGOB(icomp,IFOC,2)
             BANGOB(icomp,nbo,3)=BANGOB(icomp,IFOC,3)
+            OPOB(icomp,nbo)=OPOB(icomp,IFOC)
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
             LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,IFOC)
             BLOCKTYP(icomp,nbo)=BLOCKTYP(icomp,IFOC)
@@ -706,12 +708,8 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       common/pophelp/h(60)
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
       CHARACTER H*72,LTMP*72,OFILE*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -835,6 +833,7 @@ C the dummy obstruction in the zone geometry file.
         BANGOB(icomp,1,1)=0.0
         BANGOB(icomp,1,2)=0.0
         BANGOB(icomp,1,3)=0.0
+        OPOB(icomp,1)=1.0
         BLOCKNAME(ICOMP,1)='First'
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
@@ -1008,6 +1007,7 @@ C Provide default values for the new obstructions file.
         BANGOB(icomp,1,1)=0.0
         BANGOB(icomp,1,2)=0.0
         BANGOB(icomp,1,3)=0.0
+        OPOB(icomp,1)=1.0
         BLOCKNAME(ICOMP,1)='First'
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
@@ -1034,13 +1034,16 @@ C Write to geometry file or the obstructions file.
 
 C ************* EDOBSB 
 C EDOBSB: Edit details of an obstruction block. Adapt interface
-C if user requests conversion to a general 6 sided polygon.
+C if user requests conversion to a general 6 sided polygon. This
+C subroutine assues that the current zone geometry common blocks
+C have already been filled.
       SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "prj3dv.h"
 
 C Parameters
       integer ITRU   ! unit for writing errors
@@ -1051,19 +1054,14 @@ C Parameters
       
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
-C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND
-      DIMENSION VERT(22),IVLST(MTV)
+      DIMENSION VERT(23),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12
       character HOLD*32,outs*124
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1071,6 +1069,7 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       logical havesaved  ! to signal zone file written
       integer llbm    ! length for material
       real top        ! for the highest point of the block
+      integer NITMS,IVERT ! max items and current menu item
 
 C Initial values for point at angle facility.
       V1=1.0
@@ -1152,23 +1151,24 @@ C geometry files.
         llbm=LNBLOCKMAT(ICOMP,IB)
         WRITE(VERT(7),'(A,A)')      'g construction: ',
      &    BLOCKMAT(ICOMP,IB)(1:llbm)
-        VERT(8)                  =  '  ____________________________ '
-        VERT(9)                  =  '  block coords    X       Y   '
-        WRITE(VERT(10),'(A,2F8.3)') '  front left  :',XB(1),YB(1)
-        WRITE(VERT(11),'(A,2F8.3)') '  front right :',XB(2),YB(2)
-        WRITE(VERT(12),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
-        WRITE(VERT(13),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
-        WRITE(VERT(14),'(A,F8.3,A)')'  top @       :',top,' (Z)'
-        VERT(15)                  = '  ____________________________  '
-        VERT(16)                  = '  zone bounds  X    Y     Z     '
-        WRITE(VERT(17),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+        WRITE(VERT(8),'(A,F6.2)')   'h opacity   : ',OPOB(ICOMP,IB)
+        VERT(9)                  =  '  ____________________________ '
+        VERT(10)                  =  '  block coords    X       Y   '
+        WRITE(VERT(11),'(A,2F8.3)') '  front left  :',XB(1),YB(1)
+        WRITE(VERT(12),'(A,2F8.3)') '  front right :',XB(2),YB(2)
+        WRITE(VERT(13),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
+        WRITE(VERT(14),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
+        WRITE(VERT(15),'(A,F8.3,A)')'  top @       :',top,' (Z)'
+        VERT(16)                  = '  ____________________________  '
+        VERT(17)                  = '  zone bounds  X    Y     Z     '
+        WRITE(VERT(18),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
      &    ZZMX(iz)
-        WRITE(VERT(18),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+        WRITE(VERT(19),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
-        VERT(19)                  = '  ____________________________  '
-        VERT(20)                  = '* convert to general polygons   '
-        VERT(21)                  = '? help                          '
-        VERT(22)                  = '- exit                          '
+        VERT(20)                  = '  ____________________________  '
+        VERT(21)                  = '* convert to general polygons   '
+        VERT(22)                  = '? help                          '
+        VERT(23)                  = '- exit                          '
       else
         VERT(1)                   =  ' coords   X     Y      Z      '
         WRITE(VERT(2),'(A,3F8.3)')  'a 1:',XBP(iz,ib,1),YBP(iz,ib,1),
@@ -1193,15 +1193,16 @@ C geometry files.
         llbm=LNBLOCKMAT(ICOMP,IB)
         WRITE(VERT(12),'(A,A)')     'j construction: ',
      &    BLOCKMAT(ICOMP,IB)(1:llbm)
-        VERT(13)                  = '  ____________________________ '
-        VERT(14)                  = '  zone bounds  X    Y     Z     '
-        WRITE(VERT(15),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+        WRITE(VERT(13),'(A,F6.2)')   'k opacity   : ',OPOB(ICOMP,IB)
+        VERT(14)                  = '  ____________________________ '
+        VERT(15)                  = '  zone bounds  X    Y     Z     '
+        WRITE(VERT(16),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
      &    ZZMX(iz)
-        WRITE(VERT(16),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+        WRITE(VERT(17),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
-        VERT(17)                  = '  ____________________________  '
-        VERT(18)                  = '? help                          '
-        VERT(19)                  = '- exit                          '
+        VERT(18)                  = '  ____________________________  '
+        VERT(19)                  = '? help                          '
+        VERT(20)                  = '- exit                          '
 
       endif
       
@@ -1262,19 +1263,23 @@ C Help text for this menu.
       H(44)='surface is 1 2 6 5. The left surface is 4 1 5 8. The '
       H(45)='right surface is 2 3 7 6. The back surface is 3 4 8 7.'
       H(46)=' '
+      H(47)='Obstructions (will in the future) have an attribute of '
+      H(48)='opacity where 0.0 is transparent and 1.0 is opaque. '
 
 C Now display the menu.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
      &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-        CALL EMENU('Block Details',VERT,22,IVERT)
+        NITMS=23
+        CALL EMENU('Block Details',VERT,NITMS,IVERT)
       else
-        CALL EMENU('Obstruction Details',VERT,19,IVERT)
+        NITMS=20
+        CALL EMENU('Obstruction Details',VERT,NITMS,IVERT)
       endif
 
 C One set of interface actions if type 'obs' or 'obs3'.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
      &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-        if(IVERT.EQ.22)then
+        if(IVERT.EQ.23)then
           ITOBS = 0
           CALL ADJVIEW(IER)
           RETURN
@@ -1290,6 +1295,9 @@ C One set of interface actions if type 'obs' or 'obs3'.
      &        ZOB(ICOMP,IB)
             MODIFY=.TRUE.
           elseif(IBOPT.eq.2)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertices for origin',
@@ -1304,6 +1312,9 @@ C One set of interface actions if type 'obs' or 'obs3'.
               goto 92
             endif
           elseif(IBOPT.eq.3)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertice in zone',
@@ -1463,7 +1474,18 @@ C Note: this logic only picks up the first 12 char of construction.
             CALL USRMSG(' ',
      &     'A problem was encountered with the block construction','W')
           ENDIF
-        ELSEIF(IVERT.EQ.20)THEN
+        ELSEIF(IVERT.EQ.8)THEN
+          H(1)='Some shading devices are perforated or otherwise let'
+          H(2)='light pass and thus have an equivalent opacity. This '
+          H(3)='value is 0.0-1.0 where 0.0 is transparent and 1.0 '
+          H(4)='is fully opaque. '
+ 46       VX=OPOB(ICOMP,IB)
+          CALL EASKR(VX,MSG,' Block opacity (see help)? ',
+     &       0.0,'W',1.0,'W',1.0,'block opacity',IER,4)
+          if(ier.ne.0)goto 46
+          OPOB(icomp,IB)=VX
+          MODIFY=.TRUE.
+        ELSEIF(IVERT.EQ.21)THEN
 
 C Convert current obstruction block into general polygon obstruction.
           if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs ')then
@@ -1491,12 +1513,13 @@ C Convert current obstruction block into general polygon obstruction.
           BANGOB(ICOMP,IB,1)=0.0
           BANGOB(ICOMP,IB,2)=0.0
           BANGOB(ICOMP,IB,3)=0.0
+          OPOB(ICOMP,IB)=0.0
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
           GOTO 92
 	  
-        ELSEIF(IVERT.EQ.21)THEN
-          CALL PHELPD('obstr menu',46,'-',0,0,IER)
+        ELSEIF(IVERT.EQ.22)THEN
+          CALL PHELPD('obstr menu',48,'-',0,0,IER)
         ELSE
           GOTO 92
         ENDIF
@@ -1504,7 +1527,7 @@ C Convert current obstruction block into general polygon obstruction.
       else
 
 C Interface options if a general polygon obstruction.
-        if(IVERT.EQ.19)then
+        if(IVERT.EQ.20)then
           ITOBS = 0
           CALL ADJVIEW(IER)
           RETURN
@@ -1695,8 +1718,19 @@ C Note: this logic only picks up the first 12 char of construction.
             CALL USRMSG(' ',
      &     'A problem was encountered with the block construction','W')
           ENDIF
-        ELSEIF(IVERT.EQ.18)THEN
-          CALL PHELPD('obstr menu',46,'-',0,0,IER)
+        ELSEIF(IVERT.EQ.13)THEN
+          H(1)='Some shading devices are perforated or otherwise let'
+          H(2)='light pass and thus have an equivalent opacity. This '
+          H(3)='value is 0.0-1.0 where 0.0 is transparent and 1.0 '
+          H(4)='is fully opaque. '
+ 446      VX=OPOB(ICOMP,IB)
+          CALL EASKR(VX,MSG,' Block opacity (see help)? ',
+     &       0.0,'W',1.0,'W',1.0,'block opacity',IER,4)
+          if(ier.ne.0)goto 446
+          OPOB(icomp,IB)=VX
+          MODIFY=.TRUE.
+        ELSEIF(IVERT.EQ.19)THEN
+          CALL PHELPD('obstr menu',48,'-',0,0,IER)
         ELSE
           GOTO 92
         ENDIF
@@ -1743,7 +1777,6 @@ C Parameters
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XXW(4),YYW(4),ZZW(4)
       DIMENSION  TMAT(4,4),RMAT(4,4),VP(3),EP(3),EQN(4)

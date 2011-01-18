@@ -57,19 +57,6 @@ C Need TFUT from this
       real TMIX
       character outs*124
 
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-     
-      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA,ISKYLUX
-      integer IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
-      integer IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT,ICASUAL3,IACTIV,IBIDIRS
-      integer IVERSOL,IHTCLSETP,IDBTZNM
-
 C Common to count the number of occupied hours above 27oC (oper. temperature)
 C Used for UK NCM purposes
       common/ncmHrOverheat/ihroverheats(MCOM),ihroccup(MCOM)

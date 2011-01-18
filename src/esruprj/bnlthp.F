@@ -76,7 +76,7 @@ C **************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/G5/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -87,12 +87,9 @@ C geometry.h provides commons G0/G2/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP) 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       COMMON/VTHP18/LNLTHP
@@ -101,26 +98,18 @@ C geometry.h provides commons G0/G2/precz.
       DIMENSION IVAL2(4),IVAL3(MCOM),IVAL4(MS),IVAL5(ME)
       LOGICAL INTHPS,INTHPZ
       LOGICAL OK,DOK,SAVEOK,XST
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
       CHARACTER*95 TEXT,TEXT1
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character ltmp*72
+      integer NITEM,INO ! max items and current menu item
 
 C Read the complete building thermal and geometical data.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       SAVEOK=.FALSE.
       DO 5 ICOMP=1,NCOMP
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         IF(IER.NE.0)RETURN
         CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,0,IUOUT,IER)
         IF(IER.NE.0)RETURN
@@ -442,12 +431,14 @@ C ****************************************************************
       integer iCountWords
 
       COMMON/FILEP/IFIL
+      character h*72
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       CHARACTER ITEM(24)*42,TEXT*40,OUTSTR*124,TEXT1*95,TEXT2*95
-      CHARACTER*72 TITLE,THFIL,EQNTXT,EQNMSG,H
+      CHARACTER*72 TITLE,THFIL,EQNTXT,EQNMSG
+      integer NITMS,INO,INO1,INO2 ! max items and current menu item
 
       INDEX1=0
       IUNIT=IFIL+1
@@ -481,8 +472,8 @@ C Help text for this menu.
       H(1)='This menu is used to creat and/ or modify the thermal'
       H(2)='equations of the thermal functions.  Modifying a'
       H(3)='thermal equation is acheived by selecting it.'
-
-      CALL EMENU(TEXT,ITEM,M+15,INO)
+      NITMS=M+15
+      CALL EMENU(TEXT,ITEM,NITMS,INO)
 
 C prevent creating thermal equations, for a thermal function, more 
 C than the maximum allowed number.
@@ -554,7 +545,8 @@ C the thermal equation to be deleted.
       ELSEIF(INO.EQ.M+6)THEN
         CALL USRMSG(' ',' Select the thermal equation to delete.','-') 
         ITEM(M+5)='* cancel last delete command'
-   25   CALL EMENU('Delete',ITEM,M+5,INO1)
+        NITMS=M+5
+   25   CALL EMENU('Delete',ITEM,NITMS,INO1)
 
 C Update the data after deleting a thermal equation.
         IF(INO1.GT.3.AND.INO1.LT.(M+4))THEN
@@ -679,8 +671,9 @@ C the loaded thermal data file.
           CALL EASKS(TITLE,' Title for this thermal equation?',' ',
      &       72,' ','equation title',IER,4)
           CALL USRMSG(' ',' Select the thermal equation to save:','-') 
-          ITEM(M+5)='* cancel last save command'  
-   80     CALL EMENU('Save',ITEM,M+5,INO2)
+          ITEM(M+5)='* cancel last save command'
+   80     NITMS=M+5
+          CALL EMENU('Save',ITEM,NITMS,INO2)
           IF(INO2.GT.3.AND.INO2.LT.(M+4))THEN
             REWIND(IUNIT,ERR=999)
             MLIN=0

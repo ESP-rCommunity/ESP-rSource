@@ -52,6 +52,7 @@ C ***************** UNCERTA *********************
       character path*72,LUALF*72
       CHARACTER H*72,LTEMP*72,DTEMP*72,outs*124
       character cfgroot*24,LCFGF*72
+      integer NITMS,INO ! max items and current menu item
 
       LOGICAL LIBXST
 
@@ -206,6 +207,7 @@ C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       CHARACTER H*72,KEY*1,MLCITM(35)*24
 
       dimension IDEL(muadel)
+      integer NITMS,INO ! max items and current menu item
 
       IER=0
       if (ITYP.lt.1.and.ITYP.gt.3) return
@@ -452,6 +454,7 @@ C ICDEF  If equal to zero then add a new definition, else edit.
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER H*72, ITEM(17)*40, outs*124
+      integer NITMS,INO ! max items and current menu item
 
       IERR=0
       IER=0
@@ -613,9 +616,6 @@ C   specification and 2 if there was a cancel issued during editing.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)
@@ -624,8 +624,6 @@ C   specification and 2 if there was a cancel issued during editing.
       DIMENSION STMP(MS),IVALZ(MCOM),IVALS(MS)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.

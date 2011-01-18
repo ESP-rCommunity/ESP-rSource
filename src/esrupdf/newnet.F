@@ -109,6 +109,7 @@ C Common controlling format of plant network file
       CHARACTER ICDIR*72, DOIT*248,mode*1,pcdesc*80
       character*68 mscdsc, cvrdsc,hfpdsc
       LOGICAL OK,dok,XST
+      integer NITMS,INO ! max items and current menu item
 
 C And finally the DATA statement after all the other definitions.
       logical bInitialized
@@ -1056,7 +1057,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fill array with existing containment types.
       cnttyp(1)='Ambient air temperature.             '
@@ -1171,12 +1171,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.4) THEN
               RETURN
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
-              call eclose(gversion(IZ),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-              else
-                call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
-              endif
+              call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
               ITDSP=1
@@ -1379,6 +1374,7 @@ C fpr the component (ipc).
       dimension list(21)
       CHARACTER ltpcmf*60, mfdatstr*40,pcname*15
       character txt*27,H*72, list*60, head*44
+      integer nlist,ino ! max items and current menu item
       
       nconns=0
       do 110 inod=1, nnodes(ipc)
@@ -1539,6 +1535,7 @@ C Temporary arrays to hold 'grouped components.
       dimension ival(mpcom),item(7)
       dimension ndbahu(maxpc),ndbwch(maxpc),ndbpp(maxpc),ndboth(maxpc)
       CHARACTER H*72, item*28, head*28
+      integer nitms,ino ! max items and current menu item
 
 C Fill the array pcdesc with the database component infornation
       call descpc
@@ -1706,6 +1703,7 @@ C Electrical details for specified plant components
       character head2*21
       CHARACTER H*72,VERT*62,KEY*1,MOD*1
       LOGICAL SELECT
+      integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -1925,6 +1923,7 @@ C Electrical details for specified plant components
       character pcname*15,H*72, lodstr*16
       character*40 item
       logical close
+      integer nitms,ino ! max items and current menu item
      
 C Display a list of available plant components and allow user
 C to specify power consumption details
@@ -2090,14 +2089,12 @@ C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -2106,8 +2103,7 @@ C The routine presents a list of surface layers.
       integer header,footer
       character item*32
       CHARACTER NAM*72,PNAM*20,H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
+      integer nitms,ino ! max items and current menu item
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.
@@ -2296,6 +2292,7 @@ C Common for the building plant link
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      character H*72
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
 
@@ -2303,9 +2300,9 @@ C Common for the building plant link
       CHARACTER PCNAME*15
 
       character*(*) head
-      CHARACTER H*72,VERT*64,KEY*1,MOD*1,pctype*12,desc*12,tstr*15,
-     &tstr1*15
+      CHARACTER VERT*64,KEY*1,MOD*1,pctype*12,desc*12,tstr*15,tstr1*15
       LOGICAL SELECT
+      integer MVERT,IVERT,IDVERT ! max items and current menu item
 
 C Currently three types of linkages are supported.
       pctype(1)= 'convective'
@@ -2528,9 +2525,7 @@ C Common for the building plant lin
       LOGICAL OK,dok,CLOSE
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
-      newgeo=.false.  ! assume older format geometry.
       IF(MODE.EQ.'A'.OR.MODE.EQ.'E') THEN
 
 C Add a building plant link and update the control data. 
@@ -2690,12 +2685,7 @@ C Determine the linkage type.
           IPCLINKT(IBPLINK)=IOPT
           ASKSTR='What is the embedded component?'
 
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
           ITDSP=1

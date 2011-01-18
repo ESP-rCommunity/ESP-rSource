@@ -32,6 +32,17 @@ c	ASHP_INPUT read data for air-source heat pump system
 c       ASHP_INPUT_VERSION1_2
 C                  read input data for air-source heat pump system for
 c                  version 1.2 and older of file hvacinput.F
+c	FURNACE_COEFF
+c		  set the furnace coeff for the part-load performance
+c  ASHP_COEFF      set the correlation coeff for the part-load performance of 
+c                  the air-source heat pump
+c
+c This file contains the folowing functions:
+c	FAN_SIZE	determines the size of the indoor circulation fan
+c	SYS_FLOW_RATE     Sets value for system flow rate if not specified in 
+c			  HVAC input file
+c	BYPASS_FACTOR_R	  Determines coil bypass factor at rating conditions
+c
 c *********************************************************************
 c *********************************************************************
 c HVACINPUT
@@ -489,19 +500,16 @@ c Logical variable associated with version 1.3 of file hvacinput.F
       LOGICAL version1_3_flag
 
 c Other local variables
-      INTEGER num_out_air_day_types(max_sys),
-     &        itotal_num_day_periods,
-     &        num_outside_air_day_periods(max_sys,10),
-     &        iend_hour_out_air_daytype(max_sys,8760),
-     &        iend_hour_out_air_dayperiod(max_sys,100),
-     &        num_heatpump_var,icounter,iperiod_counter,
+       
+       
+
+      INTEGER num_heatpump_var,icounter,iperiod_counter,
      &        jcounter,idaytype_start_hour,ihour_year,
      &        ihour_day,iperiod_day_counter,
      &        iperiod_year_counter,num_heatpump_var_zonecontrol,
      &        num_zone_calls
 
-      REAL day_period_out_air_flow(max_sys,100),
-     &     SYS_FLOW_RATE,FAN_SIZE
+      REAL SYS_FLOW_RATE,FAN_SIZE
 
       IUNIT=IFIL+20
 
@@ -1333,4 +1341,559 @@ c here as that for primary system
       fan_power(i) = val
 
       return
-      end      
+      end
+
+c *********************************************************************
+c BYPASS_FACTOR_R
+
+c Created by: Kamel Haddad
+c Initial Creation Date: February 27th 2001
+c Copyright 2000: NRCan Buildings Group
+
+c Subroutine to determine coil bypass factor at rating conditions
+c from performance data at rating conditions
+
+c INPUTS:
+c	isys		number of hvac system
+c	HVAC_INPUT_DATA	HVAC input data common
+c	HEAT_PUMP_INPUT_DATA
+c			heat pump input data common
+	
+c OUTPUTS:
+c	bfr		bypass factor at rating conditions
+c **********************************************************************
+      SUBROUTINE BYPASS_FACTOR_R(isys)
+
+      IMPLICIT NONE
+
+c Variables passed in call
+      INTEGER isys
+
+#include "building.h"
+
+#include "hvac_parameters.h"
+
+#include "hvac_common.h"
+
+#include "ashp_common.h"
+
+c Local Variables
+      REAL tdb1r,den1r,cp1r,w1r,fan_capr,tdb2r,h2r,
+     &h4r,tdb4r,w4r,const1,const2,A,B,C,delta,tdb3r
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER iuout,iuin
+
+c Following moist air states are defined:
+c	state 1		condition of return air from conditioned zones
+c	state 2		condition of air entering cooling coil
+c	state 3		apparatus dew point
+c	state 4		condition at exit of heat exchanger
+c	state 5		used to define sensible process through cooling
+c			coil
+
+c Inlet temperature of air at rating conditions
+      tdb1r = 26.7
+
+c Density of air at rating conditions
+      den1r = 1.1565
+
+c Specific heat of air at rating conditions
+      cp1r = 1015.
+
+c Humidity ratio of inlet air at rating conditions
+      w1r = 0.0112
+
+c Fan capacity at rating
+      fan_capr = fan_power_r(isys)
+
+c Correct temperature of inlet air for heat gain from circulation fan.
+c If circulation fan position during rating test is blow through
+      if(ifan_position_r(isys).eq.1) then
+        tdb2r = tdb1r + fan_capr  / 
+     &               (den1r * flow_rate_r(isys) * cp1r)
+c If the circulation fan during rating test is draw through
+      elseif(ifan_position_r(isys).eq.2) then
+        tdb2r = tdb1r
+      endif
+
+c Enthalpy of air at inlet of coil
+      h2r = 1006. * tdb2r + w1r * (2501000. + 1860. * tdb2r)
+
+c Enthalpy at exit of cooling coil
+      h4r = h2r - ss_capacity(isys) / 
+     &                      (den1r * flow_rate_r(isys))
+
+c Temperature at exit of coil
+      tdb4r = tdb2r - shrr(isys) * ss_capacity(isys) /
+     &                 (den1r * flow_rate_r(isys) * cp1r)
+
+c Humidity ratio at exit of coil
+      w4r = (h4r - 1006. * tdb4r) / (2501000. + 1860. * tdb4r)
+
+c Line between inlet state and apparatus dew point can be determined by
+c two coefficients const1 and const2
+      const1 = (w1r - w4r) / (tdb2r - tdb4r)
+      const2 = w1r - const1 * tdb2r
+
+c Define constants A, B, C
+      A = 2.1539e-5
+      B = 1.0776e-4 - const1
+      C = 4.2065e-3 - const2
+
+c Compute determinant of quadratic equation to be solved
+      delta = B**2 - 4. * A * C
+
+c If there is to be a solution, delta has to be greater or equal to zero
+c This is temporary, it will have to be written to a report in the future.
+      if(delta.lt.0.) then
+        write(iuout,*) 'Sensible Heat Factor too high or too low'
+      elseif(delta.ge.0.) then
+c Apparatus dew point
+        tdb3r = (-B + (B**2 - 4.* A * C)**0.5) / (2. * A)
+      endif
+
+c Bypass Factor at rating conditions
+      bfr(isys) = (tdb4r - tdb3r) / (tdb2r - tdb3r)
+
+      return
+      end
+
+c *********************************************************************
+c *********************************************************************
+c ASHP_COEFF
+
+c Created by: Kamel Haddad
+c Initial Creation Date: July 18th 2000
+c Copyright 2000: NRCan Buildings Group
+c
+c Subroutine to set the correlation coefficients of an air-source heat pump
+
+c References:
+c             "Part load curves for use in DOE-2"
+c              Prepared for the Lawrence Berkley Laboratory by
+c              Hugh Henderson, CDH Energy Corp, Cazenovia, NY
+
+c       Air-Source Heat Pump Model for Implementation in H3k
+c       H3k model documentation, Kamel Haddad, June 10 2000
+
+c INPUTS:
+c isys number of HVAC system
+c   HEAT_PUMP_INPUT_DATA
+c	common for heat pump input data
+c   HVAC_INPUT_DATA
+c	common for HVAC input data
+
+c OUTPUTS:
+c       ahp,bhp,chp,dhp coefficients for the part-load performance
+c       of the heat pump. Stored in ashp_corr common
+c **********************************************************************
+      SUBROUTINE ASHP_COEFF(isys)
+
+      IMPLICIT NONE
+
+c Variable in call
+      INTEGER isys
+
+#include "building.h"
+
+#include "hvac_parameters.h"
+
+#include "hvac_common.h"
+
+#include "ashp_common.h"
+
+c Set the part-load performance coefficients for the three types of air-source
+c heat pump systems. The coefficients for the part-load performance are based
+c on the report of Henderson listed in the heading of this subroutine.
+c The following coefficients are in Table 1 of the air-source heat pump
+c Ref by Haddad
+
+c For a Typical unit      
+      if(isys_type(isys).eq.1) then
+        ahp(isys) = 0.0101858
+        bhp(isys) = 1.18131
+        chp(isys) = -0.246748
+        dhp(isys) = 0.0555745
+c For a Good unit
+      elseif(isys_type(isys).eq.2) then
+        ahp(isys) = 0.00988125
+        bhp(isys) = 1.08033
+        chp(isys) = -0.105267
+        dhp(isys) = 0.0151403
+c For a Poor unit
+      elseif(isys_type(isys).eq.3) then
+        ahp(isys) = 0.0300924
+        bhp(isys) = 1.20211
+        chp(isys) = -0.311465
+        dhp(isys) = 0.0798283
+      endif
+
+      return
+      end
+
+c *********************************************************************
+c *********************************************************************
+c FURNACE_COEFF
+
+c Created by: Kamel Haddad
+c Initial Creation Date: July 25th 2000
+c Copyright 2000: NRCan Buildings Group
+c
+c Subroutine to determine the correlation coefficients for the part-load
+c performance of the furnace
+
+c References:
+c		"Further developments to the HOT2000 subroutine - Part B:
+c              	furnace an heat pump models", prepared for Energy Mines 
+c             	and Resource Canada, Energy Efficiency Division. 
+c              	Submitted by C. Barringer. Report No. ET-91-045
+
+c             	"Part load curves for use in DOE-2"
+c              	Prepared for the Lawrence Berkley Laboratory by
+c              	Hugh Henderson, CDH Energy Corp, Cazenovia, NY
+
+c INPUTS:
+c	isys		number for hvac system
+c	isys_type	type of furnace
+c	FURNACE_INPUT_DATA
+c			common for furnace specific input data
+
+c OUTPUTS:
+c       af,bf,cf,df	part-load performance factors stored in common
+c			FURNACE_INPUT_DATA
+c ************************************************************************
+      SUBROUTINE FURNACE_COEFF(isys,isys_type)
+      
+      IMPLICIT NONE
+
+c Declare variables passed in call
+      INTEGER isys,isys_type
+
+
+#include "hvac_parameters.h"
+
+#include "furnace_common.h"
+
+C.....Common from hvac_common.h needed for fuel type (but rest
+C.....of hvac_common.h conflicts with furnace_common.h!)
+      common/HVAC_fuel_type/iFuel_type(max_sys)
+      integer iFuel_type
+
+c For all furnaces, except condensing and induced draft, the plff 
+c equation is based on two correlation coefficients af and bf which depend
+c on the furnace type. For condensing and induced draft furnaces, the plff 
+c is derived from the heat input ratio hir. The quantity hir is based on 
+c a correlation from the LBL report listed above. The correlation for hir 
+c is a 3rd oder polynomial with coefficients af, bf, cf, and df.
+
+c The fuel types associated with each of the values of the paramater 
+c ifuel_type are: 
+c 	=1 electric
+c 	=2 natural gas
+c 	=3 oil
+c	=4 propane
+c 	=5 wood
+
+c The furnace types associated with each of the values of parameter
+c isys_type are:
+c 	=1 advanced air tight wood stove
+c 	=2 catalytic converter
+c 	=3 flame retention head
+c  	=4 flue vent damper
+c 	=5 spark-ignition
+c	=6 spark ignition and vent damper
+c 	=7 continuous pilot
+c 	=8 condensing furnace
+c	=9 direct vent non condensing
+c  	=10 induced draft
+c 	=11 mid efficiency
+c 	=12 electric forced-air
+c	=13 wood furnace
+c	=14 oil furnace
+
+
+c** Electric (type =1) can have systypes = 12**
+c For electric furnaces
+      if(ifuel_type(isys).eq.1) then
+
+c For electric forced-air furnaces
+        if(isys_type.eq.12) then
+c Note that af and bf appear in Equation 5 in Furnace Ref by Haddad
+          af(isys) = 1.
+          bf(isys) = 0
+        endif      
+c** Natural Gas (type =2) can have systypes = 5,6,7,8,10**
+c For natural gas furnaces
+      elseif(ifuel_type(isys).eq.2) then
+
+c For natural gas spark ignition furnaces
+        if(isys_type.eq.5) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For natural gas with spark ignition and vent damper
+        elseif(isys_type.eq.6) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For natural gas with continous pilot
+        elseif(isys_type.eq.7) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For natural gas condensing furnaces
+        elseif(isys_type.eq.8) then
+c af, bf, cf, and df appear in Equation 7 in Furnace Ref by Haddad
+          af(isys) = 0.0080472
+          bf(isys) = 0.8756445
+          cf(isys) = 0.2924994
+          df(isys) = -0.176241   
+c For natural gas induced draft fan furnaces
+        elseif(isys_type.eq.10) then
+          af(isys) = 0.0080472
+          bf(isys) = 0.8756445
+          cf(isys) = 0.2924994
+          df(isys) = -0.176241
+        endif       
+
+c** Oil (type =3) can have sys_types = 3,4,8,9,11,14**
+c For oil furnaces
+      elseif(ifuel_type(isys).eq.3) then
+
+c For oil flame retention head furnaces
+        if(isys_type.eq.3) then
+          af(isys) = 1.005
+          bf(isys) = 0.0093
+c For oil flue vent damper furnaces
+        elseif(isys_type.eq.4) then
+          af(isys) = 1.005
+          bf(isys) = 0.0093
+c For oil condensing furnaces
+        elseif(isys_type.eq.8) then
+          af(isys) = 0.0080472
+          bf(isys) = 0.8756445
+          cf(isys) = 0.2924994
+          df(isys) = -0.176241
+c For oil direct vent non-condensing furnaces
+        elseif(isys_type.eq.9) then
+          af(isys) = 1.005
+          bf(isys) = 0.0093
+c For oil mid-efficiency furnace
+        elseif(isys_type.eq.11) then
+          af(isys) = 1.005
+          bf(isys) = 0.0093
+c For oil furnace
+        elseif(isys_type.eq.14) then
+          af(isys) = 1.005
+          bf(isys) = 0.0093
+	endif
+	
+c** Propane (type =4) can have sys_types = 5,6,7,8,10**
+c For propane furnaces
+      elseif(ifuel_type(isys).eq.4) then
+
+c For propane spark ignition furnaces
+        if(isys_type.eq.5) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For propane spark ignition and vent damper
+        elseif(isys_type.eq.6) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For propane continous pilot furnaces
+        elseif(isys_type.eq.7) then
+          af(isys) = 1.008
+          bf(isys) = 0.0166
+c For propane condensing furnaces
+        elseif(isys_type.eq.8) then
+          af(isys) = 0.0080472
+          bf(isys) = 0.8756445
+          cf(isys) = 0.2924994
+          df(isys) = -0.176241
+c For propane induced draft furnaces
+         elseif(isys_type.eq.10) then
+          af(isys) = 0.0080472
+          bf(isys) = 0.8756445
+          cf(isys) = 0.2924994
+          df(isys) = -0.176241
+         endif
+
+c** Wood (type =5) can have sys_types = 1,2,13**
+c For wood furnaces
+      elseif(ifuel_type(isys).eq.5) then
+
+c For advanced air tight wood furnace
+          if(isys_type.eq.1) then
+            af(isys) = 1.008
+            bf(isys) = 0.0166
+c For advanced air tight wood furnaces with catalytic converter
+          elseif(isys_type.eq.2) then
+            af(isys) = 1.008
+            bf(isys) = 0.0166
+c For wood furnaces
+          elseif(isys_type.eq.13) then
+           af(isys) = 1.008
+           bf(isys) = 0.0166
+          endif
+
+      endif    
+
+      return
+      end
+c ************************************************************************
+c *********************************************************************
+c FAN_SIZE
+
+c Created by: Kamel Haddad
+c Initial Creation Date: July 18th 2000
+c Copyright 2000: NRCan Buildings Group
+c
+c Function to determine the size of the indoor circulation fan associated
+c with the hvac system
+
+c References:	
+c		"Further developments to the HOT2000 subroutine - Part B:
+c               furnace an heat pump models", prepared for Energy Mines 
+c               and Resource Canada, Energy Efficiency Division. 
+c               Submitted by C. Barringer. Report No. ET-91-045
+
+c		Furnace Model for Implementation in H3K
+c		H3K model documentation,
+c		Kamel Haddad, April 5th 2000
+
+c		Air-Source Heat Pump Model for Implementation in H3k
+c		H3k model documentation, Kamel Haddad, June 10 2000
+
+
+c INPUTS:
+c	isys		number for hvac system
+c	HVAC_INPUT_DATA	common for HVAC input data
+c	HEAT_PUMP_INPUT_DATA
+c			common for heat pump input data
+c	
+c OUTPUTS:
+c       FAN_SIZE	size of the indoor circulation fan in W
+c **********************************************************************
+      REAL FUNCTION FAN_SIZE(isys)
+
+      IMPLICIT NONE
+
+c Variable passed in call
+      INTEGER isys
+
+#include "hvac_parameters.h"
+
+#include "building.h"  
+
+#include "hvac_common.h"
+
+#include "ashp_common.h"
+
+c Declaration of local variables
+      REAL power1,power2
+
+c The suggested fan power is based on the following report:
+c       "Further developments to the HOT2000 subroutine - Part B:
+c        furnace and heat pump models", prepared for Energy Mines 
+c        and Resource Canada, Energy Efficiency Division. 
+c        Submitted by C. Barringer. Report No. ET-91-045
+
+c If the primary system is a furnaces, boilers, or baseboards, then fan power
+c is based on the capacity of the heating equipment
+      if((ihvac_type(isys) .eq. 1).or.(ihvac_type(isys) .eq. 2).or.
+     &  (ihvac_type(isys) .eq. 3)) then
+          FAN_SIZE = 0.0194 * ss_capacity(isys)
+c For heat pumps, the circulation fan is sized based on the heating capacity
+c of the heat pump or that of the backup system if this system employs a 
+c circulation fan. The fan size chosen is the larger of the two fan sizes
+c based on the heating capacity of the heat pump and the backup heat source.
+c This is for heat pumps in the heating mode.
+      elseif (((ihvac_type(isys) .eq. 7).and.
+     &      (iunit_function(isys) .eq. 1))
+     &       .or.((ihvac_type(isys) .eq. 8)
+     &       .and.(iunit_function(isys) .eq. 1))
+     &       .or.((ihvac_type(isys) .eq. 9)
+     &       .and.(iunit_function(isys) .eq. 1))) then
+
+c If the backup source is baseboards without a circulation fan, the capacity
+c of the fan is based on the air-source heat pump capacity
+        if ( ibackup_heat(isys) .ne. 0 ) then
+          if((ibackup_heat(isys) .eq. 3).and.
+     &      (ifan_operation(ibackup_sys_num(isys)) .eq. 0)) then
+c Equation 27 in Air-source heat pump Ref by Haddad
+            FAN_SIZE = 0.0467 * ss_capacity(isys)
+c If the backup source is baseboards with a circulation fan, the capacity
+c of the fan is based on the max of two capacities
+          elseif((ibackup_heat(isys) .eq. 3).and.
+     &      ((ifan_operation(ibackup_sys_num(isys)) .eq. 1).or.
+     &      (ifan_operation(ibackup_sys_num(isys)) .eq. 2))) then
+            power1 = 0.0467 * ss_capacity(isys)
+            power2 = 0.0194 * ss_capacity(ibackup_sys_num(isys))
+            FAN_SIZE = amax1(power1,power2)
+c If the backup source is a furnace or boiler, the size of the fan is 
+c based on the max of two capacities
+          elseif((ibackup_heat(isys) .eq. 1).or.
+     &        (ibackup_heat(isys) .eq. 2)) then
+            power1 = 0.0467 * ss_capacity(isys)
+            power2 = 0.0194 * ss_capacity(ibackup_sys_num(isys))
+            FAN_SIZE = amax1(power1,power2)
+          endif
+        else
+          FAN_SIZE = 0.0467 * ss_capacity(isys)
+        endif 
+c For heat pumps in the cooling mode. There is no backup heat and
+c fan size is set by cooling and heating capacities.
+      elseif (((ihvac_type(isys) .eq. 7) .and.
+     &         (iunit_function(isys) .eq. 2))
+     &         .or. ((ihvac_type(isys) .eq. 8) 
+     &         .and.(iunit_function(isys) .eq. 2))
+     &         .or.((ihvac_type(isys) .eq. 9)
+     &         .and.(iunit_function(isys) .eq. 2))) then
+
+        if ( isys_num_heating(isys) == 0 ) then
+          power1 = 0.
+        else
+          power1 = fan_power(isys_num_heating(isys))
+        endif
+
+        power2 = 0.0467 * ss_capacity(isys)
+        FAN_SIZE = amax1(power1,power2)
+      endif
+
+      return
+      end
+
+c *********************************************************************
+c *********************************************************************
+c SYS_FLOW_RATE
+
+c Created by: Kamel Haddad
+c Initial Creation Date: February 27th 2001
+c Copyright 2000: NRCan Buildings Group
+c
+c Subroutine to determine the flow rate for hvac system if there is 
+c no value specified in the input file
+c
+c INPUTS:
+c	isys		number of hvac system
+c	HVAC_INPUT_DATA	HVAC input data common
+	
+c OUTPUTS:
+c	SYS_FLOW_RATE	system flow rate  [m3/s]
+c *********************************************************************
+      REAL FUNCTION SYS_FLOW_RATE(isys)
+
+      IMPLICIT NONE
+
+c Variables passed in call
+      INTEGER isys
+#include "building.h"
+
+#include "hvac_parameters.h"
+
+#include "hvac_common.h"
+
+      SYS_FLOW_RATE = 6.037e-5 * ss_capacity(isys)
+
+      return
+      end
+
+c *********************************************************************

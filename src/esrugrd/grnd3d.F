@@ -57,6 +57,7 @@ C *********************************************************************
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
       CHARACTER ITEM(16)*28
       integer ier
+      integer MITEM,INO ! max items and current menu item
 
       MODIFY=.FALSE.
       SAVEOK=.FALSE.
@@ -393,6 +394,7 @@ C *********************************************************************
 
       CHARACTER H*72,VALUES*32,MSG*72
       CHARACTER ITEM(14)*28,ITEMS(6)*18,VERT(35)*35,KEY*1
+      integer MVERT,IVERT  ! max items and current menu item
 
       IF(MODIFY.OR.IDRW1.NE.10)THEN
         IDRW1=10

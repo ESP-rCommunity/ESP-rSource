@@ -35,7 +35,7 @@ C via clicking on a bitmap.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -48,21 +48,11 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -98,15 +88,10 @@ C end indices for each zone.
 
       CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
-      character zn*12
+      character zn*12,LCFGF*72
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
+      character cfgroot*24
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       character longtfile*144,fname*96
 
@@ -119,7 +104,11 @@ C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
       logical justentered
       LOGICAL OKC,XST,dok,ok
-      logical newgeo  ! to use for testing if new/old geometry file.
+      logical newgeo    ! to use for testing if new/old geometry file.
+      integer IWM,IWMG  ! for radio buttons
+      integer MITEM,INO ! max items and current menu item
+      real blkopaq      ! opacity of obstruction
+
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
@@ -881,6 +870,7 @@ C Support bitmap panning - left, right, up, down.
         write(msg,'(a,i4,a,i4,a)') 
      &    'Panning options: (current offset x',ixoffset,' y ',
      &    iyoffset,' pixels)'
+        IWM=1
         CALL EASKATOG(msg,' ','done','left','right','up','down',' ',
      &    ' ',IWM,2)
         if(iwm.eq.1.or.iwm.gt.5)then
@@ -1080,6 +1070,7 @@ C Gridding options. Check if user wants a grid.
         if(.NOT.xbmgrid)then
           h(1)='A grey grid will overlay the bitmap from corner to '
           h(2)='corner. '
+          IWMG=1
           CALL EASKATOG('Gridding options:',' ',
      &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',IWMG,2)
           if(iwmg.eq.1)then
@@ -1412,6 +1403,7 @@ C If user typed `p` or `P` then do panning until user says done and then continu
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.eq.1.or.iwm.gt.5)then
@@ -1805,6 +1797,7 @@ C If user typed `p` or `P` then allow for panning and then continue.
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.gt.1.and.iwm.le.5)then
@@ -2225,6 +2218,7 @@ C If user typed `p` or `P` then do panning until user says done and then continu
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.eq.1.or.iwm.gt.5)then
@@ -2543,6 +2537,11 @@ C Ask for name.
           H(2)='from base to top). '
           CALL EASKR(Z2,' ',' Height of the obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,2)
+          H(1)='The opaticy of the obstruction 0.0 transparent to'
+          H(2)='1.0 opaque (for future shading facility). '
+          CALL EASKR(blkopaq,' ',
+     &     'Opacity of the obstruction 0=tran 1=opaque?',
+     &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,2)
           CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
@@ -2559,6 +2558,7 @@ C Ask for name.
           BANGOB(IC,nbo,1)=RO
           BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
+          OPOB(IC,nbo)=blkopaq
           BLOCKTYP(IC,nbo)='obs '
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')

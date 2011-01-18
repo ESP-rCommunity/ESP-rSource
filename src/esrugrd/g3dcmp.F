@@ -75,9 +75,6 @@ C *********************************************************************
 
       COMMON/PREC8/SLAT,SLON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -90,8 +87,7 @@ C *********************************************************************
       CHARACTER*72 H
       CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
       CHARACTER ITEM*28,SZN*12,STTS*5
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
+      integer MITEM,INO ! max items and current menu item
 
       SZN=zname(IZ)
       SSRF=' '
@@ -386,8 +382,8 @@ C SRFBND defines the boundary of a surface.
 C *********************************************************************
       SUBROUTINE SRFBND(IS)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
 
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -645,10 +641,10 @@ C SRFIND defines the surfaces indentation from inside.
 C *********************************************************************
       SUBROUTINE SRFIND
 #include "building.h"
+#include "geometry.h"
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
       COMMON/GR3D08/Y1S(MS),Y1SS(MSSZ),Y1SE(MSEZ)
@@ -948,9 +944,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/PREC8/SLAT,SLON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -964,9 +957,8 @@ C *********************************************************************
       CHARACTER*72 H,LINDSC,DISCR
       CHARACTER SRF(2)*12,ITEMS(MEZ)*27
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       real DZX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -1190,9 +1182,9 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWEDG(IEG)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -1355,8 +1347,6 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -1372,10 +1362,9 @@ C *********************************************************************
 
       CHARACTER*72 H,PROPS
       CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1627,11 +1616,10 @@ C edge with it's gridding lines.
 C *********************************************************************
       SUBROUTINE FHCEDG(IZ,IEG,IL)
 #include "building.h"
+#include "geometry.h"
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1642,8 +1630,6 @@ C *********************************************************************
       COMMON/GR3D28/ITPEDG(MEZ,MZE,MZE,MZE)
 
       CHARACTER LABELN*3,LABELS*16
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
@@ -1739,8 +1725,8 @@ C TOTEDG determines the total number of edges in the zone.
 C *********************************************************************
       SUBROUTINE TOTEDG
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
 
@@ -1889,8 +1875,8 @@ C EDGCRT creates new edges or appends new edge to existing one.
 C *********************************************************************
       SUBROUTINE EDGCRT(IS1,IS2,IV1,IV2)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -1964,8 +1950,6 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -1979,10 +1963,8 @@ C *********************************************************************
       CHARACTER*72 H,DISCR
       CHARACTER SRF(3)*12,ITEMS(MCZ)*25
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       real DZX   ! To avoid variable name clash with DX from geometry.h
-
+      integer MITEM,INO  ! max items and current menu item
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -2218,9 +2200,9 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWCRN(ICR)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -2378,8 +2360,6 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -2395,10 +2375,9 @@ C *********************************************************************
 
       CHARACTER*72 H,PROPS,DISCR
       CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
+      integer MITEM,INO ! max items and current menu item
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)
@@ -2651,12 +2630,11 @@ C corner with it's gridding lines.
 C *********************************************************************
       SUBROUTINE FHCCRN(IZ,ICR,IL)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2667,8 +2645,6 @@ C *********************************************************************
       COMMON/GR3D38/ITPCRN(MCZ,MZE,MZE,MZE)
 
       CHARACTER LABELN*3,LABELS*16
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
@@ -2939,8 +2915,8 @@ C TOTCRN determines the total number of corners in the zone.
 C *********************************************************************
       SUBROUTINE TOTCRN
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)

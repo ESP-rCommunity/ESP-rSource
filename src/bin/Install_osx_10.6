@@ -1548,6 +1548,9 @@ echo " Installing ESP-r system. This may take some time."
   echo "C      by the Install script each time ESP-r is recompiled---"    >> ${SRCdir}/include/build_info.h
   echo "C      any changes should be made in the Install scipt, and "     >> ${SRCdir}/include/build_info.h
   echo "C      not in this file"                                          >> ${SRCdir}/include/build_info.h
+  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
+  echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
+  echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       logical  bRelease,bVersioned,bModified"                    >> ${SRCdir}/include/build_info.h
   echo "       character cBuilder*32       ! User who compiled system"    >> ${SRCdir}/include/build_info.h
@@ -1565,13 +1568,9 @@ echo " Installing ESP-r system. This may take some time."
   echo "       character cCPL*32           ! C++"                         >> ${SRCdir}/include/build_info.h 
   echo "       character cXML_support*32   ! Compile-time options"        >> ${SRCdir}/include/build_info.h
   echo "       character cXlibrary*32      ! where which"                 >> ${SRCdir}/include/build_info.h
-  echo "C      "                                                          >> ${SRCdir}/include/build_info.h
-  echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
-  echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
   echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
-#  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h     
   echo "       cArchitecture     = \"${architecture}\""                   >> ${SRCdir}/include/build_info.h       
   echo "       cOperSystem       = \"${system}\""                         >> ${SRCdir}/include/build_info.h 
   echo "       cOSversion        = \"${os_flavour}\""                     >> ${SRCdir}/include/build_info.h 
@@ -1936,13 +1935,12 @@ if [ "$install_training" = "yes" ]; then
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
      cd ${SRCdir}
      echo " Done."
-     echo -n "   - Updating materials and climate databases in validation models..."
+     echo -n "   - Updating climate databases in validation models..."
      cd ${SRCdir}/validation/CEN/13791/databases
      $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
      $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
      $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
      cd ${SRCdir}
-     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db >/dev/null
      echo " Done."
      echo -n "   - Copying training and validation models..."
      cp -r ${SRCdir}/training ${ESPdir}/training
@@ -1954,10 +1952,9 @@ if [ "$install_training" = "yes" ]; then
      find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
      find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
      echo " Done."
-     echo -n "   - Removing binary materials db from training models ..."
+     echo -n "   - Removing binary databases from training models ..."
      cd ${SRCdir}/
      rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
-     rm -f validation/CEN/13791/databases/prim.db
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
      rm -f validation/CEN/13791/databases/Cond.clm

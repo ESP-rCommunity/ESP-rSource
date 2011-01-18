@@ -43,6 +43,7 @@ C If there is a mass flow simulation then request it's
 C results library as well.
       SUBROUTINE MZLIBF
 #include "building.h"
+#include "model.h"
 #include "power.h"
       
       integer lnblnk  ! function definition
@@ -60,7 +61,6 @@ C results library as well.
 C Versions of results libraries.
       common/recver/izver,ipver,iever
       common/rpath/path
-      common/uhome/upath
       common/user/browse
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -78,7 +78,7 @@ C Electrical network results library details.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character outs*124,ltmp*72,h*72,path*72,upath*72,longtfile*144
+      character outs*124,ltmp*72,h*72,path*72,longtfile*144
       character cfgroot*24,LCFGF*72
       character*72 LAPROB,ENTFLNAM,ERESLIB
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -438,14 +438,15 @@ C File name LFILE is passed in and may be edited by user,
 C Returns IW as 0 if no decision made, IW as 1 if in current path and IW
 C as 2 if in some other location.
       subroutine dealremote(topic,remote,LFILE,IW)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/uhome/upath
       common/pophelp/h(60)
       character topic*1,LFILE*72
-      character h*72,upath*72,ltmp*72,ltpath*72,filen*72
+      character h*72,ltmp*72,ltpath*72,filen*72
       logical unixok,remote
 
       iw=1

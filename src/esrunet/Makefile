@@ -1,27 +1,46 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 LIBdir = $(SRCdir)/lib
 PRJdir = $(SRCdir)/esruprj
+CETCdir = $(SRCdir)/cetc
+BLDdir = $(SRCdir)/esrubld
 PROG = net$(EXE)
 
 .SUFFIXES: .o .F .c
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = arrow.o ascii_mat.o common3dv.o egeometry.o edatabase.o e3dviews.o emfnetw.o eroper.o \
+OBJECTS = aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
+	common3dv.o egeometry.o edatabase.o e3dviews.o emfnetw.o eroper.o \
 	esru_misc.o icndbscn.o mfcdat.o netwedit.o network.o nwkrewr.o netwkc2f.o \
 	netutil.o read3dv.o sort.o startup.o
 
 $(PROG): $(OBJECTS) $(C_OBJ)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(CFLAGS) $(OBJECTS) $(ULIBS) 
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(CFLAGS) $(OBJECTS) $(ULIBS)
 
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
@@ -43,6 +62,9 @@ eroper.F:
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -67,5 +89,6 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	*.o arrow.F ascii_mat.F common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
+	*.o aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
 	esru_misc.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F

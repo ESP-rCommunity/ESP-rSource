@@ -532,13 +532,8 @@ C New file write first few lines else open in append mode.
         write(IUNIT,'(3a)') '1 ',xfile,' # All output in same file.'
       else
         lpf=lnblnk(lpifl)
-#ifdef F90
         open(IUNIT,file=lpifl(1:lpf),position='APPEND',status='UNKNOWN',
      &        err=1)
-#else
-        open(IUNIT,file=lpifl(1:lpf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
       endif
 
 C Open file for appending.

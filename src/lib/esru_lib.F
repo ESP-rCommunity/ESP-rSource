@@ -82,6 +82,7 @@ C  CROSS:   Performs a cross-product on vectors A() & B() returning in C().
 C  CROSS2:  Performs a cross-product on vectors passing parameters as ax,ay,az etc.
 C  DOT3(a,b,product) Return dot product of two vectors a & b.
 C  ZEROS:   Clear a 4x4 array prior to doing vieweing transforms.
+C  REQUAL:  Checks tolerance between two real numbers. Function returning .TRUE. or .FALSE. 
 C  ECLOSE:  Checks tolerance between two real numbers.
 C  ECLOSE3: Checks tolerance between two real vectors (3 numbers).
 C  ESIND:   Function returning SIN of angle where angle is given in degrees.
@@ -783,6 +784,8 @@ C options available, (these should not be too long).
       SUBROUTINE EASKAB(MSG1,MSG2,AOPT,BOPT,IWHICH,NHELP)
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character COPT*2,DOPT*2,EOPT*2,FOPT*2,GOPT*2
 
       COPT=' '
@@ -802,6 +805,8 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character DOPT*2,EOPT*2,FOPT*2,GOPT*2
 
       DOPT=' '
@@ -820,6 +825,8 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character EOPT*2,FOPT*2,GOPT*2
 
       EOPT=' '
@@ -1410,7 +1417,7 @@ C If problem in opening then report difficulty. F90 ISTAT
 C values can be positive numbers, but F77 ISTAT tend to be
 C negative values.
       IF(ISTAT.ne.0)THEN
-        write(outs,'(a,i3,a)') 'Error (',ISTAT,') opening the file'
+        write(outs,'(a,i5,a)') 'Error (',ISTAT,') opening the file'
         CALL LUSRMSG(outs,longtfile,'W')
         IER=ISTAT
       ENDIF
@@ -2376,6 +2383,20 @@ C ZEROS Clear a 4x4 array prior to doing viewing transforms.
       A(4,2)=0.0
       A(4,3)=0.0
       A(4,4)=0.0
+
+      RETURN
+      END
+      
+C ******************** REQUAL
+C REQUAL allows two real numbers R1 & R2 to be checked for closeness
+C to a given tolerance TOL and returns .TRUE. or .FALSE.
+      LOGICAL FUNCTION REQUAL(R1,R2,TOLERANCE)
+
+      IMPLICIT NONE
+C Declare calling parameters 
+      REAL, INTENT(IN)  :: R1,R2,TOLERANCE
+      
+      CALL ECLOSE(R1,R2,TOLERANCE,REQUAL)
 
       RETURN
       END
@@ -5840,13 +5861,8 @@ C If there is a journal file append the current message to it and close.
           INQUIRE(FILE=jfile(1:ltf),EXIST=there)
           if(there)then
             close(iuj)
-#ifdef F90
             open(iuj,file=jfile(1:ltf),position='APPEND',
      &        status='UNKNOWN',err=1)
-#else
-            open(iuj,file=jfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &        err=1)
-#endif
             LN=max(1,lnblnk(outs))
             write(iuj,'(a)',iostat=ios,err=2)outs(1:LN)
             close(iuj)

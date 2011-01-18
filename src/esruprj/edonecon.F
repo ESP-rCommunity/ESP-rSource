@@ -39,7 +39,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G1 and G2.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -53,11 +53,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -73,14 +68,10 @@ C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
       DIMENSION VERT(35),TOTHER(MS,3),SO(3)
       CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character SO*24,TOTHER*24
       character CXITM*43
       logical newgeo  ! to use for testing if new/old geometry file.
-
+      integer MVERT,IVERT ! max items and current menu item
 
 C Set for redraw if image on first entry (if refresh set to after
 C each edit). Set flag for updating geometry file (for changed
@@ -196,12 +187,7 @@ C Remember current surface attribute.
 C Display the reference zone (if type 3 then display both).
 C Remember the topology attributes for reference zone.
         IUO=IFIL+1
-        call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
-        else
-          call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
-        endif
+        call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
         do 322 IJ=1,NSUR
           ICN=IZSTOCN(IC1(IFOC),IJ)
           write(TOTHER(IJ,1),'(a)') SSOTHER(ICN,1)
@@ -443,6 +429,8 @@ C profile has not been defined.
           do 21 igrdp=1,mgrdp
             CALL ECLOSE(GRDTMP(6,igrdp),0.0,0.001,close)
             if(.NOT.close)then
+              WRITE(OUTS,'(I2,2a)')igrdp,' ',grdtmpname(IGRDP)
+              call edisp(iuout,outs)
               WRITE(OUTS,'(I2,12F5.1)')igrdp,(GRDTMP(J,IGRDP),J=1,12)
               call edisp(iuout,outs)
             endif
@@ -458,7 +446,7 @@ C profile has not been defined.
           H(7)='-3  a connection to a 3D ground model.'
           iic2=ic2(IFOC)
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',12,'F',1,'ground profile',IER,7)
+     &                  ' ',1,'F',mgrdp,'F',1,'ground profile',IER,7)
           IF(IIC2.GT.0)THEN
             IC2(IFOC)=iic2
             IE2(IFOC)=0
@@ -586,12 +574,7 @@ C Update zone geometry if attributes have changed.
         if(browse)goto 3
         if(UPDGEO)then
           call usrmsg(' Updating problem...',' ','-')
-          call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
-          else
-            call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
-          endif
+          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
           do 323 IJ=1,NSUR
             SOTHER(IJ,1)=TOTHER(IJ,1)
             SOTHER(IJ,2)=TOTHER(IJ,2)
@@ -620,12 +603,7 @@ C in the zone pointed to by IC2, update SOTHER (of index IE2 in the
 C other zone) and write out that zones geometry.
         if(updoth)then
           call usrmsg(' Updating other side...',' ','-')
-          call eclose(gversion(IC2(IFOC)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
-          else
-            call egomin(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
-          endif
+          call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
 
           ICN=IZSTOCN(IC2(IFOC),IE2(IFOC))
           SSOTHER(ICN,1)='ANOTHER'
@@ -670,13 +648,9 @@ C information. This is shorter than the string returned by CONXINFO.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer ICM  ! connection for current surface.
 
       CXITM=' '
@@ -874,7 +848,7 @@ C Find bounding box and center related to a surface. Dx is cushion
 C to place around the box (m).
       subroutine surbox(iz,is,dx,cx,cy,cz,sxmx,sxmn,symx,symn,szmx,szmn)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       SXMX=-1.E+7
       SYMX=-1.E+7
       SXMN=1.E+7

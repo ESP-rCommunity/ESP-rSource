@@ -79,6 +79,7 @@ C << this should become part of model cfg file >>
       character outs*124, head*32, item*42, mdbnam*72, outstr*124
       character mldnam*48,h*72,grow*1,str*1,KEY*1
       character*72 DFCFD,DECMPDBFL,DICONDBFL
+      integer nitem,ino  ! max items and current menu item
 
 C Open the mould database.
       if(iopmld.eq.0) then
@@ -266,6 +267,8 @@ C ****************** mycograph *****************************
       CHARACTER*29 ITEM(6)
       CHARACTER H*72,mldnam*48
       logical greyok
+      integer NITMS,INO ! max items and current menu item
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel

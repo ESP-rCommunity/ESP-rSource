@@ -97,78 +97,100 @@ C           NB fluid flow network and plant energy network need not be matched
 C laprob  - fluid flow description file
 
       subroutine mzinpt(IREP,IER)
+C AIM-2.
+      USE AIM2_InputData, ONLY:iAIM2,LAIM2
+      USE AIM2, ONLY:AIM2_READIN
+      
+      IMPLICIT NONE
 
 #include "building.h"
+#include "model.h"
 #include "site.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 #include "material.h"
-      PARAMETER (MSTMC=20)
+      INTEGER, PARAMETER :: MSTMC=20
       integer igraphiclib  ! external definition
       integer lnblnk  ! function definition
 
       common/er1/ier1
+      INTEGER :: ier1
       common/trc/itrc
+      INTEGER :: itrc
       common/filep/ifil
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      INTEGER :: icyear,icdngh
+      REAL :: clat,clong
 
-      common/outin/iuout,iuin
 
 C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
       common/c6/indcfg
-      common/CFGV/icfgv
+      INTEGER :: indcfg
 
       common/afn/iairn,laprob,icaas(mcom)
       common/ffn/iflwn,icffs(mpcon)
+      INTEGER :: iflwn,icffs
 
       common/prec7/itcnst
+      INTEGER :: itcnst
       COMMON/DNORGH/IRTYPE
+      INTEGER :: irtype
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
+      INTEGER :: ispmxist,ientxist
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
+      REAL :: GAM, RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
+      LOGICAL :: BLDG3D,ZONE3D
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
+      INTEGER :: icvs,icnc,indc,indd,itaq,itlw,ilwv,itf3
       COMMON/GRND100/GRND3D
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)
+      INTEGER :: NNODTG,ITCNSTG
+      REAL :: TEMP3G,AREAGD
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
 
 C Uncertainty common.
       COMMON/UA5/IMET,ISIM,NRSIM
+      INTEGER :: imet,isim,nrsim
 
 C Simulator parameter.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       common/SPFLN/spsname
       COMMON/Vld30/Tinitial
+      REAL :: Tinitial
       common/dllerr/dllsubr,dllmesg
 
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Flag indicating presence of GSHP models:
 C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
       common/gshpinfo/igshp
+      INTEGER :: igshp
       common/gshpfile/gshpfile
       character gshpfile*72
 
@@ -180,21 +202,24 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
-      CHARACTER outs*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
       DIMENSION ICLN(30)  ! for checking material db categories
 
 C HVAC AIM-2
-      character hvacfile*72,LAIM2*72
+      character hvacfile*72,
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
-      LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
+      LOGICAL GRND3D,MSTROK,MSTRZN
       logical dll,closemat1,closemat2,unixok
       character lworking*144,fs*1
 
-      integer ier
+      integer ier, irep
+
+      REAL :: clmloc
+      
 
 C Reset error indicator and check if running as a dll.
       ier1=0
@@ -756,7 +781,7 @@ C IREP=1 implies no reporting or data checking.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G2/G5/c20/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -767,9 +792,6 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -778,7 +800,9 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =3 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C During setup scan for inbuilt and user defined ground temperatures.
 C igttype: if > 1 then index points to most often used standard profile
@@ -831,12 +855,9 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real uavtotal   
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124
@@ -850,7 +871,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       call isadll(dll)
 
 C Zone-by-zone. Use IUNIT for geometry file.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       NNDS=0
       MNDS=0
@@ -898,12 +918,7 @@ C translate the casual gains.
           call PROCESSOLDCAS(IZ,itrc,itu,IER)
         endif
 
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading geometry file for zone ',IZ,'.'
@@ -1310,6 +1325,7 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
+      INTEGER :: ier1
 
       COMMON/CHANNL/NOCHAN
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -1433,6 +1449,7 @@ C USESPS uses configuration presimuilation data.
 C lafres  - fluid flow network results file
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       common/dllerr/dllsubr,dllmesg
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -1560,25 +1577,16 @@ C Parameters
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

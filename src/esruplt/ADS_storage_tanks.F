@@ -205,7 +205,7 @@ C Declare local variables.
 C---------------------------------------------------------------------------------
       INTEGER NumADATA,Itemp,N_expect,IPCONC
       LOGICAL mistake,CLOSE
-      INTEGER IPCOMP,J,jhour
+      INTEGER IPCOMP,J
 
 C---------------------------------------------------------------------------------
 C Initialize variables. These were formerly initialized in MODULEs prior to the
@@ -752,14 +752,6 @@ C ------------------------------------------------------------------------------
      & TIMSEC
 
       REAL TIMSEC
-
-C     Common for determining if the plant domain has converged
-      COMMON/pltcon/
-     & bpltcon,
-     & lastTStp
-
-      LOGICAL bpltcon
-      REAL lastTStp
 
       common/pcnam/pcname(mpcom)       ! Plant component names
       character*15 pcname
@@ -1897,7 +1889,7 @@ C-------------------------------------------------------------------------------
 C Declare local variables.
 C---------------------------------------------------------------------------------
       INTEGER NumADATA,Itemp,N_expect,IPCONC
-      LOGICAL mistake,CLOSE
+      LOGICAL mistake
 
       INTEGER IPCOMP,I,J
 
@@ -2325,14 +2317,6 @@ C ------------------------------------------------------------------------------
      & TIMSEC
 
       REAL TIMSEC
-
-C     Common for determining if the plant domain has converged
-      COMMON/pltcon/
-     & bpltcon,
-     & lastTStp
-
-      LOGICAL bpltcon
-      REAL lastTStp
 
       common/pcnam/pcname(mpcom)       ! Plant component names
       character*15 pcname
@@ -3293,7 +3277,6 @@ C Electrical details for specified plant components
 
       logical closea
 
-      REAL      Pressure           !-pressure, Pa
       REAL      Temp               !-temperature, K
       REAL      H20LiquidDensity   !-function calculates density of water (kg/m^3)
                                    !-for a given temperature (K) and pressure (Pa)

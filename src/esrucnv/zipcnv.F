@@ -34,7 +34,7 @@ C situated.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/c20/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -44,12 +44,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
@@ -58,9 +53,9 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
-      character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,dstmp*24
+      character oformat*24,head*4,LOUT*72,OTF*4,SN*12
+      character dstmp*24
+
       logical okform,okant,zipok
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
 
@@ -142,6 +137,8 @@ C might be zone information so jump to 81 avoiding re-read).
 C Now begin the loop for zones. Zip uses the geometry type line
 C to convey other information.  If two items on the line then the
 C second is the zone name, if more items then not a proper name.
+C Note: the code below generates a minimal version zero zone
+C geometry file and makes extensive use of the G1 common block.
   80  CONTINUE
       read(ioin,'(A)',end=44,err=900) tmp
       OUTSTR=tmp(1:LNBLNK(tmp))
@@ -196,7 +193,8 @@ C Zone is of type REC, look for 7 items on one or two lines.
       IF(CTYPE(ic)(1:3).EQ.'REC')THEN
         read(ioin,*) XO1,YO1,ZO1,DX1,DY1,DZ1,AR
 
-C Now convert to a gen description.
+C Now convert to a gen description. Pass in critical dimensions
+C and expect the data back via common G1.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR)
         CTYPE(ic)='GEN '
 
@@ -209,7 +207,8 @@ C Read base vertex data.
           read(ioin,*) XX(IW),YY(IW)
    60   CONTINUE
 
-C Now convert to Gen body type and place into in common block.
+C Now convert to Gen body type and place into in common block G1.
+C And ESCROT also acts on data in G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
@@ -234,7 +233,7 @@ C the number of expected vertices (first item on list).
           read(ioin,*) NVER(I),(JVN(I,KV),KV=1,NVER(I))
    10   CONTINUE
 
-C Rotate if required.
+C Rotate if required. Act on data in common G1.
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)
@@ -345,8 +344,8 @@ C Create and write geometry file.
         do 65 is=1,NSUR
           IF(is.LE.9)WRITE(SN,'(a5,i1)')'Surf-',is
           IF(is.GT.9)WRITE(SN,'(a5,i2)')'Surf-',is
-          SOTF='OPAQ'
-          write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',SOTF,
+          OTF='OPAQ'
+          write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',OTF,
      &        '  UNKN  UNKNOWN      UNKNOWN'
   65    continue
         close(iotmp2)

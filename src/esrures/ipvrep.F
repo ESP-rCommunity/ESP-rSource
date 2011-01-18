@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "model.h"
 #include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
@@ -53,7 +54,6 @@ C Write IPV report based on description held in common.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL2/dmdfla(7)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/CFGV/icfgv
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
@@ -103,6 +103,8 @@ C Pre calculated data (filtered).
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      integer IWM  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Remember the initial periods.
       jiod1=IOD1
@@ -390,6 +392,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)
@@ -3583,7 +3586,7 @@ C If user request cancel then return after resetting ixopen to zero.
             elseif(act.eq.'a'.or.act.eq.'A')then
 
 C If appending check and see if it exists. If so close it and then
-C open it with APPEND option. Use ifdef for F77 or F90.
+C open it with APPEND option.
               longtfile=' '
               if(unixok)then
                 call addpath(xfile,longtfile,concat)
@@ -3601,13 +3604,8 @@ C and change any / to \.
               INQUIRE(FILE=longtfile(1:ltf),EXIST=there)
               if(there)then
                 close(ixunit)
-#ifdef F90
                open(ixunit,file=longtfile(1:ltf),position='APPEND',
      &           status='UNKNOWN',err=1)
-#else
-               open(ixunit,file=longtfile(1:ltf),ACCESS='APPEND',
-     &           status='UNKNOWN',err=1)
-#endif
               else
                 call efopseq(ixunit,xfile,4,IER)
               endif
@@ -3623,19 +3621,14 @@ C and change any / to \.
             elseif(act.eq.'a'.or.act.eq.'A')then
 
 C If appending check and see if it exists. If so close it and then
-C open it with APPEND option. Ifedf for F77 or F90.
+C open it with APPEND option.
               ltf=max(1,LNBLNK(xfile))
               there=.false.
               INQUIRE(FILE=xfile(1:ltf),EXIST=there)
               if(there)then
                 close(ixunit)
-#ifdef F90
                open(ixunit,file=xfile(1:ltf),position='APPEND',
      &           status='UNKNOWN',err=1)
-#else
-                open(ixunit,file=xfile(1:ltf),ACCESS='APPEND',
-     &            status='UNKNOWN',err=1)
-#endif
               else
                 call efopseq(ixunit,xfile,4,IER)
               endif

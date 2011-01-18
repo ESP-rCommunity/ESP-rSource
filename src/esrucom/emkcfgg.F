@@ -29,6 +29,10 @@ C common blocks into the file and unit specified in COMMON/C21.
 C This version uses generic databases.
       SUBROUTINE EMKCFGG(act,IER)
 
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+      
+      IMPLICIT NONE
+
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -46,31 +50,36 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
-      PARAMETER (MSTMC=20,MSGAL=40)
+      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
+      INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
+      INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: ifcfg
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
-      common/CFGV/icfgv
+      INTEGER :: ifpnf
 
 C Project log file, paths to standard file locations.
-      COMMON/LOG/LPRJLG
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -88,15 +97,16 @@ C Images.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-C Radiance scene file.
-      common/radcfg/LRADCF
+      REAL :: angi,EYEMI,VIEWMI
+      INTEGER :: initvt
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam,ientxist
+      INTEGER :: ispmxist,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      INTEGER :: iairn,icaas
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
@@ -116,6 +126,7 @@ C Ground topology.
 
 C CFD
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+      INTEGER :: ifcfd
 
 C 3D zones.
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -127,31 +138,38 @@ C Moisture.
 
 C Structured mesh.
       COMMON/GRSD100/IndxSt
+      INTEGER :: IndxSt
       COMMON/GRSD101/LGrdSt
 
 C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
-      common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/ECONV/ieconv
+      INTEGER :: ieconv
+      common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
+      INTEGER :: ipconv
+      REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
-
+      REAL :: phtco2,phtnox,phtsox,pclco2,pclnox,pclsox
+      REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
+      REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
+ 
 C IPV description.
       common/IPVF/lipvdatf
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
+      REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
+      INTEGER :: icpcon,irt
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      INTEGER :: idwe1,idwe2
 
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -159,27 +177,31 @@ C Uncertainty analysis common.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
+      INTEGER :: naloc,ialoc,lstanchr
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
      &               isfnmon(MSPS)
+      INTEGER :: isstday,isstmon,isfnday,isfnmon
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      INTEGER :: nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh      
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
+      INTEGER :: ibsimp
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
+      INTEGER :: ihvacflag
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
+      INTEGER :: NCONTM,NOCNTM,NTSTEPC
 
 C DHW.
       common/dhw/sDHW_InputFileName,iDHW_FLAG
@@ -188,8 +210,11 @@ C DHW.
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
+      INTEGER :: iFClds
 C External longwave radiation (begin)
-      COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
+      COMMON/LongRad/iExtLgRadFlag,eGrdTp
+      INTEGER :: iExtLgRadFlag
+      REAL :: eGrdTp(12)
       INTEGER jMon
 C GSHP
        common/gshpinfo/igshp
@@ -205,31 +230,30 @@ C GCEP(end)
 
 C Bidirectional raw optical data file.
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
+      INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Generic databases from esprdbfile.h.
 
-      CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
+      CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
-      CHARACTER LPNF*72,LTDF*72,LTDFA*72
+      CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
@@ -244,7 +268,7 @@ C An array of mass flow nodes for writing.
 
       dimension iav(60)
 
-      logical KNOWN,dogrnd
+      logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
@@ -256,6 +280,10 @@ C Control for writing out multi-climate sim presets
       integer itrunc  ! to indicate there is a continuation line.
       integer ipos    ! position in flow node string buffer
       integer lnouts   ! location at end of flow node string buffer
+
+      INTEGER :: ier,i,ia,iav,icc,icd!,id1,id2,id3,id4,im1,im2,im3,im4
+      INTEGER :: img,ios,iss,iuf,iw,j,l,lcfgl,lcfgr,lct,lctn,loutlen
+      INTEGER :: loutln,ncn
 
       IUF=IFIL+1
       IER=0
@@ -282,7 +310,7 @@ C code in edcfg to trap updates following on from other modifications).
 
 C If no model root name has been set, make from configuration file.
 C If filename > 4 char it might have a .cfg attached.
-          icfgv=3
+          icfgv=4   ! set to the current default version
           lcfgr=lnblnk(LCFGF)
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
@@ -383,6 +411,8 @@ C Begin writing the file.
      &  '  # path to networks'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',ctlpth,
+     &  '  # path to aim2 files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
@@ -975,13 +1005,11 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C24/IZSTOCN(MCOM,MS)
+      INTEGER :: IZSTOCN
 
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN
         WRITE(CXSTR,8986)  
@@ -1074,7 +1102,7 @@ C ****** Scan and report current mis-matches.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G1/G2/c20.
 #include "geometry.h"
 
 C Parameters
@@ -1087,27 +1115,19 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(iz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

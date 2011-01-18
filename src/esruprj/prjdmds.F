@@ -38,6 +38,7 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
 #include "schedule.h"
       
@@ -50,8 +51,6 @@ C file unit for the demands file. IER=0 is OK.
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Floor area (optionally) associated with each demand type in an IPV.
@@ -71,10 +70,9 @@ C Flags noting whether casual gain periods are currently sorted.
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
       character cfgroot*24,LCFGF*72,hold*60
-      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
+      integer NITEMS,INO ! max items and current menu item
 
 C GFILE is the default file name for project gains file.
       if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
@@ -508,6 +506,8 @@ C Local editing arrays.
 C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
+      integer IEBCGTS,IWM  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)
@@ -647,6 +647,7 @@ C Now display the menu.
         h(1)='You can apply a scaling factor to all entries of a '
         h(2)='particular casual gain type (useful for parametric '
         h(3)='studies on profiles which have been imported).'
+        IEBCGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IEBCGTS,3)
         VAL=1.0
@@ -751,6 +752,7 @@ C Edit block identified by KEYIND.
 C Establish the nature of the casual gain
         H(1)='The type of demand can be one of those listed in the '
         H(2)='selections. '
+        IWM=1
         CALL EASKATOG('Which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IWM,2)
 
@@ -846,6 +848,7 @@ C Profile database commons via profile.h.
       character lltmp*144
       character fs*1   ! file separator
       logical unixok  ! to check for database path file separators
+      integer ICGT    ! for radio button
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -923,6 +926,7 @@ C Identify nature of demands
       H(3)='pump demands can be separately tracked from that of '
       H(4)='other equipment.  Values from 1 to 4 are accepted'
       H(5)='and can have any meaning that the user chooses. '
+      ICGT=1
       CALL EASKATOG(' ','Type of casual gain: ',ll1,ll2,ll3,ll4,ll5,
      &  ll6,ll7,ICGT,5)
 
@@ -1343,43 +1347,26 @@ C Calendar commons.
 C ************* dmdcheckcascount
 C checkcascount scans current P3 & P3TYPE commons and refreshes 
 C dmdloadcount() & dmdload24() in common blocks dmdloadcnt & dmdloadall
+C in schedule.h
+
 C Parameters:
-C   ier - set to 1 if there was a problem
+C   ier - set to 1 if there was a problem.
       subroutine dmdcheckcascount(ier)
 #include "building.h"
 #include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C dmdloadcount(gaintype,daytype) - nb of each gain type (whether
-C   absolute or W/m2).
-C dmdloadm2count(gaintype,daytype) - nb of each m2 gain types.
-C dmdloadmixed(gaintype,daytype) - if zero then nothing, if one
-C   then all non-zero are absolute, if two then all (non-zero) are in
-C   W/m2 or person/m2, if three then non-zero are mixed.
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
-     &               dmdloadmixed(7,MDTY)
-
-      common/dmdloadall/dmdload24(7,MDTY,2)
-      logical dmdload24
-
-C Keep track of how many non-zero positive and negative casual
-C gain types - in order to figure out value of loadmixed.
-      integer dmdloadnonzero,dmdloadm2nonzero
-      dimension dmdloadnonzero(7,10),dmdloadm2nonzero(7,10)
+      integer dmdloadnonzero   ! now many non-zero demand gain types
+      integer dmdloadm2nonzero ! now many m2 demand gain types
+      dimension dmdloadnonzero(MGTY,MDTY),dmdloadm2nonzero(MGTY,MDTY)
 
       integer ij,ik   ! for counters
       integer idtype  ! for the type of dispersed demand
       integer idindex ! for neagtive types of dispersed demand
 
 C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
-      do 40 ij=1,7
+      do 40 ij=1,MGTY
         do 41 ik=1,MDTY
           dmdloadcount(ij,ik)=0
           dmdloadm2count(ij,ik)=0
@@ -1394,11 +1381,11 @@ C Debug..
 C      write(6,*) 'Nb of daytype periods for dispersed demands...'
 
 C Loope through each possible day type (ik) and period (ij).
-      do 42 ik=1,10
+      do 42 ik=1,MDTY
         if(NBCAS(ik).gt.0)then
           do 43 ij=1,NBCAS(ik)
-            idtype=IBCGT(ik,ij)
-            if(idtype.gt.0.and.idtype.le.7)then
+            idtype=IBCGT(ik,ij)  ! find dispersed demand type
+            if(idtype.gt.0.and.idtype.le.MGTY)then
               dmdloadcount(idtype,ik)=dmdloadcount(idtype,ik)+1
               if(CBMGS(ik,ij).gt.0.0)then
                 dmdloadnonzero(idtype,ik)=dmdloadnonzero(idtype,ik)+1
@@ -1476,17 +1463,6 @@ C not extensive, but should catch most issues.
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
-
-C How many of each dispersed demands for each gaintype/daytype.
-      integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
-     &               dmdloadmixed(7,MDTY)
-
-C Does each gain type on each day:
-C   start at zero dmdload24(gaintype,daytype,1)=.true.
-C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-      common/dmdloadall/dmdload24(7,MDTY,2)
-      logical dmdload24
 
 C logical problem set to true if daytype might not be sorted.
       logical problem

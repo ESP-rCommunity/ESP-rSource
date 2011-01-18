@@ -47,33 +47,28 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      common/loadlabel/lodlabel(mcom,7)
+      character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
-      logical newgeo  ! to use for testing if new/old geometry file.
       
-      character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
+      character outs*124,xfile*144,tg*1,delim*1
 
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
       CHARACTER*26 LABELS(17)
       CHARACTER*9 TITLE1(17)
 
-      newgeo=.false.  ! assume older format geometry.
-
 C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
-      call eclose(gversion(izone),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
-      else
-        call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
-      endif
+      call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
       idwins=0
 
 C Generate the labels for the interface and report.
+
+C << revise for additional casual gain types >>
       LABELS(1) =' Infiltration air load    '
       LABELS(2) =' Ventilation air load     '
       LABELS(3) =' N/A                      '
@@ -414,15 +409,11 @@ C CALLED BY: MOZSUM
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Versions of libraries (zone, plant, electrical).
       common/recver/izver,ipver,iever
 
       CHARACTER*25 CSTR
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       DIMENSION CQ(MTS)
 

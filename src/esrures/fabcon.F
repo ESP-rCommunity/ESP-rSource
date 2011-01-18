@@ -47,6 +47,7 @@ C of inter-fabric temperature and condensation conditions.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
       character H*72,xfile*144,tg*1,delim*1,act*1
+      integer NITMS,INO ! max items and current menu item
 
 C Setup for menu.
    3  ITEM(1) ='2 select result set    '
@@ -164,8 +165,6 @@ C to the fabric temperature or condensation information.
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/RECV5/SNA(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/VAP1/IDO,IMO,TIMO,IDAYO,ITIMO
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -173,8 +172,6 @@ C to the fabric temperature or condensation information.
       CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character TSTR*6,ZN*12,SN*12,DS*7,DS1*10
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer lml   ! string length for construction name.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -281,16 +278,12 @@ C timestep.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/zcondhr/izctime(MCON)
 
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
       character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
       character tg*1,delim*1,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       logical found
 
 C Set chosen result set.
@@ -784,13 +777,13 @@ C Draw construction section.
       iid1=igr; iid2=igt-10;
       call wstxpt(iid1,iid2,ZN)
       igr=13
-      X=0.
+      XX=0.
       YD=PMAX-PMIN
       LAY=NELTS(ICOMP,ISUR)
       DO 101 L=1,LAY
-        XL=X
+        XL=XX
         XD=ETHK(L)
-        X=X+ETHK(L)
+        XX=XX+ETHK(L)
         if(IPRZ(ISUR,L).ne.0)call egrbox(XL,PMIN,XD,YD,igr)
   101 CONTINUE
 
@@ -851,8 +844,6 @@ C period.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -871,15 +862,11 @@ C IPRZ is primitive db ref for each layer.
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,tg*1,delim*1
       integer legmat  ! local variable for legacy index.
       logical closemat1,closemat2
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set chosen result set.
-      newgeo=.false.  ! assume older format geometry.
       ISET=ISIM
 
 C Set values as common block gets overwritten.
@@ -898,12 +885,7 @@ C If output to file alter the edisp unit number.
 
 C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
-      else
-        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
-      endif
+      call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')
