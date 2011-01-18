@@ -597,7 +597,7 @@ C#include "building.h"
         CALL ETPLOT(X,Y,iupdown,isym)
         IF(ICPLOT.EQ.1) THEN
           IF(IPCOMP.GT.100) THEN
-            WRITE(PUTS,*) IPCOMP-100
+            WRITE(PUTS,'(i6)') IPCOMP-100
             call u2pixel(x,y,ixs,iys)
             if(colok)then
               icm=IPCOMP-100
@@ -612,7 +612,7 @@ C#include "building.h"
 
 C Keep track of components plotted
             IPLOTREC(IPCOMP,NOD)=1 
-            WRITE(PUTS,*) IPCOMP
+            WRITE(PUTS,'(i4)') IPCOMP
             call u2pixel(x,y,ixs,iys)
             if(colok)then
               icm=IPCOMP
@@ -624,13 +624,13 @@ C Keep track of components plotted
             if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.EQ.0) THEN
-            WRITE(PUTS,*) 'Ext db'
+            WRITE(PUTS,'(a)') 'Ext db'
             call u2pixel(x,y,ixs,iys)
             icm=0
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
           ELSEIF(IPCOMP.LT.0) THEN
-            WRITE(PUTS,*) 'Zone',-IPCOMP
+            WRITE(PUTS,'(a,i3)') 'Zone',-IPCOMP
             call u2pixel(x,y,ixs,iys)
             icm=0
             iid1=ixs+4; iid2=iys-4; 
@@ -1004,12 +1004,12 @@ C Case where TD<60 and GS>30
           ENDIF
 
 C Debug.
-C          write(6,*) TD,xmax,xmax/2.
+          write(6,*) TD,xmax,xmax/2.,RH
 
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN
-            write(puts,*) INT(RH),'%'
+            write(puts,'(i4,a)') INT(RH),'%'
             if(GS.LE.ymax)then
               if(colok)call winscl('z',17)
               ipos=0
@@ -1082,7 +1082,7 @@ C Draw on the enthalpy scales
         IF (ENTH.GT.ENTHMINY.AND.ENTH.LE.ENTHMAXY) THEN
           TD=Xmin
           GS=((ENTH-TD)/(1.82*TD+2500.))*1000.
-          write(puts,*) IENTH
+          write(puts,'(i6)') IENTH
           ipos=0
           isize=0
           CALL etlabel(puts,Xmin-Xmax/XSC,GS,ipos,isize)
@@ -1094,7 +1094,7 @@ C Draw on the enthalpy scales
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINX.AND.ENTH.LE.ENTHMAX) THEN
           TD=TDB(ENTH,(YMAX)/1000.)
-          write(puts,*) IENTH
+          write(puts,'(i6)') IENTH
           ipos=0
           isize=0
           CALL etlabel(puts,TD,YMAX+YMAX/YSC,ipos,isize)

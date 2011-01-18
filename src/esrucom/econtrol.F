@@ -3331,8 +3331,23 @@ C          call edisp248(6,message,80)
      &    cm(5),'C throt range ',cm(6),'C ',msg2,' ',msg3
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
+
+        elseif(IPCLAW(II,JJ,KK).EQ.3)then
+          SSTR='Prop numerical ctrl.'
+          msg1=' Prop numerical'
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          write(lmsg,'(2a,f7.2,a,f7.2,a,f7.2,a,f7.2,a,f7.2,a)') 
+     &    msg1,' max output ',cm(2),' min output ',cm(3),
+     &    ' upper setpoint ',cm(4),' lower setpoint ',
+     &    cm(5),' DS to overcome hystersis ',cm(6),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+
         endif
-        IF(IPCLAW(II,JJ,KK).EQ.3) SSTR='Prop numerical ctrl.'
         IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
         IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
         if(IPCLAW(II,JJ,KK).EQ.6)then
