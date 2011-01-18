@@ -1004,7 +1004,7 @@ C Case where TD<60 and GS>30
           ENDIF
 
 C Debug.
-          write(6,*) TD,xmax,xmax/2.,RH
+C          write(6,*) TD,xmax,xmax/2.,RH
 
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
