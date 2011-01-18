@@ -3364,11 +3364,11 @@ C          call edisp248(6,message,80)
           cm(6)=pmiscd(II,JJ,KK,6)
           cm(7)=pmiscd(II,JJ,KK,7)
           cm(8)=pmiscd(II,JJ,KK,8)
-          write(lmsg,'(a,f5.1,a,f7.2,a,f7.2,a,f9.2,a,f9.2,a,f7.1,a,
+          write(lmsg,'(a,f5.1,a,f7.2,a,f7.2,a,f10.3,a,f10.3,a,f7.1,a,
      &      f7.1,a)') 
      &      ' OnOff std mode ',cm(2),' on setpt ',cm(3),
      &      'C off setpt ',cm(4),'C output @ hi ',cm(5),
-     &      'W output @ lo ',cm(6),'W sensor lag ',cm(7),
+     &      ' output @ lo ',cm(6),' sensor lag ',cm(7),
      &      's actuator lag ',cm(8),'s.'
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
