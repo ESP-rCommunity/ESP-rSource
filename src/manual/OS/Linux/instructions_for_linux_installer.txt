@@ -50,8 +50,8 @@ The --gcc4 directive assumes that you are using the GCC 4 series.
 To confirm what is on your machine try 'which gcc' and then 'gcc --version'
 to establish the version prior to running the Install script.
 
-Next, the directive --compiler_version -4.1 is useful if the executable for
-the compiler is actually something like /usr/bin/gcc-4.1. You may
+If the executable for the compiler is actually something 
+like /usr/bin/gcc-4.1  the syntax is --compiler_version -4.1. You may
 need this directive to ensure that the C compiler, C++ compiler
 and Fortran compiler gfortran are consistent with each other.
 Look in /usr/bin for which variants of gcc g++ and gfortran
