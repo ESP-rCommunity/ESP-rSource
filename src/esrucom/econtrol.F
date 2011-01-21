@@ -1829,7 +1829,7 @@ C Reporting: Get a string describing the current sensor based on common.
         IF(ITRC.GE.1)THEN
           IIS=II
           CALL EVCNTRL(6,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,65)II,SSTR(1:LNBLNK(SSTR))
+          WRITE(OUTSTR,765)II,SSTR(1:LNBLNK(SSTR))
  765      FORMAT(' The sensor for function ',I2,' ',a)
           CALL EDISP(ITRU,' ')
           CALL EDISP(ITRU,OUTSTR)
@@ -2630,6 +2630,7 @@ C sub-strings for describing multi-sensor flow controls.
       character msg1*24,msg2*24,msg3*24,msg4*24,msg*72,lmsg*248
       character message*248
       logical oka,okb
+      integer I2,I7,I8,I9  ! for plant control decoding
 
       SSTR=' '
       SSTR1=' '
@@ -3250,15 +3251,140 @@ C          call edisp248(6,message,80)
 
 C Plant control law.
         SSTR='undefined control        '
-        IF(IPCLAW(II,JJ,KK).EQ.0) SSTR='period off        '
-        IF(IPCLAW(II,JJ,KK).EQ.1) SSTR='PID flux control.  '
-        IF(IPCLAW(II,JJ,KK).EQ.2) SSTR='PID flow control. '
-        IF(IPCLAW(II,JJ,KK).EQ.3) SSTR='Prop numerical ctrl.'
+        IF(IPCLAW(II,JJ,KK).EQ.0) then
+          SSTR='period off        '
+          message=' Period switch off control has no data.'
+        elseIF(IPCLAW(II,JJ,KK).EQ.1) then
+          SSTR='PID flux control.  '
+          msg1=' '; msg2=' '; msg3=' '
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          cm(7)=pmiscd(II,JJ,KK,7)
+          cm(8)=pmiscd(II,JJ,KK,8)
+          cm(9)=pmiscd(II,JJ,KK,9)
+          cm(10)=pmiscd(II,JJ,KK,10)
+          I2=INT(cm(2))
+          if(I2.eq.1.or.I2.eq.-1) msg1='non-recursive postnl'
+          if(I2.eq.2.or.I2.eq.-2) msg1='recursive postnl'
+          if(I2.eq.3.or.I2.eq.-3) msg1='recursive vel`y rect'
+          if(I2.eq.4.or.I2.eq.-4) msg1='recursive vel`y rect'
+          if(I2.eq.5.or.I2.eq.-5) msg1='recursive vel`y trapez'
+          I7=INT(cm(7))
+          I8=INT(cm(8))
+          I9=INT(cm(9))
+          if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+            if(I7.eq.1)then
+              write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(8)
+              if(I9.eq.1)then
+                write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(10)
+              endif
+            else
+              if(I8.eq.1)then
+                write(msg2,'(a,f7.1)') ' Deriv act [s]',cm(9)
+              endif
+            endif
+          elseif(I2.eq.3.or.I2.eq.-3)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+            write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(8)
+          endif
+          write(lmsg,'(2a,f5.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,4a)') 
+     &    msg1,' mode ',cm(2),' max capacity ',cm(3),
+     &    'W min capacity ',cm(4),'W setpoint ',
+     &    cm(5),'C Tmp range ',cm(6),'C ',msg2,' ',msg3
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+
+        elseIF(IPCLAW(II,JJ,KK).EQ.2) then
+          SSTR='PID flow control. '
+          msg1=' '; msg2=' '; msg3=' '
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          cm(7)=pmiscd(II,JJ,KK,7)
+          cm(8)=pmiscd(II,JJ,KK,8)
+          cm(9)=pmiscd(II,JJ,KK,9)
+          cm(10)=pmiscd(II,JJ,KK,10)
+          I2=INT(cm(2))
+          if(I2.eq.1.or.I2.eq.-1) msg1='non-recursive postnl'
+          if(I2.eq.2.or.I2.eq.-2) msg1='recursive postnl'
+          if(I2.eq.3.or.I2.eq.-3) msg1='recursive vel rect'
+          if(I2.eq.4.or.I2.eq.-4) msg1='recursive vel rect'
+          if(I2.eq.5.or.I2.eq.-5) msg1='recursive vel trapez'
+          I7=INT(cm(7))
+          I8=INT(cm(8))
+          I9=INT(cm(9))
+          if(I2.eq.1.or.I2.eq.-1.or.I2.eq.2.or.I2.eq.-2)then
+            if(I7.eq.1)then
+              write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(8)
+              if(I9.eq.1)then
+                write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(10)
+              endif
+            else
+              if(I8.eq.1)then
+                write(msg2,'(a,f7.1)') ' Deriv act [s]',cm(9)
+              endif
+            endif
+          elseif(I2.eq.3.or.I2.eq.-3)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
+            write(msg2,'(a,f7.1)') ' Intrg act [s]',cm(7)
+            write(msg3,'(a,f7.1)') ' Deriv act [s]',cm(8)
+          endif
+          write(lmsg,'(2a,f4.1,a,f9.5,a,f9.5,a,f7.2,a,f7.2,4a)') 
+     &    msg1,' mode ',cm(2),' max flow ',cm(3),
+     &    'kg/s min flow ',cm(4),'kg/s setpoint ',
+     &    cm(5),'C throt range ',cm(6),'C ',msg2,' ',msg3
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+
+        elseIF(IPCLAW(II,JJ,KK).EQ.3) then
+          SSTR='Prop numerical ctrl.'
+          msg1=' Prop numerical'
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          write(lmsg,'(2a,f7.2,a,f7.2,a,f7.2,a,f7.2,a,f7.2,a)') 
+     &    msg1,' max output ',cm(2),' min output ',cm(3),
+     &    ' upper setpoint ',cm(4),' lower setpoint ',
+     &    cm(5),' DS to overcome hystersis ',cm(6),'.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+
+        endif
         IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
         IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
-        IF(IPCLAW(II,JJ,KK).EQ.6) SSTR='Null controller.'
+        IF(IPCLAW(II,JJ,KK).EQ.6) then
+          SSTR='Null controller.'
+          message=' Null control has no data.'
+        endif
         IF(IPCLAW(II,JJ,KK).EQ.7) SSTR='Duty Cycle Ctlr.'
-        IF(IPCLAW(II,JJ,KK).EQ.8) SSTR='On-Off control.'
+        IF(IPCLAW(II,JJ,KK).EQ.8) then
+          SSTR='On-Off control.'
+          cm(2)=pmiscd(II,JJ,KK,2)
+          cm(3)=pmiscd(II,JJ,KK,3)
+          cm(4)=pmiscd(II,JJ,KK,4)
+          cm(5)=pmiscd(II,JJ,KK,5)
+          cm(6)=pmiscd(II,JJ,KK,6)
+          cm(7)=pmiscd(II,JJ,KK,7)
+          cm(8)=pmiscd(II,JJ,KK,8)
+          write(lmsg,'(a,f5.1,a,f7.2,a,f7.2,a,f10.3,a,f10.3,a,f7.1,a,
+     &      f7.1,a)') 
+     &      ' OnOff std mode ',cm(2),' on setpt ',cm(3),
+     &      'C off setpt ',cm(4),'C output @ hi ',cm(5),
+     &      ' output @ lo ',cm(6),' sensor lag ',cm(7),
+     &      's actuator lag ',cm(8),'s.'
+          call SDELIM(lmsg,message,'S',IW)
+C          call edisp248(6,message,80)
+        endif
         IF(IPCLAW(II,JJ,KK).EQ.9) SSTR='Multi-sensor on-off.'
         IF(IPCLAW(II,JJ,KK).EQ.10) SSTR='Cogen. controller'
         IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
@@ -3763,8 +3889,8 @@ C Print out first 9 miscellaneous data if applicable.
      &        outsc(1:lnblnk(outsc))
           CALL EDISP(ITRU,outs)
 
-C For zone, flow and global controls list out the verbose decoding of the misc items.
-          if(icfoc.eq.0.or.icfoc.eq.2.or.icfoc.eq.3)then
+C For zone, plant, flow and global controls list out the verbose decoding of the misc items.
+          if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3)then
             call edisp248(itru,ltmp,90)
           endif
         elseif(NITEMS.eq.0)then
