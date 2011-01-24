@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Living room with radiator and wch. defined in
-wch.cfg generated on Tue Jan 18 16:24:01 2011. Notes associated with the model
+wch.cfg generated on Mon Jan 24 11:53:21 2011. Notes associated with the model
 are in wch.log
  
 The model is located at latitude   52.00 with a longitude difference of -10.00
@@ -59,7 +59,7 @@ the wch.log file in the cfg folder.
  Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      flux zone/plant     3.0 1.0 2.0 10000.0 10000.0
-plant/zone coupling: plant component 1 plant component node 2 coupling type hrA(0s-0a)
+plant/zone coupling: plant component 3 plant component node 1 coupling type hrA(0s-0a)
 sequential. Max heating 10000.00W max cooling 10000.00W.
  
  Zone to contol loop linkages:

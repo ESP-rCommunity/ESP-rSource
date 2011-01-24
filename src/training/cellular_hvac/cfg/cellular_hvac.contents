@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Two adjacent cellular offices serviced by
-component HVAC defined in cellular_hvac.cfg generated on Thu Jan 20 08:17:58
+component HVAC defined in cellular_hvac.cfg generated on Mon Jan 24 11:46:58
 2011. Notes associated with the model are in cellular_offices_bc.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -60,7 +60,7 @@ link between zones and plant component enabled with free float in corridor
  Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      flux zone/plant     13.0 1.0 1.0 9000.0 9000.0 15.0 1.0
-plant/zone coupling: source plant component 1 plant component node 1 coupling type
+plant/zone coupling: source plant component 13 plant component node 1 coupling type
 mCp(0s-0a) sequential. Max heating 9000.00W max cooling 9000.00W. Extract plant
 component 15 and extract node 1.
  
@@ -70,7 +70,7 @@ component 15 and extract node 1.
  Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      flux zone/plant     14.0 1.0 1.0 9000.0 9000.0 16.0 1.0
-plant/zone coupling: source plant component 1 plant component node 1 coupling type
+plant/zone coupling: source plant component 14 plant component node 1 coupling type
 mCp(0s-0a) sequential. Max heating 9000.00W max cooling 9000.00W. Extract plant
 component 16 and extract node 1.
  
