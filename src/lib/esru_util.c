@@ -165,6 +165,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
         `vwf` get list of viewfactor files, `tmc` zone optics file,
 	`htc` get list of convection regime files,
 	`shd` get list of shading files, `cgc` casual gain control files,
+        `bsm` get list of BASESIMP files,
 	`gdb` generic database, `gda` (gdba) ascii generic database
 	`dba` ascii database,
 	`dbb` binary database or climate file,
@@ -277,6 +278,8 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
         if (strstr(dirt->d_name,".shd")) foundone = 1;
       } else if(strcmp("cgc",act2)== 0) { /* If request for cas gain ctl files only, then build this list. */
         if (strstr(dirt->d_name,".cgc")) foundone = 1;
+      } else if(strcmp("bsm",act2)== 0) { /* If request for BASESIMP files only, then build this list. */
+        if (strstr(dirt->d_name,".bs,")) foundone = 1;
       } else if(strcmp("htc",act2)== 0) { /* If request for convection regime files only, then build this list. */
         if (strstr(dirt->d_name,".htc")) foundone = 1;
         if (strstr(dirt->d_name,".hcc")) foundone = 1;

@@ -1484,6 +1484,8 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to project documents'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
      &  '  # path to local databases'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*bsmpth ',bsmpth,
+     &  '  # path to BASESIMP files'
       WRITE(ioout,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)

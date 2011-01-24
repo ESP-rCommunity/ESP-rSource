@@ -521,6 +521,8 @@ C Begin writing the file with version number in the header.
      &  '  # path to local databases'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*hvacpth ',hvacpth,
      &  '  # path to hvac files'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*bsmpth ',bsmpth,
+     &  '  # path to BASESIMP files'
       WRITE(IFCFG,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)

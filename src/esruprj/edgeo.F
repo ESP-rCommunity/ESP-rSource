@@ -534,7 +534,10 @@ C Read current zone back in and then update the configuration file.
       else
         ITEMS(ITEMC+13)='j thermal bridges (NA)         '
       endif
-      ITEMS(ITEMC+14)='k                              '
+
+C Interface to BASESIMP definitions for this zone.
+C << to be done >>
+      ITEMS(ITEMC+14)='k define/edit BASESIMP         '
       ITEMS(ITEMC+15)='  _____________________________'
       ITEMS(ITEMC+16)='* list zone & surface details  '
       ITEMS(ITEMC+17)='> save                         '
@@ -1361,12 +1364,14 @@ C Attribute a single surface, set flag to redraw.
           MODIFY=.TRUE.
           goto 42
         endif
+
       ELSEIF(INO.EQ.ITEMC+10)THEN
 
 C Edit zone insolation distribution and/or user specified insolation distribution.
         call tstamp('>','PRJ: enter zone insolation distribution')
         CALL EDINSUL(ICOMP,IER)
         MODGEO=.TRUE.
+
       ELSEIF(INO.EQ.ITEMC+11)THEN
 
 C Zone obstructions. If any unsaved zone geometry changes and not
@@ -1422,6 +1427,7 @@ C editing facility.
      &        'interface to be in graphic mode.','W')
           endif
         endif
+
       ELSEIF(INO.EQ.ITEMC+12)THEN
 
 C Zone rotations and transforms.
@@ -2034,6 +2040,7 @@ C Ensure that the zone is redrawn and boundaries are checked.
         MODIFY=.TRUE.
         MODBND=.TRUE.
         MODGEO=.TRUE.
+
       ELSEIF(INO.EQ.ITEMC+13)THEN
 
 C Check the file version, if new then allow thermal bridges.
@@ -2047,8 +2054,12 @@ C Check the file version, if new then allow thermal bridges.
 
       ELSEIF(INO.EQ.ITEMC+14)THEN     
 
-C << future position of linear thermophysical properties >>
- 
+C Definition of BASESIMP definitions for this zone. The user is also
+C asked when the return from the surface attribute menu if they want
+C to work on BASESIMP data if there are any of the surfaces in the
+C zone what are associated with BASESIMP
+        CALL BASESIMP_INPUTS(ICOMP,IER)
+
       ELSEIF(INO.EQ.ITEMC+16)THEN
 
 C Surface summary: print header, followed by surface information.
