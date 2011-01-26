@@ -54,7 +54,6 @@ C IEEE callback (Solaris)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      common/pophelp/h(60)
       COMMON/MRT2/GEOLOAD,MRTLOAD
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -110,7 +109,7 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER H*72,OUTSTR*124,CUBN*6,ITEM*29
+      CHARACTER OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -121,6 +120,12 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -164,6 +169,8 @@ C Initialize global common data.
       call ezero
       call curmodule('mrt ')
       cAppName = 'mrt'
+      helpinapp='mrt'  ! set once for the application
+      helpinsub='mrt'  ! set for MAIN
       IUIN=5
       IUOUT=6
       LIMTTY=24
@@ -506,9 +513,8 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
 20    CALL EMENU('  Viewfactors & MRT',ITEM,NITEMS,INO)
 
       IF(INO.EQ.1)THEN
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+        helptopic='user_supplied_cfg'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
@@ -520,20 +526,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
@@ -622,12 +628,10 @@ c Change parameter igfact.
         WRITE(outs,'(i3,a,I5,a,i2,a)') igx,' [sqrt(',mgc,
      &    '/nsur)] and nsur is currently ',nsur,'.'
         call edisp(iuout,outs)
-        h(1)='Variable igfact represents the grid sub- '
-        h(2)='division. Every surface is divided in '
-        h(3)='igfact**2 sub-surfaces.  A bubble is placed '
-        h(4)='at the centre of each sub-surface. '
+        helptopic='grid_subdivision_density'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IGFACT,' ',' New value ? ',
-     &             2,'W',igx,'W',6,'grid factor',IER,4)
+     &    2,'W',igx,'W',6,'grid factor',IER,nbhelp)
         call tstamp('>','VWF: updated grid factor')
       ELSEIF(INO.EQ.7)THEN
 
@@ -637,8 +641,10 @@ c Change npatch.
         call edisp(iuout,' Every bubble is divided into np rings')
         WRITE(outs,'(A,I5)')' Current patch subdivision np = ',NPATCH/4
         call edisp(iuout,outs)
+        helptopic='patch_subdivision'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &       1,'F',MPATCH/4,'F',1,'patch subdivision',IER,0)
+     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -704,9 +710,8 @@ c Printout of surfaces.
       ELSEIF(INO.EQ.14)THEN
 
 C Save view factor file.
-  442   H(1)='The view factor file contains viewfactors between'
-        H(2)='each of the surfaces in a zone as well as MRT sensor'
-        H(3)='definitions.'
+  442   helptopic='viewfactor_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         else
@@ -715,7 +720,7 @@ C Save view factor file.
         endif
         LTMP=LVIEW(icomp)
         CALL EASKS(LTMP,' Viewfactor & MRT file name ?',' ',
-     &     72,DFILE,'vwf file name',IER,3)
+     &     72,DFILE,'vwf file name',IER,nbhelp)
         if (LTMP(1:2).eq.'  ')goto 442
         LVIEW(icomp)=LTMP
         CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(icomp),IUF,
@@ -767,8 +772,10 @@ C default (area weighted) viewfactors and no MRT sensors.
         call edisp(iuout,' Opened existing viewfactor file.')
         CALL ERMRT(ITRC,iuout,IUF,LVIEW(icomp),ICOMP,IER)
         if(ier.ne.0)then
+          helptopic='problem_reading_existing'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Problem reading existing viewfactor file :',
-     &      ' ','read again','create new file','continue',irt,2)
+     &      ' ','read again','create new file','continue',irt,nbhelp)
           if(irt.eq.1)then
             goto 43
           elseif(irt.eq.2)then
@@ -845,9 +852,9 @@ C Calculate viewfactors for a zone.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "espriou.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/MRT2/GEOLOAD,MRTLOAD
@@ -865,9 +872,17 @@ c np         : number of patch-rings on bubble
 C outfile is the geometry file name for the zone with cube added.
       real drow,rowsum(MS+1)
       integer wrongrow
-      character outs*124,h*72
+      character outs*124
       logical OK,DOK,GEOLOAD,MRTLOAD
       dimension iivis(MSM)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='CALVF'  ! set for this subroutine
 
 c Initialize FF(i,j) and IVIS(i,j).
       IUF = IFIL+1
@@ -1003,14 +1018,10 @@ C If summation is not close to unity then report.
       endif
 C Save view factor file.
       dok=.true.
-      h(1)='Please review the results of the calculations. If all'
-      h(2)='of the factors for each surface sum close to 1.0 then'
-      h(3)='a yes is appropriate. '
-      h(4)=' '
-      h(5)='If there are some surfaces with low or no viewfactors'
-      h(6)='to other surfaces then you may need to increase the '
-      h(7)='resolution of the grid. '
-      CALL ASKOK(' Ok to save these viewfactors?',' ',OK,dok,7)
+      helptopic='user_review_of_calcs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' Ok to save these viewfactors?',' ',OK,dok,
+     &  nbhelp)
       if(OK)then
         CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
      &    ICOMP,'v',IER)
@@ -1052,5 +1063,204 @@ C In support of floating point exceptions.
       end
 #endif
 #endif
+
+C test subroutinhe to capture help text from external file (to be
+C found in the ESP-r distribution lib folder) with file ending
+C of *.help
+      subroutine gethelptext(sub,topic,nbhelp)
+#include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      character sub*24   ! subroutine name
+      character topic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+C Commons.
+      integer ifil
+      COMMON/FILEP/IFIL
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      logical unixok
+      integer ln,lna,lnf   ! length of install path, app name app folder
+      integer lns,lnt,lnhl ! length of subroutine, topic, helpline
+      integer lno          ! length of outstr
+      integer K            ! position
+      character helpfil*72 ! the help file to load
+      character folder*8   ! the source folder for the application
+      character WORD*32    ! a token to read
+      character outstr*124 ! for help phrases
+      character outs*124 ! for messages
+      character helpline*72 ! line of help text
+      character sq*1        ! single quote
+      character fs*1
+      logical havesub       ! set true if subroutine matches
+      logical havetopic     ! set true if topic matches
+      character app*24      ! application name (local)
+#include "espinstalldir.h"
+
+C Get to work.
+      app = helpinapp      ! set local app
+      call isunix(unixok)  ! which folder separator to use
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      ln=lnblnk(instpath)  ! where is ESP-r installed
+      lna=lnblnk(app)      ! length of app name
+      if(app(1:3).eq.'clm')then
+        folder='esruclm'
+      elseif(app(1:3).eq.'bps')then
+        folder='esrubps'
+      elseif(app(1:3).eq.'mrt')then
+        folder='esrumrt'
+      endif
+      lnf=lnblnk(folder)   ! length of folder name
+      lns=lnblnk(sub)      ! length of subroutine
+      lnt=lnblnk(topic)    ! length of topic
+      sq=char(39)   ! assign single quote
+
+C Assume that the installer has placed the help text file in the
+C distribution lib folder.
+      write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
+     &  '.help'
+
+      ihfil=ifil+2              ! set file unit number
+      CALL ERPFREE(ihfil,ISTAT) ! free it
+      CALL EFOPSEQ(ihfil,helpfil,1,IER)
+      if(ier.ne.0)then
+        call edisp(iuout,'Could not find help text file.')
+        call edisp(iuout,helpfil)
+        nbhelp=-1
+        return
+      endif
+
+      nbhelp=0  ! set initial assumption
+      havesub= .false.
+      havetopic= .false.
+
+C Check the header to see if this is a help text file.
+      read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan header
+      if(ios.ne.0) goto 1   ! jump if EOF
+      K=0
+      CALL EGETW(outstr,K,WORD,'W','*help_text',IER)
+      if(WORD(1:10).ne.'*help_text')then
+        call edisp(iuout,'Not a help text file.')
+        call edisp(iuout,helpfil)
+        goto 1
+      endif
+      CALL EGETW(outstr,K,WORD,'W','application',IER)
+      if(WORD(1:lna).ne.app(1:lna))then
+        write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
+        call edisp(iuout,outs)
+        goto 1
+      endif
+
+C If we reached this point then we can go looking for a
+C subroutine and topic match on each new line.
+      scan: do
+        read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan line
+        if(ios.ne.0)  exit scan   ! jump if EOF
+        lno=lnblnk(outstr)
+        if(lno.le.1) cycle  ! jump if a blank line
+
+        if(outstr(1:1).eq.'*')then  ! we had a key phrase
+          K=0
+          CALL EGETW(outstr,K,WORD,'W','*item',IER)
+          if(WORD(1:5).eq.'*item')then
+            CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
+            if(WORD(1:lns).eq.sub(1:lns))then
+
+C We have a matching subroutine name remember this and if
+C there are still more characters in the line then it
+C probably is a topic.
+              havesub = .true.  ! set true subroutine matches
+              if(K.le.lno)then
+                CALL EGETW(outstr,K,WORD,'W','topic',IER)
+                if(WORD(1:lnt).eq.topic(1:lnt))then
+                  havetopic = .true.     ! set true topic matches
+                  cycle   ! keep scanning
+                else
+                  cycle   ! keep scanning
+                endif
+              else
+                cycle   ! keep scanning
+              endif
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:8).eq.'*enditem')then
+
+C Reached end of item exit scan, if this was the correct sub and topic then
+C set number of help lines.
+            if(havesub.and.havetopic)then
+              CALL ERPFREE(ihfil,ISTAT) ! free it
+              return
+            else
+              cycle  ! keep scanning
+            endif
+          elseif(WORD(1:6).eq.'*topic')then
+
+C In case there are some old *topic lines in the help f
+            if(lno.le.7) cycle  ! jump if no other token
+            K=7
+            CALL EGETW(outstr,K,WORD,'W','topic',IER)
+            if(WORD(1:lnt).eq.topic(1:lnt))then
+              havetopic = .true.     ! set true topic matches
+              cycle   ! keep scanning
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:11).eq.'*subroutine')then
+            cycle   ! keep scanning
+          endif
+
+        elseif(outstr(1:1).eq.sq)then
+
+C We have a line that starts with a quote. If we have reached the
+C correct topic then read it otherwise scan another line.
+          if(havesub.and.havetopic)then
+            K=0
+            call EGETDQ(outstr,K,helpline,'W','phrase',IER)
+            lnhl=lnblnk(helpline)
+            call edisp(iuout,helpline)
+            nbhelp=nbhelp+1
+            if(lnhl.le.1)then
+              h(nbhelp)='  '
+            else
+              write(h(nbhelp),'(a)') helpline(1:lnhl)
+            endif
+            cycle   ! keep scanning
+          else
+            cycle   ! keep scanning
+          endif
+        else
+ 
+C Does not match expectations.
+          cycle   ! keep scanning
+        endif
+      end do scan
+
+C The end of file reached. If there has not been a match make up a
+C standard message.
+  1   close(ihfil)
+      if(havesub.and.havetopic)then
+        return
+      else
+        h(1)='No contextual help text was found for the topic'
+        write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &    ' of application ',app(1:lna)
+        nbhelp=2
+        return
+      endif
+
+      end
 
 
