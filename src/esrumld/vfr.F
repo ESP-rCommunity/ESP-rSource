@@ -25,6 +25,7 @@ C writes the recovered data to array GOTDAT
 
 #include "building.h"
 #include "mould.h"
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -48,21 +49,27 @@ C writes the recovered data to array GOTDAT
       integer*8 ipos,isize      ! for use with etlabel
 #endif
 
-      h(1)='A moisture results file holds data from an integrated'
-      h(2)='zone and surface moisture asessment. The data for each '
-      h(3)='timestep comprises surface humidity and temperature '
-      h(4)='for the zone or zones included in the assessment. The '
-      h(5)='file is typically named with a .msr extension. '
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='vread'  ! set for subroutine
+      helptopic='moisture_results_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       if(lnblnk(FILENM).le.1) FILENM=' '
       CALL EASKS(FILENM,'moisture result file name ?',
-     &    ' ',72,'HUMIDITY','moisture file name',IER,5)
+     &    ' ',72,'HUMIDITY','moisture file name',IER,nbhelp)
       OPEN(23,FILE=FILENM,STATUS='OLD')
+      helptopic='option_to_plot_or_write'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easkab('Do you want to '
-     &,' ','plot data','write to file',IW,1)
+     &,' ','plot data','write to file',IW,nbhelp)
       if(iw.eq.2) then
-        h(1)='A moisture results << ... >>'
         CALL EASKS(FILENM,'output file name ?',
-     &' ',72,'HUMID','output file name',IER,1)
+     &' ',72,'HUMID','output file name',IER,nbhelp)
         OPEN(24,FILE=FILENM,STATUS='NEW')
       endif
 
@@ -121,7 +128,8 @@ C re-scan the first line.
             call edisp(iuout,outs)
           endif
   13    continue
-        h(1)='Select one of the available zones. '
+        helptopic='option_to_select_zone'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IZ,'Which zone in the list (1st, 2nd etc.)? ',
      &    '(zero to return)',1,'W',NCOMP,'W',1,'zone index',IER,1)
         IF(IZ.GT.0) THEN
@@ -134,8 +142,10 @@ C re-scan the first line.
   12  write(outs,'(a,i2,a)') 'Information found for ',ns,' surfaces.'
       call edisp(iuout,outs)
       is=0
+      helptopic='option_to_select_surface'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IS,'Which surface index to plot? ','(zero to return)',
-     &  0,'W',32,'W',1,'surface index to assess',IER,0)
+     &  0,'W',32,'W',1,'surface index to assess',IER,nbhelp)
       if(is.eq.0)return
       IS=IS+2
       ITS=1
