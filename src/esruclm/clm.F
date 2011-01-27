@@ -1440,6 +1440,7 @@ C Local variables.
       character outs*124 ! for messages
       character helpline*72 ! line of help text
       character sq*1        ! single quote
+      character fs*1
       logical havesub       ! set true if subroutine matches
       logical havetopic     ! set true if topic matches
       character app*24      ! application name (local)
@@ -1448,6 +1449,11 @@ C Local variables.
 C Get to work.
       app = helpinapp      ! set local app
       call isunix(unixok)  ! which folder separator to use
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       ln=lnblnk(instpath)  ! where is ESP-r installed
       lna=lnblnk(app)      ! length of app name
       if(app(1:3).eq.'clm')then
@@ -1460,10 +1466,10 @@ C Get to work.
       lnt=lnblnk(topic)    ! length of topic
       sq=char(39)   ! assign single quote
 
-      if(unixok)then
-        write(helpfil,'(4a)') instpath(1:ln),'/lib/',folder(1:lnf),
-     &    '.help'
-      endif
+C Assume that the installer has placed the help text file in the
+C distribution lib folder.
+      write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
+     &  '.help'
 
       ihfil=ifil+2              ! set file unit number
       CALL ERPFREE(ihfil,ISTAT) ! free it
