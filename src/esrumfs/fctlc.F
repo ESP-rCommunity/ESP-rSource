@@ -29,22 +29,28 @@ C simulation. Each mass flow control function
 C is read from the system control strategy file.
 
       subroutine mzcstr(ier)
+#include "espriou.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/pophelp/h(60)
       common/cctlnm/ctldoc,lctlf
 
       LOGICAL OK,dok
 
-      character LCTLF*72,H*72,DFILE*72,LTMP*72,ctldoc*248
+      character LCTLF*72,DFILE*72,LTMP*72,ctldoc*248
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='mzcstr' ! set for subroutine
 
       dok=.false.
-      h(1)='Although you might have defined control for this flow'
-      h(2)='network, this application asks you to confirm whether'
-      h(3)='this is the case. '
+      helptopic='confirm_flow_control'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' Does a mass flow control strategy exist for',
-     &  ' the current problem? ',OK,dok,3)
+     &  ' the current problem? ',OK,dok,nbhelp)
 
       IF(.NOT.OK)THEN
         CALL EZCTLI
@@ -53,14 +59,12 @@ C is read from the system control strategy file.
       ENDIF
 
       IUNIT=IFIL+1
-      H(1)='The model control file holds the definition of all of'
-      H(2)='the zone/flow/plant controls which will be imposed on'
-      H(3)='the model at simulation time. If one is associated with'
-      H(4)='this flow network provide its name.'
+      helptopic='describe_flow_control'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE=' '
       LTMP=LCTLF
    47 CALL EASKS(LTMP,' Zone/flow/plant control file: ',
-     &   ' ',72,DFILE,'control file name',IER,6)
+     &   ' ',72,DFILE,'control file name',IER,nbhelp)
       IF(LTMP(1:2).NE.'  ')THEN
         LCTLF=LTMP
       ELSE
@@ -76,11 +80,10 @@ C Read in the control file (close before returning from EZCTLR).
       CALL EZCTLR(IUNIT,ITRC,IUOUT,IER)
       IF(IER.NE.0)THEN
         dok=.false.
-        h(1)='An error was reported while scanning the zone/flow/plant'
-        h(2)='control file. Check for warning that might have been '
-        h(3)='given and if you want to try again say yes. '
+        helptopic='error_in_flow_control'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' ','Problem detected in control file...try again?',
-     &    OK,dok,3)
+     &    OK,dok,nbhelp)
         IF(OK)THEN
           GOTO 47
         ELSE

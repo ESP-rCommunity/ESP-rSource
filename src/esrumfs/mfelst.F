@@ -31,17 +31,24 @@ C          interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
-      common/pophelp/h(60)
+#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       DIMENSION VERT(35),FTYPN(10)
 
       character*(*) head
-      CHARACTER H*72,VERT*60,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
+      CHARACTER VERT*60,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
      &FTYPN*6
       LOGICAL SELECT
       integer MVERT,IVERT,IDVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKNOD'  ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -112,11 +119,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+4)  ='- Exit                     '
 
 C Help text for this menu.
-      H(1)='A node within a mass flow network is normally '
-      H(2)='selected via its position in the list. '
-      H(3)='The `<` command selects it by index.'
-      H(4)=' '
-      H(5)='To exit / signal end of browse/editing pick `-` Exit.'
+      helptopic='mfs_node_selection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL USRMSG('Select a node:',' ','-')
@@ -130,16 +134,20 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('node connection selection',5,'-',0,0,IER)
+        helptopic='mfs_node_selection'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Allow a component to be added, checked for uniqueness and returned.
 C Ability to delete node commented out until support code in place.
         IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
 
-C Allow a component to be added deleted or copied.
+C Allow a node to be added deleted or copied.
+          helptopic='mfs_node_management'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Select option or continue',' ','Add','Delete',
-     &'Copy','Continue',IOPT,0)
+     &      'Copy','Continue',IOPT,nbhelp)
           IF(IOPT.EQ.1)THEN
             IF(NNOD+1.LE.MNOD)THEN
               CALL MFNDES('A',99)
@@ -222,7 +230,7 @@ C interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
-      common/pophelp/h(60)
+#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -230,10 +238,17 @@ C interaction is begun.
 
       DIMENSION VERT(35)
       character*(*) head
-      CHARACTER H*72,VERT*75,KEY*1,MOD*1
+      CHARACTER VERT*75,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKCMP'  ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -284,11 +299,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+4)  ='- Exit                      '
 
 C Help text for this menu.
-      H(1)='A node, component or connection within a mass flow'
-      H(2)='network is normally selected via its position in the'
-      H(3)=' list.  The `<` command selects it by index.'
-      H(4)=' '
-      H(5)='To exit / signal end of browse/editing pick `-` Exit.'
+      helptopic='mfs_component_selection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -301,15 +313,19 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('node connection selection',5,'-',0,0,IER)
+        helptopic='mfs_component_selection'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Allow a component to be added, checked for uniqueness and returned.
 C Code to allow deletion commented out until support code in place.
         IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
 C Allow a component to be added deleted or copied.
+           helptopic='mfs_component_management'
+           call gethelptext(helpinsub,helptopic,nbhelp)
            CALL EASKABCD('Select option or continue',' ','Add','Delete',
-     &'Copy','Continue',IOPT,0)
+     &'Copy','Continue',IOPT,nbhelp)
 
 C Add a component
            IF(IOPT.EQ.1)THEN
@@ -412,8 +428,8 @@ C          interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
+#include "espriou.h"
     
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -422,9 +438,16 @@ C          interaction is begun.
       DIMENSION VERT(35)
 
       character*(*) head
-      CHARACTER H*72,VERT*58,KEY*1,MOD*1
+      CHARACTER VERT*58,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       LOGICAL SELECT
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKCON'  ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -477,9 +500,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+4)  ='- Exit             '
 
 C Help text for this menu.
-      H(1)='A connection within a mass flow network is normally'
-      H(2)=' selected via its position in the list.  '
-      H(3)='To exit pick `-` Exit.'
+      helptopic='mfs_connection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -496,12 +518,17 @@ C If no selection has been made before exit then return with 0.
         endif
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('connection selection',3,'-',0,0,IER)
+        helptopic='mfs_connection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
         IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
+
 C Allow a connection to be added deleted or copied.
+          helptopic='mfs_connection_management'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Select option or continue',' ','Add','Delete',
-     &'Copy','Continue',IOPT,0)
+     &      'Copy','Continue',IOPT,nbhelp)
           IF(IOPT.EQ.1)THEN
             IF(NCNN+1.LE.MCNN)THEN
               CALL MFLDES('A',99)

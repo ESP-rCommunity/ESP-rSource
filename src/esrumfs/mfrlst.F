@@ -32,19 +32,26 @@ C ASKRNOD presents a list of mass flow nodes returning the index IS.
 
 #include "net_flow.h"
 #include "epara.h"
+#include "espriou.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       DIMENSION VERT(35),FTYPN(10)
 
       character*(*) head
-      CHARACTER H*72,VERT*72,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
+      CHARACTER VERT*72,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
      &FTYPN*6
       LOGICAL SELECT
       integer MVERT,IVERT  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKRNOD' ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -121,11 +128,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+5)  ='- Exit             '
 
 C Help text for this menu.
-      H(1)='A node within a mass flow network is normally '
-      H(2)='selected via its position in the list. '
-      H(3)='The `<` command selects it by index.'
-      H(4)=' '
-      H(5)='To exit / signal end of browse/editing pick `-` Exit.'
+      helptopic='mfs_node_selection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL USRMSG('Select a node:',' ','-')
@@ -139,14 +143,18 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('node connection selection',5,'-',0,0,IER)
+        helptopic='mfs_node_selection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
+        helptopic='mfs_text_index_of_node'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   95    CALL EASKI(IV,' ',' Index of node ? ',
-     &       1,'F',NNOD,'F',1,'script node',IER,0)
+     &       1,'F',NNOD,'F',1,'script node',IER,nbhelp)
         if(IER.NE.0)goto 95
         IS=IV
         RETURN
@@ -177,9 +185,9 @@ C ASKRCMP presents a list of mass flow components returning the index IS.
 
 #include "net_flow.h"
 #include "epara.h"
+#include "espriou.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -187,10 +195,17 @@ C ASKRCMP presents a list of mass flow components returning the index IS.
 
       DIMENSION VERT(35)
       character*(*) head
-      CHARACTER H*72,VERT*84,KEY*1,MOD*1
+      CHARACTER VERT*84,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKRCMP' ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -246,11 +261,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+5)  ='- Exit             '
 
 C Help text for this menu.
-      H(1)='A node, component or connection within a mass flow'
-      H(2)='network is normally selected via its position in the'
-      H(3)=' list.  The `<` command selects it by index.'
-      H(4)=' '
-      H(5)='To exit / signal end of browse/editing pick `-` Exit.'
+      helptopic='mfs_component_selection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -263,15 +275,20 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('node connection selection',5,'-',0,0,IER)
+
+        helptopic='mfs_component_selection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
 
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
+        helptopic='mfs_component_selection_text'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NCMP,'F',1,'script comp',IER,0)
+     &         1,'F',NCMP,'F',1,'script comp',IER,nbhelp)
         if(IER.NE.0)goto 96
         IS=IV
         RETURN
@@ -303,7 +320,7 @@ C Starting and ending node numbers.
 
 #include "net_flow.h"
 #include "epara.h"
-      common/pophelp/h(60)
+#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -312,10 +329,17 @@ C Starting and ending node numbers.
       DIMENSION VERT(35)
 
       character*(*) head
-      CHARACTER H*72,VERT*68,KEY*1,MOD*1
+      CHARACTER VERT*68,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='ASKRCON'  ! set for subroutine
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -369,10 +393,8 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+5)  ='- Exit             '
 
 C Help text for this menu.
-      H(1)='A connection within a mass flow network is normally'
-      H(2)=' selected via its position in the list.  '
-      H(3)='The `<` command selects it by index.'
-      H(4)='To exit pick `-` Exit.'
+      helptopic='mfs_connection_selection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -389,13 +411,17 @@ C If no selection has been made before exit then return with 0.
         endif
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('connection selection',4,'-',0,0,IER)
+        helptopic='mfs_connection_selection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Script directed input.
         IV=1
+        helptopic='mfs_connection_selection_text'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   97    CALL EASKI(IV,' ',' Index of connection ? ',
-     &       1,'F',NCNN,'F',1,'script conn',IER,0)
+     &       1,'F',NCNN,'F',1,'script conn',IER,nbhelp)
         if(IER.NE.0)goto 97
         IS=IV
         RETURN

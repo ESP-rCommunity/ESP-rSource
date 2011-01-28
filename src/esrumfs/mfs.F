@@ -64,7 +64,6 @@ C     MMOD   - determines the device type attached to the current job.
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
@@ -108,7 +107,7 @@ C Name of current application
 
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
-      CHARACTER H*72,OUTSTR*124,inf*144,outs*124
+      CHARACTER OUTSTR*124,inf*144,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72
       character tg*1,delim*1,xfile*144
@@ -118,9 +117,17 @@ C Name of current application
       integer IWM     ! for radio button
       integer NITMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialize global common data.
       call ezero
       call curmodule('mfs ')
+      helpinapp='mfs'  ! set once for the application
+      helpinsub='mfs'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFS=1
@@ -401,11 +408,10 @@ C Tabular output of results; first read problem description file.
           GOTO 10
         ENDIF
 
-        H(1)='Pretty print is restricted to prescribed forms while'
-        H(2)='raw mode is more versatile and is often used for'
-        H(3)='export to third party graphing utilities.'
+        helptopic='mfs_tabular_format_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Do you want tabular output to be:',
-     &              'pretty print','raw & versatile',IW,3)
+     &              'pretty print','raw & versatile',IW,nbhelp)
         IF(IW.EQ.1) THEN
           call tstamp('>','MFS: enter pretty print reporting')
           CALL MFTABL(itrc,IFRES,ier)
@@ -469,10 +475,9 @@ C Alter trace flag
 
 C Enable/disable non-fatal warning message printing.
         dok=.false.
-        h(1)='Some models have parameters which, although not errors'
-        h(2)='might be of concern. If you would like to view warnings'
-        h(3)='answer yes. '
-        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,3)
+        helptopic='mfs_review_warnings'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,nbhelp)
         IF(OK)THEN
           ICOUT=IUOUT
         ELSE
@@ -497,23 +502,20 @@ C Toggle time format and day separators.
           call edisp(iuout,' ')
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
-        H(1)='Places an # separator between days of tabular data.'
+        helptopic='mfs_include_day_marker'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('Include mark between days when ',
-     &              'displaying or writing data :','no','yes',IDH,1)
+     &    'displaying or writing data :','no','yes',IDH,nbhelp)
         IDHFLG=IDH-1
       ELSEIF(INO.EQ.15)THEN
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
+        helptopic='mfs_tabular_delimeters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
-     &    ' ',IWM,6)
+     &    ' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -727,13 +729,20 @@ C Error trap on read error or silly data
 C ********************* SETUP 
 C SETUP provides the menu's and control logic for the mfs SETUP menu.
       SUBROUTINE SETUP(itrc,ITRU,IER)
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       DIMENSION SETUPM(5)
-      CHARACTER SETUPM*36,H*72
+      CHARACTER SETUPM*36
       integer NITMS,ISETUP ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='SETUP'  ! set for setup
 
 C Present the setup menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -761,13 +770,8 @@ C Display of time of day.
       SETUPM(5)=  '- Exit to main menu                 '
 
 C Help text for this menu.
-      H(1)='The preferences menu allows the fonts and display'
-      H(2)='sizes within mfs to be modified by the user. '
-      H(3)=' '
-      H(4)='For ease of viewing several font sizes are available.'
-      H(5)='Remember that the size of the window may be resized '
-      H(6)='so that complex images may be viewed in greater '
-      H(7)='detail.'
+      helptopic='mfs_setup_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=5
       CALL EMENU('  Mfs preferences',SETUPM,NITMS,ISETUP)
@@ -786,7 +790,9 @@ C allow decimal day representation if day format is DOY
       ELSEIF(ISETUP.EQ.4)THEN
 
 C Present help text for the menu.
-        CALL PHELPD('preference section',7,'-',0,0,IER)
+        helptopic='mfs_setup_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('preference section',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.5)THEN
 
 C Return to main menu.
@@ -843,4 +849,211 @@ C calls in esru_lib.F
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
       return
+      end
+
+C test subroutinhe to capture help text from external file (to be
+C found in the ESP-r distribution lib folder) with file ending
+C of *.help
+      subroutine gethelptext(sub,topic,nbhelp)
+#include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      character sub*24   ! subroutine name
+      character topic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+C Commons.
+      integer ifil
+      COMMON/FILEP/IFIL
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      logical unixok
+      integer ln,lna,lnf   ! length of install path, app name app folder
+      integer lns,lnt,lnhl ! length of subroutine, topic, helpline
+      integer lno          ! length of outstr
+      integer K            ! position
+      character helpfil*72 ! the help file to load
+      character folder*8   ! the source folder for the application
+      character WORD*32    ! a token to read
+      character outstr*124 ! for help phrases
+      character outs*124 ! for messages
+      character helpline*72 ! line of help text
+      character sq*1        ! single quote
+      character fs*1
+      logical havesub       ! set true if subroutine matches
+      logical havetopic     ! set true if topic matches
+      character app*24      ! application name (local)
+#include "espinstalldir.h"
+
+C Get to work.
+      app = helpinapp      ! set local app
+      call isunix(unixok)  ! which folder separator to use
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      ln=lnblnk(instpath)  ! where is ESP-r installed
+      lna=lnblnk(app)      ! length of app name
+      if(app(1:3).eq.'clm')then
+        folder='esruclm'
+      elseif(app(1:3).eq.'bps')then
+        folder='esrubps'
+      elseif(app(1:3).eq.'mfs')then
+        folder='esrumfs'
+      elseif(app(1:3).eq.'mld')then
+        folder='esrumld'
+      elseif(app(1:3).eq.'mrt')then
+        folder='esrumrt'
+      elseif(app(1:3).eq.'pdb')then
+        folder='esrupdb'
+      elseif(app(1:3).eq.'vew')then
+        folder='esruvew'
+      endif
+      lnf=lnblnk(folder)   ! length of folder name
+      lns=lnblnk(sub)      ! length of subroutine
+      lnt=lnblnk(topic)    ! length of topic
+      sq=char(39)   ! assign single quote
+
+C Assume that the installer has placed the help text file in the
+C distribution lib folder.
+      write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
+     &  '.help'
+
+      ihfil=ifil+2              ! set file unit number
+      CALL ERPFREE(ihfil,ISTAT) ! free it
+      CALL EFOPSEQ(ihfil,helpfil,1,IER)
+      if(ier.ne.0)then
+        call edisp(iuout,'Could not find help text file.')
+        call edisp(iuout,helpfil)
+        nbhelp=-1
+        return
+      endif
+
+      nbhelp=0  ! set initial assumption
+      havesub= .false.
+      havetopic= .false.
+
+C Check the header to see if this is a help text file.
+      read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan header
+      if(ios.ne.0) goto 1   ! jump if EOF
+      K=0
+      CALL EGETW(outstr,K,WORD,'W','*help_text',IER)
+      if(WORD(1:10).ne.'*help_text')then
+        call edisp(iuout,'Not a help text file.')
+        call edisp(iuout,helpfil)
+        goto 1
+      endif
+      CALL EGETW(outstr,K,WORD,'W','application',IER)
+      if(WORD(1:lna).ne.app(1:lna))then
+        write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
+        call edisp(iuout,outs)
+        goto 1
+      endif
+
+C If we reached this point then we can go looking for a
+C subroutine and topic match on each new line.
+      scan: do
+        read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan line
+        if(ios.ne.0)  exit scan   ! jump if EOF
+        lno=lnblnk(outstr)
+        if(lno.le.1) cycle  ! jump if a blank line
+
+        if(outstr(1:1).eq.'*')then  ! we had a key phrase
+          K=0
+          CALL EGETW(outstr,K,WORD,'W','*item',IER)
+          if(WORD(1:5).eq.'*item')then
+            CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
+            if(WORD(1:lns).eq.sub(1:lns))then
+
+C We have a matching subroutine name remember this and if
+C there are still more characters in the line then it
+C probably is a topic.
+              havesub = .true.  ! set true subroutine matches
+              if(K.le.lno)then
+                CALL EGETW(outstr,K,WORD,'W','topic',IER)
+                if(WORD(1:lnt).eq.topic(1:lnt))then
+                  havetopic = .true.     ! set true topic matches
+                  cycle   ! keep scanning
+                else
+                  cycle   ! keep scanning
+                endif
+              else
+                cycle   ! keep scanning
+              endif
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:8).eq.'*enditem')then
+
+C Reached end of item exit scan, if this was the correct sub and topic then
+C set number of help lines.
+            if(havesub.and.havetopic)then
+              CALL ERPFREE(ihfil,ISTAT) ! free it
+              return
+            else
+              cycle  ! keep scanning
+            endif
+          elseif(WORD(1:6).eq.'*topic')then
+
+C In case there are some old *topic lines in the help f
+            if(lno.le.7) cycle  ! jump if no other token
+            K=7
+            CALL EGETW(outstr,K,WORD,'W','topic',IER)
+            if(WORD(1:lnt).eq.topic(1:lnt))then
+              havetopic = .true.     ! set true topic matches
+              cycle   ! keep scanning
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:11).eq.'*subroutine')then
+            cycle   ! keep scanning
+          endif
+
+        elseif(outstr(1:1).eq.sq)then
+
+C We have a line that starts with a quote. If we have reached the
+C correct topic then read it otherwise scan another line.
+          if(havesub.and.havetopic)then
+            K=0
+            call EGETDQ(outstr,K,helpline,'W','phrase',IER)
+            lnhl=lnblnk(helpline)
+            call edisp(iuout,helpline)
+            nbhelp=nbhelp+1
+            if(lnhl.le.1)then
+              h(nbhelp)='  '
+            else
+              write(h(nbhelp),'(a)') helpline(1:lnhl)
+            endif
+            cycle   ! keep scanning
+          else
+            cycle   ! keep scanning
+          endif
+        else
+ 
+C Does not match expectations.
+          cycle   ! keep scanning
+        endif
+      end do scan
+
+C The end of file reached. If there has not been a match make up a
+C standard message.
+  1   close(ihfil)
+      if(havesub.and.havetopic)then
+        return
+      else
+        h(1)='No contextual help text was found for the topic'
+        write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &    ' of application ',app(1:lna)
+        nbhelp=2
+        return
+      endif
+
       end

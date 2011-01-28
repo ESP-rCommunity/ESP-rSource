@@ -41,7 +41,6 @@ C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      common/pophelp/h(60)
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
@@ -53,7 +52,7 @@ C Defaults.
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
-      CHARACTER H*72,DFILE*72,LTMP*72,lltmp*144
+      CHARACTER DFILE*72,LTMP*72,lltmp*144
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER OUTSTR*124,outs248*248
@@ -61,6 +60,13 @@ C Defaults.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFINIT'  ! set for subroutine
 
 C Initiates filling of valid fluid flow component type arrays
       CALL MFCDAT
@@ -85,19 +91,16 @@ C Do a simple check on the file to see if it is a network file.
       ELSE
          IFPRB=10
       END IF
-      H(1)='A mass flow problem is defined as a number of nodes,  '
-      H(2)='components and connections which are held in a data file'
-      H(3)='(previously known as a leakage distribution file).'
-      H(4)='To begin a new problem provide a file name that does not'
-      H(5)='exist, otherwise an existing file name.'
+      helptopic='mass_flow_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   289 CALL EASKS(LAPROB,' Mass flow network file name ? ',' ',
-     &     72,DAPROB,'mass flow network file',IER,5)
+     &     72,DAPROB,'mass flow network file',IER,nbhelp)
       IF(LAPROB.EQ.' ')GOTO 289
       CALL ERPFREE(IFPRB,ISTAT)
       call FINDFIL(LAPROB,XST)
       IF(.NOT.XST)THEN
         CALL EASKAB(' ',' This was not found - ',
-     &  'use this as a new problem','specify another file',IW,0)
+     &  'use this as a new problem','specify another file',IW,nbhelp)
         IF(IW.EQ.2)GOTO 289
       ENDIF
       CALL EFOPSEQ(IFPRB,LAPROB,3,IER)
@@ -119,10 +122,8 @@ C this might cause overwriting of an existing file !!
 C Assign wind pressure distribution file and read NPRE. If for some
 C reason IAPRES is still zero then set to 11.
    30 if(IAPRES.eq.0)IAPRES=11
-      H(1)='A wind pressure coefficients distribution file is a'
-      H(2)='database of pressure coefficients for surfaces in'
-      H(3)='typical positions and within several different exposure'
-      H(4)='categories. See the ESP manual for additional info.'
+      helptopic='pressure_coef_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  288  write(outs248,'(2a)') 'The current source file is:',
      &  LAPRES(1:lnblnk(LAPRES))
@@ -133,20 +134,20 @@ C reason IAPRES is still zero then set to 11.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
           CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      96,DAPRES,'pressure coef database',IER,3)
+     &      96,DAPRES,'pressure coef database',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
           CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      124,DAPRES,'pressure coef database',IER,3)
+     &      124,DAPRES,'pressure coef database',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
           CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      144,DAPRES,'pressure coef database',IER,3)
+     &      144,DAPRES,'pressure coef database',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
         CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &    144,DAPRES,'pressure coef database',IER,3)
+     &    144,DAPRES,'pressure coef database',IER,nbhelp)
       else
         CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &    96,DAPRES,'pressure coef database',IER,3)
+     &    96,DAPRES,'pressure coef database',IER,nbhelp)
       endif
 
       IF(LLTMP.EQ.' ')GOTO 288
@@ -168,33 +169,28 @@ C Read in the pressure db to see if it is a proper one.
 
 C Assign climate file and read year number.
    40 IFCLM=12
-      H(1)='A climate file holds hourly values for diffuse solar'
-      H(2)='intensity in W/m2, dry bulb temp in degrees C, direct'
-      H(3)='normal or global horizontal solar intensity in W/m2,'
-      H(4)='wind speed in tenths metre/second, wind direction deg'
-      H(5)='from north (clockwise), and relative humidity in '
-      H(6)='percent.  It also holds latitude, longitude difference'
-      H(7)='from the nearest time zone and the year represented.'
+      helptopic='climate_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       lltmp=LCLIM
       llt=lnblnk(lltmp)
       iglib = igraphiclib()
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
           CALL EASKF(lltmp,' ','Climate file?',
-     &      96,DCLIM,'climate file',IER,3)
+     &      96,DCLIM,'climate file',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
           CALL EASKF(lltmp,' ','Climate file?',
-     &      124,DCLIM,'climate file',IER,3)
+     &      124,DCLIM,'climate file',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
           CALL EASKF(lltmp,' ','Climate file?',
-     &      144,DCLIM,'climate file',IER,3)
+     &      144,DCLIM,'climate file',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
         CALL EASKF(lltmp,' ','Climate file?',
-     &    144,DCLIM,'climate file',IER,3)
+     &    144,DCLIM,'climate file',IER,nbhelp)
       else
         CALL EASKF(lltmp,' ','Climate file?',
-     &    96,DCLIM,'climate file',IER,3)
+     &    96,DCLIM,'climate file',IER,nbhelp)
       endif
       CALL ERPFREE(IFCLM,ISTAT)
       ier=0
@@ -209,14 +205,12 @@ C Assign climate file and read year number.
 
 C Assign results file; make sure this is not the problem file
    50 IFRES=13
-      H(1)='The results file holds the predictions generated by mfs'
-      H(2)='for a particular simulation.  The file is in an ASCII'
-      H(3)='format and the name is required even if you are not'
-      H(4)='planning to do a simulation during this session. '
+      helptopic='flow_results_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='new.mfr'
       LTMP=LAFRES
       CALL EASKS(LTMP,' Mass flow simulation results file ? ',
-     &     ' ',72,DFILE,'mass flow results',IER,4)
+     &  ' ',72,DFILE,'mass flow results',IER,nbhelp)
       IF(LTMP(1:lnblnk(LTMP)).EQ.LAPROB(1:lnblnk(LAPROB)))THEN
         CALL USRMSG(' You have specified the same name as the problem',
      &  ' description, please use another file name!','W')
@@ -230,13 +224,9 @@ C Assign results file; make sure this is not the problem file
 
 C File error trap
   999 dok=.false.
-      h(1)='The record holding the year of the climate data could not'
-      h(2)='be read. This probably means the file is corrupt. Check'
-      h(3)='the file - it might be of zero bytes. '
-      h(4)=' '
-      h(5)='A no will close the application and delete the '
-      h(6)='mass flow description file if it is empty.'
-      CALL ASKOK(' ',' Error reading climate...continue?',OK,dok,6)
+      helptopic='mfs_file_error_trap'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ','Error reading climate...continue?',OK,dok,nbhelp)
       IF(OK)THEN
         goto 40
       ELSE 

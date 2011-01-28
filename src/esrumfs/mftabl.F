@@ -40,10 +40,10 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
       SUBROUTINE MFTABL(itrc,IFRES,ier)
 
 #include "net_flow.h"
+#include "espriou.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -64,9 +64,16 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
       DIMENSION        VOL(MNDO)
       DOUBLE PRECISION NDOFIN(MNOD),NDOFUT(MNOD)
 
-      character WORD*20,H*72,outs*124,OUTSTR*124
+      character WORD*20,outs*124,OUTSTR*124
       character PERST1*14,PERST2*44,PERST3*44,NDNAM*12
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFTABL' ! set for subroutine
 
       IDIM=1
       VOL(1)=1.
@@ -112,15 +119,8 @@ C Set up menu.
       NITMS=9
 
 C Help text for menu.
-      H(1)='This module allows you to define/create a table of'
-      H(2)='of node related pressure and flow results.'
-      WRITE(H(3),'(A,A,I1)')' `1NODES` command *must* be used',
-     &                           ' to define up to ',MNDO
-      H(4)='nodes for output. `pERIOD` may be used to restrict'
-      H(5)='the output period, and with `uNITS` one of several'
-      H(6)='options with respect to expressing flow rate results'
-      H(7)='may be chosen. The table is printed with `fLUSH`, and'
-      H(8)='may be re-defined after is has been `rESET`.'
+      helptopic='mfs_analysis_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
    12 CALL EMENU('Reporting (formatted)',ITEM,NITMS,INO)
 
@@ -149,10 +149,10 @@ C Display format for date is Fri 10 Jan.
       ELSEIF(INO.EQ.2)THEN
 
 C Change flow results output units
-   40   H(1)='Note that for ACH it only works properly with one'
-        H(2)='other connected zone. '
+   40   helptopic='mfs_express_flow_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Express flow results as: ',' ',
-     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,2)
+     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,nbhelp)
         IF(IER.NE.0) GOTO 40
       ELSEIF(INO.EQ.4)THEN
 
@@ -169,14 +169,14 @@ C Node ok, inform user of it`s selection.
         write(outs,'(1X,A,A)') NDNAM(INOD),' added to the display list.'
         call edisp(iuout,outs)
         IF(IDIM.EQ.3) THEN
-          H(1)='This should be the same as that of the associated'
-          H(2)='zone in the bps simulation. '
+          helptopic='mfs_zone_volume_evaluated'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(INOD,2)
           write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
      &                 NDNAM(INOD),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &      ' Volume (m^3) in evaluating fluid change rates/hour? ',
-     &      0.0,'F',0.,'-',1.,'volume per hour',IER,2)
+     &      0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)
           VOL(NNDO)=VOLUME
         ELSE
           VOL(NNDO)=1.0
@@ -195,7 +195,9 @@ C Reset numbers and names of nodes for output.
       ELSEIF(INO.EQ.8)THEN
 
 c Help facilities. 
-        CALL PHELPD('pretty tabular ',8,'-',0,0,IER)
+        helptopic='mfs_analysis_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('pretty tabular ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.9)THEN
         GOTO 100
       ELSE
@@ -353,13 +355,13 @@ C
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
@@ -380,7 +382,7 @@ C ICLIM,LCLIM (for climate file)
       DIMENSION VOL(MCOLT)
 
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER H*72,LAPROB*72
+      CHARACTER LAPROB*72
       CHARACTER COLHDS(MCOLT)*14
       CHARACTER ITEM(12)*23
       character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124
@@ -390,6 +392,13 @@ C ICLIM,LCLIM (for climate file)
       DIMENSION  COLCNT(MCOLT),ICOLIX(MCOLT,2)
       logical OK,dok
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFRTBL' ! set for subroutine
 
       IDIM=1
       VOL(1)=1.
@@ -440,25 +449,8 @@ C Set up menu.
       NITMS=12
 
 C Help for this menu.
-      H(1)='This module allows you to define/create a `raw` table'
-      H(2)='of data sets, perhaps for results export to some '
-      H(3)='external data analysis package. '
-      H(4)='The table starts with some comments (`#` in column 1).'
-      H(5)='Subsequent lines hold the simulation results for each'
-      H(6)='time step in the output period (pERIOD). The 1st item'
-      H(7)='on a line is the date and time expressed as Julian'
-      H(8)='date, where 1.0 is equivalent to Jan 1th 1:00 hours.'
-      WRITE(H(9),1020)MCOLT-1
- 1020 FORMAT(' Upto ',I2,' more columns may be defined to hold nodal')
-      H(10)='pressures or net linkage flow rates.'
-      H(11)=' '
-      H(12)='*u  allows flows to be expressed in various units.'
-      H(13)='    THIS SHOULD BE SET BEFORE NODES ARE CHOSEN!'
-      H(14)='*!  writes the current data set (+ a single `&` to'
-      H(15)='    mark the end of this set) via stdout/stderr '
-      H(16)='    (depending on terminal type), or to a file '
-      H(17)='    (defined via menu pick `>DESTINATIONS`).'
-      H(18)='*c  resets the current table definition. '
+      helptopic='mfs_raw_table_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   
    12 CALL EMENU('Reporting (raw)',ITEM,NITMS,INO)
 
@@ -482,8 +474,9 @@ C Display format for date is Fri 10 Jan.
         call edisp(iuout,outs)
 
         dok=.false.
-        h(1)='Chance to alter the period of data to be displayed.'
-        CALL ASKOK(PERST3,' Different output period? ',OK,dok,1)
+        helptopic='mfs_table_period_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(PERST3,' Different output period? ',OK,dok,nbhelp)
         if(OK)then
           CALL EASKPER('Output period:',IDAYF,IDAYL,IFDAY,IER)
           IF(IER.NE.0) GOTO 60
@@ -491,10 +484,10 @@ C Display format for date is Fri 10 Jan.
       ELSEIF(INO.EQ.2)THEN
 
 C Change flow results output units
-   70   H(1)='Note that for ACH it only works properly with one'
-        H(2)='other connected zone. '
+   70   helptopic='mfs_table_express_flow'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Express flow results as: ',' ',
-     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,2)
+     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,nbhelp)
         IF(IER.NE.0) GOTO 70
       ELSEIF(INO.EQ.4)THEN
 
@@ -514,14 +507,14 @@ C Node ok, inform user of it`s selection.
 
 C Verify the node volume if volume flow set.
         if(IDIM.EQ.3)then
-          H(1)='This should be the same as that of the associated'
-          H(2)='zone in the bps simulation. '
+          helptopic='mfs_table_current_vol'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(INOD,2)
           write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
      &                 NDNAM(INOD),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &     ' Volume (m^3) in evaluating fluid change rates/hour? ',
-     &     0.0,'F',0.,'-',1.,'volume per hour',IER,2)
+     &     0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)
           VOL(NCOL)=VOLUME
         else
           VOL(NCOL)=1.0
@@ -546,8 +539,10 @@ C Add one or more connections to the table
         IF(IDIM.EQ.3) THEN
           NIS=NDNAM(IS)
           NIE=NDNAM(IE)
+          helptopic='mfs_table_vol_rate'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB(' For volume/hr flow use the',
-     &    ' volume of which node: ',NIS,NIE,IW,0)
+     &    ' volume of which node: ',NIS,NIE,IW,nbhelp)
           if(IW.eq.1)then
             VOL(NCOL)=SUPNOD(IS,2)
           elseif(IW.eq.2)then
@@ -595,7 +590,9 @@ C Show status.
       ELSEIF(INO.EQ.11)THEN
 
 C Explain option
-        CALL PHELPD('tabular facilities',18,'-',0,0,IER)
+        helptopic='mfs_raw_table_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('tabular facilities',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.12)THEN
         GOTO 100
       ELSE
