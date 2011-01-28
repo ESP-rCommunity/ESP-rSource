@@ -23,6 +23,7 @@ C  hour of the day. Logic is similar to subroutine azalt in
 C  esrucom/commonclm.F
 
       SUBROUTINE AZALTS(IYD,IHR,ITS,RLONGT,RLATIT,SOLALT,SOLAZI)
+#include "espriou.h"
 
 C Parameters:
       integer IYD,IHR,ITS
@@ -32,13 +33,18 @@ C Parameters:
       real GLAT,GLON
       COMMON/UAZALT/INIT,GLAT,GLON
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
 
 C Local definitions:
       logical close,OK,dok
       real PI,DECLIN,SDDECL,CDDECL,CDTIME,TIME,TIMCOE,ABSTMC,ASDTIM
       real ALT,SDLAT,CDLAT,AZMUTH
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='AZALTS'  ! set for MAIN
 
       PI = 4.0 * ATAN(1.0)
 
@@ -122,8 +128,8 @@ C in north or south hemispheres.
       RETURN
 
    14 dok=.false.
-      h(1)='There are some limits that should not be exceeded.'
-      h(2)='If you say no the the program will stop. '
+      helptopic='azalt_limits_warning'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK('Lat was outwith +-90.0 or Long difference more than',
      &  '+- 15 deg. Continue with default Lat/Long?',OK,dok,2)
       if(.NOT.OK)then
