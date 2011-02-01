@@ -101,31 +101,33 @@ extern "C"
   void rep_xml_summary__( char *sRootName, int iNameLength )
   {
     std::string sFileName;
-	
-	if ( TReportsManager::Instance()->UseResFilenameRoot() ) {
-	  // Turn the passed Fortran string into a C string
-	  std::string sRoot = std::string(sRootName, iNameLength);
-	  
-	  sFileName = sRoot + ".xml";
+    
+    if ( TReportsManager::Instance()->UseResFilenameRoot() ) {
+      // Turn the passed Fortran string into a C string
+      std::string sRoot = std::string(sRootName, iNameLength);
+    
+      sFileName = sRoot + ".xml";
       TReportsManager::Instance()->OutputXMLSummary(sFileName);
-	  
-	  sFileName = sRoot + ".csv";
+
+      sFileName = sRoot + ".csv";
       TReportsManager::Instance()->OutputCSVData(sFileName);
-	  
+
+      sFileName = sRoot + ".summary";
+      TReportsManager::Instance()->OutputTXTsummary(sFileName);
     } else {
-	  // old "out.*" names
+      // old "out.*" names
       // produce out.xml
       TReportsManager::Instance()->OutputXMLSummary();
       // produce out.csv
       TReportsManager::Instance()->OutputCSVData();
+
+      // produce out.summary
+      TReportsManager::Instance()->OutputTXTsummary();
     }
-	
-	// Leave these with "out.*" 
+
+    // Leave these with "out.*" 
     // produce a dictionary of results
     TReportsManager::Instance()->OutputDictionary();
-	
-	// produce out.summary
-    TReportsManager::Instance()->OutputTXTsummary();
 
   }
 

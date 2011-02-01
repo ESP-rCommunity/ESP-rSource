@@ -4,6 +4,7 @@ COMdir = $(SRCdir)/esrucom
 CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
+MRTdir = $(SRCdir)/esrumrt
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
@@ -56,7 +57,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o
+	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
+	  temper.o fanger.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_timestep.mod
 
@@ -665,6 +667,13 @@ stratified_tank_1HX.F:
 stratified_tank_2HX.F:
 	rm -f stratified_tank_2HX.F
 	ln -s $(PLTdir)/stratified_tank_2HX.F .
+
+temper.F:
+	rm -f temper.F
+	ln -s $(MRTdir)/temper.F .
+fanger.F:
+	rm -f fanger.F
+	ln -s $(COMdir)/fanger.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi

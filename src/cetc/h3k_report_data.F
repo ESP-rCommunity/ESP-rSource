@@ -255,6 +255,16 @@ C ..... Zone humidity data
                               ! pressure, future xxx and 
                               ! future saturation vapour pressure (? mbar?)
 
+C ... Mean Radiant Temperature
+      real act,wk,closi,ta,vel,pa,pmv,tr
+      DIMENSION tr(MCUB)
+
+      integer iCUB,NSENS
+
+      character MRTSEN*6
+
+      real ppd ! function
+
 C.....Zone boundary conditions
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &            ARF(MCOM,MS)
@@ -945,7 +955,7 @@ C.............Read surface type from iSurfOreint array
 C.............Surface is transparent
               iSurfType = iSurfWindow
             endif
-			
+
           case ( iBCInternalConst, iBCInternalSame )
 
 C...........Flux to known conditions
@@ -1465,6 +1475,38 @@ C.....ARTIFICIAL LIGHTING GAIN FRACTION
      &         'units', '(-)',
      &         'Zone lighting gain fraction (controlled) FRAC' )
       endif
+
+C ================= MRT / PMV / PPD ===========================
+      IF(IVF(iZone).EQ.1)THEN
+        act=70.0 ! W/m2 sens !!
+        wk=0.0
+        closi=0.90*0.155
+        vel=0.1
+        pa=0.8  ! mbar (?)
+        call TSENMRT(iZone,0,NSENS,tr)
+        if (NSENS.gt.0) then
+          mrt_loop: do iCUB = 1, NSENS
+             call fanger(act,wk,closi,TFA(iZone),tr(iCUB),vel,pa,pmv)
+             write(MRTSEN,'(A,I1)')'/MRT_',iCUB
+c             call add_to_xml_reporting (
+c     &          pmv,
+c     &          H3K_rep_NAME(1:iH3K_NameLen) 
+c     &          // MRTSEN // '/PMV',
+c     &          'units', '(-)',
+c     &          'Predicted mean vote (PMV)'
+c     &     )
+
+            call add_to_xml_reporting (
+     &          ppd(pmv),
+     &          H3K_rep_NAME(1:iH3K_NameLen) 
+     &          // MRTSEN // '/PPD',
+     &          'units', '(%)',
+     &          'Predicted percentage dissatisfied (PPD)'
+     &      )
+
+          enddo mrt_loop
+        endif ! there is at least one sensor
+      endif ! view factor file exists
 
 C--------------------------------***-----------------------------------
 C Report infiltration + ventilation rate

@@ -130,3 +130,124 @@ c  Cubefaces 4,1,6 have the larger x,y or z coordinates.
       call edisp(iuout,outs)
       return
       end
+
+CC ======================================== CC
+C Copy of res routine SENMRT ... adapted 
+C slightly for use in h3k_report_data
+C (c) ag@gae.ch / February 2011
+C ******************** SENMRT ********************
+C TSENMRT computes the resultant temperature(s) from opaque
+C surface, window temperature information at MRT sensors.
+C IOPT - specific temperature differences
+C   IOPT = 0 is "standard mean radiant at sensor".
+
+      SUBROUTINE TSENMRT(IZONE,IOPT,NSENS,TRET)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+      integer NSENS   ! return value
+      real TRET(MCUB) ! return value
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      REAL TFS, QFS
+
+      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+      common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
+
+
+      DIMENSION XD(MZS),surarea(6),stemp(6)
+
+      integer ISENS
+      character outs*124,LMRT*72,CUBN*6
+
+      NSENS=0
+
+C Recover sensor viewfactors and fill commons.
+      IUF=IFIL+1
+      LMRT=LVIEW(IZONE)
+      call ERMRT(0,IUOUT,IUF,LMRT,IZONE,IER)
+
+C loop through each sensor of zone (if any)
+      if (NCUB.gt.0) then
+        NSENS=NCUB
+        do 20 ISENS=1,NCUB
+C Find surface areas of sensor cube.
+          surarea(1)=DXC(ISENS)*DZC(ISENS)
+          surarea(2)=DYC(ISENS)*DZC(ISENS)
+          surarea(3)=surarea(1)
+          surarea(4)=surarea(2)
+          surarea(5)=DXC(ISENS)*DYC(ISENS)
+          surarea(6)=surarea(5)
+          totarea=(surarea(1)+surarea(2)+surarea(5))*2.0
+          do 5 i=1,6
+            surarea(i)=surarea(i)/totarea
+5         continue
+
+C Check view factors sum to one (if not then scale).
+          do 10 I=1,6
+            sum=0.000
+            do 15 J=1,NZSUR(IZONE)
+              sum=sum+FFL(ISENS,I,J)
+ 15         continue
+            if (sum.gt.0.0) then
+              do 25 J=1,NZSUR(IZONE)
+                FFL(ISENS,I,J)=FFL(ISENS,I,J)/sum
+ 25           continue
+            else
+              call edisp(iuout,'error in sensor view factors.')
+            endif
+ 10       continue
+
+          TRET(ISENS)=0.
+
+C Calculate MRT.
+          do 30 K=1,6
+            stemp(K)=0.0
+            do 40 J=3,NZSUR(IZONE)+2
+              stemp(K)=stemp(K)+
+     &                 FFL(ISENS,K,(J-2))*((TFS(iZone,J-2)+273.19)**4)
+ 40         continue
+            stemp(K)=stemp(K)**0.25
+ 30       continue
+
+C Treat data according to IOPT.
+          if (IOPT.eq.0) then
+
+C Average surface radiant temperatures.
+          XD(1)=0.0
+          do 50 K=1,6
+            XD(1)=XD(1)+(stemp(K)*surarea(K))
+C            stemp(K)=stemp(K)-273.19
+ 50       continue
+          TRET(ISENS)=XD(1)-273.19
+
+C Calculate delta T between opposite surfaces.  The value of IOPT is the 
+C surface representing the front surface.
+          elseif (IOPT.eq.1) then
+            TRET(ISENS)=stemp(1)-stemp(3)
+          elseif (IOPT.eq.2) then
+            TRET(ISENS)=stemp(2)-stemp(4)
+          elseif (IOPT.eq.3) then
+            TRET(ISENS)=stemp(3)-stemp(1)
+          elseif (IOPT.eq.4) then
+            TRET(ISENS)=stemp(4)-stemp(2)
+          elseif (IOPT.eq.5) then
+            TRET(ISENS)=stemp(5)-stemp(6)
+          elseif (IOPT.eq.6) then
+            TRET(ISENS)=stemp(6)-stemp(5)
+          endif
+
+C Debug.
+C      write(6,*) 'TRET= ',TRET
+ 20     continue ! ISENS loop
+      endif ! NCUB > 0
+      return
+
+ 99   call edisp(iuout,' reading error in SENMRT')
+
+      return
+      end

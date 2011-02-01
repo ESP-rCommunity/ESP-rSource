@@ -830,7 +830,7 @@ C Find day of week.
 
 C If izver >= 4 the read the data directly for the exceptional
 C cases of temporal gains.
-      if(izver.eq.4)then
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
