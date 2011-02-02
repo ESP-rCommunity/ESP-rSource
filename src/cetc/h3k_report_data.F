@@ -1504,6 +1504,14 @@ c     &     )
      &          'Predicted percentage dissatisfied (PPD)'
      &      )
 
+            call add_to_xml_reporting (
+     &          tr(iCUB),
+     &          H3K_rep_NAME(1:iH3K_NameLen) 
+     &          // MRTSEN // '/t_rad',
+     &          'units', '(degC)',
+     &          'Mean radiant temperature at sensor'
+     &      )
+
           enddo mrt_loop
         endif ! there is at least one sensor
       endif ! view factor file exists
