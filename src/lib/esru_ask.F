@@ -742,6 +742,8 @@ C Get to work.
         folder='esrumrt'
       elseif(app(1:3).eq.'pdb')then
         folder='esrupdb'
+      elseif(app(1:3).eq.'res')then
+        folder='esrures'
       elseif(app(1:3).eq.'vew')then
         folder='esruvew'
       endif

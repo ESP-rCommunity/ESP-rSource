@@ -76,7 +76,7 @@ C default file names for databases
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
+C      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
       common/trc/itrc
@@ -144,7 +144,7 @@ C IEEE callback (Solaris)
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,LCFGF,actf,Lflpar
+      CHARACTER*72 LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
@@ -159,10 +159,18 @@ C IEEE callback (Solaris)
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialize global common data.
       call ezero
       call curmodule('res ')
       cAppName = 'res'
+      helpinapp='res'  ! set once for the application
+      helpinsub='res'  ! set for MAIN
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -444,27 +452,23 @@ C Initialise results library.
 C Get the name of the configuration file name 
 C Read the plant configuration file.
         if(IPLIB.eq.0.or.IPLIB.eq.1)then
-          h(1)='In order to read the plant results'
-          h(2)='you must supply the prj `plant only`'
-          h(3)='model configuration file name. Note  '
-          h(4)='that res CANNOT read the PLANT configuration '
-          h(5)='file unless it has first read the model '
-          h(6)='configuration file.'
+          helptopic='res_dialog_for_cfg_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        96,' ','configuration file',IER,nbhelp)
           elseif(iglib.eq.2)then
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      144,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        144,' ','configuration file',IER,nbhelp)
           else
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        96,' ','configuration file',IER,nbhelp)
           endif
           if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
@@ -778,6 +782,13 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
 
       logical concat,show,unixok
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='imgdisp'  ! set for cfiles
+
 C Check if Unix-based or DOS based.
       call isunix(unixok)
 
@@ -864,17 +875,9 @@ C If GTK version then use GTK calls to display images in popup.
         if((iton.eq.0.or.iforce.eq.1))then
 
 C Setup help text for the popup.
-          h(1)='Images can be associated with a model for various'
-          h(2)='purposes: '
-          h(3)=' * document conditions at the physical site'
-          h(4)=' * document assumptions in the model'
-          h(5)=' * indicate what performance is expected'
-          h(6)='   '
-          h(7)='Images are added to a model via the context->images'
-          h(8)='menu item. There can be up to 10 images associate with'
-          h(9)='a model. '
-          h(10)='Images of type GIF and XBM and ?? are supported.'
-          CALL PHELPW(10,IHW,IER)
+          helptopic='res_images_associated_with'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPW(nbhelp,IHW,IER)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.

@@ -44,7 +44,6 @@ C act='p' iget parameters already set.
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -91,7 +90,7 @@ C Simulator parameters.
 
       dimension Yold(MZS), TIMEold(MZS)
       character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
-      character ALABEL(5)*12,t20*20,act*1,H*72
+      character ALABEL(5)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       character lltmpc*144
@@ -118,6 +117,13 @@ C Simulator parameters.
       integer*8 iid1,iid2
 #endif
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFOUTP'  ! set for cfiles
+
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
         continue
@@ -138,31 +144,26 @@ C specify it here as well.
 C Use ifdefs because the X11 version will be returning only the
 C name of the file, while the GTK version will be returning the
 C name with the full path.
-   22   H(1)='A flow results library is created by the simulator. It'
-        H(2)='will contain the time series results for flow'
-        H(3)='simulations. '
-        H(4)='On computers running UNIX, the file: '
-        write(H(5),'(5x,a60)') DAFRES(1:60)
-        H(6)='usually exists. This is a link to an example results'
-        H(7)='library set up when ESP was first installed.'
+   22   helptopic='res_flow_res_default'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',124,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
-     &      'flow library file',IER,7)
+     &      'flow library file',IER,nbhelp)
         else
           CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
-     &    'flow library file',IER,7)
+     &      'flow library file',IER,nbhelp)
         endif
 
 C If user cancel.
@@ -182,14 +183,13 @@ C name to report in header of graphs and scan its header.
             LAFRES=LLTMPC(1:72)   ! remember some of the file name
             call MFREADH(IFRES,ITRC)
           else
-            h(1)='There was a problem opening the flow results'
-            h(2)='file. Check the name given and also check the'
-            h(3)='folder to see if the file exists.'
+            helptopic='res_flow_res_problem'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(louts,'(3a)') 'Problem encountered opening ',
      &        lltmpc(1:lnblnk(lltmpc)),'!'
             call edisp248(iuout,louts,100)
             call easkab(' ','Options:','respecify','cancel',
-     &        ii,3)
+     &        ii,nbhelp)
             if(ii.eq.1)goto 22
             return
           endif
@@ -243,9 +243,10 @@ C Ask for set point value.
         if (act(1:1).eq.'p') then
           continue
         else
-          H(1)='The ..'
+          helptopic='res_flow_test_point'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(XQUERY,' ','  Test point value ? ',
-     &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
+     &      0.0,'-',0.0,'-',20.0,'query value',IER,nbhelp)
         endif
       endif
 
@@ -388,10 +389,9 @@ C If in pif mode use default bin setup.
           ok=.TRUE.
         else
           dok=.true.
-          h(1)='If you need to customize the frequency reporting'
-          h(2)='say no, otherwise the default set-up will probably '
-          h(3)='work for initial interactive views. '
-          call askok('  ','Use default bin set-up?',OK,dok,3)
+          helptopic='res_flow_freq_custom'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('  ','Use default bin set-up?',OK,dok,nbhelp)
         endif
         if(ok)then
 
@@ -449,15 +449,14 @@ C Bin sized from data max & min.
         else
           XBIN1=XMIN
           XBINN=XMAX
-          H(1)='Give minimum bin value for the current parameter.'
+          helptopic='res_flow_freq_bin_param'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &                     0.,'-',0.,'-',0.,'min bin parameter',IER,1)
-          H(1)='Give maximum bin value for the current parameter.'
+     &      0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
           call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &                  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
-          H(1)='The number of frequency bins is required.'
+     &      XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nhelp)
           call easki(NBINS,' ',' Number of bins required ? ',
-     &                               1,'F',MF,'F',0,'no of bins',IER,0)
+     &      1,'F',MF,'F',0,'no of bins',IER,nbhelp)
           DXBIN=(XBINN-XBIN1)/NBINS
         endif
         call usrmsg(' ',' ','-')
@@ -818,14 +817,15 @@ C Calculate cumulative frequency.
   710   CONTINUE
 
 C Ask user how data should be presented.
-        H(1)='Frequency distribution choices. '
+        helptopic='res_mass_freq_choices'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IDG=1
         IG=1
         CALL MENUATOL('Frequency choices','Frequency reports:',
      &    'a frequency distribution','b cumulative freq. dist.',
      &    'c summary table ','d frequency dist. + table',
      &    'e cumulative dist. + table','f none of the above',
-     &    ' ',' ',' ',' ',' ',' ',IG,IDG,1)
+     &    ' ',' ',' ',' ',' ',' ',IG,IDG,nbhelp)
         if(IG.eq.6) goto 1
         IF(IG.EQ.1.OR.IG.EQ.2.OR.IG.EQ.4.OR.IG.EQ.5)then
 
@@ -1129,7 +1129,6 @@ C (absolute value of INODE).
 #include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1138,10 +1137,17 @@ C (absolute value of INODE).
 
       DIMENSION IPK(MCNN),ICPK(MCNN),ICID(MCNN)
 
-      CHARACTER H*72,VRT(MCNN)*43
+      CHARACTER VRT(MCNN)*43
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character outs*124
       logical unixok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKMFCON'  ! set for subroutine
 
 C Set up array of menu strings.
       NITMS=0
@@ -1170,8 +1176,10 @@ C List all connections.
 
       if (INODE.ge.0) then
         if (NITMS.lt.NNPK) NNPK=NITMS
+        helptopic='res_mass_connection_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EPICKS(NNPK,IPK,'xx','yy',
-     &                     43,NITMS,VRT,'Connection selection',IER,0)
+     &    43,NITMS,VRT,'Connection selection',IER,0)
 
 C Decode menu picks to connections.
         do 20 I=1,NNPK
