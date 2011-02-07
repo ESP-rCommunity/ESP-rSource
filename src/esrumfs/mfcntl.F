@@ -839,14 +839,12 @@ C by setting the ALPHA parameter = 0.
 #include "building.h"
 #include "geometry.h"
 #include "control.h"
-#include "espriou.h"
 
 C climate file commons
       COMMON/FILEP/IFIL
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
@@ -869,7 +867,7 @@ C Adaptive comfort common
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
       REAL PREVTEMP(MMD)
-      CHARACTER*72 LAPROB,H
+      CHARACTER*72 LAPROB
       CHARACTER*2 MODE
       REAL Wposs,Fposs,WNposs,ACavail,Havail,PF,PWRfan,FUNCW
 

@@ -408,7 +408,7 @@ C Tabular output of results; first read problem description file.
           GOTO 10
         ENDIF
 
-        helptopic='mfs_tabular_format_options'
+        helptopic='tabular_format_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Do you want tabular output to be:',
      &              'pretty print','raw & versatile',IW,nbhelp)
@@ -729,7 +729,6 @@ C Error trap on read error or silly data
 C ********************* SETUP 
 C SETUP provides the menu's and control logic for the mfs SETUP menu.
       SUBROUTINE SETUP(itrc,ITRU,IER)
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME

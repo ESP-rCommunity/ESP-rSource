@@ -29,7 +29,6 @@ C simulation. Each mass flow control function
 C is read from the system control strategy file.
 
       subroutine mzcstr(ier)
-#include "espriou.h"
 
       common/outin/iuout,iuin
       common/filep/ifil

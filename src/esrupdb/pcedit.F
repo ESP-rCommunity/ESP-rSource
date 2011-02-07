@@ -35,7 +35,6 @@ C            for this component.
 
       subroutine pcedit(ival)
 #include "plantdb.h"
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -201,7 +200,7 @@ C Display non-zero matrix coefficients.
 
 C Edit external connectivity of node(s).
   330       dok=.false.
-            helptopic='pdb_matrix_change_connect'
+            helptopic='matrix_change_connect'
             call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Change external connectivity',
      &      ' of node(s)?',OK,dok,nbhelp)
@@ -230,7 +229,7 @@ C Edit external connectivity of node(s).
 
 C Edit state variable index of node(s).
   350       dok=.false.
-            helptopic='pdb_matrix_variable_index'
+            helptopic='pdb_matrix_var_index'
             call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Change state variable index ',
      &      ' of node(s)?',OK,dok,nbhelp)
@@ -358,7 +357,7 @@ C Edit miscellaneous data and data description.
 C Edit ADATA variables.
          if(nadata.gt.0) then
            dok=.false.
-           helptopic='pdb_ADATA_changes_editing'
+           helptopic='ADATA_changes_editing'
            call gethelptext(helpinsub,helptopic,nbhelp)
            CALL ASKOK(' ','Do you wish to edit ADATA?',OK,dok,nbhelp)
            IF(.NOT.OK)GOTO 530
@@ -393,7 +392,7 @@ C Edit ADATA variables.
 C Edit BDATA variables.
          if(nbdata.gt.0) then
            dok=.false.
-           helptopic='pdb_BDATA_changes_editing'
+           helptopic='BDATA_changes_editing'
            call gethelptext(helpinsub,helptopic,nbhelp)
            CALL ASKOK(' ','Do you wish to edit BDATA?',OK,dok,nbhelp)
            IF(.NOT.OK)GOTO 560
@@ -431,7 +430,7 @@ C Edit BDATA variables.
 C Edit CDATA variables (description only).
          if(ncdata.gt.0) then
            dok=.false.
-           helptopic='pdb_CDATA_changes_editing'
+           helptopic='CDATA_changes_editing'
            call gethelptext(helpinsub,helptopic,nbhelp)
            CALL ASKOK(' ','Edit CDATA description?',OK,dok,nbhelp)
            IF(.NOT.OK)GOTO 590

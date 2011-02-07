@@ -31,7 +31,6 @@ C blocks PCBLKA and PCBLKB.
 
       SUBROUTINE PCRD
 #include "plantdb.h"
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
 
       common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
@@ -228,7 +227,7 @@ C Case for meta component.
       elseif(ictype.eq.1) then
 
 C Number of components.
-  100    helptopic='pdb_nb_of_meta_components'
+  100    helptopic='pdb_nb_of_meta_comps'
          call gethelptext(helpinsub,helptopic,nbhelp)
          mncomp=0
          CALL EASKI(mncomp,' ',
@@ -242,7 +241,7 @@ C Number of components.
          call edisp(iuout,buffer)
 
 C Code number of each component.
-  110    helptopic='pdb_meta_component_indexs'
+  110    helptopic='pdb_meta_comp_indexs'
          call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=' '
          CALL EASKS(ltmp,' Code number of each component ?',
@@ -322,7 +321,7 @@ C Write component inter-connections.
       endif
 
 C Miscellaneous data items definition.
-  140 helptopic='pdb_component_ADATA_array'
+  140 helptopic='component_ADATA_array'
       call gethelptext(helpinsub,helptopic,nbhelp)
       ltmp=' '
       CALL EASKS(ltmp,' Number of items for ADATA, BDATA and CDATA?',
@@ -343,7 +342,7 @@ C Read ADATA.
          do 152 i=1,nadata
   151      write(buffer,1150) i
  1150      format(' Enter description (68 char max) for ADATA item',i5)
-           helptopic='pdb_component_ADATA_descr'
+           helptopic='component_ADATA_descr'
            call gethelptext(helpinsub,helptopic,nbhelp)
            ltmp=' '
            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
@@ -385,7 +384,7 @@ C Then BDATA.
             ii=i+nadata
             write(buffer,1160) i
  1160       format(' Enter description (68 char max) for BDATA item',i5)
-            helptopic='pdb_component_BDATA_descr'
+            helptopic='component_BDATA_descr'
             call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp=' '
             CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
@@ -426,7 +425,7 @@ C Then CDATA (description only).
   170    do 172 i=1, ncdata
             write(buffer,1170) i
  1170       format(' Enter description (68 char max) for CDATA item',i5)
-            helptopic='pdb_component_CDATA_descr'
+            helptopic='component_CDATA_descr'
             call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp=' '
             CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
@@ -443,7 +442,7 @@ C Write enterd data in text window.
 
 C Read number of additional outputs and description of
 C each output.
-  180 helptopic='pdb_comp_additional_outputs'
+  180 helptopic='comp_additional_outputs'
       call gethelptext(helpinsub,helptopic,nbhelp)
       napout=0
       CALL EASKI(napout,' ',

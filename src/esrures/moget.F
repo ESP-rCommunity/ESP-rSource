@@ -745,7 +745,7 @@ C Instanciate the help text for this menu.
       elseif (MENUTYPE.eq.8) then
         nbofhelp=nbhelp
       elseif (MENUTYPE.eq.9) then
-        helptopic='res_select_metrics_energy_bal'
+        helptopic='select_energy_bal'
         call gethelptext(helpinsub,helptopic,nbhelp)
         nbofhelp=nbhelp
       elseif (MENUTYPE.eq.10) then
@@ -753,7 +753,7 @@ C Instanciate the help text for this menu.
       elseif (MENUTYPE.eq.11) then
         nbofhelp=nbhelp
       elseif (MENUTYPE.eq.12) then
-        helptopic='res_select_surface_energy_bal'
+        helptopic='select_surface_bal'
         call gethelptext(helpinsub,helptopic,nbhelp)
         nbofhelp=nbhelp
       elseif (MENUTYPE.eq.13) then
@@ -1273,7 +1273,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,1)=53
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           MRTLIST=.true.
-          helptopic='res_comfort_sensor_direction'
+          helptopic='comfort_sensor_direction'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Sensor facing which direction:',' ','South',
      &      'East','North','West',ICF,nbhelp)
@@ -2608,7 +2608,7 @@ C IGET = 15  Casual gains.
             endif
           endif
         else
-          helptopic='res_casual_convective_select'
+          helptopic='casual_convective_select'
           call gethelptext(helpinsub,helptopic,nbhelp)
           inoc=0
           idnoc=0
@@ -2757,7 +2757,7 @@ C Test.
 C Electrical power flow.
 C IGET = 27 Real power flow.
 C IGET = 28 Reactive power flow.
-        helptopic='res_casual_electrical_select'
+        helptopic='casual_electrical_select'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Power flow type:','Real','Reactive',jpwr,
      &    nbhelp)
@@ -2802,7 +2802,7 @@ C and node logic below.
 C Renewables/special components output.
 C IGET = 46 component main output.
 C IGET = 47 component secondary output.
-        helptopic='res_embedded_renew_select'
+        helptopic='embedded_renew_select'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Choose a component performance metric',
      &    'Heat/Power output','Misc. output',ispm,nbhelp)
@@ -2952,7 +2952,7 @@ C Data presentation format (actual or rate of change).
         elseif(IROC.eq.-1)then
           write(outs,'(a)')'(currently integrated)'
         endif
-        helptopic='res_data_vs_rate_of_change'
+        helptopic='data_vs_rate_of_change'
         call gethelptext(helpinsub,helptopic,nbhelp)
 
 C The following lines do not allow casual access to the 'integrate data' 
@@ -2989,7 +2989,7 @@ C << revise for additional casual gain types >>
             write(ll2,'(1x,a6,1x)') lodlabel(NZNO(1),2)
             write(ll3,'(1x,a6,1x)') lodlabel(NZNO(1),3)
             call edisp(iuout,' ')
-            helptopic='res_which_casual_gain_type'
+            helptopic='which_casual_gain_type'
             call gethelptext(helpinsub,helptopic,nbhelp)
             IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
@@ -3081,7 +3081,7 @@ C Toggle time format and day separators.
             call edisp(iuout,' ')
             call edisp(iuout,'3rd party graphing time=day fraction set')
           endif
-          helptopic='res_export_hash_separator'
+          helptopic='export_hash_separator'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Include mark between days when ',
      &      'displaying or writing data :','no','yes',IDH,nbhelp)
@@ -3096,7 +3096,7 @@ C Add another selection - time series plot only.
         else
 
 C Toggle delimeter.
-          helptopic='res_tabular_delimiter_choice'
+          helptopic='tabular_delimiter_choice'
           call gethelptext(helpinsub,helptopic,nbhelp)
           IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
@@ -3269,7 +3269,7 @@ C user to fill in data where necessary.
 C Check if anchor points defined.
           IAC=0
           if (NALOC.gt.0) then
-            helptopic='res_options_for_surf_select'
+            helptopic='options_for_surf_select'
             call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB('Options for surface selection:','  ',
      &        'one at a time','via anchor point list',IAC,nbhelp)

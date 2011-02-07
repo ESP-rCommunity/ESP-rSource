@@ -852,7 +852,6 @@ C Calculate viewfactors for a zone.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "espriou.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

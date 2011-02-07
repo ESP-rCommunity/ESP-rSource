@@ -10,7 +10,7 @@
 'Focus length in mm (as in a camera).'
 *enditem
       CALL EASKR(FL,' ','F(MM) ? ',
-*item CHAT viewer_enlargement_factor
+*item CHAT enlargement_factor
 'Enlargement factor (100 is normal size)'
 *enditem
       CALL EASKR(EF,' ',' Enlargement factor (%) ? ',
@@ -50,7 +50,7 @@
 'Coordinates are in metres.'
 *enditem
       CALL EASKS(HOLD,' Point X, Y, Z (metres): ',
-*item CHAT viewer_initialise_replace
+*item CHAT vew_initialise_replace
 'You must choose one of the options.'
 *enditem
       CALL EASKABC('options:',' ','Initialise/replace',

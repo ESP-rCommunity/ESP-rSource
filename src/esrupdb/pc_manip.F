@@ -86,7 +86,6 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -328,7 +327,6 @@ C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
 #include "plantdb.h"
-#include "espriou.h"
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -385,7 +383,6 @@ C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
 #include "plantdb.h"  
-#include "espriou.h"
       common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -510,7 +507,6 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
-#include "espriou.h"
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -765,7 +761,6 @@ C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
 #include "plantdb.h" 
-#include "espriou.h"
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -1065,7 +1060,6 @@ C Error handling.
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
 #include "plantdb.h"
-#include "espriou.h"
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -1138,7 +1132,6 @@ C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
 #include "plantdb.h"
-#include "espriou.h"
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)

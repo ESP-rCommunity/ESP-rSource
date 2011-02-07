@@ -229,7 +229,6 @@ C--------------------------------------------------------
 C PLTFIL generates a pic file for use in forms package.
       SUBROUTINE PLTFIL
 #include "viewer.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 

@@ -48,7 +48,6 @@ C    4-mould information
 
 #include "mould.h"
 #include "esprdbfile.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -259,7 +258,6 @@ C ****************** mycograph *****************************
       subroutine mycograph
 
 #include "mould.h"
-#include "espriou.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

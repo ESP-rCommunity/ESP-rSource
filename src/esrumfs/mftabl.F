@@ -40,7 +40,6 @@ C     VOL() - volume used for calculating change rate in case IDIM=3
       SUBROUTINE MFTABL(itrc,IFRES,ier)
 
 #include "net_flow.h"
-#include "espriou.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -169,7 +168,7 @@ C Node ok, inform user of it`s selection.
         write(outs,'(1X,A,A)') NDNAM(INOD),' added to the display list.'
         call edisp(iuout,outs)
         IF(IDIM.EQ.3) THEN
-          helptopic='mfs_zone_volume_evaluated'
+          helptopic='zone_volume_evaluated'
           call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(INOD,2)
           write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
@@ -355,7 +354,6 @@ C
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 

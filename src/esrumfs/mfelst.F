@@ -31,7 +31,6 @@ C          interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -230,7 +229,6 @@ C interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
@@ -428,7 +426,6 @@ C          interaction is begun.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
     
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -525,7 +522,7 @@ C If no selection has been made before exit then return with 0.
         IF(MOD.EQ.'M'.OR.MOD.EQ.'m')THEN
 
 C Allow a connection to be added deleted or copied.
-          helptopic='mfs_connection_management'
+          helptopic='connection_management'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Select option or continue',' ','Add','Delete',
      &      'Copy','Continue',IOPT,nbhelp)

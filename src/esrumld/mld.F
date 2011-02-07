@@ -40,7 +40,6 @@ C Boston, MA 02111-1307 USA.
       common/FILEP/IFIL
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
@@ -62,7 +61,7 @@ C Name of current application
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
-      character LCMDFL*144,inf*144,H*72,mldnam*48
+      character LCMDFL*144,inf*144,mldnam*48
       character path*72
       character species*64, grow*1, head*29,fs*1
       logical unixok
@@ -70,18 +69,11 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer nitem,ino ! max items and current menu item
 
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found (will be non-zero
-                         ! because default message will be created
-
 C Initialize global common data.
       call ezero
       call curmodule('mld ')
       cAppName = 'mld'
       helpinapp='mld'  ! set once for the application
-      helpinsub='mld'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFIL=10

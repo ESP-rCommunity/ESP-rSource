@@ -33,7 +33,6 @@ C     NDONAM - name of node(s) corresponding to column contents
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 

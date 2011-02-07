@@ -32,7 +32,6 @@ C ASKRNOD presents a list of mass flow nodes returning the index IS.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -185,7 +184,6 @@ C ASKRCMP presents a list of mass flow components returning the index IS.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
     
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -261,7 +259,7 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+5)  ='- Exit             '
 
 C Help text for this menu.
-      helptopic='mfs_component_selection_menu'
+      helptopic='component_selection_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
@@ -276,7 +274,7 @@ C If no selection has been made before exit then return with 0.
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
-        helptopic='mfs_component_selection_menu'
+        helptopic='component_selection_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
 
@@ -285,7 +283,7 @@ C If no selection has been made before exit then return with 0.
 C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
-        helptopic='mfs_component_selection_text'
+        helptopic='component_selection_text'
         call gethelptext(helpinsub,helptopic,nbhelp)
   96    CALL EASKI(IV,' ',' Index of component ? ',
      &         1,'F',NCMP,'F',1,'script comp',IER,nbhelp)
@@ -320,7 +318,6 @@ C Starting and ending node numbers.
 
 #include "net_flow.h"
 #include "epara.h"
-#include "espriou.h"
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -393,7 +390,7 @@ C If MOD has been passed as a M then add an item at the end.
       VERT(M+5)  ='- Exit             '
 
 C Help text for this menu.
-      helptopic='mfs_connection_selection_menu'
+      helptopic='connect_selection_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
@@ -411,14 +408,14 @@ C If no selection has been made before exit then return with 0.
         endif
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        helptopic='mfs_connection_selection_menu'
+        helptopic='connect_selection_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('connection selection',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Script directed input.
         IV=1
-        helptopic='mfs_connection_selection_text'
+        helptopic='connect_selection_text'
         call gethelptext(helpinsub,helptopic,nbhelp)
   97    CALL EASKI(IV,' ',' Index of connection ? ',
      &       1,'F',NCNN,'F',1,'script conn',IER,nbhelp)

@@ -875,7 +875,7 @@ C If GTK version then use GTK calls to display images in popup.
         if((iton.eq.0.or.iforce.eq.1))then
 
 C Setup help text for the popup.
-          helptopic='res_images_associated_with'
+          helptopic='images_associated_with'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPW(nbhelp,IHW,IER)
 

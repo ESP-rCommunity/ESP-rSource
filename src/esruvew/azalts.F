@@ -23,7 +23,6 @@ C  hour of the day. Logic is similar to subroutine azalt in
 C  esrucom/commonclm.F
 
       SUBROUTINE AZALTS(IYD,IHR,ITS,RLONGT,RLATIT,SOLALT,SOLAZI)
-#include "espriou.h"
 
 C Parameters:
       integer IYD,IHR,ITS

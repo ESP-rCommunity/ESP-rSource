@@ -26,7 +26,6 @@ C     ICHNG=3  use a different matrix solver
 C     ICHNG=4  toggle the trace facility
 
       SUBROUTINE MFMODE(ICHNG)
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFCALC/IPSMOD,MSLVTP

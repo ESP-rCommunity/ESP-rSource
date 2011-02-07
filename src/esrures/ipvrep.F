@@ -435,7 +435,7 @@ C and adjust output channel.
 
 C If IPV report format has not been set ask the user (i.e. zero value).
       if(ipvform.eq.0)then
-        helptopic='res_IPV_report_text_comma'
+        helptopic='IPV_report_text_comma'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Format output for:',' ','Text','comma separated',
      &    'java',ipvform,nbhelp)

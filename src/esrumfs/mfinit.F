@@ -122,7 +122,7 @@ C this might cause overwriting of an existing file !!
 C Assign wind pressure distribution file and read NPRE. If for some
 C reason IAPRES is still zero then set to 11.
    30 if(IAPRES.eq.0)IAPRES=11
-      helptopic='pressure_coef_file_overview'
+      helptopic='pres_coef_file_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
  288  write(outs248,'(2a)') 'The current source file is:',
@@ -205,7 +205,7 @@ C Assign climate file and read year number.
 
 C Assign results file; make sure this is not the problem file
    50 IFRES=13
-      helptopic='flow_results_file_overview'
+      helptopic='flow_res_file_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='new.mfr'
       LTMP=LAFRES

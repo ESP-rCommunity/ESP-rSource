@@ -94,7 +94,7 @@ C Request zone and surface for output and check if graph should be
 C plotted over the whole period or one timestep at a time.
           CALL ASKZON(ICOMP)
           CALL ASKSUR(ICOMP,ISUR)
-          helptopic='res_condensation_animation'
+          helptopic='condensation_animation'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('When plotting temperatures:',' ',
      &      'show all timesteps at once','animate data display',

@@ -377,7 +377,6 @@ C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
 #include "plantdb.h"
-#include "espriou.h"
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)

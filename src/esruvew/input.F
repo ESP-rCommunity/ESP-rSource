@@ -2,7 +2,6 @@ C----------------------------------------------------
       SUBROUTINE INPUT(INIT)
 #include "viewer.h"
 #include "viewer.h2"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 

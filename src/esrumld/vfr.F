@@ -25,12 +25,10 @@ C writes the recovered data to array GOTDAT
 
 #include "building.h"
 #include "mould.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/grphlim/xmin,xmax,ymin,ymax       
       COMMON/GOTDAT/NDP,DAT1(MTS),DAT2(MTS),DAT3(MTS)
@@ -40,7 +38,7 @@ C writes the recovered data to array GOTDAT
      &imdn(mould)
 
       DIMENSION IZNDX(24)
-      CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30,H*72
+      CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30
       character outs*124
       integer ncomp
 #ifdef OSI

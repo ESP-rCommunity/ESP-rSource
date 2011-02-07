@@ -15,7 +15,6 @@ C and says 'viewer bye-bye', and does a stop.
 
 #include "viewer.h"
 #include "viewer.h2"
-#include "espriou.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/NNAAMM/NAMDS,NAMPIC
@@ -224,7 +223,7 @@ C SET PICTURE NAME
 
 C----------------------------------------------------
 C *ENLRG
-42    helptopic='viewer_enlargement_factor'
+42    helptopic='enlargement_factor'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(EF,' ',' Enlargement factor (%) ? ',
      &  0.,'F',0.,'-',50.0,'enlargement',IER,nbhelp)
@@ -464,7 +463,7 @@ C----------------------------------------------------
 C NEW INPUT FILE
 C CALL INPUT AND THEN REINITIALISE
 C ALLOW ADD OF MORE GEOMETRY DATA WITHOUT INITIALISE
- 993  helptopic='viewer_initialise_replace'
+ 993  helptopic='vew_initialise_replace'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC('options:',' ','Initialise/replace',
      &  'Add new file to','Subtract from existing data',IW,nbhelp)

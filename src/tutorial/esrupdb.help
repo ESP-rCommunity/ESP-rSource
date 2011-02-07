@@ -111,7 +111,7 @@
 ' 1 and 4.'
 *enditem
             CALL EASKI(ncpos(item),' ',' New position? ',
-*item pcedit pdb_matrix_change_connect
+*item pcedit matrix_change_connect
 'Note: only an expert will want to change the matrix'
 'connectivity so you probably want to say no. '
 'If you say yes then you will be asked for the index of the'
@@ -124,7 +124,7 @@
 '  tions then a value of 2 is specified for it.'
 *enditem
             CALL ASKOK(' Change external connectivity',
-*item pcedit pdb_matrix_variable_index
+*item pcedit pdb_matrix_var_index
 'Note: only an expert will want to change the matrix'
 'variable indices so you probably want to say no. '
 'If you say yes then you will be asked for the index of the'
@@ -170,7 +170,7 @@
 ' MISC2: Second miscellaneous data'
 *enditem
             CALL ASKOK(' Do you wish to change components ',
-*item pcedit pdb_ADATA_changes_editing
+*item pcedit ADATA_changes_editing
 'Note: only experts want to change the component'
 'ADATA so you probably want to say no. '
 '  '
@@ -179,7 +179,7 @@
 'of the data item.'
 *enditem
            CALL ASKOK(' ',' Do you wish to edit ADATA?',OK,dok,2)
-*item pcedit  pdb_BDATA_changes_editing
+*item pcedit  BDATA_changes_editing
 'Note: only experts want to change the component'
 'BDATA so you probably want to say no. '
 '  '
@@ -188,7 +188,7 @@
 'of the data item.'
 *enditem
            CALL ASKOK(' ',' Do you wish to edit BDATA?',OK,dok,2)
-*item pcedit pdb_CDATA_changes_editing
+*item pcedit CDATA_changes_editing
 'Note: only experts want to change the component'
 'CDATA so you probably want to say no. '
 ' '
@@ -286,12 +286,12 @@
 'solid    9              19                   29'
 *enditem
          CALL EASKS(ltmp,' State variable index of node(s) ?',
-*item PCRD pdb_nb_of_meta_components
+*item PCRD pdb_nb_of_meta_comps
 'You are asked to specify the number of standard components which'
 'will form this meta component.'
 *enditem
          CALL EASKI(mncomp,' ',
-*item PCRD pdb_meta_component_indexs
+*item PCRD pdb_meta_comp_indexs
 'A meta component comprises a number of components'
 'which exist in database. In order to identify'
 'these components, their code numbers must be'
@@ -316,7 +316,7 @@
 ' MISC2: Second miscellaneous data'
 *enditem
             CALL EASKS(ltmp,buffer,
-*item PCRD pdb_component_ADATA_array
+*item PCRD component_ADATA_array
 'The ADATA array holds static data for a component and'
 'their values are assumed to be fixed throughout the'
 'simulation. The BDATA on the other hand holds dynamic'
@@ -329,23 +329,23 @@
 *item PCRD
 *enditem
             CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
-*item PCRD pdb_component_ADATA_descr
+*item PCRD component_ADATA_descr
 'Provide a user friendly description of the ADATA variable!'
 'You will then be asked to supply an initial ADATA value and a minimum'
 'and maximum range for this ADATA variable.'
 *enditem
             CALL EASKR(vitem,' ',' Item value? ',0.,'-',0.,'-',0.,
-*item PCRD pdb_component_BDATA_descr
+*item PCRD component_BDATA_descr
 'Provide a user friendly description of the BDATA variable!'
 'You will then be asked to supply an initial BDATA value and a minimum'
 'and maximum range for this BDATA variable.'
 *enditem
             CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
-*item PCRD pdb_component_CDATA_descr
+*item PCRD component_CDATA_descr
 'Provide a user friendly description of the CDATA (control) variable!'
 *enditem
             CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
-*item PCRD pdb_comp_additional_outputs
+*item PCRD comp_additional_outputs
 'Plant components performance is recorded via one or more additional'
 'outputs e.g. heat injection.  You will be asked for a brief '
 'description an index (?) which defines the type of each output.'

@@ -26,7 +26,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -225,7 +224,6 @@ C IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "geometry.h"
 #include "epara.h"
-#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/MRT2/GEOLOAD,MRTLOAD

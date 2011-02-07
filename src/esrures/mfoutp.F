@@ -1176,7 +1176,7 @@ C List all connections.
 
       if (INODE.ge.0) then
         if (NITMS.lt.NNPK) NNPK=NITMS
-        helptopic='res_mass_connection_select'
+        helptopic='mass_connection_select'
         call gethelptext(helpinsub,helptopic,nbhelp)
         call EPICKS(NNPK,IPK,'xx','yy',
      &    43,NITMS,VRT,'Connection selection',IER,0)

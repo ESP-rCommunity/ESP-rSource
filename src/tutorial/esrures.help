@@ -266,7 +266,7 @@
 'condensation within one or more zones. '
 '  '
 *enditem
-*item MOFCON res_condensation_animation
+*item MOFCON condensation_animation
 'Animation shows each timestep in sequence.'
 *enditem
           CALL EASKABC('When plotting temperatures:',' ',
@@ -368,7 +368,7 @@
 '  tagged - marked up data'
 *enditem
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
-*item ipvrep res_IPV_report_text_comma
+*item ipvrep IPV_report_text_comma
 'Text is human readable, comman separated is for use in'
 'templates and java is for an interactive agent.'
 *enditem
@@ -475,7 +475,7 @@ C        CALL EASKABC('Data display options:',outs,
 'You can also add labels within the graph.'
 *enditem
           CALL EASKS(t64,' Title for graph ? ',
-*item MFMENU res_mass_graph_edit_label
+*item MFMENU mass_graph_edit_label
 'First type the label text. When you exit you can then select'
 'a point on the graph to place the label.'
 '  '
@@ -491,7 +491,7 @@ C        CALL EASKABC('Data display options:',outs,
 'reported is equal to the sum of the flows entering the node.'
 *enditem
         call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
-*item MFMENU res_mass_flow_cntm_select
+*item MFMENU mass_flow_cntm_select
 'A list of the mass flow containments is presented. Select from this'
 'list.'
 *enditem
@@ -522,7 +522,7 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
                     call EASKAB('Bi-directional flow component ',
 *subroutine EDMFGOGET
-*item EDMFGOGET res_menu_selection_editing
+*item EDMFGOGET menu_selection_editing
 'This menu allows existing metric choices to be '
 'removed from the list to display. '
 'Each item can be toggled on/ off until you are'
@@ -566,7 +566,7 @@ C        CALL EASKABC('Data display options:',outs,
 'other reporting domains. There are standard and cumulative tables'
 'with or without graphs.'
 *enditem
-*item ASKMFCON  res_mass_connection_select
+*item ASKMFCON  mass_connection_select
 'A list of connections within the mass flow network is presented'
 'for you to select within.'
 *enditem
@@ -743,7 +743,7 @@ C        CALL EASKABC('Data display options:',outs,
 '  '
 *enditem
           call MENUATOL('Select a climate metric',' Climate choices:',
-*item GOMENU res_select_metrics_energy_bal
+*item GOMENU select_energy_bal
 'A zone energy balance reports the flux gains and losses'
 'for infiltration, ventilation, occupant/lighting/small'
 'power and controlled casual gains as well as convection'
@@ -769,7 +769,7 @@ C        CALL EASKABC('Data display options:',outs,
 'which are opaque are always colder than the air temp '
 'then the report will include losses. '
 *enditem
-*item GOMENU res_select_surface_energy_bal
+*item GOMENU select_surface_bal
 'A surface energy balance reports the flux gains & losses'
 'at the inside and `other-side` face of the surface for:'
 'Conduction (just below the surface), convection, long-'
@@ -822,7 +822,7 @@ C        CALL EASKABC('Data display options:',outs,
 'NB: ceiling and wall assume delta T between zone air'
 '    point and surface.'
 *enditem
-*item GOMENU res_comfort_sensor_direction
+*item GOMENU comfort_sensor_direction
 'The question assumes that the MRT sensor has not been '
 'rotated.   '
 *enditem
@@ -916,7 +916,7 @@ C        CALL EASKABC('Data display options:',outs,
 ' * Controlled latent gains'
 *enditem
           CALL EPICKS(IX,IVALC,' ',' Casual sensible and latent:',
-*item GOMENU res_casual_convective_select
+*item GOMENU casual_convective_select
 'Casual gains are reported separately in terms of their'
 'convective and radiant contributions. '
 'The total gain (rad + conv) for a single type, or '
@@ -926,12 +926,12 @@ C        CALL EASKABC('Data display options:',outs,
 '<< expand the list if explicit values available >> '
 *enditem
           call MENUATOL('Select a casual gain metric',' Choices:',
-*item GOMENU res_casual_electrical_select
+*item GOMENU casual_electrical_select
 'To select more than one item, e.g. real+reactive '
 'reselect the electrical option.'
 *enditem
         CALL EASKAB(' ','Power flow type:','Real','Reactive',jpwr,2)
-*item GOMENU res_embedded_renew_select
+*item GOMENU embedded_renew_select
 'This option displays the ouput from embedded renewables'
 'or advanced materials. Choose to display the main '
 'output, usually heat or power (W) or a secondary '
@@ -945,7 +945,7 @@ C        CALL EASKABC('Data display options:',outs,
 'to see if there is a good fit.'
 *enditem
         CALL EASKAB('Which measured data type',
-*item GOMENU res_data_vs_rate_of_change
+*item GOMENU data_vs_rate_of_change
 'Typical results recovery are of the values within the'
 'results library. An alternative is to report the rate '
 'of change of a variable. The rate of change is expressed'
@@ -959,7 +959,7 @@ C        CALL EASKABC('Data display options:',outs,
 'Note: all selections cleared when this option is altered.'
 *enditem
         CALL EASKABCD('Data display options:',outs,'integrated',
-*item GOMENU res_which_casual_gain_type
+*item GOMENU which_casual_gain_type
 'Select a casual gain type to base occupancy on.'
 'Labels show are from the first zone in the current'
 'list. Type 1 usually represents casual gains from '
@@ -973,12 +973,12 @@ C        CALL EASKABC('Data display options:',outs,
 'scale.'
 *enditem
                 call EASKS(values,'  ','Min &max for temperature axis?',
-*item GOMENU res_export_hash_separator
+*item GOMENU export_hash_separator
 'Places a # separator between days of tabular data. Use this if you'
 'want to clearly view the demarcation between days.'
 *enditem
           CALL EASKAB('Include mark between days when ',
-*item GOMENU res_tabular_delimiter_choice
+*item GOMENU tabular_delimiter_choice
 'Tabular data can be sent to file with various '
 'delimiters: '
 '  spaces (format using spaces to lineup columns)'
@@ -1005,7 +1005,7 @@ C        CALL EASKABC('Data display options:',outs,
 'labels as well as the titile.'
 *enditem
           CALL EASKAB('Labels within graph options:',' ',
-*item GOMENU res_options_for_surf_select
+*item GOMENU options_for_surf_select
 '<one at a time> presents a list of surfaces for each'
 'of the currently selected zones. '
 'The anchor points method finds all surfaces related'
@@ -1360,7 +1360,7 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
             CALL EASKF(longtmp,' ',
 *subroutine imgdisp
-*item imgdisp res_images_associated_with
+*item imgdisp images_associated_with
 'Images can be associated with a model for various'
 'purposes: '
 ' * document conditions at the physical site'

@@ -925,7 +925,7 @@ C If there are no labels or some label start at first, if more than 5 exit.
           else
             igrl=igrl+1
           endif
-          helptopic='res_mass_graph_edit_label'
+          helptopic='mass_graph_edit_label'
           call gethelptext(helpinsub,helptopic,nbhelp)
           t24=grlbl(igrl)
  292      CALL EASKS(t24,
@@ -1026,7 +1026,7 @@ C Ask for relevent nodes. If CTLST is true then ask for containments.
             NCPK=NCONTM
             PROMPT1='Select one or more contaminants.'
             PROMPT2=' '
-            helptopic='res_mass_flow_cntm_select'
+            helptopic='mass_flow_cntm_select'
             call gethelptext(helpinsub,helptopic,nbhelp)
             NH=0
             CALL ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,nbhelp)
@@ -2503,7 +2503,7 @@ C If a long list include page facility text.
       VERT(M+3)  ='- exit and activate changes'
 
 C Instanciate h() strings for this menu.
-      helptopic='res_menu_selection_editing'
+      helptopic='menu_selection_editing'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
@@ -2551,7 +2551,7 @@ C Remove inactive elements.
  20     continue
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        helptopic='res_menu_selection_editing'
+        helptopic='menu_selection_editing'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('metric selection',5,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
