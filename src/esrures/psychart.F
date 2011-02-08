@@ -30,7 +30,6 @@ C component status, act = 'u' for user supplied points.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -51,7 +50,7 @@ C component status, act = 'u' for user supplied points.
 
       dimension UTD(20),URH(20)     
       CHARACTER*23 ITEM(12)
-      CHARACTER H*72,HOLD*24,act*1,pcname*15,pcnam1*15,head*124
+      CHARACTER HOLD*24,act*1,pcname*15,pcnam1*15,head*124
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
       logical ok,dok,ask,unixok
@@ -62,6 +61,13 @@ C component status, act = 'u' for user supplied points.
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PSYCHART'  ! set for subroutine
 
       SMALL=1E-20
       PATMOS=1013.25
@@ -144,16 +150,9 @@ C Display menu.
  2    NITMS=12
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='This psychrometric plotting facility allows'
-      H(2)='the psycrometric state of an AC plant component'
-      H(3)='or network to be plotted on a psychrometric   '
-      H(4)='chart. The user can select which plant nodes'
-      H(5)='should be plotted on the chart. Any component'
-      H(6)='linkages will be detected and drawn by the '
-      H(7)='program. The user must select the timestep from '
-      H(8)='which the results are taken.'
-      H(9)='     - Click to return to program-         '
+C Instanciate help strings for the menu and sub-dialogs.
+      helptopic='res_psychromtric_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  5    CALL EMENU('Psychrometric chart',ITEM,NITMS,INO)
       IF(INO.EQ.1)THEN
@@ -175,11 +174,8 @@ C zone nodes << to be done >>
           goto 2
         elseif(act.eq.'u')then
           if(IUP.ne.0)then
-            h(1)='System components performance can be plotted on the'
-            h(2)='chart or the user can supply temperature and humidity'
-            h(3)='data to be plotted. '
             dok=.true.
-            call askok('Re-plot previous points?',' ',ok,dok,3)
+            call askok('Re-plot previous points?',' ',ok,dok,nbhelp)
             if(ok)then
               ask=.false.
             else
@@ -189,9 +185,8 @@ C zone nodes << to be done >>
             ask=.true.
           endif
           if(ask)then
-            h(1)='You can supply up to 20 sets of DbT and RH. '
             CALL EASKI(IUP,'How many points to plot?',' ',
-     &             1,'F',20,'W',2,'points to plot',IER,1)
+     &        1,'F',20,'W',2,'points to plot',IER,nbhelp)
             do 196 i=1,IUP
               write(hold,'(2F7.3)') UTD(i),URH(i)
               CALL EASKS(HOLD,' ',' dbT and RH : ',
@@ -245,10 +240,10 @@ C Toggle labels.
 
 C Change scale.
         call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-     &  60.0,'max temp',IER,0)
+     &    60.0,'max temp',IER,nbhelp)
         Xmax=val
-        call easkr(val,'Max moisture content g/kg','for chart '
-     &  ,0.0,'F',30.,'-',30.0,'max mcnt',IER,0)
+        call easkr(val,'Max moisture content g/kg','for chart ',
+     &    0.0,'F',30.,'-',30.0,'max mcnt',IER,nbhelp)
         Ymax=val
 
 C Calculate the maximum enthalpy for the chart
@@ -298,9 +293,8 @@ C Make up a string describing this time.
         write(outs,'(a,i4,4a)') 'The current timestep (',itstep,') is ',
      &    descrh,' on ',DESCR1
         call edisp(iuout,outs)
-        h(1)='Choose the simulation timestep to use.'
         CALL EASKI(itstep,'Which timestep number? ',' ',
-     &    1,'-',10000,'-',1,'Timestep Number',IER,1)
+     &    1,'-',10000,'-',1,'Timestep Number',IER,nbhelp)
         IPSYTS=ITSTEP
   77    idift=itstep-itstepstart
         ctime=ctime+(enterval*idift)*float(nout)
@@ -392,9 +386,8 @@ C Ignore nodes with an incompatible ISV number.
         endif
 
 C Ask whether user wants to step forwards, backwards or return.
-        h(1) ='Step forwards or backwards or continue.'
         call EASKABC(' ','Options:',
-     &    'previous ts','next ts','continue',IW,1)
+     &    'previous ts','next ts','continue',IW,nbhelp)
         if(iw.eq.1)then
           if(itstep.gt.2)then
             itstep=itstep-1
@@ -533,7 +526,9 @@ C to label 10 and redraw the background lines.
  998    CONTINUE
         GOTO 10       
       elseif(ino.eq.11)then
-        CALL PHELPD('Psychrometric chart',9,'-',0,0,IER)
+        helptopic='res_psychromtric_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Psychrometric chart',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.12)THEN
 
 C When exiting, clear and then reset the plot records and re-establish
@@ -698,7 +693,6 @@ C interaction is begun.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/PSY3/PCNAM1(MPCOM)
       COMMON/PSY2/IPSYTS,ICPLOT
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -706,9 +700,16 @@ C interaction is begun.
       DIMENSION SVERT(50),TMS(MS),TMSO(MS)
       CHARACTER PCNAM1*15
       character*124 head
-      CHARACTER H*72,SVERT*23,KEY*1
+      CHARACTER SVERT*23,KEY*1
       LOGICAL SELECT
       integer MSVERT,ISVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKPSYCMP'  ! set for subroutine
 
       PATMOS=1013.25
 
@@ -755,19 +756,9 @@ C If a long list include page facility text.
       SVERT(M+5)  ='? help             '
       SVERT(M+6)  ='- exit             '
 
-C Instanciate h() strings for the menu.
-      H(1)='The list shows the (currently) available components '
-      H(2)='defined in the plant network which can be plotted on '
-      H(3)='the chart. Each selected component is drawn as a  '
-      H(4)='diamond on the chart, linkages between components are'
-      H(5)='drawn as a thick black line. Note that ambient and   '
-      H(6)='zone conditions will only be displayed if a building'
-      H(7)='results library is available for the simulation.'
-      H(8)='If a component is selected and no mark appears on the'
-      H(9)='chart then either the timestep selected is outwith  '
-      H(10)='the simulation period or the component has the same '
-      H(11)='psychrometric state as one already displayed.'
-      H(12)='  '
+C Instanciate help strings for the menu and sub-dialogs.
+      helptopic='plant_psychart_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,SVERT,MSVERT,ISVERT)
@@ -780,7 +771,9 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(ISVERT.EQ.(MSVERT-1))THEN
-        CALL PHELPD('node connection selection',12,'-',0,0,IER)
+        helptopic='plant_psychart_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
         GOTO 3
       ELSEIF(ISVERT.EQ.(MSVERT-2))THEN
 
@@ -788,7 +781,7 @@ C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NPCOMP,'F',1,'script comp',IER,0)
+     &         1,'F',NPCOMP,'F',1,'script comp',IER,nbhelp)
         if(IER.NE.0)goto 96
         IS=IV
         RETURN
@@ -829,8 +822,8 @@ C Get extenal climate parameters.
         Y=1000.*HUMRT1(X,Z,PATMOS,IOPT)
         CALL PSYPLOT(X,Y,0,0)
       ELSEIF(ISVERT.EQ.(MSVERT-4))THEN
-               IS=99
-               RETURN     
+        IS=99
+        RETURN     
       ELSEIF(ISVERT.EQ.(MSVERT-5))THEN
 
 C If there are enough items allow paging control via EKPAGE.

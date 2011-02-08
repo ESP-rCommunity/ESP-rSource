@@ -1186,113 +1186,76 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         CALL PHELPD('Result set activation',1,'-',0,0,IER)
 *subroutine MO3DPL
-*item MO3DPL
-'The contaminant selection menu does not yet have'
-'any help associated with it. '
-*enditem
-        CALL EASKATOG('Surface temperatures:',' ',
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          call ASKICN(II,NCNOUT,NNDOUT)
-*item MO3DPL
+*item MO3DPL res_3D_plot_menu
+'The 3D plot facility allows you to create graphs which have'
+'time-of-day along the X axis, days along the Y axis and'
+'magnitude along the Z axis. It is well adapted to the discovery'
+'of repeating patterns e.g. lighting over several weeks.'
+'  '
+'These graphs are best used for data which extends over several'
+'days but is shorter than a month.'
+'  '
+'The selection of metrics to plot follows the pattern established'
+'  '
+'in other reporting facilities. The exception is that you can'
+'only plot one value on each graph.'
+'  '
 'Convection and solar radiation absorbed at the '
 'inside and other/external faces. '
-*enditem
-        CALL EASKATOG('Surface fluxes:',' ',
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
-*enditem
-          CALL ASKSUR(II,NCNOUT)
-*item MO3DPL
+'  '
 'Casual gains are reported separately in terms of their'
 'convective and radiant contributions '
-*enditem
-        CALL EASKAB(' ','Casual gains:',
-*item MO3DPL
-'To select more than one item, rechoose climate pick'
-*enditem
-        CALL EASKATOG('Climate data:',' ',
-*item MO3DPL
+'  '
 'Comfort indicies are: Predicted Mean Vote PMV, PMV '
 'using efective temperature and Predicted Percentage '
 'Dissatisfied PPD. '
+'  '
+'You may need to play around with the scaling parameters in order'
+'to get a clear graph. You may need to increase the scale to see'
+'small changes or to decrease the scale if there are peaks. The'
+'minimum scale is zero.'
+'  '
+'The rotation parameters can be used change the view so that'
+'hidden data can be seen. The X-axis rotation is around the'
+'horizontal axis (0-90 degrees). The Z-axis rotation alters the'
+'elevation of the graph (0-360 degrees).
 *enditem
-        CALL EASKATOG('Comfort indices:',' ',
-*item MO3DPL
-'Rotation about the graph (horizontal) in degrees.'
-*enditem
-        CALL EASKR(XR,' ',' X-axis rotation ?',
-*item MO3DPL
-'Rotation about the graph (elevation) in degrees.'
-*enditem
-        CALL EASKR(ZR,' ',' Z-axis rotation ?',
-*item MO3DPL
-'The data scale factor allows the height of the graph'
-'to be manipulated.'
-*enditem
-        CALL EASKR(YS,' ',' Data scale factor ?',
 *subroutine PSYCHART
-*item PSYCHART
+*item PSYCHART res_psychromtric_menu
 'This psychrometric plotting facility allows'
 'the psycrometric state of an AC plant component'
-'or network to be plotted on a psychrometric   '
-'chart. The user can select which plant nodes'
-'should be plotted on the chart. Any component'
-'linkages will be detected and drawn by the '
+'or network or thermal zone to be plotted on a psychrometric'
+'chart. Depending on the current focus (zones/plant/flow) the'
+'user can select which zone or flow node or plant nodes'
+'should be plotted on the chart.'
+'  '
+'Any component linkages will be detected and drawn by the '
 'program. The user must select the timestep from '
 'which the results are taken.'
-'     - Click to return to program-         '
-'System components performance can be plotted on the'
-'chart or the user can supply temperature and humidity'
-'data to be plotted. '
-*enditem
-            call askok('Re-plot previous points?',' ',ok,dok,3)
-*item PSYCHART
-'You can supply up to 20 sets of DbT and RH. '
-*enditem
-            CALL EASKI(IUP,'How many points to plot?',' ',
-*item PSYCHART
-*enditem
-              CALL EASKS(HOLD,' ',' dbT and RH : ',
-*item PSYCHART
-*enditem
-          call askpsycmp(head,is,k,IER)
-*item PSYCHART
-*enditem
-        call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-*item PSYCHART
-*enditem
-        call easkr(val,'Max moisture content g/kg','for chart '
-*item PSYCHART
-'Choose the simulation timestep to use.'
-*enditem
-        CALL EASKI(itstep,'Which timestep number? ',' ',
-*item PSYCHART
-'Step forwards or backwards or continue.'
-*enditem
-        call EASKABC(' ','Options:',
-*item PSYCHART
+'  '
+'Note that the option to plot a sequence of timesteps will'
+'proceed through the current display period displaying about'
+'two frames per second and there is no facility to pause or'
+'stop the display until the whole period is completed.'
+
+'There is one option for user supplied temperature and humidity'
+'data to be plotted on the chart as well. You are asked how many'
+'points to plot (up to 20) and then you must supply temperature'
+'and RH data for those points.'
+'  '
+'You can alter the temperature scale (up to 60C) and the'
+'moisture content scale (up to 30 g/kg).'
+'  '
+'If you request a plot for a specific timestep (counting from'
+'the first timestep of the simulation) e.g. 14h00 on 2nd day of a'
+'simulation with 1 tsph would be 24+14=38. It is best to check'
+'with the feedback on the graph to ensure the timestep index'
+'was interpreted correctly. You will be given an opportunity to'
+'step forward or backwards in time.'
 *enditem
         CALL PHELPD('Psychrometric chart',9,'-',0,0,IER)
 *subroutine ASKPSYCMP
-*item ASKPSYCMP
+*item ASKPSYCMP plant_psychart_menu
 'The list shows the (currently) available components '
 'defined in the plant network which can be plotted on '
 'the chart. Each selected component is drawn as a  '
@@ -1307,9 +1270,6 @@ C        CALL EASKABC('Data display options:',outs,
 '  '
 *enditem
         CALL PHELPD('node connection selection',12,'-',0,0,IER)
-*item ASKPSYCMP
-*enditem
-  96    CALL EASKI(IV,' ',' Index of component ? ',
 *subroutine MOGCFG
 *item MOGCFG
 'The model configuration file holds the definition '
