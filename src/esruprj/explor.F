@@ -240,7 +240,7 @@ C If tabular reserve first display column for period which is a
 C string or julian day fraction depending on the user selected format.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
-          RDOTY=itdbdoy+INT(CDAY)+(ITIME/(FLOAT(NTSPH)*24.))
+          RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
           CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
           IF(IFTIME.EQ.0)THEN
             WRITE(IPD(M),'(A1,1X,A5,1X,A54)') KEY,DESCRH,CSTR(1:54)
