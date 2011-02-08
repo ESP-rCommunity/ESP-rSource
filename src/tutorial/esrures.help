@@ -432,6 +432,7 @@
 '  useful when exporting data to 3rd party software.'
 'Data can be displayed as raw values (rate of '
 '  change of the value is not yet implemented). '
+'  '
 'Typical results recovery are of the values within the'
 'results library. An alternative is to report the rate '
 'of change of a variable. The rate of change is expressed'
@@ -1013,7 +1014,7 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
             CALL EASKAB('Options for surface selection:','  ',
 *subroutine plttab
-*item plttab
+*item plttab res_plant_perf_menu
 'The viewing of plant system component performance'
 'is controlled by this menu. '
 ' '
@@ -1041,6 +1042,8 @@ C        CALL EASKABC('Data display options:',outs,
 ' ! produce graph or report or listing.'
 '  '
 '  / clear - reset previous seletions.'
+*enditem
+*item plttab res_plant_delimeter
 'Tabular data can be sent to file with various '
 'delimiters: '
 '  spaces (format using spaces to lineup columns)'
@@ -1057,114 +1060,80 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
           CALL EASKI(nsnd,outs,' ',
 *subroutine opnplt
-*item opnplt
+*item opnplt res_plant_comp_list
 'You may select any number of components in'
 'any order or all components. '
+*enditem
+        CALL EPICKS(mnpc,mcomp,' ',
+*item opnplt res_plant_res_file
 'The predictions from solution of a plant/system '
 'network are held in a binary results file which'
 'is separate from zone and flow results. Please '
 'supply the name (if the field is blank). '
 *enditem
             CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
-*item opnplt
-*enditem
-            CALL EASKF(ltmp,'Plant library name ? ',' ',124,DFILE,
-*item opnplt
-*enditem
-            CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
-*item opnplt
-*enditem
-          CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
-*item opnplt
-*enditem
-          CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
-*item opnplt
+*item opnplt plant_res_file_not
 'The plant results file was not found in the folder you'
 'specified or the name you gave. Check folder and file '
 'name and then retry. A no will return to main menu. '
 *enditem
         CALL ASKOK(outs,' Do you want to try again?',OK,dok,3)
-*item opnplt
+*item opnplt res_plant_res_set
+'If a plant results library contains more than one set of predictions'
+'you have the option to select one of them. You are asked for the'
+'index of the set.'
 *enditem
          CALL easki(ipset,' ',' Specify required set ? ',
-*item opnplt
+*item opnplt res_plant_cfg_file
 'The model configuration file holds the definition of'
-'the building/plant which was simulated.'
-'This file was not found.  Please supply the model '
-'which MATCHES that within the results library.'
+'the building/plant which was simulated.  It should'
+'match the contents held within the results library.'
+'  '
+'Please supply the model configuration file that'
+'MATCHES that within the results library.'
 'IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
 'WILL BE COMPROMISED! '
 *enditem
           CALL PHELPD('no system file',6,'-',0,0,IER)
-*item opnplt
-'The model configuration file holds the definition '
-'of the building/ plant to be simulated.  It should'
-'match the contents held within the results library.'
-*enditem
-            CALL EASKF(longtmp,'Model configuration file ?',' ',96,
-*item opnplt
-*enditem
-            CALL EASKF(longtmp,'Model configuration file ?',' ',144,
-*item opnplt
-*enditem
-            CALL EASKF(longtmp,'Model configuration file ?',' ',96,
-*item opnplt
+          CALL EASKF(longtmp,'Model configuration file ?',' ',96,
+*item opnplt res_climate_file_ask
 ' A climate file defines the problem boundary'
 ' condition. The one included in the results libary'
 ' was not found, type in the correct name.'
 *enditem
           CALL EASKF(ltmp,' ',' Climate file name ? ',
-*item opnplt
-*enditem
-          CALL EASKF(ltmp,' ',' Climate file name ? ',
-*item opnplt
-*enditem
-          CALL EASKF(ltmp,' ',' Climate file name ? ',
 *subroutine dbdat
-*item dbdat
+*item dbdat res_plant_db_not
 'The plant component database associated with the model'
 'could not be opened. Check the model and then the'
 'folder and the file before trying again. '
 *enditem
          CALL ASKOK('Error occurred on opening data base file',
-*item dbdat
-'The plant component database associated with the model'
-'could not be opened. Check the model and then the'
-'folder and the file before trying again. '
-*enditem
-         CALL ASKOK(' Plant component database does not exist.',
-*item dbdat
-'The plant component database associated with the model'
-'could not be opened. Check the model and then the'
-'folder and the file before trying again. '
-*enditem
-         CALL ASKOK(' Not a plant database file.',
 *subroutine SYSOUTP
-*item SYSOUTP
-'The ..'
+*item SYSOUTP plant_test_point_val
+'The predictions can be filtered on the basis of a test point.'
+'Enter a real value.'
 *enditem
           CALL EASKR(XQUERY,' ','  Test point value ? ',
-*item SYSOUTP
+*item SYSOUTP plant_freq_reporting
 'If you need to customize the frequency reporting'
 'say no, otherwise the default set-up will probably '
 'work for initial interactive views. '
 *enditem
           call askok('  ','Use default bin set-up?',OK,dok,3)
-*item SYSOUTP
-'Give minimum bin value for the current parameter.'
+*item SYSOUTP plant_freq_bin_data
+'Give minimum and maximum bin value for the current parameter. Also'
+'give the number of bins required.'
 *enditem
           call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-*item SYSOUTP
-'Give maximum bin value for the current parameter.'
-*enditem
-          call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-*item SYSOUTP
-'The number of frequency bins is required.'
-*enditem
-          call easki(NBINS,' ',' Number of bins required ? ',
 *subroutine MOSA
-*item MOSA
-'Frequency distribution choices. '
+*item MOSA res_freq_menu_options
+'Frequency distribution opions allow you to look at '
+'graphs or tables or both. When you want to do something'
+'select the exit choice.'
+*enditem
+        CALL MENUATOL('Frequency choices','Frequency reports:',
+*item MOSA res_param_uncertainty
 'Intra set statistics.'
 '  Calculate summary statistics for individual sets.'
 ' '
@@ -1176,15 +1145,20 @@ C        CALL EASKABC('Data display options:',outs,
 ' '
 *enditem
         CALL PHELPD('Uncertainty analysis',9,'-',0,0,IER)
+*item MOSA res_param_zone_list
+'You are given a list of zones which can be include in the'
+'uncertainty assessments.'
+*enditem
+        CALL EPICKS(NZ,NZNO,' ',' Which zone to include: ',
 *subroutine SAINTRA
-*item SAINTRA
+*item SAINTRA res_summary_stats
 'The choice is between summary statistics describing'
 'each set individually, or a tabular listing of each'
 'sets data.'
 *enditem
       CALL EASKAB(' ','Output format:',
 *subroutine SAINTER
-*item SAINTER
+*item SAINTER res_summary_stats_vs
 'The choice is between summary statistics describing'
 'the range of output values, or a tabular listing of'
 'the base case, maximum and minimum values from the'
@@ -1192,15 +1166,23 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
       CALL EASKABC('Output format:',' ','Summary table',
 *subroutine SAPARSEN
-*item SAPARSEN
+*item SAPARSEN res_sensitivity_aver
+'When searching the data sets for uncertainty you can select'
+'to integrate the data or average the data.'
+' '
+'You also can specify how the effect is treated. The current'
+'selections are:'
+' a) average  ?'
+' b) main     ?'
+' c) 2-way interactions'
+' d) 3-way interactions.
 *enditem
       call EASKAB('Should data be:',' ','integrated','averaged',
-*item SAPARSEN
-*enditem
-        call EASKABCD('Effect:',' ','average','main',
 *subroutine WHSET
-*item WHSET
-'Chose a set to activate/ deactivate.'
+*item WHSET res_set_activation
+'In a sensitivity study there will be a number of results'
+'sets created. You can select some or all of these for the'
+'current analysis. Chose a set to activate/ deactivate.'
 *enditem
         CALL PHELPD('Result set activation',1,'-',0,0,IER)
 *subroutine MO3DPL

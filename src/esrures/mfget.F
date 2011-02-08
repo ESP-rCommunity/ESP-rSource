@@ -335,7 +335,7 @@ C If plot give graph command and labels command, otherwise list command.
       NITMS=27+nl
       INO=-2
 
-C Instanciate h() strings for this menu.
+C Instanciate help strings for this menu.
       helptopic='res_mass_flow_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
@@ -680,15 +680,11 @@ C          write(outs,'(a)')'(currently variable)'
 C        else
 C          write(outs,'(a)')'(currently rate of change)'
 C        endif
-C        h(1)='Typical results recovery are of the values within the'
-C        h(2)='results library. An alternative is to report the rate '
-C        h(3)='of change of a variable. The rate of change is expressed'
-C        h(4)='in units per hour (of the normal unit for the variable).'
-C        h(5)=' '
-C        h(6)='Note: all selections cleared when this option is altered.'
+C        helptopic='res_mass_flow_menu'
+C        call gethelptext(helpinsub,helptopic,nbhelp)
 C        CALL EASKABC('Data display options:',outs,
 C     &    'variable (default)','rate of change of variable','contine',
-C     &    II,6)
+C     &    II,nbhelp)
 C        if(II.ne.3.and.(IROC.ne.(II-1)))then
 C          IROC=II-1
 C          call usrmsg ('Clearing current selections....','  ','W')
@@ -2426,7 +2422,6 @@ C EDMFGOGET allows removal of output requests for flow networks.
 #include "building.h"
 #include "net_flow.h"
 
-      common/pophelp/h(60)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
@@ -2436,7 +2431,7 @@ C gmflabel char*20 is short label for graphs/tables for flow item
 C glmflabel char*32 is longer label for flow item
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
 
-      character VERT(MZS+3)*36,KEY*1,h*72
+      character VERT(MZS+3)*36,KEY*1
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       integer ORDER,OGET
       dimension INCGET(MFRS),ORDER(MFRS),OGET(MFRS)
@@ -2502,7 +2497,7 @@ C If a long list include page facility text.
       VERT(M+2)  ='? help                     '
       VERT(M+3)  ='- exit and activate changes'
 
-C Instanciate h() strings for this menu.
+C Instanciate help strings for this menu.
       helptopic='menu_selection_editing'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
