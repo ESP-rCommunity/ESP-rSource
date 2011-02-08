@@ -289,7 +289,6 @@ C PERIOD ACCORDINGLY.
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/DAYSF/KDS,KDF
@@ -301,9 +300,16 @@ C PERIOD ACCORDINGLY.
      &              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)
  
-      character DESCR*7,DESCR1*10,DESCRX*7,DESCR1X*10,h*72
+      character DESCR*7,DESCR1*10,DESCRX*7,DESCR1X*10
       character DESCRW*7,DESCRW1*10,outs*124,VNAME*32
       logical ok,dok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMMMSYNOP'  ! set for cfiles
       
 C If output to file alter the edisp unit number.
       itru = icout
@@ -420,8 +426,9 @@ C DAY AND MONTH NUMBER FORMAT.
 C Pause if a long list.
         if((idf-IDS).gt.100.and.ix.gt.150)then
           dok=.true.
-          h(1)='Pause point so you can study the listing. '
-          call askok(' continue listing?',' ',OK,dok,1)
+          helptopic='pause_to_study_listing'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('continue listing?',' ',OK,dok,nbhelp)
           ix=1
         endif
 

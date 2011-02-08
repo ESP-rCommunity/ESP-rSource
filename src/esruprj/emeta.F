@@ -549,6 +549,7 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       integer newsurf   ! index of surface when adding door/glazing
       integer ibcs      ! connection associated with base surface
+      real angr         ! for rotation
 
 C If browsing then user cannot create a new zone.
       if(browse)then
@@ -625,13 +626,13 @@ C Choices based on the value of shape.
         DZC=zsize(icomp,3)
 
 C Pending rotation angle and set point to origin of the zone.
-        ANG=rotateit(ICOMP,1)
+        ANGR=rotateit(ICOMP,1)
         rotateit(ICOMP,2)=XOC
         rotateit(ICOMP,3)=YOC
 
 C Convert box into a gen description. Pass in critical dimensions
 C and expect the data back via common G1.
-        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANG)
+        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANGR)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
         rotateit(ICOMP,6)=rotateit(ICOMP,3)
@@ -1603,6 +1604,12 @@ C Debug.
         goto 43
       elseif(WORD(1:7).eq.'*dbspth')then
         CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
+        goto 43
+      elseif(WORD(1:8).eq.'*hvacpth')then
+        CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*bsmpth')then
+        CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
         goto 43
 
 C Databases

@@ -139,7 +139,11 @@ C SAINTRA calculates summary statistics within result sets.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -147,7 +151,7 @@ C SAINTRA calculates summary statistics within result sets.
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS)
       character outs*124,RSNAME*40,H*72
-      character SLABEL*32,GLABEL*20, HEAD1*108, HEAD2*108
+      character HEAD1*108, HEAD2*108
 
       logical display, TOTALS
 
@@ -188,6 +192,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=ISET
         endif
@@ -217,7 +222,7 @@ C starting Y are set based.
 
 C Write header information.
       call edisp(itru,'  ')
-      write (outs,'(a)') SLABEL(1)
+      write (outs,'(a)') SLABEL(1)(1:LNSLABEL(1))
       call edisp(itru,outs)
       write (outs,'(a,a)') 'For zone: ',zname(IGETNO(1,2))
       call edisp(itru,outs)
@@ -425,7 +430,11 @@ C SAINTER calculates summary statistics within result sets.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -442,7 +451,6 @@ C SAINTER calculates summary statistics within result sets.
 #endif
 
       character outs*124,H*72
-      character SLABEL*32,GLABEL*20
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -524,6 +532,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=NSNO(ISET)
         endif
@@ -868,7 +877,11 @@ C SAPARSEN calculates individual parameter uncertainties.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -877,7 +890,6 @@ C SAPARSEN calculates individual parameter uncertainties.
       dimension IUNC(MNFA), IPT(MNRS,MNFA)
       
       character outs*124,RSNAME*40
-      character SLABEL*32,GLABEL*20
       
 C Call the menu of choices (this also sets some default options).
  1    MENUTYPE=6

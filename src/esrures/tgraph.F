@@ -164,8 +164,6 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOWLIN(act)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -182,7 +180,11 @@ C act='p' iget parameters already set.
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -193,8 +195,8 @@ C act='p' iget parameters already set.
 
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
-      character SLABEL*32,prompt*124
-      character GLABEL*20,ALABEL(5)*12,t20*20,act*1
+      character prompt*124
+      character ALABEL(5)*12,t20*20,act*1
       character graftitle*64,grlbl*24,t24*24
 
       integer YAXSET, ADDLIN
@@ -226,8 +228,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif

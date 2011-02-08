@@ -64,7 +64,7 @@ C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
 C   `dba` (looks in {where esp-r installed}/databases).
-C   `hva`(looks in ../hvac).
+C   `hva`(looks in ../hvac), `bsm` (looks in ../bsm).
 
 C what can be: `dir` list of folders, `fil` any files in the folders,
 C   `cfg` configuration files, `ctl` control files,
@@ -81,7 +81,7 @@ C   `dbb` binary database or climate file (for future use),
 C   `xbm` X bitmap files, `gif` gif image files,
 C   `ipv` IPV definition file, `rep` IPV report file
 C   `qac` QA contents file, `zip` cflo3 zip (geometry) file, 
-C   `hva` hvac files.
+C   `hva` hvac files, `bsm` (looks for BASESIMP files).
 
       dimension nwlistf(MFFOLD),ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
@@ -169,6 +169,11 @@ C project manager was started from).
      &    path(1:lnblnk(path)),tmppth(1:lnblnk(tmppth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    tmppth(1:lnblnk(tmppth))
+      elseif(where(1:3).eq.'bsm')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    bsmpth(1:lnblnk(bsmpth))
       elseif(where(1:3).eq.'usr')then
         write(subpath,'(2a)',iostat=ios,err=1) upath(1:lnblnk(upath)),
      &    fs
@@ -275,6 +280,9 @@ C In DOS no need to prepend odir (just use the relative path defined above).
       elseif(what(1:3).eq.'cgc')then
         action='cgc'
         write(outs,*) 'zone casual control files in ',subpath
+      elseif(what(1:3).eq.'bsm')then
+        action='bsm'
+        write(outs,*) 'zone BASESIMP files in ',subpath
       elseif(what(1:3).eq.'htc')then
         action='htc'
         write(outs,*) 'zone convection regime files in ',subpath
