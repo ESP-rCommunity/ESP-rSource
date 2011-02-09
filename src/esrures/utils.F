@@ -981,14 +981,20 @@ C ASKZON: call to enquire which zone the user is interested in.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       DIMENSION IVALS(MCOM),zn(MCON)
-      character H*72,zn*12
+      character zn*12
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKZON'  ! set for subroutine
 
 C If only one zone in problem then supply it.
       if(NZ.eq.1)then
@@ -1003,11 +1009,11 @@ C with local string).
   42    continue
       endif
 
-    7 H(1)='Pick one zone for inclusion in a graph or tabular'
-      H(2)='listing from the list provided.'
+    7 helptopic='res_zone_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=1
       CALL EPICKS(INPIC,IVALS,' ',' Which zone : ',
-     &  12,NCOMP,zn,' zone list',IER,2)
+     &  12,NCOMP,zn,' zone list',IER,nbhelp)
       if(INPIC.eq.0)then
         call edisp(iuout,' You must choose one of the zones! ')
         goto 7
@@ -1046,14 +1052,20 @@ C the user is interested in for stats/ graphs/ listings etc.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       DIMENSION IVA(MS),IVALS(MS)
-      character H*72,ST(MS)*12,CSTR*25
+      character ST(MS)*12,CSTR*25
       character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PICKSUR'  ! set for subroutine
 
 C Check for illegal zone number.
       IER=0
@@ -1073,9 +1085,11 @@ C Create list of surfaces in current zone (IZ) and reset call parameters.
    11 CONTINUE
 
 C Display menu of surfaces allow multiple selections.
-      H(1)='Pick one, several or all surfaces for inclusion.'
+      helptopic='res_surface_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(3a)')'Which surfaces in ',zname(IZ),' to include:'
-      CALL EPICKS(INPIC,IVALS,outs,' ',12,NZSUR(IZ),ST,zname(IZ),IER,1)
+      CALL EPICKS(INPIC,IVALS,outs,' ',12,NZSUR(IZ),ST,
+     &  zname(IZ),IER,nbhelp)
 
 C Check for selections and copy to call parameters for passing back.
       if (INPIC.gt.0) then
@@ -1105,7 +1119,6 @@ C lstanchr = links for each anchor
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -1114,7 +1127,14 @@ C lstanchr = links for each anchor
       DIMENSION IV(20),IZLST(MCON),ISLST(MCON)
 
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,ATYPE*4
-      character H*72,ST(20)*12,outs*124
+      character ST(20)*12,outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PICKANC'  ! set for subroutine
 
       IER=0
 
@@ -1141,9 +1161,11 @@ C Check that there are anchor points of the desired type.
       endif
 
 C Display menu of anchor points allow only one selection.
-      H(1)='Pick one anchor point.'
+      helptopic='res_anchor_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)')'Which anchor point to use?'
-      CALL EPICKS(INPIC,IV,outs,' ',13,NAC,ST,'Anchor points',IER,1)
+      CALL EPICKS(INPIC,IV,outs,' ',13,NAC,ST,'Anchor points',
+     &  IER,nbhelp)
 
 C Check for selections.
       if (INPIC.gt.0) then
@@ -1171,7 +1193,6 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1180,7 +1201,14 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
-      character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6
+      character ST(60)*22,outs*124,LMRT*72,CUBN*6
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PIKMRTS'  ! set for subroutine
 
       IER=0
 
@@ -1212,10 +1240,12 @@ C Check that there are MRT sensors.
       endif
 
 C Display menu of anchor points allow only one selection.
-      H(1)='Pick one or many MRT sensors.'
+      helptopic='res_MRT_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)')'Which MRT sensors to use?'
       IVLS=NTSEN
-      CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',IER,1)
+      CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',
+     &  IER,nbhelp)
 
 C Check for selections.
       if (NTSEN.gt.0) then

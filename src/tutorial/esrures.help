@@ -1749,7 +1749,7 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         CALL PHELPD('tabular',4,'-',0,0,IER)
 *subroutine MOGRAF
-*item MOGRAF
+*item MOGRAF res_graphs_menu
 'Graphing facilities for performance data include: '
 ' '
 ' Time:var graph -> performance data vs time.'
@@ -1761,37 +1761,47 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         CALL PHELPD('graphing',8,'-',0,0,IER)
 *subroutine MOCOPT
-*item MOCOPT
+*item MOCOPT res_control_point_t
 'One or more of the following control parameters'
 'may plotted with the control point temperature:'
 '  - Error '
 '  - Set-point'
-'  - Throttling range.'
+'  - Throttling range (in this case you are asked to'
+'    specify which control loop to plot. You should'
+'    check in the project manager or model QA report'
+'    for which control loop you want to select (there'
+'    is no listing of available loops given).'
 *enditem
       CALL ASKOK(' ',' Plot control error?',OK,dok,5)
-*item MOCOPT
-*enditem
-      CALL ASKOK(' ',' Plot control set-point?',OK,dok,5)
-*item MOCOPT
-*enditem
-      CALL ASKOK(' ',' Plot throttling range?',OK,dok,5)
-*item MOCOPT
-*enditem
-      CALL ASKOK(' ',' Plot plant loop(s)? ',OK,dok,5)
-*item MOCOPT
-*enditem
-10      CALL EASKI(iloop,' ',' Which plant control loop? ',
+      CALL EASKI(iloop,' ',' Which plant control loop? ',
 *subroutine ASKSUR
-*item ASKSUR
+*item ASKSUR res_zone_pick_menu
 'Pick one zone for inclusion in a graph or tabular'
 'listing from the list provided.'
 *enditem
       CALL EASKSUR(IZONE,ISFN,'-','Select surface to be reported on.',
-*subroutine ASKICN
-*item ASKICN
+*subroutine PICKSUR
+*item PICKSUR res_surface_pick_menu
 'Pick one, several or all surfaces for inclusion.'
+*enditem
+      CALL EPICKS(INPIC,IVALS,outs,' ',12,NZSUR(IZ),ST,zname(IZ),IER,1)
+*subroutine PICKANC
+*item PICKANC res_anchor_pick_menu
+'ESP-r had the concept of anchor points - this is a name'
+'which is associated with a list of surfaces which the user'
+'has grouped together - for example surfaces on the south facade.'
+'  '
 'Pick one anchor point.'
-'Pick one or many MRT sensors.'
+*enditem
+      CALL EPICKS(INPIC,IV,outs,' ',13,NAC,ST,'Anchor points',IER,1)
+*item PIKMRTS res_MRT_pick_menu
+'ESP-r supports the definition of one or more rectangular bodies'
+'in a zone which represent sensors for MRT at specific points in'
+'the zone. If the zone has MRT sensors you can select from the'
+'list.'
+*enditem
+      CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',IER,1)
+*item ASKICN
 'Node numbering begins from the `outside` of the'
 *enditem
           CALL EASKI(INN,outs,' Which node is to be considered ?',
