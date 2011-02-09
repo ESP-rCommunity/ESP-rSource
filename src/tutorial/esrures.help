@@ -1271,25 +1271,17 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         CALL PHELPD('node connection selection',12,'-',0,0,IER)
 *subroutine MOGCFG
-*item MOGCFG
+*item MOGCFG res_ask_cfg_file
 'The model configuration file holds the definition '
 'of the building/ plant to be simulated.  It should'
 'match the contents held within the results library.'
+'  '
+'If the file is found you will be given the option of'
+'getting a summary of the files which are associated'
+'with the model.'
 *enditem
         CALL PHELPD('no system file',3,'-',0,0,IER)
-*item MOGCFG
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOGCFG
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOGCFG
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOGCFG
-'If you say yes you will be presented with a list of'
-'the files which are associated with the model. '
-*enditem
+        CALL EASKF(longtmp,' ',
         call askok(' Do you want a listing of the files ',
 *subroutine SYNOPF
 *item res res_dialog_for_cfg_file
@@ -1316,33 +1308,19 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
           CALL PHELPW(nbhelp,IHW,IER)
 *subroutine MORFIL
-*item MORFIL
-'A results library is created by the simulator. It will'
+*item MORFIL reslib_files_dialog
+'A zone results library is created by the simulator. It will'
 'contain the time series results of one or more'
 'simulations. '
-'On computers running UNIX, the file: '
-'usually exists. This is a link to an example results'
-'library set up when ESP was first installed.'
+'  '
+'On most computers there will be a default results file'
+'set up when ESP was first installed.'
+'  '
+'Take extreme caution in using incomplete or corrupt '
+'results libraries! '
 *enditem
             CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
-*item MORFIL
-*enditem
-            CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
-*item MORFIL
-*enditem
-            CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-*item MORFIL
-*enditem
-          CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-*item MORFIL
-*enditem
-          CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
-*item MORFIL
-'Take extreme caution in using incomplete or corrupt '
-'results libraries. '
-*enditem
-        call easkab('Library is incomplete or corrupt...  Do you want',
-*item MORFIL
+*item MORFIL reslib_nb_sets_dialog
 'Change the variable MNRS in the file building.h to 100'
 'as results analysis is curently configured to read a '
 'maximum of 30 result sets. '
@@ -1351,31 +1329,21 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
         call easkab('Library has more than 30 result sets! Do you want',
 *subroutine MORESS
-*item MORESS
-'It is possible to examine differences between your'
-'result sets.  This is conventional when conducting'
-'an uncertainty analysis.'
-*enditem
-            call easkab(outs,'Do you wish to analyse:',
-*item MORESS
-*enditem
-            call easkab(outs,'Do you wish to analyse:',
-*item MORESS
-*enditem
-            call easkab(outs,'Do you wish to analyse:',
-*subroutine MOOPER
-*item MOOPER
-' Pick a set for analysis.'
-'This results library contains more than one result'
-'set, each one corresponding to the same system '
-'configuration but, perhaps, a different period,'
-'climate or control.'
+*item MORESS res_set_diff
+'A result file can hold more than one results set. For'
+'example the same model but a different simulation period'
+'or a different ideal zone control definition.'
+'  ' 
+'It is possible to examine differences in performance between'
+'your result sets.  This is helpful when conducting'
+'uncertainty analysis.'
 '  '
-'You are asked to specify the result-set you wish '
-'to analyse. The default is result-set 1.'
+'If there are multiple result sets in the file you will'
+'be presented with a list of named sets to select from.'
 *enditem
-   9  call askper(IFDAY,IER)
-*item MOOPER
+            call easkab(outs,'Do you wish to analyse:',
+            CALL EPICKS(ITMP,ITMPSETS,' ',' Which set for analysis: ',
+*item MOOPER res_output_timestep
 'The output time-step increment is an integer greater '
 'than 1. It determines the number of simulation '
 'time-steps which constitute 1 recovery step.'
@@ -1395,91 +1363,74 @@ C        CALL EASKABC('Data display options:',outs,
 'relevant symbol will be plotted on any graphs.'
 *enditem
       CALL EASKI(NOUT,' ',' Output time-step increment ? ',
-*item MOOPER
-*enditem
-        call askok(' ','Average results over each output interval?',
 *subroutine MOZDFN
-*subroutine MOINIT
-*item MOINIT
-'  '
-'Pick one zone for analysis purposes.'
-'  '
+*item MOZDFN res_zones_for_inclusion
 'Pick one, several or All zones for inclusion in a'
 'graph or tabular listing from the list provided. '
 'You may choose them in any order. '
+*enditem
+      CALL EPICKS(INPIC,IVALS,' ',' Which zones to include: ',
+*item MOINIT res_old_lib_cfg
 'The system configuration file name is being requested'
 'because this is an old library format which does not '
 'include this. If you cannot find this file then you'
 'cannot proceed.'
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' ',
-*item MOINIT
-'The model configuration file holds the definition of'
-'the building/plant which was simulated.'
-'This file was not found.  Please supply the model '
-'which MATCHES that within the results library.'
+'  '
+'If the model configuration file is not found you will be asked'
+'to supply a file that MATCHES that within the results library.'
+'  '
 'IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
-'WILL BE COMPROMISED! '
+'WILL BE COMPROMISED! ' 
 *enditem
-        CALL PHELPD('no system file',6,'-',0,0,IER)
-*item MOINIT
-'The model configuration file holds the definition '
-'of the building/ plant to be simulated.  It should'
-'match the contents held within the results library.'
-*enditem
-          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' Model configuration file ?',' ',144,
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' Model configuration file ?',' ',96,
-*item MOINIT
+          CALL EASKF(longtmp,' ',
+*item MOINIT res_clm_not_found
 ' A climate file defines the model boundary'
 ' condition. The one included in the results libary'
 ' was not found, type in the correct name.'
 *enditem
           CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item MOINIT
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
 *subroutine MOSTYLE
-*item MOSTYLE
-'Select the style of output required.  This will not '
-'effect current selections. '
+*item MOSTYLE res_style_selection_menu
+'Select the style of output required.'
+'  '
+' Time series plot - one or more variables plotted over a specific'
+'                    period of time'
+' Psychrmetric chart - plot temperature vs humidity state of zones'
+'                    or plant system components.'
+' Summary statistics - the minimum, maximum, time of occurrance'
+'                    and std deviation of performance data'
+' Hours > query point - statistical report with additional data'
+'                    on how often data is above a specific value'
+' Hours < query point - ditto but for how often data is below a
+'                    speific value'
+' Frequency histogram - performance data sorted into bins and'
+'                    presented as histograms in graphic or'
+'                    tabular form'
+' Tabular performance metrics - one or more columns of performance'
+'                    data - useful for export to other tools'        
 *enditem
         CALL PHELPD('Output styles',2,'-',0,0,IER)
 *subroutine SETUP
-*item SETUP
+*item SETUP res_preferences_menu
 'The preference menu allows the format of the `res` '
 'environment to be modified. '
-' '
+'  '
+'You can toggle the format of time reporting between the'
+' 10h00 10.00 and 0.41666 styles'
+'  '
 'For ease of viewing, several font sizes are available.'
 'Remember that the size of the window may be resized '
 'via the Environment button so that complex images '
 'may be viewed in greater detail.'
+'  '
 'You can record a sequence of menu selections for use in'
 'driving res to automatically recover the same performance'
-'information. '
+'information. (you will be asked to nominate a file name to'
+'hold this log).'
 *enditem
         CALL EASKABC(' Choices for recording menu selections:',' ',
-*item SETUP
-*enditem
-           call easks(ltmp,'File to hold sequence of selections:',
-*item SETUP
-*enditem
-        CALL PHELPD('res preferences',7,'-',0,0,IER)
 *subroutine MOSTAT
-*item MOSTAT
+*item MOSTAT res_statistics_menu
 'Statistics on performace data can be presented in a'
 'several formats: '
 ' '
@@ -1492,6 +1443,9 @@ C        CALL EASKABC('Data display options:',outs,
 ' '
 ' * zone sensible (convective + radiant) demands over'
 '   time with hours of use.'
+' '
+'Energy balances can be generated for a specific time '
+'(a snapshot) or integrated over the assessment period. '
 ' '
 'For the zone air the gains/losses are related to: '
 ' Infiltration = air flow from outside via natural and'
@@ -1535,16 +1489,10 @@ C        CALL EASKABC('Data display options:',outs,
 'condensation within constructions used in a zone or'
 'zones during the assessment period.'
 *enditem
-        CALL EASKI(IANS,' ',' Password: ',
-*item MOSTAT
-'Energy balances can be generated for a specific time '
-'(a snapshot) or integrated over the assessment period. '
-*enditem
-        call EASKABC('Energy balance options: ',' ',
-*item MOSTAT
-*enditem
-          CALL ASKRTIM(IFDAY,IMO,IDO,IDAY,TIME,IT,IER)
-*item MOSTAT
+*item MOSTAT res_air_point_forms
+'An energy balance can be reported as a snapshot at a single'
+'point in time or integrated over a user defined period.'
+'  '
 'The energy balance at the zone air point can be '
 'displayed in two forms: '
 ' *) flux paths separated into times when the plant was'
@@ -1552,15 +1500,10 @@ C        CALL EASKABC('Data display options:',outs,
 ' *) flux paths separated into gains and losses,'
 *enditem
         call EASKABC('Zone energy balance: ','(grouped by)',
-*item MOSTAT
-'Energy balances can be generated for a specific time '
-'(a snapshot) or integrated over the assessment period. '
-*enditem
-        call EASKABC('Energy balance options: ',' ',
-*item MOSTAT
-*enditem
-          CALL ASKRTIM(IFDAY,IMO,IDO,IDAY,TIME,IT,IER)
-*item MOSTAT
+*item MOSTAT res_surf_point_forms
+'An energy balance can be reported as a snapshot at a single'
+'point in time or integrated over a user defined period.'
+'  '
 'The energy balance at a surface can be '
 'displayed in three forms: '
 ' *) flux paths separated into times when the plant was'
@@ -1568,10 +1511,7 @@ C        CALL EASKABC('Data display options:',outs,
 ' *) flux paths separated into gains and losses,'
 *enditem
         call EASKABC('Surface energy balance: ','(grouped by)',
-*item MOSTAT
-*enditem
-          CALL ASKZON(ICOMP)
-*item MOSTAT
+*item MOSTAT res_stats_delimiter
 'Tabular data can be sent to file with various '
 'delimiters: '
 '  spaces (format using spaces to lineup columns)'
@@ -1581,14 +1521,11 @@ C        CALL EASKABC('Data display options:',outs,
 '  tagged - marked up data'
 *enditem
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
-*item MOSTAT
+*item MOSTAT res_help_choices
 'Information on each report is provided.'
 *enditem
         call easkatog(' ','Help options:','overview','summary stats',
-*item MOSTAT
-*enditem
-          CALL PHELPD('Enquire about',53,'-',0,0,IER)
-*item MOSTAT
+*item MOSTAT res_help_sum_stats
 'Performance data can be presented in the form of a'
 'statistical report. For example if you wanted'
 'to find out the peak value of temperatures in a'
@@ -1609,7 +1546,7 @@ C        CALL EASKABC('Data display options:',outs,
 ' '
 *enditem
           CALL PHELPD('Enquire summary stats',18,'-',0,0,IER)
-*item MOSTAT
+*item MOSTAT res_help_freq_table
 'Performance data can be presented in the form of a'
 'frequency table or graph. For example if you wanted'
 'to find out the distribution of temperatures in a'
@@ -1631,7 +1568,7 @@ C        CALL EASKABC('Data display options:',outs,
 'frequency report. '
 *enditem
          CALL PHELPD('Enquire frequency',19,'-',0,0,IER)
-*item MOSTAT
+*item MOSTAT res_help_zone_bal
 'A zone energy balance reports the flux gains and losses'
 'for infiltration, ventilation, occupant/lighting/small'
 'power and controlled casual gains as well as convection'
@@ -1685,7 +1622,7 @@ C        CALL EASKABC('Data display options:',outs,
 'energy balance report will indicate gains at the inside'
 *enditem
          CALL PHELPD('Enquire energy bal',52,'-',0,0,IER)
-*item MOSTAT
+*item MOSTAT res_help_specific_topic
 'There are several reports which focus on a specific'
 'topic and these are: '
 ' '
@@ -1716,7 +1653,7 @@ C        CALL EASKABC('Data display options:',outs,
 '   in several forms.'
 *enditem
           CALL PHELPD('Enquire detailed',28,'-',0,0,IER)
-*item MOSTAT
+*item MOSTAT res_help_monthly_gl
 'The monthly gains and losses report is a collection'
 'of performance metrics which can provide an overview'
 'of different zones over longer periods of time.'
@@ -1763,30 +1700,52 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
           CALL PHELPD('Enquire montly',43,'-',0,0,IER)
 *subroutine MOSQHR
-*item MOSQHR
-'The ..'
+*item MOSQHR res_above_below_pt
+'Often it is useful to scan performance data looking for'
+'how often data is above or below a specific value. In this'
+'dialog you are asked to nominate the value you want to test'
+'against.'
 *enditem
         CALL EASKR(XQUERY,' ','  Test point value ? ',
 *subroutine MOTABL
-*item MOTABL
+*item MOTABL res_tabular_menu
+'ESP-r provides this facility so that one or more columns'
+'of performance data can be listed to the text feedback'
+'window or exported to a file for use in other applications.'
+' '
+'As with other reporting facilities you have options to'
+'select the result set to use, the period of the assessment'
+'you wish to export and the specific zones that you want to'
+'include data for,'
+'  '
+'In the performance metrics option you will find the usual'
+'list of performance topics to select from.'
+'  '
+'In the special materials data option you can access data'
+'associated with phase change materials, PV integrated facade'
+'elements and the like.'
+'  '
+'In the network flow option you can select data related to'
+'flow nodes or flow connections.'
+'  '
 'The output format selection allows you to direct '
 'tabular listing to the standard text feedback area '
-'or to a named file.  You may also define the time  '
-'format for use in 3rd party graphing facilities.  '
-'Places an # separator between days of tabular data.'
-*enditem
-        CALL EASKAB('Include mark between days when ',
-*item MOTABL
-'Tabular data can be sent to file with various '
-'delimiters: '
+'or to a named file.  You may also define the time '
+'format for use in 3rd party graphing facilities and '
+'place an # separator between days of tabular data.'
+' '
+'The labels option toggles between writing the label for'
+'the column on a single line (useful when exporting) or'
+'on multiple lines (so that the label width conforms to'
+'the column width).'
+'  '
+'You may define various delimiters to use to separate'
+'the columns of data:'
 '  spaces (format using spaces to lineup columns)'
 '  single space between columns'
 '  comma separator (for excel)'
 '  tab separator (for excel)'
 '  tagged - marked up data'
-*enditem
-        CALL EASKATOG('Delimeter to use between columns of data:',' ',
-*item MOTABL
 *enditem
         CALL PHELPD('tabular',4,'-',0,0,IER)
 *subroutine MOGRAF
