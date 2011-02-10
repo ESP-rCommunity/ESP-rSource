@@ -166,24 +166,25 @@ C LSBEM (for SBEM database)
 C MCMPDBFL (Misc components)
 C default file names for databases
 
-#include "net_flow.h"
-#include "tdf2.h"
-#include "cfd.h"
-#include "uncertainty.h"
-#include "gnetwk.h"
-#include "dhw_common.h"
-#include "MultiYear_simulations.h"
-#include "bc_data.h"
-#include "espriou.h"
+      include "net_flow.h"
+      include "tdf2.h"
+      include "cfd.h"
+      include "uncertainty.h"
+      include "gnetwk.h"
+      include "dhw_common.h"
+      include "MultiYear_simulations.h"
+      include "bc_data.h"
+      include "espriou.h"
 C espriou.h provides currentfile and defdbfl.
-#include "lookup_data.h"
-#include "sbem.h"
-#include "roam.h"
-#include "CFC_common.h"
-#include "ipvdata.h"
-#include "seasons.h"
-#include "schedule.h"
-#include "UserSimulationToggles.h"
+      include "lookup_data.h"
+      include "sbem.h"
+      include "roam.h"
+      include "CFC_common.h"
+      include "ipvdata.h"
+      include "seasons.h"
+      include "schedule.h"
+      include "UserSimulationToggles.h"
+      include "blc25_open_windows.h"
 
       INTEGER, PARAMETER :: MSTMC=20
      
@@ -2954,6 +2955,8 @@ C See if what we have is a valid fluid network node name.
 
 C Right, it is a valid fluid network node name.
    32     ICAAS(ICOMP)=INOD
+C Mark this zone as using the air-flow network.    
+          iAirFlowModel(ICOMP)= iFlowNetwork
           GOTO 35
 
 C No, it is not. Now tranform what we have into a number.

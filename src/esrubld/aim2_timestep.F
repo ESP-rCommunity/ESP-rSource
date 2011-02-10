@@ -1066,46 +1066,71 @@ C Apportion infiltration to each zone. For now just distribute the air flow
 C in proportion to each room's volume. The basement should be treated somewhat
 C differently in the future.
 
-      IF (ALLOCATED(AIM2_zone_infil).AND.
-     &    ALLOCATED(AIM2_infil_to_zones)) THEN
+      ArraysAllocated: IF (ALLOCATED(AIM2_zone_infil).AND.
+     &                     ALLOCATED(AIM2_infil_to_zones)) THEN
 
         ZoneLoop: DO ICOMP=1,NCOMP               ! Examine each zone in the model.
           AIM2_infil_to_zones(ICOMP) = 0.        ! Initialize infil to zone.
           AIM2Zones: DO i=1,AIM2_num_zones_infil ! Check if there is infil to this zone.
-c Note: Not including the crawl space BB
+c Check to see if infiltration is spec'd for this zone, and that 
+C it's not a crawl-space
             rightzone: if( AIM2_zone_infil(i) .eq. ICOMP .and. 
      &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
-!     
-!C Operable window model: Are windows open and is aim2 model specified 
-!C during this period?
-!              !print*, icomp, bWindowsOpen(iComp), iAirFlowModel(iComp)
-              winopen: if ( bWindowsOpen(iComp) .and. 
-     &                      iAirFlowModel(iComp) .eq. iAIM2model ) then 
-!                
-              AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
-     &                 VOL(ICOMP)  * fACH_when_windows_open / 3600.
-              print*, "open:", fACH_when_windows_open, 
-     &                         AIM2_infil_to_zones(ICOMP)
-!     
-!                !print*, 'windows:', icomp, AIM2_infil_to_zones(ICOMP),
+     
+C Operable window model: Are windows open and is aim2 model specified 
+C during this period?
 
-!              
-              else 
-!     
+              winopen: if ( bWindowsOpen(iComp) .and. 
+     &                      iAirFlowModel(iComp) == iAIM2model ) then 
+
+C Yes. This is a crude window model that imposes a fixed ACH 
+C as specified in the AIM-2 model. It's really only useful in ensuring 
+C that overheating in winter and shoulder seasons does not unduely reduce
+C heating loads during the subsequent night. A more detailed window model
+C (using the air flow network with automated or stocastic control) should
+C be used to examine free cooling and summer comfort. 
+
+                ! There is infil to this zone, windows are open and 
+                ! AIM-2 simple window model should be used to estimate
+                ! air-flow. Impose specified ACH from AIM-2 file. 
+                AIM2_infil_to_zones(ICOMP) =                  
+     &                   VOL(ICOMP)  * fACH_when_windows_open / 3600.
+
+              elseif ( bWIndowsOpen(iComp) .and. 
+     &                 iAirFlowModel(iComp) /= iAIM2model ) then 
+     
+                ! There is infil to this zone, windows are open. 
+                ! But window flow rates will be computed using another
+                ! means (perhaps an air-flow network). Set AIM-2 infiltration 
+                ! to zero. 
+     
+                AIM2_infil_to_zones(ICOMP) = 0.
+                
+              elseif ( .not. bWindowsOpen(iComp) ) then 
+              
+                ! There is infil to this zone, windows are closed. 
+                ! Impose AIM-2 computed infiltration, pro-rated to 
+                ! zone volume. 
+              
+     
                 AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-!     
+     
+              else 
+              
+                ! Should not happen: all possibilities innumerated above. 
+     
               endif winopen
-!              
-!                                                             ! Processing of this zone complete.
+              
+                                                             ! Processing of this zone complete.
             exit
             endif rightzone
              
           end do AIM2Zones
         END DO ZoneLoop
       ELSE
-      CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
-      END IF
+        CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
+      END IF ArraysAllocated
 
 
       RETURN

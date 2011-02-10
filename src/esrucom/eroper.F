@@ -125,9 +125,10 @@ C Maximum number of air change periods/day MA=5
 C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-#include "building.h"
-#include "model.h"
-#include "espriou.h"
+      include "building.h"
+      include "model.h"
+      include "espriou.h"
+      include "blc25_open_windows.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
@@ -586,6 +587,11 @@ C << number of items on the line and loop accordingly.
 C Gain reporting if requested.
       if(ITRC.GE.1)call CASINF(ICOMP,ITRU)
 
+C Set flag that allows switching between air flow model and other methods
+C for computing infiltration / ventilation.
+      iAirFlowModel(icomp) = iOPRschedule      
+      
+      
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
       RETURN

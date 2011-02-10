@@ -253,6 +253,7 @@ C Set ICALL to zero to signal nested control property substitution.
         else
           write(outs,'(2a)')' Error: Nested control functions must',
      &      ' refer to control functions -99 or 25.'
+          print*, ifunc, ibclaw(ifunc,idtyp,iper) 
           if(dll)then
             dllsubr='MZBCTL'
             dllmesg=outs

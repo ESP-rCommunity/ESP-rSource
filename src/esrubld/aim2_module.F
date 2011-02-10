@@ -601,8 +601,11 @@ C    AIM2_attic_zone = Zone number of attic.
       
       SUBROUTINE AIM2_READIN
       IMPLICIT NONE
-#include "building.h"
-#include "espriou.h"
+      
+      include "building.h"
+      include "espriou.h"
+      include "blc25_open_windows.h"
+
 C espriou.h provides currentfile.
 
       integer lnblnk
@@ -964,15 +967,15 @@ C Allocate memory for AIM2_num_zones_infil
 C Check allocation was sucessful     
         IF (.NOT.ALLOCATED(AIM2_zone_infil)) THEN
           CALL EDISP(IUOUT,' Warning: AIM2_zone_infil not allocated')
-	END IF
+        END IF
 C Allocate memory for AIM2_num_zones_infil
         ALLOCATE(AIM2_infil_to_zones(NCOMP),
      &       STAT=allocate_status)
 C Check allocation was sucessful     
         IF (.NOT.ALLOCATED(AIM2_infil_to_zones)) THEN
           CALL EDISP(IUOUT,'AIM2_infil_to_zones not allocated')
-	END IF
-	  
+        END IF
+ 
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
             CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
@@ -982,7 +985,10 @@ C Check allocation was sucessful
               goto 1000
             endif
             AIM2_zone_infil(ICOMP) = IVAL
-	  END DO
+C Set flag indicating that this zone's infiltration will be computed 
+C using the AIM2 model  
+            iAirFlowModel(IVAL) = iAIM2Model
+          END DO
         END IF
       END IF
 
@@ -2428,3 +2434,22 @@ C *********************************************************************
       END SUBROUTINE AIM2_ClearAll
  
       END MODULE AIM2
+
+      
+C ******************* OpenWindowBlockdata ******************************
+C **********************************************************************
+C This routine initializes common data held in blc25_open_windows.h
+C **********************************************************************
+      
+      blockdata OpenWindows
+      implicit none 
+      include "building.h"
+      include "blc25_open_windows.h"
+      
+      data bWindowsOpen  / mcom * .false. /
+      data iAirFlowModel / mcom * iOprSchedule  / 
+      
+      end blockdata OpenWindows
+
+      
+      
