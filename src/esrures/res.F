@@ -76,7 +76,6 @@ C default file names for databases
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
-C      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
       common/trc/itrc
@@ -740,7 +739,6 @@ C external tool.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -777,7 +775,7 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
       character ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
-      character topic*248,head*136,act*1,h*72
+      character topic*248,head*136,act*1
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok

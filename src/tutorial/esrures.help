@@ -1801,12 +1801,31 @@ C        CALL EASKABC('Data display options:',outs,
 'list.'
 *enditem
       CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',IER,1)
-*item ASKICN
-'Node numbering begins from the `outside` of the'
+*item ASKICN res_constr_node_pick
+'Node numbering begins from the outside face of the surface. There'
+'are 3 nodes per layer. Example: double glazed window (3 layers)'
+' will have 7 nodes as follows:'
+' ext face of glass    ------- node 1 -----------'
+' middle of glass              node 2'
+' face of glass        ------- node 3 -----------'
+' air gap                      node 4'
+' face of glass        ------- node 5 -----------'
+' middle of glass              node 6'
+' inside face of glass ------- node 7 -----------'
+'  '
+'Example: earth concrete carpet'
+' ext face of earth    ------- node 1 -----------'
+' middle of earth              node 2'
+' face of earth/conc   ------- node 3 -----------'
+' middle of conc               node 4'
+' face of conc/carpet  ------- node 5 -----------'
+' middle of carpet             node 6'
+' inside face of carpet ------ node 7 -----------'
+'  '
 *enditem
           CALL EASKI(INN,outs,' Which node is to be considered ?',
 *subroutine ASKRTIM
-*item ASKRTIM
+*item ASKRTIM res_output_time_pick
 'The output time defines the day, month and decimal '
 'hour at which the output is requested. '
 'This must be no earlier than 0.00 hours or later '
@@ -1821,44 +1840,27 @@ C        CALL EASKABC('Data display options:',outs,
  283    CALL EASKS(HOLD,' ',' Day-of-month, month & time: ',
 *subroutine VALIAV
 *subroutine ASKPER
-*item ASKPER
+*item ASKPER res_output_period
 'The output start time defines the day, month and '
 'hour at which the results recovery will commence.'
 'This hour must be within the simulation period. '
 'Hour 1 is defined as the period 0h00 to 1h00, and'
 'hour 2 is defined as the period 1h00 to 2h00 etc.'
-'The period must be within a calendar year'
-*enditem
-        CALL EASKS(HOLD,' ',' Start day-of-year & time: ',
-*item ASKPER
+'  '
 'The output finish time defines the day, month and '
 'hour at which the results recovery will terminate.'
 'This hour must be within the simulation period. '
 'Hour 1 is defined as the period 0h00 to 1h00, and'
 'hour 2 is defined as the period 1h00 to 2h00 etc.'
+'  '
 'The period must be within a calendar year'
 *enditem
-        CALL EASKS(HOLD,' ',' End day-of-year & time: ',
-*item ASKPER
-'The output start time defines the day, month and '
-'hour at which the results recovery will commence.'
-'This hour must be within the simulation period. '
-'Hour 1 is defined as the period 0h00 to 1h00, and'
-'hour 2 is defined as the period 1h00 to 2h00 etc.'
-'The period must be within a calendar year'
-*enditem
-        CALL EASKS(HOLD,' ',' Start day-of-month, month & time: ',
-*item ASKPER
-'The output finish time defines the day, month and '
-'hour at which the results recovery will terminate.'
-'This hour must be within the simulation period. '
-'Hour 1 is defined as the period 0h00 to 1h00, and'
-'hour 2 is defined as the period 1h00 to 2h00 etc.'
-'The period must be within a calendar year'
-*enditem
-        CALL EASKS(HOLD,' ',' End day-of-month, month & time: ',
+       CALL EASKS(HOLD,' ',' Start day-of-year & time: ',
+       CALL EASKS(HOLD,' ',' End day-of-year & time: ',
+       CALL EASKS(HOLD,' ',' Start day-of-month, month & time: ',
+       CALL EASKS(HOLD,' ',' End day-of-month, month & time: ',
 *subroutine ctlexp
-*item ctlexp
+*item ctlexp res_export_file_loc
 'If using path then the export file will be placed in'
 'the model folder. Otherwise nominate a folder and'
 'file name for the export file (i.e. /tmp/junk.exp or'
@@ -1867,50 +1869,49 @@ C        CALL EASKABC('Data display options:',outs,
 'If you selected this option in error click continue.'
 *enditem
             CALL EASKABC(outs,' place export file:',
-*item ctlexp
+*item ctlexp res_export_file_3rd
 'This file is a text file which can be used in'
 'reports or for third party tools. '
 *enditem
               CALL EASKF(xfile,' Export file name? ',
-*item ctlexp
-*enditem
-              CALL EASKF(xfile,' Export file name? ',
-*item ctlexp
-*enditem
-              CALL EASKF(xfile,' Export file name? ',
-*item ctlexp
-*enditem
-            CALL EASKF(xfile,' Export file name? ',
-*item ctlexp
-*enditem
-            CALL EASKF(xfile,' Export file name? ',
-*item ctlexp
+*item ctlexp res_export_title_3rd
 '3rd party graphing usually has a main title...'
 *enditem
           call easks(ttext,'Title for 3rd party graph: ',' ',42,
-*subroutine axisnorm
 *subroutine VWLIN
-*item VWLIN
-'The var vs var menu does not yet have'
-'any help associated with it. '
+*item VWLIN res_var_var_menu
+'The var vs var facility plots one performance metric against'
+'another e.g. room dbT vs ambient dbT.'
+'  '
+'As with other report/graph facilities you have the option to'
+'select which result set you want to work with, the period of'
+'the assessment you want to report on and the zones that you'
+'want to include in the graph.'
+'  '
+'Not all of the standard performance metrics are available for'
+'this graph. You must select two separate performance metrics'
+'to use the graph.'
+'  '
+'You may need to reset the axis scale to clearly see the relationship'
+'between the two data types.'
+'  '
+'You have the option to set the scale to Watts or KW.'
 *enditem
       CALL EASKAB(' ','Load/intensity variable in:',
 *subroutine VGMXN
-*item VGMXN
-*enditem
-      CALL ASKSUR(II,ISUR)
-*item VGMXN
-*enditem
-      CALL ASKSUR(II,ISUR)
-*item VGMXN
-*enditem
-      call ASKICN(II,ISUR,INN)
-*item VGMXN
+*item VGMXN res_inside_saturation
+'In order to plot the dew point temperature please specify'
+'the % saturation on the inside.
 *enditem
       CALL EASKR(V,outs,' ?',0.,'F',100.,'F',50.,
-*item VGMXN
+*item VGMXN res_inside_face
+'Some performance metrics could be reported at the other face or the'
+'inside face of surfaces. Please specify which you want to use.'
 *enditem
     7 CALL EASKAB(' ','Which side :',
-*item VGMXN
+*item VGMXN res_gains_rad_conv
+'You requested casual gains as one part of your var vs var graph.'
+'Please specify whether you want to plot the radiant or the'
+'convective portion of these gains.'
 *enditem
     8 CALL EASKAB(' ','Casual gains :',
