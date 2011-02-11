@@ -598,9 +598,6 @@ C The from scratch should intially be version 2.0
           CALL PHELPD('operation setup',23,'-',0,0,IER)
           call initcasday(ier)
 
-C Debug.
-C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
-
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
