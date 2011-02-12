@@ -736,6 +736,8 @@ C Get to work.
         folder='esruclm'
       elseif(app(1:3).eq.'bps')then
         folder='esrubps'
+      elseif(app(1:3).eq.'dfs')then
+        folder='esrudfs'
       elseif(app(1:3).eq.'mfs')then
         folder='esrumfs'
       elseif(app(1:3).eq.'mld')then

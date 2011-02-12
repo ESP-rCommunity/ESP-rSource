@@ -39,7 +39,6 @@ C if these are 0 then use default values.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
@@ -97,7 +96,7 @@ C Name of current application
       character cAppName*12
 
       CHARACTER*24 ITEM(10)
-      CHARACTER H*72,inf*144,LCFD*72,DFCFD*72,Lflpar*72
+      CHARACTER inf*144,LCFD*72,DFCFD*72,Lflpar*72
       character path*72,longtfile*144
       CHARACTER doit*248,tmode*8,outs*124,fs*1,outstr*124
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
@@ -114,6 +113,12 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO,INOt,INO1,INO2  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -136,6 +141,8 @@ C Clear all arrays.
       call ezero
       call curmodule('dfs ')
       cAppName = 'dfs'
+      helpinapp='dfs'  ! set once for the application
+      helpinsub='dfs'  ! set for MAIN
 
 C Initialization for matlab.
       islice=2
@@ -412,11 +419,10 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
 
 C change configuration file name
 C << Note: array index 1 is hard coded below! >>
-        H(1)='To run a simulation a configuration file name must be '
-        H(2)='provided, otherwise one must be created before run the'
-        H(3)='program. '
+        helptopic='dfs_config_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   289   CALL EASKF(LCFD(1),'Domain flow definition file name?','  ',
-     &    72,DFCFD,'Domain flow definition file',IER,3)
+     &    72,DFCFD,'Domain flow definition file',IER,nbhelp)
         call usrmsg('File selected is',LCFD(1),'-')
         IF(LCFD(1).EQ.'  ')GOTO 289
         CALL ERPFREE(IFL,ISTAT)
@@ -482,8 +488,8 @@ C Set simulation toggles.
         NITMS=5
 
 C Help text for this sub-menu.
-        h(1)='There is currently no help provided for the simulation'
-        h(2)='toggles section of dfs. '
+        helptopic='dfs_simulation_toggles'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EMENU('Simulation toggles',ITEM,NITMS,INOt)
         IF(INOt.EQ.1)THEN
           ILISOL=ILISOL+1
@@ -498,7 +504,9 @@ C Help text for this sub-menu.
         ELSEIF(INOt.EQ.4)THEN 
 
 C HELP
-          CALL PHELPD('dfs simul toggles',2,'-',0,0,IER)
+          helptopic='dfs_simulation_toggles'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('dfs simul toggles',nbhelp,'-',0,0,IER)
         ELSEIF(INOt.EQ.5)THEN 
           goto 10
         endif
@@ -520,23 +528,21 @@ C Re-set graphic feedback.
           call startbuffer()
         endif
         CALL EASKAB('  ','What kind of simulation is?',
-     &    'Steady','Transient',IW,0)
+     &    'Steady','Transient',IW,nbhelp)
         IF(IW.EQ.1)then
           TIMAX=1.0E20
           TSTEP=1.0E20
           GOTO 60
         ENDIF
    50   V=TIMAX/3600.0
-        H(1)='Enter the period to run the simulation.'
         CALL EASKR(V,'  ','Simulation period (h) ? ',
-     &        1E-5,'F',0.0,'-',24.0,' Simulation period',IER,1)
+     &    1E-5,'F',0.0,'-',24.0,'Simulation period',IER,nbhelp)
         IF(IER.NE.0) GOTO 50
         TIMAX=V*3600.0
 
    51   V=TSTEP/3600.0
-        H(1)='Enter simulation time-step.'
-        CALL EASKR(V,'  ',' Simulation time-step (h) ? ',
-     &           1E-6,'F',TIMAX,'F',1.0,' Simulation time-step',IER,1)
+        CALL EASKR(V,'  ','Simulation time-step (h) ? ',
+     &    1E-6,'F',TIMAX,'F',1.0,'Simulation time-step',IER,nbhelp)
         IF(IER.NE.0) GOTO 51
         TSTEP=V*3600.0
 
@@ -599,7 +605,8 @@ C Check for model (set bounds on domain for visualisation).
         NITMS=6
 
 C Help text for results sub-menu.
-        h(1)='There is no help for results sub-menu. '
+        helptopic='dfs_results_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EMENU(' results',ITEM,NITMS,INO1)
         IF(INO1.EQ.1)THEN 
 
@@ -609,8 +616,8 @@ C editor preference specified in the `dot' file.
 C Execute xten.
 C Get logical name of terminal type, expand problem name
 C to include the path and create a string to drive xten.
-  389     CALL EASKS(RESFL,' Result file name ? ','  ',
-     &       72,LPHI(1),' Result file',IER,0)
+  389     CALL EASKS(RESFL,'Result file name for DFS predictions?',
+     &      '  ',72,LPHI(1),' Result file',IER,nbhelp)
           IF(RESFL.EQ.'  ')GOTO 389
           INQUIRE (FILE=RESFL,EXIST=XST)
           IF(.NOT.XST)THEN
@@ -628,15 +635,9 @@ C to include the path and create a string to drive xten.
             GOTO 10
           ENDIF
         ELSEIF(INO1.EQ.2)THEN
-          H(1)='Before starting the analysis of the results using'
-          H(2)='PHOTON, the following files should be copied to the'
-          H(3)='current folder:'
-          H(4)='     `prefix`   and    `runpho`   '
-          H(5)='These files are usually resident in:'
-          H(6)='../d_phoe21/d_modpri'
-          H(7)='Also, the following link should be made:'
-          H(8)='     `ln -s ../d_phoe21 lp21`'
-          CALL PHELPD('PHOTON file',8,'-',0,0,IER)
+          helptopic='dfs_results_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('PHOTON file',nbhelp,'-',0,0,IER)
 
 C Execute PHOTON.
 C Get logical name of terminal type, expand problem name
@@ -651,7 +652,9 @@ C to include the path and create a string to drive PHOTON.
           IF(XST)THEN
             call runit(doit,tmode)
           ELSE
-            CALL PHELPD('PHOTON analysis',8,'-',0,0,IER)
+            helptopic='dfs_results_menu'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('PHOTON analysis',nbhelp,'-',0,0,IER)
           ENDIF
         ELSEIF(INO1.EQ.3)THEN
 
@@ -668,27 +671,25 @@ C Let the user pick a menu item.
             ITEM(3) ='c Slice in z-direction' 
             ITEM(4) ='- Exit                '
             NITMS=4
-            h(1)='There is currently no help for Matlab menu.'
   72        CALL EMENU(' Matlab',ITEM,NITMS,INO2)
-            H(1)='Enter a number of the slice to be visualized.'
             IF(INO2.EQ.0)THEN
 
 C Wrong pick.
               INO2=-1
               GOTO 72
             ELSEIF(INO2.EQ.1)THEN
-  74          CALL EASKI(islice,'  ',' Enter slice number ',
-     &          2,'F',nim1,'F',2,' Slice number',IER,1)
+  74          CALL EASKI(islice,'  ','Enter X slice number ',
+     &          2,'F',nim1,'F',2,' Slice number',IER,nbhelp)
               IF(IER.NE.0) GOTO 74
               xslice=.TRUE.
             ELSEIF(INO2.EQ.2)THEN
-  76          CALL EASKI(jslice,'  ',' Enter slice number ',
-     &          2,'F',njm1,'F',2,' Slice number',IER,1)
+  76          CALL EASKI(jslice,'  ','Enter Y slice number ',
+     &          2,'F',njm1,'F',2,' Slice number',IER,nbhelp)
               IF(IER.NE.0) GOTO 76
               yslice=.TRUE.
             ELSEIF(INO2.EQ.3)THEN
-  78          CALL EASKI(kslice,'  ',' Enter slice number ',
-     &          2,'F',nkm1,'F',2,' Slice number',IER,1)
+  78          CALL EASKI(kslice,'  ','Enter Z slice number ',
+     &          2,'F',nkm1,'F',2,' Slice number',IER,nbhelp)
               IF(IER.NE.0) GOTO 78
               zslice=.TRUE.
             ELSEIF(INO2.EQ.4)THEN
@@ -696,15 +697,7 @@ C Wrong pick.
             ENDIF
           ENDIF
 
-          H(1)='an input-file for MATLAB, named startup.m,'
-          H(2)='is created. Check if non-DFS related file'
-          H(3)='startup.m exists.'
-          H(4)='  '
-          H(5)='If yes, move file to other folder'
-          H(6)='before continuation MATLAB analysis'
-          H(7)='  '
-          H(8)='to quit MATLAB, enter: quit'
-          CALL PHELPD('MATLAB file',8,'-',0,0,IER)
+          CALL PHELPD('MATLAB file',nbhelp,'-',0,0,IER)
 
 C Assemble matlab file 'startup.m'.
           ifl = ICFLIB
@@ -715,12 +708,6 @@ C Assemble matlab file 'startup.m'.
           CALL ERPFREE(IFL,ISTAT)
 
 C Execute MATLAB with startup.m file (the MATLAB default).
-          H(1)='Before starting the analysis of the results using'
-          H(2)='MATLAB, check if MATLAB is present in your path'
-
-C  80      CALL EASKS(RESFL,' Result file name ? ','  ',
-C     &                           72,LPHI(1),' Result file',IER,0)
-C         IF(RESFL.EQ.'  ')GOTO 80
           doit = '  '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
@@ -734,7 +721,7 @@ C Graphs are defined in cfmatl.F.
             call runit(doit,tmode)
             if (incalu.and.incalv.and.incalw)goto 70
           ELSE
-            CALL PHELPD('MATLAB analysis',2,'-',0,0,IER)
+            CALL PHELPD('MATLAB analysis',nbhelp,'-',0,0,IER)
           ENDIF
         ELSEIF(INO1.EQ.4)THEN
 
@@ -746,19 +733,17 @@ C For stand-alone: only one file is written (current timestep)!
 C Visualise flow.
 C Check that we have results to visualise.
           if (.not.SIMOK) then
-            h(1)='Flow vectors from a previous simulation can be'
-            h(2)='saved for analysis later.  If you have a flow '
-            h(3)='vectors file then you can continue with the '
-            h(4)='visualisation. '
+            helptopic='dfs_flow_vectors'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call EASKABC('There are no results to visualise!',
-     &                          'Options:','Return to main menu',
-     &             'Provide vectors file','Provide library file',IW,4)
+     &        'Options:','Return to main menu',
+     &        'Provide vectors file','Provide library file',IW,nbhelp)
             if (IW.eq.1) then
               goto 10
             elseif (IW.eq.2) then
               t72=LVEC
               call EASKS(t72,'Results file name?','  ',72,
-     &                            'CFD.vectors','vectors file',IER,0)
+     &          'CFD.vectors','vectors file',IER,nbhelp)
               call FINDFIL(t72,XST)
               IF(.NOT.XST) goto 10
 
@@ -773,7 +758,7 @@ C has not yet been performed.
             elseif (IW.eq.3) then
               t72=LVEC
               call EASKS(t72,'Results library file name?','  ',72,
-     &                            'test_vec.lib','library file',IER,0)
+     &                   'test_vec.lib','library file',IER,nbhelp)
               call FINDFIL(t72,XST)
               IF(.NOT.XST) goto 10
 
@@ -802,12 +787,10 @@ C Help via the askabout facility in esru_ask.F The zero requests display
 C Finish simulation.
 C Should the results files be removed ?
         dok=.true.
-        h(1)='Assuming you have run DFS stand-alone and already looked'
-        h(2)='results and generated images there may be no need to '
-        h(3)='keep the results files. '
-        h(4)=' '
-        h(5)='If you keep the files you can look at the data again. '
-        CALL ASKOK(' ',' Delete results file before exiting?',OK,dok,5)
+        helptopic='dfs_ask_to_keep_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ','Delete results file before exiting?',
+     &    OK,dok,nbhelp)
         if (OK) then
           CALL EFDELET(ICFLIB,ISTAT)
           CALL EFDELET(ICFMON,ISTAT)
@@ -818,11 +801,8 @@ C Should the results files be removed ?
 
 C Should the cfd temporary file be removed ?
         dok=.true.
-        h(1)='The temporary files were used during caluclation and'
-        h(2)='would be re-generated if you recalculate so there is '
-        h(3)='little need to keep them. '
         CALL ASKOK(' ','Delete temporary file before exiting?',
-     &    OK,dok,3)
+     &    OK,dok,nbhelp)
         if (OK) then
           CALL EFDELET(ICFTMP,ISTAT)
         else
