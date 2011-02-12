@@ -75,8 +75,13 @@ C IW(Integer) : 1 = read BCF silently (=2 if not)
       CHARACTER ACOName*72,LabFreq*4,CalName*12
       CHARACTER PubType*12, FurType*12, FurCat*4
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Initialiastion
+      helpinsub='SCNACO'  ! set for subroutine
       IER=0
       ACOOK = .TRUE.
       NbFurnit = 0
@@ -90,8 +95,11 @@ C Initialiastion
 
 C Specify the reading mode.
       IF (IEask.EQ.1) THEN
+        helptopic='aco_read_aco_silent'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' When reading in the header of ACO file, do you',
-     &  ' want it:','done silently','with reporting of contents',IW,0)
+     &  ' want it:','done silently','with reporting of contents',
+     &  IW,nbhelp)
       ELSE
         IW = 1        
       ENDIF
@@ -186,6 +194,7 @@ C              call edisp(iuout,' Read furniture block')
               IF (IER .GE. 1) goto 666 
 221         CONTINUE
 211       CONTINUE
+
 C When furniture has been read, exit the file. The scan of the zone
 C public and furniture information is done in scnzoneaco.
           GOTO 777
@@ -270,7 +279,14 @@ C IW(Integer) : 1 = read ACO silently (=2 if not)
       CHARACTER LabFreq*4,CalName*12
       CHARACTER ACOName*72, ZoneLabel*12,ZoneName*12,CovSurf*12
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialiastion
+      helpinsub='SCNZONEACO'  ! set for subroutine
       IER=0
       ACOOK = .TRUE.
       IDisp = 0
@@ -285,8 +301,11 @@ C Initialiastion
 
 C Specify the reading mode.
       IF (IEask.EQ.1) THEN
+        helptopic='aco_read_furn_silent'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' When reading in the people/furnit. block, do you',
-     &  ' want it:','done silently','with reporting of contents',IW,0)
+     &    ' want it:','done silently','with reporting of contents',
+     &    IW,nbhelp)
       ELSE
         IW = 1        
       ENDIF
@@ -323,6 +342,7 @@ C Read ACO header : version, date, system scope, lifetime information.
           K=6
           CALL EGETW(OUTSTR,K,ZoneLabel,'W','zone name',IER)
           IF (IER .GE. 1) goto 666
+
 C Check if readed zone correspond to searched zone
           IF (ZoneName .EQ. ZoneLabel) THEN
             IF (IEask.GE.2) call edisp(iuout,OUTSTR)
@@ -510,17 +530,20 @@ C Label (String)  :
 
 C Check consistancy
       IF (Itype .EQ. 0) THEN
-        WRITE(outs,'(a,a)')' Error in public list: ',Label
+        WRITE(outs,'(a,a)')' Error in public list: ',
+     &    Label(1:lnblnk(Label))
       ELSEIF (Itype .EQ. 1) THEN
-        WRITE(outs,'(a,I3,a,a)')' Error in furniture list: ',Label
+        WRITE(outs,'(a,a)')' Error in furniture list: ',
+     &    Label(1:lnblnk(Label))
       ELSEIF (Itype .EQ. 2) THEN
-        WRITE(outs,'(a,I3,a,a)')' Error in zone list: ',Label
+        WRITE(outs,'(a,a)')' Error in zone list: ',
+     &    Label(1:lnblnk(Label))
       ENDIF
       Call edisp(iuout, outs)
       WRITE(outs,'(a)')' Nb of arguments is incorrect'
       Call edisp(iuout, outs)
-      WRITE(outs,'(a,I3,a,I3,a)')' Should be ',MShould, '   but are  ',
-     &      MIs,'   argument(s)'
+      WRITE(outs,'(a,I3,a,I3,a)')' Should be ',MShould, ' but are  ',
+     &      MIs,' argument(s)'
       Call edisp(iuout, outs)
       RETURN
       END

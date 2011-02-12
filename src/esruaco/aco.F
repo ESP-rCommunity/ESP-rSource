@@ -76,9 +76,6 @@ C Interface frame dimensions
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
 
-C Help
-      COMMON/pophelp/h(60)
-
 C View point, view direction, ...
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
@@ -135,7 +132,7 @@ C Name of current application
 
       CHARACTER BCFName*72,DBCFNam*72
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
-      CHARACTER H*72,outs*210,ITEM*35,MODE*4
+      CHARACTER outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path
@@ -149,10 +146,18 @@ C Name of current application
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('aco ')
       cAppName = 'aco'
+      helpinapp='aco'  ! set once for the application
+      helpinsub='RevTime'  ! set for MAIN
       IUIN = 5
       IUOUT = 6
       ixunit = 7
@@ -198,7 +203,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      write(path,'(a1,a1)')'.',fs
+      write(path,'(2a)')'.',fs
 
 C Set defaults.
       CFGOK=.FALSE.
@@ -418,8 +423,8 @@ C No loaded project
 
 C If BCF and ACO file supply, just read them
       IF (BCFName(1:7).ne.'UNKNOWN') THEN
-        write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
-     &      '...'
+        write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+     &    '...'
         call usrmsg(outs,' ','-')
         CALL SCNBCF(IBCF,BCFName,IER)
         IF (IER .GT. 0) THEN 
@@ -427,15 +432,15 @@ C If BCF and ACO file supply, just read them
           BCFOK=.FALSE.
           BCFNAME='UNKNOWN'
         ELSE
-          write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
-     &        '...done.'
+          write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+     &      '...done.'
           call usrmsg(outs,' ','P')
         ENDIF
       ENDIF
 
       IF (ACOName(1:7).ne.'UNKNOWN') THEN
         ACOOK=.TRUE.
-        write(outs,'(a,a,a)') 'Loading ',ACOName(1:lnblnk(ACOName)),
+        write(outs,'(3a)') 'Loading ',ACOName(1:lnblnk(ACOName)),
      &    '...'
         call usrmsg(outs,' ','-')
         call scnaco(1,IER)
@@ -446,7 +451,7 @@ C If BCF and ACO file supply, just read them
           BCFNAME='UNKNOWN'
           GOTO 10
         ELSE
-          write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+          write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &      '...done.'
           call usrmsg(outs,' ','P')
         ENDIF
@@ -454,10 +459,10 @@ C If BCF and ACO file supply, just read them
 
 C Main Menu
 10    INO = -4
-      write(ITEM(1),'(A,A22)')   'a Problem : ',LCFGF
-      write(ITEM(2),'(A,A25)')   '  Path : ',path
-      write(ITEM(3),'(A,A25)')   'b BCF  : ',BCFName
-      write(ITEM(4),'(A,A25)')   'c ACO  : ',ACOName
+      write(ITEM(1),'(A,A22)')   'a Problem : ',LCFGF(1:22)
+      write(ITEM(2),'(A,A25)')   '  Path : ',path(1:25)
+      write(ITEM(3),'(A,A25)')   'b BCF  : ',BCFName(1:25)
+      write(ITEM(4),'(A,A25)')   'c ACO  : ',ACOName(1:25)
       ITEM(5)=                 '  ---------- Zones --------------  '
       write(ITEM(6),'(A)')   'd Select zone(s) to include '
       if (TxtZone(1:6).eq.'UNKNOW') then
@@ -518,7 +523,7 @@ C Main Menu
         ITEM(14) =            '                                  '         
       endif
       ITEM(15)=               ' --------- Calculation ----------  '
-      write(ITEM(16),'(A,A)')  'j  Method >> ',
+      write(ITEM(16),'(2A)')  'j  Method >> ',
      &                          CalcName(MethodRT)(1:12)
       if ((TxtZone.eq.'N/A').or.(TxtZone.eq.'UNKNOWN')) then
         write(ITEM(17),'(A)')  'g  Calculation N/A'
@@ -589,42 +594,40 @@ C Reporting output display selection
       elseif (INO.EQ.13) THEN
 
 C Air absorption
-         h(1)='Air absorption has an influence for large volume.'
-         h(2)='By default air absorption should always be take '
-         h(3)='into account. This facility provides the possibility'
-         h(4)='to assess the influence of the air absoption.'
-         CALL EASKAB(' The air absoption ',' should be :','Inculde ',
-     &                'NOT included ',IairAb,4)
+         helptopic='aco_air_absorption'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         CALL EASKAB('The air absorption','should be :','Inculded',
+     &               'NOT included ',IairAb,nbhelp)
       elseif (INO.EQ.14) THEN
 
 C Air properties
-         h(1)='You can define a fixed air temperature and humidity'
-         h(2)=' or extract the information from a simulation results '
-         h(3)='file.'
-         CALL EASKAB(' The air absorption ',' should be :',
-     &  ' defined as constant ', ' extracted from res file ',IAirProp,3)
+         helptopic='aco_air_properties'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         CALL EASKAB('The air absorption should be :','  ',
+     &     'defined as constant ', 'extracted from res file ',
+     &     IAirProp,nbhelp)
          IF (IAirProp.EQ.1) THEN
            IairProp=0
-           h(1)='Defines the air temperature that will be used to'
-           h(2)=' calculate the air absorption. '
+           helptopic='air_temp_for_absorb'
+           call gethelptext(helpinsub,helptopic,nbhelp)
            CALL EASKR(RTair,' Give the ',' Air temperature [C]: ',0.,'
-     &       W', 50.,'W',20.,'Constant air temperature in zone',IER,2)
-           h(1)='Defines the air relative humidity that will be used to'
-           h(2)=' calculate the air absorption. '
-            CALL EASKR(RHR,' Give the ',' Air humidity [%] : ',
-     &        0.,'F',100.,'F',50.,'Constant air humidity in zone',IER,2)
+     &       W', 50.,'W',20.,'Constant air temperature in zone',
+     &       IER,nbhelp)
+           helptopic='air_rh_for_absorb'
+           call gethelptext(helpinsub,helptopic,nbhelp)
+           CALL EASKR(RHR,'Give the ','Air humidity [%] : ',
+     &       0.,'F',100.,'F',50.,'Constant air humidity in zone',
+     &       IER,nbhelp)
          ELSE
 
 C Read the result file and determin the most and less air absorption 
 C coefficient m
-           H(1)='This permit to define which are the indoor climate '
-           H(2)='conditions that will provide the lowest and higest '
-           H(3)='air absorption, based on the scaning of a result file'
-           H(4)='Currently the file must have the following format.'
-           H(5)='Col 1: time    Col 2: air temperature    Col 3: RH'
+           helptopic='air_file_for_temps'
+           call gethelptext(helpinsub,helptopic,nbhelp)
            TTmp=CLMRF
-           CALL EASKS(TTmp,' Indoor climate file ? ',' ',72, ' ',
-     &    'indoor climate file name',IER,5)
+           CALL EASKS(TTmp,'Indoor climate file? ',
+     &       '(see help for format)',72, ' ',
+     &       'indoor climate file name',IER,nbhelp)
            CLMRF=TTmp
            if(CLMRF(1:2).EQ.'  ') then
              goto 10
@@ -632,8 +635,8 @@ C coefficient m
 C If file exists, then open the file
              CALL EFOPSEQ(ICLMRF,CLMRF,1,IER)
              IF (IER.LT.0) then
-               WRITE (outs,'(a,a)')'Error while opening file: ',
-     &                             CLMRF(:lnblnk(CLMRF))
+               WRITE (outs,'(2a)')'Error while opening file: ',
+     &           CLMRF(:lnblnk(CLMRF))
                CALL EDISP(iuout,Outs)
                IER=1
                goto 10
@@ -652,7 +655,7 @@ C When open, read its content
                if (OUTSD.ne.' ') then
                  K=0
                  CALL EGETWR(OUTSD,K,Time,0.,100000.,'W','Time',IER)
-                CALL EGETWR(OUTSD,K,CTair,-100.,100.,'W','Air temp',IER)
+                 CALL EGETWR(OUTSD,K,CTair,-100.,100.,'W','Air T',IER)
                  CALL EGETWR(OUTSD,K,CHR,0.,100.,'W','Air RH',IER)
                  CurM = FactorM(CHR,CTair,4000)
                  IDay=INT(Time)
@@ -661,7 +664,7 @@ C When open, read its content
                  WRITE(outs,421)  Time, CTair, CHR, CurM
  421             FORMAT(1x,3(F6.2,5x),F7.5)
                  CALL EDISP(iuout,outs)
-C Find the maximum absorption factor
+C Find the maximum absorption factor.
                  IF (CurM.GT.FMax) THEN
                    FMax=CurM
                    TTMax=CTair
@@ -681,21 +684,23 @@ C Find the maximum absorption factor
 
              CALL EDISP(iuout,'The maximum air absorption is :')
              WRITE (outs,'(4(a, 5x))')'Time step','Temp. [C]',
-     &                                         ' RH [%]', 'M [m-1]'
+     &         ' RH [%]', 'M [m-1]'
              CALL EDISP(iuout,Outs)
              write (outs,'(2a,3(F6.2,5x),F7.5)')DESCR(1:6),'@',
-     &                                 THR,TTMax,RHMax,FMax 
+     &         THR,TTMax,RHMax,FMax 
              CALL EDISP(iuout,outs)
              CALL EDISP(iuout,' ')
              CALL EDISP(iuout,'The minimum air absorption is :')
              write (outs,'(2a,3(F6.2,5x),F7.5)')DESCR(1:6),'@',
-     &                                 THR,TMin,RHMin,FMin 
+     &         THR,TMin,RHMin,FMin 
              CALL EDISP(iuout,outs)
  
 C Ask for which air condition the RT calculation should be perfromed
+             helptopic='air_calc_high_or_low'
+             call gethelptext(helpinsub,helptopic,nbhelp)
              CALL EASKAB(' Do you want to calculate the RT with :',' ',
      &        'the HIGHEST air absoprtion','the LOWEST air absoprtion',
-     &         IairProp,4)
+     &         IairProp,nbhelp)
              IF (IairProp.EQ.1) THEN
                RTair=TTMax
                RHR=RHMax
@@ -709,8 +714,8 @@ C Ask for which air condition the RT calculation should be perfromed
   
 C Export results to file
 C First open the file, then write in and finally close the file
-        H(1)='Export current result in an ASCII file according '
-        H(2)='to the format in the textual feedback. '
+        helptopic='export_aco_predictions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         itu = ixunit
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T',' text',IER)
         write(outs,'(a)') 'Reverberation time calculation report.'
@@ -730,12 +735,11 @@ C First open the file, then write in and finally close the file
       elseif (INO.eq.1) then 
 
 C Select/change ESP-r configuration file.
-        H(1)='The problem configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+        helptopic='model_cfg_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         TTmp=LCFGF
-  289   CALL EASKS(TTmp,' Problem name? ',' ',72,DFCFG,
-     &    'config file name',IER,3)
+  289   CALL EASKS(TTmp,'Model configuration file name? ',' ',72,DFCFG,
+     &    'config file name',IER,nbhelp)
         LCFGF=TTmp
         IF(LCFGF(1:2).EQ.'  ')GOTO 289
         write(LCMDFL,'(a)') TTmp(1:lnblnk(TTMP))
@@ -743,20 +747,18 @@ C Select/change ESP-r configuration file.
       elseif (INO.eq.3) then 
 
 C Select/change BCF file.
-        H(1)='The building constructions file (BCF) holds the current'
-        H(2)='description and data of all materials and construction.'
-        H(3)='in the current project. For more information, please '
-        H(4)=' refer to the file EOS.bcf in the examplar of the   '
-        H(5)='the EOS atrium the description of the structure'
+        helptopic='model_bcf_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   288   IF (BCFOK) THEN
           call easkabc('A BCF of the current problem is loaded.',
-     &        'Do you want: ','use it','load another','continue',Iw,5)
+     &      'Do you want: ','use it','load another','continue',
+     &      Iw,nbhelp)
           if(iw.eq.3)then
             goto 10
           elseif(iw.eq.2)then
             TTmp=BCFName
             CALL EASKS(TTmp,'New building constructions file ?',
-     &                ' ',72, DBCFNAM,'BCF file name',IER,3)
+     &        ' ',72, DBCFNAM,'BCF file name',IER,nbhelp)
             BCFName=TTmp
             IF(BCFName(1:2).EQ.'  ')GOTO 288
           endif
@@ -764,7 +766,7 @@ C Select/change BCF file.
           if (CFGOK) then
             TTmp=BCFName
             CALL EASKS(TTmp,'Building constructions file?',' ',72,
-     &      DBCFNAM,'BCF file name',IER,3)
+     &      DBCFNAM,'BCF file name',IER,nbhelp)
             BCFName=TTmp
             IF(BCFName(1:2).EQ.'  ')GOTO 288
           else
@@ -778,7 +780,7 @@ C Attempt to read in the BCF file.
         INQUIRE (FILE=BCFName,EXIST=XST)
         if(XST)then
           BCFOK=.TRUE.
-          write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+          write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &      '...'
           call usrmsg(outs,' ','-')
           CALL SCNBCF(IBCF,BCFName,IER)
@@ -788,7 +790,7 @@ C Attempt to read in the BCF file.
             BCFNAME='UNKNOWN'
             GOTO 10
           ELSE
-            write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+            write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &        '...done.'
             call usrmsg(outs,' ','P')
           ENDIF
@@ -800,19 +802,18 @@ C Attempt to read in the BCF file.
       elseif (INO.eq.4) then 
 
 C Attempt to read Aco (occupants and furniture file).
-        h(1)='To improve the accuracy of the reverberation time'
-        h(2)='calculation you can include occipants and furniture in'
-        h(3)='a zone. Currently the file has to be edited manually.'
+        helptopic='include_occupants_dialog'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
   290   IF (ACOOK) THEN
-          call easkabc('A ACO file is loaded.',
-     &        'Do you want: ','use it','load another','continue',Iw,3)
+          call easkabc('A ACO file is loaded.','Do you want:',
+     &      'to use it','load another','continue',Iw,nbhelp)
           if(iw.eq.3)then
             goto 10
           elseif(iw.eq.2)then
             TTmp=AcoName
             CALL EASKS(TTmp,'New ACO (Occupnats/Furniture) file ?',
-     &                ' ',72, DACONam,'ACO file name',IER,3)
+     &        ' ',72, DACONam,'ACO file name',IER,nbhelp)
             AcoName=TTmp
             IF(ACOName(1:2).EQ.'  ') GOTO 10
           endif
@@ -820,7 +821,7 @@ C Attempt to read Aco (occupants and furniture file).
           if (CFGOK) then
             TTmp=AcoName
             CALL EASKS(TTmp,' ACO (Occupnats/Furniture) file?',
-     &                 ' ',72,DACONam,'ACO file name',IER,3)
+     &        ' ',72,DACONam,'ACO file name',IER,nbhelp)
             ACOName=TTmp
             IF(ACOName.EQ.' ')GOTO 290
           else
@@ -834,7 +835,7 @@ C Attempt to read in the BCF file.
         INQUIRE (FILE=ACOName,EXIST=XST)
         if(XST)then
           ACOOK=.TRUE.
-          write(outs,'(a,a,a)') 'Loading ',ACOName(1:lnblnk(ACOName)),
+          write(outs,'(3a)') 'Loading ',ACOName(1:lnblnk(ACOName)),
      &      '...'
           call usrmsg(outs,' ','-')
           call scnaco(1,IER)
@@ -846,7 +847,7 @@ C Attempt to read in the BCF file.
             BCFNAME='UNKNOWN'
             GOTO 10
           ELSE
-            write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+            write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &        '...done.'
             call usrmsg(outs,' ','P')
           ENDIF
@@ -871,13 +872,14 @@ C Display Zones list if project loaded and wait for INIPIC item selected.
                 write(outs,'(3a)')
      &            'Do you want to see surface details in ',
      &            zname(NZNOG(ixd)),'?'
-              h(1)=' You can display the details of the zones surfaces'
+                helptopic='display_details_dialog'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 CALL EASKABC(outs,'  ',' Yes ',' No ',
-     &                               ' No for all ',Irep,1)
+     &            ' No for all ',Irep,nbhelp)
                 if(Irep.eq.1)CALL ZoneDisp(ic)
               endif
               write(outs,'(3a)')' Zone ',zname(NZNOG(ixd)),
-     &                             ' has been successfully selected.'
+     &                          ' has been successfully selected.'
               call edisp(iuout,outs)
   41        continue
           ENDIF

@@ -730,7 +730,9 @@ C Get to work.
       endif
       ln=lnblnk(instpath)  ! where is ESP-r installed
       lna=lnblnk(app)      ! length of app name
-      if(app(1:3).eq.'clm')then
+      if(app(1:3).eq.'aco')then
+        folder='esruaco'
+      elseif(app(1:3).eq.'clm')then
         folder='esruclm'
       elseif(app(1:3).eq.'bps')then
         folder='esrubps'

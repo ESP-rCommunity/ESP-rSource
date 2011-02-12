@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -423,11 +423,18 @@ C Declare constant arrays
       REAL MaxImpTr(MIMP),MinImpTr(MIMP),MaxImp(MIMP),MinImp(MIMP)
       CHARACTER*4 AbrevImp
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Initialiastion
       DATA MaxImpTr /100.,100.,100.,100./
       DATA MinImpTr /0.,0.,0.,0./
       DATA MaxImp /10000.,10000.,10000.,10000./
       DATA MinImp /0.,0.,0.,0./
+
+      helpinsub='SCNBCF'  ! set for subroutine
 
       do 144 I=1,ME
         NbEIALay(I)=0
@@ -445,8 +452,11 @@ C Initialiastion
       IER=0
 
 C Specify the reading mode.
+      helptopic='aco_read_bcf_silent'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKAB(' When reading in the BCF file, do you',
-     &  ' want it:','done silently','with reporting of contents',IW,0)
+     &  ' want it:','done silently','with reporting of contents',
+     &  IW,nbhelp)
       CALL EFOPSEQ(IUC,BCFfile,1,IER)
       IF (IER.LT.0) then
         WRITE (outs,'(a,a)')' Error while opening BCF file : ',
