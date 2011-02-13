@@ -1762,7 +1762,7 @@ C Depending on location check existance.
 C There were lots of undefined materials so likely the Materials
 C database is for the wrong machine type. Guess the name of
 C the ascii version and if it exists, offer to convert it or use it.
-          helptopic='warning_about_bin_materials'
+          helptopic='warning_about_bin_mat'
           call gethelptext(helpinsub,helptopic,nbhelp)
           IAF=IFIL+1
           LASCI=' '

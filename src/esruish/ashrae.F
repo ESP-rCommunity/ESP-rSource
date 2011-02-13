@@ -160,7 +160,7 @@ C Overhang data.
      &   0.0,'F',99.0,'W',0.1,'R fin stop short',ier,nbhelp)
 
   71  wazi=180.
-      helptopic='ashrae_window_orientation'
+      helptopic='ashrae_window_orien'
       call gethelptext(helpinsub,helptopic,nbhelp)
       call easkr(wazi,' ','Window azimuth?',
      &   0.0,'F',360.0,'F',180.0,'azimuth',ier,nbhelp)

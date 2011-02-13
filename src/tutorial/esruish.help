@@ -45,7 +45,7 @@
       call easkr(shdx(13),'Right side fin:',
       call easkr(shdx(14),'Right side fin:',
       call easkr(shdx(15),'Right side fin:',
-*item winshd ashrae_window_orientation
+*item winshd ashrae_window_orien
 'The azimuth angle is measured clockwise from North'
 'in degrees.'
 '  '
@@ -181,7 +181,7 @@
 *enditem
             call easkab('No Zone Obstructions file found!','Options:',
 *subroutine opendb
-*item opendb warning_about_bin_materials
+*item opendb warning_about_bin_mat
 'It is likely that the Materials db associated with'
 'this model is for use under a different operating'
 'system. ESP-r will attempt to locate an ASCII version'
@@ -275,7 +275,7 @@
 *enditem
          call askok(outs,'OK to overwrite/append?',ok,dok,6)
 *subroutine sifops
-*item sifops respond_to_empty_shd_file
+*item sifops respond_to_empty_shd
 'The current shading file is empty. You can fill it with'
 'data from an ascii version of the file (if you have one)'
 'otherwise you should cancel your request.'

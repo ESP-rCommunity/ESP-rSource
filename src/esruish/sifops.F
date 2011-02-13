@@ -122,7 +122,7 @@ C Display contents of the zone shading & insolation db.
 C If there is nothing in the shading file then the user may wish to
 C import from ascii file to fill it.
       if(ims.eq.0)then
-        helptopic='respond_to_empty_shd_file'
+        helptopic='respond_to_empty_shd'
         call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabc('Zone Shading & Insolation db is empty!',
      &    'Options:','import ascii','return & calculate','cancel',
