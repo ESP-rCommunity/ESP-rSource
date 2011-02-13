@@ -167,7 +167,7 @@ C iterations).  Write current residuals to ACC file.
      &    IER,nbhelp)
         MAXIT=IVAL
         dok=.true.
-        helptopic='dfs_under_relaxation_factor'
+        helptopic='under_relaxation_factor'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Would you like to change linear ',
      &             'under-relaxation factors?',OK,dok,nbhelp)

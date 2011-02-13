@@ -59,7 +59,7 @@
       CALL ASKOK('Do you accept it as converged solution?',' ',
       CALL ASKOK('Would you like to increase the',
       CALL EASKI(IVAL,' ',' New maximum number of iterations (-) ?',
-*item CHECK dfs_under_relaxation_factor
+*item CHECK under_relaxation_factor
 'Changing the under-relaxation factors may help the '
 'problem to converge.  Generally making the values '
 'smaller will help but the solution will take longer '
@@ -317,11 +317,11 @@
 *enditem
             CALL EASKATOG(outs,' ','Air speed','Temperature',
             call EASKAB('  ','Apply colour to:','Vector','Background',
-*item FTV contaminant_selection_list
+*item FTV contaminant_select_list
 'The contaminant selection menu does not yet have'
 'any help associated with it. ;-( '
 *enditem
-*item FTV contaminant_scale_request
+*item FTV contaminant_scale_req
 'You are requested to provide a maximum and minimum value for the'
 'scale of the vertical axis. '
 *enditem

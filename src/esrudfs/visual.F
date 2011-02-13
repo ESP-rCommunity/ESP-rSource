@@ -618,7 +618,7 @@ C Ask which contaminant to plot
               INO=-1
 
 C Help text for the menu.
- 331          helptopic='contaminant_selection_list'
+ 331          helptopic='contaminant_select_list'
               call gethelptext(helpinsub,helptopic,nbhelp)
               CALL EMENU('Choose Contaminant',ITEM,NITMS,INO)
               IF(INO.EQ.NITMS)RETURN
@@ -631,7 +631,7 @@ C Remember selections (used by res for animations).
             
 C Set scale (should scan res lib in future)
             t24='30.0 0.0'
- 203        helptopic='contaminant_scale_request'
+ 203        helptopic='contaminant_scale_req'
             call gethelptext(helpinsub,helptopic,nbhelp)
             call EASKS(t24,'  ',
      &         'max and min values:',24,'30.0 0.0','scale',IER,nbhelp)
