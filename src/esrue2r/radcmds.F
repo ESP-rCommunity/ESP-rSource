@@ -474,7 +474,7 @@ C For help messages
       helpinsub='settime'  ! set for subroutine
 
 C Ask winter am/pm spring am/pm summer am/pm
-      helptopic='e2r_standard_times_of_day'
+      helptopic='standard_times_of_day'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('A scene is created for a specific day and time.',
      &  'Select one from these defaults:','winter AM','winter PM',

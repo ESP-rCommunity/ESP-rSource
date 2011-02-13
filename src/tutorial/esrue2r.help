@@ -49,7 +49,7 @@
 *enditem
         CALL EASKS(ltmp,' Miscel (furniture & fittings file ?',
         CALL EASKABC(' Miscel (furniture & fittings description:',' ',
-*item e2r confirm_grid_point_editing
+*item e2r confirm_grid_point_edit
 'If you want to alter the grid points say yes.'
 *enditem
           CALL ASKOK('Edit grid points?','  ',OK,dok,1)
@@ -197,7 +197,7 @@
 *enditem
           CALL ASKOK(' Descriptions not yet been generated...',
 *subroutine mkriofil
-*item mkriofil writing_transparent_stuff
+*item mkriofil writing_transpar_stuff
 'Based on the attributes of ESP-r surfaces and the optical properties'
 'gathered from the databases information is streamed into a file'
 'for use by Radiance.'
@@ -229,7 +229,7 @@
         CALL EASKS(ltmp72,' Inside compositon file name ?','  ',
         CALL EASKS(ltmp72,' Outside description file name ?','  ',
         CALL ASKOK(' ',outs,OK,dok,3)
-*item mkriofil precalculate_indirect_ill
+*item mkriofil precalculate_indirect_i
 'Large sources of indirect illumination should have their'
 'distributions pre-calculated as this optimises the rendering process.'
 '(Note: the pre-calculation is achieved  '
@@ -469,7 +469,7 @@
 *enditem
       call ASKOK('Scene description is now complete.',
 *subroutine settime
-*item settime e2r_standard_times_of_day
+*item settime standard_times_of_day
 'Pick a season/ time for the sky. This is a quick way to get an'
 'image which has the sun in typical locations in the sky (morning'
 'afternoon and winter and summer).'
@@ -585,7 +585,7 @@
         CALL EASKS(ltmp,' Outside opaque compositon file name ?',' ',
         CALL EASKS(ltmp,' Inside opaque composition file name ? ','  ',
         CALL EASKS(ltmp,
-*item RIFFORM e2r_image_quality_options
+*item RIFFORM image_quality_options
 'Image quality sets a number of command parameters'
 'and influences the processing time.  Most of the time'
 'a low quality image will suffice (and there are opts '

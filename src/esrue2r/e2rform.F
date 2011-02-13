@@ -524,7 +524,7 @@ C For help messages
       IER=0
 
 C Generate help for the various dialogs.
-      helptopic='writing_transparent_stuff'
+      helptopic='writing_transpar_stuff'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Find version of materials database.
@@ -1157,7 +1157,7 @@ C Highlight surface on image.
                   LINSTY(IC)=2
                   CALL ADJVIEW(IER)
 
-                  helptopic='precalculate_indirect_ill'
+                  helptopic='precalculate_indirect_i'
                   call gethelptext(helpinsub,helptopic,nbhelp)
                   write (outs,'(a,a,a)') 'Surface ',
      &                   zsn(isf)(1:lnblnk(zsn(isf))),' is transparent.'

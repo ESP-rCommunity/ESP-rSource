@@ -817,7 +817,7 @@ C Depending on value of SCENEPURP.
           endif
           call ERPFREE(ITA1,ISTAT)
           dok=.false.
-          helptopic='confirm_grid_point_editing'
+          helptopic='confirm_grid_point_edit'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Edit grid points?','  ',OK,dok,nbhelp)
           izone=0

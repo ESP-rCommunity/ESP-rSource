@@ -129,7 +129,7 @@ c Explains octree menu.
       elseif(INO.EQ.8)then
 
 C Image quality: >> Low|Medium|High  [Low]
-        helptopic='e2r_image_quality_options'
+        helptopic='image_quality_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Image quality: ',' ','Low (default)',
      &    'Medium (report quality)','High (takes ages) ?',IW,nbhelp)
