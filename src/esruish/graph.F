@@ -41,7 +41,6 @@ C Parameter
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/pophelp/h(60)
       common/spad/mmod,limit,limtty
       common/g1t/xft(mv),zft(mv)
       common/headl/irecs(ms)
@@ -49,7 +48,7 @@ C Parameter
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/c24/izstocn(mcom,ms)
 
-      character outs*124,h*72
+      character outs*124
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
       integer icc,is,nv   ! local variables for connextion and vertices
@@ -59,6 +58,13 @@ C Parameter
 #else
       integer*8 igwid,igheight  ! for use with axiscale
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='graph'  ! set for subroutine
 
       iunit=ifil
 
@@ -128,9 +134,10 @@ C Place scaling in static C variables for use by line drawing routines.
 
 C Output start hour.
       ih=1
-      h(1)='Give the hour as an integer between 1 and 24.'
+      helptopic='ish_graphing_hour'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easki(ih,' ','Output start hour?',
-     &     1,'F',24,'F',1,'output start',ier,0)
+     &  1,'F',24,'F',1,'output start',ier,nbhelp)
 
 C Hour-by-hour.
       do 20 j=1,24
@@ -175,12 +182,12 @@ C Partial direct shading.
          endif
 
          dok=.true.
-         call askok(' ','Next hour?',ok,dok,0)
+         call askok(' ','Next hour?',ok,dok,nbhelp)
          if(.not.ok)goto 1
    20 continue
 
     1 dok=.true.
-      call askok(' ','Consider another surface?',ok,dok,0)
+      call askok(' ','Consider another surface?',ok,dok,nbhelp)
       if(.not.ok)return
       goto 2
 

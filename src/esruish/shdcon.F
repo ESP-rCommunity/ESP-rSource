@@ -44,7 +44,6 @@ C geometry.h provides commons G0 and G2.
       integer lnblnk  ! function definition
 
       common/filep/ifil
-      common/pophelp/h(60)
       common/outin/iuout,iuin
 
       common/contr/mon,isc(ms),iyd
@@ -54,20 +53,30 @@ C geometry.h provides commons G0 and G2.
       dimension irecs(ms),iavdec(12)
       character ltrns*72,tbase*72,outs*124
       character*3 month(12)
-      character act*1,paction*16,h*72
+      character act*1,paction*16
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
+      helpinsub='shdcon'  ! set for subroutine
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
 
    35 call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C Make up help text for the following interactions.
+      helptopic='shdcon_actions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    
 C Recover the isc and associated arrays.
       call findisc(icomp,ier,act,icont)
@@ -84,11 +93,9 @@ C from the zone geometry file.
                call edisp(iuout,'No surfaces, shading skipped!')
                return
             else
-               h(1)='Surfaces that might be shaded need to be'
-               h(2)='selected or the computations cannot be performed.'
                dok=.true.
                call askok('No surfaces selected!','Re-specify?',
-     &                       ok,dok,2)
+     &           ok,dok,nbhelp)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
                return
@@ -121,15 +128,11 @@ C Calculate shading for specified period.
          monf=12
          mon=mons
       else
-         h(1)='An integer value between 1 and 12. For each month a'
-         h(2)='24 hour calculation of direct and diffuse shading on'
-         h(3)='external surfaces will be undertaken for the day of'
-         h(4)='average solar declination.'
          call easki(mons,' ','Start month number?',
-     &              1,'F',12,'F',1,'start month',ier,4)
+     &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
          call easki(monf,' ','End month number?',
-     &              mons,'F',12,'F',1,'end month',ier,4)
+     &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
          if(mons.eq.monf)multic=0
       endif

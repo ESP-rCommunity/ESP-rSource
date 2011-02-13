@@ -109,7 +109,6 @@ C IEEE callback (Solaris)
       common/filep/ifil
       common/tc/itc,icnt
       common/spad/mmod,limit,limtty
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
@@ -154,7 +153,7 @@ C Name of current application.
       common/appname/cAppName
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
-      character*72 lname,ltrns,tbase,h
+      character*72 lname,ltrns,tbase
       character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
@@ -185,6 +184,11 @@ C Name of current application.
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
@@ -193,6 +197,8 @@ C Initialize global common data.
       call ezero
       call curmodule('ish')
       cAppName = 'ish'
+      helpinapp='ish'  ! set once for the application
+      helpinsub='ish'  ! set for MAIN
       iuout=6
       iuin=5
       limtty=24
@@ -909,11 +915,8 @@ C (2nd parameter is 1).
 
 C Request definition of model.
       if(inos.eq.1)then
-         h(1)='The Model Configuration File holds the definition'
-         h(2)='of the building/plant to be simulated, including the'
-         h(3)='names of all constituent files. If the name given'
-         h(4)='matches an existing file it will be read and the'
-         h(5)='data therein made available for use.'
+         helptopic='ish_model_cfg_file'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=lcmdfl
 
 C Call easkf depending on the current file name length. The X11
@@ -924,20 +927,20 @@ C GTK version will be returning the name with the full path.
          if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
                call easkf(ltmp,'Model Configuration file?',' ',
-     &                        96,dfcfg,'config file name',ier,5)
+     &           96,dfcfg,'config file name',ier,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
                call easkf(ltmp,'Model configuration file?',' ',
-     &                       124,dfcfg,'config file name',ier,5)
+     &           124,dfcfg,'config file name',ier,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
                call easkf(ltmp,'Model configuration file?',' ',
-     &                       144,dfcfg,'config file name',ier,5)
+     &           144,dfcfg,'config file name',ier,nbhelp)
             endif
          elseif(iglib.eq.2)then
             call easkf(ltmp,'Model configuration file?',' ',
-     &                       144,dfcfg,'config file name',ier,5)
+     &        144,dfcfg,'config file name',ier,nbhelp)
          else
             call easkf(ltmp,'Model configuration file?',' ',
-     &                        96,dfcfg,'config file name',ier,5)
+     &        96,dfcfg,'config file name',ier,nbhelp)
          endif
 
          if(ltmp(1:2).eq.'  '.or.ltmp(1:4).eq.'UNKN')goto 289
@@ -1010,11 +1013,9 @@ C Mercator sun plot.
 C Draw the site plan or sun view.
       elseif(inos.eq.7)then
          if(mmod.lt.8)goto 201
-         h(1)='The site plan shows zones (marked `Target`) and'
-         h(2)='obstructions (marked `Bn` where n is the block'
-         h(3)='number). The view from the sun places the viewer'
-         h(4)='at a distance of 1 km from `Target`.'
-         call easkab(' ','View:','plan','from sun',iw,4)
+         helptopic='view_from_sun_or_plan'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         call easkab(' ','View:','plan','from sun',iw,nbhelp)
 
 C After drawing the site plan, the zone geometry file is reread 
 C to reconstruct /G1/,/G2/ and /G5/.
@@ -1056,7 +1057,7 @@ C Generate a heading for the view.
                isize=1
                ifont=ifs
                call viewtext(etext,iside,isize,ifont)
-               call easkab(' ','View:','next hour','exit',iw,0)
+               call easkab(' ','View:','next hour','exit',iw,nbhelp)
                if(iw.eq.1)then
                   stime=stime+((60.0/float(nts))/60.0)
                   goto 68
@@ -1066,7 +1067,7 @@ C Generate a heading for the view.
                endif
             else
                call easkab('View point below horizon!',' ',
-     &                     'Specify another time?','exit',iw,0)
+     &                     'Specify another time?','exit',iw,nbhelp)
                if(iw.eq.1)goto 67
                itsnm=0
             endif
@@ -1074,7 +1075,10 @@ C Generate a heading for the view.
 
 C Toggle sky type.
       elseif(inos.eq.9)then
-         call easkab(' ','Sky type:','isotropic','anisotropic',iw,0)
+         helptopic='what_kind_of_sky'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         call easkab(' ','Sky type:','isotropic','anisotropic',
+     &     iw,nbhelp)
 C Isotropic sky.
          if(iw.eq.1)then
             idifc=0
@@ -1100,11 +1104,11 @@ C If there is already data in the file ask user what to do.
                if(ishd(i).ne.0.or.isadd(i).ne.0)existing=.true.
    10       continue
             if(existing)then
-               h(1)='The Zone Shading & Insolation file already'
-               h(2)='contains data. New computations can overwrite'
-               h(3)='these data or another file may be created.'
+               helptopic='request_to_overwrite'
+               call gethelptext(helpinsub,helptopic,nbhelp)
                call easkabc('Zone Shading & Insolation db has data!',
-     &           'Options:','update','create new db','cancel',iw,3)
+     &           'Options:','update','create new db','cancel',
+     &           iw,nbhelp)
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
@@ -1152,12 +1156,12 @@ C in the zone transitional shading file or from common blocks).
             call edisp(iuout,'Select a zone first!')
             goto 201
          else
+            helptopic='synopsis_period_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call tstamp('>','Ish: shading synopsis')
-            h(1)='The month is specified as an integer with'
-            h(2)='January = 1, February = 2 and so on.'
             mon=mons
   202       call easki(mon,' ','Computation month number?',
-     &           1,'F',12,'F',1,'month number',ier,2)
+     &        1,'F',12,'F',1,'month number',ier,nbhelp)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
 	    
@@ -1191,7 +1195,7 @@ C Shading synopsis is based on common block information.
 
             if(mon.lt.12)then
                call easkab(' ','Consider another month?','yes',
-     &                     'no',iw,0)
+     &                     'no',iw,nbhelp)
                if(iw.eq.1)then
                   mon=mon+1
                   goto 202
@@ -1206,11 +1210,11 @@ C shading file.
             call edisp(iuout,'Select a zone first!')
             goto 201
          else
-   66       h(1)='The month is specified as an integer with'
-            h(2)='January = 1, February = 2 and so on.'
-            mon=mons
+            helptopic='graph_period_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+   66       mon=mons
   203       call easki(mon,' ','Computation month number?',
-     &                 1,'F',12,'F',1,'month number',ier,2)
+     &        1,'F',12,'F',1,'month number',ier,nbhelp)
             if(ier.ne.0)goto 66
             call eday(iavdec(mon),mon,iyd)
 
@@ -1235,7 +1239,7 @@ C file.
             call graph(icomp)
             if(mon.lt.12)then
                call easkab(' ','Consider another month?','yes',
-     &                     'no',iw,0)
+     &                     'no',iw,nbhelp)
                if(iw.eq.1)then
                   mon=mon+1
                   goto 203
@@ -1260,11 +1264,11 @@ C source surfaces.
                if(ishd(i).ne.0.or.isadd(i).ne.0)existing=.true.
    20       continue
             if(existing)then
-               h(1)='The Zone Shading & Insolation file already'
-               h(2)='contains data. New computations can overwrite'
-               h(3)='these data or another file may be created.'
+               helptopic='request_to_overwrite'
+               call gethelptext(helpinsub,helptopic,nbhelp)
                call easkabc('Zone Shading & Insolation db has data!',
-     &           'Options:','update','create new db','cancel',iw,3)
+     &           'Options:','update','create new db','cancel',
+     &           iw,nbehlp)
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
@@ -1315,11 +1319,11 @@ C held in the zone shading & insolation db.)
             goto 201
          else
             call tstamp('>','Ish: list insolation synopsis')
-            h(1)='The month is specified as an integer with'
-            h(2)='January = 1, February = 2 and so on.'
             mon=mons
+            helptopic='synopsis_period_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
   204       call easki(mon,' ','Month number?',
-     &                 1,'F',12,'F',1,'ins comp month',ier,2)
+     &        1,'F',12,'F',1,'ins comp month',ier,nbhelp)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
 
@@ -1327,7 +1331,7 @@ C held in the zone shading & insolation db.)
             call insynp(icomp,'i')   ! allow user to control surfaces seen
             if(mon.lt.12)then
                call easkab(' ','Consider another month?','yes',
-     &                     'no',iw,0)
+     &                     'no',iw,nbhelp)
                if(iw.eq.1)then
                   mon=mon+1
                   goto 204
@@ -1350,16 +1354,16 @@ C Export or import ASCII (silent).
             call edisp(iuout,'Select a zone first!')
             goto 201
          else
-           h(1)='The Zone Shading & Insolation data is also held'
-           h(2)='in a ASCII version for transport between different'
-           h(3)='computer types.'
+           helptopic='export_import_choice'
+           call gethelptext(helpinsub,helptopic,nbhelp)
            call easkabc('Zone Shading & Insolation db has data!',
-     &       'Options:','export ascii','import ascii','cancel',iw,3)
+     &       'Options:','export ascii','import ascii','cancel',
+     &       iw,nbhelp)
            lnshd=lnblnk(lshad(icomp))
            if(iw.eq.1)then
              write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Export file name?',72,
-     &         'siexp.txt','shdins export',ier,3)
+     &         'siexp.txt','shdins export',ier,nbhelp)
              write(outs,'(2a)') ' Creating ASCII file ',
      &         exportfile(1:lnblnk(exportfile))
              call edisp(iuout,outs)
@@ -1368,7 +1372,7 @@ C Export or import ASCII (silent).
            elseif(iw.eq.2)then
              write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Import file name?',72,
-     &         'siexp.txt','shdins import',ier,3)
+     &         'siexp.txt','shdins import',ier,nbhelp)
              write(outs,'(3a)') ' Reading ASCII file ',
      &         exportfile(1:lnblnk(exportfile)),'...'
              call edisp(iuout,outs)
@@ -1417,13 +1421,10 @@ C then offer to save or delete.
             call efdelet(iunit,istat)
          elseif(multic.eq.2)then
             dok=.true.
-            h(1)='Zone transitional shading files were used to'
-            h(2)='store intermediate shading results for use in'
-            h(3)='any subsequent insolation analysis. Normally,'
-            h(4)='these do not need to be retained and you may'
-            h(5)='delete them.'
+            helptopic='request_to_delete_trans'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call askok(' ','Delete zone transitional shading file(s)?',
-     &                 ok,dok,5)
+     &        ok,dok,nbhelp)
             irecw=ms+5
             if(ok)then
                do 55 ix=1,ncomp
@@ -1518,7 +1519,6 @@ C  ifstat = 8  new file filled via import of ascii file
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/filep/ifil
 
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -1527,9 +1527,16 @@ C  ifstat = 8  new file filled via import of ascii file
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
 
-      character h*72,exportfile*72,paction*16,outs*124
+      character exportfile*72,paction*16,outs*124
 
       logical modify,modlen,modbnd,silent,xst
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='shdprb'  ! set for subroutine
 
       iuf=ifil+1
 
@@ -1555,12 +1562,10 @@ C Get name of obstruction file.
             call edisp(iuout,
      &             'No obstructions so only compute insolation.')
          else
-            h(1)='Where obstructions are not associated with a zone,'
-            h(2)='external surface shading cannot be calculated. Note'
-            h(3)='that it is still possible to calculate internal'
-            h(4)='surface insolation.'
+            helptopic='obs_not_associated'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call easkab('No Zone Obstructions file found!','Options:',
-     &                  'cancel','compute insolation only',iw,4)
+     &                  'cancel','compute insolation only',iw,nbhlep)
             if(iw.EQ.1)then
                ifstat=6
                call epagend
@@ -1682,7 +1687,6 @@ C << update this to match changes in lfmat >>
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/ract/paction
@@ -1690,11 +1694,18 @@ C << update this to match changes in lfmat >>
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character H*72,LASCI*144,DFILE*144,fs*1
+      character LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs*124,outs248*248,GDESCR*36
       character lworking*144
       integer lndbp   ! for length of standard database path
       logical unixok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='opendb'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1751,11 +1762,8 @@ C Depending on location check existance.
 C There were lots of undefined materials so likely the Materials
 C database is for the wrong machine type. Guess the name of
 C the ascii version and if it exists, offer to convert it or use it.
-          h(1)='It is likely that the Materials db associated with'
-          h(2)='this model is for use under a different operating'
-          h(3)='system. ESP-r will attempt to locate an ASCII version'
-          h(4)='of this database and, if successful, convert it to'
-          h(5)='the required binary format if you agree.'
+          helptopic='warning_about_bin_materials'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IAF=IFIL+1
           LASCI=' '
           if(ipathmat.eq.0.or.ipathmat.eq.1)then
@@ -1848,15 +1856,10 @@ C Again use the expanded path.
           else
 
 C Ask user for ascii Materials database to convert.
-          H(1)='The Materials db holds the thermo-physical properties'
-          H(2)='of a range of materials. An ascii version of this db'
-          H(3)='may be used to transfer the contents between operating'
-          H(4)='systems that have incompatible binary representations'
-          H(5)='(e.g. Unix and Windows).'
             IAF=IFIL+1
             DFILE=' '
             CALL EASKS(LASCI,' ','Materials database (ASCII)?',
-     &        144,DFILE,'materials db (ascii)',IER,5)
+     &        144,DFILE,'materials db (ascii)',IER,nbhelp)
             goto 155
           endif
         else
