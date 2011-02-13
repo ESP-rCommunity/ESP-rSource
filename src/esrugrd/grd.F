@@ -49,7 +49,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -87,7 +86,7 @@ C Name of current application
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
-      CHARACTER H*72,LFILE*72,LCFGF*72
+      CHARACTER LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
@@ -96,10 +95,17 @@ C Name of current application
       integer numberofzones ! to pass to updwire rather than ncomp
       integer MITEM,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Initialize global common data.
       call ezero
       call curmodule('grd ')
       cAppName = 'grd'
+      helpinapp='grd'  ! set once for the application
+      helpinsub='grd'  ! set for MAIN
       ITRC=0
       IUOUT=6
       IUIN=5
@@ -348,11 +354,8 @@ C Check if the problem is defined.
       ELSEIF(INO.EQ.1)THEN
 
 C Define the problem.
-        H(1)='The system configuration file holds the definition of'
-        H(2)='the building/plant to be simulated, including the'
-        H(3)='names of all of the files required. If the name given'
-        H(4)='matches an existing file it will be read in.'
-        H(5)=' '
+        helptopic='grd_model_cfg_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
@@ -364,20 +367,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,' ',
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,' ',
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
