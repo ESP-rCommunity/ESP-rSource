@@ -135,7 +135,6 @@ C ******* Default views formation.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
@@ -152,7 +151,7 @@ C ******* Default views formation.
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
-      character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
+      character item*30,hold*28,VALT*28,OUTSTR*124,WORD*20
       character outs*124
       character doit*124,ltmp*72,trvewsh*10
       integer NITEMS,INO  ! max items and current menu item
@@ -164,6 +163,13 @@ C ******* Default views formation.
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VEWFORM'  ! set for subroutine
 
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.
@@ -179,6 +185,8 @@ C then it is an update to an existing view.
 C First thing is to ask what zones to include
 C in the plan view.
 C If outside view then initially select all zones...
+      helptopic='view_form_creation'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(intext.eq.0)then
         nzg=NCOMP
         izgfoc=0
@@ -188,10 +196,9 @@ C If outside view then initially select all zones...
         call edisp(iuout,'Including all zones in outside view.')
       else
         call edisp(iuout,'For an inside view... ')
-        H(1)=' Pick one, several or all zones for inclusion'
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVALS,' ','Which zones to include:',
-     &      12,NCOMP,zname,' zone list',IER,1)
+     &    12,NCOMP,zname,' zone list',IER,nbhelp)
         nzg=INPIC
         izgfoc=0
         if(nzg.eq.1)izgfoc=IVALS(1)
@@ -229,22 +236,17 @@ C adding in the ground disk.
       MODLEN=.FALSE.
 
 C Pull up a list of views and ask user for which one.
-  142 H(1)='Please select one view in the case of an interactive'
-      H(2)='session.  If no view selected the first one will be'
-      H(3)='created. '
-      do 333 iv=1,indxvew
+  142 do 333 iv=1,indxvew
         write(valt(iv),'(3a)') rvewsh(iv)(1:lnblnk(rvewsh(iv))),':',
      &                         vewcmds(iv)(1:16)
   333 continue
       valt(indxvew+1) = 'Create a new view.'
       IX=1
   334 CALL EPICKS(IX,IVALV,' Select a view: ',' ',
-     &         28,indxvew+1,VALT,'View options',IER,3)
+     &  28,indxvew+1,VALT,'View options',IER,nbhelp)
       if(IX.eq.0)then
-        H(1)='You must either select one of the known views'
-        H(2)='or create a new view point. '
         CALL EASKAB(' One of the options must be selected:',' ',
-     &     'select an option','exit facility',IW,2)
+     &    'select an option','exit facility',IW,nbhelp)
         if(iw.eq.1)goto 334
         if(iw.eq.2)return
       endif
@@ -267,9 +269,8 @@ C Given view point and viewed point return and update common values
 C of the azimuth and elevation.
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
      &    azimuth,elevtn)
-        H(1)='This is a tag used for reference.'
         CALL EASKS(trvewsh,'Name for view?',' ',10,'vew1',
-     &                                         'short view tag',IER,1)
+     &    'short view tag',IER,nbhelp)
         call edisp(iuout,'Please define the new view point now.')
 
 C If the default view.
@@ -451,37 +452,8 @@ C Draw the problem in plan/elevation with viewcone.
       endif
 
 C Help text for main menu.
-      H(1)='This menu selects the viewpoint and direction, from'
-      H(2)='where the Radiance image will be viewed.'
-      H(3)=' '
-      H(4)='For external views the perspective feedback may be '
-      H(5)='preferable to set views.  You may need to interact  '
-      H(6)='with the `wireframe control` to fine-tune the view '
-      H(7)='as Radiance uses an eyepoint & view vector approach'
-      H(8)='while e2r is built on an eyepoint & viewed point '
-      H(9)='approach. '
-      H(10)=' '
-      H(11)='For internal views the perspecitve feedback is not '
-      H(12)='appropriate--use the plan & elevation views. '
-      H(13)=' '
-      H(14)='The viewpoint can be changed in three ways:'
-      H(15)='* Eye Point: The (x,y,z) position of the eye point are'
-      H(16)='  entered directly into the computer.'
-      H(17)='* Pick EP on plan view: (easier!) select the eye point'
-      H(18)='  by placing the cursor on the desired point and press'
-      H(19)='  the left-hand button.'
-      H(20)='* Accept perspective viewing eyepoint (easiest)  '
-      H(21)='  '
-      H(22)='The View Direction can be changed by: '
-      H(23)='* Dir az elv: The direction and elevation are entered'
-      H(24)='  directly into the computer. North is 0 deg and East'
-      H(25)='  is 90 deg. The elevation is positive for up and '
-      H(26)='  negative for down.'
-      H(27)='* Accept perspective viewing direction.'
-      H(28)=' '
-      H(29)='* View angle by editing, or accepting perspective.'
-      H(30)='  NOTE that the angle in () is that required to see '
-      H(31)='  the whole ground disk.'
+      helptopic='view_definition_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(' Viewpoint definition',ITEM,NITEMS,INO)
       if(INO.EQ.1)then
@@ -493,11 +465,10 @@ C Present list of views.
         MODIFY=.TRUE.
         goto 142
       elseif(INO.EQ.2)then
-        H(1)=' Pick one, several or all zones for inclusion'
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVALS,
-     &    ' More than one zone may be seen in the view',
-     &    ' Which to include: ',12,NCOMP,zname,' zone list',IER,1)
+     &    'More than one zone may be seen in the view',
+     &    'Which to include: ',12,NCOMP,zname,' zone list',IER,nbhelp)
         call edisp(iuout,' Checking bounds....')
         nzg=INPIC
         izgfoc=0
@@ -509,19 +480,16 @@ C Present list of views.
         CALL BNDOBJ(1,IER)
         redraw =.true.
       elseif(INO.EQ.3)then
-        H(1)='In plan view you can change the viewing parameters,'
-        H(2)='the elevations are primarily for checking. '
         CALL EASKABCD(' View choices: ',' ','plan',
-     &    'south elevation ','east elevation','perspective ?',IW,2)
+     &    'south elevation','east elevation','perspective?',IW,nbhelp)
         if(IW-1.ne.ITPPSW)redraw =.true.
         ITPPSW=IW-1
       elseif(INO.EQ.5)THEN
 
 C Eye Point...(assume begins at centre of zone).
         if(ITPPSW.eq.0)then
-          H(1)='In plan view you can only edit or pick on the plan.'
           CALL EASKABC(' Specify via: ',' ','editing',
-     &     'pick on plan','ignore ?',IEE,1)
+     &     'pick on plan','ignore ?',IEE,nbhelp)
           if(IEE.eq.3)then
             goto 10
 
@@ -547,8 +515,7 @@ C Transform back from mouse position to actual coordinate.
             WRITE(outs,'(a,f7.3,a,f7.3)')' The point is at x=',ex,
      &                                   ' & y=',ey
             dok=.true.
-            h(1)='Pause in case you need to revise the viewpoint. '
-            CALL ASKOK(outs,' Is this view ok?',OK,dok,1)
+            CALL ASKOK(outs,'Is this view ok?',OK,dok,nbhelp)
             IF(OK)then
               rvpx=ex
               rvpy=ey
@@ -561,15 +528,14 @@ C Transform back from mouse position to actual coordinate.
           endif
         elseif(ITPPSW.eq.3)then
           CALL EASKABC(' Specify via: ',' ','editing',
-     &     'accept current eyepoint','ignore ?',IEE,1)
+     &     'accept current eyepoint','ignore ?',IEE,nbhelp)
           if(IEE.eq.3)then
             goto 10
           elseif(IEE.eq.2)then
             write(outs,'(a,3F7.1)') 'The perspective eyepoint is ',
      &        EYEM(1),EYEM(2),EYEM(3)
             dok=.true.
-            h(1)='Pause to allow you to adjust the eyepoint. '
-            CALL ASKOK(outs,' Is this ok ?',OK,dok,1)
+            CALL ASKOK(outs,'Is this ok ?',OK,dok,nbhelp)
             if(OK)then
               rvpx=EYEM(1)
               rvpy=EYEM(2)
@@ -592,11 +558,11 @@ C Transform back from mouse position to actual coordinate.
         endif
           
         if(IEE.eq.1)then
-          H(1)='The eyepoint is in metres in the coordinate system '
-          H(2)='of the site. '
+          helptopic='eyepoint_editing'
+          call gethelptext(helpinsub,helptopic,nbhelp)
   55      WRITE(HOLD,'(3f9.3)')rvpx,rvpy,rvpz
           CALL EASKS(HOLD,' Eye point  X  Y  Z (in metres): ',
-     &      '  ',28,' ','eye point coord',IER,2)
+     &      '  ',28,' ','eye point coord',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,rvpx,-999.,999.,'W','X cord',IER)
           CALL EGETWR(HOLD,K,rvpy,-999.,999.,'W','Y cord',IER)
@@ -610,10 +576,10 @@ C Transform back from mouse position to actual coordinate.
           call forceflush()
           if(ITPPSW.eq.3)then
             dok=.false.
-            h(1)='The wireframe view can be updated to approximate'
-            h(2)='the radiance view (does not work well for internal'
-            h(3)='views). '
-            CALL ASKOK(' ','Reflect this in perspective view?',OK,dok,3)
+            helptopic='reflect_rad_view_in_per'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK(' ','Reflect this in perspective view?',
+     &        OK,dok,nbhelp)
             if(OK)then
               EYEM(1)=rvpx
               EYEM(2)=rvpy
@@ -636,8 +602,10 @@ C Transform back from mouse position to actual coordinate.
 C Directional vector. Input as azimuth and elevation and then
 C convert into normal or take the direction from the perspective.
         if(ITPPSW.eq.3)then
+          helptopic='edit_or_accept_current'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' Specify via: ',' ','editing',
-     &     'accept current direction','ignore ?',IEE,1)
+     &      'accept current direction','ignore ?',IEE,nbhelp)
           if(IEE.eq.3)then
             goto 10
           elseif(IEE.eq.2)then
@@ -648,8 +616,7 @@ C Update the viewing azimuth and elevation.
             write(outs,'(a,F7.1,a,F7.1)') 'The perspective azimuth is ',
      &        az,' and elevation is ',el
             dok=.true.
-            h(1)='Pause to allow you to adjust the view. '
-            CALL ASKOK(outs,' Is this view ok?',OK,dok,1)
+            CALL ASKOK(outs,' Is this view ok?',OK,dok,nbhelp)
             if(OK)then
               azimuth=az
               elevtn=el
@@ -669,11 +636,12 @@ C Update the viewing azimuth and elevation.
         
         if(IEE.eq.1)then
           call edisp(iuout,' ')
-          H(1)='The view azimuth 0= looking north, 90 =looking east.'
+          helptopic='view_azimuth_edit'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(azimuth,' ',' View azimuth (deg) ? ',
-     &      -359.,'W',359.,'W',90.,'view azimuth',IER,1)
+     &      -359.,'W',359.,'W',90.,'view azimuth',IER,nbhelp)
           CALL EASKR(elevtn,' ',' View elevation (deg) ? ',
-     &      -89.,'W',89.,'W',0.,'view elevation',IER,1)
+     &      -89.,'W',89.,'W',0.,'view elevation',IER,nbhelp)
           call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
           vewdone=.false.
           redraw =.true.
@@ -681,19 +649,19 @@ C Update the viewing azimuth and elevation.
       elseif(INO.EQ.8)then
 
 C View angle...
-        H(1)='The view angle is normally 60 deg.  The range'
-        H(2)='is 20. < x < 179.'
+        helptopic='view_angle_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(outs,'(a,f6.1,a,f6.1)') ' View angle=',angh,
      &    ' deg. View angle @ bounds=',eang
         CALL EASKR(angh,outs,' View angle (deg) ? ',
-     &    0.01,'W',180.,'W',60.,'view angle',IER,2)
+     &    0.01,'W',180.,'W',60.,'view angle',IER,nbhelp)
         angv=angh
         if(ITPPSW.eq.3)then
           dok=.false.
-          h(1)='The wireframe view can be updated to approximate'
-          h(2)='the radiance view (does not work well for internal'
-          h(3)='views). '
-          CALL ASKOK(' ','Reflect this in perspective view?',OK,dok,3)
+          helptopic='reflect_rad_view_in_per'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(' ','Reflect this in perspective view?',
+     &      OK,dok,nbhelp)
           if(OK)then
             ITBND=0
             ANG=angh
@@ -707,11 +675,12 @@ C View angle...
       elseif(INO.EQ.10)then
 
 C horiz axis...
-        H(1)='Adjust axis min and max to allow more distant view.'
+        helptopic='e2r_east_axis'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(ITPPSW.eq.0)then
   41      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
           CALL EASKS(HOLD,' East axis minimum and maximum: ',
-     &      '  ',28,' ','east axis min-max',IER,1)
+     &      '  ',28,' ','east axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
@@ -724,7 +693,7 @@ C horiz axis...
         elseif(ITPPSW.eq.1)then
  141      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
           CALL EASKS(HOLD,' South axis minimum and maximum: ',
-     &      '  ',28,' ','south axis min-max',IER,1)
+     &      '  ',28,' ','south axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
@@ -737,7 +706,7 @@ C horiz axis...
         elseif(ITPPSW.eq.2)then
  241      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
           CALL EASKS(HOLD,' East axis minimum and maximum: ',
-     &      '  ',28,' ','east axis min-max',IER,1)
+     &      '  ',28,' ','east axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
@@ -754,11 +723,12 @@ C horiz axis...
       elseif(INO.EQ.11)then
 
 C vertical axis...
-        H(1)='Adjust axis min and max to allow more distant view.'
+        helptopic='e2r_north_axis'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(ITPPSW.eq.0)then
  144      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
           CALL EASKS(HOLD,' North axis minimum and maximum: ',
-     &      '  ',28,' ','north axis min-max',IER,1)
+     &      '  ',28,' ','north axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
@@ -771,7 +741,7 @@ C vertical axis...
         elseif(ITPPSW.eq.1)then
  145      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
-     &      '  ',28,' ','up axis min-max',IER,1)
+     &      '  ',28,' ','up axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
@@ -784,7 +754,7 @@ C vertical axis...
         elseif(ITPPSW.eq.2)then
  245      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
-     &      '  ',28,' ','up axis min-max',IER,1)
+     &      '  ',28,' ','up axis min-max',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
@@ -819,16 +789,18 @@ C extend the list.
       elseif(INO.EQ.(NITEMS-1))then
 
 c Explains main menu.
-        CALL PHELPD('view menu',31,'-',0,0,IER)
+        helptopic='view_definition_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('view menu',nbhelp,'-',0,0,IER)
       elseif(INO.EQ.NITEMS)then
         if(vewdone)then
           return
         else
           dok=.false.
-          h(1)='Recent changes in the view parameters might be lost'
-          h(2)='if you exit without saving the data. '
+          helptopic='e2r_remind_to_save'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('View information has not been saved',
-     &      'Is it ok to exit?',OK,dok,2)
+     &      'Is it ok to exit?',OK,dok,nbhelp)
           IF(OK)return
         endif
       endif
