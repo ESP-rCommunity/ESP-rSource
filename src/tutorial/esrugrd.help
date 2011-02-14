@@ -354,13 +354,16 @@
 *enditem
       CALL EASKS(FILE3D,' 3D gridding configuration file name ?',' ',
 *subroutine MENUSG
-*item MENUSG
-'  This menu can be used to produce the required files'
+*item MENUSG grd_3d_mesh_menu
+' This menu can be used to produce the required files'
 ' by BPS for 3D structured mesh SM) simulation. It'
-' deals with a single zone at a time. And only one '
-' structured mesh can be simulated at a time for the '
-' whole building.  Therefore, there can be only one'
+' deals with a single zone at a time (you will be asked'
+' to select the zone).'
+'  '
+' Only one structured mesh can be simulated at a time for '
+' the whole building.  Therefore, there can be only one'
 ' imported component.'
+'  '
 ' After selecting the zone, the local component indices'
 ' are defined.  That is the 1D building constructions '
 ' (local components) which will be represented by the'
@@ -372,31 +375,23 @@
 ' Alternatively, the SM configuration file can be'
 ' imported directly via option 5.'
 '  '
-'    Input the name for the zone file in which'
-' the structured mesh configuration details exit.'
-' '
+' When exiting this menu you will be asked to confirm an'
+' update to the model cfg file. If you say no the changes'
+' will not be registered.'
 *enditem
         CALL EASKS(LGrdSt,'Structured mesh file name ?',' ',
-*item MENUSG
-*enditem
         CALL PHELPD('Multi-Gridding menu ',17,'-',0,0,IER)
-*item MENUSG
-'Recent changes to the model might be lost if the '
-'data is not written to the configuration file. '
-'First check that no other ESP-r module is using '
-'this file. '
-*enditem
-          CALL ASKOK(' ',
+        CALL ASKOK(' ',
 *subroutine LCLCMP
-*item LCLCMP
+*item LCLCMP grd_component_status
 ' The local components status menu allows altering'
 ' the status of the local components between'
 ' defined (D) and not defined (N)'
 *enditem
         CALL PHELPD('local components ',3,'-',0,0,IER)
 *subroutine IMPCMP
-*item IMPCMP
-' in order to define the imported component'
+*item IMPCMP import_SM_menu
+' In order to define the imported component'
 ' (structured mesh SM), the grid structure should'
 ' be defined first via option 1.  Then the material'
 ' properties and boundary surfaces can be defined'
@@ -404,7 +399,8 @@
 *enditem
         CALL PHELPD('importing a component ',5,'-',0,0,IER)
 *subroutine DFNGRD
-*item DFNGRD
+*item DFNGRD grd_3D_mesh_defs
+' Steps in defining a mesh:'
 ' 1: define the reference mesh width in meters'
 '    meters used as unit for the mesh widths.'
 ' 2,3,4: the number of the last row, column, and layer.'
@@ -429,65 +425,65 @@
 ' the gridding via options b and c which will '
 ' automatically update the material and boundary'
 ' details.'
-'    This is the conversion factor for mesh width.'
-' That is this factor will be multiplied by the mesh'
-' width to get the real width in meters.'
+'  '
+'  Option 1:  This is the conversion factor for mesh width.'
+'    This factor will be multiplied by the mesh'
+'    width to get the real width in meters.'
+'  '
+'  Option 2: This is number of the last row.  The row number '
+'    should be odd.  Two extra row intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option 3:  This is number of the last column (should be'
+'    an odd number.  Two extra column intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option 4:  This is number of the last layer (should be'
+'    an odd number.  Two extra layer intervals should be'
+'    included, one between 1 to 3, and the other n-3 to n.'
+'    Where, n is the number entered.'
+'  '
+'  Option a: select which row column or layer to edit for'
+'    mesh widths.'
+'  '
+'  Option b: select which row column or layer to divide'
+'  ' 
+'  Option c: select which row column or layer to delete'
+'  ' 
 *enditem
         CALL EASKR(RefWidth,' ','Enter the reference mesh width:',
-*item DFNGRD
-'    This is number of the last row.  The row number '
-' should be odd.  Two extra row intervals should be'
-' included, one between 1 to 3, and the other n-3 to n.'
-' Where, n is the number entered.'
-*enditem
         CALL EASKI(NRowT,' ','Enter the number of rows:',1,'F',
-*item DFNGRD
-'   This is number of the last column.  The column number'
-' should be odd.  Two extra column intervals should be'
-' included, one between 1 to 3, and the other n-3 to n.'
-' Where, n is the number entered.'
-*enditem
         CALL EASKI(NColT,' ','Enter the number of columns:',1,'F',
-*item DFNGRD
-'    This is number of the last layer.  The layer number'
-' should be odd.  Two extra layer intervals should be'
-' included, one between 1 to 3, and the other n-3 to n.'
-' Where, n is the number entered.'
-*enditem
         CALL EASKI(NLayT,' ','Enter the number of layers:',1,'F',
-*item DFNGRD
-*enditem
         CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
-*item DFNGRD
-*enditem
         CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
-*item DFNGRD
-*enditem
         CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
-*item DFNGRD
-*enditem
         CALL PHELPD('importing a component ',24,'-',0,0,IER)
 *subroutine EDTMSH
-*item EDTMSH
+*item EDTMSH 3d_mesh_width_edit
+'You are presented with the current widths of the mesh. Edit'
+'the numbers presented as required.'
 *enditem
   20    CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
 *subroutine DVDMSH
-*item DVDMSH
+*item DVDMSH 3d_mesh_divide
+'You are presented with the current divisions of the mesh. Edit'
+'the numbers presented as required.'
 *enditem
         CALL EASKABC(Promp,' ','next','divid','finish',IW,0)
-*item DVDMSH
-*enditem
-          CALL EASKI(NDiv,' ','Enter the number of divitions:',1,'F',
-*item DVDMSH
-*enditem
-   70       CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
+        CALL EASKI(NDiv,' ','Enter the number of divitions:',1,'F',
+   70   CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
 *subroutine DLTMSH
-*item DLTMSH
+*item DLTMSH grd_3d_mesh_delete
+'You are presented with the current mesh. Select items to delete'
+'as required.'
 *enditem
         CALL EASKABC(Promp,' ','next','delete','finish',IW,0)
 *subroutine CHKREF
 *subroutine DFNMTR
-*item DFNMTR
+*item DFNMTR grd_mesh_mat_geom
 ' This menu should be used for defining the material'
 ' geometry for the imported component.  This is done'
 ' by defining homogeneous material boxes.  To define'
@@ -503,7 +499,7 @@
 *enditem
         CALL PHELPD('local components ',12,'-',0,0,IER)
 *subroutine MTRINP
-*item MTRINP
+*item MTRINP manage_mat_geom
 ' You should enter eight indices as follows:'
 ' 1. surface number (within the current zone).'
 ' 2. element number (within the above surface).'
@@ -513,7 +509,7 @@
 *enditem
   10  CALL EASKS(StrVal,Promp,' ',72,' ','material geometry',IER,6)
 *subroutine DFNBND
-*item DFNBND
+*item DFNBND grd_boundary_surf
 ' This menu should be used for defining the boundary'
 ' surfaces. To define a box, the grid coordinates'
 ' of two diagonally opposite corners of the box are'
@@ -527,7 +523,7 @@
 *enditem
         CALL PHELPD('local components ',10,'-',0,0,IER)
 *subroutine BNDINP
-*item BNDINP
+*item BNDINP grd_manage_boundary
 ' You should enter eight indices as follows:'
 ' 1. zone number.'
 ' 2. surface number (-ve:external, +ve:internal).'
@@ -537,14 +533,14 @@
 *enditem
   10  CALL EASKS(StrVal,Promp,' ',72,' ','boundary box',IER,6)
 *subroutine SLCTZN
-*item SLCTZN
-'    Select the zone for which the multi-D gridding'
+*item SLCTZN grd_multi_grid_zone
+' Select the zone for which the multi-D gridding'
 ' details are to be created/modified.'
 ' '
 *enditem
    20 CALL EPICKS(INPICK,IVALZ,' ',' ',12,
 *subroutine FHDSTM
-*item FHDSTM
+*item FHDSTM grd_draw_xsection
 ' You should enter two indices as follows:'
 ' 1. view axis (1: Row, 2: Column, and 3: Layer).'
 ' 2. view level (even number).'
@@ -552,8 +548,8 @@
 *enditem
   10  CALL EASKS(StrVal,Promp,' ',14,' ','View Indices',IER,4)
 *subroutine GRDSRF
-*item GRDSRF
-'   This menu controls the surface gridding. In order'
+*item GRDSRF 
+'This menu controls the surface gridding. In order'
 'to activate this menu the surface should be selected'
 'first via option (1). Option (5) toggles the selected'
 'surface status (lumped/discretized). The minimum'
