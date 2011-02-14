@@ -789,8 +789,10 @@ C Display the node distribution in the feedback window.
       ELSEIF(INO.EQ.14)THEN
 
 C Display the help statements.
+        helptopic='lumped_constr_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IHELPM=1
-        CALL PHELPD('lumped',26,'-',0,0,IER)
+        CALL PHELPD('lumped',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.15)THEN
 
 C Return to the 1-D gridding menu.

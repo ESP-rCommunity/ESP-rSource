@@ -170,66 +170,66 @@
 *subroutine LISTND
 *subroutine MENU1M
 *item MENU1M
-'  This menu can be used to define the hygric'
-'  nodal distribution and properties.  The '
-'  zone should be selected first.'
-'  After defining the hygric data, it should '
-'  be saved via (y) option'
-'    Select the zone for which the moisture '
-' details are to be created/modified.'
-' '
+'This menu can be used to define the hygric (moisture)'
+'nodal distribution and properties.'
+'  '
+'Options:'
+'  1:  Focus zone (1st step is to select a zone)'
+'  '
+'  a: assign number of nodes per layer in all surfaces'
+'     of the zone. Use at least 2 nodes per layer.'
+'  '
+'  b: assign number of nodes in a layer (you must select'
+'     a specific surface and then the number of nodes'
+'     per layer in that surface.'
+'  '
+'  c: detailed hygric properties are handled in a sub-menu'
+'  '
+'  x/y/z manage the 1D moisture file. You will be asked to'
+'     specify the file name before each of these operations.'
+'  '
+'  ! list node distribution (does what it says)'
+'  '
+'  ? help - this message'
+'  '
+'  - when exiting you will be asked whether the new data'
+'    files should be recorded in the model cfg file. Be'
+'    sure that no other application is using that file.'
 *enditem
    20   CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-*item MENU1M
-' The number of nodes per layer should be at '
-' least (2). On the other hand, the the total '
-' number of nodes per surface should not '
-*enditem
         CALL EASKI(NND,' ','Enter the required number of nodes',
-*item MENU1M
-' Select the surface in which the required layers '
-' are located. '
-*enditem
    60   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',IER,2)
-*item MENU1M
-*enditem
-          CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-*item MENU1M
-*enditem
+        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
         CALL PHELPD('hygric nodal',5,'-',0,0,IER)
-*item MENU1M
-'Recent changes to the model should be recorded in the'
-'configuration file. Before saying yes, make sure that'
-'no other ESP-r module is accessing that file. '
-*enditem
-          CALL ASKOK(' ',
+        CALL ASKOK(' ',
 *subroutine HYGRIC
-*item HYGRIC
+*item HYGRIC grd_hygric_detail_menu
 '  This menu can be used for defining the hygric'
 '  properties of construction layers.  It deals'
 '  with one layer at a time.'
-' Select the surface '
+'  '
+'  1: Select a focus surface (from list)'
+'  2: Select a layer in the surface (from list)'
+'  '
+'  x: moisture permeability - index plus three coefficients'
+'  '
+'  y: moisture capacity - index plus three coefficients'
+'  '
+'  z: vapour diffusion - index plus one coefficient'
+'  '
+'  !  list properties'
+'  '
+'  ?  this help message'
 *enditem
    30   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',IER,1)
-*item HYGRIC
-' Select the layer '
-*enditem
    50   CALL EPICKS(INPICK,IVALL,' ',' ',20,NE,ITEMC,' ',IER,1)
-*item HYGRIC
-*enditem
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-*item HYGRIC
-*enditem
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-*item HYGRIC
-*enditem
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-*item HYGRIC
-*enditem
         CALL PHELPD('hygric props',3,'-',0,0,IER)
 *subroutine LISTMD
 *subroutine MENU3D
-*item MENU3D
+*item MENU3D grd_3d_conduc_menu
  'This menu can be used to produce the required files'
  'by the simulator for multi-D simulation. It deals'
  'with a single zone at a time. The zone is divided'
@@ -276,16 +276,16 @@
 'allows the manually edited, via any text editor,'
 'files to be used in producing the required multi-D'
 'gridding files.'
+*enditem
+        CALL PHELPD(' Multi-Gridding menu ',45,'-',0,0,IER)
+*item MENU3D grd_3d_conduc_warn
 'A check of the 3D description found no errors but'
 'did find some issues that generated warnings. Please'
 'review the warnings to see if you should continue.'
 *enditem
             CALL ASKOK(' Warning messages were given',
-*item MENU3D
-*enditem
-        CALL PHELPD(' Multi-Gridding menu ',45,'-',0,0,IER)
 *subroutine DFNCMP
-*item DFNCMP
+*item DFNCMP grd_component_menu
 ' The components menu allows the selection of the'
 ' component type whose gridding details are to be'
 ' modefied. Depending on your selection other menues'
@@ -294,9 +294,8 @@
 *enditem
         CALL PHELPD('components definition',5,'-',0,0,IER)
 *subroutine DFNCNC
-*item DFNCNC
-' '
-'    The connection surfaces menu allows the'
+*item DFNCNC grd_connect_menu
+' The connection surfaces menu allows the'
 ' selection of the connection surface type '
 ' whose gridding details are to be modified.'
 ' Depending on your selection other menues'
@@ -304,7 +303,7 @@
 *enditem
        CALL PHELPD('connections definition',6,'-',0,0,IER)
 *subroutine DFNCSS
-*item DFNCSS
+*item DFNCSS surf_to_surf_menu
 ' The surface-to-surface connection surfaces menu'
 ' allows altering the status of the surface-to-'
 ' surface connection surfaces'
@@ -312,43 +311,43 @@
 *enditem
         CALL PHELPD('srf-srf connection surfaces',4,'-',0,0,IER)
 *subroutine DFNCSE
-*item DFNCSE
+*item DFNCSE surf_to_edge_menu
 ' The surface-to-edge connection surfaces menu'
 ' allows altering the status of the surface-to-'
 ' edge connection surfaces'
 *enditem
         CALL PHELPD('srf-edge connection surfaces',4,'-',0,0,IER)
 *subroutine DFNCEE
-*item DFNCEE
+*item DFNCEE edge_to_edge_menu
 ' The edge-to-edge connection surfaces menu'
 ' allows altering the status of the edge-to-'
 ' edge connection surfaces'
 *enditem
         CALL PHELPD('edge-edge connection surfaces',3,'-',0,0,IER)
 *subroutine DFNCEC
-*item DFNCEC
+*item DFNCEC edge_to_corner_menu
 ' The edge-to-corner connection surfaces menu'
 ' allows altering the status of the edge-to-'
 ' corner connection surfaces'
 *enditem
         CALL PHELPD('edge-corner connection surfaces',4,'-',0,0,IER)
 *subroutine SELZON
-*item SELZON
-'    Select the zone for which the multi-D gridding'
+*item SELZON grd_sel_zone_menu
+' Select the zone for which the multi-D gridding'
 ' details are to be created/modified.'
 ' '
 *enditem
    20 CALL EPICKS(INPICK,IVALZ,' ',' ',12,
 *subroutine READ3D
-*item READ3D
-'    Input the name for the zone file in which'
+*item READ3D grd_3d_read_menu
+' Input the name for the zone file in which'
 ' the multi-gridding configuration details exit.'
 ' '
 *enditem
       CALL EASKS(FILE3D,' 3D gridding configuration file name ?',' ',
 *subroutine SAVE3D
-*item SAVE3D
-'    Input the name for the zone file in which'
+*item SAVE3D grd_3d_cfg_file
+' Input the name for the zone file in which'
 ' the multi-gridding configuration details are'
 ' to be saved.'
 ' '
