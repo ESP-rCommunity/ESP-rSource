@@ -711,103 +711,38 @@
         CALL EASKI(IWCH,' ',' Copy form which level:',1,'F',NDZC(ICR),
         CALL PHELPD(' corner construction ',8,'-',0,0,IER)
 *subroutine SUPORT
-*item SUPORT
-'    Support facilities menu allow the transformation'
+*item SUPORT multi_bin_ascii_conv
+' Support facilities menu allow the transformation'
 ' of the multi-D files (nodes coordinates, control'
 ' volumes, and connections) from binary format to'
 ' ASCII and vice versa.'
 ' '
-'   Enter the name of the binary control volumes file.'
+' For each of the options 1-8 you will be asked for the name'
+' of the original file and the converted file.'
 ' '
 *enditem
         CALL EASKS(BFLCVS,'the control volumes file (Binary-version) ?',
-*item SUPORT
-'   Enter the name of the ASCII control volumes file.'
-' '
-*enditem
         CALL EASKS(AFLCVS,'the control volumes file (ASCII-version) ?',
-*item SUPORT
-'   Enter the name of the ASCII control volumes file.'
-' '
-*enditem
         CALL EASKS(AFLCVS,'the control volumes file (ASCII-version) ?',
-*item SUPORT
-'   Enter the name of the binary control volumes file.'
-' '
-*enditem
         CALL EASKS(BFLCVS,'the control volumes file (Binary-version) ?',
-*item SUPORT
-'   Enter the name of the binary connection file.'
-' '
-*enditem
         CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
-*item SUPORT
-'   Enter the name of the ASCII connection file.'
-' '
-*enditem
         CALL EASKS(AFLCNC,'the connection file (ASCII-version) ?',
-*item SUPORT
-'   Enter the name of the ASCII connection file.'
-' '
-*enditem
-        CALL EASKS(AFLCNC,'the connection file (ASCII-version) ?',
-*item SUPORT
-'   Enter the name of the binary connection file.'
-' '
-*enditem
-        CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
-*item SUPORT
-'  Enter the name of the binary nodes temperature file.'
-' '
-*enditem
+        CALL EASKS(AFLCNC,'the connection file (ASCII-version) ?',        CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
-*item SUPORT
-'  Enter the name of the ASCII nodes temperature file.'
-' '
-*enditem
         CALL EASKS(AFLTAQ,'the temperature file (ASCII-version) ?',
-*item SUPORT
-'  Enter the name of the ASCII nodes temperature file.'
-' '
-*enditem
         CALL EASKS(AFLTAQ,'the temperature file (ASCII-version) ?',
-*item SUPORT
-'  Enter the name of the binary nodes temperature file.'
-' '
-*enditem
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
-*item SUPORT
-'  Enter the name of the binary nodes coordinates file.'
-' '
-*enditem
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
-*item SUPORT
-'  Enter the name of the ASCII nodes coordinates file.'
-' '
-*enditem
         CALL EASKS(AFLNDC,'the coordinates file (ASCII-version) ?',
-*item SUPORT
-'  Enter the name of the ASCII nodes coordinates file.'
-' '
-*enditem
         CALL EASKS(AFLNDC,'the coordinates file (ASCII-version) ?',
-*item SUPORT
-'  Enter the name of the binary nodes coordinates file.'
-' '
-*enditem
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
-*item SUPORT
-*enditem
         CALL PHELPD('grd opening',5,'-',0,0,IER)
 *subroutine CZCNVS
-*item CZCNVS
-'   Enter the name for the file in which the associated'
+*item CZCNVS grd_CZCNVS_menu
+' Enter the name for the file in which the associated'
 ' control volumes details to be saved. '
 ' '
-' connections details to be saved. '
-' nodes global coordintes to be saved. '
-' nodes initial temperature to be saved. '
-' two degrees are supported in this version; '
+' Options: '
 ' 1. all boundary nodes will have convective,'
 '    and radiative boundary conditions.'
 ' 2. all boundary nodes will have convective'
