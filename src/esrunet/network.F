@@ -142,7 +142,6 @@ C Graphics and ESP-r default commons
       COMMON/FILEP/IFIL
       COMMON/MOD/MODEL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/POPHELP/H(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
       integer ifs,itfs,imfs
@@ -218,7 +217,7 @@ C Name of current application
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
-      CHARACTER INF*144,H*72,PATH*72
+      CHARACTER INF*144,PATH*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
       dimension IVAL(MNWKTYP)
@@ -232,11 +231,18 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITEMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Initialize global common data. IUEX is file unit for the
 C model external data summary.
       CALL EZERO
       call curmodule('net ')
       cAppName = 'net'
+      helpinapp='net'  ! set once for the application
+      helpinsub='NETWORK'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -387,11 +393,10 @@ C do not
         DFILE='network_flow.summary'
         lnf=lnblnk(NWKFLNAM)
         write(LTMP,'(2a)') NWKFLNAM(1:lnf-3),'summary'
-        h(1)='This summary file is written by the project manager'
-        h(2)='before invoking net. It is used by net to access'
-        h(3)='model data.'
-        CALL EASKS(LTMP,' Model summary file? ',' ',72,
-     &    DFILE,'summary file open',IER,3)
+        helptopic='net_summary_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKS(LTMP,'Model summary file? ',' ',72,
+     &    DFILE,'summary file open',IER,nbhelp)
         CALL EFOPSEQ(iuex,ltmp,1,IER)
         if(ier.ne.0)then
           isexavail=.false.
@@ -496,6 +501,10 @@ C (Re)draw the network prior to building menu strings.
       NITEMS=26
       CALL NETWDRW
 
+C Generate overall help text blocks.
+      helptopic='net_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C If there has been a new connection added check with user.
 
 C Debug.
@@ -503,12 +512,10 @@ C      write(6,*) 'ihavenewcnn c',ihavenewcnn
 
       if(ihavenewcnn.ne.0)then
         dok=.true.
-        h(1)='Recently a new connection was added to the network.'
-        h(2)='Before doing anything else you should define its '
-        h(3)='attributes. You can also edit attributes by clicking'
-        h(4)='on the connecting line. '
+        helptopic='have_new_connection'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call askok('Edit this connections attributes?',
-     &    ' ',ok,dok,4)
+     &    ' ',ok,dok,nbhelp)
         if(ok)then
           J=ihavenewcnn
           CALL NETCNNDATR(IER,J)
@@ -530,69 +537,22 @@ C Switch network graphics off and quit.
         CALL EPAGEND
         STOP
       elseif(INO.EQ.NITEMS-1)THEN
-        H(1)='The graphic network module produces graphic descriptions'
-        H(2)='of networks related to simulation such as plant systems,'
-        H(3)='flow networks and electrical networks. It accesses a'
-        H(4)='database of icons and supports both the linking of icons'
-        H(5)='and partial attribution of icons. '
-        H(6)=' '
-        H(7)='Network descriptions are written to a graphic network '
-        H(8)='file which other computational agents scan for relevant '
-        H(9)='information. '
-        H(10)=' '
-        H(11)='The current version of net should be considered work in'
-        H(12)='progress and the format of the icons database and the '
-        H(13)='graphic network file is subject to revision. '
-        H(14)=' '
-        H(15)='Use of the net module: '
-        H(16)=' option a defines the `gnf` file which will be loaded if'
-        H(17)='          it exists.'
-        H(18)=' option b description of the file contents and/or use'
-        H(19)=' option c the domain of the network (currently mixed'
-        H(20)='          domains are not supported) which should be'
-        H(21)='          defined before adding components.'
-        H(22)=' option d the icons database used by the `gnf` file.'
-        H(23)=' option e switches focus between components and'
-        H(24)='          connections between components'
-        H(25)=' If the focus is components then you have the option to'
-        H(26)=' add a new component, delete components which have been'
-        H(27)=' highlighted (ckick with left mouse button), copy a'
-        H(28)=' component (left mouse button to select which icon to'
-        H(29)=' copy and click again to place the copy) and edit the'
-        H(30)=' attributes of the icon (left mouse button to select).'
-        H(31)=' '
-        H(32)=' If the focus is connections then you have the option'
-        H(33)=' to add a connection (select menu option then use left'
-        H(34)=' mouse button to click on one of the attachement boxes'
-        H(35)=' then the middle mouse button for intermediate points'
-        H(36)=' and the right button on another icon attachment box.'
-        H(37)=' You can also delete a previously highlighted connection'
-        H(38)=' (click on any intermediate point with left button). You'
-        H(39)=' can also edit connection attributes of a previously'
-        H(40)=' highlighted connection.'
-        H(41)=' '
-        H(42)='Changes to the gridding are accomplished via the middle'
-        H(43)='mouse button (clicking on a point not close to an '
-        H(44)='existing icon or connection. '
-        CALL PHELPD('network main',44,'-',0,0,IER)
+        helptopic='net_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('network main',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.2)THEN
 
 C Provide a description of the network.
-        h(1)='This phrase can describe the intent of this network,'
-        h(2)='any assumptions or project references.'
         STR='None'
         CALL EASKS(NWKDSC,
      &    'Please provide a short description of the network',
-     &    '  ',72,STR,'netdesc',IER,2)
+     &    '  ',72,STR,'netdesc',IER,nbhelp)
       ELSEIF(INO.EQ.4)THEN
 
 C Set the network type
-        H(1)='Select the type of network you want to develop.'
-        H(2)='Each domain includes a set of icons which can be'
-        H(3)='associated with related components/entities.'
         IPCK=1
         CALL EPICKS(IPCK,IVAL,'Select a network type',' ',12,MNWKTYP,
-     &    NWKTYPSTR,'Network select',IER,3)
+     &    NWKTYPSTR,'Network select',IER,nbhelp)
         IF(IVAL(1).GT.0)THEN
           INWKTYP=IVAL(1)
         ELSE
@@ -607,25 +567,15 @@ C Option to read another icon file name. << hardcoded >>
         else
           DFILE=DICONDBFL
         endif
-        h(1)='This is the database file which contains the icons'
-        h(2)='for the network tool.'
         ltmp=ICONDBFL
   2     CALL EASKS(ltmp,'icon database filename ?',
-     &    ' ',72,DFILE,'ecomp dbnam',IER,2)
+     &    ' ',72,DFILE,'ecomp dbnam',IER,nbhelp)
         if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN') ICONDBFL=ltmp
 
         ICONFIL=IFIL+1
         CALL EFOPSEQ(ICONFIL,ICONDBFL,1,IER)
         IF(IER.NE.0) THEN
           dok=.false.
-          h(1)='Icons for this application are held in a file which is'
-          h(2)='typically /usr/esru/esp-r/databases/flow_icons.db1 for'
-          h(3)='flow networks and /usr/esru/esp-r/databases/icons.db1'
-          h(4)='for other networks. '
-          h(5)=' '
-          h(6)='The the folder /usr/esru/esp-r/databases '
-          h(7)=' '
-          h(8)='A no will set this file name to UNKNOWN. '
           CALL ASKOK('ERROR - could not find the icon database.',
      &      'Try again?',OK,dok,8)
           IF(.NOT.OK) THEN 
@@ -784,28 +734,36 @@ c        ENDIF
       ELSEIF(INO.EQ.17)THEN
 
 C Specify XY grid spacing.
+        helptopic='grid_spacing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTS,'(A,F5.1)')'enter a value between 0.125 and ',
      &    GRMAX(1)
         CALL EASKR(GRSPC(1),'XY spacing?',OUTS,0.125,'F',GRMAX(1),'F',
-     &    1.0,'gridspace',IER,0)
+     &    1.0,'gridspace',IER,nbhelp)
         GRSPC(2)=GRSPC(1)
       ELSEIF(INO.EQ.18)THEN
 
 C Specify Z grid spacing.
+        helptopic='grid_spacing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTS,'(A,F5.1)')'enter a value between 0.125 and ',
      &    GRMAX(1)
         CALL EASKR(GRSPC(3),'Z spacing?',OUTS,0.125,'F',GRMAX(3),'F',
-     &    1.0,'gridspace',IER,0)
+     &    1.0,'gridspace',IER,nbhelp)
 
       ELSEIF(INO.EQ.19)THEN 
+        helptopic='grid_spacing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTS,'(A,F5.1)')'enter a value between 0.5 and 8.0'
         CALL EASKR(SCALF,'zoom setting?',OUTS,VIEWMN,'F',VIEWMZ,'F',
-     &  VIEWMZ,'zoom setting',IER,0)
+     &  VIEWMZ,'zoom setting',IER,nbhelp)
       ELSEIF(INO.EQ.19)THEN
 
 C Edit rotation angle.
+        helptopic='grid_spacing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(ROTA,'Icon rotation angle?',' ',0.0,'-',
-     &    0.0,'-',0.0,'gridspace',IER,0)
+     &    0.0,'-',0.0,'gridspace',IER,nbhelp)
       ELSEIF(INO.EQ.21)THEN
 
 C Refresh icons and connections.
@@ -834,15 +792,10 @@ C to create a legacy network flow file.
           call mflist(iuout)
           OK=.FALSE.
           dok=.true.
-          h(1)='The icon based network file is not used directly '
-          h(2)='by the simulator. It uses a text-based flow network'
-          h(3)='file and if you say yes to this the current network'
-          h(4)='will be saved to this file format. '
-          h(5)=' '
-          h(6)='If the network is incomplete you might not want to'
-          h(7)='not create this extra file.'
+          helptopic='convert_to_text_network'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Do you want to save the nodes & components',
-     &      'to a text-based flow network file?',OK,dok,7)
+     &      'to a text-based flow network file?',OK,dok,nbhelp)
           if(OK)then
 
 C Transfer data to fluid flow file and return to main menu.
@@ -852,14 +805,10 @@ C Transfer data to fluid flow file and return to main menu.
             else
               ltmp='legacy.afn'
             endif
-            h(1)='The network flow information within the graphic'
-            h(2)='network file can be extracted into a legacy fluid'
-            h(3)='flow file for use in simulations. '
-            h(4)=' '
-            h(5)='Note: wind pressures and pressure sets should be'
-            h(6)='updated within the project manager. '
+            helptopic='convert_to_text_network'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKS(LTMP,' Fluid flow network file ? ',
-     &        '(legacy see help)',72,' ','mass flow file',IER,6)
+     &        '(legacy see help)',72,' ','mass flow file',IER,nbhelp)
             if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN')then
               LAPROB=LTMP
             else
@@ -875,19 +824,17 @@ C Transfer data to fluid flow file and return to main menu.
 
 C Read in a network, clear exiting network definitions and refreshing
 C the screen.
-        h(1)='to test reading functions... '
+        helptopic='convert_to_text_network'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabc('Options:',' ','standard network file read',
-     &    'read & fill flow commons','continue',iwh,1)
+     &    'read & fill flow commons','continue',iwh,nbhelp)
         if(iwh.eq.3)then
           goto 5
         endif
         OK=.FALSE.
         dok=.false.
-        h(1)='The description of the current network will be replaced'
-        h(2)='by any new network defined or read in. If you want to'
-        h(3)='keep any recent changes, say no and save the file first.'
         CALL ASKOK('Reading in a network will clear the current one',
-     &    'are you sure you want to do this?',OK,dok,3)
+     &    'are you sure you want to do this?',OK,dok,nbhelp)
         IF(.NOT.OK) GOTO 5
         CALL NWKINIT
         CALL startbuffer
@@ -909,11 +856,10 @@ C the screen.
 C Scan any new .summary file.
           lnf=lnblnk(NWKFLNAM)
           write(LTMP,'(2a)') NWKFLNAM(1:lnf-3),'summary'
-          h(1)='This summary file is written by the project manager'
-          h(2)='before invoking net. It is used by net to access'
-          h(3)='model data.'
+          helptopic='net_summary_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS(LTMP,' Model summary file? ',' ',72,
-     &      DFILE,'summary file open',IER,3)
+     &      DFILE,'summary file open',IER,nbhelp)
           CALL EFOPSEQ(iuex,ltmp,1,IER)
           if(ier.ne.0)then
             isexavail=.false.
@@ -1173,9 +1119,8 @@ C to handle deletion of icons.
       
       integer lnblnk  ! function definition
 
-      COMMON/POPHELP/H(60)  
-
 C Icon commons       
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
      & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
@@ -1212,7 +1157,7 @@ C ICITEM1 is ...
 C ICITEM2 is ...
       DIMENSION ICITEM1(MICNCAT+3),ICITEM2(MICN+4)
       
-      CHARACTER H*72,OUTS*124,name*12
+      CHARACTER OUTS*124,name*12
       CHARACTER NWICNM*12,ICDNAM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
       character NWICNTXT*72
       CHARACTER A*1,ICITEM1*44,ICITEM2*44, KEY*1
@@ -1226,6 +1171,13 @@ C ICITEM2 is ...
 
       LOGICAL CLOSEX,CLOSEY,OK,DOK,MREPT, ISEL,CSEL,found
       integer NICITEM,IMOUT,NICITEM2,IMOUT2 ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NETWMIC'  ! set for subroutine
 
 C Set the component reporting flag.
       MREPT=.FALSE.
@@ -1351,10 +1303,11 @@ C <<            XXXXX >>
           CALL NETWDRW
 
 C Give the copied component a name 
-          H(1)='Requires a unique name, which contains'
-          H(2)='no blank spaces.'
+          helptopic='unique_name_required'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS(NWICNM(NNICN),'Give a (unique) name',
-     &    '(with no blank spaces) ',12,ICDNAM,'newcmp',IER,2)
+     &      '(with no blank spaces) ',12,ICDNAM,'newcmp',
+     &      IER,nbhelp)
 
 C Check for duplicate names ....
           icn=nnicn
@@ -1427,10 +1380,9 @@ C then check again.
           if(NIT.eq.0)goto 9
           CALL EPMENSV
         ELSEIF(IMOUT.EQ.NICITEM-1) then
-          H(1)='The menu options relate to different categories'
-          H(2)='of icons which may be selected for use with the'
-          H(3)='current domain in the network tool.'
-          CALL PHELPD('Icon Category',3,'-',0,0,IER)
+          helptopic='icon_categories'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Icon Category',nbhelp,'-',0,0,IER)
           GOTO 9
         ELSEIF(IMOUT.EQ.NICITEM) then
           RETURN
@@ -1486,13 +1438,9 @@ C If a long list include page facility text.
 C return to the previous menu ..
             GOTO 717
           ELSEIF(IMOUT2.EQ.NICITEM2-1) THEN
-            H(1)='Select a component from the list, which will '
-            H(2)='then be drawn into the network. '
-            H(3)='  '
-            H(4)='Switch the "component info" toggle to ON to view'
-            H(5)='any more information associated with the '
-            H(6)='component; this appears in the text window.'
-            CALL PHELPD('Component',6,'-',0,0,IER)
+            helptopic='icon_cat_components'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Component',nbhelp,'-',0,0,IER)
             GOTO 13
           ELSEIF(IMOUT2.EQ.NICITEM2-2) THEN
             IF(MREPT) THEN
@@ -1509,8 +1457,10 @@ C If there are enough items allow paging control via EKPAGE.
             ENDIF
           ELSEIF(IMOUT2.GT.MHEAD.AND.IMOUT2.LT.NICITEM2-MCTL+1)THEN
             CALL KEYIND(NICITEM2,IMOUT2,ICHOSE2,IO)
+
 C Store the number of the selected icons category.
             IVAL2=ICHOSE2
+
 C Store the name of the selected string, compose NWICNHIS from the
 C icon's original domain:catetory:name and get the data.
             category=cattag(id,NIT)
@@ -1709,10 +1659,11 @@ C << the `.summary` *Zones list for data. Not yet implemented.
         ICONTP(NNICN)=1
         CALL NETWDRW
         NWICNM(NNICN)=ICDNAM
-        H(1)='Requires a unique name, which contains'
-        H(2)='no blank spaces.'
+        helptopic='unique_name_required'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(NWICNM(NNICN),'Give a (unique) name',
-     &    '(with no blank spaces) ',12,ICDNAM,'newcmp',IER,2)
+     &    '(with no blank spaces) ',12,ICDNAM,'newcmp',
+     &    IER,nbhelp)
 
 C Check for duplicate names .... 
         icn=nnicn
@@ -1777,8 +1728,9 @@ C Confirm that this is the icon to be deleted.
           write(outs,'(3a)') 'Delete the icon ',name(1:lnblnk(name)),
      &      ' and associated connections?'
           dok=.false.
-          h(1)='Pause in case you decide not to delete connections.'
-          CALL ASKOK(outs,' ',OK,dok,1)
+          helptopic='pause_to_consider'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(outs,' ',OK,dok,nbelp)
         ELSE
           OK=.TRUE.
         ENDIF
@@ -1859,41 +1811,33 @@ C List the icon details.
             CALL ECLOSE(CGY,XYZICON(I,3),0.5,CLOSEY)
           ENDIF
           IF(CLOSEX.AND.CLOSEY)THEN
-            WRITE(H(1),'(2A)') 'Name: ', NWICNM(I)(1:lnblnk(NWICNM(I)))
-            WRITE(H(2),'(A)')
-     &'  domain      |category    |name          '
-            WRITE(H(3),'(A)') NWICNHIS(I)(1:40)
+            WRITE(outs,'(2A)') 'Name: ', NWICNM(I)(1:lnblnk(NWICNM(I)))
+            call edisp(iuout,outs)
+            WRITE(outs,'(A)')
+     &        '  domain      |category    |name          '
+            call edisp(iuout,outs)
+            WRITE(outs,'(A)') NWICNHIS(I)(1:40)
+            call edisp(iuout,outs)
             if(NIVT(I).gt.0)then
-              MM=4
-              WRITE(H(MM),'(A)') 'Notes: '
+              WRITE(outs,'(A)') 'Notes: '
+              call edisp(iuout,outs)
               do 116 jh=1,NIVT(I)
-                MM=MM+1
-                if(MM.lt.58)then
-                  WRITE(h(MM),'(A)') NWICNTXT(I,jh)
-                else
-                  MM=MM-1
-                endif
+                WRITE(outs,'(A)') NWICNTXT(I,jh)
+                call edisp(iuout,outs)
   116         continue
-            else
-              MM=2
             endif
             if(NICONATR(I).gt.0)then
-              MM=MM+1
-              WRITE(H(MM),'(A)') 'Attributes: '
+              WRITE(outs,'(A)') 'Attributes: '
+              call edisp(iuout,outs)
               DO 520 jh=1,NICONATR(I)
-                MM=MM+1
-                if(MM.lt.58)then
-                  l3=lnblnk(ATRTAG(I,JH,1))
-                  l6=lnblnk(ATRMENU(I,JH))
-                  l7=MAX0(lnblnk(ATRICN(I,JH,1)),1)
-                  WRITE(h(MM),'(6A)') ' ',ATRTAG(I,jh,1)(1:l3),': ',
-     &              ATRMENU(I,jh)(1:l6),' is ',ATRICN(I,jh,1)(1:l7)
-                else
-                  MM=MM-1
-                endif
+                l3=lnblnk(ATRTAG(I,JH,1))
+                l6=lnblnk(ATRMENU(I,JH))
+                l7=MAX0(lnblnk(ATRICN(I,JH,1)),1)
+                WRITE(outs,'(6A)') ' ',ATRTAG(I,jh,1)(1:l3),': ',
+     &            ATRMENU(I,jh)(1:l6),' is ',ATRICN(I,jh,1)(1:l7)
+                call edisp(iuout,outs)
  520          continue
             endif
-            CALL PHELPD('icon list',MM,'-',0,0,IER)
             return
           endif
  115    continue
@@ -1918,9 +1862,7 @@ C Connection commons
       COMMON/NWKCON/NICNN,ICNS(MNCNN),ICNE(MNCNN),ICNNT(MNCNN),
      & ICNSP(MNCNN),ICNEP(MNCNN),CNWNP(MNCNN,MCIP,3),
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
-     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
-
-      COMMON/POPHELP/H(60)  
+     & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB) 
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
@@ -1928,9 +1870,16 @@ C Selected entity (component and connection) common
 C Grid commons
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
-      CHARACTER H*72,AW*1,ddtagatr*12,ddmenuatr*32,ddatrib*12,A*1
+      CHARACTER AW*1,ddtagatr*12,ddmenuatr*32,ddatrib*12,A*1
 
       LOGICAL ISEL,CSEL,OK,DOK,CLOSEX,CLOSEY
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NETWMCO'  ! set for subroutine
 
 C Depending on if user wants to add/delete/copy/edit a component      
       IOPT=IMOPT
@@ -1943,7 +1892,7 @@ C Depending on if user wants to add/delete/copy/edit a component
       ELSEIF(IOPT.EQ.2)THEN
 
 C Let the user select a connection        
-        CALL USRMSG(' click on the connection to delete',' ','-')
+        CALL USRMSG('click on the connection to delete',' ','-')
         CALL TRACKVIEW(A,IX,IY)
         IPX=IX
         IPY=IY
@@ -1975,8 +1924,10 @@ C Delete all selected connections.
         IF(IMODE.NE.1) THEN
           CALL NETWDRW
           dok=.true.
-          h(1)='Pause, in case you made a selection error. '
-          CALL ASKOK('Delete selected connection?',' ',OK,dok,1)
+          helptopic='pause_to_consider'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Delete selected connection?',' ',
+     &      OK,dok,nbhelp)
         ELSE
           OK=.TRUE.
         ENDIF
@@ -2870,8 +2821,6 @@ C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
       COMMON/NWKGLOB/idgatrdom,ddgtagatr(MIATRB,5),
      & ddgatrib(MIATRB,3),ddgmenuatr(MIATRB)
 
-      COMMON/POPHELP/H(60)  
-
 C CATSI: list of attribute categories (presented for selection).
 C NCATIE: number of data fields in each attribute category.
 C ICATIE: pointer from DATACATIE bookkeepping back to the 
@@ -2888,7 +2837,7 @@ C CATIES is menu entry for each data field
 
       LOGICAL MATCH
 
-      CHARACTER H*72,ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
+      CHARACTER ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
 
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,key*1
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
@@ -2900,6 +2849,13 @@ C CATIES is menu entry for each data field
 #else
       integer*8 impx,impy,iw
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NETGDATR'  ! set for subroutine
 
 C Clear the menu structures.
       NCATI=0
@@ -2989,16 +2945,16 @@ C If a long list include page facility text.
       WRITE(IECDATE(M+3),'(A)') '- exit this menu '
       NECDATA=M+MCTL  
       CALL NETWDRW
+      helptopic='net_global_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EMENU('Global attribute categories',IECDATE,
      &  NECDATA,ICOUT1)
       IF(ICOUT1.EQ.NECDATA)THEN
         RETURN
       ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
-        H(1)='This menu displays the categoties of global data which'
-        H(2)='can be edited for this domain/network.'
-        H(3)='Please select a category to contine or'
-        H(4)='exit to the previous menu.'
-        CALL PHELPD('Data categories',4,'-',0,0,IER)
+        helptopic='net_global_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Data categories',nbhelp,'-',0,0,IER)
       ELSEIF(ICOUT1.EQ.NECDATA-2)THEN   
 
 C If there are enough items allow paging control via EKPAGE.
@@ -3093,10 +3049,9 @@ C Restore category menu setup before returning to label 705.
           CALL EPMENRC
           GOTO 705
         ELSEIF(ICOUT2.EQ.NECDATAs-1)THEN
-          h(1)='This list displays the attributes for this'
-          h(2)='category; click on the data item to edit its  '
-          h(3)='value.'
-          CALL PHELPD('Data values',3,'-',0,0,IER)
+          helptopic='net_category_attrib'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Data values',nbhelp,'-',0,0,IER)
         ELSEIF(ICOUT2.EQ.NECDATAs-3)THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -3119,7 +3074,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
             IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
               t32=CATIES(IAST,ISL)
               CALL EASKI(IVAL,t32,' ',IVMIN,'W',
-     &          IVMAX,'W',IVALD,'glob atrib intg data',IER,0)
+     &          IVMAX,'W',IVALD,'glob atrib intg data',IER,nbhelp)
               if(ier.eq.0)then
                 write(istr,'(I8)') IVAL
                 call removepad(istr,inpstr,ilena,iflag)
@@ -3138,10 +3093,9 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
             read(DATCATIE(IAST,ISL,1),*,iostat=ios,ERR=99)VALD
 
             IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
-              h(1)='A real number is expected here.'
               t32=CATIES(IAST,ISL)
               CALL EASKR(VAL,t32,' ',VMIN,'W',
-     &          VMAX,'W',VALD,'atrib real data',IER,1)
+     &          VMAX,'W',VALD,'atrib real data',IER,nbhelp)
               if(ier.eq.0)then
                 call relstr(val,vnpstr,ilena,iflag)
                 WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
@@ -3153,7 +3107,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
             IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
               t32=CATIES(IAST,ISL)
               CALL EASKS(VSTR,t32,' ',12,'nothing',
-     &          'atrib text data',IER,0)
+     &          'atrib text data',IER,nbhelp)
               if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
                 call removepad(vstr,vnpstr,ilena,iflag)
                 DATCATIE(IAST,ISL,1)=VNPSTR
@@ -3191,7 +3145,6 @@ C are returned. If ier=-1 then summary file was not available.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
 
@@ -3212,7 +3165,7 @@ C znamecon is the zone name associated with inside face a conneciton
       dimension snacon(MCON),surazi(MCON),surelv(MCON),surzmin(MCON)
       dimension surzcog(MCON),surzmax(MCON),conname(MCON)
       dimension snamecon(MCON),znamecon(MCON)
-      CHARACTER H*72,outstr*124,DEPRE*40,t72*72
+      CHARACTER outstr*124,DEPRE*40,t72*72
       CHARACTER PCITM(35)*42,KEY*1,exttag*12,WORD*20,SVAL*12,conname*43
       CHARACTER PSITM(35)*60
       character snamecon*12,znamecon*12,outs*124,tl*18,tc*18,tt*18
@@ -3220,6 +3173,13 @@ C znamecon is the zone name associated with inside face a conneciton
       LOGICAL OK,DOK,isexavail
       integer IRT  ! for radio button
       integer NITMS,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='selrelexttag'  ! set for subroutine
 
 C Rewind summary file if it exists (assumed to be open on unit iuex).
       if(isexavail)then
@@ -3315,6 +3275,8 @@ C If a long list include page facility text.
           IVERT=-1
 
 C Now display the menu.
+          helptopic='net_pressure_coef'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call USRMSG('Select the pressure coefficient set which',
      &'best matches this surface. (see help) ','-') 
           CALL EMENU('Pressure Coefficient Sets:',PCITM,NITMS,IVERT)
@@ -3323,23 +3285,9 @@ C Now display the menu.
 C User exits without making a selection.
             ier= -1
           ELSEIF(IVERT.EQ.NITMS-1)THEN
-            H(1)='To enable the calculation of wind-induced surface'
-            H(2)='pressures (as required by ESP-r`s fluid flow'
-            H(3)='simulators), a database of angle dependent'
-            H(4)='pressure coefficients is provided.'
-            H(5)='The default ESP-r set contains wind pressure coeffi-'
-            H(6)='cients for surfaces in typical positions and within '
-            H(7)='several different exposure categories.'
-            H(8)='They can be used (with care) for low-rise buildings.'
-            H(9)='See the ESP manual for additional info.'
-            h(10)=' '
-            h(11)='It is also possible to calculate pressure coeffi-' 
-            h(12)='cients using CpCalc (see database maintenance).'
-            h(13)=' '
-            h(14)='Select the pressure coefficient from this list, ' 
-            h(15)='which is most appropriate for the location of the '
-            h(16)='external node.'
-            CALL PHELPD('databases overview',16,'-',0,0,IER)
+            helptopic='net_pressure_coef'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+           CALL PHELPD('databases overview',nbhelp,'-',0,0,IER)
             GOTO 70
           ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -3441,6 +3389,8 @@ C If a long list include page facility text.
           IVERT=-1
 
 C Now display the menu.
+          helptopic='external_overview'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call USRMSG('Select a zone from the model and its volume',
      &'and height can be used. (see help) ','-') 
           CALL EMENU('Available zones in model:',PCITM,NITMS,IVERT)
@@ -3448,11 +3398,9 @@ C Now display the menu.
 
 C User exits without making a selection.
             ier= -1
-          ELSEIF(IVERT.EQ.NITMS-1)THEN
-            h(1)='Each thermal zone has attributes such as name,'
-            h(2)='volume and a centre of gravity which can be used'
-            h(3)='by a flow network component.'
-            CALL PHELPD('external overview',3,'-',0,0,IER)
+            helptopic='external_overview'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('external overview',nbhelp,'-',0,0,IER)
             GOTO 71
           ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -3473,11 +3421,11 @@ C Let user select a pc set.
 
 C Ask whether choice is OK.
           dok=.true.
-          h(1)='The zone attributes are volume and location (centre)'
-          h(2)='and these can be taken from the model rather than '
-          h(3)='typing them in manually. '
+          helptopic='external_overview'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(t72,'(a,a)')'Use ',zname(ifoc)
-          CALL ASKOK(t72,'attributes with this component?',OK,dok,3)
+          CALL ASKOK(t72,'attributes with this component?',
+     &      OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 71
           AVAL(1)=zv(ifoc)
           AVAL(2)=zx(ifoc)
@@ -3569,6 +3517,8 @@ C If a long list include page facility text.
           IVERT=-1
 
 C Now display the menu.
+          helptopic='external_overview'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call USRMSG('Select a surface from the model and its area',
      &'and orientation can be used. (see help) ','-') 
           CALL EMENU('Available surfaces in model:',PSITM,NITMS,IVERT)
@@ -3577,10 +3527,9 @@ C Now display the menu.
 C User exits without making a selection.
             ier= -1
           ELSEIF(IVERT.EQ.NITMS-1)THEN
-            h(1)='Each surface has attributes such as name, area'
-            h(2)='orientation and a centre of gravity which can be used'
-            h(3)='by a flow network component.'
-            CALL PHELPD('external overview',3,'-',0,0,IER)
+            helptopic='external_overview'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('external overview',nbhelp,'-',0,0,IER)
             GOTO 72
           ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -3601,9 +3550,8 @@ C Let user select a pc set.
 
 C Ask whether choice is OK. If so return area, azim, elev, Z min
 C Z cog, Z max, zone name and surface name.
-          h(1)='The options listed would place the component at the'
-          h(2)='lowest point of the surface, the COG or the top point'
-          h(3)='of the surface.'
+          helptopic='place_at_lowest_point'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(tl,'(a,f7.3,a)') 'low (',surzmin(ifoc),'m)'
           write(tc,'(a,f7.3,a)') 'cog (',surzcog(ifoc),'m)'
           write(tt,'(a,f7.3,a)') 'top (',surzmax(ifoc),'m)'
@@ -3611,7 +3559,7 @@ C Z cog, Z max, zone name and surface name.
      &      conname(ifoc)(1:lnblnk(conname(ifoc))),' attributes with'
           IRT=1
           call easkatog(outs,'options:',tl,tc,tt,'other','continue',
-     &      ' ',' ',IRT,3)
+     &      ' ',' ',IRT,nbhelp)
           IF(irt.eq.5)GOTO 72
           AVAL(1)=snacon(ifoc)
           AVAL(2)=surazi(ifoc)
@@ -3624,9 +3572,8 @@ C Z cog, Z max, zone name and surface name.
             AVAL(4)=surzmax(ifoc)
           elseif(irt.eq.4)then
             xh=surzcog(ifoc)
-            h(1)='The component height is in model coordinates.'
             CALL EASKR(xh,'Component height (m):',' ',-9.0,'W',99.0,'W',
-     &        1.0,'component height',IER,1)
+     &        1.0,'component height',IER,nbhelp)
             if(ier.eq.0)AVAL(4)=xh
           endif
           SVAL(1)=znamecon(ifoc)
