@@ -259,9 +259,10 @@ C ... Mean Radiant Temperature
       real act,wk,closi,ta,vel,pa,pmv,tr
       DIMENSION tr(MCUB)
 
-      integer iCUB,NSENS
+      integer iCUB,NSENS,iBC
 
-      character MRTSEN*6
+      character MRTSEN*6,cCLO*6
+      DIMENSION cCLO(4)
 
       real ppd ! function
 
@@ -1480,11 +1481,17 @@ C ================= MRT / PMV / PPD ===========================
       IF(IVF(iZone).EQ.1)THEN
         act=70.0 ! W/m2 sens !!
         wk=0.0
-        closi=0.90*0.155
+c        closi=0.90*0.155
+        write(cCLO(1),'(A)')'CLO-08'
+        write(cCLO(2),'(A)')'CLO-09'
+        write(cCLO(3),'(A)')'CLO-10'
+        write(cCLO(4),'(A)')'CLO-11'
         vel=0.1
         pa=0.8  ! mbar (?)
         call TSENMRT(iZone,0,NSENS,tr)
         if (NSENS.gt.0) then
+         bc_loop: do iBC = 1,4
+          closi=(0.70+iBC*0.10)*0.155
           mrt_loop: do iCUB = 1, NSENS
              call fanger(act,wk,closi,TFA(iZone),tr(iCUB),vel,pa,pmv)
              write(MRTSEN,'(A,I1)')'/MRT_',iCUB
@@ -1499,7 +1506,7 @@ c     &     )
             call add_to_xml_reporting (
      &          ppd(pmv),
      &          H3K_rep_NAME(1:iH3K_NameLen) 
-     &          // MRTSEN // '/PPD',
+     &          // MRTSEN // '/PPD/' // cCLO(iBC),
      &          'units', '(%)',
      &          'Predicted percentage dissatisfied (PPD)'
      &      )
@@ -1513,6 +1520,7 @@ c     &     )
      &      )
 
           enddo mrt_loop
+         enddo bc_loop
         endif ! there is at least one sensor
       endif ! view factor file exists
 
