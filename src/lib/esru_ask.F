@@ -736,10 +736,14 @@ C Get to work.
         folder='esruclm'
       elseif(app(1:3).eq.'bps')then
         folder='esrubps'
+      elseif(app(1:3).eq.'dbm')then
+        folder='esrudbm'
       elseif(app(1:3).eq.'dfs')then
         folder='esrudfs'
       elseif(app(1:3).eq.'e2r')then
         folder='esrue2r'
+      elseif(app(1:3).eq.'eco')then
+        folder='esrueco'
       elseif(app(1:3).eq.'grd')then
         folder='esrugrd'
       elseif(app(1:3).eq.'ish')then
@@ -750,6 +754,8 @@ C Get to work.
         folder='esrumld'
       elseif(app(1:3).eq.'mrt')then
         folder='esrumrt'
+      elseif(app(1:3).eq.'net')then
+        folder='esrunet'
       elseif(app(1:3).eq.'pdb')then
         folder='esrupdb'
       elseif(app(1:3).eq.'res')then
