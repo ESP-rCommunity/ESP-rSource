@@ -150,7 +150,7 @@ C Help text for this menu.
       H(55)='This export facility supports testing of this file'
       H(56)='format and data structures.'
       H(57)=' '
-      NITMS=12
+      NITMS=11
       CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
@@ -438,23 +438,24 @@ C Export to EnergyPlus IDF file (work in progress)
         CALL EASKS(LFIL,' ','EnergyPlus input file name?',
      &        72,' ','EnergyPlus export file',IER,1)
 
-        ever=1.2
+        ever=3.0
         h(1)='EnergyPlus input files have several versions.'
-        h(2)='Version 1.4 is the current; 1.2 & 1.3 are options.'
-        h(3)='Version 2.0 is for testing purposes only.'
+        h(2)='Version 3.0 is the current'
+        h(3)='Version 4.0 is in testing.'
         evert=ever
-        CALL EASKR(evert,' ','Input file version?',
-     &      1.2,'F',2.0,'F',1.4,'file version',IERI,3)
+        CALL EASKR(evert,'EnergyPlus IDF file version?','(3.0)',
+     &    3.0,'F',3.0,'F',1.4,'file version',IERI,3)
         if(ieri.eq.-3)then
           continue
         else
-C          call edisp(iuout,' Performing model conversion.')
+          call edisp(iuout,' Performing model conversion.')
           itrcc=2
           ioout=2
           ever=evert
           open(ioout,file=lfil,status='UNKNOWN',err=901)
           call e2eplus(itrcc,ioout,ever,ier)
           close(ioout)
+          call edisp(iuout,' Completed model conversion.')
         endif
 
       ELSEIF(INO1.EQ.8)THEN
@@ -1594,19 +1595,8 @@ C provides LRADCF
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
-C The string buffer doit is only used within ifdef code.
-#ifdef SUN
-      character doit*248
-#endif
-#ifdef LIN
-      character doit*248
-#endif
-#ifdef CIGW
-      character doit*248
-#endif
-#ifdef MINGW
-      character doit*248
-#endif
+C The string buffer doit and option used for tar command.
+      character doit*248,option*4
       character path*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
@@ -1620,6 +1610,7 @@ C The string buffer doit is only used within ifdef code.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       character LLASCI*144
       character hvacfile*72,LBSIMP*72
+      character outs*124
 
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -1627,7 +1618,7 @@ C The string buffer doit is only used within ifdef code.
 
 C Patdot is true if path is ./, patcfg is true if path is cfg,
 C patroot is true if path is at root level. 
-      logical patdot,patcfg,patroot,pathome
+      logical patdot,patcfg,patroot,pathome,localdb
       character WORDS(12)*32
 C      character WORDS*32
 
@@ -1648,7 +1639,10 @@ C Determine if user is browsing.
         return
       endif
 
-C Set folder separator (fs) to \ or / as required.
+C Set folder separator (fs) to \ or / as required. Create a temporary
+C file to hold the names of the files to be archived. Use esppid to
+C get the process number. If that file happens to already exist then
+C remove it and then open for writing.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
@@ -1762,7 +1756,10 @@ C are now so this can be subtracted from curdir for testing.
 
 C Debug.
           call isunix(unixok)
-          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+          if(unixok)then
+            write(outs,*) 'checking writing at ',LF(1:lnblnk(LF))
+            call usrmsg(outs,' ','-')
+          endif
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1799,7 +1796,10 @@ C are now so this can be subtracted from curdir for testing.
 
 C Debug.
           call isunix(unixok)
-          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+          if(unixok)then
+            write(outs,*) 'checking writing at ',LF(1:lnblnk(LF))
+            call usrmsg(outs,' ','-')
+          endif
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1852,32 +1852,34 @@ C Build up a list of the current files used in the model.
      &  LCFGF(1:lnblnk(LCFGF))
       write(IUNIT,'(3a)',IOSTAT=IOS,ERR=2) tp(1:ltp),fs,
      &  LCNN(1:lnblnk(LCNN))
+
+C For each of the databases figure out if the database is
+C local (if ipath* value is 1).
       do 41 i=1,7
+        localdb=.false.
         if(i.eq.1)then
           LFL=LFMAT
+          if(ipathmat.eq.1) localdb=.true.
         elseif(i.eq.2)then
           LFL=LFMUL
+          if(ipathmul.eq.1) localdb=.true.
         elseif(i.eq.3)then
           LFL=LOPTDB
+          if(ipathoptdb.eq.1) localdb=.true.
         elseif(i.eq.4)then
           LFL=LAPRES
+          if(ipathapres.eq.1) localdb=.true.
         elseif(i.eq.5)then
           LFL=LPRFDB
+          if(ipathprodb.eq.1) localdb=.true.
         elseif(i.eq.6)then
           LFL=LCLIM
         elseif(i.eq.7)then
           LFL=LPCDB
+          if(ipathpcdb.eq.1) localdb=.true.
         endif
-        if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
+        if(localdb.and.LFL(1:4).ne.'UNKN')then
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
-        endif
-
-C Place to write out ascii materials db if a local file exists.
-        if(i.eq.1)then
-          IUF=IFIL+2
-          write(LLASCI,'(2a)') LFL(1:lnblnk(LFL)),'.a'
-          CALL MKAPRC(LLASCI,IUF,IER)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LLASCI)
         endif
   41  continue
 
@@ -1962,9 +1964,6 @@ C Write images if any.
           endif
  42     continue
       endif
-
-C IPV file, if known.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lipvdatf)
 
 C Write non-specific demads.
       if(bdmds(1:4).eq.'UNKN'.or.bdmds(1:2).eq.'  ')then
@@ -2053,7 +2052,7 @@ C Ground topology.
 
 C Write zone files.
       DO 920 I = 1,NCOMP
-        do 921 J = 1,9
+        do 921 J = 1,10
           LF='UNKNOWN'
           if(J.eq.1)then
             LF=LGEOM(I)
@@ -2062,7 +2061,7 @@ C Write zone files.
           elseif(J.eq.3)then
             LF=LTHRM(I)
           elseif(J.eq.4.and.IOBS(I).EQ.1)then
-            LF=ZOBS(I)
+            LF=ZOBS(I)  ! if obs is separate file
           elseif(J.eq.5.and.ITW(I).EQ.1)then
             LF=LTWIN(I)
           elseif(J.eq.6.and.IVF(I).EQ.1)then
@@ -2070,8 +2069,16 @@ C Write zone files.
           elseif(J.eq.7.and.ICGC(I).EQ.1)then
             LF=LCGCIN(I)
           elseif(J.eq.8.and.ISI(I).EQ.1)then
-            LF=LSHAD(I)
-          elseif(J.eq.9.and.IHC(I).EQ.1)then
+            LF=LSHAD(I)  ! binary shading file
+          elseif(J.eq.9.and.ISI(I).EQ.1)then
+            write(LF,'(2a)')LSHAD(I)(1:lnblnk(LSHAD(I))),'.a'  !ascii version
+            call FINDFIL(LF,XST)
+            if(XST)then
+              continue ! it was found
+            else
+              LF='UNKNOWN'
+            endif
+          elseif(J.eq.10.and.IHC(I).EQ.1)then
             LF=LHCCO(I)
           endif
           if(LF(1:4).eq.'UNKN'.or.LF(1:2).eq.'  ')then
@@ -2200,106 +2207,36 @@ C Depending on current folder invoke tar with list of file names and
 C create a tar file which includes root name of the project and the
 C current pid number (to prevent overwriting).
 C Use ifdef compiler variable passed into Make to identify which
-C block of code to use.
+C tar option to use. Most typical is -T but Sun uses -I.
+      option=' -T '
 #ifdef SUN
-C Unix version of tar.
-      call esppid(ipid)
-      write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
-      call st2file(LFIL,LF)
-      if(patdot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patcfg)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patroot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ./; tar cf ',
-     &    LF(1:lnblnk(LF)),' -I ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
+      option=' -I '
 #endif
 
-#ifdef LIN
-C Linux and OSX version of tar.
+C Unix/Linux/Cygwin versions of tar.
       call esppid(ipid)
       write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
       call st2file(LFIL,LF)
       if(patdot)then
         write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
+     &    LF(1:lnblnk(LF)),option,LTMPFL(1:lnblnk(LTMPFL))
         call usrmsg('creating archive via',doit,'-')
         call runit(doit,'-')
       endif
       if(patcfg)then
         write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
+     &    LF(1:lnblnk(LF)),option,LTMPFL(1:lnblnk(LTMPFL))
         call usrmsg('creating archive via',doit,'-')
         call runit(doit,'-')
       endif
       if(patroot)then
         write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ./; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
+     &    LF(1:lnblnk(LF)),option,LTMPFL(1:lnblnk(LTMPFL))
         call usrmsg('creating archive via',doit,'-')
         call runit(doit,'-')
       endif
-#endif
+      call usrmsg(' ',' ','P')
 
-#ifdef CIGW
-C Cygwin/Linux version of tar.
-      call esppid(ipid)
-      write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
-      call st2file(LFIL,LF)
-      if(patdot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patcfg)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patroot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ./; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-#endif
-
-#ifdef MINGW
-C mingw version of tar.
-      call esppid(ipid)
-      write(LFIL,'(a,i7,a)') cfgroot(1:lnblnk(cfgroot)),ipid,'.tar'
-      call st2file(LFIL,LF)
-      if(patdot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patcfg)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ../; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-      if(patroot)then
-        write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cd ./; tar cf ',
-     &    LF(1:lnblnk(LF)),' -T ',LTMPFL(1:lnblnk(LTMPFL))
-        call usrmsg('creating archive via',doit,'-')
-        call runit(doit,'-')
-      endif
-#endif
       return
 
     2 if(IOS.eq.2)then

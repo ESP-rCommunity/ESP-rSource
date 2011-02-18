@@ -70,6 +70,7 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
       real XO1,YO1,ZO1
+      real ANGR,ANGE    ! rotation angles
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -216,8 +217,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
 
         H(1)='Orientation is the angle between the length (DX) side'
         H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
-        ANG=0.
-        CALL EASKR(ANG,' ','Rectangle orientation?',
+        ANGR=0.
+        CALL EASKR(ANGR,' ','Rectangle orientation?',
      &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
 
         H(1)='Elevation is the angle between the length (DX) side'
@@ -230,7 +231,7 @@ C Allow user choices of beginning as a simple shape (with image feedback).
 
 C Convert box into a gen description using two rotation angles.
 C Pass in critical dimensions and expect the data back via common G1.
-        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
+        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANGR,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
@@ -536,6 +537,7 @@ C Read in control file if defined.
         call CTLWRT(ICTLF,IER)
         call usrmsg(' ',' ','-')
       endif
+
       CALL EMKCFG('-',IER)
 
       RETURN

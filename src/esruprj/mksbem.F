@@ -4466,13 +4466,15 @@ C This routine assumes newer geometry files are being used.
       COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
 
-C G9 holds information on children of a surface.
+C G9 holds information on children of a surface and its parent.
       integer nbchild   ! how many children (up to 4) for each connection
       integer nbgchild  ! how many grand children (up to 4) for each connection
       integer ichild    ! list of children for each connection
       integer igchild   ! list of grand children for each connection
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &igchild(MCON,4)
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       common/FILEP/IFIL
 
@@ -13776,8 +13778,10 @@ C G9 holds information on children of a surface.
       integer nbgchild  ! how many grand children (up to 4)
       integer ichild    ! list of children
       integer igchild   ! list of grand children
+      integer iparent   ! parent surface connection (zero is no parent)
+      integer igparent  ! grandparent surface connection (zero is no grandparent)
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &igchild(MCON,4)
+     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
 
       character acts*1   ! for call to surrel
       character outs*124 ! for feedback

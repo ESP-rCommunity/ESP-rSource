@@ -264,6 +264,7 @@ C variable to equal mpath (which was passed into this subroutine).
           write(docpth,'(2a)')'.',fs
           write(tmppth,'(2a)')'.',fs
           write(dbspth,'(2a)')'.',fs
+          write(bsmpth,'(2a)')'.',fs
           write(hvacpth,'(2a)')'.',fs
 
 C Re-establish pwd and then project folders.
@@ -317,6 +318,7 @@ C Assume all types of files go in the single project folder (mpath).
           write(docpth,'(2a)')'.',fs
           write(tmppth,'(2a)')'.',fs
           write(dbspth,'(2a)')'.',fs
+          write(bsmpth,'(2a)')'.',fs
           write(hvacpth,'(2a)')'.',fs
 
 C Re-establish pwd and then project folders.
@@ -458,6 +460,20 @@ C Check that the dbs folder path is standard.
           write(radpth,'(3a)')'..',fs,'rad'
           write(tmppth,'(3a)')'..',fs,'tmp'
 
+C Check that the bsm (BASESIMP) folder path is standard.
+          call GETTOKENS(bsmpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'bsm'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'bsm'
+            write(dbspth,'(3a)')'..',fs,'bsm'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+
 C Re-establish pwd and then project folders.
           write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs
           call edisp(iuout,
@@ -507,7 +523,7 @@ C the model description.
         write(H(11),'(3x,2a)')cfgroot(1:lncr),'/doc (reports and notes)'
         write(H(12),'(3x,2a)')cfgroot(1:lncr),'/tmp (odds+ends)'
         write(H(13),'(3x,2a)')cfgroot(1:lncr),'/dbs (project databases)'
-        H(14)=' '
+        write(H(14),'(3x,2a)')cfgroot(1:lncr),'/bsm (BASESIMP files)'
         H(15)='will be created. '
         H(16)=' '
         H(17)='Or, if the model will be small (one or two zones)'
@@ -532,6 +548,7 @@ C Assume all types of files go in the single project folder.
         write(docpth,'(2a)')'.',fs
         write(tmppth,'(2a)')'.',fs
         write(dbspth,'(2a)')'.',fs
+        write(bsmpth,'(2a)')'.',fs
         write(hvacpth,'(2a)')'.',fs
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
@@ -592,6 +609,7 @@ C Check longer paths cause the path variable to have a string buffer overflow.
         write(docpth,'(3a)')'..',fs,'doc'
         write(tmppth,'(3a)')'..',fs,'tmp'
         write(dbspth,'(3a)')'..',fs,'dbs'
+        write(bsmpth,'(3a)')'..',fs,'bsm'
         write(hvacpth,'(3a)')'..',fs,'hvac'
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
@@ -641,6 +659,10 @@ C Check longer paths cause the path variable to have a string buffer overflow.
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'hvac'
+        call usrmsg('Creating folder:',doit,'-')
+        call runit(doit,'-')
+        call pausems(400)
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'bsm'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
@@ -948,7 +970,7 @@ C Remember width of file/folder names passed back from getfilelist.
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
-      character*33 ITEMS(23)
+      character*33 ITEMS(24)
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1
       character subpath*72,action*3
@@ -1029,17 +1051,18 @@ C        write(6,*) 'OSX path is ',path
       WRITE(ITEMS(11),'(2A)')'i radiance: ',radpth(1:20)
       WRITE(ITEMS(12),'(2A)')'j local db: ',dbspth(1:20)
       WRITE(ITEMS(13),'(2A)')'k hvac    : ',hvacpth(1:20)
-      ITEMS(14)  =           ' _____________________________ '
-      ITEMS(15)  =           'l zone files                   '
-      ITEMS(16)  =           'm scan and rewrite model files '
-      ITEMS(17)  =           ' _____________________________ '
-      WRITE(ITEMS(18),'(A)') 'n list ASCII file              '
-      WRITE(ITEMS(19),'(A)') 'o edit ASCII file              '
-      WRITE(ITEMS(20),'(A)') 'p list files in esp-r/databases'
-      WRITE(ITEMS(21),'(A)') 'q list files in esp-r/climate  '
-      ITEMS(22)  =           '? help                         '
-      ITEMS(23)  =           '- exit this menu               '
-      nitems=23
+      WRITE(ITEMS(14),'(2A)')'k BASESIMP: ',bsmpth(1:20)
+      ITEMS(15)  =           ' _____________________________ '
+      ITEMS(16)  =           'l zone files                   '
+      ITEMS(17)  =           'm scan and rewrite model files '
+      ITEMS(18)  =           ' _____________________________ '
+      WRITE(ITEMS(19),'(A)') 'n list ASCII file              '
+      WRITE(ITEMS(20),'(A)') 'o edit ASCII file              '
+      WRITE(ITEMS(21),'(A)') 'p list files in esp-r/databases'
+      WRITE(ITEMS(22),'(A)') 'q list files in esp-r/climate  '
+      ITEMS(23)  =           '? help                         '
+      ITEMS(24)  =           '- exit this menu               '
+      nitems=24
 
 C Help text for this menu.
       H(1)='This menu allows you to edit the information related'
@@ -1311,8 +1334,29 @@ C << interface for dbspath here >>
           snpfile=' '
           call browsefilelist('p','hva','hvac',sfile,snpfile,nli,iier)
         endif
+      elseif(ino.eq.14)then
 
-      elseif(ino.eq.15)then
+        if(.NOT.browse)then
+          H(1)='Give relative path from cfg to BASESIMP folder.'
+          H(2)='For example `../bsm`.'
+          t24=bsmpth
+          CALL EASKS(t24,'Relative path from cfg',
+     &      'folder to BASESIMP folder?',
+     &       24,'../bsm','relative bsm path',IER,2)
+          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
+            bsmpth=t24
+            changedit=.true.
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('p','bsm','bsm',sfile,snpfile,nli,iier)
+          endif
+        else
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('p','bsm','bsm',sfile,snpfile,nli,iier)
+        endif
+
+      elseif(ino.eq.16)then
 
 C Zone file composition.
         IC=-1
@@ -1324,13 +1368,13 @@ C Loop back and see if another zone is requested.
         IC=-1
         GOTO 254
 
-      elseif(ino.eq.16)then
+      elseif(ino.eq.17)then
 
 C Option to scan in current model files and then write them out
 C again, updating the file format as per value of igupgrade.
 C << to be done >>
 
-      elseif(ino.eq.18)then
+      elseif(ino.eq.19)then
 
 C List out an ASCII file.
         H(1)='The specified ASCII file will be read and displayed'
@@ -1347,7 +1391,7 @@ C List out an ASCII file.
      &                ' ASCII file. Try again?',OK,dok,1)
           IF(OK)GOTO 6
         ENDIF
-      elseif(ino.eq.19)then
+      elseif(ino.eq.20)then
 
 C Allow user to edit a file. Append to path if necessary.
 C If vi then spawn a new window to do the editing in.
@@ -1372,7 +1416,8 @@ C and change any / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
-      elseif(ino.eq.20)then
+
+      elseif(ino.eq.21)then
 
 C List files in corporate databases folder.
         sfile=' '
@@ -1382,7 +1427,7 @@ C List files in corporate databases folder.
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
         endif
-      elseif(ino.eq.21)then
+      elseif(ino.eq.22)then
 
 C List files in corporate climate folder..
         sfile=' '

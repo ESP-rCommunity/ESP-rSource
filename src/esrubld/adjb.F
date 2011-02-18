@@ -75,9 +75,10 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/PREC14/emarea(MCOM)
 
 C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero is no surface is close to horizontal facing up).
+C  (zero if no surface is close to horizontal facing up).
 C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero is no surface is close to horizontal facing down).
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -420,8 +421,8 @@ C Plant radiant energy at other face same as inside face.
 
 C If floor, then add the sw rad. of the other face of the ceiling
 C If ceiling, then add the sw rad. of the other face of the floor
-              if(PELV(icomp,i).GE.89.98.AND.
-     &           PELV(icomp,i).LE.90.02)then
+              if(PELV(icomp,i).GE.88.5.AND.
+     &           PELV(icomp,i).LE.91.5)then
 
 C Current surface is a ceiling so assign qswsum = of a typical floor.
 C But if izsfloor is zero then assume surface 6 of the zone is a floor.
@@ -430,8 +431,8 @@ C But if izsfloor is zero then assume surface 6 of the zone is a floor.
                 else
                   qswsum(I)=QSLIF(ICOMP,6)
                 endif
-              elseif(PELV(icomp,i).GE.-90.02.AND.
-     &               PELV(icomp,i).LE.-89.98)then
+              elseif(PELV(icomp,i).GE.-91.5.AND.
+     &               PELV(icomp,i).LE.-88.5)then
 
 C Current surface is a floor so assign qswsum = of a typical ceiling.
 C But if izsceil is zero then assume surface 5 of the zone is a ceiling.

@@ -135,6 +135,11 @@ C HOT3000: BASESIMP.
       COMMON/PREC8/SLAT,SLON
       REAL :: slat,slon
 
+C izsfloor is the index (within the zone) of a floor surface.
+C izsceil is the index (within the zone) of a ceiling surface.
+      integer izsfloor,izsceil
+      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
+
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
@@ -307,6 +312,8 @@ C Initial assumption is no SHOCC files.
       imgpth='./'
       radpth='./'
       dbspth='./'
+      bsmpth='./'
+      hvacpth='./'
       lradcf='UNKNOWN'
       cfgroot=' '
       LCTLF='UNKNOWN'
@@ -502,6 +509,8 @@ C Per-zone areas and U-values.
         areaground(IX) = 0.0
         exposed(IX) = 0.0
         vexposed(IX) = 0.0
+        izsfloor(IX) = 0
+        izsceil(IX) = 0
 
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
@@ -3259,13 +3268,15 @@ C show attributes in list.
 
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
-      integer ncomp,ncon,a,b
+      integer ncomp,ncon
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
       LOGICAL SELECT
+      integer loopstart,loopend,i,icc   ! for looping
+      logical usesbasesimp
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
@@ -3273,6 +3284,7 @@ C show attributes in list.
         IER=1
         RETURN
       ENDIF
+
       write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
 
 C Initialise surface menu variables based on window size.
@@ -3364,17 +3376,22 @@ C If no selection has been made before exit then return with 0.
         call usrmsg(' ',' ','-')
 
 C Checks the surfaces in the current zone to see if any of the surface
-C attributes are 'BASESIMP'.
-         a=icc-ILEN+1
-         b=icc
-         DO i=a,b
-           IF(SSOTHER(i,1).EQ.'BASESIMP')THEN
-             CALL BASESIMP_INPUTS(IZONE,IER)
-        RETURN
-           END IF
-         END DO
-C End of code added for BASESIMP functionality
-        RETURN
+C attributes are 'BASESIMP'.  If there are any then present the
+C BASESIMP editing facility (once).
+        usesbasesimp=.false.   ! assume no basesimp attributed surfaces
+        loopstart=0
+        loopend=NZSUR(IZONE)
+        DO i=loopstart,loopend
+          icc=IZSTOCN(izone,i)
+          IF(SSOTHER(icc,1).EQ.'BASESIMP')THEN
+            usesbasesimp=.true.
+          END IF
+        END DO
+        if(usesbasesimp)then
+          CALL BASESIMP_INPUTS(IZONE,IER)
+        endif
+
+        RETURN  ! return to the parent call
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('zone geom file section',2,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN

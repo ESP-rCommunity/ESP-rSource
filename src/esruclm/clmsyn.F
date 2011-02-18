@@ -35,12 +35,18 @@ C CHARACTERISTICS OF THE CHOSEN CLIMATIC COLLECTION.
       COMMON/CLMVAR/VNAME(6)
       COMMON/RADTYP/IDNGH
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       CHARACTER*24 ITEM(23)
-      character outs*124,VNAME*32,H*72
+      character outs*124,VNAME*32
       logical ok,dok
       integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMSYN'  ! set for cfiles
 
       call usrmsg('  ','  ','-')
       ITEM(1) ='p set period            '
@@ -79,19 +85,9 @@ C CHARACTERISTICS OF THE CHOSEN CLIMATIC COLLECTION.
       if(ino.eq.nitms)then
         return
       elseif(ino.eq.nitms-1)then
-        h(1)='Typical weeks are found by scanning the climate data'
-        h(2)='for a week in each season which has the least deviation'
-        h(3)='in heating degree days (DD), cooling degree days, and'
-        h(4)='solar radiation. '
-        h(5)=' '
-        h(6)='It reports the parameters it uses to determine the'
-        h(7)='best fit as well as several ratios between the best'
-        h(8)='week and the season (ratio of julian days, ratio of'
-        h(9)='heating degree days and ratio of cooling degree days'
-        h(10)='all of which are parameters required for generating'
-        h(11)='an integrated performance view (IPV). The best-fit'
-        h(12)='can also be recorded in the `climatelist` file.'
-        CALL PHELPD('climate synopsis',12,'-',0,0,IER)
+        helptopic='typical_week_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('climate synopsis',nbhelp,'-',0,0,IER)
       elseif(ino.eq.1)then
         CALL selper(ier)
       elseif(ino.eq.3)then
@@ -115,10 +111,10 @@ C MAXIMUM, MINIMUM AND MEAN VALUES.
           ino= -1
           goto 6
         endif
-        h(1)='If a number of months are selected you can get a'
-        h(2)='weekly or monthly summary.'
+        helptopic='dd_day_week_month'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Degree day reporting: ',' ','daily','weekly',
-     &    'monthly',iddc,2)
+     &    'monthly',iddc,nbhelp)
         if(iddc.eq.1)then
           CALL CLMMMM(IP,'d')
         elseif(iddc.eq.2)then
@@ -137,21 +133,21 @@ C Call sequence routine.
 
 C Make sure that upper is above lower.
         WRITE(outs,'(1X,A)')VNAME(IP)
-        H(1)='The lower range is... '
+        helptopic='days_in_range_limits'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(XL,outs,' Lower value for range:  ',
-     &             0.,'-',0.,'-',1.0,'lower range',IER,1)
-        H(1)='The upper range is ... '
+     &    0.,'-',0.,'-',1.0,'lower range',IER,nbhelp)
         CALL EASKR(XU,outs,' Upper value for range:  ',
-     &             XL,'F',0.,'-',1.0,'upper range',IER,1)
+     &    XL,'F',0.,'-',1.0,'upper range',IER,nbhelp)
         CALL CLMSEQ(IP,XL,XU)
         IP=0
       elseif(ino.eq.14)then
 
 C DEGREE DAYS.
-        h(1)='If a number of months are selected you can get a'
-        h(2)='monthly summary.'
+        helptopic='dd_day_week_month'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD(' Degree day reporting: ',' ','daily','weekly',
-     &    'monthly','seasonal',iddc,2)
+     &    'monthly','seasonal',iddc,nbhelp)
         if(iddc.eq.1)then
           CALL CLMDEG
         elseif(iddc.eq.2)then
@@ -183,11 +179,11 @@ C CSI equation calculation.
 
 C Look for DD and Radiation typical week.
         dok=.true.
-        h(1)='If you answer yes the best-fit weeks that are found'
-        h(2)='will be presented in additional detail and with pauses'
-        h(3)='so that you can decide whether the weeks are correct. '
+        helptopic='best_fit_pause'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call askok('Do you want to record the best-fit weeks (for',
-     &    'use in climatelist typical assessment periods)?',ok,dok,3)
+     &    'use in climatelist typical assessment periods)?',
+     &    ok,dok,nbhelp)
         if(ok)then
           call DDRADSUM('?')
 
@@ -210,7 +206,6 @@ C  terms of a dimensionless number - the CSI.
       SUBROUTINE CSIEQN
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
@@ -231,9 +226,14 @@ C  terms of a dimensionless number - the CSI.
       DIMENSION CSIT(12),CSIRD(12),CSIRF(12),CSIW(12),CSI(12)
       DIMENSION AA(30),BB(30),CC(30),DD(30),EA(30),EB(30),EC(30),ED(30)
       DIMENSION CSIM(30),IVC(30)
-      character CSIM*45,H*72
+      character CSIM*45
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
 
       DATA AA/-0.356,-0.372,-0.409,-0.402,-0.359,-0.409,-0.436,-0.405,
      &-0.350,-0.417,-0.421,-0.375,-0.401,-0.403,-0.333,-0.400,-0.375,
@@ -273,6 +273,7 @@ C  terms of a dimensionless number - the CSI.
      &-0.366,-0.315,-0.318,-0.377,-0.313,-0.347,-0.427,-0.214,
      &-0.471,-0.236,-0.233,-0.079,-0.282,-0.221,-0.258/
 
+      helpinsub='CSIEQN'  ! set for cfiles
 
 C If in graphic mode make the text display area larger before
 C displaying the following data.
@@ -312,7 +313,8 @@ C Initial values.
       ADDW=0.
       NHRS=0
 
-   75 H(1)='The CSI house types (1 to 30). '
+   75 helptopic='climate_severity_types'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=1
       CSIM(1)= 'House|Capacity|Capacity|Window|Infil- |Insul.'
       CSIM(2)= 'index|        |position|size  |tration|level '
@@ -344,7 +346,7 @@ C Initial values.
       CSIM(28)=' 26   high     inside   large  tight   high  '
       CSIM(29)=' 27   low      inside   large  tight   std   '
       CALL EPICKS(INPIC,IVC,' ',' Presentation format: ',
-     &  45,29,CSIM,' CSI house types',IER,1)
+     &  45,29,CSIM,' CSI house types',IER,nbhelp)
       IF(INPIC.eq.0)return
       IF(IVC(1).lt.3)goto 75
       ihouse=IVC(1)-2
@@ -724,7 +726,6 @@ C Display is per day.
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
@@ -734,13 +735,20 @@ C Display is per day.
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-      character outs*124,H*72
+      character outs*124
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMDEG'  ! set for cfiles
+
+      helptopic='dd_base_temperature'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       BT=17.
       CALL EASKR(BT,' ',' Base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD base temp',IER,2)
+     &  -10.,'W',40.,'W',17.0,'DD base temp',IER,nbhelp)
 
 C NOW OUTPUT RESULTS.
 
@@ -760,7 +768,7 @@ C If output to file alter the edisp unit number.
   12  FORMAT(' Degree day analysis at',F6.1,' Deg C')
       call edisp(itru,outs)
       WRITE(outs,16)
-  16  FORMAT(1H ,' D  M  T   ',5X,'<',8X,'>')
+  16  FORMAT(' D  M  T   ',5X,'<',8X,'>')
       call edisp(itru,outs)
 
 C INITIALISE PARAMETERS FOR WHOLE PERIOD
@@ -816,10 +824,10 @@ C AV DEGDAYS PER DAY OVER MONTH
       YDN=XHR*XDN
       YUP=XHR*XUP
       WRITE(outs,102)YDN,YUP
- 102  FORMAT(1H ,'Month:av/day',2F8.2)
+ 102  FORMAT(' Month:av/day',2F8.2)
       call edisp(itru,outs)
       WRITE(outs,101)XDN,XUP
- 101  FORMAT(1H ,'Month:total ',2F8.2)
+ 101  FORMAT(' Month:total ',2F8.2)
       call edisp(itru,outs)
 
       CALL CHEAD(30)
@@ -846,7 +854,7 @@ C CONVERT TO DEG-DAYS PER DAY
 
 C WRITE THEM OUT
       WRITE(outs,100)IDD,IMM,JS,JF,XDN,XUP
- 100  FORMAT(1H ,I2,',',I2,1X,I2,'-',I2,2F8.2)
+ 100  FORMAT(I2,',',I2,1X,I2,'-',I2,2F8.2)
       call eddisp(itru,outs)
 
 C   UPDATE PARAMETERS FOR THIS MONTH
@@ -887,10 +895,10 @@ C AV DEGDAYS PER DAY OVER PERIOD
       YDN=XHR*XDN
       YUP=XHR*XUP
       WRITE(outs,104)YDN,YUP
- 104  FORMAT(1H ,'Total:av/day',2F8.2)
+ 104  FORMAT(' Total:av/day',2F8.2)
       call eddisp(itru,outs)
       WRITE(outs,103)XDN,XUP
- 103  FORMAT(1H ,'Period total',2F8.2)
+ 103  FORMAT(' Period total',2F8.2)
       call eddisp(itru,outs)
 
       RETURN
@@ -903,7 +911,6 @@ C for the given period.
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
@@ -913,16 +920,23 @@ C for the given period.
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-      character H*72,outs*124
+      character outs*124
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SYNOPDEG'  ! set for cfiles
+
+      helptopic='dd_base_temperatures'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       HBT=17.
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
+     &  -10.,'W',40.,'W',17.0,'DD heating base temp',IER,nbhelp)
       CBT=21.
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-     &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+     &  -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1090,7 +1104,6 @@ C seasons.h provides typper and typsea
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttgi/ixopen,ixloc,ixunit
       integer NDAY
@@ -1098,7 +1111,14 @@ C seasons.h provides typper and typsea
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-      character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
+      character outs*124,PERST1*14,PERST2*44,PERST3*44
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SYNOPDEGS'  ! set for cfiles
 
 C Jump out if no seasonal data is available.
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
@@ -1107,14 +1127,14 @@ C Jump out if no seasonal data is available.
         return
       endif
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+      helptopic='dd_base_temperature'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       HBT=17.
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
+     &   -10.,'W',40.,'W',17.0,'DD heating base temp',IER,nbhelp)
       CBT=21.
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-     &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+     &   -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1276,7 +1296,6 @@ C for the given period.
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/DAYSF/KDS,KDF
@@ -1288,17 +1307,24 @@ C for the given period.
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-      character H*72,outs*124,DESCR*7,DESCR1*10,xfile*144,tg*1,delim*1
+      character outs*124,DESCR*7,DESCR1*10,xfile*144,tg*1,delim*1
       logical ok,dok
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SYNOPWDEG'  ! set for cfiles
+
+      helptopic='dd_base_temperature'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       HBT=17.
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
+     &  -10.,'W',40.,'W',17.0,'DD heating base temp',IER,nbhelp)
       CBT=21.
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-     &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+     &  -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1399,8 +1425,9 @@ C AV DEGDAYS per day over week
 C Pause if a long list.
         if((idf-IDS).gt.120.and.ix.gt.120)then
           dok=.true.
-          h(1)='Pause point so you can study the data. '
-          call askok(' continue listing?',' ',OK,dok,1)
+          helptopic='dd_reporting_pause'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok(' continue listing?',' ',OK,dok,nbhelp)
           ix=1
           WRITE(outs,'(a)')
      &  ' Week    (starting)       Heat dd           Cool dd'

@@ -46,7 +46,11 @@ C results. Available at present:
       COMMON/DEFLT/IDEFLT
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -68,7 +72,6 @@ C SNAPSH is a logical flag to request variation in header.
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
       dimension ITEM(24)
       CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*144
-      character SLABEL*32,GLABEL*20
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -219,7 +222,7 @@ C Comparison to CEN statistics (if implemented)
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
-C data for all the zones chosen.  
+C data for all the zones chosen.
         NGET=9
         do 11 I=1,9
           IGETNO(I,1)=6
@@ -228,6 +231,7 @@ C data for all the zones chosen.
           IGETNO(I,4)=0
           IGETNO(I,5)=ISIM
           SLABEL(I)='Resultant temperature (degC)'
+          LNSLABEL(I)=28
  11     continue
         CALL MOSMSDCEN('s')
       elseif(INO.EQ.11)then
@@ -293,15 +297,14 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -415,15 +418,14 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -484,15 +486,14 @@ C scanning data. Call MOSURC for each selected zone in turn.
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -959,7 +960,11 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -973,7 +978,6 @@ C act='p' iget parameters already set.
       dimension TMAX(MZS), TMIN(MZS)
       character xfile*144,tg*1,delim*1
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -1011,7 +1015,7 @@ C data for all the zones chosen.
         if(ixopen.eq.1)then
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),' >> file...'
+     &        SLABEL(1)(1:LNSLABEL(1)),' >> file...'
           else
             write(prompt,'(a)') ' Scanning data >> file...' 
           endif
@@ -1019,7 +1023,7 @@ C data for all the zones chosen.
         else
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &        SLABEL(1)(1:LNSLABEL(1)),'...'
           else
             write(prompt,'(a)') 'Scanning...' 
           endif
@@ -1029,7 +1033,7 @@ C data for all the zones chosen.
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -1288,14 +1292,14 @@ C Generate and display column headings.
           call eddisp(itru,outs)
         else
           if (IROC.eq.-1) then
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard   Total'
           else
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard'
           endif
           call eddisp(itru,outs)
-          write(outs,'(2a)')  '                    value   occurrence',
+          write(outs,'(2a)')  '                     value   occurrence',
      & '        value   occurrence        value        deviation'
           call eddisp(itru,outs)
         endif
@@ -1307,8 +1311,8 @@ C Write tag line if tagged output requested.
             call eddisp(itru,outs)
           endif
           if (NY(I).eq.0) then
-            write (outs,'(a20,a)') GLABEL(I),
-     &           'No data: probably due to filtering.'
+            write (outs,'(a,a)') GLABEL(I)(1:LNGLABEL(I)),
+     &           ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.
@@ -1326,27 +1330,21 @@ C Create string description for time of minimum occurrance.
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
 
 C Build up string for displaying.
-            if(IGETNO(NGET,9).ge.15)then
-              write (outs,'(a)') GLABEL(I)(1:20)
-            elseif(IGETNO(NGET,9).le.12)then
-              write (outs,'(a,8x)') GLABEL(I)(1:12)
-            else
-              write (outs,'(a,5x)') GLABEL(I)(1:15)
-            endif
+            write (outs,'(a)') GLABEL(I)(1:20)
             
-C Write out results to 5 significant figures.
+C Write out results to 5 significant figures starting at col 22.
             NSIG=5
             call sigfig(YMAX(I),NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),XT
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),XT
             call sigfig(YMIN(I),NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),NT
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),NT
             call sigfig(YAVE(I),NSIG,RNO,t12,LSTR)
-            write (outs(73:85),'(a,1x)') t12
+            write (outs(74:86),'(a,1x)') t12
             call sigfig(YSTD(I),NSIG,RNO,t12,LSTR)
-            write (outs(86:98),'(a,1x)') t12
+            write (outs(87:99),'(a,1x)') t12
             if (IROC.eq.-1) then
               call sigfig(YTOT(I),NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
           call eddisp(itru,outs)
@@ -1406,19 +1404,19 @@ C Write out results to 5 significant figures.
           else
           
 C Build up string for displaying.
-            write (outs,'(3x,a,14x)') 'All'
+            write (outs,'(3x,a,15x)') 'All'
             
 C Write out results to 5 significant figures.
             NSIG=5
             call sigfig(XMAX,NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XMIN,NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XAVE,NSIG,RNO,t12,LSTR)
-            write (outs(73:98),'(a,1x,a)') t12,'     -- '
+            write (outs(74:99),'(a,1x,a)') t12,'     -- '
             if (IROC.eq.-1) then
               call sigfig(XTOT,NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
         endif
@@ -1453,8 +1451,6 @@ C standard.
 C Get common precz from geometry.h
 #include "geometry.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1469,7 +1465,11 @@ C Get common precz from geometry.h
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -1479,7 +1479,7 @@ C Get common precz from geometry.h
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
 
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20,prompt*124
+      character prompt*124
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       logical display
@@ -1489,8 +1489,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -1652,8 +1651,6 @@ C act='p' iget parameters already set.
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
@@ -1667,14 +1664,17 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20
       character prompt*124,outs*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -1704,8 +1704,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -1923,8 +1922,8 @@ C Generate and display column headings.
         endif
         do 30 I=1,NGET
           if (NY(I).eq.0) then
-            write (outs,1000) GLABEL(I)
- 1000       format (a20,'No data: probably due to filtering.')
+            write (outs,'(2a)') GLABEL(I)(1:LNGLABEL(I)),
+     &       ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.
@@ -2017,7 +2016,6 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -2025,7 +2023,11 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -2034,10 +2036,10 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20,prompt*124,outs*124,prompte*124
+      character prompt*124,outs*124,prompte*124
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
+      CHARACTER PDESCR*60,SDESCR*44,act*1
       DIMENSION YDUM(MTS)
 
 C If output to file alter the edisp unit number.
@@ -2075,8 +2077,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -2087,7 +2088,7 @@ C Call the menu of choices (this also sets some default options).
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -2237,7 +2238,11 @@ C << file does not need to be scanned to get the surface emissivity.
 
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -2256,7 +2261,7 @@ C =2 with more than 3 day types
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,act*1,prompt*124
-      CHARACTER RSNAME*40,SLABEL*32,GLABEL*20
+      CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
@@ -2285,8 +2290,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif

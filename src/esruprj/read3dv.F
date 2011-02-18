@@ -48,6 +48,12 @@ C Passed parameter.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      integer nbedgdup  ! number of duplicate edges in surface edge list
+      integer iedgdup   ! for each edge, the connection and edge duplicated
+      integer nbedgshr  ! nb surface which share an edge
+      integer iedgshr   ! for each edge, the adjacent surface
+      integer imatshr   ! for each edge, the adjacent material
+      integer ibridgeshr ! for each edge likely type of thermal bridge
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
@@ -61,6 +67,7 @@ C Passed parameter.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical greyok,found
+      integer ier1,ier2,ier3,ier4,ier5,ier6,ier7  ! traps
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -94,7 +101,7 @@ C Set font for displaying surface names etc.
 
 C The right offset for the graphic box is the character width of the
 C menu. Also allow 2 text lines at the bottom for future dialogue.
-      IER=0
+      IER=0; ier1=0; ier2=0; ier3=0; ier4=0; ier5=0; ier6=0; ier7=0; 
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
@@ -113,7 +120,11 @@ C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
-        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier1)
+        if(ier1.ne.0)then
+          call edisp(iuout,'Error in finding site extents.')
+          ier=-1
+        endif
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -123,8 +134,20 @@ C Refresh the dialogue box if terminal type 8.
       IF(MMOD.EQ.8)CALL USRMSG(' ',' ','-')
 
 C If site grid or ground is asked for draw now.
-      IF(ITGRD.EQ.0)CALL DSGRID(0.0,GRDIS,5,IER)
-      IF(ITDSP.EQ.5.or.ITDSP.EQ.6)call EGRNDR(IER)
+      if(ITGRD.EQ.0)then
+        CALL DSGRID(0.0,GRDIS,5,IER2)
+        if(ier2.ne.0)then
+          call edisp(iuout,'Error in drawing grid.')
+          ier=-2
+        endif
+      endif
+      if(ITDSP.EQ.5.or.ITDSP.EQ.6)then
+        call EGRNDR(IER3)
+        if(ier3.ne.0)then
+          call edisp(iuout,'Error in drawing ground.')
+          ier=-3
+        endif
+      endif
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
@@ -158,9 +181,19 @@ C saved common rather than from the zone file.
 C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
-      IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
-      IF(nznog(IZ).NE.izgfoc)THEN
-          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
+      if(ITDSP.EQ.0.or.ITDSP.eq.5)then
+        CALL DRAWOBS(nznog(IZ),ier4)
+        if(ier4.ne.0)then
+          call edisp(iuout,'Error in drawing obstructions.')
+          ier=-4
+        endif
+      endif
+      if(nznog(IZ).NE.izgfoc)then
+        call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER5)
+        if(ier5.ne.0)then
+          call edisp(iuout,'Error in recovering zone geometry.')
+          ier=-5
+        endif
       ELSEIF(nznog(IZ).EQ.izgfoc)THEN
         CALL ERCZONE(nznog(IZ))
       ENDIF
@@ -174,15 +207,21 @@ C Note: temp character t13 is 1 char wider than zname().
         COG1(1)=ZCOG(nznog(IZ),1)
         COG1(2)=ZCOG(nznog(IZ),2)
         COG1(3)=ZCOG(nznog(IZ),3)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
+        CALL VECTRN(COG1,TEMAT,COG2,IER6)
+        CALL VECTRN(COG2,ETSMAT,COG3,IER7)
+        if(ier6.ne.0.or.ier7.ne.0)then
+          call edisp(iuout,'Error doing name coord transforms.')
+          ier=-6
+        endif
         call u2pixel(COG3(1),COG3(2),iix,iiy)
         write(t13,'(A)')zname(nznog(IZ))
         call textpixwidth(t13,ipixw)
         iid4 = iix - (ipixw/2)
         CALL wstxpt(iid4,iiy,t13)
       ENDIF
-      IF(ier.NE.0)RETURN
+
+C << how to treat errors? >>
+C      IF(ier.NE.0)RETURN
       call forceflush()
 
 C If there are no surfaces yet defined then draw the vertices with 

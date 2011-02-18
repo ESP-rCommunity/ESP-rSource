@@ -820,9 +820,10 @@ C         if = 0 then use compiled pattern.
       COMMON/PREC14/emarea(MCOM)
 
 C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero is no surface is close to horizontal facing up).
+C  (zero if no surface is close to horizontal facing up).
 C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero is no surface is close to horizontal facing down).
+C  (zero if no surface is close to horizontal facing down).
+      integer izsfloor,izsceil
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
@@ -993,16 +994,17 @@ C Read moisture file.
 
 C Keep track of the total surface area/emisivity for use
 C in apportioning casual and plant radiation to surfaces.
-C Also instanciate izsfloor and izsceil
+C Also instanciate izsfloor and izsceil by looking for surfaces
+C which are ~1 degree of floor or ceiling orientation.
         emarea(iz)=0.0
         izsfloor(iz)=0
         izsceil(iz)=0
         do 80 kk=1,nconst(iz)
           emarea(iz)=emarea(iz)+sna(iz,kk)*ei(iz,kk)
-          if(PELV(iz,kk).GE.89.98.AND.PELV(iz,kk).LE.90.02)then
+          if(PELV(iz,kk).GE.88.5.AND.PELV(iz,kk).LE.91.5)then
             izsceil(iz)=kk
           endif
-          if(PELV(iz,kk).GE.-90.02.AND.PELV(iz,kk).LE.-89.98)then
+          if(PELV(iz,kk).GE.-91.5.AND.PELV(iz,kk).LE.-88.5)then
             izsfloor(iz)=kk
           endif
   80    continue

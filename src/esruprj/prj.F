@@ -246,6 +246,7 @@ C Set folder separator (fs) to \ or / as required.
       write(docpth,'(a1,a1)')'.',fs
       write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
+      write(bsmpth,'(a1,a1)')'.',fs
       write(hvacpth,'(a1,a1)')'.',fs
       IYEAR=2007
       IBDOY=1

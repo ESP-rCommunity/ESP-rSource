@@ -804,6 +804,10 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
           IF(IER.NE.0)goto 1
           goto 34
+        elseif(WORD(1:7).eq.'*bsmpth')then
+          CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
         elseif(WORD(1:5).eq.'*indx')then
           CALL EGETWI(OUTSTR,K,INDCFG,0,3,'F','config index',IER)
           IF(IER.NE.0)goto 1
