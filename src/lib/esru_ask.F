@@ -871,7 +871,8 @@ C correct topic then read it otherwise scan another line.
             K=0
             call EGETDQ(outstr,K,helpline,'W','phrase',IER)
             lnhl=lnblnk(helpline)
-            call edisp(iuout,helpline)
+C Debug (to text feedback).
+C            call edisp(iuout,helpline)
             nbhelp=nbhelp+1
             if(lnhl.le.1)then
               h(nbhelp)='  '
