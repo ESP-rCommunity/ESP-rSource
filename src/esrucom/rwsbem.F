@@ -76,7 +76,11 @@ C to the logic used for the optics database which is also ASCII.
         write(lworking,'(a)') DSBEM(1:lnblnk(DSBEM))
         call findwhichdbpath('sbm',lworking,ier)
       endif
-      IUF=IFIL+2
+
+C In most ESP-r modules IFIL+6 is used for optical databases and
+C air flow networks etc. so it is likely to be free for temporary
+C use in scanning the SBEM database.
+      IUF=IFIL+6
       if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
         CALL EFOPSEQ(IUF,LSBEM,1,IER)
         if(IER.ne.0)then

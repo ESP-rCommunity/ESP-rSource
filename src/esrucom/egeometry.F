@@ -4066,7 +4066,6 @@ C act is '-' derive geometric data or 'c' also determine parent
 
       CHARACTER outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
-      logical notmentioned  ! to see if surf at edge mentioned earlier
 
 C iwhich is local variable to sort most often referenced adjacent surf.
       dimension iwhich(MV),iwhichs(MV)
