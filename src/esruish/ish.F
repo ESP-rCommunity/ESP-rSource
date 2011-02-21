@@ -217,7 +217,7 @@ C ifcfg  - system configuration file
       ifilsi=ifil+3
       IFMUL=IFIL+4    ! set unit numbers for contstruction db.
       IFMAT=IFIL+5    ! set unit numbers for material db.
-      iairp=ifil+6
+      iairp=ifil+6    ! for alt files during cfg read
       IOPTDB=IFIL+7   ! set unit numbers for optical db.
       iuj=ifil+10
       cfgok=.false.
