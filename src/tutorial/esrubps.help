@@ -109,7 +109,7 @@
 *item MZLIBF
 *enditem
           CALL ASKOK(outs,' Preserve (see help)?',OK,dok,9)
-*item MZLIBF preserve_data_with_change
+*item MZLIBF preserve_data_change
 'If the model has changed the differences might cause'
 'eratic performance results recovery. Take care! '
 ' '
@@ -876,7 +876,7 @@
       CALL ASKOK(' ','Write save option 0 data to file?',OK,dok,2)
       CALL EASKS(LTMP,'Save option 0 data file name (see help)?',
 *subroutine SENRNS
-*item SENRNS select_sensitivity_method
+*item SENRNS select_sensit_method
 'Pick the required analysis method.  The only available '
 'option is Differential sensitivity analysis at present.'
 'For further details on the method see the final report '
@@ -977,3 +977,54 @@
 *enditem
       CALL ASKOK(' ',' SHADING/INSOLATION file output?',OK,dok,1)
 *subroutine MZVFIN
+*subroutine from_esruplt_folder
+*subroutine minput
+*item minput plt_graphic_monitor
+'The monitor facility tracks selected nodes temperature'
+'state variables within the graphic display'
+'as the simulation proceeds. You may select any number'
+'of components in any order or all components. '
+'  '
+'Components are identifies by their index.'
+'  '
+'You will be asked which state variable to plot as well as'
+'the axis scale (min and max) for the 1st phase or 2nd phase'
+'or temperature to be plotted.'
+*enditem
+      CALL EPICKS(mnpc,IVALS,' ',' Which component to include: ',
+      CALL EASKI(nnc,outs,' ',
+      CALL EASKI(mstate,' State variable:',
+      CALL EASKI(mstate,' State variable:',
+   30 CALL EASKR(ymin,' ',' Minimum value for state variable ?',
+      CALL EASKR(ymax,' ',' Maximum value for state variable ?',
+*subroutine ptscin
+*item ptscin plant_ts_control
+'Timestep control when applied to the plant domain is'
+'similar to that of other domains.'
+'  '
+'You are asked for the number of control periods. For each'
+'period the start time is requested.'
+'  '
+' * timestep control type 1 - if DT is less than the components'
+'     time constant. You are asked to identify a component via'
+'     manual identification or a search for a component with'
+'     shortest tc or the longest tc.'
+'  '
+' * timestep control type 2 - if abs difference of a state variable'
+'     is less than a user specified value. You can sense temperature,'
+'     1st phase mass flow, 2nd phase mass flow or all of these.'
+'     And you can specify the node in the component or all nodes'
+'     in the component.'
+*enditem
+    5 call easki(nptscp,' Number of plant time-step control periods?',
+         call easki(int1,outs,' ',0,'F',3,'F',1,'ptsdat(i,1)',IER,0)
+         call easki(int2,outs,' ',0,'W',24,'W',1,'ptsdat(i,2)',IER,0)
+   20    call easki(int3,'Options: 1) specify a plant component, ',
+   80    call easki(int4,' Component number? ',' ',
+   30    call easki(int5,' Which option? ',' ',
+  40     CALL EASKR(r1,' Temperature absolute difference? ',' ',
+  50     CALL EASKR(r2,' 1st phase flow rate absolute difference? ',
+  60     CALL EASKR(r3,' 2nd phase flow rate absolute difference? ',
+         CALL ASKOK('Do you wish to test state variable(s) of each',
+   74    call easki(m,' Number of components to consider? ',' ',
+         call easki(n,' Index of component? ',' ',

@@ -241,7 +241,7 @@ C Autook not set so ask for confirmation.
 
 C User wants to preserve data. Determine if design data has been changed.
         dok=.false.
-        helptopic='preserve_data_with_change'
+        helptopic='preserve_data_change'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Is the current model different in any way from',
      &  ' the model of the stored results (see help)?',OK,dok,nbhelp)

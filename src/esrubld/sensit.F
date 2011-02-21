@@ -59,7 +59,7 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='SENRNS'  ! set for subroutine
-      helptopic='select_sensitivity_method'
+      helptopic='select_sensit_method'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       IER=0
