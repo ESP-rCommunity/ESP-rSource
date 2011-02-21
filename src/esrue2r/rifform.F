@@ -186,7 +186,7 @@ C Image X pixel size.
           penumb='False'
         endif
       elseif(INO.EQ.14)then
-        helptopic='e2r_track_progress_options'
+        helptopic='track_progress_options'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(itrack,' ',' Track progress every [x] minutes ? ',
      &    0,'F',10,'W',1,'reporting increment',IER,nbhelp)

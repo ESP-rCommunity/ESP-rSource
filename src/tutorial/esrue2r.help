@@ -626,7 +626,7 @@
 'and some users prefer this. '
 *enditem
         CALL ASKOK(' Include penumbras in image (soft shadows) ?',
-*item RIFFORM e2r_track_progress_options
+*item RIFFORM track_progress_options
 'Computations can take a moment to several hours - so '
 'a % completion report is available. '
 *enditem
