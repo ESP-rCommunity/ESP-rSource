@@ -1,4 +1,4 @@
-C WRitten by Jon Hand, December 2010
+C Written by Jon Hand, December 2010 updated Jan/Feb 2011
 
 C Console application to take a text file of the
 C source of an esp-r module (usually created by a
@@ -42,7 +42,7 @@ C of subroutine gethelptext for specifics.
       dimension buffer(200)
       integer buflen(200)  ! length of each line in the buffer
       integer buflines     ! number of buffer lines recorded
-      character cursub*24  ! name of most recent subroutine
+      character cursub*42  ! name of most recent subroutine
       integer lncursub     ! length of most recent subroutine
       integer nexttok      ! position of next token in CALL
 
@@ -54,7 +54,7 @@ C Initial values and clear arrays.
       cursub='MAIN'   ! assume we are in MAIN until we get a subroutine
       lncursub=4
       buflines=0      ! assume nothing in the buffer and clear it
-      do 21 ij=1,100
+      do 21 ij=1,200
         buffer(ij)= ' '
         buflen(ij)= 0
    21 continue
