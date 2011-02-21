@@ -176,7 +176,6 @@ C IEEE callback (Solaris)
       common/tc/itc,icnt
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -284,7 +283,7 @@ C      logical gopher  ! not references
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
-      character h*72,OUTS*124,spsname*8
+      character OUTS*124,spsname*8
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
       character llclmdb*144
       character browsing*4
@@ -308,6 +307,11 @@ C Variables used to configure h3kreports
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C (possibly) Enable floating point exception error handling on
 C gnu 3.X compilers
@@ -397,6 +401,8 @@ C Some initial values, which may be changed later:
       matver=0.0   ! initial assumption of binary materials database
 
       cAppName = 'bps'
+      helpinapp='bps'  ! set once for the application
+      helpinsub='SubBps'  ! set for MAIN
 
 C Set parameters for DLL run.
 C all console write is rerouted to the log file
@@ -721,11 +727,10 @@ C Increment input flag if no input data errors detected.
               ier=2
               return
             endif
-            h(1)='A warning was flagged while scanning the model. You'
-            h(2)='are advised to check and then re-read the model. If'
-            h(3)='the warning is minor proceed with caution.'
+            helptopic='model_cfg_scan_warning'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call easkabc('While scanning model a problem was found.',
-     &        'Options: ','read again','use it','abort',IW,3)
+     &        'Options: ','read again','use it','abort',IW,nbhelp)
             if(iw.eq.1)then
               INPOK=.FALSE.
             elseif(iw.eq.2)then
@@ -901,15 +906,8 @@ C Single-year climate file definition
 C Set climate data file (file must exist - unit
 C number = ifil). If found, attempt to open and test that it is
 C a climate file by reading records 366 and 367.
-        H(1)=' A climate file defines the model boundary'
-        H(2)=' condition. Usually a number of files will'
-        H(3)=' exist and these can be analysed using ESRU: clm.'
-        H(4)=' '
-        H(5)=' Any climate file can be entered at this point. '
-        H(6)=' For example, on computers running UNIX, the file '
-        H(7)=' [~esru/esp-r/default] holds the name of a '
-        H(8)=' default climate file. This might define a TRY or '
-        H(9)=' example year. '
+        helptopic='ask_for_climate_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         iclim=ifil
         call erpfree(iclim,istat)
 	
@@ -919,20 +917,20 @@ C a climate file by reading records 366 and 367.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',96,DCLIM,'climate file name',IER,4)
+     &        ' ',96,DCLIM,'climate file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',124,DCLIM,'climate file name',IER,4)
+     &        ' ',124,DCLIM,'climate file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',144,DCLIM,'climate file name',IER,4)
+     &        ' ',144,DCLIM,'climate file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &      ' ',144,DCLIM,'climate file name',IER,4)
+     &      ' ',144,DCLIM,'climate file name',IER,nbhelp)
         else
           CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &      ' ',96,DCLIM,'climate file name',IER,4)
+     &      ' ',96,DCLIM,'climate file name',IER,nbhelp)
         endif
         IF(llclmdb(1:2).EQ.'  ')GOTO 291
         IER=0
@@ -956,14 +954,13 @@ C Cast back to LCLIM.
           IRTYPE=0
           IF(ICDNGH.EQ.123)IRTYPE=1
           if(icfgv.lt.3)then
-            h(1)='Older configuration files do not have a year record.'
-            h(2)='If you want the year to be taken from the climate'
-            h(3)='database use the default.'
+            helptopic='old_ask_for_year'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             IYEAR=ICYEAR
             CALL EASKI(IYEAR,
      &        'Year for the simulation? (The configuration does not',
      &        'specify one and the climate db year is shown) ',
-     &          1900,'W',2000,'@',ICYEAR,'year from clim',IER,3)
+     &          1900,'W',2000,'@',ICYEAR,'year from clim',IER,nbhelp)
           endif
 C Set flag: climate data ok
           bSY_climate_defined = .true.
@@ -972,11 +969,10 @@ C Set flag: climate data ok
           bSY_climate_defined = .false.
 
           dok = .false.
-          h(1)='At simulation time there should not be errors in'
-          h(2)='the associated climate file. Check you model to see'
-          h(3)='if it has been corrupted. '
+          helptopic='not_have_errors_clm'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' Problem encountered reading climate db,,',
-     &               ' try again? (no exits simulator)',OK,dok,3)
+     &               ' try again? (no exits simulator)',OK,dok,nbhelp)
           IF(OK)THEN
             goto 20
           ELSE
@@ -984,10 +980,6 @@ C Set flag: climate data ok
             call pauses(2)   ! pause for 2 seconds then abort program.
             CALL ERPFREE(ICLIM,ISTAT)
             if( dll ) return
-C There's no reason to stop the simulator here - 
-C Let's just return to the menu and let the user decide what to do!
-C            call epagend
-C            stop
           ENDIF
         ENDIF
 
@@ -1100,12 +1092,10 @@ C is not yet specified.
 
 C Warning messages switch.
         dok=.true.
-        h(1)='Warning messages are surpressed unless you say '
-        h(2)='yes to this question. '
-        h(3)=' '
-        h(4)='If you are experiencing odd performance predictions'
-        h(5)='you might turn warnings on as an extra check. '
-        CALL ASKOK('Warning messages required?','(see help)',OK,dok,5)
+        helptopic='supress_warnings'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Warning messages required?','(see help)',
+     &    OK,dok,nbhelp)
         IF(OK)THEN
           IWMOFF=0
           IF(MMOD.NE.-6) ICOUT=99
@@ -1133,8 +1123,8 @@ C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('bps ',0)
         if(ino.eq.1)then
           dok=.true.
-          h(1)='Just in case there are additional messages. '
-          CALL ASKOK(' ','Subsequent help messages required?',OK,dok,1)
+          CALL ASKOK(' ','Subsequent help messages required?',
+     &      OK,dok,nbhelp)
           IF(OK)THEN
             IHELPM=1
           ELSE
@@ -1203,10 +1193,10 @@ C Error.
         ok=.false.
       else
         dok=.false.
-        h(1)='There should not be a problem with the climate'
-        h(2)='data at simulation time. Check your model! '
+        helptopic='not_have_errors_clm'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Problem in climate file, try again? ',
-     &             ' (no exits program) ',OK,dok,2)
+     &             ' (no exits program) ',OK,dok,nbhelp)
       endif
       IF(OK)THEN
         goto 20

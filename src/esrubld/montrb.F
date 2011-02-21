@@ -57,10 +57,16 @@ c               3: zone temperature and plant flux.
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
-      common/pophelp/h(60)
 
       dimension IVALS(MCOM)
-      character H*72,hold*24
+      character hold*24
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='minptb'  ! set for subroutine
 
 c Initialize array.
       do 5 i=1,MDPH
@@ -77,12 +83,10 @@ c Get number of zones.
          mnzn=1
       else
    10   mnzn=NCOMP
-        H(1)='The monitor facility tracks selected zone temperature'
-        H(2)='and plant state variables within the graphic display'
-        H(3)='as the simulation proceeds. You may select any number'
-        H(4)='of zones in any order or all zones. '
+        helptopic='monitor_facility_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(mnzn,IVALS,' ',' Which zones to include: ',
-     &    12,NCOMP,zname,'monitor list',IER,4)
+     &    12,NCOMP,zname,'monitor list',IER,nbhelp)
          if(ier.ne.0) goto 10
          if(mnzn.eq.0)return
 
@@ -93,9 +97,8 @@ c Get number of each zone.
       endif
 
 c Get desired state variable.
-      H(1)='Display can get cluttered if to many items are plotted.'
       CALL EASKABCD( 'State variables:',' ','temperature (C)',
-     &  'plant flux (W)','both','cancel',mbstv,1)
+     &  'plant flux (W)','both','cancel',mbstv,nbhelp)
       if(mbstv.eq.4)then
         mbstv=0
         mnzn=0
@@ -106,9 +109,8 @@ c Get expected minimum and maximum values for state variable.
 c For option 1 and 2, read min and max data.
       if(mbstv.eq.1.or.mbstv.eq.2) then
    30   WRITE(hold,'(2F9.2)')yminb(1),ymaxb(1)
-        H(1)='Range for temperatures (C) or plant (W).'
         CALL EASKS(hold,' Minimum and maximum values:',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(1),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(1),0.,0.,'-','mntr max',IER)
@@ -118,18 +120,16 @@ c For option 3, read min and max data for temperature
 c and plant flux.
       elseif(mbstv.eq.3) then
    33   WRITE(hold,'(2F9.2)')yminb(1),ymaxb(1)
-        H(1)='Range for temperatures (C).'
         CALL EASKS(hold,' Minimum and maximum temperature:',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(1),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(1),0.,0.,'-','mntr max',IER)
         if(ier.ne.0) goto 33
 
    36   WRITE(hold,'(2F9.1)')yminb(2),ymaxb(2)
-        H(1)='Range for plant (W).'
         CALL EASKS(hold,' Minimum and maximum plant (W):',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(2),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(2),0.,0.,'-','mntr max',IER)
