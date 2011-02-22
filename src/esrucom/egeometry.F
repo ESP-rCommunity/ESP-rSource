@@ -93,7 +93,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOMF,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec16/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -132,13 +132,6 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
@@ -1346,13 +1339,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
@@ -4062,26 +4048,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
-C   if only one then that single other surface must be parent, if two
-C   other surfaces referenced then we might have a door which shares
-C   edges with a wall and the floor - so determine which is primary.
-C iedgshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
-C   this does not apply.
-C imatshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) which has the same material. Zero denotes this does not
-C   apply.used to enhance wire frame drawings of discritized zones (e.g.
-C   where a surface such as a floor has been subdivided)
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb of surfaces which share edges with this surf
-      integer iedgshr   ! for each edge, the adjacent surface
-      integer imatshr   ! for each edge, the adjacent material
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
       real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
       common/gbridge/bridgelen(MCOM,10)
@@ -4576,16 +4542,6 @@ C be duplicates.
 #include "building.h"
 #include "geometry.h"
 
-C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
-      integer iparent   ! parent surface connection (zero is no parent)
-      integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
-
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -4971,13 +4927,6 @@ C Parameters
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
 

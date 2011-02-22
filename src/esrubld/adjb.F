@@ -74,13 +74,6 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC14/emarea(MCOM)
 
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)

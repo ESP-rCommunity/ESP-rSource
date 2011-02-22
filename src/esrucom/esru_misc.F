@@ -133,11 +133,6 @@ C HOT3000: BASESIMP.
       COMMON/PREC8/SLAT,SLON
       REAL :: slat,slon
 
-C izsfloor is the index (within the zone) of a floor surface.
-C izsceil is the index (within the zone) of a ceiling surface.
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       INTEGER :: ifcfd
@@ -2658,7 +2653,7 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1,prompt2*36
+      CHARACTER VERT*27,KEY*1
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
       integer MVERT,IVERT  ! max items and current menu item
@@ -2840,18 +2835,6 @@ C If a long list include page facility text and info on portion seen.
         VERT(M+4)  ='- exit this menu        '
       endif
 
-      if(izone.le.0)then
-        if(mod.eq.'-')then
-          write(prompt2,'(a)')' (No previous zone defined.)'
-        elseif(mod.eq.'c'.or.mod.eq.'o'.or.mod.eq.'s')then
-          write(prompt2,'(a)') ' (Data file defined or undefined.)'
-        elseif(mod.eq.'v'.or.mod.eq.'g'.or.mod.eq.'h')then
-          write(prompt2,'(a)') ' (Data file defined or undefined.)'
-        endif
-      else
-        write(prompt2,'(3a)') '(',zname(izone),' is suggested.)'
-      endif
-
 C Help message for this menu.
       H(1)='A zone may be selected via the name in the list.'
       h(2)='If you have just created a file it may not show up'
@@ -2863,7 +2846,6 @@ C Help message for this menu.
       h(8)='insolation analysis.'
 
 C Display the menu.
-C      call usrmsg(PROMPT,PROMPT2,'-')
       CALL EMENU(title,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1

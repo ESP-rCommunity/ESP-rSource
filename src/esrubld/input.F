@@ -781,7 +781,7 @@ C IREP=1 implies no reporting or data checking.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/G5/c20/precz.
+C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -818,13 +818,6 @@ C         if = 0 then use compiled pattern.
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/PREC14/emarea(MCOM)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)

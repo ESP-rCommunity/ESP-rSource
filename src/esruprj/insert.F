@@ -57,15 +57,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb surface which share an edge
-      integer iedgshr   ! for each edge, the adjacent surface
-      integer imatshr   ! for each edge, the adjacent material
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -101,7 +92,7 @@ C << what about including common zndata in this manipulation? >>
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
-      character guesstype*24  ! for context of surface addition
+C      character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
       integer IRT  ! for radio button
       integer icmpall  ! to signal request to compare all names
@@ -1204,7 +1195,7 @@ C snamdup to ensure that it is a unique name (in this zone).
 
 C Set context for the use of the surface SSUSE.
 C << subroutine to use guesstype needs to be added as in INSREC >>
-        guesstype='any_type'
+C        guesstype='any_type'
 
 C Update the connection list. Move all others up and then insert with
 C default values. (allow verbose trace (3rd parameter in addedsurf).
@@ -2967,7 +2958,7 @@ C it work on surface of most orientations.
 #include "building.h"
 #include "geometry.h"
 
-      DIMENSION  XX(MV),YY(MV),ZZ(MV),XA(4),YA(4),ZA(4)
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
       DIMENSION  VP(3),EP(3),EQN(4)
       DIMENSION  TMAT(4,4),RMAT(4,4)
 
@@ -2981,7 +2972,7 @@ C Set maximum values to zero.
 C Transform surface into into site coordinates in the
 C surface of the plane. Make up XX,YY,ZZ to pass across to the
 C transform routine.
-  72  N = NVER(IS)
+      N = NVER(IS)
       DO 150 J = 1,N
         XX(J) = X(JVN(IS,J))
         YY(J) = Y(JVN(IS,J))
@@ -3040,36 +3031,9 @@ C           stop shifting).
 #include "building.h"
 #include "geometry.h"
 
-C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
-C   if only one then it must be parent, if two then it might be the
-C   case of a door so determine which is primary.
-C iedgshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
-C   this does not apply.
-C imatshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) which has the same material. Zero denotes this does not
-C   apply. Used to enhance wire frame drawings of discritized zones (e.g.
-C   where a surface such as a floor has been subdivided)
-C ibridgeshr(MCON,MV) is:
-C   zero is not a thermal bridge, one is roof-wall,
-C   two is wall-ground floor, three is wall-wall (convex corner)
-C   four is wall-wall (concave corner), five is wall-floor (not ground),
-C   six is lintel above window or door, seven is Sill below window
-C   eight is jamb at window or door
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb surface which share an edge see notes above
-      integer iedgshr   ! for each edge, the adjacent surface see notes above
-      integer imatshr   ! for each edge, the adjacent material see notes above
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
 C << potential place to track edges which might fall into specific
 C << thermal bridge categories. ? extend G8 ?
       
-      integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       CHARACTER act*1
 
