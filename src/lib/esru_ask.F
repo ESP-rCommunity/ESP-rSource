@@ -772,8 +772,13 @@ C Assume that the installer has placed the help text file in the
 C distribution lib folder.
       write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
      &  '.help'
-
-      ihfil=ifil+2              ! set file unit number
+      if(folder(1:7).eq.'esrubps')then
+        ihfil=ifil+8              ! set file unit number for bps
+      elseif(folder(1:7).eq.'esrures')then
+        ihfil=ifil+8              ! set file unit number for res
+      else
+        ihfil=ifil+2              ! set file unit number
+      endif
       CALL ERPFREE(ihfil,ISTAT) ! free it
       CALL EFOPSEQ(ihfil,helpfil,1,IER)
       if(ier.ne.0)then
