@@ -4745,7 +4745,7 @@ C Copy PHRASE from STRING, character by character until
 C a double quote or single quote is found (a quoted phrase 
 C could include a comma, but not a tab)
    20 L=L+1
-      IF(L.GT.LW) GOTO 100
+      IF(L.GE.LW) GOTO 100   ! at end of available phrase chars
       PHRASE(L:L)=A
       K=K+1
       IF(K.GT.LS) GOTO 999
