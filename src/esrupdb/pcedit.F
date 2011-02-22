@@ -83,8 +83,7 @@ C end-of-file marker will be adjusted accordingly.
 
 C Check if library empty.
  1010   IF (NPC .eq. 0) then
-          call usrmsg(' ',' The library is empty','-')
-          CALL EPAGEW
+          call usrmsg(' ',' The library is empty','W')
           return
         endif
 

@@ -356,7 +356,6 @@ C Describe components and menu structure.
         ino=-1
         goto 220
       endif
-      CALL EPAGE
       GOTO 210
 
 C Error handling.
