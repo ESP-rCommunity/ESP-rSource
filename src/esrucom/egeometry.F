@@ -1347,11 +1347,13 @@ C GS7/GS8 are defined in geometry.h
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
+      character MLCN*12      ! local string for comparison
       logical dll,checkbase
       logical havec24
       integer nbo   ! local value of nbobs
       integer lsn   ! length of currentfile
-      integer lno   ! length of optics name
+      integer lno,lnow     ! length of optics name
+      integer lstrs,lstrd  ! length of mlc names
       real VX,VY,VZ ! local values for XOB YOB ZOB
       integer iflag ! for read error state
 
@@ -1695,12 +1697,15 @@ C Surface construction name, allow for spaces.
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Check if there is a matching MLC name find out which one it is.
+C Because many names may start similarly, check against actual widths.
             ICF=-1
             if(NMLC.gt.0)then                
-              lstr=lnblnk(SMLCN(NS))
+              lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
               DO 20 IC=1,NMLC
-                if(lstr.lt.12)then
-                  IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
+                WRITE(MLCN,'(A)')DESC(IC)(1:12)  ! the first 12 char of desc
+                lstrd=lnblnk(MLCN)    ! mlc name length
+                if(lstrs.le.12)then
+                  IF(DESC(IC)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
                 else
                   IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
                 endif
@@ -1746,10 +1751,12 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
-		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
-                  lno=lnblnk(word)
-		  write(outs,*) 'Optics in geo file ',WORD(1:lno),
-     &              ' does not match optics of the MLC ',OPT
+                lnow=lnblnk(word)   ! length for token in file
+                lno=lnblnk(OPT)     ! length for mlc optics
+		if(WORD(1:lnow).ne.OPT(1:lno))then
+		  write(outs,*) 'Optics ',WORD(1:lnow),' in geo file ',
+     &              ' does not match optics of the MLC ',
+     &              DESC(ICF)(1:12),' ',OPT(1:lno)
                   call edisp(iuout,outs)
                 endif
                 write(SOTF(NS),'(a)') OPT

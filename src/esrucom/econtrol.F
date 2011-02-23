@@ -2784,14 +2784,14 @@ C          call edisp248(6,message,80)
           if(nint(cm(4)).eq.1)then
             if(nint(cm(1)).eq.5)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
-     &        ' plant/zone coupling: plant component',nint(cm(3)),
-     &        ' plant component node ',nint(cm(4)),
+     &        ' plant/zone coupling: plant component',nint(cm(2)),
+     &        ' plant component node ',nint(cm(3)),
      &        ' coupling type mCp(0s-0a) sequential. Max heating ',
      &        cm(5),'W max cooling ',cm(6),'W.'
             elseif(nint(cm(1)).eq.7)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
      &        ' plant/zone coupling: source plant component',
-     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        nint(cm(2)),' plant component node ',nint(cm(3)),
      &        ' coupling type mCp(0s-0a) sequential. Max heating ',
      &        cm(5),'W max cooling ',cm(6),
      &        'W. Extract plant component ',nint(cm(7)),
@@ -2800,14 +2800,14 @@ C          call edisp248(6,message,80)
           elseif(nint(cm(4)).eq.2)then
             if(nint(cm(1)).eq.5)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
-     &        ' plant/zone coupling: plant component',nint(cm(3)),
-     &        ' plant component node ',nint(cm(4)),
+     &        ' plant/zone coupling: plant component',nint(cm(2)),
+     &        ' plant component node ',nint(cm(3)),
      &        ' coupling type hrA(0s-0a) sequential. Max heating ',
      &        cm(5),'W max cooling ',cm(6),'W.'
             elseif(nint(cm(1)).eq.7)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
      &        ' plant/zone coupling: source plant component',
-     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        nint(cm(2)),' plant component node ',nint(cm(3)),
      &        ' coupling type hrA(0s-0a) concurrent. Max heating ',
      &        cm(5),'W max cooling ',cm(6),
      &        'W. Extract plant component ',nint(cm(7)),
@@ -2816,14 +2816,14 @@ C          call edisp248(6,message,80)
           elseif(nint(cm(4)).eq.5)then
             if(nint(cm(1)).eq.5)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a)') 
-     &        ' plant/zone coupling: plant component',nint(cm(3)),
-     &        ' plant component node ',nint(cm(4)),
+     &        ' plant/zone coupling: plant component',nint(cm(2)),
+     &        ' plant component node ',nint(cm(3)),
      &        ' coupling type mCp(0s-0a) concurrent. Max heating ',
      &        cm(5),'W max cooling ',cm(6),'W.'
             elseif(nint(cm(1)).eq.7)then
               write(lmsg,'(a,i3,a,i3,a,f9.2,a,f9.2,a,i3,a,i3,a)') 
      &        ' plant/zone coupling: source plant component',
-     &        nint(cm(3)),' plant component node ',nint(cm(4)),
+     &        nint(cm(2)),' plant component node ',nint(cm(3)),
      &        ' coupling type mCp(0s-0a) concurrent. Max heating ',
      &        cm(5),'W max cooling ',cm(6),
      &        'W. Extract plant component ',nint(cm(7)),
@@ -2831,6 +2831,7 @@ C          call edisp248(6,message,80)
             endif
           endif
           call SDELIM(lmsg,message,'S',IW)
+C Debug.
 C          call edisp248(6,message,80)
         ELSEIF(IBCLAW(II,JJ,KK).EQ.7)then
           SSTR='multi-stage with hyst'
