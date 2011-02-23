@@ -81,14 +81,11 @@ C If a space or carriage return is typed then IVAL is not changed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C Examples:
 C Ask user for zone number.
 C        ICOMP=1
-C        H(1)='The zone number is required only for reporting'
-C        H(2)='purposes.'
 C        CALL EASKI(ICOMP,' ','Zone number?',
 C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
@@ -97,10 +94,9 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10
       CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,cancel*6,outs*124
       LOGICAL OK,DOK
       integer ivalold
@@ -125,15 +121,7 @@ C Generate help and default strings.
 
       CALL INTSTR(IVAL,STR2,IW2,IER)
       CALL INTSTR(IDEFLT,STR1,IW1,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ENDIF
+      call helpcurrentint(ideflt,ival,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
       IF(MMOD.EQ.8)THEN
@@ -147,15 +135,9 @@ C Include a cancel option.
         cancel='cancel'
         CALL openaskcnclbox(PROMP1,PROMP2,cancel,iwidth)
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,NHELP+1,IHW)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,2,IHW)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(dh)
+        call updhelp(dh,newnbhelp,IHW)
         CALL askcncldialog(ask,cancel,idef,iquery)
 
 C Strip off the last character (end of line mark) as well as any
@@ -206,11 +188,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user integer',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user integer',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user integer',newnbhelp,'-',0,0,IER)
             GOTO 20
           ENDIF
         ELSEIF(WORD.EQ.' ')THEN
@@ -243,7 +221,7 @@ C Check IVALT against minimum and respond based on MINACT.
      &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,newnbhelp)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -265,7 +243,7 @@ C Check IVALT against minimum and respond based on MINACT.
      &         ' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')

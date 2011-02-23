@@ -910,3 +910,56 @@ C standard message.
 
       end
 
+C subroutine to generate line of help text for an integer dialog
+C in terms of default and current value. 
+      subroutine helpcurrentint(idef,icur,ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      integer idef         ! default value for this number
+      integer icur         ! current value
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      integer iw2,iw1      ! length of two integers
+      character outs*124 ! for messages
+      CHARACTER STR1*10,STR2*10
+
+C Get to work.
+      CALL INTSTR(icur,STR2,IW2,IER)
+      CALL INTSTR(idef,STR1,IW1,IER)
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp+1
+        WRITE(H(nbhelp+1),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=2
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 'helpboundsint: permission error composing help.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'helpboundsint: error composing help.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
