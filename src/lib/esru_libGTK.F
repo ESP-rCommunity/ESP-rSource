@@ -1210,9 +1210,8 @@ C DSTR is a string to use as a default.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER H*72,t72*72,t72a*72,t72b*72,t72c*72
+      CHARACTER t72*72,t72a*72,t72b*72,t72c*72
       character outstr*248,word*248,prompt*144,LASTS*248,outs*124
       LOGICAL next,OK,DOK,unixok
 
@@ -1226,13 +1225,7 @@ C DSTR is a string to use as a default.
       endif
 
 C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
       call edisp(iuout,'Current...')
       call edisp248(iuout,STRVAL,72)
@@ -1242,15 +1235,9 @@ C Generate custom help text and use local var for NHELP.
 
 C For graphic version use the standard GTK widget as does easks.
         IFLG=0
-        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1294,7 +1281,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
      &      DSTR(1:LN),'.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1361,7 +1348,7 @@ C Logic supports stepwise scrolling within the text. 243 label
 C is the point for editing the initial portion of the text. 244 label
 C is the point for editing 2nd tranche of text.
  243    CALL EASKSCMD(t72,PROMP1,PROMP2,'>',next,ISTRW,DSTR,
-     &    'synp 1',IER,NHELP)
+     &    'synp 1',IER,newnbhelp)
 
 C lt72 is the number of characters found after editing. If this is
 C less than 72 then cut characters from ipvsynop.
@@ -1370,7 +1357,7 @@ C less than 72 then cut characters from ipvsynop.
 
 C Edit second section.
           CALL EASKS2CMD(t72a,PROMP1,PROMP2,'|<','>',
-     &      inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+     &      inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
           lt72a=max(1,lnblnk(t72a))
           if(inext.eq.1)then
 
@@ -1381,7 +1368,7 @@ C If text to left requested go back to start.
 C If text to right requested, load 3rd portion and offer option to
 C jump to earlier or last section of text.
             CALL EASKS2CMD(t72b,PROMP1,PROMP2,'|<','>|',
-     &        inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+     &        inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
             lt72b=max(1,lnblnk(t72b))
             if(inext.eq.1)then
 
@@ -1393,7 +1380,7 @@ C Go back to start.
 C Work with last portion of string, offer option to jump back
 C to the start.
               CALL EASKSCMD(t72c,PROMP1,PROMP2,'|<..',next,ISTRW,
-     &          DSTR,ERMSG,IER,NHELP)
+     &          DSTR,ERMSG,IER,newnbhelp)
               lt72c=max(1,lnblnk(t72c))
               if(next)then
                 goto 243
@@ -1484,10 +1471,6 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -1692,10 +1675,6 @@ C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
@@ -1895,7 +1874,6 @@ C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
         IFLG=0
-        iquery=0
         WORD=' '
         if(NHELP.GT.0)then
           CALL PHELPW(NHELP,IHW,IER)
