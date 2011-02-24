@@ -907,15 +907,13 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
-C        H(1)='The site name is a test of the menu help facilities.'
 C        XNAME=' '
 C        DNAME=' '
 C        CALL EASKS(XNAME,' ',' What is the site name ?',
@@ -926,11 +924,10 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
       LOGICAL OK,DOK
 
    20 WORD=' '
@@ -941,14 +938,8 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
      &     STRVAL(1:7).eq.'Unknown') STRVAL='  '
       endif
 
-C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+C Generate custom help text.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
@@ -959,15 +950,9 @@ C If in terminal type 8 use dialogue box.
         iquery=0
         CALL openaskbox(PROMP1,PROMP2,ISTRW)
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,NHELP,IHW)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,1,IHW)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(dh)
+        call updhelp(dh,newnbhelp,IHW)
         lmmod=mmod
         CALL askdialog(STRVAL,idef,iquery)
 
@@ -984,7 +969,7 @@ C passed into the subroutine will fit within a 92 character WORD buffer.
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             call usrmsg('  ','  ','-')
@@ -1034,7 +1019,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1046,7 +1031,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            CALL PHELPD('ask user string',NHL,'-',0,0,IER)
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1115,9 +1100,7 @@ C DSTR is a string to use as a default.
      &   NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-C      common/pophelp/h(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-C      character H*72
       character t72*72,t72a*72,t72b*72,t72c*72
       LOGICAL next
 
