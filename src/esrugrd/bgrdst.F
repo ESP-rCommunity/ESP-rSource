@@ -43,7 +43,6 @@ C *********************************************************************
       SUBROUTINE MENUSG(ITRC)
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -54,8 +53,15 @@ C *********************************************************************
       LOGICAL ZONOK,MODIFY,MODBND,MODLEN,OK,DOK,SAVEOK,XST
 
       CHARACTER ITEM(13)*26,SZN*15
-      CHARACTER*72 LGrdSt,H
+      CHARACTER*72 LGrdSt
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MENUSG'  ! set for subroutine
 
       SZN=' '
       IZ=0
@@ -85,37 +91,22 @@ C Display the menu.
    10 INO=-3
       WRITE(ITEM(1),'(A,A)')'1 Zone : ',SZN
       ITEM(2)='  ------------------------'
-      ITEM(3)='2 local components        '
+      ITEM(3)='2 user defined component  '
       ITEM(4)='3 imported component      '
       ITEM(5)='  ------------------------'
       ITEM(6)='4 Save 3D conf. into file '
       ITEM(7)='5 Read 3D conf. from file '
       ITEM(8)='6 Delete 3D conf. file    '
       ITEM(9)='  ------------------------'
-      ITEM(10)='! Update system conf. file'
+      ITEM(10)='! Update model cfg. file'
       ITEM(11)='  ------------------------'
       ITEM(12)='? Help                    '
       ITEM(13)='- Exit                    '
       MITEM=13
 
 C Help text for menu.
-      H(1)='  This menu can be used to produce the required files'
-      H(2)=' by BPS for 3D structured mesh SM) simulation. It'
-      H(3)=' deals with a single zone at a time. And only one '
-      H(4)=' structured mesh can be simulated at a time for the '
-      H(5)=' whole building.  Therefore, there can be only one'
-      H(6)=' imported component.'
-      H(7)=' After selecting the zone, the local component indices'
-      H(8)=' are defined.  That is the 1D building constructions '
-      H(9)=' (local components) which will be represented by the'
-      H(10)=' SM scheme will should be cancled out (option 2).'
-      H(11)=' Then the SM is defined via option 3.'
-      H(12)=' Finally, the 3D SM configuration should be saved,'
-      H(13)=' via option 4, in a file (*.csm) which will called'
-      H(14)=' by the BPS.'
-      H(15)=' Alternatively, the SM configuration file can be'
-      H(16)=' imported directly via option 5.'
-      H(17)='  '
+      helptopic='grd_3d_mesh_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -160,11 +151,8 @@ C Save gridding information into a file.
       ELSEIF(INO.EQ.7)THEN
 
 C Read gridding from a file
-        H(1)='    Input the name for the zone file in which'
-        H(2)=' the structured mesh configuration details exit.'
-        H(3)=' '
         CALL EASKS(LGrdSt,'Structured mesh file name ?',' ',
-     &       72,' ',' Structured mesh file ',IER,3)
+     &    72,' ',' Structured mesh file ',IER,nbhelp)
         CALL READST(IZ,ITRC,IER)
         IF(IER.EQ.0)THEN
           SAVEOK=.TRUE.
@@ -194,18 +182,17 @@ C Update system configuration file.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
+        helptopic='grd_3d_mesh_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Multi-Gridding menu ',17,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
         IF(SAVEOK)THEN
           dok=.true.
-          h(1)='Recent changes to the model might be lost if the '
-          h(2)='data is not written to the configuration file. '
-          h(3)='First check that no other ESP-r module is using '
-          h(4)='this file. '
           CALL ASKOK(' ',
-     &    'configuration should be updated. Ok to do this ?',OK,dok,4)
+     &    'configuration should be updated. Ok to do this ?',
+     &    OK,dok,nbhelp)
           IF(OK)CALL EMKCFG('-',IER)
         ENDIF
         RETURN
@@ -221,14 +208,19 @@ C *********************************************************************
 #include "building.h"
 #include "geometry.h"
 
-      common/pophelp/h(60)
-
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
 
-      CHARACTER KEY*1,H*72,ITEM(20)*31,STTS*13
+      CHARACTER KEY*1,ITEM(20)*31,STTS*13
       integer NITEMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LCLCMP'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -274,9 +266,8 @@ C If a long list include page facility text.
       ITEM(M+4)  ='- Exit                       '
 
 C Help text for this menu.
-      H(1)=' The local components status menu allows altering'
-      H(2)=' the status of the local components between'
-      H(3)=' defined (D) and not defined (N)'
+      helptopic='grd_component_status'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -300,7 +291,9 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(INO.EQ.(NITEMS-1))THEN
 
 C Display help messages.
-        CALL PHELPD('local components ',3,'-',0,0,IER)
+        helptopic='grd_component_status'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('local components ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEMS)THEN
 
 C Return to multi-gridding menu.
@@ -314,13 +307,19 @@ C IMPCMP displays the menu for defining imported component.
 C *********************************************************************
       SUBROUTINE IMPCMP(IComp)
 
-      common/pophelp/h(60)
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
 
       DIMENSION ITEM(8)
 
-      CHARACTER H*72,ITEM*22
+      CHARACTER ITEM*22
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='IMPCMP'  ! set for subroutine
 
       CALL INTSTM
       ICalc=0
@@ -338,11 +337,8 @@ C *********************************************************************
       MITEM=8
 
 C Help text for menu.
-      H(1)=' in order to define the imported component'
-      H(2)=' (structured mesh SM), the grid structure should'
-      H(3)=' be defined first via option 1.  Then the material'
-      H(4)=' properties and boundary surfaces can be defined'
-      H(5)=' via options 2 and 3, respectivily.'
+      helptopic='import_SM_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL USRMSG(' ',' ','-')
       CALL EMENU('Importing',ITEM,MITEM,INO)
@@ -368,7 +364,9 @@ C Update figure.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD('importing a component ',5,'-',0,0,IER)
+        helptopic='import_SM_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('importing a component ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
@@ -384,15 +382,21 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD42/LRow(MROW),LCol(MCOL),LLay(MLAY)
 
       DIMENSION ITEM(13)
 
-      CHARACTER H*72,ITEM*32,LstMsh*72
+      CHARACTER ITEM*32,LstMsh*72
       LOGICAL IsEven
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNGRD'  ! set for subroutine
 
       ICalc=0
    10 INO=-3
@@ -402,7 +406,7 @@ C *********************************************************************
       WRITE(ITEM(4),'(A,I3)')'4 number of layerss: ',NLay
       ITEM(5)='  --------------------'
       ITEM(6)='a edit mesh widths '
-      ITEM(7)='b divid mesh widths '
+      ITEM(7)='b divide mesh widths '
       ITEM(8)='c delete mesh widths'
       ITEM(9)='  --------------------'
       ITEM(10)='u update figure   '
@@ -412,30 +416,8 @@ C *********************************************************************
       MITEM=13
 
 C Hep text for this message.
-      H(1)=' 1: define the reference mesh width in meters'
-      H(2)='    meters used as unit for the mesh widths.'
-      H(3)=' 2,3,4: the number of the last row, column, and layer.'
-      H(4)=' a,b,c: edit, divid, and delete mesh widths.'
-      H(5)=' '
-      H(6)=' Notes:'
-      H(7)=' 1. Rows, column, and layers have to be numbered in by'
-      H(8)=' odd numbers only.'
-      H(9)=' 2. The default coordinate system assumes the origin'
-      H(10)=' at the upper left corner of the screen. The row '
-      H(11)=' axes pointing down, the column axes pointing right,'
-      H(12)=' and the layer axes pointing inward.'
-      H(13)=' 3. The boundary and material interfaces need to'
-      H(14)=' correspond with grid lines.'
-      H(15)=' 4. The first and last (in all directions) grid lines'
-      H(16)=' should lie outside the object.'
-      H(17)='                '
-      H(18)=' Notes:'
-      H(19)=' 5. It is easier to defined the problem based on '
-      H(20)=' minimum gridding required via option a, and after'
-      H(21)=' defining the material and boundary details, modify'
-      H(22)=' the gridding via options b and c which will '
-      H(23)=' automatically update the material and boundary'
-      H(24)=' details.'
+      helptopic='grd_3D_mesh_defs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL USRMSG(' ',' ','-')
       CALL EMENU('Grid Data',ITEM,MITEM,INO)
@@ -447,45 +429,30 @@ C Index for figure update.
       IF(INO.EQ.1)THEN
 
 C Define grid data.
-        H(1)='    This is the conversion factor for mesh width.'
-        H(2)=' That is this factor will be multiplied by the mesh'
-        H(3)=' width to get the real width in meters.'
         CALL EASKR(RefWidth,' ','Enter the reference mesh width:',
-     &     0.00099,'W',1.0,'W',0.001,'mesh width',IER,3)
+     &     0.00099,'W',1.0,'W',0.001,'mesh width',IER,nbhelp)
       ELSEIF(INO.EQ.2)THEN
-        H(1)='    This is number of the last row.  The row number '
-        H(2)=' should be odd.  Two extra row intervals should be'
-        H(3)=' included, one between 1 to 3, and the other n-3 to n.'
-        H(4)=' Where, n is the number entered.'
         MLmt=MROW*2+1
         CALL EASKI(NRowT,' ','Enter the number of rows:',1,'F',
-     &        MLmt,'F',10,'number of rows',IER,4)
+     &        MLmt,'F',10,'number of rows',IER,nbhelp)
         IF(IsEven(NRowT))THEN
           CALL USRMSG('Odd numbers should be used',' ','W')
         ELSE
           NRow=NRowT
         ENDIF
       ELSEIF(INO.EQ.3)THEN
-        H(1)='   This is number of the last column.  The column number'
-        H(2)=' should be odd.  Two extra column intervals should be'
-        H(3)=' included, one between 1 to 3, and the other n-3 to n.'
-        H(4)=' Where, n is the number entered.'
         MLmt=MCOL*2+1
         CALL EASKI(NColT,' ','Enter the number of columns:',1,'F',
-     &        MLmt,'F',10,'number of columns',IER,0)
+     &    MLmt,'F',10,'number of columns',IER,nbhelp)
         IF(IsEven(NColT))THEN
           CALL USRMSG('Odd numbers should be used',' ','W')
         ELSE
           NCol=NColT
         ENDIF
       ELSEIF(INO.EQ.4)THEN
-        H(1)='    This is number of the last layer.  The layer number'
-        H(2)=' should be odd.  Two extra layer intervals should be'
-        H(3)=' included, one between 1 to 3, and the other n-3 to n.'
-        H(4)=' Where, n is the number entered.'
         MLmt=MLAY*2+1
         CALL EASKI(NLayT,' ','Enter the number of layers:',1,'F',
-     &        MLmt,'F',10,'number of layers',IER,0)
+     &    MLmt,'F',10,'number of layers',IER,nbhelp)
         IF(IsEven(NLayT))THEN
           CALL USRMSG('Odd numbers should be used',' ','W')
         ELSE
@@ -494,7 +461,8 @@ C Define grid data.
       ELSEIF(INO.EQ.6)THEN
 
 C Edit mesh widths.
-        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
+        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',
+     &    IW,nbhelp)
         IF(IW.EQ.1)THEN
           IF(NRow.GT.0)THEN
             CALL EDTMSH(NRow,LRow,'rows   ')
@@ -516,8 +484,9 @@ C Edit mesh widths.
         ENDIF
       ELSEIF(INO.EQ.7)THEN
 
-C Divid mesh widths.
-        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
+C Divide mesh widths.
+        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',
+     &    IW,nbhelp)
         IF(IW.EQ.1)THEN
           IF(NRow.GT.0)THEN
             CALL DVDMSH(NRow,LRow,IW)
@@ -540,7 +509,8 @@ C Divid mesh widths.
       ELSEIF(INO.EQ.8)THEN
 
 C Delete mesh widths.
-        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',IW,0)
+        CALL EASKABC('Which dimension:',' ','Row','Column','Layer',
+     &    IW,nbhelp)
         IF(IW.EQ.1)THEN
           IF(NRow.GT.0)THEN
             CALL DLTMSH(NRow,LRow,IW)
@@ -567,7 +537,6 @@ C Update figure
       ELSEIF(INO.EQ.(MITEM-2))THEN
 
 C List mesh widths
-C        CALL EPAGE
         WRITE(LstMsh,'(11(I2,5X))')(J*2+1,J=0,10)
         CALL EDISP(IUOUT,LstMsh)
         WRITE(LstMsh,'(72A)')('-',J=1,72)
@@ -641,7 +610,9 @@ C        CALL EPAGE
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD('importing a component ',24,'-',0,0,IER)
+        helptopic='grd_3D_mesh_defs'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('importing a component ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
@@ -662,6 +633,15 @@ C *********************************************************************
       CHARACTER*72 Promp,StrVal,Msg
       CHARACTER DimName*7
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDTMSH'  ! set for subroutine
+
+      helptopic='3d_mesh_width_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       NumDim=(NDim-1)/2
       IEnd=0
       NLoop=INT((NumDim-1)/10)+1
@@ -675,7 +655,7 @@ C *********************************************************************
         WRITE(Promp,'(A27,A7,A8,I3,A,I3)')'Enter the mesh widths for ',
      &    DimName,' from ',IStart*2-1,' to ',IEnd*2+1
         WRITE(StrVal,'(10(1X,I6))')(LDim(J),J=IStart,IEnd)
-  20    CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
+  20    CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,nbhelp)
         CALL USRMSG(' ',' ','-')
         NInp = iCountWords(StrVal)
         NExpct=IEnd-IStart+1
@@ -716,6 +696,15 @@ C *********************************************************************
       CHARACTER*72 Promp,StrVal,Msg
       CHARACTER DimName*6
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DVDMSH'  ! set for subroutine
+
+      helptopic='3d_mesh_divide'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IF(IndDim.EQ.1)THEN
         DimName='row'
         MaxLvl=MROW*2+1
@@ -733,11 +722,11 @@ C *********************************************************************
    91   FORMAT(A,A11,A9,I3,A5,I3,A16,I6,A1)
         WRITE(Promp,91)DimName,' mesh width',' between ',IStart,
      &    ' and ',IEnd,' (current value:',LDim(ILvl),')'
-        CALL EASKABC(Promp,' ','next','divid','finish',IW,0)
+        CALL EASKABC(Promp,' ','next','divid','finish',IW,nbhelp)
         IF(IW.EQ.2)THEN
           NDiv=2
           CALL EASKI(NDiv,' ','Enter the number of divitions:',1,'F',
-     &               10,'F',2,'number of divitions',IER,0)
+     &      10,'F',2,'number of divitions',IER,nbhelp)
           NAdd=NDiv-1
           NCHCK=NDim+2*NAdd
           IF(NCHCK.GT.MaxLvl)THEN
@@ -752,7 +741,8 @@ C *********************************************************************
             NewL=INT(LDim(ILvl)/NDiv)
             WRITE(Promp,'(A27)')'Enter the mesh widths for '
             WRITE(StrVal,'(10(1X,I6))')(NewL,J=1,NDiv)
-   70       CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
+   70       CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',
+     &        IER,nbhelp)
             CALL USRMSG(' ',' ','-')
             NInp = iCountWords(StrVal)
             IF(NInp.NE.NDiv)THEN
@@ -828,6 +818,15 @@ C *********************************************************************
       CHARACTER*72 Promp
       CHARACTER DimName*6
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DLTMSH'  ! set for subroutine
+      helptopic='grd_3d_mesh_delete'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       IF(IndDim.EQ.1)THEN
         DimName='row'
       ELSEIF(IndDim.EQ.2)THEN
@@ -842,7 +841,7 @@ C *********************************************************************
    91   FORMAT(A,A11,A9,I3,A5,I3,A16,I6,A1)
         WRITE(Promp,91)DimName,' mesh width',' between ',IStart,
      &    ' and ',IEnd,' (current value:',LDim(ILvl),')'
-        CALL EASKABC(Promp,' ','next','delete','finish',IW,0)
+        CALL EASKABC(Promp,' ','next','delete','finish',IW,nbhelp)
         IF(IW.EQ.2)THEN
 
 C Check if this width is referenced in the material or boundary geometries.
@@ -933,7 +932,6 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -942,8 +940,15 @@ C *********************************************************************
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
       COMMON/GRSD54/IMLayS(MMTR),IMLayE(MMTR)
 
-      CHARACTER KEY*1,H*72,LstMtr*72,SrfNm*12
+      CHARACTER KEY*1,LstMtr*72,SrfNm*12
       character*38 ITEM(20)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNMTR'  ! set for subroutine
 
       ICalc=0
 
@@ -1000,18 +1005,8 @@ C If a long list include page facility text.
       ITEM(M+8)  ='- Exit                     '
 
 C Help text for the menu.
-      H(1)=' This menu should be used for defining the material'
-      H(2)=' geometry for the imported component.  This is done'
-      H(3)=' by defining homogeneous material boxes.  To define'
-      H(4)=' a box, the grid coordinates of two diagonally'
-      H(5)=' opposite corners of the box are required. The'
-      H(6)=' coordinates of the first corner should be smaller'
-      H(7)=' than those for the second corner.'
-      H(8)=' '
-      H(9)=' Notes:'
-      H(10)=' 1. new material boxes will superpose preceding ones.'
-      H(11)=' 2. a zero thermal conductivity can be used to'
-      H(12)=' indicate that there is no material in the box.'
+      helptopic='grd_mesh_mat_geom'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -1079,7 +1074,6 @@ C Delete material geometry
       ELSEIF(INO.EQ.(NITEMS-4))THEN
 
 C List material geometries
-C        CALL EPAGE
         CALL EDISP(IUOUT,
      &    'No.  Surface   Element   R1  C1  L1      R1  C1  L1')
         CALL EDISP(IUOUT,
@@ -1106,7 +1100,9 @@ C Update figure
       ELSEIF(INO.EQ.(NITEMS-1))THEN
 
 C Display help messages.
-        CALL PHELPD('local components ',12,'-',0,0,IER)
+        helptopic='grd_mesh_mat_geom'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('local components ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEMS)THEN
 
 C Return to multi-gridding menu.
@@ -1122,27 +1118,29 @@ C *********************************************************************
 #include "building.h"
       integer iCountWords
 
-      common/pophelp/h(60)
-
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
       COMMON/GRSD52/IMRowS(MMTR),IMRowE(MMTR)
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
       COMMON/GRSD54/IMLayS(MMTR),IMLayE(MMTR)
 
-      CHARACTER*72 Promp,StrVal,H,Msg
+      CHARACTER*72 Promp,StrVal,Msg
       LOGICAL IsEven
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MTRINP'  ! set for subroutine
+      helptopic='manage_mat_geom'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
-      H(1)=' You should enter eight indices as follows:'
-      H(2)=' 1. surface number (within the current zone).'
-      H(3)=' 2. element number (within the above surface).'
-      H(4)=' 3, 4, and 5. row, column, and layer start.'
-      H(5)=' 6, 7, and 8. row, column, and layer end.'
-      H(6)=' '
       WRITE(Promp,'(A)')'Enter the required indices:'
       WRITE(StrVal,'(10(1X,I3))')IMtrS(I),IMtrE(I),IMRowS(I),IMColS(I),
      &                         IMLayS(I),IMRowE(I),IMColE(I),IMLayE(I)
-  10  CALL EASKS(StrVal,Promp,' ',72,' ','material geometry',IER,6)
+  10  CALL EASKS(StrVal,Promp,' ',72,' ','material geometry',
+     &  IER,nbhelp)
       CALL USRMSG(' ',' ','-')
       NInp = iCountWords(StrVal)
       NExpct=8
@@ -1202,15 +1200,21 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/GRSD61/NBnd,IBndZ(MBND),IBndS(MBND)
       COMMON/GRSD62/IBRowS(MBND),IBRowE(MBND)
       COMMON/GRSD63/IBColS(MBND),IBColE(MBND)
       COMMON/GRSD64/IBLayS(MBND),IBLayE(MBND)
 
-      CHARACTER KEY*1,H*72,ExtInt*8,LstBnd*60
+      CHARACTER KEY*1,ExtInt*8,LstBnd*60
       character*32 ITEM(20)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNBND'  ! set for subroutine
 
       ICalc=0
 
@@ -1269,16 +1273,8 @@ C If a long list include page facility text.
       ITEM(M+8)  ='- Exit                     '
 
 C Help text for this menu.
-      H(1)=' This menu should be used for defining the boundary'
-      H(2)=' surfaces. To define a box, the grid coordinates'
-      H(3)=' of two diagonally opposite corners of the box are'
-      H(4)=' required. The coordinates of the first corner should'
-      H(5)=' be smaller than those for the second corner.  The'
-      H(6)=' general rule is that each portion of a surface'
-      H(7)=' lying either inside or on the surface of the'
-      H(8)=' defined box will get the specified condition.'
-      H(9)=' New boundary boxes will superpose preceding ones.'
-      H(10)=' '
+      helptopic='grd_boundary_surf'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -1346,7 +1342,6 @@ C Delete surface boundary.
       ELSEIF(INO.EQ.(NITEMS-4))THEN
 
 C List surface boundary boxes.
-C        CALL EPAGE
         CALL EDISP(IUOUT,
      &    'No.  Zone  Surf.    R1  C1  L1      R1  C1  L1')
         CALL EDISP(IUOUT,
@@ -1365,7 +1360,9 @@ C Update figure
       ELSEIF(INO.EQ.(NITEMS-1))THEN
 
 C Display help messages.
-        CALL PHELPD('local components ',10,'-',0,0,IER)
+        helptopic='grd_boundary_surf'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('local components ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEMS)THEN
 
 C Return to multi-gridding menu.
@@ -1381,27 +1378,29 @@ C *********************************************************************
 #include "building.h"
       integer iCountWords
 
-      common/pophelp/h(60)
-
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD61/NBnd,IBndZ(MBND),IBndS(MBND)
       COMMON/GRSD62/IBRowS(MBND),IBRowE(MBND)
       COMMON/GRSD63/IBColS(MBND),IBColE(MBND)
       COMMON/GRSD64/IBLayS(MBND),IBLayE(MBND)
 
-      CHARACTER*72 Promp,StrVal,H,Msg
+      CHARACTER*72 Promp,StrVal,Msg
       LOGICAL IsEven
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BNDINP'  ! set for subroutine
 
       WRITE(Promp,'(A)')'Enter the required indices:'
       WRITE(StrVal,'(8(3X,I3))')IBndZ(I),IBndS(I),IBRowS(I),
      &             IBColS(I),IBLayS(I),IBRowE(I),IBColE(I),IBLayE(I)
-      H(1)=' You should enter eight indices as follows:'
-      H(2)=' 1. zone number.'
-      H(3)=' 2. surface number (-ve:external, +ve:internal).'
-      H(4)=' 3, 4, and 5. row, column, and layer start.'
-      H(5)=' 6, 7, and 8. row, column, and layer end.'
-      H(6)=' '
-  10  CALL EASKS(StrVal,Promp,' ',72,' ','boundary box',IER,6)
+      helptopic='grd_manage_boundary'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+  10  CALL EASKS(StrVal,Promp,' ',72,' ','boundary box',
+     &  IER,nbhelp)
       CALL USRMSG(' ',' ','-')
       NInp = iCountWords(StrVal)
       NExpct=8
@@ -1465,7 +1464,6 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1486,17 +1484,23 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,H*72
+      CHARACTER SZN*12
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SLCTZN'  ! set for subroutine
 
       IUNIT=IFIL+2
 
 C Show the zone selection menu.
-      H(1)='    Select the zone for which the multi-D gridding'
-      H(2)=' details are to be created/modified.'
-      H(3)=' '
+      helptopic='grd_multi_grid_zone'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPICK=1
    20 CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-     &            NCOMP,zname,' SELECT ZONE',IER,3)
+     &            NCOMP,zname,' SELECT ZONE',IER,nbhelp)
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
@@ -1566,26 +1570,30 @@ C *********************************************************************
       integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
 
-      CHARACTER*72 Promp,H,Msg
+      CHARACTER*72 Promp,Msg
       CHARACTER*12 StrVal
       LOGICAL IsEven
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='FHDSTM'  ! set for subroutine
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8.OR.NRow.LT.7)RETURN
 
 C Draw the cross section based on the required view dimension and level.
+      helptopic='grd_draw_xsection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
-      H(1)=' You should enter two indices as follows:'
-      H(2)=' 1. view axis (1: Row, 2: Column, and 3: Layer).'
-      H(3)=' 2. view level (even number).'
-      H(4)=' '
       WRITE(Promp,'(A)')'Enter the view axeis and level indices:'
       WRITE(StrVal,'(A4)')'3  4'
-  10  CALL EASKS(StrVal,Promp,' ',14,' ','View Indices',IER,4)
+  10  CALL EASKS(StrVal,Promp,' ',14,' ','View Indices',IER,nbhelp)
       CALL USRMSG(' ',' ','-')
       NInp = iCountWords(StrVal)
       NExpct=2

@@ -41,7 +41,6 @@ C index is the goget index.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -77,6 +76,13 @@ C Selection menu for graphs and/or tables.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
       integer NITMS,IG ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MODGRF'  ! set for subroutine
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -320,10 +326,9 @@ C If in pif mode use default bin setup.
           ok=.TRUE.
         else
           dok=.true.
-          h(1)='The default bins will tend to work for quick inital'
-          h(2)='views of frequency bins. To customise the reports '
-          h(3)='you should say no. '
-          call askok('  ','Use default bin set-up?',OK,dok,3)
+          helptopic='res_freq_default_bins'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('  ','Use default bin set-up?',OK,dok,nbhelp)
         endif
         if(ok)then
 
@@ -385,15 +390,14 @@ C Bin sized from data max & min.
         else
           XBIN1=XMIN
           XBINN=XMAX
-          H(1)='Give minimum bin value for the current parameter.'
-          call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &                     0.,'-',0.,'-',0.,'min bin parameter',IER,1)
-          H(1)='Give maximum bin value for the current parameter.'
-          call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &                  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
-          H(1)='The number of frequency bins is required.'
-          call easki(NBINS,' ',' Number of bins required ? ',
-     &                               1,'F',MF,'F',0,'no of bins',IER,0)
+          helptopic='res_frequency_bin_ranges'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call easkr(XBIN1,' ','Minimum parameter value for bin ?',
+     &      0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
+          call easkr(XBINN,' ','Maximum parameter value for bin ?',
+     &      XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nbhelp)
+          call easki(NBINS,' ','Number of bins required ?',
+     &      1,'F',MF,'F',0,'no of bins',IER,nbhelp)
           DXBIN=(XBINN-XBIN1)/NBINS
         endif
       endif
@@ -498,9 +502,8 @@ C We now have the data in bins therefore ask how it should be displayed.
 C << convert this block of code to use a standard menu
 C << call so users can just exit and not have to click
 C << on 'none of the above'.
-    5   H(1)='Frequency distribution opions allow you to look at '
-        H(2)='graphs or tables or both. When you want to do something'
-        H(3)='select the exit choice.'
+    5   helptopic='res_freq_menu_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         item(1)='a frequency graph       '
         item(2)='b cumulative graph      '
         item(3)='c summary table         '
@@ -516,7 +519,9 @@ C << on 'none of the above'.
         elseif(IG.eq.7)then
 
 C Help.
-          CALL PHELPD('frequency help',3,'-',0,0,IER)
+          helptopic='res_freq_menu_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('frequency help',nbhelp,'-',0,0,IER)
         elseif(IG.eq.6)then
           goto 5
         endif

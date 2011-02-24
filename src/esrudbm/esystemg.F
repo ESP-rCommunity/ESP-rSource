@@ -163,7 +163,6 @@ C espriou.h provides currentfile and defdbfl.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       INTEGER :: mmod,limit,limtty
-      COMMON/POPHELP/H(60)
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
@@ -465,7 +464,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
+      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117
       CHARACTER*72 FILE,LCFD
       CHARACTER*72 LAPROB,LPNF
       character LPRJLG*72
@@ -512,6 +511,13 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       INTEGER :: itwpr,itrunc,items,istat,iss,iset_start,nd,louts
       INTEGER :: is,irvc,irva,irec,ircc,ipos,ios,inod,j,k,iuc,iuf
       INTEGER :: itvc,iunit1,iv,iva,kv,lc,lcfgl,lcfgr,itrc,iunit,m,ncn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ERSYSG'  ! set for subroutine
       
       
 C Check if running in dll mode.
@@ -1432,13 +1438,10 @@ C Project log file, read and then go on to fabric/plant description.
       else
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
-        h(1)='An unknown tag or line was found in the configuration'
-        h(2)='file. The file might be corrupt or for a different'
-        h(3)='version of ESP-r. '
-        h(4)=' '
-        h(5)='Depending on the error, it might be possible to read'
-        h(6)='the rest of the file - exercise caution! '
-        CALL ASKOK('  ','Continue reading configuration?',OK,dok,6)
+        helptopic='sys_file_unknown_tag'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('  ','Continue reading configuration?',
+     &    OK,dok,nbhelp)
         if(.NOT.ok)then
           ier=1
           return
@@ -2289,12 +2292,11 @@ C older file. Try reading another line or two to get to list.
             return
           else
             dok=.true.
-            h(1)='The section of the configuration file that defines'
-            h(2)='links between zones and flow network nodes gave a '
-            h(3)='problem. The file might be corrupted or truncated. '
+            helptopic='sys_file_truncation'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call askok('There appears to be a problem with flow node-',
      &        'zone links in the configuration file. Continue?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             if(.NOT.OK)RETURN
             ier=0
           endif

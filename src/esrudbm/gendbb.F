@@ -1117,7 +1117,6 @@ C     are filled by the user when editing and at as substitutes.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -1145,7 +1144,7 @@ C bkascidb is backup file used when editing the database (i.e.
 C changing its length).
       common/tmpdocb/bkdocok,nbkdoc,indexbk
 
-      character AFIL*72,BFIL*72,tab*1,class*12,item*12,h*72
+      character AFIL*72,BFIL*72,tab*1,class*12,item*12
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,itdoc*248
       character itdat*248,itrep*248,ittag*12,itmenu*32,itdate*24
@@ -1158,6 +1157,13 @@ C changing its length).
       character errmsg*48
       logical bkdocok,ok,dok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mkagdb'  ! set for subroutine
 
 C Setup a tab character.
 C      tab=CHAR(9)
@@ -1182,8 +1188,9 @@ C Open the binary file and read the header.
       endif
       if(c20(1:20).eq.'*ESP-r binary db    ')then
         dok=.true.
-        h(1)='Chance to update to a newer format file. '
-        call askok(' ',' Update to version 2?',OK,dok,1)
+        helptopic='option_to_upgrade'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call askok(' ',' Update to version 2?',OK,dok,nbhelp)
         if(ok)then
           idbver(idbh)=2
         else
@@ -2364,7 +2371,6 @@ C types (e.g. ALL shows all, MATLCA shows only material impacts).
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -2380,8 +2386,15 @@ C and current items then lengths of each list.
       DIMENSION CLDES(35)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
-      character dbnote*72,CLDES*38,KEY*1,head*37,h*72,ctype*8,ct*8
+      character dbnote*72,CLDES*38,KEY*1,head*37,ctype*8,ct*8
       integer NCO,ICO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='selcat'  ! set for subroutine
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
@@ -2434,9 +2447,8 @@ C If a long list include page facility text.
       NCO=M+MCTL
 
 C Help text for this menu.
-      h(1)='This menu displays the current categories in the'
-      h(2)='database for selection purposes. Use item `3` to'
-      h(3)='look at the database documentation.'
+      helptopic='dbm_select_category'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       write(head,'(a,a)') ' Db: ',dbmenu(idbh)
 
@@ -2456,7 +2468,9 @@ C Db documentation. Strip off initial ":" from the string before displaying.
           call edisp248(iuout,dbdoc(i),80)
  151    continue
       ELSEIF(ICO.EQ.(NCO-1))THEN
-        CALL PHELPD('category list',3,'-',0,0,IER)
+        helptopic='dbm_select_category'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('category list',nbhelp,'-',0,0,IER)
       ELSEIF(ICO.EQ.(NCO-2))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -2503,7 +2517,6 @@ C Itwhich is the index of the db item selected.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -2523,9 +2536,16 @@ C and current items then lengths of each list.
       character ittag*12,itmenu*32,dbnote*72,c8*8,outs*124,item*12
       DIMENSION PDBM(35),ipntrm(35)
 
-      character KEY*1,PDBM*34,head*42,h*72
+      character KEY*1,PDBM*34,head*42
       logical OK,dok
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='selitem'  ! set for subroutine
 
 C Assumes that the db file is open, get gendb6 via scandbhd and
 C then gather the catg documentation. 
@@ -2586,9 +2606,8 @@ C If a long list include page facility text.
       NITMS=NC+3
 
 C Help text for this menu.
-      h(1)='The category contents are shown in this menu for'
-      h(2)='selection purposes. The `3 Documentation` option'
-      h(3)='will display notes specific to this category.'
+      helptopic='dbm_category_contents'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the elements of the classification in a menu.
       INO=-4
@@ -2609,7 +2628,9 @@ C Help. Strip off the first char ":" from the string before displaying.
       elseif(INO.eq.NITMS-1)then
 
 C Help.
-        CALL PHELPD('category list',3,'-',0,0,IER)
+        helptopic='dbm_category_contents'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('category list',nbhelp,'-',0,0,IER)
         goto 40
       elseif(INO.eq.NITMS-2)then
 
@@ -2653,8 +2674,7 @@ C Note some editing variants may require EPMENSV/EPMENRC.
           db=dbtag(idbh)
           call edmat2(db,IFB,idbh,ic,iit,'H',ier)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return
@@ -2665,8 +2685,7 @@ C Note some editing variants may require EPMENSV/EPMENRC.
           db=dbtag(idbh)
           call edmat2(db,IFB,idbh,ic,iit,'H',ier)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return
@@ -2678,8 +2697,7 @@ C Note some editing variants may require EPMENSV/EPMENRC.
         elseif(dbtag(idbh)(1:8).eq.'acoustic')then
           call edacous(IFB,idbh,ic,iit,'H',IER)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return
@@ -2689,8 +2707,7 @@ C Note some editing variants may require EPMENSV/EPMENRC.
         elseif(dbtag(idbh)(1:12).eq.'colourimetry')then
           call edcolour(IFB,idbh,ic,iit,'H',IER)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return
@@ -2702,8 +2719,7 @@ C Note some editing variants may require EPMENSV/EPMENRC.
         elseif(dbtag(idbh)(1:9).eq.'envir_imp')then
           call epopenv(IFB,idbh,ic,iit,'H',IER)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return
@@ -2714,8 +2730,7 @@ C          call edenvci(IFB,idbh,ic,iit,'H',IER)
         elseif(dbtag(idbh)(1:9).eq.'transport')then
           call edtransp(IFB,idbh,ic,iit,'H',IER)
           dok=.true.
-          h(1)='Chance to correct selection errors. '
-          call askok(' ',' Use this item?',OK,dok,1)
+          call askok(' ',' Use this item?',OK,dok,nbhelp)
           if(OK)then
             itwhich=iit
             return

@@ -1,0 +1,415 @@
+
+     A tutorial for updating ESP-r contextual help code
+                       7 February 2011
+                       Dr. Jon W. Hand
+
+ESP-r has traditionally used compiled-in contextual help
+text for user dialogs. Although this code style (shown below)
+does provide internal documentation, it forces re-compilation
+of the module each time messages are updated and is inflexible.
+
+A typical standard help and dialog in esruclm/clm.F is shown below:
+      . . .
+      common/pophelp/h(60)
+      character h*72
+      . . .
+      ELSEIF(INO.EQ.12)THEN
+
+C Creation of climate file from manual editing.
+        H(1)='Keyboard entry allows data for each hour to be '
+        H(2)=' typed in for a given day.'
+        H(3) =' '
+        H(4)='Curve fitting can generate regular patterns of'
+        H(5)=' data (e.g. provide a maximum, minimum and a sinusoidal'
+        H(6)=' pattern is generated.'
+        H(7) =' '
+        H(8)='Transforms can change climate data by a fixed increment,'
+        H(9)=' make a fractional change or a polynomial based change'
+        H(10)=' or adjust wind speeds from particular directions.'
+        H(11)=' '
+        H(12)='Prediction is used for predicting radiation from site '
+        H(13)=' position '
+        IC=1
+        CALL EASKATOG(' Creation of data via: ',' ',
+     &    'keyboard entry','prediction','transforms','curve fitting',
+     &    'continue',' ',' ',IC,13)
+      . . .
+
+Subroutine calls such as easkatog(), easkabcd(), easki() etc. expect
+the common block pophelp to include relevant text so the H(1)='xx xx'
+lines precede the calls and (typically) the last parameter in the
+subroutine call is the number of help lines to display. In the case
+above this is 13. If the text is edited or new H()=' ' lines inserted 
+the numbering of the text array will need to be altered as well as the 
+parameter passed to the subroutine.
+
+Common pophelp is a fixed array size (60 lines of 72 characters)
+and pophelp must be included in each subroutine with a user dialog. The
+usual indentation in the source results in fewer than 72 characters being
+available for use in each message line.
+
+A revised scheme follows the following pattern:
+      . . .
+      program clm
+      . . .
+      helpinapp='clm'  ! set once for the application
+      helpinsub='clm'  ! set for MAIN
+      . . .
+      ELSEIF(INO.EQ.12)THEN
+
+C Creation of climate file from manual editing.
+        helptopic='clm_data_creation_opt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        IC=1
+        CALL EASKATOG(' Creation of data via: ',' ',
+     &    'keyboard entry','prediction','transforms','curve fitting',
+     &    'continue',' ',' ',IC,nbhelp)
+      . . .
+
+The actual help text is found in a file esruclm.help which is
+located in the src/tutorial folder and later installed in the
+esp-r/lib folder. The entry for the above topic is shown below:
+      . . .
+*item clm clm_data_creation_opt
+'Keyboard entry allows data for each hour to be '
+' typed in for a given day.'
+' '
+'Curve fitting can generate regular patterns of'
+' data (e.g. provide a maximum, minimum and a sinusoidal'
+' pattern is generated.'
+' '
+'Transforms can change climate data by a fixed increment,'
+' make a fractional change or a polynomial based change'
+' or adjust wind speeds from particular directions.'
+' '
+'Prediction is used for predicting radiation from site '
+' position '
+*enditem
+        CALL EASKATOG(' Creation of data via: ',' ',
+      . . .
+
+The text variable helpinapp is defined in espriou.h which
+is set once for each ESP-r module in the MAIN program
+file. In clm.F this looks like:
+      . . .
+#include "espriou.h"
+      . . .
+      cAppName = 'clm'
+      helpinapp='clm'  ! set once for the application
+      . . .
+
+For subroutines which include dialogs which need to access
+help text the pattern is described in the following section.
+
+The subroutine identifier is the variable helpinsub. In
+clm.F this is set in the MAIN as:
+      . . .
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      . . .
+      cAppName = 'clm'
+      helpinapp='clm'  ! set once for the application
+      helpinsub='clm'  ! set for MAIN
+      . . .
+
+For a standard subroutine this would look like:
+      SUBROUTINE RRITE
+      . . .
+C For help messages
+      character helpinsub*24,helptopic*24
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RRITE'  ! set for MAIN
+      . . .
+
+The subroutine gethelptext is current found in lib/esru_ask.F.
+When it is called it checks the common value of helpinapp
+to figure out what the name of the ASCII help file will be.
+It then scans the ASCII file until a matching subroutine name
+and topic are found. Note it is looking for exact matches
+in the name of the subroutine and in the phrase for helpinapp.
+It counts the number of lines of help text and returns this (so
+that the subsequent dialog knows how much text to display).  
+If no help text is found it makes up a standard message.
+
+Preparation for a user dialog follows the pattern of:
+        . . .
+        helptopic='clm_data_creation_opt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        . . .
+
+where the helpinapp is already in common and need not be passed
+to gethelptext. The two strings helpinsub and helptopic are
+defined prior to the gethelptext call and the integer
+variable nbhelp is returned as the number of help text lines
+associated with this subroutine and topic.  The nbhelp is
+then passed to easkatog or easki etc.
+
+The ASCII help file
+
+Each application will have a separate help text file. This reduces
+the time required for scanning and partitions the information.
+The tokens in a help text file are as follows:
+
+*help_text clm
+
+This is the first line where *help_text is the tag and it is followed
+by an indicator of the application it is associated with.
+
+Next there are *item lines as follows:
+
+*item MKBCLM confirm_marker_line
+
+where the first token *item is followed by a word and a phrase. The 
+first word is the name of the calling subroutine (or the name of 
+the MAIN) and this must exactly match the word passed from the
+calling code. Spaces are assumed to be separators between the
+*item and the word and the following phrase.
+
+The block of text takes the form of quoted strings. This allows
+for leading spaces or blank lines to be represented. The
+code reads lines until an *enditem line is reached.
+
+In the above example the initial source line of the subroutine
+that is using the help text is included after the *enditem.
+  . . .
+' '
+'Prediction is used for predicting radiation from site '
+' position '
+*enditem
+        CALL EASKATOG(' Creation of data via: ',' ',
+  . . .
+
+This is optional. It does help developers identify the relationship
+between the entries in the esru*.help file and the source code.
+
+
+How to prepare *.help files
+
+There is code for a utility application named scan_context.F
+which can extract contextual help from application source code
+and do most of the work of formatting the *.help file.  The
+code is found in the src/archive folder.  Compile this via
+commands such as:
+
+C To compile (use either f90 or gfortran):
+C f90 -c scan_context.F -g
+C f90 -o scan_context scan_context.o
+C gfortran -c scan_context.F -g
+C gfortran -o scan_context scan_context.o
+C gfortran-4.3 -c scan_context.F -g
+C gfortran-4.3 -o scan_context scan_context.o
+
+Preparation for use of scan_context would be to identify
+a source folder and use a cat command to gather all of
+the source code in the folder into a single file source.F for
+processing. source.F needs to be placed in the same location
+as scan_context. If we were going to process the module esrumrt
+the following sequence would be used:
+
+  cd esrumrt
+  make clean
+  cat *.F >all_source
+  mv all_source source.F
+  scan_context
+
+This would result in a source.FH file with contents like:
+
+*help_text
+*subroutine BOUND
+*subroutine BUBBLE
+*subroutine analytic
+*subroutine BUB
+*subroutine OBSTRT
+*subroutine checkrec
+*subroutine schryf
+*item espvwf
+*enditem
+      call askabout('vwf ',1)
+*item espvwf
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+*item espvwf
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+*item espvwf
+*enditem
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+*item espvwf
+*enditem
+        CALL EASKGEOF('Select a zone to assess:',CFGOK,IC,'-',IER)
+*item espvwf
+'Variable igfact represents the grid sub- '
+'division. Every surface is divided in '
+'igfact**2 sub-surfaces.  A bubble is placed '
+'at the centre of each sub-surface. '
+*enditem
+        CALL EASKI(IGFACT,' ',' New value ? ',
+*item espvwf
+*enditem
+        CALL EASKI(NP,' ',' New value ? ',
+*item espvwf
+'The view factor file contains viewfactors between'
+'each of the surfaces in a zone as well as MRT sensor'
+*enditem
+        CALL EASKS(LTMP,' Viewfactor & MRT file name ?',' ',
+*item espvwf
+*enditem
+        call askabout('vwf ',0)
+*item espvwf
+*enditem
+          CALL EASKABC('Problem reading existing viewfactor file :',
+*subroutine CALVF
+*item CALVF
+'Please review the results of the calculations. If all'
+'of the factors for each surface sum close to 1.0 then'
+'a yes is appropriate. '
+' '
+'If there are some surfaces with low or no viewfactors'
+'to other surfaces then you may need to increase the '
+'resolution of the grid. '
+*enditem
+      CALL ASKOK(' Ok to save these viewfactors?',' ',OK,dok,7)
+*subroutine imgdisp
+*subroutine FILEIN
+*subroutine ESMZON
+
+  . . .
+
+Post processing is required.  For example the initial line of
+source.FH does not have the second token.
+
+If you see lines like:
+  . . .
+*subroutine BOUND
+*subroutine BUBBLE
+*subroutine analytic
+*subroutine BUB
+*subroutine OBSTRT
+  . . .
+which have no *item lines this indicates that there is no help
+text in those subroutines The parser will skip past lines
+which start with *subroutine. You could remove such lines
+from the source.FH file.
+
+The next pattern is:
+ . . .
+*item espvwf
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+*item espvwf
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
+*item espvwf
+*enditem
+          CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+*item espvwf
+*enditem
+ . . .
+
+The same help text is being used by alternative calls to
+EASKF. You can edit out the duplication so that you have only:
+
+ . . .
+*item espvwf
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+ . . .
+
+The next thing to notice is that the *item lines only has
+the subroutine name but not the topic phrase.  Here is where
+you need to simultaneously edit the source code and the help
+text file. And, you need to define a unique (to this help 
+text file) phrase for the topic.  
+
+Lets say the code phrase will be: user_supplied_cfg_file so
+in the source code we have:
+        . . .
+      helpinapp='espvwf'  ! set once for the application
+      helpinsub='espvwf'  ! set for MAIN
+        . . .
+        helptopic='user_supplied_cfg_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        . . .
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+     &        'config file name',IER,nbhelp)
+        . . .
+
+and the entry in the help text file would become:
+ . . .
+*item espvwf user_supplied_cfg_file
+'The model configuration file holds the definition '
+'of the building/ plant to be simulated, including the'
+'names of all of the files required.'
+*enditem
+            CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
+ . . .
+
+Remember - this search for relevant help text blocks is dependent
+on exact matches with the subroutine name (2nd token) and the
+helptopic phrase (3rd token of the *item line).
+
+Once you have transformed the help messages in a source
+file (or several subroutines) test this by copying the *.help
+file to the esp-r/lib folder, recompile the application. Note
+you may have to update the source of subroutine gethelptext if
+you are working on a new application to set a folder name for the
+new application's help text file.
+
+If in doubt look at the patterns with the esruclm folder and the
+help file named esruclm.help
+
+
+Adapting existing help text messages
+
+Editing of the text within a esru*.help file for an
+existing topic can be done without having to recompile the
+application. Ensure that each context help line is single 
+quoted. The data structure is (currently) limited to
+60 lines of help text for a single topic and each
+quoted line must be less than 72 characters.
+
+Avoid the use of quote characters within the
+body of the help text. Non-printing characters should be
+avoided. The left single quote on each line should
+start at the left (no blanks before it). Checking spelling
+makes life easier for future users. 
+
+Current convention is to ensure that when you edit
+a esru*.help file you do this with an editor that can write
+Unix line endings. If you want others to benefit from
+your changes you should either use subversion to commit
+the changes or pass them on to one of the ESP-r developers
+so that they can include it in the archive.
+
+To test that the changes work, simply copy the
+esru*.help file to the esp-r/lib folder of the distribution 
+and re-start the application. For existing help topics
+you do NOT need to re-compile ESP-r.
+
+
+Adding or deleting topics
+
+If you want to add a topic both the code and the esru*.help file
+will need to be modified and ESP-r re-compiled. Follow the pattern
+outlined above and ensure that the key phrases are exactly
+matched.
+
+If you want to delete a topic first search for its key phrases
+to ensure that it is only referenced once. You will need to edit
+both the source code and the esru*.help file and re-compile.
+
+

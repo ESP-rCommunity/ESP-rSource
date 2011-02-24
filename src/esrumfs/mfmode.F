@@ -28,12 +28,18 @@ C     ICHNG=4  toggle the trace facility
       SUBROUTINE MFMODE(ICHNG)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
-      character outs*124,H*72
+      character outs*124
       logical OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFMODE' ! set for subroutine
 
       IF(ICHNG.LT.1.OR.ICHNG.GT.4) STOP ' MFMODE: unresolvable error !'
       IF(ICHNG.EQ.1) GOTO 10
@@ -42,8 +48,7 @@ C     ICHNG=4  toggle the trace facility
       IF(ICHNG.EQ.4) GOTO 90
 
 C Show and possibly reset iteration control parameters
-   10 CALL EPAGE
-      call edisp(iuout,
+   10 call edisp(iuout,
      &' There are a number of parameters which control')
       call edisp(iuout,
      &' the iterative fluid flows calculation process. They are:')
@@ -80,111 +85,92 @@ C Show and possibly reset iteration control parameters
 
 C Test if user wishes to reset any of these values.
       dok=.false.
-      h(1)='If after reviewing the current values you wish to change'
-      h(2)='any of them, respond with a yes. '
-      CALL ASKOK(' ','Reset any of these parameters?',OK,dok,2)
+      helptopic='mfs_reset_parameters'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ','Reset any of these parameters?',OK,dok,nbhelp)
       IF(.not.OK)GOTO 100
 
 C Reset MAXITF
    20 IV=1
       WRITE(outs,'(A,I5,A)') ' MAXITF [currently = ',MAXITF,' ] '
-      H(1)='This is the maximum number of iterations allowed '
-      H(2)='before solution fails. '
+      helptopic='mfs_max_iterations'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IV=MAXITF
       CALL EASKI(IV,outs,' MAXITF value?',
-     &  0,'F',1000,'W',0,'MAXITF ',IER,2)
+     &  0,'F',1000,'W',0,'MAXITF ',IER,nbhelp)
       IF(IER.NE.0) GOTO 20
       MAXITF=IV
 
 C Reset FERREL (%)
    30 WRITE(outs,'(A,F9.3,A)') ' FERREL [currently = ',FERREL*100.0,
      &                         ' %] '
-      H(1)='This is the percentage error allowed. '
+      helptopic='mfs_percentage_error'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       V=FERREL*100.
       CALL EASKR(V,outs,' FERREL value (%) ? ',
-     &  0.,'F',100.,'F',0.,'FERREL ',IER,1)
+     &  0.,'F',100.,'F',0.,'FERREL ',IER,nbhelp)
       IF(IER.NE.0) GOTO 30
       FERREL=V*.01
 
 C Reset FERMFL (kg/s)
    40 WRITE(outs,'(A,F9.5,A)') ' FERMFL [currently = ',FERMFL,' kg/s] '
-      H(1)='This value is the largest absolute residual flow '
-      H(2)='error which is allowed in any node.'
+      helptopic='mfs_residual_flow'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       V=FERMFL
       CALL EASKR(V,outs,' FERMFL value (kg/s) ? ',
-     &  0.,'F',1000.,'F',0.,'FERMFL ',IER,2)
+     &  0.,'F',1000.,'F',0.,'FERMFL ',IER,nbhelp)
       IF(IER.NE.0) GOTO 40
       FERMFL=V
 
 C Reset PMAX (Pa)
    50 WRITE(outs,'(A,F9.2,A)') ' PMAX [currently = ',PMAX,' Pa] '
-      H(1)='This value is.... '
+      helptopic='mfs_PMAX_value'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       V=PMAX
       CALL EASKR(V,outs,' PMAX value (Pa) ? ',
-     &  0.,'F',0.,'-',0.,'PMAX ',IER,1)
+     &  0.,'F',0.,'-',0.,'PMAX ',IER,nbhelp)
       IF(IER.NE.0) GOTO 50
       PMAX=V
 
 C Reset STEFFR
    60 WRITE(outs,'(A,F9.2,A)') ' STEFFR [currently = ',STEFFR,'] '
-      H(1)='This value is.... '
+      helptopic='mfs_STEFFR_value'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       V=STEFFR
       CALL EASKR(V,outs,' STEFFR: ',
-     &  0.,'-',0.,'-',0.,'STEFFR',IER,1)
+     &  0.,'-',0.,'-',0.,'STEFFR',IER,nbhelp)
       IF(IER.NE.0) GOTO 60
       STEFFR=V
       GOTO 100
 
 C Test if user wishes to use a different stack pressure calculation model
-   70 CALL EPAGE
-      call edisp(iuout,' ')
-      call edisp(iuout,' Stack pressure effect calculation options:')
-      call edisp(iuout,'   1: fluid density of node which is sending ')
-      call edisp(iuout,'      according to most recently computed flow')
-      call edisp(iuout,'      direction')
-      call edisp(iuout,'   2: average fluid density of connected nodes')
-      call edisp(iuout,' ')
-      WRITE(outs,'(A,I1,A)')' IPSMOD value [currently = ',IPSMOD,'] '
+   70 WRITE(outs,'(A,I1,A)')' IPSMOD value [currently = ',IPSMOD,'] '
       IV=IPSMOD
+      helptopic='mfs_IPSMOD_value'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IV,outs,' Stack pressure method: ',
-     &        1,'F',2,'F',-1,'stack pressure type',IER,0)
+     &        1,'F',2,'F',-1,'stack pressure type',IER,nbhelp)
       IF(IER.NE.0) GOTO 70
       IPSMOD=IV
       GOTO 100
 
 C Test if user wishes to alter the matrix solver
-   80 CALL EPAGE
-      call edisp(iuout,' ')
-      call edisp(iuout,' Currently supported matrix solver options:')
-      call edisp(iuout,'  1: Gaussian elimination with backsubsti-')
-      call edisp(iuout,'     tution and no pivoting')
-      call edisp(iuout,'  2: LU decomposition with implicit pivoting')
-      call edisp(iuout,'     (Crout)')
-      call edisp(iuout,' ')
-      WRITE(outs,'(A,I2,A)')' MSLVTP value [currently = ',MSLVTP,'] '
+   80 WRITE(outs,'(A,I2,A)')' MSLVTP value [currently = ',MSLVTP,'] '
       IV=MSLVTP
+      helptopic='mfs_solver_type'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IV,outs,' Solver type: ',
-     &        1,'F',2,'F',-1,'solver type',IER,0)
+     &        1,'F',2,'F',-1,'solver type',IER,nbhelp)
       IF(IER.NE.0) GOTO 80
       MSLVTP=IV
       GOTO 100
 
 C Test if user wishes to reset trace facility
-   90 CALL EPAGE
-      call edisp(iuout,' ')
-      call edisp(iuout,' Currently supported trace output options are:')
-      call edisp(iuout,'  -1: no trace output at (for use with bps) ')
-      call edisp(iuout,'   0: no trace, only indicate no of iterations')
-      call edisp(iuout,'   1: pressure, residual & relative error at ')
-      call edisp(iuout,'      worst (relative) node')
-      call edisp(iuout,'   2: as 1 + pressure & residual at all nodes ')
-      call edisp(iuout,'           + pointer(s) at worst relative and ')
-      call edisp(iuout,'             absolute node(s)')
-      call edisp(iuout,'   3: as 2 + network matrix solving info')
-      call edisp(iuout,' ')
-      WRITE(outs,'(A,I2,A)') ' MFTRAC value [currently =',MFTRAC,'] '
+   90 WRITE(outs,'(A,I2,A)') ' MFTRAC value [currently =',MFTRAC,'] '
+      helptopic='mfs_trace_mode'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IV=MFTRAC
-      CALL EASKI(IV,outs,' Trace option: ',
+      CALL EASKI(IV,outs,' Trace option (see help): ',
      &        -1,'F',3,'F',-1,'trace option',IER,0)
       IF(IER.NE.0) GOTO 90
       MFTRAC=IV

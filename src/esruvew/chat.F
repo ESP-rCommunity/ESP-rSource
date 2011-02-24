@@ -21,7 +21,6 @@ C and says 'viewer bye-bye', and does a stop.
       COMMON/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/pophelp/h(60)
 
 C Redirected text/graphics parameters.
       COMMON/exporttg/xfile,tg,delim
@@ -29,7 +28,7 @@ C Redirected text/graphics parameters.
       CHARACTER NAMDS*30,NAMPIC*40
       character*12 M(23)
       character*5 XEQ,YEQ,ZEQ
-      character wins*20,outs*124,H*72,hold*36
+      character wins*20,outs*124,hold*36
       character xfile*144,tg*1,delim*1
       logical close,OK
       integer IW  ! for radio button
@@ -40,6 +39,13 @@ C Redirected text/graphics parameters.
 #else
       integer*8 igwid,igheight  ! for use with axiscale
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='CHAT'  ! set for subroutine
 
 C MENU OF COMMANDS
       DATA XEQ,YEQ,ZEQ/'X=   ','Y=   ','Z=   '/
@@ -206,9 +212,10 @@ C BYEBYE, CLOSE DOWN PLOTTER IF USED, AND EXIT
 
 C----------------------------------------------------
 C LENSFL
-41    H(1)=' Focus length in mm.'
+41    helptopic='viewer_focus_length'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(FL,' ','F(MM) ? ',
-     &            0.,'F',0.,'-',50.0,'F (mm)',IER,1)
+     &  0.,'F',0.,'-',50.0,'F (mm)',IER,nbhelp)
       SYNVKL=0.
 C SET PICTURE NAME
       CALL SETNAM
@@ -216,9 +223,10 @@ C SET PICTURE NAME
 
 C----------------------------------------------------
 C *ENLRG
-42    H(1)=' Enlargement factor (100 is normal size)'
+42    helptopic='enlargement_factor'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(EF,' ',' Enlargement factor (%) ? ',
-     &            0.,'F',0.,'-',50.0,'enlargement',IER,1)
+     &  0.,'F',0.,'-',50.0,'enlargement',IER,nbhelp)
 
 C HAVE SUCCESSFULLY GOT IN  ENLARGEMENT FACTOR
 C SET PHOTOMONTAGE MODE
@@ -230,10 +238,10 @@ C SET PICTURE NAME
 
 C----------------------------------------------------
 C ANGLEV, READ VIEWCONE ANGLE AND SET VIEWCONE MODE
-43    H(1)=' Viewcone angle is in degrees (1-175)'
-      H(2)=' 0=Photomontage -1=full picture.'
+43    helptopic='viewer_cone_angle'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(X,' ',' Viewcone angle ? ',
-     &           -1.,'F',175.,'F',40.0,'viewcone',IER,2)
+     &  -1.,'F',175.,'F',40.0,'viewcone',IER,nbhelp)
 
       call eclose(X,0.0,0.001,close)
       IF(close)GOTO 43
@@ -303,9 +311,10 @@ C INPALL
 
  471  CONTINUE
       WRITE(HOLD,'(3f9.3)')DDDD(1),DDDD(2),DDDD(3)
-      H(1)=' Eyepoint is in metres.'
+      helptopic='viewer_eyepoint'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(HOLD,' Eyepoint X, Y, Z (metres): ',
-     &    ' ',36,' -100. -100. 100. ','eyepoint',IER,1)
+     &    ' ',36,' -100. -100. 100. ','eyepoint',IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,DDDD(1),0.,0.,'-','eye x',IER)
       CALL EGETWR(HOLD,K,DDDD(2),0.,0.,'-','eye y',IER)
@@ -313,11 +322,11 @@ C INPALL
       if(ier.ne.0)goto 471
 
  472  CONTINUE
-      H(1)=' Focuspoint is in metres.'
+      helptopic='viewer_focuspoint'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       WRITE(HOLD,'(3f9.3)')CCCC(1),CCCC(2),CCCC(3)
-      H(1)=' Eyepoint is in metres.'
       CALL EASKS(HOLD,' Focus point X, Y, Z (metres): ',
-     &    ' ',36,' 1. 1. 1. ','focus point',IER,1)
+     &  ' ',36,' 1. 1. 1. ','focus point',IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,CCCC(1),0.,0.,'-','foc x',IER)
       CALL EGETWR(HOLD,K,CCCC(2),0.,0.,'-','foc y',IER)
@@ -325,10 +334,11 @@ C INPALL
       if(ier.ne.0)goto 472
 
  473  CONTINUE
-      H(1)=' Midpoint is in metres.'
+      helptopic='viewer_midpoint'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       WRITE(HOLD,'(3f9.3)')BBBB(1),BBBB(2),BBBB(3)
       CALL EASKS(HOLD,' Midpoint X, Y, Z (metres): ',
-     &    ' ',36,' 1. 1. 1. ','mid point',IER,1)
+     &  ' ',36,' 1. 1. 1. ','mid point',IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,BBBB(1),0.,0.,'-','mid x',IER)
       CALL EGETWR(HOLD,K,BBBB(2),0.,0.,'-','mid y',IER)
@@ -336,19 +346,19 @@ C INPALL
       if(ier.ne.0)goto 473
 
 C << variable ?? >>
-      H(1)=' You must choose one of the options.'
-      CALL EASKABC('Hidden lines:',' ','omit','dash','draw',IW,1)
+      helptopic='viewer_hidden_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKABC('Hidden lines:',' ','omit','dash','draw',IW,nbhelp)
       ntrat=IW-1
 
-      H(1)=' You must choose one of the options.'
       CALL EASKABCD('Projection:',' ','orthogonal','perspective',
-     &              'pa.hor','pa.vert',NTRAT,1)
+     &   'pa.hor','pa.vert',NTRAT,nbhelp)
 
  476  CONTINUE
-      H(1)=' Viewcone angle is in degrees (1-175)'
-      H(2)=' 0=Photomontage -1=full picture.'
+      helptopic='viewer_viewcone_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(SYNVKL,' ',' Viewcone angle ? ',
-     &           -1.,'F',175.,'F',40.0,'viewcone',IER,2)
+     &  -1.,'F',175.,'F',40.0,'viewcone',IER,nbhelp)
       WRITE(IUOUT,*) 'Viewcone angle (deg)(0=Photomontage) ?>'
       if(ier.ne.0)goto 476
       IF(SYNVKL.LT.0.)SYNVKL=-90.
@@ -358,12 +368,12 @@ C IF=0. THEN PHOTOMONTAGE MODE
       GOTO  477
 
 C PHOTOMONTAGE MODE:ASK FOR FL & ELNARGE
- 477  H(1)=' Focus length in mm.'
+ 477  helptopic='viewer_focal_length'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(FL,' ','F(MM) ? ',
-     &            0.,'F',0.,'-',50.0,'F (mm)',IER,1)
-      H(1)=' Enlargement factor....'
+     &            0.,'F',0.,'-',50.0,'F (mm)',IER,nbhelp)
       CALL EASKR(EF,' ',' Enlargement factor ? ',
-     &            0.,'F',0.,'-',50.0,'enlargement',IER,1)
+     &            0.,'F',0.,'-',50.0,'enlargement',IER,nbhelp)
       if(ier.ne.0)goto 477
       GOTO  478
 
@@ -433,9 +443,10 @@ C INPUT NUMERICAL VALUES
       IF(IPT.EQ.1)WRITE(HOLD,'(3f9.3)')DDDD(1),DDDD(2),DDDD(3)
       IF(IPT.EQ.2)WRITE(HOLD,'(3f9.3)')CCCC(1),CCCC(2),CCCC(3)
       IF(IPT.EQ.3)WRITE(HOLD,'(3f9.3)')BBBB(1),BBBB(2),BBBB(3)
-      H(1)=' Coordinates are in metres.'
+      helptopic='viewer_coordinates'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(HOLD,' Point X, Y, Z (metres): ',
-     &    ' ',36,' -100. -100. 100. ','eyepoint',IER,1)
+     &  ' ',36,' -100. -100. 100. ','eyepoint',IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,X,0.,0.,'-','point x',IER)
       CALL EGETWR(HOLD,K,Y,0.,0.,'-','point y',IER)
@@ -452,15 +463,18 @@ C----------------------------------------------------
 C NEW INPUT FILE
 C CALL INPUT AND THEN REINITIALISE
 C ALLOW ADD OF MORE GEOMETRY DATA WITHOUT INITIALISE
- 993  H(1)=' You must choose one of the options.'
+ 993  helptopic='vew_initialise_replace'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC('options:',' ','Initialise/replace',
-     &      'Add new file to','Subtract from existing data',IW,1)
+     &  'Add new file to','Subtract from existing data',IW,nbhelp)
       init=IW-1
       IF(INIT.EQ.0 .OR. INIT.EQ.1)THEN
            CALL INPUT(INIT)
       ELSE IF (INIT.EQ.2)THEN
+        helptopic='viewer_delete_after'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NBNEW,' ',' Delete data after body no.?',
-     &     0,'F',2,'F',0,'delete after',IER,1)
+     &     0,'F',2,'F',0,'delete after',IER,nbhelp)
         NB=NBNEW
         NP=IBP2(NBNEW)
         NF=IBF2(NBNEW)
@@ -473,16 +487,11 @@ C ALLOW ADD OF MORE GEOMETRY DATA WITHOUT INITIALISE
 C----------------------------------------------------
 C DEFAULT VIEW SETTING
   70  CONTINUE
-      h(1)='Available views: '
-      h(2)='  perspective (=initial view) '
-      h(3)='  plan view'
-      h(4)='  isometric (axonometric 45/45)'
-      h(5)='  elevation (N,S,E,W) '
-      h(6)='  cavalier (plan oblique 45/45)'
-      h(7)='  sun view (at a specific date & time'
+      helptopic='viewer_available_views'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IW=1
       call easkatog('Default views:',' ','perspec','plan','isometric',
-     &              'elev.','cavalier','sun',' ',IW,7)
+     &              'elev.','cavalier','sun',' ',IW,nbhelp)
       call usrmsg(' ',' ','-')
       IDV=IW
 
@@ -529,9 +538,10 @@ C EYEPT ABOVE
       DDDD(3)=BBBB(3)+10.*XYZMX
  
 C WHICH QUADRANT
-      H(1)='Standard quadrants are in terms of axis values.'
+      helptopic='viewer_quadrant_views'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('quadrant:',' ','+X+Y+Z',
-     &      '-X+Y+Z','-X-Y+Z','+X-Y+Z',IQUAD,1)
+     &      '-X+Y+Z','-X-Y+Z','+X-Y+Z',IQUAD,nbhelp)
       GOTO  (734,735,736,737),IQUAD
  734  GOTO  738
  
@@ -563,10 +573,11 @@ C ADJUST EYEP SLIGHTLY
       DDDD(3)=1.001*BBBB(3)
  
 C FIND WHICH ELEVATION
-      H(1)='Standard elevations are from cardinal directions.'
+      helptopic='viewer_standard_views'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ielev=3
       CALL EASKABCD('elevation:',' ','north',
-     &      'east','south','west',IELEV,1)
+     &      'east','south','west',IELEV,nbhelp)
 
       GOTO  (744,745,746,747),IELEV
 
@@ -599,10 +610,11 @@ C EYEPT 45 DEG TO EACH AXIS
       DDDD(3)=BBBB(3)+10.*XYZMX
 
 C WHICH QUADRANT
-      H(1)='Standard quadrants are in terms of axis values.'
+      helptopic='viewer_quadrant_views'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       iquad=3
       CALL EASKABCD('quadrant:',' ','+X+Y+Z',
-     &      '-X+Y+Z','-X-Y+Z','+X-Y+Z',IQUAD,1)
+     &      '-X+Y+Z','-X-Y+Z','+X-Y+Z',IQUAD,nbhelp)
 
       GOTO  (754,755,756,757),IQUAD
 
@@ -630,19 +642,19 @@ C   FOR PARALLEL PROJECTION (ORTHOG)
 C NO ANGLE
       SYNVKL=-90.
 
-      H(1)='nothing '
+      helptopic='viewer_sun_views'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(ANORTH,' ',
-     & ' North angle (deg. clockwise from Y-axis) ? ',-360.,
-     &             'F',360.,'F',0.0,'north angle',IER,1)
+     &  ' North angle (deg. clockwise from Y-axis) ? ',-360.,
+     &  'F',360.,'F',0.0,'north angle',IER,nbhelp)
       CALL EASKR(SLAT,' ',' Site latitude ? ',-89.,
-     &             'F',89.,'F',0.0,'latitude',IER,1)
+     &  'F',89.,'F',0.0,'latitude',IER,nbhelp)
       CALL EASKR(SLONG,' ',' longitude difference ? ',-15.,
-     &             'F',15.,'F',0.0,'ongitude diff',IER,1)
+     &  'F',15.,'F',0.0,'ongitude diff',IER,nbhelp)
       WRITE(IUOUT,*) 'North angle (deg. clockwise from Y-axis?>'
-      H(1)='nothing '
       WINS=' 12  1   1 '
       CALL EASKS(WINS,' ',' Hour Day Month:',
-     &      20,'12  1  1','hr day mth',IER,1)
+     &  20,'12  1  1','hr day mth',IER,nbhelp)
       K=0
       CALL EGETWI(WINS,K,IHR,0,0,'-','hour',IER)
       CALL EGETWI(WINS,K,IDAY,0,0,'-','day',IER)

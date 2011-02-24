@@ -66,7 +66,6 @@ C
 
       COMMON/ICONDBNAM/ICONDBFL
       COMMON/FILEP/IFIL
-      COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
@@ -80,7 +79,7 @@ C
      &  dgatrib(MNWKTYP,MIATRB,3),dgmenuatr(MNWKTYP,MIATRB)
 
       CHARACTER OUTSTR*124,outs*124,WORD*24,WORD1*24,WORD2*24,PHRASE*48
-      CHARACTER ICONDBFL*72,ltmp*72,h*72,DFILE*72
+      CHARACTER ICONDBFL*72,ltmp*72,DFILE*72
       character cattag*12,catmenu*32
       character icontag*12,iconmenu*40
       character dtagatr*12,dmenuatr*32,datrib*12
@@ -88,6 +87,13 @@ C
       character*72 DFCFD,DECMPDBFL,DICONDBFL
 
       LOGICAL OK,DOK,CONT
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='scanicondb'  ! set for subroutine
 
       IER=0
       ltmp='  '
@@ -104,10 +110,11 @@ C Hard coded default data base at the moment, later add to default data
 C base list.
         ICONDBFL=DICONDBFL
         DFILE=DICONDBFL
-        h(1)='<< help to be added >>  '
+        helptopic='scan_of_icon_db'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=ICONDBFL
         CALL EASKS(ltmp,'icon database filename ?',
-     &     ' ',72,DFILE,'ecomp dbnam',IER,1)
+     &     ' ',72,DFILE,'ecomp dbnam',IER,nbhelp)
         if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN') ICONDBFL=ltmp
       ENDIF
 
@@ -115,16 +122,10 @@ C base list.
       CALL EFOPSEQ(ICONFIL,ICONDBFL,1,IER)
       IF(IER.NE.0) THEN
         dok=.false.
-        h(1)='Icons for this application are held in a file which is'
-        h(2)='typically /usr/esru/esp-r/databases/flow_icons.db1 for'
-        h(3)='flow networks and /usr/esru/esp-r/databases/icons.db1'
-        h(4)='for other networks. '
-        h(5)=' '
-        h(6)='The the folder /usr/esru/esp-r/databases '
-        h(7)=' '
-        h(8)='A no will set this file name to UNKNOWN. '
+        helptopic='scan_of_icon_db'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('could not find the icon database.','Try again?',
-     &    OK,dok,8)
+     &    OK,dok,nbhelp)
         IF(.NOT.OK) THEN 
           IER=1
           CALL ERPFREE(ICONFIL,ISTAT)

@@ -30,7 +30,6 @@ C 'PCPUT' is called to add it to the datatbase.
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -43,26 +42,28 @@ C 'PCPUT' is called to add it to the datatbase.
      &              adodsc(mxaout),noutyp(mxaout)
 
       character dtdesc*68,adodsc*30,PZDESC*25 
-      character LTMP*72,ltmpg*72,buffer*90,H*72
+      character LTMP*72,ltmpg*72,buffer*90
       LOGICAL OK,dok
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCENTR' ! set for subroutine
+
 C Build menu items.
- 100  h(1)='The input file should be identical in format to that  '
-      h(2)='exported from pdb.'
+ 100  helptopic='pdb_input_file_choices'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('Read component data:',' ','from file',
-     &  'from user dialogue','from file to generic','continue',irt,2)
+     &  'from user dialogue','from file to generic','continue',irt,
+     &  nbhelp)
       if(irt.eq.1.or.irt.eq.3)then
 
 C Read from file, get filename
-        h(1)='The ACII file holds plant component entries.'
-        h(2)='If found, components data is read in and inserted'
-        h(3)='in plant component database.'
-        h(4)=' '
-        h(5)='Note that the format of components data description'
-        h(6)='is identical to that obtained from ESRUpdb (list).'
         ltmp=' '
   205   CALL EASKS(LTMP,' ASCII file name? ',' ',72,' ',
-     &    'ASCII file',IER,6)
+     &    'ASCII file',IER,nbhelp)
 
         IUFIL = IFIL+1
         CALL FPOPEN (IUFIL,ISTAT,1,1,LTMP)
@@ -115,8 +116,9 @@ C Read component data from user.
 C Check if user accepts data.
         CALL PCWRT (IUOUT)
         dok=.true.
-        h(1)='Pause to review data. No returns to editing.'
-        CALL ASKOK(' ',' Is this OK? ',OK,dok,1)
+        helptopic='pdb_input_review_pause'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ',' Is this OK? ',OK,dok,nbhelp)
         IF(OK)GOTO 330
 
 C Changes required, so call 'PCEDIT'

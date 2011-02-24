@@ -78,6 +78,8 @@ C INITIALISE PARAMETERS FOR WHOLE PERIOD.
       XMINI=1E+10
       XMEANI=0
       HRTOT=0.
+      KTMN=0
+      KTMX=0
 
 C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
       MTH1=IM1
@@ -200,7 +202,7 @@ C REINITIALISE.
 C WRITE OUT EACH DAY.
         XMEAN=XMEANJ/DAYL
         WRITE(outs,100)IDD,IMM,JS,JF,XMINJ,JTMN,XMAXJ,JTMX,XMEAN
- 100  FORMAT(1H ,I2,',',I2,1X,I2,'-',I2,F8.1,' @',I2,'h00   ',F12.1,' @'
+ 100  FORMAT(I3,',',I2,1X,I2,'-',I2,F8.1,' @',I2,'h00   ',F12.1,' @'
      &,I2,'h00     ',F10.1)
         if(act.eq.'-'.or.act.eq.'D'.or.act.eq.'d')then
           call edisp(itru,outs)
@@ -330,6 +332,8 @@ C INITIALISE PARAMETERS FOR WHOLE PERIOD.
       XMINI=1E+10
       XMEANI=0
       HRTOT=0.
+      KTMN=0
+      KTMX=0
 
 C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
       XMAXM=-1E10

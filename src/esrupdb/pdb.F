@@ -35,9 +35,6 @@ C The database holds the data needed by ESRUbps to
 C allow simulation of plant operation.
 C Facilities are provided to enter, list, edit and
 C delete component descriptions.
-C The routine PCHELP contains a description of a 
-C database entry.
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -72,7 +69,7 @@ C Name of current application
 
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(9)*26 
-      CHARACTER PZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
+      CHARACTER PZDESC*25,LTMP*72,cdesc*80,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
@@ -82,6 +79,12 @@ C Name of current application
       integer ier
       integer NITEMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialise output device, assume minimal trace, and a smallish
 C display.  If passed zero size and offsets use default, if size
 C is <200 then take % of default, otherwise use passed width.
@@ -89,6 +92,8 @@ C If left & top offsets are 0 then use defaults.
       call ezero
       call curmodule('pdb ')
       cAppName = 'pdb'
+      helpinapp='pdb'  ! set once for the application
+      helpinsub='pdb'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -202,13 +207,8 @@ C Take command line file name as initial file.
       endif
 
 C Initialize plant component database file.
-  100 h(1)='The plant component database binary file holds the'
-      h(2)='description of available components. If the name'
-      h(3)='given matches an existing file, it will be read in'
-      h(4)='and the components data will be available for'
-      h(5)='listing and editing. If there is no such file then'
-      h(6)='a new one will be created to hold data for new'
-      h(7)='components.'
+  100 helptopic='pdb_file_name_select'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       L144=LCMDFL
       llt=lnblnk(L144)
 
@@ -219,20 +219,20 @@ C name with the full path.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
           CALL EASKF(L144,'Plant component database file name? ',' ',
-     &      96,DPCDB,' Database name ',IER,7)
+     &      96,DPCDB,' Database name ',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
           CALL EASKF(L144,'Plant component database file name? ',' ',
-     &      124,DPCDB,' Database name ',IER,7)
+     &      124,DPCDB,' Database name ',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
           CALL EASKF(L144,'Plant component database file name? ',' ',
-     &      144,DPCDB,' Database name ',IER,7)
+     &      144,DPCDB,' Database name ',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
         CALL EASKF(L144,'Plant component database file name? ',' ',
-     &    144,DPCDB,' Database name ',IER,7)
+     &    144,DPCDB,' Database name ',IER,nbhelp)
       else
         CALL EASKF(L144,'Plant component database file name? ',' ',
-     &    96,DPCDB,' Database name ',IER,7)
+     &    96,DPCDB,' Database name ',IER,nbhelp)
       endif
 
       if(L144(1:2).ne.'  ')LCMDFL=L144
@@ -315,16 +315,10 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
      &       (ino.eq.4.or.ino.eq.5.or.ino.eq.6)) then
 
 C Display warning message.
-        h(1) ='**WARNING**: In order to modify plant data base,'
-        h(2) ='you must have write permission.'
-        h(3) ='This means that if your data base file is '
-        h(4) ='linked, then you must have write permission '
-        h(5) ='to the file it is linked to.'
-        h(6) ='Otherwise you need to copy plant '
-        h(7) ='data base to your home folder before you'
-        h(8) ='can modify it.'
+        helptopic='pdb_modification_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK(' ',' Continue ?',OK,dok,8)
+        CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
         IF(.NOT.OK) then
           goto 210
         else
@@ -360,8 +354,8 @@ C Describe components and menu structure.
 
 C Error handling.
   1   dok=.true.
-      h(1)='Pdb is confused, it could not scan the database. This'
-      h(2)='is an option to exit the application. '
+      helptopic='pdb_confusion_warning'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)') 'Error in pdb main database scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(ok)then
@@ -383,7 +377,6 @@ C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
 #include "plantdb.h"
-      common/pophelp/h(60)
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -391,8 +384,16 @@ C 'ix'          : returns number of selections made.
       common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       DIMENSION comp(MAXPC), ival(inpc)
-      CHARACTER comp*80,cdesc*80,outs*124,h*72
+      CHARACTER comp*80,cdesc*80,outs*124
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='list'  ! set for MAIN
 
 C Write description of each component in string array.
       DO 10 L=1,inpc
@@ -412,8 +413,8 @@ C Now display the menu.
       return
 
   1   dok=.true.
-      h(1)='Pdb is confused, it could not scan the database. This'
-      h(2)='is an option to exit the application. '
+      helptopic='pdb_could_not_scan'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)') 'Error in pdb list database scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then

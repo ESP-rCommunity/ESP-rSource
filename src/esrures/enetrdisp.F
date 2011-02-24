@@ -970,14 +970,19 @@ C  ***********************************************************************
       COMMON/ERECOVL/EVLABS(MERAWD),EVLABU(MERAWD)
       COMMON/ERECOV/NVAL1,NVAL2,EVAL1(MERAWD),EVAL2(MERAWD)
 
-      COMMON/POPHELP/H(60)
-
       INTEGER EFILT
 
-      CHARACTER H*72,ELEND*5,VERT*30,HEAD*30,SLOUT*22,EVLABS*16,
+      CHARACTER ELEND*5,VERT*30,HEAD*30,SLOUT*22,EVLABS*16,
      &EVLABU*4,KEY*1
       DIMENSION VERT(MERAWD)
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ENRFILT'  ! set for subroutine
 
 C Ensure that the selected data information is avalaible
       II=1
@@ -1033,10 +1038,8 @@ C Add the control data to the menu.
       IVERT=-4
 
 C Help text for menu.
-      H(1)='Clicking on a data entity shown on this menu will'
-      H(2)='toggle it to "ON" or "OFF". In the "ON" state the'
-      H(3)='entity will be shown on the graph. In the "OFF" '
-      H(4)='the entity is not graphed.'
+      helptopic='res_data_entry_onoff'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(HEAD,VERT,MVERT,IVERT)
       IF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1)) THEN
@@ -1051,7 +1054,9 @@ C Help text for menu.
       ELSEIF(IVERT.EQ.MVERT)THEN
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN
-        CALL PHELPD(HEAD,4,'-',0,0,IER)    
+        helptopic='res_data_entry_onoff'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD(HEAD,nbhelp,'-',0,0,IER)    
         IVERT=-1  
         GOTO 3 
       ELSE

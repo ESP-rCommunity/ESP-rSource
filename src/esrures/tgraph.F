@@ -37,7 +37,6 @@ C user's manual.
       SUBROUTINE MOGRAF
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -47,8 +46,15 @@ C user's manual.
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(13)
-      character outs*124,h*72,LAPROB*72
+      character outs*124,LAPROB*72
       integer NITMS,INO ! max items and current menu item 
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOGRAF'  ! set for subroutine
 
 C Setup menu text.
       ITEM(1) ='2 Select result set   '
@@ -69,15 +75,9 @@ C Graphical display possible.
     2 NITMS=13
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='Graphing facilities for performance data include: '
-      H(2)=' '
-      H(3)=' Time:var graph -> performance data vs time.'
-      H(4)=' Intra-fabric   -> condensation, temps in wall etc.'
-      H(5)=' 3D profile     -> data plotted as time-of-day vs day.'
-      H(6)=' Frequency histogram -> data as bar graphs.'
-      H(7)=' Var:Var graph  -> performance data vs data.'
-      H(8)=' Network flow   -> flow data vs time.'
+C Instanciate help strings for the menu.
+      helptopic='res_graphs_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
     5 CALL EMENU('Graph facilities',ITEM,NITMS,INO)
 
@@ -147,7 +147,9 @@ C Network flow graphic output. Find and open the network flow description.
         MENUTYPE=3
         call MFOUTP('-')
       ELSEIF(INO.EQ.12)THEN
-        CALL PHELPD('graphing',8,'-',0,0,IER)
+        helptopic='res_graphs_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('graphing',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.13)THEN
         RETURN
       ENDIF
@@ -822,35 +824,37 @@ C ****************************************************
               SUBROUTINE MOCOPT
               
       COMMON/OUTIN/IUOUT,IUIN              
-      common/pophelp/h(60)
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
       COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,OK,dok
-      character h*72
-      
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOCOPT'  ! set for subroutine
+ 
 C Debug.
 C      write(6,*) ' Entering MOCOPT'
 
       CALL EDISP(IUOUT,' ') 
-      h(1)='One or more of the following control parameters'     
-      h(2)='may plotted with the control point temperature:'     
-      h(3)='  - Error '     
-      h(4)='  - Set-point'     
-      h(5)='  - Throttling range.'     
+      helptopic='res_control_point_t'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.false.
-      CALL ASKOK(' ',' Plot control error?',OK,dok,5)
+      CALL ASKOK(' ','Plot control error?',OK,dok,nbhelp)
       IF(OK)ERPLOT=.TRUE.
       dok=.false.
-      CALL ASKOK(' ',' Plot control set-point?',OK,dok,5)
+      CALL ASKOK(' ','Plot control set-point?',OK,dok,nbhelp)
       IF(OK)SPPLOT=.TRUE. 
       dok=.false.
-      CALL ASKOK(' ',' Plot throttling range?',OK,dok,5)
+      CALL ASKOK(' ','Plot throttling range?',OK,dok,nbhelp)
       IF(OK)TRPLOT=.TRUE.
       dok=.true.
-      CALL ASKOK(' ',' Plot plant loop(s)? ',OK,dok,5)
+      CALL ASKOK(' ','Plot plant loop(s)? ',OK,dok,nbhelp)
       IF(OK)THEN
-10      CALL EASKI(iloop,' ',' Which plant control loop? ',
-     &             1,'F',20,'F',1,'plant loop',IER,0)
+10      CALL EASKI(iloop,' ','Which plant control loop? ',
+     &    1,'F',20,'F',1,'plant loop',IER,nbhelp)
         IF(IER.NE.0)goto 10
       ENDIF
 

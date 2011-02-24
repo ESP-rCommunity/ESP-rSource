@@ -537,11 +537,11 @@ C massless nodes.
       WRITE(ICNC,REC=IR,ERR=3)ND1,DIST,AREC,CNDCL,ITYP,IZ,N2
 
 C Connections with the two srf-edg connections.
-      ISE1=ISEFNE(IEG,IS1)
+      ISE1=ISEFNE(IEG,IS1) ! find index srf-edge connection surface
       IF(INDXSE(ISE1).EQ.3)THEN
         CALL CNCISE(IZ,ISE1,Y2/2.,X2/2.,Z2/2.,CNDCL,0.,X2,0.,Z2)
       ENDIF
-      ISE2=ISEFNE(IEG,IS2)
+      ISE2=ISEFNE(IEG,IS2) ! find index srf-edge connection surface
       IF(INDXSE(ISE2).EQ.3)THEN
         CALL CNCISE(IZ,ISE2,X2/2.,Y2/2.,Z2/2.,CNDCL,0.,Y2,0.,Z2)
       ENDIF
@@ -686,7 +686,7 @@ C Create the three adjacent massless nodes.
 C Connect the ordinary node with it's adjacent nodes.
 C LEFT.
         IF(IX.EQ.1)THEN
-          ISE2=ISEFNE(IEG,IS2)
+          ISE2=ISEFNE(IEG,IS2) ! find index srf-edge connection surface
           IF(INDXSE(ISE2).EQ.3)THEN
               CALL CNCISE(IZ,ISE2,GLBX,GLBY,GLBZ,CND,Y1,Y2,Z1,Z2)
           ENDIF
@@ -700,7 +700,7 @@ C LEFT.
 
 C BEHIND.
         IF(IY.EQ.1)THEN
-          ISE1=ISEFNE(IEG,IS1)
+          ISE1=ISEFNE(IEG,IS1) ! find index srf-edge connection surface
           IF(INDXSE(ISE1).EQ.3)THEN
               CALL CNCISE(IZ,ISE1,GLBX,GLBY,GLBZ,CND,X1,X2,Z1,Z2)
           ENDIF

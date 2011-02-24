@@ -40,7 +40,6 @@ C Boston, MA 02111-1307 USA.
       common/FILEP/IFIL
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
@@ -62,7 +61,7 @@ C Name of current application
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
-      character LCMDFL*144,inf*144,H*72,mldnam*48
+      character LCMDFL*144,inf*144,mldnam*48
       character path*72
       character species*64, grow*1, head*29,fs*1
       logical unixok
@@ -74,6 +73,7 @@ C Initialize global common data.
       call ezero
       call curmodule('mld ')
       cAppName = 'mld'
+      helpinapp='mld'  ! set once for the application
       IUOUT=6
       IUIN=5
       IFIL=10

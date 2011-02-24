@@ -33,7 +33,6 @@ C Assumes that current database is open on unit IFB.
 
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -52,7 +51,7 @@ C Generic db commons:
       dimension DayT(72),ST(72),A(72),B(72),C(72)
       dimension PELM(72),Patr(72)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -62,6 +61,13 @@ C Generic db commons:
       character snote*248
       logical primod,OK,dok,showtags
       integer MPLEM,IW,IWR ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edprof'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -191,9 +197,8 @@ C If a long list include page facility text.
       MPLEM=M+MCTL
 
 C Help text for this menu.
-  2   h(1)='Editing of event profile database entities... '
-      h(2)=' ...'
-      h(3)=' ...'
+  2   helptopic='dbm_edit_eventdb'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
       CALL EMENU(head,PELM,MPLEM,IW)
@@ -203,7 +208,9 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
-        CALL PHELPD('item edit help',3,'-',0,0,IER)
+        helptopic='dbm_edit_eventdb'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('item edit help',nbhelp,'-',0,0,IER)
       ELSEIF(IW.EQ.(MPLEM-3).and.(ACT.eq.'M'.or.ACT.eq.'m'))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -228,11 +235,8 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(IW.EQ.MPLEM-2.and.ACT(1:1).eq.'M')THEN
 
 C Add or delete a period.
-        h(1)='You can delete an existing period, append a new period'
-        h(2)='at the end of the list or insert a period within the '
-        h(3)='list (you will be asked to select a point of insertion).'
         CALL EASKABCD(' Period options: ',' ',' delete ',
-     &    ' append',' insert ','contine',IWA,3)
+     &    ' append',' insert ','contine',IWA,nbhelp)
         if(IWA.eq.4)goto 3
         if(IWA.EQ.1)then
 
@@ -243,8 +247,7 @@ C IWHICH into the next lower one.
            CALL KEYIND(MPLEM,IWR,IWHICH,IO)
            write(outs,'(A,i2)')' Remove period ',iwhich
            dok=.false.
-           h(1)='Chance to correct any selection errors. '
-           CALL ASKOK(outs,' Are you sure?',OK,dok,1)
+           CALL ASKOK(outs,' Are you sure?',OK,dok,nbhelp)
            IF(.NOT.OK)GOTO 3
            DO 791 IVV=IWHICH,NCG-1
              DayT(IVV)=DayT(IVV+1)
@@ -302,14 +305,11 @@ C the previous period unless the next period is at this time.
         endif
       ELSEIF(IW.GT.MHEAD.AND.IW.LT.(MPLEM-MCTL+1))THEN
         CALL KEYIND(MPLEM,IW,IFOC,IO)
-        h(1)='A profile period is defined by a start time and 5 data '
-        h(2)='items. For casual gains the first two are used to '
-        h(3)='represent sensible and latent loads. '
         write(hold,'(f6.3,3F9.4)') ST(ifoc),A(ifoc),B(ifoc),C(ifoc)
         write(outs,'(a,i2,a)')' For period',ifoc,
      &    ' the start time and 3 data (see help):'
   42    CALL EASKS(hold,outs,' ',60,' 1.0 0.0 0.0 0.0   ',
-     &    'period',IER,3)
+     &    'period',IER,nbhelp)
         if(ier.eq.0.and.hold(1:2).ne.'  ')then
           k=0
           CALL EGETWR(hold,K,ST(ifoc),0.00,24.0,'W','start',IER)

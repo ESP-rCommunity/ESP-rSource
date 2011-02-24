@@ -33,9 +33,8 @@ C ******* Sky calculations. *******
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
-      character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
+      character item*30,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character skopt*3,outs*124,tfile*72
       character ltmp72*72,dtmp72*72
       integer NITEMS,INO ! max items and current menu item
@@ -43,6 +42,13 @@ C ******* Sky calculations. *******
       DIMENSION ITEM(14)
 
       logical OK,DOK,XST
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SKYFORM'  ! set for subroutine
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -54,12 +60,12 @@ C Generate a default name for the sky file.
 
 C Ask for name of the sky file.  If existing, attempt to
 C read it otherwise remember name.
- 142  H(1)=' Supply a local file name (i.e. without a path).'
-      H(2)=' This file holds the sky definition.'
+ 142  helptopic='sky_def_local_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ltmp72=rskyfil
       dtmp72=rskyfil
       CALL EASKS(ltmp72,' Sky distribution file name ?',' ',72,
-     &  dtmp72,'sky file name',IER,2)
+     &  dtmp72,'sky file name',IER,nbhelp)
       if(ltmp72(1:2).eq.'  ')goto 142
       rskyfil=ltmp72
       write (tfile,'(a,a)') runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
@@ -107,53 +113,22 @@ C If daylight factors then set sky to CIE overcast.
       NITEMS = 12
 
 C Help text for the menu.
-  20  H(1)='This menu defines the sky distribution function for a'
-      H(2)='Radiance scene.'
-      H(3)=' '
-      H(4)='* Site Latitude: (imported from ESP-r configuration).'
-      H(5)=' '
-      H(6)='* Site Longitude: (imported from ESP-r configuration).'
-      H(7)=' '
-      H(8)='* Year: this should be defined automatically.'
-      H(9)=' '
-      H(10)='* Date: change this to the date and time of the'
-      H(11)='  simulation, or leave it as the default.'
-      H(12)=' '
-      H(13)='* Ground refl: this should be defined automatically.'
-      H(14)='  '
-      H(15)='* Sky: Toggle the type of sky conditions for the'
-      H(16)='  simulation. The CIE std overcast sky is the'
-      H(17)='  standard lighting design sky condition.'
-      H(18)=' '
-      H(19)='* Generate sky description: Create the Radiance sky'
-      H(20)='  description file.'
-      H(21)=' '
-      H(22)='* Display sky info: display the contents of the'
-      H(23)='  sky description file in the text window.'
+  20  helptopic='sky_distribution_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('  Sky description',ITEM,NITEMS,INO)
       IF(INO.EQ.1)THEN
-        H(1)='The site latitude should be in degrees. '
         CALL EASKR(sitelat,' ',' Site Latitude ? ',
-     &           -89.0,'W',89.,'W',50.2,'latitude',IER,1)
+     &    -89.0,'W',89.,'W',50.2,'latitude',IER,nbhelp)
         skydone=.false.
       elseif(INO.EQ.2)then
-        H(1)='Site longitude difference is degrees from some local'
-        H(2)='reference meridian, east +ve, e.g. -4.1 for Glasgow'
-        H(3)='relative to the Greenwich meridian.'
-        H(4)=' '
-        H(5)='Note this definition is different from that used by'
-        H(6)='radiance.  Also, if a meridian other than the prime '
-        H(7)='is defined in a sky file this will be reset to 0 and'
-        H(8)='the longtitude difference calculated accordingly. '
         CALL EASKR(sitelongdif,' ',
      &    'Longitude difference from reference time meridian?',
-     &     -15.0,'W',15.0,'W',0.0,'site longitude diff',IER,8)
+     &    -15.0,'W',15.0,'W',0.0,'site longitude diff',IER,nbhelp)
         skydone=.false.
       elseif(INO.EQ.3)then
-        H(1)='The year is requred to sort out days of the week. '
         CALL EASKI(iryear,' ',' Year ? ',
-     &          1900,'F',2010,'W',1993,'year',IER,1)
+     &    1900,'F',2010,'W',1993,'year',IER,nbhelp)
       elseif(INO.EQ.4)then
         call edisp(iuout,' ')
         call edisp(iuout,' Date and time for the view... ')
@@ -161,10 +136,8 @@ C Help text for the menu.
         CALL ASKTIM(2,1,IMO,IDO,irdoy,RTIME,IT,IER)
         skydone=.false.
       elseif(INO.EQ.5)then
-        H(1)='The average ground reflectance should be a fraction'
-        H(2)='between 0.0 and 0.99.'
         CALL EASKR(rgrfl,' ',' Ground reflectance? ',
-     &             0.0,'W',0.99,'W',0.2,'ground refl',IER,2)
+     &    0.0,'W',0.99,'W',0.2,'ground refl',IER,nbhelp)
         skydone=.false.
       elseif(INO.EQ.6)then
 
@@ -177,8 +150,10 @@ C Sky Toggle.
 C If daylight factors then check if sky is CIE overcast.
       if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         if (isky.ne.1) then 
+          helptopic='sky_not_CIE_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB(' The sky is not a CIE standard overcast sky.',
-     &            'Do you want to: ','proceed','change sky type',IW,0)
+     &      'Do you want to: ','proceed','change sky type',IW,nbhelp)
           if (IW.eq.2) goto 10
         endif
       endif
@@ -198,10 +173,10 @@ C which includes redirection of output to the sky definition file.
           call RADPAR('av',xga)
         endif
       elseif(INO.EQ.9)then
-        H(1)='Browsing lists the file contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
+        helptopic='sky_description_browse'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Sky description:',' ',
-     &              'browse file','edit file','ignore',IW,2)
+     &    'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rskyfil(1:lnblnk(rskyfil))
@@ -214,17 +189,18 @@ C which includes redirection of output to the sky definition file.
       elseif(INO.EQ.11)then
 
 c Explains sky & time menu.
-        CALL PHELPD('sky menu',23,'-',0,0,IER)
+        helptopic='sky_distribution_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('sky menu',nbhelp,'-',0,0,IER)
       elseif(INO.EQ.12)then
         if(skydone)then
           return
         else
           dok=.false.
-          h(1)='Recent work has not yet been used to generated a sky'
-          h(2)='file for use by radiance. If you exit without creating'
-          h(3)='the sky file the model will be incomplete. '
+          helptopic='sky_file_not_generated'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' Sky file has not yet been generated...',
-     &      ' Is it ok to exit ?',OK,dok,3)
+     &      ' Is it ok to exit ?',OK,dok,nbhelp)
           IF(OK)return
           goto 10
         endif
@@ -282,7 +258,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -296,9 +271,15 @@ C ACT = 's' silent, ACT = 'i' interactive.
 
       DIMENSION ITEM(17)
       character*72 tfile
-      character item*32,h*72,ACT*1,GTGEOM*72
+      character item*32,ACT*1,GTGEOM*72
       integer NITEMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='e2rform'  ! set for subroutine
       ITA1 = IFIL+6
       outdone=.false.
       fict=.false.
@@ -342,36 +323,8 @@ C Fictitious transmission threshhold.
       NITEMS = 14
 
 C Help text for this menu.
-  20  H(1)='This menu defines the composition of the Radiance'
-      H(2)='scene in terms of materials and geometry (inside and'
-      H(3)='outside. '
-      H(4)=' '
-      H(5)='There are 3 files created - materials (surface '
-      H(6)='properties for surfaces and geometric composition'
-      H(7)='of the inside and outside.  These are based on the '
-      H(8)='current ESP-r materials and geometry specifications'
-      H(9)='(taking into account the number of zones etc.). '
-      H(10)=' '
-      H(11)='After `generating` the files you may then manually'
-      H(12)='edit them as required to add in textures or colours.'
-      H(13)='Note that if you change one of the named material '
-      H(14)='colours, then any geometric entity referencing it '
-      H(15)='will be changed. '
-      H(16)=' '
-      H(17)='The `outer` face of internal partitions are EXCLUDED'
-      H(18)='because they are duplicates of the inner face of the '
-      H(19)='adjacent zone and cannot be seen in any event.  '
-      H(20)=' '
-      H(21)='=============| |===========     '
-      H(22)='             | |                '
-      H(23)='    visible->| |<- visible face '
-      H(24)='    face     | |                '
-      H(25)='  zone a     | |   zone b       '
-      H(26)='             | |                '
-      H(27)='=============| |===========     '
-      H(28)='              |                 '
-      H(29)='              `--- other sides of surfs '
-      H(30)='                   not seen and EXCLUDED '
+  20  helptopic='e2r_outside_comp'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Outside & Zone composition',ITEM,NITEMS,INO)
       if(INO.EQ.2)then
@@ -386,22 +339,18 @@ C If fictitious to be omitted then ask what is the transmission
 C value above which a fictitious surface is indicated.
         if(fict)then
           fict=.false.
-          H(1)='This value allows e2r to distinguish between normal'
-          H(2)='glass and fictitious surfaces. '
           CALL EASKR(ftr,
-     &      ' Above what (normal) visible transmission value  ',
+     &      ' Above what (normal) visible transmission value ',
      &      ' should a surface be considered fictitious ? ',
-     &      0.9,'W',0.99,'W',0.9,'fict threashold',IER,2)
+     &      0.9,'W',0.99,'W',0.9,'fict threashold',IER,nbhelp)
         else
           fict=.true.
         endif
       elseif(INO.EQ.4)then
 
 C Read ground file.
-        H(1)='This file contains a description of a ground form '
-        H(2)='for use by Radiance and viewing (later by esp). '
-        CALL EASKS(gtgeom,' Ground topology/geometry file name ? ',
-     &        ' ',72,'grnd.geo','ground geom file',IER,2)
+        CALL EASKS(gtgeom,' Ground topology/geometry file name ?',
+     &        ' ',72,'grnd.geo','ground geom file',IER,nbhelp)
         INQUIRE (FILE=gtgeom,EXIST=XST)
         if(XST)then
           call EGRNIN(ITA1,GTGEOM,ITRC,ITRU,IER)
@@ -428,10 +377,8 @@ C the image.
         CALL ADJVIEW(IER)
         outdone=.true.
       elseif(INO.EQ.8)then
-        H(1)='Browsing lists the file contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Glazing description:',' ',
-     &   'browse file','edit file','ignore',IW,2)
+     &   'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           write (tfile,'(a,a)') runpath(1:lnrp),
      &                          glzfil(1:lnblnk(glzfil))
@@ -442,10 +389,8 @@ C the image.
           call vifile(iglzfil,tfile,'e',ier)
         endif
       elseif(INO.EQ.9)then
-        H(1)='Browsing lists the file contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Opaque materials:',' ',
-     &   'browse file','edit file',',ignore',IW,2)
+     &   'browse file','edit file',',ignore',IW,nbhelp)
         if(IW.eq.1)then
           write (tfile,'(a,a)') runpath(1:lnrp),
      &                          matfil(1:lnblnk(matfil))
@@ -456,10 +401,8 @@ C the image.
           call vifile(imatfil,tfile,'e',ier)
         endif
       elseif(INO.EQ.10)then
-        H(1)='Browsing lists the file contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Outside opaque description:',' ',
-     &   'browse file','edit file','ignore',IW,2)
+     &   'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
      &                          rofil(1:lnblnk(rofil))
@@ -470,10 +413,8 @@ C the image.
           call vifile(irofil,tfile,'e',ier)
         endif
       elseif(INO.EQ.11)then
-        H(1)='Browsing lists the file contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Inside opaque description:',' ',
-     &   'browse file','edit file','ignore',IW,2)
+     &   'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rzfil(1:lnblnk(rzfil))
@@ -486,17 +427,18 @@ C the image.
       elseif(INO.EQ.(NITEMS-1))then
 
 C Explains composition/geometry menu.
-        CALL PHELPD('outside menu',30,'e2r_files   ',0,0,IER)
+        helptopic='e2r_outside_comp'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('outside menu',nbhelp,'e2r_files   ',0,0,IER)
       elseif(INO.EQ.NITEMS)then
         if(outdone)then
           return
         else
           dok=.false.
-          h(1)='The Radiance outside surfaces description file'
-          h(2)='has not yet been generated. You might lose information'
-          h(3)='if you exit before the file is generated. '
+          helptopic='e2r_outside_not_created'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' Descriptions not yet been generated...',
-     &      ' Is it ok to exit ?',OK,dok,3)
+     &      ' Is it ok to exit ?',OK,dok,nbhelp)
           IF(OK)return
           goto 10
         endif
@@ -522,7 +464,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -558,7 +499,7 @@ C For obstruction blocks of type "obsp":
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
       character ZSN*28
-      character h*72,ZN*12,outs*124,material*12,QT*1
+      character ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER ACT*1,doit*144
@@ -568,12 +509,23 @@ C For obstruction blocks of type "obsp":
 
       LOGICAL OK,DOK,fict,extern,XST,similar
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mkriofil'  ! set for subroutine
+
       ITA1 = IFIL+6
       ITA2 = IFIL+7
       ITA3 = IFIL+10
       nobs=0
       ISTAT=0
       IER=0
+
+C Generate help for the various dialogs.
+      helptopic='writing_transpar_stuff'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
@@ -593,12 +545,10 @@ C to treat as 'mkillum'.
       CALL ERPFREE(iglzfil,ISTAT)
       CALL ERPFREE(ita2,ISTAT)
       if(ACT.eq.'i')then
- 10     H(1)=' Supply a local file name (i.e. without a path).'
-        H(2)=' This file holds glazed surface details. '
-        ltmp72=glzfil
+ 10     ltmp72=glzfil
         dtmp72=glzfil
         CALL EASKS(ltmp72,' Glazing file name ?',' ',
-     &                             72,dtmp72,'glazing file name',IER,2)
+     &    72,dtmp72,'glazing file name',IER,nbhelp)
         if(ltmp72(1:2).eq.'  ') goto 10
         glzfil=ltmp72
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
@@ -607,20 +557,14 @@ C to treat as 'mkillum'.
 C Ask for alternative glazing file.
         if (NABS.gt.0) then
           dok=.true.
-          h(1)='The model includes controls to optical properties '
-          h(2)='and you have the option to create a Radiance model'
-          h(3)='which includes the alternative optical state. '
           call ASKOK('Blind shutter control is active.',
-     &      'Create model with blinds closed as well?',OK,dok,3)
+     &      'Create model with blinds closed as well?',OK,dok,nbhelp)
           if (OK) then
             NBSRIF(ISCENE)=NABS
- 12         H(1)=' Supply a local file name (i.e. without a path).'
-            H(2)=' This file holds alternative glazed surface details,'
-            H(3)=' e.g. representing closed blinds. '
-            ltmp72=aglzfil
+ 12         ltmp72=aglzfil
             dtmp72=aglzfil
             CALL EASKS(ltmp72,' Alternative glazing file name ?',' ',
-     &                            72,dtmp72,'glazing file name',IER,3)
+     &        72,dtmp72,'glazing file name',IER,nbhelp)
             if(ltmp72(1:2).eq.'  ') goto 12
             aglzfil=ltmp72
             write(atfile,'(a,a)')runpath(1:lnrp),
@@ -672,13 +616,10 @@ C the existing mlc db and create a set of properties.
       call edisp(iuout,' creating materials for opaque surfaces. ')
       CALL ERPFREE(imatfil,ISTAT)
       if(ACT.eq.'i')then
- 20     H(1)=' Supply a local file name (i.e. without a path).'
-        H(2)=' This file holds surface properties for the opaque '
-        H(3)=' surfaces, obstructions and ground definition.'
-        ltmp72=matfil
+ 20     ltmp72=matfil
         dtmp72=matfil
         CALL EASKS(ltmp72,' Opaque materials file name ?',' ',
-     &                          72,dtmp72,'opaque mat file name',IER,3)
+     &    72,dtmp72,'opaque mat file name',IER,nbhelp)
         if(ltmp72(1:2).eq.'  ') goto 20
         matfil=ltmp72
         write(tfile,'(a,a)')runpath(1:lnrp),matfil(1:lnblnk(matfil))
@@ -727,12 +668,10 @@ C Open the inside geometry/composition file.
       call edisp(iuout,' creating inside composition. ')
       CALL ERPFREE(irzfil,ISTAT)
       if(ACT.eq.'i')then
- 22     H(1)=' Supply a local file name (i.e. without a path).'
-        H(2)=' This file holds the definition of the zone.'
-        ltmp72=rzfil
+ 22     ltmp72=rzfil
         dtmp72=rzfil
         CALL EASKS(ltmp72,' Inside compositon file name ?','  ',
-     &                                72,dtmp72,'room file name',IER,2)
+     &    72,dtmp72,'room file name',IER,nbhelp)
         if(ltmp72(1:2).eq.'  ') goto 22
         rzfil=ltmp72
         write(tfile,'(a,a)')runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
@@ -871,11 +810,10 @@ C Open the outsite geometry/composition file.
       call edisp(iuout,' creating outside composition. ')
       CALL ERPFREE(irofil,ISTAT)
       if(ACT.eq.'i')then
- 24     H(1)='This holds the definition of outside bodies.'
-        ltmp72=rofil
+ 24     ltmp72=rofil
         dtmp72=rofil
         CALL EASKS(ltmp72,' Outside description file name ?','  ',
-     &                             72,dtmp72,'outside file name',IER,1)
+     &    72,dtmp72,'outside file name',IER,nbhelp)
         if(ltmp72(1:2).eq.'  ') goto 24
         rofil=ltmp72
         write(tfile,'(a,a)')runpath(1:lnrp),rofil(1:lnblnk(rofil))
@@ -1054,12 +992,9 @@ C Confirm inclusion of obstructions.
         if(nbobs(newfoc).ge.1)then
           if(ACT.eq.'i')then
             write(outs,'(3a)') ' Include ',ZN(1:lnblnk(ZN)),
-     &                            ' obstructions ? '
+     &                         ' obstructions ? '
             dok=.true.
-            h(1)='The model includes solar obstructions in this '
-            h(2)='zone and these can be included in the Radiance '
-            h(3)='model if you answer yes. '
-            CALL ASKOK(' ',outs,OK,dok,3)
+            CALL ASKOK(' ',outs,OK,dok,nbhelp)
           else
             OK=.TRUE.
           endif
@@ -1222,15 +1157,12 @@ C Highlight surface on image.
                   LINSTY(IC)=2
                   CALL ADJVIEW(IER)
 
-                  H(1)='Large sources of indirect illumination should'
-                  H(2)='have their distributions pre-calculated as  '
-                  H(3)='this optimises the rendering process.  '
-                  H(4)='(Note: the pre-calculation is achieved   '
-                  H(5)='  via the Radiance utility mkillum.)  '
+                  helptopic='precalculate_indirect_i'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   write (outs,'(a,a,a)') 'Surface ',
      &                   zsn(isf)(1:lnblnk(zsn(isf))),' is transparent.'
                  call EASKAB(outs,'Pre-calculate indirect illumination',
-     &                                     'no (default)','yes',IANS,5)
+     &             'no (default)','yes',IANS,nbhelp)
                   iglzty=2
                 else
                   IANS=1
@@ -1254,9 +1186,9 @@ C If IANS=2 then ask if surface should be subdivided.
               IDIV=1
               if (IANS.eq.2) then 
                 write(outs,'(a,a,a)')'Surface ',
-     &               zsn(isf)(1:lnblnk(zsn(isf))),' can be subdivided.'
+     &            zsn(isf)(1:lnblnk(zsn(isf))),' can be subdivided.'
                 call EASKAB(outs,'Create ','one surface (default)',
-     &                                      'multiple surfaces',IDIV,0)
+     &            'multiple surfaces',IDIV,nbhelp)
               endif
 
               if (IDIV.eq.2) then

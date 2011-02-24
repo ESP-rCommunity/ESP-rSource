@@ -24,7 +24,7 @@ C of the user-specified time-dependant variable.
 
       PARAMETER (MF=100)
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy

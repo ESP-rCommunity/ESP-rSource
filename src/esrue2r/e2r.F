@@ -44,7 +44,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -88,7 +87,7 @@ C Name of current application
       
       character cAppName*12      
 
-      CHARACTER H*72,outs*124,ITEM*30
+      CHARACTER outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
       character tfile*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -110,10 +109,17 @@ C Name of current application
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
       cAppName = 'e2r'
+      helpinapp='e2r'  ! set once for the application
+      helpinsub='e2r'  ! set for MAIN
       IUIN = 5
       IUOUT = 6
       IFIL = 10
@@ -422,9 +428,8 @@ C and then present the main menu.
 C No command line configuration file supplied or cannot be found, 
 C therfore get one.
       if(.NOT.XST)then
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+        helptopic='e2r_cfg_file_not_found'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
         dtmp72=DFCFG
  1289   llt=lnblnk(L144)
@@ -436,20 +441,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp72,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp72,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
@@ -473,9 +478,10 @@ C line as 'Coupling' or 'Day_coef' or 'Day_fact'.
         elseif(nzonec.lt.20.and.ngset.gt.20)then
           mono=1   ! not many colours but some greys so set to greyscale
         else
-          H(1)='This is required for several of the display utilities.'
+          helptopic='confirm_monitor_type'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Please confirm your monitor type:',' ',
-     &                        'monochrome','greyscale','colour',imon,1)
+     &      'monochrome','greyscale','colour',imon,nbhelp)
           mono=imon-1
         endif
       endif
@@ -514,16 +520,13 @@ C Create a default scene file name using the cfgroot.
             write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
 
 C File does not exist, ask for another/ new file.
- 2289       H(1)='A scene configuration file is required to aid'
-            H(2)='maintenance of the visualisation process.'
-            H(3)='This file contains details on where individual'
-            H(4)='RIF (Radiance Input Format) files are kept and'
-            H(5)='what there intended use is.'
+ 2289       helptopic='scene_config_file_name'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp72=LRADCF
             dtmp72='scene.rcf'
             CALL EASKS(ltmp72,
      &        'Scene configuration file? (suggested name)',
-     &        ' ',72,dtmp72,'scene file name',IER,5)
+     &        ' ',72,dtmp72,'scene file name',IER,nbhelp)
             IF(ltmp72(1:2).EQ.'  '.or.ltmp72(1:4).eq.'UNKN')GOTO 2289
             LRADCF=ltmp72
             XST=.FALSE.
@@ -645,19 +648,10 @@ C        lnrp=lnblnk(runpath)
         if(unixok)then
           if(browse)then
             dok=.false.
-            h(1)='The e2r module has been working with files in'
-            h(2)='a temporary folder. If you say `yes` then the'
-            h(3)='files will be copied back into the rad folder'
-            h(4)='of the ESP-r model.'
-            h(5)=' '
-            h(6)='If you say `no` the temporary folder will be'
-            h(7)='removed and your files deleted.'
-            h(8)=' '
-            h(9)='If you are planning to alter the geometry and/'
-            h(10)='or constructions in your model it is usually'
-            h(11)='best not to keep the files (i.e. select `no`).'
+            helptopic='e2r_temporary_folder'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
-     &             '(see help)',KEEP,dok,11)
+     &        '(see help)',KEEP,dok,nbhelp)
           else
 	  
 C User owns the model. Only copy the lradcf file back to the cfg
@@ -702,9 +696,8 @@ C Help via the askabout facility in esru_ask.F The zero requests display
       elseif(INO.EQ.1)then
 
 C ESP-r configuration file.
-  289   H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+  289   helptopic='model_config_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
         dtmp72=DFCFG
         llt=lnblnk(L144)
@@ -712,20 +705,20 @@ C ESP-r configuration file.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp72,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp72,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
@@ -738,15 +731,12 @@ C ESP-r configuration file.
 
 C Define possibly different scene configuration file, process if existing 
 C or create a new one with reasonable defaults.
- 319    H(1)='A scene configuration file is required to aide'
-        H(2)='maintenance of the visualisation process.'
-        H(3)='This file contains details on where individual'
-        H(4)='RIF (Radiance Input Format) files are kept and'
-        H(5)='wheat there intended use is.'
+ 319    helptopic='scene_config_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp72=LRADCF
         dtmp72='scene.rcf'
         CALL EASKS(ltmp72,'Scene configuration file (suggested name)?',
-     &    '  ',72,dtmp72,'scene file name',IER,5)
+     &    '  ',72,dtmp72,'scene file name',IER,nbhelp)
         if(ltmp72.eq.'  ')goto 319 
         LRADCF=ltmp72
         call tstamp('>','E2R: change scene configuration')
@@ -782,19 +772,16 @@ C Zone and outside composition, updating rif file upon return.
       elseif(INO.EQ.12)then
 
 C Other descriptions.
-        H(1)='In order not to disturb files generated from a thermal'
-        H(2)='description it is sometimes useful to place miscel '
-        H(3)='furniture and fixtures in a separate file. '
+        helptopic='furniture_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=rmfil
         CALL EASKS(ltmp,' Miscel (furniture & fittings file ?',
-     &    '  ',72,rmfil,'misc fixt file name',IER,3)
+     &    '  ',72,rmfil,'misc fixt file name',IER,nbhelp)
         INQUIRE (FILE=ltmp,EXIST=XST)
         if(XST)rmfil = ltmp
 
-        H(1)='Browsing lists contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Miscel (furniture & fittings description:',' ',
-     &     'browse file','edit file','ignore',IW,2)
+     &     'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           call vifile(ITA1,rmfil,'b',ier)
         elseif(IW.eq.2)then
@@ -830,8 +817,9 @@ C Depending on value of SCENEPURP.
           endif
           call ERPFREE(ITA1,ISTAT)
           dok=.false.
-          h(1)='If you want to alter the grid points say yes.'
-          CALL ASKOK('Edit grid points?','  ',OK,dok,1)
+          helptopic='confirm_grid_point_edit'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Edit grid points?','  ',OK,dok,nbhelp)
           izone=0
           if(OK)call setdfgrid('-',izone,ier)
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
@@ -893,15 +881,11 @@ C to remove it before proceeding.
         CALL ERPFREE(ITA2,ISTAT)
         call FINDFIL(octfil,XST)
         if(XST)then
-          H(1)='The octree is a intermediate step between the '
-          H(2)='Radiance input files and the rendered image. '
-          H(3)='Radiance should be able to decide if the octree '
-          H(4)='needs recreated or not, although if you have a '
-          H(5)='new sky file then you must force Radiance to  '
-          H(6)='recreate the octree (ie choose option 1).'
+          helptopic='octree_force_update'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' The octree exists, do you want to',' ',
      &      'force update','let Radiance decide (default)','cancel',
-     &      IOCTFL,6)
+     &      IOCTFL,nbhelp)
           if (IOCTFL.eq.3) then
             goto 10
           endif
@@ -912,13 +896,12 @@ C Pull up a list of views and ask user for which one.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
      &      SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           if (indxvew.gt.0) then
-            H(1)='Please select one view.'
             IX=1
             do 333 iv=1,indxvew
               write(valt(iv),'(a)') rvewsh(iv)
   333       continue
             CALL EPICKS(IX,IVALV,' ',' Select a view: ',
-     &                  28,indxvew,VALT,'View options',IER,3)
+     &        28,indxvew,VALT,'View options',IER,nbhelp)
             if(IX.ne.0)then
               ipckvew=IVALV(1)
             endif
@@ -1041,9 +1024,8 @@ C Check for existing file names based on available view and picture info.
 C Now have list of possible images, ask which one to display.
 C If there are no images then re-display the menu.
         if (npics.gt.1) then
-          H(1)='Please select one view.'
           CALL EPICKS(IX,IVALV,' ',' Select a view point: ',
-     &                28,npics,VALT,'View options',IER,1)
+     &      28,npics,VALT,'View options',IER,nbhelp)
           if(IX.eq.0) goto 10
         else
           goto 10

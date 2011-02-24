@@ -231,7 +231,6 @@ C SITEDIT edits site related data in a climate file.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       CHARACTER CLMLOC*30,T30*30,outs*124
-      logical ok
 
 C For help messages
       character helpinsub*24,helptopic*24
