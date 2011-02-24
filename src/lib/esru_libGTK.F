@@ -321,16 +321,12 @@ C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C Example:
 C    ....
 C Read a site latitude.
 C        XLAT=50.0
-C        H(1)='The latitude is required for calculating the sun'
-C        H(2)='position, it should be similar to that assumed for'
-C        H(3)='the climate file.'
 C        CALL EASKR(XLAT,' ',' What is the site latitude (deg) ? ',
 C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,3)
 C    ...
@@ -340,11 +336,9 @@ C    ...
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,close,DOK,unixok
 
@@ -378,30 +372,15 @@ C Generate help and default strings.
 
       CALL REL16STR(DEFLT,STR1,IW1,IER)
       CALL REL16STR(RVAL,STR2,IW2,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   63   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ENDIF
+      call helpcurrentreal(deflt,rval,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic facilities to edit the number.
-        iwidth=16
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(NHELP+1)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(2)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -466,11 +445,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines of
 C help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user real',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user real',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user real',newnbhelp,'-',0,0,IER)
             GOTO 20
           endif
         ELSEIF(WORD.EQ.' ')THEN
@@ -506,7 +481,7 @@ C Check RVALT against minimum and respond based on MINACT.
      &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -528,7 +503,7 @@ C Check RVALT against minimum and respond based on MINACT.
      &         ')',' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
