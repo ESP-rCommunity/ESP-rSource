@@ -107,7 +107,7 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10
-      CHARACTER ask*10,OUTSTR*124,DSTR*124,outs*124
+      CHARACTER OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
       integer ivalold
@@ -118,9 +118,8 @@ C If IVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.IVAL.LT.MINV)IVAL=IDEFLT
       if(MAXACT.EQ.'F'.and.IVAL.GT.MAXV)IVAL=IDEFLT
 
-C Clear string buffers and instantiate 'ask'
+C Clear string buffers
    20 WORD=' '
-      WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
       ivalold=ival
@@ -338,7 +337,7 @@ C    ...
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
+      CHARACTER OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,close,DOK,unixok
 
@@ -351,19 +350,6 @@ C instantiated on the Fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.0
    20 WORD=' '
-      if(abs(rval).gt.1.E+6)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
-        WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
-        WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
-        WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-4)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      else
-        WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
-      endif
 
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
@@ -564,8 +550,7 @@ C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 
       SUBROUTINE EASKE(RVAL,PROMP1,PROMP2,RMIN,MINACT,
@@ -573,11 +558,9 @@ C by the user.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,close,DOK,unixok
 
@@ -602,36 +585,15 @@ C Generate help and default strings.
 
       CALL EXPSTR(DEFLT,STR1,IW1,IER)
       CALL EXPSTR(RVAL,STR2,IW2,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   63   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT(' No help available for ',a)
-        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   65   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
-      ENDIF
+      call helpcurrentreal(deflt,rval,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
-C If in terminal type 8 (dialogue box) use graphic facilities to get the
-C string to convert.
       IF(MMOD.EQ.8)THEN
 
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
-        iwidth=16
+C If in graphic mode use graphic facilities to edit the number.
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(NHELP+1)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(2)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -701,11 +663,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines of
 C help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user real',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user real',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user real',newnbhelp,'-',0,0,IER)
             GOTO 20
           endif
         ELSEIF(WORD.EQ.' ')THEN
@@ -740,7 +698,7 @@ C Check RVALT against minimum and respond based on MINACT.
    28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this OK ? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this OK ? ',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -761,7 +719,7 @@ C Check RVALT against minimum and respond based on MINACT.
    39   FORMAT(' The value of ',a,' (',a,')',' is greater than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this ok? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this ok? ',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -818,9 +776,8 @@ C DSTR is a string to use as a default.
       character h*72
       common/pophelp/h(60)
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
-      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
 
@@ -1072,9 +1029,8 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
       integer last    ! last blank (or one) in the string.
@@ -1541,9 +1497,8 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,prompt*144
+      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,prompt*144
       LOGICAL OK,CMDACT,DOK,unixok
 
    20 IER=0
@@ -1749,9 +1704,8 @@ C should be generalized.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124
       character outstr248*248,prompt*144
       LOGICAL OK,CNCLACT,DOK,unixok
 
@@ -1953,9 +1907,8 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,prompt*144
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,prompt*144
       LOGICAL OK,DOK,unixok
 
    20 IER=0
@@ -4277,13 +4230,8 @@ C        write(6,*)sstr(1)
         INQUIRE(FILE=tfile(1:ltf),EXIST=there)
         if(there)then
           close(iuf)
-#ifdef F90
           open(iuf,file=tfile(1:ltf),position='APPEND',
      &      status='UNKNOWN',err=1)
-#else
-          open(iuf,file=tfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
         else
           close(iuf)
           open(iuf,file=tfile,status='UNKNOWN',err=1)
