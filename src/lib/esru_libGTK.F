@@ -1427,15 +1427,13 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 
 C Example:
 C    ....
 C test getting a string.
-C        H(1)='The site name is a test of the menu help facilities.'
 C        XNAME=' '
 C        DNAME=' '
 C        CALL EASKSCMD(XNAME,' ',' What is the site name ?','Use map',CACT,
@@ -1446,11 +1444,10 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
      &  ERMSG,IER,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,prompt*144
+      CHARACTER WORD*72,A*1,LASTS*72,OUTSTR*124,prompt*144
       LOGICAL OK,CMDACT,DOK,unixok
 
    20 IER=0
@@ -1460,11 +1457,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       LASTS=STRVAL(1:last)
 
 C Generate custom help text.
-      IF(NHELP.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
@@ -1472,13 +1465,8 @@ C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1515,7 +1503,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)') 'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1574,7 +1562,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)') 'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1586,11 +1574,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user string',1,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1639,8 +1623,7 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C Assumption is that STRVAL will be up to 96 char wide. This
@@ -1649,11 +1632,10 @@ C should be generalized.
      &  DSTR,ERMSG,IER,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124
+      CHARACTER WORD*96,A*1,LASTS*96,OUTSTR*124
       character outstr248*248,prompt*144
       LOGICAL OK,CNCLACT,DOK,unixok
 
@@ -1664,11 +1646,7 @@ C should be generalized.
       LASTS=STRVAL(1:last)
 
 C Generate custom help text.
-      IF(NHELP.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
@@ -1676,13 +1654,8 @@ C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1714,7 +1687,7 @@ C leading blanks from string returned.
           WRITE(OUTSTR,'(3a)') 'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1761,7 +1734,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)') 'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1773,11 +1746,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user string',1,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
