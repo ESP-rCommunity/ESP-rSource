@@ -2313,14 +2313,12 @@ C Parameters passed.
       integer idindex ! default index
       integer nhelp   ! number of help lines to display
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      character h*72
-      common/pophelp/h(60)
+
       LOGICAL SELECT
 
       DIMENSION VERT(16)
-      CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      CHARACTER VERT*48,KEY*1,prompt2*36
       integer MVERT,IVERT ! max items and current menu item
 
 #ifdef OSI
@@ -2331,10 +2329,7 @@ C Parameters passed.
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
-      if(nhelp.eq.0)then
-        write(H(1),64,iostat=ios,err=1)
-  64    format('No help available for this selection list.')
-      endif
+      call helpwithblank(title,nhelp,newnbhelp,ier)
       DO 9 L=1,16
         VERT(L)='  '
    9  CONTINUE
@@ -2482,7 +2477,7 @@ C otherwise reset index to lindex. before exit then display error message.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text (defined prior to subroutine call).
-        CALL PHELPD(title,nhelp,'-',0,0,IER)
+        CALL PHELPD(title,newnbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2).and.idindex.ne.0)THEN
 
 C Take default item.
@@ -2500,16 +2495,6 @@ C Not one of the legal menu choices.
       endif
       IVERT=-2
       goto 92
-
-   1  if(IOS.eq.2)then
-        write(outs,*) 
-     &  'MENUATOL: permissions exception while composing prompt.'
-        call edisp(iuout,outs)
-      else
-        write(outs,*) 'MENUATOL: error composing message or prompt.'
-        call edisp(iuout,outs)
-      endif
-      return
 
       END
 

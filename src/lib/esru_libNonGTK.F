@@ -708,8 +708,7 @@ C If a space is typed then FILEN is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C << this is a place holder so the X version has similar functionality
@@ -1092,8 +1091,7 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
       SUBROUTINE EASKS248(STRVAL,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,
@@ -1743,8 +1741,7 @@ C   IVALS(INPICK) is the last index chosen.
 C NSTALT is the number of selection strings STALT passed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value. IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 
 C Note that there is no particular limit on the number of alternate
@@ -2032,14 +2029,12 @@ C Passed parameters.
       integer idindex ! default index
       integer nhelp   ! number of help lines to display
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      character h*72
-      common/pophelp/h(60)
+
       LOGICAL SELECT
 
       DIMENSION VERT(16)
-      CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      CHARACTER VERT*48,KEY*1,prompt2*36
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
@@ -2050,10 +2045,7 @@ C Passed parameters.
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
-      if(nhelp.eq.0)then
-        write(H(1),64,iostat=ios,err=1)
-  64    format('No help available for this selection list.')
-      endif
+      call helpwithblank(title,nhelp,newnbhelp,ier)
       DO 9 L=1,16
         VERT(L)='  '
    9  CONTINUE
@@ -2158,8 +2150,8 @@ C Number of actual items displayed.
       if(ISTRW.lt.17)VERT(nopt+1)=  '  ______________'
       if(idindex.gt.0)then
         CALL EMKEY(idindex,KEY,IER)
-        write(VERT(nopt+2),'(a,a,a)') '* default is option `',KEY,'`'
-        if(ISTRW.lt.17)write(VERT(nopt+2),'(a,a,a)')
+        write(VERT(nopt+2),'(3a)') '* default is option `',KEY,'`'
+        if(ISTRW.lt.17)write(VERT(nopt+2),'(3a)')
      &                              '* default is option `',KEY,'`'
       else
         VERT(nopt+2)='                        '
@@ -2201,7 +2193,7 @@ C otherwise reset index to lindex. before exit then display error message.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text (defined prior to subroutine call).
-        CALL PHELPD(title,nhelp,'-',0,0,IER)
+        CALL PHELPD(title,newnbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2).and.idindex.ne.0)THEN
 
 C Take default item.
@@ -2219,16 +2211,6 @@ C Not one of the legal menu choices.
       endif
       IVERT=-2
       goto 92
-
-   1  if(IOS.eq.2)then
-        write(outs,*) 
-     &  'MENUATOL: permissions exception while composing prompt.'
-        call edisp(iuout,outs)
-      else
-        write(outs,*) 'MENUATOL: error composing message or prompt.'
-        call edisp(iuout,outs)
-      endif
-      return
 
       END
 
