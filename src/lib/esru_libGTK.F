@@ -764,8 +764,7 @@ C If a space is typed then FILEN is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK if -3 then user requested CANCEL.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 
@@ -773,8 +772,6 @@ C DSTR is a string to use as a default.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
 
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
       CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,outs*124
@@ -796,32 +793,17 @@ C Remember the file name in case user wants to abort.
      &     FILEN(1:7).eq.'Unknown') FILEN='  '
       endif
 
-C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+C Generate custom help text.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not used in GTK version (yet).
-C        idef=0
-C        iquery=0
         WORD144=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -837,7 +819,8 @@ C        iquery=0
         endif
 
 C << There are potentially several things that need updating >>
-C << to this call and to askf (within esp_file.c). >>
+C << to this call and to askf (within esp_file.c). The GTK browse >>
+C << dialog does not include a help button! >>
         CALL askf(PROMPT,FILEN)
 
 C Debug
@@ -924,7 +907,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               FILEN=DSTR(1:LN)
               RETURN
@@ -936,7 +919,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            CALL PHELPD('ask file name',NHL,'-',0,0,IER)
+            CALL PHELPD('ask file name',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 

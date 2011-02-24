@@ -1017,3 +1017,50 @@ C Get to work.
       endif
       return
       end
+
+C subroutine to generate line of help text for an string dialog
+C if no lines of help have been defined in the calling code. 
+      subroutine helpwithblank(ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      character outs*124 ! for messages
+
+C Get to work.
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp  ! nothing to do
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=1
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &    'helpwithblank: permission error composing help.'
+        call edisp(iuout,outs)
+        ier=2
+      else
+        write(outs,*) 'helpwithblank: error composing help.'
+        call edisp(iuout,outs)
+        ier=1
+      endif
+      return
+      end

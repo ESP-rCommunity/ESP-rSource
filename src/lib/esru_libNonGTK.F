@@ -719,8 +719,6 @@ C << to the GTK version. It should be extended to support browsing etc.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
@@ -742,14 +740,8 @@ C Remember the file name in case user wants to abort.
      &     FILEN(1:7).eq.'Unknown') FILEN='  '
       endif
 
-C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+C Generate custom help text if needed.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
@@ -760,15 +752,9 @@ C If in terminal type 8 use dialogue box.
         iquery=0
         CALL openaskbox(PROMP1,PROMP2,ISTRW)
         WORD144=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,NHELP,IHW)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(dh)
-          call updhelp(dh,1,IHW)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(dh)
+        call updhelp(dh,newnbhelp,IHW)
         lmmod=mmod
         CALL askdialog(FILEN,idef,iquery)
 
@@ -784,7 +770,7 @@ C leading blanks from string returned.
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             FILEN=DSTR(1:LN)
             call usrmsg('  ','  ','-')
@@ -837,7 +823,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               FILEN=DSTR(1:LN)
               RETURN
@@ -849,7 +835,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            CALL PHELPD('ask file name',NHL,'-',0,0,IER)
+            CALL PHELPD('ask file name',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
