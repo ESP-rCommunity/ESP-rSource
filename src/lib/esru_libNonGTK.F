@@ -2224,9 +2224,8 @@ C If NHELP=-1 there is no default option.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72,outs*124
+      CHARACTER ANS*2,MSG3*124,outs*124
       logical ok,dok,DEFLT
       integer IWI  ! for radio button
 
@@ -2235,13 +2234,9 @@ C Check if a default defined and use local var for NHELP.
       NHL=NHELP
       if (NHL.eq.-1) then
         DEFLT=.false.
-        NHL=0
-      endif
-
-C Generate custom help text.
-      if(NHL.eq.0)then
-        H(1)='Sorry, no help available for this dialog.'
-        NHL=1
+        call helpwithblank('Ok dialog',NHL,newnbhelp,ier)
+      else
+        call helpwithblank('Ok dialog',nhelp,newnbhelp,ier)
       endif
 
 C Print out message according to the combination of strings passed. Use
@@ -2285,14 +2280,14 @@ C Querry yes or no or default.
         if (DEFLT) then
           if(DOK)then
             call EASKATOG(MSG1,MSG2,'yes (default)','no',' ',' ',' ',
-     &      ' ',' ',IWI,NHL)
+     &      ' ',' ',IWI,newnbhelp)
           else
             call EASKATOG(MSG1,MSG2,'yes','no (default)',' ',' ',' ',
-     &      ' ',' ',IWI,NHL)
+     &      ' ',' ',IWI,newnbhelp)
           endif
         else
           call EASKATOG(MSG1,MSG2,'yes','no',' ',' ',' ',
-     &      ' ',' ',IWI,NHL)
+     &      ' ',' ',IWI,newnbhelp)
         endif
         IF(IWI.eq.1)THEN
           OK=.TRUE.
@@ -2341,16 +2336,8 @@ C Parameters passed.
       integer NHELP  ! number of help lines to display
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      CHARACTER ANS*2,MSG3*248,H*72
-
-C Generate custom help text and copy NHELP to local variable.
-      NHL=NHELP
-      if(NHL.eq.0)then
-        H(1)='Select an option.'
-        NHL=1
-      endif
+      CHARACTER ANS*2,MSG3*248
 
 C See how many items there are to present.
       nopt=7
@@ -2396,6 +2383,9 @@ C Setup a single line menu to pick from via EASKS.
      &    ' e) ',DOPT(1:ld),' f) ',EOPT(1:le),' g) ',FOPT(1:lf),
      &    ' i) ',GOPT(1:lg),' ? '
         endif
+
+C Generate custom help text.
+        call helpwithblank(msg3,nhelp,newnbhelp,ier)
         ans = '  '
         call lusrmsg(msg1,msg3,'?')
         read(iuin,'(A2)')ANS
@@ -2419,7 +2409,8 @@ C Setup a single line menu to pick from via EASKS.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-           CALL PHELPD('two choice dialog',NHL,'-',0,0,IER)
+           call helpwithblank('multi-choice dialog',nhelp,newnbhelp,ier)
+           CALL PHELPD('multi-choice dialog',newnbhelp,'-',0,0,IER)
            GOTO 21
         elseif(ANS(1:2).eq.'  ')then
           call usrmsg('The current answer is blank!',
@@ -2437,7 +2428,8 @@ C Querry which one.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-          CALL PHELPD('this multi-choice',NHL,'-',0,0,IER)
+          call helpwithblank('multi-choice dialog',nhelp,newnbhelp,ier)
+          CALL PHELPD('multi-choice',newnbhelp,'-',0,0,IER)
           GOTO 19
         ENDIF
         IWHICH=IW
@@ -2492,9 +2484,9 @@ C Promp1 gives the context of the request for a period.
       SUBROUTINE eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,
      &                      bMY_enabled,IER)
       integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
-      common/pophelp/h
+      common/pophelp/h(60)
       CHARACTER*(*) PROMP1
-      CHARACTER*72 h(60)
+      CHARACTER h*72
       character HOLD*16
 
 C Error flag
@@ -2740,8 +2732,6 @@ C MMOD=-1 Text: never wait, page with blank line.
         IF(IEND.EQ.0)THEN
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,'(a)') '  '
-C            WRITE(IUOUT,300)
-C 300        FORMAT(/,' ',72('-'),/)
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -3769,56 +3759,20 @@ C terminal type 8.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      dimension dh(60),lh(30),exh(60)
+
+C dh is duplicate help list.
+      dimension dh(60),lh(30)
       CHARACTER*(*) MSG,OTHER
-      CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
-      character tut_path*72,ltut*72,IA*3,fs*1
-      logical extra,XST
-      logical unixok
-      integer ltf    ! last actual character in the string.
-      integer ln     ! last actual character in instpath (of espinstalldir.h)
+      CHARACTER h*72,outs*73,dh*72,lh*72
+      character IA*3
+      integer IBX1,IBY1
 
-C The following include statment is placed after the common block
-C definitions to avoid compile errors.
-#include "espinstalldir.h"
+C Set coordinates IBX and IBY to zero (so parameter not needed).
+      IBX1=0; IBY1=0
+      IPM = 1
 
-C dh is duplicate help list, lh is the list (page) to be displayed.
-C exh is 'show me more' text array read in from external file.
-      extra = .false.
-      ln=lnblnk(instpath)
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      if(OTHER(1:1).ne.'-')then
-        write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
-        write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
-        iftut=IFIL-1
-        if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
-        XST=.FALSE.
-        ltf=max(1,LNBLNK(ltut))
-        INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
-        if(XST)then
-          open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
-     &      STATUS='OLD',IOSTAT=ISTAT)
-          if(ISTAT.eq.0)then
-            extra = .true.
-          else
-            extra = .false.
-          endif
-        else
-          extra = .false.
-        endif
-        CALL ERPFREE(IFTUT,ISTAT)
-      endif
-
- 41   IER=0
+      IER=0
       IF(NHELP.eq.0)THEN
         IF(MMOD.EQ.8)THEN
           if(LNBLNK(MSG).le.50)then
@@ -3831,7 +3785,7 @@ C Set folder separator (fs) to \ or / as required.
           call dupphelp(dh)
           call updhelp(dh,1,IHW)
           ipflg=0
-          CALL egphelp(IBX,IBY,IPFLG,0,iuresp)
+          CALL egphelp(IBX1,IBY1,IPFLG,0,iuresp)
         ELSE
           call edisp(iuout,' ')
           if(LNBLNK(MSG).le.50)then
@@ -3856,16 +3810,7 @@ C Set folder separator (fs) to \ or / as required.
         CALL PHELPW(NHELP,IHW,IER)
         call dupphelp(dh)
         call updhelp(dh,NHELP,IHW)
-        if(extra)then
-          CALL egphelp(IBX,IBY,IPFLG,1,iuresp)
-          if(iuresp.eq.1)then
-            call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw2,exh,IER)
-            call updhelp(exh,nhi,ihw2)
-            CALL egphelp(IBX,IBY,IPFLG,0,iuresp)
-          endif
-        else
-          CALL egphelp(IBX,IBY,IPFLG,0,iuresp)
-        endif
+        CALL egphelp(IBX1,IBY1,IPFLG,0,iuresp)
       ELSE
 
 C Loop through the items until the page to be displayed. M is the
@@ -3891,56 +3836,29 @@ C current line index.
           CALL edisp(iuout,outs)
    52   CONTINUE
         if(IPFLG.eq.0)then
-          if(extra)then
-
-C Use text based dialog functions to avoid recursion.
-            call edisp(iuout,'Show additional information (y/n) ?')
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-            if(IA(1:1).eq.'y'.or.IA(1:1).eq.'Y')iw1=4
-            if(IA(1:1).eq.'n'.or.IA(1:1).eq.'N')return
-          else
-            return
-          endif
+          return
         else
           if(IPM.eq.1)then
-            if(extra)then
-              call edisp(iuout,
-     &        ' Options:  a) -, b) next, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) -, b) next, c) continue ')
-            endif
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
+             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           elseif(IPM.eq.MPM)then
-            if(extra)then
-              call edisp(iuout,
-     &    ' Options:  a) previous, b) -, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) previous, b) -, c) continue ')
-            endif
             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           else
-            if(extra)then
-              call edisp(iuout,
-     & ' Options:  a) previous, b) next, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) previous, b) next, c) continue ')
-            endif
             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           endif
         endif
         if(iw1.eq.1)then
@@ -3954,73 +3872,6 @@ C Use text based dialog functions to avoid recursion.
         elseif(iw1.eq.3)then
           call edisp(iuout,'  ')
           return
-        elseif(iw1.eq.4)then
-
-C Recover up to 60 lines of extern text.
-          call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw,exh,IER)
-          ILEN=nhi
-          call HPAGE('create',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-
-C Loop through the extra items until the page to be displayed. M is the
-C current line index.
-  142     m=0
-          DO 151 I=1,ILEN
-            IF(I.GE.IST.AND.(I.LE.(IST+MIFULL)))THEN
-              M=M+1
-              WRITE(lh(m),'(1X,A)',iostat=ios,err=1) exh(I)(1:ihw)
-            ENDIF
-  151     CONTINUE
-          if(IPFLG.eq.1)then
-            M=M+1
-            WRITE(lh(m),'(A)')' ____________________________'
-            M=M+1
-            WRITE(lh(m),216)IPM,MPM
-  216       FORMAT (' Extra --- Part: ',I2,' of ',I2,' ---')
-          endif
-          DO 152 J=1,M
-            LN=max(1,LNBLNK(lh(J)))
-            WRITE(outs,'(A)',iostat=ios,err=1) lh(J)(1:LN)
-            CALL edisp(iuout,outs)
-  152     CONTINUE
-          if(IPFLG.eq.0)then
-            call edisp(iuout,'  ')
-            goto 41
-          else
-            if(IPM.eq.1)then
-              call edisp(iuout,' Options: a) -, b) next, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            elseif(IPM.eq.MPM)then
-              call edisp(iuout,
-     &            ' Options: a) previous, b) -, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            else
-              call edisp(iuout,
-     &          ' Options: a) previous, b) next, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            endif
-            if(iw2.eq.1)then
-              call HPAGE('prev',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-              call edisp(iuout,'  ')
-              goto 142
-            elseif(iw2.eq.2)then
-              call HPAGE('next',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-              call edisp(iuout,'  ')
-              goto 142
-            elseif(iw2.eq.3)then
-              call edisp(iuout,'  ')
-              goto 41
-            endif
-            goto 41
-          endif
         endif
       endif
    64 FORMAT('No help available for ',a,'.')
