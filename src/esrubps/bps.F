@@ -45,7 +45,7 @@ C           ifil+4  mass flow results file
 C           ifil+5  primitive construction db.
 C           ifil+6  temnporal file (ascii)
 C           ifil+7  temporal scratch file
-C           ifil+8  
+C           ifil+8  for external help text
 C           ifil+9  plant control supplementary file
 C           ifil+10 3D control volumes file
 C           ifil+11 3D connections file
