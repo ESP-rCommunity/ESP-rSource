@@ -3143,7 +3143,7 @@ C to include the path and create a string to drive the modules.
 
       character CXSTR*78
       CHARACTER*72 LS
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16
       CHARACTER*72 LAPROB
 
       logical XST,asked,dok,sorted,problem
@@ -3171,7 +3171,6 @@ C constructions are known.
       helptopic='has_unknown_attributes'
       call gethelptext(helpinsub,helptopic,nbhelp)
       mlcok=.true.
-      lh=0
       do 40 i=1,ncon
         if(SSMLCN(i)(1:7).eq.'UNKNOWN')then
           CALL ZSID(IC1(I),IE1(I),ZSDES,ZSDESC,ZSDESS)
@@ -3304,10 +3303,10 @@ C constructions are known.
           bndrysxc=.false.
           if(nbhelp.lt.59)then
             nbhelp=nbhelp+1
-            write(h(nbhelplh),'(2a)') 'Boundary unexpected GROUN in ',
+            write(h(nbhelp),'(2a)') 'Boundary unexpected GROUN in ',
      &        ZSDES
             nbhelp=nbhelp+1
-            write(h(nbhelplh),'(2a)') 'connection... ',CXSTR(1:50)
+            write(h(nbhelp),'(2a)') 'connection... ',CXSTR(1:50)
           endif
         endif
 
@@ -3371,7 +3370,7 @@ C HOT3000: BASESIMP.
             nbhelp=nbhelp+1
             write(h(nbhelp),'(2a)') 'connection... ',CXSTR(1:50)
             nbhelp=nbhelp+1
-            write(h(lnbhel),'(2a)') 'found surface attribute... ',
+            write(h(nbhelp),'(2a)') 'found surface attribute... ',
      &        SSOTHER(i,1)
           endif
         endif
@@ -3391,7 +3390,6 @@ C HOT3000: BASESIMP.
 C Check contiguity.
       helptopic='has_unknown_connects'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      lh=0
       ICC=0
       prob=.false.
       do 287 IZ=1,NCOMP
