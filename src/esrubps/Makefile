@@ -244,7 +244,7 @@ g3dmtx.F:
 	ln -s $(BLDdir)/g3dmtx.F .
 gcfunc.F:
 	rm -f gcfunc.F
-	ln -s $(CTLdir)/gcfunc.F .
+	ln -s $(COMdir)/gcfunc.F .
 gsdmtx.F:
 	rm -f gsdmtx.F
 	ln -s $(BLDdir)/gsdmtx.F .

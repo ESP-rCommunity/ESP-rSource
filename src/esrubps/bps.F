@@ -18,6 +18,9 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C SubBps: can be used where bps needs to be called as
+C    a subroutine rather than as an application.
+
 C ******************** bps
 C The main program initialises the user terminal and the
 C user-specified climate database and displays the main menu.

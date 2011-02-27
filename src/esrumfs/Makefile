@@ -32,7 +32,7 @@ emfnetw.F:
 	ln -s $(COMdir)/emfnetw.F .
 gcfunc.F:
 	rm -f gcfunc.F
-	ln -s $(CTLdir)/gcfunc.F .
+	ln -s $(COMdir)/gcfunc.F .
 initalc.F:
 	rm -f initalc.F
 	ln -s $(CTLdir)/initalc.F .
