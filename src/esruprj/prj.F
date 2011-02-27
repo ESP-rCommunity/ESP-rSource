@@ -204,7 +204,14 @@ C Initialize variables and recover command line arguments.
       LIMTTY=24
       LIMIT =24
       IFIL=11
-      iuj=IFIL+10
+      iuj=IFIL+10   ! use for journal
+
+C Other file units used in esruprj:
+C  ifil+1 (lots of uses), ifil+2 (lots of uses), ifil+3 (in mksbem and mlc db)
+C  ifile+4 (in mksbem and mat db), ifil+5 (in anlyt tdf editing scanning cfg files)
+C  ifil+6 (databases and mass flow), ifil+7 (temporal )
+C  ifil+8 (  ), ifil+9 file export, ifil+10 (AIM and DHW and journal)
+C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).

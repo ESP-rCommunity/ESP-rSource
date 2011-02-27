@@ -758,6 +758,8 @@ C Get to work.
         folder='esrunet'
       elseif(app(1:3).eq.'pdb')then
         folder='esrupdb'
+      elseif(app(1:3).eq.'prj')then
+        folder='esruprj'
       elseif(app(1:3).eq.'res')then
         folder='esrures'
       elseif(app(1:3).eq.'vew')then
@@ -774,6 +776,8 @@ C distribution lib folder.
      &  '.help'
       if(folder(1:7).eq.'esrubps')then
         ihfil=ifil+8              ! set file unit number for bps
+      elseif(folder(1:7).eq.'esruprj')then
+        ihfil=ifil+11              ! set file unit number for prj
       elseif(folder(1:7).eq.'esrures')then
         ihfil=ifil+8              ! set file unit number for res
       else
