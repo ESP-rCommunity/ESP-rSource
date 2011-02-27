@@ -217,6 +217,23 @@ C We reached the next subroutine so dump out the head and buffer.
             write(2,'(a)') outs(1:lnblnk(outs))
             head=' '     ! reset
             buflines=0
+          elseif(WORDS(nexttok)(1:6).eq.'FLNAME'.or.
+     &           WORDS(nexttok)(1:6).eq.'flname')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 27 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   27         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
           endif
           cycle    ! loop back for more
         elseif(WORDS(1)(1:10).eq.'SUBROUTINE'.or.
