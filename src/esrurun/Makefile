@@ -202,7 +202,7 @@ hcfmk.F:
 	ln -s $(PRJdir)/hcfmk.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 insert.F:
 	rm -f insert.F
 	ln -s $(PRJdir)/insert.F .

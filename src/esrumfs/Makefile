@@ -35,7 +35,7 @@ gcfunc.F:
 	ln -s $(COMdir)/gcfunc.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 psychro.F:
 	rm -f psychro.F
 	ln -s $(COMdir)/psychro.F .

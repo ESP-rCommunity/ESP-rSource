@@ -253,7 +253,7 @@ inital.F:
 	ln -s $(BLDdir)/inital.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 initalp.F:
 	rm -f initalp.F
 	ln -s $(PLTdir)/initalp.F .
