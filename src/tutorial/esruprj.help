@@ -405,7 +405,7 @@
 *enditem
       CALL ASKOK(MSG1,MSG2,OK,dok,2)
 *subroutine THMENU
-*item THMENU
+*item THMENU non_linear_thrm_prop
 'ESP_r allows defining the thermal properties of'
 'materials to be linearly or non-linearly temperature'
 'dependent .'
@@ -423,57 +423,48 @@
 'range associated with it). Show me more has details. '
 '  '
 ' The available options are :'
-'  (a)  show the next available thermal function'
-'  (b)  define the actuator location for displayed '
+'  (a)  Show the next available thermal function'
+'  (b)  Define the actuator location for displayed '
 '       thermal function (via  other menues )'
+'       The actuator location is required to define the'
+'       range of layers for which the thermal equations,'
+'       of the same thermal function, are applied.'
+'       options are:'
+'         complete building, selected zone, seleted construction'
+          or selected layer'
+'  '
 '  (c)  define the thermal equation for  displayed '
 '       thermal function  (via  other menues )'
+'  '
 '  (d)  creat a new thermal function which will be'
 '       displayed in  NON-LINEAR PROPERTIES  menu'
+'  '
 '  (e)  delete the displayed thermal function and all'
 '       data associated with it '
+'  '
+'  (f/g/h) manage the thermal configuration file which'
+'       holds the user directives for these properties.'
+'  '
 '  (!)  list the complete  description of  thermal'
 '       configuration defined so far '
 '  (?)  display this window'
 '  (-)  exit from then menu.'
-' This information is required to define the'
-' range of layers for which the thermal equations,'
-' of the same thermal function, are applied.'
 '  '
+'Note, when exiting from this facility if there have been'
+'warnings or errors reported you should fix them if possible'
+'so subsequent simulations run cleanly.'
 *enditem
         CALL EPICKS(INPICK,IVAL2,' ',' ',24,4,ITEM2,
-*item THMENU
-*enditem
-          CALL EPICKS(INPICK,IVAL3,' ',' ', 20,NCOMP,ITEM3,
-*item THMENU
-*enditem
-            CALL EPICKS(INPICK,IVAL4,' ',' ',20,NC,ITEM4,
-*item THMENU
-*enditem
-              CALL EPICKS(INPICK,IVAL5,' ',' ',20,NEL,ITEM5,
-*item THMENU
-'Enter the name of the thermal configuration file'
-*enditem
+        CALL EPICKS(INPICK,IVAL3,' ',' ', 20,NCOMP,ITEM3,
+        CALL EPICKS(INPICK,IVAL4,' ',' ',20,NC,ITEM4,
+        CALL EPICKS(INPICK,IVAL5,' ',' ',20,NEL,ITEM5,
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
-*item THMENU
-'Enter the name of the thermal configuration file'
-*enditem
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
-*item THMENU
-*enditem
         CALL PHELPD('non-linear',30,'non-linear  ',0,0,IER)
-*item THMENU
-'There was a problem and if you exit now it will not'
-'have been resolved. '
-*enditem
-          CALL ASKOK(' WARNING messages were detected',
-*item THMENU
-'There are unsaved changes to the model. These will be'
-'lost if you exit without saving. '
-*enditem
-          CALL ASKOK(' ',
+        CALL ASKOK(' WARNING messages were detected',
+        CALL ASKOK(' ',
 *subroutine THRMEQ
-*item THRMEQ
+*item THRMEQ thermal_equation_edit
 'This menu is used to creat and/ or modify the thermal'
 'equations of the thermal functions.  Modifying a'
 'thermal equation is acheived by selecting it.'
@@ -489,30 +480,23 @@
 '   '
 'where each thermal equation defines the dependence of'
 'the property for the temperature range provided.'
+'  '
+' option c provides a list of the current equations.'
+'  '
+' options d/e/f/g are used to manage the thermal file which'
+'   holds the user directives on linear/non-linear thermal'
+'   properties.'
+'  '
+'When you create or edit an equation you are asked to give'
+'it a title (up to 72 characters). It is recommended that'
+'this title includes the material and thermo-physical'
+'property names.'
 *enditem
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ','thermal data',IER,12)
-*item THRMEQ
-*enditem
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ',' data ',IER,13)
-*item THRMEQ
-'  Enter the name of the thermal file to be loaded.'
-*enditem
         CALL EASKS(THFIL,' Thermal data file name ?',' ',72,' ',
-*item THRMEQ
-'A listing of the thermal data file can be obtained'
-'by selecting the appropriate menu option.'
-'If you cancel then the menu will be re-displayed. '
-*enditem
-          CALL EASKI(INUM,
-*item THRMEQ
-'The title is required to distinguish different'
-'thermal equations as held in the thermal data file.'
-'It is recommended that this title includes the'
-'material and thermo-physical property names.'
-*enditem
-          CALL EASKS(TITLE,' Title for this thermal equation?',' ',
-*item THRMEQ
-*enditem
+        CALL EASKI(INUM,
+        CALL EASKS(TITLE,' Title for this thermal equation?',' ',
         CALL PHELPD('equation mods',3,'-',0,0,IER)
 *subroutine ADDCNTL
 *item ADDCNTL
