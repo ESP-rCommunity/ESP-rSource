@@ -39,7 +39,7 @@ C     IFIL +  4 : mass flow results library
 C     IFIL +  5 : climate file
 C     IFIL +  6 : output data file
 C     IFIL +  7 : TDF file
-C     IFIL +  8 : unused
+C     IFIL +  8 : for external help text
 C     IFIL +  9 : MLC database
 C     IFIL + 10 : plant results library
 C     IFIL + 11 : plant component database

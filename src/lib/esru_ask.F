@@ -772,8 +772,13 @@ C Assume that the installer has placed the help text file in the
 C distribution lib folder.
       write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
      &  '.help'
-
-      ihfil=ifil+2              ! set file unit number
+      if(folder(1:7).eq.'esrubps')then
+        ihfil=ifil+8              ! set file unit number for bps
+      elseif(folder(1:7).eq.'esrures')then
+        ihfil=ifil+8              ! set file unit number for res
+      else
+        ihfil=ifil+2              ! set file unit number
+      endif
       CALL ERPFREE(ihfil,ISTAT) ! free it
       CALL EFOPSEQ(ihfil,helpfil,1,IER)
       if(ier.ne.0)then
@@ -905,3 +910,157 @@ C standard message.
 
       end
 
+C subroutine to generate line of help text for an integer dialog
+C in terms of default and current value. 
+      subroutine helpcurrentint(idef,icur,ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      integer idef         ! default value for this number
+      integer icur         ! current value
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      integer iw2,iw1      ! length of two integers
+      character outs*124 ! for messages
+      CHARACTER STR1*10,STR2*10
+
+C Get to work.
+      CALL INTSTR(icur,STR2,IW2,IER)
+      CALL INTSTR(idef,STR1,IW1,IER)
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp+1
+        WRITE(H(nbhelp+1),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=2
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 'helpcurretint: permission error composing help.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'helpcurretint: error composing help.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+
+C subroutine to generate line of help text for an real dialog
+C in terms of default and current value. 
+      subroutine helpcurrentreal(def,cur,ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      real def         ! default value for this number
+      real cur         ! current value
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      integer iw2,iw1      ! length of two integers
+      character outs*124 ! for messages
+      CHARACTER STR1*16,STR2*16
+
+C Get to work.
+      CALL REL16STR(def,STR1,IW1,IER)
+      CALL REL16STR(cur,STR2,IW2,IER)
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp+1
+        WRITE(H(nbhelp+1),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=2
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &    'helpcurrentreal: permission error composing help.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'helpcurrentreal: error composing help.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+C subroutine to generate line of help text for an string dialog
+C if no lines of help have been defined in the calling code. 
+      subroutine helpwithblank(ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      character outs*124 ! for messages
+
+C Get to work.
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp  ! nothing to do
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=1
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &    'helpwithblank: permission error composing help.'
+        call edisp(iuout,outs)
+        ier=2
+      else
+        write(outs,*) 'helpwithblank: error composing help.'
+        call edisp(iuout,outs)
+        ier=1
+      endif
+      return
+      end

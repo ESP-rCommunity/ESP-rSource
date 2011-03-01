@@ -35,7 +35,6 @@ C tzph,tzpc are zone heating/cooling use over time.
 #include "sbem.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SHOUT/ICOUT
       COMMON/FILEP/IFIL
       COMMON/SAVE0/TVMEM(MCOM,4,2),ZTU(MCOM),ZTL(MCOM),ZPH(MCOM),
@@ -49,7 +48,7 @@ C tzph,tzpc are zone heating/cooling use over time.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      character LTMP*72,h*72,outs*124,louts*248
+      character LTMP*72,outs*124,louts*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lcfgf
@@ -62,11 +61,17 @@ C tzph,tzpc are zone heating/cooling use over time.
       real MJ_DHW_ann_energy,kWh_DHW_ann_energy,Tot_MJ_DHW_ann_energy
       real Tot_kWh_DHW_ann_energy,z_DHWperm2,TotDHWperm2
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Test save option selected.
 C [for NRCan]      tab=','
+      helpinsub='MZOUTP'  ! set for subroutine
       tab=' '
       IF(LSAVE.NE.0)then
 
@@ -79,6 +84,10 @@ C Output for save options 1,2 3 and 4.
       ELSE
          IWU=ICOUT
       END IF
+
+C Setup help text for the dialogs.
+      helptopic='save_zero_creation'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Save option is zero so generate the report strings and write them
 C to the feedback area or file as required.
@@ -285,18 +294,13 @@ C Close output file after writing and exit.
       endif
 
       dok=.true.
-      h(1)='The terse performance report is only written if you'
-      h(2)='answer yes. '
-      CALL ASKOK(' ','Write save option 0 data to file?',OK,dok,2)
+      CALL ASKOK(' ','Write save option 0 data to file?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK) return
    14 IWU=IFIL+1
-      H(1)='Supply a file name for this report. The initial suggestion'
-      H(2)='is the same as the binary file - you should slightly'
-      H(3)='the file name. Note that the simulator creates a binary'
-      H(4)='which is incomplete and can be removed.'
       LTMP=RFILE  ! start with zone results library file name
       CALL EASKS(LTMP,'Save option 0 data file name (see help)?',
-     &   ' ',72,'report','save0 file name',IER,4)
+     &   ' ',72,'report','save0 file name',IER,nbhelp)
       CALL EFOPSEQ(IWU,LTMP,4,IER)
       IF(IER.LT.0)GOTO 14
       goto 16   ! loop back to generate the report

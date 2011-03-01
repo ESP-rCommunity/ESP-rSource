@@ -870,7 +870,6 @@ C *********************************************************************
 #include "control.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
@@ -888,8 +887,15 @@ C *********************************************************************
 
       common/setuq/qpltp(mcom),qpltf(mcom),conv(mcom)
 
-      character outs*124,h*72
+      character outs*124
       logical OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CONT3D'  ! set for subroutine
 
       BB1=B1
       BB2=B2
@@ -938,12 +944,10 @@ C Error!
         call edisp(iuout,outs)
         icflg1(icf)=1
         dok=.true.
-        h(1)='If you say yes, the zone(s) associated with this'
-        h(2)='control loop will free-float for any days outwith'
-        h(3)='the period of validity. If you say no the simulator'
-        h(4)='will stop. '
+        helptopic='option_to_free_float'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Continue with no control if this condition occurs?',
-     &             '(see help)',OK,dok,4)
+     &             '(see help)',OK,dok,nbhelp)
         IF(.NOT.OK)then
           call epwait
           STOP
@@ -968,12 +972,10 @@ C Error!
      &   ' is being referenced outside its dates of validity.'
         call edisp(iuout,outs)
         dok=.true.
-        h(1)='If you say yes, the zone(s) associated with this'
-        h(2)='control loop will free-float for any days outwith'
-        h(3)='the period of validity. If you say no the simulator'
-        h(4)='will stop. '
+        helptopic='option_to_free_float'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Continue with no control if this condition occurs?',
-     &             '(see help)',OK,dok,4)
+     &             '(see help)',OK,dok,nbhelp)
         icflg2(icf)=1
         IF(.NOT.OK)then
           call epwait

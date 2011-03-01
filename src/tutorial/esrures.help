@@ -1053,12 +1053,8 @@ C        CALL EASKABC('Data display options:',outs,
 '  tagged - marked up data'
 *enditem
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
-*item plttab
-*enditem
         CALL PHELPD('systems tabular data',27,'-',0,0,IER)
-*item plttab
-*enditem
-          CALL EASKI(nsnd,outs,' ',
+        CALL EASKI(nsnd,outs,' ',
 *subroutine opnplt
 *item opnplt res_plant_comp_list
 'You may select any number of components in'
@@ -1401,7 +1397,7 @@ C        CALL EASKABC('Data display options:',outs,
 '                    and std deviation of performance data'
 ' Hours > query point - statistical report with additional data'
 '                    on how often data is above a specific value'
-' Hours < query point - ditto but for how often data is below a
+' Hours < query point - ditto but for how often data is below a'
 '                    speific value'
 ' Frequency histogram - performance data sorted into bins and'
 '                    presented as histograms in graphic or'

@@ -46,7 +46,6 @@ c ymax   : Expected maximum value of variable along the y axis.
 #include "plant.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
       common/c13ps/npmcoe,npnod,npmtyp
@@ -56,7 +55,14 @@ c ymax   : Expected maximum value of variable along the y axis.
       common/pcnam/pcname(mpcom)
 
       dimension IVALS(mpcom)
-      character H*72, pcname*15, outs*124
+      character pcname*15, outs*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='minput'  ! set for subroutine
 
 c Get number of components.
       if(npcomp.eq.1) then
@@ -70,12 +76,10 @@ C Initialise minimum and maximum y-axis values.
 
 c Get number of each component.
    10   mnpc=npcomp
-        H(1)='The monitor facility tracks selected nodes temperature'
-        H(2)='state variables within the graphic display'
-        H(3)='as the simulation proceeds. You may select any number'
-        H(4)='of components in any order or all components. '
+        helptopic='plt_graphic_monitor'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(mnpc,IVALS,' ',' Which component to include: ',
-     &    15,npcomp,pcname,' monitor list',IER,4)
+     &    15,npcomp,pcname,' monitor list',IER,nbhelp)
      &    
          if(ier.ne.0) goto 10
          if(mnpc.eq.0)return
@@ -96,7 +100,7 @@ c If more than one node exists then get desired node.
         if(nnodes.gt.1) then
           write(outs,*) ' Node number for component',mcomp(i),'?'
           CALL EASKI(nnc,outs,' ',
-     &      1,'F',nnodes,'F',1,'node number',IER,1)
+     &      1,'F',nnodes,'F',1,'node number',IER,nbhelp)
           mcnod(i)=nnc
         endif
    60 continue
@@ -108,11 +112,11 @@ c type index.
       if(npmtyp.eq.3) then
         CALL EASKI(mstate,' State variable:',
      &    ' 1) temperature,  2) 1st phase or  3) 2nd phase ? ',
-     &    1,'F',3,'F',1,'state variable',IER,1)
+     &    1,'F',3,'F',1,'state variable',IER,nbhelp)
       elseif(npmtyp.eq.2) then
         CALL EASKI(mstate,' State variable:',
      &    ' 1) temperature,  2) 1st phase ? ',
-     &    1,'F',2,'F',1,'state variable',IER,1)
+     &    1,'F',2,'F',1,'state variable',IER,nbhelp)
       elseif(npmtyp.eq.1) then
          mstate=1
       endif
@@ -120,9 +124,9 @@ c type index.
 
 c Get expected minimum and maximum values for satate variable.
    30 CALL EASKR(ymin,' ',' Minimum value for state variable ?',
-     &  0.,'-',0.,'-',0.8,'min state var',IER,0)
+     &  0.,'-',0.,'-',0.8,'min state var',IER,nbhelp)
       CALL EASKR(ymax,' ',' Maximum value for state variable ?',
-     &  0.,'-',0.,'-',0.8,'max state var',IER,0)
+     &  0.,'-',0.,'-',0.8,'max state var',IER,nbhelp)
       if(ier.ne.0) goto 30
       return
 

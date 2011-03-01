@@ -38,7 +38,6 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -63,9 +62,16 @@ C *********************************************************************
 
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
-      CHARACTER MSG*82,L3DTMP*72,H*72,FLTYP*25,LTMP*72,path*72
+      CHARACTER MSG*82,L3DTMP*72,FLTYP*25,LTMP*72,path*72
 
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='INIT3D'  ! set for subroutine
 
       ZNP1=0.
       ZNF1=0.
@@ -87,8 +93,9 @@ C Skip the 1D zones.
           WRITE(MSG,'(2A,I2,A)')'Do you want the associated 3D files ',
      &                         'for zone (',ICOMP,') to be re-ordered?'
           dok=.true.
-          h(1)='<< help text to be added >> '
-          CALL ASKOK(' ',MSG,OK,dok,1)
+          helptopic='re-order_3d_files'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(' ',MSG,OK,dok,nbhelp)
           IF(OK)CALL FLORDR(ICOMP)
         ENDIF
         CALL USRMSG(' ',
@@ -166,10 +173,10 @@ C Read next record in the control volumes file.
         endif
 
 C Open the 3D temporary file.
-        H(1)='     Enter the name of the 3D temporary file.'
-        H(2)='     This file will be automatically deleted.'
+        helptopic='3d_temp_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         FLTYP='3D temporary'
-        CALL FLNAME(ICOMP,L3DTMP,FLTYP,'_TMP',2,IER)
+        CALL FLNAME(ICOMP,L3DTMP,FLTYP,'_TMP',nbhelp,IER)
         ier=0
         CALL EFOPRAN(ITF3,L3DTMP,3,4,IER)
         DO 40 IS=1,NCONST(ICOMP)
@@ -266,7 +273,9 @@ C Next step is to assure that the same node will not be selected again.
 C Create the longwave file from the total longwave file.
         FLTYP='longwave'
         LTMP=L3DLWV(ICOMP)
-        CALL FLNAME(ICOMP,LTMP,FLTYP,'.LWV',0,IER)
+        helptopic='longwave_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL FLNAME(ICOMP,LTMP,FLTYP,'.LWV',nbhelp,IER)
         L3DLWV(ICOMP)=LTMP
         ier=0
         CALL EFOPRAN(ILWV,L3DLWV(ICOMP),4,4,IER)
@@ -334,7 +343,9 @@ C Determine the number of nodes in the 3D ground model.
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         FLTYP='nodes distribution'
         LTMP=LGDNDD
-        CALL FLNAME(-1,LTMP,FLTYP,'.NDD',0,IER)
+        helptopic='nodes_distr_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL FLNAME(-1,LTMP,FLTYP,'.NDD',nbhelp,IER)
         LGDNDD=LTMP
         ier=0
         CALL EFOPRAN(INDD,LGDNDD,3,4,IER)
@@ -404,15 +415,21 @@ C *********************************************************************
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
 
       CHARACTER COPYFL*124,NTERM*1,FLTYP*25
-      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DTMP,H
+      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DTMP
       logical unixok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='FLORDR'  ! set for subroutine
 
       CALL USRMSG(' ','Re-ordering in process. Please wait !','-')
       L3DTMP=' '
@@ -480,10 +497,10 @@ C Interier node with convective only boundary.
    80 CONTINUE
 
 C Re-order the connections file.
-      H(1)='     Enter the name of the 3D temporary file.'
-      H(2)='     This file will be automatically deleted.'
+      helptopic='3D_temporary_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       FLTYP='3D temporary'
-      CALL FLNAME(IZ,L3DTMP,FLTYP,'_TMP',2,IER)
+      CALL FLNAME(IZ,L3DTMP,FLTYP,'_TMP',nbhelp,IER)
       call isunix(unixok)
       if(unixok)then
         WRITE(COPYFL,'(5a)')'cp ',L3DCNC(IZ)(1:lnblnk(L3DCNC(IZ))),
