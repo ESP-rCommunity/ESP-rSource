@@ -270,9 +270,13 @@ C Declare local variables
       CHARACTER, DIMENSION(10) :: ITEM*34        !Array holding strings for menu items
       INTEGER :: IER                             !errorflag
       INTEGER :: NITEMS                          !number of items
-C Common blocks
-      COMMON/POPHELP/H(60)                       !Array holding help text
-      CHARACTER :: H*72                          !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='AIM2_Inputs'  ! set for subroutine
 
 C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
       Toplevel_Menu=-4
@@ -289,42 +293,17 @@ C Toplevel_Menu needs to be set to -4 for the menu to be displayed in text mode
       ITEM(10)='- exit this menu'
       NITEMS=10
 
-      H(1) ='This is the main menu for the empirical air '
-      H(2) ='Alberta Infiltration Model (AIM2).  This model applies'
-      H(3) ='only to low rise (up to 3 storey) detatched single family'
-      H(4) ='residendial buildings.'
-      H(5) =' '
-      H(6) ='  a. Blower door test data to describe leakage or'
-      H(7) ='     defined by air tightness type.'
-      H(8) ='  b. Leakage distribution to ceiling, wall and'
-      H(9) ='     floor.'
-      H(10)='  c. Terrain at weather station and building site,'
-      H(11)='     shielding at walls and flue, and anemometer height'
-      H(12)='     are all used to calculate the wind speed correction'
-      H(13)='     factor.'
-      H(14)='  d. Height of building eves is used to define the height'
-      H(15)='     of the eaves. The height of the building eaves'
-      H(16)='     defaults to 2.5m*(# of storeys) + 0.5m, based on the'
-      H(17)='     number of storeys indicated in the house '
-      H(18)='     specifications description. This value may be '
-      H(19)='     overwritten. If the number of storeys is '
-      H(20)='     subsequently changed, esp-r defaults the eaves'
-      H(21)='     height accordingly. '
-      H(22)='  e. Fireplace and DHW flue diameters are used to specify'
-      H(23)='     the diameter of the flue on a combustion type water '
-      H(24)='     heater. Esp-r will assign a default value based on '
-      H(25)='     the tank type. This default value can be overwritten'
-      H(26)='     at any time.'
-      H(27)='  f. Reference zone for infiltration calculation,'
-      H(28)='     and zone indexing of zones receiving '
-      H(29)='     infiltration.'
+      helptopic='AIM2_main_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Empirical Air Infiltration Model',ITEM,NITEMS,
      &            Toplevel_Menu)
 
       IF (Toplevel_Menu.EQ.NITEMS-1) THEN
 C List help text for the top level menu.
-        CALL PHELPD('AIM2 model menu',30,'-',0,0,IER)
+        helptopic='AIM2_main_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('AIM2 model menu',nbhelp,'-',0,0,IER)
       END IF
       IF (Toplevel_Menu.EQ.NITEMS) THEN
 C Exit this menu
@@ -356,8 +335,13 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                  !Array holding help text
-      CHARACTER :: H*72                     !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='AIM2_Interface'  ! set for subroutine
 
       IF (.NOT.AIM2_Initialized) THEN
 C Initialze all input parameters
@@ -368,6 +352,10 @@ C Initialze generic house data required by the AIM-2 model
 
 C Copy all parameters to temporary variables to enable checking for changes
       CALL Initialise
+
+C Setup help text for the dialogs.
+      helptopic='AIM2_attributes_a'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       DO
         Selection = Toplevel_Menu()
@@ -404,15 +392,10 @@ C Keep displaying the shielding menu until exit is selected.
 
 C Height of anemometer at weather station.
             ELSE IF (Selection2.EQ.5) THEN
-              H(1) ='The Anemometer Height is the height at which the'
-              H(2) ='wind speed was measured at the weather station.  A'
-              H(3) ='default of 10 meters is assumed, and should not be'
-              H(4) ='changed unless a user-defined weather file is used'
-              H(5) ='and the anemometer was at a different height.'
               Temp = AIM2_anemom_height
               CALL EASKR(Temp,' ',
      &         'Height of anenometor at weather station (m)?',0.1,'F',
-     &         100.0,'F',10.0, 'Amenometer height',IER,5)
+     &         100.0,'F',10.0, 'Amenometer height',IER,nbhelp)
               IF (IER.EQ.0) AIM2_anemom_height = Temp
               WRITE(DisplayString,'(A, F8.2, A)')
      &          'Height of anenometor: ',AIM2_anemom_height, ' m'
@@ -427,7 +410,7 @@ C Building eves description.
            Temp = AIM2_eaves_height
            CALL EASKR(Temp,' ',
      &        'Height of the building eaves (m)?',1.,'F',10.0,
-     &        'F',5.0,'Eaves height',IER,3)
+     &        'F',5.0,'Eaves height',IER,nbhelp)
            IF (IER.EQ.0) AIM2_eaves_height = Temp
            WRITE(DisplayString,'(A, F8.2, A)')'Building eaves height: ',
      &             AIM2_eaves_height, ' m'
@@ -436,9 +419,9 @@ C Building eves description.
         CASE (5)
 C Diameter of furnace flue (mm).
            Temp = AIM2_furnace_flue
-           CALL EASKR(Temp,' ','Diameter of furnace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Furnace flue diameter'
-     &         ,IER,3)
+           CALL EASKR(Temp,' ','Diameter of furnace flue (mm)?',
+     &       0.,'F',500.0,'F',200.0,'Furnace flue diameter',
+     &       IER,nbhelp)
            IF (IER.EQ.0) AIM2_furnace_flue = Temp
            WRITE(DisplayString,'(A, F8.2, A)')'Furnace flue diameter: ',
      &             AIM2_furnace_flue, ' mm'
@@ -446,9 +429,9 @@ C Diameter of furnace flue (mm).
 
 C Diameter of #1 fireplace flue (mm).
            Temp = AIM2_fire_flue1
-           CALL EASKR(Temp,' ','Diameter of #1 fireplace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Fireplace #1 flue diameter'
-     &         ,IER,3)
+           CALL EASKR(Temp,' ','Diameter of #1 fireplace flue (mm)?',
+     &       0.,'F',500.0,'F',200.0,'Fireplace #1 flue diameter',
+     &       IER,nbhelp)
            IF (IER.EQ.0) AIM2_fire_flue1 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
      &      'Fireplace #1 flue diameter: ', AIM2_fire_flue1, ' mm'
@@ -456,9 +439,9 @@ C Diameter of #1 fireplace flue (mm).
 
 C Diameter of #2 fireplace flue (mm).
            Temp = AIM2_fire_flue2
-           CALL EASKR(Temp,' ','Diameter of #2 fireplace flue (mm)?'
-     &          ,0.,'F',500.0,'F',200.0,'Fireplace #2 flue diameter'
-     &         ,IER,3)
+           CALL EASKR(Temp,' ','Diameter of #2 fireplace flue (mm)?',
+     &       0.,'F',500.0,'F',200.0,'Fireplace #2 flue diameter',
+     &       IER,nbhelp)
            IF (IER.EQ.0) AIM2_fire_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
      &      'Fireplace #2 flue diameter: ',AIM2_fire_flue2, ' mm'
@@ -468,7 +451,8 @@ C Diameter of primary DHW system flue (mm).
            Temp = AIM2_DHW_flue1
            CALL EASKR(Temp,' ',
      &       'Diameter of primary DHW system flue (mm)?',0.,'F',
-     &       500.0,'F',200.0,'Primary DHW system flue diameter',IER,3)
+     &       500.0,'F',200.0,'Primary DHW system flue diameter',
+     &       IER,nbhelp)
            IF (IER.EQ.0) AIM2_DHW_flue1 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
      &       'Primary DHW system flue diameter: ',AIM2_DHW_flue1,' mm'
@@ -477,8 +461,9 @@ C Diameter of primary DHW system flue (mm).
 C Diameter of secondary DHW system flue (mm).
            Temp = AIM2_DHW_flue2
            CALL EASKR(Temp,' ',
-     &        'Diameter of Secondary DHW system flue (mm)?',0.,'F',
-     &        500.0,'F',200.0,'Secondary DHW system diameter',IER,3)
+     &       'Diameter of Secondary DHW system flue (mm)?',0.,'F',
+     &       500.0,'F',200.0,'Secondary DHW system diameter',
+     &       IER,nbhelp)
            IF (IER.EQ.0) AIM2_DHW_flue2 = Temp
            WRITE(DisplayString,'(A, F8.2, A)')
      &       'Secondary DHW system flue diameter: ',AIM2_DHW_flue2,
@@ -498,7 +483,7 @@ C Check to see if any of the paramets have changed before exiting
           IF (CheckForChanges()) THEN
 C Check if the user wants to save the changes made
             CALL ASKOK(' Do you wish to save your changes?',' ',OK,
-     &                .TRUE.,0)
+     &                .TRUE.,nbhelp)
             IF (OK) CALL SAVE_AIM2
           END IF
           EXIT
@@ -539,28 +524,18 @@ C Declare local variables
       CHARACTER, DIMENSION(5) :: ITEM*34        !Array holding strings for menu items
       INTEGER :: IER                            !errorflag
       INTEGER :: NITEMS                         !number of items
-C Common blocks
-      COMMON/POPHELP/H(60)                      !Array holding help text
-      CHARACTER :: H*72                         !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LeakageMenu'  ! set for subroutine
 
 
 C Help text for this menu.
-      H(1)= 'The Air Tightness Type is used to indicate the natural'
-      H(2)= 'infiltration rate. Air tightness is measured in air '
-      H(3)= 'changes per hour (ACH). The user has the option of '
-      H(4)= 'entering blower door test values to determine the flow'
-      H(5)= 'coefficient or specifying an air tightness category where'
-      H(6)= 'air change rate and the equivalent leakage area are '
-      H(7)= 'automatically calculated by esp-r.'
-      H(8)= ''
-      H(9)= 'For further information on the blower door tests see'
-      H(10)= '1. Canadian General Standards Board (CGSB) standard'
-      H(11)= '   "Determination of the Airtightness of Building '
-      H(12)= '    Envelopes by the Fan Depressurization Method" '
-      H(13)= '2.  Airtightness tested in accordance with the EnerGuide'
-      H(14)= '    for Houses "as operated" airtightness test procedure'
-      H(15)= '    in EnerGuide for Houses: "Energy Advisor Workshop'
-      H(16)= '    Manual, Module 3 Conducting a Blower Door Test." '
+      helptopic='AIM_leakage_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (airtight_type.EQ.1) THEN
         ITEM(1)='a Blower door test (CGSB) ***'
@@ -591,7 +566,7 @@ C Selection needs to be set to -4 for the menu to be displayed in text mode
       CALL EMENU(' Leakage description',ITEM,NITEMS,Selection)
       IF (Selection.EQ.NITEMS-1) THEN! help
 C List help text for the Leakage description menu.
-        CALL PHELPD('Leakage description',16,'-',0,0,IER)
+        CALL PHELPD('Leakage description',nbhelp,'-',0,0,IER)
       ELSE IF (Selection.EQ.NITEMS) THEN
 C Exit this menu
         CALL USRMSG(' ',' ','-')
@@ -618,20 +593,17 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                      !Array holding help text
-      CHARACTER :: H*72                         !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='AirTightnessTypeMenu'  ! set for subroutine
 
 C Help text for this menu.
-      H(1)= 'The Air Tightness Type is used to indicate the natural'
-      H(2)= 'infiltration rate. Air tightness is measured in air '
-      H(3)= 'changes per hour (ACH). The options are:'
-      H(4)= 'Loose (10.35 ACH @ 50 Pa)       '
-      H(5)= 'Average (4.55 ACH @ 50 Pa)      '
-      H(6)= 'Present (3.57 ACH @ 50 Pa)      '
-      H(7)= 'Energy Tight (1.5 ACH @ 50 Pa)  '
-      H(8)= 'By specifying one of these air tightness categories, the'
-      H(9)= ' air change rate and the equivalent leakage area are '
-      H(10)= 'automatically calculated by esp-r.'
+      helptopic='AIM_tightness_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (airtight_type-2.EQ.1) THEN
         ITEM(1)='a Loose          ***'
@@ -674,7 +646,7 @@ C INO needs to be set to -4 for the menu to be displayed in text mode
         CALL EDISP(IUOUT,DisplayString)
       ELSE IF (INO.EQ.NITEMS-1) THEN
 C List help text for the Leakage description menu.
-        CALL PHELPD('Leakage description',10,'-',0,0,IER)
+        CALL PHELPD('Leakage description',nbhelp,'-',0,0,IER)
       ELSE IF (INO.EQ.NITEMS) THEN
 C Exit this menu
         CALL USRMSG(' ',' ','-')
@@ -710,26 +682,21 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                      !Array holding help text
-      CHARACTER :: H*72                         !Strings for help text
+
 C Function definition
       LOGICAL :: REQUAL                         !used to compare real variables
 
-C Help text for this menu.
-      H(1)= 'The blower door test values entered determine the flow'
-      H(2)= 'coefficient.  The blower door test results consist of the'
-      H(3)= 'Air Change Rate @ 50 Pa. and the Equivalent Leakage Area'
-      H(4)= '(ELA). These results are used to determine the amount of'
-      H(5)= 'air leaking through the envelope when an interior/'
-      H(6)= 'exterior air pressure differential of 50 Pa air pressure'
-      H(7)= 'is applied. Esp-r uses the blower door test data to '
-      H(8)= 'generate an air infiltration rate, which provides a '
-      H(9)= 'relatively accurate indication of the air leakage '
-      H(10)='characteristics of the building. The ELA may be specified'
-      H(11)='at either 10 Pa. or 4 Pa. If the ELA is set to zero (0),'
-      H(12)='the program estimates the ELA at the specified pressure '
-      H(13)='based on the ACH @50, and an assumed flow exponent of '
-      H(14)='0.68.'
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BlowerDoorInputMenu'  ! set for subroutine
+
+C Help text for this menu and for the dialogs in the menu.
+C << more help text would be useful! >>
+      helptopic='AIM_blower_door_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (blower_door_input_option.EQ.1) THEN
         ITEM(1)='a C & n          ***'
@@ -772,7 +739,7 @@ C Get the flow coefficient and flow exponent
         IF (REQUAL(Temp,0.,.001)) Temp=0.05
         CALL EASKR(Temp,' ',
      &    ' Building fabric flow coefficient [m^3/(s Pa^n)]? ',
-     &    0.,'F',0.1,'W',0.05,'flow coefficient',IER,3)
+     &    0.,'F',0.1,'W',0.05,'flow coefficient',IER,nbhelp)
         IF (IER.EQ.0) THEN
           AIM2_CO = Temp
           WRITE(DisplayString,'(A, F7.2, A)')
@@ -784,7 +751,7 @@ C Get the flow coefficient and flow exponent
         IF (REQUAL(Temp,0.,.001))Temp=0.67
         CALL EASKR(Temp,' ',
      &    ' Building flow exponent (dimensionless)? ',
-     &     0.5,'F',1.,'W',0.67,'flow exponent',IER,3)
+     &     0.5,'F',1.,'W',0.67,'flow exponent',IER,nbhelp)
         IF (IER.EQ.0) THEN
           AIM2_n = Temp
           WRITE(DisplayString,'(A, F7.2)')
@@ -798,7 +765,7 @@ C Get air change rate @ 50Pa
         IF (REQUAL(Temp,0.,.001))Temp=15.
         CALL EASKR(Temp,' ',
      &     ' Air change rate @50 Pa? ',
-     &     0.1,'F',30.0,'W',15.0,'air change rate',IER,3)
+     &     0.1,'F',30.0,'W',15.0,'air change rate',IER,nbhelp)
         IF (IER.EQ.0) THEN
           ACH_50Pa = Temp
           WRITE(DisplayString,'(A, F7.2)')
@@ -810,7 +777,7 @@ C Get Pressure difference in Pa
         IF (REQUAL(Temp,0.,.001))Temp=10.
         CALL EASKR(Temp,' ','Pressure difference (Pa)?',
      &         4.0,'W',10.0,'W',10.0,'Pressure difference',
-     &         IER,3)
+     &         IER,nbhelp)
         IF (IER.EQ.0) THEN
           ELA_deltaP = Temp
           WRITE(DisplayString,'(A, F7.2, A)')
@@ -822,7 +789,7 @@ C Get Pressure difference in Pa
           IF (REQUAL(Temp,0.,.001))Temp=500.
           CALL EASKR(Temp,' ',
      &      'Equivalent air leakage area in (ELA) cm^2?',0.1,'F',7999.0
-     &      ,'W',500.0,'Equivalent air leakage area',IER,3)
+     &      ,'W',500.0,'Equivalent air leakage area',IER,nbhelp)
           IF (IER.EQ.0) THEN
             ELA_given = 1 !input given
             ELA_cm = Temp
@@ -836,7 +803,7 @@ C Get Pressure difference in Pa
           IF (REQUAL(Temp,0.,.001))Temp=0.611
           CALL EASKR(Temp,' ',
      &      'Discharge coefficient for ELA?',0.,'F',1.
-     &      ,'W',0.611,'Discharge coefficient',IER,3)
+     &      ,'W',0.611,'Discharge coefficient',IER,nbhelp)
           IF (IER.EQ.0) THEN
             ELA_given = 1 !input given
             ELA_Cd = Temp
@@ -850,7 +817,7 @@ C Get Pressure difference in Pa
 
       ELSE IF (INO.EQ.NITEMS-1) THEN     !help
 C List help text for the Leakage description menu.
-        CALL PHELPD('Leakage description',14,'-',0,0,IER)
+        CALL PHELPD('Blower door description',nbhelp,'-',0,0,IER)
       ELSE IF (INO.EQ.NITEMS) THEN
 C Exit this menu
         CALL USRMSG(' ',' ','-')
@@ -878,28 +845,24 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                 !Array holding help text
-      CHARACTER :: H*72                    !Strings for help text
+
 c Function declaration
       LOGICAL :: REQUAL                    !used to compare real variables
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LeakageDistribution'  ! set for subroutine
+
 C Help text for the leakage distribution
-      H(1)= 'Leakage Fraction for Ceilings, Walls, and Floors'
-      H(2)= 'The leakage fractions are used to define the fraction of'
-      H(3)= 'the total building air leakage to attribute to the '
-      H(4)= 'ceilings, walls and floors.'
-      H(5)= 'If use defaults is selected, the default values are set '
-      H(6)= 'by esp-r and are based on the house type, number of'
-      H(7)= 'storeys, and the type of foundation (crawl space, '
-      H(8)= 'basement) specified for the house.'
-      H(9)= 'Otherwise the user must specify the leakage fractions '
-      H(10)= 'to ceilings, walls, and floors. The desired leakage '
-      H(11)= 'fractions must be entered as a decimal value, and must '
-      H(12)= 'total 1.0.'
+      helptopic='AIM_leak_distr_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EASKAB(
      &    'Specify leakage fractions for ceiling, wall and floor?',
-     &    'Options:','No - use defaults','Yes',INO,12)
+     &    'Options:','No - use defaults','Yes',INO,nbhelp)
 
       userspec_leakage = INO-1
 
@@ -911,17 +874,17 @@ C defaults assumed from http://www.inive.org/members_area/medias/pdf/Inive%5CIBP
           Temp = AIM2_ceil_frac
           CALL EASKR(Temp,' ',
      &       'What is the leakage fraction for the ceiling?',0.0,'F',
-     &         1.0,'F',0.2,'ceiling leakage fraction',IER,12)
+     &         1.0,'F',0.2,'ceiling leakage fraction',IER,nbhelp)
           IF (IER.EQ.0) AIM2_ceil_frac = Temp
           Temp = AIM2_wall_frac
           CALL EASKR(Temp,' ',
      &        'What is the leakage fraction for the wall?  ',0.0,'F',
-     &         1.0,'F',0.65,'wall leakage fraction',IER,12)
+     &         1.0,'F',0.65,'wall leakage fraction',IER,nbhelp)
           IF (IER.EQ.0) AIM2_wall_frac = Temp
           Temp = AIM2_floor_frac
           CALL EASKR(Temp,' ',
      &        'What is the leakage fraction for the floor? ',0.0,'F',
-     &         1.0,'F',0.15,'floor leakage fraction',IER,12)
+     &         1.0,'F',0.15,'floor leakage fraction',IER,nbhelp)
 
 C check to ensure fractions add up to 1.
           IF (IER.EQ.0) AIM2_floor_frac = Temp
@@ -966,23 +929,20 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                      !Array holding help text
-      CHARACTER :: H*72                         !Strings for help text
+
 C Function declaration
       LOGICAL :: REQUAL                         !used to compare real variables
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ShieldingAndTerrainMenu'  ! set for subroutine
+
 C Help text for this menu.
-      H(1)= 'The weather station terrain is used to specify the '
-      H(2)= 'terrain at the weather station and the building site'
-      H(3)= 'terrain is used to specify the local terrain for the'
-      H(4)= 'building.  The default for the weather station is'
-      H(5)= 'c) Open Flat terrain, grass.'
-      H(6)= 'The two terrains are used to calculate the wind speed'
-      H(7)= 'correction factor. This is a function of the surface'
-      H(8)= 'roughness lengths at the building site and weather '
-      H(9)= 'station, the height of the eaves, and the height of '
-      H(10)= 'the anemometer at the weather station. '
-      H(11)= 'This is equation 27 from Bradley (1993, p8).'
+      helptopic='AIM_terrain_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (AIM2_terrain_weather.NE.0) THEN
         WRITE(ITEM(1),'(A, I1, A)')'a Terrain at weather station  (',
@@ -1033,7 +993,8 @@ C selection
      &          Selection)
       IF (Selection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
-        CALL PHELPD('Shielding and terrain description',11,'-',0,0,IER)
+        CALL PHELPD('Shielding and terrain description',nbhelp,'-',
+     &    0,0,IER)
       ELSE IF (Selection.EQ.NITEMS) THEN
 C Exit this menu
         CALL USRMSG(' ',' ','-')
@@ -1070,22 +1031,17 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                                   !Array holding help text
-      CHARACTER :: H*72                                      !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='TerrainMenu'  ! set for subroutine
 
 C Help text for this menu.
-      H(1)= 'The weather station terrain is used to specify the '
-      H(2)= 'terrain at the weather station and the building site'
-      H(3)= 'terrain is used to specify the local terrain for the'
-      H(4)= 'building.  The default for the weather station is'
-      H(5)= 'c) Open Flat terrain, grass.'
-      H(6)= 'The two terrains are used to calculate the wind speed'
-      H(7)= 'correction factor. This is a function of the surface'
-      H(8)= 'roughness lengths at the building site and weather '
-      H(9)= 'station, the height of the eaves, and the height of '
-      H(10)= 'the anemometer at the weather station. '
-      H(11)= 'This is equation 27 from Bradley (1993, p8).'
-
+      helptopic='AIM_terrain_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (TerrainSelection.EQ.1) THEN
         ITEM(1)='a Open sea,fetch > 5 km     ***'
@@ -1150,7 +1106,7 @@ C selection
       IF (TerrainSelection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
         TerrainSelection = PreviousSelection
-        CALL PHELPD('Terrain selection',11,'-',0,0,IER)
+        CALL PHELPD('Terrain selection',nbhelp,'-',0,0,IER)
       ELSE IF (TerrainSelection.EQ.NITEMS) THEN
 C Exit this menu
         TerrainSelection = PreviousSelection
@@ -1189,24 +1145,17 @@ C Declare local variables
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
-      COMMON/POPHELP/H(60)                                   !Array holding help text
-      CHARACTER :: H*72                                      !Strings for help text
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ShieldingMenu'  ! set for subroutine
 
 C Help text for this menu.
-      H(1)= 'Local Shielding Walls and Flue'
-      H(2)= 'The Local Shielding Walls and Flue fields are used to '
-      H(3)= 'specify how well both the walls and the flue are shielded'
-      H(4)= 'from the wind.  The options are:'
-      H(5)= '1. None: no local shielding (i.e. no obstructions)'
-      H(6)= '2. Light: local shielding having few obstructions within '
-      H(7)= '   two house heights'
-      H(8)= '3. Heavy: local shielding having many large obstructions'
-      H(9)= '   within two house heights'
-      H(10)= '4. Very Heavy: local shielding having many large '
-      H(11)= '   obstructions within one house height'
-      H(12)= '5. Complete (by large buildings): local shielding having'
-      H(13)= '   large buildings immediately adjacent'
-
+      helptopic='AIM_shielding_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IF (ShieldingSelection.EQ.1) THEN
         ITEM(1)='a None          ***'
@@ -1253,7 +1202,7 @@ C selection
       IF (ShieldingSelection.EQ.NITEMS-1) THEN
 C List help text for the Shielding and Terrain menu.
         ShieldingSelection = PreviousSelection
-        CALL PHELPD('Shielding selection',13,'-',0,0,IER)
+        CALL PHELPD('Shielding selection',nbhelp,'-',0,0,IER)
        ELSE IF (ShieldingSelection.EQ.NITEMS) THEN
 C Exit this menu
         ShieldingSelection = PreviousSelection
@@ -1304,15 +1253,20 @@ C Common blocks
       LOGICAL :: CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK  !CFGOK flag for wether cfg file has been loaded in
       COMMON/C1/NCOMP,NCON
       INTEGER :: NCOMP,NCON                         !ncomp is the number of zones
-      COMMON/POPHELP/H(60)                          !Array holding help text
-      CHARACTER :: H*72                             !Strings for help text
+
       INTEGER, DIMENSION(NCOMP) :: InfilZones       !Temporary array to hold zones to recieve infiltration
 
 C Function definition
       INTEGER :: lnblnk
 
-      InfilZones=0
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
+      helpinsub='InfiltrationZonesMenu'  ! set for subroutine
+
+      InfilZones=0
 
       ITEM(1)='a Reference zone         '
       ITEM(2)='b Infiltration zones '
@@ -1322,30 +1276,10 @@ C Function definition
       ITEM(6)='? Help              '
       ITEM(7)='- Exit              '
       NITEMS = 7
+
 C Help text for this menu.
-      H(1)= 'The reference zone is the number of the zone whose '
-      H(2)= 'temperature is used as reference for infiltration '
-      H(3)= 'calculations.'
-      H(4)= ''
-      H(5)= 'The infiltration zones are the zone numbers of zones '
-      H(6)= 'that receive infiltration.'
-      H(7)= ''
-      H(8)= 'The basement zone is the number of the zone describing '
-      H(9)= 'the basement as basements have different infiltration '
-      H(10)= 'air flow allocations to that of living space. If no '
-      H(11)= 'basement is selected, it is assumed that there is no '
-      H(12)= 'basement.'
-      H(13)= ''
-      H(14)= 'The crawlspace zone is the number of the zone describing'
-      H(15)= 'the crawlspace as crawlspaces are not included in the'
-      H(16)=' house volume for infiltration calculations.  If no crawl'
-      H(17)= 'space is selected, it is assumed that there is no crawl'
-      H(18)= 'space.'
-      H(19)= ''
-      H(20)= 'The attic zone is the number of the zone describing '
-      H(21)= 'the attic as infiltration to attics is not calculated'
-      H(22)= 'with AIM-2 model. If no attic is selected, it is assumed'
-      H(23)= 'that there is no attic.  '
+      helptopic='AIM_zone_for_infil'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C INO needs to be set to -4 for the menu to be displayed in text mode
       INO = -4
@@ -1414,13 +1348,12 @@ C Zone number of basement
           Zone = AIM2_basement_zone
           IF (Zone.NE.0) THEN
             CALL ASKOK('Do you wish to revert to having no basement?',
-     &                ' ',OK,.TRUE.,0)
+     &                ' ',OK,.TRUE.,nbhelp)
             IF (OK) AIM2_basement_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            H(1)='Select the basement zone '
             CALL EPICKS(1,IVALS,' ','Basement Zone?',
-     &                12,NCOMP,zname,'zone list',IER,1)
+     &                12,NCOMP,zname,'zone list',IER,nbhelp)
             Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (IER.EQ.0) THEN
@@ -1444,13 +1377,12 @@ C Zone number of Crawl Space
           Zone = AIM2_CrawlSpace_zone
           IF (Zone.NE.0) THEN
            CALL ASKOK('Do you wish to revert to having no crawlspace?',
-     &                ' ',OK,.TRUE.,0)
+     &                ' ',OK,.TRUE.,nbhelp)
             IF (OK) AIM2_CrawlSpace_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            H(1)='Select the crawl space zone '
             CALL EPICKS(1,IVALS,' ','Crawl space Zone?',
-     &                12,NCOMP,zname,'zone list',IER,1)
+     &                12,NCOMP,zname,'zone list',IER,nbhelp)
             Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (Zone.EQ.AIM2_basement_zone) THEN
@@ -1471,13 +1403,12 @@ C Zone number of attic.
           Zone = AIM2_attic_zone
           IF (Zone.NE.0) THEN
             CALL ASKOK('Do you wish to revert to having no attic?',
-     &                ' ',OK,.TRUE.,0)
+     &                ' ',OK,.TRUE.,nbhelp)
             IF (OK) AIM2_attic_zone = 0
           END IF
           IF (.NOT.OK) THEN
-            H(1)='Select the attic zone '
             CALL EPICKS(1,IVALS,' ','Attic Zone?',
-     &                12,NCOMP,zname,'zone list',IER,1)
+     &                12,NCOMP,zname,'zone list',IER,nbhelp)
             Zone = IVALS(1)
 C check that the basement zone is not the same as the attic and crawlspace
             IF (Zone.EQ.AIM2_basement_zone) THEN
@@ -1495,7 +1426,7 @@ C check that the basement zone is not the same as the attic and crawlspace
          END IF
          CASE (6)
 C List help text for the Infiltration Zones menu.
-           CALL PHELPD('Infiltration Zones',23,'-',0,0,IER)
+           CALL PHELPD('Infiltration Zones',nbhelp,'-',0,0,IER)
          CASE (7)
 C Exit this menu
            CALL USRMSG(' ',' ','-')
@@ -1549,6 +1480,12 @@ C Declare local variables
 C Function definition
       INTEGER :: lnblnk
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAVE_AIM2'  ! set for subroutine
 
 CPrint out all the selected parameters
       CALL AIM2_report(iuout)
@@ -1592,8 +1529,10 @@ C If LAIM2 isn't set get the default
         WRITE(LAIM2,'(A)')Tempstring(1:LEN(LAIM2))
       END IF
 C Get the filename
+      helptopic='AIM_file_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKF(LAIM2,' What is the AIM2 file name?',' ',
-     &      72,TempString,'AIM2 filename',IER,0)
+     &      72,TempString,'AIM2 filename',IER,nbhelp)
 C Check for error
       IF (IER.NE.0) THEN
         CALL USRMSG('Problem with filename',' ','W')

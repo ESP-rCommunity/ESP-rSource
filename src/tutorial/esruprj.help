@@ -2,6 +2,8 @@
 *subroutine Initialise
 *subroutine Deallocate
 *item Deallocate
+*enditem
+*item AIM2_Inputs AIM2_main_menu
 'This is the main menu for the empirical air '
 'Alberta Infiltration Model (AIM2).  This model applies'
 'only to low rise (up to 3 storey) detatched single family'
@@ -34,236 +36,220 @@
 *enditem
         CALL PHELPD('AIM2 model menu',30,'-',0,0,IER)
 *subroutine AIM2_Interface
-*item AIM2_Interface
-'The Anemometer Height is the height at which the'
-'wind speed was measured at the weather station.  A'
-'default of 10 meters is assumed, and should not be'
-'changed unless a user-defined weather file is used'
-'and the anemometer was at a different height.'
-*enditem
-              CALL EASKR(Temp,' ',
-*item AIM2_Interface
+*item AIM2_Interface AIM2_attributes_a
+'A number of attributes are needed to carry out an assessment'
+'based on the AIM method. You are asked about the following:'
+'  '
+' Anemometer Height is the height at which the wind speed'
+'   was measured at the weather station.  A default of 10m'
+'   is assumed, and should not be changed unless a user-'
+'   defined weather file is used and the anemometer was at'
+'   a different height.'
+'  '
+' Flue diameters (mm) may be required for the furnace flue'
+'   as well as up to two fireplaces.'
+'  '
+' If there is a primary DHW system that has a flue then its'
+'   flue diameter in mm is requested. If there is a secondary'
+'   DHW system supply the data for that as well.'
+'  '
+' Height of the building eaves (m). Values betwen 1 and 10'
+'   are allowed. A building can only have one eves height.'
+'  '
+'If you change any of the parameters please remember to save'
+'these changes to the file of the information will be lost.'
 *enditem
            CALL EASKR(Temp,' ',
-*item AIM2_Interface
-*enditem
+           CALL EASKR(Temp,' ',
            CALL EASKR(Temp,' ','Diameter of furnace flue (mm)?'
-*item AIM2_Interface
-*enditem
            CALL EASKR(Temp,' ','Diameter of #1 fireplace flue (mm)?'
-*item AIM2_Interface
-*enditem
            CALL EASKR(Temp,' ','Diameter of #2 fireplace flue (mm)?'
-*item AIM2_Interface
-*enditem
            CALL EASKR(Temp,' ',
-*item AIM2_Interface
-*enditem
            CALL EASKR(Temp,' ',
-*item AIM2_Interface
-*enditem
-            CALL ASKOK(' Do you wish to save your changes?',' ',OK,
-*subroutine ClearLeakageParams
+           CALL ASKOK(' Do you wish to save your changes?',' ',OK,
 *subroutine LeakageMenu
-*item LeakageMenu
- 'The Air Tightness Type is used to indicate the natural'
- 'infiltration rate. Air tightness is measured in air '
- 'changes per hour (ACH). The user has the option of '
- 'entering blower door test values to determine the flow'
- 'coefficient or specifying an air tightness category where'
- 'air change rate and the equivalent leakage area are '
- 'automatically calculated by esp-r.'
- ''
- 'For further information on the blower door tests see'
- '1. Canadian General Standards Board (CGSB) standard'
- '   "Determination of the Airtightness of Building '
- '    Envelopes by the Fan Depressurization Method" '
- '2.  Airtightness tested in accordance with the EnerGuide'
- '    for Houses "as operated" airtightness test procedure'
- '    in EnerGuide for Houses: "Energy Advisor Workshop'
- '    Manual, Module 3 Conducting a Blower Door Test." '
+*item LeakageMenu AIM_leakage_menu
+'The Air Tightness Type is used to indicate the natural'
+'infiltration rate. Air tightness is measured in air '
+'changes per hour (ACH). The user has the option of '
+'entering blower door test values to determine the flow'
+'coefficient or specifying an air tightness category where'
+'air change rate and the equivalent leakage area are '
+'automatically calculated by esp-r.'
+' '
+'For further information on the blower door tests see'
+'1. Canadian General Standards Board (CGSB) standard'
+'   Determination of the Airtightness of Building '
+'    Envelopes by the Fan Depressurization Method '
+'2.  Airtightness tested in accordance with the EnerGuide'
+'    for Houses <as operated> airtightness test procedure'
+'    in EnerGuide for Houses: Energy Advisor Workshop'
+'    Manual, Module 3 Conducting a Blower Door Test. '
 *enditem
         CALL PHELPD('Leakage description',16,'-',0,0,IER)
 *subroutine AirTightnessTypeMenu
-*item AirTightnessTypeMenu
- 'The Air Tightness Type is used to indicate the natural'
- 'infiltration rate. Air tightness is measured in air '
- 'changes per hour (ACH). The options are:'
- 'Loose (10.35 ACH @ 50 Pa)       '
- 'Average (4.55 ACH @ 50 Pa)      '
- 'Present (3.57 ACH @ 50 Pa)      '
- 'Energy Tight (1.5 ACH @ 50 Pa)  '
- 'By specifying one of these air tightness categories, the'
- ' air change rate and the equivalent leakage area are '
+*item AirTightnessTypeMenu AIM_tightness_menu
+'The Air Tightness Type is used to indicate the natural'
+'infiltration rate. Air tightness is measured in air '
+'changes per hour (ACH). The options are:'
+'  Loose (10.35 ACH @ 50 Pa)       '
+'  Average (4.55 ACH @ 50 Pa)      '
+'  Present (3.57 ACH @ 50 Pa)      '
+'  Energy Tight (1.5 ACH @ 50 Pa)  '
+'  '
+'By specifying one of these air tightness categories, the'
+' air change rate and the equivalent leakage area are '
  'automatically calculated by esp-r.'
 *enditem
         CALL PHELPD('Leakage description',10,'-',0,0,IER)
 *subroutine BlowerDoorInputMenu
-*item BlowerDoorInputMenu
- 'The blower door test values entered determine the flow'
- 'coefficient.  The blower door test results consist of the'
- 'Air Change Rate @ 50 Pa. and the Equivalent Leakage Area'
- '(ELA). These results are used to determine the amount of'
- 'air leaking through the envelope when an interior/'
- 'exterior air pressure differential of 50 Pa air pressure'
- 'is applied. Esp-r uses the blower door test data to '
- 'generate an air infiltration rate, which provides a '
- 'relatively accurate indication of the air leakage '
+*item BlowerDoorInputMenu AIM_blower_door_menu
+'The blower door test values entered determine the flow'
+'coefficient.  The blower door test results consist of the'
+'Air Change Rate @ 50 Pa. and the Equivalent Leakage Area'
+'(ELA). These results are used to determine the amount of'
+'air leaking through the envelope when an interior/'
+'exterior air pressure differential of 50 Pa air pressure'
+'is applied. Esp-r uses the blower door test data to '
+'generate an air infiltration rate, which provides a '
+'relatively accurate indication of the air leakage '
 'characteristics of the building. The ELA may be specified'
 'at either 10 Pa. or 4 Pa. If the ELA is set to zero (0),'
 'the program estimates the ELA at the specified pressure '
 'based on the ACH @50, and an assumed flow exponent of '
+'  '
+'You are asked to provide information on:'
+'  building fabric flow coef [m^3/(s Pa^n)]'
+'  building flow exponent [-]'
+'  '
+'You may be asked about:'
+'  Air change rate @50 Pa (between 1 and 30).'
+'  The pressure difference in Pa'
+'  The equivalent leakage area (ELA) in cm^2 (between 0.1 and'
+'    7999.).
+'  The discharge coefficient for the ELA (between 0. and 1.)'
+'  '
+'If you have had a blower door test these information are'
+'usually supplied.'
 *enditem
         CALL EASKR(Temp,' ',
-*item BlowerDoorInputMenu
-*enditem
         CALL EASKR(Temp,' ',
-*item BlowerDoorInputMenu
-*enditem
         CALL EASKR(Temp,' ',
-*item BlowerDoorInputMenu
-*enditem
         CALL EASKR(Temp,' ','Pressure difference (Pa)?',
-*item BlowerDoorInputMenu
-*enditem
-          CALL EASKR(Temp,' ',
-*item BlowerDoorInputMenu
-*enditem
-          CALL EASKR(Temp,' ',
-*item BlowerDoorInputMenu
-*enditem
+        CALL EASKR(Temp,' ',
+        CALL EASKR(Temp,' ',
         CALL PHELPD('Leakage description',14,'-',0,0,IER)
 *subroutine LeakageDistribution
-*item LeakageDistribution
- 'Leakage Fraction for Ceilings, Walls, and Floors'
- 'The leakage fractions are used to define the fraction of'
- 'the total building air leakage to attribute to the '
- 'ceilings, walls and floors.'
- 'If use defaults is selected, the default values are set '
- 'by esp-r and are based on the house type, number of'
- 'storeys, and the type of foundation (crawl space, '
- 'basement) specified for the house.'
- 'Otherwise the user must specify the leakage fractions '
- 'to ceilings, walls, and floors. The desired leakage '
- 'fractions must be entered as a decimal value, and must '
- 'total 1.0.'
+*item LeakageDistribution AIM_leak_distr_menu
+'Leakage Fraction for Ceilings, Walls, and Floors'
+'The leakage fractions are used to define the fraction of'
+'the total building air leakage to attribute to the '
+'ceilings, walls and floors.'
+'  '
+'If use defaults is selected, the default values are set '
+'by esp-r and are based on the house type, number of'
+'storeys, and the type of foundation (crawl space, '
+'basement) specified for the house.'
+'  '
+'Otherwise the user must specify the leakage fractions '
+'to ceilings, walls, and floors. The desired leakage '
+'fractions must be entered as decimal values, and must '
+'total 1.0.'
 *enditem
       CALL EASKAB(
-*item LeakageDistribution
-*enditem
-          CALL EASKR(Temp,' ',
-*item LeakageDistribution
-*enditem
-          CALL EASKR(Temp,' ',
-*item LeakageDistribution
-*enditem
-          CALL EASKR(Temp,' ',
+      CALL EASKR(Temp,' ',
+      CALL EASKR(Temp,' ',
+      CALL EASKR(Temp,' ',
 *subroutine ShieldingAndTerrainMenu
-*item ShieldingAndTerrainMenu
- 'The weather station terrain is used to specify the '
- 'terrain at the weather station and the building site'
- 'terrain is used to specify the local terrain for the'
- 'building.  The default for the weather station is'
- 'c) Open Flat terrain, grass.'
- 'The two terrains are used to calculate the wind speed'
- 'correction factor. This is a function of the surface'
- 'roughness lengths at the building site and weather '
- 'station, the height of the eaves, and the height of '
- 'the anemometer at the weather station. '
- 'This is equation 27 from Bradley (1993, p8).'
+*item ShieldingAndTerrainMenu AIM_terrain_menu
+'The weather station terrain is used to specify the '
+'terrain at the weather station and the building site'
+'terrain is used to specify the local terrain for the'
+'building.  The default for the weather station is'
+' opton c) Open Flat terrain, grass.'
+'  '
+'The two terrains are used to calculate the wind speed'
+'correction factor. This is a function of the surface'
+'roughness lengths at the building site and weather '
+'station, the height of the eaves, and the height of '
+'the anemometer at the weather station. '
+'This is equation 27 from Bradley (1993, p8).'
 *enditem
         CALL PHELPD('Shielding and terrain description',11,'-',0,0,IER)
 *subroutine TerrainMenu
-*item TerrainMenu
- 'The weather station terrain is used to specify the '
- 'terrain at the weather station and the building site'
- 'terrain is used to specify the local terrain for the'
- 'building.  The default for the weather station is'
- 'c) Open Flat terrain, grass.'
- 'The two terrains are used to calculate the wind speed'
- 'correction factor. This is a function of the surface'
- 'roughness lengths at the building site and weather '
- 'station, the height of the eaves, and the height of '
- 'the anemometer at the weather station. '
- 'This is equation 27 from Bradley (1993, p8).'
+*item TerrainMenu AIM_terrain_options
+'The weather station terrain is used to specify the '
+'terrain at the weather station and the building site'
+'terrain is used to specify the local terrain for the'
+'building.  The default for the weather station is'
+' option c) Open Flat terrain, grass.'
+'  '
+'The two terrains are used to calculate the wind speed'
+'correction factor. This is a function of the surface'
+'roughness lengths at the building site and weather '
+'station, the height of the eaves, and the height of '
+'the anemometer at the weather station. '
+'This is equation 27 from Bradley (1993, p8).'
 *enditem
         CALL PHELPD('Terrain selection',11,'-',0,0,IER)
 *subroutine ShieldingMenu
-*item ShieldingMenu
- 'Local Shielding Walls and Flue'
- 'The Local Shielding Walls and Flue fields are used to '
- 'specify how well both the walls and the flue are shielded'
- 'from the wind.  The options are:'
- '1. None: no local shielding (i.e. no obstructions)'
- '2. Light: local shielding having few obstructions within '
- '   two house heights'
- '3. Heavy: local shielding having many large obstructions'
- '   within two house heights'
- '4. Very Heavy: local shielding having many large '
- '   obstructions within one house height'
- '5. Complete (by large buildings): local shielding having'
- '   large buildings immediately adjacent'
+*item ShieldingMenu AIM_shielding_options
+'Local Shielding Walls and Flue'
+'The Local Shielding Walls and Flue fields are used to '
+'specify how well both the walls and the flue are shielded'
+'from the wind.  The options are:'
+'1. None: no local shielding (i.e. no obstructions)'
+'2. Light: local shielding having few obstructions within '
+'   two house heights'
+'3. Heavy: local shielding having many large obstructions'
+'   within two house heights'
+'4. Very Heavy: local shielding having many large '
+'   obstructions within one house height'
+'5. Complete (by large buildings): local shielding having'
+'   large buildings immediately adjacent'
 *enditem
         CALL PHELPD('Shielding selection',13,'-',0,0,IER)
 *subroutine InfiltrationZonesMenu
-*item InfiltrationZonesMenu
- 'The reference zone is the number of the zone whose '
- 'temperature is used as reference for infiltration '
- 'calculations.'
- ''
- 'The infiltration zones are the zone numbers of zones '
- 'that receive infiltration.'
- ''
- 'The basement zone is the number of the zone describing '
- 'the basement as basements have different infiltration '
- 'air flow allocations to that of living space. If no '
- 'basement is selected, it is assumed that there is no '
- 'basement.'
- ''
- 'The crawlspace zone is the number of the zone describing'
- 'the crawlspace as crawlspaces are not included in the'
-' house volume for infiltration calculations.  If no crawl'
- 'space is selected, it is assumed that there is no crawl'
- 'space.'
- ''
- 'The attic zone is the number of the zone describing '
- 'the attic as infiltration to attics is not calculated'
- 'with AIM-2 model. If no attic is selected, it is assumed'
- 'that there is no attic.  '
+*item InfiltrationZonesMenu AIM_zone_for_infil
+'The reference zone is the number of the zone whose '
+'temperature is used as reference for infiltration '
+'calculations.'
+' '
+'The infiltration zones are the zone numbers of zones '
+'that receive infiltration.'
+' '
+'The basement zone is the ESP-r zone describing '
+'the basement as basements have different infiltration '
+'air flow allocations to that of living space. If no '
+'basement is selected from the list, it is assumed that '
+'there is no basement.'
+' '
+'The crawlspace zone is an ESP-r zone describing'
+'the crawlspace as crawlspaces are not included in the'
+'house volume for infiltration calculations.  If no crawl'
+'space is selected from the list, it is assumed that there'
+'is no crawl space.'
+' '
+'The attic zone is an ESP-r zone describing the'
+'attic as infiltration to attics is not calculated'
+'with AIM-2 model. If no attic is selected from the list,'
+'it is assumed that there is no attic.  '
 *enditem
           CALL ASKZONE(Zone,Zone,
-*item InfiltrationZonesMenu
-*enditem
           CALL ASKMULTIZONE(AIM2_num_zones_infil,InfilZones,
-*item InfiltrationZonesMenu
-*enditem
-            CALL ASKOK('Do you wish to revert to having no basement?',
-*item InfiltrationZonesMenu
-'Select the basement zone '
-*enditem
-            CALL EPICKS(1,IVALS,' ','Basement Zone?',
-*item InfiltrationZonesMenu
-*enditem
-           CALL ASKOK('Do you wish to revert to having no crawlspace?',
-*item InfiltrationZonesMenu
-'Select the crawl space zone '
-*enditem
-            CALL EPICKS(1,IVALS,' ','Crawl space Zone?',
-*item InfiltrationZonesMenu
-*enditem
-            CALL ASKOK('Do you wish to revert to having no attic?',
-*item InfiltrationZonesMenu
-'Select the attic zone '
-*enditem
-            CALL EPICKS(1,IVALS,' ','Attic Zone?',
-*item InfiltrationZonesMenu
-*enditem
-           CALL PHELPD('Infiltration Zones',23,'-',0,0,IER)
+          CALL ASKOK('Do you wish to revert to having no basement?',
+          CALL EPICKS(1,IVALS,' ','Basement Zone?',
+          CALL ASKOK('Do you wish to revert to having no crawlspace?',
+          CALL EPICKS(1,IVALS,' ','Crawl space Zone?',
+          CALL ASKOK('Do you wish to revert to having no attic?',
+          CALL EPICKS(1,IVALS,' ','Attic Zone?',
+          CALL PHELPD('Infiltration Zones',23,'-',0,0,IER)
 *subroutine SAVE_AIM2
-*item SAVE_AIM2
+*item SAVE_AIM2 AIM_file_name
+'You are asked for a file name. The suggested name is related to'
+'the root name of the model. If this is ok, just accept it.'
 *enditem
       CALL EASKF(LAIM2,' What is the AIM2 file name?',' ',
-*subroutine ARROW
 *subroutine BASESIMP_INPUTS
 *item BASESIMP_INPUTS
  'One or more surfaces in the current zone have been'
