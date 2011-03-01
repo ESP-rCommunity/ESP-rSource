@@ -342,7 +342,7 @@
       CALL EASKR(TGps,' ',' TGps (radians) ?',
       CALL EASKF(bsmFile,'Confirm filename:',' ',72,bsmFile,
 *subroutine LKMENU
-*item LKMENU
+*item LKMENU adjustable_thermal_cond
 'The menu options allow the definition of construction'
 'layers whose thermal conductivity is of the nominated'
 'type.  By default the thermal conductivity of all'
@@ -360,51 +360,50 @@
 ' ! list conductivity of construction layers'
 ' ? display this help message'
 ' - return to calling menu.'
+'  '
+'   Note: when exiting this facility, if there are potential'
+'   problems you will be warned. Best to fix these so that'
+'   subsequent simulations run smoothly.'
 *enditem
         CALL PHELPD('Thermal Conductivity',17,'-',0,0,IER)
-*item LKMENU
-'Warning messages are given when problems might be '
-'caused in the simulation. Best if corrected now.'
-*enditem
-          CALL ASKOK(' WARNING messages were detected',
+        CALL ASKOK(' WARNING messages were detected',
 *subroutine DFNMNU
-*item DFNMNU
-' Define the focus for which thermal conductivity is:'
+*item DFNMNU focus_of_thermal_cond
+'You can focus where thermal conductivity is adjusted at'
+'from within the current zone or a specific surface or'
+'within a specific surface.'
 *enditem
         CALL PHELPD('conductivity focus',2,'-',0,0,IER)
-*subroutine LKZONE
 *subroutine SURFMN
-*item SURFMN
-' Select the surfaces for which the conductivity is'
+*item SURFMN focus_of_surf_cond
+'You are presented with a list of surfaces from which'
+'the conductivity will be adjusted.'
 *enditem
       CALL EPICKS(INPICK,IVALS,' ',' ',20,NZSUR(icomp),ITEM,
-*subroutine KCONST
-*subroutine KLAYER
 *subroutine LAYRMN
-*item LAYRMN
-' Select the layers for which the thermal conductivity is'
+*item LAYRMN focus_of_layer_cond
+'You are presented with a list of layers in which'
+'the conductivity will be adjusted.'
 *enditem
       CALL EPICKS(INPICK,IVALL,' ',' ',20,NE(I), ITEM,'Layers',IER,2)
-*subroutine WRTLYR
 *subroutine TRMMSG
-*item TRMMSG
+*item TRMMSG surf_cond_warning
 'This message was presented because of prior warnings '
 'or confusion about the model. If you do not want to '
 'proceed agree to terminate. '
-*enditem
-      CALL ASKOK('There might be a problem...',
-*item TRMMSG
-' Enter the required number of warning messages after'
-' which the termination option will be available.'
+'  '
+'You will be asked for the number of the warning messages'
+'after which the termination option will be available.'
 'If you cancel the value will not be altered. '
 *enditem
-        CALL EASKI(ICNTMT,'After how many re_defining warning messages',
+      CALL ASKOK('There might be a problem...',
+      CALL EASKI(ICNTMT,'After how many re_defining warning messages',
 *subroutine KCHKMN
-*item KCHKMN
+*item KCHKMN message_for_surf_cond
 'Changing this will remove the temperature or moisture'
+'dependency.'
 *enditem
       CALL ASKOK(MSG1,MSG2,OK,dok,2)
-*subroutine KCHECK
 *subroutine THMENU
 *item THMENU
 'ESP_r allows defining the thermal properties of'
