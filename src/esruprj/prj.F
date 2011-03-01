@@ -1643,8 +1643,8 @@ C At each pass update for recent parameter changes.
         modparms=.false.
       endif
 
-C Help text for this menu.
-      helptopic='prj_simulation_menu'
+C Help text for this menu and most of the dialogs.
+      helptopic='prj_sim_set_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Simulation Controller',ITEMS,MITEM,INO)
@@ -1656,7 +1656,10 @@ C Help text for this menu.
         RETURN
       elseif(INO.EQ.MITEM-1)then
 
-C List help text for the simulations menu.
+C List both main help texts for the simulations menu.
+        helptopic='prj_sim_set_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Simulation',nbhelp,'-',0,0,IER)
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Simulation',nbhelp,'-',0,0,IER)
@@ -1668,9 +1671,9 @@ C Toggle trace level.
       elseif(INO.EQ.MITEM-8)then
 
 C Invoke simulator for the case of a simulation parameter set.
+        helptopic='prj_simulation_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(nsset.gt.0)then
-          helptopic='prj_simulation_silent'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' ','Simulation interaction options:',
      &      'run interactively','run silently','cancel',
      &      isauto,nbhelp)
@@ -1910,10 +1913,10 @@ C On return reset the value of isset.
 
 C Case of no initial sets, offer default or user defined sets. If the
 C data is internal to the file then it will already have been scanned.
+        helptopic='prj_sim_set_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(icfgv.lt.4)then
           if(lnblnk(lipvdatf).eq.0.or.lipvdatf(1:7).eq.'UNKNOWN')then
-            helptopic='prj_simulation_menu'
-            call gethelptext(helpinsub,helptopic,nbhelp)
             DOK=.false.
             CALL ASKOK('  ',' Proceed with parameter definitions?',
      &      OK,DOK,nbhelp)
@@ -1934,8 +1937,6 @@ C Scan the IPV description before asking user choice.
               INO=-4
               GOTO 3
             endif
-            helptopic='prj_simulation_menu'
-            call gethelptext(helpinsub,helptopic,nbhelp)
             DOK=.true.
             CALL ASKOK('An IPV description has been found. Proceed to',
      &        'create matching parameter sets?',OK,DOK,nbhelp)
@@ -1949,8 +1950,6 @@ C Scan the IPV description before asking user choice.
 	
 C There may be ipv data held in the configuration file.
           if(nipvassmt.eq.0)then
-            helptopic='prj_simulation_menu'
-            call gethelptext(helpinsub,helptopic,nbhelp)
             DOK=.false.
             CALL ASKOK('  ',' Proceed with parameter definitions?',
      &      OK,DOK,nbhelp)
@@ -1960,8 +1959,6 @@ C There may be ipv data held in the configuration file.
             endif
             ID=1
           else
-            helptopic='prj_simulation_menu'
-            call gethelptext(helpinsub,helptopic,nbhelp)
             DOK=.true.
             CALL ASKOK('An IPV description has been found. Proceed to',
      &        'create matching parameter sets?',OK,DOK,nbhelp)
@@ -1994,8 +1991,6 @@ C Setup one parameter set or several sets to match IPV description.
             isavgh=0
           endif
           if(ID.eq.1)then
-            helptopic='prj_sim_set_name'
-            call gethelptext(helpinsub,helptopic,nbhelp)
             de='default'
             CALL EASKS(de,'Name for set?',' ',8,'win','set name',
      &        IER,nbhelp)
@@ -2047,15 +2042,19 @@ C Set parameter sets for current number of IPV assessments.
         endif
       elseif(MITEM.eq.25.and.INO.EQ.1)then
 
+C Help text for this menu and all of the dialogs.
+        helptopic='prj_sim_set_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Select an existing set, create a new one or cancel.
- 170     do 60 ii=1, nsset
-           CALL EDAY(isstday(ii),isstmon(ii),ijdstart)
-           call stdate(iyear,ijdstart,descra,descrst)
-           CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
-           call stdate(iyear,ijdfinish,descrb,descrfn)
-           CALL EMKEY(ii,KEY,IER)
-           write(dd(ii),'(7a)') key,' ',spfdescr(ii),' ',descrst,'-',
-     &       descrfn
+ 170    do 60 ii=1, nsset
+          CALL EDAY(isstday(ii),isstmon(ii),ijdstart)
+          call stdate(iyear,ijdstart,descra,descrst)
+          CALL EDAY(isfnday(ii),isfnmon(ii),ijdfinish)
+          call stdate(iyear,ijdfinish,descrb,descrfn)
+          CALL EMKEY(ii,KEY,IER)
+          write(dd(ii),'(7a)') key,' ',spfdescr(ii),' ',descrst,'-',
+     &      descrfn
  60     continue
         if (nsset.lt.MSPS) then
           dd(nsset+1)='+ make a new set'
@@ -2071,10 +2070,6 @@ C Select an existing set, create a new one or cancel.
  61       continue
         endif
 
-C Help text for this menu.
-        helptopic='prj_sim_set_menu'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-
         CALL EMENU('Parameter sets',dd,ic,IRT)
         if(IRT.ge.ic) then
           INO=-4
@@ -2082,15 +2077,13 @@ C Help text for this menu.
         elseif(IRT.eq.ic-1) then
           helptopic='prj_sim_set_menu'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL PHELPD('Simulation sets',20,'-',0,0,IER)
+          CALL PHELPD('Simulation sets',nbhelp,'-',0,0,IER)
           goto 170
         elseif(IRT.eq.ic-2.and.nsset.lt.5)then
 
 C It is possible to add another set so ask user and set file names.
 C << note this probably should check to see if there is an IPV >>
 C << description first >>
-          helptopic='prj_sim_set_name'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           de='win'
           CALL EASKS(de,' ','Name for set?',8,'win','set name',
      &      IER,nbhelp)
@@ -2135,8 +2128,6 @@ C do not allow this set name to be changed.
         if(nipvassmt.eq.nsset)then
           call usrmsg('IPV set name is pre-defined,','.','W')
         else
-          helptopic='prj_sim_set_name'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           de=spfdescr(isset)
           CALL EASKS(de,' ','Name for set?',8,spfdescr(isset),
      &               'set name',IER,nbhelp)
@@ -2148,8 +2139,6 @@ C do not allow this set name to be changed.
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
           call scntcnst(TDM,istd,TCM,ISTC)
-          helptopic='prj_presim_startup'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           isstupt=isstup
           CALL EASKI(isstupt,' ',
      &       'Pre-simulation start-up period (days)?',
@@ -2171,8 +2160,6 @@ C one timestep in the hour.
      &     'file with ',ntsph,' per hour frequency. Use this value.'
           call edisp(iuout,outs)
         endif
-        helptopic='prj_zone_tsph'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         isbnstept=isbnstep
         CALL EASKI(isbnstept,' ','Zone-side time steps per hour?',
      &       1,'F',60,'W',2,'zone steps per hour',IERI,nbhelp)
@@ -2188,8 +2175,6 @@ C              write(6,*) 'temporal data found so save each timestep'
 
               isavgh=0
             else
-              helptopic='prj_zone_tsph'
-              call gethelptext(helpinsub,helptopic,nbhelp)
               defok=.false.
               hri=.false.
               call askok(' Hourly results integration:',' ',hri,
@@ -2208,8 +2193,6 @@ C              write(6,*) 'temporal data found so save each timestep'
       elseif(MITEM.eq.25.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           ispnstept=ispnstep
-          helptopic='prj_zone_tsph'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(ispnstept,' ',
      &      'Plant-side time steps per zone step?',
      &      1,'F',100,'W',10,'plt steps per hour',IERI,nbhelp)
@@ -2221,8 +2204,6 @@ C              write(6,*) 'temporal data found so save each timestep'
           endif
         endif
       elseif(MITEM.eq.25.and.INO.EQ.6)then
-        helptopic='prj_zone_save_level'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         issavet=issave
         CALL EASKI(issavet,' ','Results save level (0-4 & 6)?',
      &      0,'F',6,'F',6,'save level',IERI,nbhelp)
@@ -2240,8 +2221,6 @@ C              write(6,*) 'temporal data found so save each timestep'
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
       elseif(MITEM.eq.25.and.INO.EQ.8)then
-        helptopic='prj_zone_res_file'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         t72=sblres(isset)
         CALL EASKS(t72,' ','Building results library?',72,
      &    'zones.res','bld library',IER,nbhelp)
@@ -2249,8 +2228,6 @@ C              write(6,*) 'temporal data found so save each timestep'
         modparms=.true.
       elseif(MITEM.eq.25.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
-          helptopic='prj_mfs_res_file'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           t72=sflres(isset)
           CALL EASKS(t72,' ','Network flow results library?',72,
      &    'network.mfr','flow results library',IER,nbhelp)
@@ -2259,8 +2236,6 @@ C              write(6,*) 'temporal data found so save each timestep'
         endif
       elseif(MITEM.eq.25.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          helptopic='prj_plt_res_file'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           t72=splres(isset)
           CALL EASKS(t72,' ','Plant results library?',72,
      &    'plant.res','plant results library',IER,nbhelp)
@@ -2273,8 +2248,6 @@ C              write(6,*) 'temporal data found so save each timestep'
         endif
       elseif(MITEM.eq.25.and.INO.EQ.12)then
         if(MSTROK)then
-          helptopic='prj_moist_res_file'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           t72=smstres(isset)
           CALL EASKS(t72,' ','Moisture results library?',72,
      &    'moist.res','moisture results library',IER,nbhelp)
@@ -2283,8 +2256,6 @@ C              write(6,*) 'temporal data found so save each timestep'
         endif
       elseif(MITEM.eq.25.and.INO.EQ.13)then
         if(ientxist.gt.0)then
-          helptopic='prj_elec_res_file'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           t72=selres(isset)
           CALL EASKS(t72,' ','Electrical results library?',72,
      &    'elect.res','electrical results library',IER,nbhelp)
@@ -2304,8 +2275,6 @@ C              write(6,*) 'temporal data found so save each timestep'
           modparms=.true.
         endif
       elseif(MITEM.eq.25.and.INO.EQ.15)then
-        helptopic='prj_sim_set_menu'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' ','Options:',
      &    'save current sets','clear sets','cancel',IDO,nbhelp)
         if(IDO.eq.3)then
@@ -2451,11 +2420,13 @@ C Clear values.
       anu_ht_cap_bld(1)=0.; anu_ht_cap_bld(2)=0.; anu_ht_cap_bld(3)=0.
       anu_cl_cap_m2(1)=0.; anu_cl_cap_m2(2)=0.; anu_cl_cap_m2(3)=0. 
       anu_cl_cap_bld(1)=0.; anu_cl_cap_bld(2)=0.; anu_cl_cap_bld(3)=0. 
+
+C Setup help messages for this menu and its dialogs.
+      helptopic='prj_ipv_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
 C IPV for the actual number of simulations required.
       if(icfgv.lt.4)then
-        helptopic='prj_ipv_options'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         if(lnblnk(lipvdatf).eq.0)then
           CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
           return
@@ -2487,14 +2458,10 @@ C IPV data could be internal to cfg file.
         endif
       endif
 
-  39  helptopic='prj_ipv_sufficient'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABCD(' ','IPV options:',
+  39  CALL EASKABCD(' ','IPV options:',
      &  'run required simulations','extract reports',
      &  'compare reports','cancel',irs,nbhelp)
       if(irs.eq.1)then
-        helptopic='prj_ipv_sufficient'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' ','Simulation options:',
      &    'run interactively','run silently',
      &    'cancel',isauto,nbhelp)
@@ -2567,8 +2534,6 @@ C          call usrmsg('Beginning assessment via',doit,'-')
 C          call edisp(iuout,'* IPV run complete.')
   667   continue
       elseif(irs.eq.2)then
-        helptopic='prj_ipv_sufficient'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' ','IPV extraction options:',
      &    'run interactively','run silently','cancel',
      &    isauto,nbhelp)
@@ -2584,8 +2549,6 @@ C          call edisp(iuout,'* IPV run complete.')
         elseif(isauto.eq.3)then
           return
         endif
-        helptopic='prj_ipv_recovery'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabcd('IPV recovery options:',' ','intermediate',
      &    'scan intermediate ->annual','all','cancel',IRT,nbhelp)
         if(IRT.eq.4) goto 39  ! redisplay menu.
@@ -2742,8 +2705,6 @@ C          call usrmsg('Beginning performance recovery via',doit,'-')
 C Compare two IPV reports.  First ask for separator.
 
 C Toggle delimeter.
-        helptopic='prj_ipv_delimiter'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Column delimeter:',' ',
      &    'spaces','single space','tab','comma','tagged',
@@ -2763,8 +2724,6 @@ C Toggle delimeter.
         endif
 
  41     llt=lnblnk(basefile)
-        helptopic='prj_ipv_delimiter'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
@@ -2807,8 +2766,6 @@ C At user's request re-display the menu.
 
 C Ask the name of the design variant file.
  40     llt=lnblnk(variantfile)
-        helptopic='prj_ipv_delimiter'
-        call gethelptext(helpinsub,helptopic,nbhelp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
@@ -2961,8 +2918,6 @@ C write out a single line summary.
             call eddisp(iuout,outs)
           endif
 
-          helptopic='prj_ipv_delimiter'
-          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Comparison options:',' ','return to menu',
      &      'another report',IW,nbhelp)
           if(iw.eq.1)then

@@ -19042,47 +19042,44 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
               CALL EASKS(ltmp,' Surface connections file name?',' ',
 *subroutine simula
 *item simula prj_simulation_menu
-'Normally an integrated simulation is invoked by which'
-'the heat, fluid, electrical power and light flows within'
-'combined building/plant models may be evaluated.'
+' option p: Normally an integrated simulation is invoked by which'
+'   the heat, fluid, electrical power and light flows within'
+'   combined building/plant models may be evaluated.'
 '  '
-'The integrated simulation option computes the pressure'
-'induced fluid flow within a network of connected flow'
-'components representing the building and/or plant'
-'system in whole or part.' '
+'   The integrated simulation option computes the pressure'
+'   induced fluid flow within a network of connected flow'
+'   components representing the building and/or plant'
+'   system in whole or part.' '
 '  '
-'The other options are useful when only one of the above'
-'technical sub-systems is to be appraised, e.g. a CFD only'
-'analysis with fixed boundary temperatures and either an'
-'n-dimensional steady state or transient flow'
-'analysis of a single zone by the technique of'
-'computational fluid dynamics. However this means that'
-'In both cases, because the temperature distribution'
-'buoyancy effects are time invariant. For models where'
-'this assumption is inappropriate, the Integrated simulation'
-'option should be used.'
+' option r: fluid flow only invokes the mass flow solver if'
+'   one exists and it uses fixed boundary conditions during'
+'   the solution.  This can be useful for checking whether'
+'   a flow network will solve.
+'   If a CFD domain is defined then a CFD only 2D or 3D steady'
+'   state or transient assessment will be started based on'
+'   fixed boundary conditions and bouyancy effects. For models where'
+'   this assumption is inappropriate, the Integrated simulation'
+'   option should be used.'
 '  '
-'A CFD-only simulation can also be commissioned'
-'via the Integrated option.'
-' '
-'Simulation options (timesteps, start & finish dates,'
-'startup periods, result file names, etc.) can be '
-'defined in advance. You can define a several sets'
-'of parameters, e.g. to support standard assessments'
-'for a project or seasonal assessments (see also IPV'
-'definitions in project context). Ifn an IPV'
-'description has is associated with this model'
-'matching parameter sets will be created. '
+' option s: this starts up the utility application e2r to generate'
+'   a Radiane visual model from the current ESP-r model.'
+'  '
+' option t: If you have previously defined an Integrated Performance'
+'   View (IPV) this option can be used to run the associated'
+'   assessments and extract the required performance metrics and'
+'   write them to an IPV report file. Some users use this to'
+'   automate assessment tasks (it can run up to 5 simulations with'
+'   no user interactions) or to break huge model assessments into'
+'   managable seasonal results files.'
+'  '
+' option u: In the UK this can be used to automatically create the'
+'   model variants (notional, reference etc.) and run the assessments'
+'   used by the UK National Calculation Method.'
 *enditem
         CALL PHELPD('Simulation',14,'-',0,0,IER)
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
         CALL ASKOK('  ',' Proceed with parameter definitions?',
-*item simula prj_simulation_silent
-'Interactive mode uses simulation parameters as'
-'defaults, which can be overwritten. The silent'
-'running mode uses the parameters to run in automatic'
-*enditem
-          CALL EASKABC(' ','Simulation interaction options:',
+        CALL EASKABC(' ','Simulation interaction options:',
 *item simula prj_sim_set_name
 'Typical names are winter spring summer. You could also'
 'give specific names such as test22 as long as it is less'
@@ -19090,97 +19087,82 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
             CALL EASKS(de,'Name for set?',' ',8,'win','set name',IER,1)
 *item simula prj_sim_set_menu
-'Simulation options can be defined in advance with this'
-'facility. Named sets (e.g. winter|trans|summer)'
-'allow specific assessments to be invoked.'
-' '
-'Definitions of integrated performance views (see the'
-'model context menu) might have already set up one,'
-'three or five parameter sets. You can save'
-'changes to simulation parameter sets or dereference'
-'the current sets (e.g. to import new IPV assessment periods).'
-' '
-'Selecting one of the existing sets will load the'
-'associated parameters and any simulation commissioned'
-'will use this information.'
-' '
-'After running an assessment, your next step is to '
-'explore the predictions via the results analysis'
-'module the correct results file should be identified'
-'automatically. '
-' '
-'NOTE: if you have run several assessments, you should'
-'select the correct set before going on to results '
-'analysis. '
+'Simulation options can be defined in advance with this facility and'
+'and these preferences can be recorded in named sets (e.g. winter|'
+'spring|summer|hottest) so that specific assessments can be invoked.'
+'A simulator command line option uses these preferences to drive the'
+'assessment silently or to provide defaults for interactive dialogs.'
+'  '
+'There is a relationship between Integrated Performance Views (IPV)'
+'(see the model context menu) and simulation parameter sets. If'
+'an IPV has been defined its directives will populate this menu.'
+'  '
+' option a: use this to select an existing parameter set (its values'
+'   will be displayed and will be used if a simulation is requested.'
+'  '
+' option b: use this to name/re-name a set. You can use up to 8 char'
+'   (no spaces). If an IPV has been defined these set names will be'
+'   set and should not be edited.'
+'  '
+' option c: the pre-simulation start-up period is required to'
+'   isolate the effects of initialisation assumptions from'
+'   the simulation results. The suggested value, which is'
+'   computed automatically, may be overridden.'
+'  '
+' option d: building-side timesteps range from 1 to 60 per hour.'
+'   If the model includes temporal definitions data then'
+'   you are advised, if possible, to set the building-side time step'
+'   to match the value used for the temporal definitions.'
+'  '
+'   You will also be asked whether you want to save predictions'
+'   at each timestep or as averaged data once per hour. This can'
+'   save lots of disk space - but looses some of the reporting'
+'   resolution in sub-hourly assessments. Consider this for short'
+'   timestep runs where disk space is limited.'
+'  '
+' option e: Plant-side time step is an integer subdivision'
+'   of the active building side time steps per hour. If you have'
+'   a 6 tsph on the building side and 10 plant-side timesteps the'
+'   plant will be assessed once per minute.'
+'  '
+' option f: the save level determines how much information is'
+'   written to the zone results library:'
+'   Level 0 - summary table written to an ASCII file'
+'   Level 1 - zone temperatures and plant demand only'
+'   Level 2 - as 1 + zone surface temperatures'
+'   Level 3 - as 2 + zone construction node temperatures'
+'   Level 4 - as 3 + zone and surface energy balances'
+'   Level 6 - summary database friendly format or csv file'
+'  '
+' option g: the simulation period of the current assessment set'
+'  '
+' options h/i/j/k/l/m: you can pre-define the names of the results'
+'   files that are to be created (great for simplifying scripts and'
+'   enforcing naming strategies). If you defined an IPV these names'
+'   will already have been determined.'
+
+'After running an assessment, your next step is to explore the'
+'predictions via the results analysis module the correct results file'
+'should be identified automatically. NOTE: if you have run several '
+'assessments, you should select the correct parameter set first. '
 *enditem
           CALL PHELPD('Simulation sets',20,'-',0,0,IER)
-*item simula prj_presim_startup
-'The pre-simulation start-up period is required to'
-'isolate the effects of initialisation assumptions from'
-'the simulation results. The suggested value, which is'
-'computed automatically, may be overridden.'
-*enditem
           CALL EASKI(isstupt,' ',
-*item simula prj_zone_tsph
-'Building-side timesteps range from 1 to 60 per hour.'
-'If the model includes temporal definitions data then'
-'the building-side time step must be matched to the'
-'value used for the temporal definitions.'
-'  '
-'The ESP-r Simulator calculates the value of each'
-'state variable at each computational time step.'
-'The default action is to transfer each value at'
-'each computational time step to the results'
-'file(s). This option allows to average results'
-'over one hour before transfer to the results'
-'database(s), thus decreasing the size of results'
-'  '
-'Plant-side time step is an integer subdivision'
-'of the active building side time steps per hour.'
-*enditem
         CALL EASKI(isbnstept,' ','Zone-side time steps per hour?',
         call askok(' Hourly results integration:',' ',hri,
           CALL EASKI(ispnstept,' ',
-*item simula prj_zone_save_level
-'Level 0 - summary table'
-'Level 1 - zone temperatures and plant demand'
-'Level 2 - as 1 + zone surface temperatures'
-'Level 3 - as 2 + zone construction node temperatures'
-'Level 4 - as 3 + zone and surface energy balances'
-'Level 6 - summary database friendly and csv file'
-*enditem
         CALL EASKI(issavet,' ','Results save level (0-4 & 6)?',
-*item simula
-*enditem
         call EASKPER('Assessment period:',ISDS,ISDF,IFDAY,IER)
-*item simula prj_zone_res_file
-'The building results library holds the predictions associated'
-'with a building simulation (excludes plant and flow results).'
-*enditem
         CALL EASKS(t72,' ','Building results library?',72,
-*item simula prj_mfs_res_file
-'The flow library holds the predictions associated'
-'with a network flow simulation.'
-*enditem
           CALL EASKS(t72,' ','Network flow results library?',72,
-*item simula prj_plt_res_file
-'This library holds the predictions associated'
-'with a (detaile) plant component simulation.'
-*enditem
           CALL EASKS(t72,' ','Plant results library?',72,
-*item simula prj_moist_res_file
-'This library holds the predictions associated'
-'with a moisture simulation.'
-*enditem
           CALL EASKS(t72,' ','Moisture results library?',72,
-*item simula prj_elec_res_file
-'This library holds the predictions associated'
-'with an electrical simulation.'
-*enditem
           CALL EASKS(t72,' ','Electrical results library?',72,
 *item simula prj_ipv_res_file
-'This is the name of the file to be used to transfer'
-'simulation results to the IPV generation tool.'
+'If you request an IPV assessment (option t) then as the performance'
+'data is recovered from the ESP-r results files they are written into'
+'an ASCII file which can later be accessed via an IPV report viewer'
+'or opened up in a text editor.'
 *enditem
           CALL EASKS(t72,' ','IPV transfer file name?',72,
 *subroutine ipvactions
@@ -19188,31 +19170,32 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'An Integrated Performance View (IPV) is a collection'
 'of standard performance indicators that have been'
 'pre-defined. Some of the underlying assumptions may'
-'be changed via the Model Context menu option.'
-*enditem
-          CALL PHELPD('IPV message',4,'-',0,0,IER)
-*item ipvactions prj_ipv_sufficient
-'Sufficient information seems available to undertake '
-'the assessments needed for an IPV. '
+'be changed via the IPV facility in the Model Context menu.'
+'  '
+'If there is sufficient information to undertake assessments'
+'(e.g. the model is syntactically correct and the IPV definition'
+'if complete then you will be offered the following:'
 ' '
 'The option to run required simulations will invoke '
 'as many simulations as required, saving the results '
 'to the files specified in the simulation parameter '
 'sets.  '
-'Interactive mode uses simulation parameters as '
-'defaults which you can then confirm.'
-'The silent running mode uses the parameters to run'
-'in automatic mode.'
-' '
-'Extracting IPV reports is done by invoking the res '
-'module with specific command line parameters. Results'
-'recovery is usually done in a silent mode as there is'
-'minimal user interaction required. '
-' '
-'You can compare two IPV reports, extracting and '
-'reporting on the differences found. The report'
-'includes both nominal and whole building values '
-'for the following performance metrics: '
+'  '
+'Interactive mode uses simulation parameters as defaults'
+'which you can then confirm. The silent running mode uses'
+'the parameters to run in automatic mode.'
+'  '
+'Extracting IPV reports is done by invoking the res module'
+'with specific command line parameters. Results extraction'
+'is usually done in a silent mode as there is minimal user'
+'interaction required. '
+'  '
+'The recovery option you will want to select is ALL (the'
+'intermediate step is no longer required).
+'  '
+'You can compare two IPV reports, extracting and reporting'
+'on the differences found. The report includes both nominal'
+'and whole building values for the following performance metrics:'
 ' '
 ' *for each variant it reports heating demand kWh/m^2/a'
 '  and for the whole model (kWh/a), heating capacity kW/m^2'
@@ -19224,20 +19207,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '  and for the whole model (kW/a)'
 ' *difference in heating, therms and cooling by area and'
 '  for the whole building.'
-*enditem
-      CALL EASKABCD(' ','IPV options:',
-        CALL EASKABC(' ','Simulation options:',
-        CALL EASKABC(' ','IPV extraction options:',
-*item ipvactions prj_ipv_recovery
-'IPV recovery assumes that the relevant results'
-'libraries for each simulation are available.'
-'The `all` option does each in sequence and is the'
-'only option that most users will need to use.'
-*enditem
-        call easkabcd('IPV recovery options:',' ','intermediate',
-*item ipvactions prj_ipv_delimiter
-'Tabular data can be sent to file with various'
-'delimiters:'
+'  '
+'When generating the comparison report you have the option of'
+'using different delimeters:'
 '  - spaces (use spaces to lineup columns);'
 '  - single space between columns;'
 '  - comma separator (e.g. for excel);'
@@ -19251,10 +19223,15 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '  '
 'And then you are asked for the second IPV report file.'
 *enditem
-        CALL EASKATOG('Column delimeter:',' ',
-            CALL EASKF(basefile,'IPV base case report file ?',
-            CALL EASKF(variantfile,'IPV variant report file ?',
-          CALL EASKAB('Comparison options:',' ','return to menu',
+      CALL PHELPD('IPV message',4,'-',0,0,IER)
+      CALL EASKABCD(' ','IPV options:',
+      CALL EASKABC(' ','Simulation options:',
+      CALL EASKABC(' ','IPV extraction options:',
+      call easkabcd('IPV recovery options:',' ','intermediate',
+      CALL EASKATOG('Column delimeter:',' ',
+      CALL EASKF(basefile,'IPV base case report file ?',
+      CALL EASKF(variantfile,'IPV variant report file ?',
+      CALL EASKAB('Comparison options:',' ','return to menu',
 *subroutine checkmodel
 *item checkmodel has_unknown_attributes
 'A model with UNKNOWN surface construction attributes'
