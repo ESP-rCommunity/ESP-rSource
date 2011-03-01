@@ -499,19 +499,20 @@
         CALL EASKS(TITLE,' Title for this thermal equation?',' ',
         CALL PHELPD('equation mods',3,'-',0,0,IER)
 *subroutine ADDCNTL
-*item ADDCNTL
+*item ADDCNTL ctl_manage_loops
 'Controls are referenced by their index. '
 'If you select cancel then you will be returned to '
 'control menu. '
 *enditem
         CALL EASKI(ID,' ',' Which control index to delete? ',
-*item ADDCNTL
+*item ADDCNTL ctl_add_loops
 'Control day types allows different control patterns '
 'on different days. Days are allotted to be weekdays, '
 'saturdays and sundays by default. New day types (e.g.'
 'holidays) can be defined and days linked to these new'
 'day types via the calendar option in the Model Context'
 'Menu. '
+'  '
 'If you choose to follow calendar day types you will have'
 'the choice of imposing different control regimes on '
 'different day types as default week/sat/sunday or as '
@@ -521,6 +522,7 @@
 'If you choose "calendar day types" or "just one day'
 'type" then these day types are assumed to be valid all '
 'year long. '
+'  '
 'If you choose "dates of validity" you will be asked to'
 'define periods in which control will be valid e.g.'
 'you may have a different control for summer and winter.'
@@ -530,149 +532,96 @@
 'If you cancel when specifying the day types the control'
 'loop will not be added (and please confirm the details '
 'in case an error crept in) '
-*enditem
-          CALL EASKABC(outs,'(see help)',
-*item ADDCNTL
-*enditem
-	    CALL EASKI(IVP,'No of user defined control periods ',
-*item ADDCNTL
-'The default is one period in the day and a free-float'
-'control. You can specify that there will be several'
-'periods in the day and then supply details later.'
-'You can add or delete or modify periods later.'
+'  '
+'When adding a control loop you are asked for the number'
+'of periods for each day type. The default is one period'
+'starting at midnight and a free-float control.'
+'You can specify that there will be several periods in'
+'the day and then supply details later or add or delete'
+'periods or adapt the timing.'
 'If you cancel when specifying periods in the day type'
 'the control loop will be removed. '
 *enditem
-              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
-*item ADDCNTL
-*enditem
-            CALL EASKI(IP,outs,'(default is 1 period free floating)',
-*item ADDCNTL
-*enditem
           CALL EASKABC(outs,'(see help)',
-*item ADDCNTL
-*enditem
-	    CALL EASKI(IVP,'No of user defined control periods ',
-*item ADDCNTL
-'The default is one period in the day and a free-float'
-'control. You can specify that there will be several'
-'periods in the day and then supply details later.'
-'You can add or delete or modify periods later.'
-'If you cancel when specifying periods in the day type'
-'the control loop will be removed. '
-*enditem
-              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
-*item ADDCNTL
-*enditem
-            CALL EASKI(IP,outs,'(default is 1 period free floating)',
-*item ADDCNTL
-*enditem
+	  CALL EASKI(IVP,'No of user defined control periods ',
+          CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+          CALL EASKI(IP,outs,'(default is 1 period free floating)',
           CALL EASKABC(outs,'(see help)',
-*item ADDCNTL
-*enditem
-	    CALL EASKI(IVP,'No of user defined control periods ',
-*item ADDCNTL
-*enditem
-              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
-*item ADDCNTL
-*enditem
-            CALL EASKI(IP,outs,'(default is 1 period free floating)',
-*item ADDCNTL
-*enditem
+	  CALL EASKI(IVP,'No of user defined control periods ',
+          CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+          CALL EASKI(IP,outs,'(default is 1 period free floating)',
           CALL EASKABC(outs,'(see help)',
-*item ADDCNTL
-*enditem
+          CALL EASKI(IVP,'No of user defined control periods ',
+          CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+          CALL EASKI(IP,outs,'(default is 1 period free floating)',
           CALL EASKABC(outs,'(see help)',
-*item ADDCNTL
-*enditem
-	    CALL EASKI(IVP,'No of user defined control periods ',
-*item ADDCNTL
-'The default is one period in the day and a free-float'
-'control. You can specify that there will be several'
-'periods in the day and then supply details later.'
-'You can add or delete or modify periods later.'
-'If you cancel when specifying periods in the day type'
-'the control loop will be removed. '
-*enditem
-              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
-*item ADDCNTL
-*enditem
-            CALL EASKI(IP,outs,'(default is 1 period free floating)',
-*item ADDCNTL
-*enditem
+          CALL EASKABC(outs,'(see help)',
+	  CALL EASKI(IVP,'No of user defined control periods ',
+          CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+          CALL EASKI(IP,outs,'(default is 1 period free floating)',
           CALL EASKABC(outs,' ',
-*item ADDCNTL
-*enditem
-            CALL EASKI(IV,'No of user defined control day types',' ',
-*item ADDCNTL
-'The default is one period in the day and a free-float'
-'control. You can specify that there will be several'
-'periods in the day and then supply details later.'
-'You can add or delete or modify periods later.'
-'If you cancel when specifying periods in the day type'
-'the control loop will be removed. '
-*enditem
-            CALL EASKI(IP,outs,'(default is 1 period free floating)',
-*item ADDCNTL
-'Control functions are referenced by their index. '
+          CALL EASKI(IV,'No of user defined control day types',' ',
+          CALL EASKI(IP,outs,'(default is 1 period free floating)',
+*item ADDCNTL ctl_copy_loops
+'Control functions are referenced by their index. You are asked'
+'to identify which existing control loop to copy.'
 'A cancel returns you to the main control menu. '
 *enditem
         CALL EASKI(ICC,' ',' Which control function index to copy? ',
 *subroutine ADDCTLD
-*item ADDCTLD
-'One of the actions which can be taken on a control.'
+*item ADDCTLD ctl_add_day_type
+'You can modify the existing control day types in the model'
+'by deleting a day type or adding a day type or copying a day'
+'type.'
+'  '
+'If you ask to delete you are asked to provide the index of the day'
+'type to act on.'
+'  '
+'If you ask to add a day type the default treatment is to'
+'create one period in that day and set the control logic to'
+'free-float. However you can specify several periods in the'
+'new day type and period details that you can later change.'
+'  '
+'If you ask to copy a day type you are asked to identify which'
+'one to copy. This is a rarely used option.'
+'  '
 'If you select continue then you will be returned to'
 'the main control menu without any changes. '
 *enditem
       CALL EASKABCD('Options: ',' ','delete day type',
-*item ADDCTLD
-'Expecting an index. If you select cancel then you'
-'will be returned to the main control menu. '
-*enditem
-        CALL EASKI(ID,' ',' Which day type (index)? ',
-*item ADDCTLD
-'The default is one period in the day and a free-float'
-'control. You can specify that there will be several'
-'periods in the day and then supply details later.'
-'You can add or delete or modify periods later.'
-' '
-'If you select cancel when specifying the number of '
-'periods in a day the options list will be redisplayed.'
-*enditem
-          CALL EASKI(IP,' How many periods in this day type? ',
-*item ADDCTLD
-*enditem
-          CALL EASKI(IP,' How many periods in this day type? ',
-*item ADDCTLD
-*enditem
-          CALL EASKI(IP,' How many periods in this day type? ',
-*item ADDCTLD
-*enditem
-          CALL EASKI(IP,' How many periods in this day type? ',
-*item ADDCTLD
-*enditem
-          CALL EASKI(IP,' How many periods in this day type? ',
-*item ADDCTLD
-'Expecting an index. If you select cancel then no'
-'action will be taken. '
-*enditem
-        CALL EASKI(IDC,' ',' Which day type to copy ? ',
+      CALL EASKI(ID,' ',' Which day type (index)? ',
+      CALL EASKI(IP,' How many periods in this day type? ',
+      CALL EASKI(IP,' How many periods in this day type? ',
+      CALL EASKI(IP,' How many periods in this day type? ',
+      CALL EASKI(IP,' How many periods in this day type? ',
+      CALL EASKI(IP,' How many periods in this day type? ',
+      CALL EASKI(IDC,' ',' Which day type to copy ? ',
 *subroutine ADDCTLDP
-*item ADDCTLDP
-'Expecting an index of the period. If you select'
-'cancel then no changes will be made to the control. '
+*item ADDCTLDP ctl_period_manage
+'You can modify the existing control period in the model'
+'by deleting a period or adding a period.'
+'  '
+'If you ask to delete you are asked to provide the index of the'
+'period to act on.'
+'  '
+'If you ask to add a period you are asked its start time'
+'and the initial assumption is for a free-float control law.'
+'New periods are added at the end of the list (there is no'
+'insert period function).
+'  '
+'It saves time if you set the time carefully when you are'
+'first asked for it rather than attempting to edit it later.'
 *enditem
-        CALL EASKI(IP,' ',' Which period to delete ? ',
+      CALL EASKI(IP,' ',' Which period to delete ? ',
 *subroutine initperi
-*item initperi
-'The default is one period in the day and a free-float'
-'control. Periods are added to the end of the list.'
-'If you edit in actual start times the subsequent '
-'editing tasks will be easier. '
+*item initperi period_start_hour
+'If you edit in actual start times acurately the subsequent '
+'editing tasks will be easier. Currently the facility'
+'does not support more than 24 periods. '
 *enditem
       CALL EASKS(CSTR,' Start hour of each period',
 *subroutine initperr
-*item initperr
+*item initperr period_start_hour
 'If you edit in actual start times the subsequent '
 'editing tasks will be easier. Currently the facility'
 'does not support more than 24 periods. '
