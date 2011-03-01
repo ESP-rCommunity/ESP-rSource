@@ -251,126 +251,96 @@
 *enditem
       CALL EASKF(LAIM2,' What is the AIM2 file name?',' ',
 *subroutine BASESIMP_INPUTS
-*item BASESIMP_INPUTS
- 'One or more surfaces in the current zone have been'
- 'attributed with the boundary condition BASESIMP.'
- 'A .bsm file must be created or referenced.'
- 'You may select one from a list, create a new one, or'
- 'de-reference an exising definition (the file will be'
- 'kept for use later). '
+*item BASESIMP_INPUTS basesimp_opening
+'One or more surfaces in the current zone may have been'
+'attributed with the boundary condition BASESIMP. Or you'
+'may wish to define the basement criteria and then attribute'
+'the surfaces in the zone.'
+'  '
+'A .bsm file must be created or referenced.'
+'You may select one from a list, create a new one, or'
+'de-reference an exising definition (the file will be'
+'kept for use later). '
+'  '
+'If a file exists in the model ../bsm directory, you may'
+'select and use this file. Otherwise, create a new  '
+'file and input the parameters or use the defaults. '
+'                                                   '
+'For the current .bsm file you have several options:'
+' - You may use the values in the file as is (so no '
+'   further actions are taken).'
+' - You may choose to edit it and save the changes.'
+' - You can defererence the BASESIMP definition (in'
+'   which case the file is preserved for later use).'
+'  '
+'The following types of information are needed:'
+'  Depth: distance from the top of the floor slab to'
+'    the grade level. Must be between 0.05 and 2.4m '
+'  '
+'  Height: distance from the top of the floor slab to '
+'    the top of the basement structural wall.'
+'    Must be at least 0.1m greater than the depth.'
+'    Must also be between 1.0 and 2.5m'
+'  '
+'  Width: exterior-of-structural-wall to exterior-of- '
+'    structural-wall distance. Must be less than or equal'
+'    to the length. Value must be between 2.0 and 20m.'
+'  '
+'  Length: exterior-of-structural-wall to exterior-of-'
+'    structural-wall distance. Must be greater than or'
+'    equal to the width.'
+'  '
+'  Insulation overlap: value must be given but only'
+'    used for BCCN_1 and BCCN_2 combination cases.'
+'    Height of the wall covered by both interior and'
+'    exterior wall insulation (between 0 and 2.4m). '
+'  '
+'  Insulation thermal resistance:  enter the rsi '
+'    value (m2K/W). (must be between 0 and 20 m2K/W.)'
+'  '
+'  Thermal conductivity of soil surrounding the foundation'
+'    (W/mK). Must be between 0.1 and 10 W/mK.'
+'  '
+'  Water table depth: defines location of horizontal thermal '
+'    boundary. The deeper the water table, the lower the '
+'    foundation heat loss will be. Must be between 5 and 20m.'
 *enditem
-        CALL EASKABCD('Edit existing *.bsm?',' ','yes','no ',
-*item BASESIMP_INPUTS
-*enditem
-        CALL EASKABCD('Create new *.bsm?',' ','yes','no ',
-*item BASESIMP_INPUTS
- 'If a file exists in the ../bsm directory, you may  '
- 'select and use this file. Otherwise, create a new  '
- 'file and input the parameters or use the defaults. '
- '                                                   '
- 'For the current .bsm file you have several options:'
- ' - You may use the values in the file as is (so no '
- '   further actions are taken).'
- ' - You may choose to edit it and save the changes.'
- ' - You can defererence the BASESIMP definition (in'
- '   which case the file is preserved for later use).'
-*enditem
-        CALL EASKABC('Use current .bsm values or edit? ',' ',
-*item BASESIMP_INPUTS
- 'Depth: distance from the top of the floor slab to  '
- 'the grade level.                                   '
- 'Must be between 0.05 and 2.4m                      '
- '                                                   '
-*enditem
+      CALL EASKABCD('Edit existing *.bsm?',' ','yes','no ',
+      CALL EASKABCD('Create new *.bsm?',' ','yes','no ',
+      CALL EASKABC('Use current .bsm values or edit? ',' ',
       CALL EASKR(bsmtDepth,' ',' Depth of the basement (m) ? ',
-*item BASESIMP_INPUTS
- 'Height: distance from the top of the floor slab to '
- 'the top of the basement structural wall.           '
- 'Must be at least 0.1m greater than the depth.      '
- 'Must also be between 1.0 and 2.5m                  '
-*enditem
       CALL EASKR(bsmtHeight,' ',' Height of the basement (m) ? ',
-*item BASESIMP_INPUTS
- 'Width: exterior-of-structural-wall to exterior-of- '
- 'structural-wall distance.                          '
- 'Must be less than or equal to the length.          '
- 'Value must be between 2.0 and 20m.                 '
-*enditem
       CALL EASKR(bsmtWidth,' ',' Width of the basement (m) ? ',
-*item BASESIMP_INPUTS
- 'Length: exterior-of-structural-wall to exterior-of-'
- 'structural-wall distance.                          '
- 'Must be greater than or equal to the width.        '
- '                                                   '
-*enditem
       CALL EASKR(bsmtLength,' ',' Length of the basement (m) ? ',
-*item BASESIMP_INPUTS
- 'Insulation overlap: value must be given but only   '
- 'used for BCCN_1 and BCCN_2 combination cases.      '
- 'Height of the wall covered by both interior and    '
- 'exterior wall insulation (between 0 and 2.4m).     '
-*enditem
       CALL EASKR(Insul_Overlap,' ',' Insulation overlap (m)? ',
-*item BASESIMP_INPUTS
- 'Insulation: define the thermal resistance of the   '
- 'insulation by entering the rsi value (m2K/W).      '
- '                                                   '
- 'Value must be between 0 and 20 m2K/W.              '
-*enditem
       CALL EASKR(Insul_rsi,' ',' Insulation rsi (m2K/W)? ',
-*item BASESIMP_INPUTS
- 'Thermal conductivity of soil surrounding the       '
- 'foundation in W/mK.                                '
- 'Value must be between 0.1 and 10 W/mK.             '
- '                                                   '
-*enditem
       CALL EASKR(Soil_Cond,' ',' Soil conductivity (W/mK) ? ',
-*item BASESIMP_INPUTS
- 'Water table depth: defines location of horizontal  '
- 'thermal boundary. The deeper the water table, the  '
- 'lower the foundation heat loss will be.            '
- 'Value must be between 5 and 20m.                   '
-*enditem
       CALL EASKR(Water_Table,' ',' Water table depth (m) ? ',
-*item BASESIMP_INPUTS
- 'If you choose to use the Moore Method,             '
- 'TGavg, TGamp, TGps ground temperature parameters   '
- 'will be calculated. Otherwise, you must enter      '
- 'values for these parameters or use the defaults.   '
- ' '
- ' TGavg: Average ground temperature (degC)          '
- ' TGamp: Amplitude of the ground temperature (degC) '
- ' TGps: Phase lag of ground temperature (radians)   '
+*item BASESIMP_INPUTS basesimp_moore_method
+'If you choose to use the Moore Method,'
+'TGavg, TGamp, TGps ground temperature parameters'
+'will be calculated. Otherwise, you must enter'
+'values for these parameters or use the defaults.'
+' '
+' TGavg: Average ground temperature (degC) (between -10 and'
+'   20 (degC)'
+'  '
+' TGamp: Amplitude of the ground temperature (degC) (between'
+'   0 and 25(degC)'
+'  '
+' TGps: Phase lag of ground temperature (radians) (between'
+'  0 and 1 radians).'
+'  '
+'If you alter any information you will be asked to confirm'
+'the name of the BASESMP .BSM file. If your project contains'
+'the standard folder set, the file will be stored in a new '
+'folder ../bsm '
 *enditem
       CALL EASKABC('Method for handling ground temp:',' ',
-*item BASESIMP_INPUTS
- '                                                   '
- 'TGavg: Average ground temperature (degC)           '
- '                                                   '
- 'Value must be between -10 and 20(degC).            '
-*enditem
-        CALL EASKR(TGavg,' ',' TGavg (degC) ?',
-*item BASESIMP_INPUTS
- '                                                   '
- 'TGamp: Amplitude of the ground temperature         '
- '                                                   '
- 'Value must be between 0 and 25(degC).              '
-*enditem
-        CALL EASKR(TGamp,' ',' TGamp (degC) ?',
-*item BASESIMP_INPUTS
- '                                                   '
- 'TGps: Phase lag of ground temperature              '
- '                                                   '
- 'Value must be between 0 and 1 radians.             '
-*enditem
-        CALL EASKR(TGps,' ',' TGps (radians) ?',
-*item BASESIMP_INPUTS
- 'You may change the filename for the .BSM file.     '
- 'If your project contains the standard folder set,  '
- 'the file will be stored in a new folder ../bsm     '
- '                                                   '
-*enditem
-        CALL EASKF(bsmFile,'Confirm filename:',' ',72,bsmFile,
+      CALL EASKR(TGavg,' ',' TGavg (degC) ?',
+      CALL EASKR(TGamp,' ',' TGamp (degC) ?',
+      CALL EASKR(TGps,' ',' TGps (radians) ?',
+      CALL EASKF(bsmFile,'Confirm filename:',' ',72,bsmFile,
 *subroutine LKMENU
 *item LKMENU
 'The menu options allow the definition of construction'
