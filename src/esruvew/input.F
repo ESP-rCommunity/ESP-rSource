@@ -16,7 +16,6 @@ C----------------------------------------------------
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       COMMON/MAPMAP/MAPEM,MAPR(255),MAPG(255),MAPB(255)
       COMMON/TRATRA/TRX(MNF),TRY(MNF),TRZ(MNF),
      &               TRU(MNF),TRV(MNF),TRW(MNF),TRA(MNF),
@@ -32,9 +31,15 @@ C----------------------------------------------------
       CHARACTER TEXT*25
       CHARACTER TTT*3, MC*3, BLAB*3
       CHARACTER*10 SN(MELT,6)
-      character FNAME*72,outs*124,H*72
+      character FNAME*72,outs*124
 
       LOGICAL LOOK,NOIGN,OK,XST
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
       DATA MNP/8,6,6,5,4,5,4,4/
 C NO OF SURFACES.
@@ -64,6 +69,7 @@ C SURFACE DESCRIPTIONS.
       DATA NAMDS0/' VIEWER  '/
 
 C----------------------------------------------------
+      helpinsub='INPUT'  ! set for suboutine
 
       IF (INIT.EQ.0)THEN
         LIB = 1
@@ -116,7 +122,8 @@ C Take in command line file.
 C If the file exists then go ahead and load it.
       INQUIRE (FILE=LCMDFL,EXIST=XST)
       if(.NOT.XST)then 
- 11     H(1)=' This is a viewer (not esp-r geo) file.'
+ 11     helptopic='the_viewer_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
         llt=lnblnk(L144)
 
@@ -127,20 +134,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Viewer input file name?',' ',
-     &        96,'test.vew','initial input file',IER,1)
+     &        96,'test.vew','initial input file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Viewer input file name?',' ',
-     &        124,'test.vew','initial input file',IER,1)
+     &        124,'test.vew','initial input file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Viewer input file name?',' ',
-     &        144,'test.vew','initial input file',IER,1)
+     &        144,'test.vew','initial input file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Viewer input file name?',' ',
-     &      144,'test.vew','initial input file',IER,1)
+     &      144,'test.vew','initial input file',IER,nbhelp)
         else
           CALL EASKF(L144,' Viewer input file name?',' ',
-     &      96,'test.vew','initial input file',IER,1)
+     &      96,'test.vew','initial input file',IER,nbhelp)
         endif
 
         call usrmsg('File selected is',LCMDFL,'-')
@@ -155,9 +162,10 @@ C name with the full path.
 
 C If asking for clarification after an error.
  102  FNAME=FILNAM(NFILE)
-      H(1)=' This is a viewer (not esp-r geo) file.'
+      helptopic='the_viewer_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(FNAME,' Viewer input file name ?',' ',
-     &      72,'test.vew','input file',IER,1)
+     &      72,'test.vew','input file',IER,nbhelp)
       if(ier.ne.0.or.FNAME(1:2).eq.'  ')then
         goto 102
       endif

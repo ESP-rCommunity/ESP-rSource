@@ -2075,7 +2075,7 @@ C Initialise.
       VSRCF(ICOMP)=0.0
       ZMDAF(ICOMP)=1.2*VOL(ICOMP)
       ZLLDP(ICOMP)=0.0
-      GFA(ICOMP)=0.0
+      GFA(ICOMP)=0.0032
       ENTHCT=0.0
       ENTHUC=0.0
 

@@ -1,7 +1,7 @@
 # Plant component data base:
-../dbs/plant.db1                                                      
+/usr/esru/esp-r/databases/plantc.db1                                  
 # Project title:
-network to go with onoff control                                                     
+network to go with onoff control                                      
 # Total no. of specified components and simulation type
     7    3
 #->   1, air duct; 1 node model                                                  
@@ -12,13 +12,13 @@ network to go with onoff control
 #->   2, centrifugal fan, 1 node model ; flow control                            
   supply_fan         3
     1        # Component has   1 control variable(s).
-    0.250000
+ 0.25
     6
   10.000       500.00       7.0000       200.00      0.25000      0.70000    
 #->   3, air heating coil; 1 node model ; flux control                           
   heating_coil       5
     1        # Component has   1 control variable(s).
-    5000.00
+ 5000.0
     3
   15.000       1000.0       3.5000    
 #->   4, air duct; 1 node model                                                  
@@ -34,7 +34,7 @@ network to go with onoff control
 #->   6, centrifugal fan, 1 node model ; flow control                            
   extract_fan        3
     1        # Component has   1 control variable(s).
-    0.250000
+ 0.25
     6
   10.000       500.00       7.0000       200.00      0.25000      0.70000    
 #->   7, air duct; 1 node model                                                  

@@ -38,7 +38,6 @@ C MZHCFV reads the convection regime file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
-      common/pophelp/h(60)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -51,7 +50,7 @@ C MZHCFV reads the convection regime file.
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
 
-      character outs*124,OUTSTR*124,h*72
+      character outs*124,OUTSTR*124
       logical OK,dok
 
       DIMENSION HIV(MS),HEV(MS)
@@ -81,6 +80,13 @@ C       jj=3-5 floor upwd_inside, downwd_inside, external
 C       jj=6-8 ceiling upwd_inside, downwd_inside, external
 C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZHCFV'  ! set for subroutine
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -288,8 +294,10 @@ C Trace output ?
 C Trace output follows.
     5 CONTINUE 
       dok=.false.
-      h(1)='This report is available if you say yes. '
-      CALL ASKOK(' ',' Convective coefficient file output?',OK,dok,1)
+      helptopic='hc_coef_trace_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ',' Convective coefficient file output?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 6
       write(outs,'(A,I4)')' Subroutine MZHCFV      Trace output',ICNT
       call edisp(itu,outs)
@@ -333,7 +341,6 @@ C MZHCFV2 reads the convection-regime file (version 2)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
-      common/pophelp/h(60)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -347,7 +354,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
 
-      character outs*124,OUTSTR*124,word*24,h*72
+      character outs*124,OUTSTR*124,word*24
       character hcfpdescr*72
       logical OK,dok,newer
 
@@ -378,6 +385,13 @@ C       jj=3-5 floor upwd_inside, downwd_inside, external
 C       jj=6-8 ceiling upwd_inside, downwd_inside, external
 C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZHCFV2'  ! set for subroutine
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -626,8 +640,10 @@ C Error messages.
 C Trace output follows.
     5 CONTINUE
       dok=.true.
-      h(1)='This report is available if you say yes. ' 
-      CALL ASKOK(' ',' Convective regime trace output?',OK,dok,1)
+      helptopic='hc_coef_trace_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ',' Convective regime trace output?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 6
       write(outs,'(A,I4,a,i2)')' Subroutine MZHCFV2  Trace output',
      &  ICNT,' for zone ',ICOMP
@@ -691,17 +707,23 @@ c later within the simulation time-stepping.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/rsolmax/maxrec(mcom)
 
       CHARACTER LS*72
-      character outs*124,h*72
+      character outs*124
 
       DIMENSION ISUM1(12),ISUM2(12),PS(24),
      &          IGC(MS),ISADD(12),ISHD(12)
       logical OK,dok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZSHIN'  ! set for subroutine
 
 c Initialise shading file (unit number = IFIL+1).
       JOUT=ITC
@@ -762,7 +784,8 @@ C << subroutine. Also look at a common common blocks between
 C << ish and the simulator.
     1 CONTINUE 
       dok=.true.
-      h(1)='This report is available if you say yes. '
+      helptopic='shading_trace_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' ',' SHADING/INSOLATION file output?',OK,dok,1)
       IF(.NOT.OK)goto  2
       write(outs,'(A,I4)')' Subroutine MZSHIN     Trace output',ICNT

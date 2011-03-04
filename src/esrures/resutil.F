@@ -39,11 +39,17 @@ C MENUTYPE 9: Psychrometric chart
 
       SUBROUTINE MOSTYLE
 
-      common/pophelp/h(60)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
-      CHARACTER ITEM(15)*21,h*72
+      CHARACTER ITEM(15)*21
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOSTYLE'  ! set for subroutine
 
 C Create menu.
       ITEM(1) ='   Graphs:           '
@@ -65,9 +71,9 @@ C Create menu.
       NITMS=15
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='Select the style of output required.  This will not '
-      H(2)='effect current selections. '
+C Instanciate help strings for the menu.
+      helptopic='res_style_selection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  1    CALL EMENU('Output styles',ITEM,NITMS,INO)
 
@@ -87,7 +93,9 @@ C Set MENUTYPE depending on choice made.
       elseif (INO.eq.12) then
         MENUTYPE=4
       elseif (INO.eq.(NITMS-1)) then
-        CALL PHELPD('Output styles',2,'-',0,0,IER)
+        helptopic='res_style_selection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Output styles',nbhelp,'-',0,0,IER)
         goto 1
       elseif (INO.eq.NITMS) then
         return

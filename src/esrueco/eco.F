@@ -74,9 +74,6 @@ C Interface frame dimensions
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
 
-C Help
-      COMMON/pophelp/h(60)
-
 C View point, view direction, ...
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
@@ -154,7 +151,7 @@ C Name of current application
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
       CHARACTER LCFGF*72,cfgroot*24
-      CHARACTER H*72,outs*124,ITEM*35,Hold*24
+      CHARACTER outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,L144*144
@@ -179,10 +176,17 @@ C      CHARACTER tab*1
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Initial assumptions (summary reporting).
       call ezero
       call curmodule('eco ')
       cAppName = 'eco'
+      helpinapp='eco'  ! set once for the application
+      helpinsub='eco'  ! set for MAIN
 C      tab = CHAR(9)
       ITRC=1
       IUIN = 5
@@ -556,12 +560,14 @@ C Help via the askabout facility in esru_ask.F The zero requests display
       elseif(INO.EQ.12)THEN
 
 C Define Units
+        helptopic='unit_for_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL easkabcd('Define the results unit.',
-     &    'Do you want to modifie unit for: ',' Energy ',' Mass ',
-     &    ' Impacts ',' CANCEL ',IUnit,3)
+     &    'Do you want to modify unit for: ',' Energy ',' Mass ',
+     &    ' Impacts ',' CANCEL ',IUnit,nbhelp)
         IF (IUnit.EQ.1) THEN
-          CALL easkabc('Define the ENERGY unit.',
-     &      'Which unit : ',' [kWh] ',' [MJ] ',' CANCEL ',IEnergy,3)
+          CALL easkabc('Define the ENERGY unit.','Which unit : ',
+     &      ' [kWh] ',' [MJ] ',' CANCEL ',IEnergy,nbhelp)
           OldUnit=UnitEner
           IF (IEnergy.EQ.1) THEN
             UnitEner='[kWh]'
@@ -570,7 +576,7 @@ C Define Units
           ENDIF
         ELSEIF (IUnit.EQ.2) THEN
           CALL easkabc('Define the MASS unit.',
-     &      'Which unit : ','[kg]','[g]','CANCEL',IMass,3)
+     &      'Which unit : ','[kg]','[g]','CANCEL',IMass,nbhelp)
           OldUnit=UnitMass
           IF (IMass.EQ.1) THEN
             UnitMass='[kg]'
@@ -579,7 +585,8 @@ C Define Units
           ENDIF
         ELSEIF (IUnit.EQ.3) THEN
           CALL easkabc('Define the results format',
-     &      'Which unit : ','Absolue','Relative (/m2)','CANCEL',IImp,3)
+     &      'Which unit : ','Absolue','Relative (/m2)','CANCEL',
+     &      IImp,nbhelp)
           OldUnit=UnitImp
           IF (IImp.EQ.1) THEN
             UnitImp='[Imp]'
@@ -594,8 +601,8 @@ C Define Units
 
 C Export results to file
 C First open the file, then write in and finally close the file
-        H(1)='Export current result in an ASCII file according '
-        H(2)='to the format in the textual feedback. '
+        helptopic='eco_export_current'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         itu = ixunit
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T',' text',IER)
         write(outs,'(a)') 'Environmental impact assessment report.'
@@ -675,29 +682,28 @@ C Select/change ESP-r configuration file.
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
 C name with the full path.
-  289   H(1)='The problem configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+  289   helptopic='eco_model_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
         llt=lnblnk(L144)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Problem name? ',' ',124,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Problem name? ',' ',144,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Problem name? ',' ',96,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144.EQ.' ')GOTO 289
@@ -707,22 +713,21 @@ C name with the full path.
       elseif (INO.eq.3) then 
 
 C Select/change BCF file.
-        H(1)='The building composites file (BCF) holds the current'
-        H(2)='description and data of each multilayer construction.'
-        H(3)='This file is currently being revised.'
+        helptopic='eco_BCF_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   288   IF (BCFOK) THEN
           call easkabc('A BCF of the current problem is loaded.',
-     &        'Do you want: ','use it','load another','continue',Iw,3)
+     &     'Do you want:','use it','load another','continue',Iw,nbhelp)
           if(iw.eq.3)then
             goto 10
           elseif(iw.eq.2)then
             CALL EASKS(BCFName,'New building composites file?',' ',72,
-     &        DBCFNAM,'BCF file name',IER,3)
+     &        DBCFNAM,'BCF file name',IER,nbhelp)
             IF(BCFName.EQ.' ')GOTO 288
           endif
         ELSE
           CALL EASKS(BCFName,'Building composites file?',' ',72,
-     &      DBCFNAM,'BCF file name',IER,3)
+     &      DBCFNAM,'BCF file name',IER,nbhelp)
           IF(BCFName.EQ.' ')GOTO 288
         ENDIF
 
@@ -753,35 +758,12 @@ C Attempt to read in the BCF file.
 
       elseif (INO.eq.5) then
 
-        H(1)='Assessing the environmental impacts.'
-        H(2)='----------------------------------- '
-        H(3)='The ECO module provides a facility for an environmental'
-        H(4)=' impacts assessment (EIA) of an construction.'
-        H(5)='The AIE can focused on either a project, a composite or '
-        H(6)='a material.'
-        H(7)='To proced with an EIA, first use one of the following '
-        H(8)='approach : '
-        H(9)=' '
-        H(10)='1) Approach >> project based: In this case, the AIE will'
-        H(11)='   be related to a project, which has to be loaded using'
-        H(12)='   the [a Problem] item. Then select the desired zone(s)'
-        H(13)='   and surface(s) by clicking item [d Zone] in the menu.'
-        H(14)=' '
-        H(15)='2) Approach >> composite based : In this case, the AIE '
-        H(16)='   will be related to one or more composite(s). Then '
-        H(17)='   select the desired composite(s) by clicking '
-        H(18)='   [e Composite] in the menu.'
-        H(19)=' '
-        H(20)='3) Approach >> material based : In this case, the AIE '
-        H(21)='   will be related to one or more material(s). Then '
-        H(22)='   select the desired material(s) by clicking '
-        H(23)='   [e material] in the menu.'
-        H(24)=' '
-        H(25)=' When the required information have been define, an EIA'
-        H(26)=' can be performed by clicking on [1 EIA calculation ...]'
+        helptopic='eco_assessing_impacts'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EASKABC('Approaches to scope of LCA calculations:',' ',
-     &   ' Project based ',' MLC based ',' Material based ',IcalType,26)
+     &   ' Project based ',' MLC based ',' Material based ',
+     &   IcalType,nbhelp)
         GOTO 10
       ELSEIF (Ino.eq.6.and.IcalType.eq.1)then
 
@@ -797,13 +779,11 @@ C << update zoneslist to also ask for surfaces >>
 
 C Selection of the surfaces to include
 C All the zones in the project have been selected
-             h(1)='If you want to select manually the surfaces to '
-             h(2)='include in the calculation, select Yes.'
-             h(3)=' Otherwise, it include automatically all the '
-             h(4)='surfaces of the project. '
+             helptopic='eco_select_manually'
+             call gethelptext(helpinsub,helptopic,nbhelp)
              CALL EASKAB(' Do you want to select manually the surfaces',
      &        ' to include ',' No (include all) ',
-     &        ' Yes, manually ',ixman,4)
+     &        ' Yes, manually ',ixman,nbhelp)
              IF (ixman.EQ.1) THEN
                do 41 ixd=1,NZG
                   CALL ZoneDisp(NZNOG(ixd),0)
@@ -862,19 +842,18 @@ C Display the composites list.
         ENDIF
 
 C Ask areas and perimeter for each selected composite
-        H(1)='As no zone has been selected, the calculation will'
-        H(2)='be done for the corresponding dimensions.'
-        H(3)='The width in [m] of the composite to analyse.'
-        H(4)='The height in [m] of the composite to analyse.'
+        helptopic='eco_no_zone_selected'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(Hold,'(2F8.3)')WidthCo,HeightCo
         CALL EASKS(Hold,' Environmental impacts of a composite :',
-     &  'width and height [m] ',32,' 1. 1. ','width & height',IER,4)
+     &    'width and height [m] ',32,' 1. 1. ','width & height',
+     &     IER,nbhelp)
         K=0
         CALL EGETWR(Hold,K,WidthCo,0.001,999.,'W','width',IER)
         CALL EGETWR(Hold,K,HeightCo,0.001,999.,'W','height',IER)
         CALL USRMSG(' ',' ','-')
         Area = HeightCo * WidthCo
-        Perimeter = 2*HeightCo + 2*WidthCo
+        Perimeter = 2.*HeightCo + 2.*WidthCo
 
 C update menu text
         IF (NComPik.EQ.1)  WRITE(TxtLCA,'(a,a)')' of ',
@@ -887,7 +866,6 @@ C update menu text
 
 C Display Material list and allow selection of materials.
         NZG = 0
-        H(1)='See menu level help.'
         IF (.NOT.BCFOK) THEN
           call usrmsg('No BCF file loaded',
      &                      'Select a BCF file first','W')
@@ -897,49 +875,47 @@ C Display Material list and allow selection of materials.
 C Find version of materials database.
  139    call eclose(matver,1.1,0.01,closemat1)
         call eclose(matver,1.2,0.01,closemat2)
-                if(closemat1.or.closemat2)then
+        if(closemat1.or.closemat2)then
           continue
-                else
-                  call usrmsg(
+        else
+          call usrmsg(
      &      'No materials data available. Re-load the model config-',
      &      'uration file or check model in the project manager.','W')
-                  goto 10
-                endif
-
-C Select from the available materials.
-            iwhich=0
-            CALL ELISTCMOD(iwhich,chdb,'-',IER)
-            if(iwhich.eq.0)then
-              H(1)='If air is correct then accept, otherwise'
-              H(2)='reselect from the list or abort the task.'
-              CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &          ' ','accept','reselect material','cancel',iwair,2)
-              if(iwair.eq.2)then
-                CALL ELISTCMOD(iwhich,chdb,'-',IER)
-              elseif(iwair.eq.3)then
-               GOTO 10
-              endif
+          goto 10
         endif
 
-          legmat=IWHICH   ! which legacy index
-          if(legmat.gt.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-            NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C Select from the available materials.
+        iwhich=0
+        CALL ELISTCMOD(iwhich,chdb,'-',IER)
+        if(iwhich.eq.0)then
+          CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &      ' ','accept','reselect material','cancel',iwair,nbhelp)
+          if(iwair.eq.2)then
+            CALL ELISTCMOD(iwhich,chdb,'-',IER)
+          elseif(iwair.eq.3)then
+            GOTO 10
           endif
+        endif
+
+        legmat=IWHICH   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
+
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+            NAM='AIR'
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        endif
 
         call edisp(iuout,' ')
         write(outs,'(a,a)')'Selected category: ',
@@ -965,11 +941,11 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         call edisp(iuout,outs)
 
 C ask for mass of material
-        H(1)='As no zone has been selected, the calculation will'
-        H(2)='be done for the corresponding material mass [kg].'
+        helptopic='eco_no_zone_selected'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(hold,'(F8.3)')WeigtMat
         CALL EASKS(HOLD,' Environmental impacts of a single material :',
-     &  'material mass [kg] ',32,' 1. ','material mass',IER,2)
+     &  'material mass [kg] ',32,' 1. ','material mass',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,WeigtMat,0.001,100000.,'W','mass',IER)
         CALL USRMSG(' ',' ','-')

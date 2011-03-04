@@ -155,7 +155,7 @@ h3k_utils.F:
 	ln -s $(CETCdir)/h3k_utils.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .

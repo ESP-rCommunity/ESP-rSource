@@ -98,16 +98,20 @@ C Building control information.
      &     SSTR(1:ln)
         WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IBAN(II,J),J=1,3),
      &  '  # actuator data'
-        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NBCDT(II),
-     &  ' # No. day types'
         NN=NBCDT(II)
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NBCDT(II),
+     &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NBCDT(II),
+     &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NBCDT(II),
+     &    ' # No. day types using dates of validity'
         ENDIF
         DO 20 J=1,NN
           JJ=J
@@ -194,16 +198,20 @@ C Plant control information.
         WRITE(IUNIT,'(2A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
         WRITE(IUNIT,'(4I5,A)',IOSTAT=ios,ERR=1)(IPAN(II,J),J=1,4),
      &  '  # actuator '
-        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NPCDT(II),
-     &  ' # No. day types'
         NN=NPCDT(II)
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NPCDT(II),
+     &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NPCDT(II),
+     &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NPCDT(II),
+     &    ' # No. day types using dates of validity'
         ENDIF
 
         DO 50 J=1,NN
@@ -273,16 +281,20 @@ C Flow control information.
      &     SSTR(1:ln)
         WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IFAN(II,J),J=1,3),
      &  '  # actuator data'
-        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NFCDT(II),
-     &  ' # No. day types'
         NN=NFCDT(II)
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NFCDT(II),
+     &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NFCDT(II),
+     &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NFCDT(II),
+     &    ' # No. day types using dates of validity'
         ENDIF
 
         DO 501 J=1,NN
@@ -377,16 +389,20 @@ C Global control information.
      &' # sensor data'
         WRITE(IUNIT,'(3I5,a)',IOSTAT=ios,ERR=1)(IGAN(II,J),J=1,3),
      &' # actuator data'
-        WRITE(IUNIT,'(I6,a)',IOSTAT=ios,ERR=1)NGCDT(II),
-     &' # number of day types'
         NN=NGCDT(II)
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    ' # No. day types using dates of validity'
         ENDIF
 
         DO 450 J=1,NN

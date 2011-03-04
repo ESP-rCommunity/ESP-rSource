@@ -5962,7 +5962,6 @@ C climate file commons
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
 
-      common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -5975,8 +5974,15 @@ C climate file commons
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
       REAL PREVTEMP(MMD)
-      character dllsubr*12,dllmesg*124,outs*124,H*72
+      character dllsubr*12,dllmesg*124,outs*124
       logical dll
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BCL24'  ! set for subroutine
 
 C Check to see if running in dll mode.
       call isadll(dll)
@@ -6180,10 +6186,10 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
         call epagend
         STOP
       endif
-  999 H(1) = 'A data i/o error has occured in the program at BCL24'
-      H(2) = 'and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+  999 helptopic='bcl24_io_error'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('data i/o error',nbhelp,
+     &            'i/o exception handler',0,0,IER)
       RETURN
       END
 

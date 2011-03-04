@@ -159,13 +159,19 @@ C (equivalent to subroutine in esruish/miscel.F)
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
-      CHARACTER outs*124,h*72
+      CHARACTER outs*124
       logical OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MESH'  ! set for subroutine
 
 C Find max and min X & Z values for this surface.
       XMAX=-1.E+10
@@ -204,9 +210,10 @@ C each grid square.
 C Trace if verbose level.
     1 IF(ITC.LE.1)goto 9985
       dok=.false.
-      h(1)='If you want a detailed report on the MESH generated '
-      h(2)='answer yes to the question. '
-      CALL ASKOK(' ',' View details of MESH coordinates?',OK,dok,2)
+      helptopic='view_mesh_cord'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ',' View details of MESH coordinates?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 9985
 
       WRITE(outs,9986)IS

@@ -111,15 +111,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb surface which share an edge
-      integer iedgshr   ! for each edge, the adjacent surface
-      integer imatshr   ! for each edge, the adjacent material
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW

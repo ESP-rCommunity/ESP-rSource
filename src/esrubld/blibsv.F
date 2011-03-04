@@ -360,7 +360,6 @@ c save set.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -422,7 +421,7 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character LUALF*72,LCNG*15,LLOC*15,H*72
+      character LUALF*72,LCNG*15,LLOC*15
       character LCFGF*72,cfgroot*24
 
 C scname is the first 12 characters of the overall control name.
@@ -443,6 +442,12 @@ C 'simulation toggles' menu.
                                    !- is hour-centered (default) or half-hour centered.
                                    !- 0 = hour-centered; 1 = half-hour centered.
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZLS2'  ! set for subroutine
 
 C Initialise once per hour storage facility.  (Future work could
 C involve storage of results at higher frequency.
@@ -579,14 +584,11 @@ C Generate automatically if an uncertainty analysis.
       if (autook) IASK=1
       if (NRSIM.gt.1) IASK=1
       if (IASK.eq.0) then
-   50   H(1)='A phrase describing what this result-set represents '
-        H(2)='is required. The default phrase includes the root '
-        H(3)='name of the model. '
-        H(4)='  '
-        H(5)='These phrases are generated automatically during an '
-        H(6)='uncertainty analysis. '
+   50   helptopic='user_phrase'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(RSNAME,' Result-set description?',
-     &    ' ',40,'standard simulation','Result-set brief descr.',IER,6)
+     &    ' ',40,'standard simulation','Result-set brief descr.',
+     &    IER,nbhelp)
         IF(RSNAME(1:2).EQ.'  ')GOTO 50
       endif
       IREC=NSIM+2

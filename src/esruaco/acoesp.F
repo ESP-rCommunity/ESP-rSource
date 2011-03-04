@@ -34,7 +34,6 @@ C Display Zones list and wait for INIPIC item selected
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -45,8 +44,14 @@ C Display Zones list and wait for INIPIC item selected
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
-      CHARACTER H*72
-      
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='Zoneslist'  ! set for subroutine
+
       do 5 i=1,MCOM
         NbSurSel(i) = 0
   5   continue
@@ -71,15 +76,11 @@ C Otherwise select the zones from a list of zone names.
         call edisp(iuout,' Zone selection... ')
         call edisp(iuout,'  ')
 
- 7      H(1)='Pick one, several or All zones that must be included in'
-        H(2)='the reverberation time calculation. The calculation will'
-        H(3)='evaluated the performance over all the selected zones '
-        H(4)='as it was corresponding to a single space. This allow to'
-        H(5)='calculate the reverberation time of a space that is '
-        H(6)='represented by several thermal zones (ex. atrium) '
+ 7      helptopic='aco_zones_to_inclue'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,6)
+        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
+     &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
         if (IDerr.ne.0) goto 666
@@ -250,7 +251,6 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
@@ -259,7 +259,12 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CompoList'  ! set for subroutine
 
 C Read database if not already done.
       if (.not.MLDBOK) then 
@@ -277,15 +282,15 @@ C Read database if not already done.
         LstComp(II)=0
  6    continue
       NComPik=0
-C Otherwise select the zones from a list of zone names.
+
+C Otherwise select the constructions from a list of names.
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
- 7    H(1)='Pick one, several or All zones for inclusion in a'
-      H(2)='xx from the list provided. '
-      H(3)='You may choose them in any order. '
+ 7    helptopic='aco_constr_to_include'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=NMLC
-      CALL EPICKS(INPIC,IVALZ,' ',' Which constructions to include:',
-     &  20,NMLC,Desc,' Composite(s) list',IDerr,3)
+      CALL EPICKS(INPIC,IVALZ,' ','Which constructions to include:',
+     &  20,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN

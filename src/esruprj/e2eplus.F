@@ -33,7 +33,7 @@ C ver (real) should be 1.4 or 2.0 or 3.0
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/G9/prec2/prec17/precz/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -102,32 +102,6 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb surface which share an edge
-      integer iedgshr   ! for each edge, the adjacent surface
-      integer imatshr   ! for each edge, the adjacent material
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
-C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
-      integer iparent   ! parent surface connection (zero is no parent)
-      integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -176,6 +150,8 @@ C surface can be resolved into a quad).
       character*10 wkday(7)
       character*9 RAMONTH(12)
       character*4 indent   ! for indentation
+      character sitestring*48  ! for view factor to ground
+      character conststring*48 ! for use with constant boundary
       logical usethisone   ! array if true then surface can be used
       logical truechild    ! array if true then E+ child
       dimension usethisone(MCON),truechild(MCON)
@@ -190,6 +166,7 @@ C surface can be resolved into a quad).
       logical newgeo  ! to use for testing if new/old geometry file
       logical findchildvert  ! to remember child vertices
       logical treatasmass    ! if true treat surface as internal mass
+      logical processasfen   ! if true treat surface as fenistration
 
 C Viewfactor to ground.
       dimension PROPG(8)
@@ -1392,8 +1369,6 @@ C Further logic required if there is more than one radiant/convective split.
 
 
 C --------------------------------------
-C << what this is really writing out is ??
-C << need a variant for number of people
 
 C Write out the initial portion of people compact schedule.
   12    continue
@@ -1652,7 +1627,7 @@ C See if this surface happens to be a child in the strict sense.
           mentioned=0
           do 778 iprr=1,NZNVER(icc)   ! loop to see only parent mentioned
             if(iedgshr(icc,iprr).eq.0)then
-              truechild(icc)=.false.
+              truechild(icc)=.false.  ! an edge to non-parallel surface
             endif
             if(iedgshr(icc,iprr).ne.0.and.mentioned.eq.0)then
               mentioned=iedgshr(icc,iprr)
@@ -1690,7 +1665,8 @@ C     &    iedgshr(icc,7),iedgshr(icc,8),iedgshr(icc,9),iedgshr(icc,10)
 
   64    continue
 
-C For each surface write out data.
+C For each surface determine appropriate coordinates prior to
+C writing out any data.
         DO 60 IS=1,NSUR
           icc=izstocn(mz,is)
           if(.NOT.usethisone(icc))goto 60  ! jump past this
@@ -1698,7 +1674,7 @@ C For each surface write out data.
           findchildvert=.false.  ! do not bother remembering
           if(nbchild(icc).eq.0)then
 
-C If there are no children just write coords.
+C If there are no children remember all coordinates.
             do 62 iedg=1,NVER(IS)
               COORD(iedg,1)=X(JVN(IS,iedg))
               COORD(iedg,2)=Y(JVN(IS,iedg))
@@ -1781,65 +1757,91 @@ C          do 747 iedg=1,iedgcnt
 C            write(6,*) COORD(iedg,1),COORD(iedg,2),COORD(iedg,3)
 C  747     continue
 
-C Have not yet worked out equivalent to a constant boundary condition.
-C << recent versions of EnergyPlus have a way to do it >>
+C A constant boundary condition is defined with an OtherSideCoefficients
+C entity. This should be uniquely named e.g. for the zone and surface.
+C Generate this entity.
+          conststring=' '   ! initial state
           if(ICT(icc).eq.2)then
+            WRITE(ioout,'(a)',iostat=ios,err=5) ' '
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-            write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
-     &        ' faces a constant boundary so skipping.'
-            call edisp(iuout,outs)
-            WRITE(ioout,'(a)') ' '
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
-     &          '!- ',outs(1:lnblnk(outs))
-            goto 60  ! jump to next surface
+     &        '  SurfaceProperty:OtherSideCoefficients',com
+            WRITE(ioout,'(5a)',iostat=ios,err=6) indent,'Const', 
+     &        ZSDES(1:lnblnk(ZSDES)),com,'   !- OtherSideCoeff Name'
+            WRITE(conststring,'(2a)') 'Const',ZSDES(1:lnblnk(ZSDES))
+            WRITE(ioout,'(4a)') indent,'0.0000',com,'   !- trigger'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,'   !- OSC temp'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC Temp Coef'
+            WRITE(ioout,'(a,f6.2,2a)') indent,real(IC2(icc)),com,
+     &        '   !- OSC outside Dry-Bulb'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC GrndTemp'
+            WRITE(ioout,'(4a)') indent,'0.0000',com,
+     &        '   !- OSC WindSpdCoef'
+            WRITE(ioout,'(4a)') indent,'0.0000',sim,
+     &        '   !- OSC ZoneAirTemp'
           endif
 
-C If a surface is transparent, it must have a non-blank
-C parent, if not ask the user for a suggestion.
-
-C << add logic to check if a true child >>
-
-          if(SSOTF(icc)(1:4).NE.'OPAQ'.and.SSOTF(icc)(1:4).NE.'CFC '
-     &      .and.(SSPARENT(icc)(1:2).eq.'  '.or.
-     &        SSPARENT(icc)(1:2).eq.'- '))then
-            call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-            write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
-     &        ' is transparent without parent.'
-            call edisp(iuout,outs)
-            dok=.false.
-            h(1)='Is its parent surface in the current'
-            h(2)='zone. If not say no. '
-            izz=ic1(icc)
-            write(outs,'(5a)') 'Does ',ssname(icc),
-     &        ' have a parent surface in ',zname(izz),'?'
-            call askok(outs,
-     &        ' (saying no skips this subsurface)',ok,dok,2)
-            if(ok)then
-              write(outs,'(5a)') 'Specify parent surface for ',
-     &          ssname(icc),' in ',zname(izz),'.'
-              call easksur(izz,iss,'-',outs,' ',ier)
-              ibinval=izstocn(izz,iss)
-              if(ibinval.ne.0)then
-                SSPARENT(icc)=ssname(ibinval)
-              else
-                SSPARENT(icc)=' '
-                write(outs,'(3a,i2,a)') 'Surface ',
-     &            ZSDES(1:lnblnk(ZSDES)),
-     &            ' is transparent without parent.'
-                WRITE(ioout,'(a)') ' '
-                WRITE(ioout,'(2a)',iostat=ios,err=6) 
-     &            '!- ',outs(1:lnblnk(outs))
-                goto 60  ! jump to next surface
-              endif
+C If a surface is transparent, it must have a non-blank parent
+C and it must be a true child surface, if not ask the user.
+          if(SSOTF(icc)(1:4).NE.'OPAQ'.and.
+     &       SSOTF(icc)(1:4).NE.'CFC ')then
+            if(truechild(icc))then
+              continue    ! surface is a true child so process
             else
               SSPARENT(icc)=' '
-              write(outs,'(3a,i2,a)') 'Surface ',
+              write(outs,'(3a,i2,a)') 'Skipping surface ',
      &          ZSDES(1:lnblnk(ZSDES)),
-     &          ' is transparent without parent.'
+     &          ' is transparent and is NOT in a child location.'
               WRITE(ioout,'(a)') ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          '!- ',outs(1:lnblnk(outs))
               goto 60   ! jump to next surface
+            endif
+
+C If ESP-r thinks there is no parent confirm with user.
+            if(SSPARENT(icc)(1:2).eq.'  '.or.
+     &         SSPARENT(icc)(1:2).eq.'- ')then
+              call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
+              write(outs,'(3a,i2,a)')'Surface ',ZSDES(1:lnblnk(ZSDES)),
+     &          ' is transparent without parent surface.'
+              call edisp(iuout,outs)
+              dok=.false.
+              h(1)='Is its parent surface in the current'
+              h(2)='zone. If not say no. '
+              izz=ic1(icc)
+              write(outs,'(5a)') 'Does ',ssname(icc),
+     &          ' have a parent surface in ',zname(izz),'?'
+              call askok(outs,
+     &          ' (saying no skips this subsurface)',ok,dok,2)
+              if(ok)then
+                write(outs,'(5a)') 'Specify parent surface for ',
+     &            ssname(icc),' in ',zname(izz),'.'
+                call easksur(izz,iss,'-',outs,' ',ier)
+                ibinval=izstocn(izz,iss)
+                if(ibinval.ne.0)then
+                  SSPARENT(icc)=ssname(ibinval)
+                else
+                  SSPARENT(icc)=' '
+                  write(outs,'(3a,i2,a)') 'Skipping surface ',
+     &              ZSDES(1:lnblnk(ZSDES)),
+     &              ' which is transparent WITHOUT a parent.'
+                  WRITE(ioout,'(a)') ' '
+                  WRITE(ioout,'(2a)',iostat=ios,err=6) 
+     &              '!- ',outs(1:lnblnk(outs))
+                  goto 60  ! jump to next surface
+                endif
+              else
+                SSPARENT(icc)=' '
+                write(outs,'(3a,i2,a)') 'Skipping surface ',
+     &            ZSDES(1:lnblnk(ZSDES)),
+     &            ' which is transparent WITHOUT a parent.'
+                WRITE(ioout,'(a)') ' '
+                WRITE(ioout,'(2a)',iostat=ios,err=6) 
+     &            '!- ',outs(1:lnblnk(outs))
+                goto 60   ! jump to next surface
+              endif
             endif
           endif
 
@@ -1860,7 +1862,7 @@ C A transparent surface.
           else
 
 C Opaque surface.
-            if(ICT(icc).eq.5)then
+            if(ICT(icc).eq.7)then
               treatasmass=.true.  ! CEN similar is internal mass
 
             elseif(ICT(icc).eq.1)then
@@ -1890,8 +1892,6 @@ C Logic not yet in place to find an opossing partition so point it to the ceilin
                   treatasmass=.true.  ! treat as internal mass
                 endif
               endif
-C Debug.
-              write(6,*) 'reverse ',iccsimilar,izsfloor(mz),izsceil(mz)
             endif
 
             if(treatasmass)then
@@ -1899,21 +1899,59 @@ C Debug.
      &          '  InternalMass',com
             else
 
-C Opaque surface without or with a parent.
-
-C << test for true child here >>
-
+C Opaque surface without or with a parent and might not be a true child.
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
                 WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &            '  BuildingSurface:Detailed',com
               else
-                WRITE(ioout,'(3a)',iostat=ios,err=6) 
-     &            '  FenestrationSurface:Detailed',com,
-     &            '   !- (a door)'
+                if(truechild(icc))then
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) 
+     &              '  FenestrationSurface:Detailed',com,
+     &              '   !- (a door)'
+                else
+                  WRITE(ioout,'(2a)',iostat=ios,err=6) 
+     &              '  BuildingSurface:Detailed',com
+                endif
               endif
             endif
           endif
+
+C Generate a string for use with view factor to the ground.
+C Also include viewfactor to ground value depending on orientation
+C and site exposure. An index of 8 signals user defined values.
+          if(siteexposureindex.ne.8)then
+            if(SSVFC(icc)(1:4).eq.'VERT')then
+              WRITE(sitestring,'(a,f5.3,2a)',iostat=ios,err=6) '    ',
+     &          PROPG(siteexposureindex),com,
+     &          '   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &          com,'   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
+     &             SSVFC(icc)(1:4).eq.'UNKN')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &          com,'   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'FLOR')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'1.0',
+     &          com,'   !- View Factor to Ground'
+            endif
+          else
+            if(SSVFC(icc)(1:4).eq.'VERT')then
+              WRITE(sitestring,'(a,f5.3,2a)',iostat=ios,err=6) indent,
+     &         groundview,com,'   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &          com,'   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
+     &             SSVFC(icc)(1:4).eq.'UNKN')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'0.0',
+     &          com,'   !- View Factor to Ground'
+            elseif(SSVFC(icc)(1:4).eq.'FLOR')then
+              WRITE(sitestring,'(4a)',iostat=ios,err=6) indent,'1.0',
+     &          com,'   !- View Factor to Ground'
+            endif
+          endif      
 
 C Generate a unique name (zone + surface).
           call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
@@ -1929,49 +1967,29 @@ C We have a transparent surface.
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &        '   !- Construction Name'
-            lsn0=lnblnk(SSPARENT(icc))
-            lzn0=lnzname(mz)
-            WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
-     &        SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
+
+C If this surface has a grandparent then its parent (the frame) will
+C have been skipped so use the name of the grand parent rather than
+C the name of the ESP-r parent surface.
+            if(igparent(icc).gt.0)then
+              lsn0=lnblnk(SSNAME(igparent(icc)))
+              lzn0=lnzname(mz)
+              WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
+     &          SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
+            else
+              lsn0=lnblnk(SSPARENT(icc))
+              lzn0=lnzname(mz)
+              WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
+     &          SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
+            endif
             WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &        ZSDES(1:lnblnk(ZSDES)),com,'   !- Building Surface Name'
             WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &        '   !- Outside Boundary Condition Object'
 
-C Also include viewfactor to ground value depending on orientation
-C and site exposure. An index of 8 signals user defined values.
-            if(siteexposureindex.ne.8)then
-              if(SSVFC(icc)(1:4).eq.'VERT')then
-                WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '    ',
-     &            PROPG(siteexposureindex),com,
-     &            '   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
-     &            com,'   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
-     &               SSVFC(icc)(1:4).eq.'UNKN')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
-     &            com,'   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
-     &            com,'   !- View Factor to Ground'
-              endif
-            else
-              if(SSVFC(icc)(1:4).eq.'VERT')then
-                WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) indent,
-     &           groundview,com,'   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
-     &            com,'   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
-     &               SSVFC(icc)(1:4).eq.'UNKN')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'0.0',
-     &            com,'   !- View Factor to Ground'
-              elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
-     &            com,'   !- View Factor to Ground'
-              endif
-            endif      
+C Also include viewfactor to ground value depending on orientation.
+            WRITE(ioout,'(a)',iostat=ios,err=6) 
+     &        sitestring(1:lnblnk(sitestring))
             WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
      &        '   !-   Shading Control Name'
             WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
@@ -1997,12 +2015,24 @@ C CEN or a Dynamic Similar connection that does not have an opposite.
             else
 
 C Check if parent surface name is a blank or just a dash. Which says
-C that this surface has no parent (ESP-r geometric rules).
-
-C << add logic taking into account whether a true child or not. >>
-
+C that this surface has no parent (ESP-r geometric rules as well
+C as E+ rules).
+              processasfen=.false.
               if(SSPARENT(icc)(1:2).eq.'  '.or.
      &           SSPARENT(icc)(1:2).eq.'- ')then
+                processasfen=.false.
+              else
+
+C ESP-r thinks there is a parent so double check whether E+ rules
+C say this surface is a true child.
+                if(truechild(icc))then
+                  processasfen=.true.
+                else
+                  processasfen=.false.
+                endif
+              endif
+                
+              if(.NOT.processasfen)then
 
 C Depending on the surface orientation write out Wall Roof Floor tag.
                 if(SSVFC(icc)(1:4).eq.'VERT')then
@@ -2010,24 +2040,20 @@ C Depending on the surface orientation write out Wall Roof Floor tag.
      &              com,'   !- Surface Type'
                 elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
      &                 SSVFC(icc)(1:4).eq.'UNKN')then
-                  if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
+                  if(ICT(icc).eq.0.or.ICT(icc).eq.4.or.
+     &               ICT(icc).eq.6)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Roof',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.3)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                'Wall',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.1)then
+                  else
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Wall',com,'   !- Surface Type'
                   endif
                 elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                  if(ICT(icc).eq.0.or.ICT(icc).eq.4)then
+                  if(ICT(icc).eq.0.or.ICT(icc).eq.4.or.
+     &               ICT(icc).eq.6)then
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Roof',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.3)then
-                    WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                'Ceiling',com,'   !- Surface Type'
-                  elseif(ICT(icc).eq.1)then
+                  else
                     WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &                'Ceiling',com,'   !- Surface Type'
                   endif
@@ -2054,54 +2080,21 @@ C Other face environment.
      &              'SunExposed',com,'   !- Sun Exposure'
                   WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
      &              'WindExposed',com,'   !- Wind Exposure'
-                  if(siteexposureindex.ne.8)then
 
-C Standard exposure on the site.
-                    if(SSVFC(icc)(1:4).eq.'VERT')then
-                      WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                  indent,PROPG(siteexposureindex),com,
-     &                  '   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '0.0',com,'   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
-     &                     SSVFC(icc)(1:4).eq.'UNKN')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '0.0',com,'   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '1.0',com,'   !- View Factor to Ground'
-                    endif
-                  else
+C Also include viewfactor to ground value depending on orientation.
+                  WRITE(ioout,'(a)',iostat=ios,err=6) 
+     &              sitestring(1:lnblnk(sitestring))
 
-C User defined exposure on the site.
-                    if(SSVFC(icc)(1:4).eq.'VERT')then
-                      WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) 
-     &                  indent,groundview,com,
-     &                  '   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'CEIL')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '0.0',com,'   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'SLOP'.or.
-     &                     SSVFC(icc)(1:4).eq.'UNKN')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '0.0',com,'   !- View Factor to Ground'
-                    elseif(SSVFC(icc)(1:4).eq.'FLOR')then
-                      WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
-     &                  '1.0',com,'   !- View Factor to Ground'
-                    endif
-                  endif
                 elseif(ICT(icc).eq.1)then
 
-C Continue because this has been considered internal mass.
                   if(treatasmass)then
-                    continue
+                    continue  ! this has been considered internal mass
                   else
 
 C Another surface in this room (to represent similar). If the current
-C construction is the same as that used by the opposite then this will
-C work, otherwise we are going to have to point back to the original
-C surface.
+C construction is the same as that used by the opposite surface then
+C this will work, otherwise we are going to have to point back to the
+C original surface.
  
 C << for later actions, keep a list of the symmetric tag for
 C << each MLC. This might save some searching...
@@ -2137,8 +2130,19 @@ C << each MLC. This might save some searching...
                   endif
                 elseif(ICT(icc).eq.2)then
 
-C A constant connection still has to be resolved.
-                  continue
+C A constant connection makes reference to conststring.
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'OtherSideCoefficients',com,
+     &              '   !-  OutsideFaceEnvironment (constant)'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent, 
+     &              conststring(1:lnblnk(conststring)),com,
+     &              '   !-  OutsideFaceEnvironment Object'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoSun',com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoWind',com,'   !- Wind Exposure'
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.3)then
 
 C A partition to another room.
@@ -2169,14 +2173,24 @@ C A ground connection.
      &              '   !- View Factor to Ground'
                 elseif(ICT(icc).eq.5)then
 
-C A EN connection is internal mass.
-                  continue
+C Adiabatic in E+ points back to itself.
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'Surface',com,'   !-  Outside Boundary (Adiabatic)'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) '    ',
+     &              ZSDES(1:lnblnk(ZSDES)),com,
+     &              '   !- Outside Boundary Condition to self'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoSun',com,'   !- Sun Exposure'
+                  WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
+     &              'NoWind',com,'   !- Wind Exposure'
+                  WRITE(ioout,'(3a)',iostat=ios,err=6) indent,com,
+     &              '   !- View Factor to Ground'
+                elseif(ICT(icc).eq.7)then
+                  continue  ! a CEN connection is internal mass
                 endif
               else
 
-C There is a parent for this surface. Before writing the tag check that
-C this is a true child in terms of EnergyPlus.
-C << to be done >>
+C This surface should be processed as fenistration.
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'Door',
      &            com,'   !- Surface Type!'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,
@@ -2214,7 +2228,7 @@ C Otherwise give name of the other side surface. (suggested by Georgios)
      &            '   !-   Frame and Divider Name'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) indent,'1.0',
      &            com,'   !-   Multiplier'
-              endif ! of test for ESP-r parent or not
+              endif ! of test for fenistration or not
             endif   ! of test for CEN Dynamic or other type of connection
           endif     ! of test for opaque or transparent
 

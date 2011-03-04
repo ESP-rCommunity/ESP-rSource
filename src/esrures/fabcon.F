@@ -42,12 +42,18 @@ C of inter-fabric temperature and condensation conditions.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*23 ITEM(10)
-      character H*72,xfile*144,tg*1,delim*1,act*1
+      character xfile*144,tg*1,delim*1,act*1
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOFCON'  ! set for cfiles
 
 C Setup for menu.
    3  ITEM(1) ='2 select result set    '
@@ -66,12 +72,8 @@ C Setup for menu.
       ITEM(10)='- exit                 '
 
 C Instanciate help for this menu.
-      H(1) ='This facility provides graphs on condensation '
-      H(2) ='and intra-construction temperature patterns.  '
-      H(3) ='  '
-      H(4) ='Glazer plots through constructions and searches for  '
-      H(5) ='condensation within one or more zones. '
-      H(6) ='  '
+      helptopic='res_condensation_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=10
       INO=-2
@@ -92,10 +94,11 @@ C Request zone and surface for output and check if graph should be
 C plotted over the whole period or one timestep at a time.
           CALL ASKZON(ICOMP)
           CALL ASKSUR(ICOMP,ISUR)
-          h(1)='Animation shows each timestep in sequence.'
+          helptopic='condensation_animation'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('When plotting temperatures:',' ',
      &      'show all timesteps at once','animate data display',
-     &      'continue',IW,1)
+     &      'continue',IW,nbhelp)
           if(IW.eq.1)act='-'
           if(IW.eq.2)act='a'
 
@@ -123,6 +126,8 @@ C Draw profiles.
       elseif(INO.EQ.8)then
         call ctlexp(xfile,ixopen,ixunit,ixpunit,'T','Fabric',IER)
       elseif(INO.EQ.9)then
+        helptopic='res_condensation_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('condens',6,'-',0,0,IER)
       elseif(INO.EQ.10)then
         return
@@ -395,7 +400,6 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -413,8 +417,15 @@ C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       integer matarrayindex ! the index within matdatarray
       logical closemat1,closemat2
 
-      character outs*124,H*72,NAM*72
+      character outs*124,NAM*72
       logical ok,dok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOINTC'  ! set for subroutine
 
       IPICK=0
 
@@ -461,12 +472,12 @@ C And if matarrayindex is zero then reset DRVAL and NAM.
             endif
           endif
 
-        H(1)='Diffusion resistance factors are found in the'
-        H(2)='materials database.'
+        helptopic='res_diffusion_resistance'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(outs,'(A,I3,2x,A20)')' Element ',I,NAM(1:20)
         V=DRVAL
         CALL EASKR(V,outs,' Vapour res (MNs g^-1m^-1)? ',
-     &    0.,'F',0.,'-',1.,'diffusion factor',IER,2)
+     &    0.,'F',0.,'-',1.,'diffusion factor',IER,nbhelp)
         VDIF(I)=V
    20 CONTINUE
 
@@ -495,17 +506,14 @@ C Display header, draw axis and then profiles.
       CALL MOIDRW(IZ,ISUR)
 
       dok=.false.
-      h(1)='If you want to look at a different day, time or '
-      h(2)='a different surface say yes. '
-      h(3)='A no will return to the main menu. '
-      call askok(' ',' Consider another condition ? ',OK,dok,3)
+      helptopic='res_diffusion_consider'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      call askok(' ',' Consider another condition ? ',OK,dok,nbhelp)
       if(.NOT.ok)then
         RETURN
       endif
-      H(1)='If you want to alter both the surface and time then '
-      H(2)='you will have the option of a second '
       CALL EASKABC('Consider:',' ','Different surface',
-     &          'Different day or time','Both ? ',IW,1)
+     &  'Different day or time','Both ? ',IW,nbhelp)
       if(IW.eq.3)then
         IPICK=0
         goto 5

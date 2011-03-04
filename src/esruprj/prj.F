@@ -508,7 +508,7 @@ C System configuration file on channel IFIL+5.
       LCFGF='UNKNOWN'
       modeltitle='UNKNOWN'
 
-C Mass flow network, profiles and optical dbs on channel IFIL+6. 
+C Mass flow network, profiles, optical SBEM dbs on channel IFIL+6. 
       IOPTDB=IFIL+6
       write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
 

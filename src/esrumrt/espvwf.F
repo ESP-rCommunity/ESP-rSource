@@ -54,7 +54,6 @@ C IEEE callback (Solaris)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      common/pophelp/h(60)
       COMMON/MRT2/GEOLOAD,MRTLOAD
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -110,7 +109,7 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER H*72,OUTSTR*124,CUBN*6,ITEM*29
+      CHARACTER OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -121,6 +120,12 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer NITEMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -164,6 +169,8 @@ C Initialize global common data.
       call ezero
       call curmodule('mrt ')
       cAppName = 'mrt'
+      helpinapp='mrt'  ! set once for the application
+      helpinsub='mrt'  ! set for MAIN
       IUIN=5
       IUOUT=6
       LIMTTY=24
@@ -507,9 +514,8 @@ c      call askabout('vwf ',1)
 20    CALL EMENU('  Viewfactors & MRT',ITEM,NITEMS,INO)
 
       IF(INO.EQ.1)THEN
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+        helptopic='user_supplied_cfg'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
@@ -521,20 +527,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &        'config file name',IER,3)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,3)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
@@ -623,12 +629,10 @@ c Change parameter igfact.
         WRITE(outs,'(i3,a,I5,a,i2,a)') igx,' [sqrt(',mgc,
      &    '/nsur)] and nsur is currently ',nsur,'.'
         call edisp(iuout,outs)
-        h(1)='Variable igfact represents the grid sub- '
-        h(2)='division. Every surface is divided in '
-        h(3)='igfact**2 sub-surfaces.  A bubble is placed '
-        h(4)='at the centre of each sub-surface. '
+        helptopic='grid_subdivision_density'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IGFACT,' ',' New value ? ',
-     &             2,'W',igx,'W',6,'grid factor',IER,4)
+     &    2,'W',igx,'W',6,'grid factor',IER,nbhelp)
         call tstamp('>','VWF: updated grid factor')
       ELSEIF(INO.EQ.7)THEN
 
@@ -638,8 +642,10 @@ c Change npatch.
         call edisp(iuout,' Every bubble is divided into np rings')
         WRITE(outs,'(A,I5)')' Current patch subdivision np = ',NPATCH/4
         call edisp(iuout,outs)
+        helptopic='patch_subdivision'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &       1,'F',MPATCH/4,'F',1,'patch subdivision',IER,0)
+     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -705,9 +711,8 @@ c Printout of surfaces.
       ELSEIF(INO.EQ.14)THEN
 
 C Save view factor file.
-  442   H(1)='The view factor file contains viewfactors between'
-        H(2)='each of the surfaces in a zone as well as MRT sensor'
-        H(3)='definitions.'
+  442   helptopic='viewfactor_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         else
@@ -716,7 +721,7 @@ C Save view factor file.
         endif
         LTMP=LVIEW(icomp)
         CALL EASKS(LTMP,' Viewfactor & MRT file name ?',' ',
-     &     72,DFILE,'vwf file name',IER,3)
+     &     72,DFILE,'vwf file name',IER,nbhelp)
         if (LTMP(1:2).eq.'  ')goto 442
         LVIEW(icomp)=LTMP
         CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(icomp),IUF,
@@ -769,8 +774,10 @@ C default (area weighted) viewfactors and no MRT sensors.
         call edisp(iuout,' Opened existing viewfactor file.')
         CALL ERMRT(ITRC,iuout,IUF,LVIEW(icomp),ICOMP,IER)
         if(ier.ne.0)then
+          helptopic='problem_reading_existing'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Problem reading existing viewfactor file :',
-     &      ' ','read again','create new file','continue',irt,2)
+     &      ' ','read again','create new file','continue',irt,nbhelp)
           if(irt.eq.1)then
             goto 43
           elseif(irt.eq.2)then
@@ -849,7 +856,6 @@ C Calculate viewfactors for a zone.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/MRT2/GEOLOAD,MRTLOAD
@@ -867,9 +873,17 @@ c np         : number of patch-rings on bubble
 C outfile is the geometry file name for the zone with cube added.
       real drow,rowsum(MS+1)
       integer wrongrow
-      character outs*124,h*72
+      character outs*124
       logical OK,DOK,GEOLOAD,MRTLOAD
       dimension iivis(MSM)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='CALVF'  ! set for this subroutine
 
 c Initialize FF(i,j) and IVIS(i,j).
       IUF = IFIL+1
@@ -1005,14 +1019,10 @@ C If summation is not close to unity then report.
       endif
 C Save view factor file.
       dok=.true.
-      h(1)='Please review the results of the calculations. If all'
-      h(2)='of the factors for each surface sum close to 1.0 then'
-      h(3)='a yes is appropriate. '
-      h(4)=' '
-      h(5)='If there are some surfaces with low or no viewfactors'
-      h(6)='to other surfaces then you may need to increase the '
-      h(7)='resolution of the grid. '
-      CALL ASKOK(' Ok to save these viewfactors?',' ',OK,dok,7)
+      helptopic='user_review_of_calcs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' Ok to save these viewfactors?',' ',OK,dok,
+     &  nbhelp)
       if(OK)then
         CALL EMKMRT(LVIEW(icomp),LGEOM(ICOMP),NZSUR(ICOMP),IUF,
      &    ICOMP,'v',IER)
@@ -1054,5 +1064,4 @@ C In support of floating point exceptions.
       end
 #endif
 #endif
-
 

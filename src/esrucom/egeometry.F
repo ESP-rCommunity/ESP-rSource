@@ -93,7 +93,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOMF,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec16/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -132,13 +132,6 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
@@ -545,8 +538,6 @@ C Instantiate defaults for the surfaces to be read in.
 
       icn1=izstocn(icomp,1)
       if(icn1.gt.0)then
-C Debug.
-C        call edisp(iuout,'Subsequent geometry scan...')
       endif
 
       DO 42 I=1,NZSUR(ICOMP)
@@ -624,10 +615,6 @@ C Check if there is a matching MLC name and which one it is.
           if(ICF.gt.0)then
             ssthick(icn)=THKMLC(icf)
 
-C Debug.
-C            write(outs,'(a,2i3,f7.3)') 'set thick of ',icf,icn,
-C     &        ssthick(icn)
-C            call edisp(iuout,outs)
           endif
         endif
 
@@ -1347,13 +1334,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
 
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
 C to hold such information in the zone geometry file. Common GS5/GS6
@@ -1367,11 +1347,13 @@ C GS7/GS8 are defined in geometry.h
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
+      character MLCN*12      ! local string for comparison
       logical dll,checkbase
       logical havec24
       integer nbo   ! local value of nbobs
       integer lsn   ! length of currentfile
-      integer lno   ! length of optics name
+      integer lno,lnow     ! length of optics name
+      integer lstrs,lstrd  ! length of mlc names
       real VX,VY,VZ ! local values for XOB YOB ZOB
       integer iflag ! for read error state
 
@@ -1640,8 +1622,6 @@ C can probably be filled. Each surface needs to be tested
 C in case the master list is corrupt.
             icn1=izstocn(icomp,1)
             if(icn1.gt.0)then
-C Debug.
-C              call edisp(iuout,'Subsequent geometry 1.1 scan...')
             endif
           endif
           if(NS.le.MS)then
@@ -1717,12 +1697,15 @@ C Surface construction name, allow for spaces.
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Check if there is a matching MLC name find out which one it is.
+C Because many names may start similarly, check against actual widths.
             ICF=-1
             if(NMLC.gt.0)then                
-              lstr=lnblnk(SMLCN(NS))
+              lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
               DO 20 IC=1,NMLC
-                if(lstr.lt.12)then
-                  IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
+                WRITE(MLCN,'(A)')DESC(IC)(1:12)  ! the first 12 char of desc
+                lstrd=lnblnk(MLCN)    ! mlc name length
+                if(lstrs.le.12)then
+                  IF(DESC(IC)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
                 else
                   IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
                 endif
@@ -1734,10 +1717,6 @@ C Check if there is a matching MLC name find out which one it is.
               if(ICF.gt.0)then
                 ssthick(icn)=THKMLC(icf)
 
-C Debug.
-C                write(outs,'(a,2i3,f7.2)') 'set thick of ',icf,icn,
-C     &            ssthick(icn)
-C                call edisp(iuout,outs)
               endif
             endif
 
@@ -1772,10 +1751,12 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
-		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
-                  lno=lnblnk(word)
-		  write(outs,*) 'Optics in geo file ',WORD(1:lno),
-     &              ' does not match optics of the MLC ',OPT
+                lnow=lnblnk(word)   ! length for token in file
+                lno=lnblnk(OPT)     ! length for mlc optics
+		if(WORD(1:lnow).ne.OPT(1:lno))then
+		  write(outs,*) 'Optics ',WORD(1:lnow),' in geo file ',
+     &              ' does not match optics of the MLC ',
+     &              DESC(ICF)(1:12),' ',OPT(1:lno)
                   call edisp(iuout,outs)
                 endif
                 write(SOTF(NS),'(a)') OPT
@@ -2959,9 +2940,6 @@ C Do a B angle of rotation first. No Y changes required.
 C X(1) and X(4) do not change. 
 C X(2) and X(3) change based on DX length.
 
-C Debug.
-C      write(6,*) CB
-C      write(6,*) DX
 
       X(2)=X(1)+(DX*CB); X(3)=X(4)+(DX*CB)
 
@@ -2986,9 +2964,6 @@ C Do an A angle of rotation. No Z changes required.
 C X(1) does not change.       
 C X(2) changes based on [X(2)-X(1)] length
 
-C Debug.
-C      write(6,*) CA
-C      write(6,*) DX
 
       X(2)=X(1)+(CB*DX)*CA
       X(3)=X(2)-(SA*DY)
@@ -3007,16 +2982,6 @@ C Y(1) does not change.
       Y(8)=Y(4)-(SB*DZ)*SA
       Y(7)=Y(8)+((CB*DX)*SA)           
 
-C Debug      
-C      write(6,*) 'x1: ',X(1),'...','y1: ',Y(1),'...','z1: ',Z(1)
-C      write(6,*) 'x2: ',X(2),'...','y2: ',Y(2),'...','z2: ',Z(2)
-C      write(6,*) 'x3: ',X(3),'...','y3: ',Y(3),'...','z3: ',Z(3)
-C      write(6,*) 'x4: ',X(4),'...','y4: ',Y(4),'...','z4: ',Z(4)
-C      write(6,*) 'x5: ',X(5),'...','y5: ',Y(5),'...','z5: ',Z(5)
-C      write(6,*) 'x6: ',X(6),'...','y6: ',Y(6),'...','z6: ',Z(6)      
-C      write(6,*) 'x7: ',X(7),'...','y7: ',Y(7),'...','z7: ',Z(7)      
-C      write(6,*) 'x8: ',X(8),'...','y8: ',Y(8),'...','z8: ',Z(8)      
-C End debug          
 
 C Number the vertices in each face.  Vertical faces numbered anticlockwise
 C from bottom left-hand point when face viewed from the outside.  Ceiling
@@ -3201,9 +3166,6 @@ C Do a B angle of rotation first. No Y changes required.
 C XB(1) and XB(4) do not change. 
 C XB(2) and XB (3) change based on DX length.
 
-C Debug.
-C      write(6,*) CB
-C      write(6,*) DX
 
       XB(2)=XB(1)+(DX*CB); XB(3)=XB(4)+(DX*CB)
 
@@ -3228,9 +3190,6 @@ C Do an A angle of rotation. No Z changes required.
 C XB(1) does not change.       
 C XB(2) changes based on [XB(2)-XB(1)] length
 
-C Debug.
-C      write(6,*) CA
-C      write(6,*) DX
 
       XB(2)=XB(1)+(CB*DX)*CA
       XB(3)=XB(2)-(SA*DY)
@@ -3249,17 +3208,6 @@ C YB(1) does not change.
       YB(8)=YB(4)-(SB*DZ)*SA
       YB(7)=YB(8)+((CB*DX)*SA)           
 
-C Debug      
-C      write(6,*) 'xb1: ',XB(1),'...','yb1: ',YB(1),'...','zb1: ',ZB(1)
-C      write(6,*) 'xb2: ',XB(2),'...','yb2: ',YB(2),'...','zb2: ',ZB(2)
-C      write(6,*) 'xb3: ',XB(3),'...','yb3: ',YB(3),'...','zb3: ',ZB(3)
-C      write(6,*) 'xb4: ',XB(4),'...','yb4: ',YB(4),'...','zb4: ',ZB(4)
-C      write(6,*) 'xb5: ',XB(5),'...','yb5: ',YB(5),'...','zb5: ',ZB(5)
-C      write(6,*) 'xb6: ',XB(6),'...','yb6: ',YB(6),'...','zb6: ',ZB(6)      
-C      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)      
-C      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
-
-C End debug          
 
 C Number the vertices in each face anticlockwise from the bottom
 C left-hand point when face viewed from the outside.  Top is
@@ -3927,8 +3875,6 @@ C Link back to start vertex.
         vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
-C Debug.
-C        write(6,*) 'perimeter of ',ssname(icc),icc,' is ',ssperim(icc)
 
 C Derive the equation of the polygon.
         DO 60 KK=1,NVER(i)
@@ -4062,26 +4008,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-C nbedgshr(MCON) number of surfaces (same orient) which share an edge:
-C   if only one then that single other surface must be parent, if two
-C   other surfaces referenced then we might have a door which shares
-C   edges with a wall and the floor - so determine which is primary.
-C iedgshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) sharing an edge. Used to detect parent/child. Zero denotes
-C   this does not apply.
-C imatshr(MCON,MV) for each edge, the connection of surface (similarly
-C   oriented) which has the same material. Zero denotes this does not
-C   apply.used to enhance wire frame drawings of discritized zones (e.g.
-C   where a surface such as a floor has been subdivided)
-      integer nbedgdup  ! number of duplicate edges in surface edge list
-      integer iedgdup   ! for each edge, the connection and edge duplicated
-      integer nbedgshr  ! nb of surfaces which share edges with this surf
-      integer iedgshr   ! for each edge, the adjacent surface
-      integer imatshr   ! for each edge, the adjacent material
-      integer ibridgeshr ! for each edge likely type of thermal bridge
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
       real bridgelen ! Length (m) of potential thermal bridges in each zone.
                     ! See code below for what each means.
       common/gbridge/bridgelen(MCOM,10)
@@ -4093,7 +4019,6 @@ C   where a surface such as a floor has been subdivided)
 
       CHARACTER outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
-      logical notmentioned  ! to see if surf at edge mentioned earlier
 
 C iwhich is local variable to sort most often referenced adjacent surf.
       dimension iwhich(MV),iwhichs(MV)
@@ -4151,11 +4076,7 @@ C duplicate edge is found also remember it.
               endif
               kee=JVN(isurf,n)
 
-C Debug.
               if(itrc.gt.1)then
-C                write(outs,'(a,i3,a,4i3)') 'edges for conn ',icc,
-C     &            ' are ',jes,jee,kes,kee
-C                call edisp(iuout,outs)
               endif
 
               if(jes.EQ.kes.AND.jee.EQ.kee)then
@@ -4163,22 +4084,13 @@ C                call edisp(iuout,outs)
                 iedgdup(icc,m)=1
                 iedgdup(icc,n)=1
 
-C Debug...
                 if(itrc.gt.1)then
-C                  write(outs,*) 'dupl edges for conn ',icc,' is ',
-C     &              iedgdup(icc,m),' m n ',m,n
-C                  call edisp(iuout,outs)
                 endif
               endif
   41        continue   ! inner loop vertices in surf
   40      continue     ! outer loop vertices in surf
 
-C Debug...
           if(itrc.gt.1)then
-C            write(outs,*) 'duplicate edges for conn ',icc,' ',
-C     &        ssname(icc)(1:lnblnk(ssname(icc))),
-C     &        ' is ',nbedgdup(icc)
-C            call edisp(iuout,outs)
           endif
 
 C Step through the vertices of each edge in turn and check to see
@@ -4221,12 +4133,7 @@ C If an edge matches, test if other surface is facing the same way.
                 endif
                 if(j.eq.kk.and.k.eq.jj)then
 
-C Debug...
                   if(itrc.gt.1)then
-C                    write(outs,'(a,i3,a,i3,a,2i3,a,2i3)')
-C     &                'edges for conns ',icc,' & ',icco,
-C     &                ' are ',j,k,' & ',jj,kk
-C                    call edisp(iuout,outs)
                   endif
 
 C Find length of the current edge.
@@ -4263,9 +4170,6 @@ C in order to see if edge if vertical or horizontal.
                         call eclose(ux,0.00,0.002,closeux)
                         call eclose(uy,0.00,0.002,closeuy)
                         call eclose(uz,0.00,0.002,closeuz)
-C Debug.
-C                        write(outs,*) ux,closeux,uy,closeuy,uz,closeuz
-C                        call edisp(iuout,outs)
 
 C Six is lintel above window or door so both surfaces must face
 C the outside and face the same direction and one must be the
@@ -4341,10 +4245,6 @@ C Use ratio calculation to get point 100mm away.
 C                        distb = crow(VA,VB)  ! dist offset-to-offset
                         distc = crow(VAA,VBB)! dist slight offset-to-offset
 
-C Debug.
-C                        write(outs,'(9f7.2)') dista,distb,distc,
-C     &                    pa(1),va(1),vaa(1),pb(1),vb(1),vbb(1)
-C                        call edisp(iuout,outs)
 
 C If dista is greater than distc then concave.
                         if(dista.lt.distc)then
@@ -4386,19 +4286,7 @@ C other must face the ground
                     endif
                   endif
 
-C Debug.
                   if(itrc.gt.1)then
-C                    write(outs,'(a,i3,a,2i3,2f6.1,2a,3f7.3)')
-C     &                'type for conns ',icc,' & ',icco,
-C     &                ibridgeshr(icc,i),SSPAZI(icc),SSPAZI(icco),
-C     &                ':',ssparent(icc),dista,distb,distc
-C                    call edisp(iuout,outs)
-C                    write(outs,'(a,8f7.2)') 'brl ',bridgelen(izone,1),
-C     &                bridgelen(izone,2),bridgelen(izone,3),
-C     &                bridgelen(izone,4),bridgelen(izone,5),
-C     &                bridgelen(izone,6),bridgelen(izone,7),
-C     &                bridgelen(izone,8)
-C                    call edisp(iuout,outs)
                   endif
 
 C Test if azimuth are within two degrees. For the special case of the
@@ -4434,15 +4322,10 @@ C increment nbedgshr once even if other surface shares several edges).
   45          continue
   44        continue     ! loop surfaces in zone
 
-C Debug...
             if(itrc.gt.1)then
-C              write(outs,*) 'iedgshr ',iedgshr(icc,i),
-C     &          ' shared construction ',imatshr(icc,i)
-C              call edisp(iuout,outs)
             endif
   42      continue  ! loop vertices in surface
 
-C Debug...
           if(itrc.gt.1)then
             write(outs,*) 'nbedgshr for ',
      &        ssname(icc)(1:lnblnk(ssname(icc))),
@@ -4465,10 +4348,6 @@ C Parent attribute has not yet been defined so do some checking.
 C If the two surfaces have the same number of edges then it is
 C likely that these are duplicate surfaces. 
                 if(NVER(iosurf).eq.NVER(isurf))then
-
-C Debug
-C                  write(6,*) 'Probable dup surfaces ',iosurf,isurf,
-C     &              NVER(iosurf),NVER(isurf)
 
                   continue
                 else
@@ -4576,16 +4455,6 @@ C be duplicates.
 #include "building.h"
 #include "geometry.h"
 
-C G9 holds information on children of a surface and its parent.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
-      integer iparent   ! parent surface connection (zero is no parent)
-      integer igparent  ! grandparent surface connection (zero is no grandparent)
-      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
-     &          igchild(MCON,4),iparent(MCON),igparent(MCON)
-
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -4637,13 +4506,6 @@ C through only the untested part of the surface edge list.
             endif
   12      continue
 
-C Debug.
-C         if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
-C           write(6,*) isur,iver,iiver,next,idupv(isur,1),
-C     &        iduplist(isur,1),idupv(isur,2),iduplist(isur,2),
-C     &        idupv(isur,3),iduplist(isur,3),idupv(isur,4),
-C     &        iduplist(isur,4)
-C         endif
   11    continue
   10  continue
 
@@ -4701,10 +4563,6 @@ C If isur and jsur both have the same number of edges then it is likely
 C that we have duplicate surfaces.
             if(NVER(JSUR).eq.NVER(ISUR))then
 
-C Debug.
-C              write(6,*) 'Probable dup surfaces ',jsur,isur,
-C     &          NVER(jsur),NVER(isur)
-
               goto 105   ! jump to just before 102
             endif
           endif
@@ -4725,11 +4583,6 @@ C<< Division mod 360 may be a more generic way for angle checking
           if(closeazi.and.closeelv)then
 
             SSPARENT(JCC)=SSNAME(ICC)
-C Debug.
-            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
-     &        SSPARENT(JCC),' Matched vertices= ',ICOMVER(JSUR),
-     &        ' No of vertices in child= ',NVER(JSUR)
-            write(6,*)' '
 
 C Having found a child add it to the list of children of
 C the parent surface.
@@ -4737,10 +4590,6 @@ C the parent surface.
             ichild(iCC,nbchild(iCC))=jCC ! remember child connection
             iparent(JCC)=icc   ! remember childs parent connection
 
-C Debug...
-            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
-     &        jcc,' parent of ',SSNAME(JCC),' is ',
-     &        SSNAME(iparent(JCC))
           endif
  105      continue    ! jump point in case of dups
  102    CONTINUE
@@ -4828,10 +4677,6 @@ C Now fill grand children commons
             IGCHILD(ICC,IGCD)=KCC    ! remember grandchild connection
             NBGCHILD(ICC)=NBGCHILD(ICC)+1  ! increment nb granchildren
             igparent(KCC)=icc   ! remember grandchilds grandparent connection
-
-C Debug.
-            write(6,*) ' parent ',icc,' child ',JCC,' childs child ',
-     &        KCC,' grandparent is ',igparent(KCC)
  203      CONTINUE
  202    CONTINUE
  201  CONTINUE
@@ -4971,13 +4816,6 @@ C Parameters
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
-
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero if no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero if no surface is close to horizontal facing down).
-      integer izsfloor,izsceil
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
 

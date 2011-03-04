@@ -235,17 +235,24 @@ C PLTFIL generates a pic file for use in forms package.
       COMMON /FIL/ IFUSE, IFO
       COMMON/NNAAMM/ NAMDS,NAMPIC
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      character FNAME*72,H*72,NAMDS*30,NAMPIC*40
+      character FNAME*72,NAMDS*30,NAMPIC*40
       logical XST
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PLTFIL' ! set for subroutine
 
 C   SET OUTPUT DEVICE, debug unit and pic file unit.
       IOUTD=4
 
 C ONLY GET FILE ONCE I.E. DONT GET A FILE FOR EACH NEW PICTURE
- 10   H(1)=' This is a binary file holding plot info to export.'
+ 10   helptopic='viewer_picture_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(FNAME,' Picture-file name ?',' ',
-     &      72,'/tmp/viewer.pic','picture file',IER,1)
+     &  72,'/tmp/viewer.pic','picture file',IER,nbhelp)
       if(ier.ne.0.or.FNAME.eq.' ')goto 10
 
       INQUIRE (FILE=FNAME,EXIST=XST)

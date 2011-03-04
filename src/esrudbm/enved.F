@@ -31,7 +31,6 @@ C providing paramaters MGDB,MGCL,MGIT
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -47,7 +46,7 @@ C Generic db commons:
       dimension PELM(21)
       dimension trbsn(3),dtrbs(3),rtrbs(3),assite(2),lasmat(2)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24,kact*1
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24,kact*1
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248,head*38
@@ -60,6 +59,14 @@ C Generic db commons:
       character snote*248
       logical primod
       integer MPLEM,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edenvci'  ! set for subroutine
+      
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -159,27 +166,8 @@ C Make up the display.
       MPLEM=20
 
 C Help text for this menu.
-  2   h(1)='Editing of construction effect entities, which includes '
-      h(2)=' - Assembly (sur/per): These are the impacts due to the '
-      h(3)='                       assembly of the construction and'
-      h(4)='                       can be related to the construction'
-      h(5)='                       surface (sur) or perimter (per).'
-      h(6)=' '
-      h(7)=' - Transp>site: These impacts correspond to the '
-      h(8)='                transport of the construction from the'
-      h(9)='                prefabrication site (if exists) to the'
-      h(10)='                building site. It includes the mean of'
-      h(11)='                tranport (pointer) and the corresponding'
-      h(12)='                distance.'
-      h(13)=' '
-      h(14)=' - Site asmbly: These impacts correspond to the '
-      h(15)='                assembly of the construction on the'
-      h(16)='                building. '
-      h(17)='  '
-      h(18)=' - Maintenance: These impacts correspond to the '
-      h(19)='                construction maintenance and correspond'
-      h(20)='                to the maintenace pointer and the '
-      h(21)='                the maintenace period.'
+  2   helptopic='dbm_trn_asmb_impacts'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
       CALL EMENU(head,PELM,MPLEM,IW)
@@ -189,7 +177,9 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
-        CALL PHELPD('construction effect edit help',21,'-',0,0,IER)
+        helptopic='dbm_trn_asmb_impacts'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('construction effect edit help',nbhelp,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
         call EITCOMMON(IFB,idbh,ic,iit,IW,ACT,iract,primod,IER)
@@ -256,13 +246,11 @@ C and prsmenu re-establish the current database header.
           endif
 
 C Edit 1st transport distance and breakage rate.
-          H(1)='The 1st (of 3 possible) transports associated with '
-          H(2)='the construction... '
           if(IW.eq.11)write(hold,'(f8.2,f7.3)') dtrbs(1),rtrbs(1)
           if(IW.eq.12)write(hold,'(f8.2,f7.3)') dtrbs(2),rtrbs(2)
           if(IW.eq.13)write(hold,'(f8.2,f7.3)') dtrbs(3),rtrbs(3)
           CALL EASKS(hold,'Transport distance (km) and breakage rate:',
-     &      ' ',32,'1.00 0.00','trn1 dist and brk',IER,2)
+     &      ' ',32,'1.00 0.00','trn1 dist and brk',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             if(IW.eq.11)then
@@ -366,7 +354,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -382,7 +369,7 @@ C Generic db commons:
 
       dimension PELM(18),trbsn(3),dtrbs(3),eimp(9)
 
-      CHARACTER OUTSTR*124,PELM*44,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*44,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -394,6 +381,13 @@ C Generic db commons:
       character snote*248
       logical primod
       integer MPLEM,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edenvi'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -486,19 +480,8 @@ C Make up the display.
       MPLEM=17
 
 C Help text for this menu.
-      if(ct(1:6).eq.'RECYCP')then
-        h(1)='Editing of recycling process entities.'
-      elseif(ct(1:6).eq.'INCENP')then
-        h(1)='Editing of inceneration process entities.'
-      elseif(ct(1:5).eq.'DUMPP')then
-        h(1)='Editing of dump process entities.'
-      endif
-      h(2)='For this process, it is possible to have up to three'
-      h(3)='different mean of transport and corrsponding distance,'
-      h(4)='which are required to transport the construction'
-      h(5)='material from the building site to the disposal site.'
-      h(6)='The tranport is followed, by the environmental impacts'
-      h(7)='of the considered process.'
+      helptopic='dbm_rec_dump_impacts'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Depending on the category use different heading.
    2  if(ct(1:6).eq.'RECYCP')then
@@ -513,6 +496,8 @@ C Depending on the category use different heading.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
+        helptopic='dbm_rec_dump_impacts'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('dump item edit help',7,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
@@ -549,17 +534,15 @@ C Re-establish current db header after calls to prsmenu and choseitem.
           endif
 
 C Edit 1st transport distance and breakage rate.
-          H(1)='The 1st (of 3 possible) transports associated with '
-          H(2)='this process. '
           if(IW.eq.8)then
             CALL EASKR(dtrbs(1),' ',' 1st transport distance (km):',
-     &        0.0,'W',1000.,'W',1.,'dtrbs(1)',IER,2)
+     &        0.0,'W',1000.,'W',1.,'dtrbs(1)',IER,nbhelp)
           elseif(IW.eq.9)then
             CALL EASKR(dtrbs(2),' ',' 2nd transport distance (km):',
-     &        0.0,'W',1000.,'W',1.,'dtrbs(2)',IER,2)
+     &        0.0,'W',1000.,'W',1.,'dtrbs(2)',IER,nbhelp)
           elseif(IW.eq.10)then
             CALL EASKR(dtrbs(3),' ',' 3rd transport distance (km):',
-     &        0.0,'W',1000.,'W',1.,'dtrbs(3)',IER,2)
+     &        0.0,'W',1000.,'W',1.,'dtrbs(3)',IER,nbhelp)
           endif
           primod=.true.
         else
@@ -598,7 +581,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -613,7 +595,7 @@ C Generic db commons:
 
       dimension PELM(26),eimp(9),trbsn(3),dtrbs(3),rtrbs(3)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -627,6 +609,13 @@ C Generic db commons:
       character snote*248
       logical primod
       integer MPLEM,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edenvf'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -740,24 +729,8 @@ C After parsing units recover the header of the current db.
       MPLEM=23
 
 C Help text for this menu.
-      h(1)='Editing of material effects database entities. '
-      h(2)='This is the main category for a material. It holds'
-      h(3)='the environmental impacts of a material. '
-      h(4)=' - Material life: Mean life time of the material.'
-      h(5)=' - Breakage: Break/loss during the use of the material.'
-      h(6)=' - Transp>site: Mean of transport (pointer) and distance'
-      h(7)='                to transport the material from the'
-      h(8)='                material manufacture to the construction'
-      h(9)='                assembly site.' 
-      h(10)='               For pre-fabricated construction, the '
-      h(11)='               assembly site correspond to the pre-'
-      h(12)='               fabrication site, otherwise it correspond'
-      h(13)='               to the building site.'
-      h(14)=' - Recycling : Recycling process (pointer) for material.'
-      h(15)=' - Incinerat.: Incineration proc. (point.) for material.'
-      h(16)=' - Dump.     : Dump process (pointer) for the material.'
-      h(17)=' Finally, the environmetal impacts due to the material.' 
-      h(18)=' fabrication'
+      helptopic='dbm_material_life'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
    2  CALL EMENU('  Item in material effects',PELM,MPLEM,IW)
 
@@ -766,21 +739,21 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
-        CALL PHELPD('material effects item edit help',3,'-',0,0,IER)
+        helptopic='dbm_material_life'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('material effects item edit',nbhelp,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
         call EITCOMMON(IFB,idbh,ic,iit,IW,ACT,iract,primod,IER)
         if(iract.eq.3)goto 3
         if(iract.eq.9)goto 9
       ELSEIF(IW.EQ.8)THEN
-        h(1)='Useful life of this material in years. '
-        CALL EASKR(fablif,' ',' Material life (y):',
-     &    0.0,'W',1000.,'W',1.,'fablif',IER,1)
+        CALL EASKR(fablif,' ',' Material life (years):',
+     &    0.0,'W',1000.,'W',1.,'fablif',IER,nbhelp)
         primod=.true.
       ELSEIF(IW.EQ.9)THEN
-        h(1)='Fraction of material broken during assembly '
-        CALL EASKR(brkias,' ',' Breakage during assembly:',
-     &    0.0,'W',1.,'W',1.,'brkias',IER,1)
+        CALL EASKR(brkias,' ',' Breakage (fraction) during assembly:',
+     &    0.0,'W',1.,'W',1.,'brkias',IER,nbhelp)
         primod=.true.
       ELSEIF(IW.EQ.11.or.IW.EQ.12.or.IW.EQ.13)THEN
 
@@ -811,13 +784,11 @@ C Provide browse or popup for 1st/2nd/3rdtransport attributes.
           endif
 
 C Edit 1st transport distance and breakage rate.
-          H(1)='The 1st (of 3 possible) transports associated with '
-          H(2)='the construction... '
           if(IW.eq.11)write(hold,'(f8.2,f7.3)') dtrbs(1),rtrbs(1)
           if(IW.eq.12)write(hold,'(f8.2,f7.3)') dtrbs(2),rtrbs(2)
           if(IW.eq.13)write(hold,'(f8.2,f7.3)') dtrbs(3),rtrbs(3)
           CALL EASKS(hold,'Transport distance (km) and breakage rate:',
-     &      ' ',32,'1.00 0.00','trn1 dist and brk',IER,2)
+     &      ' ',32,'1.00 0.00','trn1 dist and brk',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             if(IW.eq.11)then
@@ -838,9 +809,8 @@ C Edit 1st transport distance and breakage rate.
       ELSEIF(IW.EQ.14)THEN
 
 C Provide browse popup for environmental db (recycling).
-        h(1)='Recycling rate... '
         CALL EASKR(rr,' ',' Recycling rate:',
-     &    0.0,'W',1.,'W',1.,'rr',IER,1)
+     &    0.0,'W',1.,'W',1.,'rr',IER,nbhelp)
         if(gendbok(8))then
           class=cattag(ic)
           item=ittag(iit)
@@ -862,9 +832,8 @@ C Provide browse popup for environmental db (recycling).
       ELSEIF(IW.EQ.15)THEN
 
 C Provide browse popup for environmental db (incineration).
-        h(1)='Incineration rate... '
         CALL EASKR(ri,' ',' Incineration rate:',
-     &    0.0,'W',1.,'W',1.,'ri',IER,1)
+     &    0.0,'W',1.,'W',1.,'ri',IER,nbhelp)
         if(gendbok(8))then
           class=cattag(ic)
           item=ittag(iit)
@@ -886,9 +855,8 @@ C Provide browse popup for environmental db (incineration).
       ELSEIF(IW.EQ.16)THEN
 
 C Provide browse popup for environmental db (dump).
-        h(1)='Dump rate... '
         CALL EASKR(rd,' ',' Dump rate:',
-     &    0.0,'W',1.,'W',1.,'rd',IER,1)
+     &    0.0,'W',1.,'W',1.,'rd',IER,nbhelp)
         if(gendbok(8))then
           class=cattag(ic)
           item=ittag(iit)
@@ -940,7 +908,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -957,7 +924,7 @@ C Generic db commons:
 
       dimension PELM(16),eimp(9)
 
-      CHARACTER OUTSTR*124,PELM*39,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*39,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -967,6 +934,13 @@ C Generic db commons:
       character snote*248
       logical primod,showtags
       integer MPLEM,IW  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edenvp'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -1068,30 +1042,17 @@ C After parsing units recover the header of the current db.
 
 C Help text for this menu.
    2  if(ct(1:6).eq.'ASMPRJ')then
-        h(1)='Editing of site assembly category items. '
-        h(2)='This category correspond to the environmental impacts'
-        h(3)='generated when a construction is assemble at the'
-        h(4)='project. It includes the impacts related to the process'
-        h(5)='itself and the construction breaking & loss rate' 
-        h(6)='occuring during that assembly phase. '
+        helptopic='dbm_site_assembly'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       elseif(ct(1:8).eq.'CNSTRMNT')then
-        h(1)='Editing of site maintenance category items. '
-        h(2)='This category correspond to the environmental impacts'
-        h(3)='generated during the construction/material maintenance.'
-        h(4)='It includes the impacts related to the process itself '
-        h(5)='and the construction breaking & loss rate occuring  '
-        h(6)='during that maintenance phase. '
+        helptopic='dbm_site_maintenance'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       elseif(ct(1:8).eq.'CNSTRASM')then
-        h(1)='Editing of prefabrication assembly category items... '
-        h(2)='This category correspond to the environmental impacts'
-        h(3)='generated when a construction is fabricated.'
-        h(4)='It includes the impacts related to the process itself '
-        h(5)='and the construction breaking & loss rate occuring  '
-        h(6)='during that assembly phase. '
+        helptopic='dbm_prefab_assembly'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       endif
 
-
-C << Depending on the category use different heading. >>
+C Depending on the category use different heading.
       if(ct(1:6).eq.'ASMPRJ')then
         CALL EMENU(' Item in site assembly',PELM,MPLEM,IW)
       elseif(ct(1:8).eq.'CNSTRMNT')then
@@ -1105,11 +1066,14 @@ C << Depending on the category use different heading. >>
 
 C Help.
         if(ct(1:6).eq.'ASMPRJ')then
-          CALL PHELPD('assembly on prj item edit help',6,'-',0,0,IER)
+          CALL PHELPD('assembly on prj item edit help',nbhelp,'-',
+     &      0,0,IER)
         elseif(ct(1:8).eq.'CNSTRMNT')then
-          CALL PHELPD('constr maint item edit help',3,'-',0,0,IER)
+          CALL PHELPD('constr maint item edit help',nbhelp,'-',
+     &      0,0,IER)
         elseif(ct(1:8).eq.'CNSTRASM')then
-          CALL PHELPD('constr assembly item edit help',3,'-',0,0,IER)
+          CALL PHELPD('constr assembly item edit help',nbhelp,'-',
+     &      0,0,IER)
         endif
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
@@ -1117,9 +1081,8 @@ C Help.
         if(iract.eq.3)goto 3
         if(iract.eq.9)goto 9
       ELSEIF(IW.EQ.8)THEN
-        h(1)='Fraction of material broken at the project. '
         CALL EASKR(brkias,' ',' Breakage rate: (0.0-1.0)',
-     &    0.0,'W',1.,'W',1.,'brkasp',IER,1)
+     &    0.0,'W',1.,'W',1.,'brkasp',IER,nbhelp)
         primod=.true.
       ELSEIF(IW.eq.9.or.IW.eq.10.or.IW.eq.11.or.IW.eq.12)THEN
 
@@ -1180,6 +1143,13 @@ C Generic db commons:
       character lassurm*32,lasperm*32,asitm1*32,asitm2*32,lasm1*32
       character lasm2*32,snote*248,outs*124,outs248*248
       logical showtags
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='epopenv'  ! set for subroutine
 
 C Scan the data from the common blocks.
       call rgenitem(IFB,idbh,iit,ier)

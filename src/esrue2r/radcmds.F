@@ -50,14 +50,19 @@ C  else simulate the scene by calling simscene
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
-      character outs*124,tfile*72,h*72
+      character outs*124,tfile*72
 
       LOGICAL fict,XST,OK,DOK
 
       integer irif ! loop variable for more than one rif per scene
-      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='autorad'  ! set for subroutine
+
       ITA2=IFIL+7
       ITA3=IFIL+10
 
@@ -168,12 +173,10 @@ C If scene purpose is coupling or daylight coefficients then return.
 
 C Continue and run radiance simulation?
       dok=.true.
-      h(1)='You can start the visual simulation at this point by'
-      h(2)='answering yes. If you say no you can start the simulation'
-      h(3)='later. Note the simulation can take several minutes, if '
-      h(4)='hours to complete. '
+      helptopic='e2r_proceed_with_sim'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call ASKOK('Scene description is now complete.',
-     &           'Proceed with simulation?',OK,dok,4)
+     &           'Proceed with simulation?',OK,dok,nbhelp)
       if (OK) then
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -476,14 +479,19 @@ C settime - user choice of standard times for sky generation
 #include "building.h"
 #include "e2r_common.h"
 
-      common/pophelp/h(60)
-      character H*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='settime'  ! set for subroutine
 
 C Ask winter am/pm spring am/pm summer am/pm
-      H(1)='Pick a season/ time for the sky. ' 
+      helptopic='standard_times_of_day'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('A scene is created for a specific day and time.',
-     &   'Select one from these defaults:','winter AM','winter PM',
-     &        'summer AM','summer PM',IWDT,1)
+     &  'Select one from these defaults:','winter AM','winter PM',
+     &  'summer AM','summer PM',IWDT,nbhelp)
       if(IWDT.eq.1)then
         irdoy=15
         rtime=10.0
@@ -643,10 +651,9 @@ C ITP =1 - image only; =2 - glare info to display on image.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
-      character pf*72,h*72,outs*124,ltmp*72
+      character pf*72,outs*124,ltmp*72
       character doit*256
       integer IWT,IWP   ! for radio buttons
 
@@ -655,34 +662,35 @@ C ITP =1 - image only; =2 - glare info to display on image.
       
       logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
 
+      helpinsub='genimage'  ! set for subroutine
       ITA2=IFIL+7
       anim=.false.
 
       if (ITP.eq.1) then
 
 C Ask if an animation required.
-        H(1)='Rendering can only be for one instant in time or'
-        H(2)='at intervals during a period of a day.  You can '
-        H(3)='adjust the parameters needed to create a set of'
-        H(4)='images which can be combined to form an amimation.'
+        helptopic='single_time_or_sequence'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ',' Image(s):','single time instance',
-     &     'sequence',IWDA,4)
+     &    'sequence',IWDA,nbhelp)
         if(iwda.eq.2)then
           anim = .true.
           IWDQ=2
         else
           if(mono.gt.0)then
-            H(1)='Rendering can only be directed to screen on colour'
-            H(2)='monitors.  You can adjust the visualisation '
-            H(3)='parameters interactively and a summary of commands'
-            H(4)='which Radiance understands is provided. '
-            H(5)='  '
-            H(6)='If running on Windows you should choose file option.'
+            helptopic='render_to_screen_or_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB(' ','Image rendering to:','screen','file',
-     &        IWDQ,6)
+     &        IWDQ,nbhelp)
           else
             IWDQ=2
           endif
@@ -766,19 +774,17 @@ C ITST is the start time (int).
           CALL ASKTIM(2,1,IAMO,IADO,iardoy,ATIMEST,ITST,IER)
 
 C Ask for end time of the animation.
-          H(1)='The end of the animation is assumed to be on the same'
-          H(2)='day and must be less than 24.0'
+          helptopic='end_time_of_animation'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ATIMEFN = ATIMEST + 1.0
           CALL EASKR(ATIMEFN,' ',' End time of the animation? ',
-     &      ATIMEST,'W',24.0,'W',0.2,'end time of anim',IER,2)
+     &      ATIMEST,'W',24.0,'W',0.2,'end time of anim',IER,nbhelp)
 
 C Figure out the increment.
-          H(1)='The increment is usually set as a compromise between'
-          H(2)='the visual jump between views and computation time. '
           IWT=1
           CALL EASKATOG('Interval between views:',' ','one min',
      &      'five min','ten min','15 min','20 min','30 min','cancel',
-     &      IWT,2)
+     &      IWT,nbhelp)
           if(IWT.EQ.1)then
             DT=0.016666
           elseif(IWT.EQ.2)then
@@ -799,11 +805,9 @@ C Up the image quality if low.
           if(imgqua(1:3).eq.'Low')imgqua = 'Medium'
 
 C Size of the images (set IFP to double so can filter).
-          H(1)='The image frame size is a compromise between the'
-          H(2)='visual detail and and computation time. '
           IWP=1
           CALL EASKATOG('Image frame size (pixels):',' ','240',
-     &      '320','400','500','600','700','cancel',IWP,2)
+     &      '320','400','500','600','700','cancel',IWP,nbhelp)
           if(IWP.EQ.1)then
             ipicx=240
           elseif(IWP.EQ.2)then
@@ -929,20 +933,19 @@ C See if there is an existing pic file by this name.
           CALL ERPFREE(ITA2,ISTAT)
           INQUIRE (FILE=pf,EXIST=XST)
           if(XST)then
-            H(1)='The image processing tends to `hang` when '
-            H(2)='trying to overwrite an existing image. '
+            helptopic='overwrite_existing_pic'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(outs,'(a,a)') 'There is an existing picture file ',
      &        pf(1:lnblnk(pf))
             CALL EASKABC(outs,'Do you want to: ','overwrite',
-     &        'choose another name','cancel',IWR,2)
+     &        'choose another name','cancel',IWR,nbhelp)
             if(IWR.eq.3)then
               return
             elseif(IWR.eq.2)then
-              H(1)='Root name for pictures created with `rad`'
  1111         ltmp = picfil
               CALL EASKS(ltmp,
-     &          ' Picture root name (modify slightly) ? ',
-     &          ' ',72,'xx','picture root file name',IER,1)
+     &          ' Picture root name (modify slightly) ?',
+     &          ' ',72,'xx','picture root file name',IER,nbhelp)
               if(ltmp(1:2).ne.'  ') then
                 picfil = ltmp
               else
@@ -1023,13 +1026,13 @@ C Assumes that the path to the image is given.
 
 C Generate picture and glare file names.
       if (ipckvew.gt.0) then
-        write(pf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
+        write(pf,'(4a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
-        write(gf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
+        write(gf,'(4a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
       else
-        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.pic'
-        write(gf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.glr'
+        write(pf,'(2a)') picfil(1:lnblnk(picfil)),'_X.pic'
+        write(gf,'(2a)') picfil(1:lnblnk(picfil)),'_X.glr'
       endif
 
       if (ITP.eq.1) then
@@ -1312,15 +1315,20 @@ C getdf runs daylight factor calculation and then displays them.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       CHARACTER df*72,outs*124,ltmp*72,doit*256
       character QT*1,OUTSTR*124
       character tfile*72,outsl*160
-      character h*72
       integer irif ! loop variable for more than one .rif per scene
 
       logical XST,RECALC
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='getdf'  ! set for subroutine
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -1360,17 +1368,11 @@ C Check for daylight factor points - if none then try and read grid file.
 
 C Ask for convergence limit.
       CONV=0.25
-      h(1)='The calculations will strart with one ambient bounce and'
-      h(2)='gradually increase the number of bounces until the change'
-      h(3)='is less than a value (convergence criteria). The smaller'
-      h(4)='the value the longer the calculations will take. '
-      h(5)=' '
-      h(6)='If the display freezes it may be because the underlying'
-      h(7)='rtrace calculations are hung. You may have to kill that'
-      h(8)='process. '
+      helptopic='e2r_df_convergence'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(CONV,'Daylight factor convergence criteria',
-     &     '(Max total diff between iterations) ',0.00,
-     &     'F',5.0,'W',0.25,'df convergence criteria',IER,8)
+     &  'Max total diff between iterations) ',0.00,
+     &  'F',5.0,'W',0.25,'df convergence criteria',IER,nbhelp)
 
 C Reset DFVALS to 0.0
       do 5 I=1,500
@@ -1387,11 +1389,11 @@ C Ask if the parameters should be reset.
       XAB=-1.
       call RADPAR('ab',XAB)
       if (XAB.gt.1.5) then
-        h(1)='Sometimes Radiance gets confused. This is one place'
-        h(2)='where starting again can correct this. '
+        helptopic='e2r_df_confusion'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('The rendering parameters would appear to be set',
      &    'from a previous simulation.  Do you want to: ','use them',
-     &                     'start from beginning (recommended)',IWR,2)
+     &    'start from beginning (recommended)',IWR,nbhelp)
         if (IWR.eq.2) then
           write (outsl,'(2a)') crenrp(1:lnblnk(crenrp)),
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
@@ -1407,17 +1409,17 @@ C Daylight factors output file.
       call ERPFREE(ITA1,ISTAT)
  1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FINDFIL(ltmp,XST)
+      helptopic='e2r_df_file_overwrite'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(XST)then
         write(outs,'(2a)')'There is an existing file ',df(1:lnblnk(df))
         CALL EASKAB(outs,'Do you want to: ','overwrite',
      &                            'choose another name',IWR,0)
         if (IWR.eq.2) then
           ltmp = df
-          h(1)='You have a chance to save the past by giving a'
-          h(2)='slightly different file name for the calculatons.'
  1221     CALL EASKS(ltmp,
-     &       'Daylight factors results file name (modify slightly) ?',
-     &                      ' ',72,'xx.df','df resfile name',IER,2)
+     &      'Daylight factors results file name (modify slightly) ?',
+     &      ' ',72,'xx.df','df resfile name',IER,nbhelp)
           if(ltmp.ne.'  '.and.ltmp.ne.df) then
             df = ltmp
           else

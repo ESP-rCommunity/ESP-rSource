@@ -163,9 +163,9 @@ C      write(6,*) 'MINvec ',(MINVEC(I),I=1,3)
 C Now make grid points.
       do 30 I=1,igmin
         do 40 J=1,igmaj
-          GX=XS + (2*J-1)*MAJVEC(1) + (2*I-1)*MINVEC(1)
-          GY=YS + (2*J-1)*MAJVEC(2) + (2*I-1)*MINVEC(2)
-          GZ=ZS + (2*J-1)*MAJVEC(3) + (2*I-1)*MINVEC(3)
+          GX=XS + (2.*J-1.)*MAJVEC(1) + (2.*I-1.)*MINVEC(1)
+          GY=YS + (2.*J-1.)*MAJVEC(2) + (2.*I-1.)*MINVEC(2)
+          GZ=ZS + (2.*J-1.)*MAJVEC(3) + (2.*I-1.)*MINVEC(3)
           call INSIDE3D(XSUR,YSUR,ZSUR,NVER(IS),GX,GY,GZ,INSURF)
           if (INSURF.eq.1) then
             NGRID = NGRID + 1
@@ -230,9 +230,9 @@ C If outside BB then return.
      &    ZT.lt.ZMIN.or.ZT.gt.ZMAX) return
 
 C Calculate COG.
-      COG(1)=COG(1)/NV
-      COG(2)=COG(2)/NV
-      COG(3)=COG(3)/NV
+      COG(1)=COG(1)/real(NV)
+      COG(2)=COG(2)/real(NV)
+      COG(3)=COG(3)/real(NV)
 
 C Generate test vector parallel to line from point 2 to COG.
       IVECX=2

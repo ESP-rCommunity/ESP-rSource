@@ -35,7 +35,6 @@ C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -59,9 +58,16 @@ C Special materials file flag
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(15)
-      character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
+      character outs*124,xfile*144,tg*1,delim*1,spflnam*72
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOTABL'  ! set for subroutine
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
@@ -108,11 +114,9 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
       NITMS=15
       INO=-2
 
-C Instanciate h() string array.
-      H(1) ='The output format selection allows you to direct '
-      H(2) ='tabular listing to the standard text feedback area '
-      H(3) ='or to a named file.  You may also define the time  '
-      H(4) ='format for use in 3rd party graphing facilities.  '
+C Instanciate help string array for all interactions.
+      helptopic='res_tabular_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
   504 CALL EMENU('Tabular Output',ITEM,NITMS,INO)
 
@@ -152,9 +156,9 @@ C Toggle time format and day separators.
           call edisp(iuout,' ')
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
-        H(1)='Places an # separator between days of tabular data.'
         CALL EASKAB('Include mark between days when ',
-     &              'displaying or writing data :','no','yes',IDH,1)
+     &              'displaying or writing data :','no','yes',
+     &              IDH,nbhelp)
         IDHFLG=IDH-1
       elseif(INO.EQ.12.AND.ISAVE.GE.1)then
 
@@ -171,17 +175,10 @@ C Toggle tabular listing label format.
       elseif(INO.EQ.13.AND.ISAVE.GE.1)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'continue',' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -194,7 +191,9 @@ C Toggle delimeter.
           delim = 'X'
         endif
       elseif(INO.EQ.14)then
-        CALL PHELPD('tabular',4,'-',0,0,IER)
+        helptopic='res_tabular_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('tabular',nbhelp,'-',0,0,IER)
       elseif(INO.GE.15)then
         RETURN
       else

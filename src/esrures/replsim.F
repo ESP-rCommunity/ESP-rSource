@@ -36,7 +36,6 @@ C #include "geometry.h"
 #include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/trc/itrc
 
@@ -54,9 +53,16 @@ C =2 with more than 3 day types
 
       CHARACTER*72 LCFGF,path
       character longtmp*144
-      CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
+      CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOGCFG'  ! set for subroutine
 
 C The common code method of reading in a system configuration file
 C uses the same common blocks as MOINIT so there is no convenient way
@@ -87,25 +93,24 @@ C Not found, might be in a remote folder.  Warn user first.
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated.  It should'
-        H(3)='match the contents held within the results library.'
-        CALL PHELPD('no system file',3,'-',0,0,IER)
+        helptopic='res_ask_cfg_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('no system file',nbhelp,'-',0,0,IER)
         write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &      96,' ','configuration file',IER,nbhelp)
         elseif(iglib.eq.2)then
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      144,' ','configuration file',IER,4)
+     &      144,' ','configuration file',IER,nbhelp)
         else
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &      96,' ','configuration file',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -155,10 +160,8 @@ C If tdf file used then open it so data is available for reading.
 C Ask user about description of the files used in the simulation.
       if(itrc.ne.0)then
         dok=.false.
-        h(1)='If you say yes you will be presented with a list of'
-        h(2)='the files which are associated with the model. '
-        call askok(' Do you want a listing of the files ',
-     &            ' used in the simulation?',ok,dok,2)
+        call askok('Do you want a listing of the files ',
+     &             'used in the simulation?',ok,dok,nbhelp)
         if(ok)then
           call SYNOPF
           RETURN

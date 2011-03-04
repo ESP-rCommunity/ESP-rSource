@@ -3116,7 +3116,6 @@ C          call edisp248(6,message,80)
           message='null controller has no data'
         ELSEIF(IBCLAW(II,JJ,KK).EQ.19)then
           SSTR='ideal multi-sensor'
-C          message='ideal multi-sensor controller report TBD'
           cm(1)=bmiscd(II,JJ,KK,1)
           cm(2)=bmiscd(II,JJ,KK,2)
           cm(3)=bmiscd(II,JJ,KK,3)
@@ -3252,10 +3251,11 @@ C          call edisp248(6,message,80)
 
 C Plant control law.
         SSTR='undefined control        '
-        IF(IPCLAW(II,JJ,KK).EQ.0) then
+        message='not yet coded for system controls.'
+        if(IPCLAW(II,JJ,KK).EQ.0)then
           SSTR='period off        '
           message=' Period switch off control has no data.'
-        elseIF(IPCLAW(II,JJ,KK).EQ.1) then
+        elseif(IPCLAW(II,JJ,KK).EQ.1)then
           SSTR='PID flux control.  '
           msg1=' '; msg2=' '; msg3=' '
           cm(2)=pmiscd(II,JJ,KK,2)
@@ -3300,7 +3300,7 @@ C Plant control law.
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
 
-        elseIF(IPCLAW(II,JJ,KK).EQ.2) then
+        elseif(IPCLAW(II,JJ,KK).EQ.2)then
           SSTR='PID flow control. '
           msg1=' '; msg2=' '; msg3=' '
           cm(2)=pmiscd(II,JJ,KK,2)
@@ -3345,7 +3345,7 @@ C          call edisp248(6,message,80)
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
 
-        elseIF(IPCLAW(II,JJ,KK).EQ.3) then
+        elseif(IPCLAW(II,JJ,KK).EQ.3)then
           SSTR='Prop numerical ctrl.'
           msg1=' Prop numerical'
           cm(2)=pmiscd(II,JJ,KK,2)
@@ -3363,12 +3363,12 @@ C          call edisp248(6,message,80)
         endif
         IF(IPCLAW(II,JJ,KK).EQ.4) SSTR='Optimum start ctl. '
         IF(IPCLAW(II,JJ,KK).EQ.5) SSTR='Prop`l damper ctl.'
-        IF(IPCLAW(II,JJ,KK).EQ.6) then
+        if(IPCLAW(II,JJ,KK).EQ.6)then
           SSTR='Null controller.'
           message=' Null control has no data.'
         endif
         IF(IPCLAW(II,JJ,KK).EQ.7) SSTR='Duty Cycle Ctlr.'
-        IF(IPCLAW(II,JJ,KK).EQ.8) then
+        if(IPCLAW(II,JJ,KK).EQ.8)then
           SSTR='On-Off control.'
           cm(2)=pmiscd(II,JJ,KK,2)
           cm(3)=pmiscd(II,JJ,KK,3)
@@ -3391,7 +3391,6 @@ C          call edisp248(6,message,80)
         IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
         IF(IPCLAW(II,JJ,KK).EQ.15) SSTR='PI Room Ctrl'
         IF(IPCLAW(II,JJ,KK).EQ.16) SSTR='Amb Temp Cmpnstn ctrl'
-c        message='not yet coded for system controls.'
         return
       ENDIF
 

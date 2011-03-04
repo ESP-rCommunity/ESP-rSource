@@ -59,7 +59,7 @@ C geometry.h provides commons G0/G2/precz.
 
       CHARACTER*72 LTMP
       character HFILE*72,H*72,head*33
-      CHARACTER ITEM(29)*33
+      CHARACTER ITEM(30)*33
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
       integer NITEMS,INO ! max items and current menu item
@@ -291,9 +291,10 @@ C Determine the convective regime (A-G)..
       ITEM(26)=            'o User defined or CEN values  '
 
       ITEM(27)=            '! list                        '
-      ITEM(28)=            '? help                        '
-      ITEM(29)=            '- exit                        '
-      NITEMS=29
+      ITEM(28)=            '! save                        '
+      ITEM(29)=            '? help                        '
+      ITEM(30)=            '- exit                        '
+      NITEMS=30
 
 C Redraw wireframe on each return.
       CALL INLNST(1)
@@ -457,6 +458,10 @@ C List current data.
         call listhtc(iuout,ICOMP,IER)
       ELSEIF (INO.EQ.28)then
 
+C Write data to file.
+        CALL EMKHTC(LHCCO(ICOMP),ICOMP,IUF,ITRU,IER)
+
+      ELSEIF (INO.EQ.29)then
 C Display help info.
 C Note that the ACA facility is described in section 5.2
 C of the following thesis (available in PDF format from
@@ -468,7 +473,7 @@ C of Heat and Air Flow Modelling within Dynamic
 C Whole-Building Simulation, PhD Thesis,
 C University of Strathclyde, Glasgow UK.
         CALL PHELPD('convective calculations',59,'-',0,0,IER)
-      ELSEIF (INO.EQ.29)then
+      ELSEIF (INO.EQ.30)then
         RETURN
       ELSE
         goto 20
@@ -3199,7 +3204,7 @@ C << needs range check >>
 
 C Read IAORZ,CWIDTH and CHEIGHT of ventilated channels. This line
 C may not exist in all hc files.
-            READ(IUF,*,IOSTAT=ISTAT,ERR=390,END=390)
+            READ(IUF,*,IOSTAT=ISTAT,ERR=390,END=391)
      &        IAORZ,CWIDTH,CHEIGHT
           elseif(ICTL(I).eq.4) then
 
@@ -3260,6 +3265,10 @@ C CEN mode sets values for specific conditions.
 
 C Error messages.
   390 call edisp(iuout,' HC File read error.')
+      CALL ERPFREE(IUF,ISTAT)
+      RETURN
+  391 call edisp(iuout,
+     & ' HC File scan of optional IAORZ CWIDTH CHEIGHT not found.')
       CALL ERPFREE(IUF,ISTAT)
       RETURN
   392 call edisp(iuout,' Unable to rewind HC File.')

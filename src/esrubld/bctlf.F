@@ -42,7 +42,6 @@ C is read from the system control strategy file.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/pophelp/h(60)
 
       common/cctlnm/ctldoc,lctlf
 
@@ -58,9 +57,16 @@ C is read from the system control strategy file.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character LCTLF*72,DFILE*72,LTMP*72,LBND*72,DBND*72
-      character DPBND*72,H*72
+      character DPBND*72
       character ctldoc*248,outs*124
       logical OK,dok,pbyfil,bfngn,pcfngn,ffngn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mzcstr'  ! set for subroutine
 
 C If in autoexec mode as defined by the simulator parameter file then 
 C use the control file specified in the cfg file.
@@ -74,15 +80,18 @@ C use the control file specified in the cfg file.
       else
         if(LCTLF(1:7).eq.'UNKNOWN') then
           dok=.false.
-          h(1)='No control is associated with the model. '
+          helptopic='no_control_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &    ' Does a building/plant/mass flow control strategy exist for',
-     &    ' the current model?',OK,dok,1)
+     &    ' the current model?',OK,dok,nbhelp)
         else
           dok=.true.
-          h(1)='Confirm control associated with the model.'
+          helptopic='control_was_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(outs,'(2a)')' Use ',LCTLF(1:lnblnk(LCTLF))
-          CALL ASKOK(outs,' with the current model? ',OK,dok,1)
+          CALL ASKOK(outs,' with the current model? ',
+     &      OK,dok,nbhelp)
           if(OK)then
 
 C Do initial setup of ier, ncf and if running silently then turn off trace
@@ -109,17 +118,13 @@ C or if interactive then only set trace if the first simulation.
         RETURN
       ENDIF
 
-      H(1)='The system control file holds the definition of all of'
-      H(2)='the building/plant controls which will be imposed on'
-      H(3)='the model at simulation time.  This file is optional'
-      H(4)='and is created using ESRU: imp.'
-      H(5)='Examples of configuration control files are given in'
-      H(6)='sections 3.9 and 7 of the users manual. '
+      helptopic='confirm_control_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   47  if((.not.autook).AND.(ISIM.le.1)) then
         DFILE=' '
         LTMP=LCTLF
         CALL EASKS(LTMP,' System control file: ',
-     &     ' ',72,DFILE,'control file name',IER,6)
+     &     ' ',72,DFILE,'control file name',IER,nbhelp)
         IF(LTMP.NE.' ')THEN
 
 C Assign the control file name, reset ier and ncf and only
@@ -149,11 +154,8 @@ C Read in the control file (close before returning from EZCTLR).
   42  CALL EZCTLR(IUNIT,ITRC,IUOUT,IER)
       IF(IER.NE.0)THEN
         dok=.false.
-        h(1)='At simulation time there should not be any problems with'
-        h(2)='zone/flow/system controls. Check your model for possible'
-        h(3)='corruption. '
         CALL ASKOK(' Problem detected reading controls...try again?',
-     &    '(see help)',OK,dok,3)
+     &    '(see help)',OK,dok,nbhelp)
         IF(OK)THEN
           GOTO 47
         ELSE
@@ -177,14 +179,11 @@ C Possibly read in flow function generator supplementary data items.
 
 C Possibly open ascii plant-side boundary data file.
       if(pbyfil)then
-        h(1)='This ascii file can have one or more columns of data '
-        h(2)='(space separated) wherein each line is related to a '
-        h(3)='simulation timestep (including the pre-conditioning '
-        h(4)='period.  Any line beginning with a # is considered a '
-        h(5)='comment.'
+        helptopic='timestep_boundary_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dpbnd='pby.asc '
         CALL EASKS(lbnd,' Timestep boundary data file (plant-side):',
-     &   ' ',72,dpbnd,'plant boundary file',IER,5)
+     &   ' ',72,dpbnd,'plant boundary file',IER,nbhelp)
         iunit=ifil+9
         CALL EFOPSEQ(IUNIT,lbnd,1,IER)
         rewind(iunit)
@@ -204,13 +203,19 @@ C `Function Generator` sensor .
 #include "control.h"
       
       common/outin/iuout,iuin
-      common/pophelp/h(60)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
 
-      character outs*124,H*72
+      character outs*124
       character hold*40,nterm*1
       logical bfngn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BFGRSD'  ! set for subroutine
 
       nterm=CHAR(0)
 
@@ -227,27 +232,15 @@ C Read in data for the user-specified function, IFUNC
           call edisp(iuout,outs)
 70        format(' building control function no.',i3)
           
-          H(1)=' The data items required for each function are:'
-          H(2)=' '
-          H(3)='   Function          supp1    supp2    supp3   supp4'
-          H(4)='   ================================================ '
-          H(5)='   1. Step:          start    finish   max     min  '
-          H(6)='   2. Ramp:          start    finish   max     min  '
-          H(7)='   3. Square sine:   max      min      freq    ---  '
-          H(8)='   4. Square cosine: max      min      freq    ---  '
-          H(9)='   5: Triangular:    max      min      freq    ---  '
-          H(10)='  6: Saw-tooth:     max      min      freq    ---  '
-          H(11)='  7: Sine:          max      min      freq    shift'
-          H(12)='  8: Cosine:        max      min      freq    shift'
-          H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
-          H(14)=' - Refer ESP-r manual section 3.9 ' 
+          helptopic='function_generator_opt'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
           if(ifunc.eq.1.or.ifunc.eq.2)then
   60       WRITE(HOLD,'(4f7.2,a1)')cfgsd(i,1),cfgsd(i,2),
      &                             cfgsd(i,3),cfgsd(i,4),nterm
            CALL EASKS(HOLD,' start, finish, max and min  values for',
      &     ' step/ramp function : ',40,' 0. 24. 1. -1. ',
-     &     'Step: start, fin, max, min',IER,14)
+     &     'Step: start, fin, max, min',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsd(i,1),
      &                 0.,24.,'F','Start',IER)
@@ -265,7 +258,7 @@ C Read in data for the user-specified function, IFUNC
      &                             cfgsd(i,3),nterm
            CALL EASKS(HOLD,' maximum, minimum, frequency ',
      &     ' for square/tri/saw-tooth functions : ',40,' 1. 0. 1. ',
-     &     'square/tri/saw-tooth functions: max, min, frqy',IER,14)
+     &     'square/tri/saw-tooth functions: max, min, frqy',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsd(i,1),
      &                 -99999.,999999.,'F','Str',IER)
@@ -279,7 +272,7 @@ C Read in data for the user-specified function, IFUNC
      &                             cfgsd(i,3),cfgsd(i,4),nterm
            CALL EASKS(HOLD,' vmax, vmin, freq, shift  values for',
      &     ' sine/cosine function : ',40,' 0. 24. 1. -1. ',
-     &     'vmax, vmin, freq, shift',IER,14)
+     &     'vmax, vmin, freq, shift',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsd(i,1),
      &                 -999999.,999999.,'F','vmax',IER)
@@ -292,14 +285,11 @@ C Read in data for the user-specified function, IFUNC
            if(ier.ne.0)goto 76 
           elseif(ifunc.eq.9)then
 
-           H(1)=' The items are essentially the same as required '
-           H(2)=' in a control point sensor. '
-           H(3)=' - Refer ESP-r manual section 3.9 '
   66       WRITE(HOLD,'(3f7.2,a1)')cfgsd(i,1),cfgsd(i,2),
      &                             cfgsd(i,3),nterm
            CALL EASKS(HOLD,' Sensor details for auxiliary ',
      &     ' sensor? ',40,' 1. 0. 1. ',
-     &     ' sensor details for auxiliary sensor',IER,3)
+     &     ' sensor details for auxiliary sensor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsd(i,1),
      &                 -99999.,999999.,'F','1st sen',IER)
@@ -309,16 +299,10 @@ C Read in data for the user-specified function, IFUNC
      &                 -99999.,999999.,'F','3rd seb',IER)
            if(ier.ne.0)goto 66
 
-           H(1)=' The scaling factor and the offset value (if any)'
-           H(2)=' are applied to the sensed value as follows:'
-           H(3)='    [SCALING_FACTOR*SENSED_VALUE]+OFFSET '
-           H(4)=' If no scaling factor required, input 1;'
-           H(5)=' If no offset value required, input 0.'
-           H(6)=' - Refer ESP-r manual section 3.9 '
  69        WRITE(HOLD,'(2f7.2,a1)')cfgsd(i,5),cfgsd(i,6),nterm
            CALL EASKS(HOLD,' Scaling factor, and offset',
      &     ' to apply to sensed value: ',40,' 1. 0. 1. ',
-     &     ' offset, Scaling factor',IER,6)
+     &     ' offset, Scaling factor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsd(i,5),
      &                 -99999.,999999.,'F','Mult. fact',IER)
@@ -343,13 +327,19 @@ C the plant-side type -6 `Function Generator` sensor.
 #include "control.h"
       
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       
       common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
 
       character outs*124
-      character hold*40,nterm*1,H*72
+      character hold*40,nterm*1
       logical pcfngn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PFGRSD'  ! set for subroutine
 
       nterm=CHAR(0)
 
@@ -366,27 +356,15 @@ C Read in data for the user-specified function, IFUNC
           call edisp(iuout,outs)
 70        format(' plant control loop no.',i3)
           
-          H(1)=' The data items required for each function are:'
-          H(2)=' '
-          H(3)='   Function          supp1    supp2    supp3   supp4'
-          H(4)='   ================================================ '
-          H(5)='   1. Step:          start    finish   max     min  '
-          H(6)='   2. Ramp:          start    finish   max     min  '
-          H(7)='   3. Square sine:   max      min      freq    ---  '
-          H(8)='   4. Square cosine: max      min      freq    ---  '
-          H(9)='   5: Triangular:    max      min      freq    ---  '
-          H(10)='  6: Saw-tooth:     max      min      freq    ---  '
-          H(11)='  7: Sine:          max      min      freq    shift'
-          H(12)='  8: Cosine:        max      min      freq    shift'
-          H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
-          H(14)=' - Refer ESP-r manual section 3.9 ' 
+          helptopic='function_generator_opt'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
           if(ifunc.eq.1.or.ifunc.eq.2)then
   60       WRITE(HOLD,'(4f7.2,a1)')clfgsd(i,1),clfgsd(i,2),
      &                             clfgsd(i,3),clfgsd(i,4),nterm
            CALL EASKS(HOLD,' start, finish, max and min  values for',
      &     ' step/ramp function : ',40,' 0. 24. 1. -1. ',
-     &     'Step: start, fin, max, min',IER,14)
+     &     'Step: start, fin, max, min',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,clfgsd(i,1),
      &                 0.,24.,'F','Start',IER)
@@ -404,7 +382,8 @@ C Read in data for the user-specified function, IFUNC
      &                             clfgsd(i,3),nterm
            CALL EASKS(HOLD,' maximum, minimum, frequency ',
      &     ' for square/tri/saw-tooth functions : ',40,' 1. 0. 1. ',
-     &     'square/tri/saw-tooth functions: max, min, frqy',IER,14)
+     &     'square/tri/saw-tooth functions: max, min, frqy',
+     &     IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,clfgsd(i,1),
      &                 -99999.,999999.,'F','Str',IER)
@@ -418,7 +397,7 @@ C Read in data for the user-specified function, IFUNC
      &                             clfgsd(i,3),clfgsd(i,4),nterm
            CALL EASKS(HOLD,' vmax. vmin, freq, shift values for',
      &     ' sine/cosine function : ',40,' 0. 24. 1. -1. ',
-     &     'vmax, vmin, freq, shift',IER,14)
+     &     'vmax, vmin, freq, shift',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,clfgsd(i,1),
      &                 -99999.,999999.,'F','vmax',IER)
@@ -431,14 +410,11 @@ C Read in data for the user-specified function, IFUNC
            if(ier.ne.0)goto 76
           elseif(ifunc.eq.9)then
 
-           H(1)=' The items are essentially the same as required '
-           H(2)=' in a control point sensor. '
-           H(3)=' - Refer ESP-r manual section 3.9 '
   66       WRITE(HOLD,'(3f7.2,a1)')clfgsd(i,1),clfgsd(i,2),
      &                             clfgsd(i,3),nterm
            CALL EASKS(HOLD,' Sensor details for auxiliary ',
      &     ' sensor? ',40,' 1. 0. 1. ',
-     &     ' sensor details for auxiliary sensor',IER,3)
+     &     ' sensor details for auxiliary sensor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,clfgsd(i,1),
      &                 -99999.,999999.,'F','1st sen',IER)
@@ -448,16 +424,10 @@ C Read in data for the user-specified function, IFUNC
      &                 -99999.,999999.,'F','3rd sen',IER)
            if(ier.ne.0)goto 66
 
-           H(1)=' The scaling factor and the offset value (if any)'
-           H(2)=' are applied to the sensed value as follows:'
-           H(3)='    [SCALING_FACTOR*SENSED_VALUE]+OFFSET '
-           H(4)=' If no scaling factor required, input 1;'
-           H(5)=' If no offset value required, input 0.'
-           H(6)=' - Refer ESP-r manual section 3.9 '
  69        WRITE(HOLD,'(2f7.2,a1)')clfgsd(i,5),clfgsd(i,6),nterm
            CALL EASKS(HOLD,' Scaling factor, and offset',
      &     ' to apply to sensed value: ',40,' 1. 0. 1. ',
-     &     ' offset, Scaling factor',IER,6)
+     &     ' offset, Scaling factor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,clfgsd(i,5),
      &                 -99999.,999999.,'F','Mult. fact',IER)
@@ -482,12 +452,18 @@ C  mass flow sensor type -6 `Function Generator` sensor.
 #include "control.h"
       
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       
       common/ffngr/cfgsf(MCF,6),ifsnv(MCF,3),ffngn
 
-      character outs*124,H*72,hold*40,nterm*1
+      character outs*124,hold*40,nterm*1
       logical ffngn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='FFGRSD'  ! set for subroutine
 
       nterm=CHAR(0)
 
@@ -508,27 +484,15 @@ C jmq:
           call edisp(iuout,outs)
 70        format(' mass flow control function no.',i3)
           
-          H(1)=' The data items required for each function are:'
-          H(2)=' '
-          H(3)='   Function          supp1    supp2    supp3   supp4'
-          H(4)='   ================================================ '
-          H(5)='   1. Step:          start    finish   max     min  '
-          H(6)='   2. Ramp:          start    finish   max     min  '
-          H(7)='   3. Square sine:   max      min      freq    ---  '
-          H(8)='   4. Square cosine: max      min      freq    ---  '
-          H(9)='   5: Triangular:    max      min      freq    ---  '
-          H(10)='  6: Saw-tooth:     max      min      freq    ---  '
-          H(11)='  7: Sine:          max      min      freq    shift'
-          H(12)='  8: Cosine:        max      min      freq    shift'
-          H(13)='  9: Sensed prop`y: inc/dec  ---      ---     ---  '
-          H(14)=' - Refer ESP-r manual section 3.9 ' 
+          helptopic='function_generator_opt'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
           if(ifunc.eq.1.or.ifunc.eq.2)then
   60       WRITE(HOLD,'(4f7.2,a1)')cfgsf(i,1),cfgsf(i,2),
      &                             cfgsf(i,3),cfgsf(i,4),nterm
            CALL EASKS(HOLD,' start, finish, max and min  values for',
      &     ' step/ramp function : ',40,' 0. 24. 1. -1. ',
-     &     'Step: start, fin, max, min',IER,14)
+     &     'Step: start, fin, max, min',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsf(i,1),
      &                 0.,24.,'F','Start',IER)
@@ -546,7 +510,7 @@ C jmq:
      &                             cfgsf(i,3),nterm
            CALL EASKS(HOLD,' maximum, minimum, frequency ',
      &     ' for square/tri/saw-tooth functions : ',40,' 1. 0. 1. ',
-     &     'square/tri/saw-tooth functions: max, min, frqy',IER,14)
+     &     'square/tri/saw-tooth functions: max, min, frqy',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsf(i,1),
      &                 -99999.,999999.,'F','Str',IER)
@@ -560,7 +524,7 @@ C jmq:
      &                             cfgsf(i,3),cfgsf(i,4),nterm
            CALL EASKS(HOLD,' vmax, vmin, freq, shift  values for',
      &     ' sine/cosine function : ',40,' 0. 24. 1. -1. ',
-     &     'vmax, vmin, freq, shift',IER,14)
+     &     'vmax, vmin, freq, shift',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsf(i,1),
      &                 -99999.,99999.,'F','Start',IER)
@@ -573,14 +537,11 @@ C jmq:
            if(ier.ne.0)goto 76
           elseif(ifunc.eq.9)then
 
-           H(1)=' The items are essentially the same as required '
-           H(2)=' in a control point sensor. '
-           H(3)=' - Refer ESP-r manual section 3.9 '
   66       WRITE(HOLD,'(3f7.2,a1)')cfgsf(i,1),cfgsf(i,2),
      &                             cfgsf(i,3),nterm
            CALL EASKS(HOLD,' Sensor details for auxiliary ',
      &     ' sensor? ',40,' 1. 0. 1. ',
-     &     ' sensor details for auxiliary sensor',IER,3)
+     &     ' sensor details for auxiliary sensor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsf(i,1),
      &                 -99999.,999999.,'F','1st sen',IER)
@@ -590,16 +551,10 @@ C jmq:
      &                 -99999.,999999.,'F','3rd seb',IER)
            if(ier.ne.0)goto 66
 
-           H(1)=' The scaling factor and the offset value (if any)'
-           H(2)=' are applied to the sensed value as follows:'
-           H(3)='    [SCALING_FACTOR*SENSED_VALUE]+OFFSET '
-           H(4)=' If no scaling factor required, input 1;'
-           H(5)=' If no offset value required, input 0.'
-           H(6)=' - Refer ESP-r manual section 3.9 '
  69        WRITE(HOLD,'(2f7.2,a1)')cfgsf(i,5),cfgsf(i,6),nterm
            CALL EASKS(HOLD,' Scaling factor, and offset',
      &     ' to apply to sensed value: ',40,' 1. 0. 1. ',
-     &     ' offset, Scaling factor',IER,6)
+     &     ' offset, Scaling factor',IER,nbhelp)
            K=0
            CALL EGETWR(HOLD,K,cfgsf(i,5),
      &                 -99999.,999999.,'F','Mult. fact',IER)

@@ -313,9 +313,8 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 #include "e2r_common.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
-      character MODE*1, H*72, VERT*24, KEY*1
+      character MODE*1, VERT*24, KEY*1
 
       dimension VERT(35)
 
@@ -325,6 +324,13 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       integer irif ! loop variable for more than one rif per scene
       
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='whichrif'  ! set for subroutine
+
  1    IER=0
       SELECT=.false.
       delzone=.false.
@@ -400,14 +406,9 @@ C If no selection has been made before exit then return.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text.
-        H(1)='A scene will be selected from those available'
-        if (MODE.EQ.'M'.OR.MODE.EQ.'m') then
-          H(2)='The scene list can be modified by selecting *'
-        else
-          H(2)='  '
-        endif
-        H(3)='The < command selects by index rather than a-z.'
-        CALL PHELPD('scene section',3,'-',0,0,IER)
+        helptopic='scene_selection_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('scene section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Decode from the potentially long list to the zone number via KEYIND.
@@ -479,21 +480,15 @@ C Scene list manipulation.
 
 C Allow a scene to be added or deleted.
         IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
-          H(1)='As with other entities a standard set of add/delete'
-          H(2)='and copy functions is provided. '
+          helptopic='scene_manage_list'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IW=1
           CALL EASKATOG(' ','Action: ','add scene','delete scene',
-     &      'copy scene','cancel',' ',' ',' ',IW,2)
+     &      'copy scene','cancel',' ',' ',' ',IW,nbhelp)
           if(IW.EQ.1)then
             delzone = .false.
-      H(1)='Radiance desktop creates allows the creation of separate'
-      H(2)='scenes each with a specific purpose. A modest scene can be'
-      H(3)='created silently with assumed defaults. '
-      H(4)=' '
-      H(5)='Once you have created a scene you can return to the'
-      H(6)='definition section to update or add detail to the model.'
             CALL EASKABC(' ','Create scene:','silently',
-     &        'interactively','cancel',IWDV,6)
+     &        'interactively','cancel',IWDV,nbhelp)
             if (IWDV.eq.1) then
               call newscene('c')
               cmdact='Create'
@@ -557,8 +552,6 @@ C if MODE='c' (create) then allow all purposes and auto name files.
 
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
-
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -568,9 +561,16 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       dimension IVALS(MCOM)
 
       character cfgroot*24,LCFGF*72
-      character h*72,MODE*1,outs*124
+      character MODE*1,outs*124
       character dname*28,tname*28
       character dname72*72,tname72*72
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='newscene'  ! set for subroutine
 
 C Ask for purpose of scene if new scene.
       if (MODE.eq.'s') then
@@ -600,26 +600,24 @@ c          izone=-1 ! does not seem necessary
 c          izone=-1 ! does not seem necessary
         endif
       elseif (MODE.eq.'a') then
-        H(1)='The purpose of the scene is used when creating the '
-        H(2)='scene description files. It is also used to control'
-        H(3)='the application of Radiance.'
+        helptopic='purpose_of_rif_scene'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ino=0
         idno=1
         call MENUATOL('Select a default scene.',' Default scene',
      &    'a External images','b Internal images','c Glare sources',
      &    'd Daylight factors',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,3)
+     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
         IRP=INO
       else
-        H(1)='The purpose of the scene is used when creating the '
-        H(2)='scene description files. It is also used to control'
-        H(3)='the application of Radiance.'
+        helptopic='purpose_of_rif_scene'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ino=0
         idno=1
         call MENUATOL('Select a scene purpose.',' Scene purpose',
      &    'a External images','b Internal images','c Glare sources',
      &    'd Daylight factors','e Coupling','f Daylight coefficients',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,3)
+     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
         IRP=INO
       endif
 
@@ -649,11 +647,11 @@ C Now ask for zone for internal and glare purposes.
       if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.4 .or.
      &                  IRP.eq.5 .or.IRP.eq.6) then
         if (IZONE.le.0) then
-          H(1)=' Pick a zone as the focus zone for the Radiance'
-          H(2)=' internal image calculations.'
+          helptopic='pick_zone_for_int_view'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  30       INPIC=1
           CALL EPICKS(INPIC,IVALS,' ',' Pick a focus zone: ',
-     &        12,NCOMP,zname,' zone list',IER,2)
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
           if (INPIC.eq.0) goto 30
           ifocz=IVALS(1)
         else
@@ -799,25 +797,20 @@ C If not in silent mode then confirm names with user.
       if (MODE.eq.'-') then
 
 C Ask for scene name.
- 5      H(1)='Many Radiance models may be created for a given ESP-r '
-        H(2)='thermal model. Each of these Radiance models is called'
-        H(3)='a scene, e.g. one scene may be of the buildings '
-        H(4)='exterior and another could be an internal image of a'
-        H(5)='zone. Each scene can have multiple viewpoints.'
+ 5      helptopic='e2r_new_scene_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         tname=SCENE(ISCENE)
         dname=SCENE(ISCENE)
-        CALL EASKS(tname,'Scene name? ',' ',28,dname,'scene name',IER,5)
+        CALL EASKS(tname,'Scene name? ',' ',28,dname,
+     &    'scene name',IER,nbhelp)
         IF(tname(1:2).EQ.'  ') GOTO 5
         SCENE(ISCENE)=tname
 
 C Ask for root name and use this for rif name.
- 15     H(1)='The scene prefix (one word) is used in the creation of'
-        H(2)='the rif file name and as a root name for the description,'
-        H(3)='view, octree and image files. '
-        tname=SCENERT(ISCENE)
+ 15     tname=SCENERT(ISCENE)
         dname=SCENERT(ISCENE)
-        CALL EASKS(tname,'Scene root name?',' ',28,dname,'root name',
-     &    IER,3)
+        CALL EASKS(tname,'Scene root name?',' ',28,dname,
+     &    'root name',IER,nbhelp)
         IF(tname(1:2).EQ.'  ') GOTO 15
         SCENERT(ISCENE)=tname
         do 67 irif= 1,NBSRIF(ifocz,iscene)
@@ -826,12 +819,10 @@ C Ask for root name and use this for rif name.
  67     continue
 
 C Ask for additional description.
- 25     H(1)='The description is used as an additional aide to'
-        H(2)='identify a scenes contents.'
-        tname72=SCENEDESC(ISCENE)
+ 25     tname72=SCENEDESC(ISCENE)
         dname72=SCENEDESC(ISCENE)
-        CALL EASKS(tname72,' Description ? ',' ',72,
-     &                                    dname72,'scene desc',IER,2)
+        CALL EASKS(tname72,'Description of the scene?',' ',72,
+     &    dname72,'scene desc',IER,nbhelp)
         IF(tname72(1:2).EQ.'  ') GOTO 25
         SCENEDESC(ISCENE)=tname72
       endif
@@ -851,20 +842,21 @@ C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
 
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
+      CHARACTER pfile*72
 
-      CHARACTER H*72,pfile*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDSCENE'  ! set for subroutine
 
 C Ask if a default image should be created.
-      H(1)='Radiance desktop creates allows the creation of separate'
-      H(2)='scenes each with a specific purpose. A modest scene can be'
-      H(3)='created silently with assumed defaults. '
-      H(4)=' '
-      H(5)='Once you have created a scene you can return to the'
-      H(6)='definition section to update or add detail to the model.'
+      helptopic='create_scene_interactive'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC('This is a new visualisation.',
-     &        'Create scene:','silently','interactively',
-     &        'cancel',IWDV,6)
+     &  'Create scene:','silently','interactively',
+     &  'cancel',IWDV,nbhelp)
       if(IWDV.eq.1)then
 
 C Check for command line information.
@@ -909,7 +901,6 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -920,11 +911,18 @@ C if MODE is not - then sensor points file name confirmation required.
 
       COMMON/RAY6/LINSTY(MCON)
 
-      character h*72,DESCRC*25
+      character DESCRC*25
       character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='setdfgrid'  ! set for subroutine
 
 C New grid so set number of grid points to zero.
       NDFP=0
@@ -934,13 +932,13 @@ C Remember current graphics display options.
 
 C Ask for zone (if not defined), surface and working plane height.
       if (IZONE.le.0) then
-        H(1)=' Pick a zone as the focus zone for the Radiance'
-        H(2)=' daylight factor calculations.'
+        helptopic='select_zone_for_df'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  32     INPIC=1
         CALL EPICKS(INPIC,IVALS,
-     &        'Generate daylight factors for which zone. ',
-     &        '(You will then be asked to grid a surface.) ',
-     &        12,NCOMP,zname,'Select zone',IER,2)
+     &    'Generate daylight factors for which zone. ',
+     &    '(You will then be asked to grid a surface.) ',
+     &    12,NCOMP,zname,'Select zone',IER,nbhelp)
         if (INPIC.eq.0) goto 32
         ifocz=IVALS(1)
         nzg=1
@@ -970,19 +968,14 @@ C Ask for surface and highlight.
       CALL ADJVIEW(IER)
       CALL INLNST(1)
 
-      H(1)='The grid points on the chosen surface can be '
-      H(2)='transformed along the surface normal to give points in'
-      H(3)='a parallel plane.  This is useful for calculating'
-      H(4)='daylight factors on the working plane.'
-      H(5)='The grid can be transformed to the inside or outside'
-      H(6)='of the surface, and must be at least 1mm from the'
-      H(7)='surface.'
+C Setup help for the next few dialogs.
+      helptopic='distance_to_df_grid'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       WPDIST=0.9
       CALL EASKR(WPDIST,' Distance of grid from surface ? ',' ',0.001,
-     &                          'F',2.5,'W',0.9,'grid transform',IER,7)
-      H(1)='The grid can be transformed to the inside or outside'
-      H(2)='of the surface.  The default is inside.'
-      call EASKAB('Transform grid to: ',' ','Inside','Outside',IW,2)
+     &  'F',2.5,'W',0.9,'grid transform',IER,nbhelp)
+      call EASKAB('Transform grid to: ',' ','Inside','Outside',
+     &  IW,nbhelp)
       if (IW.eq.1) then
         dirf=-1.
       else
@@ -1002,12 +995,10 @@ C Generate a list of edges. JVN(MS,MV)
       NI=NI+1
       write(ITEM(NI),'(2(a,i3))')'edge v',JVN(IS,NI),'->v',JVN(IS,1)
  12   INPIC=1
-      H(1)='The grid will be formed in rows parallel '
-      H(2)='to the selected edge.'
       CALL EPICKS(INPIC,ITEMV,
-     &        'Select an edge (defined by vertex numbers). ',
-     &        'The grid will be parallel to this edge. ',
-     &        15,NI,ITEM,'Select edge',IER,2)
+     &  'Select an edge (defined by vertex numbers). ',
+     &  'The grid will be parallel to this edge. ',
+     &  15,NI,ITEM,'Select edge',IER,nbhelp)
       if (INPIC.eq.0) goto 12
 
 C Translate edge selection into vertex numbers.
@@ -1020,26 +1011,16 @@ C Translate edge selection into vertex numbers.
       endif
 
 C Grid density.
-      H(1)=' A bounding box is created for the selected surface.'
-      H(2)=' The grid is specified by intersection points of lines'
-      H(3)=' parallel and perpendicular to the selected edge.'
-      H(4)=' The grid lines are equally spaced, starting half the'
-      H(5)=' width of a space from the edge, e.g. '
-      H(6)= '      ||     |          |'
-      H(7)= '      ||     |          |'
-      H(8)= '      ||<--->|<-------->|'
-      H(9)= '      || x/2 |     x    |'
-      H(10)='      ||     |          |'
-      H(11)='     edge    |          grid line 2'
-      H(12)='           grid line 1'
+      helptopic='df_grid_density'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Major grid lines are parallel with the selected edge.
       igmajor=4
       igminor=6
       write (t12,'(2i4)') igmajor,igminor
  25   CALL EASKS(t12,'Grid density? (First item is number of grid',
-     &      'points in the rows parallel to the chosen edge.) ',
-     &      12,' 2  2','grid density',IER,12)
+     &   'points in the rows parallel to the chosen edge.) ',
+     &   12,' 2  2','grid density',IER,nbhelp)
       K=0
       CALL EGETWI(t12,K,igmajor,1,25,'W','grid lines',IER)
       CALL EGETWI(t12,K,igminor,1,25,'W','grid lines',IER)
@@ -1057,10 +1038,9 @@ C Calculate grid points.
 C Get file name for grid points.
       write (LDFGRID,'(a,a4)') 
      &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
-      H(1)=' Supply a local file name (i.e. without a path).'
       if (MODE.eq.'-') then
  55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
-     &    ' ',72,'points.grd','df points file name',IER,1)
+     &    ' ',72,'points.grd','df points file name',IER,nbhelp)
         IF(LDFGRID.EQ.' ') GOTO 55
       endif
 

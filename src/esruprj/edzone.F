@@ -490,13 +490,23 @@ C Find co-planer surfaces and edges of similar materials.
 
 C Update the global coordinates for this zones surfaces so that
 C the subsequent wireframe image can be drawn and the bounds of
-C the zone can be calculated.
+C the zone can be calculated. Also instanciate nznver and nzjvn
+C for the new zone (as is done in subroutine zdata).
       DO 40 J=1,NZTV(ICOMP)
         VCOORD(ICOMP,J,1)=X(J)
         VCOORD(ICOMP,J,2)=Y(J)
         VCOORD(ICOMP,J,3)=Z(J)
    40 CONTINUE
- 
+      DO 50 J=1,nzsur(ICOMP)
+        icc=IZSTOCN(icomp,j)
+        if(icc.ne.0)then
+          NZNVER(icc)=NVER(J)
+          N = NVER(J)
+          DO 60 K=1,N
+            NZJVN(icc,K)=JVN(J,K)
+   60     CONTINUE
+        endif
+   50 continue
 C Save this to file before passing into the geometry editing facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(igupgrade.eq.2.and.(.NOT.newgeo))then

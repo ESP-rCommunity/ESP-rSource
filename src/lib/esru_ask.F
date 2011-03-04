@@ -679,3 +679,388 @@ C Recover previous help via dh array.
       return
       end
 
+C test subroutinhe to capture help text from external file (to be
+C found in the ESP-r distribution lib folder) with file ending
+C of *.help
+      subroutine gethelptext(sub,topic,nbhelp)
+#include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      character sub*24   ! subroutine name
+      character topic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+C Commons.
+      integer ifil
+      COMMON/FILEP/IFIL
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      logical unixok
+      integer ln,lna,lnf   ! length of install path, app name app folder
+      integer lns,lnt,lnhl ! length of subroutine, topic, helpline
+      integer lno          ! length of outstr
+      integer K            ! position
+      character helpfil*72 ! the help file to load
+      character folder*8   ! the source folder for the application
+      character WORD*32    ! a token to read
+      character outstr*124 ! for help phrases
+      character outs*124 ! for messages
+      character helpline*72 ! line of help text
+      character sq*1        ! single quote
+      character fs*1
+      logical havesub       ! set true if subroutine matches
+      logical havetopic     ! set true if topic matches
+      character app*24      ! application name (local)
+#include "espinstalldir.h"
+
+C Get to work.
+      app = helpinapp      ! set local app
+      call isunix(unixok)  ! which folder separator to use
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      ln=lnblnk(instpath)  ! where is ESP-r installed
+      lna=lnblnk(app)      ! length of app name
+      if(app(1:3).eq.'aco')then
+        folder='esruaco'
+      elseif(app(1:3).eq.'clm')then
+        folder='esruclm'
+      elseif(app(1:3).eq.'bps')then
+        folder='esrubps'
+      elseif(app(1:3).eq.'dbm')then
+        folder='esrudbm'
+      elseif(app(1:3).eq.'dfs')then
+        folder='esrudfs'
+      elseif(app(1:3).eq.'e2r')then
+        folder='esrue2r'
+      elseif(app(1:3).eq.'eco')then
+        folder='esrueco'
+      elseif(app(1:3).eq.'grd')then
+        folder='esrugrd'
+      elseif(app(1:3).eq.'ish')then
+        folder='esruish'
+      elseif(app(1:3).eq.'mfs')then
+        folder='esrumfs'
+      elseif(app(1:3).eq.'mld')then
+        folder='esrumld'
+      elseif(app(1:3).eq.'mrt')then
+        folder='esrumrt'
+      elseif(app(1:3).eq.'net')then
+        folder='esrunet'
+      elseif(app(1:3).eq.'pdb')then
+        folder='esrupdb'
+      elseif(app(1:3).eq.'res')then
+        folder='esrures'
+      elseif(app(1:3).eq.'vew')then
+        folder='esruvew'
+      endif
+      lnf=lnblnk(folder)   ! length of folder name
+      lns=lnblnk(sub)      ! length of subroutine
+      lnt=lnblnk(topic)    ! length of topic
+      sq=char(39)   ! assign single quote
+
+C Assume that the installer has placed the help text file in the
+C distribution lib folder.
+      write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
+     &  '.help'
+      if(folder(1:7).eq.'esrubps')then
+        ihfil=ifil+8              ! set file unit number for bps
+      elseif(folder(1:7).eq.'esrures')then
+        ihfil=ifil+8              ! set file unit number for res
+      else
+        ihfil=ifil+2              ! set file unit number
+      endif
+      CALL ERPFREE(ihfil,ISTAT) ! free it
+      CALL EFOPSEQ(ihfil,helpfil,1,IER)
+      if(ier.ne.0)then
+        call edisp(iuout,'Could not find help text file.')
+        call edisp(iuout,helpfil)
+        nbhelp=-1
+        return
+      endif
+
+      nbhelp=0  ! set initial assumption
+      havesub= .false.
+      havetopic= .false.
+
+C Check the header to see if this is a help text file.
+      read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan header
+      if(ios.ne.0) goto 1   ! jump if EOF
+      K=0
+      CALL EGETW(outstr,K,WORD,'W','*help_text',IER)
+      if(WORD(1:10).ne.'*help_text')then
+        call edisp(iuout,'Not a help text file.')
+        call edisp(iuout,helpfil)
+        goto 1
+      endif
+      CALL EGETW(outstr,K,WORD,'W','application',IER)
+      if(WORD(1:lna).ne.app(1:lna))then
+        write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
+        call edisp(iuout,outs)
+        goto 1
+      endif
+
+C If we reached this point then we can go looking for a
+C subroutine and topic match on each new line.
+      scan: do
+        read(ihfil,'(a)',IOSTAT=IOS,ERR=1) outstr   ! scan line
+        if(ios.ne.0)  exit scan   ! jump if EOF
+        lno=lnblnk(outstr)
+        if(lno.le.1) cycle  ! jump if a blank line
+
+        if(outstr(1:1).eq.'*')then  ! we had a key phrase
+          K=0
+          CALL EGETW(outstr,K,WORD,'W','*item',IER)
+          if(WORD(1:5).eq.'*item')then
+            CALL EGETW(outstr,K,WORD,'W','subroutine',IER)
+            if(WORD(1:lns).eq.sub(1:lns))then
+
+C We have a matching subroutine name remember this and if
+C there are still more characters in the line then it
+C probably is a topic.
+              havesub = .true.  ! set true subroutine matches
+              if(K.le.lno)then
+                CALL EGETW(outstr,K,WORD,'W','topic',IER)
+                if(WORD(1:lnt).eq.topic(1:lnt))then
+                  havetopic = .true.     ! set true topic matches
+                  cycle   ! keep scanning
+                else
+                  cycle   ! keep scanning
+                endif
+              else
+                cycle   ! keep scanning
+              endif
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:8).eq.'*enditem')then
+
+C Reached end of item exit scan, if this was the correct sub and topic then
+C set number of help lines.
+            if(havesub.and.havetopic)then
+              CALL ERPFREE(ihfil,ISTAT) ! free it
+              return
+            else
+              cycle  ! keep scanning
+            endif
+          elseif(WORD(1:6).eq.'*topic')then
+
+C In case there are some old *topic lines in the help f
+            if(lno.le.7) cycle  ! jump if no other token
+            K=7
+            CALL EGETW(outstr,K,WORD,'W','topic',IER)
+            if(WORD(1:lnt).eq.topic(1:lnt))then
+              havetopic = .true.     ! set true topic matches
+              cycle   ! keep scanning
+            else
+              cycle   ! keep scanning
+            endif
+          elseif(WORD(1:11).eq.'*subroutine')then
+            cycle   ! keep scanning
+          endif
+
+        elseif(outstr(1:1).eq.sq)then
+
+C We have a line that starts with a quote. If we have reached the
+C correct topic then read it otherwise scan another line.
+          if(havesub.and.havetopic)then
+            K=0
+            call EGETDQ(outstr,K,helpline,'W','phrase',IER)
+            lnhl=lnblnk(helpline)
+C Debug (to text feedback).
+C            call edisp(iuout,helpline)
+            nbhelp=nbhelp+1
+            if(lnhl.le.1)then
+              h(nbhelp)='  '
+            else
+              write(h(nbhelp),'(a)') helpline(1:lnhl)
+            endif
+            cycle   ! keep scanning
+          else
+            cycle   ! keep scanning
+          endif
+        else
+ 
+C Does not match expectations.
+          cycle   ! keep scanning
+        endif
+      end do scan
+
+C The end of file reached. If there has not been a match make up a
+C standard message.
+  1   close(ihfil)
+      if(havesub.and.havetopic)then
+        return
+      else
+        h(1)='No contextual help text was found for the topic'
+        write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &    ' of application ',app(1:lna)
+        nbhelp=2
+        return
+      endif
+
+      end
+
+C subroutine to generate line of help text for an integer dialog
+C in terms of default and current value. 
+      subroutine helpcurrentint(idef,icur,ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      integer idef         ! default value for this number
+      integer icur         ! current value
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      integer iw2,iw1      ! length of two integers
+      character outs*124 ! for messages
+      CHARACTER STR1*10,STR2*10
+
+C Get to work.
+      CALL INTSTR(icur,STR2,IW2,IER)
+      CALL INTSTR(idef,STR1,IW1,IER)
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp+1
+        WRITE(H(nbhelp+1),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=2
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 'helpcurretint: permission error composing help.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'helpcurretint: error composing help.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+
+C subroutine to generate line of help text for an real dialog
+C in terms of default and current value. 
+      subroutine helpcurrentreal(def,cur,ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      real def         ! default value for this number
+      real cur         ! current value
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      integer iw2,iw1      ! length of two integers
+      character outs*124 ! for messages
+      CHARACTER STR1*16,STR2*16
+
+C Get to work.
+      CALL REL16STR(def,STR1,IW1,IER)
+      CALL REL16STR(cur,STR2,IW2,IER)
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp+1
+        WRITE(H(nbhelp+1),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=2
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &    'helpcurrentreal: permission error composing help.'
+        call edisp(iuout,outs)
+      else
+        write(outs,*) 'helpcurrentreal: error composing help.'
+        call edisp(iuout,outs)
+      endif
+      return
+      end
+
+C subroutine to generate line of help text for an string dialog
+C if no lines of help have been defined in the calling code. 
+      subroutine helpwithblank(ermsg,nbhelp,newnbhelp,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters.
+      CHARACTER*(*) ERMSG  ! error message from dialog
+      integer nbhelp       ! original nb of help lines
+      integer newnbhelp    ! number of help lines after additional line(s)
+      integer ier          ! zero is ok
+
+C Commons.
+      character h*72
+      common/pophelp/h(60)
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Local variables.
+      integer ln           ! length of error message
+      character outs*124 ! for messages
+
+C Get to work.
+      IF(nbhelp.GT.0)THEN
+        newnbhelp=nbhelp  ! nothing to do
+      ELSE
+        LN=max(1,LNBLNK(ERMSG))
+        newnbhelp=1
+        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
+   64   FORMAT('No help available for ',a,'!')
+      ENDIF
+
+      return
+
+   1  if(IOS.eq.2)then
+        write(outs,*) 
+     &    'helpwithblank: permission error composing help.'
+        call edisp(iuout,outs)
+        ier=2
+      else
+        write(outs,*) 'helpwithblank: error composing help.'
+        call edisp(iuout,outs)
+        ier=1
+      endif
+      return
+      end

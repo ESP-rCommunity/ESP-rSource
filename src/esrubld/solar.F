@@ -3210,7 +3210,6 @@ c         receiving internal surfaces.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3231,9 +3230,16 @@ C Shading file record width found in mzshin.
 
       CHARACTER*72 LS
       DIMENSION ISS(12),ISADD(12)
-      character outs*124,h*72
+      character outs*124
       logical OK,dok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZSHDO'  ! set for subroutine
 
 c Determine current month number.
       CALL EDAYR(IYRD,ID,IM)
@@ -3338,11 +3344,10 @@ c applied to zone with which error is associated.
 
     3   call edisp(iuout,' ')
         dok=.true.
-        h(1)='Ignoring shading can alter performance predictions.'
-        h(2)='Exercise care when continuing with the current model.'
-        h(3)='SUGGEST - recalculate shading for whole year. '
+        helptopic='ignore_shading_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Continue the simulation and assume zero ',
-     &           ' shading with default plane insolation?',OK,dok,3)
+     &    ' shading with default plane insolation?',OK,dok,nbhelp)
         IF(OK)goto  9
 
 c Terminate simulation.
@@ -3568,9 +3573,6 @@ C site.h has common C5
 
       INTEGER IFIL      ! Unit number used for processing input/output files      
       COMMON/FILEP/IFIL
-
-      common/pophelp/h(60)
-      CHARACTER H*72
       
 C Local variables      
       CHARACTER OUTS*124
@@ -3581,6 +3583,13 @@ C Local variables
       INTEGER IFILSN    ! unit number associated with snow depth ascii file
       INTEGER ISTAT
       INTEGER IBINSN    ! unit number associated with binary file
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PPGREF'  ! set for subroutine
 
 C Set default error code and return if not advanced albedo model
       IER=0
@@ -3593,15 +3602,14 @@ C ERROR IF CANNOT BE FOUND
         DO WHILE(.NOT.FOUND)
           dok=.true.
           WRITE(OUTS,'(A,A)') 'Could not find snow depth file: ',SNFNAM
-          H(1)='The snow depth file contains hourly values '
-          H(2)='of snow depth. Data should be in a one-column '
-          H(3)='ASCII file, containing snow depth expressed in '
-          H(4)='cm for all 8760 hours of the year. '
+          helptopic='snow_depth_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(OUTS, 
-     &    ' Respecify? (simulator will exit if [no]!)',OK,DOK,4)
+     &      ' Respecify? (simulator will exit if [no]!)',
+     &      OK,DOK,nbhelp)
           IF (OK) THEN
             CALL EASKS(SNFNAM,'Enter name of snow depth file',
-     &        ' ',72,' ','Snow depth file',IER,4)
+     &        ' ',72,' ','Snow depth file',IER,nbhelp)
             CALL FINDFIL(SNFNAM,FOUND)
           ELSEIF(.NOT.OK) THEN
             call tstamp('>','SIM: snow depth file cannot be found')

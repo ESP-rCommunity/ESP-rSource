@@ -45,7 +45,6 @@ C for all other variables is achieved.
 #include "cfd.h"
 
       common/outin/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/ICFCHN/ICFMON,ICFTMP,ICFLIB
@@ -101,23 +100,30 @@ C Common blocks for blockages and small supply openings
       common/blksso/NBLK(MNZ),INBLK(MNVLS,MNZ),NSSO(MNZ),
      &          INSSO(MNVLS,MNZ)
 
-      character LRES(4)*24,LMON(4)*24,h*72
+      character LRES(4)*24,LMON(4)*24
 
       DIMENSION CRES(4),CMON(4)
 
       LOGICAL OK,DOK,LINVOL
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CALCLMA'  ! set for subroutine
+
       call edisp(iuout,
-     &           'Initiating calculation of local mean age of air')
+     &  'Initiating calculation of local mean age of air')
      
 C If there is no mass flow coming in the room (e.g. only natural 
 C convection), there is no reason to calculate LMA: 
-       IF(FLWIN.lt.0.0000001) THEN 
+      IF(FLWIN.lt.0.0000001) THEN 
          call edisp(iuout,'There are no flows into the domain!')
          call edisp(iuout,'Cannot proceed with calculation.')
 C <<Initialize LMA - subroutine INIT in cfcalc.F, add common there>> 
 C <<change dfd-file and start this subroutine after finising calculations>> 
-       RETURN
+        RETURN
       ENDIF
 
 C It is usefull to have a stronger criterion for LMA: 
@@ -396,11 +402,10 @@ C      if (RESORL.lt.SRMAX(ICFD).and.NITER.gt.5) goto 99
 
 C Check max iters.
       dok=.true.
-      h(1)='Based on the convergence criteria you gave the solution'
-      h(2)='reached the iteration limit before convergence. If you '
-      h(3)='do not accept the solution more iterations will be tried.'
+      helptopic='dfs_convergence_accept'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK('Maximum iterations reached,','accept solution?',
-     &   OK,dok,3)
+     &   OK,dok,nbhelp)
       if (.not.OK) goto 999
 
   99  RETURN

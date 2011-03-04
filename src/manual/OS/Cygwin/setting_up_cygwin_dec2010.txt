@@ -1,8 +1,8 @@
 
  
- Installing cygwin for ESP-r use on a W2K/WXP computer.
+ Installing cygwin for ESP-r use on a WXP computer.
  
-                 May 2009 version
+                 Dec 2010 version
  
  1.0 Introduction:
  
@@ -23,7 +23,7 @@
  The document also discusses how to install ESP-r once Cygwin
  has been setup. There are two options: install from a 
  precompiled distribution downloaded from the
- University of Strathclyde ftp server, or install from
+ University of Strathclyde ESRU web site, or install from
  source. 
  
  Setting up cygwin requires several steps and the use of commands 
@@ -31,7 +31,9 @@
  want to jump into that jungle and get your fingers bitten off
  then you will  not  want to read the sections that follow. You
  would probably also want to skip the information on the Cygwin
- web site at <http://www.cygwin.com>.
+ web site at <http://www.cygwin.com>. Cygwin can be used with 
+ Windows XP and Vista and there are reports that it works ok
+ on Windows 7. 
  
  1.1 Before you download and install cygwin:
  
@@ -54,7 +56,7 @@
  cygwin to packages needed to develop ESP-r then you will need
  ~1.6GB of disk space. If you take a minimum
  cygwin that is sufficient to run ESP-r then you will need
- ~1GB of free space for cygwin. You will need ~400 MB
+ ~1GB of free space for cygwin. You will need ~500 MB
  for ESP-r and Radiance.
  
  The install process tends to present fewer hassles if you
@@ -130,8 +132,7 @@
 		go into the list and remove the Qt development files along
 		with Ada compiler and Pascal compiler
 		
-		you will want both the gcc3.4/g77 as well as the
-		version 4 gcc g++ with gfortran
+		you will want the gcc4 versions of gcc g++ and gfortran
 		
   Doc:          optional but at least get the man pages and xpdf
   Editors:      at least nedit, vim & midnight commander
@@ -202,7 +203,7 @@
  sorting out the post-install so do not give up!
  
  Once Cygwin is installed you can move on to the 2nd stage of 
- installing ESP-r and Radiance.
+ installing ESP-r.
  
  After login into the PC as Administrator (suggested), click on the Cygwin 
  icon on your desktop to start up a cygwin window. This emulates a Linux
@@ -220,11 +221,11 @@
  
  1.5 Installing ESP-r by downloading a precompiled version
  
- If downloading from the ftp site <ftp://ftp.strath.ac.uk> as
- user anonymous and with your email address as the password. Go
- to Esru_public and look for the Cygwin folder. Download the
+ If downloading from the ESRU web site download page at
+ http://www.strath.ac.uk/esru. Go to the software -> ESP-r
+ and look for downloads and the Cygwin section. Download the
  file ending in .run as well as any readme files to the
- /tmp folder of Cygwin.
+ /tmp folder of your Cygwin environment.
 
  Read the readme file(s) and then (typically as Administrator) 
  run the installer script(the file ends with .run). This will 
@@ -259,14 +260,15 @@
  now available via a subversion server (source code control). 
 
  Instructions for its use can be found on the ESP-r web page
- <http://www.esru.strath.ac.uk>
- Unless you are part of the ESP-r development team you will probably
- want to use the 'export' command rather than 'checkout'.
+ <http://www.esru.strath.ac.uk/Programs/ESP-r.htm> and look for
+ ESP-r Central. Unless you are part of the ESP-r development 
+ team you will probably want to use the svn 'export' command 
+ rather than svn 'checkout'.
 
  Once you have the source code have a look at the Readme file. 
  There is an install script which can be invoked via the command
 
-   ./Install -d /usr/esru --gcc4
+   ./Install -d /usr/esru --gcc4 --reuse_ish_calcs
 
  and if you want to find out what the install options are
 
@@ -303,17 +305,13 @@
  
  1.8 Radiance install:
  
- The precompiled ESP-r distributions include a precompiled
+ The precompiled ESP-r distributions no longer include a precompiled
  Radiance version 3.5 as part of the normal install process.
  
- It is also possible to compile Radiance in the cygwin 
+ It is possible to compile Radiance in the cygwin 
  environment. Note that the tiff related modules tend not to 
  compile, but none of these is essential for use with ESP-r. 
  Out-of-the-box (e.g. a fresh download of the standard
- Radiance distribution will mostly likely fail in several 
- places). You will have to manually copy quite a few of the 
- executables and shell scripts to their proper location and
- for this reason we recommend using the precompiled version
- from the ESRU download site.
+ Radiance distribution may lack the gendaylit application.
  
  

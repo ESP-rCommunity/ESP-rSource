@@ -1,7 +1,6 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
@@ -110,7 +109,7 @@ filelist.F:
 	ln -s $(COMdir)/filelist.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 inside.F:
 	rm -f inside.F
 	ln -s $(MRTdir)/inside.F .

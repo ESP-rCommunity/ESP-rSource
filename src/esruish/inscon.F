@@ -51,7 +51,6 @@ C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/filep/ifil
 
       common/mtfile/ltrns,multic,mons,monf
@@ -61,18 +60,23 @@ C                 in common.
 
       dimension month(12),iavdec(12)
       character paction*16
-      character*72 h
       character month*3,outs*124,tbase*72,ltrns*72,act*1
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc
       integer ier
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
+      helpinsub='inscon'  ! set for subroutine
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
       
@@ -91,6 +95,10 @@ C for warning if update_silent or useupdate_silent.
           return
         endif
       endif
+
+C Make up help text for following dialogs.
+      helptopic='inscon_actions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
     
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
@@ -109,11 +117,9 @@ C from the zone geometry file.
                call edisp(iuout,'No insolation sources - skipping!')
                return
             else
-               h(1)='Surfaces that are sources of sunlight must be'
-               h(2)='selected or the computations cannot be performed.'
                dok=.true.
                call askok('No surfaces specified!','Re-specify?',
-     &                       ok,dok,2)
+     &           ok,dok,nbhelp)
      
 C Use a 2nd call to findtmc to allow the user to select different surfaces.
                if(ok)goto 4
@@ -129,15 +135,11 @@ C Establish calculation period.
          monf=12
          mon=mons
       else
-         h(1)='An integer value between 1 and 12. For each month a'
-         h(2)='24 hour calculation of internal surface insolation'
-         h(3)='distribution will be undertaken for the day of average'
-         h(4)='solar declination.'
          call easki(mons,' ','Start month number?',
-     &              1,'F',12,'F',1,'start month',ier,0)
+     &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
          call easki(monf,' ','End month number?',
-     &              mons,'F',12,'F',1,'end month',ier,0)
+     &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
          mon=mons
       endif

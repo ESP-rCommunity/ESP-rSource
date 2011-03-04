@@ -39,7 +39,6 @@ C CFCALC - CFD solution manager.
 #include "cfd.h"
 #include "building.h"
 
-      COMMON/POPHELP/H(60)
       common/outin/iuout,iuin
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -118,7 +117,7 @@ C CFCALC - CFD solution manager.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/btime/btimep,btimef
 
-      CHARACTER LRES(4)*24,LMON(4)*24,POLNAM*12,LCFD*72,H*72
+      CHARACTER LRES(4)*24,LMON(4)*24,POLNAM*12,LCFD*72
       character VOLNAME*12,VCsurf*12,wkd1*10,wkd2*10,OUT*72
 
       DIMENSION CRES(4),CMON(4)
@@ -131,6 +130,13 @@ C CFCALC - CFD solution manager.
       LOGICAL CALPOL,CALLMA
       LOGICAL areaSSO,gophrun,INCALPOL
       logical unixok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFCALC'  ! set for subroutine
 
       NITER=0
       DT=TSTEP
@@ -538,19 +544,16 @@ C Check convergence.
 C        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10)THEN
         IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10.and.NOSTOP.eq.0)THEN
 
-C Help message (unindented)
-      H(1) = 'If mass residual is maximum and velocity residuals are'
-      H(2) = 'close to convergence criterion then selecting OK here'
-      H(3) = 'is usually the best option for convergence'
-      H(4) = 'Selecting OK will decrease the velocity URFs (under '
-      H(5) = 'relaxation factors) by 25% and iterate 10 more times.'
-      H(6) = 'This will be repeated 10 times'
+C Help message (unindented) for next two dialogs.
+          helptopic='dfs_mass_residual'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C If mass residual is maximum
           CALL ECLOSE(resorm,sorce,0.01,closer)
           IF(CLOSER)THEN
-          CALL ASKOK('Mass residual is max do you want to lower velocity
-     &',  'URFs and do more iterations (see help)?',MKURFL,DOK,6)
+          CALL ASKOK(
+     &     'Mass residual is max do you want to lower velocity',
+     &     'URFs and do more iterations (see help)?',MKURFL,DOK,nbhelp)
           ENDIF
           IF(MKURFL)THEN
             WRITE(OUT,'(A,I4,A)')'Solution did not converge in ',
@@ -569,18 +572,11 @@ C If mass residual is maximum
             ENDIF
           ENDIF
 
-C Help Message (unindented)
-      H(1) = 'Regardless of mass residual if velocity residuals are '
-      H(2) = 'significantly high it may be useful to either increase'
-      H(3) = 'number of iterations only or lower the velocity URFs '
-      H(4) = '(under relaxation factors) and increase number of '
-      H(5) = 'iterations. Select OK for latter option.'
-      H(6) = 'This lowers the URFs by 25% and does 500 iterations'
-      H(7) = 'It is advisable not to choose OK if velocity residuals'
-      H(8) = 'appear to be decreasing'
           IF(NSPITR.LT.2)THEN
-          CALL ASKOK(' Solution may still converge if velocity URFs are'
-     &,'  lowered and iterating again, Is this OK (see help)?',OK,DOK,8)
+            CALL ASKOK(
+     &        'Solution may still converge if velocity URFs are',
+     &        'lowered and iterating again, Is this OK (see help)?',
+     &        OK,DOK,nbhelp)
             IF(OK)THEN
               CALL EDISP(IUOUT,'Solution has not converged lowering')
               CALL EDISP(IUOUT,'velocity URFs and 500 iterations')
@@ -601,7 +597,7 @@ C If any of the velocity residuals are maximum probably the iterations
 C need to be done again using lower velocity URFs 
           CALL EDISP(IUOUT,'Solution has not converged')       
           CALL ASKOK('It may converge if velocity URFs are lowered',
-     &     ' and iterations done again is this OK?',OK,DOK,8)
+     &      'and iterations done again is this OK?',OK,DOK,nbhelp)
           IF(OK)THEN
             NOMAXIT=MAXIT
             MAXIT=500+MAXIT

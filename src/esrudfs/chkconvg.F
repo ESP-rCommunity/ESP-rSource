@@ -28,7 +28,6 @@ C CHECK -Checks if CFD convergence has been reached.
 #include "cfd.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
 
 C      COMMON/FDTRFC/FLSDTU(MNZ),FLSDTV(MNZ),FLSDTW(MNZ),FLSDTP(MNZ),
 C     &              FLSDTT(MNZ),FLSDTK(MNZ),FLSDTE(MNZ)
@@ -68,10 +67,17 @@ C     &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
 C Parameter "Nostop" gt. 0 overrides "non-convergence" control. Use with care.
       COMMON/MFS/IMFACT,NOSTOP,MITMFS
 
-      CHARACTER word*124,H*72,outs*124,LCFD*72
+      CHARACTER word*124,outs*124,LCFD*72
 
       LOGICAL OK,DOK,CALLU,CALLV,CALLW,CALLT,KEMDL,CONVER,BUOY,CALLC
       LOGICAL ZEROT,ZandKE,MITzero,BOUSSI
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CHECK'  ! set for subroutine
 
 C Solution not converd=ged.  If in adaptive conflation mode increse number 
 C of iterations by 50% (unless this is less than 10% of original number of 
@@ -79,8 +85,8 @@ C iterations).  Write current residuals to ACC file.
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
         write(IACC,*)
         WRITE(IACC,'(a,I6,a)')
-     &        'Convergence has not been achieved after ',
-     &                       MAXIT,' iterations.'
+     &    'Convergence has not been achieved after ',
+     &    MAXIT,' iterations.'
         write(IACC,*)' Current residual values:'
         WRITE(IACC,'(a,1P7E10.3)') '  Mass = ',RESORM
         IF(CALLU(ICFD))THEN
@@ -152,11 +158,10 @@ C dont stop in multi-timestep simulations ...
 C end insertion
 
       dok=.true.
-      h(1)='Based on the convergence criteria you gave the solution'
-      h(2)='did not converge before the iteration limit was reached. '
-      h(3)='If you do not accept it more iterations will be tried.'
+      helptopic='dfs_convergence_accept'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK('Do you accept it as converged solution?',' ',
-     &  OK,dok,3)
+     &  OK,dok,nbhelp)
       IF(OK)THEN
         CONVER=.TRUE.
         return
@@ -164,20 +169,18 @@ C end insertion
 
       dok=.false.
       CALL ASKOK('Would you like to increase the',
-     &           'maximum number of iterations? ',OK,dok,3)
+     &           'maximum number of iterations? ',OK,dok,nbhelp)
       IF(OK)THEN
         IVAL=MAXIT
-        H(1)='Enter new number of maximum number of iterations.'
-        CALL EASKI(IVAL,' ',' New maximum number of iterations (-) ?',
-     &     MAXIT,'F',10000,'F',MAXIT,' Max number of iterations',IER,1)
+        CALL EASKI(IVAL,' ','New maximum number of iterations (-) ?',
+     &    MAXIT,'F',10000,'F',MAXIT,'Max number of iterations',
+     &    IER,nbhelp)
         MAXIT=IVAL
         dok=.true.
-        h(1)='Changing the under-relaxation factors may help the '
-        h(2)='problem to converge.  Generally making the values '
-        h(3)='smaller will help but the solution will take longer '
-        h(4)='to converge. '
-        CALL ASKOK(' Would you like to change linear ',
-     &             ' under-relaxation factors?',OK,dok,4)
+        helptopic='under_relaxation_factor'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Would you like to change linear ',
+     &             'under-relaxation factors?',OK,dok,nbhelp)
         IF(OK)THEN
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,' Current linear under-relaxation factors:')
@@ -214,68 +217,81 @@ C end insertion
           ENDIF
 
           VAL=URFP
-          CALL EASKR(VAL,' ',' P under-relaxation factor (-) ? ',
-     &        0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+          CALL EASKR(VAL,' ','Pressure under-relaxation factor (-)?',
+     &      0.0001,'F',1.0,'F',1.0,'linear under-relaxation',IER,nbhelp)
           URFP=VAL
 C          URFCP(ICFD)=VAL
           IF(CALLU(ICFD))THEN
             VAL=URFU
-            CALL EASKR(VAL,' ',' U under-relaxation factor (-) ? ',
-     &          0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'U (X momentum) under-relaxation factor (-) ?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFU=VAL
 C            URFCU(ICFD)=VAL
           ENDIF
           IF(CALLV(ICFD))THEN
             VAL=URFV
-            CALL EASKR(VAL,' ',' V under-relaxation factor (-) ? ',
-     &          0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'V (Y momentum) under-relaxation factor (-)?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFV=VAL
 C            URFCV(ICFD)=VAL
           ENDIF
           IF(CALLW(ICFD))THEN
             VAL=URFW
-            CALL EASKR(VAL,' ',' W under-relaxation factor (-) ? ',
-     &          0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'W (Z momentum) under-relaxation factor (-) ?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFW=VAL
 C            URFCW(ICFD)=VAL
           ENDIF
           IF(CALLT(ICFD))THEN
             VAL=URFT
-            CALL EASKR(VAL,' ',' T under-relaxation factor (-) ? ',
-     &          0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'T (Energy) under-relaxation factor (-) ?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFT=VAL
 C            URFCT(ICFD)=VAL
           ENDIF
           IF(KEMDL(ICFD))THEN
             VAL=URFK
-            CALL EASKR(VAL,' ',' K under-relaxation factor (-) ? ',
-     &          0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'K (Turb. energy) under-relaxation factor (-) ?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFK=VAL
 C            URFCK(ICFD)=VAL
             VAL=URFE
-            CALL EASKR(VAL,' ',' Epsilon under-relaxation factor (-) ? '
-     &         ,0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',
+     &        'Epsilon (Energy dissip.) under-relaxation factor (-)?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFE=VAL
 C            URFCE(ICFD)=VAL
             VAL=URFVIS
-          CALL EASKR(VAL,' ',' Viscosity under-relaxation factor (-) ? '
-     &        ,0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+          CALL EASKR(VAL,' ','Viscosity under-relaxation factor (-)?',
+     &       0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &       IER,nbhelp)
             URFVIS=VAL
             URFCVS(ICFD)=VAL
           ENDIF
           IF(CALLT(ICFD))THEN
             VAL=URFDEN
-            CALL EASKR(VAL,' ',' Density under-relaxation factor (-) ? '
-     &        ,0.0001,'F',1.0,'F',1.0,' linear under-relaxation',IER,1)
+            CALL EASKR(VAL,' ','Density under-relaxation factor (-)?',
+     &        0.0001,'F',1.0,'F',1.0,'linear under-relaxation',
+     &        IER,nbhelp)
             URFDEN=VAL
 C            URFCD(ICFD)=VAL
           ENDIF
         ENDIF
 
         dok=.false.
-        h(1)='Yet more parameters to change....;-( '
-        CALL ASKOK(' Would you like to change fictitious ',
-     &             ' time-step relaxation factors?',OK,dok,1)
+        CALL ASKOK('Would you like to change fictitious ',
+     &             'time-step relaxation factors?',OK,dok,nbhelp)
         IF(OK)THEN
           CALL EDISP(IUOUT,' ')
           write (outs,'(a,a)') 'Current fictitious time-step ',
@@ -305,47 +321,47 @@ C            URFCD(ICFD)=VAL
           ENDIF
           IF(CALLU(ICFD))THEN
             VAL=FSDTU
-            CALL EASKR(VAL,' ',' U under-relaxation factor (-) ? ',
-     &         1.0E-20,'F',1.0E20,'F',1.0E20, 
-     &         ' fictitions time-step under-relaxation',IER,1)
+            CALL EASKR(VAL,' ',' U under-relaxation factor (-)?',
+     &        1.0E-20,'F',1.0E20,'F',1.0E20, 
+     &        ' fictitions time-step under-relaxation',IER,nbhelp)
             FSDTU=VAL
 C            FLSDTU(ICFD)=VAL
           ENDIF
           IF(CALLV(ICFD))THEN
             VAL=FSDTV
-            CALL EASKR(VAL,' ',' V under-relaxation factor (-) ? ',
+            CALL EASKR(VAL,' ','V under-relaxation factor (-)?',
      &        1.0E-20,'F',1.0E20,'F',1.0E20,
-     &        ' fictitions time-step under-relaxation',IER,1)
+     &        ' fictitions time-step under-relaxation',IER,nbhelp)
             FSDTV=VAL
 C            FLSDTV(ICFD)=VAL
           ENDIF
           IF(CALLW(ICFD))THEN
             VAL=FSDTW
-            CALL EASKR(VAL,' ',' W under-relaxation factor (-) ? ',
-     &         1.0E-20,'F',1.0E20,'F',1.0E20,
-     &         ' fictitions time-step under-relaxation',IER,1)
+            CALL EASKR(VAL,' ','W under-relaxation factor (-)?',
+     &        1.0E-20,'F',1.0E20,'F',1.0E20,
+     &        ' fictitions time-step under-relaxation',IER,nbhelp)
             FSDTW=VAL
 C            FLSDTW(ICFD)=VAL
           ENDIF
           IF(CALLT(ICFD))THEN
             VAL=FSDTT
-            CALL EASKR(VAL,' ',' T under-relaxation factor (-) ?',
-     &         1.0E-20,'F',1.0E20,'F',1.0E20,
-     &         ' fictitions time-step under-relaxation',IER,1)
+            CALL EASKR(VAL,' ','T under-relaxation factor (-)?',
+     &        1.0E-20,'F',1.0E20,'F',1.0E20,
+     &        'fictitions time-step under-relaxation',IER,nbhelp)
             FSDTT=VAL
 C            FLSDTT(ICFD)=VAL
           ENDIF
           IF(KEMDL(ICFD))THEN
             VAL=FSDTK
-            CALL EASKR(VAL,' ',' K under-relaxation factor (-) ?',
-     &          1.0E-20,'F',1.0E20,'F',1.0E20,
-     &          ' fictitions time-step under-relaxation',IER,1)
+            CALL EASKR(VAL,' ','K under-relaxation factor (-)?',
+     &        1.0E-20,'F',1.0E20,'F',1.0E20,
+     &        'fictitions time-step under-relaxation',IER,nbhelp)
             FSDTK=VAL
 C            FLSDTK(ICFD)=VAL
             VAL=FSDTE
-            CALL EASKR(VAL,' ',' Epsilon under-relaxation factor (-) ?'
-     &          ,1.0E-20,'F',1.0E20,'F',1.0E20,
-     &          ' fictitions time-step under-relaxation',IER,1)
+            CALL EASKR(VAL,' ','Epsilon under-relaxation factor (-)?',
+     &        1.0E-20,'F',1.0E20,'F',1.0E20,
+     &        'fictitions time-step under-relaxation',IER,nbhelp)
             FSDTE=VAL
 C            FLSDTE(ICFD)=VAL
           ENDIF
@@ -353,9 +369,8 @@ C            FLSDTE(ICFD)=VAL
       ENDIF
 
       dok=.false.
-      h(1)='Yet more parameters to change...;-('
       CALL ASKOK('Would you like to change the number',
-     &           'of sweeps?',OK,dok,1)
+     &           'of sweeps?',OK,dok,nbhelp)
       IF(OK)THEN
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,' Current number of sweeps:')
@@ -385,48 +400,48 @@ C            FLSDTE(ICFD)=VAL
         ENDIF
 
         IVAL=NSWPP
-        CALL EASKI(IVAL,' ',' P number of sweeps (-) ? ',
-     &         1,'F',10,'F',10,' Number of sweeps',IER,1)
+        CALL EASKI(IVAL,' ','P number of sweeps (-) ?',
+     &    1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
         NSWPP=IVAL
 C        NSSWPP(ICFD)=IVAL
 
         IF(CALLU(ICFD))THEN
           IVAL=NSWPU
-          CALL EASKI(IVAL,' ',' U number of sweeps (-) ? ',
-     &         1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','U number of sweeps (-) ?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPU=IVAL
 C          NSSWPU(ICFD)=IVAL
         ENDIF
         IF(CALLV(ICFD))THEN
           IVAL=NSWPV
-          CALL EASKI(IVAL,' ',' V number of sweeps (-) ? ',
-     &        1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','V number of sweeps (-) ?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPV=IVAL
 C          NSSWPV(ICFD)=IVAL
         ENDIF
         IF(CALLW(ICFD))THEN
           IVAL=NSWPW
-          CALL EASKI(IVAL,' ',' W number of sweeps (-) ? ',
-     &         1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','W number of sweeps (-) ?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPW=IVAL
 C          NSSWPW(ICFD)=IVAL
         ENDIF
         IF(CALLT(ICFD))THEN
           IVAL=NSWPT
-          CALL EASKI(IVAL,' ',' T number of sweeps (-) ? ',
-     &         1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','T number of sweeps (-) ?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPT=IVAL
 C          NSSWPT(ICFD)=IVAL
         ENDIF
         IF(KEMDL(ICFD))THEN
           IVAL=NSWPK
-          CALL EASKI(IVAL,' ',' K number of sweeps (-) ? ',
-     &          1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','K number of sweeps (-) ?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPK=IVAL
 C          NSSWPK(ICFD)=IVAL
           IVAL=NSWPD
-          CALL EASKI(IVAL,' ',' Epsilon number of sweeps (-) ? '
-     &          ,1,'F',10,'F',10,' Number of sweeps',IER,1)
+          CALL EASKI(IVAL,' ','Epsilon number of sweeps (-)?',
+     &      1,'F',10,'F',10,' Number of sweeps',IER,nbhelp)
           NSWPD=IVAL
 C          NSSWPE(ICFD)=IVAL
         ENDIF
