@@ -87,7 +87,7 @@ C assume weekday/sat/sun day types.
             iban(IDV,2)=iban(IDV+1,2)
             iban(IDV,3)=iban(IDV+1,3)
             if(nbcdt(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=nbcdt(IDV+1)
             endif
@@ -124,7 +124,7 @@ C Plant.
             ipan(IDV,2)=ipan(IDV+1,2)
             ipan(IDV,3)=ipan(IDV+1,3)
             if(npcdt(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=npcdt(IDV+1)
             endif
@@ -161,7 +161,7 @@ C Flow.
             ifan(IDV,2)=ifan(IDV+1,2)
             ifan(IDV,3)=ifan(IDV+1,3)
             if(nfcdt(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=nfcdt(IDV+1)
             endif
@@ -205,7 +205,7 @@ C Global.
             igan(IDV,2)=igan(IDV+1,2)
             igan(IDV,3)=igan(IDV+1,3)
             if(ngcdt(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=ngcdt(IDV+1)
             endif
@@ -243,7 +243,7 @@ C Optical.
             ioan(IDV,2)=ioan(IDV+1,2)
             ioan(IDV,3)=ioan(IDV+1,3)
             if(nocdt(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=nocdt(IDV+1)
             endif
@@ -278,7 +278,7 @@ C Complex fenestration.
             iCFCactuator(IDV,2)=iCFCactuator(IDV+1,2)
             iCFCactuator(IDV,3)=iCFCactuator(IDV+1,3)
             if(nCFCctldaytypes(IDV+1).eq.0)then
-              licc=3
+              licc=NBDAYTYPE   ! this follows the calendar
             else
               licc=nCFCctldaytypes(IDV+1)
             endif
@@ -817,7 +817,7 @@ C Copy an existing control loop.
           iban(ncf,2)=iban(ICC,2)
           iban(ncf,3)=iban(ICC,3)
           if(nbcdt(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=nbcdt(ICC)
           endif
@@ -846,7 +846,7 @@ C Copy an existing control loop.
           ipan(ncl,2)=ipan(ICC,2)
           ipan(ncl,3)=ipan(ICC,3)
           if(npcdt(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=npcdt(ICC)
           endif
@@ -875,7 +875,7 @@ C Copy an existing control loop.
           ifan(ncc,2)=ifan(ICC,2)
           ifan(ncc,3)=ifan(ICC,3)
           if(nfcdt(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=nfcdt(ICC)
           endif
@@ -904,7 +904,7 @@ C Copy an existing control loop.
           igan(ngf,2)=igan(ICC,2)
           igan(ngf,3)=igan(ICC,3)
           if(ngcdt(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=ngcdt(ICC)
           endif
@@ -933,7 +933,7 @@ C Copy an existing control loop.
           ioan(nof,2)=ioan(ICC,2)
           ioan(nof,3)=ioan(ICC,3)
           if(nocdt(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=nocdt(ICC)
           endif
@@ -963,7 +963,7 @@ C Copy an existing control loop.
           iCFCactuator(nCFCctlloops,2)=iCFCactuator(ICC,2)
           iCFCactuator(nCFCctlloops,3)=iCFCactuator(ICC,3)
           if(nCFCctldaytypes(ICC).eq.0)then
-            licc=3
+            licc=NBDAYTYPE   ! this follows the calendar
           else
             licc=nCFCctldaytypes(ICC)
           endif
