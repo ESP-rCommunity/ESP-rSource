@@ -4,7 +4,6 @@ COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = e2r$(EXE)

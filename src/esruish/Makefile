@@ -3,7 +3,6 @@ BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = ish$(EXE)

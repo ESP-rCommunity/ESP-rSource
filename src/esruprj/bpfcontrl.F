@@ -3886,7 +3886,7 @@ C Proportional Integral Room controller
         elseif(IPCLAW(II,JJ,KK).eq.16)then
 
 C Outside temperature compensation controller
-          helptopic='plant_outside_compensation'
+          helptopic='plant_outside_comp'
           call gethelptext(helpinsub,helptopic,nbhelp)
           cm(1)=10.
           call edisp(iuout,' ')

@@ -1,16 +1,13 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
-TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
-PRJdir = $(SRCdir)/esruprj
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -51,9 +48,6 @@ ascii_mat.F:
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
 bscoeff.F:
 	rm -f bscoeff.F
 	ln -s $(BLDdir)/bscoeff.F .

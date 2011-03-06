@@ -1732,7 +1732,7 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' '
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL plant_outside_compensation
+*item EPCNTRL plant_outside_comp
 'ESP-r implements a control which can be used to compensate'
 'for outside conditions. It does this by modifying the
 'BDATA parameters of a plant component at simulation runtime.'

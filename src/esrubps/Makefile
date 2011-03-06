@@ -1,13 +1,11 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
 LIBdir = $(SRCdir)/lib

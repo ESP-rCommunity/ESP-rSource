@@ -6,7 +6,6 @@ MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
-TDFdir = $(SRCdir)/esrutdf
 PROG= aco$(EXE)
 
 .SUFFIXES: .o .F
