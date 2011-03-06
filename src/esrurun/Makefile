@@ -38,7 +38,7 @@ $(PROG): $(OBJECTS)
 
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .

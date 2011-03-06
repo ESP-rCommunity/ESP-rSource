@@ -42,6 +42,9 @@ $(PROG): $(OBJECTS)
 anlytc.F:
 	rm -f anlytc.F
 	ln -s $(VLDdir)/anlytc.F .
+arrow.F:
+	rm -f arrow.F
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -253,7 +256,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	anlytc.F aim2_module.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
