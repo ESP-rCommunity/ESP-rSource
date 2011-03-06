@@ -628,33 +628,23 @@
 *enditem
       CALL EASKS248(CSTR,' Start time of each period',
 *subroutine CONTRL
-*item CONTRL
+*item CONTRL sys_ctl_file_name
 'The system control file holds the definition of the'
 'building/plant control systems. The file is optional.'
+'  '
+'If your model already includes a control file then the'
+'dereference option removes knowledge of the file without'
+'removing the file.'
+'  '
 'The browse option presents a list of files in the'
 'project `ctl` folder. If you do not select one then'
 'it is assumed that you do not want any control.'
 'If you cancel then nothing will be changed.'
 *enditem
         CALL EASKS2CMD(LASCI,'Control file? (suggested name)',' ',
-*item CONTRL
-'The system control file holds the definition of the'
-'building/ plant control systems. The file is optional.'
-'The dereference option dereferences the  control file'
-'from your model but does not delete it. Your may'
-'re-establish this control by re-referencing the control'
-'file in a later session.'
-' '
-'The browse option presents a list of files in the'
-'project `ctl` folder. If you do not select one then'
-'it is assumed that you do not want any control.'
-'If you cancel then nothing will be changed.'
-*enditem
         CALL EASKS2CMD(LASCI,'Control file? (see help)',
-*item CONTRL
-*enditem
         CALL EASKAB(' File not found.','Options:',
-*item CONTRL
+*item CONTRL sys_ctl_overview
 'In order to provide realistic controls for zones,'
 'plant systems and flow networks, a configuration'
 'control file must be created. If this is not done'
@@ -677,126 +667,99 @@
 '                  start time, number of data items'
 '                  associated with control law and'
 '                  value of each data item.'
-' '
+'  '
 'To edit a control loop select it.'
-'The overall control system described (<64 characters)'
-'is used in reports.'
+'  '
+' option b: description of the overall control (<248 characters)'
+'   for the model
+'  '
+' option c: documentation of the current domain control '
+'   (<248 characters) so in combination there is space for recording'
+'   the intent of control within the model.'
+'  '
+' option d: if zone control this creates associations between'
+'   the zones in the model and the control loops. A zone with'
+'   no associated control loop is assumed to free-float. A loop'
+'   which is not used just takes up space but otherwise does no'
+'   harm - so it is ok to create control loops for future use.'
+'   You are asked for an index of the control loop that you want'
+'   to associate with each zone. A zero specifies no control.'
+'  '
+' control loops: each control loop is defined by a number of'
+'   attributes - which define where the sensor is located, where'
+'   the actuator is located, periods when the control is valid'
+'   as well as period data. Each of these can be edited separately.'
+'  '
+' option +:  manages control loops so you can add new controls'
+'   delete control loops and copy control loops. You will be'
+'   asked for the index of the control you want to act on.'
+'  '
+' option !: list the current contents of the control loops. The'
+'   indicies are decoded into descriptive phrases.'
+'  '
+' option >: save control data THIS IS IMPORTANT because any'
+'  changes are only held in memory until you write to file.'
+'  '
+'When you exit this facility if you have not specified any links'
+'between zones and control loops you are warned (so you can change'
+'this if required.'
+'  '
 *enditem
         CALL EASKS248(t248,' ','Control system description?',
-*item CONTRL
-'Description of control system (<248 characters).'
-*enditem
-          CALL EASKS248(t248,' ','Zone control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ','Plant control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ','Flow control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ','Global control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ','Electrical control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ',' Optical control description?',
-*item CONTRL
-*enditem
-          CALL EASKS248(t248,' ',' Complex fen. control description?',
-*item CONTRL
-'This is the control index: 0 means no control,'
-'1 is the first defined control function, 2 the'
-'second and so on.'
-*enditem
-            CALL EASKI(ICA,'Associated control function',
-*item CONTRL
-'This is the control index: 0 means no control,'
-'1 is the first defined control function, 2 the'
-'second and so on.'
-*enditem
-              CALL EASKI(ICA,'Associated control function',outs,
-*item CONTRL
-'To impose control, the defined control loops must'
-'be associated with the modelled zones.'
-*enditem
-            CALL ASKOK('Control functions have not yet been',
-*item CONTRL
-'You may have made changes to the control file. If'
-'you exit without saving these changes will be lost.'
-*enditem
-          CALL ASKOK(' ','Save changes to control file?',OK,dok,2)
-*item CONTRL
-*enditem
+        CALL EASKS248(t248,' ','Zone control description?',
+        CALL EASKS248(t248,' ','Plant control description?',
+        CALL EASKS248(t248,' ','Flow control description?',
+        CALL EASKS248(t248,' ','Global control description?',
+        CALL EASKS248(t248,' ','Electrical control description?',
+        CALL EASKS248(t248,' ',' Optical control description?',
+        CALL EASKS248(t248,' ',' Complex fen. control description?',
+        CALL EASKI(ICA,'Associated control function',
+        CALL EASKI(ICA,'Associated control function',outs,
+        CALL ASKOK('Control functions have not yet been',
+        CALL ASKOK(' ','Save changes to control file?',OK,dok,2)
         CALL PHELPD('control help',24,'-',0,0,IER)
-*item CONTRL
-*enditem
         CALL EASKS(LASCI,'Control file?',' ',72,' ','Control file',
-*item CONTRL
-*enditem
         CALL EASKABC(' ','Options:',
-*item CONTRL
-'Delete/add/copy a control loop'
-'(unless wkd:sat:sun control).'
-*enditem
         CALL EASKATOG(' ','Options:','delete control loop',
-*item CONTRL
-'Control function attributes that may be edited:'
-' a) sensor location'
-' b) actuator location'
-' c) for each day type, the period of validity and'
-'    details for distinct period during the day.'
-*enditem
-          call MENUATOL(outs,'Editing Options',
-*item CONTRL
-*enditem
-          call MENUATOL(outs,'Editing Options',
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-*item CONTRL
-*enditem
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
+        call MENUATOL(outs,'Editing Options',
+        call MENUATOL(outs,'Editing Options',
 *subroutine totctlper
 *subroutine EBCNTRL
-*item EBCNTRL
+*item EBCNTRL sys_bctl_periods
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (N.B'
 'periods may not overlap), a sensed property, an actuated'
 'property, a control law and miscellaneous data items'
 'defining available capacity, set-points etc.'
+'  '
+' editing common control period data: '
+'   start time - a hour plus fraction 10h30 is 10.5'
+'     the initial period of a control loop must start at'
+'     midnight e.g. 0.0 hours.'
+'  '
+' option * control periods can be managed by adding a period'
+'   at the end of the list of periods (there is no insert'
+'   function) or a control loop can be deleted. The only'
+'   way to insert a period is to add at the end and then'
+'   redefine the earlier priods.'
+'   Next time plan your control periods carefully so as to'
+'   avoid the need to insert a period.'
 *enditem
        CALL PHELPD('control period help',5,'-',0,0,IER)
-*item EBCNTRL
-'Periods are added to the end of the list.'
-*enditem
-        CALL EASKABC(' ','Options:',
-*item EBCNTRL
+       CALL EASKABC(' ','Options:',
+*item EBCNTRL sys_bctl_types
 'The basic zone controller is an ideal controller that'
 'will inject or extract sufficient flux (subject to'
 'the defined heating and cooling capacities) to ensure'
-'the heating and/or cooling set point.'
+'the heating and/or cooling set point is reached. It is'
+'a good initial controller for use in establishing demand'
+'patterns without the need for tuning of PID controllers.'
 ' '
 'A free float controller allows the zone temperature'
 'to reach whatever temperature is consistent with the '
 'heat gains and losses in the zone. No environmental'
-'control is applied. '
+'control is applied. A typical free float might be used'
+'in the evening if no frost protection is required.'
 ' '
 'The ideal fixed injection controller represents'
 'systems which operate with a fixed input when heating'
@@ -849,114 +812,105 @@
 'are taken to set the setpoints for heating and cooling'
 *enditem
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
-*item EBCNTRL
-'See ESP-r Data Model Section 9 for details.'
-*enditem
         CALL EASKR(tcps,' ','Period start time?',
-*item EBCNTRL
-'See ESP-r Data Model Section 9 for details.'
+*item EBCNTRL sys_bctl_thermo_sub
+'One specialized control (which is usually a nested control)'
+'allows up to three surfaces in a zone to have alternative MLC'
+'used as long as the alternative has the same number of layers.'
+'These are the indices of the multi-layer constructions'
+'for the 1st, 2nd and 3rd surfacesmto which substitutions'
+'are to be made. If less than 3 surfaces then assign zero to'
+'the remaining slots.'
 *enditem
           CALL EASKR(cm(2),outs,' Substitution: 0) off, 1) on?',
+          CALL EASKS(HOLD,' ','MLC index for 1st/2nd/3rd surfaces?',
 *item EBCNTRL
-'These are the indices of the multi-layer'
-'construction for the 1st, 2nd and 3rd surfaces'
-'to which susbsitutions are to be made. If less'
-'than 3 surfaces then assign `0` to the last.'
-*enditem
-            CALL EASKS(HOLD,' ','MLC index for 1st/2nd/3rd surfaces?',
-*item EBCNTRL
-'See ESP-r Data Model Section 9 for details.'
 'The number of data items required is either'
 '5 or 7 and depends on whether there is an'
 'extract component (e.g fan).'
+' data are:'
+'   supply component (select from list) and node index'
+'  '
+'   coupling type index depends upon the component that'
+'   connects the plant to the building zone.'
+'     For warm/cool air-based systems use type 1.'
+'     While the ESP-r simulator can use an iterative'
+'     method to solve the combined buidling and'
+'     plant systems, it is often acceptable to solve'
+'     the two domains sequentially. IN this case the'
+'     building domain is solved first. The results'
+'     are then saved and the simulation moves on to'
+'     the next time step.'
+' '
+'     Since the plant domain is solved after the'
+'     building domain, the building domain solver'
+'     must use the plant injection temperature from'
+'     the previous time step when calculating the'
+'     amount of heat injected into the zone. Two'
+'     methods are offered for calculating the amount'
+'     of heat injection/extraction:'
+' '
+'     1) Sequential boundry conditions: the Simulator'
+'       uses the plant boundary conditions from '
+'       the previous time step but zone boundary'
+'       conditions from the present time step (to'
+'       solve the zone-side energy balance). This'
+'       approach can lead to inequality between'
+'       the heat flux injected into the zone and '
+'       the amount extracted from the plant, '
+'       especially at large time steps.'
+'     2) Concurrent boundary conditions: the'
+'       Simulator uses the zone and plant conditions'
+'       from the pervious time step to calcuate '
+'       the heat injection that prevailed over '
+'       the previous timestep, and injects this '
+'       into the zone at the current time step. '
+'       This approach ensures that the heat flows'
+'       calculated in the building and plant '
+'       domains can be reconciled over the '
+'       sumulation period'
+' '
+'     For radiators, heated floors, etc. use type 2. '
+'  '
+'   max heating (W) to roughly match component capacity'
+'   max cooling (W) to roughly match component capacity'
+'   extract component index and variable type
 *enditem
           CALL EASKR(cm(1),'Number of miscellaneous','data items?',
-*item EBCNTRL
-*enditem
           CALL ASKPCMP(' Supply plant component ? ',
-*item EBCNTRL
-' The coupling type depends upon the component '
-' that connects the plant to the building zone'
-' For warm/cool air-based systems use type 1,'
-' and for radiators, heated floors, etc. '
-' use type 2. '
-*enditem
           CALL EASKR(cm(4),'  Coupling type',
-*item EBCNTRL
- ' While the ESP-r simulator can use an iterative'
- ' method to solve the combined buidling and'
- ' plant systems, it is often acceptable to solve'
- ' the two domains sequentially. IN this case the'
- ' building domain is solved first. The results'
- ' are then saved and the simulation moves on to'
- ' the next time step.'
- ' '
- ' Since the plant domain is solved after the'
-' building domain, the building domain solver'
-' must use the plant injection temperature from'
-' the previous time step when calculating the'
-' amount of heat injected into the zone. Two'
-' methods are offered for calculating the amount'
-' of heat injection/extraction:'
-' '
-' 1) Sequential boundry conditions: the Simulator'
-'    uses the plant boundary conditions from '
-'    the previous time step but zone boundary'
-'    conditions from the present time step (to'
-'    solve the zone-side energy balance). This'
-'    approach can lead to inequality between'
-'    the heat flux injected into the zone and '
-'    the amount extracted from the plant, '
-'    especially at large time steps.'
-' 2) Concurrent boundary conditions: the'
-'    Simulator uses the zone and plant conditions'
-'    from the pervious time step to calcuate '
-'    the heat injection that prevailed over '
-'    the previous timestep, and injects this '
-'    into the zone at the current time step. '
-'    This approach ensures that the heat flows'
-'    calculated in the building and plant '
-'    domains can be reconciled over the '
-'    sumulation period'
-' '
-' Alternatively, turn on iteration.'
-*enditem
-            CALL EASKAB(
-*item EBCNTRL
-*enditem
+          CALL EASKAB(
           CALL EASKR(cm(5),' ','Maximum heating flux (W)?',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(6),' ','Maximum cooling flux (W)?',
-*item EBCNTRL
-*enditem
-           CALL ASKPCMP(' Extract plant component ? ',
-*item EBCNTRL
-*enditem
+          CALL ASKPCMP(' Extract plant component ? ',
           CALL EASKR(cm(2),' Iteration index',
-*item EBCNTRL
+*item EBCNTRL sys_bctl_heat_pipe
+'A specialized control approximates the heat transfer of'
+'a heat pipe buried within a construction. You are asked for:'
+'  iteration index - zero is none, one allows iteration'
+'  index of surface in the zone'
+'  index of outer node of heatpipe'
+'  index of inner node of heatpipe'
+'  critical temperature degrees C'
+'  maximum number of iterations'
+'  flux difference tollerance to meet (W)'
+'  flag for trace zero is none, one is trace on'
 *enditem
           CALL EASKR(cm(3),' ',' Surface no with heat pipe ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(4),' ',' Outer node for heatpipe ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(5),' ',' Inner node for heatpipe ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(6),' ',' Critical temperature ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(7),' ',' Maximum no of iterations ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(8),' ',' Flux difference tolerance ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(9),' Trace flag...',
-*item EBCNTRL
-' - Refer ESP-r Data Model section 9 '
+*item EBCNTRL sys_bctl_11
+'ESP-r allows you to control to a temperature based on'
+'one or two sensor locations (defined as triplets) or'
+'from a column of timestep information in a temporal'
+'file.'
+'This is an ideal controller (there is a separate ON/OFF'
+'multi-sensor controller as control 12).'
+' '
 ' The number of data items required is in the range'
 ' 10 to 16 and depends on the auxiliary sensor mode'
 ' selected.'
@@ -978,10 +932,6 @@
 'from a temporal file a zone control might already have'
 'created within the model context->temporal data menu.'
 ' '
-' '
-*enditem
-          CALL EASKR(cm(1),' ','Number of misc data items (see help)',
-*item EBCNTRL
 'Heat delivery is normally set high so that the '
 'target temperature is attained. The heating minimum '
 'is normally 0 but if > 0 then heating will continue'
@@ -990,24 +940,21 @@
 'In the unlikely event that you want to control to'
 'another temperature but allow no cooling capacity '
 'the control may not work properly.'
-*enditem
-          CALL EASKS(HOLD,
-*item EBCNTRL
-' At present, this is limited to 2 auxiliary sensors'
-' which may be located outside or in other zone(s).'
-*enditem
-          CALL EASKR(cm(6),' ','No of auxiliary sensors?',
-*item EBCNTRL
-' The sensor modes options are:'
+' '
+'At present, this control is limited to 2 auxiliary sensors'
+'which may be located outside or in other zone(s).'
+'If just one sensor it is assumed to be the mean condition.'
+'If multiple sensors then you have the option of:'
 ' 1: (ref sensor)-(greatest value of aux sensors)'
 ' 2: (ref sensor)-(least value of aux sensors)'
 ' 3: (ref sensor)-(mean value of aux sensors)'
 ' 4: (ref sensor)-(weighting of aux sensors)'
-' '
-'If just one aux sensor then select 3 as a safe'
 *enditem
-            CALL EASKR(cm(7),' ','Multi-sensor mode (see help)?',
-*item EBCNTRL
+        CALL EASKR(cm(1),' ','Number of misc data items (see help)',
+        CALL EASKS(HOLD,
+        CALL EASKR(cm(6),' ','No of auxiliary sensors?',
+        CALL EASKR(cm(7),' ','Multi-sensor mode (see help)?',
+*item EBCNTRL bctl_11_aux_sens
 'The sensor details are essentially the same as '
 'required in a control point sensor ie. '
 ' 1st aux item >0 is a zone and or surface, =0 any zone,'
@@ -1027,36 +974,33 @@
 ' 2nd item is used to further specify the location '
 ' 3rd item is used to further specify the location '
 ' 4th item is always zero '
-' - Refer ESP-r Data Model section 9 '
-*enditem
-            CALL EASKR(cm(ndx),' ',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+3),' ',
-*item EBCNTRL
+'  '
 'The sensor weightings must total exactly 100.0'
 'This allows you to discount one of the sensors.'
+'  '
+'Lastly you can apply a scaling factor to the sensed value'
+'derived from the weighted multiple sensors:'
+'  sensor scaling factor is applied to the sensed'
+'    value at each timestep e.g. (20C sensed x 1.1) would'
+'    request a 10% rise over measured.'
+'  sensor offset allows you to modify the sensed'
+'    value by a fixed amount. '
 *enditem
-              CALL EASKR(cm(ndx),' ',
-*item EBCNTRL
-'The sensor scaling factor is applied to the sensed'
-'value at each timestep e.g. (20C sensed x 1.1) would'
-'request a 10% rise over measured.'
-*enditem
+          CALL EASKR(cm(ndx),' ',
+          CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item?',
+          CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item?',
+          CALL EASKR(cm(ndx+3),' ',
+          CALL EASKR(cm(ndx),' ',
           CALL EASKR(cm(ndx),' ',' Scaling factor?',
-*item EBCNTRL
-'The sensor offset allows you to modify the sensed'
-'value by a fixed amount. '
-*enditem
           CALL EASKR(cm(ndx+1),' ',' Offset factor?',
-*item EBCNTRL
-' - Refer ESP-r Data Model section 9 '
+*item EBCNTRL sys_bctl_12
+'ESP-r allows you to control to a temperature based on'
+'one or two sensor locations (defined as triplets) or'
+'from a column of timestep information in a temporal'
+'file.'
+'This is an On/Off controller (there is a separate ideal'
+'multi-sensor controller as control 11).'
+' '
 ' The number of data items required is in the range'
 ' 10 to 16 and depends on the auxiliary sensor mode'
 ' selected.'
@@ -1070,10 +1014,7 @@
 ' mean val of aux`y sensors            1       10 '
 '   `   `  `    `     `                2       14 '
 ' weighting of aux`y sensors           2       16 '
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(1),' ',' No. of misc data items ',
-*item EBCNTRL
+'  '
 'Heat delivery is normally set high so that the '
 'target temperature is attained. The heating minimum '
 'is normally 0 but if > 0 then heating will continue'
@@ -1082,22 +1023,21 @@
 'In the unlikely event that you want to control to'
 'another temperature but allow no cooling capacity '
 'the control may not work properly.'
-*enditem
-          CALL EASKS(HOLD,
-*item EBCNTRL
-' At present, this is limited to 2 auxiliary sensors'
-' which may be located outside or in other zone(s).'
-*enditem
-          CALL EASKR(cm(6),' ',' No of auxiliary sensors ? ',
-*item EBCNTRL
-' The sensor modes options are:'
+' '
+'At present, this control is limited to 2 auxiliary sensors'
+'which may be located outside or in other zone(s).'
+'If just one sensor it is assumed to be the mean condition.'
+'If multiple sensors then you have the option of:'
 ' 1: (ref sensor)-(greatest value of aux sensors)'
 ' 2: (ref sensor)-(least value of aux sensors)'
 ' 3: (ref sensor)-(mean value of aux sensors)'
 ' 4: (ref sensor)-(weighting of aux sensors)'
 *enditem
+          CALL EASKR(cm(1),' ',' No. of misc data items ',
+          CALL EASKS(HOLD,
+          CALL EASKR(cm(6),' ',' No of auxiliary sensors ? ',
           CALL EASKR(cm(7),' ',' Multi-sensor mode ? ',
-*item EBCNTRL
+*item EBCNTRL bctl_12_aux_sens
 'The sensor details are essentially the same as '
 'required in a control point sensor ie. '
 ' 1st item >0 is a zone and or surface, =0 any zone,'
@@ -1111,231 +1051,150 @@
 ' 2nd item is used to further specify the location '
 ' 3rd item is used to further specify the location '
 ' 4th item is always zero '
-' - Refer ESP-r Data Model section 9 '
+'  '
+'The sensor weightings must total exactly 100.0'
+'This allows you to discount one of the sensors.'
 *enditem
             CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ?',
-*item EBCNTRL
-*enditem
             CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ?',
-*item EBCNTRL
-*enditem
             CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ?',
-*item EBCNTRL
-*enditem
             CALL EASKR(cm(ndx+3),' ',
-*item EBCNTRL
-' The sensor weightings must total exactly 100.0'
-*enditem
             CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
-*item EBCNTRL
+*item EBCNTRL sys_bctl_opt_stop
+'An optimal stop controller is implemented which requires'
+'the following data:'
+'  maximum heating capacity (W)'
+'  maximum cooling capacity (W)'
+'  heating setpoint (C)'
+'  cooling setpoint (C)'
+'  desired temperature when occupants depart (C)'
+'  throttling range (C)'
+'  occupancy departure time (hour.fraction)'
+'  minimum time difference (fraction of hour)'
+'  initial guess for optimal stop time (hour.fraction)'
+'  '
+'If the difference between successive estimates is'
+'less then the `Min. Time Diff`, then the latest'
+'time is accepted as the `Optimum Stop Time`.'
 *enditem
           CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(3),' ',' Maximum cooling capacity (W) ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(4),' ',' Htg Set pt ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(5),' ',' Clg Set pt ? ',
-*item EBCNTRL
-' Desired temp is minimum temp at occupancy dept time'
-*enditem
           CALL EASKR(cm(6),' ',' Desired temp ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(7),' ',' Throtl range ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(8),' ',' Occpy dept time ? ',
-*item EBCNTRL
-' If the difference between successive estimates is'
-' less then the `Min. Time Diff`, then the latest'
-' time is accepted as the `Optimum Stop Time`.'
-' - Refer ESP-r Data Model section 9 '
-*enditem
           CALL EASKR(cm(9),' ',' Min time diff ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(10),' ',' Initial guess ? ',
-*item EBCNTRL
-' Reference must be made to a fuzzy data set.'
-' A fuzzy data set holds all the information about'
-' the fuzzy membership functions. At least one such '
-' set MUST exist if this control law is to used.'
-' The data set is currently input by external'
-' editorial facility.'
-' Refer ESP-r Data Model section 9'
-*enditem
-          CALL EASKR(cm(2),' ',' Referenced data set ? ',
-*item EBCNTRL
-' The control mode nay be one of the following:'
+*item EBCNTRL sys_bctl_fuzzy
+'ESP-r implements two types of fuzzy logic controls.'
+'The control attributes holds all the information about'
+'the fuzzy membership functions. At least one such '
+'set MUST exist if this control law is to used.'
+' '
+' The control mode may be one of the following:'
 ' 1:= Fuzzy logic PI control;'
 ' 2:= Fuzzy logic PD control.'
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(3),' ',' Control Mode ? ',
-*item EBCNTRL
-*enditem
-          CALL EASKR(cm(4),' ',' Set point ? ',
-*item EBCNTRL
+'  '
+' You are asked for a single set point temperature (C).
+'  '
 ' There is a choice of two defuzzification methods:'
 ' 1:= Mean-of-Max method;'
 ' 2:= Centre-of-Area method.'
+'  '
+' Error scale and a change of error scale are used to tune'
+' the fuzzy controller.'
+'  '
+' Lastly there is a output scale value required.'
 *enditem
+          CALL EASKR(cm(2),' ',' Referenced data set ? ',
+          CALL EASKR(cm(3),' ',' Control Mode ? ',
+          CALL EASKR(cm(4),' ',' Set point ? ',
           CALL EASKR(cm(5),' ',' Defuzzification method ? ',
-*item EBCNTRL
-' This is used to tune the controller'
-*enditem
           CALL EASKR(cm(6),' ',' Error scale ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(7),' ',' Change of Error scale ? ',
-*item EBCNTRL
-*enditem
           CALL EASKR(cm(8),' ',' Output scale ? ',
-*item EBCNTRL
-'A multi-sensor control is used to inject/extract heat'
-'in one zone (termed source) based on conditions in one'
-'or more locations (termed auxilliary sensors).'
+*item EBCNTRL sys_bctl_multi_sensor
+'A multi-sensor control is used to inject/extract heat in one zone'
+'(termed source) based on conditions in other locations (termed'
+'auxilliary sensors).'
 ' '
-'If  any of the auxilliary sensors demands heat then'
-'heat will be injected in the source. If any of the'
-'auxilliary sensors demand cooling then heat will be'
-'extracted from the source. If there are simultaneous'
-'demands for heating and cooling nothing will happen.'
+'If any of the auxilliary sensors demands heat then heat will be'
+'injected in the source zone. For cooling heat will be extracted'
+'from the source. If there are simultaneous demands for heating'
+'and cooling nothing will happen.'
 ' '
-'A classic use is to condition a mixing box/air handler'
-'used within an air flow network to deliver heating or '
-'cooling to occupied spaces. '
+'A classic use is to condition a mixing box/air handler used'
+'within an air flow network to deliver heating or cooling to'
+'an occupied space. '
 ' '
-'If you are using a multi-sensor controller to enable'
-'a chilled ceiling (represented as a zone) or a radiant'
-'heating panel (represented as a zone) then these set'
-'points are the temperature of the working fluid in '
-'the radiant panel. Later you will be asked for the '
-'setpoints for the occupied space(s). '
+'If you are using a multi-sensor controller to enable a chilled'
+'ceiling (represented as a zone) or a radiant heating panel'
+'or a Korean Ondol thin floor heater (represented as a zone)'
+'then these set  points are the temperature of the working fluid in'
+'the radiant panel. Later you will be asked for the set points'
+'for the occupied space(s). '
 ' '
-'Example: to heat a radiant panel to 70C in order '
-'to get a temperature of 21C in room(s) below'
-'the multi-sensor control can be used. '
+'If you do not wish cooling use a high set point such as 100C'
+'A 0 deg C cooling setpoint does not turn cooling off. '
+' '
+'Example: to heat a radiant panel to 70C in order to get a'
+'temperature of 21C in adjacent room(s).'
 ' '
 'Heat delivery may be less than the max. If minimium'
-'heating > 0 then heating will continue at a re- '
-'duced level even when the setpoint is reached. '
-'If there is no cooling then use zero values in '
-'conjunction with a hight cooling setpoint. '
+'heating > 0 then heating will continue at a reduced level'
+'even when the setpoint is reached. If there is no cooling'
+'then use zero values in conjunction with a high cooling setpoint.'
 ' '
-'Note this type of control is an ON/OFF control and'
-'thus you should use an appropriately short timestep'
-'of one or two minutes if there is not much mass in'
-'the radiant panel or if there is a considerable air'
-'air flow rate. '
+'Note this type of control is an ON/OFF control and thus you'
+'should use an appropriately short timestep of one or two minutes'
+'if there is not much mass in the radiant panel or if there is a'
+'considerable air air flow rate. '
 ' '
-'Note: with the control law it is most common to set'
-'the sensor in the occupied space to be located at'
-'the zone air node (sensing remote mixed rad/conv is'
-'??) '
+'Note: set the sensor at the air node rather than mixed rad/conv.'
 ' '
+'Also for both heating and cooling panels it is common to inject'
+'at the air node and to use a heat transfer coefficient regime '
+'at the surfaces to ensure flux is transferred to the panel. '
+'For a mixing box it is usually not necessary to use a hc regime.'
 ' '
-'Also for both heating and cooling panels it is '
-'common to inject at the air node and to use a hc '
-'coefficient regime to set a high hc coef at the '
-'surfaces to ensure flux is transferred to the '
-'of the panel. '
+'The aux sensor details are the usual 4 values:'
+'  Example: to sense air temperature is 3rd zone'
+'    3.0  0.0  0.0  0.0'
 ' '
-'For a mixing box it is usually not necessary to '
-'use a hc regime in within the box. '
+'This data is followed - per sensor - by the heating set-point'
+'and cooling set-point for that auxiliary sensor.'
+' '
+'Thus the number of control data items is thus 7 + 6 * no. of sensors'
+' '
+' Example: to sense air temperature in 3rd zone which'
+'    needs to be heated to 21.1C and no cooling'
+'    3.0 0.0 0.0 0.0 21.1 100.0 '
+'  '
+'It is worth gathering information on sensor locations and carefully'
+'checking the data/QA report afterwards.'
 *enditem
           CALL EASKS(HOLD,' Max & Min heat capacity, Max & Min cool ',
-*item EBCNTRL
-'It you are using a multi-sensor controller to enable'
-'a chilled ceiling (represented as a zone) or a radiant'
-'heating panel (represented as a zone) then these set '
-'points are the temperature of the working fluid in '
-'the radiant panel. Later you will be asked for the '
-'setpoints for the occupied space. '
-' '
-'Example: to heat a radiant panel to 70C in order '
-'to get a temperature of 21C in one or more room below'
-'the multi-sensor control can be used. '
-' '
-'If you do not wish cooling use a high set point '
-'such as 100C. A 0 deg C cooling setpoint does not'
-'turn cooling off. '
-*enditem
           CALL EASKS(HOLD,
-*item EBCNTRL
- ' The max number of auxiliary sensors is MSEN'
- ' '
- ' The number of data items = 7 + 6 * no. of sensors'
- ' For each auxiliary sensor, 6 items are needed:'
- ' 4 items for the sensor location and two setpoints.'
- ' '
- ' Example: to sense air temperature is 3rd zone which'
- '    needs to be heated to 21.1C and no cooling'
- '    3.0 0.0 0.0 0.0 21.1 100.0 '
-'  '
-' So it is worth gathering information on the location'
-' of auxillary sensors before answering any further'
-' question abouts this control and carefully'
-' checking the data/QA report afterwards.'
-' '
-'If you choose cancel the controller data will not be'
-'altered and you will be returned to the main menu. '
-*enditem
           CALL EASKI(I8,' ',' Number of aux sensors (see help)',
-*item EBCNTRL
-'The sensor details are essentially the same as '
-'required in a control point sensor ie. '
-' 1st item >0 is a zone and or surface, =0 any zone,'
-'   = -2 measuring mix air:radiant,'
-'   = -3 ambient where the 2nd item is:'
-'        0 = db, 1 = sol-air, 2 = wind velo, '
-'        3 = wind dir, 4 = diffuse rad, '
-'        5 = direc norm rad, 6 = RH'
-' '
- ' Example: to sense air temperature is 3rd zone'
- '    3.0  0.0 0.0  '
- ' '
-'This data is followed - per sensor - by the'
-'heating set-point and cooling set-point for'
-'that auxiliary sensor.'
-*enditem
-            CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+3),' ',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ?',
-*item EBCNTRL
-*enditem
-            CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ?',
-*item EBCNTRL
+          CALL EASKR(cm(ndx),' ',' Aux sensor detail 1st item ?',
+          CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
+          CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
+          CALL EASKR(cm(ndx+3),' ',
+          CALL EASKR(cm(ndx+4),' ',' Aux sensor heating set-point ?',
+          CALL EASKR(cm(ndx+5),' ',' Aux sensor cooling set-point ?',
+*item EBCNTRL sys_bctl_wetted_surf
 'A wetted surface can either be a wet opaque surface '
 'in the zone or the floor of the zone can'
 'contain a swimming pool, some additional data is '
 'required from user for this option.'
-*enditem
-          CALL EASKAB('Wetted surface options:',' ',
-*item EBCNTRL
-'You have chosen to incorporate a swimming pool model'
-'into this zone. This requires that 1) the floor'
-'internal convective heat transfer coefficient and '
-'emissivity are set to small values (i.e. 0.001) '
-'and that 2) the external boundary condition is set '
-'to adiabatic. Please do this after defining the pool'
-*enditem
-            call phelpd('pool control help',7,'-',0,0,IER)
-*item EBCNTRL
+'  '
+'If you choose to incorporate a swimming pool model into this'
+'zone 1) the floor internal convective heat transfer coefficient and'
+'emissivity are set to small values (i.e. 0.001) and that'
+' 2) the external boundary condition is set to adiabatic.'
+'Please do this after defining the pool controller.'
+'  '
 'Data requirements: '
 ' 1) pool surface area m^2'
 ' 2) pool surface convective htc W/m^2K'
@@ -1344,147 +1203,172 @@
 ' 5) surrounding ground temperature degC'
 ' 6) pool water supply rate kg/s'
 ' 7) pool water supply temperature degC'
- ' 8) submerged wall surface area m^2'
- ' 9) submerged wall surface U-value W/m^2'
+' 8) submerged wall surface area m^2'
+' 9) submerged wall surface U-value W/m^2'
+' '
+'If you choose cancel the controller data will not be'
+'altered and you will be returned to the main menu. '
 *enditem
-            CALL EASKS(HOLD,'Pool surface area(m^2), convective and',
-*item EBCNTRL
-*enditem
-            CALL EASKS(HOLD,'Pool temperature and ground temperature',
-*item EBCNTRL
-*enditem
-            CALL EASKS(HOLD,'water supply rate (kg/s), water supply ',
-*item EBCNTRL
-*enditem
-            CALL EASKS(HOLD,'submerged wall surface area (m^2), ',
-*item EBCNTRL
-'See ESP-r Data Model section 9 for details. '
+          CALL EASKAB('Wetted surface options:',' ',
+          call phelpd('pool control help',7,'-',0,0,IER)
+          CALL EASKS(HOLD,'Pool surface area(m^2), convective and',
+          CALL EASKS(HOLD,'Pool temperature and ground temperature',
+          CALL EASKS(HOLD,'water supply rate (kg/s), water supply ',
+          CALL EASKS(HOLD,'submerged wall surface area (m^2), ',
+*item EBCNTRL sys_bctl_fall_through
+'You have selected an unknown controller. So supply the number of'
+'control data that you will type in followed by the data values.'
 ' '
 'If you choose cancel the controller data will not be'
 'altered and you will be returned to the main menu. '
 *enditem
           CALL EASKI(NITEMS,' ',' No of control law data items ?',
-*item EBCNTRL
-*enditem
-              CALL EASKR(cm(MM),outs,' value: ',
+          CALL EASKR(cm(MM),outs,' value: ',
 *subroutine EOCNTRL
-*item EOCNTRL
+*item EOCNTRL optical_ctl_menu
+'ESP-r will in the future implement an optical controller.'
+'This facility is work-in-progress...'
+'  '
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (i.e.'
 'they do not overlap), a sensed property, an actuated'
 'property, a control law and miscel. data which defines'
 'capacity, setpoints, etc.'
 '  '
+'Periods are added to the end of the list. '
+'  '
+'Optical controls act as a staged controller - it changes to'
+'another stage if sensed value is greater than '
+'a set point. Other laws may be added in the future.'
+'  '
+'Help text for commented out sections of the optical control:'
+'  Sensor setpoint (between -1000 and 1000) relative to the'
+'  type of sensor.'
+'  '
+'You will be asked to select the optical property if the sensed'
+'value is exceeded.'
+'  '
+'Bidirectional data is held as sets and you are asked which'
+'of these sets to use if the sensed value is exceeded.'
+'  '
+'You can provide the set-point and the bidirectional'
+'dataset (e.g. at a specific slat angle) that will be '
+'used above the set-point. The order of the set-points'
+'here does not matter as they will be sorted when they '
+'will be processed. It is, however, recommended for QA'
+'purposes to start from the top using the higher '
+'setpoint and carry on following a descending order.'
+'Dataset 1 will always be used unless the control '
+'condition is met.'
+'The value given should relate to the type of sensor'
+'(e.g. in oC for temperature sensor, in W/m2 for'
+'radiation sensor, etc.).'
+'  '
+'The value given should relate to the bidirectional'
+'dataset that will be used above the specified setpoint.'
+'  '
 'Note: if no change required in an item then accept the'
 'current value.'
 *enditem
         CALL PHELPD('control period help',8,'-',0,0,IER)
-*item EOCNTRL
-'Periods are added to the end of the list. '
-*enditem
         CALL EASKABC('Options:',' ',
-*item EOCNTRL
-'This acts as a stage controller which changes to '
-'another stage if sensed value is greater than '
-'a set point. Other laws may be added in the future.'
-*enditem
         call MENUATOL(outs,' Available laws',
-*item EOCNTRL
-'Define the start of the period for this control law.'
-*enditem
-          CALL EASKR(tcps,' ',' Period start time ? ',
-*item EOCNTRL
-'The value given should relate to the type of sensor'
-*enditem
+        CALL EASKR(tcps,' ',' Period start time ? ',
 C          CALL EASKR(cm(2),' Set point:',' ',
-*item EOCNTRL
-'Select the optical properties to be used when '
-'condition sensed is above the setpoint '
-*enditem
 C          CALL EPICKS(IX,IGVAL,' ',' Glazing types: ',
-*item EOCNTRL
-'The value given should relate to the type of sensor'
-*enditem
 C          CALL EASKR(cm(2),' Set point:',' ',
-*item EOCNTRL
-'Select the bidirectional dataset to be used when '
-'condition sensed is above the setpoint '
-*enditem
 C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
-*item EOCNTRL
-'You can provide the set-point and the bidirectional'
-'dataset (e.g. at a specific slat angle) that will be '
-' used above the set-point. The order of the set-points'
-'here does not matter as they will be sorted when they '
-' will be processed. It is, however, recommended for QA'
-' purposes to start from the top using the higher '
-' setpoint and carry on following a descending order.'
-' Dataset 1 will always be used unless the control '
-' condition is met.'
-'The value given should relate to the type of sensor'
-'(e.g. in oC for temperature sensor, in W/m2 for'
-'radiation sensor, etc.).'
-*enditem
-            CALL EASKR(cmlocal(ivert*2),' Set-point:',' ',
-*item EOCNTRL
-'The value given should relate to the bidirectional'
-'dataset that will be used above the specified '
-*enditem
-            CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
-*item EOCNTRL
-*enditem
-            CALL PHELPD('bidirectional control help',9,'-',0,0,IER)
+        CALL EASKR(cmlocal(ivert*2),' Set-point:',' ',
+        CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
+        CALL PHELPD('bidirectional control help',9,'-',0,0,IER)
 *subroutine edit_CFC_control
-*item edit_CFC_control
+*item edit_CFC_control optical_CFC_ctl_menu
+'Zones which make use of CFC representations of glazing have'
+'control options which are defined in the current facility.'
+'  '
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (N.B'
 'periods may not overlap), a sensed property, an actuated'
 'property, a control law and miscellaneous data items'
 'defining available capacity, set-points etc.'
+'  '
+' editing a period control law: select a controller type based'
+'   on the nature of the sensor and actuator you will be using.'
+'   After you select the controller type you will be asked for'
+'   its attributes during the current period.'
+'  '
+'   The current control types are:'
+'     senses temp.      actuates shade ON/OFF'
+'     senses temp.      actuates slat angle'
+'     senses sol-rad    actuates shade ON/OFF'
+'     senses sol-rad    actuates slat angle'
+'     senses wind speed actuates shade ON/OFF'
+'     senses wind dir.  actuates shade ON/OFF'
+'     no sensor (schedule only)'
+'  '
+'   The current control laws are: basic control or schedule.'
+'   If you select no sensor then also select schedule.'
+'  '
+' option * to add or delete a period. New periods are added'
+'   to the end of the list (there is no insert facility). If'
+'   you delete a period the list is compacted.'
+'  '
 *enditem
        CALL PHELPD('control period help',5,'-',0,0,IER)
-*item edit_CFC_control
-'Periods are added to the end of the list.'
-*enditem
         CALL EASKABC(' ','Options:',
-*item edit_CFC_control
-'See ESP-r Data Model section 9 for details. '
-'Broadly, you want to select based on what is to'
-'be actuated and what is being sensed. This information'
-'will be used later when setting the control actions.'
-*enditem
   64    CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
-*item edit_CFC_control
-'Help for complex fen. control types and laws'
-*enditem
   65    CALL EPICKS(IX,IPVALS,' ',' Complex fen. control law: ',
-*item edit_CFC_control
-*enditem
   62    CALL EASKR(tcps,' ','Period start time?',
 *subroutine EPCNTRL
-*item EPCNTRL
+*item EPCNTRL plant_ctl_menu
+'ESP-r allows you to specify controls for detailed system'
+'components in a plant network. The pattern for setting'
+'up control loops is similar to that used for other domains.'
+'  '
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (i.e.'
 'they do not overlap), a sensed property, an actuated'
 'property, a control law and miscel. data which defines'
 'capacity, setpoints, etc.'
 '  '
+' editing common control period data: '
+'   start time - a hour plus fraction 10h30 is 10.5'
+'     the initial period of a control loop must start at'
+'     midnight e.g. 0.0 hours.'
+'  '
+'   control types: Broadly, you want to select based on what is'
+'     to be actuated and what is being sensed. There are 42'
+'     combinations which can be selected.
+'     Sensor choices:'
+'       dry bulb temperature, enthalph, 1st phase mass flow,'
+'       2nd phase mass flow, additional plant output data (depends'
+'       on the specific component) pressure in flow networks,'
+'       mass flow, solar radiation, wind speed, wind direction,'
+'       and relative humidity in zones and outside. Plus'
+'       the DIFFERENCE in temperature, pressure and absolute'
+'       pressure'
+'     Actuator choices:'
+'       flux, flow, variable within a component, mass (diversion)'
+'       ratios and other control loops.'
+'  '
+'This control type information will be used later when setting the'
+'control actions as well as the control logic that can applied.'
+'  '
+' option * control periods can be managed by adding a period'
+'   at the end of the list of periods (there is no insert'
+'   function) or a control loop can be deleted. The only'
+'   way to insert a period is to add at the end and then'
+'   redefine the earlier priods.'
+'   Next time plan your control periods carefully so as to'
+'   avoid the need to insert a period.'
+'  '
 'Note: if no change required in an item then accept the'
 'current value.'
 *enditem
         CALL PHELPD('control period help',8,'-',0,0,IER)
-*item EPCNTRL
-'Periods are added to the end of the list. '
-*enditem
         CALL EASKABC('Options:',' ',
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
-'Broadly, you want to select based on what is to'
-'be actuated and what is being sensed. This information'
-'will be used later when setting the control actions.'
-*enditem
         CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
-*item EPCNTRL
+*item EPCNTRL sys_plant_types
 'The `type` numbers relate to the selection you made'
 'in the previouos step. Here is a reminder: '
 ' '
@@ -1530,21 +1414,16 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' type 39 is senses ext rel hum actuates flux'
 ' type 33 is senses contaminant conc actuates flow'
 ' type 41 is senses other loops actuates either'
-'See ESP-r Data Model section 9 for details. '
 *enditem
-          CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
-*item EPCNTRL
+        CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
+        CALL EASKR(tcps,' ',' Period start time ? ',
+*item EPCNTRL plant_must_be_multi
 'This control type only works with multisensing of'
 'control loops. The control type will be set to '
 'sensing other control loops action (type 41) '
 *enditem
           CALL PHELPD('control type help',3,'-',0,0,IER)
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
-*enditem
-        CALL EASKR(tcps,' ',' Period start time ? ',
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
+*item EPCNTRL plant_ctl_pid_flux
 ' Mode options are:'
 ' 1: P, PI, PD, PID non-recursive positional control'
 ' 2: P, PI, PD, PID recursive positional control'
@@ -1552,11 +1431,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' 4: PID recursive vel`y control (rect. integration)'
 ' 5: PID recursive vel`y control(trapez integration)'
 ' Note: negate mode number for cooling'
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(2),' ',' PID mode ? ',
-*item EPCNTRL
-' The number of data items required is in the range'
+'  '
+' The PID flux control data items are in the range'
 ' 6 to 9 and depends on the PID mode selected, i.e.,'
 ' For modes 1, -1 , 2, -2 :- '
 '     Positional P              -   7 items required,'
@@ -1570,10 +1446,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' NOTE: if `AHU dynamic set point` option '
 ' selected (set point = -1001) then add 7 data'
 ' items to above.'
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(1),' ',' No. of misc data items ?',
-*item EPCNTRL
+' '
+'The next questions relate to heating and cooling capacity.'
 'Htg/clg delivery may be less than the max. If min'
 'htg/clg > 0 then htg/clg will continue at a re- '
 'duced level even when the setpoint is reached. '
@@ -1588,39 +1462,27 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'should be used when simulating air conditioning '
 ' Refer ...../esp-r/training/plant/AHU/humidity_ctl'
 ' training folder.'
+'  '
+'The integral action flag must be specified: 1 if'
+'required; 0 if not required. The integral action'
+'time [sec] and derivitive action time [sec] may also'
+'be requested. A derivitive action flag must be set: 1 if'
+'required; 0 if not required.'
+'  '
 *enditem
+          CALL EASKR(cm(2),' ',' PID mode ? ',
+          CALL EASKR(cm(1),' ',' No. of misc data items ?',
           CALL EASKS(HOLD,
-*item EPCNTRL
-' Int. action flag: 1 if required; 0 if not required.'
-*enditem
-            CALL EASKR(cm(7),' ',' Integral action flag?',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(8),' ',' Integral action time [sec]?',
-*item EPCNTRL
-' Derv. action flag: 1 if required; 0 if not req`d.'
-*enditem
-            CALL EASKR(cm(9),' ',' derivative action flag?',
-*item EPCNTRL
-*enditem
-                CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
-*item EPCNTRL
-' Drv. action flag: 1 if required; 0 if not rqd.'
-*enditem
-              CALL EASKR(cm(8),' ',' derivative action flag?',
-*item EPCNTRL
-*enditem
-                  CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(7),' ',' Integral action time [secs]?',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(8),' ',' Integral action time [secs]?',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
-*item EPCNTRL
+          CALL EASKR(cm(7),' ',' Integral action flag?',
+          CALL EASKR(cm(8),' ',' Integral action time [sec]?',
+          CALL EASKR(cm(9),' ',' derivative action flag?',
+          CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
+          CALL EASKR(cm(8),' ',' derivative action flag?',
+          CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
+          CALL EASKR(cm(7),' ',' Integral action time [secs]?',
+          CALL EASKR(cm(8),' ',' Integral action time [secs]?',
+          CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
+*item EPCNTRL plant_ctl_pid_flow
 ' Mode options are:'
 ' 1: P, PI, PD, PID non-recursive positional control'
 ' 2: P, PI, PD, PID recursive positional control'
@@ -1628,11 +1490,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' 4: PID recursive vel`y control (rect. integration)'
 ' 5: PID recursive vel`y control(trapez integration)'
 ' Note: negate mode number for cooling'
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(2),' ',' PID mode? ',
-*item EPCNTRL
-' The number of data items required is in the range'
+'  '
+' The PID flow control data items are in the range'
 ' 6 to 9 and depends on the PID mode selected, i.e.,'
 ' For modes 1, -1 , 2, -2 :- '
 '     Positional P              -   7 items required,'
@@ -1646,10 +1505,7 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' NOTE: if `AHU dynamic set point` option '
 ' selected (set point = -1001) then add 7 data'
 ' items to above.'
-' - Refer ESP-r Data Model section 9 '
-*enditem
-          CALL EASKR(cm(1),' ',' No. of misc data items ?',
-*item EPCNTRL
+'  '
 'The set point may be specified to be :-'
 '(a) a fixed constant value;'
 ' or'
@@ -1660,64 +1516,111 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'should be used when simulating air conditioning '
 ' Refer ...../esp-r/training/plant/AHU/humidity_ctl'
 ' training folder.'
+'  '
+'The integral action flag must be specified: 1 if'
+'required; 0 if not required. The integral action'
+'time [sec] and derivitive action time [sec] may also'
+'be requested. A derivitive action flag must be set: 1 if'
+'required; 0 if not required.'
+'  '
+'  '
+*enditem
+          CALL EASKR(cm(2),' ',' PID mode? ',
+          CALL EASKR(cm(1),' ',' No. of misc data items ?',
+          CALL EASKS(HOLD,
+          CALL EASKR(cm(7),' ',' Integral action flag?',
+          CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
+          CALL EASKR(cm(9),' ',' derivative action flag?',
+          CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
+          CALL EASKR(cm(8),' ',' derivative action flag?',
+          CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
+          CALL EASKR(cm(7),' ',' Integral action time [seconds]?',
+          CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
+          CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
+*item EPCNTRL plant_ctl_numeric_prop
+'ESP-r implemnts a so-called numerical proprotional controller.'
+'Attributes are:  '
+'  Maximum and minimum output, upper and lower setpoints'
+'  and output to overcome hysteresis'
+'  '
+'No other information is available about this controller.'
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
-' Int. action flag: 1 if required; 0 if not required.'
-*enditem
-            CALL EASKR(cm(7),' ',' Integral action flag?',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
-*item EPCNTRL
-' Derv. action flag: 1 if required; 0 if not req`d.'
-*enditem
-            CALL EASKR(cm(9),' ',' derivative action flag?',
-*item EPCNTRL
-*enditem
-                CALL EASKR(cm(10),' ',' Derivative action time [sec]?',
-*item EPCNTRL
-' Drv. action flag: 1 if required; 0 if not rqd.'
-*enditem
-              CALL EASKR(cm(8),' ',' derivative action flag?',
-*item EPCNTRL
-*enditem
-                  CALL EASKR(cm(9),' ',' Derivative action time [sec]?',
-*item EPCNTRL
-*enditem
-              CALL EASKR(cm(7),' ',' Integral action time [seconds]?',
-*item EPCNTRL
-*enditem
-              CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
-*item EPCNTRL
-*enditem
-              CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
+*item EPCNTRL plant_ctl_opti_start
+'ESP-r implements an optimal start controller for system '
+'components. Its attributes are:'
+'  Maximum output, desired time of arrival, desired temperature,'
+'  first second and thrid B&J coefficients
+'  '
+'No other information is available about this controller.'
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
+*item EPCNTRL plant_ctl_prop_damper
+'ESP-r implements a proportional damper controller. Its '
+'attributes are:'
+'  Maximum and minimum damper position'
+'  Flox at maximum and minimum positions'
+'  1st and 2nd connection indicies.'
+'  '
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
-*enditem
-          CALL EASKS(HOLD,
-*item EPCNTRL
+*item EPCNTRL plant_ctl_duty_cycle
+'ESP-r implements a duty cycle controller for system '
+'components. Its attributes are:'
+'  Duty cycle period, time steps off, first off time-step'
+'  in the cycle period.'
+'  '
 'All time-steps are in terms of plant time-steps. '
 ' For example, for a cycle period of, say, 5 '
 ' time-steps, there could be, say, 2 off, with, e.g'
 ' the 1st off at the 3rd time-step, and thus the '
 ' 2nd off at the 4th time-step.'
-'See ESP-r Data Model section 9 for details. '
+'  '
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
-'See ESP-r Data Model section 9 for details. '
+*item EPCNTRL plant_ctl_on_off
+'ESP-r implements a simple ON/OFF controller for plant'
+'components. Its attributes are:'
+'  mode of operation:'
+'                            OUTLO'
+' MODE = +1        SPTOFF ----------'
+'                  SPTON  ----------'
+'                            OUTHI'
+'  '
+'                            OUTHI'
+' MODE = -1        SPTON  ----------'
+'                  SPTOFF ----------'
+'                            OUTLO'
+
+'  on set point (units depends on control type)'
+'  off setpoint (units depends on control type)'
+'  output at hi, output at lo'
+'  '
+'  sensor lag (in plant-timesteps)'
+'  actuator lag (in plant-timesteps)'
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
+*item EPCNTRL plant_multi_on_off
+'ESP-r implements an ON/OFF controller which is linked to'
+'multiple auxilary sensors. Attributes of the controller:'
+'  Output at high status'
+'  Output at low status'
+'  Mode of operation:'
+'    Mode = +1 for `ON` if control point is less than '
+'           specified function of aux`y sensor(s). '
+'    Mode = -1 for `ON` if control point is greater than'
+'           specified function of aux`y sensor(s). '
+'  '
+'At present, the control is limited to 2 auxiliary sensors.'
+'The following combinations of sensors are supported:'
+' 1: greatest value of aux sensors '
+' 2: least value of aux sensors '
+' 3: mean value of aux sensors '
+' 4: weighting of aux sensors '
+'  '
+'   Sensor lag (in plant-timesteps)'
+'   Actuator lag (in plant-timesteps)'
+'  '
 ' The number of data items required is in the range'
 ' 10 to 16 and depends on: (1) number of auxiliary '
 ' sensors (ns); (2) the auxiliary sensor function '
@@ -1726,75 +1629,48 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '                                   |no. of| |no. of|'
 '          Function                 |aux sn| |items |'
  '---------------------------------------------------'
-' greatest val of aux`y sensors         1       10 '
+' greatest val of aux`y sensors        1       10 '
 '   `      `  `    `     `             2       14 '
 ' least val of aux`y sensors           1       10 '
 '   `    `  `    `     `               2       14 '
 ' mean val of aux`y sensors            1       10 '
 '   `   `  `    `     `                2       14 '
 ' weighting of aux`y sensors           2       16 '
-' - Refer ESP-r Data Model section 9 '
+'  '
+'The description of an aux sensor is essentially the same as'
+'required in a control point sensor: three indices denoting'
+'the location of the sensor.'
+'  '
+'Weightings for the aux sensors must be supplied. The total'
+'must add up to 100.'
 *enditem
           CALL EASKR(cm(1),' ',' No. of misc data items ',
-*item EPCNTRL
-*enditem
           CALL EASKR(cm(2),' ',' Output at `hi` status ? ',
-*item EPCNTRL
-*enditem
           CALL EASKR(cm(3),' ',' Output at `lo` status ? ',
-*item EPCNTRL
- 'Mode = +1 for `ON` if control point is less than '
-'           specified function of aux`y sensor(s). '
-' Mode = -1 for `ON` if control point is greater than'
-'           specified function of aux`y sensor(s). '
-*enditem
           CALL EASKR(cm(4),' ',' Output mode ? ',
-*item EPCNTRL
-' At present, this is limited to 2 auxiliary sensors.'
-' - Refer ESP-r Data Model section 9 '
-*enditem
           CALL EASKR(cm(5),' ',' No of auxiliary sensors ? ',
-*item EPCNTRL
-' The auxiliary sensor function options are:'
-' 1: greatest value of aux sensors '
-' 2: least value of aux sensors '
-' 3: mean value of aux sensors '
-' 4: weighting of aux sensors '
-*enditem
           CALL EASKR(cm(6),' ',' Multi-sensor auxy function ? ',
-*item EPCNTRL
-' Lag is in terms of plant time-steps'
-*enditem
           CALL EASKR(cm(7),' ',' Sensor lag? ',
-*item EPCNTRL
-*enditem
           CALL EASKR(cm(8),' ',' Actuator lag ? ',
-*item EPCNTRL
-' - Refer ESP-r Data Model Section 9 '
-'The items are essentially the same as required in a'
-' control point sensor. '
-*enditem
-            CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
-*item EPCNTRL
-*enditem
-            CALL EASKR(cm(ndx+3),' ',
-*item EPCNTRL
-' The sensor weightings must total exactly 100.0'
-*enditem
-              CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
-*item EPCNTRL
+          CALL EASKR(cm(ndx),' ',' Aux sen detail 1st item ? ',
+          CALL EASKR(cm(ndx+1),' ',' Aux sen detail 2nd item ? ',
+          CALL EASKR(cm(ndx+2),' ',' Aux sen detail 3rd item ? ',
+          CALL EASKR(cm(ndx+3),' ',
+          CALL EASKR(cm(ndx),' ',' Aux sensor weighting ? ',
+*item EPCNTRL plant_multi_loops
+'ESP-r implements a controller which evaluates the state'
+'of other plant control loops.'
+'  '
 'You will be asked to state how many control loops you'
 'want to sense for this controller. For each loop that'
 'you specify you will asked a logical relationship'
 'with the next loop (.AND. or .OR.) e.g. loop 4 .AND.'
 'loop 7 will give the logical outcome of loop4 and 7'
 'based on their states at that time.'
+'  '
+'You are asked to a signal ON and signal OFF value for'
+'each control loop.
+'  '
 'The actuator for this component will have its control'
 'data modified at run time if the multisensor gives'
 'an ON signal. The value of this signal must be given'
@@ -1802,57 +1678,50 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'whether control data item no. 1 or 2 is being set'
 ' '
 'Additionally there is provision to set an overrun'
-'time. This is the time for which the component / '
+'time (minutes). This is the time for which the component / '
 'parameter actuated by this loop will be on after'
 'the control loop sensor goes off.'
 *enditem
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
-*item EPCNTRL
-*enditem
-            CALL EASKI(ICLN,' ',' Select control loops number',
-*item EPCNTRL
-*enditem
-              CALL EASKAB('Logical relationship with next loop',' ',
-*item EPCNTRL
-*enditem
+          CALL EASKI(ICLN,' ',' Select control loops number',
+          CALL EASKAB('Logical relationship with next loop',' ',
           CALL EASKR(TONV,' ',' Signal value at ON ',
-*item EPCNTRL
-*enditem
           CALL EASKR(TONV,' ',' Signal value at OFF ',
-*item EPCNTRL
-*enditem
           CALL EASKI(ICDAT,' ','Which control item to set at ON'
-*item EPCNTRL
-*enditem
           CALL EASKR(TONV,' ',' Overrun time (min)',
-*item EPCNTRL
+*item EPCNTRL plant_wch_simple_PI
 'This control law is a simplified PI controller '
 'specially adapted to room control of wet central'
 'heating (WCH) systems. It can be used to control the'
 'BDATA items of a plant component using PI action.'
+'  '
 'Alternately it can be used in TPMPI (time proportional'
 'modulating proportional integral) mode. In this mode '
 'BDATA items are not modified but ON time is controlled'
+'  '
 'For the implementation it was developed it was used'
 'to control the upper boiler temperature limit of a'
 'WCH boiler depending on the output temperature of a'
+'  '
 'Control inputs are: '
-'Setpoint nominal T_st (default value 21)'
-'Sensed condition T_sen (from sensor definition)'
-'Setpoint max T_max (default value 90)'
-'Setpoint min T_min (default value 20)'
-'Proportional band PB (default value 1)'
-'Bdata item number of actuated plant component, the'
-'value of this parameter will be changed by this '
-'controller index BDATA (default value 10)'
-'Integral reset time AIRT (default value 1)'
-'Integral summation of delta SDELTA'
+'  Setpoint nominal T_st (default value 21)'
+'  Sensed condition T_sen (from sensor definition)'
+'  Setpoint max T_max (default value 90)'
+'  Setpoint min T_min (default value 20)'
+'  Proportional band PB (default value 1)'
+'  Bdata item number of actuated plant component, the'
+'    value of this parameter will be changed by this '
+'    controller index BDATA (default value 10)'
+'  Integral reset time AIRT (default value 1)'
+'  Integral summation of delta SDELTA'
+'  '
 'At simulation run time BDATA value will be '
 'modified according to the following logic:'
 'BDATA=(T_max-T_min)*(DELTA/PB+SDELTA/(PB*AIRT)'
 '       + 0.5*(T_max+T_min)'
 'If BDATA is bigger than T_max it is reset to T_max or'
 'If BDATA is smaller than T_min it is reset to T_min'
+'  '
 'Optionally an additional control loop can be specified'
 'it this loop is active then BDATA item number is '
 'reset to a user defined static value, if you dont'
@@ -1861,31 +1730,29 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'The TPMPI mode of operation becomes active if cycle'
 'time is stated to be more than zero.'
 ' '
-' '
-' '
-' '
-' '
-' '
-' '
 *enditem
           CALL EASKS(HOLD,
-*item EPCNTRL
-'This controller modifies BDATA parameters of a plant'
-'component at simulation runtime. It was originally '
-'used to control boiler upper temperature limit for '
-'wet central heating systems.'
+*item EPCNTRL plant_outside_compensation
+'ESP-r implements a control which can be used to compensate'
+'for outside conditions. It does this by modifying the
+'BDATA parameters of a plant component at simulation runtime.'
+' '
+'It was originally used to control boiler upper temperature '
+'limit for wet central heating systems.'
+'  '
 'The following parameters are used:'
-'coefficients alpha, beta, gamma with default values'
-' (3.5 2. and 0. respectively)'
-'Nominal temperature 1 = T_st1 (default value 20)'
-'Nominal temperature = T_st (default value 21)'
-'Setpoint max T_max (default value 90)'
-'Setpoint min T_min (default value 20)'
-'ambient temperature T_amb (from climate file)'
-'Sensed condition T_sen (from sensor definition)'
-'Bdata item number of actuated plant component, the'
-'value of this parameter will be changed by this '
-'controller index BDATA (default value 10)'
+'  Coefficients alpha, beta, gamma with default values'
+'   (3.5 2. and 0. respectively)'
+'  Nominal temperature 1 = T_st1 (default value 20)'
+'  Nominal temperature = T_st (default value 21)'
+'  Setpoint max T_max (default value 90)'
+'  Setpoint min T_min (default value 20)'
+'  ambient temperature T_amb (from climate file)'
+'  Sensed condition T_sen (from sensor definition)'
+'  Bdata item number of actuated plant component, the'
+'    value of this parameter will be changed by this '
+'    controller index BDATA (default value 10)'
+'  '
 'At simulation run time the BDATA value will be'
 'If BDATA is bigger than T_max it is reset to T_max or'
 'If BDATA is smaller than T_min it is reset to T_min'
@@ -1895,54 +1762,85 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'want to specify an optional loop leave its value = 0'
 *enditem
           CALL EASKS(HOLD,'alpha, beta, gamma',
-*item EPCNTRL
-*enditem
           CALL EASKS(HOLD,'nominal1, nominal, max, min, BDATA',
 *subroutine EFCNTRL
-*item EFCNTRL
+*item EFCNTRL flow_ctl_menu
+'ESP-r allows you to specify controls for components in a'
+'flow network (mostly commonly in terms of a component within'
+'a specific flow path in the network). The pattern for setting'
+'up control loops is similar to that used for other domains.'
+'  '
+'Control within flow networks is optional. If you have no control'
+'then the nominal characteristics of the flow components are'
+'used throughout the assessment. If you want doors or windows to'
+'open and close or fans to turn off under specific circumstances'
+'then you need to define controls.'
+'  '
+'Flow controls can be used in combinations to approximate almost'
+'any situation or logic combination. Planning of networks is'
+'essential so that control actions in parallel and in sequence'
+'can be implemented.'
+'  '
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (i.e.'
 'they do not overlap), a sensed property, an actuated'
-'property, a control law and miscel. data which defines'
-'capacity, setpoints, etc.'
+'property (e.g. flow rate or opening area), a control law'
+'and miscel. data which defines setpoints, etc.'
+'  '
+'Periods are added to the end of the list. There is no insert'
+'option. Plan your periods before you define the control loop!'
+'  '
+' editing common control period data: '
+'   start time - a hour plus fraction 10h30 is 10.5'
+'     the initial period of a control loop must start at'
+'     midnight e.g. 0.0 hours.'
+'  '
+'Available flow control laws:'
+'  on/off/fractional controller - turns a component on or'
+'    off based on a sensed condition. It can work directly'
+'    (on above setpoint) or indirectly (on below setpoint)'
+'    and you can specify that ON is some fraction of the'
+'    nominal size and/or flow rate of the component.'
+'  '
+'  proportional with hysteresis - signal lower limit and valve'
+'    position, signal upper limit and vale position, delta'
+'    signal to overcome hysteresis.'
+'  '
+'  range based controller which is based on three temperatures'
+'    and three flow rates. E.g. flow rate 1 if below 1st temp'
+'    and flow rate 2 if above 2nd temp and flor rate 3 if above'
+'    3rd temp.' 
+'  '
+'  multi-sensor on/off to implement complex control logic'
+'  '
+'  human behaviour algorithm controlling windows and fans'
+'  '
+'  proportional and integral controller without hysterisis'
 '  '
 'Note: if no change required in an item then accept the'
 'current value.'
 *enditem
         CALL PHELPD('control period help',8,'-',0,0,IER)
-*item EFCNTRL
-'Periods are added to the end of the list. '
-*enditem
         CALL EASKABC('Options:',' ',
-*item EFCNTRL
-'See ESP-r Data Model Section 9 for details. '
-'The range controler is for use with component types'
-'30 35 40 110 130 and should sense a node temperature '
-'or outside db temperature. It returns a ratio of the'
-'nominal rate or area associated with each range. '
-*enditem
         call MENUATOL(outs,' Available laws','a on/off',
-*item EFCNTRL
-'See ESP-r Data Model Section 9 for details. '
-*enditem
         CALL EASKR(tcps,' ',' Period start time ? ',
-*item EFCNTRL
- 'Number of items for on/off controller = 3 '
- ' 1st is setpoint, '
- ' 2nd is action index 1=direct, -1=inverse'
- '   where direct is ON above setpoint.'
- '   and inverse  is ON below setpoint.'
- ' 3rd is fraction of capacity (e.g. if set to 0.5'
- '   of the area, door width or flow rate of the'
- '   component is 0.5 x its stated value) valid  '
- '   fractions are between 0.0 and 1.0 for area based'
+*item EFCNTRL flow_ctl_on_off
+'Number of items for on/off controller = 3 '
+' 1st is setpoint, '
+' 2nd is action index 1=direct, -1=inverse'
+'   where direct is ON above setpoint.'
+'   and inverse  is ON below setpoint.'
+' 3rd is fraction of capacity (e.g. if set to 0.5'
+'   of the area, door width or flow rate of the'
+'   component is 0.5 x its stated value) valid  '
+'   fractions are between 0.0 and 1.0 for area based'
 '   components and 0.1 to 1.0 for door width. A value'
 '   of 1.0 is equivalent to a simple ON:OFF control.'
 '   If a door control action would cause it to be less'
 '   than 10mm wide it is reset to 10mm.'
 *enditem
           CALL EASKS(HOLD,
-*item EFCNTRL
+*item EFCNTRL flow_ctl_prop_hyster
 'Number of items for proportional controller = 5 '
 '  1st is signal (what is sensed for this control)'
 '      lower limit,'
@@ -1953,16 +1851,27 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '  5th delta signal to overcome hysteresis.'
 *enditem
           CALL EASKS(HOLD,
-*item EFCNTRL
- 'Number of items for range controller = 6 '
- ' 1st is low setpoint, '
- ' 2nd is mid setpint'
- ' 3nd is high setpint'
- ' which yields 4 ranges as follows:'
- '   low range - below low setpoint, '
- '   default range - (nominal area or rate of the'
- '      component) between low and mid setpoints,'
- '   mid range - between mid and hi setpoints,'
+*item EFCNTRL flow_ctl_range_based
+'The range based controller acts in the same way as the'
+'range based control which can be imposed in scheduled'
+'infiltration in the zone operations file.'
+'  '
+'This could close a window if it is cold outside'
+'open it a bit more than normal if the temperature rises'
+'and then close the window if it is really hot outside.'
+'  '
+'Or it could be used to allow a fan to boost in stages'
+'based on the temperature.'
+'  '
+'Number of items for range controller = 6 '
+' 1st is low setpoint, '
+' 2nd is mid setpint'
+' 3nd is high setpint'
+' which yields 4 ranges as follows:'
+'   low range - below low setpoint, '
+'   default range - (nominal area or rate of the'
+'      component) between low and mid setpoints,'
+'   mid range - between mid and hi setpoints,'
 '   high range - above high setpoint. '
 ' 4th is low range ratio (of rate or area), '
 ' 5th is mid range ratio (of rate or area),'
@@ -1973,22 +1882,32 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' '
 'NOTE: this controller works with sensed conditions'
 'such as node temperature and can be used with '
-'components 30 35 40 110 and 130. '
+'components 30 (constant vol) 35 (constant mass)'
+'40 (common orifice) 110 (specific air opening)'
+'and 130 (bi-directional flow). '
+'  '
+'The range controler should sense a node temperature '
+'or outside db temperature. It returns a ratio of the'
+'nominal rate or area associated with each range. '
 *enditem
           CALL EASKS(HOLD,
-*item EFCNTRL
-*enditem
           CALL EASKS(HOLD,
-*item EFCNTRL
- 'Number of items for multi sensor flow'
- 'controller = 2 + 8 * no. of sensors'
- '  1st is default position: (1=open,0=closed)'
- '  2nd is number of auxiliary sensors. Then'
- '  for each auxiliary sensor 8 items are needed:'
- '    4 items for the sensor location followed by'
- '    1 item for the set point temperature'
- '    1 item for action flag (1=direct, -1=inverse)'
- '    1 item for fraction ON (currently not implemented)'
+*item EFCNTRL flow_ctl_multi_sensing
+'Some types of flow control require complex logic - e.g.'
+'opening a window if the inside temperature is within'
+'particular limits and the outside temperature is within'
+'particular limits. This can be done with several components'
+'in sequence, each with its on logic. Or you can use a '
+'multi-sensor flow control applied to a single component.'
+'  ' 
+'Number of items is = 2 + 8 * no. of sensors'
+'  1st is default position: (1=open,0=closed)'
+'  2nd is number of auxiliary sensors. Then'
+'  for each auxiliary sensor 8 items are needed:'
+'    4 items for the sensor location followed by'
+'    1 item for the set point temperature'
+'    1 item for action flag (1=direct, -1=inverse)'
+'    1 item for fraction ON (currently not implemented)'
 '    1 item for logical action (AND/OR/NOT/SLAVE)'
 'The connection/component will CHANGE from the default'
 'position when the sensed value is above the set-point'
@@ -1996,14 +1915,12 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'set to INVERSE, the CHANGE will take place when the'
 'sensed value is below the set-point.'
 ' '
-'This CHANGE when it takes place will switch the  '
-'connection from its default position (open or'
-'closed) to the inverse. '
+'This CHANGE when it takes place will switch the connection'
+'from its default position (open or closed) to the inverse.'
 ' '
-'Any sensor defined in the sensor location menu will'
-'be overridden. But sensor needs to be defined to '
-'pass through error traps therefore define sensor '
-'location as usual. '
+'Any sensor defined in the sensor location menu will be'
+'overridden. But sensor needs to be defined to pass though'
+'error traps therefore define sensor location as usual. '
 ' '
 'The logical action is a means to combine logically'
 'the outcomes of the multiple sensors. e.g. if in a'
@@ -2035,43 +1952,20 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '-3 ? 0 0 where ?=0 or 2 to 6 depending upon climate'
 'variable. OR. -4 ? 0 0 where ?= node number to'
 'be sensed.'
-' '
 *enditem
           CALL EASKI(NSEN,' ',OUTS,
-*item EFCNTRL
-*enditem
      &    CALL ASKOK('You have chosen just one sensor, the only option',
-*item EFCNTRL
-*enditem
-            CALL EASKAB('Choose whether NOT or SLAVE',' ','NOT','SLAVE'
-*item EFCNTRL
-*enditem
+          CALL EASKAB('Choose whether NOT or SLAVE',' ','NOT','SLAVE'
           CALL EASKAB('Default position? ',' ','closed','open',IW,56)
-*item EFCNTRL
-*enditem
-            CALL EASKAB(OUTS,' ','Climate variable','Node temperature'
-*item EFCNTRL
-*enditem
-              call MENUATOL(' ',' Climate variables','a temperature',
-*item EFCNTRL
-*enditem
-              call ASKRNOD('  sensed flow node','-',INOD,IER)
-*item EFCNTRL
-*enditem
-            CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
-*item EFCNTRL
-*enditem
-            CALL EASKAB('Action Flag (see help)',' ','Direct',
-*item EFCNTRL
-*enditem
-C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
-*item EFCNTRL
-*enditem
-     &      CALL EASKABC('Logical action variable',
-*item EFCNTRL
-*enditem
+          CALL EASKAB(OUTS,' ','Climate variable','Node temperature'
+          call MENUATOL(' ',' Climate variables','a temperature',
+          call ASKRNOD('  sensed flow node','-',INOD,IER)
+          CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
+          CALL EASKAB('Action Flag (see help)',' ','Direct',
+C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
+     &    CALL EASKABC('Logical action variable',
           CALL ASKMFCON(INODE,NNPK,ICPK,prmpt1,prmpt2)
-*item EFCNTRL
+*item EFCNTRL flow_ctl_adaptive
 'The windowfan algorithm models occupant behaviour'
 'and operates windows and fans based on mean operative'
 'and outdoor mean temperatures automatically.'
@@ -2080,62 +1974,38 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'which is a constant from 0-0.99 (Default value 0.8)'
 'The operative (resultant=0.5mean radiant + 0.5dry bulb)'
 'temperature is required for this algorithm. User has '
-'to specify internal node to be used to calculate this'
+'to specify internal flow node to be used to calculate this.'
+'  '
+'If you want to use this controller you probably should read'
+'the conference paper by Tuohy, Rijal, Humphreys, Nicol,'
+'Samuel and Clarke of IBPSA BS 2007.'
 *enditem
           CALL EASKR(cm(2),' ',' Running mean response parameter ? ',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(3),'  ','Fraction window openable in day ? ',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(4),' ','Fraction fan available for day use?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(5),' ','Fraction window openable in night ? ',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(6),' ','Fraction AC available for day use?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(7),' ','Fraction heating available ?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(8),' ','Fraction daylight available?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(9),' ','Power rating of the fan W/m2?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(10),' ','Power rating of the lights W/m2?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(11),' ','Fan comfort temperature adjustment?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(12),' ','Deadband for window open?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(13),' ','Deadband for fan on?',
-*item EFCNTRL
-*enditem
           CALL EASKR(cm(14),' ','Air intake surface ID?',
-*item EFCNTRL
-*enditem
  545      call ASKMFNOD(INOPT,NNPK,INPK,prmpt1,prmpt2,9)
+          CALL PHELPD('node selection help',2,'-',0,0,IER)
 *item EFCNTRL
-'Operative node must be inside a zone'
-'Select an internal node'
-*enditem
-            CALL PHELPD('node selection help',2,'-',0,0,IER)
-*item EFCNTRL
-'This control law is a simplified PI controller '
+'This control law is a simplified PI controller (it does not'
+'include hysterisis).'
+'  '
 'Control inputs are: '
-'Setpoint nominal T_st (default value 21)'
-'Sensed condition T_sen (from sensor definition)'
-'max flow fraction Q_max (default value 1)'
-'min flow fraction Q_min (default value 0.3)'
-'Proportional band PB (default value 1)'
-'Integral reset time AIRT (default value 1000)'
+'  Setpoint nominal T_st (default value 21)'
+'  Sensed condition T_sen (from sensor definition)'
+'  max flow fraction Q_max (default value 1)'
+'  min flow fraction Q_min (default value 0.3)'
+'  Proportional band PB (default value 1)'
+'  Integral reset time AIRT (default value 1000)'
 ' '
 'At simulation run time controlled value will be '
 'modified according to the following logic:'
@@ -2157,53 +2027,49 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'loop will be used as the sensed parameter'
 *enditem
           CALL EASKS(HOLD,
-*item EFCNTRL
-*enditem
           CALL EASKAB('Action flag (see help)',' ',
-*item EFCNTRL
-*enditem
           CALL EASKABC('Which sensor to use',' ',
-*item EFCNTRL
-*enditem
-            CALL EASKR(ocli,' ',' control loop index ',
+          CALL EASKR(ocli,' ',' control loop index ',
 *subroutine EGCNTRL
 *item EGCNTRL
+'ESP-r allows you to specify global controls which ?'
+'The pattern for setting up global control loops is rather'
+'different to that used for other domains.'
+'  '
 'A number of control periods can be defined for each'
 'control day type. Each period has a start time (i.e.'
 'they do not overlap), a sensed property, an actuated'
-'property, a control law and miscel. data which defines'
-'capacity, setpoints, etc.'
+'property, a control law and miscel. data.'
+'  '
+' editing common control period data: '
+'   start time - a hour plus fraction 10h30 is 10.5'
+'     the initial period of a control loop must start at'
+'     midnight e.g. 0.0 hours.'
+'  '
+'The following control laws are offered:'
+'  global on-off has an operational mode [definition?]'
+'    and a minimum loops on or a setpoint
+'  '
+'  global capacity controller is based on a global heating and'
+'    cooling capacity and a no shed value.'
+'  '
+'  global schedule on controller asks for a number of scheduled'
+'    control loops.'
+'  '
+'  global multi-sensor controller senses the state of mass flow'
+'    and plant control loops and actuates one named control'
+'    loop.'
 '  '
 'Note: if no change required in an item then accept the'
 'current value.'
 *enditem
         CALL PHELPD('control period help',8,'-',0,0,IER)
-*item EGCNTRL
-'Periods are added to the end of the list.'
-*enditem
         CALL EASKABC('Options:',' ',
-*item EGCNTRL
-'See ESP-r Data Model Section 9 for details. '
-*enditem
         call MENUATOL(outs,' Available laws',
-*item EGCNTRL
-'See ESP-r Data Model Section 9 for details. '
-*enditem
-        CALL EASKR(tcps,' ',' Period start time ? ',
-*item EGCNTRL
-'See ESP-r Data Model Section 9 for details.'
-'See ESP-r Data Model Section 9 for details. '
-*enditem
-          CALL EASKS(HOLD,' Mode; Min ON [mode_1] or stpt [mode_2]',
-*item EGCNTRL
-'See ESP-r Data Model Section 9 for details. '
-*enditem
-          CALL EASKS(HOLD,'Glb htg capy, Glb clg capy, No shed ',
-*item EGCNTRL
-'See ESP-r Data Model Section 9 for details. '
-*enditem
-          CALL EASKS(HOLD,'No. of scheduled loops',
-*item EGCNTRL
+        CALL EASKS(HOLD,' Mode; Min ON [mode_1] or stpt [mode_2]',
+        CALL EASKS(HOLD,'Glb htg capy, Glb clg capy, No shed ',
+        CALL EASKS(HOLD,'No. of scheduled loops',
+*item EGCNTRL global_ctl_multi_sens
 'This control senses the state of other control loops'
 'and actuates one named control loop -- overriding the '
 'original actuation state of the actuated loop. '
@@ -2234,177 +2100,37 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'relative values hence MAX/MIN should not be used here)'
 *enditem
           CALL EASKI(nClp,' ','Number of loops to sense ?',
-*item EGCNTRL
-*enditem
-            call MENUATOL(outs(1:iotsl),outs(1:iotsl),
-*item EGCNTRL
-*enditem
-            CALL EASKI(NLPS,' ','Loop number to sense ?',
-*item EGCNTRL
-*enditem
-                CALL EASKATOG('Logical action variable',
-*item EGCNTRL
-*enditem
+          call MENUATOL(outs(1:iotsl),outs(1:iotsl),
+          CALL EASKI(NLPS,' ','Loop number to sense ?',
+          CALL EASKATOG('Logical action variable',
           call MENUATOL(outs(1:iotsl),'select actuation domain',
-*item EGCNTRL
-*enditem
           CALL EASKI(IAPS,' ','Loop number to actuate ?',
 *subroutine senloc
-*item senloc
-'Depending on the control domain a sensor can be located'
-'at one of many places to measure specified parameters of'
-'the model.'
-*enditem
-        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
-*item senloc
-*enditem
-        call askzone(isn1,idef,
-*item senloc
-'This value specifies sensor location in greater'
-'detail. If >0 then refers to a specific surface.'
-*enditem
-          CALL EASKABC('Specific location: ',' ','zone air point',
-*item senloc
-*enditem
-          call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
-*item senloc
-'If = 0 then `inside` face of surface, '
-'If > 0 then refers to a node within surface and'
-'       this option may not result in a reliable'
-'       control so avoid selecting a node.'
-*enditem
-          CALL EASKABC('Specific location in surface: ',' ',
-*item senloc
-*enditem
-            call asksnode(isn1,isn2,ilayt,isn3t,ier)
-*item senloc
-'This value specifies the plant component index in '
-'the plant network definition file. '
-' '
-'If you choose cancel the controller data will not be'
-'altered and you will be returned to the main menu. '
-*enditem
-        CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
-*item senloc
-'This value specifies the plant component node (see '
-'the plant component database). '
-' '
-'If you choose cancel the controller data will not be'
-'altered and you will be returned to the main menu. '
-'When measuring the temperature in a node of a plant'
-'component, a sensor can compare this value to the'
-'temperature in another node in the plant network.'
-'Choosing `yes` configures the sensor to measure the'
-'difference in temperature between two nodes, while'
-'`no` configures the sensor to report the temperature'
-'in one node.'
-'This value specifies the second plant component '
-'index in the plant network definition file. The '
-'temperature of a node in this plant component   '
-'will be subtracted from the temperature in the  '
-'first plant component.'
-' '
-'If you choose cancel, a second component will not '
-'be specified, and the sensor will only report the '
-'the temperature measured in one plant component.'
-*enditem
-          CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
-*item senloc
-*enditem
-        call askzone(isn2T,idef,'Zone for sensor','Select zone','-',
-*item senloc
-'The convective weighting factor is the percent of'
-'overall energy exchange that is convective. '
-' '
-'If you choose cancel the controller data will not be'
-'altered and you will be returned to the main menu. '
-*enditem
-        CALL EASKI(isn3T,' ',' Convective weighting factor (%) ?',
-*item senloc
-*enditem
-        call askzone(isn1,idef,
-*item senloc
-*enditem
-        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
-*item senloc
-*enditem
-        call askzone(isn2,idef,
-*item senloc
-*enditem
-        call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
-*item senloc
-' See file solar.F for details of the two methods'
-' Two methods are available: Light Switch (manual'
-' blind control) or Lux level. However, only the '
-' second for Lux level is active here. This should'
-' be used with care. A tested implementation of both'
-' methods is available through the Tranparent Multilayer'
-' Control (TMC) files. '
-*enditem
-          call EASKAB(' ','Available lux level controls:',
-*item senloc
-*enditem
-            call askzone(isn2,idef,
-*item senloc
-*enditem
-            call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
-*item senloc
-'A temporal file holds timestep data including setpoints'
-'for use with zone or plant controls.   '
-' '
-'If you choose cancel the controller data will not be'
-'altered and you will be returned to the main menu. '
-*enditem
-        CALL EASKI(isn2T,'Index of the temporal item to associate with',
-*item senloc
-'A typical flow sensor is at a node in the mass flow '
-'network.  Only in the case of sensing 1st or 2nd phase'
-'mass flow would a specific connection be used as'
-'the sensed point. '
-*enditem
-        CALL EASKABC(' ',' Flow sensor at:',' flow node (typical) ',
-*item senloc
-'Synopsis of sensed properties: '
-'a) Nodes linked to thermal zones will take their'
-' temperature the last know temperature of the zone.'
-' Many users prefer to sense flow node temperatures'
-' rather than sense the thermal thermal zones directly.'
-' '
-'b) enthalpy is know at each node and can be sensed.'
-' '
-'c) additional plant output might be something like'
-' the demand (W) of the component.'
-' '
-'d/e/g/h) the Delta selections are in the form of'
-' the value at the 1st node of the connection minus'
-' the value at the 2nd node of the connection.'
-' For example: if a window should open if the ambient'
-' temperature is less than a room node temperature and'
-' the connection was defined from ambient to room then'
-' the delta T should be negative for an ON state.'
-' '
-'i) contanimate concentration - the units are '
-' typically g/kg .....'
-' '
-*enditem
-          call MENUATOL(outs,' Sensed Property',
-*item senloc
-*enditem
-            CALL ASKMFCTM(NCPK,ICPK,'choose','contaminant',NH)
-*item senloc
-' You need to set contaminant concentrations in g/kg'
-' in the control law and not kg/kg as elsewhere'
-*enditem
-            CALL PHELPD(' ',2,'-',0,0,IER)
-*item senloc
-'See ESP-r Data Model Section 9 for details.'
-*enditem
-          CALL EPICKS(IX,IVALS,' ',' Controller type: ',
-*item senloc
-*enditem
-          call ASKCON('  flow connections','-',INS,INE,IC,IER)
-*item senloc
-' The available functions are:'
+*item senloc senslocation_bld
+'In the building solution domain sensors for ideal controls can'
+'be placed in the locations listed in the menu. This list is'
+'similar to but not identical to that of the other domains.'
+'  '
+'The variety of locations is broad so as to give you maximum'
+'flexibility. The location you select tends to define the nature'
+'of what is sensed.'
+'  '
+'Note option a allows you to define a controller which can be'
+'  applied to almost any zone in your model.' 
+'  '
+'Option b needs a more specific location and you will be asked'
+'  to identify which zone and where in the zone.'
+'  '
+'Options c-i use data in the climate file as sensed conditions'
+'  the most common is ambient drybulb.'
+'  '
+'Option j allows you to read in timestep values (setpoints)'
+'  in a model temporal file. You are asked for the index of'
+'  the temporal item (so best look this up first).'
+'  '
+'Option k takes its output from a function generator so that'
+'  standard test patterns can be implemented.'
+'  The available functions are:'
 ' '
 '   Function          supp1    supp2    supp3   supp4'
 '   ================================================ '
@@ -2413,39 +2139,223 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   3. Square sine:   max      min      freq    ---  '
 '   4. Square cosine: max      min      freq    ---  '
 '   5: Triangular:    max      min      freq    ---  '
-'  6: Saw-tooth:     max      min      freq    ---  '
-'  7: Sine:          max      min      freq    shift'
-'  8: Cosine:        max      min      freq    shift'
-'  9: Sensed prop`y: inc/dec  ---      ---     ---  '
-' - Refer ESP-r Data Model section 9 '
+'   6: Saw-tooth:     max      min      freq    ---  '
+'   7: Sine:          max      min      freq    shift'
+'   8: Cosine:        max      min      freq    shift'
+'   9: Sensed prop`y: inc/dec  ---      ---     ---  '
+'  '
+'Option l implements switching multi-layer constructions'
+'  and the data is overloaded to identify which surfaces'
+'  the switching will be applied to.  You are asked for the'
+'  Upper zone air temperature limit above which substitution'
+'  occurs and the lower zone air temperature below which'
+'  substitution occurs.'
+'  '
+'Senses temperature in specific zone - this allows you to be'
+'  specific about where in a zone temperatures are sensed. You'
+'  will be asked to sepcify the zone and then whether the sensor'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node in the surface.'
+'  '
+'NESTED CONTROLS - if a question pops up about whether you want'
+'nested controls use the default NO. This only applies if you'
+'have previously defined a MLC switching controller. And if so'
+'you will be asked to idenfity the index of the switching control.'   
 *enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+*item senloc senslocation_plant
+'In the plant solution domain sensors for control loops can'
+'be placed in the locations listed in the menu. This list is'
+'similar to but not identical to that of the other domains.'
+'  '
+'The variety of locations is broad so as to give you maximum'
+'flexibility. The location you select tends to define the nature'
+'of what is sensed.'
+'  '
+'Option a allows you to sense one of the output variables in'
+'  a plant component - you need to research the component'
+'  prior to using this. You are asked for the plant component'
+'  index as well as the output type.' 
+'  '
+'Option b needs a more specific location and you will be asked'
+'  to identify which zone and you are asked for a'
+'  radiant and convective weighting.'
+'  '
+'Options c-i use data in the climate file as sensed conditions'
+'  the most common is ambient drybulb.'
+'  '
+'Option j allows you to read in timestep values (setpoints)'
+'  in a model temporal file. You are asked for the index of'
+'  the temporal item (so best look this up first).'
+'  '
+'Option k takes its output from a function generator so that'
+'  standard test patterns can be implemented.'
+'  The available functions are:'
+' '
+'   Function          supp1    supp2    supp3   supp4'
+'   ================================================ '
+'   1. Step:          start    finish   max     min  '
+'   2. Ramp:          start    finish   max     min  '
+'   3. Square sine:   max      min      freq    ---  '
+'   4. Square cosine: max      min      freq    ---  '
+'   5: Triangular:    max      min      freq    ---  '
+'   6: Saw-tooth:     max      min      freq    ---  '
+'   7: Sine:          max      min      freq    shift'
+'   8: Cosine:        max      min      freq    shift'
+'   9: Sensed prop`y: inc/dec  ---      ---     ---  '
+'  '
+'Senses temperature in specific zone - this allows you to be'
+'  specific about where in a zone temperatures are sensed. You'
+'  will be asked to sepcify the zone and then whether the sensor'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node in the surface.'
+'  '   
+*enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+*item senloc senslocation_flow
+'In the mass flow solution domain sensors for control loops can'
+'be placed in the locations listed in the menu. This list is'
+'similar to but not identical to that of the other domains.'
+'  '
+'The variety of locations is broad so as to give you maximum'
+'flexibility. The location you select tends to define the nature'
+'of what is sensed.'
+'  '
+'Option a allows you to sense the temperature of a node in'
+'  a plant component - you need to research the component'
+'  prior to using this. You are asked for the plant component'
+'  index as well as the node index. Optionally you can measure'
+'  the difference in temperature between two nodes.' 
+'  '
+'Option b needs a more specific location and you will be asked'
+'  to identify which zone and you are asked for a radiant and'
+'  convective weighting. Take care when using this. Most users'
+'  should use option j.'
+'  '
+'Options c-i use data in the climate file as sensed conditions'
+'  the most common is ambient drybulb.'
+'  '
+'Option j is the most common choice - sensing flow nodes is'
+'  more robust than sensing a zone temperature. In almost all'
+'  cases you will be sensing conditions at a flow node rather'
+'  than at a specific flow connection (the latter is only used'
+'  when the sensed value is to be  1st or 2nd phase mass flow.'
+'  Synopsis of sensed properties: '
+'  a) Nodes linked to thermal zones will take their'
+'     temperature the last know temperature of the zone.'
+'     Many users prefer to sense flow node temperatures'
+'     rather than sense the thermal thermal zones directly.'
+' '
+'  b) enthalpy is know at each node and can be sensed.'
+' '
+'  c) additional plant output might be something like'
+'     the demand (W) of the component.'
+' '
+'  d/e/g/h) the Delta selections are in the form of'
+'     the value at the 1st node of the connection minus'
+'     the value at the 2nd node of the connection.'
+'     For example: if a window should open if the ambient'
+'     temperature is less than a room node temperature and'
+'     the connection was defined from ambient to room then'
+'     the delta T should be negative for an ON state.'
+' '
+'  i) contanimate concentration - the units are in g/kg'
+'     (in other places you will have used kg/kg)'
+'  '
+'Senses temperature in specific zone - this allows you to be'
+'  specific about where in a zone temperatures are sensed. You'
+'  will be asked to sepcify the zone and then whether the sensor'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node in the surface.'
+'  '   
+*enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+*item senloc senslocation_optical
+'In the optical controller sensors for control loops can'
+'be placed in the locations listed in the menu. This list is'
+'less extensive than other domains.'
+'  '
+'Note option a allows you to define a controller which can be'
+'  applied to almost any zone in your model.' 
+'  '
+'Option b use data in the climate file'
+'  '
+'Option c tests the radiation at a specific outside surface.'
+'  '
+'Option d senses lux. Two methods are available: Light'
+' Switch (manual blind control) or Lux level. However, only the '
+' second for Lux level is active here. This should'
+' be used with care. A tested implementation of both'
+' methods is available through the Tranparent Multilayer'
+' Control (TMC) files. '
+'  '
+'Senses temperature in specific zone - this allows you to be'
+'  specific about where in a zone temperatures are sensed. You'
+'  will be asked to sepcify the zone and then whether the sensor'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node in the surface.'
+'  '   
+*enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+*item senloc senslocation_CFC
+'In the CFC optical controller sensors for control loops can'
+'be placed in the locations listed in the menu. This list is'
+'less extensive than other domains.'
+'  '
+'Option b appproximates a comfort sensor and you are asked for'
+'  a radiant and convective weighting.' 
+'  '
+'Option c-h use data in the climate file'
+'  '
+'Option i tests the radiation at a specific outside surface.'
+'  '
+'Option j senses lux levels. Two methods are available: Light'
+' Switch (manual blind control) or Lux level. However, only the '
+' second for Lux level is active here. This should'
+' be used with care. A tested implementation of both'
+' methods is available through the Tranparent Multilayer'
+' Control (TMC) files. '
+'  '   
+'Depending on the control domain a sensor can be located'
+'at one of many places to measure specified parameters of'
+'the model.'
+*enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+*item senloc senslocation_nothing
+'In the global and power domains sensors are not used.'
+'There is nothing much for you to do!'
+*enditem
+        CALL PHELPD('zone geom file section',3,'-',0,0,IER)
+        call askzone(isn1,idef,
+        CALL EASKABC('Specific location: ',' ','zone air point',
+        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
+        CALL EASKABC('Specific location in surface: ',' ',
+        call asksnode(isn1,isn2,ilayt,isn3t,ier)
+        CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
+        CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
+        call askzone(isn2T,idef,'Zone for sensor','Select zone','-',
+        CALL EASKI(isn3T,' ',' Convective weighting factor (%) ?',
+        call askzone(isn1,idef,
+        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
+        call askzone(isn2,idef,
+        call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
+        call EASKAB(' ','Available lux level controls:',
+        call askzone(isn2,idef,
+        call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
+        CALL EASKI(isn2T,'Index of the temporal item to associate with',
+        CALL EASKABC(' ',' Flow sensor at:',' flow node (typical) ',
+        call MENUATOL(outs,' Sensed Property',
+        CALL ASKMFCTM(NCPK,ICPK,'choose','contaminant',NH)
+        CALL PHELPD(' ',2,'-',0,0,IER)
+        CALL EPICKS(IX,IVALS,' ',' Controller type: ',
+        call ASKCON('  flow connections','-',INS,INE,IC,IER)
         CALL EASKI(isn2T,' ',' Required mathematical function ?',
-*item senloc
-'Upper zone air temperature limit (above which sub- '
-'stitution occurs. '
-*enditem
         CALL EASKI(isn2T,' Upper zone air temperature limit',
-*item senloc
-'Lower zone air temperature limit (below which sub- '
-'stitution occurs. '
-*enditem
         CALL EASKI(isn3T,' Lower zone air temperature limit',
-*item senloc
-'Most users should say no at this point. Nested functions'
-'are only used in support of thermophysical property '
-'substitution controls (and if you say yes you will be'
-'asked for the index of the control loop that defines '
-'the substitution). '
-*enditem
         CALL ASKOK(' Are there any nested control functions ?',
-*item senloc
-'Index of the control function to point to.'
-'Note that control must be control type -99.'
-'A cancel restores the previous values. '
-*enditem
-          CALL EASKI(isn4T,' ',
+        CALL EASKI(isn4T,' ',
 *subroutine actloc
-*item actloc
+*item actloc actlocation_prop_sub
 'Up to three surfaces may have substitute properties.'
 'The number required is the index in the surface.'
 'A zero signals no substitution as follows: '
@@ -2455,91 +2365,88 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If you cancel then data will revert to previous vlues.'
 *enditem
         CALL EASKI(ian1T,' ',' First surface index (see help)?',
-*item actloc
-*enditem
         CALL EASKI(ian2T,' ',' Second surface index (see help)?',
-*item actloc
-*enditem
         CALL EASKI(ian3T,' ',' Third surface index (see help)?',
-*item actloc
-'Depending on the control domain actuation can be located'
-'at one of many locations within the model.'
+*item actloc actlocation_bld
+'In the ideal building control domain actuation can be located'
+'at one of many locations within the zones of the model.'
+' Available actuation locations:'
+' option a - current zone air point. The controller can be applied'
+'   to any zone. The action is pure convective.
+' option b - this requires a specific location and a split between'
+'   the radiant and convective injections. The radiant flux will'
+'   be distributed to the surfaces in the zone on an area and'
+'   emissivity basis. For example, a WCH radiator is really a'
+'   mixed radiant and convective source. Depending on its design'
+'   it may have up to 60% convective delivery.'
+'  '
+' actuates specific location - this allows you to be'
+'  specific about where in a zone flux is applied. You'
+'  will be asked to sepcify the zone and then whether the actuator'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node within the surface.'
 *enditem
         CALL PHELPD('control actuation point',2,'-',0,0,IER)
-*item actloc
-'This value specifies sensor location in greater'
-'detail. If >0 then refers to a specific surface.'
+*item actloc actlocation_plant
+'In the plant control domain actuation can be located'
+'at one of the nodes within the plant network. You are asked'
+'to supply the index of the component as well as the index of'
+'the plant node. Do a bit of research on your plant network'
+'and components prior to selecting this option.'
+'  '
+' actuates specific location - this allows you to be'
+'  specific about where in a zone flux is applied. You'
+'  will be asked to sepcify the zone and then whether the actuator'
+'  is at the air node or associated with a surface. If a surface'
+'  then whether at a surface or at a node within the surface.'
 *enditem
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
+*item actloc actlocation_flow
+'In the flow control domain actuation can be located at a'
+'specific flow connection (e.g. the control is applied to the'
+'specific component associated with that connection). There is'
+'also an option to apply control to a component type and all'
+'of the places that that component is used. This later option'
+'is somewhat more compact but has not been tested recently.'
+*enditem
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
+*item actloc actlocation_nothing
+'The global control domain and power control domains do not'
+'rely on actuation specifications.'
+*enditem
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
+*item actloc actlocation_optical
+'The optical control domain actuation is focused on the optical'
+'properties of surfaces within the model.'
+*enditem
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
+*item actloc actlocation_CFC
+'The complex fenistration control domain actuation can cause'
+'a change of state in shading layers of a CFC or the slat angle'
+'of a slat-type shade within a CFC or schecedule shading and'
+'slat angles within a CFC.'
+*enditem
+        CALL PHELPD('control actuation point',2,'-',0,0,IER)
         CALL EASKABC('Specific location: ',' ','zone air point',
-*item actloc
-*enditem
-          call EASKSUR(ian1,ian2,'-','Available surfaces.',' ',IER)
-*item actloc
-'If = 0 then `inside` face of surface, '
-'If >0 then refers to a node within surface.'
-*enditem
-          CALL EASKABC('Specific location in surface: ',' ',
-*item actloc
-*enditem
-            call asksnode(ian1,ian2,ilayt,ian3t,ier)
-*item actloc
-'This value specifies the plant component index in '
-'the plant network definition file. '
-'A cancel restores the previous value. '
-*enditem
+        call EASKSUR(ian1,ian2,'-','Available surfaces.',' ',IER)
+        CALL EASKABC('Specific location in surface: ',' ',
+        call asksnode(ian1,ian2,ilayt,ian3t,ier)
         CALL ASKPCMP('Plant component for actuator ? ','-',IP,IER)
-*item actloc
-*enditem
         call ASKCON(' Flow connection?','-',INS,INE,IC,IER)
-*item actloc
-*enditem
-          call ASKRNOD('  sensed flow node','-',INOD,IER)
-*item actloc
-*enditem
-              call ASKRNOD(' 2nd sensed flow node','-',INOD,IER)
-*item actloc
-*enditem
+        call ASKRNOD('  sensed flow node','-',INOD,IER)
+        call ASKRNOD(' 2nd sensed flow node','-',INOD,IER)
         call askzone(ian2,idef,
-*item actloc
-*enditem
         call askCFCtype(ian2,ian3,IER)
-*item actloc
-*enditem
         call askzone(ian2T,idef,'Zone for actuation','Select zone','-',
-*item actloc
-'The convective weighting factor is the percent of'
-'overall energy exchange that is convective. '
-'A cancel restores the previous value. '
-*enditem
         CALL EASKI(ian3T,' ',' Convective weighting factor (%) ?',
-*item actloc
-*enditem
         call ASKRCMP(' Flow component?','-',ICMP,IER)
-*item actloc
-*enditem
-              call ASKRNOD('control on node','-',iv,IER)
-*item actloc
-*enditem
-              call ASKRNOD(' 1st sensed node name','-',iv,IER)
-*item actloc
-*enditem
-              call ASKRNOD(' 2nd sensed node name','-',iv,IER)
-*item actloc
-*enditem
+        call ASKRNOD('control on node','-',iv,IER)
+        call ASKRNOD(' 1st sensed node name','-',iv,IER)
+        call ASKRNOD(' 2nd sensed node name','-',iv,IER)
         call askzone(ian2,idef,
-*item actloc
-*enditem
         call askCFCtype(ian2,ian3,IER)
-*item actloc
-*enditem
         call askzone(ian2,idef,
-*item actloc
-*enditem
         call askCFCtype(ian2,ian3,IER)
-*subroutine ASKMFCTM
-*item ASKMFCTM
-*enditem
-        call EPICKS(NCPK,ICPK,PROMPT1,PROMPT2,
 *subroutine editctlperiod
 *item editctlperiod
 *enditem
@@ -2550,7 +2457,7 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item editctlperiod
 *enditem
   62    CALL EASKR(tcpst,' ',' Period start time ? ',
-*item editctlperiod
+*item editctlperiod bld_ctl_period_data
 'The zone basic controller is an ideal controller which'
 'will inject or extract sufficient heat (subject to '
 'the defined heating and cooling capacity) to meet a '
@@ -2612,21 +2519,12 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Values from the temporal file are taken to set setpnts'
 'Further details within each control law interface. '
 *enditem
-  63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-*item editctlperiod
-'Help for shading control law.'
-*enditem
+  63    CALL EPICKS(IX,IVALS,' ',' Control law option:',
   64    CALL EPICKS(IX,IVALS,' ',' Control law option:',
-*item editctlperiod
-*enditem
-          CALL EASKI(ivalue,prompt1(ifoc),prompt2(ifoc),
-*item editctlperiod
-*enditem
-          CALL EASKR(cmlocal(ifoc),prompt1(ifoc),prompt2(ifoc),
+        CALL EASKI(ivalue,prompt1(ifoc),prompt2(ifoc),
+        CALL EASKR(cmlocal(ifoc),prompt1(ifoc),prompt2(ifoc),
 *subroutine stfmenu
-*subroutine check_CFC_control_validity
-*subroutine exportcad
-*item exportcad
+*item stfmenu sys_bctl_01_03
 'A basic zone controller is an ideal controller that'
 'will inject or extract heat (subject to the available'
 'heating and cooling capacity) to maintain a given'
@@ -2670,10 +2568,14 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'time step should be constrained to a maximum of'
 '15 minutes to give sufficient control regulation'
 'decision points'
+*enditem
+*item stfmenu sys_bctl_02
 'A free float controller allows the zone temperature'
 'to reach whatever value is consistent with the heat'
 'gains and losses to the zone. No heating or cooling'
 'is applied. '
+*enditem
+*item stfmenu sys_bctl_04
 'The ideal fixed injection controller injects a given'
 'flux when heating or cooling is requested.'
 ' '
@@ -2683,6 +2585,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Heating (or cooling) may be disabled by setting a'
 'correspondingly low (or high) set point or by setting'
 'the corresponding capacity to zero.'
+*enditem
+*item stfmenu sys_bctl_05
 'This implements an ideal proportional (P) controller'
 'with optional integral (I) and/or derivative (D)'
 ' '
@@ -2713,6 +2617,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Heating (or cooling) may be disabled by setting a'
 'correspondingly low (or high) set point or by setting'
 'the corresponding capacity to zero.'
+*enditem
+*item stfmenu sys_bctl_07
 'A multi-stage controller (with hysteresis) has'
 'increasing (or equal) heating and cooling capacities'
 'defined for several stages. Stage set-points are'
@@ -2721,6 +2627,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'The control logic switches to the least stage that'
 'will maintain the desired temperature, stepping up'
 'and down between stages as appropriate.'
+*enditem
+*item stfmenu sys_bctl_08
 'This control represents an idealised, air based'
 'system that delivers air at a fixed flow rate (same'
 'for heating & cooling). The heating supply temperature'
@@ -2736,6 +2644,9 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'This control can be used to check whether an air'
 'based system is able to meet demand patterns in a'
 'room prior to specification of a detailed component'
+'model.'
+*enditem
+*item stfmenu sys_bctl_10'
 'This control allows separate flux ON and flux OFF'
 'set points to be specified for heating and cooling.'
 ' '
@@ -2768,6 +2679,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you'
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_13
 'This control allows separate flux ON and flux OFF'
 'set points to be specified for heating and cooling'
 'and extends the functionality of the basic separate '
@@ -2821,6 +2734,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you'
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_14
 'BCL14 is a floating action (three-position) controller'
 'which supports the definition of an open switch and'
 'shut switch differential (C) for heating and cooling'
@@ -2838,6 +2753,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you'
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_15
 'The optimum start controller allows for three modes '
 'of operation: '
 ' (1) Default start at 4AM'
@@ -2883,6 +2800,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you'
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_21
 'Proportional capacity slave controller. Typically a'
 'slave control is used to represent an environmental'
 'control with a thermostat in one zone and actions in'
@@ -2933,6 +2852,8 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you'
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_22
 'This control represents an ideal air based '
 'environmental control system that delivers air '
 'at a variable flow rate and a fixed supply temp'
@@ -2973,12 +2894,16 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You are given the option to discard changes when you '
 'exit the period. '
+*enditem
+*item stfmenu sys_bctl_23
 'This control law sets the setpoints based on heating'
 'and cooling temperatures as read from a temporal file'
 'defined in the model context > impose measured data'
 'section of the project manager interface. Any amount'
 'of heating and cooling is added so that the setpoints'
 'are met.'
+*enditem
+*item stfmenu sys_bctl_24
 'Adaptive comfort algorithm models occupant behaviour'
 'and operates heating/cooling based on mean operative'
 'and outdoor mean temperatures automatically.'
@@ -2997,11 +2922,19 @@ C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'The statically entered set points are currently not  '
 'used in the calculation but are retained for possible '
 'future use. '
-' '
-' '
-' '
-' '
+*enditem
+*item stfmenu sys_bctl_other
+'Nothing '
+'written '
+'yet about '
+'this control '
+*enditem
+*item stfmenu sys_bctl_CFC
 'Add explanation about CFC basic shading control here'
+'  '
+*enditem
+*subroutine exportcad
+*item exportcad
 'This facility allows you to export the current model'
 'in a format as required by one of the following'
 '3rd party applications.'
