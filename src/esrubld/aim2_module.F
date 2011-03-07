@@ -942,6 +942,7 @@ C this zone should represent a conditioned space.
         goto 1000
       endif
       AIM2_ref_zone = IVAL
+      
 
 C Read number of zones in model that will receive infiltration. This will normally
 C be less than the total number of zones in the model, as attic spaces and garages
@@ -985,9 +986,7 @@ C Check allocation was sucessful
               goto 1000
             endif
             AIM2_zone_infil(ICOMP) = IVAL
-C Set flag indicating that this zone's infiltration will be computed 
-C using the AIM2 model  
-            iAirFlowModel(IVAL) = iAIM2Model
+
           END DO
         END IF
       END IF

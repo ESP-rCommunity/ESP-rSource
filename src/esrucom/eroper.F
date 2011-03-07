@@ -587,11 +587,7 @@ C << number of items on the line and loop accordingly.
 C Gain reporting if requested.
       if(ITRC.GE.1)call CASINF(ICOMP,ITRU)
 
-C Set flag that allows switching between air flow model and other methods
-C for computing infiltration / ventilation.
-      iAirFlowModel(icomp) = iOPRschedule      
-      
-      
+     
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
       RETURN

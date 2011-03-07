@@ -2778,6 +2778,7 @@ C it is probably the index indicating flow.
       write(currentfile,'(a)') FILE(1:lnblnk(FILE))
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'anchors or flow',IER)
       IF(IER.NE.0)goto 1
+      
       if(OUTSTR(1:7).eq.'*Anchor')then
         K=8
         CALL EGETWI(OUTSTR,K,NALOC,0,20,'F','NALOC',IER)
@@ -2955,8 +2956,7 @@ C See if what we have is a valid fluid network node name.
 
 C Right, it is a valid fluid network node name.
    32     ICAAS(ICOMP)=INOD
-C Mark this zone as using the air-flow network.    
-          iAirFlowModel(ICOMP)= iFlowNetwork
+
           GOTO 35
 
 C No, it is not. Now tranform what we have into a number.
