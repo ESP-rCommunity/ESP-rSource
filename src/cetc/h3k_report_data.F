@@ -181,6 +181,10 @@ C.....Ventilation, infiltration data
                                 !   on present and future time rows
       real qvnp,xx3,cvvpm,cvvfm ! Not used in current context
 
+C.....Flow data
+      COMMON/MBINFO/ZMBI(MCOM,4)
+      REAL :: ZMBI      
+      
 C.....Zone boundary conditions
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &            ARF(MCOM,MS)
@@ -1153,6 +1157,12 @@ C.....Window position from BCL25 controller
      &         'Window position as per BCL25 controller (0->1)' )     
      
      
+      call add_to_xml_reporting (
+     &         real(iAirFlowModel(iZone)),
+     &         H3K_rep_NAME(1:16)// '/air_flow_model',
+     &         'units', '(-)',
+     &         'Air-flow-model (0->3)' )    
+     
 C.....Zone relative humidity
       fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
 
@@ -1283,6 +1293,22 @@ C.....Envelope heat loss
      &         'units', '(W)',
      &         'Contribution of foundation to heating load' )
 
+      
+C.....Zone air change rate (AIM2)
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationACH,
+     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
+     &                           //'air_changes_per_hour',
+     &         'units', '(ACH)',
+     &         'Zone infiltration (air changes per hour)') 
+      
+      call add_to_xml_reporting (
+     &         fZoneHeatGainInfiltration,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to cooling load' )      
+      
       call add_to_xml_reporting (
      &         fZoneHeatLossInfiltration,
      &         H3K_rep_NAME(1:16)
@@ -1290,6 +1316,22 @@ C.....Envelope heat loss
      &         'units', '(W)',
      &         'Contribution of infiltration to heating load' )
 
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationLoad,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to heating load' )     
+     
+     
+            call add_to_xml_reporting (
+     &         ZMBI(iZone,1),
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/balance/air',
+     &         'units', '(kg/s?)',
+     &         'Air movement into zone' )   
+     
+     
       call add_to_xml_reporting (
      &         fZoneHeatLossWalls
      &           + fZoneHeatLossInfiltration
@@ -1302,22 +1344,25 @@ C.....Envelope heat loss
      &         'units', '(W)',
      &         'Heat lost through all components of envelope' )
 
-C.....Zone air change rate (AIM2)
-      call add_to_xml_reporting (
-     &         fZoneInfiltrationACH,
-     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
-     &                           //'air_changes_per_hour',
-     &         'units', '(ACH)',
-     &         'Zone infiltration (air changes per hour)')
+
 
 ! Not sure if this is being computed correctly
-!       call add_to_xml_reporting (
-!      &         fZoneHeatLossVentilation,
-!      &         H3K_rep_NAME(1:16)
-!      &            //'/envelope/ventilation/heat_loss',
-!      &         'units', '(W)',
-!      &         'Contribution of ventilation to heating load' )
-
+!      call add_to_xml_reporting (
+!    &         fZoneHeatLossInfiltration,
+!    &         H3K_rep_NAME(1:16)
+!    &            //'/envelope/infiltration/heat_loss',
+!    &         'units', '(W)',
+!    &         'Contribution of ventilation to heating load' )
+!
+!    ! Not sure if this is being computed correctly
+!      call add_to_xml_reporting (
+!    &         fZoneHeatGainInfiltration,
+!    &         H3K_rep_NAME(1:16)
+!    &            //'/envelope/infiltration/heat_gain',
+!    &         'units', '(W)',
+!    &         'Contribution of infiltration to cooling load' )
+     
+     
 C.....Envelope heat gains
       call add_to_xml_reporting (
      &         fZoneHeatGainWindows,
