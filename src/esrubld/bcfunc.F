@@ -6156,7 +6156,7 @@ C - Zone characteristics
       
       common/fvala/tfa,qfa
       
-
+      ! Present and future fow temperatures 
       common/pvala/tpa(mcom),qpa(mcom)
       real tpa, qpa
       
@@ -6165,9 +6165,23 @@ C - Environment characteristics
       real TP, TF          ! Present & Future time-row temperatures       
       REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
       
+      
+C Control heat injection.      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       real BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER
+      
+
+C Time characteristics       
+      common/btime/btimep,btimef     
+      real BTimeP, BTimeF       
+      
+
+      
+C Running clock 
+      real fTimeLapsed(MCF) 
+      save fTimeLapsed
+      data fTimeLapsed / MCF * 0. /
       
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
@@ -6195,6 +6209,16 @@ C Window control setpoints (oC)
       real fWindowUpperSetpoint  ! Temperaturte at which windows are 
                                  ! opened.
       
+      real fDelayBetweenAction   ! time that must lapse between successive
+                                 ! control action (hours)
+                                 
+      logical bDelayLapsed       ! Flag indicating specified delay has 
+                                 ! passed
+                    
+      logical bWindowPosAtStart  ! Window position at start of ts (-)                  
+
+      real fOldTime, fNewTime
+      
 C Temperature data 
 
       real fZoneTemperature      ! Temperature in zone (oC)
@@ -6205,6 +6229,8 @@ C-----------------------------------------------------------------------
 C Get data from control spec.
 C-----------------------------------------------------------------------     
 
+      bWindowPosAtStart = bWindowsOpen(iComp) 
+
 C Get setpoints from input data 
       fWindowLowerSetpoint = BMISCD(ICF,IDTYP,IPER,2)  ! (oC)
       fWindowUpperSetpoint = BMISCD(ICF,IDTYP,IPER,3)  ! (oC) 
@@ -6214,60 +6240,91 @@ C closed.
       iClosedFlowMethod = int( BMISCD(ICF,IDTYP,IPER,4) ) ! (oC)
       iOpenFlowMethod   = int( BMISCD(ICF,IDTYP,IPER,5) ) ! (oC)
 
-
-C Get environment data 
-C 1. Determine zone temperature (future time row). 
+C Read delay between action (hours)
+      fDelayBetweenAction = BMISCD(ICF,IDTYP,IPER,6)
       
-      fZoneTemperature    = tpa(iComp) 
-      fAmbientTemperature = tf
+C 1. Determine zone temperature (future time row). 
+        fZoneTemperature    = tpa(iComp) 
+        fAmbientTemperature = tf      
+      
+      
+C Determine if control can act 
+      fOldTime = bTimeP
+      fNewTime = bTimeF 
+      if ( fOldTime > fNewTime ) fNewTime = fNewTime + 24.
+      fTimeLapsed(ICF) = fTimeLapsed(ICF) + (fNewTime - fOldTime)  
+      
+           
+      if ( fTimeLapsed(ICF) >= fDelayBetweenAction ) then 
+      
+        bDelayLapsed = .true. 
+        
+      else 
+        
+        bDelayLapsed = .false. 
+        
+      endif 
+      
+     
+C Get environment data 
+     
+      CheckDelayLapsed: if ( bDelayLapsed ) then   
+      
+
       
 C Determine if windows are open or closed. 
 C 1. Is AC system operational? If so, close windows if AC setpoint 
 C    is exceeded.
        
-      AreWindowsOpen: 
-     & if ( bZoneCooled(iComp) .and. 
-     &      fZoneTemperature .ge. fCoolSetpoint(iComp) ) then 
+        AreWindowsOpen: 
+     &  if ( bZoneCooled(iComp) .and. 
+     &       fZoneTemperature .ge. fCoolSetpoint(iComp) ) then 
      
-        bWindowsOpen(iComp) = .false. 
+          bWindowsOpen(iComp) = .false. 
         
 C 2. Is heating system operational? If so, close windows if heating 
 C    setpoint is exceeded.
 
-      elseif ( bZoneHeated(iComp) .and. 
-     &     fZoneTemperature .le. fHeatSetpoint(iComp) ) then
+        elseif ( bZoneHeated(iComp) .and. 
+     &           fZoneTemperature .le. fHeatSetpoint(iComp) ) then
      
-        bWindowsOpen(iComp) = .false. 
+          bWindowsOpen(iComp) = .false. 
         
 C 3. Is zone temperatue above upper window control setpoint? If so, 
 C    open windows to try to use free cooling. (Note: we presently don't
 C    consider what should happen if the OA temp is above the zone temp...
 
-      elseif ( fZoneTemperature .ge. fWindowUpperSetpoint ) then 
+        elseif ( fZoneTemperature .ge. fWindowUpperSetpoint ) then 
       
-        bWindowsOpen(iComp) = .true.
+          bWindowsOpen(iComp) = .true.
         
 C 4. Is zone temperature below lower window control setpoint? If so, 
 C    close windows to retain the heat. 
 
-      elseif ( fZoneTemperature .le. fWindowLowerSetpoint ) then 
+        elseif ( fZoneTemperature .le. fWindowLowerSetpoint ) then 
       
-        bWindowsOpen(iComp) = .false. 
+          bWindowsOpen(iComp) = .false. 
         
-      else 
+        else 
       
 C 5. Leave the windows where they are. 
 
-      endif AreWindowsOpen
+        endif AreWindowsOpen
       
+      endif CheckDelayLapsed
+
 C Flag which method should be used to determine if windows are open, 
 C closed.    
-
-
+      
       if ( bWindowsOpen(iComp) ) then 
         iAirFlowModel(iComp) = iOpenFlowMethod
       else 
         iAirFlowModel(iComp) = iClosedFlowMethod
+      endif 
+      
+C Check to see if windows have moved, and update running clock if so.
+      if ( bWindowsOpen(iComp) .neqv. bWindowPosAtStart ) then
+        fTimeLapsed(ICF) = 0.
       endif 
       
       if (.not. bNested) then 
@@ -6275,6 +6332,7 @@ C closed.
         TFUT = TNP 
       endif 
       
+    
 !               call add_to_xml_reporting (
 !     &              fWindowUpperSetpoint ,
 !     &              "debug/blc25/setpoint/open",

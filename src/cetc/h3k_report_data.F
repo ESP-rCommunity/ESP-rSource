@@ -1331,6 +1331,15 @@ C.....Zone air change rate (AIM2)
      &         'units', '(kg/s?)',
      &         'Air movement into zone' )   
      
+                  call add_to_xml_reporting (
+     &         ZMBI(iZone,1) / 1.275  * 3600. / vol(iZone)  ,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/balance/air_exchange',
+     &         'units', '(ACH)',
+     &         'Air movement into zone' )  
+     
+     
+     
      
       call add_to_xml_reporting (
      &         fZoneHeatLossWalls
