@@ -895,7 +895,8 @@ C Averaging on/off.
 
 C Zone side equations implicitness degree.
 
-        CALL EASKR(fUserGAM,' ','Zone side equations implicitness degree: ',
+        CALL EASKR(fUserGAM,' ',
+     &        'Zone side equations implicitness degree: ',
      &         0.,'F',1.,'F',0.5,' implicitness degree',IER,nbhelp)
 
         bUserGAM = .true. 
@@ -929,11 +930,7 @@ C Solar ON/OFF option.
   191   CALL EASKI(iUserSolar,' ',
      &    'Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,nbhelp)
-  191   H(1) ='To assess the effect of solar radiation on a '
-        H(2) ='zone a toggle switch on the simulator solar '
-        H(3) ='processing algorithms has been installed. If '
-        H(4) ='required solar processing can be switched off. '
-
+  
         bUserSolar = .true.
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
