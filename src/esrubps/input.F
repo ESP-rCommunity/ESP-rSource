@@ -877,6 +877,12 @@ C Open and scan the bidirectional data file if it exists.
         endif
       ENDIF
 
+      
+C Call routine to establish priority between overlapping airflow 
+C computation methods (e.g. AIM-2/Airflow network) 
+      call AirFlowInitializePriority()      
+      
+      
       return
 
 C Error.

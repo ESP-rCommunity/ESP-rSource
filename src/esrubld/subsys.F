@@ -1161,13 +1161,14 @@ C     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 C Variables used to transport equiv. conductances for infiltration, 
 C ventilation from air-flow networks. 
       COMMON/AfnToBldData/fAfnCondInfil,fAfnCondVent,iAfnIndex,
-     &                    fAfnCondNorm, bAfnZoneActive
+     &                    fAfnCondNorm, bAfnZoneActive,fZoneMassBalance
      
-      real :: fAfnCondInfil(MCOM)   
-      real :: fAfnCondVent(MCOM)
-      real :: fAfnCondNorm(MCOM)
-      integer :: iAfnIndex(MCOM)
-      logical :: bAfnZoneActive(MCOM)
+      real fAfnCondInfil(MCOM)   
+      real fAfnCondVent(MCOM)
+      real fAfnCondNorm(MCOM)
+      integer iAfnIndex(MCOM)
+      logical bAfnZoneActive(MCOM)
+      real fZoneMassBalance(MCOM,4)
       
       COMMON/BTIME/BTIMEP,BTIMEF
       REAL :: btimep,btimef
@@ -1622,6 +1623,8 @@ C to the above priority table.
             bNoFlow = .true. 
         end select CheckAirflowMethod
 
+        
+        
 C========================================================================          
         AssignInfil: if ( bNoFlow ) then
 C User has not specified any air flow (Can't really happen!)          
@@ -1705,17 +1708,18 @@ C User has defined an air-flow network. Use conductance reported from there.
 
 C========================================================================      
         elseif ( bAIM2) then 
-        
+       
           ! Conductance of infiltration returned for that zone
           ! If the zone was not specified in the AIM-2 file then it will return a zero
           CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-
+        
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
           ! loads are reflected in ESP-r's zonal energy balances.      
            CVIF = ZONE_infil_cond 
         endif AssignInfil
+       
+
         
-    
 C If the mechanical ventilation model is active
 C then add this infiltration conductance to the CVIF.
 C Note that this mechanical ventilation is added to the CVIF regardless of 
@@ -1782,7 +1786,7 @@ C .aim2 case.
           ! more sense given ESP's other conventions regarding .opr
           ! schedules.
           ! 
-          !IF(IAIRN.ge.1)TAF=TA1+(TRAT*(TA2-TA1))
+          ! IF(IAIRN.ge.1)TAF=TA1+(TRAT*(TA2-TA1))
           
           CVVF=CF
                 
@@ -1859,10 +1863,17 @@ C         mass flow rate and moisture content; 3= product of
 C         mechanical system mass flow rate and moisture content;
 C         4= total mass flow rate lost from the zone (no moisture
 C         included).
-      MoistureByMethod: IF(IAIRN.EQ.0.OR.ICAAS(ICOMP).EQ.0) THEN
+      MoistureByMethod: IF( bAFN ) THEN
+C........Read moisture balance data from air-flow network.
+         ZMBI(ICOMP,1) = fZoneMassBalance(ICOMP,1)
+         ZMBI(ICOMP,2) = fZoneMassBalance(ICOMP,2)
+         ZMBI(ICOMP,3) = fZoneMassBalance(ICOMP,3)
+         ZMBI(ICOMP,4) = fZoneMassBalance(ICOMP,4)    
+      else 
+C No air-flow network. Establish air and moisture balance based
+C on infiltration.  First initialize if there is no flow network or 
+C no node in the current zone.
 
-C First initialize if there is no flow network or no node in
-C the current zone.
          ZMBI(ICOMP,1)=0.0
          ZMBI(ICOMP,2)=0.0
          ZMBI(ICOMP,4)=0.0
@@ -1883,10 +1894,11 @@ C reset ZCVENT.
          else
            ZCVENT(ICOMP)=0.0
          END IF
-      END IF MoistureByMethod
-
+         
+      ENDIF MoistureByMethod
+  
 C Modify to relate to outside temperature.
-      IF(IAIRN.ge.1)THEN
+      IF( bAFN )THEN
 
 C In the case of a flow network.
         XX=TF
@@ -1907,6 +1919,7 @@ C No flow network.
 C Determine XX3.
       XX3=CVIF*TF+CVVFM*XX
 
+      
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM
       CIF(ICOMP)=CVIF
