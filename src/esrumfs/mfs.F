@@ -64,7 +64,6 @@ C     MMOD   - determines the device type attached to the current job.
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
@@ -108,7 +107,7 @@ C Name of current application
 
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
-      CHARACTER H*72,OUTSTR*124,inf*144,outs*124
+      CHARACTER OUTSTR*124,inf*144,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72
       character tg*1,delim*1,xfile*144
@@ -118,9 +117,17 @@ C Name of current application
       integer IWM     ! for radio button
       integer NITMS,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialize global common data.
       call ezero
       call curmodule('mfs ')
+      helpinapp='mfs'  ! set once for the application
+      helpinsub='mfs'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFS=1
@@ -401,11 +408,10 @@ C Tabular output of results; first read problem description file.
           GOTO 10
         ENDIF
 
-        H(1)='Pretty print is restricted to prescribed forms while'
-        H(2)='raw mode is more versatile and is often used for'
-        H(3)='export to third party graphing utilities.'
+        helptopic='tabular_format_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Do you want tabular output to be:',
-     &              'pretty print','raw & versatile',IW,3)
+     &              'pretty print','raw & versatile',IW,nbhelp)
         IF(IW.EQ.1) THEN
           call tstamp('>','MFS: enter pretty print reporting')
           CALL MFTABL(itrc,IFRES,ier)
@@ -469,10 +475,9 @@ C Alter trace flag
 
 C Enable/disable non-fatal warning message printing.
         dok=.false.
-        h(1)='Some models have parameters which, although not errors'
-        h(2)='might be of concern. If you would like to view warnings'
-        h(3)='answer yes. '
-        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,3)
+        helptopic='mfs_review_warnings'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,nbhelp)
         IF(OK)THEN
           ICOUT=IUOUT
         ELSE
@@ -497,23 +502,20 @@ C Toggle time format and day separators.
           call edisp(iuout,' ')
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
-        H(1)='Places an # separator between days of tabular data.'
+        helptopic='mfs_include_day_marker'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('Include mark between days when ',
-     &              'displaying or writing data :','no','yes',IDH,1)
+     &    'displaying or writing data :','no','yes',IDH,nbhelp)
         IDHFLG=IDH-1
       ELSEIF(INO.EQ.15)THEN
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
+        helptopic='mfs_tabular_delimeters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
-     &    ' ',IWM,6)
+     &    ' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -729,11 +731,17 @@ C SETUP provides the menu's and control logic for the mfs SETUP menu.
       SUBROUTINE SETUP(itrc,ITRU,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       DIMENSION SETUPM(5)
-      CHARACTER SETUPM*36,H*72
+      CHARACTER SETUPM*36
       integer NITMS,ISETUP ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='SETUP'  ! set for setup
 
 C Present the setup menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -761,13 +769,8 @@ C Display of time of day.
       SETUPM(5)=  '- Exit to main menu                 '
 
 C Help text for this menu.
-      H(1)='The preferences menu allows the fonts and display'
-      H(2)='sizes within mfs to be modified by the user. '
-      H(3)=' '
-      H(4)='For ease of viewing several font sizes are available.'
-      H(5)='Remember that the size of the window may be resized '
-      H(6)='so that complex images may be viewed in greater '
-      H(7)='detail.'
+      helptopic='mfs_setup_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=5
       CALL EMENU('  Mfs preferences',SETUPM,NITMS,ISETUP)
@@ -786,7 +789,9 @@ C allow decimal day representation if day format is DOY
       ELSEIF(ISETUP.EQ.4)THEN
 
 C Present help text for the menu.
-        CALL PHELPD('preference section',7,'-',0,0,IER)
+        helptopic='mfs_setup_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('preference section',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.5)THEN
 
 C Return to main menu.

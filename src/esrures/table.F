@@ -35,7 +35,6 @@ C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -59,9 +58,16 @@ C Special materials file flag
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(15)
-      character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
+      character outs*124,xfile*144,tg*1,delim*1,spflnam*72
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOTABL'  ! set for subroutine
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
@@ -108,11 +114,9 @@ C Default value for GRTOOL file = 0 (off), day hash marks off.
       NITMS=15
       INO=-2
 
-C Instanciate h() string array.
-      H(1) ='The output format selection allows you to direct '
-      H(2) ='tabular listing to the standard text feedback area '
-      H(3) ='or to a named file.  You may also define the time  '
-      H(4) ='format for use in 3rd party graphing facilities.  '
+C Instanciate help string array for all interactions.
+      helptopic='res_tabular_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
   504 CALL EMENU('Tabular Output',ITEM,NITMS,INO)
 
@@ -152,9 +156,9 @@ C Toggle time format and day separators.
           call edisp(iuout,' ')
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
-        H(1)='Places an # separator between days of tabular data.'
         CALL EASKAB('Include mark between days when ',
-     &              'displaying or writing data :','no','yes',IDH,1)
+     &              'displaying or writing data :','no','yes',
+     &              IDH,nbhelp)
         IDHFLG=IDH-1
       elseif(INO.EQ.12.AND.ISAVE.GE.1)then
 
@@ -171,17 +175,10 @@ C Toggle tabular listing label format.
       elseif(INO.EQ.13.AND.ISAVE.GE.1)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'continue',' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -194,7 +191,9 @@ C Toggle delimeter.
           delim = 'X'
         endif
       elseif(INO.EQ.14)then
-        CALL PHELPD('tabular',4,'-',0,0,IER)
+        helptopic='res_tabular_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('tabular',nbhelp,'-',0,0,IER)
       elseif(INO.GE.15)then
         RETURN
       else
@@ -229,7 +228,11 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -242,20 +245,21 @@ C act='m' called from ipv metric with parameters already set.
 
       character outs*124,outs248*248 ! string buffers
       character outs400*400,outs400d*400  ! really long string buffers
-      character act*1,sq*1,unit*7,t20*20,dg*1
-      character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8
+      character act*1,sq*1,unit*7,t28*28,dg*1
+      character LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      integer lnb   ! length of buffer to write to
+      integer lnb    ! length of buffer to write to
+      integer K,K4   ! counters
+      integer KE,KE4 ! current end points
 
 C If output to file alter the edisp unit number.
       itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -273,8 +277,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &       ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -317,7 +320,7 @@ C Write general header information (skip if IPV mode).
 C If requested or writing to file start lines with a '#'.
         if (IHFLAG.eq.1.or.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),36)
+          lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
             write(outs248,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
      &      ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -330,18 +333,21 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
-              call edisp248(itru,outs248,lnb)
+              call edisp248(itru,outs248,124)
             endif
           endif
           WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
           call edisp(itru,outs)
         else
+
+C Writing to the screen. It would be great to figure out how wide
+C we can write to << ?? to be done >>
           call edisp(itru,'Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),36)
+          lsn1=MIN0(lnblnk(RFILE),42)
           if(NSIM.gt.1)then
             write(outs248,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',
      &        ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
@@ -354,10 +360,10 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call edisp(itru,outs248(1:lnb))
             else
-              call edisp248(itru,outs248,lnb)
+              call edisp248(itru,outs248,124)
             endif
           endif
           WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
@@ -392,9 +398,9 @@ C Write day of results and column headings information (skip if IPV mode).
             call edisp(itru,outs)
           endif
           
-C If printing to screen then split column headings over three rows 
+C If printing to screen then split column headings over four rows 
 C   don't do this if printing to file.
-          irows=3
+          irows=4
           if (ixopen.eq.1) irows=1
           is=1
           do 100 ir=1,irows
@@ -446,21 +452,21 @@ C Define units.
               endif
               
 C Set end character for output string (KE or KE4) and for section of 
-C  glabel (ie) to be printed (if to screen).
-              KE=K+(33/irows)   ! set for 248
-              KE4=K4+(33/irows) ! set for 400
+C  tablabel (ie) to be printed (if to screen).
+              KE=K+(44/irows)   ! set for 248
+              KE4=K4+(44/irows) ! set for 400
               ie=is+9
               if(KE.le.248)then
                 
 C If writing to file remove blanks from label.
                 if (ixopen.eq.1) then
-                  call SDELIM(GLABEL(IL),t20,'N',IW)
-                  write (outs248(K:KE),'(3a)') ' ',t20(1:lnblnk(t20)),
-     &              unit
-                  K=K+lnblnk(t20)+lnblnk(unit)+1
+                  call SDELIM(TABLABEL(IL),t28,'N',IW)
+                  write(outs248(K:KE),'(3a)') ' ',
+     &              t28(1:lnblnk(t28)),unit
+                  K=K+lnblnk(t28)+lnblnk(unit)+1
                 else
-                  if (ir.lt.3) then
-                    write (outs248(K:KE),'(2a)') '|',GLABEL(IL)(is:ie)
+                  if (ir.lt.4) then
+                    write (outs248(K:KE),'(2a)') '|',TABLABEL(IL)(is:ie)
                   else
                     write (outs248(K:KE),'(2a)') '| ',unit
                   endif
@@ -471,13 +477,14 @@ C If writing to file remove blanks from label.
 C For writing to file also fill the 400 char buffer
               if(KE4.le.400)then
                 if (ixopen.eq.1) then
-                  call SDELIM(GLABEL(IL),t20,'N',IW)
-                  write (outs400(K4:KE4),'(3a)') ' ',t20(1:lnblnk(t20)),
-     &              unit
-                  K4=K4+lnblnk(t20)+lnblnk(unit)+1
+                  call SDELIM(TABLABEL(IL),t28,'N',IW)
+                  write(outs400(K4:KE4),'(3a)') ' ',
+     &              t28(1:lnblnk(t28)),unit
+                  K4=K4+lnblnk(t28)+lnblnk(unit)+1
                 else
-                  if (ir.lt.3) then
-                    write (outs400(K4:KE4),'(2a)') '|',GLABEL(IL)(is:ie)
+                  if (ir.lt.4) then
+                    write (outs400(K4:KE4),'(2a)') '|',
+     &                TABLABEL(IL)(is:ie)
                   else
                     write (outs400(K4:KE4),'(2a)') '| ',unit
                   endif
@@ -489,6 +496,12 @@ C For writing to file also fill the 400 char buffer
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
+C Debug.
+C            write(6,*) outs248(1:lnblnk(outs248))
+C            write(6,*) ' '
+C            write(6,*) outs400(1:lnblnk(outs400))
+C            write(6,*) ' '
+
             lnb=lnblnk(outs248)+1   ! ensure we do not warp line
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
@@ -496,10 +509,10 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               else
                 lnb=MIN0(lnblnk(outs248),124)
-                if(lnb.lt.72)then
+                if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
-                  call edisp248(itru,outs248,lnb)
+                  call edisp248(itru,outs248,124)
                 endif
               endif
             else
@@ -508,10 +521,10 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 lnb=MIN0(lnblnk(outs248),124)
-                if(lnb.lt.72)then
+                if(lnb.lt.124)then
                   call edisp(itru,outs248(1:lnb))
                 else
-                  call edisp248(itru,outs248,lnb)
+                  call edisp248(itru,outs248,124)
                 endif
               else
                 continue
@@ -642,10 +655,10 @@ C If using X delimeter (tagged data) then set the delimeter to a comma.
 
 C Writing to screen so use shorter file buffer.
             lnb=MIN0(lnblnk(outs248),124)
-            if(lnb.lt.72)then
+            if(lnb.lt.124)then
               call eddisp(itru,outs248(1:lnb))
             else
-              call eddisp248(itru,outs248,lnb)
+              call eddisp248(itru,outs248,124)
             endif
           endif
  421    CONTINUE
@@ -689,7 +702,11 @@ C gains and losses.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -703,7 +720,6 @@ C gains and losses.
       character outs*124,prompt*124,outsl*144
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character SLABEL*32,GLABEL*20
 
       DIMENSION VAL(12),TVAL(12,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
@@ -731,15 +747,14 @@ C Call the menu of choices (this also sets some default options).
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &    ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
         call usrmsg(prompt,'Scanning for range of values...','-')
       else
         write(prompt,'(3a)') 'Scanning for ',
-     &    SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &    SLABEL(1)(1:LNSLABEL(1)),'...'
         itru = icout
         call usrmsg(prompt,'  ','-')
       endif

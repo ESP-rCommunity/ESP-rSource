@@ -24,8 +24,7 @@ C of the user-specified time-dependant variable.
 
       PARAMETER (MF=100)
 
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
@@ -39,7 +38,7 @@ C of the user-specified time-dependant variable.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension IVALS(3),FDC(3)
-      character FDC*20,outs*124,H*72
+      character FDC*20,outs*124
       logical graph_ok,ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -49,6 +48,13 @@ C of the user-specified time-dependant variable.
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+
+      helpinsub='HISCLM'  ! set for cfiles
+
 C Identify specific variable to examine
 C and set up relevant label type for axis.
       graph_ok = .false.
@@ -57,14 +63,15 @@ C and set up relevant label type for axis.
 C Call MODFRQ to set up bin sizes and fill bins with data.
       CALL HISFRQ (IGET)
       IF(IFLAGF.EQ.1)GOTO 9999
+   75 helptopic='clm_frq_distr_choice'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-   75 H(1)='Frequency distribution choices. '
       INPIC=1
       FDC(1)='frequency bins      '
       FDC(2)='cumulative bins     '
       FDC(3)='summary table       '
       CALL EPICKS(INPIC,IVALS,' ',' Presentation format: ',
-     &  20,3,FDC,' frequency displays',IER,1)
+     &  20,3,FDC,' frequency displays',IER,nbhelp)
       IF(INPIC.eq.0)goto 9999
       IG=IVALS(1)
       call usrmsg(' ',' ','-')
@@ -74,9 +81,10 @@ C Call MODFRQ to set up bin sizes and fill bins with data.
 C Set tabular output.
         if(graph_ok)then
           dok=.true.
-          h(1)='If you want to see the numbers as well as the '
-          h(2)='graph say yes. '
-          call askok(' ','Add table below existing graph?',ok,dok,2)
+          helptopic='clm_numb_below_graph'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok(' ','Add table below existing graph?',ok,dok,
+     &      nbhelp)
           if(.NOT.ok)CALL CHEAD(30)
         else
           CALL CHEAD(30)
@@ -167,7 +175,6 @@ C falls inside each bin.
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
@@ -178,30 +185,31 @@ C falls inside each bin.
 
       COMMON/IFDFLG/IFLAGF
 
-      character CHA*20,H*72
+      character CHA*20
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+
+      helpinsub='HISFRQ'  ! set for cfiles
 
 C Reset the number of bins, the maximum hits in one bin etc.
       DXBIN=0.0
       NBINS=0
       IFREQ=0
-      h(1)='Priority can be given to either the number of frequency'
-      h(2)='bins or the width of each bin. Specifying the number of'
-      h(3)='frequency bins adjusts the width of each bin, while'
-      h(4)='setting this to 0 allows the number of bins to adjust'
-      h(5)='to the (user specified) width of each bin.'
+      helptopic='clm_frq_distr_choice'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easki(NBINS,' ',' Number of bins (0 for fixed width)?',
-     &  0,'F',MF,'F',1,'no of bins',IER,5)
+     &  0,'F',MF,'F',1,'no of bins',IER,nbhelp)
       IF (NBINS .GT. 0 .AND. NBINS .LE. MF) GOTO 110
 
 
       DXBIN=1.0
       CHA='  1   '
-      h(1)='Priority can be given to either the number of frequency'
-      h(2)='bins or the width of each bin. Specifying the number of'
-      h(3)='frequency bins adjusts the width of each bin, while'
-      h(4)='setting this to 0 allows the number of bins to adjust'
-      h(5)='to the (user specified) width of each bin.'
+      helptopic='clm_frq_distr_bins'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(CHA,' ',' Bin width [d] ? ',20,
      &    '1','bin width',IER,5)
       IF(CHA(1:1).EQ.'d'.OR.CHA(1:1).EQ.'D')then
@@ -216,11 +224,8 @@ C Reset the number of bins, the maximum hits in one bin etc.
       K=0
       CALL EGETWR(CHA,K,DXBIN,0.,0.,'-','bin width',IER)
 
- 110  h(1)='Priority can be given to either the number of frequency'
-      h(2)='bins or the width of each bin. Specifying the number of'
-      h(3)='frequency bins adjusts the width of each bin, while'
-      h(4)='setting this to 0 allows the number of bins to adjust'
-      h(5)='to the (user specified) width of each bin.'
+ 110  helptopic='clm_frq_distr_bins'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.true.
       call  askok('  ','Default bins?',OK,dok,5)
       if(ok)then
@@ -231,23 +236,26 @@ C Reset the number of bins, the maximum hits in one bin etc.
 
 C Get bin sizes from user.
   200 IF(NBINS.EQ.0)goto 210
-      H(1)='Give minimum bin value for the current parameter. '
-      call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &  0.,'-',0.,'-',0.,'min bin parameter',IER,1)
+      helptopic='clm_frq_min_bin'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      call easkr(XBIN1,' ','Minimum parameter value for bin ?',
+     &  0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
 
-      H(1)='Give maximum bin value for the current parameter. '
-      call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
+      helptopic='clm_frq_max_bin'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      call easkr(XBINN,' ','Maximum parameter value for bin ?',
+     &  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nbhelp)
 
       DXBIN = (XBINN-XBIN1) / NBINS
   210 dok=.false.
-      h(1)='You have the option to specify the maximum number '
-      h(2)='of `hits` for the bins. '
-      call askok('  ',' Fix maximum height of bins?',OK,dok,2)
+      helptopic='clm_frq_max_hit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      call askok('  ','Fix maximum height of bins?',OK,dok,nbhelp)
       if(ok)then
-        H(1)='Height is in `hits` ?? '
+        helptopic='clm_frq_max_hight'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easki(IFREQ,' ',' Maximim height ? ',
-     &          0,'W',0,'-',1,'max bin height',IER,1)
+     &          0,'W',0,'-',1,'max bin height',IER,nbhelp)
         goto 500
       else
         goto 500

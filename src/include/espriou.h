@@ -24,6 +24,11 @@ C Where esp-r environment variables at initial scan are held.
       common/udot/esprc
       character esprc*144
 
+C For external help text facility these variables give focus
+C to the file and the section of the help text blocks.
+      character helpinapp*24  ! application name set once in MAIN
+      common/helpin/helpinapp
+
 C parameters for browsing files (e.g. as used in esrucom/filelist.F)
 C MFFOLD - (integer) number of files remembered in a folder. Changes
 C to this parameter should also be reflected in the size of the

@@ -304,6 +304,8 @@ C Initial assumption is no SHOCC files.
       imgpth='./'
       radpth='./'
       dbspth='./'
+      bsmpth='./'
+      hvacpth='./'
       lradcf='UNKNOWN'
       cfgroot=' '
       LCTLF='UNKNOWN'
@@ -499,6 +501,8 @@ C Per-zone areas and U-values.
         areaground(IX) = 0.0
         exposed(IX) = 0.0
         vexposed(IX) = 0.0
+        izsfloor(IX) = 0
+        izsceil(IX) = 0
 
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
@@ -2649,7 +2653,7 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1,prompt2*36
+      CHARACTER VERT*27,KEY*1
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
       integer MVERT,IVERT  ! max items and current menu item
@@ -2831,18 +2835,6 @@ C If a long list include page facility text and info on portion seen.
         VERT(M+4)  ='- exit this menu        '
       endif
 
-      if(izone.le.0)then
-        if(mod.eq.'-')then
-          write(prompt2,'(a)')' (No previous zone defined.)'
-        elseif(mod.eq.'c'.or.mod.eq.'o'.or.mod.eq.'s')then
-          write(prompt2,'(a)') ' (Data file defined or undefined.)'
-        elseif(mod.eq.'v'.or.mod.eq.'g'.or.mod.eq.'h')then
-          write(prompt2,'(a)') ' (Data file defined or undefined.)'
-        endif
-      else
-        write(prompt2,'(3a)') '(',zname(izone),' is suggested.)'
-      endif
-
 C Help message for this menu.
       H(1)='A zone may be selected via the name in the list.'
       h(2)='If you have just created a file it may not show up'
@@ -2854,7 +2846,6 @@ C Help message for this menu.
       h(8)='insolation analysis.'
 
 C Display the menu.
-C      call usrmsg(PROMPT,PROMPT2,'-')
       CALL EMENU(title,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -3256,13 +3247,15 @@ C show attributes in list.
 
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
-      integer ncomp,ncon,a,b
+      integer ncomp,ncon
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
       LOGICAL SELECT
+      integer loopstart,loopend,i,icc   ! for looping
+      logical usesbasesimp
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
@@ -3270,6 +3263,7 @@ C show attributes in list.
         IER=1
         RETURN
       ENDIF
+
       write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
 
 C Initialise surface menu variables based on window size.
@@ -3361,17 +3355,22 @@ C If no selection has been made before exit then return with 0.
         call usrmsg(' ',' ','-')
 
 C Checks the surfaces in the current zone to see if any of the surface
-C attributes are 'BASESIMP'.
-         a=icc-ILEN+1
-         b=icc
-         DO i=a,b
-           IF(SSOTHER(i,1).EQ.'BASESIMP')THEN
-             CALL BASESIMP_INPUTS(IZONE,IER)
-             RETURN
-           END IF
-         END DO
-C End of code added for BASESIMP functionality
-        RETURN
+C attributes are 'BASESIMP'.  If there are any then present the
+C BASESIMP editing facility (once).
+        usesbasesimp=.false.   ! assume no basesimp attributed surfaces
+        loopstart=0
+        loopend=NZSUR(IZONE)
+        DO i=loopstart,loopend
+          icc=IZSTOCN(izone,i)
+          IF(SSOTHER(icc,1).EQ.'BASESIMP')THEN
+            usesbasesimp=.true.
+          END IF
+        END DO
+        if(usesbasesimp)then
+          CALL BASESIMP_INPUTS(IZONE,IER)
+        endif
+
+        RETURN  ! return to the parent call
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('zone geom file section',2,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN

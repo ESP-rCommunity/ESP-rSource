@@ -43,16 +43,24 @@ C simulations to be run.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       COMMON/UA4/NIACT,IACTD(MNACT,2)
       COMMON/UA5/IMET,ISIM,NRSIM
       COMMON/UAMET/IUNCMET
       COMMON/UAFCT/IADIR(MNFA),NFA
 
-      character ITEM(3)*18,H*72,outs*124
+      character ITEM(3)*18,outs*124
 
       DIMENSION IVAL(3)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SENRNS'  ! set for subroutine
+      helptopic='select_sensit_method'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       IER=0
 
@@ -69,13 +77,9 @@ C Ask for uncertainty analysis method first
         ITEM(3) ='Monte-Carlo '
         NITMS=3
 
-        H(1)='Pick the required analysis method.  The only available '
-        H(2)='option is Differential sensitivity analysis at present.'
-        H(3)='For further details on the method see the final report '
-        H(4)='of the PASSYS project. '
         INPIC=1
         CALL EPICKS(INPIC,IVAL,' ',' Which analysis type : ',
-     &                        18,NITMS,ITEM,'Analysis methods',IERR,4)
+     &    18,NITMS,ITEM,'Analysis methods',IERR,nbhelp)
 
 C Check for errors - try again if error has occurred.
         if (IERR.ne.0) then
@@ -119,12 +123,8 @@ C Factorial method. First check if there is space for all the runs.
 
 C Monte-Carlo. Set IMET and NSRIM.
         NRSIM=80
-        H(1)='A Monte-Carlo analysis usually requires at least 70 '
-        H(2)='simulations and usually no more than 100. '
-        H(3)='You may have to re-compile so as the result library '
-        H(4)='can accomodate all the result sets. '
         call EASKI(NRSIM,' ',' Required number of simulations ? ',
-     &        70,'W',MNRS,'F',80,' No. of simulations ',IER,4)
+     &    70,'W',MNRS,'F',80,' No. of simulations ',IER,nbhelp)
 
 C Seen random number generator.
         call getsecs(istime)

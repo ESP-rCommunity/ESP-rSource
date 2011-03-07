@@ -220,12 +220,18 @@ C once per day-month.
       common/filep/ifil
       common/data1/ical,idifc,init
       common/contr/mon,isc(ms),iyd
-      common/pophelp/h(60)
       common/data2/pso(ms,24),psof(ms,24)
 
       dimension isadd(12),ishd(12)
-      character outs*124,h*72
+      character outs*124
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ssave'  ! set for subroutine
 
 C SI db unit number.
       ifilsi=ifil+3
@@ -279,14 +285,12 @@ C Update saved data index.
       endif
 
 C Shading data already exists for this month.
-      h(1)='This month has previously been processed. You may wish'
-      h(2)='to overwrite the shading data with the new calculation'
-      h(3)='results. Note however that it is possibly safer to replace'
-      h(4)='the Zone Shading & Insolation db with a new one.'
+      helptopic='data_already_exists'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a,i2,a)') 'Shading data already saved for month ',
      &                        mon,'.' 
       dok=.true.
-      call askok(outs,'OK to overwrite?',ok,dok,4)
+      call askok(outs,'OK to overwrite?',ok,dok,nbhelp)
       if(.not.ok)return
 
 C For each zone surface (whether included in the shading calculation
@@ -340,7 +344,6 @@ C once per day-month.
       common/outin/iuout,iuin
       common/data1/ical,idifc,init
       common/contr/mon,isc(ms),iyd
-      common/pophelp/h(60)
       common/filep/ifil
       common/tmc/itmc(ms),nwins
       common/stins/insst(mgt,24,misur),pinsst(mgt,24,misur),
@@ -349,13 +352,19 @@ C once per day-month.
 
       dimension pso(ms,24),psof(ms,24),insstx(24),pinsstx(24)
       dimension isadd(12),ishd(12),ioffs(ms),ntmc(ms),month(12)
-      character outs*124,paction*16,h*72,month*3
+      character outs*124,paction*16,month*3
       logical ok,dok,close
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
 
 C SI db unit number.
+      helpinsub='isave'  ! set for subroutine
       ifilsi=ifil+3
       ier=0
 
@@ -446,15 +455,11 @@ C Possibly update saved data index.
          if(multi.eq.1)new=1
       elseif(ishdt.eq.2.or.ishdt.eq.3)then
          dok=.true.
-         h(1)='This month has previously been processed. You may'
-         h(2)='wish to update the insolation data with the new'
-         h(3)='calculation results. Where this will result in'
-         h(4)='the replacement of existing entries you may wish'
-         h(5)='to replace the current Zone Shading & Insolation db'
-         h(6)='with a new one.'
+         helptopic='data_already_exists'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          write(outs,'(3a)')
      &       'Insolation data already saved for month ',month(mon),'.' 
-         call askok(outs,'OK to overwrite/append?',ok,dok,6)
+         call askok(outs,'OK to overwrite/append?',ok,dok,nbhelp)
          if(.not.ok)return
       endif
 

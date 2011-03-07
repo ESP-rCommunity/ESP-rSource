@@ -60,29 +60,18 @@ C
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C Variables used to transport computed infiltration, ventilation
-C conductances to building domain      
-      COMMON/AfnToBldData/fAfnCondInfil,fAfnCondVent,iAfnIndex,
-     &                    fAfnCondNorm, bAfnZoneActive,fZoneMassBalance
-     
-      real fAfnCondInfil(MCOM)   
-      real fAfnCondVent(MCOM)
-      real fAfnCondNorm(MCOM)
-      integer iAfnIndex(MCOM)
-      logical bAfnZoneActive(MCOM)
-      real fZoneMassBalance(MCOM,4)
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Zone moisture balance information.
       COMMON/FVALG/GFA(MCOM)
+      COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/ZCVNT/ZCVENT(MCOM)
 C Hourly ventilation conductances and temperature of incoming air.
-!      COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
-!     &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
-!      INTEGER ICCN
-!      REAL CVIN,CVVN,TIAN
+      COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
+     &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
+      INTEGER ICCN
+      REAL CVIN,CVVN,TIAN
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -253,9 +242,7 @@ C temperatures.
       DO 49 ICOMP=1,NCOMP
         IF(ICAAS(ICOMP).NE.0) THEN
           JNOD=ICAAS(ICOMP)
-          bAfnZoneActive(ICOMP) = .true. 
         ELSE
-          bAfnZoneActive(ICOMP) = .false. 
           GOTO 49
         END IF
 
@@ -286,61 +273,52 @@ C infiltration load).
             ENDIF
    40   CONTINUE
 
-!C Now overwrite appropriate COMMON block PREC5 variable
-!C Jump depending on day of week.
-!        IDAY=IDYP
-!        IF(IHRF.EQ.1)IDAY=IDYP+1
-!        IF(IDAY.GT.365)IDAY=IDAY-365
-!        IDTY=ICALENDER(IDAY)
-!        IF(CALENAME(1:7).EQ.'UNKNOWN')THEN
-!
-!C Day types are legacy (weekday/saturday/sunday)
-!          IF(IHRF.EQ.1) GOTO 42
-!          GOTO (44,44,44,44,44,45,46) IDWP
-!   42     GOTO (44,44,44,44,44,45,46) IDWF
-!   44     IDTY=1
-!          GOTO 409
-!   45     IDTY=2
-!          GOTO 409
-!   46     IDTY=3
-!        ENDIF
 C Now overwrite appropriate COMMON block PREC5 variable
-!409    CVIN(IDTY,ICOMP,IHRF)=CVI
-!       CVVN(IDTY,ICOMP,IHRF)=CVV
-!       ICCN(IDTY,ICOMP,IHRF)=0
-!       TIAN(IDTY,ICOMP,IHRF)=CVVM 
+C Jump depending on day of week.
+        IDAY=IDYP
+        IF(IHRF.EQ.1)IDAY=IDYP+1
+        IF(IDAY.GT.365)IDAY=IDAY-365
+        IDTY=ICALENDER(IDAY)
+        IF(CALENAME(1:7).EQ.'UNKNOWN')THEN
 
-C Store zone conductances in common for transfer to building. 
-        fAfnCondInfil(iComp) = CVI
-        fAfnCondVent(iComp)  = CVV
-        iAfnIndex(iComp)     = 0
-        fAfnCondNorm(iComp)  = CVVM
-
+C Day types are legacy (weekday/saturday/sunday)
+          IF(IHRF.EQ.1) GOTO 42
+          GOTO (44,44,44,44,44,45,46) IDWP
+   42     GOTO (44,44,44,44,44,45,46) IDWF
+   44     IDTY=1
+          GOTO 409
+   45     IDTY=2
+          GOTO 409
+   46     IDTY=3
+        ENDIF
+ 
+C Now overwrite appropriate COMMON block PREC5 variable
+ 409    CVIN(IDTY,ICOMP,IHRF)=CVI
+        CVVN(IDTY,ICOMP,IHRF)=CVV
+        ICCN(IDTY,ICOMP,IHRF)=0
+        TIAN(IDTY,ICOMP,IHRF)=CVVM
  49   CONTINUE
 
 C Now, zone by zone, check if there is a corresponding mass flow node
 C and if so fill the zone moisture balance array.
       DO 55 ICOMP=1,NCOMP
-      fZoneMassBalance(ICOMP,1)=0.0
-      fZoneMassBalance(ICOMP,2)=0.0
-      fZoneMassBalance(ICOMP,3)=0.0
-      fZoneMassBalance(ICOMP,4)=0.0
+      ZMBI(ICOMP,1)=0.0
+      ZMBI(ICOMP,2)=0.0
+      ZMBI(ICOMP,4)=0.0
       IF(ICAAS(ICOMP).NE.0) THEN
          INOD=ICAAS(ICOMP)
 
 C Infiltration.
-         fZoneMassBalance(ICOMP,1)=AMFR(INOD,INOD)
-         fZoneMassBalance(ICOMP,4)=AMFR(INOD,INOD)
+         ZMBI(ICOMP,1)=AMFR(INOD,INOD)
+         ZMBI(ICOMP,4)=AMFR(INOD,INOD)
 
 C Node by node, check for intra-node air flows. ZCVNT added to help
 C in checking zone moisture balance info.
          DO 52 JNOD=1,NNOD
          IF(JNOD.NE.INOD.AND.AMFR(JNOD,INOD).GT.0.0) THEN
             ZCVENT(ICOMP)=ZCVENT(ICOMP)+AMFR(JNOD,INOD)
-            fZoneMassBalance(ICOMP,2)= fZoneMassBalance(ICOMP,2)
-     &                                +AMFR(JNOD,INOD)*real(XNOD(JNOD))
-            fZoneMassBalance(ICOMP,4)= fZoneMassBalance(ICOMP,4)
-     &                                +AMFR(JNOD,INOD)
+            ZMBI(ICOMP,2)=ZMBI(ICOMP,2)+AMFR(JNOD,INOD)*real(XNOD(JNOD))
+            ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+AMFR(JNOD,INOD)
          END IF
    52    CONTINUE
       END IF

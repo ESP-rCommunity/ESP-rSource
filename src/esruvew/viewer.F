@@ -3,8 +3,8 @@ C VIEWER MAIN PROGRAM
       program viewer
 #include "viewer.h"
 #include "viewer.h2"
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -25,10 +25,16 @@ C Name of current application
       
       logical     unixok
 
-      character outs*124,inf*144,path*72,LCMDFL*144,H*72,fs*1
+      character outs*124,inf*144,path*72,LCMDFL*144,fs*1
       character outs248*248
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
 C Viewer works as follows:
 C call input which initialises everything and reads in
@@ -40,6 +46,8 @@ C Initialise terminal and begin program.
       call ezero
       call curmodule('vew ')
       cAppName = 'vww'
+      helpinapp='vew'  ! set once for the application
+      helpinsub='vew'  ! set for MAIN
       IUIN = 5
       IUOUT = 6
       IFUSE = 7

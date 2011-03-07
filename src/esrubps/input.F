@@ -190,7 +190,6 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
-#include "UserSimulationToggles.h"
       INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
@@ -204,7 +203,6 @@ C default file names for databases
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
@@ -290,7 +288,7 @@ C For reading in of bi-directional data.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144
+      CHARACTER outs*124,louts*248,spsname*8,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -335,6 +333,13 @@ C Status of multi-year climate database
       REAL :: clmloc
       INTEGER :: i,iaprob,iglib,irec,istat,itru,iua,llt,nclass
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mzinpt'  ! set for cfiles
+
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
@@ -349,7 +354,6 @@ C Set folder separator (fs) to \ or / as required.
 
 C Initialize the system variables.
       GAM=0.5
-      fUserGAM = GAM
       BLDG3D=.FALSE.
       GRND3D=.FALSE.
       MSTROK=.FALSE.
@@ -359,14 +363,8 @@ C Initialize the system variables.
 
 C If an input file has been specified then load it after confirmation
 C and return to the main menu.
-      H(1)='A model configuration file defines the model for'
-      H(2)='simulation. This can be a building only (in whole or '
-      H(3)='part), a plant network, or a combined building and '
-      H(4)='plant system. It is also possible to specify building'
-      H(5)='leakage and pressure distribution to enable air flow '
-      H(6)='simulation. The file is created using ESRU: imp. '
-      H(7)='Examples of system configuration files are given in '
-      H(8)='sections 3.8 and 7 of the user manual.'
+      helptopic='model_cfg_file_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  42   if (.NOT.(ISIM.gt.1.or.autook)) then
         write(L144,'(a)') LCMDFL(1:lnblnk(LCMDFL))
         llt=lnblnk(LCMDFL)
@@ -378,20 +376,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &        'config file name',IER,8)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,DFCFG,
-     &        'config file name',IER,8)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &        'config file name',IER,8)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,DFCFG,
-     &      'config file name',IER,8)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,DFCFG,
-     &      'config file name',IER,8)
+     &      'config file name',IER,nbhelp)
         endif
 
         if(L144(1:2).ne.'  '.and.L144(1:4).ne.'UNKN')then
@@ -427,12 +425,10 @@ C Unless error occured, initiate computation/setting-up of:
             endif
           else
             dok=.false.
-            h(1)='Usually problems with a model are detected prior to'
-            h(2)='starting the simulator. It is unclear what the nature'
-            h(3)='of the problem is - so be careful if you say no to '
-            h(4)='continue the assessment with the current model.'
+            helptopic='model_cfg_warning'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' The model scan was not clean. Do you want',
-     &        'to rescan the model? (see help)',OK,dok,4)
+     &        'to rescan the model? (see help)',OK,dok,nbhelp)
             if(OK)goto 42
           endif
         endif
@@ -555,28 +551,17 @@ C Specify ground simulation start-up period.
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
-        H(1)='The start-up period is the number of days preceding'
-        H(2)='the user defined simulation period. The results for'
-        H(3)='this start-up period are not transferred to the'
-        H(4)='results library and so cannot be analysed. '
-        H(5)='  '
-        H(6)='Note that a start-up period prior to January 1 '
-        H(7)='will utilise climatic data from the end of the'
-        H(8)='same year. '
-        H(9)='  '
-        H(10)='Note also that the start up period for the ground '
-        H(11)='is dependent on its boundaries which are not '
-        H(12)='considared for the default value provided which '
-        H(13)='is estimated for the worse case.'
+        helptopic='model_startup_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if (IREP.eq.1) then
           write(OUTS,'(a,I4,a)')
-     &        ' Ground simulation start-up period is',ITCNSTG,' days.'
+     &      ' Ground simulation start-up period is',ITCNSTG,' days.'
           call EDISP(IUOUT,OUTS)
         else
           WRITE(OUTS,'(2A)')' Number of days for ground',
-     &                                  ' simulation start-up period?'
+     &                      ' simulation start-up period?'
           CALL EASKI(ITCNSTG,' ',OUTS,0,'F',99999,'W',1,
-     &                                               'startup',IER,13)
+     &      'startup',IER,nbhelp)
         endif
       ENDIF
 
@@ -614,11 +599,11 @@ C In interactive mode, prompt user for new database.
           elseif ( .not. autook ) then
 
             IER=0
-            H(1)='The material db holds the thermophysical'
-            H(2)='properties for aluminium, brick, earth, tile, etc.'
+            helptopic='materials_db_not_found'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
   56        CALL EASKS(lltmp,' Material database? ',
-     &        ' ',144,DFCON,'materials db file name',IER,2)
+     &        ' ',144,DFCON,'materials db file name',IER,nbhelp)
             if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
               write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
               goto 55
@@ -795,14 +780,14 @@ C the global model definition, as it can be specified separately.
    
 C If older configuration, confirm the year.
             if(icfgv.lt.3)then
-               h(1)='Older config files do not have a year record. '
-               h(2)='If you want the year to be taken from the climate'
-               h(3)='database use the default.'
+              helptopic='get_year_from_climate'
+              call gethelptext(helpinsub,helptopic,nbhelp)
                IYEAR=ICYEAR
                CALL EASKI(IYEAR,
-     &         'Year for the simulation? (The configuration does not',
-     &         'specify one and the climate db year is shown) ',
-     &         1900,'W',2005,'@',ICYEAR,'year from clim',IClmErr,3)
+     &           'Year for the simulation? (The configuration does',
+     &           'not specify one and the climate db year is shown)',
+     &           1900,'W',2011,'@',ICYEAR,'year from clim',
+     &           IClmErr,nbhelp)
             endif
             
          ELSE
@@ -877,12 +862,6 @@ C Open and scan the bidirectional data file if it exists.
         endif
       ENDIF
 
-      
-C Call routine to establish priority between overlapping airflow 
-C computation methods (e.g. AIM-2/Airflow network) 
-      call AirFlowInitializePriority()      
-      
-      
       return
 
 C Error.
@@ -893,10 +872,10 @@ C Error.
         return
       else
         dok=.false.
-        h(1)='At simulation time there should not be any problems'
-        h(2)='with the climate data. Check your model. '
+        helptopic='problem_opening_climate'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Problem opening climate file, try again? ',
-     &             ' (no exits program)',OK,dok,2)
+     &             ' (no exits program)',OK,dok,nbhelp)
         IF(OK)THEN
           goto 35
         ELSE
@@ -938,11 +917,10 @@ C IREP=1 implies no reporting or data checking.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/G5/c20/precz.
+C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/WARN/IWARN
       COMMON/WRNOFF/IWMOFF
       COMMON/FILEP/IFIL
@@ -976,12 +954,6 @@ C         if = 0 then use compiled pattern.
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/PREC14/emarea(MCOM)
 
-C izsfloor is the index (within the zone) of a floor surface in each zone
-C  (zero is no surface is close to horizontal facing up).
-C izsceil is the index (within the zone) of a ceiling surface in each zone 
-C  (zero is no surface is close to horizontal facing down).
-      COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
-
       COMMON/VTHP30/ILTHPS,ILTHPZ(MCOM)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -1013,7 +985,7 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER*72 LMOIST,LMSTR
-      character outs*124,CXSTR*78,spflnam*72,H*72
+      character outs*124,CXSTR*78,spflnam*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124

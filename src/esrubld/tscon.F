@@ -99,7 +99,6 @@ C ITRPAS       : Counts number of iterations performed so far.
       SUBROUTINE TSCINP
 #include "building.h"
 
-      common/pophelp/h(60)
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
       COMMON/TS1/NF(MSCH),IFL(MSCH,MCVT1),FD(MSCH,MCVT1),ITSCF1,
      &           NMAX1(MSCH)
@@ -119,8 +118,15 @@ C ITRPAS       : Counts number of iterations performed so far.
 
       CHARACTER*39  ZITEM(9)
       character*36  zitem1(9)
-      character     H*72,outs*80
+      character     outs*80
       integer NITEMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='TSCINP'  ! set for subroutine
 
 C Initialise timestep controllers variables.
     1 ITSFLG=1
@@ -156,6 +162,10 @@ C Build main menu for available time-step controllers.
       zitem(8)='? help'
       zitem(9)='- Exit'
 
+C Help text for the menu.
+      helptopic='timestep_control_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Display menu.
       NITEMS = 9
       INO = -5
@@ -171,7 +181,7 @@ C Consider case for time-step controller type 0.
 C Type 0 imposes no control.
       if(ino.eq.1) then
   120    CALL EASKI(istart,' ',' Period start hour ?',
-     &       0,'F',24,'F',0,'start hour',IER,1)
+     &     0,'F',24,'F',0,'start hour',IER,nbhelp)
          if(ier.ne.0) goto 120
          itssch(ntscpd,3)=0
          itssch(ntscpd,1)=istart
@@ -184,7 +194,7 @@ C Type 1 is the boundary condition look ahead.
          icv1f(i)=0
   404 continue
   130    CALL EASKI(istart,' ',' Control period start hour ?',
-     &       0,'F',24,'F',0,'start hour',IER,1)
+     &     0,'F',24,'F',0,'start hour',IER,nbhelp)
          if(ier.ne.0) goto 130
          nmax1(ntscpd)=10
          itssch(ntscpd,3)=1
@@ -223,9 +233,9 @@ C Increment number of control variables counter.
             mitem=icv1f(ino)
          endif
  1041    value=fd(ntscpd,mitem)
-        CALL EASKR(value,' ',
+         CALL EASKR(value,' ',
      &    ' Rate of change tolerance value for control variable ?',
-     &       0.0,'F',100000.,'F',1.,'rate of change',IER,1)
+     &       0.0,'F',100000.,'F',1.,'rate of change',IER,nbhelp)
          if(ier.ne.0) goto 1041
          fd(ntscpd,mitem)=value
          jpick=1
@@ -243,13 +253,13 @@ C Type 2 is the time-step reduction by iteration.
          icv2f(i)=0
   406 continue
   140    CALL EASKI(istart,' ',' Period start hour ?',
-     &       0,'F',24,'F',0,'start hour',IER,1)
+     &       0,'F',24,'F',0,'start hour',IER,nbhelp)
          if(ier.ne.0) goto 140
   145    itrdef=10
          ivalue=nmax2(ntscpd)
          if(ivalue.eq.0) ivalue=itrdef
          CALL EASKI(ivalue,' ',' Maximum number of iterations (>2) ?',
-     &       2,'F',100,'F',itrdef,'no of iterations',IER,1)
+     &       2,'F',100,'F',itrdef,'no of iterations',IER,nbhelp)
          if(ier.ne.0) goto 145
          nmax2(ntscpd)=ivalue
          itssch(ntscpd,3)=2
@@ -286,7 +296,7 @@ C Increment number of control variables counter.
          value=fd2(ntscpd,mitem)
          CALL EASKR(value,' ',
      &    ' Difference allowed for control variable ?',
-     &       0.0,'F',100000.,'F',dfault,'rate of change',IER,1)
+     &    0.0,'F',100000.,'F',dfault,'rate of change',IER,nbhelp)
          if(ier.ne.0) goto 1047
          fd2(ntscpd,mitem)=value
          jpick=1
@@ -299,13 +309,13 @@ C Consider case for time-step controller type 3.
 C Type 3 is the user specified time-step value.
       elseif(ino.eq.4) then
   150    CALL EASKI(istart,' ',' Period start hour ?',
-     &       0,'F',24,'F',0,'start hour',IER,1)
+     &     0,'F',24,'F',0,'start hour',IER,nbhelp)
          if(ier.ne.0) goto 150
          itssch(ntscpd,3)=3
          itssch(ntscpd,1)=istart
   155    iv=ITSV(ntscpd)
          call easki(iv,' ',' Time-steps/hour for this period ?',1,'F',
-     &     MTMS,'F',2,'time-steps/hour?',ier,7)
+     &     MTMS,'F',2,'time-steps/hour?',ier,nbhelp)
          ITSV(ntscpd)=iv
          IF (AMOD(FLOAT(ITSV(ntscpd)),FLOAT(NTSTEP)).NE.0.0) THEN
             call edisp(iuout,' Time-step must equal NTSTEP * I where:')
@@ -322,15 +332,15 @@ C Type 4 is iteration with no time-step reduction.
       elseif(ino.eq.5) then
   160    istart=0
          CALL EASKI(istart,' ',' Period start hour ?',
-     &       0,'F',24,'F',0,'start hour',IER,1)
+     &     0,'F',24,'F',0,'start hour',IER,nbhelp)
          if(ier.ne.0) goto 160
          itssch(ntscpd,3)=4
          itssch(ntscpd,1)=istart
   165    iterv=itsitr(ntscpd)
          if(iterv.eq.0) iterv=1
          CALL EASKI(iterv,' ',
-     &       'Enter number of iterations/building time-step  ?',
-     &       1,'F',500,'W',1,'iterations/time-step',IER,1)
+     &     'Enter number of iterations/building time-step  ?',
+     &     1,'F',500,'W',1,'iterations/time-step',IER,nbhelp)
          if(ier.ne.0) goto 165
          itsitr(ntscpd)=iterv
          jpick=1
@@ -347,14 +357,14 @@ C Type 6 is rewind to period start time.
          itsfin=0
   
   180    CALL EASKI(idystr,' ',' Period start day ?',
-     &       1,'F',365,'F',0,'start day',IER,1)  
+     &       1,'F',365,'F',0,'start day',IER,nbhelp)  
          CALL EASKI(idyfin,' ',' Period finish day ?',
-     &       1,'F',365,'F',0,'finish day',IER,1)
+     &       1,'F',365,'F',0,'finish day',IER,nbhelp)
    
          CALL EASKI(ihrstr,' ',' Period start hour each day?',
-     &       0,'F',24,'F',0,'start hour',IER,1)   
+     &       0,'F',24,'F',0,'start hour',IER,nbhelp)   
          CALL EASKI(ihrfin,' ',' Period finish hour each day ?',
-     &       0,'F',24,'F',0,'finish hour',IER,1)
+     &       0,'F',24,'F',0,'finish hour',IER,nbhelp)
      
          IF(IDYSTR.GT.IDYFIN)THEN
           call edisp(iuout,' Start day later than finish day
@@ -377,24 +387,8 @@ C NOT a control law
 
 C Display help
       elseif(ino.eq.8) then
-        h(1) ='You can specify a control period for the time-step'
-        h(2) ='controller type you pick from the main menu.'
-        h(3) ='The following is a synopsis of each type:'
-        h(4) =' '
-        h(5) ='0: No control imposed on time-step.'
-        h(6) =' '
-        h(7) ='1: Monitors user specified control variable(s) and'
-        h(8) ='   reduces time-step value if rate of change of the'
-        h(9) ='   control variable greater than user specified value.'
-        h(10) ='   value.'
-        h(11) =' '
-        h(12)='2: Reduces time-step value until diference in control'
-        h(13)='   variable for current time-step and previous time-'
-        h(14)='   step is within user specified value.'
-        h(15)=' '
-        h(16)='3: Time-step value used is user specified value.'
-        h(17)='   value.'
-        h(18)='4: Iterate without reducing time-step value.'
+        helptopic='timestep_control_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('tsc help',18,'-',0,0,IER)
         goto 210
 
@@ -418,7 +412,7 @@ C Check for overlapping periods.
                call edisp(iuout,outs)
   745          istart=0
                CALL EASKI(istart,' ',' Period start hour ?',
-     &             0,'F',24,'F',0,'start hour',IER,1)
+     &             0,'F',24,'F',0,'start hour',IER,nbhelp)
                if(ier.ne.0) goto 745
                itssch(i,1)=istart
                GOTO 315

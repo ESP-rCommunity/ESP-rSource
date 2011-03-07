@@ -38,7 +38,6 @@ C time-dependent variables to be plotted for one or more zones.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -52,8 +51,15 @@ C time-dependent variables to be plotted for one or more zones.
       LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*24 ITEM(42)
-      character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1,h*72
+      character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VWLIN'  ! set for subroutine
 
       MODIFY=.FALSE.
       VITEM=' '
@@ -127,9 +133,10 @@ C the image before presenting the command menu.
         MODIFY=.FALSE.
       endif
 
-C Instanciate h() string arrays for this menu.
-      h(1)='The var vs var menu does not yet have'
-      h(2)='any help associated with it. '
+C Instanciate help string arrays for this menu.
+      helptopic='res_var_var_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('var var chart',nbhelp,'-',0,0,IER)
 
       CALL EMENU(' Var.vs.Var',ITEM,NITMS,INO)
 
@@ -251,7 +258,7 @@ C Load/intensity output can be WATTS or KILOWATTS.
         goto 51
       endif
       CALL EASKAB(' ','Load/intensity variable in:',
-     &            'Watts','Kilowatts',IANS,0)
+     &            'Watts','Kilowatts',IANS,nbhelp)
       CONVER=1.
       IF(IANS.EQ.2)CONVER=1000.
       goto 51
@@ -284,6 +291,13 @@ C at the time of graph construction.
 
       DIMENSION XVAL1(MS)
       character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VGMXN'  ! set for subroutine
 
 C For each zone selected.
       DO 999 IZ=1,NZ
@@ -320,22 +334,28 @@ C Ask for node number.
       goto 1
 
 C Dew point temperature: what % saturation ?
-    6 WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
+    6 helptopic='res_inside_saturation'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
       CALL EASKR(V,outs,' ?',0.,'F',100.,'F',50.,
-     &    '% saturation',IER,0)
+     &    '% saturation',IER,nbhelp)
       VPSAT(IZ)=V
       goto 1
 
 C Inside or outside ?
-    7 CALL EASKAB(' ','Which side :',
-     &  'external (other side)','internal',IANS,0)
+    7 helptopic='res_inside_face'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKAB(' ','Which side :',
+     &  'external (other side)','internal',IANS,nbhelp)
       IF(JPICK.EQ.23)IVELT(IZ)=IANS
       IF(JPICK.NE.23)IVCON(IZ)=IANS
       goto 1
 
 C Radiant or convective casual gain ?
-    8 CALL EASKAB(' ','Casual gains :',
-     &            'radiant','convective',IANS,0)
+    8 helptopic='res_gains_rad_conv'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKAB(' ','Casual gains :',
+     &            'radiant','convective',IANS,nbhelp)
       IVCON(IZ)=IANS
       goto 1
 

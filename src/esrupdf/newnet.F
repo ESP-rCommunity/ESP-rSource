@@ -117,11 +117,11 @@ C And finally the DATA statement after all the other definitions.
       save bInitialized
 
 C Initialize bPLN_format_long variable, if necessary. bPLN_format_long
-C controls the format of the plant network file --- and will always
-C be defaulted to 'short'. The user may switch it to 'long', and this
+C controls the format of the plant network file --- default to
+C be defaulted to 'long'. The user may switch it to 'short', and this
 C setting will persist for the current prj session.
       if ( .not. bInitialized ) then
-        bPLN_format_long = .false.
+        bPLN_format_long = .true.
         bInitialized = .true.
       endif 
 

@@ -1,37 +1,37 @@
 simple building
 * Building
-convective heating, ideal control
+convective heating via component heater and PID control
    1  # No. of functions
-* Control function
+* Control function    1
 # senses dry bulb temperature in reception.
     1    0    0    0  # sensor data
 # actuates the air point in reception.
     1    0    0  # actuator data
     1 # No. day types
-    1  365  # valid Sun  1 Jan - Sun 31 Dec
-     1  # No. of periods in day
+    1  365  # valid Sun-01-Jan - Sun-31-Dec
+     1  # No. of periods in day: weekday     
     0    6   0.000  # ctl type, law (flux zone/plant), start @
       7.  # No. of data items
-  4.000 1.000 1.000 99000.000 99000.000 5.000 1.000
+  4.000 1.000 1.000 5000.000 1000.000 5.000 1.000
 # Function:Zone links
  1,0,0
 * Plant
-senses condition in extract duct
+senses condition in extract duct and enables PID control
    1  # No. of loops
-* Control loops
+* Control loops    1
 # senses var in compt.  5:extract_duct @ node no.  1
-   -1    5    1    0  # sensor 
+   -1    5    1    0    0  # sensor 
 # plant component   3:heating_coil @ node no.  1
    -1    3    1    0  # actuator 
     1 # No. day types
-    1  365  # valid Sun  1 Jan - Sun 31 Dec
-     3  # No. of periods in day
+    1  365  # valid Sun-01-Jan - Sun-31-Dec
+     3  # No. of periods in day: weekday     
     0    1   0.000  # ctl type, law (PID flux control.), start @
       9.  # No. of data items
-  1.000 7000.000 0.000 16.000 8.000 1.000 1080.000 1.000 70.000
+  1.00000 7000.00000 0.00000 16.00000 8.00000 1.00000 1080.00000 1.00000 70.00000
     0    1   7.000  # ctl type, law (PID flux control.), start @
       9.  # No. of data items
-  1.000 10000.000 0.000 21.000 8.000 1.000 1080.000 1.000 70.000
+  1.00000 10000.00000 0.00000 21.00000 8.00000 1.00000 1080.00000 1.00000 70.00000
     0    1  18.000  # ctl type, law (PID flux control.), start @
       9.  # No. of data items
-  1.000 7000.000 0.000 16.000 8.000 1.000 1080.000 1.000 70.000
+  1.00000 7000.00000 0.00000 16.00000 8.00000 1.00000 1080.00000 1.00000 70.00000

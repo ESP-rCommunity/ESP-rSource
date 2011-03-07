@@ -36,7 +36,6 @@ C seasons.h provides typper and typsea
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -85,7 +84,7 @@ C Name of current application
 
       dimension ITEM(22)
       character CLMLOC*30
-      character ITEM*26,H*72,LASCI*72,outs*124,outs248*248
+      character ITEM*26,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
@@ -100,10 +99,18 @@ C Name of current application
       integer ic,iwm  ! for radio buttons
       integer NITEM,INO  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
       cAppName = 'clm'
+      helpinapp='clm'  ! set once for the application
+      helpinsub='clm'  ! set for MAIN
       tab = CHAR(9)
       ITRC=1
       IUOUT=6
@@ -496,18 +503,20 @@ C        write(6,*)outs248(1:lnblnk(outs248))
         CALL EPAGEND
         STOP
       ELSEIF(INO.EQ.1)THEN
-        H(1)='The `select db` option displays a list of available '
-        H(2)='climate sets.  See menu level help for more information.'
-        CALL EASKABCD(' Climate database options:',' ',
-     &   'new db','use current db','select db','cancel',ICT,2)
+        helptopic='select_db_opt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKABCD('Climate database options:',' ',
+     &   'new db','use current db','select db','cancel',ICT,nbhelp)
         if(ICT.eq.1)then
 
 C Confirm that this is a new file and clear memory if necessary.
           dok=.true.
-          h(1)='When reading in a new set of climate data you should'
-          h(2)='clear the current data first.'
-          CALL ASKOK(' As part of changing climate file do you wish',
-     &      ' to clear any current data held in memory?',OK,dok,2)
+          helptopic='ok_to_clear_data'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('As part of changing climate file do you wish',
+     &      'to clear any current data held in memory?',OK,dok,2)
+          CALL ASKOK('As part of changing climate file do you wish',
+     &      'to clear any current data held in memory?',OK,dok,nbhelp)
           if(OK)then
             call clrclm
             LCMDFL='UNKNOWN'
@@ -619,18 +628,20 @@ C Tabular analysis.
       ELSEIF(INO.EQ.9)THEN
 
 C Change radiation type.
-        H(1)='Changing the radiation type requires a password '
-        H(2)='This is available from ESRU upon request. '
+        helptopic='rad_change_password'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IANS=0
         CALL EASKI(IANS,' ',' Password ? ',
-     &    0,'-',0,'-',0,'passowrd',IER,2)
+     &    0,'-',0,'-',0,'passowrd',IER,nbhelp)
         IF(IANS.NE.101)then
           call usrmsg(' ',' Password not accepted! ','-')
           goto 3
         endif
 
+        helptopic='rad_type_choice'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' Solar radiation type in file: ',' ',
-     &    'direct normal','global horizontal',IRADT,0)
+     &    'direct normal','global horizontal',IRADT,nbhelp)
         IRTYP=0
         IF(IRADT.EQ.2)IRTYP=123
         IDNGH=IRTYP
@@ -649,23 +660,12 @@ C Edit site attributes.
       ELSEIF(INO.EQ.12)THEN
 
 C Creation of climate file from manual editing.
-        H(1)='Keyboard entry allows data for each hour to be '
-        H(2)=' typed in for a given day.'
-        H(3) =' '
-        H(4)='Curve fitting can generate regular patterns of'
-        H(5)=' data (e.g. provide a maximum, minimum and a sinusodial'
-        H(6)=' pattern is generated.'
-        H(7) =' '
-        H(8)='Transforms can change climate data by a fixed increment,'
-        H(9)=' make a fractional change or a polynomial based change'
-        H(10)=' or adjust wind speeds from particular directions.'
-        H(11)=' '
-        H(12)='Prediction is used for predicting radiation from site '
-        H(13)=' position '
+        helptopic='clm_data_creation_opt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IC=1
         CALL EASKATOG(' Creation of data via: ',' ',
      &    'keyboard entry','prediction','transforms','curve fitting',
-     &    'continue',' ',' ',IC,13)
+     &    'continue',' ',' ',IC,nbhelp)
 
         if(ic.eq.1)then
           call tstamp('>','CLM: manual editing')
@@ -688,19 +688,17 @@ C Creation of climate file from manual editing.
       ELSEIF(INO.EQ.13)THEN
 
 C Export climate data to ASCII file (with similar name).
-        h(1)='One option is to export a text version of the esp-r'
-        h(2)='climate file. The other is a tab separated file suitable'
-        h(3)='for use in an SQL database.'
-        call easkabc(' Climate export options:',' ',
-     &    'ASCII esp-r file','SQL tab separated','continue',IICT,3)
+        helptopic='clm_export_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call easkabc(' Climate export options:',' ','ASCII esp-r file',
+     &    'SQL tab separated','continue',IICT,nbhelp)
         if(IICT.eq.3) goto 3
 
 C Prepend a .a to the current binary name and allow for browsing.
         call tstamp('>','CLM: export climate data')
         write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        h(1)='This file will be an ASCII version of the current db.'
-        h(2)='You can accept the name or browse for a new location '
-        h(3)='and add in a name. '
+        helptopic='clm_file_browse_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -711,20 +709,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
-     &        ' ',96,DCLIM,'ASCII climate file name',IER,3)
+     &        ' ',96,DCLIM,'ASCII climate file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
-     &        ' ',124,DCLIM,'climate file name',IER,3)
+     &        ' ',124,DCLIM,'climate file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
-     &        ' ',144,DCLIM,'ASCII climate file name',IER,3)
+     &        ' ',144,DCLIM,'ASCII climate file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
-     &      ' ',144,DCLIM,'ASCII climate file name',IER,3)
+     &      ' ',144,DCLIM,'ASCII climate file name',IER,nbhelp)
         else
           CALL EASKF(LLASCI,' Climate file (esp-r ascii format)?',
-     &      ' ',96,DCLIM,'ASCII climate file name',IER,3)
+     &      ' ',96,DCLIM,'ASCII climate file name',IER,nbhelp)
         endif
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
@@ -739,10 +737,9 @@ C Confirm the period to transfer.
 
         write(outs,'(A,A)') PERST3(1:lnblnk(PERST3)),' ?'
         dok=.true.
-        h(1)='Usually you will want to export the whole period.'
-        h(2)='However you can select a portion of a year to export'
-        h(3)='if required. '
-        CALL ASKOK(' Export the data inclusive of',outs,OK,dok,3)
+        helptopic='clm_export_inclusive'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' Export the data inclusive of',outs,OK,dok,nbhelp)
         IF(.NOT.OK)THEN
           CALL selper(ier)
         ENDIF
@@ -755,29 +752,18 @@ C Confirm the period to transfer.
       ELSEIF(INO.EQ.14)THEN
 
 C Check whether it is an esp-r climate file or an EPW file.
-        h(1)='One option is to import and EPW format file (joint esp-r'
-        h(2)='and Energy Plus climate file format) or a text version'
-        h(3)='of the esp-r climate file. '
-        h(4)=' '
-        h(5)='Korean Met Office files are of two types XXXH.dat files'
-        h(6)='hold hourly data, potentially for a number of years in '
-        h(7)='a file delimited by | marks. XXXD.dat files hold earth'
-        h(8)='temperature data at 1m 3m 5m for each day of multiple '
-        h(9)='years.'
-        h(10)=' '
-        h(11)='This facility reads dry bulb ... '
-        h(12)=' '
+        helptopic='clm_esp_or_epw'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD(' Climate import options:',' ',
      &   'EPW climate file','ASCII esp-r file','Korean MET',
-     &   'continue',IICT,12)
+     &   'continue',IICT,nbhelp)
         if(IICT.eq.1)then
           NTSPH=1
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This text file is the EPW source to be read in.'
-          h(2)='You can browse for the source location and then '
-          h(3)='add in a name or type in the whole name. '
+          helptopic='clm_epw_source'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -788,20 +774,20 @@ C name with the full path.
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(LLASCI,' Climate EPW file?',
-     &          ' ',96,DCLIM,'EPW climate file name',IER,3)
+     &          ' ',96,DCLIM,'EPW climate file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(LLASCI,' Climate EPW file?',
-     &          ' ',124,DCLIM,'EPW climate file name',IER,3)
+     &          ' ',124,DCLIM,'EPW climate file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(LLASCI,' Climate EPW file?',
-     &          ' ',144,DCLIM,'EPW climate file name',IER,3)
+     &          ' ',144,DCLIM,'EPW climate file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(LLASCI,' Climate EPW file?',
-     &        ' ',144,DCLIM,'EPW climate file name',IER,3)
+     &        ' ',144,DCLIM,'EPW climate file name',IER,nbhelp)
           else
             CALL EASKF(LLASCI,' Climate EPW file?',
-     &        ' ',96,DCLIM,'EPWclimate file name',IER,3)
+     &        ' ',96,DCLIM,'EPWclimate file name',IER,nbhelp)
           endif
 
 C If user canceled loop show menu again.
@@ -823,10 +809,9 @@ C to overwrite site information. Confirm the period to transfer.
 
           write(outs,'(2A)') PERST3(1:lnblnk(PERST3)),' ?'
           dok=.true.
-          h(1)='Usually you will want to import the whole period.'
-          h(2)='If you want to import fewer days then say no and '
-          h(3)='you will be asked to specify a period. '
-          CALL ASKOK(' Import the data inclusive of',outs,OK,dok,3)
+          helptopic='clm_import_inclusive'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Import the data inclusive of',outs,OK,dok,nbhelp)
           IF(.NOT.OK)THEN
             CALL selper(ier)
           ENDIF
@@ -834,9 +819,8 @@ C to overwrite site information. Confirm the period to transfer.
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This ASCII ESP-r file is the source to be read in. '
-          h(2)='You can browse for the source location and then '
-          h(3)='add in a name or type in the whole name. '
+          helptopic='clm_import_ascii_esp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -847,20 +831,20 @@ C name with the full path.
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(LLASCI,' Climate ASCII file?',
-     &          ' ',96,DCLIM,'ASCII climate file name',IER,3)
+     &          ' ',96,DCLIM,'ASCII climate file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(LLASCI,' Climate ASCII file?',
-     &          ' ',124,DCLIM,'ASCII climate file name',IER,3)
+     &          ' ',124,DCLIM,'ASCII climate file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(LLASCI,' Climate ASCII file?',
-     &          ' ',144,DCLIM,'ASCII climate file name',IER,3)
+     &          ' ',144,DCLIM,'ASCII climate file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(LLASCI,' Climate ASCII file?',
-     &        ' ',144,DCLIM,'ASCII climate file name',IER,3)
+     &        ' ',144,DCLIM,'ASCII climate file name',IER,nbhelp)
           else
             CALL EASKF(LLASCI,' Climate ASCII file?',
-     &        ' ',96,DCLIM,'ASCII climate file name',IER,3)
+     &        ' ',96,DCLIM,'ASCII climate file name',IER,nbhelp)
           endif
 
 C If user canceled loop show menu again.
@@ -873,11 +857,9 @@ C Cast back to 72 char name and do the conversion.
           write(LASCI,'(a)') LLASCI(1:llt)
 
           dok=.true.
-          h(1)='When scanning an ASCII version of the ESP-r '
-          h(2)='climate file you can also take any site data '
-          h(3)='held in that file. '
-          h(4)='Usually you want to update the site information.'
-          CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
+          helptopic='clm_also_update_site'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(' ','Update the site info as well?',OK,dok,nbhelp)
           silent=.false.
           WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
           CALL EDISP248(IUOUT,outs248,100)
@@ -894,47 +876,30 @@ C Cast back to 72 char name and do the conversion.
 C Import climate data from Korean Met Office XXXH.dat ASCII file
 C asking user which year to transfer.
           NTSPH=1
-          H(1)='The year is required to find the day of the week '
-          H(2)='for a given julian day. Korean Met off files can'
-          H(3)='include several years but standard ESP-r climate'
-          H(4)='files are setup for a single year. If your data '
-          H(5)='file starts on something other than 1 January '
-          H(6)='then data not matching the year you request will'
-          H(7)='be filled with zeros. '
+          helptopic='clm_year_is_required'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ','Which year to import? ',
-     &             1900,'W',2020,'W',2000,'year',IER,7)
+     &             1900,'W',2020,'W',2000,'year',IER,nbhelp)
           CLMLOC=' '
-          H(1)='Site name (30 char) for descriptive purposes. '
+          helptopic='clm_site_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS(CLMLOC,' ','Climate site name ? ',
-     &      30,'North_Pole','climate site. ',IER,1)
+     &      30,'North_Pole','climate site. ',IER,nbhelp)
 
-          H(1)='The climate latitude does not necessarily have to '
-          H(2)='match the site latitude.  However, the difference '
-          H(3)='should not be great or simulation results may be '
-          H(4)='open to question.'
-          H(5)=' '
-          H(6)='Longitude difference is typically +-15 degrees and'
-          H(7)='is the offset from the local time meridian. You will'
-          H(8)='also be asked (later) about the actual longitude. '
+          helptopic='clm_latitude_match'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(CLAT,' ','Climate latitude ? ',
-     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,8)
+     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
 
           CALL EASKR(CLONG,' ',
      &      'Longitude diference from local time meridian?',
-     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,8)
+     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
 
           LASCI=' '
           LLASCI=' '
           IUNIT=IFIL+1
-          h(1)='This ASCII Korean file is the source to be read in.'
-          h(2)='You can browse for the source location and then'
-          h(3)='add in a name or type in the whole name.'
-          h(4)=' '
-          h(5)='NOTE: the Korean MET file can include data in a form'
-          h(6)='that is difficult for clm to read. Please check and'
-          h(7)='edit the file for places of two commas in sequence '
-          h(8)='(i.e. with no value between the commas). Ensure that'
-          h(9)='there is a number (typically zero) inserted. '
+          helptopic='clm_korea_met_file_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Call EASKF depending on the current file name length.
 C The X11 version will be returning only the name of the
@@ -945,20 +910,20 @@ C name with the full path.
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',96,DCLIM,'Korean climate file name',IER,9)
+     &          ' ',96,DCLIM,'Korean climate file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',124,DCLIM,'Korean climate file name',IER,9)
+     &          ' ',124,DCLIM,'Korean climate file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &          ' ',144,DCLIM,'Korean climate file name',IER,9)
+     &          ' ',144,DCLIM,'Korean climate file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &        ' ',144,DCLIM,'Korean climate file name',IER,9)
+     &        ' ',144,DCLIM,'Korean climate file name',IER,nbhelp)
           else
             CALL EASKF(LLASCI,' Korean XXXH.dat file?',
-     &        ' ',96,DCLIM,'Korean climate file name',IER,9)
+     &        ' ',96,DCLIM,'Korean climate file name',IER,nbhelp)
           endif
 
 C If user canceled loop show menu again.
@@ -971,10 +936,10 @@ C Cast back to 72 char name and do the conversion.
           write(LASCI,'(a)') LLASCI(1:llt)
 
 C Ask if older or newer file format.
-          H(1)='The Korean met office older files are in a different'
-          H(2)='format than file after ~2006.'
+          helptopic='korea_met_file_old_new'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Korean met office file age options:',' ',
-     &     'older file','newer file','cancel',ICT,2)
+     &     'older file','newer file','cancel',ICT,nbhelp)
           if(ICT.eq.1)then
             call MKOREANCLM(LASCI,IUNIT,'old',IER)
           elseif(ICT.eq.2)then
@@ -1015,16 +980,12 @@ C Feedback channel. Suggest an initial name for the export file.
       ELSEIF(INO.EQ.20)THEN
 
 C Delimiter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
+        helptopic='clm_delimiter_choice'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
-     &    ' ',IWM,6)
+     &    ' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -1038,20 +999,11 @@ C Delimiter.
 
 C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('clm ',0)
-        h(2)=' '
-        h(3)='Additional note: '
-        h(4)=' '
-        h(5)='If you plan to import data from US DoE EPW climate files'
-        h(6)='please read the relevant chapter in the ESP-r Cookbook.'
-        h(7)=' '
-        h(8)='If you plan to import data from a Korean MET file might'
-        h(9)='include data in a form that is difficult for clm to'
-        h(10)='read. Please check and edit the file for places of two'
-        h(11)='commas or || in sequence (i.e. with no value'
-        h(12)='between the separators). Ensure that there is a'
-        h(13)='number (typically zero) inserted. If the data item is'
-        h(14)='for RH then a zero is not an appropriate number! '
-        CALL PHELPD('climate import',14,'climate_import',0,0,IER)
+
+C Get additional text to dislay.
+        helptopic='clm_additional_notes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('climate import',nbhelp,'climate_import',0,0,IER)
       ELSE
         INO=-1
         goto 3
@@ -1071,7 +1023,6 @@ C hour in any specified day.
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
       COMMON/RADTYP/IDNGH
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -1088,11 +1039,19 @@ C hour in any specified day.
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-      character outs*124,xfile*144,tg*1,delim*1,h*72
+      character outs*124,xfile*144,tg*1,delim*1
       character blank*2  ! for edisp of blank line
       logical ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='CLMTOT'  ! set for this subroutine
 
 C If in type 8 terminal make the text display area larger before
 C displaying the following data.
@@ -1181,9 +1140,10 @@ C Output all values in tabular form.
    10 CONTINUE
 
 C Consider another day?
+      helptopic='confirm_another_period'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.true.
-      h(1)='If you do not want to carry on just say no. '
-      CALL ASKOK(' ','Continue with another period?',OK,dok,1)
+      CALL ASKOK(' ','Continue with another period?',OK,dok,nbhelp)
       IF(OK)GOTO 5
 
       RETURN
@@ -1196,13 +1156,18 @@ C SETUP provides the menus and control logic for the preferences menu.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/pophelp/h(60)
 
       DIMENSION SETUPM(6)
-      CHARACTER SETUPM*36,H*72
+      CHARACTER SETUPM*36
       integer nitms,ISETUP  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Present the preferences menu. ISETUP is the menu index returned.
+      helpinsub='SETUP'  ! set for this subroutine
     2 IER=0
       ISETUP=-2
 
@@ -1245,13 +1210,9 @@ C allow decimal day representation if day format is DOY.
       ELSEIF(ISETUP.EQ.4)THEN
 
 C Produce help text for the  menu.
-        H(1)='The preferences menu allows the format of the'
-        H(2)='preferences (date & time) to be adjusted. '
-        H(3)=' '
-        H(4)='For ease of viewing several font sizes are allowed.'
-        H(5)='Remember that the window may be resized so that'
-        H(6)='complex images may be viewed in greater detail.'
-        CALL PHELPD('clm preferences',6,'-',0,0,IER)
+        helptopic='clm_setup_help'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('clm preferences',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.5)THEN
 
 C Return to main menu.

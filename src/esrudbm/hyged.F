@@ -54,7 +54,6 @@ C providing paramaters MGDB,MGCL,MGIT
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -68,20 +67,27 @@ C Generic db commons:
      &               nbitrep(MGIT),ibitusc(MGIT)
 
       character ittag*12,itmenu*32,itdate*24,itdoc*248
-      character h*72,ACT*1,outs*124
+      character ACT*1,outs*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,t12*12,t32*32,t248*248
       logical primod
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='eitcommon'  ! set for subroutine
+      helptopic='dbm_edit_common_abcd'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       write(currentfile,'(a)')  gendbfn(idbh)(1:lnblnk(gendbfn(idbh)))
       if(ino.EQ.2)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='A unique identity (up to 12 char) is required and it'
-          H(2)='should contain no blanks or `wild-card` characters.'
           t12=ittag(iit)
           CALL EASKS(t12,' ',' Identity string:  ',
-     &      12,'xxx','item identity',IER,2)
+     &      12,'xxx','item identity',IER,nbhelp)
           if(ier.eq.0.and.t12(1:2).ne.'  ')then
             ittag(iit)=t12
             primod=.true.
@@ -92,12 +98,10 @@ C Generic db commons:
         iract=3
       elseif(ino.EQ.3)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='A descriptive phrase (up to 32 char) is required for'
-          H(2)='display purposes (selection menu`s etc).'
           t32=itmenu(iit)
           CALL EASKS(t32,' ',
      &      ' Item descriptive phrase ? ',32,'new item',
-     &      'no descriptor supplied',IER,2)
+     &      'no descriptor supplied',IER,nbhelp)
           if(ier.eq.0.and.t32(1:2).ne.'  ')then
             itmenu(iit)=t32
             primod=.true.
@@ -126,14 +130,11 @@ C the block of text changes.
         call edisp248(iuout,itdoc,96)
         if(ACT(1:1).eq.'M'.or.ACT(1:1).eq.'m')then
 
-          H(1)='Documentation of database entries is encouraged.'
-          H(2)='You can enter up to 248 characters of text.'
-
 C Non-proforma editing of category documentation. 
           t248=' '
           write(t248,'(a)')itdoc(1:lnblnk(itdoc))
           write(outs,'(a,I2)')' Documentation of item ',iit
-          CALL EASKS248(t248,outs,': ',72,': ','id',IER,2)
+          CALL EASKS248(t248,outs,': ',72,': ','id',IER,nbhelp)
           if(ier.eq.0)then
             write(itdoc,'(a)')t248(1:lnblnk(t248))
             primod=.true. 
@@ -149,21 +150,22 @@ C edimpact: Edit environmental impacts (Global Warming Potential (GWP), Acidific
 C Potential (AP), PhotoSmog depletion (PS)and Utilisation of Non Renewable
 C Energy (UNRE).
       subroutine edimpact(GWP,AP,PS,UNRE,ier)
-      common/pophelp/h(60)
-      character h*72,hold*54
+      character hold*54
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edimpact'  ! set for subroutine
+      helptopic='dbm_GWP_AP_PS_NRE'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       write(hold,'(1P4e13.3)') GWP,AP,PS,UNRE
-      H(1)='Global Warming Potential (GWP) is related to CO2'
-      H(2)='emissions (kgeqCO2/kg).'
-      H(3)='Acidification Potential (AP) is related to SO2'
-      H(4)='emissions (kgeqSO2/kg).'
-      H(5)='PhotoSmog depletion (POPC) is related to NOX'
-      H(6)='emissions (kgeqNOX/kg).'
-      H(7)='Utilisation of Non Renewable Energy (NRE) (MJ/kg). '
       CALL EASKS(hold,
      & 'GWP (kgeqCO2/kg), AP (kgeqSO2/kg), POCP (kgeqNOX/kg)',
      & 'NRE (MJ/kg)',54,'0.000 0.000 0.000 0.000','impacts',
-     & IER,7)
+     & IER,nbhelp)
       if(ier.eq.0.and.hold(1:2).ne.'  ')then
         k=0
         CALL EGETWR(hold,K,GWP,-0.01,999.0,'W','GWP',IER)
@@ -492,7 +494,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -510,7 +511,7 @@ C Generic db commons:
 
       dimension PELM(24)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24,db*12
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24,db*12
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248,lcatype*1
@@ -525,6 +526,13 @@ C Generic db commons:
       real misc1,misc2
       logical showtags
       integer MPLEM,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edmat'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -648,9 +656,8 @@ C Adjust printed width of description.
       MPLEM=24
 
 C Help text for this menu.
-   2  h(1)='Editing of material database entities... '
-      h(2)=' ...'
-      h(3)=' ...'
+   2  helptopic='dbm_material_edits'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       call usrmsg(' ',' ','-')
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
@@ -662,7 +669,9 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
-        CALL PHELPD('material item edit help',3,'-',0,0,IER)
+        helptopic='dbm_material_edits'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('material item edit help',nbhelp,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
 
 C << eventually adjust to include uncertainty in the common editing? >>
@@ -747,9 +756,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.12)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Conductivity units are W/(m deg.C) '
           CALL EASKR(DBCON,' ',' Conductivity : ',
-     &            0.001,'W',300.,'W',1.,'conductivity',IER,1)
+     &            0.001,'W',300.,'W',1.,'conductivity',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -757,9 +765,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.13)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Density units are  kg/m**3 '
           CALL EASKR(DBDEN,' ',' Density  : ',
-     &             1.0,'W',9000.,'W',100.,'density',IER,1)
+     &             1.0,'W',9000.,'W',100.,'density',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -767,9 +774,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.14)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Specific Heat units are J/(kg deg.C) '
           CALL EASKR(DBSHT,' ',' Specific heat : ',
-     &             1.0,'W',2000.,'W',100.,'specific heat',IER,1)
+     &             1.0,'W',2000.,'W',100.,'specific heat',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -777,10 +783,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.15)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Surface emissivity is based on LW band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
           CALL EASKR(E,' ',' Surface emissivity : ',
-     &             0.01,'W',0.99,'W',0.9,'emissivity',IER,2)
+     &             0.01,'W',0.99,'W',0.9,'emissivity',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -788,10 +792,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.16)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Surface absorptance is based on solar band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
           CALL EASKR(A,' ',' Surface absorptance : ',
-     &             0.01,'W',0.99,'W',0.9,'absorptance',IER,2)
+     &             0.01,'W',0.99,'W',0.9,'absorptance',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -799,9 +801,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.17)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Diffusion resistance is... '
           CALL EASKR(DRV,' ',' Diffusion resistance : ',
-     &      1.0,'W',20000.,'W',1.,'diffusion resistance',IER,1)
+     &      1.0,'W',20000.,'W',1.,'diffusion resistance',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -809,9 +810,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.18)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Specularity is... '
           CALL EASKR(spec,' ',' Specularity : ',
-     &      0.0,'W',2.,'W',0.,'specularity',IER,1)
+     &      0.0,'W',2.,'W',0.,'specularity',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -819,9 +819,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.19)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Roughness is... '
           CALL EASKR(rough,' ',' Roughness (visible) : ',
-     &      0.0,'W',2.,'W',0.,'roughness',IER,1)
+     &      0.0,'W',2.,'W',0.,'roughness',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -829,9 +828,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.20)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Miscelaneous data 1 is... '
           CALL EASKR(misc1,' ',' Miscel data (1st) : ',
-     &      0.0,'-',0.0,'-',0.,'miscel 1',IER,1)
+     &      0.0,'-',0.0,'-',0.,'miscel 1',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -839,9 +837,8 @@ C Provide browse popup for environmental db.
         endif
       ELSEIF(IW.EQ.21)THEN
         if(ACT(1:1).eq.'M')then
-          H(1)='Miscelaneous data 2 is... '
           CALL EASKR(misc2,' ',' Miscel data (2nd) : ',
-     &      0.0,'-',0.0,'-',0.,'miscel 2',IER,1)
+     &      0.0,'-',0.0,'-',0.,'miscel 2',IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -872,7 +869,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -890,7 +886,7 @@ C Generic db commons:
 
       dimension PELM(20),FRQ(17)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -900,6 +896,13 @@ C Generic db commons:
       character snote*248,outs*124,outs248*248
       logical primod,showtags
       integer MPLEM,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edacous'  ! set for subroutine
 
 C Scan the data from the common blocks. Check category type to see if
 C SYS or MAT also check first character of item name to see if it starts
@@ -1003,23 +1006,9 @@ C       write(PELM(10) ,'(3a)') kact(act,'f'),' unit :',aunit
       MPLEM=18
 
 C Help text for this menu.
-   2  h(1)='Editing of room acoustic database entities'
-      h(2)='Type: The absoption coefficients correspond'
-      h(3)='      either to a Material or to a Composite.In this'
-      h(4)='      latest case, it generaly represents the outward'
-      h(5)='      layers starting from the support.'
-      h(6)='      '
-      h(7)='Unit: Define the unit in which the absoption coefficients'
-      h(8)='      are expressed (per m2, per person, etc.)'
-      h(9)='Coef: Absorption coefficients for resp. the following'
-      h(10)='     frequencies [Hz]:'
-      h(11)='        100,  125,  160,  200'
-      h(12)='        250,  315,  400,  500'
-      h(13)='        630,  800, 1000, 1250'
-      h(14)='       1600, 2000, 2500'
-      h(15)='       3150, 4000'
+   2  helptopic='dbm_acoustic_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      call usrmsg(' ',' ','-')
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
 
       CALL EMENU(head,PELM,MPLEM,IW)
@@ -1035,10 +1024,8 @@ C Help text for this menu.
 
 C Acoustic Type.
         if(ACT(1:1).eq.'M')then
-          h(1)='Acoustic coefficients are associated with either a '
-          h(2)='single material layer or with a whole composite. '
           CALL EASKABC(' Acoustic coef related to:',' ',
-     &      'composite construction','material','cancel',irpt,2)
+     &      'composite construction','material','cancel',irpt,nbhelp)
 C SC The buttons where invert
           if(irpt.eq.1)atype='C   '
           if(irpt.eq.2)atype='M   '
@@ -1052,11 +1039,9 @@ C Units.
 
 C Coef for frequencies 100, 125, 160.
         if(ACT(1:1).eq.'M')then
-          H(1)='Acoustic coefficients. '
-          H(2)=' '
           write(hold,'(4f7.3)') frq(1),frq(2),frq(3),frq(4)
           CALL EASKS(hold,'Coefficients @ frequencies 100 125 160 200:',
-     &      ' ',32,'0.00 0.00 0.00 0.00','frq(1-4)',IER,2)
+     &      ' ',32,'0.00 0.00 0.00 0.00','frq(1-4)',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWR(hold,K,FRQ(1),0.00,10.0,'W','frq co',IER)
@@ -1073,12 +1058,10 @@ C Coef for frequencies 100, 125, 160.
 
 C Coef for frequencies 250, 315, 400, 500.
         if(ACT(1:1).eq.'M')then
-          H(1)='Acoustic coefficients. '
-          H(2)=' '
           write(hold,'(4f7.3)') frq(5),frq(6),frq(7),frq(8)
           CALL EASKS(hold,
      &      'Coefficients for frequencies 250 315 400 500: ',
-     &      ' ',32,'0.00 0.00 0.00 0.00','frq(5-8)',IER,2)
+     &      ' ',32,'0.00 0.00 0.00 0.00','frq(5-8)',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWR(hold,K,FRQ(5),0.00,10.0,'W','frq co',IER)
@@ -1095,12 +1078,10 @@ C Coef for frequencies 250, 315, 400, 500.
 
 C Coef for frequencies 630, 800, 1000, 1250
         if(ACT(1:1).eq.'M')then
-          H(1)='Acoustic coefficients. '
-          H(2)=' '
           write(hold,'(4f7.3)') frq(9),frq(10),frq(11),frq(12)
           CALL EASKS(hold,
      &      'Coefficients for frequencies 630 800 1000 1250: ',
-     &      ' ',32,'0.00 0.00 0.00 0.00','frq(9-12)',IER,2)
+     &      ' ',32,'0.00 0.00 0.00 0.00','frq(9-12)',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWR(hold,K,FRQ(9),0.00,10.0,'W','frq co',IER)
@@ -1117,12 +1098,10 @@ C Coef for frequencies 630, 800, 1000, 1250
 
 C Coef for frequencies 1600, 2000, 2500.
         if(ACT(1:1).eq.'M')then
-          H(1)='Acoustic coefficients. '
-          H(2)=' '
           write(hold,'(3f7.3)') frq(13),frq(14),frq(15)
           CALL EASKS(hold,
      &      'Coefficients for frequencies 1600, 2000, 2500: ',
-     &      ' ',32,'0.00 0.00 0.00','frq(13-15)',IER,2)
+     &      ' ',32,'0.00 0.00 0.00','frq(13-15)',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWR(hold,K,FRQ(13),0.00,10.0,'W','frq co',IER)
@@ -1138,11 +1117,9 @@ C Coef for frequencies 1600, 2000, 2500.
 
 C Coef for frequencies 3150, 4000.
         if(ACT(1:1).eq.'M')then
-          H(1)='Acoustic coefficients. '
-          H(2)=' '
           write(hold,'(2f7.3)') frq(16),frq(17)
           CALL EASKS(hold,'Coefficients for frequencies 3150, 4000: ',
-     &      ' ',32,'0.00 0.00','frq(16-17)',IER,2)
+     &      ' ',32,'0.00 0.00','frq(16-17)',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWR(hold,K,FRQ(16),0.00,10.0,'W','frq co',IER)
@@ -1156,7 +1133,9 @@ C Coef for frequencies 3150, 4000.
       ELSEIF(IW.EQ.17)THEN
 
 C Help.
-        CALL PHELPD('Room acoustic item edit help',15,'-',0,0,IER)
+        helptopic='dbm_acoustic_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Room acoustic item edit help',nbhelp,'-',0,0,IER)
       ELSE
         IW=-1
         GOTO 2
@@ -1181,7 +1160,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1200,7 +1178,7 @@ C Generic db commons:
 
       dimension PELM(15)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -1211,6 +1189,13 @@ C Generic db commons:
       character snote*248,outs*124,outs248*248
       logical primod,showtags
       integer MPLEM,IW  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edcolour'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -1299,14 +1284,11 @@ C Make up the display.
       MPLEM=14
 
 C Help text for this menu.
-  2   h(1)='Editing of material database entities... '
-      h(2)=' ...'
-      h(3)=' ...'
+   2  helptopic='dbm_edit_colour'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      call usrmsg(' ',' ','-')
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
 
-   
       CALL EMENU(head,PELM,MPLEM,IW)
 
       IF(IW.EQ.0.OR.IW.EQ.MPLEM)THEN
@@ -1314,7 +1296,9 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
-        CALL PHELPD('material item edit help',3,'-',0,0,IER)
+        helptopic='dbm_edit_colour'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('material item edit help',nbhelp,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
         call EITCOMMON(IFB,idbh,ic,iit,IW,ACT,iract,primod,IER)
@@ -1324,12 +1308,9 @@ C Help.
 
 C Red (if edited update grey).
         if(ACT(1:1).eq.'M')then
-          H(1)='Red green and blue RGB values. Defined in the range of'
-          H(2)='0 - 255. After editing the grey reflectance is updated'
-          H(3)='based on r*0.256 + g*0.67 + b*0.0645. '
           write(hold,'(3i6)') IR255,IG255,IB255
   42      CALL EASKS(hold,' Red green blue (0-255): ',
-     &      ' ',32,' 128 128 128','rgb values',IER,3)
+     &      ' ',32,' 128 128 128','rgb values',IER,nbhelp)
           if(ier.eq.0.and.hold(1:2).ne.'  ')then
             k=0
             CALL EGETWI(hold,K,IR255,0,255,'W','red',IER)
@@ -1350,11 +1331,9 @@ C Red (if edited update grey).
 
 C Grey reflect.
         if(ACT(1:1).eq.'M')then
-          H(1)='Grey reflectance is derived from the RGB values via: '
-          H(2)=' r*0.256 + g*0.67 + b*0.0645 '
-          H(3)='which you can override via direct editing. '
           CALL EASKR(greyrefl,' Grey reflectance (usually derived from',
-     &      'the RGB values): ',0.0,'W',1.,'W',0.5,'grey refl',IER,3)
+     &      'the RGB values): ',0.0,'W',1.,'W',0.5,'grey refl',
+     &      IER,nbhelp)
           primod=.true.
           call usrmsg(' ',' ','-')
         else
@@ -1399,7 +1378,6 @@ C Assumes that current database is open on unit IFB.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1418,7 +1396,7 @@ C Generic db commons:
 
       dimension PELM(21),eimp(9)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,dstmp*24
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -1427,6 +1405,13 @@ C Generic db commons:
       character itdat*248,itrep*248,kact*1,head*38
       character snote*248,outs*124,outs248*248
       logical primod,showtags
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edtransp'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -1532,9 +1517,8 @@ C Make up the display.
       MPLEM=14
 
 C Help text for this menu.
-   2  h(1)='Editing of transport database entities... '
-      h(2)=' ...'
-      h(3)=' ...'
+   2  helptopic='dbm_edit_transport'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       call usrmsg(' ',' ','-')
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
@@ -1560,7 +1544,9 @@ C Edit the impacts.
       ELSEIF(IW.EQ.13)THEN
 
 C Help.
-        CALL PHELPD('transport item edit help',3,'-',0,0,IER)
+        helptopic='dbm_edit_transport'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('transport item edit help',nbhelp,'-',0,0,IER)
       ELSE
         IW=-1
         GOTO 2
@@ -1697,7 +1683,6 @@ C CPITEM: Copy item iitorig to catg iccopy returning index of copied item as iit
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -1718,7 +1703,7 @@ C CPITEM: Copy item iitorig to catg iccopy returning index of copied item as iit
       character cattag*12,cattype*8,catmenu*32,catdate*24,catcpdate*24
       character ittag*12,itmenu*32,itdate*24,itdoc*248
       character ituntstr*42,itsrcstr*1,itcnfstr*42,outs*124,outsd*124
-      character c20*20,ptag*12,dstmp*24,act*1,h*72,itemtag*12
+      character c20*20,ptag*12,dstmp*24,act*1,itemtag*12
       real misc1,misc2
 
 C Position of new item will be at lastr+1 so compute and updated lastr

@@ -34,7 +34,6 @@ C design question facility.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -48,11 +47,18 @@ C design question facility.
       DIMENSION IRANK(MCOM),VRANK(MCOM),KDUM(MCOM),ZDUM(MCOM),
      &          LABEL(10)
 
-      character outs*124,H*72
+      character outs*124
       CHARACTER*10 LABEL
       CHARACTER*16 ITEM(10)
       logical close
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MODESQ'  ! set for cfiles
 
       ITEM(1) ='2 Result set    '
       ITEM(2) ='3 Define period '
@@ -80,8 +86,8 @@ C design question facility.
       INO=-2
 
 C Help text for menu.
-      h(1)='The design questions menu does not yet have'
-      h(2)='any help associated with it. '
+      helptopic='res_design_q_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
     4 CALL EMENU('Design Questions',ITEM,NITMS,INO)
 
@@ -116,13 +122,14 @@ C Test for overheating.
       call edisp(IUOUT,'             resultant temperature  (3) ?')
       call edisp(iuout,' ')
 
+      helptopic='res_design_critical_var'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IDQV1,' ',' Which critical variable ? ',
-     &  1,'F',3,'F',1,'design 1 critical var',IER,17)
+     &  1,'F',3,'F',1,'design 1 critical var',IER,nbhelp)
 
 C Solicit upper temperature limit.
-      H(1)='Temperature in degrees C. '
       CALL EASKR(DQV1,' ',' Upper temperature limit ? ',
-     &   0.0,'-',0.0,'-',24.,'upper temp limit',IER,1)
+     &   0.0,'-',0.0,'-',24.,'upper temp limit',IER,nbehlp)
 
 C Set appropriate value of IGET.
       IF(IDQV1.EQ.1)IGET=3
@@ -165,13 +172,14 @@ C Test for underheating.
       call edisp(iuout,'                control temperature (2)')
       call edisp(iuout,'              resultant temperature (3) ?')
       call edisp(iuout,' ')
+      helptopic='res_design_critical_var'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IDQV2,' ',' Which critical variable ? ',
-     &  1,'F',3,'F',1,'design 2 critical var',IER,17)
+     &  1,'F',3,'F',1,'design 2 critical var',IER,nbhelp)
 
 C Solicit lower temperature limit.
-      H(1)='Temperature in degrees C. '
       CALL EASKR(DQV2,' ',' Lower temperature limit ? ',
-     &   0.0,'-',0.0,'-',24.,'upper temp limit',IER,1)
+     &   0.0,'-',0.0,'-',24.,'upper temp limit',IER,nbhelp)
 
 C Set appropriate value of IGET.
       IF(IDQV2.EQ.1)IGET=3

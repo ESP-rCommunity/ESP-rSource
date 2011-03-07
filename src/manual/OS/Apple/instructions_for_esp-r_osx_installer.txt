@@ -1,6 +1,6 @@
 
         Steps to create or use the ESP-r installers on OSX
-                             June 2010
+                             September 2010
 
 There are two patterns used to create an installer for ESP-r for use
 on OSX machines.  One is via a single-file self extractor based on
@@ -19,8 +19,6 @@ Compiling ESP-r from source
 First compile a standard version of esp-r (X11 version) in the standard
 location which on OSX should be /opt/esru with a command such as:
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
-  or
   ./Install -d /opt/esru --gcc4 --compiler_version -4.3 --reuse_ish_calcs
 
 You can find out more about the source code compile process by giving
@@ -47,8 +45,6 @@ remove the executables from the /opt/esru/esp-r/bin folder.
 Clear the source (via a make clean) and compile a new GTK 
 version of esp-r.
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
-  or
   ./Install -d /opt/esru --gcc4 --compiler_version -4.3 --reuse_ish_calcs
  
 Again remove the subversion files from the /opt/esru folders.

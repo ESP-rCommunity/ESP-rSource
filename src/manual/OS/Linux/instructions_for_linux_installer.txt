@@ -1,6 +1,6 @@
 
      Steps to create or use the ESP-r self extractor on Linux
-                        June 2010
+                        December 2010
 
 There are two patterns used to create an installer for ESP-r for use
 on Linux computers.  One is via a single-file self-extractor and 
@@ -36,11 +36,9 @@ name is fred and your group is staff):
 
 
 The commands to compile a standard version of esp-r (X11 version) 
-in the standard location which on cygwin should be /usr/esru with 
+in the standard location which on Linux should be /opt/esru with 
 a command such as:
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
-  or
   ./Install -d /opt/esru --gcc4 --compiler_version -4.1 --reuse_ish_calcs
 
 You can find out more about the source code compile process by giving
@@ -48,18 +46,16 @@ the command:
 
   ./Install --help
 
-The --gcc4 or --gcc3 directives should be based on the version of the GCC
-compilers on your machine.  Try 'which gcc' and then 'gcc --version'
+The --gcc4 directive assumes that you are using the GCC 4 series.
+To confirm what is on your machine try 'which gcc' and then 'gcc --version'
 to establish the version prior to running the Install script.
 
-Next, the directive --compiler_version -4.1 is useful if the executable for
-the compiler is actually something like /usr/bin/gcc-4.1. You may
+If the executable for the compiler is actually something 
+like /usr/bin/gcc-4.1  the syntax is --compiler_version -4.1. You may
 need this directive to ensure that the C compiler, C++ compiler
-and Fortran compiler are consistent with each other.  Older versions
-of the GNU compiler collection used g77 and newer versions use gfortran.
-Look in /usr/bin for which variants of gcc g++ and gfortran or g77 
+and Fortran compiler gfortran are consistent with each other.
+Look in /usr/bin for which variants of gcc g++ and gfortran
 exist on your machine.
-
 
 After you have built the ESP-r distribution in /opt/esru, there may be 
 hidden folders related to the version control system called
@@ -83,17 +79,17 @@ wish to change to reflect the current version number). For 32
 bit Linux computers use the following:
 
   cd /opt/esru
-  tar cf esp-r_X11_11.9_linux.tar esp-r
-  gzip -9 esp-r_X11_11.9_linux.tar
-  mv esp-r_X11_11.9_linux.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_X11_11.10_linux.tar esp-r
+  gzip -9 esp-r_X11_11.10_linux.tar
+  mv esp-r_X11_11.10_linux.tar.gz /opt/esru/precompiled_for_linux
 
 If you are working on a 64 bit computer then alter the names to
 avoid confusion.
 
   cd /opt/esru
-  tar cf esp-r_X11_11.9_linux_64.tar esp-r
-  gzip -9 esp-r_X11_11.9_linux_64.tar
-  mv esp-r_X11_11.9_linux_64.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_X11_11.10_linux_64.tar esp-r
+  gzip -9 esp-r_X11_11.10_linux_64.tar
+  mv esp-r_X11_11.10_linux_64.tar.gz /opt/esru/precompiled_for_linux
 
 
 
@@ -108,8 +104,6 @@ or at least remove the executables from the /opt/esru/esp-r/bin folder.
 Clear the source (via a make clean) and compile a new GTK 
 version of esp-r.
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
-  or
   ./Install -d /opt/esru --gcc4 --compiler_version -4.1 --reuse_ish_calcs
  
 Again remove the subversion files from the /opt/esru folders.
@@ -118,16 +112,16 @@ Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_linux folder (as above). 
 
   cd /opt/esru
-  tar cf esp-r_GTK_11.9_linux.tar esp-r
-  gzip -9 esp-r_GTK_11.9_linux.tar
-  mv esp-r_GTK_11.9_linux.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_GTK_11.10_linux.tar esp-r
+  gzip -9 esp-r_GTK_11.10_linux.tar
+  mv esp-r_GTK_11.10_linux.tar.gz /opt/esru/precompiled_for_linux
 
 or 
 
   cd /opt/esru
-  tar cf esp-r_GTK_11.9_linux_64.tar esp-r
-  gzip -9 esp-r_GTK_11.9_linux_64.tar
-  mv esp-r_GTK_11.9_linux_64.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_GTK_11.10_linux_64.tar esp-r
+  gzip -9 esp-r_GTK_11.10_linux_64.tar
+  mv esp-r_GTK_11.10_linux_64.tar.gz /opt/esru/precompiled_for_linux
 
 Remember to remove any older *.tar.gz files from the precompiled_for_linux
 folder so that are not included in the installer run file.
@@ -149,10 +143,10 @@ The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
 32 bit:
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.9_linux_precomp.run "ESP-r V11.9 32bit distribution" ./setup
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.10_linux_precomp.run "ESP-r V11.10 32bit distribution" ./setup
 
 64 bit:
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.9_linux_precomp_64.run "ESP-r V11.9 64bit distribution" ./setup64
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.10_linux_precomp_64.run "ESP-r V11.10 64bit distribution" ./setup64
 
 The tokens in the above command are as follows:
 
@@ -198,13 +192,13 @@ Typically the `run` file you downloaded should be placed in /tmp within
 and run from that folder via a command (adapt to reflect the 
 actual name of the `run` file).  For example:
 
-  ./esp-r_v11.9_linux_precomp.run
+  ./esp-r_v11.10_linux_precomp.run
 
 If nothing happens it may be that the download process has removed the
 execute permissions from the run file.  You can re-enable these via
 the command:
 
-  chmod a+x ./esp-r_v11.9_linux_precomp.run
+  chmod a+x ./esp-r_v11.10_linux_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version

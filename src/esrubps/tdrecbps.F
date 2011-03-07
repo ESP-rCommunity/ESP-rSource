@@ -37,7 +37,6 @@ C day and VAL(2...) are timestep fields.
 #include "building.h"
 #include "tdf2.h"
 #include "sbem.h"
-      common/pophelp/h(60)
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/OUTIN/IUOUT,IUIN
@@ -58,7 +57,14 @@ C  4th value is whether to interpolate for this timestepX.
 
       dimension VAL(MBITS+2)
       logical traceok,FOUND,closer
-      character h*72
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RCTDFB'  ! set for cfiles
+
 
 C Trace output ?
       traceok = .true.
@@ -78,11 +84,9 @@ C Workout if building side timestep is equal to tdf timestep or not
 C need to do once per simulaton. Skip if any of the UK NCM models
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
-          h(1)='tdf - simulation timestep mismatch'
-          h(2)='You are simulating with time step greater'
-          h(3)='than that at which measured data is recorded'
-          h(4)='This can cause errors in results!'
-          CALL PHELPD('tdf warning ',4,'bsim-tdf-mismatch',0,0,IER)
+          helptopic='tdf_timestep_mismatch'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('tdf warning',nbheop,'bsim-tdf-mismatch',0,0,IER)
           ialrdy_warned=1
         ENDIF
       ENDIF
@@ -228,7 +232,6 @@ C day and VAL(2...) are timestep fields.
 #include "building.h"
 #include "tdf2.h"
 #include "sbem.h"
-      common/pophelp/h(60)
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/OUTIN/IUOUT,IUIN
@@ -249,7 +252,13 @@ C  4th value is whether to interpolate for this timestepX.
 
       dimension VAL(MTABC+2)
       logical traceok,FOUND,closer
-      character h*72
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RCTDFBALL'  ! set for cfiles
 
 C Trace output ?
       traceok = .true.
@@ -269,11 +278,9 @@ C Workout if building side timestep is equal to tdf timestep or not
 C need to do once per simulaton. Skip if any of the UK NCM models
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
-          h(1)='tdf - simulation timestep mismatch'
-          h(2)='You are simulating with time step greater'
-          h(3)='than that at which measured data is recorded'
-          h(4)='This can cause errors in results!'
-          CALL PHELPD('tdf warning ',4,'bsim-tdf-mismatch',0,0,IER)
+          helptopic='tdf_timestep_mismatch'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('tdf warning',nbhelp,'bsim-tdf-mismatch',0,0,IER)
           ialrdy_warned=1
         ENDIF
       ENDIF

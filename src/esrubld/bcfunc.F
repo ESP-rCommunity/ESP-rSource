@@ -49,8 +49,6 @@ C      BCL21: master slave capacity inj/ext controller
 C      BCL22: VAV with CAV with reheat air supply controller
 C      BCL23: Match sensed values (ideal:2 setpoints)
 C      BCL24: Adaptive human comfort model
-C      BCL25_open_windows: Control switching between different 
-C             airflow computation methods.
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine
@@ -73,218 +71,172 @@ C The main building control function executive.
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
-      logical bNested 
-      
 C Check if running in dll mode.
       call isadll(dll)
 
-C 25 control functions active at present + thermo-physical
-C property substitution (BCL99).  If control function index
-C negated then property substitution active within zone
-C associated with control function.
-      IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
+
 
 C If actuator is not located in zone then no control is imposed
 C regardless of control function prevailing at this time.
-C (default to free-float)
       IF(IBAN(ICF,1).EQ.-1.OR.(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).NE.
-     &IICOMP).OR.(IBAN(ICF,1).GT.0.AND.IBAN(ICF,1).NE.IICOMP)) IFUNC=2  
-   
+     &IICOMP).OR.(IBAN(ICF,1).GT.0.AND.IBAN(ICF,1).NE.IICOMP))GOTO 2
+
 C For the special case of current zone, mixed node control only.
       IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP
-     &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
-     
-      CtlLaw: select case (IFUNC) 
+     &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24)GOTO 77
+      GOTO 76
+   77 CALL BCL00
+      return
 
-      case (0) 
-        call BCL00
+C 17 control functions active at present + thermo-physical
+C property substitution (BCL99).  If control function index
+C negated then property substitution active within zone
+C associated with control function.
+   76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
+      GOTO
+     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+     & ,IFUNC
+      GOTO 98
 
 C CL1 is basic control with potential for a different heating and
 C cooling set point.   Limiting capacities allow either heating or
-C cooling to be disallowed. Humidity control may also be active.      
-      case (1)
-        CALL BCL01(ier)
-        if(ier.eq.2)then
-          return
-        endif
-        GOTO 99
+C cooling to be disallowed. Humidity control may also be active.
+    1 CALL BCL01(ier)
+      if(ier.eq.2)then
+        return
+      endif
+      GOTO 99
 
 C CL2 is a free-floating controller.
-      case (2)
-        CALL BCL02
-
+    2 CALL BCL02
+      GOTO 99
 
 C CL3 is a pre-heating/pre-cooling condition.  Limiting
 C heating and cooling capacities are supplied and within these
 C constraints temperatures will evolve exponentially towards
 C the set point temperature of the control period which follows.
-      case(3) 
-        CALL BCL03
-
+    3 CALL BCL03
+      GOTO 99
 
 C CL4 is a fixed heat injection or extraction period.
-      case(4) 
-        CALL BCL04
-
+    4 CALL BCL04
+      GOTO 99
 
 C CL5 is a three-term PID controller.
-      case(5)
-        CALL BCL05
-
+    5 CALL BCL05
+      GOTO 99
 
 C CL6 allows zone input or extract flux to be set
 C as a function of the plant network status.
-      case(6)
-        CALL BCL06(icomp)
-
+    6 CALL BCL06(icomp)
+      GOTO 99
 
 C CL7 allows a multi-stage energy supply to
 C be defined.
-      case(7) 
-        CALL BCL07
-
+    7 CALL BCL07
+      GOTO 99
 
 C CL8 is a variable supply temperature system
 C with limit constraints.
-      case(8)
-        CALL BCL08
-
+    8 CALL BCL08
+      GOTO 99
 
 C CL9 is a heat pipe which allows heat to be extracted from one
 C node and transferred to another.
-      case(9) 
-        CALL BCL09
-
+    9 CALL BCL09
+      GOTO 99
 
 C CL10 allows separate flux ON and flux OFF set points to
 C be specified for both heating and cooling.
-      case(10) 
-        CALL BCL10
-
+   10 CALL BCL10
+      GOTO 99
 
 C CL11 is a multi-sensor controller which will bring the 
 C temperature of the associated zone to a specified
 C function of the sensed temperatures at other locations.
 C Heating and cooling restrictions are allowed.    
-      case(11)
-        CALL BCL11
-
+   11 CALL BCL11
+      GOTO 99
 
 C CL12 is a multi-sensor on/off controller. It will bring
 C the temperature of the associated zone to a specified
 C function of the sensed temperature at other locations.
 C Heating and cooling restrictions are allowed.
-      case(12)
-        CALL BCL12
-
+   12 CALL BCL12
+      GOTO 99
 
 C CL13 is a time-proportioning on/off controller.
 C Separate ON and OFF set-points may be specified.      
-      case(13)
-        CALL BCL13
-
+   13 CALL BCL13
+      GOTO 99
 
 C CL14 is a floating ('three-position') controller.   
-      case(14)
-        CALL BCL14
-
+   14 CALL BCL14
+      GOTO 99
 
 C CL15 is an optimum start logic controller. 
-      case(15)
-        CALL BCL15
-
+   15 CALL BCL15
+      GOTO 99
 
 C CL16 is an optimum stop logic controller. 
-      case(16)
-        CALL BCL16
-
+   16 CALL BCL16
+      GOTO 99
 
 C CL17 is a Fuzzy Logic controller. 
-      case(17)
-        CALL BCL17
-
+   17 CALL BCL17
+      GOTO 99
 
 C CL18 is a null controller. 
-      case(18)
-        CALL BCL18
-
+   18 CALL BCL18
+      GOTO 99
 
 C CL19 is a multi-sensor basic controller
-      case(19)
-        CALL BCL19
-
+   19 CALL BCL19
+      GOTO 99
 
 C CL20 evaporative source (e.g. swimming pool).
-      case(20)
-        call BCL20
-
+   20 call BCL20
+      goto 99
 
 C CL21 slave capacity controller
-      case(21)
-        call BCL21
-
+   21 call BCL21
+      goto 99
 
 C CL22 VAV and CAV air based controller
-      case(22)
-        call BCL22
-
+   22 call BCL22
+      goto 99
       
 C CL23 sensed setpoint based controller
-      case(23)
-        call BCL23
-
+   23 call BCL23
+      goto 99
       
 C CL24 Adaptive human comfort model
-      case(24)
-        call BCL24(ier)
-
-
-C Simple window opening model      
-      case (25)
-        bNested = .false. 
-        call BCL25_open_windows(ICOMP,IER,.false.)
-
-
+   24 call BCL24(ier)
+      goto 99
       
 C New control laws should be inserted here.
-      case default 
-        write(outs,'(a,i3,a)')' Zone control function',IFUNC,
-     &    ' is not implemented in this release.'
-        call edisp(iuout,outs)
-        if(dll)then
-          dllsubr='MZBCTL'
-          dllmesg=outs
-          ier=2
-          return
-        else
-          call epwait
-          call epagend
-          STOP
-        endif
-      
-      end select CtlLaw 
-      
-C Nested conrol functions:
+   98 continue
+      write(outs,'(a,i3,a)')' Zone control function',IFUNC,
+     &  ' is not implemented in this release.'
+      call edisp(iuout,outs)
+      if(dll)then
+        dllsubr='MZBCTL'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call epwait
+        call epagend
+        STOP
+      endif
+
 C CL99 will modify the thermo-physical properties of
-C the specified multi-layered constructions. BCL25 will 
-C switch between air flow methods.
+C the specified multi-layered constructions.
    99 ifunc=ibsn(icf,4)
-
       if(ifunc.gt.0)then
-        
-        if(ibsn(ifunc,1).eq.-99)then
-C Set ICALL to zero to signal nested control property substitution.
-          ICALL=0
-          call bcl99(ICALL)
-        
-        elseif ( IBCLAW(ifunc,IDTYP,IPER) .eq. 25 ) then
-          bNested = .true. 
-          call BCL25_open_windows(ICOMP,IER, bNested)        
-          
-        else
+        if(ibsn(ifunc,1).ne.-99)then
           write(outs,'(2a)')' Error: Nested control functions must',
-     &      ' refer to control functions -99 or 25.'
-
+     &      ' refer to control function -99.'
           if(dll)then
             dllsubr='MZBCTL'
             dllmesg=outs
@@ -296,7 +248,11 @@ C Set ICALL to zero to signal nested control property substitution.
             call epagend
             stop
           endif
+        else
 
+C Set ICALL to zero to signal nested control property substitution.
+          ICALL=0
+          call bcl99(ICALL)
         endif
       endif
       RETURN
@@ -1123,8 +1079,7 @@ C control.
 
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
+C to evaluate passive solar design performance.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
      &                         fHeatSetpoint, fCoolSetpoint
 
@@ -1242,15 +1197,15 @@ C     ensure that the AC is not used. Note: if window model not active the resul
 C     AreWindowsOpen()  will be false. 
 C     Also the window control is only used in tandem with a cooling 
 C     stratagy. 
-!          if ( AreWindowsOpen() 
-!      &        .and. (BMISCD(ICF,IDTYP,IPER,4) .gt. 0.)  ) then
-!             QCM = 0.
-!             QCN = 0.
-!          else
+         if ( AreWindowsOpen() 
+     &        .and. (BMISCD(ICF,IDTYP,IPER,4) .gt. 0.)  ) then
+            QCM = 0.
+            QCN = 0.
+         else
             QCM = - cont_fun_cool_cap(IICOMP)
 C     Ensure windows are closed.
-!             bWindowsAreOpen = .false.
-!          endif
+            bWindowsAreOpen = .false.
+         endif
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
@@ -5888,7 +5843,6 @@ C climate file commons
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
 
-      common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -5901,8 +5855,15 @@ C climate file commons
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
       REAL PREVTEMP(MMD)
-      character dllsubr*12,dllmesg*124,outs*124,H*72
+      character dllsubr*12,dllmesg*124,outs*124
       logical dll
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BCL24'  ! set for subroutine
 
 C Check to see if running in dll mode.
       call isadll(dll)
@@ -6106,191 +6067,12 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
         call epagend
         STOP
       endif
-  999 H(1) = 'A data i/o error has occured in the program at BCL24'
-      H(2) = 'and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+  999 helptopic='bcl24_io_error'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('data i/o error',nbhelp,
+     &            'i/o exception handler',0,0,IER)
       RETURN
       END
-      
-C ******************** BCL25_open_windows
-C This is a fairly simple algorithm that sets a flag approximating
-C window operation in residential houses. It's primary purpose is 
-C to approximate occupant-response to overheating in passive-solar 
-C designs, ensuring that they don't recieve undue credit for solar 
-C gains during overheated hours. While it provides a crude estimation
-C of free cooling benifits, it should not be used in place of more 
-C detailed methods (e.g. FCL04-Nicol Control algorithm ). 
-C
-C This control is primarely intended to switch between the AIM-2 model
-C and other methods of computing interzone air flow when windows are 
-C open/closed. 
-C 
-C At present, this code only works with the simple ideal controller. 
-C on-off and plant network cotnrollers will are not compatable with BLC25.
-
-      subroutine BCL25_open_windows(iComp,iER, bNested)
-      implicit none 
-      
-      include "building.h"
-      include "control.h"
-      include "blc25_open_windows.h"
-      
-C Passed variables 
-      
-      integer iComp    ! Index of current zone 
-      integer iER      ! Error flag. 
-      logical bNested  ! Flag for nested status.  
-      
-C ESP commons: 
-C - Zone characteristics 
-      real tfa(mcom)   ! Future time-row zone temperaturte (oC) 
-      real qfa(mcom)   ! Future time-row zone energy injection 
-                       ! /extraction (W, not used)
-      
-      common/fvala/tfa,qfa
-      
-
-      common/pvala/tpa(mcom),qpa(mcom)
-      real tpa, qpa
-      
-C - Environment characteristics 
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      real TP, TF          ! Present & Future time-row temperatures       
-      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
-      
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      real BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      integer ICF,IDTYP,IPER
-      
-C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
-      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
-
-C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-C Heating and cooling setpoint (oC)
-      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)      
-      
-C Flags indicating how flow should be determined when windows are 
-C open, closed
-      integer iClosedFlowMethod ! Method for determining air flow when 
-                                ! windows are closed
-      integer iOpenFlowMethod   ! Method for determining air flow when 
-                                ! windows are open
-      
-C Window control setpoints (oC)
-      real fWindowLowerSetpoint  ! Temperature at which windows are 
-                                 ! closed       
-      
-      real fWindowUpperSetpoint  ! Temperaturte at which windows are 
-                                 ! opened.
-      
-C Temperature data 
-
-      real fZoneTemperature      ! Temperature in zone (oC)
-      real fAmbientTemperature   ! Ambient temperature (oC)
-      
-     
-C-----------------------------------------------------------------------
-C Get data from control spec.
-C-----------------------------------------------------------------------     
-
-C Get setpoints from input data 
-      fWindowLowerSetpoint = BMISCD(ICF,IDTYP,IPER,2)  ! (oC)
-      fWindowUpperSetpoint = BMISCD(ICF,IDTYP,IPER,3)  ! (oC) 
-      
-C Determine how air flow should be determined when windows are open/
-C closed.
-      iClosedFlowMethod = int( BMISCD(ICF,IDTYP,IPER,4) ) ! (oC)
-      iOpenFlowMethod   = int( BMISCD(ICF,IDTYP,IPER,5) ) ! (oC)
-
-
-C Get environment data 
-C 1. Determine zone temperature (future time row). 
-      
-      fZoneTemperature    = tpa(iComp) 
-      fAmbientTemperature = tf
-      
-C Determine if windows are open or closed. 
-C 1. Is AC system operational? If so, close windows if AC setpoint 
-C    is exceeded.
-       
-      AreWindowsOpen: 
-     & if ( bZoneCooled(iComp) .and. 
-     &      fZoneTemperature .ge. fCoolSetpoint(iComp) ) then 
-     
-        bWindowsOpen(iComp) = .false. 
-        
-C 2. Is heating system operational? If so, close windows if heating 
-C    setpoint is exceeded.
-
-      elseif ( bZoneHeated(iComp) .and. 
-     &     fZoneTemperature .le. fHeatSetpoint(iComp) ) then
-     
-        bWindowsOpen(iComp) = .false. 
-        
-C 3. Is zone temperatue above upper window control setpoint? If so, 
-C    open windows to try to use free cooling. (Note: we presently don't
-C    consider what should happen if the OA temp is above the zone temp...
-
-      elseif ( fZoneTemperature .ge. fWindowUpperSetpoint ) then 
-      
-        bWindowsOpen(iComp) = .true.
-        
-C 4. Is zone temperature below lower window control setpoint? If so, 
-C    close windows to retain the heat. 
-
-      elseif ( fZoneTemperature .le. fWindowLowerSetpoint ) then 
-      
-        bWindowsOpen(iComp) = .false. 
-        
-      else 
-      
-C 5. Leave the windows where they are. 
-
-      endif AreWindowsOpen
-      
-C Flag which method should be used to determine if windows are open, 
-C closed.    
-
-
-      if ( bWindowsOpen(iComp) ) then 
-        iAirFlowModel(iComp) = iOpenFlowMethod
-      else 
-        iAirFlowModel(iComp) = iClosedFlowMethod
-      endif 
-      
-      if (.not. bNested) then 
-        QFUT = 0.
-        TFUT = TNP 
-      endif 
-      
-!               call add_to_xml_reporting (
-!     &              fWindowUpperSetpoint ,
-!     &              "debug/blc25/setpoint/open",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )      
-!      
-!               call add_to_xml_reporting (
-!     &              fWindowLowerSetpoint ,
-!     &              "debug/blc25/setpoint/closed",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )
-!            
-!      
-!               call add_to_xml_reporting (
-!     &              fZoneTemperature ,
-!     &              "debug/blc25/sensor",
-!     &              'units', '(kg/kg)',
-!     &              'mfn contaminant concentration' )
-      
-      return 
-      end subroutine BCL25_open_windows
-      
 
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 

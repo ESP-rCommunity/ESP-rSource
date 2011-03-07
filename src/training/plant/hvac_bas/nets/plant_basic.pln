@@ -1,5 +1,4 @@
-# Plant component data base:
-/usr/esru/esp-r/databases/plantc.db1                                  
+ESP-r plant file version 2 written on: Mon Jan 17 08:21:33 2011
 # Project title:
 network to go with onoff control                                      
 # Total no. of specified components and simulation type
@@ -8,40 +7,72 @@ network to go with onoff control
   inlet_duct         6
     0        # Component has   0 control variable(s).
     6
-  9.2500       500.00       14.000      0.12500       5.0000      0.25000    
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.25000     #   6 Cross sectional face area (m^2)                                 
 #->   2, centrifugal fan, 1 node model ; flow control                            
   supply_fan         3
     1        # Component has   1 control variable(s).
- 0.25
+  0.25000000    
     6
-  10.000       500.00       7.0000       200.00      0.25000      0.70000    
+       10.000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       7.0000     #   3 UA modulus (W/K)                                                
+       200.00     #   4 Rated total absorbed power (W)                                  
+      0.25000     #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
 #->   3, air heating coil; 1 node model ; flux control                           
   heating_coil       5
     1        # Component has   1 control variable(s).
- 5000.0
+   5000.0000    
     3
-  15.000       1000.0       3.5000    
+       15.000     #   1 Component total mass (kg)                                       
+       1000.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       3.5000     #   3 UA modulus (W/K)                                                
 #->   4, air duct; 1 node model                                                  
   supply_duct        6
     0        # Component has   0 control variable(s).
     6
-  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
 #->   5, air duct; 1 node model                                                  
   extract_duct       6
     0        # Component has   0 control variable(s).
     6
-  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
 #->   6, centrifugal fan, 1 node model ; flow control                            
   extract_fan        3
     1        # Component has   1 control variable(s).
- 0.25
+  0.25000000    
     6
-  10.000       500.00       7.0000       200.00      0.25000      0.70000    
+       10.000     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       7.0000     #   3 UA modulus (W/K)                                                
+       200.00     #   4 Rated total absorbed power (W)                                  
+      0.25000     #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
 #->   7, air duct; 1 node model                                                  
   exhaust_duct       6
     0        # Component has   0 control variable(s).
     6
-  9.2500       500.00       14.000      0.12500       5.0000      0.12270E-01
+       9.2500     #   1 Component total mass (kg)                                       
+       500.00     #   2 Mass weighted average specific heat (J/kgK)                     
+       14.000     #   3 UA modulus (W/K)                                                
+      0.12500     #   4 Hydraulic diameter of duct (m)                                  
+       5.0000     #   5 Length of duct section (m)                                      
+      0.12270E-01 #   6 Cross sectional face area (m^2)                                 
 # The following is a list of component connections.
   7          # Total number of connections
 # receiving       node  conncn sending          node  diversion  suppl1   suppl2

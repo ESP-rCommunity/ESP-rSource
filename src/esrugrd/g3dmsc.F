@@ -156,7 +156,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
@@ -164,9 +163,16 @@ C *********************************************************************
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       CHARACTER*72 AFLCVS,BFLCVS,AFLCNC,BFLCNC
       CHARACTER*72 AFLNDC,BFLNDC,AFLTAQ,BFLTAQ
-      CHARACTER H*72,ITEM(11)*41,MSG*72,FLTMP*65
+      CHARACTER ITEM(11)*41,MSG*72,FLTMP*65
       integer ier
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SUPORT'  ! set for subroutine
 
       IF(IZ.EQ.-1)THEN
         BFLCVS=LGDCVS
@@ -202,19 +208,14 @@ C *********************************************************************
       MITEM=11
 
 C Help text for this menu.
-      H(1)='    Support facilities menu allow the transformation'
-      H(2)=' of the multi-D files (nodes coordinates, control'
-      H(3)=' volumes, and connections) from binary format to'
-      H(4)=' ASCII and vice versa.'
-      H(5)=' '
+      helptopic='multi_bin_ascii_conv'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EMENU('        Support facilities',ITEM,MITEM,INO)
 
 C Binary --> ASCII  ( control volumes ).
       IF(INO.EQ.1)THEN
-        H(1)='   Enter the name of the binary control volumes file.'
-        H(2)=' '
         CALL EASKS(BFLCVS,'the control volumes file (Binary-version) ?',
-     &     ' ',72,' ','binary file',IER,2)
+     &    ' ',72,' ','binary file',IER,nbhelp)
         IU1=IFIL+1
         IF(IZ.EQ.-1)THEN
           ier=0
@@ -225,10 +226,8 @@ C Binary --> ASCII  ( control volumes ).
           CALL EFOPRAN(IU1,BFLCVS,5,1,IER)
           IF(IER.NE.0)GOTO 10
         ENDIF
-        H(1)='   Enter the name of the ASCII control volumes file.'
-        H(2)=' '
         CALL EASKS(AFLCVS,'the control volumes file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU2=IFIL+2
         CALL EFOPSEQ(IU2,AFLCVS,4,IER)
         IF(IER.NE.0)GOTO 10
@@ -263,17 +262,13 @@ C Binary --> ASCII  ( control volumes ).
       ELSEIF(INO.EQ.2)THEN
 
 C ASCII  --> Binary ( control volumes ).
-        H(1)='   Enter the name of the ASCII control volumes file.'
-        H(2)=' '
         CALL EASKS(AFLCVS,'the control volumes file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU1=IFIL+1
         CALL EFOPSEQ(IU1,AFLCVS,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='   Enter the name of the binary control volumes file.'
-        H(2)=' '
         CALL EASKS(BFLCVS,'the control volumes file (Binary-version) ?',
-     &     ' ',72,' ','binary file',IER,2)
+     &     ' ',72,' ','binary file',IER,nbhelp)
         IU2=IFIL+2
         IF(IZ.EQ.-1)THEN
           ier=0
@@ -292,7 +287,7 @@ C ASCII  --> Binary ( control volumes ).
           IREC=IREC+1
           IF(IREC.NE.NCV)THEN
             WRITE(MSG,'(A,I8)')
-     &                   'wronge control volume number at line:',IREC+1
+     &        'wronge control volume number at line:',IREC+1
             CALL EDISP(IUOUT,MSG)
             CALL ERPFREE(IU1,ISTAT)
             CALL ERPFREE(IU2,ISTAT)
@@ -329,18 +324,14 @@ C ASCII  --> Binary ( control volumes ).
       ELSEIF(INO.EQ.3)THEN
 
 C Binary --> ASCII  ( connection file ).
-        H(1)='   Enter the name of the binary connection file.'
-        H(2)=' '
         CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
-     &     ' ',72,' ','binary file',IER,2)
+     &     ' ',72,' ','binary file',IER,nbhelp)
         IU1=IFIL+1
         ier=0
         CALL EFOPRAN(IU1,BFLCNC,7,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='   Enter the name of the ASCII connection file.'
-        H(2)=' '
         CALL EASKS(AFLCNC,'the connection file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU2=IFIL+2
         CALL EFOPSEQ(IU2,AFLCNC,4,IER)
         IF(IER.NE.0)GOTO 10
@@ -357,22 +348,18 @@ C Binary --> ASCII  ( connection file ).
           GOTO 10
         ENDIF
         WRITE(IU2,'(2I8,3G11.3,2I4,I6)')
-     &                       IC,ND1,DIST,ARECV,COND,ITYP,ISP1,ISP2
+     &    IC,ND1,DIST,ARECV,COND,ITYP,ISP1,ISP2
         GOTO 60
       ELSEIF(INO.EQ.4)THEN
 
 C ASCII  --> Binary ( connection file ).
-        H(1)='   Enter the name of the ASCII connection file.'
-        H(2)=' '
         CALL EASKS(AFLCNC,'the connection file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU1=IFIL+1
         CALL EFOPSEQ(IU1,AFLCNC,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='   Enter the name of the binary connection file.'
-        H(2)=' '
         CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
-     &     ' ',72,' ','binary file',IER,2)
+     &     ' ',72,' ','binary file',IER,nbhelp)
         IU2=IFIL+2
         ier=0
         CALL EFOPRAN(IU2,BFLCNC,7,4,IER)
@@ -397,18 +384,14 @@ C ASCII  --> Binary ( connection file ).
       ELSEIF(INO.EQ.5)THEN
 
 C Binary --> ASCII  ( nodes temperature ).
-        H(1)='  Enter the name of the binary nodes temperature file.'
-        H(2)=' '
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
-     &        ' ',72,' ','binary file',IER,2)
+     &    ' ',72,' ','binary file',IER,nbhelp)
         IU1=IFIL+1
         ier=0
         CALL EFOPRAN(IU1,BFLTAQ,2,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='  Enter the name of the ASCII nodes temperature file.'
-        H(2)=' '
         CALL EASKS(AFLTAQ,'the temperature file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU2=IFIL+2
         CALL EFOPSEQ(IU2,AFLTAQ,4,IER)
         IF(IER.NE.0)GOTO 10
@@ -427,17 +410,13 @@ C Binary --> ASCII  ( nodes temperature ).
       ELSEIF(INO.EQ.6)THEN
 
 C ASCII  --> Binary ( nodes temperature ).
-        H(1)='  Enter the name of the ASCII nodes temperature file.'
-        H(2)=' '
         CALL EASKS(AFLTAQ,'the temperature file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU1=IFIL+1
         CALL EFOPSEQ(IU1,AFLTAQ,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='  Enter the name of the binary nodes temperature file.'
-        H(2)=' '
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
-     &       ' ',72,' ','binary file',IER,2)
+     &       ' ',72,' ','binary file',IER,nbhelp)
         IU2=IFIL+2
         ier=0
         CALL EFOPRAN(IU2,BFLTAQ,3,4,IER)
@@ -464,18 +443,14 @@ C ASCII  --> Binary ( nodes temperature ).
       ELSEIF(INO.EQ.7)THEN
 
 C Binary --> ASCII  ( nodes coordinates ).
-        H(1)='  Enter the name of the binary nodes coordinates file.'
-        H(2)=' '
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
-     &        ' ',72,' ','binary file',IER,2)
+     &    ' ',72,' ','binary file',IER,nbhelp)
         IU1=IFIL+1
         ier=0
         CALL EFOPRAN(IU1,BFLNDC,3,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='  Enter the name of the ASCII nodes coordinates file.'
-        H(2)=' '
         CALL EASKS(AFLNDC,'the coordinates file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU2=IFIL+2
         CALL EFOPSEQ(IU2,AFLNDC,4,IER)
         IF(IER.NE.0)GOTO 10
@@ -494,17 +469,13 @@ C Binary --> ASCII  ( nodes coordinates ).
       ELSEIF(INO.EQ.8)THEN
 
 C ASCII  --> Binary ( nodes coordinates ).
-        H(1)='  Enter the name of the ASCII nodes coordinates file.'
-        H(2)=' '
         CALL EASKS(AFLNDC,'the coordinates file (ASCII-version) ?',
-     &     ' ',72,' ','ascii file',IER,2)
+     &     ' ',72,' ','ascii file',IER,nbhelp)
         IU1=IFIL+1
         CALL EFOPSEQ(IU1,AFLNDC,1,IER)
         IF(IER.NE.0)GOTO 10
-        H(1)='  Enter the name of the binary nodes coordinates file.'
-        H(2)=' '
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
-     &       ' ',72,' ','binary file',IER,2)
+     &    ' ',72,' ','binary file',IER,nbhelp)
         IU2=IFIL+2
         ier=0
         CALL EFOPRAN(IU2,BFLNDC,3,4,IER)
@@ -539,7 +510,7 @@ C Exit program.
       ENDIF
       GOTO 10
     1 CALL USRMSG(' ',
-     &           'Error detected while reading/writing to a file.','W')
+     &  'Error detected while reading/writing to a file.','W')
       END
 
 C *****************************  INGRD3  ******************************

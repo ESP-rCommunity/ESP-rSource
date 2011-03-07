@@ -46,7 +46,6 @@ C Write IPV report based on description held in common.
       COMMON/OUTPCH/ICOUT
       common/outpvrb/ioutvrb
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -60,7 +59,11 @@ C Comfort parameters and hash table.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -93,8 +96,8 @@ C Pre calculated data (filtered).
       dimension XMINSUM(7)
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
-      character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
-      character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
+      character xfile*144,tg*1,delim*1,ITEM*18,lipvdatf*72
+      character SUFFIX*8,paction*16
       CHARACTER ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       CHARACTER selres*72,CLMLOC*30
@@ -105,6 +108,13 @@ C Pre calculated data (filtered).
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ipvrep'  ! set for cfiles
 
 C Remember the initial periods.
       jiod1=IOD1
@@ -133,12 +143,11 @@ C Make up a single quote for IPV
 C Read in the existing IPV description.
       if(.NOT.autook)then
         if(icfgv.lt.4)then
-          h(1)='This file holds a description of an Integrated'
-          h(2)='Performance View of this model, including periods,'
-          h(3)='climatic dd information and assiciated zones.'
+          helptopic='res_IPV_report_file_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ltmp=lipvdatf
           CALL EASKS(ltmp,'IPV description file ?',
-     &      ' ',72,'xxx.ipv','IPV file',IER,3)
+     &      ' ',72,'xxx.ipv','IPV file',IER,nbhelp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             lipvdatf=ltmp
           endif
@@ -314,24 +323,9 @@ C Interactive commands.
       ITEM(13)  ='- Exit            '
       NITMS=13
 
-C Instanciate h() strings for this menu.
-      h(1) ='This facility is under development.'
-      h(2) =' '
-      h(3) ='Produces seasonal and annual integrated performance'
-      h(4) ='views (IPV) of the current model based on data'
-      h(5) ='defined in an IPV definition.  To generate a report'
-      h(6) ='for each season, toggle to the required season'
-      h(7) ='(which matches the current results database) and'
-      h(8) ='direct report to feedback or a file.  Also set the'
-      h(9) ='delimeter depending on the use of the report. Use'
-      h(10)='a comma or tab if exporting.'
-      h(11)=' '
-      h(12)='Remember to toggle to the relevant season before'
-      h(13)='generating a seasonal report.'
-      h(14)=' '
-      h(15)='To generate an annual report which includes scaled'
-      h(16)='data and emissions etc., supply the file names for'
-      h(17)='each seasonal report.'
+C Instanciate help strings for this menu.
+      helptopic='res_IPV_report_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       INO=-2
    4  CALL EMENU('IPV Output',ITEM,NITMS,INO)
@@ -357,6 +351,8 @@ C Remember the initial periods.
      &    '(which have altered for IPV reporting).','-')
         return
       elseif(INO.eq.NITMS-1)then
+        helptopic='res_IPV_report_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('ipv reporting',17,'-',0,0,IER)
       elseif(INO.eq.NITMS-2)then
 
@@ -365,14 +361,11 @@ C Toggle averaging.
           IAV=0
         else
           dok=.true.
-          h(1)='Typically, information included in an Integreated'
-          h(2)='Performance View is integrated to once per hour if'
-          h(3)='the simulation was undertaken at a higher frequency.'
-          h(4)=' '
-          h(5)='Some `agents` which display IPV data are unable to'
-          h(6)='work with high frequency data.'
+          helptopic='res_IPV_report_average'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok(' ',
-     &      ' Average results over each output interval?',ok,dok,6)
+     &      'Average results over each output interval?',ok,dok,
+     &      nbhelp)
           if(ok)then
             IAV=1
           else
@@ -380,22 +373,19 @@ C Toggle averaging.
           endif
         endif
       elseif(INO.eq.NITMS-3)then
+        helptopic='res_IPV_report_average'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NOUT,' ',' Output time-step increment ?',
-     &   1,'F',60,'F',NTS,'output time-step',IER,17)
+     &   1,'F',60,'F',NTS,'output time-step',IER,nbhelp)
       elseif(INO.eq.NITMS-4)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various'
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
+        helptopic='res_IPV_report_delimeter'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'continue',' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
           tab=' '
@@ -445,10 +435,10 @@ C and adjust output channel.
 
 C If IPV report format has not been set ask the user (i.e. zero value).
       if(ipvform.eq.0)then
-        h(1)='Text is human readable, comman separated is for use in'
-        h(2)='templates and java is for an interactive agent.'
+        helptopic='IPV_report_text_comma'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Format output for:',' ','Text','comma separated',
-     &    'java',ipvform,2)
+     &    'java',ipvform,nbhelp)
       endif
 
 C If text output the set tab to a space and delimeter to -.
@@ -665,6 +655,7 @@ C If no zones, continue with the storage arrays at zero.
             IGETNO(I,4)=0
             IGETNO(I,5)=ISET
             SLABEL(I)='Heating flux injection (W)'
+            LNSLABEL(I)=26
    50     CONTINUE
           CALL MOSMSD('i',XMAX(1),XMIN(1),XAVE(1),XTOT(1),DMAX(1),
      &      DMIN(1),XMSUM(1),XMINSUM(1))
@@ -677,6 +668,7 @@ C cooling is reported as positive values.
             IGETNO(I,1)=9
             IGETNO(I,2)=izedg(ij,I)
             SLABEL(I)='Cooling flux (W)'
+            LNSLABEL(I)=16
    51     CONTINUE
           CALL MOSMSD('i',XMAX(2),XMIN(2),XAVE(2),XTOT(2),DMAX(2),
      &      DMIN(2),XMSUM(2),XMINSUM(2))
@@ -687,6 +679,7 @@ C Get Max Min lighting casual gains and then integrated lighting.
             IGETNO(I,1)=15
             IGETNO(I,3)=5
             SLABEL(I)='Lighting (unctld) gains (W)'
+            LNSLABEL(I)=27
    52     CONTINUE
           CALL MOSMSD('i',XMAX(3),XMIN(3),XAVE(3),XTOT(3),DMAX(3),
      &      DMIN(3),XMSUM(3),XMINSUM(3))
@@ -696,6 +689,7 @@ C Get Max Min lighting casual gains and then integrated lighting.
             IGETNO(I,1)=15
             IGETNO(I,3)=7
             SLABEL(I)='Lighting (ctld) gains (W)'
+            LNSLABEL(I)=25
    53     CONTINUE
           CALL MOSMSD('i',XMAX(4),XMIN(4),XAVE(4),XTOT(4),DMAX(4),
      &      DMIN(4),XMSUM(4),XMINSUM(4))
@@ -707,6 +701,7 @@ C Use the (5) part of arrays for fans and pumps.
             IGETNO(I,1)=15
             IGETNO(I,3)=6
             SLABEL(I)='Small Power (W)'
+            LNSLABEL(I)=15
    54     CONTINUE
           CALL MOSMSD('i',XMAX(6),XMIN(6),XAVE(6),XTOT(6),DMAX(6),
      &      DMIN(6),XMSUM(6),XMINSUM(6))
@@ -869,7 +864,7 @@ C not know about idmdinc() so this needs to be applied.
         call aggregpv(iseas,pvok,pvmax,totpv,iier)
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         call edisp(itru,' ')
         write(outs,'(9a)') '*report',tab,'71',tab,'maximum',
      &    tab,'capacity',tab,'Dispersed'
@@ -904,7 +899,7 @@ C The IGET number is fixed at 71.
         call edisp(itru,' ')
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         write(outs,'(9a)') '*report',tab,'71',tab,'minimum',
      &    tab,'capacity',tab,'Dispersed'
         call edisp(itru,outs)
@@ -937,7 +932,7 @@ C The IGET number is fixed at 71.
         call edisp(itru,' ')
         
 C The IGET number is fixed at 71.
-        SLABEL(1)='Dispersed demands'
+        SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
         write(outs,'(9a)') '*report',tab,'71',tab,'average',
      &    tab,'capacity',tab,'Dispersed'
         call edisp(itru,outs)
@@ -1069,7 +1064,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=6
                 IGETNO(I,8)=1
-                SLABEL(I)='Dry bulb temperature,degC'
+                SLABEL(I)='Dry bulb temperature,degC'; LNSLABEL(I)=25
               elseif(imetget(ig).eq.6)then
                 IGETNO(I,1)=6
                 IGETNO(I,2)=izmg(ig,I)
@@ -1079,7 +1074,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=5
                 IGETNO(I,8)=1
-                SLABEL(I)='Resultant temperature,degC'
+                SLABEL(I)='Resultant temperature,degC'; LNSLABEL(I)=26
               elseif(imetget(ig).eq.11)then
                 IGETNO(I,1)=11
                 IGETNO(I,2)=izmg(ig,I)
@@ -1089,7 +1084,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=4
                 IGETNO(I,8)=2
-                SLABEL(I)='Infiltration load,W'
+                SLABEL(I)='Infiltration load,W'; LNSLABEL(I)=19
               elseif(imetget(ig).eq.12)then
                 IGETNO(I,1)=12
                 IGETNO(I,2)=izmg(ig,I)
@@ -1099,7 +1094,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=9
                 IGETNO(I,8)=2
-                SLABEL(I)='Ventilation load,W'
+                SLABEL(I)='Ventilation load,W'; LNSLABEL(I)=18
               elseif(imetget(ig).eq.13)then
                 IGETNO(I,1)=13
                 IGETNO(I,2)=izmg(ig,I)
@@ -1109,7 +1104,7 @@ C Set up selections.
                 IGETNO(I,6)=-202
                 IGETNO(I,7)=4
                 IGETNO(I,8)=4
-                SLABEL(I)='Relative humidity,%'
+                SLABEL(I)='Relative humidity,%'; LNSLABEL(I)=19
               elseif(imetget(ig).eq.15)then
                 IGETNO(I,1)=15
                 IGETNO(I,2)=izmg(ig,I)
@@ -1119,7 +1114,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=12
                 IGETNO(I,8)=2
-                SLABEL(I)='Total casual gains,W'
+                SLABEL(I)='Total casual gains,W'; LNSLABEL(I)=20
               elseif(imetget(ig).eq.38)then
                 IGETNO(I,1)=38
                 IGETNO(I,2)=izmg(ig,I)
@@ -1130,6 +1125,7 @@ C Set up selections.
                 IGETNO(I,7)=7
                 IGETNO(I,8)=2
                 SLABEL(I)='Solar entering from outside,W'
+                LNSLABEL(I)=29
               elseif(imetget(ig).eq.40)then
                 IGETNO(I,1)=40
                 IGETNO(I,2)=izmg(ig,I)
@@ -1139,7 +1135,7 @@ C Set up selections.
                 IGETNO(I,6)=-104
                 IGETNO(I,7)=9
                 IGETNO(I,8)=2
-                SLABEL(I)='Total solar absorbed,W'
+                SLABEL(I)='Total solar absorbed,W'; LNSLABEL(I)=22
               elseif(imetget(ig).eq.73)then
                 IGETNO(I,1)=73
                 IGETNO(I,2)=izmg(ig,I)
@@ -1149,7 +1145,7 @@ C Set up selections.
                 IGETNO(I,6)=1
                 IGETNO(I,7)=6
                 IGETNO(I,8)=1
-                SLABEL(I)='Guth comfort index,-'
+                SLABEL(I)='Guth comfort index,-'; LNSLABEL(I)=20
               elseif(imetget(ig).eq.74)then
                 IGETNO(I,1)=74
                 IGETNO(I,2)=izmg(ig,I)
@@ -1159,7 +1155,7 @@ C Set up selections.
                 IGETNO(I,6)=-3
                 IGETNO(I,7)=12
                 IGETNO(I,8)=2
-                SLABEL(I)='Plnt cnv+rad&latent,Wh'
+                SLABEL(I)='Plnt cnv+rad&latent,Wh'; LNSLABEL(I)=22
               endif
   250       CONTINUE
 
@@ -1188,7 +1184,7 @@ C Next grab the stats for current metric.
      &          'stats',tab,msdoc(ig)(1:lnblnk(msdoc(ig))),tab,
      &          metgroup(ig)
               call edisp(itru,outs)
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               if(imetmsc(ig,1).eq.2)then
 
@@ -1247,7 +1243,7 @@ C Write stats for current metric.
      &          metgroup(ig)
               call edisp(itru,outs)
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
               call edisp(itru,outs)
@@ -1272,7 +1268,7 @@ C Write stats for current metric.
      &          metgroup(ig)
               call edisp(itru,outs)
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
               if(imetget(ig).eq.1.or.imetget(ig).eq.6)then
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'3'
@@ -1399,7 +1395,7 @@ C uncontrolled and controlled lighting.
    61       continue
             DO 63 I=1,NZ
               IGETNO(I,1)=9
-              SLABEL(I)='Cooling flux (W)'
+              SLABEL(I)='Cooling flux (W)'; LNSLABEL(I)=16
    63       CONTINUE
             call GOGET(IDAY)
             DO 64 I=1,NZ
@@ -1411,6 +1407,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=5
               SLABEL(I)='Lighting (unctld) gains (W)'
+              LNSLABEL(I)=27
    66       CONTINUE
             call GOGET(IDAY)
             DO 67 I=1,NZ
@@ -1421,7 +1418,7 @@ C uncontrolled and controlled lighting.
             DO 70 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=7
-              SLABEL(I)='Lighting (ctld) gains (W)'
+              SLABEL(I)='Lighting (ctld) gains (W)'; LNSLABEL(I)=25
    70       CONTINUE
             call GOGET(IDAY)
             DO 71 I=1,NZ
@@ -1439,7 +1436,7 @@ C Small power (assumed to be equipment casual gains)
             DO 74 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=6
-              SLABEL(I)='Small power (W)'
+              SLABEL(I)='Small power (W)'; LNSLABEL(I)=15
    74       CONTINUE
             call GOGET(IDAY)
             DO 75 I=1,NZ
@@ -1709,6 +1706,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=6
                   IGETNO(I,8)=1
                   SLABEL(I)='Dry bulb temperature,degC'
+                  LNSLABEL(I)=25
                 elseif(imetget(ig).eq.6)then
                   SUFFIX=' Res T'
                   IGETNO(I,1)=6
@@ -1720,6 +1718,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=5
                   IGETNO(I,8)=1
                   SLABEL(I)='Resultant temperature,degC'
+                  LNSLABEL(I)=25
                 elseif(imetget(ig).eq.11)then
                   SUFFIX=' Inf'
                   IGETNO(I,1)=11
@@ -1730,7 +1729,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=4
                   IGETNO(I,8)=2
-                  SLABEL(I)='Infiltration load,W'
+                  SLABEL(I)='Infiltration load,W'; LNSLABEL(I)=19
                 elseif(imetget(ig).eq.12)then
                   SUFFIX=' Vent'
                   IGETNO(I,1)=12
@@ -1741,7 +1740,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
-                  SLABEL(I)='Ventilation load,W'
+                  SLABEL(I)='Ventilation load,W'; LNSLABEL(I)=18
                 elseif(imetget(ig).eq.13)then
                   SUFFIX=' RH'
                   IGETNO(I,1)=13
@@ -1752,7 +1751,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-202
                   IGETNO(I,7)=4
                   IGETNO(I,8)=4
-                  SLABEL(I)='Relative humidity,%'
+                  SLABEL(I)='Relative humidity,%'; LNSLABEL(I)=19
                 elseif(imetget(ig).eq.15)then
                   SUFFIX=' TotCnv'
                   IGETNO(I,1)=15
@@ -1763,7 +1762,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-3
                   IGETNO(I,7)=12
                   IGETNO(I,8)=2
-                  SLABEL(I)='Total casual gains,W'
+                  SLABEL(I)='Total casual gains,W'; LNSLABEL(I)=20
                 elseif(imetget(ig).eq.38)then
                   SUFFIX=' SolinEx'
                   IGETNO(I,1)=38
@@ -1775,6 +1774,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=7
                   IGETNO(I,8)=2
                   SLABEL(I)='Solar entering from outside,W'
+                  LNSLABEL(I)=29
                 elseif(imetget(ig).eq.40)then
                   SUFFIX=' TSolabs'
                   IGETNO(I,1)=40
@@ -1785,7 +1785,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=-104
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
-                  SLABEL(I)='Total solar absorbed,W'
+                  SLABEL(I)='Total solar absorbed,W'; LNSLABEL(I)=22
                 elseif(imetget(ig).eq.73)then
                   SUFFIX=' Guth'
                   IGETNO(I,1)=73
@@ -1796,14 +1796,15 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,6)=1
                   IGETNO(I,7)=6
                   IGETNO(I,8)=1
-                  SLABEL(I)='Guth comfort index,-'
+                  SLABEL(I)='Guth comfort index,-'; LNSLABEL(I)=20
                 endif
                 lnz=lnzname(izmg(ig,i))
                 write (GLABEL(I),'(a,a)')ZNAME(izmg(ig,i))(1:lnz),
      &            SUFFIX
+                lnglabel(I)=lnblnk(glabel(i))  ! remember width
   350         CONTINUE
 
-              write(outs,'(3a)') '*title',tab,SLABEL(1)
+              write(outs,'(3a)') '*title',tab,SLABEL(1)(1:LNSLABEL(1))
               call edisp(itru,outs)
 
               write(outs,'(6a,i2)') '*format',tab,'tabular',
@@ -1836,12 +1837,10 @@ C Restore hour format flag.
 C Write the hourly aggregate demands for whole period if requested.
  477  if(.NOT.autook)then
         dok=.false.
-        h(1)='If you want to assess hourly patterns you should say'
-        h(2)='yes to this question. NOTE: this will increase the '
-        h(3)='size of the report, especially as the number of days'
-        h(4)='in the assessments increase. '
+        helptopic='res_IPV_hourly_patterns'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call askok('Include hourly listing (for assessment period) of',
-     &    'aggregate delivered energy (by type)?',ok,dok,4)
+     &    'aggregate delivered energy (by type)?',ok,dok,nbhelp)
       else
         if(iaggr.eq.0)then
           ok=.false.
@@ -1925,7 +1924,6 @@ C Write IPV report based on description held in common.
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -1941,11 +1939,18 @@ C Write IPV report based on description held in common.
       dimension WDHWD(MSPS),WPVD(MSPS),WHC(MSPS),WCC(MSPS)
       dimension WLC(MSPS),WFC(MSPS),WSPC(MSPS),WDHWC(MSPS),WPVC(MSPS)
       character outs*124,outsd*124,outsn*124
-      character xfile*144,tg*1,delim*1,h*72,tab*1,OUTSTR*124,sq*1
+      character xfile*144,tg*1,delim*1,tab*1,OUTSTR*124,sq*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
 
       logical XST,dmdsok,closea,closeb,closec,closed,closee
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='mkannrep'  ! set for subroutine
 
 C Make up a single quote for IPV
       sq = char(39)
@@ -1962,8 +1967,8 @@ C Read project demands file if it exists.
       endif
 
 C Interact with user if in interactive mode.
-      h(1)='An annual IPV report is derived from the intermediate '
-      h(2)='IPV report (previously generated). '
+      helptopic='res_IPV_annual_rep'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ifu=ifil+1
  342  if(nipvassmt.ge.1)then
         call FINDFIL(sipvres,XST)
@@ -1983,10 +1988,10 @@ C Interact with user if in interactive mode.
 
 C If IPV report format has not been set ask the user.
       if(ipvform.eq.0)then
-        h(1)='Text is human readable, comman separated is for use in'
-        h(2)='templates and java is for an interactive agent.'
+        helptopic='res_IPV_annual_delim'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Format output for:',' ','Text','comma separated',
-     &    'java',ipvform,2)
+     &    'java',ipvform,nbhelp)
       endif
 
 C Set tab based on format of report.
@@ -3139,7 +3144,11 @@ C      common/OUTIN/IUOUT,IUIN
       COMMON/BL2/dmdfla(7)
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       common/exporttg/xfile,tg,delim
@@ -3153,7 +3162,6 @@ C << is this required? >>
 
       dimension edput(7,MTS)
       character tab*1,outs*124,xfile*144,tg*1,delim*1
-      character SLABEL*32,GLABEL*20
       logical pvok
 
 C Set separator as in rest of seasonal report.
@@ -3270,6 +3278,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,4)=0
               IGETNO(I,5)=ISET
               SLABEL(I)='Heating flux injection (W)'
+              LNSLABEL(I)=26
    60       CONTINUE
             call GOGET(IDAY)
             DO 161 I=1,NZ
@@ -3281,6 +3290,7 @@ C uncontrolled and controlled lighting.
             DO 63 I=1,NZ
               IGETNO(I,1)=9
               SLABEL(I)='Cooling flux (W)'
+              LNSLABEL(I)=16
    63       CONTINUE
             call GOGET(IDAY)
             DO 64 I=1,NZ
@@ -3293,6 +3303,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=5
               SLABEL(I)='Lighting (unctld) gains (W)'
+              LNSLABEL(I)=27
    66       CONTINUE
             call GOGET(IDAY)
             DO 67 I=1,NZ
@@ -3304,6 +3315,7 @@ C uncontrolled and controlled lighting.
               IGETNO(I,1)=15
               IGETNO(I,3)=7
               SLABEL(I)='Lighting (ctld) gains (W)'
+              LNSLABEL(I)=25
    70       CONTINUE
             call GOGET(IDAY)
             DO 71 I=1,NZ
@@ -3317,6 +3329,7 @@ C Small power (assumed to be equipment casual gains)
               IGETNO(I,1)=15
               IGETNO(I,3)=6
               SLABEL(I)='Small power (W)'
+              LNSLABEL(I)=15
    74       CONTINUE
             call GOGET(IDAY)
             DO 75 I=1,NZ
@@ -3384,7 +3397,6 @@ C of all nodes (W).
       subroutine aggregpv(iseas,pvok,pvmax,totpv,iier)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
@@ -3396,10 +3408,17 @@ C Special materials file flag
      &  smstres(MSPS),selres(MSPS),sipvres
       common/spm55/pvdayhr(2*MTS)
 
-      character outs*124,H*72,spflnam*72
+      character outs*124,spflnam*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
       logical OK,DOK,XST,pvok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='aggregpv'  ! set for cfiles
 
 C Special material output.
       iier=0
@@ -3415,12 +3434,10 @@ C for output file.
         return
       endif
       dok=.true.
-      h(1)='There are active/special materials in the model and'
-      h(2)='thus there might be a report generated for their '
-      h(3)='performance. If you know the name say yes and '
-      h(4)='then supply the name of the file. '
+      helptopic='res_special_materials'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call askok('Is there a special materials output file',
-     &           'associated with this simulation?',OK,dok,4)
+     &           'associated with this simulation?',OK,dok,nbhelp)
       if(.NOT.OK)then
         pvok=.false.
         iier=0
@@ -3483,7 +3500,6 @@ C file. tg is a character T text or X tabular info being saved.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/rcmd/LCMDFL
       common/rpath/path
 
@@ -3491,11 +3507,18 @@ C Simulator parameters. autook signals silent operation.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg
-      character H*72,xfile*144,path*72,outs*124,outs248*248
+      character xfile*144,path*72,outs*124,outs248*248
       character tg*1,tfile*72,act*1
       character LCMDFL*144,longtfile*144,longtfiledos*144
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok,there
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ipvexp'  ! set for cfiles
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -3528,16 +3551,12 @@ C Each call is a toggle.
           if (autook) then
             IW=2   ! iw needs to be non-zero for subsequent code to work.
           else
-            h(1)='If using path then the export file will be placed in'
-            h(2)='the model folder. Otherwise nominate a folder and'
-            h(3)='file name for the export file (i.e. /tmp/junk.exp or'
-            h(4)='/home/ralph/reports/junk.exp) '
-            h(5)=' '
-            h(6)='If you selected this option in error click continue.'
+            helptopic='res_IPV_export_folder'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(outs,'(A,A)') ' The model is in folder ',path
             CALL EASKABC(outs,' place export file:',
      &        'in the model folder','user defined folder','continue',
-     &        iw,6)
+     &        iw,nbhelp)
             if(iw.eq.3)then
               ixopen=0
               return    ! does ixopen need to be reset?
@@ -3546,28 +3565,28 @@ C Each call is a toggle.
         else
           IW=2   ! iw needs to be non-zero for subsequent code to work.
         endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
+        helptopic='res_IPV_export_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if (.NOT.autook) then
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           llt=lnblnk(xfile)
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',96,'export.txt','export file name',IER,2)
+     &          ' ',96,'export.txt','export file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',124,'export.txt','export file name',IER,2)
+     &          ' ',124,'export.txt','export file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',144,'export.txt','export file name',IER,2)
+     &          ' ',144,'export.txt','export file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(xfile,' Export file name? ',
-     &        ' ',144,'export.txt','export file name',IER,2)
+     &        ' ',144,'export.txt','export file name',IER,nbhelp)
           else
             CALL EASKF(xfile,' Export file name? ',
-     &        ' ',96,'export.txt','binary events db',IER,2)
+     &        ' ',96,'export.txt','binary events db',IER,nbhelp)
           endif
 
 C If user request cancel then return after resetting ixopen to zero.

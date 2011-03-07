@@ -37,7 +37,6 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -54,10 +53,17 @@ C *********************************************************************
 
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
-      CHARACTER H*72,TEXT*40,LGRD1D*72
+      CHARACTER TEXT*40,LGRD1D*72
       integer MITEM,INO ! max items and current menu item
 
       DIMENSION IVALSZ(MCOM),IVALSC(MS),IVALSL(ME)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MENU1D'  ! set for subroutine
 
       IUNIT=IFIL+1
       SAVEOK=.FALSE.
@@ -80,33 +86,9 @@ C *********************************************************************
       MITEM=14
 
 C Help text for menu.
-      H(1)='    The node distribution menu allows the user to '
-      H(2)=' select the required discretisation scheme, and to '
-      H(3)=' detribute the nodes throughout the domain.'
-      H(4)='  '
-      H(5)='     The available options are:'
-      H(6)=' 1   select the  discretisation scheme.'
-      H(7)=' a   (default) assign 2 nodes per each layer in the'
-      H(8)='     building. '
-      H(9)='  '
-      H(10)=' b   assign the number of nodes for a particular '
-      H(11)='     layer in the building.'
-      H(12)=' c   automatic node distribution according to the'
-      H(13)='     thickness and thermal diffusivity of each '
-      H(14)='     layer.'
-      H(15)='  '
-      H(16)=' d   replace a multi-layered construction with '
-      H(17)='     a lumped construction.'
-      H(18)=' e   distribute the nodes throughout the building'
-      H(19)='     according to the information given by a grid'
-      H(20)='     distribution file.'
-      H(21)=' f   save the current grid distribution into a file.'
-      H(22)=' !   list the nodes distribution throughout the '
-      H(23)='     building.'
-      H(24)=' ?   display these help statements.'
-      H(25)=' -   return to the main simulator menu.'
+      helptopic='1D_node_def_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL USRMSG(' ',' ','-')
       CALL EMENU('  Nodes Distribution',ITEM,MITEM,INO)
       IF(INO.EQ.3)THEN
 
@@ -133,9 +115,8 @@ C Show the zones menu.
         DO 40 IZ=1,NCOMP
           ITEMZ(IZ)=zname(IZ)
    40   CONTINUE
-        H(1)=' Select the zone in which required layer is located. '
-        H(2)=' '
-        CALL EPICKS(INPICK,IVALSZ,' ',' ',20,NCOMP,ITEMZ,'  ',IER,2)
+        CALL EPICKS(INPICK,IVALSZ,' ',' ',20,NCOMP,ITEMZ,'  ',
+     &    IER,nbhelp)
         MNU1=IVALSZ(1)
 
 C Show the constructions menu.
@@ -151,9 +132,8 @@ C Show the constructions menu.
               ITEMC(IS)=SSNAME(icn1)
             ENDIF
    60     CONTINUE
-          H(1)=' Select the surface in which the required layer '
-          H(2)=' is located. '
-          CALL EPICKS(INPICK,IVALSC,' ',' ',20,NC,ITEMC,' ',IER,2)
+          CALL EPICKS(INPICK,IVALSC,' ',' ',20,NC,ITEMC,' ',
+     &      IER,nbhelp)
           MNU2=IVALSC(1)
           IF(MNU2.GT.0.AND.MNU2.LE.NC)THEN
             ISRFC=MNU2
@@ -168,22 +148,19 @@ C Show the layers menu for un-lumped constructions.
               WRITE(ITEML(J),'(A,1X,I2,1X,A,I3)')'LAYER (',J,') : ',
      &                 NNDL(ICOMP,ISRFC,J)
    80       CONTINUE
-            H(1)=' Select the layer whose number of nodes will '
-            H(2)=' be re-assigned. '
-            CALL EPICKS(INPICK,IVALSL,' ',' ',20,NE,ITEML,' ',IER,2)
+            CALL EPICKS(INPICK,IVALSL,' ',' ',20,NE,ITEML,' ',
+     &        IER,nbhelp)
             MNU3=IVALSL(1)
             IF(MNU3.GT.0.AND.MNU3.LE.NE)THEN
               IL=MNU3
-              H(1)=' The number of nodes per layer should be at '
-              H(2)=' least (2). On the other hand, the the total '
-              H(3)=' number of nodes per surface should not '
-              WRITE(H(4),'(A,I2,A)')' exceed (',MN-1,').'
+              helptopic='nodes_per_layer'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               WRITE(TEXT,'(A,I2,A,I2,A,I2,A)')'for layer (',ICOMP,
      &                                      ',',ISRFC,',',IL,') :'
 
 C Enter the required number of nodes for the selected layer.
               CALL EASKI(NND,'Enter the required number of nodes',TEXT,
-     &                      2,'F',MN-1,'F',2,' number of nodes ',IER,4)
+     &          2,'F',MN-1,'F',2,' number of nodes ',IER,nbhelp)
               IDEL=NND-NNDL(ICOMP,ISRFC,IL)
               ICHKC=NNDC(ICOMP,ISRFC)+IDEL
 
@@ -225,15 +202,16 @@ C Creating lumped construction is required.
       ELSEIF(INO.EQ.8)THEN
 
 C Read a node distribution file.
-        h(1)='The 1D gridding configuration file << ... >> '
+        helptopic='1D_node_def_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LGRD1D,' 1D gridding configuration file name ?',' ',
-     &               72,' ',' gridding confg. file ',IER,1)
+     &    72,' ',' gridding confg. file ',IER,nbhelp)
         CALL READ1D(LGRD1D,IUNIT,IUOUT,ITRC,IER)
       ELSEIF(INO.EQ.9)THEN
 
 C Save the current node distrbution in a file.
         CALL EASKS(LGRD1D,' 1D gridding configuration file name ?',' ',
-     &               72,' ',' gridding confg. file ',IER,2)
+     &    72,' ',' gridding confg. file ',IER,nbhelp)
         CALL SAVE1D(LGRD1D,IUNIT,IUOUT,ITRC,IER)
         IF(IER.EQ.0)THEN
           SAVEOK=.TRUE.
@@ -261,21 +239,21 @@ C list the node distribution in the text feedback window.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Display the help statements.
+        helptopic='1D_node_def_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IHELPM=1
-        CALL PHELPD('node distrib ',25,'-',0,0,IER)
+        CALL PHELPD('node distrib ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main simulator menu.
         IF(SAVEOK)THEN
           dok=.true.
-          h(1)='Recent changes to the model have not yet been saved'
-          h(2)='to the configuration file. You should do this update'
-          h(3)=' '
-          h(4)='AND you should ensure that no other ESP-r module is '
-          h(5)='currently accessing this file. '
+          helptopic='save_recent_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &      'The system configuration should be updated for changes.',
-     &      '(if no other module is using it). Do this?',OK,dok,5)
+     &      '(if no other module is using it). Do this?',
+     &      OK,dok,nbhelp)
           IF(OK)CALL EMKCFG('-',IER)
         ENDIF
         RETURN
@@ -292,7 +270,6 @@ C *********************************************************************
       SUBROUTINE AUTG1D
 #include "building.h"
 
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -307,10 +284,17 @@ C *********************************************************************
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
       COMMON/GR1D04/GAM,RGAM
 
-      CHARACTER ITEM(14)*30,H*72,TEXT2*120,ONFF*3
+      CHARACTER ITEM(14)*30,TEXT2*120,ONFF*3
       integer NITMS,INO ! max items and current menu item
 
       DIMENSION FRN(MS,ME)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='AUTG1D'  ! set for subroutine
 
       IF(IADP.EQ.1)THEN
          ONFF='ON '
@@ -341,45 +325,8 @@ C The required time step in seconds.
       ITEM(14)='- Exit'
 
 C Help text for menu.
-      H(1)='     The variable node distribution menu allows'
-      H(2)='  automatic distribution of grids throughout the'
-      H(3)='  building according to the values of layers  '
-      H(4)='  thickness and thermal diffusivity.'
-      H(5)='    '
-      H(6)='     The user should, first, select the referance '
-      H(7)='  value for the Fourier number of the layers in '
-      H(8)='  the building. The acceptable range of Fourier'
-      H(9)='  numbers,and the expected time steps per hour '
-      H(10)='  should also be defined.'
-      H(11)=' '
-      H(12)='     The available options are:'
-      H(13)=' 1   set the dynamic gridding ON or OFF. This'
-      H(14)='     option will be available only if the '
-      H(15)='     automatic node distribution was invoked.'
-      H(16)=' a   set the minimum allowable Fourier number'
-      H(17)='     below which a warning will be given.'
-      H(18)=' b   set the reference Fourier number for  '
-      H(19)='     node distribution.'
-      H(20)=' '
-      H(21)=' c   set the maximum allowable Fourier number     '
-      H(22)='     above which a warning will be given.'
-      H(23)=' d   set the required building time steps '
-      H(24)='     per hour.'
-      H(25)=' e   invoke automatic node distribution '
-      H(26)='     according to the layers thickness'
-      H(27)='     and the values given by options (b & d).'
-      H(28)=' f   list the current Fourier number for all'
-      H(29)='     the layers in the building.'
-      H(30)=' !   list the node distribution throughout'
-      H(31)='     the building.'
-      H(32)=' ?   display these help statements.'
-      H(33)=' -   return to the nodes distribution menu.'
-      H(34)=' '
-      H(35)=' NB: If the thermo-physical properties of'
-      H(36)='     any multi-layered construction were'
-      H(37)='     modified by the control function (99),'
-      H(38)='     then its node distribution will be '
-      H(39)='     updated if the dynamic gridding was ON. '
+      helptopic='variable_node_distr'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL USRMSG(' ',' ','-')
       NITMS=14
@@ -398,22 +345,12 @@ C Switching the dynamic gridding index.
 
 C Assign the minimum Fourier number for, all layers, below which a warning
 C will be given.
-        H(1)='  Usually, this limit is used to control the  '
-        H(2)='  truncation error.'
-        H(3)=' '
         CALL EASKR(FMIN,' ','Enter the minimum allowable Fourier No.:',
-     &                      0.,'F',FREF,'W',.5,' Minimum (Fo) ',IER,3)
+     &     0.,'F',FREF,'W',.5,' Minimum (Fo) ',IER,nbhelp)
       ELSEIF(INO.EQ.5)THEN
 
-C Assign the reference Fourier number for the automatic node distribution.
-        H(1)='  This value will be used in the automatic node '
-        H(2)='  distribution scheme.(i.e. the nodes will be'
-        H(3)='  distributed in such away that the Fourier'
-        H(4)='  number for each layer will be approximately'
-        H(5)='  equal to the reference Fourier number entered. '
-        H(6)=' '
         CALL EASKR(FREF,' ','Enter the reference Fourier No. :',
-     &            FMIN,'F',FMAX,'F',.5,' Reference (Fo) ',IER,6)
+     &    FMIN,'F',FMAX,'F',.5,' Reference (Fo) ',IER,nbhelp)
       ELSEIF(INO.EQ.6)THEN
 
 C Assign the maximum Fourier number for, all layers, above which a warning
@@ -423,30 +360,19 @@ C will be given.
         ELSE
           FMAXD=0.25/(1.-GAM)
         ENDIF
-        H(1)='  Usually, this limit is used to control the '
-        H(2)='  occurance of resonance during the simulation. '
-        H(3)='  This limit is a function of the degree of'
-        H(4)='  implicitness. The default value is calculated '
-        H(5)='  based on the degree of implicitness.'
-        H(6)=' '
         CALL EASKR(FMAX,' ',
-     &              'Enter the maximum allowable Fourier No. :',FREF,
-     &              'W',1.,'-',FMAXD,' Maximum (Fo) ',IER,6)
+     &   'Enter the maximum allowable Fourier No. :',FREF,
+     &   'W',1.,'-',FMAXD,' Maximum (Fo) ',IER,nbhelp)
       ELSEIF(INO.EQ.7)THEN
 
 C Assign the building side number of time steps per hour
-        H(1)='  This value should be equal to the real  building '
-        H(2)='  time steps per hour, in order to asure the  '
-        H(3)='  accuracy of the simulation.'
-        H(4)='  '
         CALL EASKI(NSTP,'Enter the building side  ',
-     &             'number of time steps per hour:',1,'F',60,
-     &              'F',1,' No. of time step/hr ',IER,4)
+     &    'number of time steps per hour:',1,'F',60,
+     &    'F',1,' No. of time step/hr ',IER,nbhelp)
       ELSEIF(INO.EQ.9)THEN
 
 C Invoke the automatic node distribution.
         IVAR=1
-C        CALL EPAGE
         DO 30 ICOMP=1,NCOMP
         DO 30 I=1,NCONST(ICOMP)
           ILUMP(ICOMP,I)=0
@@ -455,7 +381,6 @@ C        CALL EPAGE
       ELSEIF(INO.EQ.11)THEN
 
 C Display the Fourier number for all the layers in the building.
-C        CALL EPAGE
         DO 60 ICOMP=1,NCOMP
           WRITE(TEXT2,'(A,A,I2,A)')'Surface               ',
      &         ' Fourier number for each layer in zone (',ICOMP,')'
@@ -519,7 +444,6 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -542,9 +466,16 @@ C *********************************************************************
 
       LOGICAL OK,dok
 
-      CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50
+      CHARACTER ITEM(15)*31,TEXT2*120,MSG1*50
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LUMPMN'  ! set for subroutine
 
 C Initialise the external and internal convective heat transfer 
 C coefficient.
@@ -572,32 +503,8 @@ C coefficient.
       ITEM(15)='- Exit'
 
 C Help text for this menu.
-      H(1)='     The lumped construction menu allows the'
-      H(2)=' replacement of a multi-layered construction by'
-      H(3)=' only three nodes, if the Biot number for that'
-      H(4)=' layer was <= 0.1.'
-      H(5)=' '
-      H(6)='     The available options are:'
-      H(7)=' a   assign the convective heat transfer '
-      H(8)='     coefficient , hc, value for a layer.'
-      H(9)=' b   assign (hc) value for all surfaces in the'
-      H(10)='     building.'
-      H(11)=' c   assign the (hc) value for all surfaces in '
-      H(12)='     the building according to the values given  '
-      H(13)='     by a file '
-      H(14)=' '
-      H(15)=' d   save the current (hc) values in a file.'
-      H(16)=' e   replace all the multi-layered constructions '
-      H(17)='     whose Biot number is <= 0.1 by only three'
-      H(18)='     nodes.'
-      H(19)=' f   list the current (hc) values for all '
-      H(20)='     surfaces in the building.'
-      H(21)=' h   list the last calculated Biot number values'
-      H(22)='     for all surfaces in the building.'
-      H(23)=' !   list the node distribution throughout the'
-      H(24)='     building.'
-      H(25)=' ?   display these help statements. '
-      H(26)=' -   return to the nodes distribution menu. '
+      helptopic='lumped_constr_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL USRMSG(' ',' ','-')
       NITMS=15
@@ -610,9 +517,8 @@ C Display the available zones menu.
         DO 50 IZ=1,NCOMP
           ITEMZ(IZ)=zname(IZ)
    50   CONTINUE
-        H(1)=' Select the zone in which required layer is located. '
-        H(2)=' '
-        CALL EPICKS(INPICK,IVALSZ,' ',' ',20,NCOMP,ITEMZ,'  ',IER,2)
+        CALL EPICKS(INPICK,IVALSZ,' ',' ',20,NCOMP,ITEMZ,'  ',
+     &    IER,nbhelp)
         MNU1=IVALSZ(1)
 
 C Display the available constructions menu.
@@ -634,10 +540,8 @@ C Display the available constructions menu.
             WRITE(ITEMC(IS+2),'(A,A,F7.1)')SSNAME(icn1),':',
      &              HCSRF(ICOMP,IS,IEXT)
    70     CONTINUE
-          H(1)=' Select the surface for which the convective heat ' 
-          H(2)=' coefficient will be changed.'
-          H(3)=' '
-          CALL EPICKS(INPICK,IVALSC,' ',' ',28,NC+2,ITEMC,' ',IER,3)
+          CALL EPICKS(INPICK,IVALSC,' ',' ',28,NC+2,ITEMC,' ',
+     &      IER,nbhelp)
           MNU2=IVALSC(1)
           IF(MNU2.EQ.1.AND.IEXT.EQ.2)THEN
             IEXT=1
@@ -646,13 +550,10 @@ C Display the available constructions menu.
             IEXT=2
             GOTO 60
           ELSEIF(MNU2.GT.2.AND.MNU2.LE.NC+2)THEN
-            H(1)=' Enter the value of the convective heat transfer '
-            H(2)=' coefficient for the selected surface.'
-            H(3)=' '
             ISRFC=MNU2-2
             CALL EASKR(HCSRF(ICOMP,ISRFC,IEXT),MSG1,
-     &           'convective heat transfer coefficient :',0.,'F',
-     &            10.,'W',5.,' conv. heat coeff. ',IER,3)
+     &        'convective heat transfer coefficient :',0.,'F',
+     &        10.,'W',5.,' conv. heat coeff. ',IER,nbhelp)
             GOTO 60
           ELSEIF(MNU2.EQ.0)THEN
             GOTO 40
@@ -667,13 +568,9 @@ C Display the available constructions menu.
       ELSEIF(INO.EQ.4)THEN
 
 C Assign (hc) for the complete building.
-        H(1)=' Enter the value of the external and enternal  '
-        H(2)=' convective heat transfer  coefficient for '
-        H(3)=' the building.'
-        H(4)=' '
         CALL EASKR(BCNV,'Enter the value of external and internal',
-     &              'convective heat transfer coefficient :',0.,'F',
-     &              10.,'W',5.,' Internal conv. coeff. ',IER,4)
+     &    'convective heat transfer coefficient :',0.,'F',
+     &    10.,'W',5.,' Internal conv. coeff. ',IER,nbhelp)
         DO 80 ICOMP=1,NCOMP
         DO 80 I=1,NCONST(ICOMP)
           HCSRF(ICOMP,I,1)=BCNV
@@ -682,20 +579,16 @@ C Assign (hc) for the complete building.
       ELSEIF(INO.EQ.6)THEN
 
 C Read the (hc) values from a file.
-        H(1)='Enter the name of the heat coefficients '
-        H(2)='distribution file.'
-        H(3)='     '
   100   CALL EASKS(HCFILE,' Hc distribution file name ?',' ',
-     &       72,' ',' (hc) distr. file ',IER,3)
+     &    72,' ',' (hc) distr. file ',IER,nbhelp)
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,HCFILE,1,IER)
         IF(IER.LT.0)THEN
           dok=.false.
-          h(1)='Grd holds coefficients for heat distribution in' 
-          h(2)='in a file and there was a problem while trying to' 
-          h(3)='open the file that you supplied. ' 
+          helptopic='hc_distrib_not_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' Problem detected while trying to open ',
-     &      ' (hc) distribution file... try again? ',OK,dok,3)
+     &      ' (hc) distribution file... try again? ',OK,dok,nbhelp)
           IF(OK)THEN
             GOTO 100
           ELSE
@@ -724,20 +617,16 @@ C Read the (hc) values from a file.
       ELSEIF(INO.EQ.7)THEN
 
 C Save the current (hc) values in a file.
-        H(1)=' Enter the name of the file in which'
-        H(2)=' the (hc) distribution will be saved.'
-        H(3)=' '
   150   CALL EASKS(HCFILE,' Grid configuration file name ?',' ',
-     &       72,' ',' grid confg. file ',IER,3)
+     &    72,' ',' grid confg. file ',IER,nbhelp)
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,HCFILE,4,IER)
         IF(IER.LT.0)THEN 
           dok=.false.
-          h(1)='Grd holds coefficients for heat distribution in' 
-          h(2)='in a file and there was a problem while trying to' 
-          h(3)='open the file that you supplied. ' 
+          helptopic='hc_distrib_not_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' Problem detected while trying to open ',
-     &      ' (hc) distribution file... try again?',OK,dok,3)
+     &      ' (hc) distribution file... try again?',OK,dok,nbhelp)
           IF(OK)THEN
             GOTO 150
           ELSE
@@ -786,7 +675,6 @@ C Initialise the node distribution variables.
   310   CONTINUE
         IBIOT=1
         ICON=0
-C        CALL EPAGE
 
 C Calculate the Biot number for all constructions in the building.
         DO 180 ICOMP=1,NCOMP
@@ -901,8 +789,10 @@ C Display the node distribution in the feedback window.
       ELSEIF(INO.EQ.14)THEN
 
 C Display the help statements.
+        helptopic='lumped_constr_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IHELPM=1
-        CALL PHELPD('lumped',26,'-',0,0,IER)
+        CALL PHELPD('lumped',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.15)THEN
 
 C Return to the 1-D gridding menu.
