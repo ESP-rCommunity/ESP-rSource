@@ -217,6 +217,9 @@ C File version (used in report functions)
 C Initialization flag	
       LOGICAL :: AIM2_Initialized 
 
+C Air flow when windows open (ACH)
+      REAL :: fACH_when_windows_open      
+      
       END MODULE AIM2_InputData
 
 C ********************************************************************************
@@ -598,8 +601,11 @@ C    AIM2_attic_zone = Zone number of attic.
       
       SUBROUTINE AIM2_READIN
       IMPLICIT NONE
+      
+      include "building.h"
+      include "espriou.h"
+      include "blc25_open_windows.h"
 
-#include "espriou.h"
 C espriou.h provides currentfile.
 
       integer lnblnk
@@ -619,8 +625,9 @@ C espriou.h provides currentfile.
      &     bWindowControlFlag,
      &     iWindowControlZone,
      &     bWindowsAreOpen,
-     &    fDeltaTInttoExt,
-     &     fWindowLowSetpoint
+     &     fDeltaTInttoExt,
+     &     fWindowLowSetpoint,
+     &     fWndmMultAIM
 
       REAL fWindowSetpoint
       REAL fACSetPoint
@@ -629,6 +636,10 @@ C espriou.h provides currentfile.
       LOGICAL bWindowsAreOpen
       REAL  fDeltaTInttoExt
       REAL fWindowLowSetpoint
+      
+      !-LUKAS: Variable added.
+      REAL fWndmMultAIM
+      
       CHARACTER WORD*128
 
 C Declarations for local variables and variables passed in common blocks.
@@ -639,12 +650,26 @@ C Declarations for local variables and variables passed in common blocks.
       REAL val
       LOGICAL CLOSE
       
+C Some variables for fancy parsing functions      
+      integer iFile_read_err   ! flag indicating that error was
+                               ! encountered while reading from a file
+      integer iFile_write_err  ! Flag indicating that error was encountered
+                               ! while writing to a file
+
+
+      character*248 cLnBuffer     ! Line buffer
+      character*248 cLnWords(124) ! words on the line
+      integer iWordCount          ! # of words in a string
+      integer iDummy
+      integer iEGetArrW           ! Function processing a string.
+      
+      
       INTEGER :: allocate_status   !returns 0 for sucessful memory allocation
       
 C Initialise H2K Defaults
       CALL AIM2_H2KDefaults()
+      clnbuffer = '';
       
-
 C Open AIM-2 input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
       IUNIT=IFIL+10
@@ -662,6 +687,7 @@ C Obtain version number of AIM file.
       if(WORD(1:11).eq.'FileVersion')then
          CALL EGETWR(OUTSTR,K,fAIM2VersionNumber,0.,100.00,'F',
      &        'Version Number',IER)
+        
          if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read AIM-2 Version Number.')
             goto 1000
@@ -916,6 +942,7 @@ C this zone should represent a conditioned space.
         goto 1000
       endif
       AIM2_ref_zone = IVAL
+      
 
 C Read number of zones in model that will receive infiltration. This will normally
 C be less than the total number of zones in the model, as attic spaces and garages
@@ -941,15 +968,15 @@ C Allocate memory for AIM2_num_zones_infil
 C Check allocation was sucessful     
         IF (.NOT.ALLOCATED(AIM2_zone_infil)) THEN
           CALL EDISP(IUOUT,' Warning: AIM2_zone_infil not allocated')
-	END IF
+        END IF
 C Allocate memory for AIM2_num_zones_infil
         ALLOCATE(AIM2_infil_to_zones(NCOMP),
      &       STAT=allocate_status)
 C Check allocation was sucessful     
         IF (.NOT.ALLOCATED(AIM2_infil_to_zones)) THEN
           CALL EDISP(IUOUT,'AIM2_infil_to_zones not allocated')
-	END IF
-	  
+        END IF
+ 
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
             CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
@@ -959,7 +986,8 @@ C Check allocation was sucessful
               goto 1000
             endif
             AIM2_zone_infil(ICOMP) = IVAL
-	  END DO
+
+          END DO
         END IF
       END IF
 
@@ -993,20 +1021,58 @@ C version of the .aim file so assume no attic (AIM2_attic_zone=0).
          IVAL = 0
       Else ! Read it
          CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' attic zone',IER)
+         
          if(IER.NE.0)then
            call edisp(IUOUT,' Cannot read attic zone.')
            goto 1000
          endif
       Endif
       AIM2_attic_zone = IVAL
-      IF (fAIM2VersionNumber .ge. 2.00 ) THEN
+      
+      newversions: IF (fAIM2VersionNumber .ge. 3.0 ) THEN 
 
-C Read Blind control and Window control and Zone which temperature  controls the windows.
+C----------------------------------------------------------------------
+C        Get first line
+C          -> stripc: stips comments from line. Synopsys:
+C             stripc ( file #     (input),
+C                      line data (output),
+C                      # items expected (input, 0 to disable checking),
+C                      Error handling (input, 0 for silent)
+C                      Contextual message (input)
+C                      error status (output)
+C                    )
+C----------------------------------------------------------------------
+         call LStripc (IUNIT, cLnBuffer, 0, iDummy, 0,
+     &                 'AIM-2 window operation',
+     &                 IER)
+C----------------------------------------------------------------------
+C        Get space/comma/tab separated words
+C          -> iEGetArrW: returns the number of words encountered
+C             and a character array containing the words. Synopsys
+C             # of words = ( string, array of words)
+C
+C----------------------------------------------------------------------
+         iWordCount = iEGetArrW ( cLnBuffer, cLnWords )
+         if (iWordCount == 2 .and. 
+     &       cLnWords(1)(1:lnblnk(cLnWords(1))) == '*ach_windows_open'
+     &      ) then 
+           read (cLnWords(2),*, IOSTAT=IER) fACH_when_windows_open      
+         endif 
+      elseIF (fAIM2VersionNumber >= 2.00 ) THEN
+
+C Read data inputs for window controls :
+C    - Window Control flag (0,1) 
+C    - Location of temperature control 
+C    - Hot (upper?) setpoint (oC)
+C    - Cold (lower?) setpoint (oC)
+C    - Temperature difference control (oC, min temp difference needed 
+C      to open windows?)
+C    ( All on the same line !)
          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
          IF(IER.NE.0)goto 1000
          K=0
          CALL EGETWI(OUTSTR,K,IVAL,0,1,'F',
-     &        ' Zone actuator for window control',IER)
+     &        ' Flag for window control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,'Cannot read window Control Flag')
             goto 1000
@@ -1020,7 +1086,7 @@ C Set logical flag for window control.
 C     if the window control model is active get the setpoint and actuating zone.
          IF (bWindowControlFlag ) THEN
  
-         CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
+         CALL EGETWI(OUTSTR,K,IVAL,1,MCOM,'F',
      &           ' Zone actuator for window control',IER)
          if(IER.NE.0)then
             call edisp(IUOUT,
@@ -1054,8 +1120,8 @@ C     if the window control model is active get the setpoint and actuating zone.
          endif
          fDeltaTInttoExt = VAL
 
-      ENDIF
-      ENDIF
+        ENDIF
+      ENDIF newversions
 
 C Close AIM-2 input data file.
       CALL ERPFREE(IUNIT,ISTAT)
@@ -1170,7 +1236,7 @@ c The crawl space zone is not part of the living space
         END DO
         ELSE
           CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
-	END IF
+      END IF
 
       RETURN
       END SUBROUTINE AIM2_HOUSE_VOLUME
@@ -1686,9 +1752,11 @@ C its fuel.
 
         CASE DEFAULT
           call edisp(IUOUT,' Warning in AIM2_flue_size.')
-          call edisp(IUOUT,' Ignore this warning if building is heated')
-          call edisp(IUOUT,' by an explicit plant network.')
-
+          call edisp(IUOUT,'   AIM2_flue_size expects a .hvac '//
+     &     'file for flue on/off.')
+          call edisp(IUOUT,'   This file was likely not supplied.')
+          
+          
       END SELECT
 
       RETURN
@@ -2365,3 +2433,22 @@ C *********************************************************************
       END SUBROUTINE AIM2_ClearAll
  
       END MODULE AIM2
+
+      
+C ******************* OpenWindowBlockdata ******************************
+C **********************************************************************
+C This routine initializes common data held in blc25_open_windows.h
+C **********************************************************************
+      
+      blockdata OpenWindows
+      implicit none 
+      include "building.h"
+      include "blc25_open_windows.h"
+      
+      data bWindowsOpen  / mcom * .false. /
+      data iAirFlowModel / mcom * iOprSchedule  / 
+      
+      end blockdata OpenWindows
+
+      
+      
