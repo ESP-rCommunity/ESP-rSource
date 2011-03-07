@@ -107,10 +107,11 @@ C ------------------------------------------------------------------------------
       USE AIM2
       CONTAINS
       SUBROUTINE AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-
+     
 
       IMPLICIT NONE
 
+      include "building.h"
 
 
 C HVAC_CALC_DATA common used to pass pass furnace part-load ratio to AIM-2 model
@@ -131,14 +132,26 @@ C Declarations for local variables.
      &     AIM2_unbal_mech,AIM2_total,AIM2_total_sum
       
       LOGICAL bNumsAreClose ! For close-to-zero comparisons
-
+      logical bProcessCalcs 
+      
+      integer iLastZone 
+      save iLastZone
+      data iLastZone / MCOM /
+      
+      
 C The AIM-2 model calculates the infiltration rate for the whole house but
 C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
 C only for the model's first zone. This will calculate the infiltration rate for
 C the whole house. Following this, apportion the infiltration air flow to
 C the individual zones.
       
-      IF( ICOMP.eq.1 ) THEN  ! First zone, perform AIM-2 calcs.
+      if ( iCOMP <= iLastZone ) then
+        bProcessCalcs = .true. 
+      else
+        bProcessCalcs = .false. 
+      endif 
+
+      IF( bProcessCalcs ) THEN  ! First zone, perform AIM-2 calcs.
 C If the furnace's flue affects the house's infiltration, then the infiltration rate
 C will be calculated twice: once for the case when the furnace is operating and once
 C for the case when it is off. A weighted sum of these two calculations will be used
@@ -237,6 +250,9 @@ C Record the infiltration rate for use in creating the results file that will be
 C to the HOT3000 interface.
       CALL H3KSTORE_AIM2_DATA(AIM2_total)
 
+C Set flag to ensure that we don't duplicate calls to AIM2 ctl      
+      iLastZone = iComp 
+      
 C Completion of the infiltration calculations for this zone, this time-step.
       RETURN
       END SUBROUTINE AIM2_CONTROL
