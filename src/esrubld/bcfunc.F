@@ -242,7 +242,8 @@ C CL24 Adaptive human comfort model
 C Simple window opening model      
       case (25)
         bNested = .false. 
-        call BCL25_open_windows(ICOMP,IER,.false.)
+        iCtlFuncIndex = ICF
+        call BCL25_open_windows(ICOMP,iCtlFuncIndex,IER,.false.)
 
 
       
@@ -279,7 +280,8 @@ C Set ICALL to zero to signal nested control property substitution.
         
         elseif ( IBCLAW(ifunc,IDTYP,IPER) .eq. 25 ) then
           bNested = .true. 
-          call BCL25_open_windows(ICOMP,IER, bNested)        
+          iCtlFuncIndex = iFunc 
+          call BCL25_open_windows(ICOMP,iCtlFuncIndex,IER, bNested)        
           
         else
           write(outs,'(2a)')' Error: Nested control functions must',
@@ -6135,7 +6137,10 @@ C
 C At present, this code only works with the simple ideal controller. 
 C on-off and plant network cotnrollers will are not compatable with BLC25.
 
-      subroutine BCL25_open_windows(iComp,iER, bNested)
+      subroutine BCL25_open_windows( iComp,
+     &                               iCtlFuncIndex,
+     &                               iER, 
+     &                               bNested         )
       implicit none 
       
       include "building.h"
@@ -6144,9 +6149,10 @@ C on-off and plant network cotnrollers will are not compatable with BLC25.
       
 C Passed variables 
       
-      integer iComp    ! Index of current zone 
-      integer iER      ! Error flag. 
-      logical bNested  ! Flag for nested status.  
+      integer iComp          ! Index of current zone 
+      integer iCtlFuncIndex  ! Index of control function 
+      integer iER            ! Error flag. 
+      logical bNested        ! Flag for nested status.  
       
 C ESP commons: 
 C - Zone characteristics 
@@ -6232,30 +6238,33 @@ C-----------------------------------------------------------------------
       bWindowPosAtStart = bWindowsOpen(iComp) 
 
 C Get setpoints from input data 
-      fWindowLowerSetpoint = BMISCD(ICF,IDTYP,IPER,2)  ! (oC)
-      fWindowUpperSetpoint = BMISCD(ICF,IDTYP,IPER,3)  ! (oC) 
+      fWindowLowerSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,2)  ! (oC)
+      fWindowUpperSetpoint = BMISCD(iCtlFuncIndex,IDTYP,IPER,3)  ! (oC) 
       
 C Determine how air flow should be determined when windows are open/
 C closed.
-      iClosedFlowMethod = int( BMISCD(ICF,IDTYP,IPER,4) ) ! (oC)
-      iOpenFlowMethod   = int( BMISCD(ICF,IDTYP,IPER,5) ) ! (oC)
+      iClosedFlowMethod = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,4) ) ! (oC)
+      iOpenFlowMethod   = int( BMISCD(iCtlFuncIndex,IDTYP,IPER,5) ) ! (oC)
 
 C Read delay between action (hours)
-      fDelayBetweenAction = BMISCD(ICF,IDTYP,IPER,6)
+      fDelayBetweenAction = BMISCD(iCtlFuncIndex,IDTYP,IPER,6)
       
 C 1. Determine zone temperature (future time row). 
         fZoneTemperature    = tpa(iComp) 
         fAmbientTemperature = tf      
       
       
-C Determine if control can act 
+C Determine if control can act: Consider present and future time.
       fOldTime = bTimeP
       fNewTime = bTimeF 
+      
       if ( fOldTime > fNewTime ) fNewTime = fNewTime + 24.
-      fTimeLapsed(ICF) = fTimeLapsed(ICF) + (fNewTime - fOldTime)  
+      
+      fTimeLapsed(iCtlFuncIndex) =   fTimeLapsed(iCtlFuncIndex) 
+     &                             + (fNewTime - fOldTime)  
       
            
-      if ( fTimeLapsed(ICF) >= fDelayBetweenAction ) then 
+      if ( fTimeLapsed(iCtlFuncIndex) >= fDelayBetweenAction ) then 
       
         bDelayLapsed = .true. 
         
@@ -6324,7 +6333,9 @@ C closed.
       
 C Check to see if windows have moved, and update running clock if so.
       if ( bWindowsOpen(iComp) .neqv. bWindowPosAtStart ) then
-        fTimeLapsed(ICF) = 0.
+        
+        fTimeLapsed( iCtlFuncIndex ) = 0.
+      
       endif 
       
       if (.not. bNested) then 
