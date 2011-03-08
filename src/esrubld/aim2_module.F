@@ -604,7 +604,6 @@ C    AIM2_attic_zone = Zone number of attic.
       
       include "building.h"
       include "espriou.h"
-      include "blc25_open_windows.h"
 
 C espriou.h provides currentfile.
 
@@ -650,11 +649,6 @@ C Declarations for local variables and variables passed in common blocks.
       REAL val
       LOGICAL CLOSE
       
-C Some variables for fancy parsing functions      
-      integer iFile_read_err   ! flag indicating that error was
-                               ! encountered while reading from a file
-      integer iFile_write_err  ! Flag indicating that error was encountered
-                               ! while writing to a file
 
 
       character*248 cLnBuffer     ! Line buffer

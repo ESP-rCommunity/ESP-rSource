@@ -1117,8 +1117,6 @@ C                 external temperature (for use in MZLS3).
       
       include "hvac_parameters.h"
       
-      include "aim2_common.h"
-
       include "blc25_open_windows.h"   
       include "hvac_common.h"
    
@@ -1717,8 +1715,6 @@ C========================================================================
           ! loads are reflected in ESP-r's zonal energy balances.      
            CVIF = ZONE_infil_cond 
         endif AssignInfil
-       
-
         
 C If the mechanical ventilation model is active
 C then add this infiltration conductance to the CVIF.

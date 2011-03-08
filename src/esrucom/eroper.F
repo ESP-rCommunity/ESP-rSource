@@ -128,7 +128,7 @@ C Maximum number of casual gains/day       MC=20
       include "building.h"
       include "model.h"
       include "espriou.h"
-      include "blc25_open_windows.h"
+
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition

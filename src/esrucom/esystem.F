@@ -184,7 +184,7 @@ C espriou.h provides currentfile and defdbfl.
       include "seasons.h"
       include "schedule.h"
       include "UserSimulationToggles.h"
-      include "blc25_open_windows.h"
+
 
       INTEGER, PARAMETER :: MSTMC=20
      
