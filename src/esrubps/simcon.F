@@ -670,7 +670,7 @@ C Set simulation toggles.
       COMMON/AVRAGE/IDAVER
       common/hcthry/ihct,icorexhct
       COMMON/PCEQU/IMPEXP,RATIMP
-      COMMON/SOLOFF/ISOLAR
+
       COMMON/SKYFLG/ISKYFL
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -697,7 +697,7 @@ C Common for electrical file
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       INTEGER :: ispmxist,ientxist
 
-      COMMON/GR1D04/GAM,RGAM
+
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/AIRWAT/WATERZ(MCOM),WATCAP

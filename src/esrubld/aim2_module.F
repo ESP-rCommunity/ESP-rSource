@@ -625,8 +625,8 @@ C espriou.h provides currentfile.
      &     iWindowControlZone,
      &     bWindowsAreOpen,
      &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint,
-     &     fWndmMultAIM
+     &     fWindowLowSetpoint
+
 
       REAL fWindowSetpoint
       REAL fACSetPoint
@@ -635,9 +635,6 @@ C espriou.h provides currentfile.
       LOGICAL bWindowsAreOpen
       REAL  fDeltaTInttoExt
       REAL fWindowLowSetpoint
-      
-      !-LUKAS: Variable added.
-      REAL fWndmMultAIM
       
       CHARACTER WORD*128
 

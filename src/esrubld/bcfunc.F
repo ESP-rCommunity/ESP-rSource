@@ -1139,41 +1139,6 @@ C Heating and cooling setpoint (oC)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,CLOSERH
-      LOGICAL AreWindowsOpen
-
-      COMMON/WindowControl/
-     &     fWindowSetpoint,
-     &     fACSetPoint, 
-     &     bWindowControlFlag,
-     &     iWindowControlZone,
-     &     bWindowsAreOpen,
-     &     fDeltaTInttoExt,
-     &     fWindowLowSetpoint
-          
-
-C     Exterior Temperature at which and below the windows could open.  
-      REAL fWindowSetpoint
-
-C     The AC Temperature setpoint. 
-      REAL fACSetPoint
-
-C     The zone at which the temperature is controlled against.
-      INTEGER iWindowControlZone
-
-C     The flag which indicates the window feature is active.
-      LOGICAL bWindowControlFlag
-
-C     Common block variable to tell other routines that the windows are open. 
-C     (This saves processor time)
-      LOGICAL bWindowsAreOpen
-
-C     The DeltaT that is used to detemine if cooling can be used from the outside.
-C     Thus Windows could be open when DeltaT >= Zone Temp - ExteriorTemp
-      REAL  fDeltaTInttoExt
-
-C     The temperature at which and below that the windows remain closed.
-C     This prevents the zone becoming too cold. 
-      REAL fWindowLowSetpoint
 
 C Check to see if running in dll mode.
       call isadll(dll)
@@ -1239,20 +1204,8 @@ C Set minimum heating capacity
 C Set maximum cooling capacity:
       if(cont_fun_cool_cap(IICOMP).gt.0 ) then
 
-C     if the windows are open
-C     ensure that the AC is not used. Note: if window model not active the result of 
-C     AreWindowsOpen()  will be false. 
-C     Also the window control is only used in tandem with a cooling 
-C     stratagy. 
-!          if ( AreWindowsOpen() 
-!      &        .and. (BMISCD(ICF,IDTYP,IPER,4) .gt. 0.)  ) then
-!             QCM = 0.
-!             QCN = 0.
-!          else
+
             QCM = - cont_fun_cool_cap(IICOMP)
-C     Ensure windows are closed.
-!             bWindowsAreOpen = .false.
-!          endif
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
@@ -6156,15 +6109,18 @@ C Passed variables
       
 C ESP commons: 
 C - Zone characteristics 
-      real tfa(mcom)   ! Future time-row zone temperaturte (oC) 
-      real qfa(mcom)   ! Future time-row zone energy injection 
+      real tpa(mcom)   ! Future time-row zone temperaturte (oC) 
+      real qpa(mcom)   ! Future time-row zone energy injection 
                        ! /extraction (W, not used)
       
-      common/fvala/tfa,qfa
+      
       
       ! Present and future fow temperatures 
-      common/pvala/tpa(mcom),qpa(mcom)
-      real tpa, qpa
+      common/pvala/tpa,qpa
+      
+C Future values (not used)      
+C      common/fvala/tfa,qfa
+C      real tfa, qfa
       
 C - Environment characteristics 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -6174,8 +6130,8 @@ C - Environment characteristics
       
 C Control heat injection.      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      real BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      integer ICF,IDTYP,IPER
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
       
 
 C Time characteristics       
@@ -6228,8 +6184,6 @@ C Window control setpoints (oC)
 C Temperature data 
 
       real fZoneTemperature      ! Temperature in zone (oC)
-      real fAmbientTemperature   ! Ambient temperature (oC)
-      
      
 C-----------------------------------------------------------------------
 C Get data from control spec.
@@ -6251,9 +6205,7 @@ C Read delay between action (hours)
       
 C 1. Determine zone temperature (future time row). 
         fZoneTemperature    = tpa(iComp) 
-        fAmbientTemperature = tf      
-      
-      
+       
 C Determine if control can act: Consider present and future time.
       fOldTime = bTimeP
       fNewTime = bTimeF 
@@ -6343,6 +6295,8 @@ C Check to see if windows have moved, and update running clock if so.
         TFUT = TNP 
       endif 
       
+C Set error flag 
+      ier = 0      
     
 !               call add_to_xml_reporting (
 !     &              fWindowUpperSetpoint ,

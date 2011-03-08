@@ -45,10 +45,6 @@ C
 #include "building.h"
 #include "net_flow.h"
 
-      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      common/calena/calename,calentag(MDTY),calendayname(MDTY)
-      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
