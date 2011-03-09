@@ -1,6 +1,6 @@
 
      Steps to create or use the ESP-r self extractor on Linux
-                        December 2010
+                        March 2011
 
 There are two patterns used to create an installer for ESP-r for use
 on Linux computers.  One is via a single-file self-extractor and 
@@ -8,7 +8,7 @@ the second is to use compressed archive files. Both of these will
 be covered in this document.
 
 If you want to use the self-extractor or compressed archive file
-please skip down to the relevant section.
+please skip DOWN to the relevant section.
 
 Before you Install ESP-r make sure your locale on your computer
 is set to one which uses a 'dot' for the decimal place
@@ -16,7 +16,7 @@ rather than a 'comma'. ESP-r gets extremely confused and tends
 to corrupt models and crash if the locale is not reset.
 
 
-Building a self-extractor
+BUILDING A SELF-EXTRACTOR
 
 The self-extractor for ESP-r is based on a package called 
 makeself-2.1.5. Makeself is a script which can be downloaded from
@@ -27,17 +27,14 @@ Optional Linux software is typically installed to the /opt folder.
 First check that /opt exists on your computer. If is does then
 issue the following command to create and own (e.g. if your login
 name is fred and your group is staff):
-  sudo mkdir /usr/esru
-  sudo chown fred /usr/esru
-  sudo chgrp staff /usr/esru
   sudo mkdir /opt/esru
   sudo chown fred /opt/esru
   sudo chgrp staff /opt/esru
 
 
 The commands to compile a standard version of esp-r (X11 version) 
-in the standard location which on Linux should be /opt/esru with 
-a command such as:
+in the standard location which on Linux can be /usr/esru or /opt/esru
+with a command such as:
 
   ./Install -d /opt/esru --gcc4 --compiler_version -4.1 --reuse_ish_calcs
 
@@ -46,8 +43,9 @@ the command:
 
   ./Install --help
 
-The --gcc4 directive assumes that you are using the GCC 4 series.
-To confirm what is on your machine try 'which gcc' and then 'gcc --version'
+The --gcc4 directive is required. The --compiler_version option is
+sometimes needed if you have more than one version of GCC on your
+computer.  Try 'which gcc' and then 'gcc --version'
 to establish the version prior to running the Install script.
 
 If the executable for the compiler is actually something 
@@ -182,7 +180,7 @@ required. A ldd command on an executable will list the libraries that are
 found as well as those which it wants to find.
 
 
-Using/testing the self-extractor
+USING or TESTING THE SELF-EXTRACTOR
 
 If you have just created an installer you should test this on a separate
 machine to confirm that it works.  If you have downloaded the 
@@ -256,14 +254,8 @@ is set.  Most users will want to run ESP-r in graphics mode so you need to
 give the command to start esp-r from within an X11 command window.
 
 
-Where to get more information
 
-The ESP-r download pages have separate folders for each operating system. Further
-information is available on issues related to setup of Linux boxes to work
-with ESP-r.
-
-
-Installing via compressed archive files
+INSTALLING VIA COMPRESSED ARCHIVE FILES
 
 As an alternative, some machines do not work well with self-extractor. In this
 case the gzipped tar files can be used to install ESP-r. The following is a list of
@@ -288,7 +280,7 @@ drwxr-xr-x    60 jon  jon       2040 Jul 15 06:49 testing
 the first jon is the user name and the second instance is the name of the 
 group. In some cases the second instance might be staff or users.
 
-There are two version of ESP-r for OSX. One is based on the X11 graphics 
+There are two version of ESP-r for Linux. One is based on the X11 graphics 
 library and is a complete version of ESP-r but is an older style of 
 interaction. The other version of ESP-r uses the GTK graphics library 
 with a modern style of interaction (but it is not quite a complete port
@@ -316,12 +308,11 @@ chmod commands.
   chmod a+r esru
   chmod u+w esru
 
-Now you can extract the the_file_name_tar.gz file to /opt/esru via:
+Now assuming that you placed the_file_name.tar.gz in a location that
+you have control of e.g. /tmp you can extract the the_file_name_tar.gz 
+file to /opt/esru via:
 
-  gzip -d the_file_name.tar.gz
-  chown fred the_file_name.tar
-  chgrp staff the_file_name.tar
-  tar xf the_file_name.tar --directory=/opt/esru
+  tar xfz the_file_name.tar.gz --directory /opt/esru
 
 Now lets make sure that everything in the folder /opt/esru
 is available to be owned
@@ -341,5 +332,125 @@ then we need to alter this via the following commands:
   chgrp -R staff esp-r
 
 You will need to set an environment variable PATH as explained above.
+Currently the example link_to and profile files are not included
+in the tar file version (they are listed below):
 
-Once ESP-r is working you can remove the_file_name.tar
+Contents of profile file:
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+Contents of link_to file:
+#!/bin/csh
+# create a link in /Users/jon/bin to current esp-r executables
+# so can test out different variants easily.
+echo "use is"
+echo "link_to [folder with exectables]"
+foreach i ( aco bps c2e cfg clm dfs e2r ecnv eco grd ish mfs mld mrt pdb prj pro res viewer )
+  if ( -f $1/$i )then
+    if ( -f $HOME/bin/$i ) rm -f $HOME/bin/$i
+    ln -s $1/$i $HOME/bin/$i
+    echo $i " is now pointing to "$1/$i
+  endif
+end
+
+Once ESP-r is working you can remove the_file_name.tar.gz
+
+DEPENDENCIES
+
+The GTK version of ESP-r uses the following libraries (list generated via
+a ldd ./prj command) on a Ubuntu 10.4 LTS computer:
+	linux-gate.so.1 =>  (0x00147000)
+	libgtk-x11-2.0.so.0 => /usr/lib/libgtk-x11-2.0.so.0 (0x002c5000)
+	libgdk-x11-2.0.so.0 => /usr/lib/libgdk-x11-2.0.so.0 (0x0088f000)
+	libatk-1.0.so.0 => /usr/lib/libatk-1.0.so.0 (0x00110000)
+	libgio-2.0.so.0 => /usr/lib/libgio-2.0.so.0 (0x007c3000)
+	libpangoft2-1.0.so.0 => /usr/lib/libpangoft2-1.0.so.0 (0x00a7a000)
+	libgdk_pixbuf-2.0.so.0 => /usr/lib/libgdk_pixbuf-2.0.so.0 (0x0012c000)
+	libgfortran.so.3 => /usr/lib/libgfortran.so.3 (0x00ec6000)
+	libm.so.6 => /lib/tls/i686/cmov/libm.so.6 (0x00148000)
+	libpangocairo-1.0.so.0 => /usr/lib/libpangocairo-1.0.so.0 (0x0072c000)
+	libcairo.so.2 => /usr/lib/libcairo.so.2 (0x0016e000)
+	libpango-1.0.so.0 => /usr/lib/libpango-1.0.so.0 (0x009f7000)
+	libfreetype.so.6 => /usr/lib/libfreetype.so.6 (0x001e8000)
+	libfontconfig.so.1 => /usr/lib/libfontconfig.so.1 (0x0025e000)
+	libgobject-2.0.so.0 => /usr/lib/libgobject-2.0.so.0 (0x00fb4000)
+	libgmodule-2.0.so.0 => /usr/lib/libgmodule-2.0.so.0 (0x0028e000)
+	libgthread-2.0.so.0 => /usr/lib/libgthread-2.0.so.0 (0x00293000)
+	librt.so.1 => /lib/tls/i686/cmov/librt.so.1 (0x006b9000)
+	libglib-2.0.so.0 => /lib/libglib-2.0.so.0 (0x00925000)
+	libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x00b13000)
+	libxml2.so.2 => /usr/lib/libxml2.so.2 (0x00cf7000)
+	libgcc_s.so.1 => /lib/libgcc_s.so.1 (0x00cb2000)
+	libpthread.so.0 => /lib/tls/i686/cmov/libpthread.so.0 (0x00299000)
+	libc.so.6 => /lib/tls/i686/cmov/libc.so.6 (0x00ff3000)
+	libXext.so.6 => /usr/lib/libXext.so.6 (0x002b2000)
+	libXrender.so.1 => /usr/lib/libXrender.so.1 (0x0069a000)
+	libXinerama.so.1 => /usr/lib/libXinerama.so.1 (0x006a4000)
+	libXi.so.6 => /usr/lib/libXi.so.6 (0x006a8000)
+	libXrandr.so.2 => /usr/lib/libXrandr.so.2 (0x006c2000)
+	libXcursor.so.1 => /usr/lib/libXcursor.so.1 (0x006ca000)
+	libX11.so.6 => /usr/lib/libX11.so.6 (0x0114d000)
+	libXcomposite.so.1 => /usr/lib/libXcomposite.so.1 (0x006d4000)
+	libXdamage.so.1 => /usr/lib/libXdamage.so.1 (0x006d8000)
+	libXfixes.so.3 => /usr/lib/libXfixes.so.3 (0x006dc000)
+	libz.so.1 => /lib/libz.so.1 (0x006e7000)
+	libdl.so.2 => /lib/tls/i686/cmov/libdl.so.2 (0x006e2000)
+	libpcre.so.3 => /lib/libpcre.so.3 (0x00738000)
+	libresolv.so.2 => /lib/tls/i686/cmov/libresolv.so.2 (0x006fc000)
+	libselinux.so.1 => /lib/libselinux.so.1 (0x00710000)
+	/lib/ld-linux.so.2 (0x00af6000)
+	libpixman-1.so.0 => /usr/lib/libpixman-1.so.0 (0x00769000)
+	libdirectfb-1.2.so.0 => /usr/lib/libdirectfb-1.2.so.0 (0x00c09000)
+	libfusion-1.2.so.0 => /usr/lib/libfusion-1.2.so.0 (0x00861000)
+	libdirect-1.2.so.0 => /usr/lib/libdirect-1.2.so.0 (0x0086b000)
+	libpng12.so.0 => /lib/libpng12.so.0 (0x00a3a000)
+	libxcb-render-util.so.0 => /usr/lib/libxcb-render-util.so.0 (0x00881000)
+	libxcb-render.so.0 => /usr/lib/libxcb-render.so.0 (0x00886000)
+	libxcb.so.1 => /usr/lib/libxcb.so.1 (0x00a5f000)
+	libexpat.so.1 => /lib/libexpat.so.1 (0x00aa1000)
+	libXau.so.6 => /usr/lib/libXau.so.6 (0x009ef000)
+	libXdmcp.so.6 => /usr/lib/libXdmcp.so.6 (0x00ac8000)
+
+The X11 version of ESP-r has the following dependencies (on a Ubuntu 10.4 LTS computer)
+	linux-gate.so.1 =>  (0x00afc000)
+	libX11.so.6 => /usr/lib/libX11.so.6 (0x00110000)
+	libstdc++.so.6 => /usr/lib/libstdc++.so.6 (0x0022d000)
+	libxslt.so.1 => /usr/lib/libxslt.so.1 (0x006cc000)
+	libxml2.so.2 => /usr/lib/libxml2.so.2 (0x00323000)
+	libgfortran.so.3 => /usr/lib/libgfortran.so.3 (0x00a1d000)
+	libm.so.6 => /lib/tls/i686/cmov/libm.so.6 (0x0044e000)
+	libgcc_s.so.1 => /lib/libgcc_s.so.1 (0x00671000)
+	libc.so.6 => /lib/tls/i686/cmov/libc.so.6 (0x00474000)
+	libxcb.so.1 => /usr/lib/libxcb.so.1 (0x005d4000)
+	libdl.so.2 => /lib/tls/i686/cmov/libdl.so.2 (0x00f3c000)
+	/lib/ld-linux.so.2 (0x00d2d000)
+	libz.so.1 => /lib/libz.so.1 (0x00ece000)
+	libXau.so.6 => /usr/lib/libXau.so.6 (0x00fed000)
+	libXdmcp.so.6 => /usr/lib/libXdmcp.so.6 (0x00976000)
+
+
+WHERE TO GET MORE INFORMATION
+
+The ESP-r download pages have separate sections for each operating system. Further
+information is available on issues related to setup of Linux boxes to work
+with ESP-r.

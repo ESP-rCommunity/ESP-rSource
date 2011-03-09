@@ -1,16 +1,13 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
-TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
-PRJdir = $(SRCdir)/esruprj
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -45,15 +42,15 @@ $(PROG): $(OBJECTS)
 anlytc.F:
 	rm -f anlytc.F
 	ln -s $(VLDdir)/anlytc.F .
+arrow.F:
+	rm -f arrow.F
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
 bscoeff.F:
 	rm -f bscoeff.F
 	ln -s $(BLDdir)/bscoeff.F .
@@ -259,7 +256,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	anlytc.F aim2_module.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \

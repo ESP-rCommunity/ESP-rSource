@@ -6,7 +6,6 @@ MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
-TDFdir = $(SRCdir)/esrutdf
 PROG= aco$(EXE)
 
 .SUFFIXES: .o .F
@@ -31,7 +30,7 @@ aim2_module.F:
 	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
