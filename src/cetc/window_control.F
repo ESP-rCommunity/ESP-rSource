@@ -80,13 +80,11 @@ c ***********************************************************************
       
       
       
-      LOGICAL FUNCTION AreWindowsOpen(icomp)
+      LOGICAL FUNCTION AreWindowsOpen()
       IMPLICIT NONE
 #include "building.h"
 #include "control.h"
 
-!     Passed variable
-      Integer icomp ! Zone number
 
 C Future values common block.
 
@@ -95,9 +93,9 @@ C     Zone Temp.
       REAL	TFA,QFA
 
 C     Present Values.
-!       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
 C     Zone Temp
-!       REAL	TPA,QPA
+      REAL	TPA,QPA
 
 C Climate 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -106,11 +104,11 @@ C     Ambiant Temperature at Future Timestep.
       REAL	TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
 
 C Common block required for getting AC Setpoint
-       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-       INTEGER	ICF,IDTYP,IPER
-       REAL	BB1,BB2,BB3
-       INTEGER	IICOMP
-       REAL	TNP,QFUT,TFUT
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      INTEGER	ICF,IDTYP,IPER
+      REAL	BB1,BB2,BB3
+      INTEGER	IICOMP
+      REAL	TNP,QFUT,TFUT
 
 C Common block for the window model.           
       COMMON/WindowControl/
@@ -128,9 +126,6 @@ C     Exterior Temperature at which and below the windows could open.
 
 C     The AC Temperature setpoint. 
       REAL fACSetPoint
-      
-C     The AC Capacity (W)
-      Real fACCapacityW
 
 C     The zone at which the temperature is controlled against.
       INTEGER iWindowControlZone
@@ -156,57 +151,41 @@ C****DEBUG CODE****
 C****END DEBUG CODE**** 
 
 
+C Get the cooling set point of the ac from this array.
+      fACSetPoint=BMISCD(ICF,IDTYP,IPER,7) 
 
-C     Hardcode this to the first control function to beat the MZVENT prior to MZBCTL issue
-C     Note that we are presently only calling this from MZVENT after a check for AIM, so that
-C     would indicate we are using control func 1
-!       fACSetPoint=BMISCD(ICF,IDTYP,IPER,7) ! original
-        fACSetPoint=BMISCD(1,IDTYP,IPER,7) ! hardcoded
-        fACCapacityW = BMISCD(1,IDTYP,IPER,4) ! hardcoded
-      
-!       write (*,*) 'ICF is ', ICF, '; IDTYP is ', IDTYP, '; IPER is ',
-!      &  IPER, '; fACsetpoint is ', fACSetPoint, '; fACCapacityW is', 
-!      &  fACCapacityW
+    
+
       
 C     Default value initialisation. 
       AreWindowsOpen = .false.
       
 C     Check if WindowOpenControl model is running. This value is from the aim-2 input file. 
       IF (bWindowControlFlag) THEN
-
-C Old code:       
-C     Check if AC-Cooling is required and if the AC has capacity to do it. The air conditioner will only be used if the zone temperature exceed 
-C     the AC set-point. This will force the windows to closed in this case. 
-!          IF ( (TPA(iWindowControlZone)+TFA(iWindowControlZone))/2.0 
-C         IF ( TFA(iWindowControlZone) 
-C     &        .ge.  (fACSetPoint+ 1.0) .and.
-C     &         fACCapacityW .ge. 100 ) THEN
-C
-C     AC -Cooling is required, windows closed.
-
     
-C     Check if Cooling or Heating is on
-         IF ( QFA(icomp)
-     &        .lt.  -1. .or.  QFA(icomp)
-     &        .gt.  1.) THEN
+C     Check if AC-Cooling is required. The air conditioner will only be used if the zone temperature exceed 
+C     the AC set-point. This will force the windows to closed in this case. 
+         IF ( (TPA(iWindowControlZone)+TFA(iWindowControlZone))/2.0 
+     &        .ge.  (fACSetPoint+ 1.0) ) THEN
             
-C     Ac -Cooling or Heating is required, windows closed.
-
+C     Ac -Cooling is required, windows closed.
             AreWindowsOpen = .false.
             
-C     Check if window cooling is required
+C     Check if window cooing is required
          ELSEIF (
 C     If the exterior temperature is lower then the windows exterior setpoint.
-!      &           TF .le. fWindowSetpoint 
-!      &           .and.
+     &           TF .le. fWindowSetpoint 
+     &           .and.
 C     
 C     If the Zone temperature is greater then the window low setpoint. 
-     &           TFA(icomp) .gt. fWindowLowSetpoint
+     &           TPA(iWindowControlZone) .gt. fWindowLowSetpoint
      &           .and.
 C     
 C     If there is a big enough delta T between the Zone temp and the outdoor temperature. 
-     &           (TFA(icomp) - TF)
-     &           
+     &           ( 
+     &           (TPA(iWindowControlZone)+TFA(iWindowControlZone))
+     &           /2.0  
+     &           -TF) 
      &           .ge. fDeltaTInttoExt )THEN
 
 C     If all above  is true open the windows.
@@ -217,9 +196,7 @@ C     If all above  is true open the windows.
       ELSE
 C     Too hot to use outdoor cooling. Close all windows, will use AC if available when setpoint is tripped. 
          AreWindowsOpen = .false.
-
       ENDIF
-
 C     Set common block variable to make inforamtion available globally. 
       bWindowsAreOpen = AreWindowsOpen
 

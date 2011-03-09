@@ -1,10 +1,8 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 BLDdir = $(SRCdir)/esrubld
 CETCdir = $(SRCdir)/cetc
 PROG = b2e$(EXE)

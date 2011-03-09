@@ -1,6 +1,5 @@
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 PROG = mfs$(EXE)
 
 .SUFFIXES: .o .F

@@ -41,7 +41,6 @@ C   AIM2_sumover_DT          Calculates average air flow rate from outdoors over
 C                            separate calculations are performed for furnace on and off cycles.
 C   AIM2_split2zones         Apportions infiltration to individual zones in model.
 C   AIM2_inf2attic           Set the infiltration rate for the attic zone.
-C   AIM2_inf2crawl           Set the infiltration rate for the crawl space zone.
 C   AIM2_airflow_to_conduct  Expresses infiltration air flow rate in terms of a conductance between
 C                            indoor-outdoor temperature difference.
 
@@ -107,11 +106,10 @@ C ------------------------------------------------------------------------------
       USE AIM2
       CONTAINS
       SUBROUTINE AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-     
+
 
       IMPLICIT NONE
 
-      include "building.h"
 
 
 C HVAC_CALC_DATA common used to pass pass furnace part-load ratio to AIM-2 model
@@ -132,26 +130,15 @@ C Declarations for local variables.
      &     AIM2_unbal_mech,AIM2_total,AIM2_total_sum
       
       LOGICAL bNumsAreClose ! For close-to-zero comparisons
-      logical bProcessCalcs 
-      
-      integer iLastZone 
-      save iLastZone
-      data iLastZone / MCOM /
-      
-      
+
 C The AIM-2 model calculates the infiltration rate for the whole house but
 C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
 C only for the model's first zone. This will calculate the infiltration rate for
 C the whole house. Following this, apportion the infiltration air flow to
 C the individual zones.
-      
-      if ( iCOMP <= iLastZone ) then
-        bProcessCalcs = .true. 
-      else
-        bProcessCalcs = .false. 
-      endif 
 
-      IF( bProcessCalcs ) THEN  ! First zone, perform AIM-2 calcs.
+      IF( ICOMP.eq.1 ) THEN  ! First zone, perform AIM-2 calcs.
+
 C If the furnace's flue affects the house's infiltration, then the infiltration rate
 C will be calculated twice: once for the case when the furnace is operating and once
 C for the case when it is off. A weighted sum of these two calculations will be used
@@ -230,9 +217,8 @@ C apportioned to individual zones.
         CALL AIM2_split2zones(AIM2_total)
 
 C The above calculated the infiltration to the occupied portion of the house. Now determine
-C the infiltration to the attic zone and crawl space zone (if they exist).
+C the infiltration to the attic zone (if it exists).
         CALL AIM2_inf2attic
-        CALL AIM2_inf2crawl
 
 C End of AIM-2 calculations for first zone in model. By this point the infiltration
 C air flow to each zone of the model has been calculated for the current time-step.
@@ -242,17 +228,12 @@ C For the zone called, assign the zone's calculated infiltration conductance
 C to ESP-r's standard infiltration variable, CVIF. CVIF is incorporated into the
 C zone's energy balance by ESP-r's normal approach, so no further
 C interactions with the zone matrix processor and solver are required.
-C Note that both AIM (natural) [/cetc/aim2_timestep.F] and CVS (forced) [/cetc/CentralVentSys.F]
-C infiltration exist and as such the values are summed in /esrubld/subsys.F.
       CALL AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)
 
 C Record the infiltration rate for use in creating the results file that will be passed
 C to the HOT3000 interface.
       CALL H3KSTORE_AIM2_DATA(AIM2_total)
 
-C Set flag to ensure that we don't duplicate calls to AIM2 ctl      
-      iLastZone = iComp 
-      
 C Completion of the infiltration calculations for this zone, this time-step.
       RETURN
       END SUBROUTINE AIM2_CONTROL
@@ -1063,7 +1044,6 @@ C ------------------------------------------------------------------------------
 
 #include "building.h"
 #include "geometry.h"
-#include "blc25_open_windows.h"
 
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
@@ -1081,72 +1061,24 @@ C Declarations for local variables.
 C Apportion infiltration to each zone. For now just distribute the air flow
 C in proportion to each room's volume. The basement should be treated somewhat
 C differently in the future.
+      IF (ALLOCATED(AIM2_zone_infil).AND.
+     &    ALLOCATED(AIM2_infil_to_zones)) THEN
 
-      ArraysAllocated: IF (ALLOCATED(AIM2_zone_infil).AND.
-     &                     ALLOCATED(AIM2_infil_to_zones)) THEN
-
-        ZoneLoop: DO ICOMP=1,NCOMP               ! Examine each zone in the model.
-          AIM2_infil_to_zones(ICOMP) = 0.        ! Initialize infil to zone.
-          AIM2Zones: DO i=1,AIM2_num_zones_infil ! Check if there is infil to this zone.
-c Check to see if infiltration is spec'd for this zone, and that 
-C it's not a crawl-space
-            rightzone: if( AIM2_zone_infil(i) .eq. ICOMP .and. 
+        DO ICOMP=1,NCOMP                    ! Examine each zone in the model.
+          AIM2_infil_to_zones(ICOMP) = 0.   ! Initialize infil to zone.
+          DO i=1,AIM2_num_zones_infil       ! Check if there is infil to this zone.
+c Note: Not including the crawl space BB
+            if( AIM2_zone_infil(i) .eq. ICOMP .and. 
      &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
-     
-C Operable window model: Are windows open and is aim2 model specified 
-C during this period?
-
-              winopen: if ( bWindowsOpen(iComp) .and. 
-     &                      iAirFlowModel(iComp) == iAIM2model ) then 
-
-C Yes. This is a crude window model that imposes a fixed ACH 
-C as specified in the AIM-2 model. It's really only useful in ensuring 
-C that overheating in winter and shoulder seasons does not unduely reduce
-C heating loads during the subsequent night. A more detailed window model
-C (using the air flow network with automated or stocastic control) should
-C be used to examine free cooling and summer comfort. 
-
-                ! There is infil to this zone, windows are open and 
-                ! AIM-2 simple window model should be used to estimate
-                ! air-flow. Impose specified ACH from AIM-2 file. 
-                AIM2_infil_to_zones(ICOMP) =                  
-     &                   VOL(ICOMP)  * fACH_when_windows_open / 3600.
-
-              elseif ( bWIndowsOpen(iComp) .and. 
-     &                 iAirFlowModel(iComp) /= iAIM2model ) then 
-     
-                ! There is infil to this zone, windows are open. 
-                ! But window flow rates will be computed using another
-                ! means (perhaps an air-flow network). Set AIM-2 infiltration 
-                ! to zero. 
-     
-                AIM2_infil_to_zones(ICOMP) = 0.
-                
-              elseif ( .not. bWindowsOpen(iComp) ) then 
-              
-                ! There is infil to this zone, windows are closed. 
-                ! Impose AIM-2 computed infiltration, pro-rated to 
-                ! zone volume. 
-              
-     
-                AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
+              AIM2_infil_to_zones(ICOMP) =                        ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-     
-              else 
-              
-                ! Should not happen: all possibilities innumerated above. 
-     
-              endif winopen
-              
-                                                             ! Processing of this zone complete.
-            exit
-            endif rightzone
-             
-          end do AIM2Zones
-        END DO ZoneLoop
+              exit                                                ! Processing of this zone complete.
+            endif
+          end do
+        END DO
       ELSE
-        CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
-      END IF ArraysAllocated
+      CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
+      END IF
 
 
       RETURN
@@ -1265,54 +1197,4 @@ C treatment should be used in the future.
 
       RETURN
       END SUBROUTINE AIM2_inf2attic
-
-
-C ********************************************************************************
-C ******************************* AIM2_inf2crawl *********************************
-C Created by: Lukas Swan based on AIM2_inf2attic
-C Initial Creation Date: Feb 14, 2009
-C Copyright 2009: Dalhousie University/CETC/NRCan
-
-C The AIM-2 model calculates the infiltration rate for the occupied portion of the house.
-C The infiltration to the crawl zone is treated separately in this subroutine.
-
-C INPUTS:
-C    AIM2_CrawlSpace_zone   The zone number of the crawl space
-
-C OUTPUTS:
-C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `i'.
-C --------------------------------------------------------------------------------
-
-      SUBROUTINE AIM2_inf2crawl
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
-
-      IMPLICIT NONE
-
-      include "building.h"
-      include "geometry.h"
-
-
-C Declarations for local variables.
-      REAL crawl_ach
-
-C If user has specified that one of the zones in the model is an crawl space, then
-C set the infiltration rate for the crawl space. IF an crawl space has not been specified,
-C then AIM2_CrawlSpace_zone' will have defaulted to zero. In this case, no action
-C is taken here.
-      IF(AIM2_CrawlSpace_zone.gt.0)THEN
-
-C Assume the crawl space receives 0.5 ac/h of infiltration from the outdoors and no infiltration
-C from the occupied portion of the house.
-        crawl_ach = 0.5
-
-        AIM2_infil_to_zones(AIM2_CrawlSpace_zone) =
-     &             crawl_ach * VOL(AIM2_CrawlSpace_zone) / 3600.
-
-
-      END IF
-
-      RETURN
-      END SUBROUTINE AIM2_inf2crawl
-
       END MODULE AIM2_TIMESTEP

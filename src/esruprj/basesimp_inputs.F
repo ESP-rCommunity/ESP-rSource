@@ -36,7 +36,6 @@ C Declare calling parameters
 
       INTEGER LNBLNK   ! function definition
       
-      COMMON/pophelp/h(60)
       COMMON/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -46,7 +45,7 @@ C COMMONS FOR BASEREAD
       COMMON/BSvn/bsVrsnNmbr(MCOM)
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
 
-      CHARACTER*72 H,bsmFile
+      CHARACTER*72 bsmFile
       CHARACTER*27 strHeight,strDepth,strLength,strWidth,strOverlap,
      &        strRSI,strSoil,strWater,strTGavg,strTGamp,strTGps
 C      CHARACTER :: delimiter
@@ -89,6 +88,13 @@ C      CHARACTER :: delimiter
      &             bsOVER,bsRSI,bsSOIL, bsWTD
       REAL bsVrsnNmbr
       REAL bsTGavg,bsTGamp,bsTGps
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BASESIMP_INPUTS'  ! set for subroutine
        
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -146,13 +152,10 @@ C Use the pattern in folders.F to issue mkdir command.
         endif
       END IF ! the exists test
 
-C HELP CONTENT for initial selection from the user.
-      H(1)= 'One or more surfaces in the current zone have been'
-      H(2)= 'attributed with the boundary condition BASESIMP.'
-      H(3)= 'A .bsm file must be created or referenced.'
-      H(4)= 'You may select one from a list, create a new one, or'
-      H(5)= 'de-reference an exising definition (the file will be'
-      H(6)= 'kept for use later). '
+C HELP CONTENT for initial selection from the user and
+C many of the initial dialogs.
+      helptopic='basesimp_opening'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C USER INPUTS
 C Upon exiting the SURFACE ATTRIBUTES the user is prompted for inputs
@@ -161,7 +164,7 @@ C must decide whether to create/edit the .BSM file now or later.
       if(zonehasone)then
         CALL EASKABCD('Edit existing *.bsm?',' ','yes','no ',
      &    'browse for another bsm file','dereference basesimp',
-     &    IWHICH,6)
+     &    IWHICH,nbhelp)
         if(iwhich.eq.4)then
           call usrmsg('Dereferencing the bsm file...',
      &      ' ','-')
@@ -171,7 +174,7 @@ C must decide whether to create/edit the .BSM file now or later.
         endif
       else
         CALL EASKABCD('Create new *.bsm?',' ','yes','no ',
-     &    'browse for another bsm file','cancel',IWHICH,6)
+     &    'browse for another bsm file','cancel',IWHICH,nbhelp)
         if(iwhich.eq.4)then
           call usrmsg('Continuing without creating bsm file...',
      &      ' ','-')
@@ -180,11 +183,7 @@ C must decide whether to create/edit the .BSM file now or later.
       endif
 
 
-C HELP CONTENT for using existing file.
-      H(1)= 'If a file exists in the ../bsm directory, you may  '
-      H(2)= 'select and use this file. Otherwise, create a new  '
-      H(3)= 'file and input the parameters or use the defaults. '
-      H(4)= '                                                   '
+C If using existing file.
       if(IWHICH.EQ.1)then
         if(zonehasone)then
 
@@ -301,17 +300,10 @@ C Echo the current information to the user.
           call edisp(iuout,outs)
         endif
 
-C HELP CONTENT for use edit choice.
-        H(1)= 'For the current .bsm file you have several options:'
-        H(2)= ' - You may use the values in the file as is (so no '
-        H(3)= '   further actions are taken).'
-        H(4)= ' - You may choose to edit it and save the changes.'
-        H(5)= ' - You can defererence the BASESIMP definition (in'
-        H(6)= '   which case the file is preserved for later use).'
-
+C User edit choices.
         CALL EASKABC('Use current .bsm values or edit? ',' ',
      &    'use current data','edit','dereference basesimp definition',
-     &    IWHICH,6)
+     &    IWHICH,nbhelp)
         IF(IWHICH.EQ.1)THEN
           RETURN     ! nothing else to do
         ELSEIF(IWHICH.EQ.2)THEN
@@ -329,110 +321,72 @@ C HELP CONTENT for use edit choice.
 
 C BASESIMP file inputs
 
-C HELP CONTENT for depth of basement.
+C CONTENT for depth of basement.
       min_bsmtDepth = 0.05                    ! meter
       max_bsmtDepth = 2.4                     ! meter
-      H(1)= 'Depth: distance from the top of the floor slab to  '
-      H(2)= 'the grade level.                                   '
-      H(3)= 'Must be between 0.05 and 2.4m                      '
-      H(4)= '                                                   '
       CALL EASKR(bsmtDepth,' ',' Depth of the basement (m) ? ',
      &  min_bsmtDepth,'F',max_bsmtDepth,'F',bsmtDepth,
-     & 'depth of the basement',IER,4)
+     & 'depth of the basement',IER,nbhelp)
 
-C HELP CONTENT for height of basement.
+C CONTENT for height of basement.
       min_bsmtHeight = bsmtDepth+0.1          ! meter
       max_bsmtHeight = 2.5                    ! meter
-      H(1)= 'Height: distance from the top of the floor slab to '
-      H(2)= 'the top of the basement structural wall.           '
-      H(3)= 'Must be at least 0.1m greater than the depth.      '
-      H(4)= 'Must also be between 1.0 and 2.5m                  '
       CALL EASKR(bsmtHeight,' ',' Height of the basement (m) ? ',
      &  min_bsmtHeight,'F',max_bsmtHeight,'F',bsmtHeight,
-     &  'height of the basement',IER,4)
+     &  'height of the basement',IER,nbhelp)
 
-C HELP CONTENT for width of basement.
+C CONTENT for width of basement.
       min_bsmtWidth = 2.                      ! meter
       max_bsmtWidth = 20.                     ! meter
-      H(1)= 'Width: exterior-of-structural-wall to exterior-of- '
-      H(2)= 'structural-wall distance.                          '
-      H(3)= 'Must be less than or equal to the length.          '
-      H(4)= 'Value must be between 2.0 and 20m.                 '
       CALL EASKR(bsmtWidth,' ',' Width of the basement (m) ? ',
      &  min_bsmtWidth,'F',max_bsmtWidth,'F',bsmtWidth,
-     &  'width of the basement',IER,4)
+     &  'width of the basement',IER,nbhelp)
 
-C HELP CONTENT for length of basement.
+C CONTENT for length of basement.
       min_bsmtLength = bsmtWidth              ! meter
       max_bsmtLength = 20.                    ! meter
-      H(1)= 'Length: exterior-of-structural-wall to exterior-of-'
-      H(2)= 'structural-wall distance.                          '
-      H(3)= 'Must be greater than or equal to the width.        '
-      H(4)= '                                                   '
       CALL EASKR(bsmtLength,' ',' Length of the basement (m) ? ',
      &  min_bsmtLength,'F',max_bsmtLength,'F',bsmtLength,
-     &  'width of the basement',IER,4)
+     &  'width of the basement',IER,nbhelp)
 
-C HELP CONTENT for insulation overlap.
+C CONTENT for insulation overlap.
       min_Insul_Overlap = 0.                  ! meter
       max_Insul_Overlap = 2.4                 ! meter
-      H(1)= 'Insulation overlap: value must be given but only   '
-      H(2)= 'used for BCCN_1 and BCCN_2 combination cases.      '
-      H(3)= 'Height of the wall covered by both interior and    '
-      H(4)= 'exterior wall insulation (between 0 and 2.4m).     '
       CALL EASKR(Insul_Overlap,' ',' Insulation overlap (m)? ',
      &  min_Insul_Overlap,'F',max_Insul_Overlap,'F',Insul_Overlap,
-     &  'Insulation overlap',IER,4)
+     &  'Insulation overlap',IER,nbhelp)
 
-C HELP CONTENT for insulation RSI.
+C CONTENT for insulation RSI.
       min_Insul_rsi = 0.                      ! rsi (m2K/W)
       max_Insul_rsi = 20.                     ! rsi (m2K/W)
-      H(1)= 'Insulation: define the thermal resistance of the   '
-      H(2)= 'insulation by entering the rsi value (m2K/W).      '
-      H(3)= '                                                   '
-      H(4)= 'Value must be between 0 and 20 m2K/W.              '
       CALL EASKR(Insul_rsi,' ',' Insulation rsi (m2K/W)? ',
      &  min_Insul_rsi,'F',max_Insul_rsi,'F',Insul_rsi,
-     &  'Insulation rsi',IER,4)
+     &  'Insulation rsi',IER,nbhelp)
 
-C HELP CONTENT for soil conductivity.
+C CONTENT for soil conductivity.
       min_Soil_Cond = 0.1                     ! W/mK
       max_Soil_Cond = 10.                     ! W/mK
-      H(1)= 'Thermal conductivity of soil surrounding the       '
-      H(2)= 'foundation in W/mK.                                '
-      H(3)= 'Value must be between 0.1 and 10 W/mK.             '
-      H(4)= '                                                   '
       CALL EASKR(Soil_Cond,' ',' Soil conductivity (W/mK) ? ',
      &  min_Soil_Cond,'F',max_Soil_Cond,'F',Soil_Cond,
-     &  'Soil Conductivity',IER,4)
+     &  'Soil Conductivity',IER,nbhelp)
 
-C HELP CONTENT water table.
+C CONTENT water table.
       min_Water_Table = 5.                     ! meter
       max_Water_Table = 20.                    ! meter
-      H(1)= 'Water table depth: defines location of horizontal  '
-      H(2)= 'thermal boundary. The deeper the water table, the  '
-      H(3)= 'lower the foundation heat loss will be.            '
-      H(4)= 'Value must be between 5 and 20m.                   '
       CALL EASKR(Water_Table,' ',' Water table depth (m) ? ',
      &  min_Water_Table,'F',max_Water_Table,'F',Water_Table,
-     &  'Water table depth',IER,4)
+     &  'Water table depth',IER,nbhelp)
 
 C SELECT METHOD OF HANDLING GROUND TEMPERATURE
 C Using the Moore method for ground temperatures the TG values are
 C calculated by another subroutine. Otherwise, they must enter these.
 
-C HELP CONTENT
-      H(1)= 'If you choose to use the Moore Method,             '
-      H(2)= 'TGavg, TGamp, TGps ground temperature parameters   '
-      H(3)= 'will be calculated. Otherwise, you must enter      '
-      H(4)= 'values for these parameters or use the defaults.   '
-      H(5)= ' '
-      H(6)= ' TGavg: Average ground temperature (degC)          '
-      H(7)= ' TGamp: Amplitude of the ground temperature (degC) '
-      H(8)= ' TGps: Phase lag of ground temperature (radians)   '
+C HELP for Moore.
+      helptopic='basesimp_moore_method'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC('Method for handling ground temp:',' ',
      &  'Use Moore method','Enter TGavg,TGamp,TGps','cancel',
-     &  IWHICH,8)
+     &  IWHICH,nbhelp)
 
 C FILE VERSIONING
 C Set the version number based on user's selection (1 or 0).
@@ -444,47 +398,29 @@ C values of TG avg, TGamp, TGps are read in.
       ELSEIF(IWHICH.EQ.2)THEN
         fBASESIMPVersionNumber = 0
 
-C HELP CONTENT or average ground temperature.
-        H(1)= '                                                   '
-        H(2)= 'TGavg: Average ground temperature (degC)           '
-        H(3)= '                                                   '
-        H(4)= 'Value must be between -10 and 20(degC).            '
+C Average ground temperature.
         min_TGavg = -10.                  ! degC
         max_TGavg = 20.                   ! degC
         CALL EASKR(TGavg,' ',' TGavg (degC) ?',
-     &    min_TGavg,'F',max_TGavg,'F',8.9,'TGavg',IER,4)
+     &    min_TGavg,'F',max_TGavg,'F',8.9,'TGavg',IER,nbhelp)
 
-C HELP CONTENT for amplidude of ground temperature.
+C Amplidude of ground temperature.
         min_TGamp = 0.                    ! degC
         max_TGamp = 25.                   ! degC
-        H(1)= '                                                   '
-        H(2)= 'TGamp: Amplitude of the ground temperature         '
-        H(3)= '                                                   '
-        H(4)= 'Value must be between 0 and 25(degC).              '
         CALL EASKR(TGamp,' ',' TGamp (degC) ?',
-     &    min_TGamp,'F',max_TGamp,'F',14.20,'TGamp',IER,4)
+     &    min_TGamp,'F',max_TGamp,'F',14.20,'TGamp',IER,nbhelp)
 
-C HELP CONTENT for phase lag.
-        H(1)= '                                                   '
-        H(2)= 'TGps: Phase lag of ground temperature              '
-        H(3)= '                                                   '
-        H(4)= 'Value must be between 0 and 1 radians.             '
+C Phase lag.
         min_TGps = 0.                     ! radians
         max_TGps = 1.                     ! radians
         CALL EASKR(TGps,' ',' TGps (radians) ?',
-     &    min_TGps,'F',max_TGps,'F',0.380,'TGps',IER,4)
+     &    min_TGps,'F',max_TGps,'F',0.380,'TGps',IER,nbhelp)
       ELSEIF(IWHICH.EQ.3)THEN
         RETURN
       END IF ! END of "GROUND TEMPERATUE METHOD" IF LOOP
 
 C FILE CHECK
 C Checks whether or not default.bsm file exists,rewrites or creates it.
-
-C HELP CONTENT
-      H(1)= 'You may change the filename for the .BSM file.     '
-      H(2)= 'If your project contains the standard folder set,  '
-      H(3)= 'the file will be stored in a new folder ../bsm     '
-      H(4)= '                                                   '
       if(zonehasone)then
         bsmFile=LBSIMP(ICOMP)
         iuo=66
@@ -499,7 +435,7 @@ C HELP CONTENT
         END IF
 
         CALL EASKF(bsmFile,'Confirm filename:',' ',72,bsmFile,
-     &    'Invalid filename',IER,4)
+     &    'Invalid filename',IER,nbhelp)
 
         CALL EFOPSEQ(iuo,bsmFile,4,IER)
       endif

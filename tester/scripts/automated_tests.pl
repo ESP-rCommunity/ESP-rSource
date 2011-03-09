@@ -79,7 +79,7 @@ my %binlist = ( "aco"   =>   "esruaco",
 my %binalias = ( "vew"    =>   "viewer",
                  "mrt"    =>   "espvwf" );                          
 
-
+my %binlist = ("bps" => "esrubps");
 my @Suppress_code_list  = ( "222 W" );
 my @Dangerous_info_list = ( "340 I" );
                           
@@ -636,8 +636,8 @@ if ( $test_forcheck ){
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
 
     # Build X11 debugging version.
-    if ( ! $debug_forcheck ) {
-      buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
+    if (  $debug_forcheck ) {
+      buildESPr("bps", $build_args{"$key"},"default","debug","onebyone");
     }
     stream_out(" Done\n");
     
@@ -682,7 +682,8 @@ if ( $test_forcheck ){
       # execute function may redirect output to /dev/null, depending on 
       # verbosity.
       # DEBUG
-
+      system("rm $TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out");
+      
       if ( ! $debug_forcheck || ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
         system ("forchk -I ../include *.F ../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
       }
@@ -975,7 +976,7 @@ decreases.
   stream_out(" Done\n");
   
       
-  # Reset FCKCNF
+  # Reset FCKCNF/
   $ENV{FCKCNF} = $orig_FCKCNF;
   stream_out("Reset FCKCNF path: $ENV{FCKCNF}\n");
 }

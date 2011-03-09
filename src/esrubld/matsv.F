@@ -81,11 +81,17 @@ C Find appropriate record in library.
 
 C Write dummy values for default doors and windows to results library.
       irec=iresrv
-      write(iunit,rec=irec,iostat=istat,err=1000)zgae,zgai,zdae,zdai
+      write(iunit,rec=irec,iostat=istat,err=1001)zgae,zgai,zdae,zdai
     5 return
 
- 1000 write(outs,'(A,I5,A)')
-     &  'mzwdar: results library error at record',irec,
+ 1000 write(outs,'(A,2I5,A)')
+     &  'mzwdar: results library error at record',irec,nst,
+     &  ' while reading for default window and door areas.'
+      call edisp(iuout,outs)
+      call epwait
+      goto 5
+ 1001 write(outs,'(A,2I5,A)')
+     &  'mzwdar: results library error at record',irec,iresrv,
      &  ' while writing default window and door areas.'
       call edisp(iuout,outs)
       call epwait
@@ -1944,15 +1950,10 @@ C Error!
 C Set up day type and period for nested control loop.    
    11 if(ibsn(icf,4).eq.0)goto 12
       jcf=ibsn(icf,4)
-      if ( nbcdt(jcf).eq.0 ) then 
-        ndt=nbdaytype
-      else 
-        ndt = nbcdt(jcf)
-      endif      
+      if(nbcdt(jcf).eq.0)ndt=nbdaytype
       do 71 i=1,ndt
       idtypx=i
-      if(iday.le.ibcdv(jcf,i,2).and.iday.ge.ibcdv(jcf,i,1))goto 72
-
+      if(iday.le.ibcdv(icf,i,2).and.iday.ge.ibcdv(icf,i,1))goto 72
    71 continue
 
 C Error: issue warning and set day type 1.
