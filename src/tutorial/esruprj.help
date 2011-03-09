@@ -2934,159 +2934,102 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 *enditem
 *subroutine exportcad
-*item exportcad
-'This facility allows you to export the current model'
-'in a format as required by one of the following'
-'3rd party applications.'
+*item exportcad cad_export_choices
+'This facility allows you to export the current model in a format as'
+'required by one of the following 3rd party applications.'
 ' '
-'VIEWER, a hidden line perspective program from ABACUS;'
-'DXF (version 12) file (see the note below);'
-'XZIP, a CAD program from IES;'
-'RADIANCE, a lighting simulation program from LBL;'
-'XFIG, a vector plotting program (available on Linux and'
-'OSX and Cygwin) so that wire-frame images can be exported'
-'in high resolution.'
-'MicroGDS, a CAD program;'
-'EnergyPlus, a building thermal simulation program from'
-'       North America'
-'VRML Version 2.0, with a matching html file containing'
-'     surface attributes.'
+'VIEWER, a hidden line perspective program from ABACUS'
+'DXF (version 12) file (see the note below)'
+'XZIP, an old CAD program from IES'
+'RADIANCE, a lighting simulation program from LBL. If your model'
+'  includes zone, ground and/or solar obstructions geometry you'
+'  can visualise them using RADIANCE. It is assumed that your computer'
+'  has the RADIANCE modules installed and their location is defined'
+'  in your PATH environment variable. The e2r module does the work.'
+' '
+'XFIG, a vector plotting program (Linux, OSX and Cygwin) for high-'
+'  res wire-frame images. Make sure your model view is correct before'
+'  you force a re-draw and export of the wire-frame.'
+'MicroGDS, a CAD program, exports a THINGS file with obstructions as'
+'  clusters of surfaces.'
+'EnergyPlus, (IDF file V3) a building thermal simulation program'
+'  from North America. V4 is under testing.'
+'VRML Version 2.0, with a matching html file containing surface'
+'  attributes which can be viewed with some web browsers.'
+'META, transfer file representation of most of an ESP-r model. Used'
+'  by a Revit plugin and and ArchiCAD plugin. This file is typically'
+'  converted by prj into a standard ESP-r model. This export facility'
+'  supports testing of this file format and data structures.'
 ' '
 'General rules assumed in DXF export: '
-'* Each thermal zone has a separate layer and the'
-'  layer name is the zone name (<12 char without blanks).'
+'* Each thermal zone has a separate layer and the layer name'
+'  is the zone name (<12 char without blanks).'
 ' '
-'* If a zone includes shading obstruction blocks then'
-'  these should be on a separate layer and the name of'
-'  the layer should be OBS_ followed by the characters'
-'  in the zone layer name. Example the obstructions for'
-'  layer MANAGER_A are in OBS_MANAGER_A'
+'* If a zone includes shading obstruction blocks then the should'
+'  be on a separate layer and the name of the layer should be '
+'  OBS_ followed by the characters in the zone layer name. Example'
+'  the obstructions for layer MANAGER_A are in OBS_MANAGER_A'
 ' '
-'* If you want to identify particular surfaces in a zone'
-'  as transparent then create and additional layer with'
-'  the layer name starting with TRN_. Example transparent'
-'  surfaces in MANAGER_A are in TRN_MANAGER_A. If you do'
-'  not create this separate layer then you will have to'
+'* If you want to identify particular surfaces in a zone as trans-'
+'  parent then create and additional layer name starting with TRN_.'
+'  Example transparent surfaces in MANAGER_A are in TRN_MANAGER_A.'
+'  If you do not create this separate layer then you will have to'
 '  manually attribute the glass surfaces in ESP-r.'
 ' '
-'* Shading obstructions are represented via DXF BLOCK'
-'  entities. Typically a set of 6 3DFACE objects within'
-'  each BLOCK. You could probably also use POLYLINE '
-'  entities within a BLOCK.'
+'* Shading obstructions are represented via DXF BLOCK entities.'
+'  Typically a set of 6 3DFACE objects within each BLOCK. You '
+'  could probably also use POLYLINE entities within a BLOCK.'
 ' '
-' * Zone surfaces which are polygons of 4 sides used the'
-'   3DFACE entity. Zone surfaces which are triangles or'
-'   are > 4 sides use POLYLINE entities.  Or you could use'
-'   POLYLINE entities for all zone surfaces.'
+' * Zone surfaces which have 4 sides use the 3DFACE entity. Zone'
+'   surfaces which are triangles or are > 4 sides use POLYLINE'
+'   entities. Or you could use POLYLINEs for all zone surfaces.'
 ' '
 'NOTE: if you need to debug the import of CAD data turn'
 'the reporting level from silent or standard to detailed.'
 ' '
 'NOTE: if you are useing Native Windows version the paths'
 'to the exported files may not work correctly. '
-' '
-'The option for ESP-r meta file creates a compact'
-'description of a model in a single file. This file'
-'is typically created by 3rd party applications and'
-'used by prj to expand to a standard ESP-r model.'
-'This export facility supports testing of this file'
-'format and data structures.'
-' '
+'  '
+'Based on which option you select you will be asked for the'
+'name of the file to be created. You may need to match specific'
+'line endings or file name extensions.'
 *enditem
-         CALL EASKAB('The model is in a remote folder.',
-*item exportcad
-'Input the name of the VIEWER input file.'
-*enditem
+        CALL EASKAB('The model is in a remote folder.',
         CALL EASKS(LFIL,' ','VIEWER file name?',
-*item exportcad
-'A DXF file may be passed to some CAD packages'
-'such as AutoCAD V12.'
-*enditem
         CALL EASKS(LFIL,' ','DXF file name?',
-*item exportcad
-'A ZIP file may be passed to the XZIP CAD package'
-'from IES.'
-*enditem
         CALL EASKS(LFIL,' ','ZIP file name?',
-*item exportcad
-'If your model includes zone, ground and/or solar'
-'obstructions geometry you can visualise them using'
-'the RADIANCE program. It is assumed that your computer'
-'has the RADIANCE modules installed and their location'
-'defined in your PATH environment variable. The actual'
-'model convertion is achieved using ESP-r`s e2r module.'
-*enditem
         CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,6)
-*item exportcad
-'It is possible to write a wireframe image of the model'
-'to a vetor file for use with the xfig application.'
-'Before exporting adjust the model view and resize'
-'the graphics window to force a redraw.'
-*enditem
         call askok(' ','Is wireframe composition ok?',oke,dok,4)
-*item exportcad
-'Assuming the export was sucessful you can proceed.'
-*enditem
-          call askok(' ','Convert output to xfig format?',ok,dok,1)
-*item exportcad
-'A THINGS file is used with the CAD package MicroGDS.'
-'Note that obstructions are treated as clusters of'
-*enditem
+        call askok(' ','Convert output to xfig format?',ok,dok,1)
         CALL EASKS(LFIL,' ','MicroGDS THINGS file name?'
-*item exportcad
-'This file is input to the EnergyPlus system.'
-*enditem
         CALL EASKS(LFIL,' ','EnergyPlus input file name?',
-*item exportcad
-'EnergyPlus input files have several versions.'
-'Version 3.0 is the current'
-'Version 4.0 is in testing.'
-*enditem
         CALL EASKR(evert,'EnergyPlus IDF file version?','(3.0)',
-*item exportcad
-'A VRML format file may be used with a number of'
-'3rd party packages and web browser plug-ins to'
-'visually explore a model.'
-*enditem
         CALL EASKS(LFIL,' ','VRML file name?',
-*item exportcad
-'The option for ESP-r meta file creates a compact'
-'description of a model in a single file. This file'
-'is typically created by 3rd party applications and'
-'used by prj to expand to a standard ESP-r model.'
-'This export facility supports testing of this file'
-'format and data structures.'
-*enditem
         CALL EASKS(LFIL,' ','ESP-r meta file name?',
-*item exportcad
-*enditem
        CALL PHELPD('export menu',55,'-',0,0,IER)
 *subroutine cadin
-*item cadin
-'Executing CAD program by which the zone geometry'
-'may be defined.  The file created will be requested'
-'later for model importing.'
+*item cadin cad_import_choices
+'Executing CAD program by which the zone geometry may be defined.'
+'The file created will be requested later for model importing.'
 ' '
 'If the CAD program creates DXF files then PLEASE READ'
-'the following section for hints and notes on current'
+'the following section for hints and notes on current options.'
 ' '
-'If the CAD program is able to create ESP compatable'
-'files then please assign zone names so that the'
-'conversion process will proceed smoothly.'
+'If the CAD program is able to create ESP compatable files then'
+'please assign zone names so that the conversion process will'
+'proceed smoothly.'
 ' '
-'ESP-r currently exports and imports a subset of DXF'
-'version 12 entities. ESP-r only deals with 3D entities.'
-'The import process will skip most 2D entities because'
-'2D has no meaning within simulation. '
+'ESP-r currently exports and imports a subset of DXF V12. ESP-r'
+'only deals with 3D entities. The import process will skip most'
+'2D entities because 2D has no meaning within simulation. '
 ' '
-'For a quick exploration of the entity types that ESP-r'
-'works with take an existing ESP-r model, export it to'
-'DXF and look at the file or import it into a CAD tool.'
+'For a quick exploration of the entity types that ESP-r works with'
+'take an existing ESP-r model, export it to DXF and look at the file'
+'or import it into a CAD tool.'
 ' '
-'The import facility assumes that you have registered'
-'an initial ESP-r model and that there no thermal'
-'zones in the model.  If your current model has zones'
-'you are advised to create a new model and add the'
+'The import facility assumes that you have registered an initail'
+'ESP-r model and that there no zones in the model. If your current'
+'model has zones you are advised to create a new model and add the'
 'existing zones after you have imported the CAD data.'
 ' '
 'General rules: '
@@ -3116,56 +3059,24 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   are > 4 sides use POLYLINE entities.  Or you could use'
 '   POLYLINE entities for all zone surfaces.'
 ' '
-'The current model includes zones.  Please make'
-'careful note of any changes you make to the model'
-'so that you can restore contiguity when importing'
-'from the CAD package.'
+'If the current model includes zones make careful note of any'
+'changes you make to the model so that you can restore contiguity'
+'when importing from the CAD package. Recommend only using'
+'import with new models without zones.'
+'  '
+'If the file name you supply is not found you are asked to try again.'
 *enditem
-        CALL PHELPD('CAD warning',58,'-',0,0,IER)
-*item cadin
-*enditem
-        CALL PHELPD('CAD warning',53,'-',0,0,IER)
-*item cadin
-'Current import options are DXF files and so-called'
-'ZIP files (from a Scottish CAD company).'
-*enditem
+      CALL PHELPD('CAD warning',58,'-',0,0,IER)
+      CALL PHELPD('CAD warning',53,'-',0,0,IER)
       CALL EASKABC('Specify which CAD format to work with',
-*item cadin
-'A DXF file is required by this CAD package please,'
-'supply a name.'
-*enditem
-        CALL EASKS(LFIL,' Put current model into DXF file named: ',
-*item cadin
-'A ZIP file may be passed to the XZIP CAD package.'
-*enditem
-        CALL EASKS(LFIL,' Put current model into ZIP file named: ',
-*item cadin
-'Assuming that the 3rd party tool is installed on your '
-'machine it should be ok to proceed. If you just want to'
-'generate the file for the tool say no at this point. '
-*enditem
+      CALL EASKS(LFIL,' Put current model into DXF file named: ',
+      CALL EASKS(LFIL,' Put current model into ZIP file named: ',
       CALL ASKOK(' ',outs,OK,dok,3)
-*item cadin
-'Assuming that the 3rd party tool generated a file and you'
-'know the location of that files it should be ok to proceed.'
-*enditem
       CALL ASKOK(' ','Import the CAD transfer file?',OK,dok,2)
-*item cadin
-'A DXF format file may be converted if it has been'
-'created using layer and entity constraints.'
-' '
-'If the file is from `xzip` supply its name (if you'
-'saved the zip file in the folder that the CAD tool'
-'suggested you will not need to give the path). '
-*enditem
-        CALL EASKS(LFIL,' File to import ? ',
-*item cadin
-'Coud not find the file in the location you'
-'specified. Double check and perhaps try again.'
-*enditem
-          call askok(outs,'Try again?',OK,dok,2)
+      CALL EASKS(LFIL,' File to import ? ',
+      call askok(outs,'Try again?',OK,dok,2)
 *subroutine rexmpl
-*item rexmpl
+*item rexmpl exemplar_menu_help
 'These exemplar model sets are available for browsing.'
 'Each set comprises a family of models relating to'
 'different possible uses of ESP-r.'
@@ -3180,25 +3091,20 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'word syntax as explained in the exemplars file.'
 *enditem
         CALL PHELPD('exemplar menu',12,'-',0,0,IER)
-*item rexmpl
-'To browse one of the exemplar designs, simply'
-'select it.  If you wish to modify the model'
-'then you must first copy it into your folder.'
-' '
+*item rexmpl exemplar_set_browse
+'To browse one of the exemplar models, simply select it.'
+'  '
+'You have a choice to BROWSE or OWN IT.'
+'  '
+'When browsing a model you are prevented from altering'
+'its data although you can use it to run simulations.'
+'If you want to modify the model then the OWN IT option will'
+'copy it to your own folder.'
+'  '
 'The current set of exemplars: '
 *enditem
           CALL PHELPD('exemplar menu',5+nghelp,'-',0,0,IER)
-*item rexmpl
-*enditem
-          CALL PHELPD('exemplar menu',3,'-',0,0,IER)
-*item rexmpl
-'When browsing a model you are prevented from'
-'altering its data although you can use it to run'
-'simulations. If you want to modify the model'
-'then you must firstly copy it to your own folder'
-'by selecting the `own it` option.'
-*enditem
-              CALL EASKABCD(exdescr,'Actions:','browse',
+          CALL EASKABCD(exdescr,'Actions:','browse',
 *subroutine clickonbitmap
 *item clickonbitmap
 'You can describe a thermal zone as an rectangle, a floor'
