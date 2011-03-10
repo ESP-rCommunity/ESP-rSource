@@ -703,12 +703,14 @@ C Commons.
 
 C Local variables.
       logical unixok
-      integer ln,lna,lnf   ! length of install path, app name app folder
+      integer ln,lna,lnf,lnf2   ! length of install path, app name app folder
       integer lns,lnt,lnhl ! length of subroutine, topic, helpline
       integer lno          ! length of outstr
       integer K            ! position
+      integer trywhich     ! if one then primary help file if two use secondary
       character helpfil*72 ! the help file to load
       character folder*8   ! the source folder for the application
+      character folder2*8  ! secondary folder for the application
       character WORD*32    ! a token to read
       character outstr*124 ! for help phrases
       character outs*124 ! for messages
@@ -722,6 +724,7 @@ C Local variables.
 
 C Get to work.
       app = helpinapp      ! set local app
+      trywhich = 1         ! assume primary help file
       call isunix(unixok)  ! which folder separator to use
       if(unixok)then
         fs = char(47)
@@ -732,48 +735,77 @@ C Get to work.
       lna=lnblnk(app)      ! length of app name
       if(app(1:3).eq.'aco')then
         folder='esruaco'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'clm')then
         folder='esruclm'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'bps')then
         folder='esrubps'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'dbm')then
         folder='esrudbm'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'dfs')then
         folder='esrudfs'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'e2r')then
         folder='esrue2r'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'eco')then
         folder='esrueco'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'grd')then
         folder='esrugrd'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'ish')then
         folder='esruish'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'mfs')then
         folder='esrumfs'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'mld')then
         folder='esrumld'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'mrt')then
         folder='esrumrt'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'net')then
         folder='esrunet'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'pdb')then
         folder='esrupdb'
+        folder2='UNKNOWN'
+      elseif(app(1:3).eq.'prj')then
+        folder='esruprj'
+        folder2='esrumfs'
       elseif(app(1:3).eq.'res')then
         folder='esrures'
+        folder2='UNKNOWN'
       elseif(app(1:3).eq.'vew')then
         folder='esruvew'
+        folder2='UNKNOWN'
       endif
       lnf=lnblnk(folder)   ! length of folder name
+      lnf2=lnblnk(folder2)   ! length of folder name
       lns=lnblnk(sub)      ! length of subroutine
       lnt=lnblnk(topic)    ! length of topic
       sq=char(39)   ! assign single quote
 
 C Assume that the installer has placed the help text file in the
 C distribution lib folder.
-      write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,folder(1:lnf),
-     &  '.help'
+  42  if(trywhich.eq.1)then
+        write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,
+     &    folder(1:lnf),'.help'
+C        call edisp(iuout,helpfil)   ! debug
+      elseif(trywhich.eq.2)then
+        write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,
+     &    folder2(1:lnf2),'.help'
+C        call edisp(iuout,helpfil)   ! debug
+      endif
       if(folder(1:7).eq.'esrubps')then
         ihfil=ifil+8              ! set file unit number for bps
+      elseif(folder(1:7).eq.'esruprj')then
+        ihfil=ifil+11              ! set file unit number for prj
       elseif(folder(1:7).eq.'esrures')then
         ihfil=ifil+8              ! set file unit number for res
       else
@@ -803,10 +835,15 @@ C Check the header to see if this is a help text file.
         goto 1
       endif
       CALL EGETW(outstr,K,WORD,'W','application',IER)
-      if(WORD(1:lna).ne.app(1:lna))then
-        write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
-        call edisp(iuout,outs)
-        goto 1
+
+C If we are looking in the primary help file check the app name.
+C Subsequent help texts will not have a matching app line.
+      if(trywhich.eq.1)then
+        if(WORD(1:lna).ne.app(1:lna))then
+          write(outs,'(2a)') 'Not a help text file for ',app(1:lna)
+          call edisp(iuout,outs)
+          goto 1
+        endif
       endif
 
 C If we reached this point then we can go looking for a
@@ -895,12 +932,33 @@ C Does not match expectations.
         endif
       end do scan
 
-C The end of file reached. If there has not been a match make up a
-C standard message.
+C The end of file reached. If there has not been a match try other
+C likely help files for the current application. If that fails
+C make up a standard message.
   1   close(ihfil)
       if(havesub.and.havetopic)then
         return
       else
+
+C Check if there is an alternative help text file. If not give up.
+        if(trywhich.eq.1)then
+          if(folder2(1:7).eq.'UNKNOWN')then
+            call edisp(iuout,'folder2 was UNKNOWN')
+            h(1)='No alt contextual help text was found for the topic'
+            write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &        ' of application ',app(1:lna)
+            nbhelp=2
+            return
+          endif
+          trywhich=trywhich+1
+          goto 42  ! try scaning the alternative file
+        elseif(trywhich.eq.2)then
+          h(1)='No alt contextual help text was found for the topic'
+          write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &      ' of application ',app(1:lna)
+          nbhelp=2
+          return
+        endif
         h(1)='No contextual help text was found for the topic'
         write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
      &    ' of application ',app(1:lna)

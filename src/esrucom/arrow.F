@@ -38,7 +38,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer ipoints
       DIMENSION VE(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1
-C     character outs*124
+C      character outs*124
       logical unixok
 
 C Local variables to pass to edline.

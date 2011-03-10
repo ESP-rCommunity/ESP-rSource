@@ -393,15 +393,15 @@ C Global control information.
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
-          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NOCDT(II),
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NGCDT(II),
      &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
-          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NOCDT(II),
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NGCDT(II),
      &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
-          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NGCDT(II),
      &    ' # No. day types using dates of validity'
         ENDIF
 
@@ -471,16 +471,20 @@ C Optical control information.
      &     SSTR(1:ln)
         WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IOAN(II,J),J=1,3),
      &  '  # actuator data'
-        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
-     &  ' # No. day types'
         NN=NOCDT(II)
         IF(NN.EQ.0)THEN ! All day types have individual controls
           NN=nbdaytype
           daytype='individual'
+          WRITE(IUNIT,'(I5,A,I2)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    ' # day types follow calendar ',nbdaytype
         ELSEIF(NN.EQ.1)THEN ! All day types have same controls
           daytype='all daytypes'
+          WRITE(IUNIT,'(I5,2A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    '  # ',daytype
         ELSE ! Day types are not used but periods of validity are active
           daytype=' '
+          WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &    ' # No. day types using dates of validity'
         ENDIF
 
         DO 200 J=1,NN

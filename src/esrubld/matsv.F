@@ -81,11 +81,17 @@ C Find appropriate record in library.
 
 C Write dummy values for default doors and windows to results library.
       irec=iresrv
-      write(iunit,rec=irec,iostat=istat,err=1000)zgae,zgai,zdae,zdai
+      write(iunit,rec=irec,iostat=istat,err=1001)zgae,zgai,zdae,zdai
     5 return
 
- 1000 write(outs,'(A,I5,A)')
-     &  'mzwdar: results library error at record',irec,
+ 1000 write(outs,'(A,2I5,A)')
+     &  'mzwdar: results library error at record',irec,nst,
+     &  ' while reading for default window and door areas.'
+      call edisp(iuout,outs)
+      call epwait
+      goto 5
+ 1001 write(outs,'(A,2I5,A)')
+     &  'mzwdar: results library error at record',irec,iresrv,
      &  ' while writing default window and door areas.'
       call edisp(iuout,outs)
       call epwait

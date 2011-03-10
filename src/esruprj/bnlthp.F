@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2010.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -30,11 +30,12 @@ C        thchks
 C        thchkf
 
 C **************************  THMENU  *************************
-C This subroutine is called by INITPF ( bld.F ) ,or(bps.F) .
+C This subroutine is called from the prj constructions top level
+C list menu as an alternative to working with a zone construction file.
 C It displays the main nonlinear thermal properties menu .and 
 C according to the users selection it calls other subroutines ,
 C performs the required process internally, or returns back to 
-C INITPF ( bld.F ) .   The common variables are :
+C The common variables are :
 C IBTHAL(MTHF,3) : defines the actuator location ( the layers
 C                  which will be governed by the associated
 C                  thermal equations .
@@ -80,7 +81,6 @@ C geometry.h provides commons G0/G1/G2/G5/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       
@@ -99,11 +99,18 @@ C geometry.h provides commons G0/G1/G2/G5/precz.
       LOGICAL INTHPS,INTHPZ
       LOGICAL OK,DOK,SAVEOK,XST
 
-      CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
+      CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
       CHARACTER*95 TEXT,TEXT1
       character ltmp*72
       integer NITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='THMENU'  ! set for subroutine
 
 C Read the complete building thermal and geometical data.
       IUNIT=IFIL+1
@@ -154,36 +161,8 @@ C Read the complete building thermal and geometical data.
       NITEM=16
 
 C Help text for this menu.
-      H(1) ='ESP_r allows defining the thermal properties of'  
-      H(2) ='materials to be linearly or non-linearly temperature'
-      H(3) ='dependent .'
-      H(4) ='For defining linear dependency of thermal conductivity:'
-      H(5) ='option (k) of simulator menu is recommended du to its'
-      H(6) ='flixibility .    '
-      H(7) ='       '
-      H(8) ='Via this menu you can descripe the variation (or'
-      H(9) ='change) of the thermal properties (1: conductivity, ' 
-      H(10)='2:density, 3:heat capacity) of any layer (except air'
-      H(11)='gaps) as a function of temperature.  You can also '
-      H(12)='describe the variation of any thermal property of a '
-      H(13)='layer by more than one thermal functions (i.e. each'
-      H(14)='thermal function will be valid only for the temperature'
-      H(15)='range associated with it). Show me more has details. '
-      H(16)='  '
-      H(17)=' The available options are :'
-      H(18)='  (a)  show the next available thermal function'
-      H(19)='  (b)  define the actuator location for displayed '
-      H(20)='       thermal function (via  other menues )'
-      H(21)='  (c)  define the thermal equation for  displayed '
-      H(22)='       thermal function  (via  other menues )'
-      H(23)='  (d)  creat a new thermal function which will be'
-      H(24)='       displayed in  NON-LINEAR PROPERTIES  menu'
-      H(25)='  (e)  delete the displayed thermal function and all'
-      H(26)='       data associated with it ' 
-      H(27)='  (!)  list the complete  description of  thermal'
-      H(28)='       configuration defined so far '
-      H(29)='  (?)  display this window'
-      H(30)='  (-)  exit from then menu.'
+      helptopic='non_linear_thrm_prop'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Non-Linear Properties',ITEM,NITEM,INO)
 
@@ -206,12 +185,8 @@ C define the actuator location
         ITEM2(2)=' selected zone          '
         ITEM2(3)=' selected construction  '
         ITEM2(4)=' selected layer         '
-        H(1)=' This information is required to define the'
-        H(2)=' range of layers for which the thermal equations,'
-        H(3)=' of the same thermal function, are applied.'
-        H(4)='  '
         CALL EPICKS(INPICK,IVAL2,' ',' ',24,4,ITEM2,
-     &             'Actuator Location',IER,4)
+     &    'Actuator Location',IER,nbhelp)
         I1=IVAL2(1)
         IF(I1.EQ.0)GOTO 10
 
@@ -228,7 +203,7 @@ C actuator location : other than complete building
             WRITE(ITEM3(I),'(A)')zname(I)
    20     CONTINUE
           CALL EPICKS(INPICK,IVAL3,' ',' ', 20,NCOMP,ITEM3,
-     &                '   Zones',IER,0)
+     &      '   Zones',IER,nbhelp)
           I2=IVAL3(1)
           IBTHAL(ITHF,1)=I2
           IF(I2.EQ.0)GOTO 200
@@ -244,7 +219,7 @@ C actuator location : selected zone
               WRITE(ITEM4(I),'(A)')SNAME(I2,I)
    30       CONTINUE
             CALL EPICKS(INPICK,IVAL4,' ',' ',20,NC,ITEM4,
-     &                  '   Surfaces',IER,0)
+     &        '   Surfaces',IER,nbhelp)
             I3=IVAL4(1)
             IBTHAL(ITHF,2)=I3
             IF(I3.EQ.0)GOTO 300
@@ -270,7 +245,7 @@ C actuator location : selected layer
    50           WRITE(ITEM5(I),'(A,1X,I2,1X,A)')'LAYER (',I,')'
    40         CONTINUE
               CALL EPICKS(INPICK,IVAL5,' ',' ',20,NEL,ITEM5,
-     &                        '  Layers',IER,0)
+     &          '  Layers',IER,nbhelp)
               I4=IVAL5(1)
               IBTHAL(ITHF,3)=I4
               IF(I4.EQ.0)GOTO 400
@@ -317,7 +292,7 @@ C Delete the displayed thermal function and update the associated data
         IBTHAL(NTHF,3)=0
         DO 70 J=1,NTHEQ(NTHF)
         DO 70 K=1,MDATA
-          BTHDT(NTHF,J,K)=0
+          BTHDT(NTHF,J,K)=0.0
    70   CONTINUE
         NTHEQ(NTHF)=0
         NTHF=NTHF-1
@@ -327,19 +302,17 @@ C Delete the displayed thermal function and update the associated data
 C load a thermal configuration from an existing thermal configuration 
 C file.
       ELSEIF(INO.EQ.10)THEN
-        H(1)='Enter the name of the thermal configuration file'
         ltmp=LNLTHP
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
-     &               72,' ',' thermal confg. file ',IER,1)
+     &    72,' ',' thermal confg. file ',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') LNLTHP=ltmp
         CALL THERMR(LNLTHP,IUNIT,ITRC,IER)
 
 C Save the defined thermal configuration into a file.
       ELSEIF(INO.EQ.11)THEN
-        H(1)='Enter the name of the thermal configuration file'
         ltmp=LNLTHP
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
-     &               72,' ',' thermal confg. file ',IER,1)
+     &    72,' ',' thermal confg. file ',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') LNLTHP=ltmp
         CALL THERMS(LNLTHP,IUNIT,ITRC,IER)
         IF(IER.EQ.0)THEN
@@ -385,13 +358,12 @@ C List all defined thermal functions with their associated data
   150       FORMAT(I1,2X,I1,2(1X,F7.2),1X,F8.3,4(1X,F8.5,1X,F6.2))
             CALL EDISP(IUOUT,TEXT)
   120     CONTINUE
-          CALL EPAGEW
   110   CONTINUE
 
 C Display the help message
       ELSEIF(INO.EQ.(NITEM-1))THEN
         IHELPM=1
-        CALL PHELPD('non-linear',30,'non-linear  ',0,0,IER)
+        CALL PHELPD('non-linear',nbhelp,'non-linear  ',0,0,IER)
 
 C Return to simulator. Before that check thermal configuration legality.
       ELSEIF(INO.EQ.NITEM)THEN
@@ -399,18 +371,14 @@ C Return to simulator. Before that check thermal configuration legality.
         CALL THERMC(ICHCK)
         IF(ICHCK.NE.0)THEN
           dok=.false.
-          h(1)='There was a problem and if you exit now it will not'
-          h(2)='have been resolved. '
           CALL ASKOK(' WARNING messages were detected',
-     &               ' Are you sure you want to exit ? ',OK,dok,2)
+     &               ' Are you sure you want to exit ? ',OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 10
         ENDIF
         IF(SAVEOK)THEN
           dok=.true.
-          h(1)='There are unsaved changes to the model. These will be'
-          h(2)='lost if you exit without saving. '
-          CALL ASKOK(' ',
-     &    'configuration should be saved. Do this ?',OK,dok,2)
+          CALL ASKOK('Detected unsaved changes in model. The model',
+     &    'configuration should be saved. Do this?',OK,dok,nbhelp)
           IF(OK)CALL EMKCFG('-',IER)
         ENDIF
         CALL USRMSG(' ',' ','-')
@@ -431,14 +399,19 @@ C ****************************************************************
       integer iCountWords
 
       COMMON/FILEP/IFIL
-      character h*72
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       CHARACTER ITEM(24)*42,TEXT*40,OUTSTR*124,TEXT1*95,TEXT2*95
       CHARACTER*72 TITLE,THFIL,EQNTXT,EQNMSG
       integer NITMS,INO,INO1,INO2 ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='THRMEQ'  ! set for subroutine
 
       INDEX1=0
       IUNIT=IFIL+1
@@ -469,9 +442,8 @@ C Display the defined thermal equations for this thermal function.
       ITEM(M+15)='- exit this menu                       '
 
 C Help text for this menu.
-      H(1)='This menu is used to creat and/ or modify the thermal'
-      H(2)='equations of the thermal functions.  Modifying a'
-      H(3)='thermal equation is acheived by selecting it.'
+      helptopic='thermal_equation_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       NITMS=M+15
       CALL EMENU(TEXT,ITEM,NITMS,INO)
 
@@ -496,22 +468,11 @@ C Add a new equation manually
         ELSE
           N=INO-3
         ENDIF
-        H(1)='The available thermo-physical property types are:'
-        H(2)=' '
-        H(3)='1 thermal conductivity'
-        H(4)='2 density'
-        H(5)='3 thermal capacity.'
-        H(6)=' '
-        H(7)='The thermal equation is defined by:'
-        H(8)='               b       c       d       e'
-        H(9)='   P = A + B * T + C * T + D * T + E * T'
-        H(10)='   '
-        H(11)='where each thermal equation defines the dependence of'
-        H(12)='the property for the temperature range provided.'
         WRITE(EQNTXT,101)INT(BTHDT(ITHF,N,1)),(BTHDT(ITHF,N,K),K=2,3)
   101   FORMAT(I2,2(1X,F7.2))
         WRITE(EQNMSG,*)' Enter the property type and temperature range.'
-        CALL EASKS(EQNTXT,EQNMSG,' ',72,' ','thermal data',IER,12)
+        CALL EASKS(EQNTXT,EQNMSG,' ',72,' ','thermal data',
+     &    IER,nbhelp)
         NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.3)THEN
           CALL USRMSG(' ',
@@ -526,7 +487,7 @@ C Add a new equation manually
         WRITE(EQNTXT,102)(BTHDT(ITHF,N,K),K=4,12)
   102   FORMAT(F8.3,4(1X,F8.5,1X,F6.2))
         WRITE(EQNMSG,*)' Coefficient value?'
-        CALL EASKS(EQNTXT,EQNMSG,' ',72,' ',' data ',IER,13)
+        CALL EASKS(EQNTXT,EQNMSG,' ',72,' ',' data ',IER,nbhelp)
         NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.9)THEN
           CALL USRMSG(' ',' Please enter 9 values!','W')
@@ -589,9 +550,8 @@ C equations, in order to modify it, copy from it and/ or list the
 C contents.
       ELSEIF(INO.EQ.M+9)THEN
         IF(INDEX1.EQ.1)CALL ERPFREE(IUNIT,IOS)
-        H(1)='  Enter the name of the thermal file to be loaded.'
         CALL EASKS(THFIL,' Thermal data file name ?',' ',72,' ',
-     &       ' thermal file ',IER,1)
+     &       ' thermal file ',IER,nbhelp)
        INDEX1=1
        CALL EFOPSEQ(IUNIT,THFIL,3,IER)
        IF(IER.LT.0)INDEX1=0
@@ -599,7 +559,7 @@ C contents.
 
 C While reading (loading) the thermal data file, display its contents 
 C in the text feedback window.
-   55  READ(IUNIT,'(A95)',IOSTAT=IOS,END=56)OUTSTR
+   55  READ(IUNIT,'(A)',IOSTAT=IOS,END=56)OUTSTR
        MLIN=MLIN+1
        CALL  EDISP(IUOUT,OUTSTR)
        GOTO 55
@@ -611,7 +571,7 @@ C already loaded.
       ELSEIF(INO.EQ.M+10)THEN
         IF(INDEX1.EQ.1)THEN
           REWIND(IUNIT,ERR=999)
-   57     READ(IUNIT,'(A95)',IOSTAT=IOS,END=58)OUTSTR
+   57     READ(IUNIT,'(A)',IOSTAT=IOS,END=58)OUTSTR
           CALL  EDISP(IUOUT,OUTSTR)
           GOTO 57
    58     if(IOS.eq.2)then
@@ -628,14 +588,11 @@ C Defining a new thermal equation by copy an existing equation from the
 C thermal data file.
       ELSEIF(INO.EQ.M+11)THEN
         IF(INDEX1.EQ.1)THEN
-          H(1)='A listing of the thermal data file can be obtained'
-          H(2)='by selecting the appropriate menu option.'
-          H(3)='If you cancel then the menu will be re-displayed. '
           MNUM=MLIN/2
           CALL EASKI(INUM,
      &         ' Code for the thermal equation to be added',
      &         ' from the thermal data file?',
-     &               1,'F',MNUM,'F',1,'equation number',IERI,2)
+     &         1,'F',MNUM,'F',1,'equation number',IERI,nbhelp)
           if(ieri.eq.-3)then
             goto 10
           endif
@@ -664,12 +621,8 @@ C manually by the user or copyed from another thermal data file )in
 C the loaded thermal data file.
       ELSEIF(INO.EQ.M+12)THEN
         IF(INDEX1.EQ.1)THEN
-          H(1)='The title is required to distinguish different'
-          H(2)='thermal equations as held in the thermal data file.'
-          H(3)='It is recommended that this title includes the'
-          H(4)='material and thermo-physical property names.'
           CALL EASKS(TITLE,' Title for this thermal equation?',' ',
-     &       72,' ','equation title',IER,4)
+     &       72,' ','equation title',IER,nbhelp)
           CALL USRMSG(' ',' Select the thermal equation to save:','-') 
           ITEM(M+5)='* cancel last save command'
    80     NITMS=M+5
@@ -696,7 +649,7 @@ C the loaded thermal data file.
 C Display the help message.
       ELSEIF(INO.EQ.M+14)THEN
         IHELPM=1
-        CALL PHELPD('equation mods',3,'-',0,0,IER)
+        CALL PHELPD('equation mods',nbhelp,'-',0,0,IER)
 
 C Return to the non-linear properties menu and close the thermal data
 C file if it was loaded.

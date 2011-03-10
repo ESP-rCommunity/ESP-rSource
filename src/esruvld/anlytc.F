@@ -263,7 +263,7 @@ C Compare results.
           WRITE(LstDtl,'(a)')'-----------------------------------'
           CALL EDISP(IOutC,LstDtl)
           DO 30 ITime=0,NTime
-            VTime=ITime*DTime/3600.0
+            VTime=real(ITime)*DTime/3600.0
             CALL STRIPC(IOutS,STRS,2,ND,0,' ',IER)
             K=0
             CALL EGETWR(STRS,K,Dummy,0.,0.,'-','time',IER)
@@ -349,7 +349,7 @@ C Simulation time step.
         H(2)=' of the entered value should equal to 1 hour. Otherwise,'
         H(3)=' the entered value will be approximated.'
         CALL EASKR(DTime,' ',Msg,1.,'F',2.,'-',3600.,'time step',IER,3)
-        DTime=3600.0/INT(3600.0/DTime+0.5)
+        DTime=3600.0/(3600.0/DTime+0.5)
 
 C Number of simulation time steps.
       ELSEIF(INO.EQ.2)THEN
@@ -1070,7 +1070,7 @@ C      write(IUF,'(a)')'/usr/esru/esp-r/climate/clm67'
       write(IUF,'(a)')'a'
       write(IUF,'(a)')'conduction.res'
       write(IUF,'(a)')'1 1'
-      idy=int(DTime*NTime/3600.0/24.0)+2
+      idy=int(DTime*real(NTime)/3600.0/24.0)+2
       call edayr(idy,id,im)
       write(IUF,'(i2,1x,i2)')id,im
       write(IUF,'(a)')'1'
@@ -1228,7 +1228,7 @@ C *********************************************************************
         ELSEIF(.NOT.Found)THEN
           IF(MonNod.LE.NodeC)THEN
             NodeD=MonNod-NodeC
-            VXX=VXX+DX(L)*NodeD/NPLyr(L)
+            VXX=VXX+DX(L)*real(NodeD)/real(NPLyr(L))
             ILayer=L
             Found=.TRUE.
           ELSE
@@ -1273,7 +1273,7 @@ C Solve the transient part of the solution.
       TempV=Tinit
       WRITE(IUF,'(F10.1,4X,F8.2)')VTime,TempV
       DO 100 ITime=1,NTime
-        VTime=DTime*ITime
+        VTime=DTime*real(ITime)
         TermTr=0.0
         I=ILayer
         DO 200 K=1,NRoot

@@ -180,7 +180,7 @@ C Viewfactor to ground.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1. 
-      ITA1 = IFIL+8
+      ITA1 = IFIL+6
 
 C Set character variable com to be a single comma and sim to be a
 C simicolon. 
@@ -1560,7 +1560,7 @@ C Setup standard assumptions.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1. 
-      ITA1 = IFIL+8
+      ITA1 = IFIL+6
       INPIC=NCOMP
       do 14 mz=1,inpic
 
