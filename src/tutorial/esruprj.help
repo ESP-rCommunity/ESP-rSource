@@ -2604,6 +2604,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Heating (or cooling) may be disabled by setting a'
 'correspondingly low (or high) set point or by setting'
 'the corresponding capacity to zero.'
+' '
+'The capacity given can be either in W or in W/m2.'
 *enditem
 *item stfmenu sys_bctl_05
 'This implements an ideal proportional (P) controller'

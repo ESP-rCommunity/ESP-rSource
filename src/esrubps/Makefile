@@ -8,7 +8,6 @@ PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
 RESdir = $(SRCdir)/esrures
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
 LIBdir = $(SRCdir)/lib
