@@ -3106,153 +3106,117 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL PHELPD('exemplar menu',5+nghelp,'-',0,0,IER)
           CALL EASKABCD(exdescr,'Actions:','browse',
 *subroutine clickonbitmap
-*item clickonbitmap
-'You can describe a thermal zone as an rectangle, a floor'
-'plan extrusion or a general polyhedra. Use only as much'
-'details as required to simplify attribution tasks, QA'
-'and interpretation tasks.'
-' '
-'Points from a bitmap:                  '
-' Zones, ground topology and obstructions can be defined'
-' via points from a scanned image of a site plan or floor'
-' plan or elevation or one of several predefined grids.'
-'                  '
-' First scan the relevant source and convert it to an'
-' XBM (X11 monochrome bitmap) file and place this in'
-' the project `cfg` folder.'
-' '
-' Ensure that the bitmap is large enough to allow for'
-' accurate positioning of the mouse. The bitmap can be'
-' larger than the graphic display area (you can pan left'
-' and right and up and down within it).'
-' '
-' The source image should indicate an origin (X=0.0'
-' Y=0.0), the direction north (optional), and a'
-' line of known length (to get scaling from).'
-'                  '
+*item clickonbitmap clickon_bitmap_menu
+'The click-on-bitmap facility is an alternative geometric input'
+'method that can speed up the process. Use only as much detail as'
+'required to simplify subsequent attribution and QA tasks. Plan'
+'carefully the zoning and critical points that you are going to'
+'capture. The following options are available for collecting points:'
+'  '
+' Zones, ground topology and obstructions can be defined via points'
+' from a scanned image of a site plan or floor plan or elevation'
+' or one of several predefined grids.'
+'  '
+' First scan the relevant source and convert it to an X11 (X11'
+' monochrome bitmap) file and place this in the project cfg folder.'
+'  '
+' Ensure that the bitmap is large enough to allow for accurate'
+' positioning of the mouse. The bitmap can be larger than the'
+' graphic display area (you can pan left right up down within it).'
+'  '
+' The source image should indicate an origin (X=0.0 Y=0.0),'
+' the direction north (optional), and a line of known length'
+' (to get scaling pixels to metres from).'
+'  '
 'Menu options:     '
 ' Pan: if bitmap larger then display then you can show'
-'      a portion of the bitmap and pan around'
+'      a portion of the bitmap and pan around in 50 pixel increments'
 ' Origin: identifies X=0.0 and Y=0.0 on the bitmap  '
 ' North: identifies angle between North and Y axis'
-'        (no translation/rotation is currently done!)'
-' Scaling: select two points a known distance apart '
-'          (for best results pick a longer line).'
-' Gridding: impose a grid and a `snap-to-grid` function.'
+'     (no translation/rotation is currently done!)'
+' Scaling: select two points a known distance apart (for best'
+'     results pick a longer line) and state the distance (m).'
+' Gridding: impose a grid overlay and a `snap-to-grid` function.'
 '           '
 'Input modes:'
-'  Adding vertices (with same Z value or different Z) is'
-'  useful if you want to gather points and later link'
-'  the vertices to form surfaces.'
+'  Adding vertices (with same Z value or different Z) to create'
+'  points and later link the vertices to form surfaces.'
 '                  '
-'  Adding walls is the same as a floor plan extrusion.'
-'  You can input many zones in sequence. Note:'
-'  the snap to grid option is useful here.'
+'  Adding walls - same as a floor plan extrusion. You can input'
+'  zones in sequence after defining height of base and top. Note:'
+'  grid and the snap-to-grid option is useful here. You must'
+'  name the zone prior to creating it (name must be unique) and'
+'  supply a descriptive phrase for the zone.'
 '                  '
-'  Adding vertices for a south or east elevation is'
-'  supported. Later you can link them together to form'
-'  surfaces.'
+'  Adding vertices for a south or east elevation is supported.'
+'  Later you can link them together to form surfaces.'
 '                  '
-'  Adding vertices to the project ground topology is'
-'  supported. Later you can link them together to form'
-'  surfaces.'
+'  Adding vertices to the project ground topology is supported.'
+'  Later you can link them together to form surfaces. You will'
+'  be asked for a file name to hold the ground topology for'
+'  later use by Radiance and viewing in ESP-r.'
 ' '
-'  Adding obstructions for the zones you have created'
-'  can save time. You will probably want to set the'
-'  gridding small before you start this.'
+'  Adding obstructions for the zones you have created can save time.'
+'  Hint: set the gridding small before you start this.'
 ' '
 'Zones and obstructions can be saved or discarded after'
 'you type `e` but you must manually save ground topol.'
 ' '
-'HINT: this facility is designed for doing zones then'
-'obstructions in one session. '
-'You were defining ground topology. This information'
-'might be lost if you exit without having saved first.'
+'HINT: this facility is designed for doing zones and then'
+'obstructions in one session.'
+'  '
+'Coordinates will be lost if you exit without having saved first.'
 *enditem
           call askok('Have you saved the ground topology?',' ',ok,
 *item clickonbitmap
 *enditem
         CALL PHELPD('bitmap opening',59,'-',0,0,IER)
-*item clickonbitmap
-'Assuming the basic parameters (zone base and top height,'
-'gridding and shap options have been set you can proceed '
-'with adding points. Otherwise select continue and get'
-'the parameters sorted first. '
-*enditem
         call easkab('Options for adding objects (see help):',' ',
-*item clickonbitmap
-'This file contains a description of a ground form'
-'for use by Radiance and viewing (later by esp). '
-*enditem
- 56       CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-*item clickonbitmap
-'This is a reminder of the ground type.'
-*enditem
-          CALL EASKS(t15,' Description of the ground?',
-*item clickonbitmap
-'The name of the zone is used both for descriptive'
-'and bookkeeping purposes.  Each name should be'
-'unique and should not contain blanks. '
-*enditem
-          CALL EASKS(ZN,' What do you want to call this new zone ',
-*item clickonbitmap
-'The zone description allows further information about'
-'the zone form and composition to be recorded.  '
-*enditem
+ 56     CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
+        CALL EASKS(t15,' Description of the ground?',
+        CALL EASKS(ZN,' What do you want to call this new zone ',
  43       CALL EASKS(zd,' What does it represent ',
-*item clickonbitmap
-'Please convert any bitmap file to XBM format '
-'and ensure that the graphic feedback area is large '
-'enough for it to display properly and that the bitmap'
-'is large enough to allow for accurate positioning of '
-'the mouse. '
+*item clickonbitmap x11_bitmap_options
+'Please convert any bitmap file representing the buidling plan'
+'to a monochrom X11 XBM format. Grey-scale or colour images will'
+'be dithered in this process and thus may loose resolution.'
+'  '
+'Take note of the full path to the bitmap file so that you can'
+'include this in the dialog when asked for the file name.'
+'  '
+'Before loading in the bitmap enlarge the graphic feedback area'
+'(you will still need to see 4-5 lines of text feedback). A high'
+'resolution monitor is helpful!'
+'  '
+'The bitmap size might be ~1000-1500 pixels wide to allow for'
+'accurate positioning of the mouse. ESP-r might fault if you'
+'try to use an overly large image file.  Sorry but this facility'
+'is only available in the X11 version of the inteface. GTK is'
+'pending.'
 ' '
 'If you just want to use a blank bitmap or a bitmap with'
 'tickmarks to quickly input zones and/or obstructions'
-'then these are also available. '
+'then these are also available: '
+'  40x40.xbm  710 x 525 pixels 26 ticks hor 19 ticks vert'
+'  40x40_notick.xbm  710 x 525 pixels blank'
+'  50x50.xbm  886 x 656 pixels 26 ticks hor 19 ticks vert '
+'  50x50_notick.xbm 886 x 656 pixels blank'
+'  60x60.xbm  1063 x 787 pixels 26 ticks hor 19 ticks vert '
+'  60x60_notick.xbm  1063 x 787 pixels blank'
+'  '
+'User defined bitmaps are probably ok up to 1600 x 1200 pixels'
 *enditem
         call MENUATOL('Bitmap options: (see help)',' ',
-*item clickonbitmap
-*enditem
         CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
-*item clickonbitmap
-'The view of a truncated bitmap can be panned left '
-'and right and up and down (by increments of 50 pixels)'
-*enditem
         CALL EASKATOG(msg,' ','done','left','right','up','down',' ',
-*item clickonbitmap
-'You previously defined an orgin on the bitmap.'
-'If you want to change it say ok. '
-*enditem
-          CALL ASKOK(' ',' Redefine origin? ',OK,dok,2)
-*item clickonbitmap
-'You previously defined north on the bitmap.'
-'If you want to change it say ok. '
-*enditem
-          CALL ASKOK(' ',' Redefine north? ',OK,dok,2)
-*item clickonbitmap
-'You previously defined scaling points on the bitmap.'
-'If you want to change this say ok. '
-*enditem
-          CALL ASKOK(' ',' Redefine scale? ',OK,dok,2)
-*item clickonbitmap
-*enditem
-          CALL EASKR(disn,' ','Distance (metres) between points?',
-*item clickonbitmap
-'You previously defined gridding for the bitmap.'
-'If you want to change this say ok. '
-*enditem
-          CALL ASKOK(' ',' Redefine grid? ',OK,dok,2)
-*item clickonbitmap
-'A grey grid will overlay the bitmap from corner to '
-'corner. '
-*enditem
-          CALL EASKATOG('Gridding options:',' ',
-*item clickonbitmap
-'Enter a value between 0.1 and 1.0.'
-*enditem
-            CALL EASKR(ZDI,' ',' Distance between grid points?',
-*item clickonbitmap
+        CALL ASKOK(' ',' Redefine origin? ',OK,dok,2)
+        CALL ASKOK(' ',' Redefine north? ',OK,dok,2)
+        CALL ASKOK(' ',' Redefine scale? ',OK,dok,2)
+        CALL EASKR(disn,' ','Distance (metres) between points?',
+        CALL ASKOK(' ',' Redefine grid? ',OK,dok,2)
+        CALL EASKATOG('Gridding options:',' ',
+        CALL EASKR(ZDI,' ',' Distance between grid points?',
+*item clickonbitmap click_on_input_modes
 'Input modes:'
 '  Adding vertices (with same Z value) is useful if you'
 '  want to gather information from the bitmap and later'
@@ -3263,142 +3227,84 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  (e.g. contours on a site plan)'
 '  '
 '  Adding walls via a floor plan extrusion. Remember to'
-'  select the `corners` anti-clockwise.'
+'  select the `corners` anti-clockwise. You will be asked for'
+'  the Z value of the base and the top surfaces.'
 '  '
-'  South elevation fills X & Z coords @ one Y.'
-'  East elevation  fills Y & Z coords @ one X.'
+'  South elevation fills X & Z coords @ one Y coord value.'
+'  East elevation  fills Y & Z coords @ one X coord value.'
 '  '
-'  Ground toplogy will ask for Z value for each point.'
+'  Ground toplogy will ask for Z value for each point as well'
+'  as a file name to hold the information in for later use by'
+'  Radiance and later viewing in ESP-r.'
 '  '
 '  Obstructions asks for 2 points defining front and'
 '  one point perpendicular as well as base and top.'
 '  '
 'If gridding is on and snap-to is on then the selected'
 'coordinate may be relocated to the nearest point. '
+'  '
+'If you switch input modes and were working on floor plans'
+'then the history of prior points is lost. ESP-r sometimes'
+'gets confused if you switch input modes during a session.'
 *enditem
         call MENUATOL(msg,' Coordinate input options',
-*item clickonbitmap
-'If you previously were defining points via floor '
-'plans the history of these points can be cleared '
-'if you say ok. '
-*enditem
-            CALL ASKOK(
-*item clickonbitmap
-'This file contains a description of a ground form'
-'for use by Radiance and viewing (later by esp). '
-*enditem
- 46         CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-*item clickonbitmap
-'This is a reminder of the ground type.'
-*enditem
-            CALL EASKS(t15,' Description of the ground?',
-*item clickonbitmap
-'The elevation is in metres.'
-*enditem
-          CALL EASKR(Z1,' ',' Elevation of vertices to be selected?',
-*item clickonbitmap
-'The base (floor) elevation is in metres.'
-*enditem
-          CALL EASKR(Z1,' ',' Elevation of the base surface? ',
-*item clickonbitmap
-'The south elevation has all the same'
-'Y values (m).'
-*enditem
-          CALL EASKR(Y1,' ','Y value for south elevation?',
-*item clickonbitmap
-'The east elevation has all the same'
-'X values (m).'
-*enditem
-          CALL EASKR(X1,' ','X value for east elevation?',
-*item clickonbitmap
-'The base elevation of obstruction is in metres.'
-*enditem
-          CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
-*item clickonbitmap
-'The top surface height is along the Z axis (metres).'
-'Note: this is not the base-top distance!'
-*enditem
-          CALL EASKR(Z2,' ',' Elevation of the top surface? ',
-*item clickonbitmap
-'The height of obstruction is in metres.'
-*enditem
-          CALL EASKR(Z2,' ',' Height (top-bottom) of obstruction?',
-*item clickonbitmap
+        CALL ASKOK(
+ 46     CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
+        CALL EASKS(t15,' Description of the ground?',
+        CALL EASKR(Z1,' ',' Elevation of vertices to be selected?',
+        CALL EASKR(Z1,' ',' Elevation of the base surface? ',
+        CALL EASKR(Y1,' ','Y value for south elevation?',
+        CALL EASKR(X1,' ','X value for east elevation?',
+        CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
+        CALL EASKR(Z2,' ',' Elevation of the top surface? ',
+        CALL EASKR(Z2,' ',' Height (top-bottom) of obstruction?',
+*item clickonbitmap click_option_mistake
 'You might have selected this option by mistake. ESP-r'
 'is expecting to have found a name for a zone at this'
 'point. Probably you ment to select the `add another` '
 'option first. '
 *enditem
           call askok(
-*item clickonbitmap
-'The view of a truncated bitmap can be panned left'
-'and right and up and down (by 50 pixels)'
-*enditem
-              CALL EASKATOG(msg,' ','done','left','right','up','down',
-*item clickonbitmap
-*enditem
-              CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
-*item clickonbitmap
-*enditem
-            CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
-*item clickonbitmap
+          CALL EASKATOG(msg,' ','done','left','right','up','down',
+          CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
+          CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
+*item clickonbitmap user_typed_e
 'Having stopped adding points, if you made a mistakes'
 'you can clear and start again or you can clear data'
 'and return to the menu or save the data.'
 *enditem
           call easkabc('Options:',' ','clear points & redefine zone',
-*item clickonbitmap
-'The view of a truncated bitmap can be panned left'
-'and right and up and down (by 50 pixels)'
+*item clickonbitmap click_pan_options
+'The view within a truncated bitmap can be panned left and right'
+'and up and down (by 50 pixel increments)'
 *enditem
-              CALL EASKATOG(msg,' ','done','left','right','up','down',
-*item clickonbitmap
-'Having stopped adding points, if you made a mistakes'
-'you can clear and start again or you can clear data'
-'and return to the menu or save the data.'
-*enditem
-          call easkabc('Options:',' ','clear points & redefine zone',
-*item clickonbitmap
-'The view of a truncated bitmap can be panned left'
-'and right and up and down (by 50 pixels)'
-*enditem
-              CALL EASKATOG(msg,' ','done','left','right','up','down',
-*item clickonbitmap
-'Assuming the last block is where you want it proceed.'
+          CALL EASKATOG(msg,' ','done','left','right','up','down',
+          CALL EASKATOG(msg,' ','done','left','right','up','down',
+*item clickonbitmap clickon_obstructions
+'In order to account for external shading devices, window'
+'reveals, trees, outside walls, etc. used in a detailed'
+'shading analysis the user should approximate such objects as'
+'one or more prisms which are described in a site obstruction file'
+'or held with the zone geometric information.'
+'  '
+'You can use the click on facility to define solar obstructions.'
+'You will be asked for the blocks attributes:'
+'  A descriptive name (up to 12 char) is recommended.'
+'  The base elevation of obstruction is in metres.'
+'  The height of obstruction (m) (dimension from base to top).'
+'  The opaticy of the obstruction 0.0 transparent to'
+'    1.0 opaque (for future shading facility). '
+'
+'And you will be asked to pick a zone to associate the obstructions'
+'with.'
 *enditem
           CALL ASKOK(' ','Block position ok? ',OK,dok,1)
-*item clickonbitmap
-' Pick a zone for these obstructions.'
-*enditem
           CALL EPICKS(INPIC,IVALS,' ',
-*item clickonbitmap
-'A descriptive name (up to 12 char) is recommended.'
-*enditem
           CALL EASKS(S12,' ',' Name of obstruction? ',
-*item clickonbitmap
-'The base elevation of obstruction is in metres.'
-*enditem
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
-*item clickonbitmap
-'The height of obstruction is in metres (dimension.'
-'from base to top). '
-*enditem
           CALL EASKR(Z2,' ',' Height of the obstruction?',
-*item clickonbitmap
-'The opaticy of the obstruction 0.0 transparent to'
-'1.0 opaque (for future shading facility). '
-*enditem
           CALL EASKR(blkopaq,' ',
-*item clickonbitmap
-'In order to account for external shading devices,'
-'window reveals, trees, outside walls, etc. in a '
-'detailed shading analysis the user should'
-'approximate such objects as one or more prisms'
-'which are described in a site obstruction file.'
-'The browse option presents a list of files in the'
-'project `zones` folder.'
-*enditem
-            CALL EASKS(LTMP,' Zone obstructions file? ',
+          CALL EASKS(LTMP,' Zone obstructions file? ',
 *subroutine EDSITE
 *item EDSITE
 'This menu allows site and miscellaneous data to'
