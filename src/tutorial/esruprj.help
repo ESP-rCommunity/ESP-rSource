@@ -3306,60 +3306,73 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKR(blkopaq,' ',
           CALL EASKS(LTMP,' Zone obstructions file? ',
 *subroutine EDSITE
-*item EDSITE
+*item EDSITE context_overview_menu
 'This menu allows site and miscellaneous data to'
 'be defined. In most cases the default entries will'
-'be acceptable. An explanatyion of the less obvious'
+'be acceptable. An explanation of the less obvious'
 'entries follows.'
+'  '
+' options a/b: the location of the model in latitude +north'
+'   and -south and longitude difference in degrees from the'
+'   local time meridian (+-15 degrees) where east is positive.'
+'   (example Glasgow is -4.1 west of Greenwich Meridian)'
+'   If you alter either of these values you will be asked'
+'   if you want to recalculate shading and/or insolation'
+'   patterns for zones that have existing shading data.'
+'  '
+' option c: solar timing relates to how data is collected and'
+'   held within the climate file. Toggle between hour centred'
+'   and half-hour centred data.'
+'  '
+' option e: Some locations reserve days other than Saturday and'
+'   Sunday as `weekends`. You can define these days or set a'
+'   one day weekend by defining the second day equal to the first.'
+'  '
+' option h: to document the building and project client address.'
+'  '
+' option i: to document the simulation team contact information.'
+'  '
+' option k: ground topology is a description of the ground form'
+'   which can be passed to Radiance for enhanced site views.'
+'   If there is an existing ground toplogy you may browse'
+'   or edit its defining data. To create a new toplogy you'
+'   may input the defining data manually or elect to'
+'   click on points on a bitmap.'
+'  '
+' option l: Ground temperature profiles define the monthly soil'
+'   temperatures at some arbitrary depth (typically 1.5m)'
+'   for use as a boundary condition within a simulation.'
+'   Up to 12 profiles may be defined, each comprising 12'
+'   monthly temperature values.'
+'  '
+'Primary energy conversions convert from predicted demands (for'
+'lights, small power heating etc.) to equivalent primary energy units'
+'and also equivalent emission values.'
 ' '
-'Primary energy conversions are used to convert'
-'predicted energy demands (for lights, small power,'
-'heating etc.) to equivalent primary energy units.'
-' '
-'Dispersed demands are schedules of demands for items'
-'such as pumps, lifts etc, that are not simulation'
-'(although they could be). These items may then be'
-'displayed on an IPV alongside data relating to'
+'Dispersed demands are schedules of demands for items such as pumps,'
+'lifts etc, that are not simulation (although they could be). These'
+'items may then be displayed on an IPV alongside data relating to'
 'simulated items.'
 ' '
-'An integrated performance view (IPV) definition'
-'specifies the assessments to be included in an IPV,'
-'what portion(s) of the model to cover, the time'
-'period to consider and any scaling factors to apply.'
+'An integrated performance view (IPV) definition specifies the'
+'assessments to be included in an IPV, what portion(s) of the model'
+'to cover, time periods to consider and any scaling factors to apply.'
 ' '
-'Situation specific wind pressure coefficent sets may'
-'be calculated using CPCALC for later use in network'
-'air flow modelling.'
+'Situation specific wind pressure coefficent sets may be calculated'
+'using CPCALC for later use in network air flow modelling.'
 ' '
 'Images are normally in GIF format although other'
 'formats may be used where an appropriate display tool'
 ' '
 'Where the time averaging method applied to climate'
 'data is known this should be set via the toggle.'
-'Shading should be recalculated when site data'
-'changes. Each affected zone will be done in turn.'
 *enditem
-          CALL EASKABC(
-*item EDSITE
-'Each zone is calculated in turn. If you do '
-'one zone then you should do all zones.'
-*enditem
-                  CALL ASKOK(outs,' ',OK,DOK,2)
-*item EDSITE
-*enditem
+        CALL EASKABC(
+        CALL ASKOK(outs,' ',OK,DOK,2)
         CALL PHELPD('Model context',30,'-',0,0,IER)
-*item EDSITE
-'Site latitude in degrees, where North is +ve, e.g. 55.9'
-'for Glasgow.'
-*enditem
         CALL EASKR(SLAT,' ','Site latitude?',
-*item EDSITE
-'Site longitude difference is the difference in degrees'
-'from the local reference meridian, East is +ve, e.g.'
-'-4.1 for Glasgow (relative to the Greenwich Meridian).'
-*enditem
         CALL EASKR(SLON,' ','Longitude difference?',
-*item EDSITE
+*item EDSITE site_exposure_options
 'The site exposure defines the relative view factors'
 'between a vertical surface and the sky (S), ground (G)'
 'and surrounding buildings (B). These data are used in'
@@ -3379,208 +3392,114 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'totally enclosed:        0.00  0.00  1.00  '
 'user defined:             -     -     -    '
 '=========================================  '
+'  '
+'If you select user defined:'
+'  0 <= Sky view factor <= .99'
+'  0 <= Ground view factor <= .99'
+'  0 <= Surroundings view factor <= .99'
 *enditem
         CALL EPICKS(IX,IVALS,' ','Site Exposure',
-*item EDSITE
-'0 <= Sky view factor <= .99'
-*enditem
-  290     CALL EASKR(skyview,' ','Sky view factor?',
-*item EDSITE
-'0 <= Ground view factor <= .99'
-*enditem
-          CALL EASKR(groundview,' ','Ground view factor?',
-*item EDSITE
-'0 <= Surroundings view factor <= .99'
-*enditem
-          CALL EASKR(buildingview,' ','Surroundings view factor?',
-*item EDSITE
-'Ground shortwave reflectance can be determined'
-'from one of three methods:'
-'Constant = time invariant value;'
-'Simple   = 12 monthly values, with user'
-'              defined snow cover;'
-'Advanced = 12 monthly values, with hourly'
-'              snow depth from weather file.'
-*enditem
+  290   CALL EASKR(skyview,' ','Sky view factor?',
+        CALL EASKR(groundview,' ','Ground view factor?',
+        CALL EASKR(buildingview,' ','Surroundings view factor?',
         CALL EASKABCD(' ','Ground reflectance method?',
-*item EDSITE
-'0 <= ground reflectance <= .99'
+*item EDSITE context_ground_refl
+' option d: reflectivity of the ground via different methods:'
+'   Constant = time invariant value;'
+'   Simple   = 12 monthly values, with user defined snow cover;'
+'              you are asked for the number of days with snow'
+'              greater than 5cm.'
+'   Advanced = hourly snow depth data in an ASCII file with a'
+'              single column of data with cm of snow depth at'
+'              each of the 8760 hours of the year. Please ensure'
+'              that the file exists and check what the path to the'
+'              file is.'
+'  '
+'   Suggested ground reflectance (no snow):'
+'     bituminous/gravel roof 0.13'
+'     dry, bare ground       0.20'
+'     weathered concrete     0.22'
+'     grass                  0.26'
+'     sand                   0.40'
+'     light building surface 0.60'
+'  '
+'   Suggested ground reflectance (with snow):'
+'     city centre    0.20'
+'     urban          0.40'
+'     rural          0.50'
+'     isolated rural 0.70'
 *enditem
           CALL EASKR(groundrefl,' ',' Ground reflectance?',
-*item EDSITE
-'Suggested ground reflectance (no snow):'
-'  bituminous/gravel roof 0.13'
-'  dry, bare ground       0.20'
-'  weathered concrete     0.22'
-'  grass                  0.26'
-'  sand                   0.40'
-'  light building surface 0.60'
-*enditem
           CALL EASKS(HOLD,' ',
-*item EDSITE
-*enditem
           CALL EASKS(HOLD,' ',
-*item EDSITE
-'Suggested ground reflectance (with snow):'
-'  city centre    0.20'
-'  urban          0.40'
-'  rural          0.50'
-'  isolated rural 0.70'
-*enditem
-            CALL EASKR(snowgroundrefl,' ',
-*item EDSITE
-'For each month, enter the number of days with snow'
-'d=epth typically greater than 5 cm.'
-*enditem
-            CALL EASKS(HOLD,' ',
-*item EDSITE
-*enditem
-            CALL EASKS(HOLD,' ',
-*item EDSITE
-'Typical values for ground reflectance with snow:'
-'  city centre:   0.20'
-'  urban          0.40'
-'  rural          0.50'
-'  isolated rural 0.70'
-*enditem
-            CALL EASKR(snowgroundrefl,' ',
-*item EDSITE
-'The snow depth file contains hourly values of snow'
-'depth. The data should be formatted as a single'
-'column within an ASCII file, with the snow depth'
-'given in centimeters for each of the 8760 hours of'
-'the year.'
-*enditem
-            CALL EASKS(SNFNAM,'Enter name of snow depth file',
-*item EDSITE
-'Please ensure that the file exists, or selectpress '
-'`OK` if the file will be created later.'
-*enditem
-              CALL ASKOK('File not found: continue?',' ',OK,DOK,2)
-*item EDSITE
-'Some locations reserve days other than Saturday and'
-'Sunday as `weekends`. You can define these days or'
-'set a one day weekend by defining the second day'
-'equal to the first.'
-*enditem
+          CALL EASKR(snowgroundrefl,' ',
+          CALL EASKS(HOLD,' ',
+          CALL EASKS(HOLD,' ',
+          CALL EASKR(snowgroundrefl,' ',
+          CALL EASKS(SNFNAM,'Enter name of snow depth file',
+          CALL ASKOK('File not found: continue?',' ',OK,DOK,2)
         CALL EASKI(idwe1T,'Day index (Mon=1,Tue=2, ...) for',
-*item EDSITE
-*enditem
         CALL EASKI(idwe2T,'Day index (Mon=1,Tue=2, ...) for',
-*item EDSITE
-'Control and scheduling actions the year to be defined.'
-'You may accept the one specified with the climate'
-'file or provide an alternative.'
+*item EDSITE context_model_year
+'Control and scheduling actions based on the day of the week'
+'are sensitive to the year associated with the model.'
+'  '
+'You may accept the one specified with the climate file or'
+'provide an alternative.'
 ' '
 'The choice is year impacts the day of the week for'
 '1 January. It also will alter the day type associated'
 'of days in the calendar which are the standard default'
 'weekday/saturday/sunday (but not user defined day types.'
-*enditem
-        CALL EASKI(iyeart,' ','Simulation year?',
-*item EDSITE
-'You can use the calandar to check that a day or days'
+'  '
+'You can view a calandar to check that a specific day or days'
 'fall on a required date (e.g. to test a heating system`s'
 'response under a cold, Monday start).'
 *enditem
+        CALL EASKI(iyeart,' ','Simulation year?',
         call askok(' ','View calendar?',ok,dok,3)
-*item EDSITE
-'If there is an existing ground toplogy you may browse'
-'or edit its defining data. To create a new toplogy you'
-'may input the defining data manually or elect to'
-'click on points on a bitmap.'
-*enditem
         call easkabcd(' ','Ground topology defining options:',
-*item EDSITE
-'Ground temperature profiles define the monthly soil'
-'temperatures at some arbitrary depth (typically 1.5m)'
-'for use as aboundary condition within a simulation.'
-'Up to 12 profiles may be defined, each comprising 12'
-'monthly temperature values.'
-*enditem
         CALL EASKABC(' ','Ground temperature profile options:',
-*item EDSITE
-'Provide index of the ground temperature profile'
-'to be edited.'
-*enditem
-            CALL EASKI(IFOC,' ','Profile to edit?',
-*item EDSITE
-'Temperatures are typically defined at a 1.5m depth.'
-*enditem
+        CALL EASKI(IFOC,' ','Profile to edit?',
         CALL EASKS(HOLD,' ','Temperatures, January- thro June?',
-*item EDSITE
-'Temperatures are typically defined at a 1.5m depth.'
-*enditem
         CALL EASKS(HOLD,' ','Temperatures, July thro December?',
-*item EDSITE
-'Energy demand may be converted to primary energy'
-'(e.g. as comsumed at a power station) and also to'
-'equivalent emission values.'
-*enditem
         CALL EASKABC(' ','Energy demand conversion options:',
-*item EDSITE
-'This file holds data required to later construct'
-'an `Integrated Performance View` of simulation'
-*enditem
- 142      CALL EASKS(ltmp,' ','IPV description file?',
+ 142    CALL EASKS(ltmp,' ','IPV description file?',
 *subroutine ROAMING
-*item ROAMING
-' '
+*item ROAMING roaming_choices
+'This facility is reserved for specialist use. It is not a'
+'user accessible feature.'
 *enditem
-        CALL PHELPD('Roaming Introduction',19,'-',0,0,IER)
-*item ROAMING
-*enditem
-        CALL EASKAB(' ','Roaming file actions:',
-*item ROAMING
-*enditem
-        CALL EASKS2CMD(LROAM,' Roaming file? (see help)',
-*item ROAMING
-*enditem
+      CALL PHELPD('Roaming Introduction',19,'-',0,0,IER)
+      CALL EASKAB(' ','Roaming file actions:',
+      CALL EASKS2CMD(LROAM,' Roaming file? (see help)',
       CALL ASKOK('View location information?',' ',OK,dok,19)
-*item ROAMING
-*enditem
-        CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
+      CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
 *subroutine manageimages
-*item manageimages
-'Images may be associated with a model for various'
-'purposes - for example to record site conditions'
-'may be associated with a model.'
-' '
+*item manageimages model_image_management
+'Images may be associated with a model for various purposes -'
+'for example to record site conditions or parts of design drawings.'
+'The purpose of the image is defined as you add it to the list.'
+ from either the model images folder or by entering an'
+'absolute path and file name.'
+'  '
+'Up to 10 images may be associated with a model.'
+'  '
 'The following image types are supported: gif, tiff,'
 'jpeg and X11 bitmap. To edit an image name, select'
 'it from the list.'
-' '
+'  '
 'Newer model configuration files can also include a'
-'text block explaining the image. '
+'text block (<248 char) explaining each image. '
 *enditem
         CALL PHELPD('Model images',11,'-',0,0,IER)
-*item manageimages
-'Images can be associated with various aspects of a'
-'model. You can add images to the current list from'
-'either the model images folder or by entering an'
-'absolute path and file name.'
-*enditem
         CALL EASKABCD(' ','Project image options:',
-*item manageimages
-'Notes (<248 char) for images can help with'
-'communicating supporting information.'
-*enditem
-                CALL EASKS248(tcname,' ','Image notes:',
-*item manageimages
-*enditem
-            call easks(limg,'Image file name',' ',72,'xxx.gif',
-*item manageimages
-'Notes (<248 char) for images can help with'
-'communicating supporting information.'
-*enditem
-                CALL EASKS248(tcname,' ','Image notes:',
-*item manageimages
-'Notes (<248 char) for images can help with'
-'communicating supporting information.'
-*enditem
-            CALL EASKS248(tcname,' ','Image notes:',
+        CALL EASKS248(tcname,' ','Image notes:',
+        call easks(limg,'Image file name',' ',72,'xxx.gif',
+        CALL EASKS248(tcname,' ','Image notes:',
+        CALL EASKS248(tcname,' ','Image notes:',
 *subroutine setuptemporal
-*item setuptemporal
+*item setuptemporal temporal_setup_menu
 'Temporal definitions are used to impose special'
 'boundary condition on a simulation or to modify'
 'design parameters as a simulation proceeds.'
@@ -3619,7 +3538,10 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'manage associations - you can add and delete associations'
 '  that have been previously defined. Note this does not'
-'  alter the contents of the temporal file.'
+'  alter the contents of the temporal file. Typically you'
+'  are asked to define associations between temporal items'
+'  and zones (e.g. for casual gains or ventilation or with'
+'  control loops to get a control state or setpoint.'
 ' '
 'dereference temporal file - this removes current links'
 '  between the model and entities in the temporal file.'
@@ -3633,121 +3555,49 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'General instructions for setting up a temporal file:'
 'a) Decide the period of the data (start and end dates)'
-'   as well as frequency (1stph to 60 tsph).'
+'   as well as frequency (1 tsph to 60 tsph).'
 'b) If data is to be imported from a file with columns'
 '   of data take a note of which columns are required.'
 'c) Plan the names of the temporal entities you will be'
 '   be creating as well as which zones or controls in '
 '   the model are going to be associates with the'
 '   entities in the temporal file.'
-'At the current time there are no temporal definitions;'
+' '
 *enditem
-          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-'An outdated file format is associated with the model.'
-*enditem
-          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-'You may view the temporal data via view option.'
-*enditem
-            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-'An outdated file format is associated with the model.'
-*enditem
-            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-'You can view the temporal data via view opton.'
-*enditem
-            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-'Temporal definitions are available for editing/use.'
-*enditem
-            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
-*item setuptemporal
-*enditem
-          CALL EASKS(ltmp,' ','Temporal definitions file?',
-*item setuptemporal
-*enditem
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+        CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
         CALL EASKS(ltmp,' ','Temporal definitions file?',
-*item setuptemporal
-'Temporal definitions are used to impose special'
-'boundary condition on a simulation or to modify'
-'design parameters as the simulation proceeds.'
-*enditem
+        CALL EASKS(ltmp,' ','Temporal definitions file?',
         CALL EASKS(ltmp,' Temporal definitions file name?',
-*item setuptemporal
-'Existing associations can be removed or new '
-'associations between temporal entities and '
-'model zones and/or controls can be added. '
-*enditem
-          call easkabc('Temporal association options:',' ',
-*item setuptemporal
-*enditem
-          call easkabcd('Temporal association options:',' ',
-*item setuptemporal
-'Select the index of the temporal item you do not wish'
-'use in the current model. This removes the association'
-'but does not remove the entity from the temporal file.'
-' '
-'A cancel request leaves the model unchanged. '
-*enditem
-          CALL EASKI(it,'Temporal item which you do not want to use',
-*item setuptemporal
-'Select the index of the association you wish to'
-'modify in the current model. '
-' '
-'A cancel request leaves the model unchanged. '
-*enditem
-            CALL EASKI(ite,'Which temporal association to modify?',
-*item setuptemporal
-'Select the index of the temporal item you wish'
-'to associate. '
-*enditem
-              CALL EASKI(it,' ','Associate temporal item?',
-*item setuptemporal
-'Select the index of the temporal item you wish to'
-'include in the current model. '
-' '
-'A cancel request leaves the model unchanged. '
-*enditem
-            CALL EASKI(it,'Temporal item index to associate with',
-*item setuptemporal
-*enditem
-            call askzone(ic,izdef,' Related zone for casual gains?',
-*item setuptemporal
-*enditem
-            call askzone(ic,izdef,' Related zone for ventilation?',
-*item setuptemporal
-*enditem
-            call askzone(ic,izdef,' Related zone for air velocity?',
-*item setuptemporal
-*enditem
-            call askzone(ic,izdef,' Related zone for control state?',
-*item setuptemporal
-*enditem
-            call askzone(ic,izdef,' Related zone for activity db?',
-*item setuptemporal
-*enditem
-              CALL EASKABC(' Control linkage options:',' ',
-*item setuptemporal
-*enditem
-                CALL EASKI(ispl,'Control loop to use set point data?',
-*item setuptemporal
-*enditem
-              CALL EASKABC(' Control linkage options:',' ',
-*item setuptemporal
-'This control assumes that heating and cooling'
-'capacities are adequate for reaching the setpoints'
-'in the temporal definition file (tdf). It is only'
+        call easkabc('Temporal association options:',' ',
+        call easkabcd('Temporal association options:',' ',
+        CALL EASKI(it,'Temporal item which you do not want to use',
+        CALL EASKI(ite,'Which temporal association to modify?',
+        CALL EASKI(it,' ','Associate temporal item?',
+        CALL EASKI(it,'Temporal item index to associate with',
+        call askzone(ic,izdef,' Related zone for casual gains?',
+        call askzone(ic,izdef,' Related zone for ventilation?',
+        call askzone(ic,izdef,' Related zone for air velocity?',
+        call askzone(ic,izdef,' Related zone for control state?',
+        call askzone(ic,izdef,' Related zone for activity db?',
+        CALL EASKABC(' Control linkage options:',' ',
+        CALL EASKI(ispl,'Control loop to use set point data?',
+        CALL EASKABC(' Control linkage options:',' ',
+*item setuptemporal temporal_ctl_linkage
+'If you are linking to an existing control we assume that the'
+'existing heating and cooling capacities are adequate for reaching'
+'the setpoints in the temporal definition file (tdf). It is only'
 'required to define the columns in the tdf where the'
 'setpoints should be read from. Defaults are column 4'
 'for heating setpoint and column 5 for cooling.'
 *enditem
               CALL EASKS(HOLD,
-*item setuptemporal
-*enditem
               CALL EASKS(HOLD,
-*item setuptemporal
+*item setuptemporal temporal_ctl_setpoints
 'A temporal item of type SETPPT can be associated'
 'with a zone control in order to force the zone'
 'temperature to match that recorded in the temporal'
@@ -3773,22 +3623,6 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'control once it has been created (unless you did '
 'not guess the correct capacity. '
 ' '
-'A cancel request leaves the model unchanged. '
-*enditem
-            CALL PHELPD('temporal-control popup',26,'-',0,0,IER)
-*item setuptemporal
-*enditem
-              CALL EASKABC(' Control linkage options:',' ',
-*item setuptemporal
-*enditem
-                CALL EASKI(ispl,'Control loop to use set point data?',
-*item setuptemporal
-*enditem
-              CALL EASKABC(' Control linkage options:',' ',
-*item setuptemporal
-*enditem
- 255        call askzone(ic,izdef,'Related zone for temporal setpoint?',
-*item setuptemporal
 'Heat delivery is normally set high so that the '
 'target temperature is attained. The heating minimum'
 'is normally 0 but if > 0 then heating will continue'
@@ -3797,39 +3631,25 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'In the unlikely event that you want to control to'
 'another temperature but allow no cooling capacity '
 'the control may not work properly.'
+'  '
+'A cancel request leaves the model unchanged. '
 *enditem
+            CALL PHELPD('temporal-control popup',26,'-',0,0,IER)
+            CALL EASKABC(' Control linkage options:',' ',
+            CALL EASKI(ispl,'Control loop to use set point data?',
+            CALL EASKABC(' Control linkage options:',' ',
+ 255        call askzone(ic,izdef,'Related zone for temporal setpoint?',
             CALL EASKS(HOLD,
-*item setuptemporal
-*enditem
             call askzone(ic,izdef,
-*item setuptemporal
-*enditem
             call easksur(IC,ISUR,'-',
-*item setuptemporal
-*enditem
             call askzone(ic,izdef,
-*item setuptemporal
-*enditem
             call easksur(IC,ISUR,'-',
-*item setuptemporal
-*enditem
             call askzone(ic,izdef,' Related zone for measured db T?',
-*item setuptemporal
-*enditem
             call askzone(ic,izdef,'Related zone for measured surf T?',
-*item setuptemporal
-*enditem
             call easksur(IC,ISUR,'-',
-*item setuptemporal
-'If you want to continue adding temporal refences '
-'then answer yes. '
-*enditem
             CALL ASKOK(' ',' Use another temporal item?',OK,DOK,2)
 *subroutine peconv
-*item peconv
-*enditem
-        call easkabc('Typical patterns',' ','UK','Europe','zeros',IW,41)
-*item peconv
+*item peconv primary_energy_conversion
 'Use these emission patterns as an approximation of '
 'patterns in several regions. '
 ' '
@@ -3872,308 +3692,245 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  small power & lighting: 3.2-3.6 (typical UK) '
 '  small power & lighting: ? (typical Europe) '
 *enditem
+        call easkabc('Typical patterns',' ','UK','Europe','zeros',IW,41)
         CALL PHELPD('prim convers',41,'-',0,0,IER)
-*item peconv
-*enditem
         CALL EASKR(pcnvht,' ','Heating primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKR(pcnvcl,' ','Cooling primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKR(pcnvlt,' ','Lighting primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKR(pcnvfn,' ','Fans & pumps primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKR(pcnvsp,' ','Small power primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKR(pcnvhw,' ','Hot water primary energy multiplier:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Heating related emissions [gr/kWh primary]:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Cooling related emissions [gr/kWh primary]:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Lighting related emissions [gr/kWh primary]:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Fan & pump emissions [gr/kWh primary]:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Small power emissions [gr/kWh primary]:',
-*item peconv
-*enditem
         CALL EASKS(HOLD,'Hot water emissions [gr/kWh primary]:',
 *subroutine calenmanage
-*item calenmanage
+*item calenmanage calendar_day_types
 'This facilitiy sets up and manages a calendar of day'
 'types which can be associated with zone casual gains,'
 'infiltration schedues and controls.'
 ' '
+'The default is to implement weekdays, saturdays and sundays '
+'throughout the year.
 ' '
+'You can define additional day types such as holidays for a'
+'specific country or company so that occupancy or controls'
+'can switch to the holiday attributes which such days are part'
+'of a simulation run.'
+'  '
+'Calendars are also a way to implement seasonal controls. You'
+'can define, for example a winter day type that applies for all'
+'the Julian days from 1 January to 15 March as well as all the'
+'Julian days after 11 November. With seasonal day types then'
+'seasonal controls can be implemented with little effort.'
+'  '
+'Note that day types should be defined as soon as possible! Existing'
+'controls may be corrupted if new day types are added and care is'
+'also needed for existing operational schedules.' 
 ' '
-' '
-'This facility is still being developed further and '
-'does not yet hold standard calendars for use by projects'
-'nor does it access typical patterns for differenct '
-'countries. '
-'Short phrase idenfitying the calendar. '
-'Useful if you need to maintain several variants.'
-*enditem
-        CALL EASKS(tcalename,' Description of calendar: ',
-*item calenmanage
-'This facility allows you to manage day types. You can'
-'add a day type. To change the details of a day type'
-'click on the relevant menu item.'
-*enditem
-          CALL PHELPD('calendar day section',3,'-',0,0,IER)
-*item calenmanage
-'Day types cannot be deleted (yet) but may not'
-'not be assigned to any day at all. The equivalent'
-'of deletion is to unassign a day type from all '
-'actual days '
-*enditem
-            CALL EASKABC(' Options:',' ',
-*item calenmanage
-'The tag is one word (<12 char) e.g. holiday'
-'Description is phrase for use in selection lists.'
-*enditem
-              CALL EASKS(tcalentag,' Calendar day type tag: ',
-*item calenmanage
-*enditem
-              CALL EASKS(tcalendayn,' Calendar day type descripton: ',
-*item calenmanage
-'The tag is one word (<12 char) e.g. holiday'
-'Description is phrase for use in selection lists'
-'e.g. Holidays in Wales'
-*enditem
-          CALL EASKS(tcalentag,' Calendar day type tag: ',
-*item calenmanage
-*enditem
-          CALL EASKS(tcalendayn,' Calendar day type descripton: ',
-*item calenmanage
-*enditem
-        CALL PHELPD('calendar section',11,'-',0,0,IER)
-*item calenmanage
-*enditem
-        call MENUATOL(outs,'Display options:',
-*item calenmanage
-'Select one of the existing day types. This day type'
-'will be applied to each of the julian days selected.'
-*enditem
-        CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-*item calenmanage
-'Days can be selected "one by one" and you can associate'
-'any day type with any day. A faster method is to follow'
-'a pattern. Here you will first be asked for dates during'
+'When you create a new day type you are asked for a short phrase'
+'identifying the day type. Next you can select one day at a time'
+'of define a pattern to follow when assigning days to the calendar.'
+'For the pattern option you will first be asked for dates during'
 'which the new day type is to be added (called relevant'
 'dates) The selected day type will then be added to every'
 'Nth day in the relevant dates starting from the first '
 'relevant date e.g. N=7 for weekly, N=1 for all days'
+'Useful if you need to maintain several variants.'
+'  '
+'You can create a day type but not link any days of the year to'
+'it. There is currently no facility to remove a day type from the'
+'list. You have to select the days that point to it and assign'
+'them to another day type.
+'  '
+'Take care when editing an existing day type - other entities'
+'may use the data.'
+'  '
+'There are several options for displaying calendars. One draws'
+'monthly calendars on the graphic feedback area for selected'
+'months or for the whole year.'
 *enditem
-          CALL EASKABC('How to add day types (see help)?',' ',
-*item calenmanage
-*enditem
-            CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
-*item calenmanage
-'Days can be selected "one by one" and you can associate'
-'any day type with any day. A faster method is to follow'
-*enditem
-            CALL EASKI(IFRQ,
+        CALL EASKS(tcalename,' Description of calendar: ',
+        CALL PHELPD('calendar day section',3,'-',0,0,IER)
+        CALL EASKABC(' Options:',' ',
+        CALL EASKS(tcalentag,' Calendar day type tag: ',
+        CALL EASKS(tcalendayn,' Calendar day type descripton: ',
+        CALL EASKS(tcalentag,' Calendar day type tag: ',
+        CALL EASKS(tcalendayn,' Calendar day type descripton: ',
+        CALL PHELPD('calendar section',11,'-',0,0,IER)
+        call MENUATOL(outs,'Display options:',
+        CALL EPICKS(IX,IDVALS,' ',' Available day types:',
+        CALL EASKABC('How to add day types (see help)?',' ',
+        CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
+        CALL EASKI(IFRQ,
 *item calenmanage
 'Select one of the existing day types. '
 'Note: this applies only to the current day of the year.'
 *enditem
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-*subroutine calenprint
 *subroutine EDDGTP
-*item EDDGTP
+*item EDDGTP ground_temp_profile
 'Ground temperature profiles define the monthly soil'
 'temperatures at arbitrary depths for use as a boundary'
 'condition within a simulation.  Up to 12 profiles may'
 'be defined each comprising 12 monthly temperatures.'
+'  '
+'The depth that the data is representative for is up to you.'
+'If the monthly profile is to be used as the boundary condition'
+'for a construction which is 1m thick then the temperature will'
+'need to be consistant with that depth.'
+'  '
+'You will be asked to specify the index of the profile you'
+'want to use.'
+'  '
+'A cancel request leaves the model unchanged.'
 *enditem
-        CALL EASKABC(' ','Options:',
-*item EDDGTP
-'Provide index of the ground temperature profile.'
-' '
-'A cancel request leaves the model unchanged. '
-*enditem
-            CALL EASKI(IFOC,' ',' Index of profile to edit?',
-*item EDDGTP
-'Temperatures are typically at 1.5m depth.'
-*enditem
+      CALL EASKABC(' ','Options:',
+      CALL EASKI(IFOC,' ',' Index of profile to edit?',
       CALL EASKS(HOLD,' Temperatures January-June:',' ',72,' ',
-*item EDDGTP
-'Temperatures are typically at 1.5m depth.'
-*enditem
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
 *subroutine EDDSHD
-*item EDDSHD
-'Shading should be recalculated when site'
-'changes. Each affected zone will be done in turn.'
+*item EDDSHD reflect_site_change
+'Shading should be recalculated when site latitude or longitude'
+'changes. Each affected zone will be done in turn. Do all zones'
+'if you start the process.'
 *enditem
       CALL EASKABC(' Reflect site change in shading options:',' ',
-*item EDDSHD
-'Each zone is calculated in sequence.'
-'If you do one, you should do all.'
-*enditem
-            CALL ASKOK(outs,' ',OK,DOK,2)
+      CALL ASKOK(outs,' ',OK,DOK,2)
 *subroutine CTLWRT
 *subroutine e2eplus
-*item e2eplus
-'EnergyPlus needs to know the offset in hours from GTM.'
-'West is negative, East is positive. '
-' '
-'The cancel option will skip the creation of the '
-'EnergyPlus descriptive file time zone section.'
+*item e2eplus eplus_needs_to_know
+'Exporting ESP-r models to EnergyPlus V3 is mostly an automatic'
+'process however there are a few things that are needed from you'
+'in order to do the conversion. Mostly this includes data that'
+'has no direct equivalent or for which a conversion has not yet'
+'been written. Energyplus needs to know:'
+
+'  * the offset in hours from GTM West is negative East is positive'
+'  '
+'  * the site elevation in metres above sea level'
+'  '
+'  * how many people are represented by the peak occupant gain'
+'    in each room. The numbers presented are the sensible and'
+'    latent gains and the total of the sensible and latent. '
+'  '
+'During the scan it will attempt to find a parent surface for'
+'doors and windows. If the information is not clear then it will'
+'ask for clarification.'
+'  '
+'The cancel option will skip the creation of the IDF file.'
 *enditem
       CALL EASKI(IIC2T,' Time zone (hours +- GTM) ',
-*item e2eplus
-'EnergyPlus needs to know the site elevation in metres'
-'above sea level. '
-*enditem
       CALL EASKR(SLM,' Site elevation above sea level (m) ',
-*item e2eplus
-'EnergyPlus needs to know how many people are represented'
-'by the peak occupant gain in this room. The numbers '
-'presented are the sensible and latent gains and the '
-'tototal of the sensible and latent. '
-*enditem
-        CALL EASKR(vpeople,' Number of people in room (see report): ',
-*item e2eplus
-'Is its parent surface in the current'
-'zone. If not say no. '
-*enditem
-              call askok(outs,
-*item e2eplus
-*enditem
-                call easksur(izz,iss,'-',outs,' ',ier)
+      CALL EASKR(vpeople,' Number of people in room (see report): ',
+      call askok(outs,
+      call easksur(izz,iss,'-',outs,' ',ier)
 *subroutine EDCASCTL
-*item EDCASCTL
-'The zone casual gain control file allows to control'
-'zone casual gains based on the internal or external'
-'photocell illuminance. Different levels of calculation'
-'of photocell illuminance and control algorithms are'
-*enditem
-  246     CALL EASKS(LTMP,' Zone casual gain control file ?',
-*item EDCASCTL
-*enditem
- 8888     call EASKABC('Radiance model for daylight coefficients:',' ',
-*item EDCASCTL
-'This menu allows to create/edit zone casual control'
-'file. The casual gain control file allows to control'
-'zone casual gains based on the internal or external'
-'photocell illuminance. Different levels of calculation'
-'of photocell illuminance and control algorithms are'
-'supported.'
-' '
+*item EDCASCTL casual_gain_control
 '           Casual Gains Control Menu'
-'a Wkd Wkend control: Which casual gain type to control'
-'b Control periods  : Star and end hours of control'
+'  '
+'The zone casual gain control file supports control of'
+'zone casual gains (lighting) based on the internal or external'
+'photocell illuminance. Different levels of calculation'
+'of photocell illuminance and control algorithms are supported.'
+'  '
+'a Wkd Wkend control: Which casual gain type in the operations'
+'    schedule to control. Plus you are asked about the day types'
+'    for the control.'
+'b Control periods  : Star and end hours of the casual gain'
+'                     control - there is one active period assumed'
+'                     in each day.'
 '  Lighting zones   : Displays number of lighting zones'
-'c Lighting zone    : Scrol through lighting zones'
-'d Control type     : Selection of control algorithm'
+'c Lighting zone    : Scroll through lighting zones'
+'d Control type     : Selection of control algorithm:'
+'  * Alway On  - casual gain will be alway on'
+'  * Alway Off - casual gain will be alway off'
+'  * On-Off    - on-off control algorithm'
+'  * Step      - step control algorithm 100% - 50% - 0%'
+'  * Dimming   - three dimming control algorithms are upported'
+'  '
+'  * Probab    - user probability switching algorithm'
+'  '
 'e Calculation type : Selection of sensor illuminance'
 '                     calculation method'
 'f Control data     : Control algorithm input data'
-'g Photocell data   : Casual gain distribution between'
-'                     lighting zones and number of'
-'                     photocells'
+'g Photocell data   : Casual gain distribution between lighting'
+'                     zones and number of photocells'
 ' '
 '  Posn: x y z ux ..: Photocell location & orientation'
 '                     (opt. daylight coefficient link)'
+'  '
+' option > save writes the current information to the file'
+'   (you are asked to confirm the name). The file extension'
+'   is usually .cgc. REMEMBER to save otherwise the data you'
+'   supplied will be lost.'
+'  '
+' option * provides management facilities for adding or deleting'
+'   casual gain control lighting zones. Although a zone operation'
+'   schedule typically only has one lighting gain type, you can'
+'   control a portion of that gain via lighting zones.'
+'  '
+'If you make changes to a casual gain control you are asked to'
+'provide a name for the overall casual gain control scheme e.g.'
+'  Dimming control with 2 lighting zones.' 
+'  '
+'Some control options make use of Radiance to calculate so-called'
+'daylight coefficients for a room which are then used at'
+'simulation time. If this has been selected then when you exit'
+'the menu prj will attempt to start the module e2r to calculate'
+'these coefficients. This can take some time!  If you have not'
+'used a control which relies on Radiance they select the continue'
+'option when exiting this menu.'
+'  '
 *enditem
+  246   CALL EASKS(LTMP,' Zone casual gain control file ?',
+ 8888   call EASKABC('Radiance model for daylight coefficients:',' ',
         CALL PHELPD('cgc editing',22,'-',0,0,IER)
-*item EDCASCTL
-'Save casual gain control information into the file'
-'with specified name. File name is passed back to the '
-'model description.'
-'Default file name is zone_name.cgc'
-*enditem
   247   CALL EASKS(LTMP,' Zone casual gain control file ?',
-*item EDCASCTL
-*enditem
         CALL EASKAB(' ','Modify nmber of lighting zones:',
-*item EDCASCTL
-'The model has an associated 72 character descriptor'
-'which is used later as an identifier, e.g. Dimming'
-'control with 2 lighting zones.'
-*enditem
  52     CALL EASKS(DTMP,
-*item EDCASCTL
-*enditem
         CALL EASKAB(' ','Control casual gains for ','one day type',
-*item EDCASCTL
-*enditem
           CALL EPICKS(IX,KSTR,' ',
-*item EDCASCTL
-*enditem
         CALL EASKABC(' ','Control casual gain type ','occupants',
-*item EDCASCTL
-'Specify time of the day when casual gain control'
-'algorithm is active. Two numbers are expected:'
-' '
-'         * Control period start hour'
-'         * Control period end hour'
-*enditem
         CALL EASKS(HOLD,' Control is active from hour to hour:',
-*item EDCASCTL
-'Select control type from menu by mouse clicking:'
-'* Alway On  - casual gain will be alway on'
-'* Alway Off - casual gain will be alway off'
-'* On-Off    - on-off control algorithm'
-'* Step      - step control algorithm 100% - 50% - 0%'
-'* Dimming   - three dimming control algorithms are'
-'              supported'
-'* Probab    - user probability switching algorithm'
-*enditem
         call EASKATOG(' Control type:',' ',
-*item EDCASCTL
+*item EDCASCTL cas_ctl_dimming
 'Select dimming control algorithm by mouse clicking:'
 '* Ideal: ideal dimming control algorithm by matching'
 '  the photocell illuminance value. Usually photocell'
 '  is located at the horizontal workplane.'
+'  '
 '* Integral reset: more realistic dimming control'
 '  algorithm requiring night-time calibration of'
 '  photocell. Usually photocell is located at ceiling'
+'  and one input parameter is expected:'
+'  * Night-time photocell calibration value, this'
+'    value can be measured or calculated and'
+'    represents illuminance at the photocell point'
+'    from an artificial lighting only.'
+'  '
 '* Closed loop: more realistic dimming control'
 '  algorithm requiring night-time and day-time '
 '  calibration of photocell. Usually photocell is'
-'  located at ceiling.'
+'  located at ceiling and 2 parameters are needed:'
+'  * Night-time photocell calibration value, this'
+'    value can be measured or calculated and'
+'    represents illuminance at the photocell point'
+'    from an artificial lighting only.'
+'  '
+'  * Linear control slope value, this value helps to'
+'    set dimming level as a linear function of the'
+'    difference between photocel signal and'
+'    night-time calibration value. This value could'
+'    be measured or calculated under variety of the'
+'    sky luminance distribution conditions.'
 *enditem
           call EASKATOG(' Dimming control type:',' ',
-*item EDCASCTL
-'      One input parameter is expected:'
-' '
-'* Night-time photocell calibration value, this'
-'  value can be measured or calculated and'
-'  represents illuminance at the photocell point'
-'  from an artificial lighting only.'
-*enditem
-            CALL EASKS(HOLD,' Night-time calibration lux value:',
-*item EDCASCTL
-'      Two input parameters are expected:'
-' '
-'* Night-time photocell calibration value, this'
-'  value can be measured or calculated and'
-'  represents illuminance at the photocell point'
-'  from an artificial lighting only.'
-' '
-'* Linear control slope value, this value helps to'
-'  set dimming level as a linear function of the'
-'  difference between photocel signal and'
-'  night-time calibration value. This value could'
-'  be measured or calculated under variety of the'
-'  sky luminance distribution conditions.'
-*enditem
-            CALL EASKS(HOLD,' Night-time calibration lux value &',
-*item EDCASCTL
+          CALL EASKS(HOLD,' Night-time calibration lux value:',
+          CALL EASKS(HOLD,' Night-time calibration lux value &',
+*item EDCASCTL cas_ctl_photocell
 'Select photocell illuminance calculation type by mouse'
 'clicking. The following types are supported:'
 '* Analyt DF: horizontal workplane daylight factors'
@@ -4182,21 +3939,25 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  interreflected component. Direct solar photocell'
 '  illuminance is being traced. THE METHOD WORKS ONLY'
 '  FOR VERTICAL 4 VERTEX TMC POLYGONS!'
+'  '
 '* User DF: horizontal workplane daylight factors'
 '  provided by user which could be either measured or'
 '  calculated values. Direct solar sensor illuminance'
 '  is not being traced i.e. sensor shaded from direct'
 '  sunlight.'
+'  '
 '* Extern: external unobstructed horizonal or vertical'
 '  global illuminance. In the case of vertical global'
 '  illuminance sensor location on the zone external '
 '  surface has to be specified.'
+'  '
 '* Coupling: direct running time coupling between'
 '  thermal and lighting simulations at the time step'
 '  level using third party global illumination solvers.'
 '  In the current version coupling with Radiance is'
 '  implemented. THIS IS AN EXPERT LEVEL AND CAN BE'
 '  COMPUTATIONALY INTENSIVE!'
+'  '
 '* DayCoeff: set of precalculated daylight coefficients'
 '  is being used to calculate sensor illuminance at the'
 '  time step level. Ones daylight coefficient have been'
@@ -4208,12 +3969,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  COMPUTATIONALY INTENSIVE!'
 *enditem
         CALL PHELPD('cgs calct type',32,'photocell   ',0,0,IER)
-*item EDCASCTL
-'See the previously displayed summary. '
-*enditem
         call EASKATOG(' Calculation type:',' ',
-*item EDCASCTL
-'Specify number of control alhorithm parameters.'
+*item EDCASCTL ctl_photocell_data
+'Specify number of control algorithm parameters.'
 'Five numerical inputs are expected:'
 ' '
 '* Photocell lux set point (lux) i.e. anything from'
@@ -4240,12 +3998,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  only with short simulation time step.'
 *enditem
         CALL PHELPD('cgc control data',25,'-',0,0,IER)
-*item EDCASCTL
-'See the control message just displayed. '
-*enditem
         CALL EASKS(HOLD,
-*item EDCASCTL
-'        Two input parameters are expected:'
+*item EDCASCTL cas_ctl_zone_data
+'Two input parameters are expected for the lighting zone:'
 ' '
 '* Part of the casual heat gains associated with this'
 '  lighting zone. Casual gains are specified at the'
@@ -4259,8 +4014,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  from 1 to 9.'
 *enditem
         CALL EASKS(HOLD,' Casual gain portion & No of photocells',
-*item EDCASCTL
-'       Six input parameters are expected:'
+*item EDCASCTL cas_ctl_cell_location
+'Six input parameters are needed for photocell location:'
 ' '
 '* X, Y, Z coordinates of the photocell location (m)'
 '  relative to the site origin.'
@@ -4274,8 +4029,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  tal facing up sensors are allowed.'
 *enditem
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
-*item EDCASCTL
-'     Two input parameters are expected:'
+*item EDCASCTL ctl_external_location
+'Two input parameters are expected for an external sensor:'
 ' '
 '* Zone external surface number at which the'
 '  photocell is to be located.'
@@ -4285,8 +4040,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  1.0 - measure global vertical illuminance'
 *enditem
           CALL EASKS(HOLD,' Sensor surface number position &',
-*item EDCASCTL
-'       Seven input parameters are expected:'
+*item EDCASCTL daylight_coef_method
+'Seven input parameters are expected for the daylight coef method:'
 ' '
 '* X, Y, Z coordinates of the photocell location (m)'
 '  relative to the site origin.'
@@ -4300,8 +4055,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  of daylight coefficients in the DC file.'
 *enditem
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
-*item EDCASCTL
-'       Six input parameters are expected:'
+*item EDCASCTL photocell_orientation
+'Six input parameters are expected for cell orientation:'
 ' '
 '* X, Y, Z coordinates of the photocell location (m)'
 '  relative to the site origin.'
@@ -4311,11 +4066,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  up 0  0  1 or facing down 0  0  -1.'
 ' '
 '  Note that photocell orientation will not effect'
-'  Analyt DF calculation type as here only horizon-'
-'  tal facing up sensors are allowed.'
+'  Analyt DF calculation type as here only horizontal'
+'  facing up sensors are allowed.'
 *enditem
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
-*item EDCASCTL
+*item EDCASCTL user_supplied_dfactors
 'User specified DF are inputed here. You will be'
 'prompted to input DF for each TMC polygon and'
 'all photocells in this lighting zone'
@@ -4334,41 +4089,41 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
       CALL EASKS(ltmp,' CFD input file?','  ',72,DFCFD,'dfd file',IER,5)
 *item CFDCOMP
- 'Data on conflation, geometry, gridding, solution'
- 'variables, boundary conditions, solver parameters,'
- 'output files, etc. are required for the CFD model.'
- 'The majority of these data can be input through the'
- 'menues provided in this facility; however, you will have'
- 'to do some manual editing of the CFD input file (use the'
- 'menu item provided in this facility to invoke the'
- 'editor).'
- ' '
- 'Each of the menu items in this list should be selected'
- 'in turn to build-up the CFD input file.'
- ' '
- 'Some hints on working with CFD domains: '
- ' '
- ' a) this portion of ESP-r is full of jargon because'
- '    those who work in CFD have evolved expressions that'
- '    seem like english but have a particular meaning. For'
- '    example, the `south face` of the domain might not'
- '    actually be facing south.'
- ' '
- ' b) there are lots of parameter options, some of which'
- '    influcence computation time and some of which are'
- '    not as well documented as some users would expect.'
- ' '
- ' c) ESP-r is normally compiled for domains of limited'
- '    grid resolution, it can be recompiled to increase'
- '    the grid density and those who do this should '
- '    carefully check their models and predictions.'
- ' '
- ' d) it is recommended that you plan your cfd domains'
- '    first and there are some places where efficiency'
- '    is improved if you record critical dimensions'
- '    as you work - e.g. so that boundary surface and'
- '    cell groups can be more reliably associated.'
- ' '
+'Data on conflation, geometry, gridding, solution'
+'variables, boundary conditions, solver parameters,'
+'output files, etc. are required for the CFD model.'
+'The majority of these data can be input through the'
+'menues provided in this facility; however, you will have'
+'to do some manual editing of the CFD input file (use the'
+'menu item provided in this facility to invoke the'
+'editor).'
+' '
+'Each of the menu items in this list should be selected'
+'in turn to build-up the CFD input file.'
+' '
+'Some hints on working with CFD domains: '
+' '
+' a) this portion of ESP-r is full of jargon because'
+'    those who work in CFD have evolved expressions that'
+'    seem like english but have a particular meaning. For'
+'    example, the `south face` of the domain might not'
+'    actually be facing south.'
+' '
+' b) there are lots of parameter options, some of which'
+'    influcence computation time and some of which are'
+'    not as well documented as some users would expect.'
+' '
+' c) ESP-r is normally compiled for domains of limited'
+'    grid resolution, it can be recompiled to increase'
+'    the grid density and those who do this should '
+'    carefully check their models and predictions.'
+' '
+' d) it is recommended that you plan your cfd domains'
+'    first and there are some places where efficiency'
+'    is improved if you record critical dimensions'
+'    as you work - e.g. so that boundary surface and'
+'    cell groups can be more reliably associated.'
+' '
 'You should refer to Section 5.9 - Zone CFD Domain File'
 'in: Data Model Summary ESP-r Version 9 Series,'
 'ESRU Report TR96/2, which forms part of the ESP-r'
@@ -4379,15 +4134,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         call EASKS(ltmp,'Description of CFD model:',' ',72,dtmp,
 *item CFDCOMP
- 'The CFD model can either operate in stand-alone mode'
- '(CFD-only) or it can be `conflated` with the'
- 'whole-building simulation (BSim). The user must supply'
- 'all boundary conditions when CFD is operated in'
- 'stand-alone mode. When conflated, CFD and BSim operate'
- 'in tandem, exchanging information on a time-step'
- 'basis. Three different conflation mechanisms currently'
- 'exist to allow BSim and CFD to `handshake`:'
- ' '
+'The CFD model can either operate in stand-alone mode'
+'(CFD-only) or it can be `conflated` with the'
+'whole-building simulation (BSim). The user must supply'
+'all boundary conditions when CFD is operated in'
+'stand-alone mode. When conflated, CFD and BSim operate'
+'in tandem, exchanging information on a time-step'
+'basis. Three different conflation mechanisms currently'
+'exist to allow BSim and CFD to `handshake`:'
+' '
 'With type 1 thermal conflation, the surface convection'
 'heat transfer coefficients are calculated from the'
 'CFD-predicted flow and temperature fields.  There is'
@@ -4443,15 +4198,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
 *item CFDGGRD
- 'First, define the geometry of the CFD domain by'
- 'establishing its origin and X,Y, and Z axes. This is'
- 'done by specifying vertex points for the origin and'
- 'the ends of each axis. CFD domains are currently'
- 'restricted to cuboidal zones. Axes must be cartesian.'
- '  '
- 'Second, subdivide the domain into cells by gridding'
- 'each axis. Each axis may be divided into regions,'
- 'enabling a fine mesh in some areas while a coarse mesh'
+'First, define the geometry of the CFD domain by'
+'establishing its origin and X,Y, and Z axes. This is'
+'done by specifying vertex points for the origin and'
+'the ends of each axis. CFD domains are currently'
+'restricted to cuboidal zones. Axes must be cartesian.'
+'  '
+'Second, subdivide the domain into cells by gridding'
+'each axis. Each axis may be divided into regions,'
+'enabling a fine mesh in some areas while a coarse mesh'
 'in others. For 2-dimensional problems, specify only a'
 'single grid in the redundant direction.'
 '  '
@@ -4500,8 +4255,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
 *item CFDGGRD
- 'Currently curvilinear is not yet operational.'
- ' ... '
+'Currently curvilinear is not yet operational.'
+' ... '
 *enditem
         CALL EASKABC('Options for Z gridding:',' ','orthogonal',
 *item CFDGGRD
@@ -4521,15 +4276,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL PHELPD('gridding',14,'-',0,0,IER)
 *subroutine CFDSVAR
 *item CFDSVAR
- 'Specify the equations to be solved in the CFD analysis.'
- '  '
- 'Velocity must always be solved and is determined from'
- ' the grid definition. '
- '  '
- 'Temperature. choice of on or off '
- '  '
- 'Turbulence. five models available: '
- '   no turbulence (ie laminar flow conditions)'
+'Specify the equations to be solved in the CFD analysis.'
+'  '
+'Velocity must always be solved and is determined from'
+' the grid definition. '
+'  '
+'Temperature. choice of on or off '
+'  '
+'Turbulence. five models available: '
+'   no turbulence (ie laminar flow conditions)'
 '   k-e model (for recirculating flows)'
 '   fixed eddy viscosity (for approximating turbulence)'
 '   MIT zero-equation (for ...)'
@@ -4556,15 +4311,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL PHELPD('solution variables',25,'-',0,0,IER)
 *subroutine CFDEDAT
 *item CFDEDAT
- 'Specify the equations to be solved in the CFD analysis.'
- '  '
- 'Velocity must always be solved and is determined from'
- ' the grid definition. '
- '  '
- 'Temperature. choice of on or off '
- '  '
- 'Turbulence. five models available: '
- '   no turbulence (ie laminar flow conditions)'
+'Specify the equations to be solved in the CFD analysis.'
+'  '
+'Velocity must always be solved and is determined from'
+' the grid definition. '
+'  '
+'Temperature. choice of on or off '
+'  '
+'Turbulence. five models available: '
+'   no turbulence (ie laminar flow conditions)'
 '   k-e model (for recirculating flows)'
 '   fixed eddy viscosity (for approximating turbulence)'
 '   MIT zero-equation (for ...)'
@@ -4665,29 +4420,29 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         call EASKS(ltmp,'Reference temperature? ','  ',16,
 *item CFDEDAT
- 'An iterative solution procedure is employed.'
- 'Iterations continue until either:'
- '  1) the solution converges to a user-specified'
- '     tolerance; or'
- '  2) a user-specified number of iterations has been'
- '     performed.'
- ' '
- 'Specify the number of iterations, after which the'
- 'calculations will be halted.'
+'An iterative solution procedure is employed.'
+'Iterations continue until either:'
+'  1) the solution converges to a user-specified'
+'     tolerance; or'
+'  2) a user-specified number of iterations has been'
+'     performed.'
+' '
+'Specify the number of iterations, after which the'
+'calculations will be halted.'
 ' '
 'A cancel results in no change to the model. '
 *enditem
         CALL EASKI(ival,' ',' Maximum iterations to perform?',
 *item CFDEDAT
- 'An iterative solution procedure is employed.'
- 'Iterations continue until either:'
- '  1) the solution converges to a user-specified'
- '     tolerance; or'
- '  2) a user-specified number of iterations has been'
- '     performed.'
- '  '
- 'Specify the maximum equation residual. When the'
- 'sum of the equation residues (for the mass and'
+'An iterative solution procedure is employed.'
+'Iterations continue until either:'
+'  1) the solution converges to a user-specified'
+'     tolerance; or'
+'  2) a user-specified number of iterations has been'
+'     performed.'
+'  '
+'Specify the maximum equation residual. When the'
+'sum of the equation residues (for the mass and'
 'momentum equations) over all cells in the domain'
 'drops below this value, the solution is considered'
 'converged. The residual is normalized by the flow'
@@ -4742,15 +4497,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         call EASKS(t12,'Opening name? ','  ',12,d12,'open name',IER,1)
 *item EDAIRO
- 'Boundary coundition if defined to be "from flow network"'
- 'will make ALL air flow opening conditions to be defined'
- 'from the airflow network and individual specification'
- 'of boundary conditions will be overridden.'
- 'If however CFD is run in standalone mode, boundary '
- 'conditions, if previosuly defined, will be maintained.'
- 'Only choose "from flow network" if an airflow network'
- 'has been defined and you wish to take up boundary '
- 'conditions from it i.e. conflate CFD and flow network.'
+'Boundary coundition if defined to be "from flow network"'
+'will make ALL air flow opening conditions to be defined'
+'from the airflow network and individual specification'
+'of boundary conditions will be overridden.'
+'If however CFD is run in standalone mode, boundary '
+'conditions, if previosuly defined, will be maintained.'
+'Only choose "from flow network" if an airflow network'
+'has been defined and you wish to take up boundary '
+'conditions from it i.e. conflate CFD and flow network.'
 'If you choose to conflate then ALL air flow openings'
 'will be taken from the flow network automatically'
 'If you wish not to conflate CFD and flow network then'
@@ -4759,28 +4514,28 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKATOG('Opening types: (see help)',' ','pressure',
 *item EDAIRO
- 'This is the pressure at the opening.'
+'This is the pressure at the opening.'
 *enditem
           call EASKR(VAL,' ',' Pressure (Pa) of cells?',
 *item EDAIRO
- 'This is the mass flow rate entering'
- 'or leaving the domain.  '
+'This is the mass flow rate entering'
+'or leaving the domain.  '
 *enditem
           call EASKR(VAL,' ',
 *item EDAIRO
- 'This is the mass flow rate entering'
- 'or leaving the domain.  '
+'This is the mass flow rate entering'
+'or leaving the domain.  '
 *enditem
           call EASKR(VAL,' ','Mass flow rate (kg/s) entering cells?',
 *item EDAIRO
- 'This is the temperature of air entering the domain.'
+'This is the temperature of air entering the domain.'
 *enditem
         call EASKR(VAL,' ','Temperature (degC) of air entering domian?',
 *item EDAIRO
- 'The real opening area may be less than the area covered'
- 'by the cells.  If this is the case then enter the true'
- 'area of the opening and the mass flow rate and momentum'
- 'of the incoming air will be preserved.'
+'The real opening area may be less than the area covered'
+'by the cells.  If this is the case then enter the true'
+'area of the opening and the mass flow rate and momentum'
+'of the incoming air will be preserved.'
 *enditem
         call EASKR(VAL,' ','Real area (m^2) of opening?',
 *item EDAIRO
@@ -4800,16 +4555,16 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         call EASKS(t12,'Boundary name? ','  ',12,d12,'bnd name',IER,1)
 *item EDSLDB
- '  '
- ' ... '
+'  '
+' ... '
 *enditem
         CALL EASKATOG('Boundary types:',' ','temperature','heat flux',
 *item EDSLDB
- '  '
+'  '
 *enditem
           call EASKR(VAL,'temperature (degC) at chosen face of cells?',
 *item EDSLDB
- '  '
+'  '
 *enditem
           call EASKR(VAL,'Heat flux (W) at chosen face of cells?',
 *item EDSLDB
@@ -4820,61 +4575,61 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL PHELPD('boundary conditions',1,'-',0,0,IER)
 *subroutine EDSRC
 *item EDSRC
- 'This menu allows you to define contaminant source and'
- 'sink for this CFD boundary type.  It is also possible to'
- 'allow heat injection/extraction at these sources, to do '
- 'this you may specify a heat flux manually or as a casual '
- 'gain from the operations file in which case you have '
- 'to give the index of that casual gain and fraction '
- 'injected.'
- 'It is also possible to define contaminants automatically'
- 'from the contaminants definition file if you have created'
- 'one. It is essential that you have an airflow network'
- 'defined and/or coupled with CFD before contaminants can'
- 'be auto defined. You may couple flow network with CFD by'
- 'exiting from here are defining boundary condition of '
- 'opening type boundaries to be taken from the flow network'
- 'In standalone mode CFD will take static boundary'
- 'conditions defined here '
- 'This source type boundary condition has been set up'
- 'to allow contaminant mass injections / extractions'
- 'due to air flow as described from conflated mass flow'
- 'and CFD. Do not modify any paramter definition in '
- 'the menu to follow this message and exit from there!'
+'This menu allows you to define contaminant source and'
+'sink for this CFD boundary type.  It is also possible to'
+'allow heat injection/extraction at these sources, to do '
+'this you may specify a heat flux manually or as a casual '
+'gain from the operations file in which case you have '
+'to give the index of that casual gain and fraction '
+'injected.'
+'It is also possible to define contaminants automatically'
+'from the contaminants definition file if you have created'
+'one. It is essential that you have an airflow network'
+'defined and/or coupled with CFD before contaminants can'
+'be auto defined. You may couple flow network with CFD by'
+'exiting from here are defining boundary condition of '
+'opening type boundaries to be taken from the flow network'
+'In standalone mode CFD will take static boundary'
+'conditions defined here '
+'This source type boundary condition has been set up'
+'to allow contaminant mass injections / extractions'
+'due to air flow as described from conflated mass flow'
+'and CFD. Do not modify any paramter definition in '
+'the menu to follow this message and exit from there!'
 *enditem
         CALL PHELPD('Warning',5,'-',0,0,IER)
 *item EDSRC
- '  '
+'  '
 *enditem
         call EASKS(t12,'Source name? ','  ',12,d12,'src name',IER,1)
 *item EDSRC
- 'Choose from contaminants network only if'
- '1. This is not standalone CFD'
- '2. You have a mass flow network which is conflated'
- '   with the CFD domain or you intend to conflate it'
- '   before simulation'
- '3. You have a contaminants flow network defined'
+'Choose from contaminants network only if'
+'1. This is not standalone CFD'
+'2. You have a mass flow network which is conflated'
+'   with the CFD domain or you intend to conflate it'
+'   before simulation'
+'3. You have a contaminants flow network defined'
 *enditem
         CALL EASKABC('How to specify coundary condition',' ','static',
 *item EDSRC
- 'You may link CFD with the contamiant network if you'
- 'have defined one. Once this is done source type'
- 'boundary conditions will take their strengths (kg/s)'
- 'from source/sink models that you have defined in the'
- 'contaminant network. If you have conflated a mass '
- 'flow network with CFD then new source type boundary'
- 'conditions which will accomodate any addition or '
- 'deletion of contaminant from CFD domain due to air'
- 'flow as computed from conflated CFD and mass flow nwk'
- 'If you have not conflated the mass flow network with '
- 'CFD you are advised to do so before linking CFD with'
- 'contaminant network'
+'You may link CFD with the contamiant network if you'
+'have defined one. Once this is done source type'
+'boundary conditions will take their strengths (kg/s)'
+'from source/sink models that you have defined in the'
+'contaminant network. If you have conflated a mass '
+'flow network with CFD then new source type boundary'
+'conditions which will accomodate any addition or '
+'deletion of contaminant from CFD domain due to air'
+'flow as computed from conflated CFD and mass flow nwk'
+'If you have not conflated the mass flow network with '
+'CFD you are advised to do so before linking CFD with'
+'contaminant network'
 *enditem
           CALL ASKOK('Link CFD with contaminant network (see help) ?',
 *item EDSRC
- 'You are not allowed to conflate CFD with '
- 'contaminants if CFD is not conflated with '
- 'mass flow network'
+'You are not allowed to conflate CFD with '
+'contaminants if CFD is not conflated with '
+'mass flow network'
 *enditem
             CALL PHELPD(' ',3,'-',0,0,IER)
 *item EDSRC
@@ -4886,15 +4641,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
             CALL PHELPD(' ',1,'-',0,0,IER)
 *item EDSRC
- 'In order to calculate contaminant distribution'
- 'the turbulent Schmidt Number needs to be '
- 'calculated. To do this the following information'
- 'is required: molar mass, volume at critical point,'
- 'boiling point and critical temperature.'
- 'If this information is available press parameters'
- 'If not press manual to specify a value for the '
- 'turbulent Schmidt Number.  Click default to use a'
- 'default value of unity or 0.59 for moisture'
+'In order to calculate contaminant distribution'
+'the turbulent Schmidt Number needs to be '
+'calculated. To do this the following information'
+'is required: molar mass, volume at critical point,'
+'boiling point and critical temperature.'
+'If this information is available press parameters'
+'If not press manual to specify a value for the '
+'turbulent Schmidt Number.  Click default to use a'
+'default value of unity or 0.59 for moisture'
 *enditem
             CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
 *item EDSRC
@@ -4904,48 +4659,48 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
               call EASKR(VAL,'What is Turbulent Schmidt Number for',
 *item EDSRC
- 'If sources and sinks are defined in the contaminant'
- 'network then these can be linked with this CFD source'
- 'boundary condition. For any one contaminant only one'
- 'source/sink can be linked to one source b.c. but '
- 'two or more source/sinks for as many contamiants can'
- 'be linked with the same CFD source b.c.'
+'If sources and sinks are defined in the contaminant'
+'network then these can be linked with this CFD source'
+'boundary condition. For any one contaminant only one'
+'source/sink can be linked to one source b.c. but '
+'two or more source/sinks for as many contamiants can'
+'be linked with the same CFD source b.c.'
 *enditem
           CALL ASKOK('Link contaminant network source/sink with this',
 *item EDSRC
- 'are displayed. Choose which one represents this'
- 'source type CFD boundary condition (if at all)'
+'are displayed. Choose which one represents this'
+'source type CFD boundary condition (if at all)'
 *enditem
                 CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
 *item EDSRC
- 'No sources/sinks defined for this contaminant'
+'No sources/sinks defined for this contaminant'
 *enditem
             CALL PHELPD(' ',1,'-',0,0,IER)
 *item EDSRC
- '  '
+'  '
 *enditem
         call EASKR(VAL,'Heat flux (W) in source volume?',
 *item EDSRC
- 'This is the index of the casual gain included in the'
- 'zone operation file.  '
- '  '
- 'A cancel results in no change in the model.  '
+'This is the index of the casual gain included in the'
+'zone operation file.  '
+'  '
+'A cancel results in no change in the model.  '
 *enditem
         call EASKI(IVAL,'Which casual gain index represents heat ',
 *item EDSRC
 *enditem
         call EASKR(VAL,'What fraction of casual gain is generated? ',
 *item EDSRC
- ' '
+' '
 *enditem
         CALL EASKABC('Add/Delete contaminant source',' ','add',
 *item EDSRC
- 'You cannot add / delete contaminants from '
- 'contaminants network here, go to contaminants '
- 'in Model Definition Menu'
- 'To dereference contaminants network and invoke '
- 'static definition (which you can edit here) change'
- 'source type to "static" from "From ctm network"'
+'You cannot add / delete contaminants from '
+'contaminants network here, go to contaminants '
+'in Model Definition Menu'
+'To dereference contaminants network and invoke '
+'static definition (which you can edit here) change'
+'source type to "static" from "From ctm network"'
 *enditem
             CALL PHELPD('Not allowed',6,'-',0,0,IER)
 *item EDSRC
@@ -4958,15 +4713,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
             CALL ASKOK(' ','Is this contaminant water',OK,dok,0)
 *item EDSRC
- 'In order to calculate contaminant distribution'
- 'the turbulent Schmidt Number needs to be '
- 'calculated. To do this the following information'
- 'is required: molar mass, volume at critical point,'
- 'boiling point and critical temperature.'
- 'If this information is available press parameters'
- 'If not press manual to specify a value for the '
- 'turbulent Schmidt Number.  Click default to use a'
- 'default value of unity or 0.59 for moisture'
+'In order to calculate contaminant distribution'
+'the turbulent Schmidt Number needs to be '
+'calculated. To do this the following information'
+'is required: molar mass, volume at critical point,'
+'boiling point and critical temperature.'
+'If this information is available press parameters'
+'If not press manual to specify a value for the '
+'turbulent Schmidt Number.  Click default to use a'
+'default value of unity or 0.59 for moisture'
 *enditem
             CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
 *item EDSRC
@@ -4976,25 +4731,25 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
               call EASKR(VAL,'What is Turbulent Schmidt Number ',
 *item EDSRC
- 'You cannot add / delete contaminants from '
- 'contaminants network here, go to contaminants '
- 'in Model Definition Menu'
- 'To dereference contaminants network and invoke '
- 'static definition (which you can edit here) change'
- 'source type to "static" from "contaminants network"'
+'You cannot add / delete contaminants from '
+'contaminants network here, go to contaminants '
+'in Model Definition Menu'
+'To dereference contaminants network and invoke '
+'static definition (which you can edit here) change'
+'source type to "static" from "contaminants network"'
 *enditem
             CALL PHELPD('Not allowed',6,'-',0,0,IER)
 *item EDSRC
- 'You can link contaminant(ctm) source/sink models from'
- 'contaminants network here. '
- 'To dereference contaminants network and invoke '
- 'static definition (which you can edit here) change'
- 'source type to "static" from "From ctm network"'
- 'You can define which contaminant is moisture'
- 'and how to specify turbulent Schmidt number'
- 'You should also specify static source strengths '
- '(kg/s) these being the values that will be used '
- 'CFD standalone mode'
+'You can link contaminant(ctm) source/sink models from'
+'contaminants network here. '
+'To dereference contaminants network and invoke '
+'static definition (which you can edit here) change'
+'source type to "static" from "From ctm network"'
+'You can define which contaminant is moisture'
+'and how to specify turbulent Schmidt number'
+'You should also specify static source strengths '
+'(kg/s) these being the values that will be used '
+'CFD standalone mode'
 *enditem
           CALL PHELPD('Contaminants Edit',10,'-',0,0,IER)
 *item EDSRC
@@ -5007,15 +4762,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL ASKOK(' ','Is this contaminant water(humidity)',OK,dok,0)
 *item EDSRC
- 'In order to calculate contaminant distribution'
- 'the turbulent Schmidt Number needs to be '
- 'calculated. To do this the following information'
- 'is required: molar mass, volume at critical point,'
- 'boiling point and critical temperature.'
- 'If this information is available press parameters'
- 'If not press manual to specify a value for the '
- 'turbulent Schmidt Number.  Click default to use a'
- 'default value of unity or 0.59 for moisture'
+'In order to calculate contaminant distribution'
+'the turbulent Schmidt Number needs to be '
+'calculated. To do this the following information'
+'is required: molar mass, volume at critical point,'
+'boiling point and critical temperature.'
+'If this information is available press parameters'
+'If not press manual to specify a value for the '
+'turbulent Schmidt Number.  Click default to use a'
+'default value of unity or 0.59 for moisture'
 *enditem
         CALL EASKABC('How to specify turbulent Schmidt # (see help) ?'
 *item EDSRC
@@ -5025,45 +4780,45 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           call EASKR(VAL,'What is Turbulent Schmidt Number ',
 *item EDSRC
- 'If sources and sinks are defined in the contaminant'
- 'network then these can be linked with this CFD source'
- 'boundary condition. For any one contaminant only one'
- 'source/sink can be linked to one source b.c. but '
- 'two or more source/sinks for as many contamiants can'
- 'be linked with the same CFD source b.c.'
+'If sources and sinks are defined in the contaminant'
+'network then these can be linked with this CFD source'
+'boundary condition. For any one contaminant only one'
+'source/sink can be linked to one source b.c. but '
+'two or more source/sinks for as many contamiants can'
+'be linked with the same CFD source b.c.'
 *enditem
           CALL ASKOK('Link contaminant network source/sink with this',
 *item EDSRC
- 'are displayed. Choose which one represents this'
- 'source type CFD boundary condition (if at all)'
+'are displayed. Choose which one represents this'
+'source type CFD boundary condition (if at all)'
 *enditem
               CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
 *item EDSRC
- 'No sources/sinks defined for this contaminant'
+'No sources/sinks defined for this contaminant'
 *enditem
           CALL PHELPD(' ',1,'-',0,0,IER)
 *item EDSRC
 *enditem
         CALL PHELPD('sources edit help',16,'-',0,0,IER)
 *item EDSRC
- 'According to Recknagel, Sprenger und Schrameck'
- 'persons at light, sedentary activity release '
- 'water vapour: '
- '20C - 35g/h; 22C - 40g/h; 23C - 50g/h; 24 and 25C - 60/h'
+'According to Recknagel, Sprenger und Schrameck'
+'persons at light, sedentary activity release '
+'water vapour: '
+'20C - 35g/h; 22C - 40g/h; 23C - 50g/h; 24 and 25C - 60/h'
 *enditem
 *        call EASKR(VAL,'Moisture (g/hr) generated in source volume?',
 *item EDSRC
- 'Assuming CO2 production of 0.0000153737kg/s/person  '
+'Assuming CO2 production of 0.0000153737kg/s/person  '
 *enditem
 *        call EASKR(VAL,'No of people breathing in source volume?',
 *subroutine EDBLK
 *item EDBLK
 'There is no help text for this menu (yet).'
- ' '
+' '
 *enditem
         call EASKS(t12,'Blockage name? ','  ',12,d12,'blk name',IER,1)
 *item EDBLK
- '  '
+'  '
 *enditem
         call EASKR(VAL,'Heat flux (W/m^2) on blockage surfaces?',
 *item EDBLK
@@ -5072,11 +4827,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *subroutine HANDSHK
 *subroutine PIKCELS
 *item PIKCELS
- 'You will have to pick a face at which the'
- 'boundary condition will apply.'
- 'Based on the face you select, information about'
- 'the face X/Y or Z cell coordinates will be reported'
- 'in the text feedback area. '
+'You will have to pick a face at which the'
+'boundary condition will apply.'
+'Based on the face you select, information about'
+'the face X/Y or Z cell coordinates will be reported'
+'in the text feedback area. '
 *enditem
         CALL EASKATOG('Boundary face is on which side?',t30,'West',
 *item PIKCELS
@@ -5090,8 +4845,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
       call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
 *subroutine PIKFACE
 *item PIKFACE
- 'You will have to pick a face at which'
- 'the boundary condition will apply.'
+'You will have to pick a face at which'
+'the boundary condition will apply.'
 *enditem
         CALL EASKATOG('Boundary face is on which side?',' ','West',
 *subroutine TOPBOT
@@ -5195,23 +4950,23 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL ASKOK(' ',' Symmetrical gridding?',OK,dok,3)
 *item GRIDDEF
- 'Each axis is sub-divided into regions which are'
- 'gridded independently.'
+'Each axis is sub-divided into regions which are'
+'gridded independently.'
 *enditem
         call EASKABC('Region operations:','  ','add one','delete one',
 *item GRIDDEF
- 'You can specify regions either by selecting'
- 'vertices or by giving dimensioned input (m).'
+'You can specify regions either by selecting'
+'vertices or by giving dimensioned input (m).'
 *enditem
             CALL EASKABC('Specify region length:',' ','by vertices',
 *item GRIDDEF
- 'This is the zone vertex index.'
- 'The distance parallel to the axis between these '
- 'vertices will be calculated.'
+'This is the zone vertex index.'
+'The distance parallel to the axis between these '
+'vertices will be calculated.'
 *enditem
               call EASKS(HOLD,'Specify vertex at start & end of region',
 *item GRIDDEF
- 'Distance in metres.'
+'Distance in metres.'
 *enditem
               CALL EASKR(VAL,' ','Length of current region (m) ? ',
 *item GRIDDEF
@@ -5222,15 +4977,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
               CALL EASKI(icellt,' Specify number of cells in region',
 *item GRIDDEF
- 'The cells faces are located according to a '
- 'power-law relation:'
- '            Xi = L*(i/n)**c'
- 'where `i` is cell number, `Xi` is position of '
- 'face of i`th cell, `L` is length of region, '
- '`n` is number of cells in region, and `c` is '
- 'power-law coeff. '
- '  '
- 'c > 1:      grid spacing grows along axis'
+'The cells faces are located according to a '
+'power-law relation:'
+'            Xi = L*(i/n)**c'
+'where `i` is cell number, `Xi` is position of '
+'face of i`th cell, `L` is length of region, '
+'`n` is number of cells in region, and `c` is '
+'power-law coeff. '
+'  '
+'c > 1:      grid spacing grows along axis'
 '0 < c < 1:  grid spacing decreases along axis'
 'c = 1:      uniform grid'
 '-1 < c < 0: grid spacing grows along axis'
@@ -5244,9 +4999,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
                 CALL ASKOK('  ','Symmetrical gridding?',OK,dok,3)
 *item GRIDDEF
- 'This is the region index.'
- 'A cancel returns you to the menu without changing'
- 'the model.'
+'This is the region index.'
+'A cancel returns you to the menu without changing'
+'the model.'
 *enditem
           CALL EASKI(IDEL,' ','Which region to delete ? ',
 *item GRIDDEF
@@ -6764,15 +6519,15 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL EASKS(T14,'Name of inverted construction (<12 char)?',
 *item EDMLDB
- 'Although g-values for transparent glazings are not used'
- 'in ESP-r is is possible to report these in accordance '
- 'with Test G5 TM33:2006 CIBSE. '
- 'You will be required to provide for each pane its  '
- 'transmittance and reflectance (both in the direction of'
- 'incident radiation and against it)'
- 'Single/double and triple glazings are supported '
- 'G-value calculations are currently restricted to '
- 'air or gas filled triple glazings which are symmetric'
+'Although g-values for transparent glazings are not used'
+'in ESP-r is is possible to report these in accordance '
+'with Test G5 TM33:2006 CIBSE. '
+'You will be required to provide for each pane its  '
+'transmittance and reflectance (both in the direction of'
+'incident radiation and against it)'
+'Single/double and triple glazings are supported '
+'G-value calculations are currently restricted to '
+'air or gas filled triple glazings which are symmetric'
 'in construction'
 *enditem
         CALL PHELPD('G-value for tran construction',10,'-',0,0,IER)
@@ -7367,14 +7122,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKF(LCOPY,' ','Plant templates db?',
 *subroutine EDDBPROFILE
 *item EDDBPROFILE
- '   Events Database '
- ' '
- 'Profiles in this database are currently used to'
- 'assist in the defintion of zone operations.  The'
- 'standard db are found in '
- 'as either ASCII versions (ends with .a) or a binary'
- 'version (depreciated).'
- ' The data requirements are summarised below :- '
+'   Events Database '
+' '
+'Profiles in this database are currently used to'
+'assist in the defintion of zone operations.  The'
+'standard db are found in '
+'as either ASCII versions (ends with .a) or a binary'
+'version (depreciated).'
+' The data requirements are summarised below :- '
 ' '
 ' for each profile - number of events.'
 ' '

@@ -50,7 +50,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -101,7 +100,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
       character*72 GTGEOM
-      character lipvdatf*72,H*72,outs*124,ltmp*72
+      character lipvdatf*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
       character ipvact*3  ! to denote whether in cfd file or external
@@ -110,6 +109,13 @@ C ITEMS is menu for site/context items.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSITE'  ! set for subroutine
       
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -188,36 +194,8 @@ c      ITEMS(26)=                'u transient orientation          '
       nitms=29
 
 C Help text for this menu.
-      H(1)='This menu allows site and miscellaneous data to'
-      H(2)='be defined. In most cases the default entries will'
-      H(3)='be acceptable. An explanatyion of the less obvious'
-      H(4)='entries follows.'
-      H(5)=' '
-      H(6)='Primary energy conversions are used to convert'
-      H(7)='predicted energy demands (for lights, small power,'
-      H(8)='heating etc.) to equivalent primary energy units.'
-      H(9)=' '
-      H(10)='Dispersed demands are schedules of demands for items'
-      H(11)='such as pumps, lifts etc, that are not simulation'
-      H(12)='(although they could be). These items may then be'
-      H(13)='displayed on an IPV alongside data relating to'
-      H(14)='simulated items.'
-      H(15)=' '
-      H(16)='An integrated performance view (IPV) definition'
-      H(17)='specifies the assessments to be included in an IPV,'
-      H(18)='what portion(s) of the model to cover, the time'
-      H(19)='period to consider and any scaling factors to apply.'
-      H(20)=' '
-      H(21)='Situation specific wind pressure coefficent sets may'
-      H(22)='be calculated using CPCALC for later use in network'
-      H(23)='air flow modelling.'
-      H(24)=' '
-      H(25)='Images are normally in GIF format although other'
-      H(26)='formats may be used where an appropriate display tool'
-      H(27)='exists.'
-      H(28)=' '
-      H(29)='Where the time averaging method applied to climate'
-      H(30)='data is known this should be set via the toggle.'
+      helptopic='context_overview_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Model Context',ITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
@@ -243,13 +221,11 @@ C If there was a change in location, but no zones defined just return.
               endif
             endif
   42      continue
-          h(1)='Shading should be recalculated when site data'
-          h(2)='changes. Each affected zone will be done in turn.'
           CALL EASKABC(
      &        'Site changes may require shading adjustments',
      &        'Options:',
      &        'recalculate (silent)','recalculate (interactive)',
-     &        'cancel',IRT,2)
+     &        'cancel',IRT,nbhelp)
           if(IRT.eq.1.or.IRT.eq.2)then
             call edisp(iuout,'Processing zones - may take some time.')
             if(IRT.eq.1)then
@@ -272,11 +248,9 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                   call comissionish(iz,'sr ',ier)
                 else
                   DOK=.TRUE.
-                  h(1)='Each zone is calculated in turn. If you do '
-                  h(2)='one zone then you should do all zones.'
                   write(outs,'(3a)') 'Proceed with shading for ',
      &              zname(iz)(1:lnzname(iz)),'?'
-                  CALL ASKOK(outs,' ',OK,DOK,2)
+                  CALL ASKOK(outs,' ',OK,DOK,nbhelp)
                   if(OK)then
                     call comissionish(iz,'ir ',ier)
                   endif
@@ -290,25 +264,22 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('Model context',30,'-',0,0,IER)
+        helptopic='context_overview_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Model context',nbhelp,'-',0,0,IER)
 
       ELSEIF(INO.EQ.1)THEN
 
-        H(1)='Site latitude in degrees, where North is +ve, e.g. 55.9'
-        H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
-     &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
+     &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,nbhelp)
         IF(IER.EQ.0)sitelat=SLAT
         MODSIT=.true.
         modish=.true.
 
       ELSEIF(INO.EQ.2)THEN
 
-        H(1)='Site longitude difference is the difference in degrees'
-        H(2)='from the local reference meridian, East is +ve, e.g.'
-        H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
         CALL EASKR(SLON,' ','Longitude difference?',
-     &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
+     &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,nbhelp)
         IF(IER.EQ.0)sitelongdif=SLON
         MODSIT=.true.
         modish=.true.
@@ -329,28 +300,11 @@ C        WRITE(SALT(8),53)skyview,groundview,buildingview
 C  53    FORMAT('user defined)
         SALT(8)='user defined'
 
-        H(1)='The site exposure defines the relative view factors'
-        H(2)='between a vertical surface and the sky (S), ground (G)'
-        H(3)='and surrounding buildings (B). These data are used in'
-        H(4)='the calculation of external longwave radiation exchange.'
-        H(5)=' '
-        H(6)='The following options are available.'
-        H(7)=' '
-        H(8)='                          View factor to:  '
-        H(9)='Context                   S     G     B    '
-        H(10)='=========================================  '
-        H(11)='urban (normal):          0.36  0.36  0.28  '
-        H(12)='urban (low density):     0.41  0.41  0.18  '
-        H(13)='rural:                   0.45  0.45  0.10  '
-        H(14)='urban (equal weighting): 0.33  0.33  0.34  '
-        H(15)='urban (B emphasised):    0.15  0.33  0.52  '
-        H(16)='isolated rural:          0.50  0.50  0.00  '
-        H(17)='totally enclosed:        0.00  0.00  1.00  '
-        H(18)='user defined:             -     -     -    '
-        H(19)='=========================================  '
+        helptopic='site_exposure_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IX=1
         CALL EPICKS(IX,IVALS,' ','Site Exposure',
-     &                31,8,SALT,'Site Exposure',IER,19)
+     &                31,8,SALT,'Site Exposure',IER,nbehlp)
         IF(IX.EQ.0)THEN
           INO=-4
           GOTO 3
@@ -359,15 +313,12 @@ C  53    FORMAT('user defined)
         siteexposureindex=IVALS(1)
         SEXP=SALT(siteexposureindex)
         IF(siteexposureindex.EQ.8)THEN
-          H(1)='0 <= Sky view factor <= .99'
   290     CALL EASKR(skyview,' ','Sky view factor?',
-     &         0.0,'W',0.99,'W',0.33,'sky view factor',IER,1)
-          H(1)='0 <= Ground view factor <= .99'
+     &      0.0,'W',0.99,'W',0.33,'sky view factor',IER,nbhelp)
           CALL EASKR(groundview,' ','Ground view factor?',
-     &         0.0,'W',0.99,'W',0.33,'ground view factor',IER,1)
-          H(1)='0 <= Surroundings view factor <= .99'
+     &      0.0,'W',0.99,'W',0.33,'ground view factor',IER,nbhelp)
           CALL EASKR(buildingview,' ','Surroundings view factor?',
-     &         0.0,'W',0.99,'W',0.33,'surroundings view factor',IER,1)
+     &      0.0,'W',0.99,'W',0.33,'surroundings view factor',IER,nbhelp)
           IF(skyview.LT.0.0.or.groundview.LT.0.0.or.
      &       buildingview.LT.0.0)then
             CALL USRMSG(' ','View factor cannot be negative!','W')
@@ -392,39 +343,28 @@ C  53    FORMAT('user defined)
       ELSEIF(INO.EQ.5)THEN
 
 C Ground reflectance type
-        h(1)='Ground shortwave reflectance can be determined'
-        h(2)='from one of three methods:'
-        h(3)='Constant = time invariant value;'
-        h(4)='Simple   = 12 monthly values, with user'
-        h(5)='              defined snow cover;'
-        h(6)='Advanced = 12 monthly values, with hourly'
-        h(7)='              snow depth from weather file.'
+        helptopic='context_ground_refl'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD(' ','Ground reflectance method?',
-     &      'constant','monthly simple','mnthly advanced','cancel',IW,7)
+     &    'constant','monthly simple','mnthly advanced','cancel',
+     &    IW,nbhelp)
+
 C---- Constant ground reflectance        
         if (IW.EQ.1) then
           groundreflmodel=1
-          H(1)='0 <= ground reflectance <= .99'
           CALL EASKR(groundrefl,' ',' Ground reflectance?',
-     &        0.0,'W',0.99,'W',0.2,'ground reflectance',IER,1)
+     &        0.0,'W',0.99,'W',0.2,'ground reflectance',IER,nbhelp)
           MODSIT=.true.
 C---- Simple or advanced models: ask for monthly values 
         elseif (IW.EQ.2 .OR. IW.EQ.3) then
           groundreflmodel=IW
           
-          h(1)='Suggested ground reflectance (no snow):'
-          h(2)='  bituminous/gravel roof 0.13'
-          h(3)='  dry, bare ground       0.20'
-          h(4)='  weathered concrete     0.22'
-          h(5)='  grass                  0.26'
-          h(6)='  sand                   0.40'
-          h(7)='  light building surface 0.60'
-   83     CONTINUE
-          HOLD=' '
+   83     HOLD=' '
           WRITE(HOLD,'(1X,6F7.2)')(groundreflmonth(J),J=1,6)
           CALL EASKS(HOLD,' ',
      &      'January thro June ground reflectance (no snow)?',
-     &      72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jan-jun',IER,7)
+     &      72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jan-jun',
+     &      IER,nbhelp)
           NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 83
           K=0
@@ -438,7 +378,8 @@ C---- Simple or advanced models: ask for monthly values
           WRITE(HOLD,'(1X,6F7.2)')(groundreflmonth(J),J=7,12)
           CALL EASKS(HOLD,' ',
      &      'July thro December ground reflectance (no snow)?',
-     &       72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jul-dec',IER,7)
+     &       72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jul-dec',
+     &      IER,nbhelp)
           NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 85
           K=0
@@ -451,23 +392,16 @@ C---- Simple or advanced models: ask for monthly values
 C---- Simple model: ask for average albedo of snow, and number of days
 C     with snow on the ground
           if (IW.EQ.2) then
-            H(1)='Suggested ground reflectance (with snow):'
-            H(2)='  city centre    0.20'
-            H(3)='  urban          0.40'
-            H(4)='  rural          0.50'
-            H(5)='  isolated rural 0.70'
             CALL EASKR(snowgroundrefl,' ',
      &        ' Average ground reflectance in the presence of snow?',
-     &        0.0,'W',0.99,'W',0.4,'snow reflectance',IER,5)
+     &        0.0,'W',0.99,'W',0.4,'snow reflectance',IER,nbhelp)
             MODSIT=.true.
-            H(1)='For each month, enter the number of days with snow'
-            H(2)='d=epth typically greater than 5 cm.'
    87       CONTINUE
             HOLD=' '
             WRITE(HOLD,'(6(1X,I2))')(dayswithsnow(J),J=1,6)
             CALL EASKS(HOLD,' ',
      &        'Number of days in January thro June with snow?',
-     &        72,'0 0 0 0 0 0','days with snow jan-jun',IER,2)
+     &        72,'0 0 0 0 0 0','days with snow jan-jun',IER,nbhelp)
             NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 87
             K=0
@@ -481,7 +415,7 @@ C     with snow on the ground
             WRITE(HOLD,'(6(1X,I2))')(dayswithsnow(J),J=7,12)
             CALL EASKS(HOLD,' ',
      &        'Number of days in July thro December with snow?',
-     &        72,'0 0 0 0 0 0 ','days with snow jul-dec',IER,3)
+     &        72,'0 0 0 0 0 0 ','days with snow jul-dec',IER,nbhelp)
             NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 89
             K=0
@@ -494,29 +428,18 @@ C     with snow on the ground
 C---- Advanced model: ask for albedo of fresh snow, and file containing
 C     hourly snow depths
           if (IW.EQ.3) then
-            H(1)='Typical values for ground reflectance with snow:'
-            H(2)='  city centre:   0.20'
-            H(3)='  urban          0.40'
-            H(4)='  rural          0.50'
-            H(5)='  isolated rural 0.70'
             CALL EASKR(snowgroundrefl,' ',
      &        ' Ground reflectance in the presence of fresh snow?',
-     &        0.0,'W',0.99,'W',0.5,'snow reflectance',IER,5)
-C    
+     &        0.0,'W',0.99,'W',0.5,'snow reflectance',IER,nbhelp)
+    
    92       CONTINUE
-            H(1)='The snow depth file contains hourly values of snow'
-            H(2)='depth. The data should be formatted as a single'
-            H(3)='column within an ASCII file, with the snow depth'
-            H(4)='given in centimeters for each of the 8760 hours of'
-            H(5)='the year.'
             CALL EASKS(SNFNAM,'Enter name of snow depth file',
-     &        ' ',72,' ','Snow depth file',IER,5)
+     &        ' ',72,' ','Snow depth file',IER,nbhelp)
             CALL FINDFIL(SNFNAM,FOUND)
             IF(.NOT.FOUND) THEN
-              H(1)='Please ensure that the file exists, or selectpress '
-              H(2)='`OK` if the file will be created later.'
               DOK=.FALSE.
-              CALL ASKOK('File not found: continue?',' ',OK,DOK,2)
+              CALL ASKOK('File not found: continue?',' ',
+     &          OK,DOK,nbhelp)
               IF (.NOT.OK) GOTO 92
             ENDIF
           endif
@@ -526,14 +449,10 @@ C
 
 C Weekends def.
         call edisp(iuout,'Please define weekend days.')
-        H(1)='Some locations reserve days other than Saturday and'
-        H(2)='Sunday as `weekends`. You can define these days or'
-        H(3)='set a one day weekend by defining the second day'
-        H(4)='equal to the first.'
         idwe1T=idwe1
         CALL EASKI(idwe1T,'Day index (Mon=1,Tue=2, ...) for',
      &    'the first day of the weekend?',
-     &        1,'F',7,'F',6,'1st weekend index',IERI,4)
+     &        1,'F',7,'F',6,'1st weekend index',IERI,nbhelp)
         if(ieri.eq.-3) goto 3
         idwe1=idwe1T
         wkd1=wkday(idwe1)
@@ -541,7 +460,7 @@ C Weekends def.
         idwe2T=idwe2
         CALL EASKI(idwe2T,'Day index (Mon=1,Tue=2, ...) for',
      &    'the second day of the weekend?',
-     &        1,'F',7,'F',7,'2nd weekend index',IERI,4)
+     &        1,'F',7,'F',7,'2nd weekend index',IERI,nbhelp)
         if(ieri.eq.-3) goto 3
         idwe2=idwe2T
         wkd2=wkday(idwe2)
@@ -553,17 +472,11 @@ C Change the year and if calendar has not been set up initialise
 C and then list the months of the year.  If there is an existing
 C calendar with the default day types and the year has changed
 C then re-initialize the calendar.
-        H(1)='Control and scheduling actions the year to be defined.'
-        H(2)='You may accept the one specified with the climate'
-        H(3)='file or provide an alternative.'
-        H(4)=' '
-        H(5)='The choice is year impacts the day of the week for'
-        H(6)='1 January. It also will alter the day type associated'
-        H(7)='of days in the calendar which are the standard default'
-        H(8)='weekday/saturday/sunday (but not user defined day types.'
+        helptopic='context_model_year'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
         CALL EASKI(iyeart,' ','Simulation year?',
-     &       1900,'W',2010,'W',2001,'year',IERI,8)
+     &       1900,'W',2010,'W',2001,'year',IERI,nbhelp)
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
@@ -598,10 +511,7 @@ C otherwise overwrite. (Same logic as in esystem.F
      &      'Simulation year and calendar mismatch rectified')
         endif
         dok=.false.
-        H(1)='You can use the calandar to check that a day or days'
-        H(2)='fall on a required date (e.g. to test a heating system`s'
-        H(3)='response under a cold, Monday start).'
-        call askok(' ','View calendar?',ok,dok,3)
+        call askok(' ','View calendar?',ok,dok,nbhelp)
         if(ok)then
           loop=12
           loopst=1
@@ -638,13 +548,9 @@ C Future option.
       ELSEIF(INO.EQ.13)THEN
 
 C Ground topology.
-        h(1)='If there is an existing ground toplogy you may browse'
-        h(2)='or edit its defining data. To create a new toplogy you'
-        h(3)='may input the defining data manually or elect to'
-        h(4)='click on points on a bitmap.'
         call easkabcd(' ','Ground topology defining options:',
      &    'select current','create manually','create via bitmap',
-     &    'cancel',iwgt,4)
+     &    'cancel',iwgt,nbhelp)
         if(iwgt.eq.1)then
           call GTOPOL(itrc,ier)
           MODSIT=.true.
@@ -675,13 +581,8 @@ C Ground temperature profiles.
 C        call edisp(iuout,' ')  
 C        write(outs,'(a,i3,a)')' There are currently ',NGRDP,' profiles.'      
 C        call edisp(iuout,outs) 
-        H(1)='Ground temperature profiles define the monthly soil'
-        H(2)='temperatures at some arbitrary depth (typically 1.5m)'
-        H(3)='for use as aboundary condition within a simulation.'
-        H(4)='Up to 12 profiles may be defined, each comprising 12'
-        H(5)='monthly temperature values.'
         CALL EASKABC(' ','Ground temperature profile options:',
-     &   'list','edit','add',IRT,5)
+     &   'list','edit','add',IRT,nbhelp)
         if(IRT.eq.1)then
           if(NGRDP.gt.0)then
             do 22 igrdp=1,NGRDP    
@@ -693,10 +594,8 @@ C        call edisp(iuout,outs)
           goto 3
         elseif(IRT.eq.2)then
           if(NGRDP.gt.0)then
-            H(1)='Provide index of the ground temperature profile'
-            H(2)='to be edited.'
             CALL EASKI(IFOC,' ','Profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IERI,2)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,nbhelp)
             if(ieri.eq.-3) goto 3
             goto 93
           else
@@ -715,9 +614,8 @@ C        call edisp(iuout,outs)
           endif
         endif
    93   WRITE(HOLD,'(1X,6F7.2)')(UGRDTP(J,IFOC),J=1,6)
-        H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, January- thro June?',
-     &      72,' ','gr prof jan-jun',IER,1)
+     &      72,' ','gr prof jan-jun',IER,nbhelp)
         NV = iCountWords(HOLD)
         if(NV.ne.6)goto 93
         K=0
@@ -728,7 +626,6 @@ C        call edisp(iuout,outs)
    94   CONTINUE
    95   hold = ' '
         WRITE(HOLD,'(1X,6F7.2)')(UGRDTP(J,IFOC),J=7,12)
-        H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, July thro December?',
      &      72,' ','gr prof jan-jun',IER,1)
         NV = iCountWords(HOLD)
@@ -750,11 +647,8 @@ C 3-D Ground representations....
       ELSEIF(INO.EQ.17)THEN
 
 C Primary energy conversions.
-        h(1)='Energy demand may be converted to primary energy'
-        h(2)='(e.g. as comsumed at a power station) and also to'
-        h(3)='equivalent emission values.'
         CALL EASKABC(' ','Energy demand conversion options:',
-     &   'initialise and edit','edit','cancel',IR,3)
+     &   'initialise and edit','edit','cancel',IR,nbhelp)
         if(IR.eq.1)then
           call peconv('i')
           call peconv('-')
@@ -771,9 +665,6 @@ C Dispersed fan/pump/lift/DHW demands.
 
 C IPV data.
         if(icfgv.lt.4)then
-          h(1)='This file holds data required to later construct'
-          h(2)='an `Integrated Performance View` of simulation'
-          h(3)='results.'
           lr=lnblnk(cfgroot)
           if(lnblnk(lipvdatf).eq.0)then
             write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
@@ -783,7 +674,7 @@ C IPV data.
             ltmp=lipvdatf
           endif
  142      CALL EASKS(ltmp,' ','IPV description file?',
-     &               72,'xxx.ipv','IPV file',IER,3)
+     &               72,'xxx.ipv','IPV file',IER,nbhelp)
           if(ltmp(1:2).ne.'  ')then
             lipvdatf=ltmp
             call FINDFIL(lipvdatf,XST)
@@ -864,12 +755,18 @@ C function of time. Important variables are defined in roam.h
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
 
-      CHARACTER*72 h,DFLTNAME,LCFGF,OUTS
+      CHARACTER*72 DFLTNAME,LCFGF,OUTS
       CHARACTER CFGROOT*24,TEMPSTR*30
       INTEGER IOK
       LOGICAL OK,DOK
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ROAMING'  ! set for subroutine
 
 C Initialise variables
       IOK=0
@@ -877,39 +774,23 @@ C Initialise variables
       DOK=.TRUE.
 
 C Help message
-      H(1) =' '
-      H(2) =' '
-      H(3) =' '
-      H(4) =' '
-      H(5) =' '
-      H(6) =' '
-      H(7) =' '
-      H(8) =' '
-      H(9) =' '
-      H(10)=' '
-      H(11)=' '
-      H(12)=' '
-      H(13)=' '
-      H(14)=' '
-      H(15)=' '
-      H(16)=' '
-      H(17)=' '
-      H(18)=' '
-      H(19)=' '
+      helptopic='roaming_choices'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       WRITE(DFLTNAME,'(2A)')CFGROOT(1:LNBLNK(CFGROOT)),'.roam'
       IF(IROAM.NE.1)THEN
         LROAM=DFLTNAME
         IROAM=1
-        CALL PHELPD('Roaming Introduction',19,'-',0,0,IER)
+        CALL PHELPD('Roaming Introduction',nbhelp,'-',0,0,IER)
         CALL EASKAB(' ','Roaming file actions:',
-     &    'create template','cancel and exit',IOK,19)
+     &    'create template','cancel and exit',IOK,nbhelp)
         IF(IOK.EQ.1)THEN
           CALL WROAM
           CALL RROAM
         ENDIF
       ELSE
         CALL EASKS2CMD(LROAM,' Roaming file? (see help)',
-     &  ' ','dereference','browse',IACT,72,' ','Roaming file',IER,19)
+     &    ' ','dereference','browse',IACT,72,' ','Roaming file',
+     &    IER,nbhelp)
         IF(IACT.EQ.1)THEN
           IROAM=0
           CALL EDISP(IUOUT,'Updating configuration file ...')
@@ -920,7 +801,7 @@ C Help message
       ENDIF
 
 C Display file contents
-      CALL ASKOK('View location information?',' ',OK,dok,19)
+      CALL ASKOK('View location information?',' ',OK,dok,nbhelp)
       IF(OK)THEN
         CALL EDISP(IUOUT,' ')
         WRITE(OUTS,'(A,F3.1)')'ESP-r Roaming file version number ',VERS
@@ -932,7 +813,7 @@ C Display file contents
      &    LOCRM(ILOC),XLOCLT(ILOC),XLOCLG(ILOC)
           CALL EDISP(IUOUT,OUTS)
  1000   CONTINUE
-        CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
+        CALL ASKOK('View cruise schedule?',' ',OK,dok,nbhelp)
         IF(OK)THEN
           CALL EDISP(IUOUT,
      &    'start hr, dy, mth, orientation, day type, location')
@@ -967,7 +848,6 @@ C model including view and add images (delete not yet working).
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/user/browse
 
 C Images.
@@ -986,12 +866,19 @@ C Images.
 C ITEMS is menu for site/context items, ITEMIMG is menu for editing
 C and control of project images.
       character*33 ITEMIMG(20)
-      character H*72,outs*124
+      character outs*124
       character limg*72,key*1,fs*1
       character iformat*4,ifocus*4
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
       integer nimgitms,INOI  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='manageimages'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1023,18 +910,8 @@ C Set folder separator (fs) to \ or / as required.
       nimgitms=m+5
 
 C Help text for menu.
-      h(1)='Images may be associated with a model for various'
-      h(2)='purposes - for example to record site conditions'
-      write(h(3),'(a,i2,a)') 
-     &  'or corresponding design drawings. Up to ',MIMG,' images'
-      h(4)='may be associated with a model.'
-      h(5)=' '
-      h(6)='The following image types are supported: gif, tiff,'
-      h(7)='jpeg and X11 bitmap. To edit an image name, select'
-      h(8)='it from the list.'
-      h(9)=' '
-      h(10)='Newer model configuration files can also include a'
-      h(11)='text block explaining the image. '
+      helptopic='model_image_management'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Project Images',ITEMIMG,nimgitms,INOI)
       if(INOI.EQ.nimgitms)then
@@ -1045,7 +922,9 @@ C Update configuration if images have changed.
         endif
         return
       elseif(INOI.EQ.nimgitms-1)then
-        CALL PHELPD('Model images',11,'-',0,0,IER)
+        helptopic='model_image_management'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Model images',nbhelp,'-',0,0,IER)
       elseif(INOI.EQ.nimgitms-2)then
 
 C Display each of the current images by topic.
@@ -1067,13 +946,9 @@ C Display each of the current images by topic.
       elseif(INOI.EQ.nimgitms-3)then
 
 C Add images from images folder or other location.
-        h(1)='Images can be associated with various aspects of a'
-        h(2)='model. You can add images to the current list from'
-        h(3)='either the model images folder or by entering an'
-        h(4)='absolute path and file name.'
         CALL EASKABCD(' ','Project image options:',
      &    'add from standard folder','add from another folder',
-     &    'delete','cancel',IOK,4)
+     &    'delete','cancel',IOK,nbhelp)
         if(iok.eq.1)then
           if(noimg.ge.MIMG)then
             call edisp(iuout,'No more images can be associated with')
@@ -1116,11 +991,9 @@ C Try to use information gathered from file scan.
 
 C Edit image documentation if version supports it.
               if(icfgv.gt.3)then
-                H(1)='Notes (<248 char) for images can help with' 
-                H(2)='communicating supporting information.'
                 tcname=imgdoc(noimg)
                 CALL EASKS248(tcname,' ','Image notes:',
-     &            72,'associated image','image notes',IER,2)
+     &            72,'associated image','image notes',IER,nbhelp)
                 if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
               endif
               modsit=.true.
@@ -1146,11 +1019,9 @@ C Edit image documentation if version supports it.
 
 C Edit image description if version supports it.
               if(icfgv.gt.3)then
-                H(1)='Notes (<248 char) for images can help with' 
-                H(2)='communicating supporting information.'
                 tcname=imgdoc(noimg)
                 CALL EASKS248(tcname,' ','Image notes:',
-     &            72,'associated image','image notes',IER,2)
+     &            72,'associated image','image notes',IER,nbhelp)
                 if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
               endif
               modsit=.true.
@@ -1192,11 +1063,9 @@ C what they selected first.
 
 C Edit current image description if version allows.
           if(icfgv.gt.3)then
-            H(1)='Notes (<248 char) for images can help with' 
-            H(2)='communicating supporting information.'
             tcname=imgdoc(inoi-2)
             CALL EASKS248(tcname,' ','Image notes:',
-     &        72,'associated image','image notes',IER,2)
+     &        72,'associated image','image notes',IER,nbhelp)
             if(tcname(1:2).ne.'  ')imgdoc(inoi-2)=tcname
           endif
           MODSIT=.true.
@@ -1220,7 +1089,6 @@ C temporal data to be associated with a model.
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
      
@@ -1233,7 +1101,7 @@ C TDF related.
       logical MODSIT,browse,OK,dok,unixok
       logical FOUND,XST
 
-      character H*72,outs*124,ltmp*72,hold*40
+      character outs*124,ltmp*72,hold*40
       character cfgroot*24,LCFGF*72
       character fs*1,msgl2*48
       character*72 DLTDF
@@ -1245,9 +1113,14 @@ C TDF related.
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
-C << thought required to transition between functionality of >>
-C << the module tdf to the in-built functionality            >>
        character action*16
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='setuptemporal'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1295,65 +1168,8 @@ C file, what is currently used and other management tasks.
 
 C Take into account if the user is browsing or can modify the files
 C and present a different interface depending on file type.
- 42   H(1)='Temporal definitions are used to impose special'
-      H(2)='boundary condition on a simulation or to modify'
-      H(3)='design parameters as a simulation proceeds.'
-      H(4)=' '
-      H(5)='A temporal file holds one or more entities (e.g. climate'
-      H(6)='data, casual gains, set points etc.) over a specified '
-      H(7)='number of days and for a specified time step. These'
-      H(8)='entities, depending on their type, may be associated'
-      H(9)='with zones or controls within the model and will'
-      H(10)='replace existing definitions.'
-      H(11)=' '
-      H(12)='associations - entities in the temporal file can be'
-      H(13)='  associated with entities in your model depending on'
-      H(14)='  the type of information. For example climate data'
-      H(15)='  is associated with the whole model and infiltration'
-      H(16)='  is associated with a zone.'
-      H(17)=' '
-      H(18)='Currently the following item types are offered: '
-      H(19)=' ALLCLMT - all climate data (includes next 6 items)'
-      H(20)=' BDTEXTT - ambient temperature'
-      H(21)=' WINDVLT - wind velocity'
-      H(22)=' WINDDRT - wind direction'
-      H(23)=' RELHUMT - ambient relative humidity'
-      H(24)=' DIFHSLT - diffuse horizonal radiation'
-      H(25)=' GLOHSLT - global horizonal radiation'
-      H(26)=' DIRSOLT - direct normal solar radiation'
-      H(27)=' SETPTTT - control setpoint temperature'
-      H(28)=' CASUALT - zone casual gains (combined gains)'
-      H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
-      H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
-      H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
-      H(32)=' VERTSOL -Vertical solar radiation data for a facade'
-      H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(34)=' DBTZNM  - measured zone db temperature'
-      H(35)=' SURTM   - measured surface temperature'
-      H(36)=' '
-      H(37)='manage associations - you can add and delete associations'
-      H(38)='  that have been previously defined. Note this does not'
-      H(39)='  alter the contents of the temporal file.'
-      H(40)=' '
-      H(41)='dereference temporal file - this removes current links'
-      H(42)='  between the model and entities in the temporal file.'
-      H(43)='  It does not remove the temporal file.'
-      H(44)=' '
-      H(45)='create file - you supply a file name, if it exists it'
-      H(46)='  is scanned otherwise a minimal file is created.'
-      H(47)=' '
-      H(48)='edit/list - contents of the current file are presented'
-      H(49)='  and if you have permission you can alter its contents.'
-      H(50)=' '
-      H(51)='General instructions for setting up a temporal file:'
-      H(52)='a) Decide the period of the data (start and end dates)'
-      H(53)='   as well as frequency (1stph to 60 tsph).'
-      H(54)='b) If data is to be imported from a file with columns'
-      H(55)='   of data take a note of which columns are required.'
-      H(56)='c) Plan the names of the temporal entities you will be'
-      H(57)='   be creating as well as which zones or controls in '
-      H(58)='   the model are going to be associates with the'
-      H(59)='   entities in the temporal file.'
+ 42   helptopic='temporal_setup_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Begin with high level menu.
     3 IER=0
@@ -1366,8 +1182,6 @@ C Begin with high level menu.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(60)='At the current time there are no temporal definitions;'
-        nbhelp=60
         WRITE(ITEMS(1),'(A)')'a create temporal entities file'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c not applicable '
@@ -1378,6 +1192,8 @@ C Begin with high level menu.
         if(irt.EQ.nitms)then
           return
         elseif(irt.EQ.nitms-1)then
+          helptopic='temporal_setup_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
           goto 3
         elseif(irt.EQ.3)then
@@ -1392,8 +1208,6 @@ C Begin with high level menu.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(60)='An outdated file format is associated with the model.'
-        nbhelp=60
         WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c dereference temporal file'
@@ -1413,8 +1227,6 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(60)='You may view the temporal data via view option.'
-          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1433,8 +1245,6 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(60)='An outdated file format is associated with the model.'
-          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
           WRITE(ITEMS(3),'(A)')'c dereference temporal file'
@@ -1455,8 +1265,6 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(60)='You can view the temporal data via view opton.'
-          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1475,8 +1283,6 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(60)='Temporal definitions are available for editing/use.'
-          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
           WRITE(ITEMS(3),'(A)')'c dereference temporal file'
@@ -1511,7 +1317,7 @@ C If LTDFA is still UNKNOWN set to default name.
           ltmp=LTDFA
           CALL EASKS(ltmp,' ','Temporal definitions file?',
      &      72,DLTDF,'temporal definitions file',
-     &      IER,5)
+     &      IER,nbhelp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LTDFA=ltmp
             MODSIT=.true.
@@ -1538,7 +1344,7 @@ C << later add add a file browse function >>
         if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
         ltmp=LTDFA
         CALL EASKS(ltmp,' ','Temporal definitions file?',
-     &    72,DLTDF,'temporal definitions file',IER,5)
+     &    72,DLTDF,'temporal definitions file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           continue
         else
@@ -1675,12 +1481,9 @@ C Use/manage entity associations.
           goto 42
         endif
 
-        H(1)='Temporal definitions are used to impose special'
-        H(2)='boundary condition on a simulation or to modify'
-        H(3)='design parameters as the simulation proceeds.'
         ltmp=LTDFA
         CALL EASKS(ltmp,' Temporal definitions file name?',
-     &    ' ',72,DLTDF,'temporal definitions db name',IER,3)
+     &    ' ',72,DLTDF,'temporal definitions db name',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
 
 C Depending on its type read the header of the temporal file.
@@ -1731,30 +1534,23 @@ C Befor management option list current db items and then associations.
         endif
 
 C Manage the list of DBTAG/DBTASK/DBZN/DBSN.
-        h(1)='Existing associations can be removed or new '
-        h(2)='associations between temporal entities and '
-        h(3)='model zones and/or controls can be added. '
         itro=0
         if(ITEMSTD.eq.0)then
           call easkabc('Temporal association options:',' ',
-     &      'n/a','add association','continue',ITRO,3)
+     &      'n/a','add association','continue',ITRO,nbhelp)
           if(itro.eq.3) goto 42
         else
           call easkabcd('Temporal association options:',' ',
      &      'delete association','add association','edit association',
-     &      'continue',ITRO,3)
+     &      'continue',ITRO,nbhelp)
           if(itro.eq.4) goto 42
         endif
         if(itro.eq.1)then
 
 C Delete an association and move others up.
-          h(1)='Select the index of the temporal item you do not wish'
-          h(2)='use in the current model. This removes the association'
-          h(3)='but does not remove the entity from the temporal file.'
-          H(4)=' '
-          H(5)='A cancel request leaves the model unchanged. '
           CALL EASKI(it,'Temporal item which you do not want to use',
-     &      'in this model?',1,'F',itemstd,'F',1,'selec index',IERI,5)
+     &      'in this model?',1,'F',itemstd,'F',1,'selec index',
+     &      IERI,nbhelp)
           if(ieri.eq.-3) goto 42
 
           if(it.eq.0)then
@@ -1779,12 +1575,9 @@ C Delete an association and move others up.
 
 C Add association or edit current association.
           if(itro.eq.3)then
-            h(1)='Select the index of the association you wish to'
-            h(2)='modify in the current model. '
-            H(3)=' '
-            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(ite,'Which temporal association to modify?',
-     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',IERI,4)
+     &        '(index)',1,'F',itemstd,'F',1,'selec tdf assoc',
+     &        IERI,nbhelp)
             if(ieri.eq.-3) goto 42
             if(ite.ne.0)then
 
@@ -1793,19 +1586,14 @@ C Reset itemstd to the item to be edited.
               WRITE(outs,29)ite,DBTAG(ite),DBTASK(ite),DBZN(ite),
      &             DBSN(ite)
               call edisp(iuout,outs)
-              h(1)='Select the index of the temporal item you wish'
-              h(2)='to associate. '
-              CALL EASKI(it,' ','Associate temporal item?',
-     &              1,'F',NITDF,'F',1,'selec tdf index',IERI,24)
+              CALL EASKI(it,' ','Index of associated temporal item?',
+     &              1,'F',NITDF,'F',1,'selec tdf index',IERI,nbhelp)
               if(ieri.eq.-3) goto 42
             endif
           elseif(itro.eq.2)then
-            h(1)='Select the index of the temporal item you wish to'
-            h(2)='include in the current model. '
-            H(3)=' '
-            H(4)='A cancel request leaves the model unchanged. '
             CALL EASKI(it,'Temporal item index to associate with',
-     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',IERI,4)
+     &        'this model?',1,'F',NITDF,'F',1,'selec tdf index',
+     &        IERI,nbhelp)
             if(ieri.eq.-3) goto 42
             ITEMSTD=ITEMSTD+1
             ite=ITEMSTD
@@ -1897,13 +1685,16 @@ C temporal definition entity
 
 C If there are possible control laws and if the user selects one of them
 C copy data into cm variables for later editing.
+              helptopic='temporal_ctl_linkage'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
      &          'use existing control','create new control','continue',
-     &          IRTC,26)
+     &          IRTC,nbhelp)
               if(irtc.eq.1)then
                 CALL EASKI(ispl,'Control loop to use set point data?',
-     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,26)
+     &            ' ',1,'F',ncf,'F',1,'cntrl loop for set point',
+     &            IERI,nbhelp)
                 if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=izdef
@@ -1923,7 +1714,7 @@ C possible and link back to the temporal item. Increment ncf.
               call edisp(iuout,'No applicable controls found.')
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
-     &          'n/a','create new control','cancel',IRTC,26)
+     &          'n/a','create new control','cancel',IRTC,nbhelp)
               if(irtc.eq.1.or.irtc.eq.3)then
                 goto 42
               endif
@@ -1961,22 +1752,16 @@ C Add another controls
 
 C Confirm capacities.
   553       WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
-            H(1)='This control assumes that heating and cooling'
-            H(2)='capacities are adequate for reaching the setpoints'
-            H(3)='in the temporal definition file (tdf). It is only'
-            H(4)='required to define the columns in the tdf where the'
-            H(5)='setpoints should be read from. Defaults are column 4'
-            H(6)='for heating setpoint and column 5 for cooling.'
             if(TTYPE(it)(1:6).eq.'ACTIVI')then
               CALL EASKS(HOLD,
      &        'Heating and cooling setpoint column number ',
      &        '(respectively):',40,' 5.0 6.0 ',
-     &        ' track another column number(s)',IER,6)
+     &        ' track another column number(s)',IER,nbhelp)
             elseif(TTYPE(it)(1:6).eq.'HTCLSE')then     
               CALL EASKS(HOLD,
      &        'Heating and cooling setpoint column number ',
      &        '(respectively):',40,' 2.0 3.0 ',
-     &        ' track another column number(s)',IER,6)
+     &        ' track another column number(s)',IER,nbhelp)
             endif    
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
@@ -2010,33 +1795,9 @@ C If there is no control file warn the user to create one first.
             endif
 
 C Present a summary of the steps needed to create a temporal-control link.
-            h(1)='A temporal item of type SETPPT can be associated'
-            h(2)='with a zone control in order to force the zone'
-            h(3)='temperature to match that recorded in the temporal'
-            h(4)='file. It makes use a control law 11 to do this. '
-            h(5)=' '
-            h(6)='If you want to use an existing control it will be '
-            h(7)='updated to impliment the necessary links. If you '
-            h(8)='want to create a new zone control then all of the '
-            h(9)='necessary control period will be generated. '
-            h(10)=' '
-            h(11)='If you want to use temporal-based setpoints for'
-            h(12)='several zones you will need a separate temporal '
-            h(13)='item and a separate zone control law for each zone.'
-            h(14)=' '
-            h(15)='You will be asked about: '
-            h(16)=' a) control loop index (existing or new)'
-            h(17)=' b) maximum and minimum heating & cooling capacity'
-            h(18)='    which should have sufficient capacity to main-'
-            h(19)='    tain the setpoint.'
-            h(20)=' c) the zone where the set point will be used '
-            h(21)=' '
-            h(22)='It is not necessary to further modify the zone '
-            h(23)='control once it has been created (unless you did '
-            h(24)='not guess the correct capacity. '
-            h(25)=' '
-            h(26)='A cancel request leaves the model unchanged. '
-            CALL PHELPD('temporal-control popup',26,'-',0,0,IER)
+            helptopic='temporal_ctl_setpoints'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('temporal-control popup',nbhelp,'-',0,0,IER)
 
 C Ask the user whether there has already been a control law defined
 C to use the setpoint. If so report on that control loop and offer
@@ -2066,10 +1827,11 @@ C copy data into cm variables for later editing.
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
      &          'use existing control','create new control','continue',
-     &          IRTC,26)
+     &          IRTC,nbhelp)
               if(irtc.eq.1)then
                 CALL EASKI(ispl,'Control loop to use set point data?',
-     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,26)
+     &            ' ',1,'F',ncf,'F',1,'cntrl loop for set point',
+     &            IERI,nbhelp)
                 if(ieri.eq.-3) goto 42
                 izdef=iban(ispl,1)
                 ibsn(ispl,1)=izdef
@@ -2099,7 +1861,7 @@ C possible and link back to the temporal item. Increment ncf.
               call edisp(iuout,'No applicable controls found.')
               irtc=0
               CALL EASKABC(' Control linkage options:',' ',
-     &          'n/a','create new control','cancel',IRTC,26)
+     &          'n/a','create new control','cancel',IRTC,nbhelp)
               if(irtc.eq.1.or.irtc.eq.3)then
                 goto 42
               endif
@@ -2155,18 +1917,10 @@ C even though cm(8) - cm(13) does not seem to be used set them.
 
 C Confirm capacities.
   53        WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
-            H(1)='Heat delivery is normally set high so that the '
-            H(2)='target temperature is attained. The heating minimum'
-            H(3)='is normally 0 but if > 0 then heating will continue'
-            H(4)='at the minimum even when the temperature is'
-            H(5)='reached. '
-            H(6)='In the unlikely event that you want to control to'
-            H(7)='another temperature but allow no cooling capacity '
-            H(8)='the control may not work properly.'
             CALL EASKS(HOLD,
      &      ' Max & Min heat capacity, Max & Min cool capacity for',
      &      ' matching another temp: ',40,' 10000. 0.0 10000. 0.0 ',
-     &      ' track another max min heat cool',IER,8)
+     &      ' track another max min heat cool',IER,nbhelp)
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,999999.,'F','Max Heat',IER)
             CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Min Heat',IER)
@@ -2259,9 +2013,7 @@ C Measured surface T (associated with a zone and up to 6 surfaces).
           endif
           if(itro.eq.2)then
             dok=.false.
-            h(1)='If you want to continue adding temporal refences '
-            h(2)='then answer yes. '
-            CALL ASKOK(' ',' Use another temporal item?',OK,DOK,2)
+            CALL ASKOK(' ','Use another temporal item?',OK,DOK,nbhelp)
             if(OK)then
               IRT=4
               goto 27
@@ -2296,23 +2048,32 @@ C  pspco2,pspnox,pspsox = small power related emissions co2/nox/sox
 C  phwco2,phwnox,phwsox = how water related emissions co2/nox/sox
       subroutine peconv(act)
 
-      common/pophelp/h(60)
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
 
       dimension ITEMS(18)
-      character items*36,h*72,hold*40,act*1
+      character items*36,hold*40,act*1
       logical MODSIT
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='peconv'  ! set for subroutine
 
       MODSIT=.false.
 
 C If act = 'i' then initialise variables.
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
+        helptopic='primary_energy_conversion'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ipconv=1
-        call easkabc('Typical patterns',' ','UK','Europe','zeros',IW,41)
+        call easkabc('Typical patterns',' ','UK','Europe','zeros',
+     &    IW,nbhelp)
         if(IW.eq.1)then
           pcnvht=1.53; pcnvcl=1.44; pcnvlt=3.6; pcnvfn=3.6
           pcnvsp=3.6; pcnvhw=1.53
@@ -2369,47 +2130,8 @@ C If act = 'i' then initialise variables.
       nitms=18
 
 C Help text for this menu.
-  4   h(1) ='Use these emission patterns as an approximation of '
-      h(2) ='patterns in several regions. '
-      h(3) =' '
-      h(4)='Emissions [grams per kWh primary energy]. '
-      h(5)='Typical UK       CO2    NOx   SOx   '
-      h(6)='Gas              190.   0.3    0.2    '
-      h(7)='Oil              260.   2.5    0.1    '
-      h(8)='Coal             320.   1.3   2.63  '
-      h(9)='Electricity      612.   2.06  7.57   '
-      h(10)='Where heating and DHW are gas, and lights/fans/pumps'
-      h(11)='are electricity. '
-      h(12) =' '
-      h(13)='Typical Europe   CO2    NOx   SOx   '
-      h(14)='Gas              190.   0.3   0.2    '
-      h(15)='Oil              260.   2.5   5.0    '
-      h(16)='Coal             320.   1.3   2.63  '
-      h(17)='Electricity      360.   1.2   4.5   '
-      h(18)=' '
-      h(19)='Conversion demand units > primary energy units includes'
-      h(20)='both the typical seasonal efficiency of the equipment '
-      h(21)='and transport losses. Transmission losses assumed'
-      h(22)='are 4% for gas, none for fuel oil, none for solid fuel.'
-      h(23)=' '
-      h(24)='Heating system efficiencies and conversions are: '
-      h(25)='  gas boiler (fan assisted flue)     68%  1.53'
-      h(26)='  gas boiler (open/balanced flue)    65%  1.60'
-      h(27)='  gas condensing boiler              85%  1.22'
-      h(28)='  gas combi boiler                   72%  1.44'
-      h(29)='  solid fuel (auto feed)             60%  1.73'
-      h(30)='  oil fired (standard)               70%  1.48'
-      h(31)='  oil fired (condensing)             85%  1.22'
-      h(32)='  gas fired warm air (fan asst flue) 80%  1.30'
-      h(33)='  gas fired warm air (open/bal flue) 70%  1.48'
-      h(34)=' '
-      h(35)='Cooling system efficiencies and conversions are: '
-      h(36)='  packaged A/C unit assuming 2.5 CoP      1.44'
-      h(37)='  split A/C unit assuming 2.5 CoP         1.44'
-      h(38)=' '
-      h(39)='Conversion factors: '
-      h(40)='  small power & lighting: 3.2-3.6 (typical UK) '
-      h(41)='  small power & lighting: ? (typical Europe) '
+  4   helptopic='primary_energy_conversion'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Conversions to primary',ITEMS,nitms,INO)
     
@@ -2417,36 +2139,37 @@ C Help text for this menu.
         if(MODSIT)CALL EMKCFG('-',IER)
         RETURN
       elseif(INO.EQ.nitms-1)then
-        CALL PHELPD('prim convers',41,'-',0,0,IER)
+        CALL PHELPD('prim convers',nbhelp,'-',0,0,IER)
       elseif(ino.eq.2)then
         CALL EASKR(pcnvht,' ','Heating primary energy multiplier:',
-     &       1.0,'W',5.0,'W',1.25,'heat prim multip',IER,41)
+     &       1.0,'W',5.0,'W',1.25,'heat prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.3)then
         CALL EASKR(pcnvcl,' ','Cooling primary energy multiplier:',
-     &       1.0,'W',5.0,'W',3.6,'cool prim multip',IER,41)
+     &       1.0,'W',5.0,'W',3.6,'cool prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.4)then
         CALL EASKR(pcnvlt,' ','Lighting primary energy multiplier:',
-     &       1.0,'W',5.0,'W',3.6,'light prim multip',IER,41)
+     &       1.0,'W',5.0,'W',3.6,'light prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.5)then
         CALL EASKR(pcnvfn,' ','Fans & pumps primary energy multiplier:',
-     &       1.0,'W',5.0,'W',3.6,'fans prim multip',IER,41)
+     &       1.0,'W',5.0,'W',3.6,'fans prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.6)then
         CALL EASKR(pcnvsp,' ','Small power primary energy multiplier:',
-     &       1.0,'W',5.0,'W',3.6,'sml pwr prim multip',IER,41)
+     &       1.0,'W',5.0,'W',3.6,'sml pwr prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.7)then
         CALL EASKR(pcnvhw,' ','Hot water primary energy multiplier:',
-     &       1.0,'W',5.0,'W',3.6,'hot water prim multip',IER,41)
+     &       1.0,'W',5.0,'W',3.6,'hot water prim multip',IER,nbhelp)
         MODSIT=.true.
       elseif(ino.eq.10)then
    95   hold = ' '
         WRITE(HOLD,'(3F10.3)')phtco2,phtnox,phtsox
         CALL EASKS(HOLD,'Heating related emissions [gr/kWh primary]:',
-     &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','heat emiss',IIER,41)
+     &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','heat emiss',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,phtco2,0.,999.,'W','ht co2',IIER)
         CALL EGETWR(HOLD,K,phtnox,0.,999.,'W','ht nox',IIER)
@@ -2457,7 +2180,8 @@ C Help text for this menu.
    96   hold = ' '
         WRITE(HOLD,'(3F10.3)')pclco2,pclnox,pclsox
         CALL EASKS(HOLD,'Cooling related emissions [gr/kWh primary]:',
-     &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','cool emiss',IIER,41)
+     &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','cool emiss',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,pclco2,0.,999.,'W','cl co2',IIER)
         CALL EGETWR(HOLD,K,pclnox,0.,999.,'W','cl nox',IIER)
@@ -2468,7 +2192,8 @@ C Help text for this menu.
    97   hold = ' '
         WRITE(HOLD,'(3F10.3)')pltco2,pltnox,pltsox
         CALL EASKS(HOLD,'Lighting related emissions [gr/kWh primary]:',
-     &   'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','light emiss',IIER,41)
+     &   'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','light emiss',
+     &   IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,pltco2,0.,999.,'W','lt co2',IIER)
         CALL EGETWR(HOLD,K,pltnox,0.,999.,'W','lt nox',IIER)
@@ -2479,7 +2204,8 @@ C Help text for this menu.
    98   hold = ' '
         WRITE(HOLD,'(3F10.3)')pfnco2,pfnnox,pfnsox
         CALL EASKS(HOLD,'Fan & pump emissions [gr/kWh primary]:',
-     &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','fan emiss',IIER,41)
+     &    'CO2 NOx & SOx ',40,' 612.  2.06   7.5 ','fan emiss',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,pfnco2,0.,999.,'W','fan co2',IIER)
         CALL EGETWR(HOLD,K,pfnnox,0.,999.,'W','fan nox',IIER)
@@ -2490,7 +2216,8 @@ C Help text for this menu.
    99   hold = ' '
         WRITE(HOLD,'(3F10.3)')pspco2,pspnox,pspsox
         CALL EASKS(HOLD,'Small power emissions [gr/kWh primary]:',
-     &    'CO2 NOx & SOx ',40,'612.   2.06  7.5 ','smlp emiss',IIER,41)
+     &    'CO2 NOx & SOx ',40,'612.   2.06  7.5 ','smlp emiss',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,pspco2,0.,999.,'W','sml co2',IIER)
         CALL EGETWR(HOLD,K,pspnox,0.,999.,'W','sml nox',IIER)
@@ -2501,7 +2228,8 @@ C Help text for this menu.
    94   hold = ' '
         WRITE(HOLD,'(3F10.3)')phwco2,phwnox,phwsox
         CALL EASKS(HOLD,'Hot water emissions [gr/kWh primary]:',
-     &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','dhw emiss',IIER,41)
+     &    'CO2 NOx & SOx ',40,' 190.  0.2  0.1 ','dhw emiss',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,phwco2,0.,999.,'W','hw co2',IIER)
         CALL EGETWR(HOLD,K,phwnox,0.,999.,'W','hw nox',IIER)
@@ -2536,7 +2264,6 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -2561,11 +2288,18 @@ C 31
       dimension ixdvals(365)
 
       character calename*32,calentag*12,calendayname*32
-      character h*72,vert*33,DS*7,DS1*10,act*1,key*1
+      character vert*33,DS*7,DS1*10,act*1,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       logical modify,browse,XST
       INTEGER IHL
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='calenmanage'  ! set for subroutine
 
 C If user requested initial calendar.
       if(act.eq.'i'.and.(.NOT.browse))then
@@ -2660,28 +2394,18 @@ C If a long list include page facility text.
       VERT(M+5)  ='- exit                           '
 
 C Help text for this menu.
-      H(1)='This facilitiy sets up and manages a calendar of day'
-      H(2)='types which can be associated with zone casual gains,'
-      H(3)='infiltration schedues and controls.'
-      H(4)=' '
-      H(5)=' '
-      H(6)=' '
-      H(7)=' '
-      H(8)='This facility is still being developed further and '
-      H(9)='does not yet hold standard calendars for use by projects'
-      H(10)='nor does it access typical patterns for differenct '
-      H(11)='countries. '
+      helptopic='calendar_day_types'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       write(head,'(a,i4)') ' Calendar for ',iyear
       CALL EMENU(head,VERT,MVERT,IVERT)
       IF(IVERT.eq.1)THEN
 
 C Edit calendar name
-        h(1)='Short phrase idenfitying the calendar. '
-        h(2)='Useful if you need to maintain several variants.'
         tcalename=calename
         CALL EASKS(tcalename,' Description of calendar: ',
-     &    '  ',32,'weekday sat sun all year','calen descr',IER,2)
+     &    '  ',32,'weekday sat sun all year','calen descr',
+     &    IER,nbhelp)
         if(tcalename(1:2).ne.'  ')then
           if(tcalename(1:lnblnk(tcalename)).ne.
      &       calename(1:lnblnk(calename)))then
@@ -2707,9 +2431,6 @@ C Manage day types.
         write(citem(mm+3),'(a)') '? help                               '
         write(citem(mm+4),'(a)') '- exit                               '
         mcvert=mj+nbdaytype+4
-        h(1)='This facility allows you to manage day types. You can'
-        h(2)='add a day type. To change the details of a day type'
-        h(3)='click on the relevant menu item.'
         icvert=-1
         CALL EMENU('  Day types',citem,mcvert,icvert)
         if(icvert.eq.mcvert)then
@@ -2718,20 +2439,14 @@ C Manage day types.
         elseif(icvert.eq.mcvert-1)then
 
 C Help.
-          CALL PHELPD('calendar day section',3,'-',0,0,IER)
+          CALL PHELPD('calendar day section',nbhelp,'-',0,0,IER)
           goto 73
         elseif(icvert.eq.mcvert-2)then
 
 C Add or delete a day type.
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
-            write(h(1),'(a,i3,a)')'There can be up to ',MDTY,
-     &      ' day types.'
-            h(2)='Day types cannot be deleted (yet) but may not'
-            h(3)='not be assigned to any day at all. The equivalent'
-            h(4)='of deletion is to unassign a day type from all '
-            h(5)='actual days '
             CALL EASKABC(' Options:',' ',
-     &        'add','delete (not available)','continue',IRT,5)
+     &        'add','delete (not available)','continue',IRT,nbhelp)
             if(irt.eq.1)then
 
 C Update control file before increasing day types
@@ -2746,11 +2461,9 @@ C Update control file before increasing day types
               calendayname(nbdaytype)='new day type'
 
 C Edit calendar day tag and name.
-              h(1)='The tag is one word (<12 char) e.g. holiday'
-              h(2)='Description is phrase for use in selection lists.'
               tcalentag=calentag(nbdaytype)
               CALL EASKS(tcalentag,' Calendar day type tag: ',
-     &          '  ',12,'holiday','day tag',IER,2)
+     &          '  ',12,'holiday','day tag',IER,nbhelp)
               if(tcalentag(1:2).ne.'  ')then
                 if(tcalentag(1:lnblnk(tcalentag)).ne.
      &calentag(nbdaytype)(1:lnblnk(calentag(nbdaytype))))then
@@ -2759,7 +2472,7 @@ C Edit calendar day tag and name.
               endif
               tcalendayn=calendayname(nbdaytype)
               CALL EASKS(tcalendayn,' Calendar day type descripton: ',
-     &          '  ',32,'holiday','day descr',IER,2)
+     &          '  ',32,'holiday','day descr',IER,nbhelp)
               if(tcalendayn(1:2).ne.'  ')then
                 if(tcalendayn(1:lnblnk(tcalendayn)).ne.
      &calendayname(nbdaytype)(1:lnblnk(calendayname(nbdaytype))))then
@@ -2773,9 +2486,6 @@ C Update operations and control data for all zones to include this new day type
               modify=.true.
               goto 73
             elseif(irt.eq.2)then
-              DO 144 IHL=1,5
-                call edisp(iuout,h(ihl))
- 144          CONTINUE
               goto 73
             elseif(irt.eq.3)then
               goto 73
@@ -2785,12 +2495,9 @@ C Update operations and control data for all zones to include this new day type
 
 C Edit calendar day tag and name.
           ifoc=icvert-2
-          h(1)='The tag is one word (<12 char) e.g. holiday'
-          h(2)='Description is phrase for use in selection lists'
-          h(3)='e.g. Holidays in Wales'
           tcalentag=calentag(ifoc)
           CALL EASKS(tcalentag,' Calendar day type tag: ',
-     &      '  ',12,'holiday','day tag',IER,3)
+     &      '  ',12,'holiday','day tag',IER,nbhelp)
           if(tcalentag(1:2).ne.'  ')then
             if(tcalentag(1:lnblnk(tcalentag)).ne.
      &         calentag(ifoc)(1:lnblnk(calentag(ifoc))))then
@@ -2800,7 +2507,7 @@ C Edit calendar day tag and name.
           endif
           tcalendayn=calendayname(ifoc)
           CALL EASKS(tcalendayn,' Calendar day type descripton: ',
-     &      '  ',32,'holiday','day descr',IER,2)
+     &      '  ',32,'holiday','day descr',IER,nbhelp)
           if(tcalendayn(1:2).ne.'  ')then
             if(tcalendayn(1:lnblnk(tcalendayn)).ne.
      &         calendayname(ifoc)(1:lnblnk(calendayname(ifoc))))then
@@ -2830,7 +2537,7 @@ C update the model if not browsing
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text for the vertex menu.
-        CALL PHELPD('calendar section',11,'-',0,0,IER)
+        CALL PHELPD('calendar section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List current calendar.
@@ -2843,7 +2550,7 @@ C Begin by finding out the day of the week of 1 Jan.
         call MENUATOL(outs,'Display options:',
      &    'a january - march','b april - june',
      &    'c july - september','d october - december ',
-     &    'e all year',' ',' ',' ',' ',' ',' ',' ',isw,idno,3)
+     &    'e all year',' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
 
 C loop is the number of months to display
 C loopst is the month number to start with
@@ -2875,25 +2582,16 @@ C Apply day type to several days of the year. First ask for the
 C day type and then present a list of all of the days so that the
 C user can select one or more.
         CALL EPMENSV
-        h(1)='Select one of the existing day types. This day type'
-        h(2)='will be applied to each of the julian days selected.'
         do 67 ij=1,nbdaytype
           write(citem(ij),'(3a)') calentag(ij),' ',calendayname(ij)
   67    continue
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-     &    52,nbdaytype,citem,'available day types',IER,2)
-        h(1)='Days can be selected "one by one" and you can associate'
-        h(2)='any day type with any day. A faster method is to follow'
-        h(3)='a pattern. Here you will first be asked for dates during'
-        h(4)='which the new day type is to be added (called relevant'
-        h(5)='dates) The selected day type will then be added to every'
-        h(6)='Nth day in the relevant dates starting from the first '
-        h(7)='relevant date e.g. N=7 for weekly, N=1 for all days'
-        if(ix.ne.0)then
+     &    52,nbdaytype,citem,'available day types',IER,nbhelp)
+       if(ix.ne.0)then
           IHDT=0
           CALL EASKABC('How to add day types (see help)?',' ',
-     &    'One by one','Follow pattern','cancel',IHDT,7)
+     &    'One by one','Follow pattern','cancel',IHDT,nbhelp)
           IF(IHDT.EQ.1)THEN
             idt=idvals(1)
             do 78 ld=1,365
@@ -2904,7 +2602,7 @@ C user can select one or more.
             CALL EPMENSV
             ixd=365
             CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
-     &        52,365,clist,'available days',IER,7)
+     &        52,365,clist,'available days',IER,nbhelp)
             CALL EPMENRC
             if(ixd.ne.0)then
               do 79 idayloop=1,ixd
@@ -2926,12 +2624,10 @@ C user can select one or more.
      &      isds,isdf,ifday,ier)
 
 C Regenerate help string that is clobbered by call to easkper
-        h(1)='Days can be selected "one by one" and you can associate'
-        h(2)='any day type with any day. A faster method is to follow'
             CALL EASKI(IFRQ,
      &      ' Enter number of days to repeat pattern after ',
      &      ' E.g. 7=weekly, 30=monthly, 1=daily ',
-     &      1,'F',30,'F',1,'frequency ',IERI,7)
+     &      1,'F',30,'F',1,'frequency ',IERI,nbhelp)
             DO 532 IDTT=ISDS,ISDF,IFRQ
               ICALENDER(IDTT)=idvals(1)
  532        CONTINUE
@@ -2957,14 +2653,12 @@ C Edit day identified by KEYIND.
 C Select from current range of day types. Assign icalendar value
 C for the focus day to the selected day type and increment nbcaldays.
         CALL EPMENSV
-        h(1)='Select one of the existing day types. '
-        h(2)='Note: this applies only to the current day of the year.'
         do 76 ij=1,nbdaytype
           write(citem(ij),'(3a)') calentag(ij),' ',calendayname(ij)
   76    continue
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-     &    52,nbdaytype,citem,'avail day types',IER,2)
+     &    52,nbdaytype,citem,'avail day types',IER,nbhelp)
         if(ix.ne.0)then
           idt=idvals(1)
           icalender(ifoc)=idt
@@ -3404,20 +3098,24 @@ C EDDGTP Sets up ground temperature profiles
 #include "site.h"
       integer iCountWords
 
-      common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
 
-      CHARACTER H*72,HOLD*72,OUTS*124
+      CHARACTER HOLD*72,OUTS*124
       LOGICAL MODSIT
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDDGTP'  ! set for subroutine
 
 C Ground temperature profiles....
       call edisp(iuout,' ')  
       write(outs,'(a,i3,a)')' There are currently ',NGRDP,' profiles.'      
       call edisp(iuout,outs) 
-      H(1)='Ground temperature profiles define the monthly soil'
-      H(2)='temperatures at arbitrary depths for use as a boundary'
-      H(3)='condition within a simulation.  Up to 12 profiles may'
-      H(4)='be defined each comprising 12 monthly temperatures.'
+      helptopic='ground_temp_profile'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(NGRDP.gt.0)then
         CALL EDISP(IUOUT,' ')
         do 22 igrdp=1,NGRDP    
@@ -3432,15 +3130,12 @@ C Ground temperature profiles....
           CALL EDISP(IUOUT,' ')
  22     continue
         CALL EASKABC(' ','Options:',
-     &             'edit profiles','add profile',' ',IRT,4)
+     &             'edit profiles','add profile',' ',IRT,nbhelp)
         if(IRT.eq.1)then
           if(NGRDP.gt.0)then
             ifoc=1
-            H(1)='Provide index of the ground temperature profile.'
-            H(2)=' '
-            H(3)='A cancel request leaves the model unchanged. '
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
-     &        1,'F',NGRDP,'F',1,'edit profile',IERI,3)
+     &        1,'F',NGRDP,'F',1,'edit profile',IERI,nbhelp)
             if(ieri.eq.-3) then
               modsit=.false.
               return
@@ -3475,9 +3170,8 @@ C Ground temperature profiles....
       ENDIF
 
    93 WRITE(HOLD,'(1X,6F7.2)')(UGRDTP(J,IFOC),J=1,6)
-      H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures January-June:',' ',72,' ',
-     &    'gr prof jan-jun',IER,1)
+     &    'gr prof jan-jun',IER,nbhelp)
       NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
@@ -3491,9 +3185,8 @@ C Ground temperature profiles....
    94 CONTINUE
    95 hold = ' '
       WRITE(HOLD,'(1X,6F7.2)')(UGRDTP(J,IFOC),J=7,12)
-      H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
-     &    'gr prof jul-dec',IER,1)
+     &    'gr prof jul-dec',IER,nbhelp)
       NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
@@ -3522,11 +3215,17 @@ C EDDSHD Sets up shading and insolation files
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/pophelp/h(60)
 
-      character H*72,LCFGF*72
+      character LCFGF*72
       character outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDDSHD'  ! set for subroutine
 
       if(ncomp.eq.0)then
         return
@@ -3545,11 +3244,11 @@ C Check if Unix-based or DOS based.
           endif
         endif
   42  continue
-      h(1)='Shading should be recalculated when site'
-      h(2)='changes. Each affected zone will be done in turn.'
+      helptopic='reflect_site_change'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC(' Reflect site change in shading options:',' ',
      &  'recalculate (silent)','recalculate (interactive)','continue',
-     &  IRT,2)
+     &  IRT,nbhelp)
       if(IRT.eq.1.or.IRT.eq.2)then
         if(IRT.eq.1)then
         endif
@@ -3566,11 +3265,9 @@ C as the command line.
             call comissionish(iz,'sra',ier)
           else
             DOK=.true.
-            h(1)='Each zone is calculated in sequence.'
-            h(2)='If you do one, you should do all.'
             write(outs,'(3a)') 'Proceed with shading for ',
      &        zname(iz)(1:lnzname(iz)),' ?'
-            CALL ASKOK(outs,' ',OK,DOK,2)
+            CALL ASKOK(outs,' ',OK,DOK,nbhelp)
             if(OK)then
               call comissionish(iz,'ira',ier)
             endif
