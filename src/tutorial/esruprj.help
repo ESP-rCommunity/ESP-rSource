@@ -637,7 +637,7 @@
 'removing the file.'
 '  '
 'The browse option presents a list of files in the'
-'project `ctl` folder. If you do not select one then'
+'project [ctl] folder. If you do not select one then'
 'it is assumed that you do not want any control.'
 'If you cancel then nothing will be changed.'
 *enditem
@@ -917,14 +917,14 @@
 '                                   |no. of| |no. of|'
 '          Function                 |aux sn| |items |'
  '---------------------------------------------------'
-' greatest val of aux`y sensors         1       10 '
-'   `      `  `    `     `              2       14 '
-' least val of aux`y sensors            1       10 '
-'   `    `  `    `     `               2       14 '
-' mean val of aux`y sensors            1       10 '
-'   `   `  `    `     `                2       14 '
-' weighting of aux`y sensors           2       16 '
-' '
+' greatest val of auxiliary sensors     1       10 '
+'                                       2       14 '
+' least val of auxiliary sensors        1       10 '
+'                                       2       14 '
+' mean val of auxiliary sensors         1       10 '
+'                                       2       14 '
+' weighting of auxiliary sensors        2       16 '
+'  '
 'PLUS 1 item for scaling factor (i.e. a % offset)'
 'PLUS 1 item for offset factor (absolute offset) '
 ' '
@@ -1007,13 +1007,13 @@
 '                                   |no. of| |no. of|'
 '          Function                 |aux sn| |items |'
  '---------------------------------------------------'
-' greatest val of aux`y sensors         1       10 '
-'   `      `  `    `     `              2       14 '
-' least val of aux`y sensors            1       10 '
-'   `    `  `    `     `               2       14 '
-' mean val of aux`y sensors            1       10 '
-'   `   `  `    `     `                2       14 '
-' weighting of aux`y sensors           2       16 '
+' greatest val of auxiliary sensors     1       10 '
+'                                       2       14 '
+' least val of auxiliary sensors        1       10 '
+'                                       2       14 '
+' mean val of auxiliary sensors         1       10 '
+'                                       2       14 '
+' weighting of auxiliary sensors        2       16 '
 '  '
 'Heat delivery is normally set high so that the '
 'target temperature is attained. The heating minimum '
@@ -1074,8 +1074,8 @@
 '  initial guess for optimal stop time (hour.fraction)'
 '  '
 'If the difference between successive estimates is'
-'less then the `Min. Time Diff`, then the latest'
-'time is accepted as the `Optimum Stop Time`.'
+'less then the [Min. Time Diff], then the latest'
+'time is accepted as the [Optimum Stop Time].'
 *enditem
           CALL EASKR(cm(2),' ',' Maximum heating capacity (W) ? ',
           CALL EASKR(cm(3),' ',' Maximum cooling capacity (W) ? ',
@@ -1369,7 +1369,7 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
         CALL EASKABC('Options:',' ',
         CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
 *item EPCNTRL sys_plant_types
-'The `type` numbers relate to the selection you made'
+'The [type] numbers relate to the selection you made'
 'in the previouos step. Here is a reminder: '
 ' '
 ' type 0 is senses dry bulb actuates flux'
@@ -1427,9 +1427,9 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' Mode options are:'
 ' 1: P, PI, PD, PID non-recursive positional control'
 ' 2: P, PI, PD, PID recursive positional control'
-' 3: PI recursive vel`y control (rect. integration)'
-' 4: PID recursive vel`y control (rect. integration)'
-' 5: PID recursive vel`y control(trapez integration)'
+' 3: PI recursive velocity control (rect. integration)'
+' 4: PID recursive velocity control (rect. integration)'
+' 5: PID recursive velocity control(trapez integration)'
 ' Note: negate mode number for cooling'
 '  '
 ' The PID flux control data items are in the range'
@@ -1443,7 +1443,7 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '     Rect. Velocity PID        -   6 items required,'
 ' For mode 4, -4, 5, -5:-'
 '    Trap. Velocity PID        -   7 items required,'
-' NOTE: if `AHU dynamic set point` option '
+' NOTE: if [AHU dynamic set point] option '
 ' selected (set point = -1001) then add 7 data'
 ' items to above.'
 ' '
@@ -1486,9 +1486,9 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 ' Mode options are:'
 ' 1: P, PI, PD, PID non-recursive positional control'
 ' 2: P, PI, PD, PID recursive positional control'
-' 3: PI recursive vel`y control (rect. integration)'
-' 4: PID recursive vel`y control (rect. integration)'
-' 5: PID recursive vel`y control(trapez integration)'
+' 3: PI recursive velocity control (rect. integration)'
+' 4: PID recursive velocity control (rect. integration)'
+' 5: PID recursive velocity control(trapez integration)'
 ' Note: negate mode number for cooling'
 '  '
 ' The PID flow control data items are in the range'
@@ -1502,7 +1502,7 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '     Rect. Velocity PID        -   6 items required,'
 ' For mode 4, -4, 5, -5:-'
 '    Trap. Velocity PID        -   7 items required,'
-' NOTE: if `AHU dynamic set point` option '
+' NOTE: if [AHU dynamic set point] option '
 ' selected (set point = -1001) then add 7 data'
 ' items to above.'
 '  '
@@ -1606,10 +1606,10 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '  Output at high status'
 '  Output at low status'
 '  Mode of operation:'
-'    Mode = +1 for `ON` if control point is less than '
-'           specified function of aux`y sensor(s). '
-'    Mode = -1 for `ON` if control point is greater than'
-'           specified function of aux`y sensor(s). '
+'    Mode = +1 for [ON] if control point is less than '
+'           specified function of auxilary sensor(s). '
+'    Mode = -1 for [ON] if control point is greater than'
+'           specified function of auxilary sensor(s). '
 '  '
 'At present, the control is limited to 2 auxiliary sensors.'
 'The following combinations of sensors are supported:'
@@ -1629,13 +1629,13 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '                                   |no. of| |no. of|'
 '          Function                 |aux sn| |items |'
  '---------------------------------------------------'
-' greatest val of aux`y sensors        1       10 '
-'   `      `  `    `     `             2       14 '
-' least val of aux`y sensors           1       10 '
-'   `    `  `    `     `               2       14 '
-' mean val of aux`y sensors            1       10 '
-'   `   `  `    `     `                2       14 '
-' weighting of aux`y sensors           2       16 '
+' greatest val of auxiliary sensors      1       10 '
+'                                        2       14 '
+' least val of auxiliary sensors         1       10 '
+'                                        2       14 '
+' mean val of auxiliary sensors          1       10 '
+'                                        2       14 '
+' weighting of auxiliary sensors         2       16 '
 '  '
 'The description of an aux sensor is essentially the same as'
 'required in a control point sensor: three indices denoting'
@@ -1645,8 +1645,8 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 'must add up to 100.'
 *enditem
           CALL EASKR(cm(1),' ',' No. of misc data items ',
-          CALL EASKR(cm(2),' ',' Output at `hi` status ? ',
-          CALL EASKR(cm(3),' ',' Output at `lo` status ? ',
+          CALL EASKR(cm(2),' ',' Output at [hi] status ? ',
+          CALL EASKR(cm(3),' ',' Output at [lo] status ? ',
           CALL EASKR(cm(4),' ',' Output mode ? ',
           CALL EASKR(cm(5),' ',' No of auxiliary sensors ? ',
           CALL EASKR(cm(6),' ',' Multi-sensor auxy function ? ',
@@ -2142,7 +2142,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   6: Saw-tooth:     max      min      freq    ---  '
 '   7: Sine:          max      min      freq    shift'
 '   8: Cosine:        max      min      freq    shift'
-'   9: Sensed prop`y: inc/dec  ---      ---     ---  '
+'   9: Sensed propty: inc/dec  ---      ---     ---  '
 '  '
 'Option l implements switching multi-layer constructions'
 '  and the data is overloaded to identify which surfaces'
@@ -2202,7 +2202,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   6: Saw-tooth:     max      min      freq    ---  '
 '   7: Sine:          max      min      freq    shift'
 '   8: Cosine:        max      min      freq    shift'
-'   9: Sensed prop`y: inc/dec  ---      ---     ---  '
+'   9: Sensed propty: inc/dec  ---      ---     ---  '
 '  '
 'Senses temperature in specific zone - this allows you to be'
 '  specific about where in a zone temperatures are sensed. You'
@@ -2793,8 +2793,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'in order to understand these coefficients. '
 ' '
 'This control uses a rewind action that resets the'
-'simulation timestep and `tries again`. During the'
-'simulation the `monitor` facility will get confused'
+'simulation timestep and [tries again]. During the'
+'simulation the [monitor] facility will get confused'
 'and some graphs in the results module might not '
 'plot correctly.  Use this control with care. '
 ' '
@@ -3085,7 +3085,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'as a record of interesting past projects that might'
 'serve as the starting point in some future project.'
 ' '
-'Note to ESP-r Administrators: the `exemplars` file'
+'Note to ESP-r Administrators: the [exemplars] file'
 'located in directory ~esp-r/training should be kept'
 'up-to-date by appending new models using the key'
 'word syntax as explained in the exemplars file.'
@@ -3136,7 +3136,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '     (no translation/rotation is currently done!)'
 ' Scaling: select two points a known distance apart (for best'
 '     results pick a longer line) and state the distance (m).'
-' Gridding: impose a grid overlay and a `snap-to-grid` function.'
+' Gridding: impose a grid overlay and a [snap-to-grid] function.'
 '           '
 'Input modes:'
 '  Adding vertices (with same Z value or different Z) to create'
@@ -3160,7 +3160,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  Hint: set the gridding small before you start this.'
 ' '
 'Zones and obstructions can be saved or discarded after'
-'you type `e` but you must manually save ground topol.'
+'you type [e] but you must manually save ground topol.'
 ' '
 'HINT: this facility is designed for doing zones and then'
 'obstructions in one session.'
@@ -3227,7 +3227,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  (e.g. contours on a site plan)'
 '  '
 '  Adding walls via a floor plan extrusion. Remember to'
-'  select the `corners` anti-clockwise. You will be asked for'
+'  select the [corners] anti-clockwise. You will be asked for'
 '  the Z value of the base and the top surfaces.'
 '  '
 '  South elevation fills X & Z coords @ one Y coord value.'
@@ -3261,7 +3261,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item clickonbitmap click_option_mistake
 'You might have selected this option by mistake. ESP-r'
 'is expecting to have found a name for a zone at this'
-'point. Probably you ment to select the `add another` '
+'point. Probably you ment to select the [add another] '
 'option first. '
 *enditem
           call askok(
@@ -3325,7 +3325,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   and half-hour centred data.'
 '  '
 ' option e: Some locations reserve days other than Saturday and'
-'   Sunday as `weekends`. You can define these days or set a'
+'   Sunday as [weekends]. You can define these days or set a'
 '   one day weekend by defining the second day equal to the first.'
 '  '
 ' option h: to document the building and project client address.'
@@ -3453,7 +3453,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'weekday/saturday/sunday (but not user defined day types.'
 '  '
 'You can view a calandar to check that a specific day or days'
-'fall on a required date (e.g. to test a heating system`s'
+'fall on a required date (e.g. to test a heating system-s'
 'response under a cold, Monday start).'
 *enditem
         CALL EASKI(iyeart,' ','Simulation year?',
@@ -4080,68 +4080,68 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL EASKS(HOLD2,outs,' ',72,' 1 0.05',' df for each ',IER,6)
 *subroutine CFDCOMP
-*item CFDCOMP
-'A CFD input file holds the definition of the'
-'geometry and gridding of the CFD domain,'
-'information on how to conflate the CFD zone model'
-'into the whole-building model, and data required'
-'by the CFD solver.'
-*enditem
-      CALL EASKS(ltmp,' CFD input file?','  ',72,DFCFD,'dfd file',IER,5)
-*item CFDCOMP
-'Data on conflation, geometry, gridding, solution'
-'variables, boundary conditions, solver parameters,'
-'output files, etc. are required for the CFD model.'
-'The majority of these data can be input through the'
-'menues provided in this facility; however, you will have'
-'to do some manual editing of the CFD input file (use the'
-'menu item provided in this facility to invoke the'
+*item CFDCOMP cfd_opening_menu
+'ESP-r includes a 2D and 3D computational fluid dynamics solver'
+'which is integrated with the building and mass flow solvers so'
+'there are opportunities for carrying out CFD assessments which'
+'can benefit from the evolving boundary condtions provided by the'
+'other solution domans.'
+'  '
+'Data on conflation, geometry, gridding, solution variables,'
+'boundary conditions, solver parameters, output files, etc. are'
+'required for the CFD model. The majority of these data can be'
+'input through the menues provided in this facility; however, '
+'you will have to do some manual editing of the CFD input file'
+'(use the menu item provided in this facility to invoke the'
 'editor).'
+'  '
+'A CFD input file holds the definition of the geometry and '
+'gridding of the CFD domain, information on how to conflate'
+'the CFD zone model into the whole-building model, as well as'
+'the data required by the CFD solver.'
 ' '
 'Each of the menu items in this list should be selected'
 'in turn to build-up the CFD input file.'
 ' '
 'Some hints on working with CFD domains: '
 ' '
-' a) this portion of ESP-r is full of jargon because'
-'    those who work in CFD have evolved expressions that'
-'    seem like english but have a particular meaning. For'
-'    example, the `south face` of the domain might not'
-'    actually be facing south.'
+' a) this portion of ESP-r is full of jargon because those'
+'    who work in CFD have evolved expressions that seems like'
+'    english but have a particular meaning. For example, the'
+'    south face of the domain might not actually be facing south.'
+'  '
+' b) there are lots of parameter options, some of which influence'
+'    computation time and some of which are not as well documented'
+'    as some users would expect.'
 ' '
-' b) there are lots of parameter options, some of which'
-'    influcence computation time and some of which are'
-'    not as well documented as some users would expect.'
+' c) ESP-r is normally compiled for domains of limited grid'
+'    resolution, it can be recompiled to increase the grid'
+'    density and those who do this should carefully check their'
+'    models and predictions.'
 ' '
-' c) ESP-r is normally compiled for domains of limited'
-'    grid resolution, it can be recompiled to increase'
-'    the grid density and those who do this should '
-'    carefully check their models and predictions.'
+' d) it is recommended that you plan your cfd domains first and'
+'    there are some places where efficiency is improved if you'
+'    record critical dimensions as you work - e.g. so that boundary'
+'    surface and cell groups can be more reliably associated.'
 ' '
-' d) it is recommended that you plan your cfd domains'
-'    first and there are some places where efficiency'
-'    is improved if you record critical dimensions'
-'    as you work - e.g. so that boundary surface and'
-'    cell groups can be more reliably associated.'
+'You should refer to ESRU Report TR96/2, which forms part'
+'of the ESP-r distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
 ' '
-'You should refer to Section 5.9 - Zone CFD Domain File'
-'in: Data Model Summary ESP-r Version 9 Series,'
-'ESRU Report TR96/2, which forms part of the ESP-r'
-'distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
-' '
-'Note that CFD domains are currently restricted to'
-'cuboidal zones.'
+'Note that CFD domains are currently restricted to cuboidal zones.'
+'Remember to save your work on a regular basis!'
+*enditem
+      CALL EASKS(ltmp,' CFD input file?','  ',72,DFCFD,'dfd file',IER,5)
+*item CFDCOMP
 *enditem
         call EASKS(ltmp,'Description of CFD model:',' ',72,dtmp,
-*item CFDCOMP
-'The CFD model can either operate in stand-alone mode'
-'(CFD-only) or it can be `conflated` with the'
-'whole-building simulation (BSim). The user must supply'
-'all boundary conditions when CFD is operated in'
-'stand-alone mode. When conflated, CFD and BSim operate'
-'in tandem, exchanging information on a time-step'
-'basis. Three different conflation mechanisms currently'
-'exist to allow BSim and CFD to `handshake`:'
+*item CFDCOMPcfd_conflation_options 
+'The CFD model can either operate in stand-alone mode (CFD only)'
+'or it can be conflated with the whole-building simulation.'
+'The user must supply all boundary conditions when CFD is operated'
+'in stand-alone mode. When conflated, CFD and BSim operate in'
+'tandem, exchanging information on a time-step basis. Three'
+'different conflation mechanisms currently exist to allow the'
+'building solution and CFD to handshake:'
 ' '
 'With type 1 thermal conflation, the surface convection'
 'heat transfer coefficients are calculated from the'
@@ -4162,7 +4162,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'Note: when changing from a stand-alone CFD definition'
 'to a conflated CFD definition you will need to revise'
-'the boundary definition of `solids` to `building surf`'
+'the boundary definition of [solids] to [building surf]'
 'so that the relevant solid-surface linkages are defined.'
 ' '
 'For further details, refer to:'
@@ -4171,111 +4171,69 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Simulation, IBPSA News, V9, N2, Dec. 1997.'
 *enditem
         call EASKATOG('Conflation options:',' ','CFD only',
-*item CFDCOMP
-*enditem
         CALL PHELPD('CFD inputs',42,'-',0,0,IER)
-*item CFDCOMP
-'Recent changes to the CFD domain are held in memory '
-'and might be lost if you exit without saving. '
-*enditem
-          CALL ASKOK(' Data not yet saved to CFD input file.',
+        CALL ASKOK(' Data not yet saved to CFD input file.',
 *subroutine CFDGGRD
-*item CFDGGRD
-'Choose a vertex point.'
-' '
-'A cancel request will return you to the main menu '
-'without altering the model. '
+*item CFDGGRD cfd_gridding_setup
+'One of the major imput tasks in CFD is to define the gridding'
+'of the domain. This tends to be a compromise between a course'
+'grid for faster solution and fine gridding to resolve detailed'
+'flow patterns. Experts will have evolved techiques for defining'
+'thermal zone geometry so that it works well with the needs of'
+'CFD gridding.'
+'  '
+'There are several steps required. First, define the geometry'
+'of the CFD domain by establishing its origin and X,Y, and Z axes.'
+'This is done by specifying vertex points for the origin and'
+'the ends of each axis. CFD domains are currently restricted to'
+'cuboidal zones. Axes must be cartesian.'
+'  '
+'Second, subdivide the domain into cells by gridding each axis.'
+'Each axis may be divided into regions, enabling a fine mesh in'
+'some areas while a coarse mesh in others. For 2-dimensional'
+'problems, specify only a single grid in the redundant direction.'
+'  '
+'It is useful to visualize the grid to confirm your work.'
+'  '
+'One of your first steps is to identify the origin of the zone'
+'(look at the wire-frame to identify the vertex. Next choose points'
+'at the end of the X and Y and Z axis.  Your selections will be'
+'echoed in the menu.'
+'  '
+' option a: this allows you to re-define the origin and the axis.
+'  '
+' option b: scans the current zone geometry and makes suggestions'
+'   about the regions along each axis.  You are asked to state the'
+'   total number of cells in each of the axis. This is reflected'
+'   in the menu in options c d and e.'
+'  '
+' options c/d: supports editing of the X and Y grid spacing.'
+'  '
+' option e: the Z axis grid spacing - note that the curvilinear'
+'   option is not yet working so choose orthogonal. Check the'
+'   wireframe view for the East face of the domain for the vertex'
+'   that represents the start and end of the EZ axis.'
+'  '
+'A cancel request will return you to the main menu without altering'
+'the model. But check your model carefully for inconsistencies.'
 *enditem
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
-*item CFDGGRD
-'Choose a vertex point. Axes must be cartesian.'
-*enditem
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
-*item CFDGGRD
-*enditem
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
-*item CFDGGRD
-*enditem
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
-*item CFDGGRD
-'First, define the geometry of the CFD domain by'
-'establishing its origin and X,Y, and Z axes. This is'
-'done by specifying vertex points for the origin and'
-'the ends of each axis. CFD domains are currently'
-'restricted to cuboidal zones. Axes must be cartesian.'
-'  '
-'Second, subdivide the domain into cells by gridding'
-'each axis. Each axis may be divided into regions,'
-'enabling a fine mesh in some areas while a coarse mesh'
-'in others. For 2-dimensional problems, specify only a'
-'single grid in the redundant direction.'
-'  '
-'It is useful to visualize the grid to confirm your'
-'Choose a vertex point.'
-' '
-'A cancel request will return you to the main menu '
-'without altering the model. '
-*enditem
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
-*item CFDGGRD
-'Choose a vertex point. Axes must be cartesian.'
-*enditem
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
-*item CFDGGRD
-*enditem
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
-*item CFDGGRD
-*enditem
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
-*item CFDGGRD
-'This sets the general resolution along the axis '
-'which is to be accommodaed by the regions in the axis.'
-' '
-'A cancel request will return you to the main menu '
-'but you will need to check the CFD domain because some'
-'prior edits might cause inconsistencies. '
-*enditem
         CALL EASKI(icellx,outs,' ',1,'F',NTCELX,'F',10,
-*item CFDGGRD
-'This sets the general resolution along the axis '
-'which is to be accommodaed by the regions in the axis.'
-' '
-'A cancel request will return you to the main menu '
-'but you will need to check the CFD domain because some'
-'prior edits might cause inconsistencies. '
-*enditem
         CALL EASKI(icelly,outs,' ',1,'F',NTCELY,'F',10,
-*item CFDGGRD
-'This sets the general resolution along the axis '
-'which is to be accommodaed by the regions in the axis.'
-' '
-'A cancel request will return you to the main menu '
-'but you will need to check the CFD domain because some'
-'prior edits might cause inconsistencies. '
-*enditem
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
-*item CFDGGRD
-'Currently curvilinear is not yet operational.'
-' ... '
-*enditem
         CALL EASKABC('Options for Z gridding:',' ','orthogonal',
-*item CFDGGRD
-'Look at the wireframe image of the zone to find this'
-'out. '
-' '
-'A cancel request will return you to the main menu'
-'but you will need to check the CFD domain because'
-'some prior edits might cause inconsistencies. '
-*enditem
-            CALL EASKI(ieorg,'Specify vertex at start of east Z axis.',
-*item CFDGGRD
-*enditem
-            CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
-*item CFDGGRD
-*enditem
+        CALL EASKI(ieorg,'Specify vertex at start of east Z axis.',
+        CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
         CALL PHELPD('gridding',14,'-',0,0,IER)
 *subroutine CFDSVAR
-*item CFDSVAR
+*item CFDSVAR cfd_equations_to_solve
 'Specify the equations to be solved in the CFD analysis.'
 '  '
 'Velocity must always be solved and is determined from'
@@ -4300,126 +4258,88 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 'The expert user can edit the individual equations which'
 'are to be solved and adjust initial values, relaxation'
-'factors etc via the edit equation setup option.  '
+'factors etc via the edit equation setup option.'
+'  '
 'If you have messed up the solution parameters you might'
 'want to reset them to default values. Note that default'
 'solution parameters might not be appropriate. '
+'  '
 *enditem
         call askok('Resetting solution parameters to default values.',
-*item CFDSVAR
-*enditem
         CALL PHELPD('solution variables',25,'-',0,0,IER)
 *subroutine CFDEDAT
-*item CFDEDAT
+*item CFDEDAT cfd_equations_to_edit
 'Specify the equations to be solved in the CFD analysis.'
 '  '
-'Velocity must always be solved and is determined from'
-' the grid definition. '
+'Initial conditions can have a significant influence over'
+'convergence rates and potential. Relaxation factors can also'
+'have a significant impact on convergence rates and potential.'
+'The optimal value depends upon the nature of the flow, gridding,'
+'and other factors.'
 '  '
-'Temperature. choice of on or off '
+'Velocity must always be solved based on the grid definition. '
 '  '
-'Turbulence. five models available: '
+' options b/c/d: set initial conditions which will apply to all'
+'   grid cells.  The relaxation factors shown in the menu have'
+'   the potential to help the solution to converge - if in doubt'
+'   use the default value.'
+'  '
+' option e: toggles whether temperautre is to be solved and'
+'   if so what its relaxation factor is.'
+'  '
+' option g: toggles whether turbulence is to be solved and'
+'   if so what its relaxation factor is. Five models available:'
 '   no turbulence (ie laminar flow conditions)'
-'   k-e model (for recirculating flows)'
-'   fixed eddy viscosity (for approximating turbulence)'
+'   k-e model (for recirculating flows) you are asked for the'
+'     initial k and e value and their relaxaton factors.'
+'   fixed eddy viscosity (for approximating turbulence) you are'
+'     asked for the initial eddy value in terms of a multiple of'
+'     the molecular viscosity.'
 '   MIT zero-equation (for ...)'
 '   fixed eddy -> k-e model (uses fixed eddy approx for N'
-'      iterations then k-e as an aide to convegence)'
+'      iterations then k-e as an aide to convegence). You are'
+'      asked for the eddy value as well as the number of iterations'
+'      and the e value and relaxation factor.
 '  '
-'Buoyancy.  three choices (temperature should be solved):'
+' option i: toggles 3 buoyancy choices (temperature should be solved):'
 '   none - buoyancy effects are ignored.'
 '   ideal gas - density calculated by ideal gas equation.'
-'   Boussinesq - Calculates buoyancy relative to buoyancy'
-'      at reference temperature. Best for small '
-'      temperature variations in domain. '
+'   Boussinesq - Calculates buoyancy relative to buoyancy at a given'
+'     reference T (~ average in the domain). Best for small temperature'
+'     variations in domain. '
 '  '
-'Most equations require the definition of initial values'
-'and relaxation factors.  '
+' options x/y: convergence criteria are used by the solver to judge'
+'   when a converged solution has been obtained.'
 '  '
-'Initial conditions can have a significant influence'
-'  over convergence rates and potential.'
+' option z: location of the monitoring cell.  This will be the cell'
+'   whos values are displayed during the solution.'
 '  '
-'Relaxation factors can also have a significant impact'
-'  on convergence rates and potential. The optimal value'
-'  depends upon the nature of the flow, gridding, and'
-'  other factors.'
-'  '
-'Underrelaxation (values between 0 and 1) is'
-'  typically employed to slow the solution to avoid'
-'  divergence. Overrelaxation (values greater than 1),'
-'  although not common, is permissible. Use smaller'
+'Underrelaxation (values between 0 and 1) is typically employed'
+'to slow the solution to avoid divergence. Overrelaxation (values'
+'greater than 1), although not common, is permissible. Use smaller'
 '  relaxation factors for highly non-linear problems.'
 '  '
-'  more on relaxation factors and convergence criteria...'
-'Relaxation factors can be of two types.  The most common'
-' is linear although relaxation via fictitious time steps'
-' is also permissible.'
+'Relaxation factors can be of two types.  The most common is linear'
+'although relaxation via fictitious time steps is also permissible.'
 '  '
-'If a solution diverges, consider reducing the'
-'relaxation factors.'
-'  '
-'Convergence criteria are used by the solver to'
-' judge when a converged solution has been obtained.'
-' The solution will either terminate when the maximum'
-' number of iterations is reached, or if the sum of the'
-' residuals is less than the specified value.  Only the'
-' latter case represents a successful solution.'
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
+'If a solution diverges, consider reducing the relaxation factors.'
 *enditem
         call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
-*enditem
         call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
-*enditem
         call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
-*enditem
         call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
-*enditem
-          call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify the value of the eddy-viscosity.  This will'
-'apply to all grid cells.  The value is specified in'
-'terms of a multiple of the molecular viscosity.'
-*enditem
-          call EASKS(ltmp,'Fixed value for eddy viscosity?',
-*item CFDEDAT
-'Specify the value of the eddy viscosity.  This will'
-'apply to all grid cells.  The value is specified in'
-'terms of a multiple of the molecular viscosity.'
-'The number of iterations to apply this eddy viscosity'
-'is also required. '
-*enditem
-          call EASKS(ltmp,'Fixed value for eddy viscosity and number ',
-*item CFDEDAT
-'Specify initial conditions which will apply to all grid'
-'cells.  The relaxation factor will help the solution to'
-'converge - if in doubt use the default value.'
-*enditem
-          call EASKS(ltmp,'Initial value and relaxation factor',
-*item CFDEDAT
-'Specify the value of the reference temperature.  This'
-'should be approximately the average temperature in the'
-'domain.  This will apply to all grid cells.  '
-*enditem
+        call EASKS(ltmp,'Initial value and relaxation factor',
+        call EASKS(ltmp,'Fixed value for eddy viscosity?',
+        call EASKS(ltmp,'Fixed value for eddy viscosity and number ',
+        call EASKS(ltmp,'Initial value and relaxation factor',
         call EASKS(ltmp,'Reference temperature? ','  ',16,
-*item CFDEDAT
+*item CFDEDAT cfd_convergence_crit
+'Convergence criteria are used by the solver to judge when a'
+'converged solution has been obtained. The solution will either'
+'terminate when the maximum number of iterations is reached, or'
+'if the sum of the residuals is less than the specified value.'
+'Only the latter case represents a successful solution.'
+'  '
 'An iterative solution procedure is employed.'
 'Iterations continue until either:'
 '  1) the solution converges to a user-specified'
@@ -4427,154 +4347,153 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  2) a user-specified number of iterations has been'
 '     performed.'
 ' '
-'Specify the number of iterations, after which the'
+'If you specify the number of iterations, after which the'
 'calculations will be halted.'
 ' '
+'In the case of a maximum equation residual. When the sum of'
+'the equation residues (for the mass and momentum equations)'
+'over all cells in the domain drops below this value, the'
+'solution is considered converged. The residual is normalized'
+'by the flow into the domain.'
+'  '
+'A value of 0.001 is considered well converged. A reasonable'
+'prediction of the flow pattern can often be achieved with'
+'a value of 0.02.'
+'  '
 'A cancel results in no change to the model. '
 *enditem
         CALL EASKI(ival,' ',' Maximum iterations to perform?',
-*item CFDEDAT
-'An iterative solution procedure is employed.'
-'Iterations continue until either:'
-'  1) the solution converges to a user-specified'
-'     tolerance; or'
-'  2) a user-specified number of iterations has been'
-'     performed.'
-'  '
-'Specify the maximum equation residual. When the'
-'sum of the equation residues (for the mass and'
-'momentum equations) over all cells in the domain'
-'drops below this value, the solution is considered'
-'converged. The residual is normalized by the flow'
-'into the domain.'
-'  '
-'A value of 0.001 is considered well converged.'
-'A reasonable prediction of the flow pattern can often'
-'be achieved with a value of 0.02.'
-*enditem
         CALL EASKR(VAL,' ',' Maximum equation residual?',
-*item CFDEDAT
-'Specify the localtion of the monitoring cell.  This'
-'will be the cell whos values are displayed during the'
-'solution.  '
-*enditem
-        call EASKS(ltmp,'Monitoring cell (i,j,k)? ','  ',16,
-*item CFDEDAT
-*enditem
         CALL PHELPD('solution variables',53,'-',0,0,IER)
 *subroutine CFDBVAR
-*item CFDBVAR
+*item CFDBVAR cfd_boundary_variables
 'A summary of each boundary condition is presented.'
 'By selecting one you can see all the data associated '
 'with this boundary and edit it if necessary.'
 'If source type bc are to be defined do not start the '
-'name by "SRC_"'
-'New source type boundary condition types have been '
-'defined to accomodate contaminant entering and '
-'leaving the CFD domain via airflow connections'
-'These are named SRC_[contaminant #][airflow node #]'
+'name by SRC_'
+'  '
+'If new source type boundary condition types have been '
+'defined to accomodate contaminant entering and leaving'
+'the CFD domain via airflow connections these are named'
+'in the pattern SRC_[contaminant #][airflow node #]'
+'  '
+' option + allows you to manage the boundary conditions list.'
+'   if you add a new boundary condition it can be:'
+'   * air flow opening (to mass flow)'
+'   * a solid surface (one of the zone surfaces)'
+'   * a source ?'
+'   * a blockage '
+'   if you ask to delete a boundary condition you are asked'
+'   to select form a list of volume names.'
+'  '
+'Boundary conditions facilities help messages are terse - we'
+'need volunteers to improve them...'
 *enditem
-          CALL PHELPD('boundary conditions',9,'-',0,0,IER)
-*item CFDBVAR
-*enditem
-          CALL PHELPD('boundary conditions',5,'-',0,0,IER)
-*item CFDBVAR
-'No one has written a help message for this dialog.'
-*enditem
+        CALL PHELPD('boundary conditions',9,'-',0,0,IER)
+        CALL PHELPD('boundary conditions',5,'-',0,0,IER)
         call easkabc('Add/ delete a boundary condition?','  ','Add',
-*item CFDBVAR
-'Choose the type of new boundary condition.'
-*enditem
-          call EASKATOG('Which type of boundary?','  ',
-*item CFDBVAR
-'Select a key volume to delete.'
-*enditem
-            call EPICKS(INDEL,IDEL,' ',' ',12,INVOL,NAMES,
+        call EASKATOG('Which type of boundary?','  ',
+        call EPICKS(INDEL,IDEL,' ',' ',12,INVOL,NAMES,
 *subroutine EDAIRO
-*item EDAIRO
-'There is no help for this menu (yet).'
- '  '
-*enditem
-        call EASKS(t12,'Opening name? ','  ',12,d12,'open name',IER,1)
-*item EDAIRO
+*item EDAIRO cfd_air_boundary
+'One boundary condition option for a CFD domain involves links'
+'to a mass flow network. This is a potentially powerful approach'
+'because it allows the efficiency of the mass flow solution to'
+'provide a transient boundary condition of air flow to the CFD'
+'domain solution - for example wind pressures against a facade'
+'or from an adjacent room.'
+'  '
 'Boundary coundition if defined to be "from flow network"'
 'will make ALL air flow opening conditions to be defined'
 'from the airflow network and individual specification'
 'of boundary conditions will be overridden.'
-'If however CFD is run in standalone mode, boundary '
+'  '
+'If, however, CFD is run in standalone mode, boundary '
 'conditions, if previosuly defined, will be maintained.'
 'Only choose "from flow network" if an airflow network'
 'has been defined and you wish to take up boundary '
 'conditions from it i.e. conflate CFD and flow network.'
+'  '
 'If you choose to conflate then ALL air flow openings'
 'will be taken from the flow network automatically'
 'If you wish not to conflate CFD and flow network then'
 'simply choose some other boundary condition and ALL'
 'openings will be restored.'
+'  '
+' option a: supply a name for the opening - this short phrase'
+'    <12 char is essential for understanding the cfd domain.'
+'  '
+' option b: opening types are Pressure Velocity Zero gradiant'
+'   and Mass flow and from-flow-network.  Depending on the type'
+'   the attributes shown in the menu will change. The data'
+'   requested includes:'
+'   * pressure Pa at the cell'
+'   * mass flow rate entering or leaving the cell/domain'
+'   * temperature of air entering the cell/domain'
+'   * opening area - the real opening area may be less than'
+'     the area covered by the cells.  If this is the case then'
+'     enter the true area of the opening and the mass flow rate'
+'     and momentum of the incoming air will be preserved.'
+'  '
+'Boundary conditions facilities help messages are terse - we'
+'need volunteers to improve them...'
 *enditem
+        call EASKS(t12,'Opening name? ','  ',12,d12,'open name',IER,1)
         CALL EASKATOG('Opening types: (see help)',' ','pressure',
-*item EDAIRO
-'This is the pressure at the opening.'
-*enditem
-          call EASKR(VAL,' ',' Pressure (Pa) of cells?',
-*item EDAIRO
-'This is the mass flow rate entering'
-'or leaving the domain.  '
-*enditem
-          call EASKR(VAL,' ',
-*item EDAIRO
-'This is the mass flow rate entering'
-'or leaving the domain.  '
-*enditem
-          call EASKR(VAL,' ','Mass flow rate (kg/s) entering cells?',
-*item EDAIRO
-'This is the temperature of air entering the domain.'
-*enditem
+        call EASKR(VAL,' ',' Pressure (Pa) of cells?',
+        call EASKR(VAL,' ',
+        call EASKR(VAL,' ','Mass flow rate (kg/s) entering cells?',
         call EASKR(VAL,' ','Temperature (degC) of air entering domian?',
-*item EDAIRO
-'The real opening area may be less than the area covered'
-'by the cells.  If this is the case then enter the true'
-'area of the opening and the mass flow rate and momentum'
-'of the incoming air will be preserved.'
-*enditem
         call EASKR(VAL,' ','Real area (m^2) of opening?',
-*item EDAIRO
-*enditem
         CALL PHELPD('boundary conditions',1,'-',0,0,IER)
 *subroutine MFCONF
-*item MFCONF
+*item MFCONF cfd_mass_flow_node
+'The linkage between the CFD domain and the mass flow domain'
+'requires that you identify which node in the mass flow network'
+'is considered to be representative of the CFD domain. This allows'
+'the solvers to coordinate their computations e.g. for the flow'
+'network to talk to the CFD domain to get relevant predictions.'
+'  '
+'After identifying the representative flow node for the domain you'
+'are asked to identify the connection in the flow network for each'
+'of the air flow boundaries.'
 *enditem
       call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
-*item MFCONF
-*enditem
-          CALL ASKMFCON(INODE,NNPK,ICPK,PROMPT1,PROMPT2)
+      CALL ASKMFCON(INODE,NNPK,ICPK,PROMPT1,PROMPT2)
 *subroutine EDSLDB
-*item EDSLDB
-'There is no help text for this menu yet.'
- '  '
+*item EDSLDB cfd_solid_boundary_edit
+'One of the allowed boundary conditions for the CFD domain is'
+'a solid boundary - to be located at the West, East, South, North'
+'Low or High edges of the domain (identified in menu a Face just'
+'under the option c cells) or to be applied to the Whole'
+'domain or one of the blocks or a source region.'
+'  '
+' option a: name of the boundary - useful to help others'
+'   understand the CFD domain!'
+'  '
+' option b: each of the volumes will be identified with its'
+'   current boundary type: Temperature, Heat flux, Symmetrical,'
+'   or Conflated.  Depending on the boundary type option e will'
+'   display one of the following:'
+'   * temperature (degC)'
+'   * heat flux (W)'
+'   * surface name it is conflated with and the type of handshaking'
+'  '
+'If the cells for the volume have not been defined you will be'
+'asked for this information as a first step.'
+'  '
+'Boundary conditions facilities help messages are terse - we'
+'need volunteers to improve them...'
 *enditem
         call EASKS(t12,'Boundary name? ','  ',12,d12,'bnd name',IER,1)
-*item EDSLDB
-'  '
-' ... '
-*enditem
         CALL EASKATOG('Boundary types:',' ','temperature','heat flux',
-*item EDSLDB
-'  '
-*enditem
-          call EASKR(VAL,'temperature (degC) at chosen face of cells?',
-*item EDSLDB
-'  '
-*enditem
-          call EASKR(VAL,'Heat flux (W) at chosen face of cells?',
-*item EDSLDB
-*enditem
-          CALL EASKSUR(IZONE,IS,'-','Select a surface.',' ',IER)
-*item EDSLDB
-*enditem
+        call EASKR(VAL,'temperature (degC) at chosen face of cells?',
+        call EASKR(VAL,'Heat flux (W) at chosen face of cells?',
+        CALL EASKSUR(IZONE,IS,'-','Select a surface.',' ',IER)
         CALL PHELPD('boundary conditions',1,'-',0,0,IER)
 *subroutine EDSRC
-*item EDSRC
+*item EDSRC cfd_source_boundary_edit
 'This menu allows you to define contaminant source and'
 'sink for this CFD boundary type.  It is also possible to'
 'allow heat injection/extraction at these sources, to do '
@@ -4582,6 +4501,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'gain from the operations file in which case you have '
 'to give the index of that casual gain and fraction '
 'injected.'
+'  '
 'It is also possible to define contaminants automatically'
 'from the contaminants definition file if you have created'
 'one. It is essential that you have an airflow network'
@@ -4589,58 +4509,62 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'be auto defined. You may couple flow network with CFD by'
 'exiting from here are defining boundary condition of '
 'opening type boundaries to be taken from the flow network'
+'  '
 'In standalone mode CFD will take static boundary'
-'conditions defined here '
-'This source type boundary condition has been set up'
-'to allow contaminant mass injections / extractions'
-'due to air flow as described from conflated mass flow'
-'and CFD. Do not modify any paramter definition in '
-'the menu to follow this message and exit from there!'
+'conditions are defined here.'
+'  '
+'If the cells for the volume have not been defined you will be'
+'asked for this information as a first step.'
+'  '
+' option a: name of the source - useful to help others'
+'   understand the CFD domain!'
+'  '
+' option b: each of the volumes will be identified with its'
+'   current boundary type which might be the name of the face'
+'   of the domain or static-source or from-ctm-network'
+'   Choose from contaminants network only if:'
+'   1. This is not standalone CFD'
+'  '
+'   2. You have a mass flow network which is conflated'
+'      with the CFD domain or you intend to conflate it'
+'      before simulation Once this is done source type'
+'      boundary conditions will take their strengths (kg/s)'
+'      from source/sink models that you have defined in the'
+'      contaminant network. If you have conflated a mass '
+'      flow network with CFD then new source type boundary'
+'      conditions which will accomodate any addition or '
+'      deletion of contaminant from CFD domain due to air'
+'      flow as computed from conflated CFD and mass flow nwk'
+'  '
+'      If you have not conflated the mass flow network with '
+'      CFD you are advised to do so before linking CFD with'
+'      contaminant network'
+'  '
+'   3. You have a contaminants flow network defined'
+'  '
+'Look for volume names beginning in SRC_ in this case the 
+'  source type boundary condition has been set up'
+'  to allow contaminant mass injections / extractions'
+'  due to air flow as described from conflated mass flow'
+'  and CFD. Do not modify any paramter definition in '
+'  the menu to follow this message and exit from there!'
+'  '
+' option c: defines cells for this volume'
+'  '
+' option e: defines heat flux (W) at the boundary'
+'  '
+' option f/g: defines which casual gain is associated with'
+'   this boundary and the fraction of the gain'
+'  '
+'Boundary conditions facilities help messages are terse - we'
+'need volunteers to improve them...'
 *enditem
         CALL PHELPD('Warning',5,'-',0,0,IER)
-*item EDSRC
-'  '
-*enditem
         call EASKS(t12,'Source name? ','  ',12,d12,'src name',IER,1)
-*item EDSRC
-'Choose from contaminants network only if'
-'1. This is not standalone CFD'
-'2. You have a mass flow network which is conflated'
-'   with the CFD domain or you intend to conflate it'
-'   before simulation'
-'3. You have a contaminants flow network defined'
-*enditem
         CALL EASKABC('How to specify coundary condition',' ','static',
-*item EDSRC
-'You may link CFD with the contamiant network if you'
-'have defined one. Once this is done source type'
-'boundary conditions will take their strengths (kg/s)'
-'from source/sink models that you have defined in the'
-'contaminant network. If you have conflated a mass '
-'flow network with CFD then new source type boundary'
-'conditions which will accomodate any addition or '
-'deletion of contaminant from CFD domain due to air'
-'flow as computed from conflated CFD and mass flow nwk'
-'If you have not conflated the mass flow network with '
-'CFD you are advised to do so before linking CFD with'
-'contaminant network'
-*enditem
-          CALL ASKOK('Link CFD with contaminant network (see help) ?',
-*item EDSRC
-'You are not allowed to conflate CFD with '
-'contaminants if CFD is not conflated with '
-'mass flow network'
-*enditem
-            CALL PHELPD(' ',3,'-',0,0,IER)
-*item EDSRC
-'Choose which contaminant is moisture'
-'None of the contaminants is moisture'
-*enditem
-              CALL PHELPD(' ',1,'-',0,0,IER)
-*item EDSRC
-*enditem
-            CALL PHELPD(' ',1,'-',0,0,IER)
-*item EDSRC
+        CALL ASKOK('Link CFD with contaminant network (see help) ?',
+        CALL PHELPD(' ',3,'-',0,0,IER)
+*item EDSRC cfd_contam_distribution
 'In order to calculate contaminant distribution'
 'the turbulent Schmidt Number needs to be '
 'calculated. To do this the following information'
@@ -4652,49 +4576,37 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'default value of unity or 0.59 for moisture'
 *enditem
             CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
-*item EDSRC
-*enditem
-              CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
-*item EDSRC
-*enditem
-              call EASKR(VAL,'What is Turbulent Schmidt Number for',
-*item EDSRC
+            CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
+            call EASKR(VAL,'What is Turbulent Schmidt Number for',
+*item EDSRC cfd_contam_sinks
 'If sources and sinks are defined in the contaminant'
 'network then these can be linked with this CFD source'
 'boundary condition. For any one contaminant only one'
 'source/sink can be linked to one source b.c. but '
 'two or more source/sinks for as many contamiants can'
 'be linked with the same CFD source b.c.'
-*enditem
-          CALL ASKOK('Link contaminant network source/sink with this',
-*item EDSRC
-'are displayed. Choose which one represents this'
-'source type CFD boundary condition (if at all)'
-*enditem
-                CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
-*item EDSRC
-'No sources/sinks defined for this contaminant'
-*enditem
-            CALL PHELPD(' ',1,'-',0,0,IER)
-*item EDSRC
+'  '
+' option a: name of the source - useful to help others'
+'   understand the CFD domain!'
+'  '
+' option c: defines the cells for the volume have'
+'  '
+'You are given the option to add or delete contaminate sources.'
+'Be careful when you do this (make a backup first just in case).'
+'  '
+'If you add a contaminate source you are asked for:'
+'  * the name of the contaminate name'
+'  * the source strength (kg/s)'
+'  * whether the contaminate is water'
 '  '
 *enditem
-        call EASKR(VAL,'Heat flux (W) in source volume?',
-*item EDSRC
-'This is the index of the casual gain included in the'
-'zone operation file.  '
-'  '
-'A cancel results in no change in the model.  '
-*enditem
-        call EASKI(IVAL,'Which casual gain index represents heat ',
-*item EDSRC
-*enditem
-        call EASKR(VAL,'What fraction of casual gain is generated? ',
-*item EDSRC
-' '
-*enditem
+        CALL ASKOK('Link contaminant network source/sink with this',
+        CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
+        call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
+        call EASKR(VAL,'What is source strength (kg/s) ',
+        CALL ASKOK(' ','Is this contaminant water',OK,dok,0)
         CALL EASKABC('Add/Delete contaminant source',' ','add',
-*item EDSRC
+*item EDSRC cfd_contam_delete_warn
 'You cannot add / delete contaminants from '
 'contaminants network here, go to contaminants '
 'in Model Definition Menu'
@@ -4703,16 +4615,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'source type to "static" from "From ctm network"'
 *enditem
             CALL PHELPD('Not allowed',6,'-',0,0,IER)
-*item EDSRC
-*enditem
-            call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
-*item EDSRC
-*enditem
-            call EASKR(VAL,'What is source strength (kg/s) ',
-*item EDSRC
-*enditem
-            CALL ASKOK(' ','Is this contaminant water',OK,dok,0)
-*item EDSRC
+*item EDSRC cfd_contam_schmidt_no
 'In order to calculate contaminant distribution'
 'the turbulent Schmidt Number needs to be '
 'calculated. To do this the following information'
@@ -4723,137 +4626,78 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'turbulent Schmidt Number.  Click default to use a'
 'default value of unity or 0.59 for moisture'
 *enditem
-            CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
-*item EDSRC
-*enditem
-              CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
-*item EDSRC
-*enditem
-              call EASKR(VAL,'What is Turbulent Schmidt Number ',
-*item EDSRC
-'You cannot add / delete contaminants from '
-'contaminants network here, go to contaminants '
-'in Model Definition Menu'
-'To dereference contaminants network and invoke '
-'static definition (which you can edit here) change'
-'source type to "static" from "contaminants network"'
-*enditem
-            CALL PHELPD('Not allowed',6,'-',0,0,IER)
-*item EDSRC
+       CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
+       CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
+       call EASKR(VAL,'What is Turbulent Schmidt Number ',
+*item EDSRC cfd_link_contam_sink
 'You can link contaminant(ctm) source/sink models from'
 'contaminants network here. '
-'To dereference contaminants network and invoke '
-'static definition (which you can edit here) change'
-'source type to "static" from "From ctm network"'
-'You can define which contaminant is moisture'
-'and how to specify turbulent Schmidt number'
-'You should also specify static source strengths '
-'(kg/s) these being the values that will be used '
-'CFD standalone mode'
+'  '
+'If you add a contaminate source you are asked for:'
+'  * the name of the contaminate name'
+'  * the source strength (kg/s)'
+'  * whether the contaminate is water'
 *enditem
-          CALL PHELPD('Contaminants Edit',10,'-',0,0,IER)
-*item EDSRC
-*enditem
-          call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
-*item EDSRC
-*enditem
-        call EASKR(VAL,'What is source strength (kg/s) ',
-*item EDSRC
-*enditem
-        CALL ASKOK(' ','Is this contaminant water(humidity)',OK,dok,0)
-*item EDSRC
-'In order to calculate contaminant distribution'
-'the turbulent Schmidt Number needs to be '
-'calculated. To do this the following information'
-'is required: molar mass, volume at critical point,'
-'boiling point and critical temperature.'
-'If this information is available press parameters'
-'If not press manual to specify a value for the '
-'turbulent Schmidt Number.  Click default to use a'
-'default value of unity or 0.59 for moisture'
-*enditem
-        CALL EASKABC('How to specify turbulent Schmidt # (see help) ?'
-*item EDSRC
-*enditem
-          CALL EASKS(HOLD,'enter mol mass (g/mol) crit vol (cm^3/mol)'
-*item EDSRC
-*enditem
-          call EASKR(VAL,'What is Turbulent Schmidt Number ',
-*item EDSRC
-'If sources and sinks are defined in the contaminant'
-'network then these can be linked with this CFD source'
-'boundary condition. For any one contaminant only one'
-'source/sink can be linked to one source b.c. but '
-'two or more source/sinks for as many contamiants can'
-'be linked with the same CFD source b.c.'
-*enditem
-          CALL ASKOK('Link contaminant network source/sink with this',
-*item EDSRC
-'are displayed. Choose which one represents this'
-'source type CFD boundary condition (if at all)'
-*enditem
-              CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
-*item EDSRC
-'No sources/sinks defined for this contaminant'
-*enditem
-          CALL PHELPD(' ',1,'-',0,0,IER)
-*item EDSRC
-*enditem
-        CALL PHELPD('sources edit help',16,'-',0,0,IER)
-*item EDSRC
-'According to Recknagel, Sprenger und Schrameck'
-'persons at light, sedentary activity release '
-'water vapour: '
-'20C - 35g/h; 22C - 40g/h; 23C - 50g/h; 24 and 25C - 60/h'
-*enditem
-*        call EASKR(VAL,'Moisture (g/hr) generated in source volume?',
-*item EDSRC
-'Assuming CO2 production of 0.0000153737kg/s/person  '
-*enditem
-*        call EASKR(VAL,'No of people breathing in source volume?',
+       CALL PHELPD('Contaminants Edit',10,'-',0,0,IER)
+       call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
+       call EASKR(VAL,'What is source strength (kg/s) ',
+       CALL ASKOK(' ','Is this contaminant water(humidity)',OK,dok,0)
 *subroutine EDBLK
-*item EDBLK
-'There is no help text for this menu (yet).'
-' '
+*item EDBLK cfd_blockage_menu
+'The CFD facility supports the concept of blockages within the'
+'domain. These are defined as a specific volume of cells.'
+'  '
+'If the cells for the blockage have not been defined you will be'
+'asked for this information as a first step.'
+'  '
+' option a: name of the blockage - useful to help others'
+'   understand the CFD domain!'
+'  '
+' option c: defines the cells for the blockage'
+'  '
+' option e: defines heat flux (W) within the blockage'
+'  '
+'The blockage facility help messages are terse - we'
+'need volunteers to improve them...'
 *enditem
         call EASKS(t12,'Blockage name? ','  ',12,d12,'blk name',IER,1)
-*item EDBLK
-'  '
-*enditem
         call EASKR(VAL,'Heat flux (W/m^2) on blockage surfaces?',
-*item EDBLK
-*enditem
         CALL PHELPD('blocakage edit',1,'-',0,0,IER)
-*subroutine HANDSHK
 *subroutine PIKCELS
-*item PIKCELS
-'You will have to pick a face at which the'
-'boundary condition will apply.'
-'Based on the face you select, information about'
-'the face X/Y or Z cell coordinates will be reported'
-'in the text feedback area. '
-*enditem
-        CALL EASKATOG('Boundary face is on which side?',t30,'West',
-*item PIKCELS
-'The boundary condition will apply to a volume (or face)'
-'defined by the start and end control volume in the three'
-'orthogonal directions i,j,k.'
+*item PIKCELS cfd_cell_selection
+'A volume or face within the CFD is composed of a number of cells'
+'in the X and Y and Z axis.'
+'  '
+'If this is a new volume or face you will have to pick a face'
+'at which the boundary condition will apply.'
+'  '
+'Based on the face you select, information about the face X/Y or Z'
+'cell coordinates will be reported in the text feedback area. '
+'  '
+'The boundary condition will apply to a volume (or face) defined by'
+'the start and end control volume in the three orthogonal'
+'directions i,j,k.'
 ' '
 'If in doubt, review the cell coordinates which listed'
 'in the text feedback area.'
 *enditem
+      CALL EASKATOG('Boundary face is on which side?',t30,'West',
       call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
 *subroutine PIKFACE
-*item PIKFACE
-'You will have to pick a face at which'
+*item PIKFACE cfd_face_selection
+'Boundary conditions in the CFD domain are often defined in relation'
+'to a face within the domain.'
+'  '
+'You may be asked to pick a face or a range of cells at which
 'the boundary condition will apply.'
 *enditem
         CALL EASKATOG('Boundary face is on which side?',' ','West',
 *subroutine TOPBOT
-*item TOPBOT
+*item TOPBOT cfd_curvilinear_grid
 'The curvilinear gridding routine requires the shape of the'
 'high and low boundaries of the domain to be defined as '
 'follows:  '
+'  '
 'For the high boundary start with the vertex at the '
 'intersection of the west and high boundaries.  Select the'
 'next vertex to the east in the same east-west, high-low'
@@ -4868,37 +4712,25 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'In the example above HIGH is defined by the vertices  '
 '3 4 5 6 and the LOW by 1 and 9. Note: order is from '
 'the WEST to the EAST (i.e. left to right). '
+'  '
+'The definition of the vertices requires that you either type'
+'the list of vertices (west to east) OR in the X11 interface'
+'you can click mouse on existing vertices, ending with an '
+'[e]. A match is assumed if within 5 pixels.'
+'You will be given an oportunity to confirm the list. '
+'  '
 'Repeat for the bottom boundary. '
+
 *enditem
       CALL PHELPD('gen start popup',18,'-',0,0,IER)
-*item TOPBOT
-'Type the list of vertices (west to east) OR '
-'click mouse on existing vertices, ending with an '
-'` e `. A match is assumed if within 5 pixels.'
-'You will be given an oportunity to confirm the list. '
-*enditem
-        CALL EASKS(HOLD,' Give high vertices (west to east)','  ',
-*item TOPBOT
-*enditem
-        CALL EASKSCMD(HOLD,' Give high vertices (west to east)',
-*item TOPBOT
-*enditem
-          CALL EASKS(HOLD,' Associated high vertices (confirm):',
-*item TOPBOT
-'Type the list of vertices (west to east) OR '
-'click mouse on existing vertices, ending with an '
-'` e `. A match is assumed if within 5 pixels.'
-'You will be given an oportunity to confirm the list. '
-*enditem
-        CALL EASKS(HOLD,' Give low vertices (west to east)','  ',
-*item TOPBOT
-*enditem
-        CALL EASKSCMD(HOLD,' Give low vertices (west to east)',
-*item TOPBOT
-*enditem
-          CALL EASKS(HOLD,' Associated low vertices (confirm):',
+      CALL EASKS(HOLD,' Give high vertices (west to east)','  ',
+      CALL EASKSCMD(HOLD,' Give high vertices (west to east)',
+      CALL EASKS(HOLD,' Associated high vertices (confirm):',
+      CALL EASKS(HOLD,' Give low vertices (west to east)','  ',
+      CALL EASKSCMD(HOLD,' Give low vertices (west to east)',
+      CALL EASKS(HOLD,' Associated low vertices (confirm):',
 *subroutine GRIDDEF
-*item GRIDDEF
+*item GRIDDEF cfd_cells_in_region
 'Number of cells - specifies how many computational'
 'cells (control volumes, grid points) the current'
 'region contains. There is a limit for each axis due'
@@ -4920,101 +4752,43 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'Symmetrical gridding will set an axis of symmetry'
 'in the middle of the region.'
-'Number of cells - specifies how many computational'
-'cells (control volumes, grid points) the current'
-'region contains. There is a limit for each axis due'
-'to array dimensions (if you would like to change it,'
-'please read file esrudfs/Info/help1.txt.'
-' '
-'The length of the region is in meters.'
-' '
-'The power law coefficient guides the distribution of'
-'cells - a value of 1.0 will distribute cells evenly,'
-'for a value bigger/less than 1 - each next cell will'
-'increase/decrease in size.'
-' '
-'To have a grid of a good quality - the size/distance'
-'of two neighbor cells should not differ more than 20%'
-'which can be controlled using --> vizualize gridding'
-'--> list x,y,z plane points (aspect ratio) from the '
-'upper menu.'
-' '
-'Symmetrical gridding will set an axis of symmetry'
-'in the middle of the region.'
+'  '
+' option + allows you to manage regions by adding and deleting'
+'   them. Each region is gridded independently.'
+'   When adding a region you can specify the length (m) or'
+'   by selecting verticies.'
+'   You may be asked how many cells to include in the a new'
+'   region. If more than one cell you are asked for further info'
+'   according to a power-law relation:'
+'            Xi = L*(i/n)**c'
+'   where [i] is cell number, [Xi] is position of '
+'   face of ith cell, [L] is length of region, '
+'   [n] is number of cells in region, and [c] is '
+'   power-law coeff. '
+'  '
+'   c > 1:      grid spacing grows along axis'
+'   0 < c < 1:  grid spacing decreases along axis'
+'   c = 1:      uniform grid'
+'   -1 < c < 0: grid spacing grows along axis'
+'   c < -1:     grid spacing decreases along axis'
+'  '
+'   If symmetrical gridding will set an axis of symmetry'
+'   in the middle of the region. If this is what you want say ok.'
+'  '
+'   If you ask to delete a region you are asked for its index'
+'   e.g. the 2nd region along an axis would be index 2.'
 *enditem
         call EASKS(HOLD,outs,' ',32,' 1 1.0 1.0 ','cell data',IER,21)
-*item GRIDDEF
-'Symmetrical gridding will set an axis of symmetry'
-'in the middle of the region. If this is what you'
-'want say ok. '
-*enditem
-          CALL ASKOK(' ',' Symmetrical gridding?',OK,dok,3)
-*item GRIDDEF
-'Each axis is sub-divided into regions which are'
-'gridded independently.'
-*enditem
+        CALL ASKOK(' ',' Symmetrical gridding?',OK,dok,3)
         call EASKABC('Region operations:','  ','add one','delete one',
-*item GRIDDEF
-'You can specify regions either by selecting'
-'vertices or by giving dimensioned input (m).'
-*enditem
-            CALL EASKABC('Specify region length:',' ','by vertices',
-*item GRIDDEF
-'This is the zone vertex index.'
-'The distance parallel to the axis between these '
-'vertices will be calculated.'
-*enditem
-              call EASKS(HOLD,'Specify vertex at start & end of region',
-*item GRIDDEF
-'Distance in metres.'
-*enditem
-              CALL EASKR(VAL,' ','Length of current region (m) ? ',
-*item GRIDDEF
-'A region can be subdivided into a number of cells.'
-' '
-'A cancel takes you back to the grid definition'
-'menu and you should check your model for incon-'
-*enditem
-              CALL EASKI(icellt,' Specify number of cells in region',
-*item GRIDDEF
-'The cells faces are located according to a '
-'power-law relation:'
-'            Xi = L*(i/n)**c'
-'where `i` is cell number, `Xi` is position of '
-'face of i`th cell, `L` is length of region, '
-'`n` is number of cells in region, and `c` is '
-'power-law coeff. '
-'  '
-'c > 1:      grid spacing grows along axis'
-'0 < c < 1:  grid spacing decreases along axis'
-'c = 1:      uniform grid'
-'-1 < c < 0: grid spacing grows along axis'
-'c < -1:     grid spacing decreases along axis'
-*enditem
-                CALL EASKR(VAL,'  ','Power-law coefficient?',
-*item GRIDDEF
-'Symmetrical gridding will set an axis of symmetry'
-'in the middle of the region. If this is what you'
-'want say ok. '
-*enditem
-                CALL ASKOK('  ','Symmetrical gridding?',OK,dok,3)
-*item GRIDDEF
-'This is the region index.'
-'A cancel returns you to the menu without changing'
-'the model.'
-*enditem
-          CALL EASKI(IDEL,' ','Which region to delete ? ',
-*item GRIDDEF
-*enditem
+        CALL EASKABC('Specify region length:',' ','by vertices',
+        call EASKS(HOLD,'Specify vertex at start & end of region',
+        CALL EASKR(VAL,' ','Length of current region (m) ? ',
+        CALL EASKI(icellt,' Specify number of cells in region',
+        CALL EASKR(VAL,'  ','Power-law coefficient?',
+        CALL ASKOK('  ','Symmetrical gridding?',OK,dok,3)
+        CALL EASKI(IDEL,' ','Which region to delete ? ',
         CALL PHELPD('CFD inputs',21,'-',0,0,IER)
-*subroutine ASKMFNOD
-*item ASKMFNOD
-*enditem
-      call EPICKS(NNPK,INPK,PROMPT1,PROMPT2,
-*subroutine ASKMFCON
-*item ASKMFCON
-*enditem
-        call EPICKS(NNPK,IPK,PROMPT1,PROMPT2,
 *subroutine edcfg
 *item edcfg
 'A model, as defined within the system configuration file,'
@@ -5032,7 +4806,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'adding in a CFD domain to represent zone air movement'
 'or plant component working fluid flow.'
 ' '
-'The `actions` section includes comissioning assessments'
+'The [actions] section includes comissioning assessments'
 'of the model, recovering performance indidators, as'
 'well as generating QA reports on the composition of'
 'the model. '
@@ -5061,7 +4835,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'only domain to a plant only domain, all zone data will'
 'be lost from your model.'
 ' '
-'The `registration level` domain holds only site'
+'The [registration level] domain holds only site'
 'information and images (i.e. no building/plant details).'
 *enditem
         call MENUATOL(outs,'Domain options:',
@@ -5069,8 +4843,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Normally the domains included in a model are updated'
 'automatically as new information is added. Changing'
 'the domain can have a significant impact: for example,'
-'if the domain is `building and plant` and you change'
-'it to `plant only`, all references to the building'
+'if the domain is [building and plant] and you change'
+'it to [plant only], all references to the building'
 'zones will be removed. The zone files will still exist'
 'but would need to be reattached to the model.'
 *enditem
@@ -5112,12 +4886,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
               CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
 *item edcfg
-'File not found, select `OK` if you want this file'
+'File not found, select [OK] if you want this file'
 'to hold the definition of a new plant network.'
 *enditem
               CALL ASKOK('This is a new plant network file.',
 *item edcfg
-'Found an existing file, select `OK` if you want to'
+'Found an existing file, select [OK] if you want to'
 'use or modify it.'
 *enditem
               CALL ASKOK('Found existing plant network file.',
@@ -5152,7 +4926,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
  250      CALL EASKGEOF('Select a zone:',CFGOK,IC,'-',IER)
 *item edcfg
 'This is the network graphics file generated by the'
-'`net` tool.'
+'[net] tool.'
 *enditem
           CALL EASKS(LFIL,' ','Network graphics file?',72,
 *item edcfg
@@ -5196,31 +4970,31 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'construction, schedules and miscellaneous technical'
 'data relating to CFD, casual gain control etc.'
 ' '
-'The `Zones` section (geometry, construction, operations)'
+'The [Zones] section (geometry, construction, operations)'
 'are the essential attributes of zones which must be'
 'completed prior to simulation.'
 ' '
-'The `Topology` section allows you to automate the'
+'The [Topology] section allows you to automate the'
 'specification of what-is-on-the-other-side of surfaces'
 'in the model (which can also be done on a surface by'
 'surface basis within the geometry facility). Anchors'
 'can be thought of as named lists of surfaces e.g.'
-'a list called `finistration` might point to all windows'
+'a list called [finistration] might point to all windows'
 'in a facade to allow you to change them all to a new'
 'type of glazing.'
 ' '
-'The `Options` section allows you to add additional'
+'The [Options] section allows you to add additional'
 'descriptions and or detail to your model as and when'
 'such concepts become important to your performance'
 'assessments. If you do not specify these additional'
 'model attributes default assumptions are made.'
 ' '
-'The `Special components` section also allows you to'
+'The [Special components] section also allows you to'
 'add detail to your model to support specialists'
 'tasks (e.g. assigning electrical characteristics to'
 'PV cells embedded within surfaces).'
 ' '
-'The `Global tasks` option allows you to transform and'
+'The [Global tasks] option allows you to transform and'
 'rotate the model on the site and do search & replace '
 'actions on surface attributes. '
 *enditem
@@ -5644,7 +5418,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Note that before this model can be edited, it must'
 'be copied to your user area to give you write'
 'permission. Other example models are available'
-'via the `exemplars` option.'
+'via the [exemplars] option.'
 *enditem
         CALL EASKXORGTKF(LCMDFL,
 *item NEWPRB
@@ -5661,7 +5435,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'to see if the problem is one you can fix. Also check'
 'that the file was of the correct type.'
 ' '
-'If you say `no` then it may be possible to work with'
+'If you say [no] then it may be possible to work with'
 'the model, but it may be incomplete or inconsistent'
 'and should be treated as at risk.'
 *enditem
@@ -5672,7 +5446,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'the problem. Also check to see that the file is'
 'of the correct type. '
 ' '
-'If you say `no`, the model description may be'
+'If you say [no], the model description may be'
 'incomplete so be careful. Consider dereferencing'
 'the control file and recreating it from scratch.'
 *enditem
@@ -5686,7 +5460,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If the name supplied is not found you can: '
 '  a) edit the name,'
 '  b) create a new configuration file using that name,'
-'  c) delay the decision by selecting `cancel`.'
+'  c) delay the decision by selecting [cancel].'
 ' '
 'If you are running the GTK version of Project Manager,'
 'and the name of the model appears correct (including'
@@ -5708,11 +5482,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL ASKOK(' ',' Display hidden line views?',OK,dok,3)
 *item visualz
-'Creating a folder for Radiance model: `../rad`.'
+'Creating a folder for Radiance model: [../rad].'
 'The current model includes a Radiance model in the'
-'`cfg` folder. If you want to use this old model,'
-'you should move the files to `../rad` and update'
-'the `scenes` and `rif` files. The current scenes'
+'[cfg] folder. If you want to use this old model,'
+'you should move the files to [../rad] and update'
+'the [scenes] and [rif] files. The current scenes'
 'file is:'
 *enditem
               CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
@@ -5768,12 +5542,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'the surfaces have not been attributed as to their '
 'construction type.  It is recommended that you: '
 '  '
-'  a) go to the  `geometry browse & edit` facility and'
+'  a) go to the  [geometry browse & edit] facility and'
 '     attribute the surface construction types - after'
 '     which you can return to this facility,'
 '  '
-'  b) in the case of an existing `old or unattributed`'
-'     zone construction file select the `Save` '
+'  b) in the case of an existing [old or unattributed]'
+'     zone construction file select the [Save] '
 '     option in the following menu. '
 *enditem
         CALL PHELPD('unknowns atrib in constr',11,'-',0,0,IER)
@@ -5797,7 +5571,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKAB(outs,'Options:','respecify',
 *item EDCON
 'The opaque/transparent attribute of the surface is not'
-'OPAQUE. If it is opaque then select `ok`.'
+'OPAQUE. If it is opaque then select [ok].'
 *enditem
           CALL ASKOK(outs,'Confirm surface is opaque?',OK,DOK,2)
 *item EDCON
@@ -6031,7 +5805,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKABC(outs,' ','remove this optical control',
 *item EDTWIN
 'There is a surface attribute that indicates that an'
-'optical control could be defined. To do it say `yes`. '
+'optical control could be defined. To do it say [yes]. '
 *enditem
           CALL ASKOK(OUTS,'optical control?',OK,dok,2)
 *item EDTWIN
@@ -6572,12 +6346,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'construction you will be asked (later) if you want to'
 'update the zone construction files.'
 '  '
-'Note: layer 1 is considered the `outside`.'
+'Note: layer 1 is considered the [outside].'
 '  '
 'The terms SYMMETRIC and NONSYMMETRIC have the following'
 'meaning: SYMMETRIC constructions can be referenced from'
 'either zone associated with a partition; a NONSYMMETRIC'
-'construction must have an `inverted` version in the'
+'construction must have an [inverted] version in the'
 'database in the case of surfaces which are partitions.'
 ' '
 'In ESP-r air gaps in constructions are represented as'
@@ -6600,7 +6374,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
        CALL PHELPD('construction editing',36,'-',0,0,IER)
 *item EDWALL
 'You can delete an existing layer, append a new layer '
-'at the `inside face` of the surface (remember the '
+'at the [inside face] of the surface (remember the '
 'order is other-side to zone-side), or insert a layer'
 '(you will be asked to select a point of insertion and'
 'existing inner layers will be shifted).'
@@ -7656,7 +7430,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL EASKF(longtmp,' ',' Climate file name ? ',
 *item EDDBCLM
-'An empty climate file has been created. It can`t'
+'An empty climate file has been created. It can-t'
 'be used for anything until it is populated with '
 'climate data.  '
 *enditem
@@ -7905,7 +7679,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
   64    CALL EASKS(T64,'Zone description?','(<64 characters)',
 *item EDZONE
 'These surfaces are associated with the base area'
-'because they had attributes of `flor` or were'
+'because they had attributes of [flor] or were'
 'previously picked by the user. You can edit this'
 'list or select none and then edit the value.'
 'No surfaces are associated with the base area because'
@@ -7913,7 +7687,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'You can select surfaces (and the floor area will be'
 'calculated) or select none and then edit the value.'
 'A subset of surfaces are associated with the base'
-'area (user excluded some `flor` surfaces). Select'
+'area (user excluded some [flor] surfaces). Select'
 'surfaces and the floor area will be calculated'
 'or select none and then edit the value.'
 *enditem
@@ -7940,7 +7714,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKATOG('Surface attribution: ',' ',
 *item EDZONE
 'The boundary conditions at the other face of this'
-'surface is specified  here. The default is `exterior`.'
+'surface is specified  here. The default is [exterior].'
 ' '
 ' Exterior - exposed to external weather.'
 ' '
@@ -7973,12 +7747,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 ' BASESIMP foundation configuration -  used to represent'
 '  a basement configuration and precalculate basement'
-'  heat transfer. Requires the existence of a `basesimp`'
+'  heat transfer. Requires the existence of a [basesimp]'
 '  file giving dimensions and required computational'
 '  parameters.'
 ' '
 ' CEN 13791 partition - CEN 13791 test: like'
-'  `similar to current` above but the temperature and'
+'  [similar to current] above but the temperature and'
 '  radiation offsets are not available. Details given'
 '  in Section 4.4.2 of the CEN 13791 standard.'
 ' '
@@ -7988,7 +7762,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
             CALL EPICKS(IX,IVALSS,' ','Surface boundary condition:',
 *item EDZONE
-'A `similar to current` boundary condition can'
+'A [similar to current] boundary condition can'
 'include a temperature (degC) and radiation (W/m^2)'
 'from the current zone. For example, the adjacent'
 'zone (not included in the model) might tend to be'
@@ -8000,7 +7774,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
               CALL EASKR(VALW,' ','Radiation offset?',
 *item EDZONE
-'A `prescribed static` boundary condition requires'
+'A [prescribed static] boundary condition requires'
 'the specification of a constant temperature (degC)'
 'and radiation value (W/m^2).'
 *enditem
@@ -8244,7 +8018,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  and absorptance) (this is the default).'
 ' '
 '* A dynamic analysis of shading and insolation distri-'
-'  bution via `ish` which is stored in a shading/'
+'  bution via [ish] which is stored in a shading/'
 '  insolation file based on user directives.'
 '  Typical directives are to calculate shading on all'
 '  applicable surfaces (those that face the outside) as'
@@ -8300,7 +8074,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'A shading analysis calculates the time varying patterns'
 'of shading on external zone surfaces. You must select'
 'the surfaces to include in this calculation. Selecting'
-'`all applicable surfaces` corresponds to all outside'
+'[all applicable surfaces] corresponds to all outside'
 'facing opaque and tansparent surfaces.'
 *enditem
         CALL EASKABCD(' ','Shading calculation options:',
@@ -8308,7 +8082,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'An insolation analysis calculates the time varying'
 'insolation of internal zone surfaces. You must select'
 'the external surfaces (with windows) to include in'
-'this calculation. Selecting`all applicable surfaces`'
+'this calculation. Selecting [all applicable surfaces]'
 'corresponds to all outside facing tansparent surfaces.'
 *enditem
          CALL EASKABCD(' ','Insolation calculationoptions:',
@@ -8358,7 +8132,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'calculations and determine casual gains based on floor'
 'area. Initial values are based on the azimuth and'
 'elevation of each surface. Leaving this attribute'
-'as `UNKNOWN` is not detrimental.'
+'as UNKNOWN is not detrimental.'
 *enditem
         call MENUATOL(' ','Surface Orientation',
 *item EDSURA
@@ -8388,7 +8162,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           call askok('Modify thermo-physical data of',outs,ok,dok,7)
 *item EDSURA
 'The boundary conditions at the other face of this'
-'surface is specified  here. The default is `exterior`.'
+'surface is specified  here. The default is [exterior].'
 ' '
 ' Exterior - exposed to external weather.'
 ' '
@@ -8421,12 +8195,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 ' BASESIMP foundation configuration -  used to represent'
 '  a basement configuration and precalculate basement'
-'  heat transfer. Requires the existence of a `basesimp`'
+'  heat transfer. Requires the existence of a [basesimp]'
 '  file giving dimensions and required computational'
 '  parameters.'
 ' '
 ' CEN 13791 partition - CEN 13791 test: like'
-'  `similar to current` above but the temperature and'
+'  [similar to current] above but the temperature and'
 '  radiation offsets are not available. Details given'
 '  in Section 4.4.2 of the CEN 13791 standard.'
 ' '
@@ -8436,7 +8210,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EPICKS(IX,IVAL,' ','Other Side Boundary Condition',
 *item EDSURA
-'A `similar to current` boundary condition can'
+'A [similar to current] boundary condition can'
 'include a temperature (degC) and radiation (W/m^2)'
 'from the current zone. For example, the adjacent'
 'zone (not included in the model) might tend to be'
@@ -8448,7 +8222,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL EASKR(VALW,' ','Radiation offset?',
 *item EDSURA
-'A `prescribed static` boundary condition requires the'
+'A [prescribed static] boundary condition requires the'
 'specification of a constant temperature (degC) and'
 'radiation value (W/m^2).'
 *enditem
@@ -8510,7 +8284,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'internal mass), GRILL/SMOKEVNT (surfaces representing'
 'specific location of forced air flow), ROOF, STRUC'
 '(column or beam), WALL/FLOOR (part of the facade), '
-'and either PARTN or `-` to represent other surfaces.'
+'and either PARTN or [-] to represent other surfaces.'
 ' '
 'There are, of course, more than one kind of DOOR and '
 'WINDOW so a second specifier is included. For some '
@@ -8645,7 +8419,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'internal mass), GRILL/SMOKEVNT (surfaces representing'
 'specific location of forced air flow), ROOF, STRUC'
 '(column or beam), WALL/FLOOR (part of the facade), '
-'and either PARTN or `-` to represent other surfaces.'
+'and either PARTN or [-] to represent other surfaces.'
 ' '
 'There are, of course, more than one kind of DOOR and '
 'WINDOW so a second specifier is included. For some '
@@ -8884,7 +8658,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You may delete one or more vertices (but only those'
 'which are unlinked to surfaces may be deleted). '
-'In graphic mode click on the vertices (end with and `e`)'
+'In graphic mode click on the vertices (end with and [e])'
 ' '
 'Replication can be used make several varitants of a'
 'single vertex (useful where only one coordinate needs'
@@ -8917,13 +8691,13 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'This menu allows existing vertices to be viewed and'
 'edited. Edit by selecting an item or -Exit to escape.'
 ' '
-'The `@ check vertex topology` looks for unbounded '
+'The [@ check vertex topology] looks for unbounded '
 'edges, edges with an adjacent edge ordered in the same'
 'direction (one surface probably reversed) and for '
 'missing intermediate vertices (where one edge is has'
 'more than one adjacent surface). '
 ' '
-'The `>` command to shift a surface along its normal '
+'The [>] command to shift a surface along its normal '
 'axis updates vertices associated with that surface '
 'and thus surfaces sharing these vertices.  Useful '
 'for expanding/shrinking a zone. '
@@ -9033,7 +8807,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'You may create a rectangular surface by specifying its'
 'origin and either an azimuth (for vertical) or a '
-'rotation between the X axis and its `length edge` for.'
+'rotation between the X axis and its [length edge] for.'
 'a horizontal rectangle. '
 ' '
 'Creating a new surface with existing vertices can be '
@@ -9103,7 +8877,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EASKS(HOLDS,' Horizontal surface origin X Y & Z: ',' ',
 *item EDVLIST
 'Rotation is in relation to the first edge along the '
-'`length` edge and the X axis (positive is anticlockwise'
+'[length] edge and the X axis (positive is anticlockwise'
 'and negative is clockwise.'
 *enditem
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
@@ -9232,7 +9006,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Display days: are specific days (up to 10) for which'
 'timestep data is recorded.'
 ' '
-'Seasons are based on information in the `climatelist`'
+'Seasons are based on information in the [climatelist]'
 'file. This information is included to clarify the'
 'relationship between each season and the 1/3/5 sim-'
 'ulations being run. '
@@ -9242,8 +9016,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'and the assessment period. For an annual simulation'
 'the ratios are 1.00.'
 ' '
-'Option 5 `re-scan climate` is a two step process;'
-'the first to scan the `climatelist` file for the '
+'Option 5 [re-scan climate] is a two step process;'
+'the first to scan the [climatelist] file for the '
 'days in each season; the second being scanning the'
 'climate data to find the best fit week in each'
 'season. '
@@ -9368,7 +9142,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for heating:',
@@ -9382,7 +9156,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for cooling:',
@@ -9396,7 +9170,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for lighting:',
@@ -9410,7 +9184,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for small power:',
@@ -9424,7 +9198,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for fans & pumps:',
@@ -9438,14 +9212,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'If three simulations only edit first three numbers.'
 'If five simulations edit all numbers.'
 ' '
-'Note: the `rescan climate` function can be used to'
+'Note: the [rescan climate] function can be used to'
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multipliers for domestic hot water:',
 *item ipvdat
 'Each climate data set may have different seasons and'
 'different typical assessment periods. Choosing this '
-'will rescan a `climatelist` file and update display.'
+'will rescan a [climatelist] file and update display.'
 ' '
 'Both the climate tool and the project manager can scan'
 'the current climate file to locate the best fit week '
@@ -9546,10 +9320,10 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *subroutine ipvseasons
 *item ipvseasons
 'Select an assessment regime from the list provided.'
-'The `winter/spring/summer/autumn` options are based on'
-'information in the `climatelist` file for the current'
+'The [winter/spring/summer/autumn] options are based on'
+'information in the [climatelist] file for the current'
 'climate file. For example if you ask for the summer season'
-'the period from the `climatelist` file will be used. '
+'the period from the [climatelist] file will be used. '
 ' '
 'The annual assessment will do one simulation for the whole'
 'year (this may generate a large results file). '
@@ -9693,7 +9467,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item EDMRT
 'This menu allows zone viewfactors or MRT sensors to'
 'be viewed and edited.  These are then passed to the '
-'program `espvwf` for further processing if a robust '
+'program [espvwf] for further processing if a robust '
 'evaluation of view factors or position dependent '
 'mean radiant temperatures is required. '
 ' '
@@ -9905,13 +9679,13 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'which are described in a site obstruction file.'
 ' '
 'The browse option presents a file list in the project'
-'`zones` folder to allow import of legacy obstructions'
+'[zones] folder to allow import of legacy obstructions'
 '(overwriting any obstructions already held in the zone'
 'geometry file.  '
 ' '
 ' '
 'The browse option presents a file list in the project'
-'`zones` folder to associate with obstructions in an'
+'[zones] folder to associate with obstructions in an'
 'exising zone obstruction file. '
 ' '
 'The dereference option removes the reference to any'
@@ -10092,7 +9866,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'You can specify 4 corners (i.e. 4 vertices, '
 'beginning lower left and going anti-clockwise). '
 *enditem
-        CALL EASKAB('The selected surface doesn`t have 4 sides.',
+        CALL EASKAB('The selected surface doesn-t have 4 sides.',
 *item EREVEAL
 'You can specify 4 corners (i.e. 4 vertices, '
 'beginning lower left and going anti-clockwise). '
@@ -10232,7 +10006,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
 'correspondence between iconfig and standard BASESIMP '
 'descriptors (e.g. BCIN_1).'
-'BASESIMP is a `whole-foundation model`. Therefore, when'
+'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
 'must specify the percentage of the whole-foundation'
@@ -10303,7 +10077,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'In order to reflect changes you have made in this db'
 'in the current model you will have to rebuild the '
 'zone construction and tmc files.  This is in option '
-'`Construction` of the `model definition` menu.'
+'[Construction] of the [model definition] menu.'
 *enditem
           CALL PHELPD('optical db update',4,'-',0,0,IER)
 *item EDOPT
@@ -10842,7 +10616,7 @@ C          CALL ASKOK(
 ' a) attribute surfaces via the zone geometry facility'
 '    as they are created,'
 '    '
-' b) manually edit them via the `cfg` facility, '
+' b) manually edit them via the [cfg] facility, '
 '    '
 ' c) search for matching vertices within the model'
 '    to fill in all partitions and then complete this'
@@ -10895,7 +10669,7 @@ C          CALL ASKOK(
 'not conform to the geometric matching criteria to be'
 'assumed to have an EXTERNAL boundary condition.'
 'If you want to choose the boundary condition then'
-'you should toggle `no match found` to YES.'
+'you should toggle [no match found] to YES.'
 *enditem
           CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
 *item EDCONN
@@ -10909,10 +10683,10 @@ C          CALL ASKOK(
 'In restructuring a model it is sometimes useful to '
 'redefine the topology.'
 ' '
-'The `clear subset` asks for each type of connection '
+'The [clear subset] asks for each type of connection '
 '(partitions/identical etc.) to clear. '
 ' '
-'The `clear all` will rebuild the whole master list '
+'The [clear all] will rebuild the whole master list '
 'and this should be done if the list has been corrupted.'
 *enditem
         CALL EASKABC(' Topology Options:',' ','clear all topology',
@@ -10932,7 +10706,7 @@ C          CALL ASKOK(
 *enditem
           call askok('Recover surface attribute data?',
 *item EDCONN
-'The `clear subset` asks for each type of connection '
+'The [clear subset] asks for each type of connection '
 '(partitions/identical etc.) to clear. '
 ' '
 'Say yes to SIMILAR and/or CONSTANT and/or GROUND'
@@ -11085,7 +10859,7 @@ C          CALL ASKOK(
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
 'correspondence between iconfig and standard '
 'BASESIMPdescriptors (e.g. BCIN_1).'
-'BASESIMP is a `whole-foundation model`. Therefore, when'
+'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
 'must specify the percentage of the whole-foundation'
@@ -11171,7 +10945,7 @@ C          CALL ASKOK(
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
 'correspondence between iconfig and standard '
 'BASESIMPdescriptors (e.g. BCIN_1).'
-'BASESIMP is a `whole-foundation model`. Therefore, when'
+'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
 'must specify the percentage of the whole-foundation'
@@ -11471,7 +11245,7 @@ C          CALL ASKOK(
 '                  '
 ' To do this you need to scan the relevant source and'
 ' then convert it to an XBM (X11 monochrome bitmap) file,'
-' which should be placed in the project `cfg` folder.'
+' which should be placed in the project [cfg] folder.'
 ' '
 ' Please ensure that the bitmap is large enough to'
 ' allow for accurate positioning of the mouse. The bitmap'
@@ -11668,7 +11442,7 @@ C          CALL ASKOK(
 'the new inter-connections are appropriate. '
 ' '
 'If in doubt ARCHIVE of the model before embarking on a'
-'major restructuring - there is no `undo` command! '
+'major restructuring - there is no [undo] command! '
 *enditem
       CALL ASKOK(outs,'(see help)',OK,dok,10)
 *item DELZONE
@@ -11744,7 +11518,7 @@ C          CALL ASKOK(
 *item SUMRCHG
 ' (rebuild via construction facility) '
 ' (rebuild via construction facility) '
-' (recalculate via `Options viewfactors`)'
+' (recalculate via [Options viewfactors])'
 *enditem
             CALL PHELPD('files out of date',nh,'-',0,0,IER)
 *item SUMRCHG
@@ -11956,11 +11730,11 @@ C          CALL ASKOK(
 'a large power source can be considered as fixed.    '
 'Three methods are available for calculating nodal   '
 'voltages:                                           '
-'  - `Variable` means that the voltage is determined '
+'  - [Variable] means that the voltage is determined '
 '    by the solution of the power flow matrix of eqs.'
-'  - `PV` means that the voltage is calculated by    '
+'  - [PV] means that the voltage is calculated by    '
 '     the buiding domain`s PV model.                 '
-'  - `Plant` means that the voltage is calculated by '
+'  - [Plant] means that the voltage is calculated by '
 '    a component in the plant domain.                '
 *enditem
             CALL EASKABCD('What is the node type?',' ',
@@ -12035,11 +11809,11 @@ C          CALL ASKOK(
 'a large power source can be considered as fixed.     '
 'Three methods are available for calculating nodal    '
 'voltages:                                            '
-'  - `Variable` means that the voltage is determined  '
+'  - [Variable] means that the voltage is determined  '
 '    by the solution of the power flow matrix of eqs. '
-'  - `PV` means that the voltage is calculated by     '
+'  - [PV] means that the voltage is calculated by     '
 '     the buiding domain`s PV model.                  '
-'  - `Plant` means that the voltage is calculated by  '
+'  - [Plant] means that the voltage is calculated by  '
 '    a component in the plant domain.                 '
 *enditem
         CALL EASKABCD('What is the node type?',' ',
@@ -12433,7 +12207,7 @@ C          CALL ASKOK(
 ' '
 'If the column data file includes information '
 'prior to the point in time that you are interested'
-'in you can use the `begin reading @` instruction '
+'in you can use the [begin reading @] instruction '
 'to skip past the unwanted information (take care '
 'when deciding how many lines to skip as there is '
 'no way to shift time once the data is imported). '
@@ -12489,7 +12263,7 @@ C          CALL ASKOK(
           CALL PHELPD('timestep import warning',8,'-',0,0,IER)
 *item EDIMPT
 'Please specify which column of the import file is'
-'associated with this data field. A `0` indicates that'
+'associated with this data field. A [0] indicates that'
 'no data will be imported into this field.'
 *enditem
         CALL EASKI(IV,' ','Associated column in import file:',
@@ -12508,7 +12282,7 @@ C          CALL ASKOK(
 ' '
 'If the data file includes information '
 'prior to the point in time that you are interested'
-'in you can use the `begin reading @` instruction '
+'in you can use the [begin reading @] instruction '
 'to skip past the unwanted information (take care '
 'when deciding how many lines to skip as there is '
 'no way to shift time once the data is imported). '
@@ -12535,7 +12309,7 @@ C          CALL ASKOK(
 *item EDSTATICIMPT
 'Please specify which item (e.g. separated by commas'
 'but at the same line) of the import file is associated'
-'with this data field. A `0` indicates that no data will'
+'with this data field. A [0] indicates that no data will'
 'be imported into this field.'
 *enditem
         CALL EASKI(IV,' ','Associated item number in import file:',
@@ -12577,7 +12351,7 @@ C          CALL ASKOK(
       CALL EASKS(ltmp,' ','Model description?',
 *item pregist
 'The project log file holds a description of the project'
-'and the analysis intentions. It is located in the `cgf`'
+'and the analysis intentions. It is located in the [cgf]'
 'directory. Keep it up to date via a text editor.'
 *enditem
       CALL EASKS(ltmp,' ','Project log file?',
@@ -12591,7 +12365,7 @@ C          CALL ASKOK(
 'The log file is used to document your model and record the'
 'purpose and outcomes of commissioned simulations. Update'
 'it using a text editor as your modelling project evolves.'
-'The file is located in the `cfg`directory of your model'
+'The file is located in the [cfg] directory of your model'
 ' '
 'Assuming you have an editor associated with ESP-r (defined'
 'via your .esprc file), you can edit the log file now.'
@@ -12601,10 +12375,10 @@ C          CALL ASKOK(
 'A model can usefully include references to images'
 'depicting different model aspects such as geometry,'
 'flow networks, simulation results and the like.'
-'Such images are usually located in the `images` folder.'
+'Such images are usually located in the [images] folder.'
 ' '
 'You can either identify such images now or add them'
-'later via the `model context->images` menu item.'
+'later via the [model context->images] menu item.'
 *enditem
       CALL ASKOK(' ','Associate images now?',OKI,dok,7)
 *item pregist
@@ -12638,8 +12412,8 @@ C          CALL ASKOK(
 *item pregist
 'Other site information, such as ground reflectivity and'
 'wind exposure, have been automatically set to default'
-'values and these may be changed via the `model context`'
-'menu option accessed via the `browse/edit/simulate`'
+'values and these may be changed via the [model context]'
+'menu option accessed via the [browse/edit/simulate]'
 'option of the present menu.'
 ' '
 'If you have additional day types (e.g. summer holiday) '
@@ -12650,7 +12424,7 @@ C          CALL ASKOK(
 *subroutine pfolders
 *item pfolders
 'This menu allows you to edit the information related'
-'to a project`s folders and files.'
+'to a project-s folders and files.'
 ' '
 'The path options allow new files to be positioned in'
 'standard folders. The paths are relative to the'
@@ -12678,53 +12452,53 @@ C          CALL ASKOK(
         CALL PHELPD('folders and files',19,'-',0,0,IER)
 *item pfolders
 'Give relative path from cfg to zones folder.'
-'For example `../zones`.'
+'For example ../zones .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to controls folder.'
-'For example `../ctl`.'
+'For example ../ctl .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to AIM2 folder.'
-'For example `../aim2`.'
+'For example ../aim2 .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to networks folder.'
-'For example `../nets`.'
+'For example ../nets .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to images folder.'
-'For example `../images`.'
+'For example ../images .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to documents folder.'
-'For example `../docs`.'
+'For example ../docs .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to temporary folder.'
-'For example `../tmp`.'
+'For example ../tmp .'
 'Holds transient information.'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to Radiance folder.'
-'For example `../rad`.'
+'For example ../rad .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg folder',
 *item pfolders
 'Give relative path from cfg to hvac folder.'
-'For example `../hvac`.'
+'For example ../hvac .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
 'Give relative path from cfg to BASESIMP folder.'
-'For example `../bsm`.'
+'For example ../bsm .'
 *enditem
           CALL EASKS(t24,'Relative path from cfg',
 *item pfolders
@@ -12767,7 +12541,7 @@ C          CALL ASKOK(
 *enditem
         CALL EASKS(t5,' ','Image type character code?',
 *item edimage
-'If an image is tagged `general` then it will be'
+'If an image is tagged [general] then it will be'
 'displayed when the model is loaded, otherwise it'
 'will only be displayed when requested via a graphic'
 'display button.'
@@ -12784,7 +12558,7 @@ C          CALL ASKOK(
 'listed in this menu. In the case of a blank entry,'
 'the file is optional and is not currently defined.'
 ' '
-'If the menu says `not yet defined` then the file is'
+'If the menu says [not yet defined] then the file is'
 'required before simulations can proceed.  Such files'
 'will be created when the related facilities have been'
 'accessed (ie. geometry files are created as you define'
@@ -12895,7 +12669,7 @@ C          CALL ASKOK(
 'coefficient correlations for specified surfaces and for'
 'specified time intervals. You can specify fixed'
 'coefficients, select from amongst a suite of specialised'
-'correlations, or impose `adaptive` control over the'
+'correlations, or impose [adaptive] control over the'
 'convection calculations.'
 *enditem
           CALL EASKABCD(' For the convection regime file',' :',
@@ -12996,7 +12770,7 @@ C          CALL ASKOK(
 ' '
 'Geometry is similar to that of zone enclosures but'
 'is primarily a collection of triangles which need not'
-'form a `closed` body - rather a mesh which approx- '
+'form a [closed] body - rather a mesh which approx- '
 'imates the contours of the site. '
 ' '
 'Each surface has an composition attribute (mlc db'
@@ -13073,10 +12847,10 @@ C          CALL ASKOK(
 'This menu allows existing vertices to be viewed and'
 'edited. Edit by selecting an item or -Exit to escape.'
 ' '
-'The `> find vertex` option is useful to predict an'
+'The [> find vertex] option is useful to predict an'
 'intermediate vertex along an edge. '
 ' '
-'The `^ distance along` option is useful to confirm'
+'The [^ distance along] option is useful to confirm'
 'actual dimension of a surface.'
 *enditem
         CALL PHELPD('configuration section',8,'-',0,0,IER)
@@ -13186,7 +12960,7 @@ C          CALL ASKOK(
 ' '
 'You may delete one or more vertices (but only those'
 'which are unlinked to surfaces may be deleted). '
-'In graphic mode click on the vertices (end with and `e`)'
+'In graphic mode click on the vertices (end with and [e])'
 ' '
 'Replication can be used make several varitants of a'
 'single vertex (useful where only one coordinate needs'
@@ -13305,7 +13079,7 @@ C          CALL ASKOK(
 'of the surface is from the last to the first vertex. '
 ' '
 'You may mouse click on existing vertices, ending with'
-'an `e`. A match is assumed if the location is within'
+'an [e]. A match is assumed if the location is within'
 '5 pixels.'
 *enditem
           CALL EASKS(HOLD,' ','Vertex list?',
@@ -13386,7 +13160,7 @@ C          CALL ASKOK(
 ' '
 'You may create a rectangular surface by specifying its'
 'origin and either an azimuth (for vertical) or a '
-'rotation between the X axis and its `length edge` for.'
+'rotation between the X axis and its [length edge] for.'
 'a horizontal rectangle. '
 *enditem
         call MENUATOL(' ','new surface options',
@@ -13407,7 +13181,7 @@ C          CALL ASKOK(
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
 *item EDGVLIST
 'Rotation is in relation to the first edge along the '
-'`length` edge and the X axis (positive is anticlockwise'
+'[length] edge and the X axis (positive is anticlockwise'
 'and negative is clockwise.'
 *enditem
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
@@ -13488,7 +13262,7 @@ C          CALL ASKOK(
 'rigorous fashion.'
 ' '
 'The adaptive convection algorithm (ACA) implemented'
-'under options `a` through `n` controls the calculation'
+'under options [a] through [n] controls the calculation'
 'of int-hc in a dynamic fashion. Based upon minimal data'
 'input, the ACA appraises a configuration to assign an'
 'appropriate set of int-hc correlation equations to each'
@@ -13536,7 +13310,7 @@ C          CALL ASKOK(
 'through ceiling, floor, or wall-mounted diffusers. The'
 'buoyant forces are caused by surface-to-air temperature'
 'differences. This option is preferred over the'
-'`air-based HVAC system` convective regime as it captures'
+'[air-based HVAC system] convective regime as it captures'
 'the combined influence of buoyant and forced effects.'
 *enditem
         CALL PHELPD('convective calculations',59,'-',0,0,IER)
@@ -13551,7 +13325,7 @@ C          CALL ASKOK(
 'is driven primarily by buoyancy resulting from'
 'surface-to-air temperature differences.'
 ' '
-'Use option `in-floor heating` when you have defined a'
+'Use option [in-floor heating] when you have defined a'
 'zone with floor surface(s) heated by flux injection'
 'into the floor construction or by flux injection into'
 'a plenum under the floor surface. It is assumed that'
@@ -13578,7 +13352,7 @@ C          CALL ASKOK(
 *enditem
          CALL PHELPD('Cause of dT',28,'-',0,0,IER)
 *item EconvA
-'Use option `heated wall panel` when you have defined a'
+'Use option [heated wall panel] when you have defined a'
 'zone with surface(s) heated by flux injection into the'
 'panel construction or by flux injection into a zone'
 'which represents a panel heater. It is assumed that'
@@ -13609,7 +13383,7 @@ C          CALL ASKOK(
 *enditem
          CALL PHELPD('Cause of dT',32,'-',0,0,IER)
 *item EconvA
-'The option `other temp diff` is the appropriate choice'
+'The option [other temp diff] is the appropriate choice'
 'when the temperature diff is caused by a sun patch or'
 'by heat transfer through the fabric (e.g. a cold window '
 'surface). '
@@ -13654,12 +13428,12 @@ C          CALL ASKOK(
 'regime within the zone.'
 ' '
 'You will be prompted to indicate whether you want to'
-'apply Khalifa`s window correlations or alternate'
+'apply Khalifa-s window correlations or alternate'
 'equations. As discussed in Section 5.2 of'
 'Beausoleil-Morrison (2000), it is suspected that'
-'Khalifa`s window correlations overpredict int-hc.'
+'Khalifa-s window correlations overpredict int-hc.'
 ' '
-'For option `a` the ACA models convection as follows:'
+'For option [a] the ACA models convection as follows:'
 '  walls:   Khalifa eq 6 when heat on; Alamdari-Hammond'
 '           vertical eq (or sim toggle) when heat off.'
 '  windows: Khalifa eq 6 or 9 (user choice) when heat on;'
@@ -13673,7 +13447,7 @@ C          CALL ASKOK(
 '           stably stratified or buoyant horizontal eq'
 '           (or sim toggle) when heat off.'
 ' '
-'For option `b` the ACA models convection as follows:'
+'For option [b] the ACA models convection as follows:'
 '(you will be prompted to indicate which wall surfaces'
 'are adjacent to the heating device):'
 '  walls close to heater:'
@@ -13726,7 +13500,7 @@ C          CALL ASKOK(
 'floor or wall-mounted diffusers. It should not be used'
 'when buoyancy is also a significant factor. Buoyancy is'
 'often negligible for cooling situations, but usually'
-'important for heating situations. The `mixed flow`'
+'important for heating situations. The [mixed flow]'
 'convective regime is generally recommended as an'
 'alternative to this choice as it can capture the combined'
 'influence of buoyant and forced effects.'
@@ -13742,7 +13516,7 @@ C          CALL ASKOK(
 'zone requires heat, the system supplies air at a fixed'
 'flow rate, equal to the min damper position of the VAV'
 'box. Reheat coils warm the air upstream of the diffuser'
-'to meet the zone`s heating load.'
+'to meet the zone-s heating load.'
 ' '
 'NOTE: variable air volume system with variable volume'
 'heating. It operates the same as VAV with CV in'
@@ -13762,7 +13536,7 @@ C          CALL ASKOK(
 'It is important to note that the description given here'
 'is used to simulate the convective regime induced in the'
 'zone by the HVAC air handling system. It does not model'
-'the performance and energy draws of the system`s'
+'the performance and energy draws of the system-s'
 'components. Therefore, you should ensure that the data'
 'given here is consistent with the zone control data or'
 'the explicit plant data that describes the HVAC system.'
@@ -13809,7 +13583,7 @@ C          CALL ASKOK(
 'Enter the maximum air temperature that can be supplied'
 'by the system to the zone. This is the design temperature'
 'for heating and is measured at the diffuser. Note that'
-'if the zone`s heating load cannot be satisfied by this'
+'if the zone-s heating load cannot be satisfied by this'
 'supply air temp, it is assumed that any remaining heat is'
 'supplied from another source (e.g. baseboard heaters)'
 'which does not affect the flow regime.'
@@ -13818,27 +13592,27 @@ C          CALL ASKOK(
 *item EconvC
 'Typically the air handling unit (AHU) conditions outdoor'
 'air. In this case, the conditioning of the outdoor air'
-'is performed by the AHU`s heating or cooling coil.'
+'is performed by the AHUs heating or cooling coil.'
 ' '
 'You can choose to represent the outdoor air in your model'
 'as infiltration to the zone. This would give the correct'
 'total heating or cooling load for the zone. However, in'
 'this case it is necessary to subtract the outdoor air'
-'load from the zone`s total load. In this way, the correct'
+'load from the zone-s total load. In this way, the correct'
 'temperature and flow rate at the diffuser can be'
 'calculated. This is handled automatically when you'
-'select option `b`.'
+'select option [b].'
 ' '
 'Alternatively, you can represent the AHU as another'
 'zone. You would have infiltration of outdoor air to the'
 'AHU zone then ventilation from the AHU zone to the'
 'occupied zone. The energy inj/extracted to condition'
 'this ventilation to the zone air-point temp must be'
-'subtracted from the zone`s total load to correctly'
+'subtracted from the zone-s total load to correctly'
 'calculate the temperature and flow rate at the diffuser.'
-'This is handled automatically with option `c`.'
+'This is handled automatically with option [c].'
 ' '
-'Use option `a` if you have no outdoor air in your model.'
+'Use option [a] if you have no outdoor air in your model.'
 *enditem
         CALL PHELPD('Outdoor air treated as',23,'-',0,0,IER)
 *item EconvC
@@ -13861,7 +13635,7 @@ C          CALL ASKOK(
 'Beausoleil-Morrison (2000) for further details and'
 'references to the int-hc correlations.'
 'Two alternate correlations are available to calculate'
-'int-hc values for AHU`s that supply air through ceiling'
+'int-hc values for AHUs that supply air through ceiling'
 'diffusers. Both were generated from the same'
 'experimental data set but use different functional'
 'forms. Refer to Appendix C of Beausoleil-Morrison'
@@ -13926,14 +13700,14 @@ C          CALL ASKOK(
 'through ceiling, floor, or wall-mounted diffusers. The'
 'buoyant forces are caused by surface-to-air temperature'
 'differences. This option is preferred over the'
-'`air-based HVAC system` convective regime as it captures'
+'[air-based HVAC system] convective regime as it captures'
 'the combined influence of buoyant and forced effects.'
 ' '
 'Indicate the air-handling system type. This determines'
 'the temperature and flow rate of air introduced to the'
 'zone and thus the convective regime.'
 ' '
-'Option `VAV with CV heating` is a variable air volume'
+'Option [VAV with CV heating] is a variable air volume'
 'system with constant vol heating.'
 'When the zone requires cooling, the supply air'
 'is chilled to a constant temp while the system'
@@ -13941,11 +13715,11 @@ C          CALL ASKOK(
 'zone requires heat, the system supplies air at a fixed'
 'flow rate, equal to the min damper position of the VAV'
 'box. Reheat coils warm the air upstream of the diffuser'
-'to meet the zone`s heating load.'
+'to meet the zone-s heating load.'
 ' '
-'Option `VAV with VV heating` is a variable air volume'
+'Option [VAV with VV heating] is a variable air volume'
 'system with variable volume heating. It operates the'
-'same as `VAV with CV heating` in cooling model. In '
+'same as [VAV with CV heating] in cooling model. In '
 'heating mode, the dampers and reheat coils work in'
 'in conjunction to satisfy the heating load.'
 'At low heat loads the system delivers air at the low'
@@ -13953,7 +13727,7 @@ C          CALL ASKOK(
 'load. If the reheat coil cannot meet the load,'
 'the damper opens to increase the flowrate.'
 ' '
-'Option `n` is a constant-volume variable-temperature'
+'Option [n] is a constant-volume variable-temperature'
 'system. It delivers a constant flow of air, varying the'
 'temperature of the supply air in response to the zone'
 ' '
@@ -13964,7 +13738,7 @@ C          CALL ASKOK(
 'It is important to note that the description given here'
 'is used to simulate the convective regime induced in the'
 'zone by the HVAC air handling system. It does not model'
-'the performance and energy draws of the system`s'
+'the performance and energy draws of the system-s'
 'components. Therefore, you should ensure that the data'
 'given here is consistent with the zone control data or'
 'the explicit plant data that describes the HVAC system.'
@@ -14020,7 +13794,7 @@ C          CALL ASKOK(
 'Enter the maximum air temperature that can be supplied'
 'by the system to the zone. This is the design temperature'
 'for heating and is measured at the diffuser. Note that'
-'if the zone`s heating load cannot be satisfied by this'
+'if the zone-s heating load cannot be satisfied by this'
 'supply air temp, it is assumed that any remaining heat is'
 'supplied from another source (e.g. baseboard heaters)'
 'which does not affect the flow regime.'
@@ -14029,27 +13803,27 @@ C          CALL ASKOK(
 *item EconvE
 'Typically the air handling unit (AHU) conditions outdoor'
 'air. In this case, the conditioning of the outdoor air'
-'is performed by the AHU`s heating or cooling coil.'
+'is performed by the AHUs heating or cooling coil.'
 ' '
 'You can choose to represent the outdoor air in your model'
 'as infiltration to the zone. This would give the correct'
 'total heating or cooling load for the zone. However, in'
 'this case it is necessary to subtract the outdoor air'
-'load from the zone`s total load. In this way, the correct'
+'load from the zone-s total load. In this way, the correct'
 'temperature and flow rate at the diffuser can be'
 'calculated. This is handled automatically when you'
-'select option `b`.'
+'select option [b].'
 ' '
 'Alternatively, you can represent the AHU as another'
 'zone. You would have infiltration of outdoor air to the'
 'AHU zone then ventilation from the AHU zone to the'
 'occupied zone. The energy inj/extracted to condition'
 'this ventilation to the zone air-point temp must be'
-'subtracted from the zone`s total load to correctly'
+'subtracted from the zone-s total load to correctly'
 'calculate the temperature and flow rate at the diffuser.'
-'This is handled automatically with option `c`.'
+'This is handled automatically with option [c].'
 ' '
-'Use option `a` if you have no outdoor air in your model.'
+'Use option [a] if you have no outdoor air in your model.'
 *enditem
         CALL PHELPD('Outdoor air treated as',23,'-',0,0,IER)
 *subroutine EHCMAN
@@ -14062,7 +13836,7 @@ C          CALL ASKOK(
 'coefficient correlations for specified surfaces and for'
 'specified time intervals.'
 ' '
-'Four `convection-calculation control` methods are'
+'Four [convection-calculation control] methods are'
 'supported when you add or edit a period: '
 ' '
 'fixed coefficients - coefficients can be specified for'
@@ -14087,7 +13861,7 @@ C          CALL ASKOK(
 'values are almost always imposed for the whole day'
 'rather than mixed with other convective regimes. '
 ' '
-'Note that the `outside` surface of a mlc may be interior'
+'Note that the [outside] surface of a mlc may be interior'
 'to the building, ie. it may face the air-point of an '
 'adjacent zone. '
 ' '
@@ -14163,7 +13937,7 @@ C          CALL ASKOK(
 *enditem
       CALL EASKR(V2,' ',' End time ? ',
 *item EPHCF
-'Four `convection-calculation control` methods are'
+'Four [convection-calculation control] methods are'
 'supported: '
 ' '
 'fixed coefficients - allows coefficients to be specified '
@@ -14182,7 +13956,7 @@ C          CALL ASKOK(
 'CEN - supports CEN standard coefficient regimes or'
 'regimes which are similar in approach. '
 ' '
-'Note that the `outside` surface of a mlc may be interior'
+'Note that the [outside] surface of a mlc may be interior'
 'to the building, ie. it may face the air-point of an '
 'adjacent zone. '
 *enditem
@@ -14201,24 +13975,24 @@ C          CALL ASKOK(
 'A number of empirical correlations and fixed values, '
 'extracted from the following sources, are supported: '
 ' '
-'Alamdari and Hammond (1983), `Improved Data '
-'Correlations for Buoyancy-Driven Convection in Rooms`,'
+'Alamdari and Hammond (1983), Improved Data '
+'Correlations for Buoyancy-Driven Convection in Rooms,'
 'BSER&T, 4(3) 106-12. '
 ' '
-'Khalifa and Marshall (1990), `Validation of Heat '
+'Khalifa and Marshall (1990), Validation of Heat '
 'Transfer Coefficients on Interior Building Surfaces '
-'Using a Real-Sized Indoor Test Cell`, Int. J. Heat '
+'Using a Real-Sized Indoor Test Cell, Int. J. Heat '
 'and Mass Transfer, 33 (10) 2219-2236. '
 ' '
-'Halcrow (1987), `Heat Transfer at Internal Building '
-'Surfaces`, Report to ETSU, British Department of '
+'Halcrow (1987), Heat Transfer at Internal Building '
+'Surfaces, Report to ETSU, British Department of '
 'Energy. '
 ' '
 'CIBSE Guide (1988), 5th Edition, Table A3.4.'
 ' '
-'CEN (1995), `Thermal Performance of Buildings, Room'
+'CEN (1995), Thermal Performance of Buildings, Room'
 'Cooling Load Calculation, General Criteria for a'
-'Simplified Calculation Method`, CEN/TC89/WG6 N.225 /'
+'Simplified Calculation Method, CEN/TC89/WG6 N.225 /'
 'JWG-N79, Section 6.2.2. '
 ' '
 'Each correlation is identified by an index.  Refer to'
@@ -14264,8 +14038,8 @@ C          CALL ASKOK(
           CALL EASKI(IH,outs,' (-1.= simulation toggle = default) ? ',
 *item EPHCF
 'It is possible for the convection calculations to '
-'`adapt` as the simulation progresses.  You must assign '
-'a `control law` for each interior surface, which '
+'[adapt] as the simulation progresses.  You must assign '
+'a [control law] for each interior surface, which '
 'defines how the calculations will adapt. The following '
 'control laws are available: '
 ' '
@@ -14278,10 +14052,10 @@ C          CALL ASKOK(
 'Adaptive control is only applicable for interior '
 'building surfaces. Control laws specified for exterior '
 'surfaces will be ignored. As well, a control law '
-'specified for an `outside` surface which faces the '
+'specified for an [outside] surface which faces the '
 'air-point of an adjacent zone will be ignored: the law'
 'specified in the neighbouring zone will take precedence.'
-'Specify law `99` in these cases where adaptive control'
+'Specify law [99] in these cases where adaptive control'
 'is not applicable. '
 ' '
 'A cancel leaves the current control law unchanged.'
@@ -14305,8 +14079,8 @@ C          CALL ASKOK(
   102       CALL EASKS(stuff,' correlation indices',
 *item EPHCF
 'It is possible for the convection calculations to '
-'`adapt` as the simulation progresses.  You must assign '
-'a `control law` for each interior surface, which '
+'[adapt] as the simulation progresses.  You must assign '
+'a [control law] for each interior surface, which '
 'defines how the calculations will adapt. The following '
 'control laws are available: '
 ' '
@@ -14319,10 +14093,10 @@ C          CALL ASKOK(
 'Adaptive control is only applicable for interior '
 'building surfaces. Control laws specified for exterior '
 'surfaces will be ignored. As well, a control law '
-'specified for an `outside` surface which faces the '
+'specified for an [outside] surface which faces the '
 'air-point of an adjacent zone will be ignored: the law'
 'specified in the neighbouring zone will take precedence.'
-'Specify law `99` in these cases where adaptive control'
+'Specify law [99] in these cases where adaptive control'
 'is not applicable. '
 ' '
 'A cancel leaves the current control law unchanged.'
@@ -14435,7 +14209,7 @@ C          CALL ASKOK(
 'The file is optional.                                  '
 ' '
 'The browse option presents a list of files in the      '
-'project `hvac` folder. If you do not select one then it'
+'project [hvac] folder. If you do not select one then it'
 'is assumed that you do not want an hvac system.        '
 'If you cancel then nothing will be changed.            '
 *enditem
@@ -14451,7 +14225,7 @@ C          CALL ASKOK(
 'later time.                                            '
 ' '
 'The browse option presents a list of files in the      '
-'project `hvac` folder. If you do not select one then it'
+'project [hvac] folder. If you do not select one then it'
 'is assumed that you do not want an hvac system.       '
 'If you cancel then nothing will be changed.           '
 *enditem
@@ -15192,7 +14966,7 @@ c              call askok(outs,
 'from the last vertex to the start vertex. '
 ' '
 'Or click mouse on existing vertices, ending with an '
-'` e `. A match is assumed if within 5 pixels.'
+'[e]. A match is assumed if within 5 pixels.'
 'You will be given an oportunity to confirm the list. '
 *enditem
           CALL EASKS(HOLD,
@@ -15319,17 +15093,17 @@ c              call askok(outs,
         CALL EASKS(T14,' ',' Inserted surface name (12 char max):',
 *item INSREC
 'The topology of the current surface indicates that '
-'there is probably an existing `hole` in the surface'
+'there is probably an existing [hole] in the surface'
 '(typically used for glazing). '
 ' '
 'Polygons in esp-r are defined as a continuous line,'
-'so the addition of a second `hole` requires that the'
+'so the addition of a second [hole] requires that the'
 'bounding surface be revised to flow around the new'
 'surface.  '
 ' '
 'You will be asked which corner of the new surface'
 'and the vertex in the bounding surface to link to.'
-'If the first `hole` linked to the lower left corner'
+'If the first [hole] linked to the lower left corner'
 '(as indicated by a diagonal line) the new surface '
 'might link to the lower right corner of the '
 'bounding surface.  This convention will hopefully '
@@ -15361,7 +15135,7 @@ c              call askok(outs,
 'attributes and topology which have been made need to'
 'be checked closely.  For example the original surface'
 'topology must have a link between the outer boundaries'
-'and the `hole` so that it is a proper polygon. '
+'and the [hole] so that it is a proper polygon. '
 *enditem
         CALL PHELPD('surface details',5,'-',0,0,IER)
 *subroutine ITINSRT
@@ -15703,7 +15477,7 @@ c              call askok(outs,
           CALL EASKSUR(IZ,ISO,'-',OUTS,' ',IER)
 *item MFNDES
 'To enable the calculation of wind-induced surface'
-'pressures (as required by ESP-r`s fluid flow'
+'pressures (as required by ESP-r-s fluid flow'
 'simulators), a database of angle dependent'
 'pressure coefficients is provided.'
 'The default ESP-r set contains wind pressure coeffi-'
@@ -16839,7 +16613,7 @@ c              call askok(outs,
 ' '
 'It is a GOOD IDEA to use the display current information'
 'choice to review the current contents before proceeding'
-'to the `setting up required models` stage. '
+'to the [setting up required models] stage. '
 ' '
 'Facade surfaces in the model must be attributed for their'
 'USE e.g. WINDOW DISPLAY prior to setting up the models.'
@@ -18267,7 +18041,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine EDPCDB
 *item EDPCDB
 'To enable the calculation of wind-induced surface'
-'pressures (as required by ESP-r`s fluid flow'
+'pressures (as required by ESP-r-s fluid flow'
 'simulators), this database of angle dependent'
 'pressure coefficients is provided.'
 ' '
@@ -18372,7 +18146,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'to suggest tool enhancements.'
 ' '
 'To list the invocation options supported by this tool'
-'enter `esp-r -help` at the command line prompt.'
+'enter [esp-r -help] at the command line prompt.'
 ' '
 'If you need to work with complex models then '
 'you will need to update the parameters in the '
@@ -18729,7 +18503,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '   and tmc files to hold subsequent changes by the'
 '   user. Also creates variant connections and model'
 '   configuration file. If number of surfaces will'
-'   be altered select `geometry & attribution` first.'
+'   be altered select [geometry & attribution] first.'
 ' '
 ' materials database - makes copy of current database'
 '   to hold subsequent changes by the user.'
@@ -19076,11 +18850,11 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' '
 'Please note that neither the order in which periods'
 'are described nor their position in the display is'
-'important.  You may use an `additive` or `sequential`'
+'important.  You may use an [additive] or [sequential]'
 'approach or a combination as you choose. '
 ' '
 'You may insert or delete a period at any point in '
-'the list by selecting it`s key  (a,b,c...).'
+'the list by selecting it-s key  (a,b,c...).'
 ' '
 'See section 3.4 of the users manual for more info. '
 *enditem
@@ -19148,10 +18922,10 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'flow and casual gains. Air flows may have thermostatic'
 'or wind speed control. If electrical details are'
 'included then casual gains and electrical loads are'
-'combined into a `zone load`.'
+'combined into a [zone load].'
 ' '
 'The browse option presents a list of files in the'
-'project `zones` folder in case you want to share.'
+'project [zones] folder in case you want to share.'
 'the same definition as used by another zone.'
 *enditem
           CALL EASKSCMD(LTMP,' ','Zone operations file options:',
@@ -19167,10 +18941,10 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'and casual gains. Air flows may have thermostatic or'
 'wind speed control. If electrical details are included'
 'then casual gains and electrical loads are combined'
-'into a `zone load`.'
+'into a [zone load].'
 ' '
 'The browse option presents a list of files in the'
-'project `zones` folder in case you want to associate'
+'project [zones] folder in case you want to associate'
 'another operations file with the current zone In that'
 'case you the file will be shared between zones so that'
 'any change to its contents will affect more than one'
@@ -19768,7 +19542,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'gains in all periods which include that time.  In '
 'this way complex patterns may be described. '
 ' '
-'You may use an `additive` or `sequential` approach or'
+'You may use an [additive] or [sequential] approach or'
 'a combination as you choose.  The total gain is '
 'displayed in the graphic feedback window.'
 '  '
@@ -20218,7 +19992,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine prjqa
 *item prjqa
 'Normally reports are generated from a standard pattern'
-'and edited to fit the current project. The `notes` file'
+'and edited to fit the current project. The [notes] file'
 'is created during project registration and should be '
 'updated as the project evloves.'
 ' '
@@ -20226,7 +20000,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'performance data from the assessment tool.'
 ' '
 'If you wish to view bitmapped images oor capture '
-'images from the screen use option `h`. '
+'images from the screen use option [h]. '
 ' '
 'The preview tool has a default assumption that the '
 'report uses the troff typesetting convention. '
@@ -20253,7 +20027,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'composition. '
 ' '
 'Once you generate a QA report file you can select the'
-'`edit QA report` option and an editor will be launched.'
+'[edit QA report] option and an editor will be launched.'
 *enditem
         CALL PHELPD('QA overview',37,'-',0,0,IER)
 *item prjqa
@@ -20603,17 +20377,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'to maintain the current state, save to an eariler'
 'format or save files to a newer format (if available).'
 ' '
-'The edit `defaults` file allows you to change where'
+'The edit [defaults] file allows you to change where'
 'ESP-r looks for certain files. TAKE CARE when editing'
 'this file. '
 ' '
-'The edit `exemplars` file allows you to change where'
+'The edit [exemplars] file allows you to change where'
 'ESP-r looks for example models. TAKE CARE when editing'
 'this file. '
 ' '
-'The edit `3rd party application` allows you to specify'
+'The edit [3rd party application] allows you to specify'
 'a text editor, image display tool, CAD tool and the '
-'location of example models and where the `defaults` '
+'location of example models and where the [defaults] '
 'file (above) is located. '
 ' '
 'The test button is for scanning the ESP-r meta file.'
@@ -20655,7 +20429,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKXORGTKF(LFIL,'ASCII file name?',' ',
 *item SETUP
-'The edit `defaults` file allows you to change where'
+'The edit [defaults] file allows you to change where'
 'ESP-r looks for certain files. TAKE CARE when editing'
 'this file. The key words are:'
 ' '
@@ -20695,7 +20469,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKXORGTKF(defdbfl,'ESP-r default files?',' ',
 *item SETUP
-'The edit `esprc` file allows you to change 3rd party'
+'The edit [esprc] file allows you to change 3rd party'
 'tools used by ESP-r. A standard esprc file is included'
 'in the installation folder. ESP-r also checks for a '
 '.esprc (note the dot) file in the users home folder'
@@ -20712,7 +20486,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' '
 ' *gprn line specifies an application to invoke for'
 '    capturing a portion of the graphic display. For'
-'    Linux and OSX and Solaris the `import` tool in'
+'    Linux and OSX and Solaris the [import] tool in'
 '    Imagemagik is suggested.'
 ' '
 ' *cad  line specifies a CAD application to start. There'
@@ -20750,7 +20524,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKXORGTKF(esprc,'ESP-r esprc file?','(see help)',
 *item SETUP
-'The edit `climatelist` file allows you to change the'
+'The edit [climatelist] file allows you to change the'
 'list of climate files available for browsing. TAKE CARE'
 'when editing this file. '
 ' '
@@ -20803,7 +20577,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKXORGTKF(cdblfil,'ESP-r climatelist file?',
 *item SETUP
-'The edit `exemplars` file allows you to change the list'
+'The edit [exemplars] file allows you to change the list'
 'of example models. TAKE CARE when editing'
 'this file. The key words are:'
 ' '
@@ -20909,16 +20683,16 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' '
 'The TDF file is the main temporal file.'
 'The period shown is related to all tabular data'
-'and includes any `startup` time required by the'
+'and includes any [startup] time required by the'
 'simulation.  Example: for a simulation at half hour '
 'intervals over 10 days and with 2 startup days the '
 'temporal file should include 288 timesteps. '
 ' '
 'Note on file headers:'
-'Older asci temporal files may start with `TDFdatabase2`'
+'Older asci temporal files may start with [TDFdatabase2]'
 'before using them please change 1st line to use the'
 'identifier ASCIITDF2'
-'Newer ascii files will start with `ASCIITDF3`.'
+'Newer ascii files will start with [ASCIITDF3].'
 'Also note that binary/scratch temporal files are'
 'machine dependant and are not always safe for use on'
 'another computer.'

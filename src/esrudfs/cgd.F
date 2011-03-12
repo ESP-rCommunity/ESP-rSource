@@ -277,7 +277,7 @@ C Text listings
       ELSEIF(INO.EQ.15)THEN
         helptopic='dfs_display_list_grid'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('grid visualization',23,'-',0,0,IER)
+        CALL PHELPD('grid visualization',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.16)THEN
 
 C Finish grid visualization, returning display to initial state.
