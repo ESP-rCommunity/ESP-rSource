@@ -3634,7 +3634,7 @@ C copy # of plant component nodes from bps to prj commons
         call CopyPltNodeCounts()
         IF(IER.NE.0)THEN
           dok=.true.
-          helptopic='unspecified_problem_found'
+          helptopic='unspecified_prob_found'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('While reading the model configuration file',
      &               'a problem was detected! Try again?',
@@ -3722,7 +3722,7 @@ C Set flag so that bounds are checked.
    77   CONTINUE
         IF(IER.NE.0)THEN
           dok=.true.
-          helptopic='unspecified_problem_found'
+          helptopic='unspecified_prob_found'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('There was an error reported as the',
      &      'model was read! Try again?',OK,dok,nbhelp)

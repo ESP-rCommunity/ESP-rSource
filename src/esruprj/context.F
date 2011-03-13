@@ -2069,7 +2069,7 @@ C For help messages
 
 C If act = 'i' then initialise variables.
       if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
-        helptopic='primary_energy_conversion'
+        helptopic='primary_energy_conv'
         call gethelptext(helpinsub,helptopic,nbhelp)
         ipconv=1
         call easkabc('Typical patterns',' ','UK','Europe','zeros',
@@ -2130,7 +2130,7 @@ C If act = 'i' then initialise variables.
       nitms=18
 
 C Help text for this menu.
-  4   helptopic='primary_energy_conversion'
+  4   helptopic='primary_energy_conv'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Conversions to primary',ITEMS,nitms,INO)
@@ -2292,7 +2292,6 @@ C 31
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       logical modify,browse,XST
-      INTEGER IHL
 
 C For help messages
       character helpinsub*24 ! subroutine name

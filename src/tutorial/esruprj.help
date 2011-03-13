@@ -3649,7 +3649,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
             call easksur(IC,ISUR,'-',
             CALL ASKOK(' ',' Use another temporal item?',OK,DOK,2)
 *subroutine peconv
-*item peconv primary_energy_conversion
+*item peconv primary_energy_conv
 'Use these emission patterns as an approximation of '
 'patterns in several regions. '
 ' '
@@ -5306,7 +5306,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item NEWPRB
 *enditem
           CALL EASKABC('When reading the model description,',
-*item NEWPRB unspecified_problem_found
+*item NEWPRB unspecified_prob_found
 'There was an unspecified problem, review any warnings'
 'to see if the problem is one you can fix. Also check'
 'that the file was of the correct type.'
@@ -5418,8 +5418,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
               call askok(outs,' ?',OK,dok,3)
               call askok(outs,' ?',OK,dok,3)
 *subroutine EDCON
-*item EDCON
-'In scanning the geometry it was found that many of '
+*item EDCON many_not_attributed
+'The zone construction file defines the thermophysical'
+'properties of the zone and is required in order to run a'
+'simulation.'
+'  '
+'In preparation for the creation of this file attributes from'
+'the databases and zone construction file are scanned.'
+'When scanning the geometry it was found that many of '
 'the surfaces have not been attributed as to their '
 'construction type.  It is recommended that you: '
 '  '
@@ -5432,38 +5438,42 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '     option in the following menu. '
 *enditem
         CALL PHELPD('unknowns atrib in constr',11,'-',0,0,IER)
-*item EDCON
-'The zone construction file defines the thermo-'
-'physical properties of the zone and is mandatory.'
+*item EDCON pre_zone_constructions
+'The zone construction file defines the thermophysical'
+'properties of the zone and is required in order to run a'
+'simulation. The idea is that the thermophysical properties'
+'are held within the model so that there is less need for'
+'scanning databases durin the simulation.'
+'  '
+'In preparation for the creation of this file attributes from'
+'the databases and zone construction file are scanned. Please'
+'agree with the suggested file names or edit as required.'
+'  '
+'If an existing construction file is found you can use it or'
+'re-build the data from the available attributes in the'
+'geometry file.'
+'  '
+'If a file was not found then you must supply a name if prj'
+'is being run interactively. If prj is in silent model the'
+'processing will fail because there is no way to supply the'
+'needed information.'
+'  '
+'A TMC file holds optical properties for transparent surfaces'
+'within a zone as well as the definition of and control of'
+'blinds associated with such surfaces. If any surfaces are'
+'transparent you will be asked to confirm this file name.'
+'  '
 *enditem
         CALL EASKS(LTMP,' Zone construction file? ',' ',
-*item EDCON
-'Unless there is control on optical properties, the'
-'best way to proceed is to recreate via geometry'
-*enditem
-          CALL EASKABC(outs,'Options:',
-*item EDCON
-'The construction file does not exist, or was not'
-'found, please create/rereference this file.'
-*enditem
-          CALL PHELPD('file error',2,'-',0,0,IER)
-*item EDCON
-*enditem
-          CALL EASKAB(outs,'Options:','respecify',
-*item EDCON
+        CALL EASKABC(outs,'Options:',
+        CALL PHELPD('file error',2,'-',0,0,IER)
+        CALL EASKAB(outs,'Options:','respecify',
+*item EDCON confirm_surf_opaque
 'The opaque/transparent attribute of the surface is not'
 'OPAQUE. If it is opaque then select [ok].'
 *enditem
           CALL ASKOK(outs,'Confirm surface is opaque?',OK,DOK,2)
-*item EDCON
-'A TMC file holds optical properties for transparent'
-'surfaces within a zone as well as the definition of'
-'any control of blinds associated with such surfaces.'
-'Specify name of *.cfc file which will store the CFC'
-'input data for this zone.'
-*enditem
-        CALL EASKS(ltmp,'CFC file name?',
-*item EDCON
+*item EDCON complex_fen_options
 'Complex Fenestration Construction (CFC)'
 'A CFC allows for a more accurate treatment of'
 'modeling windows with or without shading devices.'
@@ -5480,9 +5490,14 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'The Glazing Shading Layer editor (GSLedit) used for'
 'importing CFC input properties can be downloaded from'
 'the ESRU website, downloads section.'
+'  '
+'If any surfaces have CFC attributes you will be asked to'
+'supply the name of the *.cfc file which will store the CFC'
+'input data for this zone.'
 *enditem
+        CALL EASKS(ltmp,'CFC file name?',
         CALL PHELPD('CFC instructions',19,'-',0,0,IER)
-*item EDCON
+*item EDCON zone_constructions_menu
 'The surface attributes within the zone geometry file,'
 'in conjunction with the Constructions db, allow the'
 'specific thermo-physical properties to be saved within'
@@ -5535,69 +5550,56 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'transparent surfaces that have optical property control.'
 'Note however that the air flow control logic is'
 'different from optical property control logic so care'
-'is required to ensure that they operate together as'
+'is required to ensure that they operate together.'
+*enditem
+       CALL PHELPD('zone geom file section',54,'-',0,0,IER)
+*item EDCON attribute_recent_change
 'The Project Manager thinks that there have been recent'
 'changes to either surface attributes or constructions'
 'that have not been saved. To be safe agree to saving'
 'these changes.'
 *enditem
           CALL ASKOK('Save changes in surface attributes or',
-*item EDCON
-*enditem
-        CALL PHELPD('zone geom file section',54,'-',0,0,IER)
-*item EDCON
-'This facility currently requires that you use an'
-'external text editor to add information to the zone'
+*item EDCON zone_linear_cond
+'The linear conductivity facility currently requires that you'
+'use an external text editor to add information to the zone'
 'constructions file to define linear dependencies.'
-'Please contact your administrator for information on'
-'how to do this.'
+'  '
+'Please contact your administrator for information on how'
+'to do this.'
 ' '
-'The linear facility identifies which layers in the'
-'model will have such dependencies applied.'
+'The linear facility identifies which layers in the model'
+'will have such dependencies applied.'
 ' '
 'A non-linear property facility is also available'
 'from the above menu.'
 *enditem
         CALL PHELPD('linear properties',11,'-',0,0,IER)
-*item EDCON
-'The current construction data will be placed in a'
-'file. If this is the same name as the source file'
-'then it will be overwritten.'
-'In addition, details of surfaces which are transparent'
-'will be place in a separate zone TMC file. '
-*enditem
-        CALL PHELPD('zone constr file save',5,'-',0,0,IER)
-*item EDCON
-*enditem
-        CALL EASKS(SFILE,' New construction file? ',
-*item EDCON
-'Check that you have permission to update the zone'
-'construction and/or optics files and that you have'
-'sufficient disk space. '
+*item EDCON constr_write_error
+'Check that you have permission to update the zone files'
+'and that you have sufficient disk space. If you are running'
+'on OSX or Linux or Cygwin there may be messages written to'
+'the command window.'
 *enditem
           CALL ASKOK(
-*item EDCON
-'ESP-r thinks that there are recent changes that have'
-'not yet been saved to file. Information might be lost'
-'if you do not save the changes. '
-*enditem
-        CALL ASKOK('Save zone geometry to reflect recent changes',
 *subroutine EDSCON
-*item EDSCON
+*item EDSCON surface_constr_atrib
 'This is a display of the surface attributes which may'
 'be edited.  Most are selections from existing database'
+'entries.'
 '  '
-'You are allowed to modify the thermophysical proper-'
-'ties of the layers BUT BE CAREFUL.  Manual editing'
-'may be overwritten by subsequent file re-attrubution.'
+'WARNING: You are allowed to modify the thermophysical'
+'properties of the layers BUT BE CAREFUL.  Manual editing'
+'will be overwritten by subsequent file re-attrubution.'
+'Manual editing messes up QA tasks!'
 ' '
-'RATHER create additional multilayer constructions'
-'for each unique case and use them as attributes.   '
+'RATHER create additional multilayer constructions for'
+'each unique case, give them unique names and use them'
+'as attributes for the surfaces.'
+'  '
 'DO NOT CHANGE the TOPOLOGY (ie. move air gaps around)'
-'here - do it in the mlc database.'
-*enditem
-        CALL PHELPD('surface details',12,'-',0,0,IER)
-*item EDSCON
+'within a construction - do it in the constructions database.'
+'  '
 'The choice of using an opaque or transparent construction'
 'is dependent on the optical properties. Where there is a'
 'mix of opaque and transparent layers the construction'
@@ -5608,72 +5610,63 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'After selecting TRAN you will be asked for further '
 'information. '
+'  '
+'Other construction attributes that you can edit:'
+'  * long-wave/infrared emissivity is normally 0.1 < x < 0.9'
+'    this is an attribute of the face adjacent to the zone'
+'    and the other-face of the surface.'
+'  * short wave absorptivity is normally 0.1 < x < 0.9'
+'    this is an attribute of the face adjacent to the zone'
+'    and the other-face of the surface.'
+'  * layer conductivity can vary from about 0.03 W/(mK) for'
+'    insulation to about 200 W/(mK) for copper'
+'  * layer density can vary from about 30 kg/m^3 for'
+'    insulation to about 8900 kg/m^3 for copper'
+'  * specific heat (J/(kgK))
+'  * layer thickness is typically from 0.1mm to 300mm
+'  '
+'If a layer is identified as an air gap all you can do is to'
+'alter its resistance -.e.g. 0.18 m^2K/W for a cavity wall'
 *enditem
+        CALL PHELPD('surface details',12,'-',0,0,IER)
         CALL EASKABCD('Select a type for the surface.',' Surface type',
-*item EDSCON
-'The infrared emissivity is normally 0.1 < x < 0.9'
-*enditem
         CALL EASKR(EMISI(ISUR),' ','Inside emissivity  ?',
-*item EDSCON
-*enditem
         CALL EASKR(EMISE(ISUR),' ','Outside emissivity ?',
-*item EDSCON
-'The short wave absorptivity is normally 0.1 < x < 0.9'
-*enditem
         CALL EASKR(ABSI(ISUR),' ',' Inside absorptivity ? ',
-*item EDSCON
-*enditem
         CALL EASKR(ABSE(ISUR),' ',' Outside absorptivity? ',
-*item EDSCON
-'WARNING: You are allowed to modify the properties'
-'of the layers BUT NOT CHANGE the TOPOLOGY (ie.'
-'move air gaps around) - do that in the multi-layer '
-'construction database facility.  Quality assurance'
-'is enhanced if you use the multilayer construction'
-'facility rather than editing entities here. '
-*enditem
-          CALL PHELPD('surface details',6,'-',0,0,IER)
-*item EDSCON
-'The conductivity can vary from about 0.03 W/(mK) for'
-'insulation to about 200 W/(mK) for copper'
-' '
-'The density can vary from about 30 kg/m^3 for'
-'insulation to about 8900 kg/m^3 for copper'
-' '
-'Specify the specific heat in J/(kgK)'
-' '
-'Specify the thickness of the layer (m)'
-*enditem
         CALL EASKS(HOLD,
-*item EDSCON
-'Enter air gap resistance.'
-'Typically this is 0.18 m^2K/W for a cavity wall'
-*enditem
-            CALL EASKR(VAL,' ',' Air gap resistance ? ',
-*subroutine EDZCON
+        CALL EASKR(VAL,' ',' Air gap resistance ? ',
 *subroutine MKTWIN
-*item MKTWIN
+*item MKTWIN tmc_file_not_found
 ' The TMC file does not exist, or was not found, '
 'please create / rereference this file individually.'
 *enditem
         CALL PHELPD('file error',2,'-',0,0,IER)
 *subroutine EDTWIN
-*item EDTWIN
+*item EDTWIN constr_attribute_checks
+'Surfaces have several attributes which are ment to work together'
+'and if these are not consistent you are asked to clarify what'
+'approach to take. For example, if the geometry file surface'
+'attribute is OPAQUE but the MLC construction database indicates'
+'that the construction is not opaque then you will be asked to'
+'decide which one is correct.
+'  '
+'If the optical properties name does not point to a valid entry'
+'in the optics database then you will be asked to either select'
+'a different construction or supply the optical properties'
+'manually. Do not start on the maual editing unless you already'
+'know the set of optical property data that you will be typing'
+'into the dialogs.' 
+'  '
+'If you interupt the process of defining an optical control you'
+'will be given the option to try it again or to clear the'
+'control definition.'
 *enditem
-          CALL EASKAB(outs,' do you want to:','switch to opaque',
-*item EDTWIN
-'Supplying optical properties if you know the angular'
-'transmission and absorption data. '
-*enditem
-          CALL EASKABC(outs,' Do you want to: ',
-*item EDTWIN
-'You interupted the specification. If you want to start'
-'again say yes or if you want to not have optical controls'
-'say no and the data will be cleared. '
-*enditem
+        CALL EASKAB(outs,' do you want to:','switch to opaque',
+        CALL EASKABC(outs,' Do you want to: ',
         CALL ASKOK('Try again to define the optical control?',
-*item EDTWIN
-'There is a surface attribute that indicates that an'
+*item EDTWIN detect_existing_opt_ctl'
+'If there is a surface attribute that indicates that an'
 'existing optical control. You have the following '
 'options: '
 ' a) remove this optical control '
@@ -5682,40 +5675,23 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'Hint - scroll the text feedback backwards to see the'
 'current optical control details. '
+'  '
+'Or if there are no controls say yes to the offer to create a new'
+'control. Up to eight optical controls can be defined in the zone.'
+'  '
+'When working with optical controls you have several options'
+'for sensors:'
+' * each transparent surface has its own sensor (default);'
+' * one user defined external surface will contain the sensor'
+'   for all surfaces which use this particular TMC type;'
+' * one user defined internal Daylight Coefficient sensor is used.'
 *enditem
-          CALL EASKABC(outs,' ','remove this optical control',
-*item EDTWIN
-'There is a surface attribute that indicates that an'
-'optical control could be defined. To do it say [yes]. '
-*enditem
-          CALL ASKOK(OUTS,'optical control?',OK,dok,2)
-*item EDTWIN
-'Up to 8 control periods are allowed.'
-*enditem
+        CALL EASKABC(outs,' ','remove this optical control',
+        CALL ASKOK(OUTS,'optical control?',OK,dok,2)
         CALL EASKI(N1,' ','Number of control periods?',
-*item EDTWIN
-'The position of the sensor may be as follows.'
-' * each transparent surface has its own'
-'   sensor (default);'
-' * one user defined external surface will'
-'   contain the sensor for all surfaces which'
-'   use this particular TMC type;'
-' * one user defined internal Daylight Coefficient'
-'   sensor is employed.'
-*enditem
         CALL EASKAB(' ','Transparent surfaces controlled by:',
-*item EDTWIN
-*enditem
-          CALL EASKI(N2,' ','Surface for common sensor location?',
-*item EDTWIN
-'Control period starting and ending times should'
-'define consecutive periods.'
-*enditem
-          CALL EASKR(VAL,outs,' Begin at hour: ',
-*item EDTWIN
-*enditem
-          CALL EASKR(VAL,outs,' End at hour  : ',
-*item EDTWIN
+        CALL EASKI(N2,' ','Surface for common sensor location?',
+*item EDTWIN optical_control_summary
 'Surfaces composed of transparent constructions'
 'will have optical properties defined from either'
 'the Optical Properties db or by manual input. If'
@@ -5764,80 +5740,64 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'the optical property control logic so some care and'
 'testing is required to ensure that optical and flow'
 'control works together.'
+'  '
+'If you interupt the process of defining an optical control you'
+'will be given the option to try it again or to clear the'
+'control definition.'
 *enditem
-            call EASKATOG('Controlled on:','(currently time)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently radiation)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently ambient temp.)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently zone temp.)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently daylight coef)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently Lightswitch)',
-*item EDTWIN
-*enditem
-            call EASKATOG('Controlled on:','(currently undefined)',
-*item EDTWIN
-*enditem
-            CALL EASKR(VAL,' ','Radiation set point?',
-*item EDTWIN
-*enditem
-            CALL EASKR(VAL,' ','Ambient temp. set point?',
-*item EDTWIN
-*enditem
-            CALL EASKR(VAL,' ','Zone temp. set point',
-*item EDTWIN
-*enditem
-            CALL EASKR(VAL,' ','Lux set point',
-*item EDTWIN
-*enditem
-            CALL EASKR(VAL,' ','Lightswitch lux set point?',
+          CALL EASKR(VAL,outs,' Begin at hour: ',
+          CALL EASKR(VAL,outs,' End at hour  : ',
+          call EASKATOG('Controlled on:','(currently time)',
+          call EASKATOG('Controlled on:','(currently radiation)',
+          call EASKATOG('Controlled on:','(currently ambient temp.)',
+          call EASKATOG('Controlled on:','(currently zone temp.)',
+          call EASKATOG('Controlled on:','(currently daylight coef)',
+          call EASKATOG('Controlled on:','(currently Lightswitch)',
+          call EASKATOG('Controlled on:','(currently undefined)',
+          CALL EASKR(VAL,' ','Radiation set point?',
+          CALL EASKR(VAL,' ','Ambient temp. set point?',
+          CALL EASKR(VAL,' ','Zone temp. set point',
+          CALL EASKR(VAL,' ','Lux set point',
+          CALL EASKR(VAL,' ','Lightswitch lux set point?',
 *subroutine EOPTKS
-*item EOPTKS
+*item EOPTKS manual_optical_editing
+'The simulation of radiation transmission through glazing'
+'is angular dependent.  Five angles are used:'
+' 0 (normal to the glass), 40, 55, 70 & 80 degrees.'
+'  '
+'The visible transmittance at normal incidence is used for'
+'daylighting calculations.'
+'  '
+'The simulation of radiation transmission through transparent'
+'constructions also requires that the short-wave absorptance'
+'at each layer (including air gaps) is defined for five angles'
+'of incidence: '
+'  0 (normal to the glass), 40, 55, 70 & 80 degrees '
+'The values for an air gap are usually: '
+'  0.001, 0.002, 0.003, 0.004, 0.005 '
+'  '
+'The number of layers should be equal to that of the'
+'associated multilayer construction. Layers index (outside=1).'
+'  '
+'There are two typcial sources for angular optical properties:'
+' * data which is held in the optical properties database'
+'   which has typically been imported from Window 6.2 or from'
+'   the EU WIS application.'
+' * data which you supply and type in manually'
+'  '
 'Manual data input will ask for the direct transmission'
 'at each angle as well as absorption characteristics for'
 'layer. Using data from an optical database simplifies '
 'the process. '
-*enditem
-      CALL EASKAB(' Get optical properties from: ',' ',
-*item EOPTKS
-'The simulation of radiation transmission through '
-'glazing is angular dependent.  Five angles are '
-'used: 0 (normal), 40, 55, 70 & 80 degrees and the'
-'data can be obtained via program win.'
-*enditem
-      CALL EASKS(HOLD,' Direct trans @ 0 40 55 70 80 degrees: ',
-*item EOPTKS
-'The visible transmittance at normal incidence is'
-'used for daylighting calculations.'
-*enditem
-      CALL EASKR(VTRN,' ',' Visible transmittance: ',
-*item EOPTKS
-'This is almost always equal to that of the associated'
-'multilayer construction. Layers index (outside=1).'
+'  '
 'If you cancel you will be taken back to the start'
 'of the editing sequence. '
 *enditem
-        CALL EASKI(NTLT,' ',
-*item EOPTKS
-'The simulation of radiation transmission through '
-'transparent constructions requires that the short-'
-'wave absorptance at each layer (including air gaps)'
-'is defined for five angles of incidence: '
-'  0 (normal), 40, 55, 70 & 80 degrees '
-'This data can be obtained via program window.'
-'The values for an air gap are usually: '
-'   0.001, 0.002, 0.003, 0.004, 0.005 '
-*enditem
-          CALL EASKS(HOLD,outs,'  ',
-*subroutine scntcnst
+      CALL EASKAB(' Get optical properties from: ',' ',
+      CALL EASKS(HOLD,' Direct trans @ 0 40 55 70 80 degrees: ',
+      CALL EASKR(VTRN,' ',' Visible transmittance: ',
+      CALL EASKI(NTLT,' ',
+      CALL EASKS(HOLD,outs,'  ',
 *subroutine ELISTMAT
 *item ELISTMAT
 'The classifications shown in the display include up to'

@@ -2917,7 +2917,7 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      character ITMSS(10)*50,H*72,FACE*6
+      character ITMSS(10)*50,FACE*6
       character ltmp*16,t12*12,d12*12,t20*20
       character VOLNAME*12, VCsurf*12
 
