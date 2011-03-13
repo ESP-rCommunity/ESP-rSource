@@ -4790,118 +4790,109 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKI(IDEL,' ','Which region to delete ? ',
         CALL PHELPD('CFD inputs',21,'-',0,0,IER)
 *subroutine edcfg
-*item edcfg
-'A model, as defined within the system configuration file,'
-'comprises several entities such as simulation domain'
-'definition, site location, geometry, construction, usage'
-'and control. The system configuration file references'
-'other files where the actual defining data is held.'
+*item edcfg model_comprises_br_sim
+'A model, as defined within the system configuration file, comprises'
+'several entities such as simulation domain definition, site location'
+'geometry, construction, usage and control. The system configuration'
+'file references other files where the actual defining data is held.'
 ' '
-'The structure of this menu reflects the entities of a'
-'system configuration file. The options may be used to'
-'define a model to be simulated.  For example, it is'
-'possible to initially define a single building zone and'
-'then add further zones, plant and control later. It is'
-'also possible to increase the resolution of a model by,'
-'adding in a CFD domain to represent zone air movement'
+'The structure of this menu reflects the entities of a model config-'
+'uration file. The interface allows you to evolve it. For example, it'
+'is possible to initially define a single building zone and then add'
+'further zones, plant and control later. Or increase the resolution'
+'of a model by, adding in a CFD domain to represent zone air movement'
 'or plant component working fluid flow.'
-' '
-'The [actions] section includes comissioning assessments'
-'of the model, recovering performance indidators, as'
-'well as generating QA reports on the composition of'
-'the model. '
+'  '
+' option a:  domains included in a model are updated automatically'
+'   as new information is added. Changing the domain can have a'
+'   significant impact: for example, if [building & plant] and you'
+'   change to [plant only], all references to the building zones'
+'   will be removed (zone files still exist). [registration level]'
+'   domain holds only site information documentation and images.'
+'  '
+' option b: the context of the model includes site details, images'
+'   primary energy conversions and the Integrated Performance View'
+'  '
+' option c: the zone composition includes facilities for defining'
+'   geometry, constructions, operational schedules and optional'
+'   facilities to increase thermophysical resolution.'
+'  '
+'The [networks] section gives access to details of plant (component'
+'based or idealized) and air flow, electrical & contaminant networks.'
+'  '
+'The [controls] section gives access to the detail of the ideal'
+'zone controls as well as plant & flow controls and global controls.'
+'  '
+'The [actions] section includes tasks that are applicable to models'
+'which are complete:'
+'  * visualisation supports hidden line views or colour images'
+'  * simulation defines the parameters of simulations as well as'
+'     comissioning assessments of the model'
+'  * results recovers performance indicators, reports, graphs etc.
+'  * QA reports on the composition of the model. '
+'  '
+' option ! saves the model cfg and cnn (boundary conditions) file'
+'   with the information currently in memory
 *enditem
         CALL PHELPD('configuration images',19,'-',0,0,IER)
-*item edcfg
-'The current model description will be written to'
-'this file.'
-*enditem
    89   CALL EASKS(ltmp,' ','Update system configuration file?',
-*item edcfg
-'The surface topology of the model is held'
-'in the surface connections file.'
-*enditem
-            CALL EASKS(ltmp,' ','Surface connections file name?',
-*item edcfg
+        CALL EASKS(ltmp,' ','Surface connections file name?',
+        call MENUATOL(outs,'Domain options:',
+        call askok('Are you sure you want to change the domains',
+*item edcfg disk_might_be_full
 'Check to see that the disk is not full and that you'
 'have permission to write to the folder.'
 *enditem
           CALL ASKOK('Problem creating new file!',
-*item edcfg
-'The domains included in a model are automatically'
-'updated in the system configuration file as you add'
-'new information. While you can change the defined domain'
-'at any time, BE WARNED - if you change from a building'
-'only domain to a plant only domain, all zone data will'
-'be lost from your model.'
-' '
-'The [registration level] domain holds only site'
-'information and images (i.e. no building/plant details).'
-*enditem
-        call MENUATOL(outs,'Domain options:',
-*item edcfg
-'Normally the domains included in a model are updated'
-'automatically as new information is added. Changing'
-'the domain can have a significant impact: for example,'
-'if the domain is [building and plant] and you change'
-'it to [plant only], all references to the building'
-'zones will be removed. The zone files will still exist'
-'but would need to be reattached to the model.'
-*enditem
-          call askok('Are you sure you want to change the domains',
-*item edcfg
-'Idealized model creates an .hvac file with    '
-'descriptions of main and backup systems.      '
-'Explicit creates a plant network file which   '
-'defines plant components and their connection '
-'topology.                                     '
+*item edcfg submenu_plant_options
+'There are several options for defining environmental controls in'
+'ESP-r. One approach is based on ideal zone controls which are'
+'accessed via the [controls] section.'
+'  '
+'In the current menu there are additional options which you may'
+'wish to consider which can provide additional performance infor-'
+'mation within the components or in relation to parasitic power use.'
+'  '
+'Idealized model creates an .hvac file with descriptions of main and'
+'backup systems for a number of residential scale scenarios. It is'
+'used in combination with the ideal zone control laws to provide the'
+'attributes needed for post-processing tasks.'
+'  '
+'Explicit creates a plant network file which defines plant components'
+'and their connection topology and thus the greatest level of detail'
+'in terms of the response of individual components. If you do not'
+'have access to a suitable components database or a good working'
+'knowledge of how systems are assembled from components then you'
+'should avoid the explicit approach.'
+'  '
+'If an existing plant network file is located it will be used (if'
+'you say OK), otherwise a new plant network file will be created'
+'(if you say OK).'
+'  '
+'For existing plant network files there is a dereference option'
+'which removes the name of the plant network file from the model'
+'configuration file but does not delete it. The plant network can'
+'later be re-established.'
+'  '
+'If you select the explicit mode and there is no plant component'
+'database you will be warned not to continue.'
 *enditem
             CALL PHELPD('Idealized or Explicit Plant Model?'
-*item edcfg
-'A plant network file holds the definition of a     '
-'system, the purpose of which is usually to supply  '
-'the building with heat, coolth and/or power. Unless'
-'you have access to a suitable components database, '
-'DO NOT use this facility.                          '
-*enditem
-              CALL ASKOK(
-*item edcfg
-'The plant network file defines plant components'
-'and their connection topology.'
-*enditem
-              CALL EASKS(ltmp,' ','Plant network definition file?',72,
-*item edcfg
-'The plant network file defines plant components and'
-'topology. If you supply an existing file it will be'
-'used, otherwise a new file will be created.'
-' '
-'The dereference option removes the name of the plant'
-'network file from the system configuration file but'
-'does not delete it. The plant domain can later be'
-'re-established by rintrosucting the configuration'
-'file reference.'
-*enditem
-              CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
-*item edcfg
-*enditem
-              CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
-*item edcfg
-'File not found, select [OK] if you want this file'
-'to hold the definition of a new plant network.'
-*enditem
-              CALL ASKOK('This is a new plant network file.',
-*item edcfg
-'Found an existing file, select [OK] if you want to'
-'use or modify it.'
-*enditem
-              CALL ASKOK('Found existing plant network file.',
-*item edcfg
+            CALL ASKOK(
+            CALL EASKS(ltmp,' ','Plant network definition file?',72,
+            CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
+            CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
+            CALL ASKOK('This is a new plant network file.',
+            CALL ASKOK('Found existing plant network file.',
+*item edcfg submenu_flow_options
 'Air flow can be modelled using an empirical air'
 'infiltration model, sheduling flow by prescribing'
 'flowrates and imposing controls or by defining a'
 'detailed air flow network.'
+'  '
 'The Alberta Air Infiltration Model (AIM-2) is used '
 'to describe the empirical air infilration model.'
+'  '
 'It is possible to schedule air flowing from the'
 'outside (infiltration) and from specified zones or'
 'plant components (ventilation). This is sometimes'
@@ -4918,165 +4909,144 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'influence of the above flow network.)'
 ' '
 'Flow networks may be defined by selecting components'
-'from a menu or by graphical manipulation.'
+'from a menu (the standard approach) or by graphical'
+'manipulation of icons in a grid (an experimental approach'
+'which uses the [net] module).'
+'  '
+'In the case of the graphical approach when you return from'
+'the [net] tool you may have created nodes that are not linked'
+'to a zone. You will be asked to confirm the link manually'
+'for each of the zones in the model and then to save these'
+'links into the model configuration file.'
 *enditem
         call EASKATOG('Define air flow via:',' ',
-*item edcfg
-*enditem
- 250      CALL EASKGEOF('Select a zone:',CFGOK,IC,'-',IER)
-*item edcfg
-'This is the network graphics file generated by the'
-'[net] tool.'
-*enditem
-          CALL EASKS(LFIL,' ','Network graphics file?',72,
-*item edcfg
-'You may have nodes that are not linked to a zone'
-'but where network nodes and zones are linked, the'
-'temperature of the former will be matched to the'
-'latter. '
-*enditem
-              CALL EASKABC(outs,' ','ok',
-*item edcfg
-*enditem
-                call ASKRNOD('available nodes','-',IC,IER)
-*item edcfg
-*enditem
-              CALL EASKAB(outs,' ','ok','select a node',iacc,3)
-*item edcfg
-*enditem
-                call ASKRNOD('available nodes','-',IC,IER)
-*item edcfg
-'You have been working on an independant description'
-'of a flow network. To use it in a simulation you '
-'need to associate it with zones in the current'
-*enditem
-            CALL ASKOK('Save graphic flow network links to zones',
-*item edcfg
+        CALL EASKS(LFIL,' ','Network graphics file?',72,
+        CALL EASKABC(outs,' ','ok',
+        call ASKRNOD('available nodes','-',IC,IER)
+        CALL EASKAB(outs,' ','ok','select a node',iacc,3)
+        call ASKRNOD('available nodes','-',IC,IER)
+        CALL ASKOK('Save graphic flow network links to zones',
+*item edcfg password_is_needed
 'This option is password protected because it is'
 'under development and so must be used with care.'
 'The password is available from ESRU on request.'
 *enditem
         call easki(IPASS,' ','Password?',
-*item edcfg
+*item edcfg model_visual_options
 'In addition to the in-built perspective view you can'
-'request a hidden line view of the model or send'
-'it to be rendered by Radiance.'
+'request a hidden line view of the model - this starts'
+'a separate [viewer] tool.'
+'  '
+'For high resolution interior or external images of the model'
+'you can request that the ESP-r model be exported in a syntax'
+'which is understood by the visual simulation tool Radiance and'
+'managed by the [e2r] module in the ESP-r suite.'
+'  '
+'Radiance is available for Linux, OSX and the Cygwin environment'
+'under Windows.'
 *enditem
           CALL EASKABC(' ','Visualisation options:','hidden line',
 *subroutine EDZCOMP
-*item EDZCOMP
-'This menu provides facilities to create, browse'
-'and edit zone-level data such as geometry and'
-'construction, schedules and miscellaneous technical'
-'data relating to CFD, casual gain control etc.'
+*item EDZCOMP zone_composition_menu
+'This menu provides facilities to create, browse and edit zone-level'
+'data such as geometry and construction, schedules and miscellaneous'
+'technical data relating to CFD, casual gain control etc.'
 ' '
-'The [Zones] section (geometry, construction, operations)'
-'are the essential attributes of zones which must be'
-'completed prior to simulation.'
+'The [Zones] section (geometry, construction, operations) are the'
+'essential attributes of zones which must be completed prior to'
+'simulation. If you fully attribute the zone surfaces in the geometric'
+'facility the [construction materials] section tasks require little'
+'user intervention. In the zone selection menu you have options to'
+'nanage zones (add delete copy).'
 ' '
-'The [Topology] section allows you to automate the'
-'specification of what-is-on-the-other-side of surfaces'
-'in the model (which can also be done on a surface by'
-'surface basis within the geometry facility). Anchors'
-'can be thought of as named lists of surfaces e.g.'
-'a list called [finistration] might point to all windows'
-'in a facade to allow you to change them all to a new'
-'type of glazing.'
+'The [Topology] section automates the specification of'
+'what-is-on-the-other-side of surfaces in the model (which'
+'can also be done on a surface by surface basis within the geometry'
+'facility). Anchors can be thought of as named lists of surfaces'
+'e.g. a list called [finistration] might point to all windows in'
+'a facade to allow you to change them all to a new type of glazing.'
 ' '
-'The [Options] section allows you to add additional'
-'descriptions and or detail to your model as and when'
-'such concepts become important to your performance'
-'assessments. If you do not specify these additional'
-'model attributes default assumptions are made.'
+'The [Options] section allows you to add additional descriptions'
+'and or detail to your model as and when such concepts become'
+'important to your performance assessments. If you do not specify'
+'these additional model attributes default assumptions are made.'
 ' '
-'The [Special components] section also allows you to'
-'add detail to your model to support specialists'
-'tasks (e.g. assigning electrical characteristics to'
-'PV cells embedded within surfaces).'
+'The [Special components] section also allows you to add detail to'
+'your model to support specialists tasks (e.g. assigning electrical'
+'characteristics to PV cells embedded within surfaces).'
 ' '
-'The [Global tasks] option allows you to transform and'
-'rotate the model on the site and do search & replace '
-'actions on surface attributes. '
+'The [Global tasks] option allows you to transform and rotate the'
+'model on the site and do search & replace actions on surface'
+'attributes. XYZ transforms (of zone and obstruction coordinates)'
+'and rotations (+ is anticlockwise around site origin or a user'
+'specified point) may be applied to one or more zones.'
+'Search-and-replace of surface construction attributes'
+'Global attribution allows all surface matching specific'
+'criteria (e.g. vertical and opaque) to be assigned a'
+'particular attribute.'
 *enditem
         CALL PHELPD('zones definition',32,'-',0,0,IER)
-*item EDZCOMP
-'Transforms and rotations may be applied to one or more'
-'zones in the model. Global attribution allows all'
-'surfaces matching some criteria (e.g. vertical and'
-'opaque) to be assigned a particular attribute.'
-*enditem
-          call EASKATOG(' Global action?',' ',
-*item EDZCOMP
-*enditem
-          call EASKATOG(' Global action?',' ',
-*item EDZCOMP
-'A transform shifts each zone & its solar obstructions'
-'by a given amount along each axis.'
-*enditem
-            CALL EASKS(HOLD,'X, Y and Z transform (m)?',' ',
-*item EDZCOMP
-*enditem
-            CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ',
-*item EDZCOMP
-' Pick one, several or all zones for inclusion.'
-*enditem
-          CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
-*item EDZCOMP
-'The rotation is applied to all selected zones about'
-'a common point or the site origin. Positive is  '
-*enditem
-          CALL EASKR(VAL,' ','Rotation (degrees, +ve anticlockwise)?',
-*item EDZCOMP
-*enditem
-            CALL EASKABC(' ','Rotation choice?',
-*item EDZCOMP
-'The point is relative to the site'
-'Tcoordinate system.'
-*enditem
-              CALL EASKR(x1,' ','X point (m)?',
-*item EDZCOMP
-*enditem
-              CALL EASKR(y1,' ','Y point (m)?',
-*item EDZCOMP
-'Pick one, several or all zones to rotate.'
-*enditem
-            CALL EPICKS(INPIC,IVALS,' ','Zones to rotate?',
-*item EDZCOMP
-*enditem
-          CALL EASKGEOF('Select a zone to focus on:',CFGOK,IC,'M',IER)
-*item EDZCOMP
-'When you copy a zone, the control file needs to be'
-'updated to reflect the additional zone. Separately'
-'(in the control interface) you must indicate which'
-'control loop to use with the copied zone. The'
-'initial assumption is that it free-floats. '
+        call EASKATOG(' Global action?',' ',
+        call EASKATOG(' Global action?',' ',
+        CALL EASKS(HOLD,'X, Y and Z transform (m)?',' ',
+        CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ',
+        CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
+        CALL EASKR(VAL,' ','Rotation (degrees, +ve anticlockwise)?',
+        CALL EASKABC(' ','Rotation choice?',
+        CALL EASKR(x1,' ','X point (m)?',
+        CALL EASKR(y1,' ','Y point (m)?',
+        CALL EPICKS(INPIC,IVALS,' ','Zones to rotate?',
+        CALL EASKGEOF('Select a zone to focus on:',CFGOK,IC,'M',IER)
+*item EDZCOMP zone_copy_and_ctl
+'When copying a zone and obstructions the copy can be transformed'
+'and rotated. This is useful for replicating zones. You can skip'
+'such transforms.'
+'  '
+'XYZ transforms shifts the zone by a given amount in each axis.'
+'If you want to rotate the zone from its initial position the'
+'rotation option can be done around the first vertex of the zone'
+'or a user specified XYZ point.'
+'  '
+'When you copy a zone there are a number of dependencies that need'
+'to be resolved.'
+'  '
+'One dependency relates to links between the zone ideal controls'
+'held in the model control file - it needs to be'
+'updated to reflect the additional zone or a zone deletion.'
+'  '
+'If a zone control exists in your model you will want to update'
+'it. If no control exist you can skip this step.'
+'  '
+'There is a separate facility (in the control interface) where you'
+'can indicate which control loop to use with the copied zone. The'
+'INITIAL assumption is that the new zone free-floats. '
 *enditem
             CALL ASKOK(
-*item EDZCOMP
-'The (optional) system control file holds the '
-'definition of all building/plant controls. '
-'A free-flot control has been associated with the'
-'copied zone.'
-*enditem
             CALL EASKS(lctmp,' Control file ? ',
-*item EDZCOMP
+*item EDZCOMP problem_scanning_file
 'While scanning the file a problem was noted. If you'
 'think this might be because the wrong file name was'
 'given you can try it again. '
 *enditem
             CALL ASKOK('Problem reading geometry file.','Try again?',
-*item EDZCOMP
-'The name of the zone is used both for descriptive'
-'and bookkeeping purposes.  Each name should be'
-'unique and should not contain blanks. '
+*item EDZCOMP zone_name_description
+'There are two forms of documentation to help idenfity zones (for'
+'use in the interface and in reports).
+'  '
+'The name of the zone (up to 12 char) is used both for descriptive'
+'and bookkeeping purposes.  Each name should be unique and should'
+'not contain blanks. Files associated with the zone use this as'
+'a root name and reports and graphs will use this for identification'
+'so a good name can provide clarity in selection tasks.'
+'  '
+'The zone description (up to 64 char) allows information about'
+'zone form, composition and use to be recorded. This is included'
+'in the model QA report and can help to clarify the intent of'
+'the zone within the model.'
 *enditem
           CALL EASKS(ZN,' What do you want to call this copied zone ',
-*item EDZCOMP
-'The zone description allows information about'
-'zone form and composition to be recorded.'
-*enditem
   40      CALL EASKS(zd,'What does it represent?',
-*item EDZCOMP
+*item EDZCOMP options_for_copy_obs
 'The original zone had associated solar obstructions'
 'and you have two options '
 ' a) copy the obstructions so that modifications'
@@ -5086,143 +5056,105 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '    can reference the original obstructions (via'
 '    the project files menu).'
 *enditem
-            CALL ASKOK(' ','Also copy obstructions of source zone?',
-*item EDZCOMP
-'When copying a zone and obstructions the copy is'
-'usually shifted away from the position of the '
-'source. You can skip such transforms.'
-'When copying a zone the copy is usually shifted'
-'away from the position of the source.  You can '
-'skip such transforms. '
-'Transform shifts the zone by a given amount in'
-'each axis.'
-*enditem
-            CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ',
-*item EDZCOMP
-*enditem
-            CALL EASKS2CMD(HOLD,'Transform (X Y Z metres):',' ',
-*item EDZCOMP
-'If you want to rotate the zone from its initial'
-'position now is a good time to do this if the '
-'point of rotation is the first vertex of the zone.'
-*enditem
+          CALL ASKOK(' ','Also copy obstructions of source zone?',
+          CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ',
+          CALL EASKS2CMD(HOLD,'Transform (X Y Z metres):',' ',
           CALL ASKOK(' ',' Rotate the copied zone',OKZR,dok,3)
-*item EDZCOMP
-'The rotation is applied around vertex 1,'
-'positive is anticlockwise.'
-*enditem
-            CALL EASKR(VAL,' ',' Rotation (deg., +ve anticlockwise)?',
-*item EDZCOMP
-'The default rotation is about vertex 1 of the'
-'zone with a positive angle denoting anticlockwise.'
-'You may change this to rotate the zone about the'
-'site origin or a specified point.'
-*enditem
-              CALL EASKABCD(' ','Rotation choices:',
-*item EDZCOMP
-'Point is in the site coordinate system.'
-*enditem
-                CALL EASKR(x1,' ',' X point (metres) ? ',
-*item EDZCOMP
-*enditem
-                CALL EASKR(y1,' ',' Y point (metres) ? ',
-*item EDZCOMP
+          CALL EASKR(VAL,' ',' Rotation (deg., +ve anticlockwise)?',
+          CALL EASKABCD(' ','Rotation choices:',
+          CALL EASKR(x1,' ',' X point (metres) ? ',
+          CALL EASKR(y1,' ',' Y point (metres) ? ',
+*item EDZCOMP problem_writing_file
 'When writing the geometry file a problem was found.'
 'Check that you have permission to update the file '
 'and that there is sufficient disk space. '
 *enditem
             CALL ASKOK(' ','Problem creating geometry...try again?',
-*item EDZCOMP
-'You can have the new zone constructions based'
-'on the source zone (by copying the file)'
-'or by pointing to the file (exercise care)'
-'or browse available files or continue without'
-'defining constructions at this time.'
+*item EDZCOMP copy_constr_options
+'A zone construction file contains thermophysical data for the zone'
+'surfaces. If the original zone had a construction file the infor-'
+'mation may be able to be reused.'
+'  '
+'You can have the new zone constructions based on the source zone'
+'(by copying the file) or by pointing to the source zone file name'
+'(exercise care because the two zones must continue to be identical'
+'in terms of their construction and optical attributes) or you can'
+'browse available files in the model [zones] folder or continue'
+'without defining constructions at this time.'
+'  '
+'A similar pattern exists for any zone tmc (zone optical properties'
+'file) you can copy or point to source file or browse to locate a'
+'file.'
 *enditem
             CALL EASKATOG(' ','Source zone has a constructions file:',
-*item EDZCOMP
-'You can have the new zone constructions by'
-'browing available files or continue without'
-'defining constructions at this time.'
-*enditem
             CALL EASKATOG(' ','Source zone has no constructions file:',
-*item EDZCOMP
-'A zone construction file contains thermophysical'
-'data for the zone surfaces.'
-*enditem
             CALL EASKS(CFILE,' New construction file name:',
-*item EDZCOMP
-'A zone tmc file contains optical data for the'
-'data zone surfaces.'
-*enditem
-                CALL EASKS(DFILE,' ','New zone tmc file name:',
-*item EDZCOMP
-'You can have the new zone operations based initially'
-'on the source zones operations (by copying the file)'
-'or use the same operations (by pointing to the file)'
-'or browse available files or continue without '
-'defining operations at this time. '
-*enditem
-            CALL EASKATOG(
-*item EDZCOMP
-'You can have the new zone operations by'
-'browing available files or continue without'
-'defining operations at this time.'
+            CALL EASKS(DFILE,' ','New zone tmc file name:',
+*item EDZCOMP copy_operation_options
+'A zone operation file contains scheduled air flows and casual gains'
+'for the zone. The original zone had an operations file the infor-'
+'mation may be able to be reused.'
+'  '
+'You can have the new zone operations based on the source zone'
+'(by copying the file) or by pointing to the source zone file name'
+'(exercise care because the two zones must continue to be identical'
+'in terms of their schedules) or you can browse available'
+'files in the model [zones] folder or continue without defining'
+'schedules at this time.'
+'  '
 *enditem
             CALL EASKATOG(
-*item EDZCOMP
-'A zone operation file contains schedules of air'
-'flow and casual gains.'
-*enditem
+            CALL EASKATOG(
             CALL EASKS(DFILE,' New zone operations file name:',
 *item EDZCOMP
-'The new zone view factors file can be based on the'
-'source zone (by copying the file) or you can'
-'point to the source zone file (use care because'
-'the two zones may change shape) or browse available '
-'files or continue. '
+'A zone view factor file contains calculations of how much each'
+'surface can see other surfaces. The original zone had this file'
+'so the information may be able to be reused (if the two zones'
+'will remain geometrically identical.'
+'  '
+'You can have the new zone view-factors based on the source zone'
+'(by copying the file) or by pointing to the source zone file name'
+'(exercise care because the two zones must continue to be identical'
+'in terms of their geometry) or you can browse available'
+'files in the model [zones] folder or continue without defining'
+'view-factors at this time.'
 *enditem
             CALL EASKATOG(
-*item EDZCOMP
-'A zone view factor file contains calculations of'
-'how much each surface can see other surfaces.'
-*enditem
-              CALL EASKS(DFILE,' ','New view factor file name?',
-*item EDZCOMP
-'The new zone casual gain control can be based on'
-'the source zone (by copying the file) or you'
-'can point to the source zone file or browse'
-'available files.'
+            CALL EASKS(DFILE,' ','New view factor file name?',
+*item EDZCOMP copy_cgc_options
+'A zone casual gain control file contains logic for light switching'
+'in a zone. The original zone had this file so the information'
+'may be able to be reused (if the two zones will remain geometrically'
+'and operationally identical.'
+'  '
+'You can have the new zone casual gain ctl based on the source zone'
+'(by copying the file) or by pointing to the source zone file name'
+'(exercise care because the two zones must continue to be identical'
+'in terms of their geometry and schedules) or you can browse available'
+'files in the model [zones] folder or continue without defining'
+'casual gain controls at this time.'
 *enditem
             CALL EASKATOG(
-*item EDZCOMP
-'A zone casual gain control file contains logic'
-'for light switching in a zone.'
-*enditem
               CALL EASKS(DFILE,' ','Zone CG file name?',
-*item EDZCOMP
-'The new zone convection regime can be based on'
-'the source zone (by copying the file) or you'
-'can point to the source zone file or browse  '
-'available files or continue.'
+*item EDZCOMP copy_hc_options
+'A zone convection coefficients file contains data used to impose'
+'surface convection regimes within a zone. The original zone had'
+'this file so the information may be able to be reused (if the two'
+'zones will remain geometrically identical.'
+'  '
+'You can have the new zone convection regime based on the source zone'
+'(by copying the file) or by pointing to the source zone file name'
+'(exercise care because the two zones must continue to be identical'
+'in terms of their geometry) or you can browse available files'
+'in the model [zones] folder or continue without defining a'
+'convective regime at this time.'
 *enditem
             CALL EASKATOG('Source zone has a CC file.',
-*item EDZCOMP
-'A zone convection coefficients file contains data'
-'used to impose surface convection regimes within'
-'a zone.'
-*enditem
-              CALL EASKS(DFILE,' ','Zone CC file name?',
-*item EDZCOMP
-'A problem was found while reading the geometry and'
-'you have the option to try again. Do this if you '
-'think you migh have the wrong file. '
-*enditem
-            CALL ASKOK('Problem reading geometry file!',
+            CALL EASKS(DFILE,' ','Zone CC file name?',
 *item EDZCOMP
 *enditem
  249    CALL EASKGEOF('Select a zone to focus on:',CFGOK,IC,'t',IER)
-*item EDZCOMP
+*item EDZCOMP update_all_constructions
 'If you suspect that your zone constructions file has'
 'been corrupted or is out of date then this command'
 'will refresh it. This requires that the model has'
@@ -5230,22 +5162,16 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'of refreshing requires the file names.'
 *enditem
           CALL ASKOK(' ','Update zone constructions files?',
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone Operations Selection',
-*item EDZCOMP
-'You can upgrade older unsorted zone operations files'
-'if they exist in the current model.'
+*item EDZCOMP update_all_operations
+'You can upgrade older unsorted zone operations files if they'
+'exist in the current model.'
 ' '
-'You can also check current operations files to see'
-'if the casual gains periods are sorted.'
+'You can also check current operations files to see if the'
+'casual gains periods are sorted.'
 *enditem
           CALL EASKABC(
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone Shading Selection',
-*item EDZCOMP
-'You can establish detailed shading and/orinsolation'
+*item EDZCOMP global_shading_tasks
+'You can establish detailed shading and/or insolation'
 'patterns in nominated zones as follows.'
 ' '
 '  Recalculate shading in all zones where a shading'
@@ -5276,38 +5202,22 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'It is suggested that the first surface edge be'
 'close to horizontal if possible.'
+'  '
+'The shading and insolation patterns for a zone is held in'
+'a zone shading/insolation file. The name of the file is'
+'typically based on the root name of the zone.'
+'  '
+'If there is an existing shading and insolation file you'
+'can dereference it (the file will not be deleted) so that'
+'it can be re-referenced later.'
 *enditem
           CALL EASKABCD(' ','Options for multiple zones:',
-*item EDZCOMP
-*enditem
-            call askmultizone(inpic,ivals,
-*item EDZCOMP
-*enditem
-            call askmultizone(inpic,ivals,
-*item EDZCOMP
-'The zone shading/insulation database holds time'
-'varying external surface shading and internal surface'
-*enditem
+          call askmultizone(inpic,ivals,
+          call askmultizone(inpic,ivals,
           CALL EASKS(SFIL,' ','Zone shading/insulation file?',
-*item EDZCOMP
-'The zone shading/insulation database holds time'
-'varying external surface shading and internal surface'
-'insolation. You may dereference an existing file.'
-*enditem
           CALL EASKSCMD(SFIL,' ','Zone shading/insulation file?',
-*item EDZCOMP
-'If you reached this point you probably have all you'
-'need to carry out the shading/insolation analysis.'
-'If in doubt, double check. '
-*enditem
-        CALL ASKOK(' ',
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone Convection Selection',
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone View Factors Selection',
-*item EDZCOMP
+          CALL ASKOK(' ',
+*item EDZCOMP area_weighted_or_calc
 'Inter-surface view factors may be determined as simple'
 'area weightings or exactly using ray tracing. Area '
 'weighting is the default treament.'
@@ -5317,120 +5227,86 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'dereference an exiting zone view factor file.analysis'
 *enditem
           CALL EASKABCD(' ','View factor options:',
-*item EDZCOMP
-*enditem
-            call askmultizone(inpic,ivals,
-*item EDZCOMP
-*enditem
-            call askmultizone(inpic,ivals,
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone CG Ctl Selection',
-*item EDZCOMP
-'This menu allows the dereferencing or editing of a'
-'zone casual gain control file.'
-*enditem
-          CALL EASKABC(' ','Casual gain control options:','edit',
-*item EDZCOMP
+*item EDZCOMP zone_cgc_options
 'This menu allows a zone casual control file to be'
 'created/editted. The data within this file controls'
 'zone casual gains based on the internal or external'
 'illuminance. Different control algorithms are offered.'
+'  '
+'The facility allows you to dereference and existing file'
+'or edit an existing zone casual gain control file.'
 *enditem
+          CALL EASKABC(' ','Casual gain control options:','edit',
           CALL EASKABC(' ','Casual gain ctl options:',
-*item EDZCOMP
-'This facility allows you to compose a file defining'
-'the zone parameters required for a CFD simulation.'
-'You may reference and dereference the CFD domain'
-'within the current model at any time.'
-*enditem
-        CALL PHELPD('CFD domain + parameters',4,'-',0,0,IER)
-*item EDZCOMP
-*enditem
-        call askzone(ic,izdef,' ','Zone CFD Selection',
-*item EDZCOMP
-'If the CFD domain is complete you will probably want'
-'to associate it with the model. If you do not do this'
+*item EDZCOMP zone_cfd_options
+'This facility allows you to compose a file defining the zone'
+'parameters required for a CFD simulation.'
+'  '
+'You may reference and dereference the CFD domain within the current'
+'model at any time. If the CFD domain is complete you will probably'
+'want to associate it with the model. If you do not do this'
 'now, you can do it later (but you will need to supply'
 'the name of the file to complete the association). '
-' '
-'If you want to ignore the CFD domain just say no. '
 *enditem
-          CALL ASKOK(outs,'(see help)',OK,dok,6)
-*item EDZCOMP
+        CALL PHELPD('CFD domain + parameters',4,'-',0,0,IER)
+        CALL ASKOK(outs,'(see help)',OK,dok,6)
+*item EDZCOMP zone_adaptive_grid_opt
+'There are four adaptive gridding files which must be specified'
+'for each zone to which such gridding is to be applied.'
+'  '
+'  The moisture file holds moisture transport data for nodes.'
+'  '
+'  The 3D control volumes file defines...<< ? >>'
+'  '
+'  The 3D control volumes connections file defines...<< ? >>'
+'  '
+'  The 3D nodes coordinates file defines...<< ? >>'
+'  '
+'  The 3D nodes temperatures file defines...<< ? >>'
+'  '
+'To proceed with adaptive gridding you first have to...'
+'   << instructions to be added >> '
+'  '
+'Check documentation for more information.'
 *enditem
         CALL EASKGEOF('Select zone for adaptive gridding:',CFGOK,IC,
-*item EDZCOMP
-'The moisture file holds moisture transport data'
-'for nodes.'
-*enditem
-          CALL EASKSCMD(SFIL,outs,' ','ignore',clkok,72,DSFIL,
-*item EDZCOMP
-*enditem
-          CALL EASKSCMD(SFIL,outs,' ','dereference',clkok,72,DSFIL,
-*item EDZCOMP
-'There are four adaptive gridding files which must be'
-'specified for each zone to which such gridding is to'
-'be applied. Check documentation for more information.'
-*enditem
-          CALL EASKAB(' Addaptive gridding options:',
-*item EDZCOMP
-*enditem
-          CALL EASKABC(' Addaptive gridding options:',
-*item EDZCOMP
-'The 3D control volumes file defines...'
-'<< more text to be added here >>'
-*enditem
+        CALL EASKSCMD(SFIL,outs,' ','ignore',clkok,72,DSFIL,
+        CALL EASKSCMD(SFIL,outs,' ','dereference',clkok,72,DSFIL,
+        CALL EASKAB(' Addaptive gridding options:',
+        CALL EASKABC(' Addaptive gridding options:',
         CALL EASKS(SFIL,' 3D control volumes file',
-*item EDZCOMP
-'The 3D control volumes connections file defines...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(SFIL,' 3D control volumes connections file',
-*item EDZCOMP
-'The 3D nodes coordinates file defines...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(SFIL,' 3D nodes coordinates file',
-*item EDZCOMP
-'The 3D nodes temperatures file defines...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(SFIL,' 3D nodes temperatures file',
-*item EDZCOMP
-'To proceed with adaptive gridding you first have to...'
-'<< instructions to be added >> '
-*enditem
         CALL ASKOK(' ',' Proceed with adaptive gridding?',OK,dok,2)
 *subroutine NEWPRB
-*item NEWPRB
+*item NEWPRB new_model_cfg_overview
 'The system configuration file holds the definition'
 'of the building/plant to be simulated, including'
 'references to the various files comprising a model.'
+'  '
 'If the name given matches an existing file then that'
 'model is loaded by the Project Manager and becomes'
 'available for browsing and editing (if you are the'
-'owner. If the file does not exist then a new one is'
+'owner). If the file does not exist then a new one is'
 'created and loaded with a set ofdefaults that can'
-'subsequently be modified. The default model is'
+'subsequently be modified.'
 ' '
-' '
-'Note that before this model can be edited, it must'
-'be copied to your user area to give you write'
-'permission. Other example models are available'
-'via the [exemplars] option.'
+'Note that before a default model can be edited, it must'
+'be copied to your user area to give you write permission.'
+'  '
+'Other example models are available via the [exemplars] option.'
+'  '
+'If you are using the GTK iterface there is a browsing function'
+'in the dialog. If you used the browse facility the selected'
+'file will be loaded and used if it is a valid file.'
 *enditem
         CALL EASKXORGTKF(LCMDFL,
-*item NEWPRB
-'The following files match the search criteria.'
-'Select one to use or, if none selected, it will'
-'revert to prior value. '
-*enditem
-            CALL EPICKS(IX,ivlist,outs,' ',
+        CALL EPICKS(IX,ivlist,outs,' ',
 *item NEWPRB
 *enditem
           CALL EASKABC('When reading the model description,',
-*item NEWPRB
+*item NEWPRB unspecified_problem_found
 'There was an unspecified problem, review any warnings'
 'to see if the problem is one you can fix. Also check'
 'that the file was of the correct type.'
@@ -5440,7 +5316,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'and should be treated as at risk.'
 *enditem
           CALL ASKOK('While reading the model configuration file',
-*item NEWPRB
+*item NEWPRB control_problem_found
 'There was a problem while scanning the control'
 'file. Review any messages to see if you can correct'
 'the problem. Also check to see that the file is'
@@ -5451,12 +5327,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'the control file and recreating it from scratch.'
 *enditem
             CALL ASKOK('While reading the control file a',
-*item NEWPRB
-'There is an unspecified error with this model. Please'
-'review earlier error messages.'
-*enditem
-          CALL ASKOK('There was an error reported as the',
-*item NEWPRB
+*item NEWPRB cfg_not_found
 'If the name supplied is not found you can: '
 '  a) edit the name,'
 '  b) create a new configuration file using that name,'
@@ -5469,73 +5340,83 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKABC(OUTSTR,' Options: (see help)',
 *subroutine visualz
-*item visualz
-'The hidden line perspective program requires an input'
-'file, which may be automatically created from the'
-'current model.'
-*enditem
-        CALL EASKS(LFIL,' ','File name for image data?',
-*item visualz
-'If the export of vector information was accomplished'
-'without error you should be able to start up the module'
-'that displays hidden line views.'
-*enditem
-        CALL ASKOK(' ',' Display hidden line views?',OK,dok,3)
-*item visualz
-'Creating a folder for Radiance model: [../rad].'
-'The current model includes a Radiance model in the'
-'[cfg] folder. If you want to use this old model,'
-'you should move the files to [../rad] and update'
-'the [scenes] and [rif] files. The current scenes'
-'file is:'
-*enditem
-              CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
-*item visualz
+*item visualz visualization_options
+'In addition to the in-built perspective view you can'
+'request a hidden line view of the model - this starts'
+'a separate [viewer] tool based on a geometric data file'
+'that is created by prj (you are asked to confirm the file'
+'name and then whether to start up the [viewer] tool.'
+'  '
+'For high resolution interior or external images of the model'
+'you can request that the ESP-r model be exported in a syntax'
+'which is understood by the visual simulation tool Radiance and'
+'managed by the [e2r] module in the ESP-r suite.'
+'  '
 'A Radiance scene file specifies the composition of the'
 'model for Radiance as well as the purpose of various'
 'scenes (general viewing, daylight appraisal etc.).'
+'  '
+'The other files and data that are used by Radiance and the [e2r]'
+'module needs to be placed in a separate folder. Typically this'
+'will be in a ../rad folder within the model folder. If there is'
+'an existing folder by that name you are asked whether you want'
+'to use it.'
+'  '
+'Note that the Radiance process works best if you are'
+'working in the model folders rather than accessing a'
+'remote folder.  If possible close prj and go to the model'
+'cfg folder and re-start prj before working with Radiance.'
+'  '
+'Radiance is available for Linux, OSX and the Cygwin environment'
+'under Windows.'
 *enditem
-          CALL EASKS(ltmp,' Radiance scene file for this model?',
-*item visualz
+        CALL EASKS(LFIL,' ','File name for image data?',
+        CALL ASKOK(' ',' Display hidden line views?',OK,dok,3)
+        CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
+        CALL EASKS(ltmp,' Radiance scene file for this model?',
+*item visualz click_when_done
 ' CLICK here when you have finished with the'
 ' colour rendering module.'
 *enditem
         CALL PHELPD('e2r finished menu',2,'-',0,0,IER)
 *subroutine globaltransform
-*item globaltransform
-'You have rotated the zone and probably also'
-'want to rotate the sensors to match.'
+*item globaltransform global_transform_options
+'There are a number of global transformations to geometric'
+'data in the simulation model (zone geometry, solar obstructions'
+'and even block sensors for MRT).'
+'  '
+'If information for any of these geometric objects is referenced'
+'multiple times (e.g. old zone obstruction files could be used by'
+'several zones) you probably do not want to transform these more'
+'than once. The software does not always detect this so please'
+'be observant during global actions. Even better, make a backup'
+'copy of your model before you do any global transforms.'
+'  '
+'If you transform a zone you will probably also want to rotate any'
+'MRT sensors and obstructions to match.'
 *enditem
-                call askok('Transform MRT sensors of',outs,OK,dok,2)
-*item globaltransform
-'You rotated the zone(s) and so will probably'
-'also want to rotate associated obstructions.'
-*enditem
+              call askok('Transform MRT sensors of',outs,OK,dok,2)
               call askok(outs,' ?',OK,dok,2)
-*item globaltransform
-'You rotated the zone(s) and so will probably'
-'also want to rotate associated obstructions.'
-*enditem
-                call askok(outs,' ?',OK,dok,2)
+              call askok(outs,' ?',OK,dok,2)
 *subroutine globalrotate
-*item globalrotate
-'You already rotated the zone, you will most'
-'likely want to rotate MRT sensors for the '
-'zone as well. '
+*item globalrotate global_rotate_options
+'There are a number of global rotations to geometric'
+'data in the simulation model (zone geometry, solar obstructions'
+'and even block sensors for MRT).'
+'  '
+'If information for any of these geometric objects is referenced'
+'multiple times (e.g. old zone obstruction files could be used by'
+'several zones) you probably do not want to transform these more'
+'than once. The software does not always detect this so please'
+'be observant during global actions. Even better, make a backup'
+'copy of your model before you do any global transforms.'
+'  '
+'If you rotate a zone you will probably also want to rotate any'
+'MRT sensors and obstructions to match.'
 *enditem
-                call askok('Rotate MRT sensors of',outs,OK,DOK,3)
-*item globalrotate
-'You rotated the zone and so will probably'
-'want to rotate the solar obstructions which'
-'are associated with it as well. '
-*enditem
+              call askok('Rotate MRT sensors of',outs,OK,DOK,3)
               call askok(outs,' ?',OK,dok,3)
-*item globalrotate
-'You rotated the zone and so will probably'
-'want to rotate the solar obstructions which'
-'are associated with it as well. '
-*enditem
-                call askok(outs,' ?',OK,dok,3)
+              call askok(outs,' ?',OK,dok,3)
 *subroutine EDCON
 *item EDCON
 'In scanning the geometry it was found that many of '
