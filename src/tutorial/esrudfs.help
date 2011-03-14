@@ -136,11 +136,11 @@
 '  '
 'If you select PHOTON analysis: the following files should'
 'be copied to the current folder:'
-'     `prefix`   and    `runpho`   '
+'     [prefix[   and    [runpho]   '
 'These files are usually resident in:'
 '../d_phoe21/d_modpri'
 'Also, the following link should be made:'
-'     `ln -s ../d_phoe21 lp21`'
+'     ln -s ../d_phoe21 lp21'
 '  '
 'If you select Matlab you will be asked to enter an'
 'index of the X Y Z slice to be visualized.'
@@ -246,8 +246,8 @@
           CALL EASKI(ilayer,'  ',' Which Z layer ',
 *item VISOUT 2D_slice_resolution
 'Higher resolution requires greater processing time'
-'and disk space. `Low` quality images are often'
-'sufficient, although `medium` and `high` quality'
+'and disk space. [Low] quality images are often'
+'sufficient, although [medium] and [high] quality'
 'may be desirable for inclusion in publications.'
 *enditem
           call EASKABC(' ','Image resolution?','Low','Medium','High',
@@ -270,8 +270,8 @@
 ' View from Top or Bottom asks for Z layer'
 '  '
 'Higher resolution requires greater processing time'
-'and disk space. `Low` quality images are often'
-'sufficient, although `medium` and `high` quality'
+'and disk space. [Low] quality images are often'
+'sufficient, although [medium] and [high] quality'
 'may be desirable for inclusion in publications.'
 *enditem
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',

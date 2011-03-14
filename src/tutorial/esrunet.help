@@ -151,7 +151,7 @@
 'graphic network file is subject to revision. '
 ' '
 'Use of the net module: '
-' option a defines the `gnf` file which will be loaded if'
+' option a defines the [gnf] file which will be loaded if'
 '          it exists.'
 ' option b description of the file contents and/or use up'
 '          to 72 characters.'
@@ -159,7 +159,7 @@
 '          domains are not supported). You should define'
 '          this before adding components by selecting'
 '          from the list provided.'
-' option d the icons database used by the `gnf` file. You'
+' option d the icons database used by the [gnf] file. You'
 '          are asked to confirm the name of the db. If the'
 '          icons file cannot be found in the ESP-r distribution'
 '          databases folder then we will have serious problems.'
@@ -284,7 +284,7 @@
 *subroutine selrelexttag
 *item selrelexttag net_pressure_coef
 'To enable the calculation of wind-induced surface'
-'pressures (as required by ESP-r`s fluid flow'
+'pressures (as required by ESP-r-s fluid flow'
 'simulators), a database of angle dependent'
 'pressure coefficients is provided.'
 'The default ESP-r set contains wind pressure coeffi-'
