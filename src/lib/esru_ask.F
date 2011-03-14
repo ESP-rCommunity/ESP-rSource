@@ -703,14 +703,15 @@ C Commons.
 
 C Local variables.
       logical unixok
-      integer ln,lna,lnf,lnf2   ! length of install path, app name app folder
+      integer ln,lna  ! length of install path, app name app folder
       integer lns,lnt,lnhl ! length of subroutine, topic, helpline
       integer lno          ! length of outstr
       integer K            ! position
       integer trywhich     ! if one then primary help file if two use secondary
       character helpfil*72 ! the help file to load
+      dimension folder(4),lnf(4)  ! up to 3 subsequent folders to look in and their lengths
       character folder*8   ! the source folder for the application
-      character folder2*8  ! secondary folder for the application
+      integer lnf
       character WORD*32    ! a token to read
       character outstr*124 ! for help phrases
       character outs*124 ! for messages
@@ -733,60 +734,53 @@ C Get to work.
       endif
       ln=lnblnk(instpath)  ! where is ESP-r installed
       lna=lnblnk(app)      ! length of app name
+      folder(1)='UNKNOWN'
+      folder(2)='UNKNOWN'
+      folder(3)='UNKNOWN'
+      folder(4)='UNKNOWN'
       if(app(1:3).eq.'aco')then
         folder='esruaco'
-        folder2='UNKNOWN'
       elseif(app(1:3).eq.'clm')then
-        folder='esruclm'
-        folder2='UNKNOWN'
+        folder(1)='esruclm'
       elseif(app(1:3).eq.'bps')then
-        folder='esrubps'
-        folder2='UNKNOWN'
+        folder(1)='esrubps'
       elseif(app(1:3).eq.'dbm')then
-        folder='esrudbm'
-        folder2='UNKNOWN'
+        folder(1)='esrudbm'
       elseif(app(1:3).eq.'dfs')then
-        folder='esrudfs'
-        folder2='UNKNOWN'
+        folder(1)='esrudfs'
       elseif(app(1:3).eq.'e2r')then
-        folder='esrue2r'
-        folder2='UNKNOWN'
+        folder(1)='esrue2r'
       elseif(app(1:3).eq.'eco')then
-        folder='esrueco'
-        folder2='UNKNOWN'
+        folder(1)='esrueco'
       elseif(app(1:3).eq.'grd')then
-        folder='esrugrd'
-        folder2='UNKNOWN'
+        folder(1)='esrugrd'
       elseif(app(1:3).eq.'ish')then
-        folder='esruish'
-        folder2='UNKNOWN'
+        folder(1)='esruish'
       elseif(app(1:3).eq.'mfs')then
-        folder='esrumfs'
-        folder2='UNKNOWN'
+        folder(1)='esrumfs'
       elseif(app(1:3).eq.'mld')then
-        folder='esrumld'
-        folder2='UNKNOWN'
+        folder(1)='esrumld'
       elseif(app(1:3).eq.'mrt')then
-        folder='esrumrt'
-        folder2='UNKNOWN'
+        folder(1)='esrumrt'
       elseif(app(1:3).eq.'net')then
-        folder='esrunet'
-        folder2='UNKNOWN'
+        folder(1)='esrunet'
       elseif(app(1:3).eq.'pdb')then
-        folder='esrupdb'
-        folder2='UNKNOWN'
+        folder(1)='esrupdb'
       elseif(app(1:3).eq.'prj')then
-        folder='esruprj'
-        folder2='esrumfs'
+        folder(1)='esruprj'
+        folder(2)='esrumfs'
+        folder(3)='esrudfs'
       elseif(app(1:3).eq.'res')then
-        folder='esrures'
-        folder2='UNKNOWN'
+        folder(1)='esrures'
+        folder(2)='esrumfs'
+        folder(3)='esrubps'
       elseif(app(1:3).eq.'vew')then
-        folder='esruvew'
-        folder2='UNKNOWN'
+        folder(1)='esruvew'
       endif
-      lnf=lnblnk(folder)   ! length of folder name
-      lnf2=lnblnk(folder2)   ! length of folder name
+      lnf(1)=lnblnk(folder(1))   ! length of folder name
+      lnf(2)=lnblnk(folder(2))   ! length of folder name
+      lnf(3)=lnblnk(folder(3))   ! length of folder name
+      lnf(4)=lnblnk(folder(4))   ! length of folder name
       lns=lnblnk(sub)      ! length of subroutine
       lnt=lnblnk(topic)    ! length of topic
       sq=char(39)   ! assign single quote
@@ -795,18 +789,18 @@ C Assume that the installer has placed the help text file in the
 C distribution lib folder.
   42  if(trywhich.eq.1)then
         write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,
-     &    folder(1:lnf),'.help'
+     &    folder(1)(1:lnf(1)),'.help'
 C        call edisp(iuout,helpfil)   ! debug
-      elseif(trywhich.eq.2)then
+      elseif(trywhich.ge.2)then
         write(helpfil,'(6a)') instpath(1:ln),fs,'lib',fs,
-     &    folder2(1:lnf2),'.help'
+     &    folder(trywhich)(1:lnf(trywhich)),'.help'
 C        call edisp(iuout,helpfil)   ! debug
       endif
-      if(folder(1:7).eq.'esrubps')then
+      if(folder(1)(1:7).eq.'esrubps')then
         ihfil=ifil+8              ! set file unit number for bps
-      elseif(folder(1:7).eq.'esruprj')then
+      elseif(folder(1)(1:7).eq.'esruprj')then
         ihfil=ifil+11              ! set file unit number for prj
-      elseif(folder(1:7).eq.'esrures')then
+      elseif(folder(1)(1:7).eq.'esrures')then
         ihfil=ifil+8              ! set file unit number for res
       else
         ihfil=ifil+2              ! set file unit number
@@ -942,8 +936,8 @@ C make up a standard message.
 
 C Check if there is an alternative help text file. If not give up.
         if(trywhich.eq.1)then
-          if(folder2(1:7).eq.'UNKNOWN')then
-            call edisp(iuout,'folder2 was UNKNOWN')
+          if(folder(2)(1:7).eq.'UNKNOWN')then
+C            call edisp(iuout,'alt folder was UNKNOWN')
             h(1)='No alt contextual help text was found for the topic'
             write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
      &        ' of application ',app(1:lna)
@@ -953,11 +947,29 @@ C Check if there is an alternative help text file. If not give up.
           trywhich=trywhich+1
           goto 42  ! try scaning the alternative file
         elseif(trywhich.eq.2)then
-          h(1)='No alt contextual help text was found for the topic'
-          write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
-     &      ' of application ',app(1:lna)
-          nbhelp=2
-          return
+          if(folder(3)(1:7).eq.'UNKNOWN')then
+C            call edisp(iuout,'2nd alt folder was UNKNOWN')
+            h(1)='No alt contextual help text was found for the topic'
+            write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &        ' of application ',app(1:lna)
+            nbhelp=2
+            return
+          endif
+          trywhich=trywhich+1
+          goto 42  ! try scaning the alternative file
+        elseif(trywhich.eq.3)then
+          if(folder(4)(1:7).eq.'UNKNOWN')then
+C            call edisp(iuout,'3rd alt folder was UNKNOWN')
+            h(1)='No alt contextual help text was found for the topic'
+            write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
+     &        ' of application ',app(1:lna)
+            nbhelp=2
+            return
+          endif
+          trywhich=trywhich+1
+          goto 42  ! try scaning the alternative file
+        elseif(trywhich.eq.4)then
+          continue
         endif
         h(1)='No contextual help text was found for the topic'
         write(h(2),'(5a)') topic(1:lnt),' in ',sub(1:lns),
