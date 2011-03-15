@@ -1618,7 +1618,7 @@ C duplicates are found.
  111    continue
 
 C Write out UA information if extra information requested.
-        if(zoneextrainfo.gt.0)then
+        if(zoneextrainfo.gt.1)then
 
 C Debug...
 C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
@@ -1634,10 +1634,10 @@ C          write(itu,*) 'uavwall = ',uavwall(IZZ)
 C          write(itu,*) 'uavslproof = ',uavslproof(IZZ)
 C          write(itu,*) 'uavfltroof = ',uavfltroof(IZZ)
 C          write(itu,*) 'uavgsky = ',uavgsky(IZZ)
-          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
-     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
-          write(itu,*) 'UA total = ',uavtotal(IZZ)
-          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
+C          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
+C     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
+C          write(itu,*) 'UA total = ',uavtotal(IZZ)
+C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 
           if(exposed(IZZ).gt.0.1)then
 
