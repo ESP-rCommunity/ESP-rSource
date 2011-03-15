@@ -2257,23 +2257,42 @@ C nbdaytype (int) is the number of day types
 C nbcaldays (int) is the number of days associated with each type
 C icalendar (int*365) for each day, the associated day type
 C act (char*1) action to take 'i' initialise, '-' interactive
+
+C Note that there is no specific logic to remind a user to update the
+C model cfg file if a change is made.
       subroutine calenmanage(act,ier)
+      implicit none
 #include "epara.h"
 #include "building.h"
 #include "control.h"
-      
+
       integer lnblnk  ! function definition
 
+C Parameters passed
+      character act*1 ! action to take
+      integer ier     ! error state
+
+      integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
+      integer iyear,ibdoy,iedoy,ifday,iftime
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      integer nbdaytype,nbcaldays,icalender
       COMMON/FILEP/IFIL
+      integer ifil
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
       integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
-      integer iloop  index for looping
+      integer iloop,ib,ld,l,idayloop,loop ! index for looping
+      integer ijd,idayn,idayno,idwk,idt,idtt,imthn,ixd   ! for counting days
+      integer idno,istjandwk,ISDS,ISDF   ! for counting days
+      integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position
+      integer icfoc,ictlf  ! for control domain and file unit
+      integer ieri,istat   ! for error states
+      integer ITRC         ! for verbosity
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2288,15 +2307,17 @@ C 24 25 26 27 28 29 30    28 29
 C 31                    
       DIMENSION VERT(35),citem(17),IDVALS(10),clist(365)
       dimension ixdvals(365)
+      integer IDVALS,ixdvals
 
-      character calename*32,calentag*12,calendayname*32
-      character vert*33,DS*7,DS1*10,act*1,key*1
+      character vert*33,DS*7,DS1*10,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       character dayact*2   ! action to take in managing day types
       logical modify,browse,XST
       logical havectl ! to remember if control file exists
       integer IHDTP   ! for users preference to add or copy
+      logical usecalendar  ! signal so easier to detect if other domains
+                           ! have a different number of day types
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2305,6 +2326,7 @@ C For help messages
 
       helpinsub='calenmanage'  ! set for subroutine
       havectl=.false.          ! assume no control
+      usecalendar=.false. 
 
 C If user requested initial calendar.
       if(act.eq.'i'.and.(.NOT.browse))then
@@ -2365,6 +2387,7 @@ C Initial menu entry setup.
    92 IER=0
       ILEN=365
       IVERT=-3
+      if(nbdaytype.ge.3) usecalendar=.true. 
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
@@ -2463,8 +2486,8 @@ C existing control loops to add in what-will-become the new day type.
                 CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
                 havectl=.true.          ! yes we have control
 
-C << ask user whether to create a minimal control regime or to >>
-C << duplicate the last control day type in each loop... >>
+C Ask user whether to create a minimal control regime or to
+C duplicate the last control day type in each loop.
                 IDT=nbdaytype     ! set to the not-yet-incremented value
                 IHDTP=1
                 CALL EASKABC('Pattern for new day type (see help)?',' ',
@@ -2481,19 +2504,31 @@ C << duplicate the last control day type in each loop... >>
                 if(NCF.gt.0)then  ! zone loops
                   icfoc=0
                   do 80 iloop=1,NCF
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    if(nbcdt(iloop).ne.0.AND.usecalendar)then
+                      continue   ! calendar and ideal day types do not match
+                    else
+                      call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    endif
   80              continue
                 endif
                 if(NCC.gt.0)then  ! flow loops
                   icfoc=2
                   do 81 iloop=1,NCC
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    if(nfcdt(iloop).ne.0.AND.usecalendar)then
+                      continue   ! calendar and flow day types do not match
+                    else
+                      call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    endif
   81              continue
                 endif
                 if(NCL.gt.0)then  ! plant loops
                   icfoc=1
                   do 82 iloop=1,NCL
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    if(npcdt(iloop).ne.0.AND.usecalendar)then
+                      continue   ! calendar and plant day types do not match
+                    else
+                      call ADDCTLD(icfoc,iloop,IDT,dayact)
+                    endif
   82              continue
                 endif
                 if(NGF.gt.0)then  ! global loops

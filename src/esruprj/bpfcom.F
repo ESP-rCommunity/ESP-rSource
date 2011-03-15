@@ -535,7 +535,7 @@ C Initial setup of day types.
 	    endif
           endif
           NN=nfcdt(ncc)
-          IF(NN.EQ.0)NN=NBDAYTYPE
+          IF(NN.EQ.0) NN=NBDAYTYPE
           do 587 ik=1,NN
             IF(IDOV.EQ.1)THEN
               IEDY=365

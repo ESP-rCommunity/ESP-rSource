@@ -377,7 +377,7 @@ C of the menu.
       elseif(icfoc.eq.2.and.ncc.gt.0)then
         do 288 II=1,ncc
           NN=NFCDT(II)
-          if(NFCDT(II).eq.0)NN=nbdaytype
+          if(NFCDT(II).eq.0) NN=nbdaytype
           do 287 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -1265,7 +1265,7 @@ C of type icfoc.
         if(ncc.gt.0)then
           do 884 II=1,ncc
             NN=nfcdt(ii)
-            if(nfcdt(ii).eq.0)NN=nbdaytype
+            if(nfcdt(ii).eq.0) NN=nbdaytype
             do 883 IJ=1,NN
               ncper=ncper+1
   883       continue
