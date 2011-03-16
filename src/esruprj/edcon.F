@@ -51,7 +51,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -73,7 +72,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       CHARACTER*72 CFILE
       CHARACTER*72 DFILE
-      CHARACTER SFILE*72,H*72,LTMP*72
+      CHARACTER SFILE*72,LTMP*72
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
       character TOPTIC*12,OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
@@ -88,6 +87,13 @@ C geometry.h provides commons G0/G2/c20/precz.
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDCON'  ! set for subroutine
 
 C Clear number of TMC's and layers in each before loading common data.
       NTMC=0
@@ -146,18 +152,9 @@ C geometry facility first.
         if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
   11  CONTINUE
       if(ig.gt.(NZSUR(icomp)/2))then
-        H(1)='In scanning the geometry it was found that many of '
-        H(2)='the surfaces have not been attributed as to their '
-        H(3)='construction type.  It is recommended that you: '
-        H(4)='  '
-        H(5)='  a) go to the  `geometry browse & edit` facility and'
-        H(6)='     attribute the surface construction types - after'
-        H(7)='     which you can return to this facility,'
-        H(8)='  '
-        H(9)='  b) in the case of an existing `old or unattributed`'
-        H(10)='     zone construction file select the `Save` '
-        H(11)='     option in the following menu. '
-        CALL PHELPD('unknowns atrib in constr',11,'-',0,0,IER)
+        helptopic='many_not_attributed'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
       endif
 
 C On entry display the current zone. Reset all surface lines to std.
@@ -184,16 +181,16 @@ C On entry display the current zone. Reset all surface lines to std.
       endif
 
 C Read construction file into common.
+      helptopic='pre_zone_constructions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   42  CONTINUE
       IF(again.or.LTHRM(ICOMP)(1:1).EQ.' '.OR.
      &            LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN
 
 C Construction file name not yet specified.
-        H(1)='The zone construction file defines the thermo-'
-        H(2)='physical properties of the zone and is mandatory.'
         LTMP=CFILE
         CALL EASKS(LTMP,' Zone construction file? ',' ',
-     &    72,CFILE,'construction file',IER,2)
+     &    72,CFILE,'construction file',IER,nbhelp)
         IF(IER.NE.0)GOTO 42
         IF(LTMP.NE.' ')THEN
           LTHRM(ICOMP)=LTMP
@@ -210,12 +207,9 @@ C Construction file name not yet specified.
         ELSE
           write(outs,'(3a)') 'Found an existing constructions file: ',
      &            LTHRM(ICOMP)(1:lnblnk(LTHRM(ICOMP))),'.'
-          h(1)='Unless there is control on optical properties, the'
-          h(2)='best way to proceed is to recreate via geometry'
-          h(3)='attributes.'
           CALL EASKABC(outs,'Options:',
      &     'use it','recreate via geometry attributes',
-     &     'cancel',IWA,3)
+     &     'cancel',IWA,nbhelp)
           IF(IWA.EQ.1)THEN
             call tstamp('>','PRJ: use existing zone constructions')
             CALL ECONST(LTHRM(ICOMP),IFIL+1,ICOMP,0,IUOUT,IER)
@@ -234,15 +228,13 @@ C Construction file name not yet specified.
 
 C If in quiet mode: the file should exist => error if we are here.
         IF (QUIET) THEN
-          H(1)='The construction file does not exist, or was not'
-          H(2)='found, please create/rereference this file.'
-          CALL PHELPD('file error',2,'-',0,0,IER)
+          CALL PHELPD('file error',nbhelp,'-',0,0,IER)
           RETURN
         ELSE
           write(outs,'(1x,A,A)')LTHRM(ICOMP)(:lnblnk(LTHRM(ICOMP))),
      &        ' not found!'
           CALL EASKAB(outs,'Options:','respecify',
-     &        'create using this name',IWB,0)
+     &        'create using this name',IWB,nbhelp)
           if(IWB.eq.1)then
             again=.true.
             goto 42
@@ -265,12 +257,12 @@ C Do not check for UK NCM notional model
      &    and.inoti.ne.1)then
           write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
           dok=.true.
-          h(1)='The opaque/transparent attribute of the surface is not'
-          h(2)='OPAQUE. If it is opaque then select `ok`.'
-          CALL ASKOK(outs,'Confirm surface is opaque?',OK,DOK,2)
+          helptopic='confirm_surf_opaque'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(outs,'Confirm surface is opaque?',
+     &      OK,DOK,nbhelp)
           if(OK)then
             ITMCFL(ICOMP,IS)=0
-C            SOTF(IS)='OPAQUE'   ! remove this line later when geo write uses G6
             SSOTF(icn1)='OPAQUE'
           endif
         endif
@@ -287,13 +279,10 @@ C from the surface attributes.
       IF(TFOUND)THEN
         if(ITW(ICOMP).ne.1)then
           ITW(ICOMP)=1
-          H(1)='A TMC file holds optical properties for transparent'
-          H(2)='surfaces within a zone as well as the definition of'
-          H(3)='any control of blinds associated with such surfaces.'
           LTWIN(ICOMP)=DFILE
           ltmp=LTWIN(ICOMP)
           IF(.NOT.QUIET)CALL EASKS(ltmp,'TMC file name?',
-     &      ' ',72,DFILE,'TMC file name',IER,3)
+     &      ' ',72,DFILE,'TMC file name',IER,nbehlp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LTWIN(ICOMP)=ltmp
           endif
@@ -351,46 +340,27 @@ C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
       call FINDFIL(lcfcin(ICOMP),XST)
 
       IF(CFCFOUND)THEN
-       if(icfc(icomp).ne.1.or.(.NOT.XST))then
-        icfc(icomp)=1
-        H(1)='Specify name of *.cfc file which will store the CFC'
-        H(2)='input data for this zone.'
-        lcfcin(icomp)=CFCFILE
-        ltmp=lcfcin(icomp)
-        CALL EASKS(ltmp,'CFC file name?',
-     &    ' ',72,CFCFILE,'CFC file name',IER,2)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          lcfcin(icomp)=ltmp
-        endif
-        H(1)='Complex Fenestration Construction (CFC)'
-        H(2)=''
-        H(3)='A CFC allows for a more accurate treatment of'
-        H(4)='modeling windows with or without shading devices.'
-        H(5)=''
-        H(6)='A CFC surface has the following attributes:'
-        H(7)=' '
-        H(8)='-Exterior, vertical surface (IE=0)'
-        H(9)='-Each glazing/shading layer is separated by gas gap'
-        H(10)='-Currently limited to one shading layer per CFC'
-        H(11)=' '
-        H(12)='For an example of usage of CFCs see'
-        H(13)='"Appendix F: CFC User Reference" from'
-        H(14)='http://uwspace.uwaterloo.ca'
-        H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-        H(16)=''
-        H(17)='The Glazing Shading Layer editor (GSLedit) used for'
-        H(18)='importing CFC input properties can be downloaded from'
-        H(19)='the ESRU website, downloads section.'
-        CALL PHELPD('CFC instructions',19,'-',0,0,IER)
+        helptopic='complex_fen_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        if(icfc(icomp).ne.1.or.(.NOT.XST))then
+          icfc(icomp)=1
+          lcfcin(icomp)=CFCFILE
+          ltmp=lcfcin(icomp)
+          CALL EASKS(ltmp,'CFC file name?',
+     &      ' ',72,CFCFILE,'CFC file name',IER,nbehlp)
+          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+            lcfcin(icomp)=ltmp
+          endif
+          CALL PHELPD('CFC instructions',nbhelp,'-',0,0,IER)
 
-        CALL EMKCFG('-',IER)
+          CALL EMKCFG('-',IER)
 
-        CALL makeCFCfile(ICOMP,IER)
-        IF(IER.EQ.1)THEN
+          CALL makeCFCfile(ICOMP,IER)
+          IF(IER.EQ.1)THEN
             icfc(icomp)=0
             CALL EMKCFG('-',IER)
             RETURN
-        ENDIF
+          ENDIF
        endif
       ENDIF
 C -------------------
@@ -473,60 +443,8 @@ C has resized the display, redraw.
       endif
 
 C Help text for this menu.
-      H(1)='The surface attributes within the zone geometry file,'
-      H(2)='in conjunction with the Constructions db, allow the'
-      H(3)='specific thermo-physical properties to be saved within'
-      H(4)='the model definition.'
-      H(5)=' '
-      H(6)='The recommended procedure is to attribute surfaces'
-      H(7)='using the geometry editing facility before creating'
-      H(8)='the zone contructions file.'
-      H(9)=' '
-      H(10)='Surfaces which are composed of transparent materials'
-      H(11)='will have optical properties defined from either'
-      H(12)='the optical database or by manual input. If there'
-      H(13)='is a mismatch between information in a zone TMC'
-      H(14)='file and existing surface attributes then you will be'
-      H(15)='asked to confirm the correct choice.'
-      H(16)=' '
-      H(17)='Optical properties can have scheduled controls which'
-      H(18)='allow an alternative optical property to be used based'
-      H(19)='on the following sensd parameters:'
-      H(20)=' a) time - alternative optics are used during a'
-      H(21)='    specific period of the day'
-      H(22)=' b) total radiation on the outside face of a zone'
-      H(23)='    surface - you specify a radiation level (W/m^2)'
-      H(24)='    above which the alternate optical propertiess'
-      H(25)='    are used.'
-      H(26)=' c) ambient temperature - you specify a temperature'
-      H(27)='    above which the alternative optical properties'
-      H(28)='    are used.'
-      H(29)=' d) zone air temperature - you specify the temperature'
-      H(30)='    above which the alternative optical properties'
-      H(31)='    are used.'
-      H(32)=' e) lux level - you specify the lux level above which'
-      H(33)='    the alternative optical properties are used.'
-      H(34)='    '
-      H(35)='Note that there can be up to 8 control periods during'
-      H(36)='a day and that all days within the simulation are treated'
-      H(37)='the same).'
-      H(38)=' '
-      H(39)='The alternative optical propetry set must relate to the'
-      H(40)='same number of material layers as the original set. It'
-      H(41)='is a good idea to prepare the alternative set using the'
-      H(42)='the Optical Properties db management facility prior to'
-      H(43)='using the transparent properties facility in this menu.'
-      H(44)=' '
-      H(45)='Control of optical properties can be used to approximate'
-      H(46)='the closing of window blinds and shutters.'
-      H(47)=' '
-      H(48)='If the model has an air flow network you might also'
-      H(49)='wish to control any flow components associated with'
-      H(50)='transparent surfaces that have optical property control.'
-      H(51)='Note however that the air flow control logic is'
-      H(52)='different from optical property control logic so care'
-      H(53)='is required to ensure that they operate together as'
-      H(54)='intended.'
+      helptopic='zone_constructions_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       write(head,'(3a)') 'Composition of `',
@@ -539,12 +457,10 @@ C Now display the menu.
         if(browse)return
         if(MODGEO.OR.MODCON)then
           dok=.true.
-          h(1)='The Project Manager thinks that there have been recent'
-          h(2)='changes to either surface attributes or constructions'
-          h(3)='that have not been saved. To be safe agree to saving'
-          h(4)='these changes.'
+          helptopic='attribute_recent_change'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Save changes in surface attributes or',
-     &    ' constructions before exiting?',OK,dok,4)
+     &    ' constructions before exiting?',OK,dok,nbhelp)
           if(.NOT.OK)RETURN
           savereturn=.false.
           goto 43
@@ -557,7 +473,9 @@ C Now display the menu.
 
 C If no existing file advise user to create from info in geom file and
 C various databases.
-        CALL PHELPD('zone geom file section',54,'-',0,0,IER)
+        helptopic='zone_constructions_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('zone geom file section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Save data and then return to menu.
@@ -566,18 +484,9 @@ C Save data and then return to menu.
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Linear thermal conductivity.
-        H(1)='This facility currently requires that you use an'
-        H(2)='external text editor to add information to the zone'
-        H(3)='constructions file to define linear dependencies.'
-        H(4)='Please contact your administrator for information on'
-        H(5)='how to do this.'
-        H(6)=' '
-        H(7)='The linear facility identifies which layers in the'
-        H(8)='model will have such dependencies applied.'
-        H(9)=' '
-        H(10)='A non-linear property facility is also available'
-        H(11)='from the above menu.'
-        CALL PHELPD('linear properties',11,'-',0,0,IER)
+        helptopic='zone_linear_cond'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('linear properties',nbhelp,'-',0,0,IER)
         call tstamp('>','PRJ: enter linear properties')
         CALL LKMENU(ICOMP)
         GOTO 777
@@ -628,22 +537,17 @@ C Not one of the legal menu choices.
       GOTO 92
 
   43  continue
+
 C Save...
-      H(1)='The current construction data will be placed in a'
-      H(2)='file. If this is the same name as the source file'
-      H(3)='then it will be overwritten.'
-      H(4)='In addition, details of surfaces which are transparent'
-      H(5)='will be place in a separate zone TMC file. '
-      IF (.NOT.QUIET) THEN
-        CALL PHELPD('zone constr file save',5,'-',0,0,IER)
-      ENDIF
+      helptopic='zone_constructions_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   88  IF(LTHRM(ICOMP)(1:2).EQ.'  '.OR.
      &   LTHRM(ICOMP)(1:7).EQ.'UNKNOWN')THEN
 
 C Ask for name of file to put common block information into.
         SFILE=' '
         CALL EASKS(SFILE,' New construction file? ',
-     &    ' ',72,CFILE,'related constr file name',IER,3)
+     &    ' ',72,CFILE,'related constr file name',IER,nbhelp)
         IF(SFILE.NE.' ')LTHRM(ICOMP)=SFILE
       ENDIF
 
@@ -655,12 +559,11 @@ C and save the system configuration file if not browsing.
         CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)THEN
           dok=.true.
-          h(1)='Check that you have permission to update the zone'
-          h(2)='construction and/or optics files and that you have'
-          h(3)='sufficient disk space. '
+          helptopic='constr_write_error'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &      ' Problem detected while saving the thermophysical',
-     &      ' properties..try again? (see help)',OK,dok,3)
+     &      ' properties..try again? (see help)',OK,dok,nbhelp)
           IF(OK)then
             goto 88
           else
@@ -747,11 +650,10 @@ C----------------
 C If geometry info has changed then save it as well.
       IF(MODGEO)THEN
         dok=.true.
-        h(1)='ESP-r thinks that there are recent changes that have'
-        h(2)='not yet been saved to file. Information might be lost'
-        h(3)='if you do not save the changes. '
+        helptopic='attribute_recent_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Save zone geometry to reflect recent changes',
-     &    'to surfaces and attributes? (see help)',OK,dok,3)
+     &    'to surfaces and attributes? (see help)',OK,dok,nbhelp)
         if(OK)then
           call eclose(gversion(ICOMP),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -799,7 +701,6 @@ C Parameters
       integer ier    ! zero is ok, one materials not available
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C Optical and geometric properties.
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -818,12 +719,18 @@ C Material properties.
 
       DIMENSION ISD(19)
       CHARACTER NAM*72,ISD*46
-      CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
+      CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
       integer ISDN,INODA ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
       told=.false.
+      helpinsub='EDSCON'  ! set for subroutine
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.
@@ -939,23 +846,13 @@ C Size of the menu.
       IPT1=ISDN-2
 
 C Help text for this menu.
-      H(1)='This is a display of the surface attributes which may'
-      H(2)='be edited.  Most are selections from existing database'
-      H(3)='entries.'
-      H(4)='  '
-      H(5)='You are allowed to modify the thermophysical proper-'
-      H(6)='ties of the layers BUT BE CAREFUL.  Manual editing'
-      H(7)='may be overwritten by subsequent file re-attrubution.'
-      H(8)=' '
-      H(9)='RATHER create additional multilayer constructions'
-      H(10)='for each unique case and use them as attributes.   '
-      H(11)='DO NOT CHANGE the TOPOLOGY (ie. move air gaps around)'
-      H(12)='here - do it in the mlc database.'
+      helptopic='surface_constr_atrib'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu control.
       CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
-       RETURN
+        RETURN
       ELSEIF(INODA.EQ.0)THEN
 
 C Choose another surface.
@@ -963,7 +860,9 @@ C Choose another surface.
       ELSEIF(INODA.EQ.ISDN-1)THEN
 
 C List help text for the menu.
-        CALL PHELPD('surface details',12,'-',0,0,IER)
+        helptopic='surface_constr_atrib'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('surface details',nbhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.ISDN-2)THEN
         GOTO 12
       ELSEIF(INODA.EQ.1)THEN
@@ -975,17 +874,6 @@ C or fictitious (bookkeeping purposes only). If transparent ask user
 C which set of optical properties to use. (This will probably result in
 C an additional surface attribute!!!)
 C Additional option to choose CFC type.
-        H(1)='The choice of using an opaque or transparent construction'
-        H(2)='is dependent on the optical properties. Where there is a'
-        H(3)='mix of opaque and transparent layers the construction'
-        H(4)='should be marked transparent.'
-        H(5)=' '
-        H(6)='For a more exact treatment of windows that may include'
-        H(7)='slat type operable blinds, choose Complex Fenestration'
-        H(8)='Construction.'
-        H(9)=' '
-        H(10)='After selecting TRAN you will be asked for further '
-        H(11)='information. '
         if(SSOTF(icn1)(1:4).eq.'OPAQ')then
           ino=1
         elseif(SSOTF(icn1)(1:4).eq.'TRAN')then
@@ -1001,7 +889,7 @@ C Additional option to choose CFC type.
         CALL EASKABCD('Select a type for the surface.',' Surface type',
      &      'Opaque (all layers)','Transparent (at least 1 layer)',
      &      'Complex Fenestration Construction',
-     &      'cancel',ino,11)
+     &      'cancel',ino,nbhelp)
         IF(ilno.eq.ino)GOTO 12
         IF(ino.eq.0)GOTO 12
         IF(ino.EQ.1)THEN
@@ -1142,23 +1030,19 @@ C assign an appropriate U value to each air gap encountered.
 
 C Emissivity.
 C << todo take advantage of the out/in data within the material arrays. >>
-
-        H(1)='The infrared emissivity is normally 0.1 < x < 0.9'
         CALL EASKR(EMISI(ISUR),' ','Inside emissivity  ?',
-     &      0.01,'W',0.99,'W',0.8,'inside emissivity',IER,1)
+     &    0.01,'W',0.99,'W',0.8,'inside emissivity',IER,nbhelp)
         CALL EASKR(EMISE(ISUR),' ','Outside emissivity ?',
-     &      0.01,'W',0.99,'W',0.8,'outside emissivity',IER,1)
+     &    0.01,'W',0.99,'W',0.8,'outside emissivity',IER,nbhelp)
         MODCON=.TRUE.
       ELSEIF(INODA.EQ.7)THEN
 
 C Absorptivity.
 C << todo take advantage of the out/in data within the material arrays. >>
-
-        H(1)='The short wave absorptivity is normally 0.1 < x < 0.9'
         CALL EASKR(ABSI(ISUR),' ',' Inside absorptivity ? ',
-     &      0.01,'W',0.99,'W',0.8,'inside absorptivity',IER,1)
+     &    0.01,'W',0.99,'W',0.8,'inside absorptivity',IER,nbhelp)
         CALL EASKR(ABSE(ISUR),' ',' Outside absorptivity? ',
-     &      0.01,'W',0.99,'W',0.8,'outside absorptivity',IER,1)
+     &    0.01,'W',0.99,'W',0.8,'outside absorptivity',IER,nbhelp)
         MODCON=.TRUE.
       ELSEIF(INODA.GT.10.AND.INODA.LT.IPT1)THEN
 
@@ -1166,31 +1050,13 @@ C Edit thermophysical properties. Inform caviats on
 C first pass.
         IE=INODA-10
         MODCON=.TRUE.
-        if(.not.told)then
-          H(1)='WARNING: You are allowed to modify the properties'
-          H(2)='of the layers BUT NOT CHANGE the TOPOLOGY (ie.'
-          H(3)='move air gaps around) - do that in the multi-layer '
-          H(4)='construction database facility.  Quality assurance'
-          H(5)='is enhanced if you use the multilayer construction'
-          H(6)='facility rather than editing entities here. '
-          CALL PHELPD('surface details',6,'-',0,0,IER)
-          told=.true.
-        endif
   42    HOLD=' '
         WRITE(HOLD,'(1x,f7.3,3f11.3)')THK(ISUR,IE),CON(ISUR,IE),
      &                             DEN(ISUR,IE),SHT(ISUR,IE)
-        H(1)='The conductivity can vary from about 0.03 W/(mK) for'
-        H(2)='insulation to about 200 W/(mK) for copper'
-        H(3)=' '
-        H(4)='The density can vary from about 30 kg/m^3 for'
-        H(5)='insulation to about 8900 kg/m^3 for copper'
-        H(6)=' '
-        H(7)='Specify the specific heat in J/(kgK)'
-        H(8)=' '
-        H(9)='Specify the thickness of the layer (m)'
         CALL EASKS(HOLD,
      &    ' Layer thickness(m), conductivitiy, density, specific heat:',
-     &    '  ',48,' 0.025 1.0 100. 100. ','thk con den spht',IER,9)
+     &    '  ',48,' 0.025 1.0 100. 100. ','thk con den spht',
+     &    IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,ZZ,0.001,THKCH,'W','thickness',IER)
         CALL EGETWR(HOLD,K,XO,0.001,CONCH,'W','conductivity',IER)
@@ -1206,11 +1072,9 @@ C Find air gap resistance for this layer.
         DO 147 IGG=1,NAIRG(ISUR)
           IF(IPAIRG(ISUR,IGG).EQ.IE)THEN
             VAL=RAIRG(ISUR,IGG)
-            H(1)='Enter air gap resistance.'
-            H(2)='Typically this is 0.18 m^2K/W for a cavity wall'
             VAL=RAIRG(ISUR,IGG)
             CALL EASKR(VAL,' ',' Air gap resistance ? ',
-     &        0.001,'W',9.99,'W',0.017,'air gap R',IER,2)
+     &        0.001,'W',9.99,'W',0.017,'air gap R',IER,nbhelp)
             RAIRG(ISUR,IGG)=VAL
           ENDIF
  147    CONTINUE
@@ -1472,7 +1336,6 @@ C Parameter
       integer IER   ! if zero then ok
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1489,7 +1352,14 @@ C Parameter
       logical XST
 
       dimension ival(MS)
-      CHARACTER H*72,TOPTIC*12,louts*248
+      CHARACTER TOPTIC*12,louts*248
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MKTWIN'  ! set for subroutine
 
 C If in quiet mode then the file should exist, but if it is not a
 C silly name open it and inform.
@@ -1611,9 +1481,9 @@ c Error messages.
 
 C If in quiet mode: the file should exist => error if we are here.
    98 IF (IER.EQ.-301) THEN
-        H(1)=' The TMC file does not exist, or was not found, '
-        H(2)='please create / rereference this file individually.'
-        CALL PHELPD('file error',2,'-',0,0,IER)
+        helptopic='tmc_file_not_found'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('file error',nbhelp,'-',0,0,IER)
       ELSE
         CALL EDISP(IUOUT,' TMC file write error ')
       ENDIF
@@ -1641,7 +1511,6 @@ C through each of the existing surfaces and finds unique optical types.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -1662,9 +1531,16 @@ C through each of the existing surfaces and finds unique optical types.
       logical canceled   ! toggle set if user interupts an edit session.
       integer IRT        ! for radio button
 
-      CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
+      CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36
       CHARACTER outs*124
       CHARACTER msg*28
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDTWIN'  ! set for subroutine
 
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.
@@ -1677,7 +1553,7 @@ C to 0.
       DO 10 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).EQ.'OPAQ'.OR.
-     &      SSOTF(icn1)(1:4).EQ.'CFC ')THEN
+     &     SSOTF(icn1)(1:4).EQ.'CFC ')THEN
           ITMCFL(ICOMP,IS)=0
           GOTO 10
         ENDIF
@@ -1702,10 +1578,12 @@ C to 0.
 C Check this composite db entry is also transparent and that it has
 C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
+        helptopic='constr_attribute_checks'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(outs,'(A12,A)') DESC(ICF)(1:12),' is not transparent!'
         IF(DESC(ICF)(15:18).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
-     &    'select a transparent material',IWB,0)
+     &    'select a transparent material',IWB,nbhelp)
           if(IWB.eq.1)then
 
 C Switch back to opaque construction.
@@ -1734,11 +1612,9 @@ C Check to see if this new construction has a known set of opticals.
      &     OPT(1:6).EQ.'OPAQUE')THEN
           WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
      &      ' has unknown optical properties!'
-          h(1)='Supplying optical properties if you know the angular'
-          h(2)='transmission and absorption data. '
           CALL EASKABC(outs,' Do you want to: ',
      &      'supply optical properties','select another composite',
-     &      'assign `opaque` to this one',IW,2)
+     &      'assign `opaque` to this one',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
 C << todo consider how one might treat a cancel request within eoptks
@@ -1799,6 +1675,8 @@ C Save ITMCFL.
 
 C Display of current information...
    90 CONTINUE
+      helptopic='constr_attribute_checks'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EDISP(ITRU,' ')
       WRITE(outs,9996)zname(ICOMP)(1:lnzname(ICOMP))
  9996 FORMAT(' Transparent construction file details for ',A)
@@ -1878,12 +1756,9 @@ C invokes a cancel during the editing.
       canceled=.false.
   203 if(canceled)then
         dok=.false.
-        h(1)='You interupted the specification. If you want to start'
-        h(2)='again say yes or if you want to not have optical controls'
-        h(3)='say no and the data will be cleared. '
         CALL ASKOK('Try again to define the optical control?',
      &    '(A `no` clears the control definitions.)',OK,
-     &    dok,3)
+     &    dok,nbhelp)
         if(.NOT.OK) then
 
 C Clear the optical control common blocks that might have
@@ -1898,19 +1773,13 @@ C been set during the prior edit.
       endif
       DO 22 IT=1,NTMC
         if(IBCMT(ICOMP,IT).eq.1)then
-          h(1)='There is a surface attribute that indicates that an'
-          h(2)='existing optical control. You have the following '
-          h(3)='options: '
-          h(4)=' a) remove this optical control '
-          h(5)=' b) edit the current optical control'
-          h(6)=' c) continue with out changing this control'
-          h(7)=' '
-          h(8)='Hint - scroll the text feedback backwards to see the'
-          h(9)='current optical control details. '
+          helptopic='detect_existing_opt_ctl'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           WRITE(OUTS,'(A,I2,A)')' For TMC type ',IT,
      &      ' there is an optical control. Options:'
           CALL EASKABC(outs,' ','remove this optical control',
-     &      'edit this optical control','accept control as-is',iwa,9)
+     &      'edit this optical control','accept control as-is',
+     &      iwa,nbhelp)
           if(iwa.eq.1)then
             IBCMT(ICOMP,IT)=0
             GOTO 22
@@ -1922,21 +1791,22 @@ C been set during the prior edit.
           endif
         else
           dok=.false.
-          h(1)='There is a surface attribute that indicates that an'
-          h(2)='optical control could be defined. To do it say `yes`. '
+          helptopic='detect_existing_opt_ctl'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           WRITE(OUTS,'(A,I2,A)')'For TMC type ',IT,' is there any'
-          CALL ASKOK(OUTS,'optical control?',OK,dok,2)
+          CALL ASKOK(OUTS,'optical control?',OK,dok,nbhelp)
           IF(.NOT.OK)THEN
             IBCMT(ICOMP,IT)=0
             GOTO 22
           ENDIF
         endif
 
+        helptopic='optical_control_summary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IBCMT(ICOMP,IT)=1
         N1=NBCTMC(ICOMP,IT)
-        H(1)='Up to 8 control periods are allowed.'
         CALL EASKI(N1,' ','Number of control periods?',
-     &    1,'F',MBP,'F',1,'no of control periods',IERI,1)
+     &    1,'F',MBP,'F',1,'no of control periods',IERI,nbhelp)
         if(ieri.eq.-3) then
           canceled=.true.
           goto 203
@@ -1944,21 +1814,14 @@ C been set during the prior edit.
         NBCTMC(ICOMP,IT)=N1
 
         N2=IBCSUR(ICOMP,IT)
-        H(1)='The position of the sensor may be as follows.'
-        H(2)=' * each transparent surface has its own'
-        H(3)='   sensor (default);'
-        H(4)=' * one user defined external surface will'
-        H(5)='   contain the sensor for all surfaces which'
-        H(6)='   use this particular TMC type;'
-        H(7)=' * one user defined internal Daylight Coefficient'
-        H(8)='   sensor is employed.'
         CALL EASKAB(' ','Transparent surfaces controlled by:',
-     &    'separate sensors','a single sensor',IW,8)
+     &    'separate sensors','a single sensor',IW,nbhelp)
         if(IW.eq.1)then
           IBCSUR(ICOMP,IT)=0
         else
           CALL EASKI(N2,' ','Surface for common sensor location?',
-     &      1,'F',NZSUR(icomp),'F',1,'sensor location',IERI,8)
+     &      1,'F',NZSUR(icomp),'F',1,'sensor location',
+     &      IERI,nbhelp)
           if(ieri.eq.-3) then
             canceled=.true.
             goto 203
@@ -1967,99 +1830,50 @@ C been set during the prior edit.
         endif
 
 C For each control period get the appropriate replacement properties.
+        helptopic='optical_control_summary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DO 24 ICP=1,N1
           write(outs,'(A,I2)')' For control period ',ICP
-          H(1)='Control period starting and ending times should'
-          H(2)='define consecutive periods.'
           VAL=REAL(IBCST(ICOMP,ICP,IT))
           CALL EASKR(VAL,outs,' Begin at hour: ',
-     &      0.00,'W',24.0,'W',0.0,'control start',IER,2)
+     &      0.00,'W',24.0,'W',0.0,'control start',IER,nbhelp)
           IBCST(ICOMP,ICP,IT)=INT(VAL)
 
           VAL=REAL(IBCFT(ICOMP,ICP,IT))
           CALL EASKR(VAL,outs,' End at hour  : ',
-     &      0.00,'W',24.0,'W',24.0,'control end',IER,2)
+     &      0.00,'W',24.0,'W',24.0,'control end',IER,nbhelp)
           IBCFT(ICOMP,ICP,IT)=INT(VAL)
 
           N3=NBCTT(ICOMP,ICP,IT)
-          H(1)='Surfaces composed of transparent constructions'
-          H(2)='will have optical properties defined from either'
-          H(3)='the Optical Properties db or by manual input. If'
-          H(4)='there is a mismatch between information in a zone'
-          H(5)='TMC file and existing surface attributes then you'
-          H(6)='will be asked to confirm the correct choice.'
-          H(7)=' '
-          H(8)='Optical properties can have scheduled controls which'
-          H(9)='allow an alternative optical property to be use based'
-          H(10)='on the following sensed parameter:'
-          H(11)=' a) time - alternative optics are used during a'
-          H(12)='    specific period of the day;'
-          H(13)=' b) total radiation on the outside face of a'
-          H(14)='    surface in the zone - you specify a radiation'
-          H(15)='    level (W/m^2) above which the alternate optical'
-          H(16)='    properties will be used;'
-          H(17)=' c) ambient temperature - you specify a temperature'
-          H(18)='    above which the alternative optical properties'
-          H(19)='    will be used;'
-          H(20)=' d) zone air temperature - you specify the'
-          H(21)='    temperature above which the alternative optical'
-          H(22)='    properties will be used;'
-          H(23)=' e) lux level - you specify the lux level above'
-          H(24)='    which the alternative optical properties will'
-          H(25)='    be used. Two alternative lux calculation'
-          H(26)='    approaches are offered.'
-          H(27)=' '
-          H(28)='Note: there can be up to 8 control periods in a'
-          H(29)='day (all days within the simulation will be treated'
-          H(30)='the same).'
-          H(31)=' '
-          H(32)='The alternative optics must correspond to the same'
-          H(33)='number of layers as the initial set. It is a good'
-          H(34)='idea to prepare the alternative properties via the'
-          H(35)='Optical Properties db management facility prior to'
-          H(36)='using the transparent properties facility here.'
-          H(37)=' '
-          H(38)='Control of optical properties can be used to'
-          H(39)='approximate closing blinds/shutters and shading'
-          H(40)='devices.'
-          H(41)=' '
-          H(42)='If the model has an air flow network you might also'
-          H(43)='think about controlling any air flow components'
-          H(44)='associated with any transparent surfaces that have'
-          H(45)='been assigned optical property control. Note however'
-          H(46)='that the air flow control logic is different from'
-          H(47)='the optical property control logic so some care and'
-          H(48)='testing is required to ensure that optical and flow'
-          H(49)='control works together.'
           IRT=1
           if(n3.eq.-99)then
             call EASKATOG('Controlled on:','(currently time)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           elseif(n3.eq.0)then
             call EASKATOG('Controlled on:','(currently radiation)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           elseif(n3.eq.1)then
             call EASKATOG('Controlled on:','(currently ambient temp.)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           elseif(n3.eq.2)then
             call EASKATOG('Controlled on:','(currently zone temp.)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           elseif(n3.eq.3)then
             call EASKATOG('Controlled on:','(currently daylight coef)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           elseif(n3.eq.4)then
             call EASKATOG('Controlled on:','(currently Lightswitch)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           else
             call EASKATOG('Controlled on:','(currently undefined)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -2068,25 +1882,25 @@ C For each control period get the appropriate replacement properties.
             NBCTT(ICOMP,ICP,IT)= 0
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Radiation set point?',
-     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,49)
+     &        0.00,'W',1000.0,'W',0.0,'radiation set point',IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.3)then
             NBCTT(ICOMP,ICP,IT)= 1
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Ambient temp. set point?',
-     &      0.00,'W',1000.0,'W',0.0,'ambient set point',IER,49)
+     &        0.00,'W',1000.0,'W',0.0,'ambient set point',IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.4)then
             NBCTT(ICOMP,ICP,IT)= 2
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Zone temp. set point',
-     &      0.00,'W',1000.0,'W',0.0,'zone set point',IER,49)
+     &        0.00,'W',1000.0,'W',0.0,'zone set point',IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.5)then
             NBCTT(ICOMP,ICP,IT)= 3
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lux set point',
-     &      0.00,'W',1000.0,'W',0.0,'lux set point',IER,49)
+     &        0.00,'W',1000.0,'W',0.0,'lux set point',IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
 
@@ -2094,7 +1908,8 @@ C << Do not know what sort of question is to be asked here! >>
             NBCTT(ICOMP,ICP,IT)= 4
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lightswitch lux set point?',
-     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,49)
+     &        0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',
+     &        IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
             return
@@ -2144,13 +1959,19 @@ C transparent construction data editing.
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-      CHARACTER SOPT*12,GDESCR*36,H*72,HOLD*42
+      CHARACTER SOPT*12,GDESCR*36,HOLD*42
       CHARACTER WHICH*1,outs*124
 
       integer ntlt   ! for local editing.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EOPTKS'  ! set for subroutine
 
 C The user will be allowed to use a item from the optical database or
 C to put in the data directly.  77 is a jump back point in case the
@@ -2158,12 +1979,10 @@ C user cancels part way through the definition.
 
 C << todo: consider adding a cancel option >>
 
-  77  h(1)='Manual data input will ask for the direct transmission'
-      h(2)='at each angle as well as absorption characteristics for'
-      h(3)='layer. Using data from an optical database simplifies '
-      h(4)='the process. '
+  77  helptopic='manual_optical_editing'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKAB(' Get optical properties from: ',' ',
-     &  ' manual data input',' optical database',IW,4)
+     &  ' manual data input',' optical database',IW,nbhelp)
       IF(IW.EQ.2)THEN
         CALL EDWINO(SOPT,IER)
         IF(SOPT.EQ.'UNKNOWN')RETURN
@@ -2171,14 +1990,11 @@ C << todo: consider adding a cancel option >>
         RETURN
       ENDIF
 
-      H(1)='The simulation of radiation transmission through '
-      H(2)='glazing is angular dependent.  Five angles are '
-      H(3)='used: 0 (normal), 40, 55, 70 & 80 degrees and the'
-      H(4)='data can be obtained via program win.'
   42  HOLD=' '
       WRITE(HOLD,'(1x,5f8.3)')DG(1),DG(2),DG(3),DG(4),DG(5)
       CALL EASKS(HOLD,' Direct trans @ 0 40 55 70 80 degrees: ',
-     &   '  ',42,' 0.779 0.759 0.717 0.581 0.348 ','dir trans',IER,4)
+     &   '  ',42,' 0.779 0.759 0.717 0.581 0.348 ','dir trans',
+     &   IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,DG(1),0.001,0.99,'W','dir t @ 0',IER)
       CALL EGETWR(HOLD,K,DG(2),0.001,0.99,'W','dir t @ 40',IER)
@@ -2187,10 +2003,8 @@ C << todo: consider adding a cancel option >>
       CALL EGETWR(HOLD,K,DG(5),0.001,0.99,'W','dir t @ 80',IER)
       if(ier.ne.0)goto 42
 
-      H(1)='The visible transmittance at normal incidence is'
-      H(2)='used for daylighting calculations.'
       CALL EASKR(VTRN,' ',' Visible transmittance: ',
-     &  0.001,'W',0.99,'W',0.85,'vis tran',IER,2)
+     &  0.001,'W',0.99,'W',0.85,'vis tran',IER,nbhelp)
 
       IF(WHICH.EQ.'w'.OR.WHICH.EQ.'W')THEN
         call usrmsg(
@@ -2199,27 +2013,15 @@ C << todo: consider adding a cancel option >>
       ELSEIF(WHICH.EQ.'t'.OR.WHICH.EQ.'T')THEN
 
 C For each of the layers provide the absorptions.
-        H(1)='This is almost always equal to that of the associated'
-        H(2)='multilayer construction. Layers index (outside=1).'
-        H(3)='If you cancel you will be taken back to the start'
-        H(4)='of the editing sequence. '
         ntlt=ntl
         CALL EASKI(NTLT,' ',
      &    ' Current no. of layers (including air gaps)? ',
-     &    1,'F',ME,'F',1,'layers in tmc',IERI,4)
+     &    1,'F',ME,'F',1,'layers in tmc',IERI,nbhelp)
         if(ieri.eq.-3)then
           goto 77
         endif
         ntl=ntlt
 
-        H(1)='The simulation of radiation transmission through '
-        H(2)='transparent constructions requires that the short-'
-        H(3)='wave absorptance at each layer (including air gaps)'
-        H(4)='is defined for five angles of incidence: '
-        H(5)='  0 (normal), 40, 55, 70 & 80 degrees '
-        H(6)='This data can be obtained via program window.'
-        H(7)='The values for an air gap are usually: '
-        H(8)='   0.001, 0.002, 0.003, 0.004, 0.005 '
         DO 10 I=1,NTL
   44      HOLD=' '
           WRITE(HOLD,'(1x,5f8.3)')AB(I,1),AB(I,2),AB(I,3),AB(I,4),
@@ -2227,7 +2029,8 @@ C For each of the layers provide the absorptions.
           WRITE(outs,'(a,I2,a)') ' Layer ',I,
      &       ' absorption @ 0 40 55 70 80 degrees:'
           CALL EASKS(HOLD,outs,'  ',
-     &      42,' 0.106 0.116 0.124 0.129 0.125 ','layer abs',IER,8)
+     &      42,' 0.106 0.116 0.124 0.129 0.125 ','layer abs',
+     &      IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,AB(I,1),0.001,0.99,'W','abs @0',IER)
           CALL EGETWR(HOLD,K,AB(I,2),0.001,0.99,'W','abs @40',IER)
