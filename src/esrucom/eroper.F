@@ -125,9 +125,10 @@ C Maximum number of air change periods/day MA=5
 C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-#include "building.h"
-#include "model.h"
-#include "espriou.h"
+      include "building.h"
+      include "model.h"
+      include "espriou.h"
+
 C espriou.h provides currentfile.
 #include "CFC_common.h"
       

@@ -102,7 +102,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F econstr.F edatabase.F egeometry.F \
 	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F editCFC.F

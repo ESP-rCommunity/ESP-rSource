@@ -69,6 +69,7 @@ c      USE Building
 #include "model.h"
 #include "geometry.h"
 #include "control.h"
+#include "blc25_open_windows.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -241,6 +242,11 @@ C.....Ventilation, infiltration data
       real cvvp, cvvf           ! Conductances assoc. w/ ventilation
                                 !   on present and future time rows
       real qvnp,xx3,cvvpm,cvvfm ! Not used in current context
+
+C.....Flow data
+      COMMON/MBINFO/ZMBI(MCOM,4)
+      REAL :: ZMBI      
+      
 
 C ..... Zone humidity data
       COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM)
@@ -506,6 +512,8 @@ C                                           ! per m2 of floor area
 
       real fZoneRH                   ! Zone relative humidity (%)
 
+      real fWindowPosition           ! Position of windows in zone. 
+      
 C.....Misc Zone parameters returned by zoneinfo
 C      real fSurfArea(MS)          ! Area of each surface`
 C      real fTotalZoneArea         ! Total Zone area
@@ -588,13 +596,13 @@ C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
 C----------------------------------------------------------------------
 
-      logical bWindowsOpen                    ! Are windows open?
+      logical bPSwindowsOpen                    ! Are windows open?
       real fSwingTemperature                  ! Max permissible
                                               !    swing temp. (oC)
       logical bBuildingHeated                 ! Is building heated?
       ! ( These need to be picked up from other parts of esp-r.
       !   Hard-coded for now. )
-      parameter ( bWindowsOpen      = .false. )
+      parameter ( bPSwindowsOpen      = .false. )
       parameter ( fSwingTemperature = 5.0     )
 
 
@@ -1174,7 +1182,7 @@ C     ventilated).
 C-----------------------------------------------------------------------
 
       are_gains_useful:
-     &if ( .not. bWindowsOpen .and.
+     &if ( .not. bPSwindowsOpen .and.
      &           bZoneHeated(iZone)  .and.
      &     TFA(iZone) <= fHeatSetpoint(iZone) + fSwingTemperature ) then
 
@@ -1605,6 +1613,30 @@ C .... ZONE DRY AIR MASS
      &         'units', '(kg)',
      &         'Zone dry air mass' )
 
+C.....Window position from BCL25 controller
+
+      if ( bWindowsOpen(iZone) ) then 
+        fWindowPosition = 1.0
+      else 
+        fWindowPosition = 0.0
+      endif 
+
+      call add_to_xml_reporting (
+     &         fWindowPosition,
+     &         H3K_rep_NAME(1:iH3K_NameLen)// '/windows/position',
+     &         'units', '(-)',
+     &         'Window position as per BCL25 controller (0->1)' )     
+     
+     
+      call add_to_xml_reporting (
+     &         real(iAirFlowModel(iZone)),
+     &         H3K_rep_NAME(1:iH3K_NameLen)// '/air_flow_model',
+     &         'units', '(-)',
+     &         'Air-flow-model (0->3)' )    
+     
+C.....Zone relative humidity
+      fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
+
 C .... ZONE AIR MOISTURE CONTENT
       call add_to_xml_reporting (
      &         GFA(iZone),
@@ -1769,6 +1801,22 @@ C.....Envelope heat loss
      &         'units', '(W)',
      &         'Contribution of foundation to heating load' )
 
+      
+C.....Zone air change rate (AIM2)
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationACH,
+     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
+     &                           //'air_changes_per_hour',
+     &         'units', '(ACH)',
+     &         'Zone infiltration (air changes per hour)') 
+      
+      call add_to_xml_reporting (
+     &         fZoneHeatGainInfiltration,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to cooling load' )      
+      
       call add_to_xml_reporting (
      &         fZoneHeatLossInfiltration,
      &         H3K_rep_Name(1:iH3K_NameLen)
@@ -1776,6 +1824,31 @@ C.....Envelope heat loss
      &         'units', '(W)',
      &         'Contribution of infiltration to heating load' )
 
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationLoad,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to heating load' )     
+     
+     
+            call add_to_xml_reporting (
+     &         ZMBI(iZone,1),
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/balance/air',
+     &         'units', '(kg/s?)',
+     &         'Air movement into zone' )   
+     
+                  call add_to_xml_reporting (
+     &         ZMBI(iZone,1) / 1.275  * 3600. / vol(iZone)  ,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/balance/air_exchange',
+     &         'units', '(ACH)',
+     &         'Air movement into zone' )  
+     
+     
+     
+     
       call add_to_xml_reporting (
      &         fZoneHeatLossWalls
      &           + fZoneHeatLossInfiltration
@@ -1796,14 +1869,24 @@ C.....Zone air change rate (AIM2)
      &         'units', '(ACH)',
      &         'Zone infiltration (air changes per hour)')
 
-! Not sure if this is being computed correctly
-!       call add_to_xml_reporting (
-!      &         fZoneHeatLossVentilation,
-!      &         H3K_rep_Name(1:iH3K_NameLen)
-!      &            //'/envelope/ventilation/heat_loss',
-!      &         'units', '(W)',
-!      &         'Contribution of ventilation to heating load' )
 
+! Not sure if this is being computed correctly
+!      call add_to_xml_reporting (
+!    &         fZoneHeatLossInfiltration,
+!    &         H3K_rep_NAME(1:16)
+!    &            //'/envelope/infiltration/heat_loss',
+!    &         'units', '(W)',
+!    &         'Contribution of ventilation to heating load' )
+!
+!    ! Not sure if this is being computed correctly
+!      call add_to_xml_reporting (
+!    &         fZoneHeatGainInfiltration,
+!    &         H3K_rep_NAME(1:16)
+!    &            //'/envelope/infiltration/heat_gain',
+!    &         'units', '(W)',
+!    &         'Contribution of infiltration to cooling load' )
+     
+     
 C.....Envelope heat gains
       call add_to_xml_reporting (
      &         fZoneHeatGainWindows,
@@ -2389,8 +2472,8 @@ C.......RADIATION HEAT TRANSFER COEFFICIENT
 C     &         ZHRS(iZone,iSurface)/(TFS(iZone,iSurface)-trsum), ! <= problems with DT approx. zero !
 C          Incropera et. al., page 10:
      &        EI(iZone,iSurface)*SBC*
-     &            (TFS(iZone,iSurface)+trsum+2.0*273.15)*
-     &            ((TFS(iZone,iSurface)+273.15)**2+(trsum+273.15)**2),
+     &            (TFS(iZone,iSurface)+trsum+2.*273.15)*
+     &            ((TFS(iZone,iSurface)+273.15)**2.+(trsum+273.15)**2.),
      &         H3K_rep_NAME(1:iH3K_NameLen)//'/HRi',
      &         'units', '(W/(m2 K))',
      &         'Radiant heat transfer coef. (inside face)' )

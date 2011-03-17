@@ -44,7 +44,6 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -86,7 +85,6 @@ C end indices for each zone.
 
       dimension VIEWLIM(6),GRSPC(3),IVALS(MCOM)
 
-      CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
       character zn*12,LCFGF*72
@@ -118,6 +116,13 @@ C an object has been saved the set justentered to false.
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='clickonbitmap'  ! set for subroutine
 
 C Logical toggles: xbmorigin (required origin defined) xbmnorth (optional
 C north defined), xbmscale (required scaling factor defined), xbmgrid
@@ -428,65 +433,8 @@ C up and down (by 50 pixel increments).
       MITEM=18+m+n
 
 C Help text for this menu.
-      H(1)='You can describe a thermal zone as an rectangle, a floor'
-      H(2)='plan extrusion or a general polyhedra. Use only as much'
-      H(3)='details as required to simplify attribution tasks, QA'
-      H(4)='and interpretation tasks.'
-      H(5)=' '
-      H(6)='Points from a bitmap:                  '
-      H(7)=' Zones, ground topology and obstructions can be defined'
-      H(8)=' via points from a scanned image of a site plan or floor'
-      H(9)=' plan or elevation or one of several predefined grids.'
-      H(10)='                  '
-      H(11)=' First scan the relevant source and convert it to an'
-      H(12)=' XBM (X11 monochrome bitmap) file and place this in'
-      H(13)=' the project `cfg` folder.'
-      H(14)=' '
-      h(15)=' Ensure that the bitmap is large enough to allow for'
-      h(16)=' accurate positioning of the mouse. The bitmap can be'
-      h(17)=' larger than the graphic display area (you can pan left'
-      H(18)=' and right and up and down within it).'
-      H(19)=' '
-      H(20)=' The source image should indicate an origin (X=0.0'
-      H(21)=' Y=0.0), the direction north (optional), and a'
-      H(22)=' line of known length (to get scaling from).'
-      H(23)='                  '
-      H(24)='Menu options:     '
-      H(25)=' Pan: if bitmap larger then display then you can show'
-      H(26)='      a portion of the bitmap and pan around'
-      H(27)=' Origin: identifies X=0.0 and Y=0.0 on the bitmap  '
-      H(28)=' North: identifies angle between North and Y axis'
-      H(29)='        (no translation/rotation is currently done!)'
-      H(30)=' Scaling: select two points a known distance apart '
-      H(31)='          (for best results pick a longer line).'
-      H(32)=' Gridding: impose a grid and a `snap-to-grid` function.'
-      H(33)='           '
-      H(34)='Input modes:'
-      H(35)='  Adding vertices (with same Z value or different Z) is'
-      H(36)='  useful if you want to gather points and later link'
-      H(37)='  the vertices to form surfaces.'
-      H(38)='                  '
-      H(39)='  Adding walls is the same as a floor plan extrusion.'
-      H(40)='  You can input many zones in sequence. Note:'
-      H(41)='  the snap to grid option is useful here.'
-      H(42)='                  '
-      H(43)='  Adding vertices for a south or east elevation is'
-      H(44)='  supported. Later you can link them together to form'
-      H(45)='  surfaces.'
-      H(46)='                  '
-      H(47)='  Adding vertices to the project ground topology is'
-      H(48)='  supported. Later you can link them together to form'
-      H(49)='  surfaces.'
-      H(50)=' '
-      H(51)='  Adding obstructions for the zones you have created'
-      H(52)='  can save time. You will probably want to set the'
-      H(53)='  gridding small before you start this.'
-      H(54)=' '
-      H(55)='Zones and obstructions can be saved or discarded after'
-      H(56)='you type `e` but you must manually save ground topol.'
-      H(57)=' '
-      H(58)='HINT: this facility is designed for doing zones then'
-      H(59)='obstructions in one session. '
+      helptopic='clickon_bitmap_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('  Point definition',ITEMS,MITEM,INO)
   29  IF(INO.EQ.MITEM)THEN
@@ -496,10 +444,8 @@ C On exit, check save data depending on input mode.
 
 C Save any ground topology.
           dok=.false.
-          h(1)='You were defining ground topology. This information'
-          h(2)='might be lost if you exit without having saved first.'
           call askok('Have you saved the ground topology?',' ',ok,
-     &      dok,2)
+     &      dok,nbhelp)
           if(ok)then
             return
           else
@@ -513,7 +459,9 @@ C Save any ground topology.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD('bitmap opening',59,'-',0,0,IER)
+        helptopic='clickon_bitmap_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('bitmap opening',nbhelp,'-',0,0,IER)
       elseif(INO.EQ.MITEM-2)then
 
 C Write data to file depending on the input mode.
@@ -536,12 +484,8 @@ C Save any ground topology.
       elseif(INO.EQ.MITEM-3)then
 
 C Offer to start another object.
-        h(1)='Assuming the basic parameters (zone base and top height,'
-        h(2)='gridding and shap options have been set you can proceed '
-        h(3)='with adding points. Otherwise select continue and get'
-        h(4)='the parameters sorted first. '
         call easkab('Options for adding objects (see help):',' ',
-     &    'start clicking on points','continue',iwclear,4)
+     &    'start clicking on points','continue',iwclear,nbhelp)
         if(iwclear.eq.2)then
           goto 142
         endif
@@ -550,15 +494,13 @@ C Clear and start new zone or ground topology or obstruction.
         if(inpmode.eq.6)then
           NGT=0
           NGTV=0
-          H(1)='This file contains a description of a ground form'
-          H(2)='for use by Radiance and viewing (later by esp). '
           if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
             write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
           else
             ltmp=gtgeom
           endif
  56       CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-     &      ' ',72,'grnd.geo','ground geom file',IER,2)
+     &      ' ',72,'grnd.geo','ground geom file',IER,nbhelp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             gtgeom=ltmp
           else
@@ -567,11 +509,10 @@ C Clear and start new zone or ground topology or obstruction.
 
 C Get the name of the ground. Also set ZN to this to allow
 C entry to point clicking.
-          H(1)='This is a reminder of the ground type.'
           GTNAME='from_bitmap'
   49      t15=GTNAME
-          CALL EASKS(t15,' Description of the ground?',
-     &      ' ',15,'flat','not flat',IER,1)
+          CALL EASKS(t15,' Description of the ground? (<12 char)',
+     &      ' ',15,'flat','not flat',IER,nbhelp)
           if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
             GTNAME=t15
             ZN=t15(1:12)
@@ -608,13 +549,10 @@ C collected points as a zone.
           addinganother=.true.
           INCOMP=NCOMP+1
           call tstamp('>','PRJ: new zone')
-          H(1)='The name of the zone is used both for descriptive'
-          H(2)='and bookkeeping purposes.  Each name should be'
-          H(3)='unique and should not contain blanks. '
  42       ZN=' '
-          CALL EASKS(ZN,' What do you want to call this new zone ',
+          CALL EASKS(ZN,'What do you want to call this new zone ',
      &      ' ( <12 char, no blanks) ?',12,'new_zone','zone name',
-     &      IER,3)
+     &      IER,nbhelp)
           IF(ZN.eq.' '.or.ier.ne.0)goto 42
 
 C << Unix vs NT needs to be updated >>
@@ -631,11 +569,10 @@ C << Unix vs NT needs to be updated >>
      &        zn(1:lnblnk(zn)),'.opr'
           endif
 
-          H(1)='The zone description allows further information about'
-          H(2)='the zone form and composition to be recorded.  '
           write(zd,'(2a)') zn(1:lnblnk(zn)),' describes a...'
  43       CALL EASKS(zd,' What does it represent ',
-     &  ' ( <64 char) ?',64,'no description entered','zone descr',IER,2)
+     &      ' ( <64 char) ?',64,'no description entered','zone descr',
+     &      IER,nbhelp)
           IF(zd.eq.' '.or.ier.ne.0)goto 43
         endif
         call edisp(iuout,'BEGIN ENTERING POINTS NOW...')
@@ -708,21 +645,15 @@ C List the current vertices and corners.
       elseif(INO.EQ.1)then
 
 C Load an X11 bitmap file (user required to convert to the format).
-        h(1)='Please convert any bitmap file to XBM format '
-        h(2)='and ensure that the graphic feedback area is large '
-        h(3)='enough for it to display properly and that the bitmap'
-        h(4)='is large enough to allow for accurate positioning of '
-        h(5)='the mouse. '
-        h(6)=' '
-        h(7)='If you just want to use a blank bitmap or a bitmap with'
-        h(8)='tickmarks to quickly input zones and/or obstructions'
-        h(9)='then these are also available. '
+        helptopic='x11_bitmap_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         idno=7
         call MENUATOL('Bitmap options: (see help)',' ',
-     &    'a small for gridding','b small with ticks for gridding',
-     &    'c medium for gridding','d medium with ticks for gridding',
-     &    'e large for gridding','f large with ticks for gridding',
-     &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,idno,9)
+     &    'a small blank bitmap','b small with ticks for gridding',
+     &    'c medium blank bitmap','d medium with ticks for gridding',
+     &    'e large blank bitmap','f large with ticks for gridding',
+     &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,
+     &    idno,nbhelp)
 
 C Locate the xbm files via the installed path.
         call isunix(unixok)
@@ -756,7 +687,7 @@ C Locate the xbm files via the installed path.
         endif
 	longtfile=' '    ! reset return string
         CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
-     &    'xxx.xbm',longtfile,'bitmap file',IER,9)
+     &    'xxx.xbm',longtfile,'bitmap file',IER,nbhelp)
         write(fname,'(a)') longtfile(1:lnblnk(longtfile))
      
 C If user request jump back and re-display the menu.
@@ -778,7 +709,7 @@ C and pixel height are also read.
             if(phrase(1:8).eq.'#define ')then
               K=8
               CALL EGETW(phrase,K,WORD,'W','bitmap name',IFLAG)
-              CALL EGETWI(phrase,K,ibmwidth,1,1200,'W','bitmap w',IER)
+              CALL EGETWI(phrase,K,ibmwidth,1,1600,'W','bitmap w',IER)
               read(iin,'(a)',iostat=ios,err=99) phrase
               if(phrase(1:8).eq.'#define ')then
                 K=8
@@ -865,14 +796,14 @@ C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
 
 C Support bitmap panning - left, right, up, down.
         if(.NOT.trimmed) goto 142
-  199   h(1)='The view of a truncated bitmap can be panned left '
-        h(2)='and right and up and down (by increments of 50 pixels)'
-        write(msg,'(a,i4,a,i4,a)') 
+        helptopic='click_pan_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+  199   write(msg,'(a,i4,a,i4,a)') 
      &    'Panning options: (current offset x',ixoffset,' y ',
      &    iyoffset,' pixels)'
         IWM=1
         CALL EASKATOG(msg,' ','done','left','right','up','down',' ',
-     &    ' ',IWM,2)
+     &    ' ',IWM,nbhelp)
         if(iwm.eq.1.or.iwm.gt.5)then
           goto 142
         else
@@ -908,9 +839,8 @@ C Refresh current bitmap and overlayed information.
 C Origin within the bitmap.
         if(xbmorigin)then
           dok=.false.
-          h(1)='You previously defined an orgin on the bitmap.'
-          h(2)='If you want to change it say ok. '
-          CALL ASKOK(' ',' Redefine origin? ',OK,dok,2)
+          CALL ASKOK(' ',' Redefine origin on the bitmap? ',OK,
+     &      dok,nbhelp)
           if(OK) xbmorigin = .false.
         endif
         if(.NOT.xbmorigin)then
@@ -936,9 +866,8 @@ C Origin within the bitmap.
 C North.
         if(xbmnorth)then
           dok=.false.
-          h(1)='You previously defined north on the bitmap.'
-          h(2)='If you want to change it say ok. '
-          CALL ASKOK(' ',' Redefine north? ',OK,dok,2)
+          CALL ASKOK(' ','Redefine north on the bitmap? ',
+     &      OK,dok,nbhelp)
           if(OK) xbmnorth = .false.
         endif
         if(.NOT.xbmnorth)then
@@ -967,9 +896,8 @@ C North.
 C Scaling of a known line. Ask for two points and distance.
         if(xbmscale)then
           dok=.false.
-          h(1)='You previously defined scaling points on the bitmap.'
-          h(2)='If you want to change this say ok. '
-          CALL ASKOK(' ',' Redefine scale? ',OK,dok,2)
+          CALL ASKOK(' ','Redefine scale on the bitmap?',
+     &      OK,dok,nbhelp)
           if(OK) xbmscale = .false.
         endif
         if(.NOT.xbmscale)then
@@ -987,7 +915,7 @@ C Scaling of a known line. Ask for two points and distance.
           call usrmsg(' ',' ','-')
           disn=1.
           CALL EASKR(disn,' ','Distance (metres) between points?',
-     &      0.0001,'W',0.,'-',0.1,'dist',IER,1)
+     &      0.0001,'W',0.,'-',0.1,'dist',IER,nbhelp)
           vdis= crowxyz(float(ixs1),float(iys1),0.0,float(ixs2),
      &      float(iys2),0.0)
           factor=vdis/disn
@@ -1062,17 +990,14 @@ C Gridding options. Check if user wants a grid.
         endif
         if(xbmgrid)then
           dok=.false.
-          h(1)='You previously defined gridding for the bitmap.'
-          h(2)='If you want to change this say ok. '
-          CALL ASKOK(' ',' Redefine grid? ',OK,dok,2)
+          CALL ASKOK(' ','Redefine grid on the bitmap?',OK,dok,nbhelp)
           if(OK) xbmgrid = .false.
         endif
         if(.NOT.xbmgrid)then
-          h(1)='A grey grid will overlay the bitmap from corner to '
-          h(2)='corner. '
           IWMG=1
           CALL EASKATOG('Gridding options:',' ',
-     &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',IWMG,2)
+     &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',
+     &      IWMG,nbhelp)
           if(iwmg.eq.1)then
             GRSPC(1)=0.0
             GRSPC(2)=0.0
@@ -1105,9 +1030,9 @@ C Gridding options. Check if user wants a grid.
             xbmgrid=.true.
           elseif(iwmg.eq.7)then
             ZDI=0.1
-            H(1)='Enter a value between 0.1 and 1.0.'
-            CALL EASKR(ZDI,' ',' Distance between grid points?',
-     &      0.100,'W',1.0,'W',1.0,'grid point distance',IER,1)
+            CALL EASKR(ZDI,' ',
+     &       'Distance between grid points (0.1 - 1.0m)?',
+     &        0.100,'W',1.0,'W',1.0,'grid point distance',IER,nbhelp)
             GRSPC(1)=ZDI
             GRSPC(2)=ZDI
             GRSPC(3)=ZDI
@@ -1156,28 +1081,8 @@ C Toggle the input mode. Ask user if they want to do this.
           inpmode = 8
           goto 142
         endif
-        H(1)='Input modes:'
-        H(2)='  Adding vertices (with same Z value) is useful if you'
-        H(3)='  want to gather information from the bitmap and later'
-        H(4)='  link the vertices to form surfaces.'
-        H(5)='                  '
-        H(6)='  Adding vertices (with different Z values) is useful'
-        H(7)='  if you want to capture information at several levels'
-        H(8)='  (e.g. contours on a site plan)'
-        H(9)='  '
-        H(10)='  Adding walls via a floor plan extrusion. Remember to'
-        H(11)='  select the `corners` anti-clockwise.'
-        H(12)='  '
-        H(13)='  South elevation fills X & Z coords @ one Y.'
-        H(14)='  East elevation  fills Y & Z coords @ one X.'
-        H(15)='  '
-        H(16)='  Ground toplogy will ask for Z value for each point.'
-        H(17)='  '
-        H(18)='  Obstructions asks for 2 points defining front and'
-        H(19)='  one point perpendicular as well as base and top.'
-        H(20)='  '
-        H(21)='If gridding is on and snap-to is on then the selected'
-        H(22)='coordinate may be relocated to the nearest point. '
+        helptopic='click_on_input_modes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         inpt=inpmode
         if(inpt.eq.1) msg='Options (currently vertices @ one Z)'
         if(inpt.eq.2) msg='Options (currently vertices @ various Z)'
@@ -1194,7 +1099,7 @@ C Toggle the input mode. Ask user if they want to do this.
      &    'c floor plan extrusion','d south elevation',
      &    'e east elevation','f ground topology',
      &    'g shading obstructions','h awaiting data',' ',' ',' ',
-     &    ' ',inpt,idno,22)
+     &    ' ',inpt,idno,nbhelp)
 
 C If changing the input mode confirm with user what to do with prior
 C data (if moving from vertices to floor plan extrusion or from floor
@@ -1206,13 +1111,10 @@ C and ground topology do require intial information.
           justentered=.true.
           if(nipwhis.gt.0)then
             dok=.false.
-            h(1)='If you previously were defining points via floor '
-            h(2)='plans the history of these points can be cleared '
-            h(3)='if you say ok. '
             CALL ASKOK(
      &        'Clear history of floor plans before defining new',
      &        'vertices? (previous zones will not show on bitmap)',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
               if(OK)nipwhis=0
           endif
           if(inpt.eq.1)then
@@ -1236,25 +1138,22 @@ C and ground topology do require intial information.
             INVERT=0
             NGT=0
             NGTV=0
-            H(1)='This file contains a description of a ground form'
-            H(2)='for use by Radiance and viewing (later by esp). '
             if(gtgeom(1:4).eq.'UNKN'.or.gtgeom(1:2).eq.'  ')then
               write(ltmp,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.grnd'
             else
               ltmp=gtgeom
             endif
  46         CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-     &        ' ',72,'grnd.geo','ground geom file',IER,2)
+     &        ' ',72,'grnd.geo','ground geom file',IER,nbhelp)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
               gtgeom=ltmp
             else
               goto 46
             endif
-            H(1)='This is a reminder of the ground type.'
             GTNAME='from_bitmap'
   39        t15=GTNAME
-            CALL EASKS(t15,' Description of the ground?',
-     &        ' ',15,'flat','not flat',IER,1)
+            CALL EASKS(t15,'Short <12 char description of the ground?',
+     &        ' ',15,'flat','not flat',IER,nbhelp)
             if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
               GTNAME=t15
             else
@@ -1279,39 +1178,37 @@ C and ground topology do require intial information.
 
 C Z coordinate to be associated with all points.
           Z1=0.
-          H(1)='The elevation is in metres.'
-          CALL EASKR(Z1,' ',' Elevation of vertices to be selected?',
-     &      0.000,'W',99.9,'W',0.0,'elevation of verts',IER,1)
+          CALL EASKR(Z1,' ',
+     &      'Elevation (m) of vertices to be selected?',
+     &      0.000,'W',99.9,'W',0.0,'elevation of verts',IER,nbhelp)
         elseif(inpmode.eq.3)then
 
 C Floor height.  User begins with an extruded shape.
           Z1=0.
-          H(1)='The base (floor) elevation is in metres.'
-          CALL EASKR(Z1,' ',' Elevation of the base surface? ',
-     &      0.000,'W',99.9,'W',0.0,'elevation of base',IER,1)
+          CALL EASKR(Z1,' ','Elevation (m) of the base surface? ',
+     &      0.000,'W',99.9,'W',0.0,'elevation of base',IER,nbhelp)
         elseif(inpmode.eq.4)then
 
 C Y coordinate to be associated with all points.
           Y1=0.
-          H(1)='The south elevation has all the same'
-          H(2)='Y values (m).'
           CALL EASKR(Y1,' ','Y value for south elevation?',
-     &      -99.000,'W',99.9,'W',0.0,'Y value for elevation',IER,2)
+     &      -99.000,'W',99.9,'W',0.0,'Y value for elevation',
+     &      IER,nbhelp)
         elseif(inpmode.eq.5)then
 
 C X coordinate to be associated with all points.
           X1=0.
-          H(1)='The east elevation has all the same'
-          H(2)='X values (m).'
           CALL EASKR(X1,' ','X value for east elevation?',
-     &      -99.000,'W',99.9,'W',0.0,'X value for elevation',IER,2)
+     &      -99.000,'W',99.9,'W',0.0,'X value for elevation',
+     &      IER,nbhelp)
         elseif(inpmode.eq.7)then
 
 C Base of obstruction..
           Z1=0.
-          H(1)='The base elevation of obstruction is in metres.'
-          CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
-     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
+          CALL EASKR(Z1,' ',
+     &      'Elevation (m) of the base of obstruction?',
+     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',
+     &      IER,nbhelp)
         endif
         goto 142
       elseif(INO.EQ.10+m+n)then
@@ -1319,17 +1216,15 @@ C Base of obstruction..
 
 C Ceiling height.
           Z2=2.4
-          H(1)='The top surface height is along the Z axis (metres).'
-          H(2)='Note: this is not the base-top distance!'
-          CALL EASKR(Z2,' ',' Elevation of the top surface? ',
-     &      0.000,'W',99.9,'W',2.7,'elevation of top',IER,2)
+          CALL EASKR(Z2,' ','Elevation (m) of the top surface?',
+     &      0.000,'W',99.9,'W',2.7,'elevation of top',IER,nbhelp)
         elseif(inpmode.eq.7)then
 
 C Top of obstruction..
           Z2=1.
-          H(1)='The height of obstruction is in metres.'
-          CALL EASKR(Z2,' ',' Height (top-bottom) of obstruction?',
-     &      0.000,'W',99.9,'W',0.0,'height of obs top',IER,1)
+          CALL EASKR(Z2,' ',
+     &      'Height (top-bottom difference in m) of obstruction?',
+     &      0.000,'W',99.9,'W',0.0,'height of obs top',IER,nbhelp)
         elseif(inpmode.eq.8)then
           continue
         endif
@@ -1341,13 +1236,12 @@ C Top of obstruction..
 C First check to see if there is a non-blank ZN.
         if(ZN(1:2).eq.'  ')then
           dok=.false.
-          h(1)='You might have selected this option by mistake. ESP-r'
-          h(2)='is expecting to have found a name for a zone at this'
-          h(3)='point. Probably you ment to select the `add another` '
-          h(4)='option first. '
+          helptopic='click_option_mistake'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok(
      &      'No zone name found. Are you sure you want to proceed?',
-     &      '(you might not have picked `add another` first)',ok,dok,4)
+     &      '(you might not have picked `add another` first)',
+     &      ok,dok,nbhelp)
           if(.NOT.ok) goto 142
         endif
 
@@ -1398,14 +1292,14 @@ C Toggle on/off the snap-to grid.
 C If user typed `p` or `P` then do panning until user says done and then continue.
           if(ii.eq.80.or.ii.eq.112)then
             if(trimmed)then
- 148          h(1)='The view of a truncated bitmap can be panned left'
-              h(2)='and right and up and down (by 50 pixels)'
-              write(msg,'(a,i4,a,i4,a)') 
+              helptopic='click_pan_options'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+ 148          write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
               IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
-     &          ' ',' ',IWM,2)
+     &          ' ',' ',IWM,nbhelp)
               if(iwm.eq.1.or.iwm.gt.5)then
                 goto 146
               else
@@ -1569,7 +1463,7 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
                 Z3=0.0
               endif
               CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
-     &          0.000,'W',99.9,'W',2.7,'elevation',IER,2)
+     &          0.000,'W',99.9,'W',2.7,'elevation',IER,nbhelp)
               Z(INVERT)=Z3
             endif
             if(INVERT.eq.1)then
@@ -1632,7 +1526,7 @@ C Add to ground topology and confirm Z.
               Z3=0.0
             endif
             CALL EASKR(Z3,' ',' Elevation (Z metres)? ',
-     &        -99.000,'W',99.9,'W',0.0,'elevation',IER,2)
+     &        -99.000,'W',99.9,'W',0.0,'elevation',IER,nbhelp)
             ZGT(INVERT)=Z3
             if(INVERT.eq.1)then
               write(outs,'(a,i3,a,f8.3,a,f8.3)') 'Vertex ',INVERT,
@@ -1654,11 +1548,10 @@ C Selection terminated with `e`, ask user if they want to save the
 C information. If so fill zone common blocks and make a
 C dummy surface with the first three vertices.
  147      continue
-          h(1)='Having stopped adding points, if you made a mistakes'
-          h(2)='you can clear and start again or you can clear data'
-          h(3)='and return to the menu or save the data.'
+          helptopic='user_typed_e'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call easkabc('Options:',' ','clear points & redefine zone',
-     &      'clear points & continue','save zone data',izclear,3)
+     &      'clear points & continue','save zone data',izclear,nbhelp)
           if(izclear.eq.1.or.izclear.eq.2)then
             if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.4.or.
      &         inpmode.eq.5)then
@@ -1792,8 +1685,8 @@ C Toggle on/off the snap-to grid.
 C If user typed `p` or `P` then allow for panning and then continue.
           if(ii.eq.80.or.ii.eq.112)then
             if(trimmed)then
-              h(1)='The view of a truncated bitmap can be panned left'
-              h(2)='and right and up and down (by 50 pixels)'
+              helptopic='click_pan_options'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
@@ -1957,11 +1850,10 @@ C corner to first corner and return forground colour to black.
             iid4=ipyw(1)
           call edwline(iid1,iid2,iid3,iid4)
           call winscl('-',0)
-          h(1)='Having stopped adding points, if you made a mistakes'
-          h(2)='you can clear and start again or you can clear data'
-          h(3)='and return to the menu or save the data.'
+          helptopic='user_typed_e'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call easkabc('Options:',' ','clear points & redefine zone',
-     &      'clear points & continue','save zone data',izclear,3)
+     &      'clear points & continue','save zone data',izclear,nbhelp)
           if(izclear.eq.1.or.izclear.eq.2)then
 
 C Clear history of extrusion points and number of walls. 
@@ -2169,6 +2061,8 @@ C Reset the temporary string variables used to name and describe zone.
 C Input mode for obstructions. Each obstruction is formed by a
 C point at origin, a 2nd point at end of front edge and a point
 C at the back corner from the front edge.
+          helptopic='clickon_obstructions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call edisp(iuout,
      &      'Select three corners (origin, end of front edge and')
           call edisp(iuout,
@@ -2213,14 +2107,14 @@ C Toggle on/off the snap-to grid.
 C If user typed `p` or `P` then do panning until user says done and then continue.
           if(ii.eq.80.or.ii.eq.112)then
             if(trimmed)then
- 348          h(1)='The view of a truncated bitmap can be panned left'
-              h(2)='and right and up and down (by 50 pixels)'
+ 348          helptopic='click_pan_options'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
               IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
-     &          ' ',' ',IWM,2)
+     &          ' ',' ',IWM,nbhelp)
               if(iwm.eq.1.or.iwm.gt.5)then
                 goto 346
               else
@@ -2493,9 +2387,12 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &      twid,'m and depth ',tdepth,'m @ aimuth ',RO
           call edisp(iuout,outs)
           call forceflush()
+          helptopic='clickon_obstructions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
-          h(1)='Assuming the last block is where you want it proceed.'
-          CALL ASKOK(' ','Block position ok? ',OK,dok,1)
+          CALL ASKOK(' ',
+     &      'Is the block position ok (so we can continue)? ',
+     &      OK,dok,nbhelp)
           if(.NOT.ok)then
             INVERT=INVERT-3
             completed=.false.
@@ -2512,36 +2409,28 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
 C Need to get the associated zone before we can save the names
 C and constructions.
-
-          H(1)=' Pick a zone for these obstructions.'
           INPIC=1
           CALL EPICKS(INPIC,IVALS,' ',
      &      ' Associate which zone with these obstruction(s)? ',
-     &      12,NCOMP,zname,' zone list',IER,1)
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
           IC=IVALS(1)
 
 C Ask for name.
           nbo=nbobs(icomp)
-          H(1)='A descriptive name (up to 12 char) is recommended.'
           S12='blk_'
           CALL EASKS(S12,' ',' Name of obstruction? ',
-     &      12,'obstruction','Block name',IER,1)
+     &      12,'obstruction','Block name',IER,nbhelp)
           IF(S12(1:2).NE.'  ')then
             BLOCKNAME(IC,nbo)=S12
             LNBLOCKNAME(IC,nbo)=lnblnk(S12)
           endif
-          H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
-     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
-          H(1)='The height of obstruction is in metres (dimension.'
-          H(2)='from base to top). '
+     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,nbhelp)
           CALL EASKR(Z2,' ',' Height of the obstruction?',
-     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,2)
-          H(1)='The opaticy of the obstruction 0.0 transparent to'
-          H(2)='1.0 opaque (for future shading facility). '
+     &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,nbhelp)
           CALL EASKR(blkopaq,' ',
      &     'Opacity of the obstruction 0=tran 1=opaque?',
-     &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,2)
+     &      0.000,'W',1.0,'W',1.0,'opacity of obs base',IER,nbhelp)
           CALL EPKMLC(ISEL,
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
@@ -2578,20 +2467,15 @@ C << update to work with version 1.1 geometry files. >>
               WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
      &          zname(IC)(1:lnzname(IC)),'.obs'
             endif
-            H(1)='In order to account for external shading devices,'
-            H(2)='window reveals, trees, outside walls, etc. in a '
-            H(3)='detailed shading analysis the user should'
-            H(4)='approximate such objects as one or more prisms' 
-            H(5)='which are described in a site obstruction file.'
-            H(6)='The browse option presents a list of files in the'
-            H(7)='project `zones` folder.'
             if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
               LTMP=OFILE
             else
               LTMP=ZOBS(IC)
             endif
+            helptopic='clickon_obstructions'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKS(LTMP,' Zone obstructions file? ',
-     &        ' ',72,OFILE,'obstructions file',IER,5)
+     &        ' ',72,OFILE,'obstructions file',IER,nbhelp)
             IF(LTMP.NE.' ')ZOBS(IC)=LTMP
             IOBS(ic)=1
             IUF=IFIL+1

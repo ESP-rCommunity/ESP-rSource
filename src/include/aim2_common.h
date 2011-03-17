@@ -188,7 +188,8 @@ C the return from AIM2_CONTROL.
      & AIM2_Swo,
      & AIM2_Swflue,
      & AIM2_house_vol,
-     & AIM2_infil_to_zones
+     & AIM2_infil_to_zones,
+     & AIM2_active_zones
 
 
 C The height of the flue (m).
@@ -223,6 +224,10 @@ C House volume in m^3.
 
 C Matrix holding the infiltration rate apportioned to each zone.
         REAL AIM2_infil_to_zones(MCOM)
+
+C Array holding logical indicators at the zone index as to whether it should be modeled with AIM2 or not.
+        LOGICAL AIM2_active_zones(MCOM)
+      
 
 C     ********************************************************************************
 C     ************************* AIM2_H2K_DUMMY ***************************************

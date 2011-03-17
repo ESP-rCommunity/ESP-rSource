@@ -36,7 +36,6 @@ C exportcad: controls model export facilities.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
@@ -53,7 +52,7 @@ C exportcad: controls model export facilities.
 
       DIMENSION ITEMS1(11)
 
-      character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
+      character LFIL*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
       character xfile*144,tg*1,delim*1,ffile*72
       character ETEXT*82
@@ -69,6 +68,13 @@ C exportcad: controls model export facilities.
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ICPMOD   ! passed from tchild
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='exportcad'  ! set for subroutine
 
       if(.NOT.cfgok)then
         call usrmsg(' You must load a model before',
@@ -93,63 +99,8 @@ C Check if Unix-based or DOS based.
       ITEMS1(11)='- exit this menu           '
 
 C Help text for this menu.
-      H(1)='This facility allows you to export the current model'
-      H(2)='in a format as required by one of the following'
-      H(3)='3rd party applications.'
-      H(4)=' '
-      H(5)='VIEWER, a hidden line perspective program from ABACUS;'
-      H(6)='DXF (version 12) file (see the note below);'
-      H(7)='XZIP, a CAD program from IES;'
-      H(8)='RADIANCE, a lighting simulation program from LBL;'
-      H(9)='XFIG, a vector plotting program (available on Linux and'
-      H(10)='OSX and Cygwin) so that wire-frame images can be exported'
-      H(11)='in high resolution.'
-      H(12)='MicroGDS, a CAD program;'
-      H(13)='EnergyPlus, a building thermal simulation program from'
-      H(14)='       North America'
-      H(15)='VRML Version 2.0, with a matching html file containing'
-      H(16)='     surface attributes.'
-      H(17)=' '
-      H(18)='General rules assumed in DXF export: '
-      H(19)='* Each thermal zone has a separate layer and the'
-      H(20)='  layer name is the zone name (<12 char without blanks).'
-      H(21)=' '
-      H(22)='* If a zone includes shading obstruction blocks then'
-      H(23)='  these should be on a separate layer and the name of'
-      H(24)='  the layer should be OBS_ followed by the characters'
-      H(25)='  in the zone layer name. Example the obstructions for'
-      H(26)='  layer MANAGER_A are in OBS_MANAGER_A'
-      H(27)=' '
-      H(28)='* If you want to identify particular surfaces in a zone'
-      H(29)='  as transparent then create and additional layer with'
-      H(30)='  the layer name starting with TRN_. Example transparent'
-      H(31)='  surfaces in MANAGER_A are in TRN_MANAGER_A. If you do'
-      H(32)='  not create this separate layer then you will have to'
-      H(33)='  manually attribute the glass surfaces in ESP-r.'
-      H(34)=' '
-      H(35)='* Shading obstructions are represented via DXF BLOCK'
-      H(36)='  entities. Typically a set of 6 3DFACE objects within'
-      H(37)='  each BLOCK. You could probably also use POLYLINE '
-      H(38)='  entities within a BLOCK.'
-      H(39)=' '
-      H(40)=' * Zone surfaces which are polygons of 4 sides used the'
-      H(41)='   3DFACE entity. Zone surfaces which are triangles or'
-      H(42)='   are > 4 sides use POLYLINE entities.  Or you could use'
-      H(43)='   POLYLINE entities for all zone surfaces.'
-      H(44)=' '
-      H(45)='NOTE: if you need to debug the import of CAD data turn'
-      H(46)='the reporting level from silent or standard to detailed.'
-      H(47)=' '
-      H(48)='NOTE: if you are useing Native Windows version the paths'
-      H(49)='to the exported files may not work correctly. '
-      H(50)=' '
-      H(51)='The option for ESP-r meta file creates a compact'
-      H(52)='description of a model in a single file. This file'
-      H(53)='is typically created by 3rd party applications and'
-      H(54)='used by prj to expand to a standard ESP-r model.'
-      H(55)='This export facility supports testing of this file'
-      H(56)='format and data structures.'
-      H(57)=' '
+      helptopic='cad_export_choices'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       NITMS=11
       CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
@@ -158,31 +109,32 @@ C Prepare filter command lines with path.
 C << to be done - the code that creates the initial LFIL is not yet updated
 C << to work with DOS paths with spaces. >>
 
-      IF(INO1.NE.10)THEN
-      iw=0
-       if(path.ne.'./'.and.path.ne.' ')then
-         write(outs,'(A,A)') 'The current path is: ',path
-         call edisp(iuout,outs)
-         CALL EASKAB('The model is in a remote folder.',
-     &   'Place exported file(s) in:','current path','local folder',
-     &   IW,0)
-       endif
-       if(iw.eq.1)then
-         write(LFIL,'(a)') path(1:lnblnk(path))
-       else
-         LFIL='./'
-       endif
-      ENDIF
+      if(INO1.eq.10.or.INO1.eq.11)then
+        continue
+      else
+        iw=0
+        if(path.ne.'./'.and.path.ne.' ')then
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKAB('The model is in a remote folder.',
+     &    'Place exported file(s) in:','current path','local folder',
+     &    IW,nbhelp)
+        endif
+        if(iw.eq.1)then
+          write(LFIL,'(a)') path(1:lnblnk(path))
+        else
+          LFIL='./'
+        endif
+      endif
 
       IF(INO1.EQ.1)THEN
 
 C Construct a 'VIEWER' format file.  First get file name.
         call tstamp('>','PRJ: export to viewer')
         doit = ' '
-        H(1)='Input the name of the VIEWER input file.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vew'
         CALL EASKS(LFIL,' ','VIEWER file name?',
-     &              72,' ','VIEWER input file',IER,1)
+     &              72,' ','VIEWER input file',IER,nbhelp)
 C        call edisp(iuout,'Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -216,11 +168,9 @@ C and change any / to \.
 C DXF creation.  Process similar to ecnv filter for VIEWER.
         call tstamp('>','PRJ: export to DXF')
         doit = ' '
-        H(1)='A DXF file may be passed to some CAD packages'
-        H(2)='such as AutoCAD V12.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.DXF'
         CALL EASKS(LFIL,' ','DXF file name?',
-     &            72,' ','dxf export file',IER,2)
+     &            72,' ','dxf export file',IER,nbhelp)
 C        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -253,11 +203,9 @@ C and change any / to \.
 C XZIP creation. Process similar to ecnv filter for VIEWER.
         call tstamp('>','PRJ: export to xzip')
         doit = ' '
-        H(1)='A ZIP file may be passed to the XZIP CAD package'
-        H(2)='from IES.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_zip'
         CALL EASKS(LFIL,' ','ZIP file name?',
-     &            72,' ','zip export file',IER,2)
+     &            72,' ','zip export file',IER,nbhelp)
 C        call edisp(iuout,' Performing model conversion.')
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
@@ -289,14 +237,8 @@ C and change any / to \.
       ELSEIF(INO1.EQ.4)THEN
 
 C RADIANCE creation. Starts e2r with current configuration file.
-        H(1)='If your model includes zone, ground and/or solar'
-        H(2)='obstructions geometry you can visualise them using'
-        H(3)='the RADIANCE program. It is assumed that your computer'
-        H(4)='has the RADIANCE modules installed and their location'
-        H(5)='defined in your PATH environment variable. The actual'
-        H(6)='model convertion is achieved using ESP-r`s e2r module.'
         dok=.true.
-        CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,6)
+        CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,nbhelp)
         if(OK)then
 
 C If browsing pass this information to e2r.
@@ -331,12 +273,8 @@ C If browsing pass this information to e2r.
       ELSEIF(INO1.EQ.5)THEN
 
 C Toggle output redirection to xfig.
-        h(1)='It is possible to write a wireframe image of the model'
-        h(2)='to a vetor file for use with the xfig application.'
-        h(3)='Before exporting adjust the model view and resize'
-        h(4)='the graphics window to force a redraw.'
         dok=.true.
-        call askok(' ','Is wireframe composition ok?',oke,dok,4)
+        call askok(' ','Is wireframe composition ok?',oke,dok,nbhelp)
         if(.NOT.oke)then
           call usrmsg('Adjust wireframe image and',
      &      'then re-select this option.','W')
@@ -375,8 +313,7 @@ C Toggle the wirefram export file closed.
 
 C Check if conversion to xfig wanted.
           dok=.true.
-          h(1)='Assuming the export was sucessful you can proceed.'
-          call askok(' ','Convert output to xfig format?',ok,dok,1)
+          call askok(' ','Convert output to xfig format?',ok,dok,nbhelp)
           if(ok)then
             write(ffile,'(a,a4)') xfile(1:lnblnk(xfile)),'.fig'
             doit = ' '
@@ -396,12 +333,9 @@ C << has been created
 C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
         call tstamp('>','PRJ: export to THINGS')
         doit = ' '
-        H(1)='A THINGS file is used with the CAD package MicroGDS.'
-        H(2)='Note that obstructions are treated as clusters of'
-        h(3)='surfaces.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.THF'
         CALL EASKS(LFIL,' ','MicroGDS THINGS file name?'
-     &                ,72,' ','THF file',IER,3)
+     &                ,72,' ','THF file',IER,nbhelp)
 C        call edisp(iuout,'Performing model conversion.')
 
 C Why is the addpath not used?
@@ -433,18 +367,14 @@ C Why is the addpath not used?
 C Export to EnergyPlus IDF file (work in progress)
         call tstamp('>','PRJ: export to energyplus')
         doit = ' '
-        H(1)='This file is input to the EnergyPlus system.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.idf'
         CALL EASKS(LFIL,' ','EnergyPlus input file name?',
-     &        72,' ','EnergyPlus export file',IER,1)
+     &        72,' ','EnergyPlus export file',IER,nbhelp)
 
         ever=3.0
-        h(1)='EnergyPlus input files have several versions.'
-        h(2)='Version 3.0 is the current'
-        h(3)='Version 4.0 is in testing.'
         evert=ever
         CALL EASKR(evert,'EnergyPlus IDF file version?','(3.0)',
-     &    3.0,'F',3.0,'F',1.4,'file version',IERI,3)
+     &    3.0,'F',3.0,'F',1.4,'file version',IERI,nbhelp)
         if(ieri.eq.-3)then
           continue
         else
@@ -463,12 +393,9 @@ C Export to EnergyPlus IDF file (work in progress)
 C Export to VRML (2.0) file.
         call tstamp('>','PRJ: export to VRML')
         doit = ' '
-        H(1)='A VRML format file may be used with a number of'
-        H(2)='3rd party packages and web browser plug-ins to'
-        h(3)='visually explore a model.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vrml'
         CALL EASKS(LFIL,' ','VRML file name?',
-     &             72,' ','vrml file',IER,3)
+     &             72,' ','vrml file',IER,nbhelp)
 C        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -503,15 +430,9 @@ C        call edisp(iuout,'Use a VRML viewer to explore it.')
 C Export to ESP-r meta file.
         call tstamp('>','PRJ: export to ESP-r meta')
         doit = ' '
-        H(1)='The option for ESP-r meta file creates a compact'
-        H(2)='description of a model in a single file. This file'
-        H(3)='is typically created by 3rd party applications and'
-        H(4)='used by prj to expand to a standard ESP-r model.'
-        H(5)='This export facility supports testing of this file'
-        H(6)='format and data structures.'
         write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.mesp'
         CALL EASKS(LFIL,' ','ESP-r meta file name?',
-     &             72,' ','ESP-r meta file',IER,6)
+     &             72,' ','ESP-r meta file',IER,nbhelp)
         if(unixok)then
           call addpath(LFIL,longtfile,concat)
         else
@@ -528,7 +449,7 @@ C and change any / to \.
       ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
-       CALL PHELPD('export menu',55,'-',0,0,IER)
+       CALL PHELPD('export menu',nbhelp,'-',0,0,IER)
 
       ELSEIF(INO1.EQ.11)THEN
         RETURN
@@ -569,95 +490,36 @@ C Indicator of possible focus zone.
 C External cad package.
       common/cad3rd/cadlbl,cadexe,cadfmt
 
-      common/pophelp/h(60)
       LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
-      character LCFGF*72,H*72,LFIL*72,LCMDFL*144
+      character LCFGF*72,LFIL*72,LCMDFL*144
       character outs*124,OUTSTR*124,cfgroot*24,doit*248
       character cadlbl*20,cadexe*20,cadfmt*4
       character longtfile*144,longtfiledos*144
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='cadin'  ! set for subroutine
 
 C Set file unit and check if running Unix-like OS.
       ifun=ifil+1
       call isunix(unixok)
 
 C CAD definition and importing.
-      H(1)='Executing CAD program by which the zone geometry'
-      H(2)='may be defined.  The file created will be requested'
-      H(3)='later for model importing.'
-      H(4)=' '
-      H(5)='If the CAD program creates DXF files then PLEASE READ'
-      H(6)='the following section for hints and notes on current'
-      H(7)='constraints.'
-      H(8)=' '
-      H(9)='If the CAD program is able to create ESP compatable'
-      H(10)='files then please assign zone names so that the'
-      H(11)='conversion process will proceed smoothly.'
-      H(12)=' '
-      H(13)='ESP-r currently exports and imports a subset of DXF'
-      H(14)='version 12 entities. ESP-r only deals with 3D entities.'
-      H(15)='The import process will skip most 2D entities because'
-      H(16)='2D has no meaning within simulation. '
-      H(17)=' '
-      H(18)='For a quick exploration of the entity types that ESP-r'
-      H(19)='works with take an existing ESP-r model, export it to'
-      H(20)='DXF and look at the file or import it into a CAD tool.'
-      H(21)=' '
-      H(22)='The import facility assumes that you have registered'
-      H(23)='an initial ESP-r model and that there no thermal'
-      H(24)='zones in the model.  If your current model has zones'
-      H(25)='you are advised to create a new model and add the'
-      H(26)='existing zones after you have imported the CAD data.'
-      H(27)=' '
-      H(28)='General rules: '
-      H(29)='* Each thermal zone has a separate layer and the'
-      H(30)='  layer name is the zone name (<12 char without blanks).'
-      H(31)=' '
-      H(32)='* If a zone includes shading obstruction blocks then'
-      H(33)='  these should be on a separate layer and the name of'
-      H(34)='  the layer should be OBS_ followed by the characters'
-      H(35)='  in the zone layer name. Example the obstructions for'
-      H(36)='  layer MANAGER_A are in OBS_MANAGER_A'
-      H(37)=' '
-      H(38)='* If you want to identify particular surfaces in a zone'
-      H(39)='  as transparent then create and additional layer with'
-      H(40)='  the layer name starting with TRN_. Example transparent'
-      H(41)='  surfaces in MANAGER_A are in TRN_MANAGER_A. If you do'
-      H(42)='  not create this separate layer then you will have to'
-      H(43)='  manually attribute the glass surfaces in ESP-r.'
-      H(44)=' '
-      H(45)='* Shading obstructions are represented via DXF BLOCK'
-      H(46)='  entities. Typically a set of 6 3DFACE objects within'
-      H(47)='  each BLOCK. You could probably also use POLYLINE '
-      H(48)='  entities within a BLOCK.'
-      H(49)=' '
-      H(50)=' * Zone surfaces which are polygons of 4 sides used the'
-      H(51)='   3DFACE entity. Zone surfaces which are triangles or'
-      H(52)='   are > 4 sides use POLYLINE entities.  Or you could use'
-      H(53)='   POLYLINE entities for all zone surfaces.'
+      helptopic='cad_import_choices'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      if(NCOMP.ne.0)then
-
-C Tell the user to create a model configuration file. If the model is
-C not yet known, check to see if a model has been passed in the
-C command line.
-        H(54)=' '
-        H(55)='The current model includes zones.  Please make'
-        H(56)='careful note of any changes you make to the model'
-        H(57)='so that you can restore contiguity when importing'
-        H(58)='from the CAD package.'
-        CALL PHELPD('CAD warning',58,'-',0,0,IER)
-      else
-        CALL PHELPD('CAD warning',53,'-',0,0,IER)
-      endif
+C Tell the user to create a model configuration file.
+      CALL PHELPD('CAD warning',nbhelp,'-',0,0,IER)
 
 C Ask user which format of CAD file will be scanned in.
-      h(1)='Current import options are DXF files and so-called'
-      h(2)='ZIP files (from a Scottish CAD company).'
       CALL EASKABC('Specify which CAD format to work with',
      &  'Options:','DXF (version 12)','ZIP CAD format',
-     &  'cancel',IRT,2)
+     &  'cancel',IRT,nbhelp)
       if(irt.eq.1)then
         cadfmt='DXF '
       elseif(irt.eq.2)then
@@ -670,10 +532,8 @@ C If there is a currently loaded model then convert it.
       if(NCOMP.gt.0.and.cadfmt(1:3).eq.'DXF')then
         call tstamp('>','PRJ: start CAD')
         doit = ' '
-        H(1)='A DXF file is required by this CAD package please,'
-        H(2)='supply a name.'
         CALL EASKS(LFIL,' Put current model into DXF file named: ',
-     &    ' ',72,' ','dxf export file',IER,2)
+     &    ' ',72,' ','dxf export file',IER,nbhelp)
         call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -697,9 +557,8 @@ C and change any / to \.
         endif
       elseif(NCOMP.gt.0.and.cadfmt(1:3).eq.'ZIP')then
         doit = ' '
-        H(1)='A ZIP file may be passed to the XZIP CAD package.'
-        CALL EASKS(LFIL,' Put current model into ZIP file named: ',
-     &    ' ',72,' ','zip export file',IER,1)
+        CALL EASKS(LFIL,'Put current model into XZIP file named: ',
+     &    ' ',72,' ','xzip export file',IER,nbhelp)
         call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
@@ -729,10 +588,8 @@ C and change any / to \.
       write(outs,'(3a)') ' Proceed with ',
      &  cadlbl(1:lnblnk(cadlbl)),' ?'
       dok=.true.
-      h(1)='Assuming that the 3rd party tool is installed on your '
-      h(2)='machine it should be ok to proceed. If you just want to'
-      h(3)='generate the file for the tool say no at this point. '
-      CALL ASKOK(' ',outs,OK,dok,3)
+      CALL ASKOK(outs,'(no will just generate the file)',
+     &  OK,dok,nbehlp)
       IF(OK)then
 
 C << might do a cd to the current configuration location? before running zip >>
@@ -749,18 +606,10 @@ C << might do a cd to the current configuration location? before running zip >>
       endif
 
  28   dok=.true.
-      h(1)='Assuming that the 3rd party tool generated a file and you'
-      h(2)='know the location of that files it should be ok to proceed.'
-      CALL ASKOK(' ','Import the CAD transfer file?',OK,dok,2)
+      CALL ASKOK(' ','Import the CAD transfer file?',OK,dok,nbhelp)
       IF(OK)then
-        H(1)='A DXF format file may be converted if it has been'
-        H(2)='created using layer and entity constraints.'
-        h(3)=' '
-        h(4)='If the file is from `xzip` supply its name (if you'
-        h(5)='saved the zip file in the folder that the CAD tool'
-        h(6)='suggested you will not need to give the path). '
         CALL EASKS(LFIL,' File to import ? ',
-     &    ' ',72,' ','cad import file',IER,6)
+     &    ' ',72,' ','cad import file',IER,nbhelp)
 
 C Read the first couple of lines of the import file to see if it
 C is a ZIP or DXF file.
@@ -769,9 +618,7 @@ C is a ZIP or DXF file.
         IF(ISTAT.LT.0)THEN
           write(outs,'(a,a)')'Could not find: ',LFIL(1:lnblnk(LFIL))
           dok=.false.
-          h(1)='Coud not find the file in the location you'
-          h(2)='specified. Double check and perhaps try again.'
-          call askok(outs,'Try again?',OK,dok,2)
+          call askok(outs,'Try again?',OK,dok,nbhelp)
           if(OK)then
             goto 28
           else
@@ -861,7 +708,6 @@ C espriou.h provides currentfile, defdbfl exemfl.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -884,7 +730,7 @@ C to quit the image browser.
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
-      character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
+      character exemplar*144,line*72,outs*124,rootp*72,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
@@ -901,6 +747,15 @@ C Strings for dos version of rootp and upath and a double quote.
 #else
       integer*8 impx,impy,iwe
 #endif
+
+C For help messages
+      common/pophelp/h(60)
+      character h*72
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='rexmpl'  ! set for subroutine
 
 C Make up a double quote and file separator for xcopy.
       useraction ='-'
@@ -982,18 +837,8 @@ C Present the display.
  141  continue
 
 C Help text for this menu.
-      h(1)='These exemplar model sets are available for browsing.'
-      h(2)='Each set comprises a family of models relating to'
-      h(3)='different possible uses of ESP-r.'
-      h(4)=' '
-      h(5)='Exemplar models may be used for training purposes or'
-      h(6)='as a record of interesting past projects that might'
-      h(7)='serve as the starting point in some future project.'
-      h(8)=' '
-      h(9)='Note to ESP-r Administrators: the `exemplars` file'
-      h(10)='located in directory ~esp-r/training should be kept'
-      h(11)='up-to-date by appending new models using the key'
-      h(12)='word syntax as explained in the exemplars file.'
+      helptopic='exemplar_menu_help'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       if(MMOD.EQ.8)then
         impx=0
@@ -1010,7 +855,9 @@ C Help text for this menu.
       ELSEIF(ICOG.EQ.(NCOG-1))THEN
 
 C Help @ db file level.
-        CALL PHELPD('exemplar menu',12,'-',0,0,IER)
+        helptopic='exemplar_menu_help'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('exemplar menu',nbhelp,'-',0,0,IER)
       ELSEIF(ICOG.GT.0.AND.ICOG.LT.(NCOG-2))THEN
         if(gitem(ICOG)(1:2).eq.'  ')goto 142
         if(inl2ngr(ICOG).gt.0.and.inl2ngr(ICOG).le.15)then
@@ -1103,16 +950,15 @@ C Present the display.
         if(lnblnk(mitem(ij)).gt.IWE)IWE=lnblnk(mitem(ij))
  143  continue
 
-C Help text for this menu.
-      h(1)='To browse one of the exemplar designs, simply'
-      h(2)='select it.  If you wish to modify the model'
-      h(3)='then you must first copy it into your folder.'
-      h(4)=' '
+C Help text for this menu. Append the help text read from the
+C exemplars file to the existing help text found in the esruprj.help
+C file for this topic.
+      helptopic='exemplar_set_browse'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(nghelp.gt.0)then
-        h(5)='The current set of exemplars: '
         do 33 ih=1,nghelp
           lex=MIN0(lnblnk(gh(ih)),72)
-          write(h(5+ih),'(a)')gh(ih)(1:lex)
+          write(h(nbhelp+ih),'(a)')gh(ih)(1:lex)
  33     continue
       endif
 
@@ -1130,12 +976,8 @@ C Exit from detail level back to group level.
         goto 41
       ELSEIF(ICO.EQ.(NCO-1))THEN
 
-C Help @ db file level.
-        if(nghelp.gt.0)then
-          CALL PHELPD('exemplar menu',5+nghelp,'-',0,0,IER)
-        else
-          CALL PHELPD('exemplar menu',3,'-',0,0,IER)
-        endif
+C Display the basic help plus help from exemplars file.
+        CALL PHELPD('exemplar menu',nbhelp+nghelp,'-',0,0,IER)
       ELSEIF(ICO.EQ.(NCO-2))THEN
         icod=0
         if(MMOD.EQ.8)then
@@ -1270,13 +1112,8 @@ C For older format file, normally ignore *aide line.
 
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
-              H(1)='When browsing a model you are prevented from'
-              H(2)='altering its data although you can use it to run'
-              H(3)='simulations. If you want to modify the model'
-              H(4)='then you must firstly copy it to your own folder'
-              H(5)='by selecting the `own it` option.'
               CALL EASKABCD(exdescr,'Actions:','browse',
-     &          '`own` it','select another','cancel',IW,5)
+     &          '`own` it','select another','cancel',IW,nbhelp)
               if(IW.eq.1)then
                 call tstamp('>','PRJ: browse exemplar')
                 useraction='browse  '

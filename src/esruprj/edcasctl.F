@@ -37,7 +37,6 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -79,7 +78,7 @@ C TMC common block:
       logical MODIFY,MODLEN,MODBND
       logical browse
 
-      character H*72,outs*124,LTMP*72,DTMP*64
+      character outs*124,LTMP*72,DTMP*64
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN,LCFGF
@@ -93,6 +92,13 @@ C TMC common block:
 #else
       integer*8 iix,iiy
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDCASCTL'  ! set for subroutine
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
@@ -124,6 +130,11 @@ C Read existing file.
         endif
         N=1   ! set N to signal cgc
       endif
+
+C Help text for this menu.
+      helptopic='casual_gain_control'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       if((ICGC(ICOMP).eq.0).or.(.not.xst))then
 
 C Set up default data based on ....
@@ -167,14 +178,9 @@ C Read existing file.
             DFDAT(ICOMP,1,I,1)=0.0
   48      continue
 
-          H(1)='The zone casual gain control file allows to control'
-          H(2)='zone casual gains based on the internal or external'
-          H(3)='photocell illuminance. Different levels of calculation'
-          H(4)='of photocell illuminance and control algorithms are'
-          H(5)='supported.'
           LTMP=DLCGCIN
   246     CALL EASKS(LTMP,' Zone casual gain control file ?',
-     &      ' ',72,DLCGCIN,'cgc control file',IER,5)
+     &      ' ',72,DLCGCIN,'cgc control file',IER,nbhelp)
           IF(IER.NE.0)GOTO 246
           IF(LTMP(1:2).NE.'  ')THEN
             LCGCIN(ICOMP)=LTMP
@@ -358,6 +364,8 @@ C If browsing pass this information to e2r.
         endif
 
 C Check for control using Radiance.
+        helptopic='casual_gain_control'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         lcouple=.false.
         DO 560 ILZ=1,NLITZ(ICOMP)
           if (IDFST(ICOMP,N).eq.4) lcouple=.true.
@@ -369,7 +377,8 @@ C Check for control using Radiance.
           call runit(doitl,'-')
         elseif (ldcoef) then
  8888     call EASKABC('Radiance model for daylight coefficients:',' ',
-     &    'Create and edit model','Calculate coeffs','Continue',IW,0)
+     &    'Create and edit model','Calculate coeffs','Continue',
+     &    IW,nbhelp)
           if (IW.eq.1) then
             write(doitl,'(3a,i3,2a)')'e2r -file ',
      &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
@@ -389,39 +398,15 @@ C Check for control using Radiance.
       ELSEIF(INO.EQ.NITEMS-1)THEN
 
 C Help.
-        H(1) ='This menu allows to create/edit zone casual control'
-        H(2) ='file. The casual gain control file allows to control'
-        H(3) ='zone casual gains based on the internal or external'
-        H(4) ='photocell illuminance. Different levels of calculation'
-        H(5) ='of photocell illuminance and control algorithms are'
-        H(6) ='supported.'
-        H(7) =' '
-        H(8) ='           Casual Gains Control Menu'
-        H(9) ='a Wkd Wkend control: Which casual gain type to control'
-        H(10)='b Control periods  : Star and end hours of control'
-        H(11)='  Lighting zones   : Displays number of lighting zones'
-        H(12)='c Lighting zone    : Scrol through lighting zones'
-        H(13)='d Control type     : Selection of control algorithm'
-        H(14)='e Calculation type : Selection of sensor illuminance'
-        H(15)='                     calculation method'
-        H(16)='f Control data     : Control algorithm input data'
-        H(17)='g Photocell data   : Casual gain distribution between'
-        H(18)='                     lighting zones and number of'
-        H(19)='                     photocells'
-        H(20)=' '
-        H(21)='  Posn: x y z ux ..: Photocell location & orientation'
-        H(22)='                     (opt. daylight coefficient link)'
-        CALL PHELPD('cgc editing',22,'-',0,0,IER)
+        helptopic='casual_gain_control'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('cgc editing',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEMS-2)THEN
 
 C Save data.
-        H(1)='Save casual gain control information into the file'
-        H(2)='with specified name. File name is passed back to the '
-        H(3)='model description.'
-        H(4)='Default file name is zone_name.cgc'
         LTMP=LCGCIN(ICOMP)
   247   CALL EASKS(LTMP,' Zone casual gain control file ?',
-     &    ' ',72,DLCGCIN,'cgc control file',IER,4)
+     &    ' ',72,DLCGCIN,'cgc control file',IER,nbhelp)
         IF(IER.NE.0)GOTO 247
         IF(LTMP(1:2).NE.'  ')THEN
           LCGCIN(ICOMP)=LTMP
@@ -576,9 +561,10 @@ C <<  Perhaps this could be joined together? >>
   117   CONTINUE
 
       ELSEIF(INO.EQ.NITEMS-4)THEN
+
 C +- Lighting zone.
         CALL EASKAB(' ','Modify nmber of lighting zones:',
-     &    'delete one','add one @ end',IW,0)
+     &    'delete one','add one @ end',IW,nbhelp)
         IF(IW.EQ.2.AND.(NLITZ(ICOMP)+1.LE.4))THEN
           NLITZ(ICOMP)= NLITZ(ICOMP)+1
           N=NLITZ(ICOMP)
@@ -624,13 +610,10 @@ C Delete lighting zone.  << ... >>
 
       ELSEIF (INO.EQ.2)THEN
 C General description of the model.
-        H(1)='The model has an associated 72 character descriptor'
-        H(2)='which is used later as an identifier, e.g. Dimming'
-        H(3)='control with 2 lighting zones.'
         DTMP=cgcdesc(ICOMP)
  52     CALL EASKS(DTMP,
      &  ' Please supply a brief description of the model:',
-     &    ' ',64,'Dimming control','model description',IER,3)
+     &    ' ',64,'Dimming control','model description',IER,nbhelp)
         IF(IER.NE.0)GOTO 52
         IF(LTMP(1:2).NE.'  ')THEN
           cgcdesc(ICOMP)=DTMP  
@@ -639,16 +622,16 @@ C General description of the model.
       ELSEIF (INO.EQ.3)THEN
 C Weekday sat sun control
         CALL EASKAB(' ','Control casual gains for ','one day type',
-     &     'all day types',IY,35)
+     &     'all day types',IY,nbhelp)
         IF(IY.EQ.1)THEN
           IX=1
           CALL EPICKS(IX,KSTR,' ',
      &    'choose daytype to control casual gains'
-     &    ,12,nbdaytype,calentag,'Choose daytype',IER,1)
+     &    ,12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
           IDTY=KSTR(1)
         ENDIF
         CALL EASKABC(' ','Control casual gain type ','occupants',
-     &     'lighting','equipment',IZ,1)
+     &     'lighting','equipment',IZ,nbhelp)
         IF(IY.EQ.1)THEN
           NCGTC(ICOMP,IDTY)=IZ
         ELSEIF(IY.EQ.2)THEN
@@ -659,14 +642,9 @@ C Weekday sat sun control
 
       ELSEIF (INO.EQ.4)THEN
 C Control periods.
-        H(1)='Specify time of the day when casual gain control'
-        H(2)='algorithm is active. Two numbers are expected:'
-        H(3)=' '
-        H(4)='         * Control period start hour'
-        H(5)='         * Control period end hour'
   34    WRITE(HOLD,'(2I6)')ICGCS(ICOMP),ICGCF(ICOMP)
         CALL EASKS(HOLD,' Control is active from hour to hour:',
-     &    ' ',40,' 8  18 ',' cast ctl periods',IER,5)
+     &    ' ',40,' 8  18 ',' cast ctl periods',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,ia,0,23,'W','period start',IER)
         CALL EGETWI(HOLD,K,ib,ia+1,24,'W','period end',IER)
@@ -683,18 +661,10 @@ C Toggle and then reform the menu to match control/calc type.
 
       ELSEIF (INO.EQ.8)THEN
 C Control type.
-        H(1)='Select control type from menu by mouse clicking:'
-        H(2)='* Alway On  - casual gain will be alway on'
-        H(3)='* Alway Off - casual gain will be alway off'
-        H(4)='* On-Off    - on-off control algorithm'
-        H(5)='* Step      - step control algorithm 100% - 50% - 0%'
-        H(6)='* Dimming   - three dimming control algorithms are'
-        H(7)='              supported'
-        H(8)='* Probab    - user probability switching algorithm'
         IRT=1
         call EASKATOG(' Control type:',' ',
      &    'Alway On','Alway Off','On-Off','Step','Dimming','Probab',
-     &    'cancel',IRT,8)
+     &    'cancel',IRT,nbhelp)
         if(irt.eq.1)then
           ICGCFL(ICOMP,N)=-1
         elseif(irt.eq.2)then
@@ -704,60 +674,33 @@ C Control type.
         elseif(irt.eq.4)then
           ICGCFL(ICOMP,N)=2
         elseif(irt.eq.5)then
-          H(1)='Select dimming control algorithm by mouse clicking:'
-          H(2)='* Ideal: ideal dimming control algorithm by matching'
-          H(3)='  the photocell illuminance value. Usually photocell'
-          H(4)='  is located at the horizontal workplane.'
-          H(5)='* Integral reset: more realistic dimming control'
-          H(6)='  algorithm requiring night-time calibration of'
-          H(7)='  photocell. Usually photocell is located at ceiling'
-          H(8)='* Closed loop: more realistic dimming control'
-          H(9)='  algorithm requiring night-time and day-time '
-          H(10)='  calibration of photocell. Usually photocell is'
-          H(11)='  located at ceiling.'
+          helptopic='cas_ctl_dimming'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IRT=1
           call EASKATOG(' Dimming control type:',' ',
      &        'Ideal','Integral reset','Close loop',
-     &        'cancel',' ',' ',' ',IRT,11)
+     &        'cancel',' ',' ',' ',IRT,nbhelp)
           if(irt.eq.1)then
             ICGCFL(ICOMP,N)=3
           elseif(irt.eq.2)then
             ICGCFL(ICOMP,N)=31
             SIG=SPELEC(ICOMP,N)
-            H(1)='      One input parameter is expected:'
-            H(2)=' '
-            H(3)='* Night-time photocell calibration value, this'
-            H(4)='  value can be measured or calculated and'
-            H(5)='  represents illuminance at the photocell point' 
-            H(6)='  from an artificial lighting only.'
   46        WRITE(HOLD,'(F6.2)')SPELEC(ICOMP,N)
             CALL EASKS(HOLD,' Night-time calibration lux value:',
-     &      ' ',40,' 15.0 ',' night-time calib',IER,6)
+     &      ' ',40,' 15.0 ',' night-time calib',IER,nbhelp)
             K=0
             CALL EGETWR(HOLD,K,sig,0.,2000.,'W','night calib',IER)
-        if(ier.ne.0)goto 46
+            if(ier.ne.0)goto 46
             SPELEC(ICOMP,N)=SIG
             SLOPEM(ICOMP,N)=0.0
           elseif(irt.eq.3)then
             ICGCFL(ICOMP,N)=32
             SIG=SPELEC(ICOMP,N)
             SLP=SLOPEM(ICOMP,N)
-            H(1)='      Two input parameters are expected:'
-            H(2)=' '
-            H(3)='* Night-time photocell calibration value, this'
-            H(4)='  value can be measured or calculated and'
-            H(5)='  represents illuminance at the photocell point' 
-            H(6)='  from an artificial lighting only.'
-            H(7)=' '
-            H(8)='* Linear control slope value, this value helps to'
-            H(9)='  set dimming level as a linear function of the'
-            H(10)='  difference between photocel signal and'
-            H(11)='  night-time calibration value. This value could'
-            H(12)='  be measured or calculated under variety of the'
-            H(13)='  sky luminance distribution conditions.'
   45        WRITE(HOLD,'(F6.2,F8.4)')SPELEC(ICOMP,N),SLOPEM(ICOMP,N)
             CALL EASKS(HOLD,' Night-time calibration lux value &',
-     &      ' Control slope',40,' 15.0  -0.025',' calib & slope',IER,13)
+     &        ' Control slope',40,' 15.0  -0.025',' calib & slope',
+     &        IER,nbhelp)
             K=0
             CALL EGETWR(HOLD,K,sig,0.,2000.,'W','night calib',IER)
             CALL EGETWR(HOLD,K,slp,-1.,1.,'W','contr slope',IER)
@@ -771,45 +714,13 @@ C Control type.
 
       ELSEIF (INO.EQ.9)THEN
 C Calculation type.
-        H(1)='Select photocell illuminance calculation type by mouse'
-        H(2)='clicking. The following types are supported:'
-        H(3)='* Analyt DF: horizontal workplane daylight factors'
-        H(4)='  calculated by combination of analytical formula for'
-        H(5)='  sky component and split flux method for'
-        H(6)='  interreflected component. Direct solar photocell'
-        H(7)='  illuminance is being traced. THE METHOD WORKS ONLY'
-        H(8)='  FOR VERTICAL 4 VERTEX TMC POLYGONS!'
-        H(9)='* User DF: horizontal workplane daylight factors'
-        H(10)='  provided by user which could be either measured or'
-        H(11)='  calculated values. Direct solar sensor illuminance'
-        H(12)='  is not being traced i.e. sensor shaded from direct'
-        H(13)='  sunlight.'
-        H(14)='* Extern: external unobstructed horizonal or vertical'
-        H(15)='  global illuminance. In the case of vertical global'
-        H(16)='  illuminance sensor location on the zone external '
-        H(17)='  surface has to be specified.'
-        H(18)='* Coupling: direct running time coupling between'
-        H(19)='  thermal and lighting simulations at the time step'
-        H(20)='  level using third party global illumination solvers.'
-        H(21)='  In the current version coupling with Radiance is'
-        H(22)='  implemented. THIS IS AN EXPERT LEVEL AND CAN BE'
-        H(23)='  COMPUTATIONALY INTENSIVE!'
-        H(24)='* DayCoeff: set of precalculated daylight coefficients'
-        H(25)='  is being used to calculate sensor illuminance at the'
-        H(26)='  time step level. Ones daylight coefficient have been'
-        H(27)='  calculated or measured simulation progress fast.'
-        H(28)='  Third party global illumination solvers are being'
-        H(29)='  used to calculate set of daylight coefficients.'
-        H(30)='  In the current version Radiance is used to get'
-        H(31)='  daylight coeff. THIS IS AN EXPERT LEVEL AND CAN BE'
-        H(32)='  COMPUTATIONALY INTENSIVE!'
-        CALL PHELPD('cgs calct type',32,'photocell   ',0,0,IER)
-
-        h(1)='See the previously displayed summary. '
+        helptopic='cas_ctl_photocell'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('cgs calct type',nbhelp,'photocell',0,0,IER)
         IRT=1
         call EASKATOG(' Calculation type:',' ',
      &      'Analyt DF','User DF','Extern','Coupling','DayCoeff',
-     &      'cancel',' ',IRT,1)
+     &      'cancel',' ',IRT,nbhelp)
         if(irt.eq.1)then
           IDFST(ICOMP,N)=1
           ldcoef=.false.
@@ -840,39 +751,15 @@ c            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
 
       ELSEIF (INO.EQ.10)THEN
 C Control data.
-        H(1)='Specify number of control alhorithm parameters.'
-        H(2)='Five numerical inputs are expected:'
-        H(3)=' '
-        H(4)='* Photocell lux set point (lux) i.e. anything from'
-        H(5)='  300 lux to 2000 lux or more for external sensors.'
-        H(6)=' '
-        H(7)='* Switch-off light level i.e. level at which the light'
-        H(8)='  is being switch-off, usually from 150% to 250%'
-        H(9)='  expressed here as a ratio i.e 1.5 to 2.5.'
-        H(10)=' '
-        H(11)='* Minimum dimming light output i.e. the level to which'
-        H(12)='  artificial lights can be dimmed i.e. usually 10%'
-        H(13)='  expressed here as a ratio i.e. 0.1.'
-        H(14)=' '
-        H(15)='* Minimum electric/gain dimming output i.e. the level'
-        H(16)='  to which electric power/ heat gain can be dimmed,'
-        H(17)='  expressed here as a ratio. Does not have to equal'
-        H(18)='  to the minimum dimming light output.'
-        H(19)=' '
-        H(20)='* Switch-off delay time i.e. the time for which the'
-        H(21)='  control algorithm will wait before switching off'
-        H(22)='  lights. Expressed here in number of building side'
-        H(23)='  simulation time steps. Usually anything from 5 min'
-        H(24)='  to 30 min. Off course this effect can be traced'
-        H(25)='  only with short simulation time step.'
-        CALL PHELPD('cgc control data',25,'-',0,0,IER)
-        h(1)='See the control message just displayed. '
+        helptopic='ctl_photocell_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('cgc control data',nbhelp,'-',0,0,IER)
   24    WRITE(HOLD,'(4F6.2,I4)')SETPT(ICOMP,N),SOFFLL(ICOMP,N),
      &  SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
         CALL EASKS(HOLD,
      &    'Control data: lux set-point, switch-off, min dim, min elec',
      &    'and switch-off delay: ',40,' 500.0 1.5 0.1 0.1 0 ',
-     &    ' control data',IER,1)
+     &    ' control data',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,aa,1.,2000.,'W','lux set-point',IER)
         CALL EGETWR(HOLD,K,ab,1.,3.,'W','switch-off lit lev',IER)
@@ -887,23 +774,13 @@ C Control data.
         IOFFDT(ICOMP,N)=ie
 
       ELSEIF (INO.EQ.11)THEN
-C Sensor data.
-        H(1)='        Two input parameters are expected:'
-        H(2)=' '
-        H(3)='* Part of the casual heat gains associated with this'
-        H(4)='  lighting zone. Casual gains are specified at the'
-        H(5)='  thermal zone level and have to be split into the'
-        H(6)='  lighting zones. Ratio is expected i.e 50% -> 0.5.'
-        H(7)=' '
-        H(8)='* Number of the photocells in this lighting zone. If'
-        H(9)='  more than one photocell is specified (max. 9) then'
-        H(10)='  simple average of all photocell illuminances will'
-        H(11)='  be used for control. Integer number is expected '
-        H(12)='  from 1 to 9.'
+C Sensor data for lighting zone.
+        helptopic='cas_ctl_zone_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         lastndf=NDF(ICOMP,N)
   35    WRITE(HOLD,'(F6.2,I4)')SYSPER(ICOMP,N),NDF(ICOMP,N)
         CALL EASKS(HOLD,' Casual gain portion & No of photocells',
-     &    ' ',40,' 1.0 1',' sensor data',IER,12)
+     &    ' ',40,' 1.0 1',' sensor data',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,aa,0.,1.,'W','casual gain port',IER)
         CALL EGETWI(HOLD,K,ib,1,9,'W','no. of sensors',IER)
@@ -927,23 +804,13 @@ C Sensor data.
 
       ELSEIF (INO.GT.12.AND.INO.LT.(NITEMS-5))THEN
         IF(IDFST(ICOMP,N).EQ.1.OR.IDFST(ICOMP,N).EQ.4)then
-          H(1)='       Six input parameters are expected:'
-          H(2)=' '
-          H(3)='* X, Y, Z coordinates of the photocell location (m)'
-          H(4)='  relative to the site origin.'
-          H(5)=' '
-          H(6)='* Photocell orientation expressed as the X, Y, Z of'
-          H(7)='  direction vector i.e. horizontal photocell facing'
-          H(8)='  up 0  0  1 or facing down 0  0  -1.'
-          H(9)=' '
-          H(10)='  Note that photocell orientation will not effect'
-          H(11)='  Analyt DF calculation type as here only horizon-'
-          H(12)='  tal facing up sensors are allowed.'
+          helptopic='cas_ctl_cell_location'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           J = INO - 12
   36      WRITE(HOLD,'(6F6.2)')CGX(ICOMP,N,J),CGY(ICOMP,N,J),
      &          CGH(ICOMP,N,J),UX(ICOMP,N,J),UY(ICOMP,N,J),UH(ICOMP,N,J)
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
-     &         ' ',40,' 0. 0. 0. 0. 0. 1.',' sensor x y z',IER,12)
+     &         ' ',40,' 0. 0. 0. 0. 0. 1.',' sensor x y z',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,aa,-100.,100.,'W','x coordinate',IER)
           CALL EGETWR(HOLD,K,ab,-100.,100.,'W','y coordinate',IER)
@@ -963,18 +830,12 @@ C Sensor data.
 
         ELSEIF(IDFST(ICOMP,N).EQ.3)THEN
 C External sensor method.
-          H(1)='     Two input parameters are expected:'
-          H(2)=' '
-          H(3)='* Zone external surface number at which the'
-          H(4)='  photocell is to be located.'
-          H(5)=' '
-          H(6)='* Indication of the photocell orientation:'
-          H(7)='  0.0 - measure global horizontal illuminance'
-          H(8)='  1.0 - measure global vertical illuminance'
+          helptopic='ctl_external_location'
+          call gethelptext(helpinsub,helptopic,nbhelp)
   37      WRITE(HOLD,'(2F6.2)')CGX(ICOMP,N,1),CGY(ICOMP,N,1)
           CALL EASKS(HOLD,' Sensor surface number position &',
      &         'Orientation (0)-horizontal (1)-vertical ',40,' 1. 1.',
-     &         ' sensor pos & orien',IER,8)
+     &         ' sensor pos & orien',IER,nbhelp)
           K=0
           EMAX = REAL(NSUR)
           CALL EGETWR(HOLD,K,aa,0.,EMAX,'W','sensor sur no',IER)
@@ -987,18 +848,8 @@ C Set third coordinate to dummy value:
 
         ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
 C Daylight coef method (5).
-          H(1)='       Seven input parameters are expected:'
-          H(2)=' '
-          H(3)='* X, Y, Z coordinates of the photocell location (m)'
-          H(4)='  relative to the site origin.'
-          H(5)=' '
-          H(6)='* Photocell orientation expressed as the X, Y, Z of'
-          H(7)='  direction vector i.e. horizontal photocell facing'
-          H(8)='  up 0  0  1 or facing down 0  0  -1.'
-          H(9)=' '
-          H(10)='* Daylight coefficient number to be linked to the'
-          H(11)='  given photocell location. This has to match no.'
-          H(12)='  of daylight coefficients in the DC file.'
+          helptopic='daylight_coef_method'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           J = INO - 12
           ICMDCF=ICMDCF+1
           IDCFID(ICOMP,N,J)=ICMDCF
@@ -1007,7 +858,7 @@ C Daylight coef method (5).
      &      IDCFID(ICOMP,N,J)
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
      &      ' Sensor daycoeff no ',40,' 0. 0. 0. 0. 0. 1. 1',
-     &      ' sensor x y z',IER,12)
+     &      ' sensor x y z',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,aa,-100.,100.,'W','x coordinate',IER)
           CALL EGETWR(HOLD,K,ab,-100.,100.,'W','y coordinate',IER)
@@ -1070,23 +921,13 @@ C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)
 
         ELSEIF(IDFST(ICOMP,N).EQ.2)THEN
          IF(INO.GT.12.AND.INO.LT.(13+NDF(ICOMP,N)))THEN
-          H(1)='       Six input parameters are expected:'
-          H(2)=' '
-          H(3)='* X, Y, Z coordinates of the photocell location (m)'
-          H(4)='  relative to the site origin.'
-          H(5)=' '
-          H(6)='* Photocell orientation expressed as the X, Y, Z of'
-          H(7)='  direction vector i.e. horizontal photocell facing'
-          H(8)='  up 0  0  1 or facing down 0  0  -1.'
-          H(9)=' '
-          H(10)='  Note that photocell orientation will not effect'
-          H(11)='  Analyt DF calculation type as here only horizon-'
-          H(12)='  tal facing up sensors are allowed.'
+          helptopic='photocell_orientation'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           J = INO - 12
   40      WRITE(HOLD,'(6F6.2)')CGX(ICOMP,N,J),CGY(ICOMP,N,J),
      &          CGH(ICOMP,N,J),UX(ICOMP,N,J),UY(ICOMP,N,J),UH(ICOMP,N,J)
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
-     &         ' ',40,' 0. 0. 0. 0. 0. 1.',' sensor x y z',IER,12)
+     &      ' ',40,' 0. 0. 0. 0. 0. 1.',' sensor x y z',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,aa,-100.,100.,'W','x coordinate',IER)
           CALL EGETWR(HOLD,K,ab,-100.,100.,'W','y coordinate',IER)
@@ -1105,18 +946,15 @@ C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)
           goto 20
 
          ELSEIF(INO.GT.(13+NDF(ICOMP,N)).AND.INO.LT.(NITEMS-5))THEN
-          H(1)='User specified DF are inputed here. You will be'
-          H(2)='prompted to input DF for each TMC polygon and'
-          H(3)='all photocells in this lighting zone'
-          H(4)=' '
-          H(5)='Note that daylight factors (DF) are inputed as'
-          H(6)='ratios and not as percentage i.e 2% -> 0.02.'
+          helptopic='user_supplied_dfactors'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           iww=ITMC2DF(ino)
   39      WRITE(HOLD2,'(9F7.4)')(DFDAT(ICOMP,N,IWW,KK),KK=1,
-     &                              NDF(ICOMP,N))
+     &                           NDF(ICOMP,N))
           write(outs,'(a,a,a,i2,a)') 'For surface ',sname(icomp,iww),
      &          ' give DF for each photocell (',NDF(ICOMP,N),' values)'
-          CALL EASKS(HOLD2,outs,' ',72,' 1 0.05',' df for each ',IER,6)
+          CALL EASKS(HOLD2,outs,' ',72,' 1 0.05',' df for each ',
+     &      IER,nbhelp)
           K=0
           DO 94 J=1,NDF(ICOMP,N)
             CALL EGETWR(HOLD2,K,v1,0.,1.,'W','df',IER)
