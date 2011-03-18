@@ -5807,100 +5807,72 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
       CALL EASKI(NTLT,' ',
       CALL EASKS(HOLD,outs,'  ',
 *subroutine ELISTMAT
-*item ELISTMAT
+*item ELISTMAT cat_list_materials
 'The classifications shown in the display include up to'
-'18 materials. To get a listing of the items included'
+'~30 materials. To get a listing of the items included'
 'select one of the classifications.'
+'  '
+'You can manage categories - e.g. add a new category and'
+'give a name (<32 char) to the classification and also'
+'supply notes (<248 char) about the category.'
+'  ' 
+'Summary reporting can be shown in the text feedback'
+'or exported to a text file.'
+'  '
 *enditem
         CALL PHELPD('materials menu',3,'-',0,0,IER)
-*item ELISTMAT
-'You may select one or more classes to list. '
-*enditem
         CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
-*item ELISTMAT
-' Summary reporting can be shown in the text feedback'
-' or a text file.'
-*enditem
         CALL EASKABC(' Reporting to:',' ',
-*item ELISTMAT
-'This description may be up to 32 char. '
-*enditem
-          CALL EASKS(t32,' Classification name (<32 char)?',' ',
-*item ELISTMAT
-'The information in this display is based on data from'
-'a materials database.  Databases of this'
-'type are used to build a construction database.'
-'Data in this db rarely changes. However, users may '
-'wish to add additional materials or classifications to'
-'conform to materials in their region.  '
+        CALL EASKS(t32,' Classification name (<32 char)?',' ',
+*item ELISTMAT materials_db_overview
+'The information in this display is based on data from a'
+'materials database. Databases of this this type are referenced'
+'by the ESP-r construction database.'
 '  '
-'Adding or Deleting a material is supported. The'
-'former creates a material at the end of the current'
-'classification which may then be edited.  You have'
-'the choice of manually supplying the data or to'
-'select two materials and give each a weighting'
-'(useful for approximating ISO 6946 non-homogeneous'
-'layers in constructions).'
+'Data in this db rarely changes. However, users may wish to add'
+'additional materials or classifications to conform to products'
+'and materials in their region.'
+'  '
+'You can manage categories - e.g. add a new category and'
+'give a name (<32 char) to the classification and also'
+'supply notes (<248 char) about the category.'
+'  '
+'Adding or Deleting a material is supported. The former'
+'creates a material at the end of the current classification'
+'which may then be edited. '
+'  '
+'You have the choice of supplying the data for a material or'
+'to approximate the performance of non-homogeneous constructions'
+'in ISO 6946 (repeating thermal bridges) by selecting two existing'
+'materials and give each a weighting (1-99%) (please document '
+'non-homogeneous constructions carefully).'
+' '
+'Note: currently the derivation only works with two solid'
+'materials. If air is in the layer then its air gap'
+'resistance needs to be converted into an aeuivalent'
+'thermal conductivity. The 6946 spec applies to pairs'
+'of materials which do not differ greatly in conductivity'
+'and thus is not applicable for metal & insulation combinations.'
+' '
+'The conductivity, density, spedific heat and vapour'
+'properties will be weighted from the two sources for 6946.'
 ' '
 'You may copy an existing material into a new item at'
 'the end of the list. BE SURE TO ALTER ITS NAME! '
+'  '
 'Recent changes to the materials database are held'
 'in memory and might be lost if not saved to file.'
 *enditem
-            CALL ASKOK('Changes have been made in database. ',
-*item ELISTMAT
-'A classification has a descriptive name (up to '
-'32 char).'
-*enditem
+          CALL ASKOK('Changes have been made in database. ',
           CALL EASKS(t32,' ',' Classification name (<32 char)?',
-*item ELISTMAT
-'Notes (<248 char) for this category of materials'
-'are useful for descriptions that apply to all'
-'the materials.'
-*enditem
           CALL EASKS248(t248,'Category notes:',' ',
-*item ELISTMAT
-*enditem
           CALL PHELPD('materials database',17,'-',0,0,IER)
-*item ELISTMAT
-'You cannot recover a deleted material. You can add a'
-'homogeneous or non-homogeneous material (type in the'
-'new thermophysical values or you can derive a new'
-'non-homogeneous material (repeating thermal bridges)'
-'based on percentages of two existing materials for '
-'use with ISO 6946:2007 section 6.2.4 lower limit '
-'calculations. '
-' '
-'Note: currently the derivation only works with two'
-'solid materials. If air is in the layer then its'
-'air gap resistance needs to be converted into an'
-'equivalent thermal conductivity. The 6946 spec'
-'applies to pairs of materials which do not differ'
-'greatly in conductivity and thus is not applicable'
-'for metal & insulation combinations. '
-' '
-'The conductivity, density, spedific heat and vapour'
-'properties will be weighted from the two sources.'
-*enditem
           CALL EASKABCD(' ','Options: ','Delete existing material',
-*item ELISTMAT
-'Assuming there are two materials used in a layer of'
-'a construction you will be asked for the percentage'
-'(1-99%) for the first and second materials. '
-*enditem
-            CALL EASKR(PER1,' ','First material % in the layer: ',
-*item ELISTMAT
-'Assuming there are two materials used in a layer of'
-'a construction you will be asked for the percentage'
-'(1-99%) for the first and second materials. '
-*enditem
-            CALL EASKR(PER2,' ','Second material % in the layer: ',
-*item ELISTMAT
-'Last chance to abort the selection. '
-*enditem
-            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+          CALL EASKR(PER1,' ','First material % in the layer: ',
+          CALL EASKR(PER2,' ','Second material % in the layer: ',
+          CALL ASKOK(outs,'as your selection ?',OK,dok,1)
 *subroutine EDONEMAT
-*item EDONEMAT
+*item EDONEMAT material_db_edit_one
 'This display shows the attributes of this material.'
 'The attributes vary depending on the source of the '
 'material (legacy materials have fewer attributes). '
@@ -5909,511 +5881,336 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'used in a future ESP-r version but are required for'
 'expport to other assessment tools. '
 ' '
-'Edit by selecting an item. '
-'Recent changed to materials are held in memory '
-'and if you say no then edits will be discarded. '
-*enditem
-          CALL ASKOK(' ','Accept changes in material (see help)?',
-*item EDONEMAT
-'A descriptive name (up to 32 char) is required.'
-'This will appear in selection lists (but might be'
-'be shown in a truncated form in some locations). '
-*enditem
-        CALL EASKS(tnam,' ',' Description of material? ',
-*item EDONEMAT
-'Documentation (up to 248 char) is a really good idea'
+'Edit by selecting an item. The following information can be'
+'changed:'
+'  '
+' name - (up to 32 char) is required and will appear in'
+'in selection lists (but might be be shown in a truncated'
+'form in some locations). '
+'  '
+' documentation - (up to 248 char) is a really good idea'
 'and might include the source and test regime etc.'
-*enditem
-        CALL EASKS248(tdoc,' ',' Documentation for material? ',
-*item EDONEMAT
-'Conductivity units are W/(m deg.C) '
-*enditem
-        CALL EASKR(DBCON,' ',' Conductivity (W/(m deg.C): ',
-*item EDONEMAT
-'Density units are  kg/m**3 '
-*enditem
-        CALL EASKR(DBDEN,' ',' Density (kg/m**3): ',
-*item EDONEMAT
-'Specific Heat units are J/(kg deg.C) '
-*enditem
-        CALL EASKR(DBSHT,' ',' Specific heat (J/(kg deg.C): ',
-*item EDONEMAT
-'Surface emissivity is based on infrared band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'This legacy material will have the same value '
-'for the inside and outside face. '
-*enditem
-          CALL EASKR(EOUT,' ',' Surface emissivity : ',
-*item EDONEMAT
-'Surface emissivity is based on infrared band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'You may specify different values for each face '
-'(but ESP-r does not yet use this). '
-*enditem
-          CALL EASKR(EOUT,' ',' Outside face emissivity : ',
-*item EDONEMAT
-'Surface emissivity is based on infrared band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'This legacy material will have the same value '
-'for the inside and outside face. '
-*enditem
-          CALL EASKR(EIN,' ',' Surface emissivity : ',
-*item EDONEMAT
-'Surface emissivity is based on infrared band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'You may specify different values for each face '
-'(but ESP-r does not yet use this). '
-*enditem
-          CALL EASKR(EIN,' ',' Inside face emissivity : ',
-*item EDONEMAT
-'Surface absorptance is based on solar band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'This legacy material will have the same value '
-'for the inside and outside face. '
-*enditem
-          CALL EASKR(AOUT,' ',' Surface absorptance: ',
-*item EDONEMAT
-'Surface absorptance is based on solar band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'You may specify different values for each face '
-'(but ESP-r does not yet use this). '
-*enditem
-          CALL EASKR(AOUT,' ',' Outside face absorptance: ',
-*item EDONEMAT
-'Surface absorptance is based on solar band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'This legacy material will have the same value '
-'for the inside and outside face. '
-*enditem
-          CALL EASKR(AIN,' ',' Surface absorptance : ',
-*item EDONEMAT
-'Surface absorptance is based on solar band. '
-'It is specified as fraction 0.01 < x < 0.99 '
-'You may specify different values for each face '
-'(but ESP-r does not yet use this). '
-*enditem
-          CALL EASKR(AIN,' ',' Inside face absorptance: ',
-*item EDONEMAT
-'Vapour resistvity for vapour transfer has units'
-'of MNs g^-1m^-1. Used to support assessments of'
-'condensation within constructions. '
-*enditem
-        CALL EASKR(dbdrv,' ','Vapour resistvity (MNs g^-1m^-1): ',
-*item EDONEMAT
+'  '
+' conductivity - units are W/(m deg.C) '
+'  '
+' density - -units are  kg/m**3 '
+'  '
+' specific Heat units are J/(kg deg.C) '
+'  ;
+' surface emissivity - is based on infrared band. It is'
+'   a fraction 0.01 < x < 0.99  You may specify different'
+'   values for each face (but ESP-r does not yet use this).'
+'  '
+' surface absorptance - is based on solar band. It is a'
+'   fraction 0.01 < x < 0.99. 'You may specify different'
+'   values for each face (but ESP-r does not yet use this).'
+'  '
+'Legacy materials will have the same value for the'
+'inside and outside faces. '
+'  '
+'Legacy materials will have the same value for the'
+'inside and outside face. '
+'  '
+'Vapour resistvity for vapour transfer has units of'
+'MNs g^-1m^-1. Used to support assessments of condensation'
+'within constructions. '
+'  '
 'Thickness (mm) is the typical/default thickness of this'
 'material. '
+'  '
+'Recent changes to materials are held in memory and if you'
+'exit without saving the edited data will be discarded. '
 *enditem
+        CALL ASKOK(' ','Accept changes in material (see help)?',
+        CALL EASKS(tnam,' ',' Description of material? ',
+        CALL EASKS248(tdoc,' ',' Documentation for material? ',
+        CALL EASKR(DBCON,' ',' Conductivity (W/(m deg.C): ',
+        CALL EASKR(DBDEN,' ',' Density (kg/m**3): ',
+        CALL EASKR(DBSHT,' ',' Specific heat (J/(kg deg.C): ',
+        CALL EASKR(EOUT,' ',' Surface emissivity : ',
+        CALL EASKR(EOUT,' ',' Outside face emissivity : ',
+        CALL EASKR(EIN,' ',' Surface emissivity : ',
+        CALL EASKR(EIN,' ',' Inside face emissivity : ',
+        CALL EASKR(AOUT,' ',' Surface absorptance: ',
+        CALL EASKR(AOUT,' ',' Outside face absorptance: ',
+        CALL EASKR(AIN,' ',' Surface absorptance : ',
+        CALL EASKR(AIN,' ',' Inside face absorptance: ',
+        CALL EASKR(dbdrv,' ','Vapour resistvity (MNs g^-1m^-1): ',
         CALL EASKR(THICK,' ',' Default thickness (mm) : ',
-*item EDONEMAT
-'Legacy opaque was imported from an older materials'
-'database and only contains essential data. '
+*item EDONEMAT material_db_edit_type
+'Legacy opaque was imported from an older materials database'
+'and only contains essential data. Future materials database'
+'will have additional attributes to introduce temperature '
+'corrections based on either gas data plus a temperature'
+'correction factor or gas data at 4 temperature points. '
 ' '
-'Opaque will have option of additional parameters. '
-' '
-'Transparent includes single layer optics such as '
-'used by WIS and Window5.1 etc. '
-' '
-'There are two types of gas (work in progress): '
-' Data with T correction to match data model of'
-' the UK Energy Performance Directive'
-' '
-' Data (viscosity, conductivity, density, CP at'
-' 4 temperature points.'
+'Transparent materias will include single layer optics such as'
+'used by WIS and Window6 etc. These are:'
+'  Longwave transmittance units (-) between 0.0 & 1.0'
+'  Solar transmittance units(-) between 0.0 & 1.0'
+'  Solar reflectance units are (-) between 0.0 and 1.0'
+'    (the outside face is farthest from zone air)'
+'    (the inside face is nearest the zone air)'
+'  Visible transmittance units are (-) between 0.0 & 1.0'
+'  Visible reflectance units are (-) between 0.0 and 1.0'
+'    (the outside face is farthest from zone air)'
+'    (the inside face is nearest the zone air)'
+'  Colour rendering units are (?) between 0.0 & 100.0'
+'    <<more text to be added...>>'
+'  '
 *enditem
         CALL EASKATOG('Material options:',message,
-*item EDONEMAT
-'Longwave transmittance units (-) between 0.0 & 1.0'
-*enditem
-            CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
-*item EDONEMAT
-'Solar transmittance units(-) between 0.0 & 1.0'
-*enditem
-            CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
-*item EDONEMAT
-'Solar reflectance units are (-) between 0.0 and 1.0'
-'The outside face is farthest from zone air.'
-*enditem
-            CALL EASKR(soldrotrfl,' ',
-*item EDONEMAT
-'Solar reflectance units are (-) between 0.0 and 1.0'
-'The inside face is nearest the zone air.'
-*enditem
-            CALL EASKR(soldrinrfl,' ',
-*item EDONEMAT
-'Visible transmittance units are (-) between 0.0 & 1.0'
-*enditem
-            CALL EASKR(vistran,' ','Visible trans (-): ',
-*item EDONEMAT
-'Visible reflectance units are (-) between 0.0 and 1.0'
-'The outside face is farthest from zone air.'
-*enditem
-            CALL EASKR(visotrfl,' ',
-*item EDONEMAT
-'Visable reflectance units are (-) between 0.0 and 1.0'
-'The inside face is nearest the zone air.'
-*enditem
-            CALL EASKR(visinrfl,' ',
-*item EDONEMAT
-'Colour rendering units are (?) between 0.0 & 100.0'
-'<<more text to be added...>>'
-*enditem
-            CALL EASKR(visinrfl,' ',
-*item EDONEMAT
-*enditem
+        CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
+        CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
+        CALL EASKR(soldrotrfl,' ',
+        CALL EASKR(soldrinrfl,' ',
+        CALL EASKR(vistran,' ','Visible trans (-): ',
+        CALL EASKR(visotrfl,' ',
+        CALL EASKR(visinrfl,' ',
+        CALL EASKR(visinrfl,' ',
         CALL PHELPD('material attributes',9,'-',0,0,IER)
 *subroutine EDMLDB
-*item EDMLDB
+*item EDMLDB constr_db_overview
 'The information in this display is based on data from'
 'both a materials database and a construction database.'
-'It is used to build zone construction files'
-'according to the construction name associated with'
-'each surface.'
+'It is used to build zone construction files according to'
+'the construction name associated with each surface.'
 '  '
-'Note that the reporting level influences the detail '
-'in this display and you may wish to reset the'
-'reporting level to see additional information.'
+'Note that the reporting level influences the detail in'
+'this display and you may wish to reset the reporting level'
+'to see additional information.'
+'  '
+'The list of MLC database entries can be sent to a text file'
+'or displayed.  Optical properties are included in detailed'
+'files or if the reporting level has been set to verbose. And'
+'the combined information is also available in the modeo QA'
+'report if you toggle that report to verbose.'
 '  '
 'Adding or Deleting constructions is supported. The'
 'former creates a single layer construction at the end'
-'of the list which may then be edited. '
+'of the list which may then be edited. Plese be sure '
+'that new construction names are unique.'
 ' '
 'You may copy an existing construction into a new item at'
 'the end of the list. Be sure its name is unique! '
-' '
-'To cope with non-symmetrical partitions you may wish'
-'to use the copy & invert function.'
-'Recent changed to constructions are held in memory '
-'and might be lost if not save to file. '
-*enditem
-          CALL ASKOK(' ','Save recent changes to constructions db?',
-*item EDMLDB
-*enditem
-        CALL PHELPD('construction db',19,'-',0,0,IER)
-*item EDMLDB
-'In order to reflect changes you have made in this db'
-'in the current model you will have to rebuild the '
-'zone construction and tmc files.   '
-' '
-'This option will be presented to you when you exit'
-'the database management session. '
-*enditem
-        CALL PHELPD('construction db save',6,'-',0,0,IER)
-*item EDMLDB
-'The list of MLC database entries can be sent to a'
-'text file or displayed.  Optical properties are'
-'included in detailed files or if the reporting level'
-'has been set to verbose. '
-*enditem
-        CALL EASKABCD(' Reporting to:',' ',
-*item EDMLDB
-'Copies of exsiting constructions should have unique '
-'names. Before deleting a construction check that no '
-'surfaces use this attribute. '
 ' '
 'The copy and invert function is useful where nonsymmetric'
 'constructions are used in partitions. For example, in'
 'the case of a raised floor system from the point of view'
 'of the room the carpet is on the inside face and from the'
 'point of view of the floor void the carpet should be on '
-'the outside face. '
+'the outside face. The original and interted constructions'
+'should have similar names with one indicating its'
+'inverted state.'
+'  '
+'Although you only have 12 characters to work with (no spaces'
+'or unprintable characters try and create a useful name for the'
+'construction that is not a duplicate of an existing name.'
+'  '
+'Remeber, recent changes to constructions are held in memory'
+'and might be lost if not save to file. '
+'  '
+'In order to reflect changes you have made in this db you'
+'you will have to rebuild the zone construction and tmc files.'
+'This option will be presented to you when you exit'
+'the database management session. '
 *enditem
+        CALL ASKOK(' ','Save recent changes to constructions db?',
+        CALL PHELPD('construction db',19,'-',0,0,IER)
+        CALL PHELPD('construction db save',6,'-',0,0,IER)
+        CALL EASKABCD(' Reporting to:',' ',
         call easkatog('Constructions options:',' ',
-*item EDMLDB
-'Although you only have 12 characters to work with'
-'try and create a useful name for the construction'
-'that is not a duplicate of an existing name. '
-*enditem
-          CALL EASKS(T14,' ',' Name of construction? ',
-*item EDMLDB
-'Last chance to abort removal of construction. '
-*enditem
-          CALL ASKOK(' ',' Are you sure? ',OK,dok,1)
-*item EDMLDB
-'Each construction in the database should have a unique'
-'name. Please edit the name (12 character or less) with'
-'no spaces or unprintable characters. '
-*enditem
-          CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
-*item EDMLDB
-'Typically the original and interted constructions have'
-'similar names with one indicating its inverted state.'
-'The name should be less than or equal to 12 characters'
-'and not use spaces or unprintable characters. '
-*enditem
-          CALL EASKS(T14,'Name of inverted construction (<12 char)?',
-*item EDMLDB
+        CALL EASKS(T14,' ',' Name of construction? ',
+        CALL ASKOK(' ',' Are you sure? ',OK,dok,1)
+        CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
+        CALL EASKS(T14,'Name of inverted construction (<12 char)?',
+*item EDMLDB construction_db_g-value
 'Although g-values for transparent glazings are not used'
-'in ESP-r is is possible to report these in accordance '
-'with Test G5 TM33:2006 CIBSE. '
-'You will be required to provide for each pane its  '
-'transmittance and reflectance (both in the direction of'
-'incident radiation and against it)'
-'Single/double and triple glazings are supported '
-'G-value calculations are currently restricted to '
-'air or gas filled triple glazings which are symmetric'
-'in construction'
-*enditem
-        CALL PHELPD('G-value for tran construction',10,'-',0,0,IER)
-*item EDMLDB
+'in ESP-r is is possible to report these in accordance with'
+'Test G5 TM33:2006 CIBSE. '
+'You will be required to provide for each pane its transmittance'
+'and reflectance (both in the direction of incident radiation and'
+'against it). Single/double and triple glazings are supported.'
+'  '
+'G-value calculations are currently restricted to air or'
+'gas filled triple glazings which are symmetric in construction.'
+'  '
 'In order to calculate G-value ESP-r needs values for'
-'trnt   = transmittance of the pane,'
-'ref    = reflectance of this pane in direction of'
-'         incident radiation'
-'o-ref  = reflectance of this pane in direction '
-'         opposite incident radiation'
-'ems    = emissivity of this pane in direction of'
-'         incident radiation'
-'o-ems  = emissivity of this pane in direction '
-'         opposite incident radiation'
+'  trnt   = transmittance of the pane,'
+'  ref    = reflectance of this pane in direction of'
+'           incident radiation'
+'  o-ref  = reflectance of this pane in direction '
+'           opposite incident radiation'
+'  ems    = emissivity of this pane in direction of'
+'           incident radiation'
+'  o-ems  = emissivity of this pane in direction '
+'           opposite incident radiation'
 ' '
-'Choose CIBSE TM33:2006 prescribed values or   '
-'define your own'
-'Note that low emissivity glass has been inverted'
-'because it is always the 2nd pane for TM33'
+'Choose CIBSE TM33:2006 prescribed values or define your own.'
+' '
+'Note that low emissivity glass has been inverted because it'
+'is always the 2nd pane for TM33 tests in the UK.'
 *enditem
-            CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
-*item EDMLDB
-*enditem
-              CALL EASKS(T72,
+       CALL PHELPD('G-value for tran construction',10,'-',0,0,IER)
+       CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
+       CALL EASKS(T72,
 *subroutine EDWALL
-*item EDWALL
-'A construction is composed of between one and eight'
-'layers (three of which may be air gaps). Each layer'
-'has a thickness and is composed of one material. '
-'The thermophysical properties of each layer are based'
-'on data in the current materials database.'
+*item EDWALL edit_wall_details
+'A construction is composed of between one and eight layers'
+'(three of which may be air gaps). Each layer has a thickness'
+'and is composed of one material. The thermophysical properties'
+'of each layer are based on data in the current materials database.'
 '  '
-'Instances of the data for this construction will be'
-'inserted in the zone construction file. To ensure'
-'model quality, avoid further editing of the zone con-'
-'struction files (create more constructions if you need'
-'variant thermophysical properties).'
-' '
-'Current options allow one layer at a time to be added'
-'to the end of the list or inserted into the list. You'
-'may also delete one layer at a time.  If you alter a'
-'construction you will be asked (later) if you want to'
-'update the zone construction files.'
+'Instances of the data for this construction will be inserted'
+'in the zone construction file. To ensure model quality, avoid'
+'further editing of the zone construction files. Create more'
+'constructions if you need variant thermophysical properties.'
 '  '
+'You can delete an existing layer, append a new layer at the'
+'[inside face] of the surface (remember the order is other-side'
+'to zone-side), or insert a layer (you will be asked to select'
+'a point of insertion and existing inner layers will be shifted).'
 'Note: layer 1 is considered the [outside].'
+'  '
+'When editing you are given the option to select a material from'
+'the materials database. If you want to keep the existing'
+'material just say no to browsing the materials database.'
+'There is a special case for an air gap - historically the'
+'material zero indicated air. Currently there is a category'
+'named GAPS in the materials database and the first entry'
+'in that category should be used for air gaps (to get properties'
+'for other gasses you should edit the air gap resistance). In'
+'the future the other entries in the GAPS category can be used.'
+'  '
+'A set of default assumptions on the R value of an air gap'
+'will be requested so the the construction can be used in'
+'different orientations (horizontal, vertical sloped).'
+'  '
+'The thickness of the layer is nominally between 1mm and 300mm.'
+'It is stored in the file as m. You can also alter the name'
+'of the construction (try for clarity an uniqueness).'
+'  '
+'If you alter a construction you will be asked (later)'
+'if you want to update the zone construction files.'
 '  '
 'The terms SYMMETRIC and NONSYMMETRIC have the following'
 'meaning: SYMMETRIC constructions can be referenced from'
 'either zone associated with a partition; a NONSYMMETRIC'
 'construction must have an [inverted] version in the'
 'database in the case of surfaces which are partitions.'
+'  '
+'If the current construction is linked to a reversed version'
+'of itself. Allow the software to keep these in sync!'
+'  '
+'In ESP-r air gaps in constructions are represented as a fixed'
+'resistance to heat flow (depending on the orientation of the'
+'surface using the construction). The R-value supplied should'
+'account for the resistance across the cavity (including the'
+'impact of low emissivity at the adjacent solid layers).'
 ' '
-'In ESP-r air gaps in constructions are represented as'
-'a fixed resistance to heat flow (depending on the orien-'
-'tation of the surface using the construction). The R'
-'value supplied should account for the resistance across'
-'the cavity (including the impact of low emissivity'
-'at the adjacent solid layers).'
-' '
-'Air gaps are assumed not to have air movement. If the'
-'cavity is ventilated you might have to represent it as'
-'a thermal zone and include it in an air flow network.'
-'The current construction is linked to a reversed '
-'version of itself. You will want to keep these in'
-'sync with each other. '
+'Air gaps are assumed not to have air movement. If the cavity'
+'is ventilated you might have to represent it as a thermal'
+'zone and include it in an air flow network.'
 *enditem
-            CALL ASKOK(outs,'Update the linked construction as well?',
-*item EDWALL
-*enditem
+       CALL ASKOK(outs,'Update the linked construction as well?',
        CALL PHELPD('construction editing',36,'-',0,0,IER)
-*item EDWALL
-'You can delete an existing layer, append a new layer '
-'at the [inside face] of the surface (remember the '
-'order is other-side to zone-side), or insert a layer'
-'(you will be asked to select a point of insertion and'
-'existing inner layers will be shifted).'
+       CALL EASKABCD(' Layer options: ',' ',' Delete',
+       CALL EPICKS(IX,imlay,' ',' Layer to delete: ',
+       CALL EPICKS(IX,imlay,' ',' Point of insertion: ',
+       CALL ASKOK('Browse the materials db for a new material',
+       CALL EASKABC('Your selection is `0` i.e. air. Options:',
+       CALL EASKR(VAL,outs,
+       CALL EASKR(VAL,outs,
+       CALL EASKR(VAL,outs,
+       CALL EASKR(VAL,' ',' Layer thickness (mm): ',
+       CALL EASKS(T14,' ','Name of the construction?',
+*item EDWALL construction_opaque_trn
+'In order to make cross checking easier the user is asked'
+'to define the construction as either OPAQUE or TRANSPARENT.'
+'  '
+'A Complex Fenestration Construction (CFC) allows for a more'
+'accurate treatment of modeling windows with or without shading'
+'devices. A CFC surface has the following attributes:'
 ' '
-'If you cancel no changes will be made in the mode. '
-*enditem
-        CALL EASKABCD(' Layer options: ',' ',' Delete',
-*item EDWALL
-'Any one of the layers may be selected.'
-*enditem
-          CALL EPICKS(IX,imlay,' ',' Layer to delete: ',
-*item EDWALL
-'Any one of the layers may be selected.'
-*enditem
-              CALL EPICKS(IX,imlay,' ',' Point of insertion: ',
-*item EDWALL
-'If you want to keep the current material answer NO'
-'otherwise you can find one by browsing the database.'
-*enditem
-            CALL ASKOK('Browse the materials db for a new material',
-*item EDWALL
-'If air is correct then accept, otherwise'
-'reselect from the list or abort the task.'
-*enditem
-                CALL EASKABC('Your selection is `0` i.e. air. Options:',
-*item EDWALL
-'A set of default assumptions on the R value of'
-'an air gap is requested, in case the construction '
-'is used in different orientations.'
-'This information will allow for the automatic'
-'creation of zone construction files with sub-'
-'stantially less user interaction.'
-*enditem
-              CALL EASKR(VAL,outs,
-*item EDWALL
-*enditem
-              CALL EASKR(VAL,outs,
-*item EDWALL
-*enditem
-              CALL EASKR(VAL,outs,
-*item EDWALL
-'The thickness of the layer is nominally between'
-'1 mm and 300 mm. It is stored in the file as m.'
-*enditem
-            CALL EASKR(VAL,' ',' Layer thickness (mm): ',
-*item EDWALL
-'A descriptive name (up to 12 characters) is required.'
-'Because the name is short it is a good idea to also'
-'separately document what this name really means. '
-*enditem
-        CALL EASKS(T14,' ','Name of the construction?',
-*item EDWALL
-'In order to make cross checking easier the user is'
-'asked to define the construction as either'
-'OPAQUE or TRANSPARENT. A complex fenestration '
-'construction, CFC, can also be chosen to model'
-'windows with slat type operable blinds.'
+'  -Exterior, vertical surface (IE=0)'
+'  -Each glazing/shading layer is separated by gas gap'
+'  -Currently limited to one shading layer per CFC'
+' '
+'For an example of usage of CFCs see Appendix F: CFC User'
+'Reference from http://uwspace.uwaterloo.ca'
+'/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+'  '
+'The Glazing Shading Layer editor (GSLedit) used for importing'
+'CFC input properties can be downloaded from here.'
 *enditem
         CALL EASKABC(' ','Please choose one type :',
-*item EDWALL
-'Complex Fenestration Construction (CFC)'
-'A CFC allows for a more accurate treatment of'
-'modeling windows with or without shading devices.'
-'A CFC surface has the following attributes:'
-' '
-'-Exterior, vertical surface (IE=0)'
-'-Each glazing/shading layer is separated by gas gap'
-'-Currently limited to one shading layer per CFC'
-' '
-'For an example of usage of CFCs see'
-'"Appendix F: CFC User Reference" from'
-'http://uwspace.uwaterloo.ca'
-'/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-'The Glazing Shading Layer editor (GSLedit) used for'
-'importing CFC input properties can be downloaded from'
-*enditem
-          CALL PHELPD('CFC instructions',20,'-',0,0,IER)
-*item EDWALL
+        CALL PHELPD('CFC instructions',20,'-',0,0,IER)
+*item EDWALL construction_optics
 'In order to allow for the optical properties to be'
 'used in the model description and to be acted on'
 'by control laws the relevant optical property id  '
 '(from the optical properties db) is required.'
+'  '
+'If a particular optical property set cannot be recovered'
+'you are asked to select a different one.'
 *enditem
-          CALL PHELPD('optical selection',4,'-',0,0,IER)
-*item EDWALL
-'Could not recover that particular optical property'
-'set. You might want to select a different one. '
-*enditem
-            CALL ASKOK(' ',' Not found... try again? ',OK,dok,2)
-*item EDWALL
-'This construction is not symmetrical and needs to '
-'be linked to a reversed copy of itself if it is going'
-'to be used as a partition between two zones. '
-*enditem
-          CALL ASKOK('Would you like to link this construction to',
-*item EDWALL
-'To change to a different material select it from the'
-'the list within the current materials database.'
-'If you need an air gap, choose one from the GAPS '
-'category (you may be asked for the air gap resistance'
-'values for various orientations of the construction.'
-' '
-'If you want to keep the current material just say NO.'
-*enditem
+        CALL PHELPD('optical selection',4,'-',0,0,IER)
+        CALL ASKOK(' ',' Not found... try again? ',OK,dok,2)
+        CALL ASKOK('Would you like to link this construction to',
         CALL ASKOK('Change the materials db reference via browsing',
-*item EDWALL
-'If air is correct then accept, otherwise'
-'reselect from the list or abort the task.'
-*enditem
-            CALL EASKABC('Your selection is `0` i.e. air. Options:',
-*item EDWALL
-'A set of default assumptions on the R value of'
-'an air gap is requested, in case the construction '
-'is used in different orientations.'
-'This information will allow for the automatic'
-'creation of zone construction files with sub-'
-'stantially less user interaction.'
-*enditem
-          CALL EASKR(VAL,outs,
-*item EDWALL
-*enditem
-          CALL EASKR(VAL,outs,
-*item EDWALL
-*enditem
-          CALL EASKR(VAL,outs,
-*item EDWALL
-'The thickness of the layer is normally between'
-'0.001 m and 0.500 mm. It is held in the file as'
-*enditem
+        CALL EASKABC('Your selection is `0` i.e. air. Options:',
+        CALL EASKR(VAL,outs,
+        CALL EASKR(VAL,outs,
+        CALL EASKR(VAL,outs,
         CALL EASKR(VAL,' ',' Layer thickness (mm): ',
 *subroutine allmat
-*item allmat
+*item allmat select_from_materials
 'This menu allows existing materials to be viewed and'
 'one of them selected.'
 *enditem
         CALL PHELPD('materials section',2,'-',0,0,IER)
 *subroutine EDDB
-*item EDDB
-'ESP-r is provided with standard databases located at'
-'For some simulation models a user may'
-'require a bespoke version of a database.  In such a'
-'case the user may either copy a standard database'
-'into a local directory for modification or simply begin'
-'from scratch.'
+*item EDDB database_mgt_overview
+'ESP-r is provided with standard databases located in'
+'a databases folder adjacent to the ESP-r executables bin'
+'folder.'
+'  '
+'For some simulation models a user may require a bespoke'
+'version of a database.  In this case the user may either'
+'copy a standard database into a local directory for'
+'modification or simply begin from scratch.'
 ' '
-'In most cases a bespoke database may be created by'
-'copying a standard database into the project'
-'directory (hint: give it a name identifiable with'
-'the project) and then modifying it to fit the needs'
-'of the project.'
+'In most cases a bespoke database may be created by copying'
+'a standard database into the project directory (hint:'
+'accept the suggested name which is based on the root name'
+'of the model or give it a name identifiable with the project)'
+'and then modifying it to fit the needs of the project.'
 ' '
-'Initially the database names will correspond to'
-'the defaults supplied by ESRU.  If these defaults'
-'are not found, the most likely reason is that they'
-'have not been correctly installed in the file path'
-'given at the top of this message.'
-'Recent changes in database file names need to be'
-'recorded in the model if the correct databases are'
-'to be accessed in the future. If you do not update'
-'the model configuration other dependencies might be'
-'left unresolved. '
+'Initially the database names will correspond to the defaults'
+'supplied with ESP-r. If these defaults are not found, the'
+'most likely reason is that they have not been correctly'
+'installed in the file path given at the top of this message.'
+'  '
+'If you alter database file names these need to be recorded'
+'in the model if the correct databases are to be accessed in'
+'the future. If you do not update the model configuration'
+'other dependencies might be left unresolved. '
 ' '
-'If you are have not quite finished work on your'
-'databases (e.g. you are creating an alternative)'
-'you might wish to delay updating the model. '
+'If you are have not quite finished work on your databases'
+'(e.g. you are creating an alternative) you might wish to delay'
+'updating the model zone files. If you have finished and zone'
+'construction and tmc files already exist then the option to'
+'update the zone files will save time.'
+'  '
+'The help option in this menu allows you to select which db'
+'you want more information for.'
 *enditem
-          CALL ASKOK(
-*item EDDB
-'Recent changes to the materials, constructions'
-'or optical databases may make the zone files '
-'out-of-date. If you want these changes to be '
-'reflected in the zone files say yes. '
-*enditem
-              CALL ASKOK(
-*item EDDB
-*enditem
+        CALL ASKOK(
+        CALL ASKOK(
         call phelpd('databases overview',19,'-',0,0,IER)
-*item EDDB
-'Information on each databases is provided.'
-*enditem
         call easkatog(' ','Help options:','overview','climate',
-*item EDDB
-'ESP-r is provided with standard databases located at'
-'Where a model requires a bespoke version of a'
-'database, the user may either copy a standard database'
-'into a local directory and modify it or create a new'
-'database from scratch.'
-*enditem
-          CALL PHELPD('databases overview',7,'-',0,0,IER)
-*item EDDB
+        CALL PHELPD('databases overview',7,'-',0,0,IER)
+*item EDDB database_clm_overview
 'Climate databases contain hourly parameters over the'
 'period 1h00 on 1 Jan to 24h00 on 31 December (i.e. no'
 'leap years). Where data is supplied for only one or'
@@ -6432,68 +6229,89 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' 5. Wind direction (clockwise degrees from North.'
 ' 6. Relative humidity (%).'
 ' '
-'When using these climate parameters ESP-r will'
-'assume that the data represents the one hour period'
-'centered on the hour in question. Where sub hour'
-'simulation time steps are used, interpolation is'
-' '
+'When using these climate parameters ESP-r will assume that'
+'the data represents the one hour period centered on the hour'
+'in question. Where sub hour simulation time steps are used,'
+'interpolation is used.'
+'  '
 'The database is held in binary format to allow random'
 'access. Conversion to an ASCII format is supported to'
 'allow transfer between different operating systems.'
 *enditem
           CALL PHELPD('climate overview',26,'clm_dbitems ',0,0,IER)
-*item EDDB
-'The Materials database holds the density, specific'
-'heat, conductivity, diffusion resistance and surface'
-'absorptivity and emissivity of products such as brick,'
-'concrete, metal, wood and so on.'
+*item EDDB database_mat_overview
+'The Materials database holds the density, specific heat,'
+'conductivity, diffusion resistance and surface absorptivity'
+'and emissivity (plus some future attributes) of products such'
+'as brick, concrete, metal, wood and so on.'
+'  '
+'Materials are arranged into a number of categories such as'
+'concrete, glass etc. to allow for quicker access.'
 ' '
-'The database is held in binary format to allow random'
-'access. Conversion to an ASCII format is supported to'
-'allow transfer between different operating systems.'
+'Older versions of the database were held in binary format'
+'but most recent versions of ESP-r use an ASCII file format'
+'which is scanned into memory. The ASCII version is assumed'
+'however it is possible to use the older binary version as'
+'well as supporting its conversion to the ASCII format.'
+'  '
+'Materials are known by a short name <12 char as well'
+'as by a longer <248 character description. The initial'
+'portion of the description is used for checking and is included'
+'in the constructions database to clarify the contets'
+'  '
+'Older database made use of a numerical index rather than'
+'the name for identification and thus the short names in'
+'older files may not be unique and cause some confusion when'
+'they are scanned. The usual recorse is to open the materials'
+'database in a text editor and locate the duplicate names and'
+'alter them slightly.'
 *enditem
           CALL PHELPD('materials db overview',8,'materials_db',0,0,IER)
-*item EDDB
+*item EDDB database_mlc_overview
 'The Constructions database defines the composition of'
 'walls, floors, roofs etc in terms of layer ordering,'
 'thickness and material. Where the construction is'
 'transparent a named set of optical properties, as held'
-'in the Optical Properties database, is associated.'
+'in the Optical Properties database, is part of the construction'
+'description.'
+'  '
+'Unlike materials, constructions are held in a single list'
+'and so it may take some time to identify a specific construction.'
+'  '
+'Also unlike materials there is no documentation string associated'
+'with a construction and you are advised to keep separate notes'
+'on the construction and the assumptions and sources.'
 *enditem
           CALL PHELPD('constr db overview',5,'mlc_database',0,0,IER)
-*item EDDB
-'The Optical Properties database holds the solar'
-'transmissivity and absorptivity for each layer within'
-'a transparent construction and for 5 angles of'
-'incidence - 0 (normal), 40, 55, 70 and 80 degrees.'
+*item EDDB database_optic_overview
+'The Optical Properties database holds the visable and solar'
+'transmissivity and absorptivity for each layer within a'
+'transparent construction and for 5 angles of incidence:'
+'   0 (normal), 40, 55, 70 and 80 degrees.'
+'  '
+'Optical data must be sourced from 3rd party software. ESP-r'
+'is able to import optical data calculated via the applications'
+'WIS (in Europe) and Window 6 (from LBL). It is up to you to'
+'ensure that there is a matching construction for the optical'
+'property.'
 *enditem
           CALL PHELPD('optics overview',4,'optical_db',0,0,IER)
-*item EDDB
-'The Plant Ccomponents database holds data defining'
+*item EDDB database_plant_overview
+'The Plant components template database holds data defining'
 'individual plant components for assembly into networks'
 'defining particular systems of arbitrary complexity.'
 ' '
 'The database is held in binary format to allow random'
 'access. Conversion to an ASCII format is supported to'
 'allow transfer between different operating systems.'
+'  '
+'The database format is strict and it takes extreme care'
+'and attention to detail in order to edit the database or'
+'add in new component templates.'
 *enditem
           CALL PHELPD('plant db overview',7,'plant_db_fld',0,0,IER)
 *subroutine opendb
-*item opendb
-'It is likely that the Materials db associated with'
-'this model is for use under a different operating'
-'system. ESP-r will attempt to locate an ASCII version'
-'of this database and, if successful, convert it to'
-'the required binary format if you agree.'
-'The Materials db holds the thermo-physical properties'
-'of a range of materials. An ascii version of this db'
-'may be used to transfer the contents between operating'
-'systems that have incompatible binary representations'
-'(e.g. Unix and Windows).'
-*enditem
-            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
-*subroutine EDDBMATERIAL
-*item EDDBMATERIAL
+*item opendb many_mat_not_found
 'The Materials database holds the density, specific'
 'heat, conductivity, diffusion resistance and surface'
 'absorptivity/emissivity for materials such as brick'
@@ -6502,30 +6320,65 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'use an ASCII version of the file and support additional'
 'attributes. Conversion options between ascii and binary'
 'versions are available.'
+'  '
+'When ESP-r attempts to scan the databases it will look'
+'at how many of the materials are correctly read. If there'
+'are many that seem to be corrupted it will conclude that'
+'the Materials db associated with this model is a binary'
+'file from a different operating system.'
+'  '
+'ESP-r will attempt to locate an ASCII version of the'
+'materials database and, if successful use it.'
+'  '
+'The Materials db holds the thermo-physical properties'
+'of a range of materials. An ascii version of this db'
+'may be used to transfer the contents between operating'
+'systems that have incompatible binary representations'
+'(e.g. Unix and Windows).'
+*enditem
+            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
+*subroutine EDDBMATERIAL
+*item EDDBMATERIAL mat_db_edit_menu
+'The Materials database holds the density, specific heat,'
+'conductivity, diffusion resistance and surface absorptivity/'
+'emissivity for materials such as brick concrete, wood, metal'
+'etc. Older versions of thie db were held in binary format and'
+'newer models use an ASCII version of the file and support'
+'additional attributes. Conversion options between ascii and'
+'binary versions are available.'
+' '
+'The ESP-r distribution includes alternatives to the'
+'default which might be useful.'
 ' '
 'The following options can be selected:'
 ' '
-'a) If the file exists than you can browse the database '
-'   and if you have permission to update the file you'
-'   can edit the entities in the database.'
+'a) If the file exists than you can browse the database and if'
+'   you have permission to update the file you can edit the'
+'   entities in the database.'
 ' '
-'b) select another file: you will asked for a file'
-'   name and if it is found you can browse or edit it.'
+'b) select another file: you will asked for a file name and if'
+'   it is found you can browse or edit it.'
 ' '
-'c) make a new database: a new database will be created '
-'   based on the file name you supply.'
+'c) make a new database: a new database will be created and'
+'   the suggested file name will be based on the model root'
+'   name which you can alter.  A new materials will have'
+'   one item in each of the standard categories. It will be'
+'   useless until you populate the database with relevant infor.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and you will be offered a chance to'
+'   rename it.  The suggested name will be based on the model'
+'   root name.'
 ' '
-'e) Convert a binary representation of the db (which is'
-'   platform dependant) to an ASCII representation.'
+'e) Convert a legacy binary representation of the db (which is'
+'   platform dependant) to an ASCII representation which is'
+'   the current standard format.'
 ' '
-'f) Convert an ascii representation of the db to a'
-'   binary representation (NOTE THIS IS ONLY for'
-'   LEGACY models and is depreciated).'
+'f) Convert an ascii representation of the db to a binary'
+'   representation (NOTE THIS IS ONLY for LEGACY models'
+'   with old ASCII format files and is depreciated).'
 ' '
+'The GTK interface includes the following options:'
 'g) browse ../dbs allows you to look in the model ../dbs'
 '  folder for alternative optics files. If you do not'
 '  find anything the previous value will be restored.'
@@ -6536,222 +6389,106 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'i) copy another database to the project allows you to'
 ' locate a database and get a project copy of it.'
-'g) select a file (X11 only): edit the file name'
-'   and if it is found you can browse or edit it.'
-'   Hint: if you eventually want to copy that other file'
-'   into the model folder first select it and then ask'
-'   for a copy.'
 ' '
-' '
-' '
-' '
+'The X11 interface provides the following options: '
+'g) select a file (X11 only): edit the file name and if it'
+'   is found you can browse or edit it.  Hint: if you'
+'   you eventually want to copy that other file into the'
+'   model folder first select it and then ask for a copy.'
 ' '
 *enditem
         call MENUATOL('  ','Materials db',
-*item EDDBMATERIAL
-*enditem
         call MENUATOL('  ','Materials db',
-*item EDDBMATERIAL
-*enditem
         call MENUATOL('  ','Materials db',
-*item EDDBMATERIAL
-*enditem
         call MENUATOL('  ','Materials db',
-*item EDDBMATERIAL
-'The suggested name of this db is related to the'
-'current project name.'
-'The suggested name of this db is related to the'
-'current project name.'
-*enditem
         CALL EASKSCNCL(ltmp,' ','New materials db?',
-*item EDDBMATERIAL
-'A mostly empty materials database has been created'
-'and it it useless until it has been populated with'
-'data. If you have the information required you can'
-'proceed with that task. '
-*enditem
         CALL ASKOK(' ','Browse or edit new database?',OK,dok,4)
-*item EDDBMATERIAL
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,
-*item EDDBMATERIAL
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,
    66   CALL EASKS(LTMP,
-*item EDDBMATERIAL
-'This db is held as a binary representation for speed'
-'of access. Supply the name of the binary file.'
-*enditem
         CALL EASKSCNCL(LTMP,'Materials db (binary)?',' ',
-*item EDDBMATERIAL
-'This db is held as a binary representation for speed'
-'of access. It is sometimes necessary to convert to'
-'an ASCII representation, e.g. to facilitate manual'
-'editing or implementation on an operating system that'
-'uses a different binary representation.'
-*enditem
         CALL EASKSCNCL(LTMP,'Materials db (ascii)?',' ',
-*item EDDBMATERIAL
-'An ascii (human readable) version of the Materials db'
-'may be manually edited and is also convenient for'
-'use in operating systems or computers that employ'
-'different binary representations.'
-' '
-'NOTE: only older ASCII files can be converted to binary.'
-'If you have a newer ASCII materials database the process'
-'will fail. '
-*enditem
         CALL EASKSCNCL(LTMP,'Materials db (legacy ascii)?',' ',
-*item EDDBMATERIAL
-*enditem
  143    CALL EASKSCNCL(ltmp,'Materials db (legacy binary)?',' ',
-*item EDDBMATERIAL
-'The Materials database holds the density, specific'
-'heat, conductivity, diffusion resistance and surface'
-'absorptivity/emissivity for materials such as brick'
-'concrete, wood, metal etc. Older versions of thie db'
-'were held in binary format and newer models tend to'
-'use an ASCII version of the file and support'
-'additional attributes.'
-*enditem
         CALL EASKXORGTKF(LCOPY,'Materials db?',' ',
-*item EDDBMATERIAL
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBMATERIAL
-'The Materials database holds the density, specific'
-'heat, conductivity, diffusion resistance and surface'
-'absorptivity/emissivity for materials such as brick'
-'concrete, wood, metal etc. Older versions of thie db'
-'were held in binary format and newer models tend to'
-'use an ASCII version of the file and support'
-'additional attributes.'
-*enditem
-          CALL EASKF(LCOPY,' ','Materials db?',
-*item EDDBMATERIAL
-'The binary Materials db file could get corrupted.'
-'It is good to have a backup to restore from and'
-'this is held in ascii format.'
-*enditem
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Materials db?',
         CALL EASKSCNCL(LTMP,
 *subroutine EDDBPCDB
-*item EDDBPCDB
-'The plant components database is a binary, random '
-'access file holding plant component descriptions to '
-'enable the establishment of component state-space '
-' representations used by ESP-r.'
+*item EDDBPCDB plant_template_manage
+'The plant components database is a binary, random access'
+'file holding plant component descriptions to enable the'
+'establishment of component state-space representations'
+'used by ESP-r.'
 ' '
-'If there is no such file then a new one will be'
-'created to hold data for new components.'
+'If there is no such file then a new one will be created to'
+'hold data for new components.'
 ' '
 'The following options can be selected:'
 ' '
-'a) If the file exists than you can browse the database '
-'   and if you have permission to update the file you'
-'   can edit the entities in the database.'
+'a) If the file exists than you can browse the database and'
+'   if you have permission to update the file you can edit'
+'   the entities in the database.'
 ' '
-'b) select another file: you will asked for a file'
-'   name and if it is found you can browse or edit it.'
+'b) select another file: you will asked for a file name and'
+'   if it is found you can browse or edit it.'
 ' '
 'c) make a new database: a new database will be created '
-'   based on the file name you supply.'
+'   based on the root name of the model (which you can alter'
+'   if required. An empty plant component database is'
+'   useless until it has been populated with data. If you have'
+'   the information required you can proceed with that task.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and you will be offered a chance'
+'   to rename it. The suggested name will be based on the model'
+'   root name.'
 ' '
-'e) browse ../dbs allows you to look in the model ../dbs'
-'  folder for alternative optics files. If you do not'
-'  find anything the previous value will be restored.'
+'The GTK interface includes the following options:
+' '
+' e) browse ../dbs allows you to look in the model ../dbs'
+'   folder for alternative optics files. If you do not'
+'   find anything the previous value will be restored.'
 ' '
 ' f) browse distribution displays files in the databases'
-'  folder of the ESP-r distribution. If you do not find'
-'  anything the previous value will be restored.'
+'   folder of the ESP-r distribution. If you do not find'
+'   anything the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to'
 ' locate a database and get a project copy of it.'
+' '
+'The X11 interface provides the following options: '
+'  '
 'e) select a file (X11 only): edit the file name'
 '   and if it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
 ' '
-' '
-' '
-' '
-' '
 *enditem
         call MENUATOL('  ','Plant Components db',
-*item EDDBPCDB
-*enditem
         call MENUATOL('  ','Plant Components db',
-*item EDDBPCDB
-*enditem
         call MENUATOL('  ','Plant components db',
-*item EDDBPCDB
-*enditem
         call MENUATOL('  ','Plant Components db',
-*item EDDBPCDB
-'The suggested name of this database is based on the '
-'project name. '
-'The plant component database binary file holds the'
-'description of available components. If the name'
-'given matches an existing file, it will be read in'
-'and the components data will be available for'
-'listing and editing. If there is no such file then'
-'a new one will be created to hold data for new'
-*enditem
         CALL EASKSCNCL(ltmp,' ','Plant Components db?',
-*item EDDBPCDB
-'An empty plant component database has been created'
-'and it it useless until it has been populated with'
-'data. If you have the information required you can'
-'proceed with that task. '
-*enditem
         CALL ASKOK(outs,' Browse or edit new database?',OK,dok,4)
-*item EDDBPCDB
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,
-*item EDDBPCDB
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,
    66   CALL EASKS(LTMP,
-*item EDDBPCDB
-'The plant component database binary file holds the'
-'description of available components. If the name'
-'given matches an existing file, it will be read in'
-'and the components data will be available for'
-'listing and editing. If there is no such file then'
-'a new one will be created to hold data for new'
-*enditem
         CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
-*item EDDBPCDB
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBPCDB
-'The plant component database binary file holds the'
-'description of available components. If the name'
-'given matches an existing file, it will be read in'
-'and the components data will be available for'
-'listing and editing. If there is no such file then'
-'a new one will be created to hold data for new'
-*enditem
-          CALL EASKF(LCOPY,' ','Plant templates db?',
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Plant templates db?',
 *subroutine EDDBPROFILE
-*item EDDBPROFILE
+*item EDDBPROFILE events_db_manage
 '   Events Database '
 ' '
-'Profiles in this database are currently used to'
-'assist in the defintion of zone operations.  The'
-'standard db are found in '
-'as either ASCII versions (ends with .a) or a binary'
-'version (depreciated).'
+'Profiles in this database are currently used to assist in'
+'the defintion of zone operations.  The standard db are found'
+'in the databases folder adjacent to the ESP-r executables bin'
+'folder. There are ASCII versions (file name ends with an .a)'
+'or binary versions (depreciated).'
+' '
+'The ESP-r distribution includes alternatives to the'
+'default which might be useful.'
+'  '
 ' The data requirements are summarised below :- '
 ' '
 ' for each profile - number of events.'
@@ -6762,29 +6499,33 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'The following options can be selected:'
 ' '
-'a) If the file exists than you can browse the database '
-'   and if you have permission to update the file you'
-'   can edit the entities in the database.'
+'a) If the file exists than you can browse the database and if'
+'   you have permission to update the file you can edit the'
+'   entities in the database.'
 ' '
 'b) Select from list (not available for events databases).'
 ' '
-'c) Make a new database: a new database will be created '
-'   based on the file name you supply. It will contain a'
+'c) Make a new database: a new (ASCII) database will be created'
+'   based on the file name you supply.  The suggested file name'
+'   will be based on the model root name. It will contain a'
 '   minimal number of items and you can then modify this'
-'   as required. '
-'   Exercise care if you use a text editor to copy sets'
-'   of data from another event profile database.'
+'   as required (indeed the database is useless until you add'
+'   data to it. Exercise care if you use a text editor'
+'   to copy sets of data from another event profile database'
+'   into the current database.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made with a name based on the root name'
+'   of the model and you will be offered a chance to rename it.'
 ' '
-'e) binary -> ascii conversion saves current database '
-'  to a computer independant form.'
+'e) binary -> ascii conversion saves current database to a'
+'   computer independant form.'
 ' '
 'f) ascii -> binary useful when you need to pass the model.'
 '   to someone with an old version of ESP-r that only reads'
 '   a binary version,'
+' '
+'The GTK interface includes the following options:'
 ' '
 'g) browse ../dbs allows you to look in the model ../dbs'
 '  folder for alternative profile files. If you do not'
@@ -6795,208 +6536,113 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  anything the previous file will be restored.'
 ' '
 'i) copy another database to the project allows you to'
-' locate a database and get a project copy of it.'
+'  locate a database and get a project copy of it.'
+'  '
+'The X11 interface provides the following options: '
 'g) select a file (X11 only): edit the file name'
 '   and if it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
 ' '
-' '
-' '
-' '
-' '
 *enditem
         call MENUATOL('  ','Event Profiles db',
-*item EDDBPROFILE
-*enditem
         call MENUATOL('  ','Event Profiles db',
-*item EDDBPROFILE
-*enditem
         call MENUATOL('  ','Event Profiles db',
-*item EDDBPROFILE
-*enditem
         call MENUATOL('  ','Event Profiles db',
-*item EDDBPROFILE
-'The suggested name of this database is based on the '
-'project name. '
-'An event profiles db holds a schedule of patterns'
-'over a day. When a new db is created in the model'
-'it will be the ASCII version.'
-*enditem
         CALL EASKSCNCL(ltmp,' ','Event Profiles db? (ASCII)',
-*item EDDBPROFILE
-'An empty profiles database has been created. It'
-'is useless unless it is populated with data. If '
-'you have the required data, use this facility '
-'to do this.'
-*enditem
         CALL ASKOK(outs,' Browse or edit database?',OK,dok,4)
-*item EDDBPROFILE
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,'Event Profiles db (source)?',' ',
-*item EDDBPROFILE
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,'Event Profiles db (source)?',' ',
   66    CALL EASKS(LTMP,
-*item EDDBPROFILE
-'The events db contains one or more descriptions of'
-'profiles created via a diary entry format. This'
-'otion converts from a legacy binary to an asci version'
-'of the file.'
-*enditem
         CALL EASKXORGTKF(LPRFDB,'Event Profiles db (source)?',' ',
-*item EDDBPROFILE
-'The events db contains one or more descriptions of'
-'profiles created via a diary entry format. This option'
-'allows you to convert an ASCII version to a binary'
-'version of the file (if you need to pass the model to'
-'someone with an older version of ESP-r that only deals'
-'with binary versions).'
-*enditem
         CALL EASKXORGTKF(LLASCI,
-*item EDDBPROFILE
-'Existing binary events db will be overwritten'
-'with the data from the ASCII version. If you'
-'want to use the binary file select it.'
-*enditem
         CALL EASKXORGTKF(lbin,'Event Profiles db (binary)?',' ',
-*item EDDBPROFILE
-'An event profiles database holds named sets of profiles'
-'in either a binary or ASCII representation.'
-' '
-'A local database folder (../dbs) is usually associated'
-'with each model. '
-*enditem
         CALL EASKXORGTKF(LCOPY,'Event Profiles db?',' ',
-*item EDDBPROFILE
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBPROFILE
-'An event profiles database holds named sets of profiles'
-'in a binary representation. '
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Event Profiles db?',
+*subroutine EDDBMLCON
+*item EDDBMLCON mlc_db_manage
+'A (multilayer) construction database defines the composition'
+'of constructions such as walls and glazing systems in terms'
+'of layers of materials of particular thickness in a particular'
+'order and, where appropriate, with a named set of optical '
+'properties. '
+'  '
+'More than other database types the MLC databse tends to be'
+'project specifice. Some groups maintain a number of bespoke'
+'MLC databases for specific building types and then use those'
+'as the starting point for new models.'
 ' '
 'The ESP-r distribution includes alternatives to the'
 'default which might be useful.'
-*enditem
-          CALL EASKF(LCOPY,' ','Event Profiles db?',
-*subroutine EDDBMLCON
-*item EDDBMLCON
-'A (multilayer) construction database defines the com-'
-'position of constructions such as walls and glazing'
-'systems in terms of layers of materials of particular'
-'thickness in a particular order and, where appropriate,'
-'with a named set of optical properties. '
 ' '
 'The following options can be selected:'
 ' '
-' '
-'a) If the file exists than you can browse the database '
-'   and if you have permission to update the file you'
-'   can edit the entities in the database.'
+'a) If the file exists than you can browse the database and if'
+'   ayou have permission to update the file you can edit the'
+'   entities in the database.'
 ' '
 'b) Select from list (not available for MLC databases).'
 ' '
-'c) Make a new database: a new database will be created '
-'   based on the file name you supply. It will contain a'
-'   minimal number of items and you can then modify this'
-'   as required. '
-'   Exercise care if you use a text editor to copy sets'
-'   of data from another MLC database.'
+'c) Make a new database: a new database will be created based'
+'   based on the root name of the model (which you can alter'
+'   if necessary. It will contain a minimal number of items'
+'   and you can then modify this as required. Indeed a new'
+'   database is useless until you add data to it. Exercise
+'   care if you use a text editor to copy sets from another'
+'   MLC database into this new database.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made based on the root name of the model'
+'   and you will be offered a chance to rename it prior to'
+'   editing its data.'
 ' '
+'The GTK interface includes the following options:'
 'e) browse ../dbs allows you to look in the model ../dbs'
-'  folder for alternative MLC files. If you do not'
-'  find anything the previous value will be restored.'
+'   folder for alternative MLC files. If you do not'
+'   find anything the previous value will be restored.'
 ' '
 ' f) browse distribution displays files in the databases'
-'  folder of the ESP-r distribution. If you do not find'
-'  anything the previous value will be restored.'
+'    folder of the ESP-r distribution. If you do not find'
+'    anything the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to'
-' locate a database and get a project copy of it.'
-'e) select a file (X11 only): edit the file name'
-'   and if it is found you can browse or edit it.'
+'   locate a database and get a project copy of it.'
+' '
+'The X11 interface provides the following options: '
+'e) select a file (X11 only): edit the file name and if'
+'   it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
 ' '
-' '
-' '
-' '
-' '
 *enditem
         call MENUATOL('  ','Constructions db',
-*item EDDBMLCON
-*enditem
         call MENUATOL('  ','Constructions db',
-*item EDDBMLCON
-*enditem
         call MENUATOL('  ','Constructions db',
-*item EDDBMLCON
-*enditem
         call MENUATOL('  ','Constructions db',
-*item EDDBMLCON
-'A (multilayer) construction database defines the com-'
-'position of constructions such as walls and glazing'
-'systems in terms of layers of materials of particular'
-'thickness in a particular order and, where appropriate,'
-'with a named set of optical properties. '
-*enditem
         CALL EASKSCNCL(ltmp,'Constructions database?',
-*item EDDBMLCON
-'An empty MLC database has been created. It is'
-'useless until it is populated with data. If you '
-'have the relevant information you can start now.'
-*enditem
         CALL ASKOK('  ',' Browse or edit new database?',OK,dok,3)
-*item EDDBMLCON
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,'Constructions db (source)?',
-*item EDDBMLCON
-'The suggested name of this database is based on the'
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,'Constructions db (source)?',
   66    CALL EASKS(LTMP,
-*item EDDBMLCON
-'A (multilayer) construction database defines the com-'
-'position of constructions such as walls and glazing'
-'systems in terms of layers of materials of particular'
-'thickness in a particular order and, where appropriate,'
-'with a named set of optical properties. '
-' '
-'A local database folder (../dbs) is usually associated'
-'with each model. '
-*enditem
         CALL EASKXORGTKF(LCOPY,'Constructions db?',' ',
-*item EDDBMLCON
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBMLCON
-'A (multilayer) construction database defines the com-'
-'position of constructions such as walls and glazing'
-'systems in terms of layers of materials of particular'
-'thickness in a particular order and, where approp-'
-'riate, with a named set of optical properties. '
-' '
-'The ESP-r distribution includes alternatives to the'
-'default which might be useful.'
-*enditem
-          CALL EASKF(LCOPY,' ','Constructions db?',
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Constructions db?',
 *subroutine EDDBOPT
-*item EDDBOPT
+*item EDDBOPT optic_db_manage
 'The optical properties of multilayer constructions'
 'are defined in an optical database.  The data include'
 'angular (0, 40, 55, 70, 80 degrees from normal) solar'
 'transmission and absorption at each layer.'
+'  '
+'There are two typcial sources for angular optical properties:'
+' * data which is held in the optical properties database'
+'   which has typically been imported from Window 6.2 or from'
+'   the EU WIS application.'
+' * data which you supply and type in manually'
+' '
+'The ESP-r distribution includes alternatives to the'
+'default which might be useful.'
 ' '
 'The following options can be selected:'
 ' '
@@ -7009,91 +6655,46 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'c) Make a new database: a new database will be created '
 '   based on the file name you supply. It will contain a'
 '   minimal number of items and you can then modify this'
-'   as required. '
-'   Exercise care if you use a text editor to copy sets'
-'   of data from another optical database.'
+'   as required (indeed the db will be useless until you'
+'   you add in some data. Exercise care if you use a text'
+'   editor to copy sets of data from another optical database.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and named based on the root name of'
+'   the model and you will be offered a chance to rename it.'
 ' '
+'The GTK interface includes the following options:'
 'e) browse ../dbs allows you to look in the model ../dbs'
-'  folder for alternative optics files. If you do not'
-'  find anything the previous value will be restored.'
+'   folder for alternative optics files. If you do not'
+'   find anything the previous value will be restored.'
 ' '
 ' f) browse distribution displays files in the databases'
-'  folder of the ESP-r distribution. If you do not find'
-'  anything the previous value will be restored.'
+'   folder of the ESP-r distribution. If you do not find'
+'   anything the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to'
-' locate a database and get a project copy of it.'
+'   locate a database and get a project copy of it.'
+'  '
+'The X11 interface provides the following options: '
 'e) select a file (X11 only): edit the file name'
 '   and if it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
-' '
-' '
-' '
-' '
-' '
 *enditem
         call MENUATOL('  ','Optical Properties db',
-*item EDDBOPT
-*enditem
         call MENUATOL('  ','Optical Properties db',
-*item EDDBOPT
-*enditem
         call MENUATOL('  ','Optical Properties db',
-*item EDDBOPT
-*enditem
         call MENUATOL('  ','Optical Properties db',
-*item EDDBOPT
-'The suggested name of this database is based on the '
-'project name. '
-'An optics db holds properties of transparent'
-'constructions '
-*enditem
         CALL EASKSCNCL(ltmp,' Optics database?',
-*item EDDBOPT
-'An empty optics database has been created. It is'
-'useless until it is populated with data. If you '
-'have the relevant information you can start now.'
-*enditem
         CALL ASKOK('  ',' Browse or edit new database?',OK,dok,3)
-*item EDDBOPT
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,'Optical Properties db (source)?',
-*item EDDBOPT
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,'Optical Properties db (source)?',
   66    CALL EASKS(LTMP,
-*item EDDBOPT
-'An optical properties database holds information for'
-'transparent constructions. It is closely related to'
-'the constructions database referenced by the project.'
-' '
-'A local database folder (../dbs) is usually associated'
-'with each model. '
-*enditem
         CALL EASKXORGTKF(LCOPY,'Optical Properties db?',' ',
-*item EDDBOPT
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBOPT
-'An optical properties database holds information for'
-'transparent constructions. It is closely related to'
-'the constructions database referenced by the project.'
-' '
-'The ESP-r distribution includes alternatives to the'
-'default which might be useful.'
-*enditem
-          CALL EASKF(LCOPY,' ','Optical Properties db?',
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Optical Properties db?',
 *subroutine EDDBPRES
-*item EDDBPRES
+*item EDDBPRES pressure_db_manage
 'To enable the calculation of wind-induced surface'
 'pressures (as required the simulator), this database'
 'of angle dependent pressure coefficients is provided.'
@@ -7111,100 +6712,48 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'b) Select from list (not available for optics databases).'
 ' '
 'c) Make a new database: a new database will be created '
-'   based on the file name you supply. It will contain a'
+'   based on the root name of the model and you will be'
+'   given a chance to alter this file name. It will contain a'
 '   minimal number of items and you can then modify this'
-'   as required. '
-'   Exercise care if you use a text editor to copy sets'
-'   of data from another optical database.'
+'   so that it is useful. Exercise care if you use a text'
+'   editor to copy sets of data from another pressure database.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and you will be offered a '
+'   chance to rename it.'
 ' '
+'The GTK interface includes the following options:'
 'e) browse ../dbs allows you to look in the model ../dbs'
-'  folder for alternative database. If you do not'
-'  find anything the previous value will be restored.'
+'   folder for alternative database. If you do not'
+'   find anything the previous value will be restored.'
 ' '
 ' f) browse distribution displays files in the databases'
-'  folder of the ESP-r distribution. If you do not find'
-'  anything the previous value will be restored.'
+'    folder of the ESP-r distribution. If you do not find'
+'    anything the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to'
-' locate a database and get a project copy of it.'
+'   locate a database and get a project copy of it.'
+'  '
+'The X11 interface provides the following options: '
 'e) select a file (X11 only): edit the file name'
 '   and if it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
-' '
-' '
-' '
-' '
-' '
 *enditem
         call MENUATOL('  ','Pressure Distributions db',
-*item EDDBPRES
-*enditem
         call MENUATOL('  ','Pressure Distributions db',
-*item EDDBPRES
-*enditem
         call MENUATOL('  ','Pressure Distributions db',
-*item EDDBPRES
-*enditem
         call MENUATOL('  ','Pressure Distributions db',
-*item EDDBPRES
-'To enable the calculation of wind-induced surface'
-'pressures (as required the simulator), this database'
-'of angle dependent pressure coefficients is provided.'
-' '
-'Wind pressure coefficients are pressure coefficients'
-'for surfaces in typical positions and within several'
-'different exposure categories. '
-' '
-'Please supply and confirm the file name.'
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
   62    CALL EASKSCNCL(ltmp,' New pressure coefficients database?',
-*item EDDBPRES
-'An empty pressure database has been created. It is'
-'useless until it is populated with data. If you '
-'have the relevant information you can start now.'
-*enditem
         CALL ASKOK('  ',' Browse or edit new database?',OK,dok,3)
-*item EDDBPRES
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,
-*item EDDBPRES
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
+        CALL EASKXORGTKF(lguess,
   66    CALL EASKS(LTMP,
-*item EDDBPRES
-'Wind pressure coefficients are pressure coefficients'
-'for surfaces in typical positions and within several'
-'different exposure categories.'
-' '
-'A local database folder (../dbs) is usually associated'
-'with each model. '
-*enditem
         CALL EASKXORGTKF(LCOPY,'Pressure coefficients db?',' ',
-*item EDDBPRES
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBPRES
-'Wind pressure coefficients are pressure coefficients'
-'for surfaces in typical positions and within several'
-'different exposure categories.'
-' '
-'The ESP-r distribution includes alternatives to the'
-'default which might be useful.'
-*enditem
-          CALL EASKF(LCOPY,' ','Pressure coefficients db?',
+        CALL ASKOK('Is this file in the model ../dbs folder?',
+        CALL EASKF(LCOPY,' ','Pressure coefficients db?',
 *subroutine EDDBCLM
-*item EDDBCLM
+*item EDDBCLM clm_db_manage
 'Climate databases are hourly sets of values from '
 '1h00 on 1 Jan to 24h00 on 31 December.  For each hour'
 ' the following data is held:'
@@ -7222,15 +6771,22 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   and if you have permission to update the file you'
 '   can edit the entities in the database.'
 ' '
-'b) select another file: you will asked for a file'
-'   name and if it is found you can browse or edit it.'
+'b) select another file: you will presented with a list of'
+'   available climate files. One of the options is user-defined'
+'   where you can supply a file name and if it is found you'
+'   can browse or edit it.'
 ' '
-'c) make a new database: a new database will be created '
-'   based on the file name you supply.'
+'c) make a new database: will create a file full of zeros'
+'   which you can then optn in the clm module for editing.'
+'   Alternatively in the list of available climate files'
+'   choose user-defined a new database will be created '
+'   based on the file name you supply. This starts up the clm'
+'   module where you can enter data or import data from EPW'
+'   of Korea Met office files.'
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and you will be offered a '
+'   chance to rename it.'
 ' '
 'e) convert binary file to an (esp-r) ascii file '
 '   (typically for transport between machine types).'
@@ -7238,157 +6794,64 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'f) convert ascii (esp-r) climate file to a binary'
 '   suitable to the current computer.'
 ' '
-'g) convert an EPW file (which has already been edited'
-'   as per EPW_readme instructions) to an esp-r binary'
-'   climate file'
-*enditem
-        call MENUATOL('  ','Climate db',
-*item EDDBCLM
-*enditem
-        call MENUATOL('  ','Climate db',
-*item EDDBCLM
-*enditem
-        call MENUATOL('  ','Climate db',
-*item EDDBCLM
-'Climate databases are hourly sets of values from '
-'1h00 on 1 Jan to 24h00 on 31 December. Please'
-'specify which file in the list.'
-*enditem
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-*item EDDBCLM
-*enditem
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-*item EDDBCLM
-*enditem
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-*item EDDBCLM
-*enditem
-                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-*item EDDBCLM
-*enditem
-                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-*item EDDBCLM
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-'An empty climate file has been created. It can-t'
-'be used for anything until it is populated with '
-'climate data.  '
-*enditem
-        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
-*item EDDBCLM
-*enditem
-          CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
-*item EDDBCLM
-'The suggested name of this database is related to the'
-'active project name.'
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL ASKOK(' ','Browse/edit copied climate data?',OK,dok,3)
-*item EDDBCLM
-'Some databases are held as BINARY files for speed'
-'of access and security. It is sometimes convenient'
-'to convert to ASCII - e.g. for implementation under'
-'a different operating system or for word processing.'
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
-*item EDDBCLM
-'Some databases are held as BINARY files for speed'
-'of access and security. There are machine dependant'
-'and can be created from ASCII file versions.'
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-*item EDDBCLM
-*enditem
-        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
-*item EDDBCLM
-'ESP-r can import climate data from EPW format files'
-'(some editing is required, see instructions in the'
-'file EPW_readme). This option converts EPW files'
-'to ESP-r climate files.'
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-*item EDDBCLM
-*enditem
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-*item EDDBCLM
-'Use the browse function to clarify whether the climate'
-'data you have selected is appropriate for the current '
-'model. '
-*enditem
-        CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
-*item EDDBCLM
-'Typically the project location will not deviate'
-'by much from the location of Climate db.'
-*enditem
-      CALL ASKOK(outs,
-*item EDDBCLM
+'g) convert an EPW file (which has been check as per the'
+'   EPW_readme instructions) to an esp-r binary climate file.'
+'  '
+'After conversion you are asked to confirm the climate latitude'
+'and longitude difference as well as the climate year. Typically'
+'you should be using a climate location which is close to the'
+'site of your building.'
+'  '
 'The year associated with a model primarily tells the'
 'simulator what day of the week is 1 January. '
 ' '
-'IF YOU CHANGE the model year remember to save '
-'your model before you exit the project manager. '
+'IF YOU CHANGE the model year remember to save your model'
+'before you exit the project manager. '
 ' '
-'The choice is year impacts the day of the week for'
-'1 January. It also will alter the day type associated'
-'of days in the calendar which are the standard default'
-'weekday/saturday/sunday (but not user defined day types.'
+'The choice is year impacts the day of the week for 1 January.'
+'It also will alter the day type associated with days in the'
+'model calendar which are of the standard default'
+'weekday/saturday/sunday (but not user defined day types).'
 *enditem
+        call MENUATOL('  ','Climate db',
+        call MENUATOL('  ','Climate db',
+        call MENUATOL('  ','Climate db',
+        CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+        CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+        CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+        CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+        CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
+        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL ASKOK(' ','Browse/edit copied climate data?',OK,dok,3)
+        CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+        CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+        CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+        CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
+      CALL ASKOK(outs,
       CALL ASKOK(OUTS,
 *subroutine EDDBMSC
-*item EDDBMSC
+*item EDDBMSC misc_db_manage
 'The miscellaneous components database can'
 'be edited using the current defined text editor'
 '(as defined in the default file).'
@@ -7405,163 +6868,103 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'c) Make a new database: not yet available '
 ' '
 'd) copy default database: a project copy of the default'
-'  database will be made and you will be offered a '
-'  chance to rename it.'
+'   database will be made and you will be offered a '
+'   chance to rename it.'
 ' '
+'The GTK interface includes the following options:'
 'e) browse ../dbs allows you to look in the model ../dbs'
 '  folder for alternative files. If you do not'
 '  find anything the previous value will be restored.'
 ' '
 ' f) browse distribution displays files in the databases'
-'  folder of the ESP-r distribution. If you do not find'
-'  anything the previous value will be restored.'
+'   folder of the ESP-r distribution. If you do not find'
+'   anything the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to'
-' locate a database and get a project copy of it.'
+'  locate a database and get a project copy of it.'
+'  '
+'The X11 interface provides the following options: '
 'e) select a file (X11 only): edit the file name'
 '   and if it is found you can browse or edit it.'
 '   Hint: if you eventually want to copy that other file'
 '   into the model folder first select it and then ask'
 '   for a copy.'
-' '
-' '
-' '
-' '
-' '
-*enditem
-        call MENUATOL('  ','Miscellaneous components db',
-*item EDDBMSC
-*enditem
-        call MENUATOL('  ','Miscellaneous components db',
-*item EDDBMSC
-*enditem
-        call MENUATOL('  ','Miscellaneous components db',
-*item EDDBMSC
-*enditem
-        call MENUATOL('  ','Miscellaneous components db',
-*item EDDBMSC
-'You are asked to confirm the source file for the'
-'copy action. If this one is ok then accept it. '
-*enditem
-          CALL EASKXORGTKF(lguess,'Miscellaneous comp db (source)?',
-*item EDDBMSC
-'The suggested name of this database is based on the '
-'project name. '
-*enditem
-  66    CALL EASKS(LTMP,
-*item EDDBMSC
-'The miscellaneous components database can'
-'be edited using the current defined text editor'
-'(as defined in the default file).'
-'BE CAREFUL!'
-' '
-'A local database folder (../dbs) is usually associated'
-'with each model. '
-*enditem
-        CALL EASKXORGTKF(LCOPY,'Miscellaneous comp db?',' ',
-*item EDDBMSC
-*enditem
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-*item EDDBMSC
-'The miscellaneous components database can'
-'be edited using the current defined text editor'
-'(as defined in the default file).'
-'BE CAREFUL!'
-' '
-'The ESP-r distribution includes alternatives to the'
-'default which might be useful.'
-*enditem
-          CALL EASKF(LCOPY,' ','Miscellaneous components db?',
-*item EDDBMSC
-'Exercise care when editing this text file as the'
-'format may be sensitive to user edits! '
+'  '
+'The miscellaneous components database can be edited with'
+'the current defined text editor (as defined in the default file).'
+'BE CAREFUL!  The format may be sensitive to user edits! '
 'If you alter the file name when saving the text'
 'in the editor then you will have to browse to'
 'find the new file.'
 *enditem
+        call MENUATOL('  ','Miscellaneous components db',
+        call MENUATOL('  ','Miscellaneous components db',
+        call MENUATOL('  ','Miscellaneous components db',
+        call MENUATOL('  ','Miscellaneous components db',
+          CALL EASKXORGTKF(lguess,'Miscellaneous comp db (source)?',
+  66    CALL EASKS(LTMP,
+        CALL EASKXORGTKF(LCOPY,'Miscellaneous comp db?',' ',
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+          CALL EASKF(LCOPY,' ','Miscellaneous components db?',
       CALL ASKOK('  ','Use this edited database (see help)?',OK,dok,5)
 *subroutine EDZONE
-*item EDZONE
-'This menu allows the attributes of a thermal zone to'
-'be specified as follows.'
+*item EDZONE geometry_main_menu
+'This menu allows the attributes of a thermal zone to be specified'
+'as follows.'
 ' '
-'* Zone name: label used in lists and reports.'
-'* Base area: list of surfaces associate with the base.'
-' '
-'* Vertex list & coordinates: X, Y, Z coordinates of'
-'  vertices in the zone and related functions'
-'  (add/delete/copy and transforms).'
-' '
-'* Surface list: topology (edge ordering) of each surface'
-'  with related functions (add/delete/copy as well as'
-'  transforms).  New surfaces can be composed via point'
-'  and click, imported from other zones or defined via'
-'  keyboard input.'
-' '
-'* Surface attributes: name, composition, opacity and'
-'  boundary conditions. This is the preferred place to'
-'  define composition and opacity.'
+'* Zone name: label <12 char used in lists and reports. It should'
+'    be descriptive and unique'
 '  '
-'* Solar insolation: as a alternative to running a'
-'  time-series insolation analysis, you may specify'
-'  the surface or surfaces that will receive any'
-'  solar radiation entering a zone.'
+'* Zone description: <64 char which records the intent of the zone'
+'    and assumptions made
+'  '
+'* Base area: list of surfaces associate with the base. Logic looks'
+'    for FLOR orientation but you can manually select ~6 surfaces'
+'    and the base area will be calculated or type in a specific'
+'    floor area (for example if the base of the zone is sloped).
+' '
+'* Vertex list & coordinates: X, Y, Z coordinates of vertices'
+'    in the zone and related functions (add/delete/copy and'
+'    transforms). You are asked to confirm the data shoould be'
+'    saved when you exit.
+' '
+'* Surface list: topology (edge ordering) of each surface with'
+'  related functions (add/delete/copy as well as transforms).'
+'  New surfaces can be composed via point and click, imported'
+'  from other zones or defined via keyboard input.'
+' '
+'* Surface attributes: name, composition, opacity and boundary'
+'  conditions and use. This is the preferred place to define the'
+'  full range of surface attributes. You will have the option'
+'  to attribute-many surfaces as well as editing individual'
+'  surfaces one at a time. This includes a new USES attribute'
+'  which is used to automate code compliance checking.'
+'  '
+'* Solar insolation: as a alternative to running a time-series'
+'  insolation analysis, you may specify the surface or surfaces'
+'  that will receive any solar radiation entering a zone.'
 ' '
 '* Obstructions: Shading patterns are generated via the'
-'  use of obstruction blocks, and the definition of'
-'  these blocks is via this menu pick.'
+'  use of obstruction blocks, and the definition of these'
+'  blocks is via this menu pick. You will be able to supply'
+'  an origin plus dimensions or click-on-bitmap.'
 ' '
-'* Browse: displays a table of information about each'
-'  surface in a zone.'
-'If you exit without saving changes then some of'
-'your inputs may be lost.'
+'* Browse: displays a table of information about each surface'
+'  there is an option to see detailed attributes such as thermo-'
+'  physical properties.'
+'  '
+'If you exit without saving changes then some inputs may be lost.'
+'You will be asked to confirm the file name.'
 *enditem
-          CALL ASKOK('Save changes to zone composition and surface',
-*item EDZONE
-'The name of the zone is used both for descriptive and'
-'bookkeeping purposes.  Each name should be unique.'
-*enditem
+        CALL ASKOK('Save changes to zone composition and surface',
         CALL EASKS(T14,'Descriptive name for zone?','(<12 characters)',
-*item EDZONE
-'Input a succinct description of the zone here.'
-*enditem
   64    CALL EASKS(T64,'Zone description?','(<64 characters)',
-*item EDZONE
-'These surfaces are associated with the base area'
-'because they had attributes of [flor] or were'
-'previously picked by the user. You can edit this'
-'list or select none and then edit the value.'
-'No surfaces are associated with the base area because'
-'the user manually edited the floor area value.'
-'You can select surfaces (and the floor area will be'
-'calculated) or select none and then edit the value.'
-'A subset of surfaces are associated with the base'
-'area (user excluded some [flor] surfaces). Select'
-'surfaces and the floor area will be calculated'
-'or select none and then edit the value.'
-*enditem
         CALL EPICKS(INPICK,IVALS,outs,
-*item EDZONE
-*enditem
-          CALL EASKR(ZBASEA(ICOMP),' ',
-*item EDZONE
-'Changes to vertex data may be lost if you continue'
-'working without saving the data.'
-*enditem
-          CALL ASKOK(' ','Save vertex changes?',OK,DOK,2)
-*item EDZONE
-*enditem
+        CALL EASKR(ZBASEA(ICOMP),' ',
+        CALL ASKOK(' ','Save vertex changes?',OK,DOK,2)
         CALL EASKSUR(ICOMP,IS,'M','Select surface(s) to attribute.',
-*item EDZONE
-'You can apply an attribute to several surfaces or'
-'edit several surface names. For composition you will'
-'be asked to select a construction and then a list of'
-'surfaces to apply this to. Boundary conditions are'
-'set in the same way as are the USES of surfaces (to'
-'assist with code compliance).'
-*enditem
           CALL EASKATOG('Surface attribution: ',' ',
-*item EDZONE
+*item EDZONE geometry_boundary_menu
 'The boundary conditions at the other face of this'
 'surface is specified  here. The default is [exterior].'
 ' '
@@ -7569,30 +6972,37 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 ' Similar to current - exposed to the same conditions'
 '   as the inside face except for the treatment of solar'
-'  insolation: only the diffuse component assumed the'
-'  same. A temperature (C) and radiation (W/m^2) offset'
-'  may be imposed.'
+'   insolation: only the diffuse component assumed the'
+'   same. A temperature (C) and radiation (W/m^2) offset'
+'   may be imposed to approximate a room which is always'
+'   a bit warmer or cooler.'
 ' '
 ' Prescribed static - exposed to a user specifiec and'
-'  constant temperature and radiation condition.'
+'   constant temperature (C) and radiation condition (W/m^2)'
+'   e.g. to approximate a cold storage room.'
 ' '
 ' Surface in other zone - exposed to the temperature and'
-'  radiation condition of a specified surface in a'
-'  other zone (but one time step in arrears).'
+'   radiation conditions of a specified surface in a'
+'   other zone (but one time step in arrears).'
 ' '
 ' Ground (monthly profile) - exposed to a temperature'
-'  defined by a standard monthly temperature profile'
-'  embedded in ESP-r.'
+'   defined by a standard monthly temperature profile'
+'   embedded in ESP-r. There are ~50 profiles to choose from.'
 ' '
-' Ground (user defined profile) - exposed to a'
-'  temperature defined by a monthly temperature profile'
-'  defined by the user (in Model Context).'
+' Ground (user defined profile) - exposed to a temperature'
+'   defined by a monthly temperature profile supplied by'
+'   the user (in Model Context menu). For example a profile'
+'   at 1m and another at 3m depth.'
 ' '
-' Ground (3D conduction model) - exposed to a'
-'  temperature calculated from a model based on a 3D'
-'  representation of the ground.'
+' Ground (3D conduction model) - exposed to a temperature'
+'   calculated from a 3D representation of the ground.'
+'  '
+'The 1st index for a ground connection is either:'
+' > 0 connection to a standard profile'
+' = 0 connection to a user defined profile (2nd index)
+' =-3 connection to a 3D ground model.'
 ' '
-' Adiabatic - heat flux set to zero.'
+' Adiabatic - heat flux set to zero at the boundary'
 ' '
 ' BASESIMP foundation configuration -  used to represent'
 '  a basement configuration and precalculate basement'
@@ -7610,92 +7020,35 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'available in zone geometry files.'
 *enditem
             CALL EPICKS(IX,IVALSS,' ','Surface boundary condition:',
-*item EDZONE
-'A [similar to current] boundary condition can'
-'include a temperature (degC) and radiation (W/m^2)'
-'from the current zone. For example, the adjacent'
-'zone (not included in the model) might tend to be'
-'cooler and have lower solar and/or casual gains.'
-'Dimensions are whole degC and whole W'
-*enditem
-              CALL EASKR(VALT,' ','Temperature offset?',
-*item EDZONE
-*enditem
-              CALL EASKR(VALW,' ','Radiation offset?',
-*item EDZONE
-'A [prescribed static] boundary condition requires'
-'the specification of a constant temperature (degC)'
-'and radiation value (W/m^2).'
-*enditem
-              CALL EASKR(VALT,' ','Constant temperature?',
-*item EDZONE
-*enditem
-              CALL EASKR(VALW,' ','Constant radiation?',
-*item EDZONE
-'A ground connection is either:'
-' > 0 connection to one of several standard profiles'
-'     in which case the profile number is required.'
-' = 0 connection to a user defined profile in which'
-'     case a 0 followed by a profile number is'
-'     required.'
-' =-3 connection to a 3D ground model.'
-*enditem
-              CALL EASKI(IIC2,' ','Standard ground profile number?',
-*item EDZONE
-' A user defined ground profile numbers is'
-'required here.'
-*enditem
-                CALL EASKI(IIE2,' ',
-*item EDZONE
-'Select the surfaces for which the name is to'
-'be defined.'
-*enditem
+            CALL EASKR(VALT,' ','Temperature offset?',
+            CALL EASKR(VALW,' ','Radiation offset?',
+            CALL EASKR(VALT,' ','Constant temperature?',
+            CALL EASKR(VALW,' ','Constant radiation?',
+            CALL EASKI(IIC2,' ','Standard ground profile number?',
+            CALL EASKI(IIE2,' ',
             CALL EPICKS(INPICK,IVALS,' ',' ',15,NSUR,ITEMSS,
-*item EDZONE
-'Select the surfaces for which the composition '
-'is to be defined.'
-*enditem
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
-*item EDZONE
-'Select the surfaces for which the boundary condition'
-'is to be defined.'
-*enditem
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
-*item EDZONE
-'Select the surfaces for which a specific USE will be'
-'associated e.g. DOOR VEHICLE, FRAME FACADE.'
-*enditem
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
-*item EDZONE
-'Use this attribute to name the surface in a way'
-'that makes it easy to reference the surface later.'
-*enditem
- 52           CALL EASKS(T14,outs,'(<=12 chars, no spaces)',
-*item EDZONE
-'You can define shading obstructions by either supplying'
-'an origin and dimensions or clicking on a bitmap.'
-*enditem
+ 52         CALL EASKS(T14,outs,'(<=12 chars, no spaces)',
           call easkab(' ','Shading obstruction definition via:',
-*item EDZONE
-*enditem
           call easkabc(' ','Shading obstruction definition via:',
-*item EDZONE
-'The current zone geometry can be modified via'
-'rotation, translation and mirroring options that'
-'apply to all zone surfaces and, optionally,'
-'to obstructions and Mean Radiant Temperature'
-'sensors in the zone.'
+*item EDZONE geometry_rotation_menu
+'The current zone geometry can be modified via rotation,'
+'translation and mirroring options that apply to all zone'
+'surfaces and, optionally, to obstructions and Mean Radiant'
+'Temperature sensors in the zone. You will be asked if you'
+'want to apply the rotation to obstructions and sensors.'
 ' '
 'Rotation: + = anticlockwise.'
 ' '
-'Translation: use to change all X Y or Z by the same'
-'amount. To translate a portion of the zone use surface'
-'translation or edit vertices.'
+'Translation: use to change all X Y or Z by the same amount.'
+'To translate a portion of the zone use surface translation'
+'or edit vertices.'
 ' '
-'Mirror: flips one axis - you specify the axis and'
-'the point along that axis where the mirror is to'
-'occur. A positive Y mirror is shown below; a negative'
-'mirror is top to bottom.'
+'Mirror: flips one axis - you specify the axis and this point'
+'along that axis where the mirror is to occur. A positive Y'
+'mirror is shown below; a negative mirror is top to bottom.'
 ' '
 '             +Y'
 '            |  .......'
@@ -7726,76 +7079,34 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '            |'
 '            | -Y    Positive X mirror'
 '                  '
-'Please ensure that the mirror point is at the edge of'
-'or outside the zone since a mirror point within a'
-'zone can cause problems.'
+'Please ensure that the mirror point is at the edge of or outside'
+'the zone since a mirror point within a zone can cause problems.'
 'Take care: there is no undo facility.'
 *enditem
           CALL PHELPD('rotation section',50,'-',0,0,IER)
-*item EDZONE
-*enditem
           CALL EASKR(VAL,' ','Rotation (+ = anticlockwise)?',
-*item EDZONE
-*enditem
-              CALL EASKR(x1,' ','X-coord?',
-*item EDZONE
-*enditem
-              CALL EASKR(y1,' ',' Y-coord?',
-*item EDZONE
-'You have rotated the zone. You probably also '
-'need to rotate the MRT sensors.'
-*enditem
-              call askok('Apply this rotation to MRT sensors',
-*item EDZONE
-'You have already rotated the zone. Probably '
-'you will want to rotate associated obstructions.'
-*enditem
-            call askok('Apply this rotation to obstructions',
-*item EDZONE
-'You have already rotated the zone. Probably '
-'you will want to rotate associated obstructions.'
-*enditem
-            call askok('Apply this rotation to obstructions',
-*item EDZONE
-*enditem
-  43        CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
-*item EDZONE
-*enditem
-            call askok('Apply this transform to zone surfaces?',' ',
-*item EDZONE
-*enditem
-            call askok(msgv,' Is this ok?',ok,dok,58)
-*item EDZONE
-*enditem
-            CALL EASKGEOF(
-*item EDZONE
-*enditem
-            call askok(msgv,' Is this ok?',ok,dok,58)
-*item EDZONE
-'You have transformed the zone. You probably also '
-'want to transform its MRT sensors.'
-*enditem
-              call askok('Apply this transform to MRT sensors',
-*item EDZONE
-'You already transformed the zone. You probably also'
-'want to transform the associated obstructions. '
-*enditem
-            call askok('Apply this transform to obstructions',
-*item EDZONE
-'You already transformed the zone. You probably also'
-'want to transform the associated obstructions. '
-*enditem
-            call askok('Apply this transform to obstructions',
-*item EDZONE
-'The mirror facility flips one axis.  You specify '
-'which axis and the point along that axis where the '
-'mirror is to occur. A positive Y mirror is shown. '
-'A negative mirror is top to bottom. '
- '             +Y'
- '            |  .......'
- '            |  :     :.......'
- '            |  :     /\\     :'
- '            |  :.....||.....:'
+          CALL EASKR(x1,' ','X-coord?',
+          CALL EASKR(y1,' ',' Y-coord?',
+          call askok('Apply this rotation to MRT sensors',
+          call askok('Apply this rotation to obstructions',
+          call askok('Apply this rotation to obstructions',
+  43      CALL EASKS(HOLD,'Transform (X Y Z metres):',' ',36,
+          call askok('Apply this transform to zone surfaces?',' ',
+          call askok(msgv,' Is this ok?',ok,dok,58)
+          CALL EASKGEOF(
+          call askok(msgv,' Is this ok?',ok,dok,58)
+          call askok('Apply this transform to MRT sensors',
+          call askok('Apply this transform to obstructions',
+          call askok('Apply this transform to obstructions',
+*item EDZONE geometry_mirror_menu
+'The mirror facility flips one axis.  You specify which axis'
+'and the point along that axis where the mirror is to occur.'
+'A positive Y mirror is shown. A negative mirror is top to bottom.'
+'             +Y'
+'            |  .......'
+'            |  :     :.......'
+'            |  :     /\\     :'
+'            |  :.....||.....:'
 '           -|- - - - || - - - - - -mirror line'
 '            |  ......||......'
 '            |  :     ||     :'
@@ -7806,69 +7117,51 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '            | -Y    Positive Y mirror'
 '  '
 '  '
-'  '
 'A positive X mirror is shown. The negative goes from'
 'right to left. '
 ' '
- '             +Y'
- '          |            mirror line'
- '          |           |'
- '          | ......... | ..........'
- '          | :     ==========>    :'
- '          | :     ..: | :..      :'
- '          | :.....:   |   :......:'
- ' -X_______|___________|__________ +X '
- '          |'
- '          | -Y    Positive X mirror'
- '                  '
- '                  '
+'             +Y'
+'          |            mirror line'
+'          |           |'
+'          | ......... | ..........'
+'          | :     ==========>    :'
+'          | :     ..: | :..      :'
+'          | :.....:   |   :......:'
+' -X_______|___________|__________ +X '
+'          |'
+'          | -Y    Positive X mirror'
+'                  '
+'                  '
+'Please ensure the mirror point is at or outside '
+'of the zone. '
+'  For +Y mirror the point is above the object.'
+'  For -Y mirror the point is below it. '
+'  For +X mirror the point is to the right of the zone'
+'  For -X mirror the point is on the left.'
 *enditem
           CALL PHELPD('axis mirror',35,'-',0,0,IER)
-*item EDZONE
-'Please ensure the mirror point is at or outside '
-'of the zone. For +mirror the point is above the'
-'object.  For -mirror the point is below it. '
-*enditem
-            CALL EASKR(VALM,' ','Mirror point on Y-axis?',
-*item EDZONE
-*enditem
-            call askok(' ','Apply mirror transform?',ok,dok,3)
-*item EDZONE
-'Please ensure the mirror point is at or outside of'
-'the zone. For +mirror the point is to the right of'
-'the zone.  For -mirror the point is on the left.'
-*enditem
-            CALL EASKR(VALM,' ','Mirror point on X-axis?',
-*item EDZONE
-*enditem
-            call askok(' ','Apply mirror transform?',ok,dok,3)
-*item EDZONE
-'In addition to surface attributes you can view the'
-'thermo-physical properties of the zone.'
-*enditem
+          CALL EASKR(VALM,' ','Mirror point on Y-axis?',
+          call askok(' ','Apply mirror transform?',ok,dok,3)
+          CALL EASKR(VALM,' ','Mirror point on X-axis?',
+          call askok(' ','Apply mirror transform?',ok,dok,3)
            call askok(' ','Also view thermo-physical details?',
-*item EDZONE
-'The current geometry  will be written to file in'
-'GEN format.'
-*enditem
         CALL EASKS(LTMP,' ','Zone geometry file?',
-*item EDZONE
-*enditem
         CALL PHELPD('geometry section',35,'zone_geo_ed ',0,0,IER)
 *subroutine EDINSUL
-*item EDINSUL
+*item EDINSUL insolation_choices
 'There are a number of options for treating shading and '
 'insolation distibution in a zone:'
 ' '
 '* The user specifies a static insolation distribution '
 '  i.e. which surface or pair of surfaces to which all '
 '  insolation entering the room is to be directed.'
+'  '
 '* Insolation is distributed diffusely (by surface area '
 '  and absorptance) (this is the default).'
-' '
-'* A dynamic analysis of shading and insolation distri-'
-'  bution via [ish] which is stored in a shading/'
-'  insolation file based on user directives.'
+'  '
+'* A dynamic analysis of shading and insolation distribution'
+'  via [ish] which is stored in a shading/insolation file'
+'  (you are asked to confirm the name) based on user directives.'
 '  Typical directives are to calculate shading on all'
 '  applicable surfaces (those that face the outside) as'
 '  and include all outside facing transparent surfaces'
@@ -7887,37 +7180,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'no zone shading file at simulation time. '
 *enditem
         CALL PHELPD('shad:insol',28,'-',0,0,IER)
-*item EDINSUL
-'Having defined obstructions, you must run a separate'
-'analysis to predice temporal distribution patterns.'
-*enditem
         CALL EASKABC('Shading & insolation analysis options: ',' ',
-*item EDINSUL
-'The shading/ insulation database holds time '
-'varying external surface shading and internal'
-'surface insolation.'
-*enditem
-            CALL EASKS(SFIL,' New zone shading/ insulation database?',
-*item EDINSUL
-'There are a number of options for treating shading and '
-'insolation distibution in a zone:'
-' '
-'* The user specifies a static insolation distribution '
-'  i.e. which surface or pair of surfaces to which all '
-'  insolation entering the room is to be directed.'
-'* Insolation is distributed diffusely (by surface area '
-'  and absorptance) (this is the default).'
-*enditem
+        CALL EASKS(SFIL,' New zone shading/ insulation database?',
         CALL EPICKS(IX,IVAL,' static insolation options:','  ',
-*item EDINSUL
-*enditem
-          CALL EASKSUR(ICOMP,IS,'A','Select surface for insolation.',
-*item EDINSUL
-*enditem
-          CALL EASKSUR(ICOMP,IS,'A','Select first insolated surface.',
-*item EDINSUL
-*enditem
-          CALL EASKSUR(ICOMP,IS,'A','Select 2nd insolated surface.',
+        CALL EASKSUR(ICOMP,IS,'A','Select surface for insolation.',
+        CALL EASKSUR(ICOMP,IS,'A','Select first insolated surface.',
+        CALL EASKSUR(ICOMP,IS,'A','Select 2nd insolated surface.',
 *subroutine PICKSSUR
 *item PICKSSUR
 'A shading analysis calculates the time varying patterns'
@@ -17331,8 +16599,8 @@ c      CALL EASKABC(
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
 *subroutine EMKSTRIPPED
 *item EMKSTRIPPED
- ' Control file exists. Choose to overwrite in '
- ' question that will follow '
+' Control file exists. Choose to overwrite in '
+' question that will follow '
 *enditem
           CALL PHELPD('File exists',2,'-',0,0,IER)
 *item EMKSTRIPPED
@@ -18281,42 +17549,42 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Images are added to a model via the context->images'
 'with a model. '
 'Images of type GIF and XBM and JPG are supported.'
- 'This menu supports the creation of design variants.'
- 'The assumption is that a working model exists from'
- 'which other permutations can be derived.'
- ' '
- 'Variants may be created in the following ways.'
- ' '
- 'Project Variant: asks specific questions about the '
- 'changes the user wishes to make to the model. The'
- 'changes once implemented are saved to new model'
- 'files, i.e. the original model is preserved.'
- ' '
- 'For example, a variant corresponding to a different'
- 'location will require a different climate file,'
- 'modified ground temperatures and recalculated shading'
- 'factors.'
- ' '
- 'As another example, a variant with alternative'
- 'constructions may requires new geometry, construction'
- 'and optical property files.'
- ' '
- 'Several changes may be applied within a single'
- 'variant.'
- ' '
- 'A five character postfix is requested from the'
- 'user and this is appended to the names of new files.'
- ' '
- ' '
- '*****SBEM Notional Model*****'
- ' ESP-r creates the SBEM notional model in compliance with'
- ' CIBSE TM33 ??? This creates a model with the postfix'
- ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
- ' '
- ' Details of how the notonal building relates to the '
- ' original building and plant model is defined in relevant'
- ' SBEM documentation'
- ' '
+'This menu supports the creation of design variants.'
+'The assumption is that a working model exists from'
+'which other permutations can be derived.'
+' '
+'Variants may be created in the following ways.'
+' '
+'Project Variant: asks specific questions about the '
+'changes the user wishes to make to the model. The'
+'changes once implemented are saved to new model'
+'files, i.e. the original model is preserved.'
+' '
+'For example, a variant corresponding to a different'
+'location will require a different climate file,'
+'modified ground temperatures and recalculated shading'
+'factors.'
+' '
+'As another example, a variant with alternative'
+'constructions may requires new geometry, construction'
+'and optical property files.'
+' '
+'Several changes may be applied within a single'
+'variant.'
+' '
+'A five character postfix is requested from the'
+'user and this is appended to the names of new files.'
+' '
+' '
+'*****SBEM Notional Model*****'
+' ESP-r creates the SBEM notional model in compliance with'
+' CIBSE TM33 ??? This creates a model with the postfix'
+' _not [i.e. filname.cfg is copied to filename_not.cfg]'
+' '
+' Details of how the notonal building relates to the '
+' original building and plant model is defined in relevant'
+' SBEM documentation'
+' '
 *enditem
         CALL EASKS(APP,' ',
 *item CFGVER
@@ -18500,13 +17768,13 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
           CALL EASKS248(ipvsynop,'Synopsis',' ',72,
 *item VERMAN
- 'Pressure coefficients are used to calculate pressure'
- 'distribution. These are defined at two levels.'
- 'Building parameters include overall dimensions, roof'
- 'detail, plan area etc. Invoking this facility will'
- 'allow these values to be changed.'
- 'The database option defines pressure coefficients that'
- 'are used where an air flow network exists.'
+'Pressure coefficients are used to calculate pressure'
+'distribution. These are defined at two levels.'
+'Building parameters include overall dimensions, roof'
+'detail, plan area etc. Invoking this facility will'
+'allow these values to be changed.'
+'The database option defines pressure coefficients that'
+'are used where an air flow network exists.'
 *enditem
         CALL EASKABC('Change to be made to:',
 *item VERMAN
@@ -20632,15 +19900,15 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *subroutine CLRTABC
 *subroutine glbset
 *item glbset
- 'Period of the temporal file:'
- 'The year is required. It should match that of '
- 'the climate file used in a simulation and can hold'
- 'data for a few days up to a year. '
- ' '
- 'The start day applies to all of the items in the '
- 'file.  Example:'
- ' '
- ' A week long simulation in July (say 7-14th) requires'
+'Period of the temporal file:'
+'The year is required. It should match that of '
+'the climate file used in a simulation and can hold'
+'data for a few days up to a year. '
+' '
+'The start day applies to all of the items in the '
+'file.  Example:'
+' '
+' A week long simulation in July (say 7-14th) requires'
 ' a 4 day startup period. A minumum TDF db would be'
 ' 3-14 July.'
 ' '
