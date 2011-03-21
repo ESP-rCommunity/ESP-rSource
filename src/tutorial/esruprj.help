@@ -7187,72 +7187,92 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKSUR(ICOMP,IS,'A','Select first insolated surface.',
         CALL EASKSUR(ICOMP,IS,'A','Select 2nd insolated surface.',
 *subroutine PICKSSUR
-*item PICKSSUR
+*item PICKSSUR picksurface_choices
+'For shading and insolation analysis you will be asked to'
+'specify surfaces to participate in the analysis. A limit'
+'to the number of surfaces will be indicated in the interface.'
+'  '
 'A shading analysis calculates the time varying patterns'
 'of shading on external zone surfaces. You must select'
 'the surfaces to include in this calculation. Selecting'
 '[all applicable surfaces] corresponds to all outside'
 'facing opaque and tansparent surfaces.'
-*enditem
-        CALL EASKABCD(' ','Shading calculation options:',
-*item PICKSSUR
+'  '
 'An insolation analysis calculates the time varying'
 'insolation of internal zone surfaces. You must select'
 'the external surfaces (with windows) to include in'
 'this calculation. Selecting [all applicable surfaces]'
 'corresponds to all outside facing tansparent surfaces.'
 *enditem
-         CALL EASKABCD(' ','Insolation calculationoptions:',
-*item PICKSSUR
-'Pick one or more surfaces from the zone (up to'
-'the limit indicated).'
-*enditem
-          CALL EPICKS(INPIC,IVALS,'Which surfaces?',msg1,
-*item PICKSSUR
-'Pick one, several or all surfaces for inclusion.'
-*enditem
-          CALL EPICKS(INPIC,IVALS,' ','Surfaces to Include',
+        CALL EASKABCD(' ','Shading calculation options:',
+        CALL EASKABCD(' ','Insolation calculationoptions:',
+        CALL EPICKS(INPIC,IVALS,'Which surfaces?',msg1,
+        CALL EPICKS(INPIC,IVALS,' ','Surfaces to Include',
 *subroutine EDSURA
-*item EDSURA
-'This menu displays the surface attributes that may'
-'be edited. Editing is accomplished by selecting one'
-'of the surfaces.'
+*item EDSURA surface_attrib_menu
+'This menu displays the surface attributes that may be edited.'
+'  '
+' option a: surface name (up to 12 char) should be descriptive'
+'   if possible and unique within this zone. A key step in'
+'   QA involves replacing the default name.'
+'  '
+' option b: surface type identifies whether the surface is opaque'
+'   or transparet or a complex fenistration. This attribute is'
+'   based on the properties of the construction it uses so make'
+'   sure it matches! If a surface has at least one transparent'
+'   layer is considered a TRAN and it is expected that the MLC'
+'   will include a reference to an optical property set.'
+'  '
+' option c: surface location is derived from the orientation of'
+'   the polygon to characterize the heat transfer at the surface'
+'   as well as an aide in model checking and determining the area'
+'   of the base of the model. A value of UNKN signals that it is'
+'   sloped.'
+'  '
+' surface area, azim & elevation, perimeter are derived values'
+'  '
+' option d: thickness is derived from the construction attribute'
+'   and is reported here to clarify the nature of the surface. In'
+'   older files the display relates to indentation used for thermal'
+'   bridge estimation if 3D conduction is active.'
+'  '
+' option e: construction gives access to the current list of'
+'   constructions in the database and a change in construction'
+'   may cause other attributes and derived values to be updated.'
+'   You are given the option to view the current thermophysical'
+'   properties if a zone construction file exists.'
+'  '
+' option f: environement (at the other face) presents a standard'
+'   list of available options. More help is found in that dialog'
+'   and if this surface is thermophysically linked to a surface'
+'   in another zone then its details are presented.'
+'  '
+' option g: parent child relationships are indicated based on an'
+'   analysis of the edges and orientations of adjacent surfaces.'
+'   Other simulation tools rely on this and it also is used when'
+'   undertaking code complience tasks.'
+'  '
+' option h: surface use attributes help clarify the intent of a'
+'   surface (primarily for code complience) and as an aide for'
+'   model checking. In the future it will be used to automate the'
+'   creation of air flow networks.'
+'  '
+' option + You can add a rectangular opening (e.g. a window or'
+'   door) to a surface by specifing its position within'
+'   the parent surface. This position is an X Y offset from'
+'   the lower left hand corner (when looking from outside'
+'   the model). An opening will then be created within'
+'   the parent surface with the specified width and height.'
 ' '
-'You can add a rectangular opening (e.g. a window or'
-'door) to a surface by specifing its position within'
-'the parent surface. This position is an X Y offset from'
-'the lower left hand corner (when looking from outside'
-'the model). An opening will then be created within'
-'the parent surface with the specified width and height.'
-' '
-'To add a non-rectangular opening, use the surface'
-'list & edges menu. Or you might begin with a rectangle'
-'and then add more vertices (be careful with openings'
-'in sloped surfaces).'
+'To add a non-rectangular opening, use the surface list & edges'
+'menu. Or you might begin with a rectangle and then add more'
+'vertices (be careful with openings in sloped surfaces).'
 *enditem
         CALL PHELPD('surface attributes menu',11,'-',0,0,IER)
-*item EDSURA
-'Inserting a surface into an existing surface is a'
-'common way to create a door or window opening.'
-'Use this attribute to name the surface in a way that'
-'makes it easy to reference the surface later.'
-*enditem
  52     CALL EASKS(T14,' Surface name?','(<=12 characters, no spaces)',
-*item EDSURA
-'If a surface is composed of at least one transparent'
-'layer then it is considered not to be opaque.'
-*enditem
     9   CALL EPICKS(IX,IVAL,' ','Surface Type',
-*item EDSURA
-'The surface orientation is an optional attribute which'
-'is used to assist in assessing surfaces for daylight'
-'calculations and determine casual gains based on floor'
-'area. Initial values are based on the azimuth and'
-'elevation of each surface. Leaving this attribute'
-'as UNKNOWN is not detrimental.'
-*enditem
         call MENUATOL(' ','Surface Orientation',
-*item EDSURA
+*item EDSURA surface_indentation
 'To enable 3D geometry definition (as required for'
 '3D gridding), the distance between the current'
 'surface and an imaginary external surface (line)'
@@ -7260,137 +7280,88 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'for all surfaces with similar direction angles.'
 *enditem
         CALL EASKR(SINDT,' ','Surface indentation?',
-*item EDSURA
-'There is no zone construction file yet although'
-'you can browse entries in the Constructions db.'
-*enditem
-                call askok('View thermo-physical properties of ',
-*item EDSURA
-'You can see the thermo-physical properties as held'
-'in the zone constructions file.'
-*enditem
-              call askok('View thermo-physical properties of ',outs,
-*item EDSURA
+        call askok('View thermo-physical properties of ',
+        call askok('View thermo-physical properties of ',outs,
+*item EDSURA surface_non_symetric
 'If this surface is a partition and the construction is'
 'non-symetrical and linked to a reversed construction,'
 'you should check that the surface in the other room'
 'has also been properly updated.'
 *enditem
           call askok('Modify thermo-physical data of',outs,ok,dok,7)
-*item EDSURA
+*item EDSURA surface_boundary_opt
 'The boundary conditions at the other face of this'
 'surface is specified  here. The default is [exterior].'
 ' '
 ' Exterior - exposed to external weather.'
 ' '
-' Similar to current - exposed to the same conditions'
-'   as the inside face except for the treatment of solar'
-'  insolation: only the diffuse component assumed the'
-'  same. A temperature (C) and radiation (W/m^2) offset'
-'  may be imposed.'
+' Similar to current - exposed to the same conditions as the'
+'   inside face except for the treatment of solar insolation:'
+'   only the diffuse component assumed the same. A temperature'
+'   (C) and radiation (W/m^2) offset may be imposed to approximate'
+'   a situation where the adjacent space (not included in the model)'
+'   tends to be warmer or cooler than the real zone.'
 ' '
-' Prescribed static - exposed to a user specifiec and'
-'  constant temperature and radiation condition.'
+' Prescribed static - exposed to a user specified constant'
+'   temperature(C) and radiation condition(W/m2) such as would be'
+'   found in a cold store room.'
 ' '
-' Surface in other zone - exposed to the temperature and'
-'  radiation condition of a specified surface in a'
-'  other zone (but one time step in arrears).'
+' Surface in other zone - exposed to the temperature and radiation'
+'   condition of a specified surface in another zone (but one time'
+'   step in arrears). You are given the option to update the other'
+'   zone to match this.'
 ' '
-' Ground (monthly profile) - exposed to a temperature'
-'  defined by a standard monthly temperature profile'
-'  embedded in ESP-r.'
+' A ground connection is either:'
+'  > 0 connection to one of several standard profiles'
+'  = 0 connection to a user defined profile'
+'  =-3 connection to a 3D ground model.'
+'  '
+' Ground (monthly profile) - exposed to a temperature defined by'
+'  one of the standard monthly temperature profiles embedded in'
+'  ESP-r. Some of these were found in the literature, others are'
+'  based on data held in DoE EPW climate files.'
 ' '
-' Ground (user defined profile) - exposed to a'
-'  temperature defined by a monthly temperature profile'
-'  defined by the user (in Model Context).'
+' Ground (user defined profile) - exposed to a monthly temperature'
+'  supplied by the user (via the Model Context menu prior to its'
+'  use as a surface atrributre). Note that calculated ground'
+'  temperatures are included in the model QA report based on'
+'  standard simplified methods. If you have measured ground'
+'  temperatures these should be used.'
 ' '
-' Ground (3D conduction model) - exposed to a'
-'  temperature calculated from a model based on a 3D'
-'  representation of the ground.'
+' Ground (3D conduction model) - exposed to a temperature calculated'
+'  from a 3D representation of the ground (via the grd module).'
 ' '
-' Adiabatic - heat flux set to zero.'
+' Adiabatic - heat flux set to zero at the boundary.'
 ' '
-' BASESIMP foundation configuration -  used to represent'
-'  a basement configuration and precalculate basement'
-'  heat transfer. Requires the existence of a [basesimp]'
-'  file giving dimensions and required computational'
-'  parameters.'
+' BASESIMP foundation configuration -  used to represent a basement'
+'  configuration and precalculate basement heat transfer. Requires'
+'  the existence of a [basesimp] file giving dimensions and required'
+'  computational parameters. Look for the BASESIMP option in the zone'
+'  geometry menu. You are asked for which of the BASESIMP'
+'  configurations to use and the the percentage of the overall heat'
+'  transfer with the ground which is associated with this surface.'
+'  More information is available in the source bscoeff.F.'
 ' '
-' CEN 13791 partition - CEN 13791 test: like'
-'  [similar to current] above but the temperature and'
-'  radiation offsets are not available. Details given'
-'  in Section 4.4.2 of the CEN 13791 standard.'
+' CEN 13791 partition - CEN 13791 test: like [similar to current]'
+'  above but the temperature and radiation offsets are not available.'
+'  Details given in Section 4.4.2 of the CEN 13791 standard.'
 ' '
-'Note that the Project Manager is able to automatically'
-'link adjacent surfaces based on the infomation'
-'available in zone geometry files.'
+'Note that the Project Manager is able to automatically link adjacent'
+'surfaces based on the infomation available in zone geometry files.'
 *enditem
         CALL EPICKS(IX,IVAL,' ','Other Side Boundary Condition',
-*item EDSURA
-'A [similar to current] boundary condition can'
-'include a temperature (degC) and radiation (W/m^2)'
-'from the current zone. For example, the adjacent'
-'zone (not included in the model) might tend to be'
-'cooler and have lower solar and/or casual gains.'
-'Dimensions are whole degC and whole W'
-*enditem
           CALL EASKR(VALT,' ','Temperature offset?',
-*item EDSURA
-*enditem
           CALL EASKR(VALW,' ','Radiation offset?',
-*item EDSURA
-'A [prescribed static] boundary condition requires the'
-'specification of a constant temperature (degC) and'
-'radiation value (W/m^2).'
-*enditem
           CALL EASKR(VALT,' ','Constant temperature?',
-*item EDSURA
-*enditem
           CALL EASKR(VALW,' ','Constant radiation?',
-*item EDSURA
-*enditem
           CALL EASKGEOF('If other zone known select it, else exit.',
-*item EDSURA
-*enditem
-            CALL EASKSUR(IZ,ISO,'A','Select surface in',
-*item EDSURA
-'You have modified an attribute of a surface which'
-'is a partition between two zones. You probably'
-'should also update the adjacent zone surface to'
-'maintain consistency. '
-*enditem
-              CALL ASKOK(' ','Update other surface side?',
-*item EDSURA
-'A ground connection is either:'
-' > 0 connection to one of several standard profiles'
-'     in which case the profile number is required.'
-' = 0 connection to a user defined profile in which'
-'     case a 0 followed by a profile number is'
-'     required.'
-' =-3 connection to a 3D ground model.'
-*enditem
+          CALL EASKSUR(IZ,ISO,'A','Select surface in',
+          CALL ASKOK(' ','Update other surface side?',
   777     CALL EASKI(IIC2,' ','Standard ground profile number?',
-*item EDSURA
-'A user defined ground profile number is required'
-*enditem
- 778        CALL EASKI(IIE2,' ','User defined ground profile number?',
-*item EDSURA
-'Specify the BASESIMP configuration number.'
-'Refer to src/esp-r/esrubld/bscoeff.F for'
-'correspondence between this number (iconfig)'
-'and the BASESIMP descriptors (e.g. BCIN_1).'
-'BASESIMP is a whole foundation model. Therefore, when'
-'a basement is represented by several ESP-r surfaces'
-'(e.g. n walls + floor), you must specify the'
-'percentage of the whole foundation heat loss to'
-'attribute to each surface. Normally the sum of the'
-'will be 100%. A basesimp file (defining dimensions and'
-'computational parameters must exist and be associated'
-'with the ESP-r basement zone.'
-*enditem
+ 778      CALL EASKI(IIE2,' ','User defined ground profile number?',
           CALL EASKI(Ifrac,' ','% BASESIMP loss to this surface?',
 *subroutine edituse
-*item edituse
+*item edituse surface_use_menu
 'For QA and code compliance purposes as well as to'
 'help auto-generate air flow networks ESP-r allows'
 'you to attach SEMANTIC tags to surfaces in a zone.'
@@ -7427,22 +7398,12 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'ROOF FLAT (0deg-20deg slope).'
 *enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item edituse
+*item edituse door_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
@@ -7463,11 +7424,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','DOOR air leakage:',
-*item edituse
+*item edituse fict_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this fictitious opening. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7484,11 +7445,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','FICT surface air leakage:',
-*item edituse
+*item edituse frame_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this frame. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7501,11 +7462,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','FRAME surface air leakage:',
-*item edituse
+*item edituse window_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this window. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7525,7 +7486,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKATOG(' ','WINDOW surface air leakage:',
 *subroutine selectuse
-*item selectuse
+*item selectuse surface_use_menu
 'For QA and code compliance purposes as well as to'
 'help auto-generate air flow networks ESP-r allows'
 'you to attach SEMANTIC tags to surfaces in a zone.'
@@ -7562,10 +7523,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'ROOF FLAT (0deg-20deg slope).'
 *enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item selectuse
-*enditem
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-*item selectuse
+*item selectuse door_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
@@ -7586,11 +7545,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','DOOR air leakage:',
-*item selectuse
+*item selectuse fict_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this fictitious opening. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7607,11 +7566,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','FICT surface air leakage:',
-*item selectuse
+*item selectuse frame_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this frame. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7624,11 +7583,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Cancel does what it says. '
 *enditem
         CALL EASKATOG(' ','FRAME surface air leakage:',
-*item selectuse
+*item selectuse window_use_open_closed
 'Closed signals to other parts of ESP-r that air '
 'is not likely to pass and neither the scheduled '
 'air flow or the flow network definitions should '
-'pay further attention to this door. '
+'pay further attention to this window. '
 ' '
 'Crack signals that air might pass via a crack '
 'component (if network) or that there might be a'
@@ -7648,371 +7607,227 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
         CALL EASKATOG(' ','WINDOW surface air leakage:',
 *subroutine EDVERT
-*item EDVERT
-'This menu allows existing vertices to be viewed and'
-*enditem
-        CALL PHELPD('configuration section',2,'-',0,0,IER)
-*item EDVERT
-'*--x-* Vertex on a line: finds one or more points'
-'along a line (defined by specifying two vertices).'
+*item EDVERT surface_vertex_menu
+'This menu allows existing vertices to be viewed and edited.'
+'  '
+' edit vertex - select one and you can then alter the values'
+'   of the X Y or Z value and if you are in graphic mode you'
+'   can see the change in the zone.
+'  '
+' + manage vertices - add a new vertex, delete an existing vertex'
+'   if it is not being referenced by a surface, copy a vertex'
+'   (you will be given the option to edit the X Y Z values after'
+'   the copy), replicate a vertex allows a number of copies to be'
+'   made (useful if only one coordinate needs to be altered).'
+'   If you are in graphics mode you can click on the vertex to'
+'   select it.'
+'  '
+'Transforms - provides a number of options which reduce the need'
+'   to get out your calculator:
+'  *--x-* Vertex on a line: creates one (or more) points along a'
+'  line (i.e. two vertices and then a distance (m) along the line).'
 ' '
-'*<-?->* Distance between vertices: gives distance'
-'given two vertices.'
+'  *<-?->* Distance between vertices: gives distance (m) based on'
+'  two user selected vertices.'
 ' '
-'Vertex at angle: finds a (new) vertex relative to'
-'a given vertex at a specified distance, angle and'
+'  Vertex at angle: finds a (new) vertex relative to a given vertex'
+'  at a specified distance (m), angle (degrees north is 0 + clockwise)'
+'  and elevation (degrees) where 90 is vertical.'
 ' '
-'Angle between lines: finds angle A between two lines'
-'given 3 vertex as in:'
+'  Angle between lines: finds angle A between two lines given'
+'  3 vertex as in:'
 '                            * 1 '
 '                           /    '
 '                       a  /     '
 '                3 *------* 2    '
 ' '
-'The intersection of a line & plane asks you for two'
-'points defining a line as well as a plane to test.'
+'  The intersection of a line & plane asks you for two points'
+'  defining a line as well as a polygon to test.'
 ' '
-'The intersection of LINES and plan ask for a plane'
-'to test and then checks ALL lines that intersects'
-'that plane and adds vertices where they cross. This'
-'can be used to help subdivide surfaces within a zone.'
+'  The intersection of LINES and plan ask for a plane to test'
+'  and then checks ALL lines that intersect that plane and'
+'  adds vertices where they cross. This can be used to help'
+'  subdivide surfaces within a zone.'
+'  '
+'  Distance between vertex and a line - you are asked to identify'
+'  the line as well as the vertex.'
+'  '
+'  Find close vertices - sometimes the wire-frame is not clear so'
+'  this searches for close vertices within the room.'
+'  '
+'  Move vertices within a line - you are told the existing length'
+'  of the line and the distance from the first vertex. Positive is'
+'  a move towards the 2nd vertex and negative is away from the'
+'  2nd vertex.'
+'  '
+'Where a new vertex is created you will be asked to confirm that'
+'you want it to be included in the zone.'
+'  '
+'If a new vertex is within 3mm of an existing edge you may be'
+'asked whether the vertex should be included in the associated'
+'polygon.'
 *enditem
+        CALL PHELPD('configuration section',2,'-',0,0,IER)
         call MENUATOL(' ',
-*item EDVERT
-'Distance along the line in metres.'
-*enditem
-          CALL EASKR(vdis,' ','Distance along line?',0.001,
-*item EDVERT
-'Distance is in metres, azimuth assumes North = 0,'
-'+ degrees clockwise, elevation of 90 is vertical.'
-*enditem
- 342      CALL EASKS(HOLD,
-*item EDVERT
-*enditem
-            CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
-*item EDVERT
-*enditem
-          CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
-*item EDVERT
-'This can become a new vertex. '
-*enditem
-                  CALL EASKABC(' ',outs,'new vertex',
-*item EDVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
-  136               CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',
-*item EDVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface so the rules about'
-'matching edges are followed. '
-*enditem
-                      call askok(' ','Insert this vertex?',ok,dok,5)
-*item EDVERT
-'Last chance to change the vertex position. '
-*enditem
-            call askok('Is this aligned vertex ok?',' ',ok,dok,1)
-*item EDVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface so that the rules about'
-'matching edges are followed. '
-*enditem
-                      call askok(' ','Insert this vertex?',
-*item EDVERT
-'This function lists vertices which are probably'
-'duplicates or a close to a given vertex.'
-*enditem
-          CALL EASKABC(' ','Options:','find close vertices',
-*item EDVERT
-'Distance (m) along the line in metres. Positive'
-'is towards the 2nd vertex; negative is away from'
-'the 2nd vertex.'
-*enditem
-            CALL EASKR(vdis,' ','Movement distance?',
-*item EDVERT
-'Last chance to abort the change. '
-*enditem
-            call askok('Apply this move?',' ',OK,dok,1)
-*item EDVERT
-'This can become a new vertex. '
-*enditem
-            CALL EASKABC(' ',outs,'new vertex',
-*item EDVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
-  43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
-*item EDVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface so the rules about'
-'matching edges are followed. '
-*enditem
-                      call askok(' ','Insert this vertex?',ok,dok,5)
-*item EDVERT
-'If you have several vertices along one line you'
-'can click ok to continue defining them.'
-*enditem
-                call askok('Another vertex along the line? ',' ',
-*item EDVERT
-'If you have several vertices from this origin'
-'you can click ok to continue defining them.'
-*enditem
-                call askok('Another vertex from this origin? ',
-*item EDVERT
-'If you have several vertices along one line you'
-'can click ok to continue defining them.'
-*enditem
-                call askok('Another intersection of line and plane? ',
-*item EDVERT
-'If a new vertex is a minor variation of an existing '
-'point then it may be easier to copy and then edit. '
-' '
-'You may delete one or more vertices (but only those'
-'which are unlinked to surfaces may be deleted). '
-'In graphic mode click on the vertices (end with and [e])'
-' '
-'Replication can be used make several varitants of a'
-'single vertex (useful where only one coordinate needs'
-'to be altered). '
-' '
-'In graphic mode you can edit a number of vertices by '
-'clicking on the wire-frame image. '
-' '
-'A cancel request leaves the model unchanged. '
-*enditem
+        CALL EASKR(vdis,' ','Distance along line?',0.001,
+ 342    CALL EASKS(HOLD,
+        CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
+        CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
+        CALL EASKABC(' ',outs,'new vertex',
+  136   CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',
+        call askok(' ','Insert this vertex?',ok,dok,5)
+        call askok('Is this aligned vertex ok?',' ',ok,dok,1)
+        call askok(' ','Insert this vertex?',
+        CALL EASKABC(' ','Options:','find close vertices',
+        CALL EASKR(vdis,' ','Movement distance?',
+        call askok('Apply this move?',' ',OK,dok,1)
+        CALL EASKABC(' ',outs,'new vertex',
+  43    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
+        call askok(' ','Insert this vertex?',ok,dok,5)
+        call askok('Another vertex along the line? ',' ',
+        call askok('Another vertex from this origin? ',
+        call askok('Another intersection of line and plane? ',
         CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
-*item EDVERT
-*enditem
-          CALL EASKI(IADD,' ',' How many vertices to add ? ',
-*item EDVERT
-*enditem
-            CALL EASKI(IADD,' ',' Replicate how many times ? ',
-*item EDVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
- 146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
-*item EDVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
+        CALL EASKI(IADD,' ',' How many vertices to add ? ',
+        CALL EASKI(IADD,' ',' Replicate how many times ? ',
+ 146    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
   42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',IER,2)
 *subroutine EDVLIST
-*item EDVLIST
-'This menu allows existing vertices to be viewed and'
+*item EDVLIST surface_edge_list
+'This menu allows existing surface edge lists to be viewed and'
 'edited. Edit by selecting an item or -Exit to escape.'
 ' '
-'The [@ check vertex topology] looks for unbounded '
-'edges, edges with an adjacent edge ordered in the same'
-'direction (one surface probably reversed) and for '
-'missing intermediate vertices (where one edge is has'
-'more than one adjacent surface). '
+'The [@ check vertex topology] looks for unbounded edges, edges'
+'with an adjacent edge ordered in the same direction (one surface'
+'is probably reversed) and for missing intermediate vertices'
+'(where one edge is has more than one adjacent surface). '
 ' '
-'The [>] command to shift a surface along its normal '
-'axis updates vertices associated with that surface '
-'and thus surfaces sharing these vertices.  Useful '
-'for expanding/shrinking a zone. '
+'The [>] command to shift a surface along its normal axis updates'
+'vertices associated with that surface and thus surfaces sharing'
+'these vertices.  Useful for expanding/shrinking a zone. '
 ' '
-'NOTE: it is suggested that the first surface edge be'
-'horizontal (or close to horizontal) if at all possible.'
-'The shading analysis application gets confused if the'
-'first edge of a surface is vertical. Nothing in esp-r'
-'warns you of this so get into a consistent habit of '
-'avoiding vertical first edges in surfaces. '
+'NOTE: it is suggested that the first surface edge be horizontal'
+'(or close to horizontal) if at all possible. The shading analysis'
+'application gets confused if the first edge of a surface is'
+'vertical. Nothing in esp-r warns you of this so get into a'
+'consistent habit of avoiding vertical first edges in surfaces.'
 ' '
 'There are several options for adding surfaces to a zone'
 ' *made from existing vertices - use this if all of the'
 '    vertices already exist within the zone.'
 ' '
-' *made from existing vertices (mouse) - the same but you'
-'    can select points by clicking on them in the wire-'
-'    frame view.'
+' *made from existing vertices (mouse) - the same but you can'
+'    select points by clicking on them in the wire-frame view
 ' '
-' *inserted into a surface - this option would allow you'
-'    to insert a window or a door or a grill into an'
-'    existing surface.'
+' *inserted into a surface - this option would allow you to insert'
+'    a window or a door or a grill into an existing surface.'
 ' '
-' *copy surface(s) in this zone - this option allows you'
-'    to replicate an existing surface and transform or'
-'    rotate it into a new position. Useful if you have'
-'    repeating element(s). Most attributes are preserved.'
+' *copy surface(s) in this zone - this option allows you to'
+'    replicate an existing surface and transform or rotate it'
+'    into a new position. Useful if you have repeating'
+'    element(s). Most attributes are preserved.'
 ' '
-' *copy surface(s) from another zone - this option allows'
-'    you to re-use surfaces defined in another zone such'
-'    as a partition. Most surface attributes are preserved'
-'    during the copy process. '
+' *copy surface(s) from another zone - this option allows you to'
+'    re-use surfaces defined in another zone such as a partition.'
+'    Most surface attributes are preserved during the copy process.'
 ' '
 ' *vertical rectangle - allows you to place a rectangle'
 '    which is vertical within or at the edge of the zone.'
 ' '
-' *horizontal rectangle - allows you to place a rectangle'
-'    in a horizontal position within or at the edge of the'
-'    zone. E.g. to make a desk add a horizontal rectangle'
-'    in the correct location and then copy and invert this'
-'    surface to form two back-to-back surfaces (and give'
-'    them either adiabetic or a partition connection to'
-'    the other.'
+' *horizontal rectangle - allows you to place a rectangle in a'
+'    horizontal position within or at the edge of the zone.'
+'    E.g. to make a desk add a horizontal rectangle in the'
+'    correct location and then copy and invert this surface to'
+'    form two back-to-back surfaces (and give them either adiabetic'
+'    or a partition connection to the other.'
 ' '
-' *extrude sides and top from a base surface - can take'
-'    an initial surface and extrude it to form a closed'
-'    set of surfaces taking its shape. A base surface can'
-'    be extruded up and a wall initial surface extrudes'
-'    sideways.'
+' *extrude sides and top from a base surface - can take an intial'
+'    surface and extrude it to form a closed set of surfaces'
+'    taking its shape. A base surface can be extruded up and a'
+'    wall initial surface extrudes sideways.'
+'  '
+'Transforms - included actions: 
+'  shift surface along surface normal (+ve is outward metres);'
+'  translate vertices by X,Y,Z metres;'
+'  rotate surface about one of its vertices (+ve anticlockwise);'
+'  invert ordering (to swop front and back faces);'
+'  apply several operations to the surface; cancel (no action).'
 *enditem
         CALL PHELPD('vertex section',59,'-',0,0,IER)
-*item EDVLIST
-*enditem
         CALL EASKSUR(ICOMP,IS,'-','Select surface to act on.',
-*item EDVLIST
-'Possible actions: '
-'  shift surface along surface normal (+ve is outward);'
-'  translate vertices by X,Y,Z metres;'
-'  rotate surface about one of its vertices;'
-'  invert ordering (to swop front and back faces);'
-'  apply several operations to the surface;'
-'  cancel (no action).'
-*enditem
-          CALL PHELPD('transform section',7,'-',0,0,IER)
-*item EDVLIST
-'Distance along the normal (+=out) in metres.'
-*enditem
-          CALL EASKR(vdis,' ','Distance along normal?',
-*item EDVLIST
-*enditem
- 152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-*item EDVLIST
-'The rotation is applied around one vertex of'
-'the surface. The index is to the 1st, 2nd, 3rd,'
-'vertex in the surface. '
-' '
-'A cancel leaves the model unchanged. '
-*enditem
-          CALL EASKI(IRV,'Rotate about which vertex index: ',
-*item EDVLIST
-'The rotation is applied with positive'
-'being anticlockwise. '
-*enditem
-          CALL EASKR(ANGR,' ','Rotation (+ = anticlockwise)?',
-*item EDVLIST
-'If you say no then no changes to the geometry.'
-*enditem
-                CALL ASKOK(outs,'Update the vertex?',OK,DOK,1)
-*item EDVLIST
-'If you say no then no changes to the zone geometry.'
-*enditem
+        CALL PHELPD('transform section',7,'-',0,0,IER)
+        CALL EASKR(vdis,' ','Distance along normal?',
+ 152    CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
+        CALL EASKI(IRV,'Rotate about which vertex index: ',
+        CALL EASKR(ANGR,' ','Rotation (+ = anticlockwise)?',
+        CALL ASKOK(outs,'Update the vertex?',OK,DOK,1)
         CALL ASKOK('Apply the transformed points to the',
-*item EDVLIST
-*enditem
         CALL EASKSUR(ICOMP,IS,'-','Select surface to delete.',
-*item EDVLIST
-'Insertion into an existing surface is a common way '
-'to create a door or window opening. '
+*item EDVLIST surface_insertion
+'Insertion into an existing surface is a common way to create'
+'a door or window opening. '
 ' '
-'You may copy (and then transform) a surface within this '
-'zone to make a new surface. An example an identical shape'
-'which is repeated in several locations. '
+'You may copy (and then transform) a surface within this zone'
+'to make a new surface. An example an identical shape which is'
+'repeated in several locations. '
 ' '
-'You may copy (and then transform) a surface from another '
-'zone for use in this zone. For example, a partition which'
-'shared between two zones. '
+'You may copy (and then transform) a surface from another zone'
+'for use in this zone. For example, a partition between zones.'
 ' '
-'You may create a rectangular surface by specifying its'
-'origin and either an azimuth (for vertical) or a '
-'rotation between the X axis and its [length edge] for.'
-'a horizontal rectangle. '
+'You may create a rectangular surface by specifying its origin'
+'XYZ (typically the lower left corner) and either an azimuth'
+'(for vertical) or a rotation between the X axis and its'
+'[length edge] for a horizontal rectangle + anticlockwise.  A'
+'polygon which is parallel to the Y axis should face North or'
+'South. Azimuth 0.0 is north, 180 is south, 270 is west.'
+'Azimuth 90.0 is east '
 ' '
-'Creating a new surface with existing vertices can be '
-'done by either entering the indices of each vertex in '
-'turn (anticlockwise looking from the outside or clock-'
-'wise looking from the inside). '
+'Creating a new surface with existing vertices can be done by'
+'either entering the indices of each vertex in turn (anti-'
+'clockwise looking from the outside or clock-wise looking from'
+'the inside). '
 ' '
-'NOTE: it is suggested that the first surface edge be'
-'horizontal (or close to horizontal) if at all possible.'
-'The shading analysis application gets confused if the'
-'first edge of a surface is vertical. Nothing in esp-r'
-'warns you of this - so get into a consistent habit of'
-'avoiding vertical first edges in surfaces! '
+'NOTE: it is suggested that the first surface edge be horizontal'
+'(or close to horizontal) if at all possible. The shading'
+'analysis application gets confused if the first edge of a'
+'surface is vertical. Nothing in esp-r warns you of this - so'
+'get into a habit of avoiding vertical first edges in surfaces!'
 ' '
-'You may take a surface and extrude an enclosure (like'
-'the process of creating a zone from a floor plan). With'
-'a surface extrusion the shape of the initial surface is'
-'repeated as a top to the extrusion Xm along the normal'
-'vector and the sides are filled in and given default '
-'names. '
+'You may take a surface and extrude an enclosure (like the'
+'process of creating a zone from a floor plan). With a surface'
+'extrusion the shape of the initial surface is repeated as a'
+'top to the extrusion Xm along the normal vector and the sides'
+'are filled in and given default names. '
 ' '
-'Hint: the extrusion value (if positive) will extrude'
-'in the direction of the outward surface normal and if'
-'negative it will extrude in inwards. If the original '
-'surface is a floor position use a negative extrusion.'
-'If the original surface is an exterior wall a negative'
-'extrusion value will extude inwards. '
+'Hint: the extrusion value (if positive) will extrude in the'
+'direction of the outward surface normal and if negative it'
+'will extrude in inwards. If the original surface is a floor'
+'position use a negative extrusion. If the original surface is'
+'an exterior wall a negative extrusion value will extude inwards.'
 ' '
 'If you are working in a graphics display you can use'
 'mouse clicks on the existing vertices.'
 ' '
-'Options to insert a vertical or horizontal rectangle'
-'into the zone have two variange. One creates a single'
-'wurface with a name and construction and the MASS'
-'option creates a pair of surfaces which are thermally'
-'connected as partitions to each other. For the MASS'
-'option the construction should represent the full'
-'thickness (as opposed to the use of an ADIABETIC'
-'connection where the construction represents half of'
-'the thickness. '
+'Options to insert a vertical or horizontal rectangle into the'
+'zone have two variants. One creates a single surface with a'
+'name and construction and the MASS option creates a pair of'
+'surfaces which are thermally connected as partitions to each'
+'other. For the MASS option the construction should represent'
+'the full thickness (as opposed to the use of an ADIABETIC'
+'connection where the construction represents half of the thickness.'
 *enditem
           call MENUATOL(' ','new surface options',
-*item EDVLIST
-*enditem
           call MENUATOL(' ','new surface options',
-*item EDVLIST
-*enditem
           CALL EASKSUR(ICOMP,IS,'-','Select surface to insert into.',
-*item EDVLIST
-'The origin of the surface will be its lower left hand'
-'corner when viewed from the outside. '
-*enditem
           CALL EASKS(HOLDS,' Vertical surface origin X Y & Z: ',' ',
-*item EDVLIST
-'The orientation of the new surface is specified via'
-'defining its surface normal. A surface polygon which'
-'is parallel to the Y axis should face North or South.'
-'Azimuth 0.0 is north, 180 is south, 270 is west.'
-'Azimuth 90.0 is east '
-'Length and height are in metres.'
-*enditem
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height:',
-*item EDVLIST
-'The origin of the surface will be its lower left hand '
-'corner when viewed from the outside. '
-*enditem
           CALL EASKS(HOLDS,' Horizontal surface origin X Y & Z: ',' ',
-*item EDVLIST
-'Rotation is in relation to the first edge along the '
-'[length] edge and the X axis (positive is anticlockwise'
-'and negative is clockwise.'
-*enditem
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
-*item EDVLIST
-*enditem
           CALL EASKSUR(ICOMP,IS,'-','Select surface .',
-*item EDVLIST
-*enditem
           CALL EASKR(vdis,' ','Extrusion distance along normal?',
-*item EDVLIST
-*enditem
-            CALL EASKS(T14,'Revised surface name',
-*item EDVLIST
-'Well named surfaces (e.g. call a door a door) '
-'can help you understand a model better! '
-*enditem
+          CALL EASKS(T14,'Revised surface name',
           CALL EASKS(T14,'Inserted surface name (12 char max):','  ',
-*item EDVLIST
+*item EDVLIST surface_edge_order
 'The list of associated vertices should be given in'
 'anticlockwise order as one faces the outside of the'
 'surface.  If one is looking at the inside face then'
@@ -8023,76 +7838,40 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'It helps to follow a consistent pattern!'
 *enditem
         CALL EASKS248(t248,' Associated vertices (type the indices)?',
-*subroutine EPKVERT
-*item EPKVERT
-*enditem
-        CALL PHELPD('vertex pick',NHELP,'-',0,0,IER)
-*subroutine surfprm
-*subroutine EZIPIN
 *subroutine LINTHBRDG
-*item LINTHBRDG
-'The underlying assumptions about heat flows via'
-'thermal bridges depend on whether the facade uses'
-'metal cladding. '
+*item LINTHBRDG linear_thermal_bridge
+'Linear thermal bridges are composed of a length (m) and a'
+'psi value W/mK and are used to represent the difference in'
+'heat flow due to a corner junction or edge.'
+'  '
+'The user needs to define the length of the thermal bridge at'
+'each junction/openings/etc. Psi values can also be defined or'
+'the default values from BRE IP 1/06 can be used.'
+'  '
+'The underlying assumptions about heat flows via thermal'
+'bridges depend on whether the facade uses metal cladding.'
+'  '
+'If you have not yet done so you can setup thermal bridge'
+'definitions to fit the specifics of your design. If there'
+'are existing definitions you can update them.'
+'  '
+'Initial values will be based on the geometry of the room as'
+'well as the boundary conditions and the surface USES attributes.'
+'IF YOU HAVE NOT YET set the boundary conditions or surface USE'
+'attributes for this zone you should do that first (choose exit).'
 ' '
-'Initial values will be based on the geometry of the'
-'room as well as the boundary conditions and the'
-'surface use attributes. IF YOU HAVE NOT YET set the'
-'boundary conditions or surface use attributes for'
-'this zone you should do that first (choose exit).'
-' '
-'The fixed % option sets thermal bridges equivalent'
-'to a percentage of the overall UA value. '
+'The fixed % option sets thermal bridges equivalent to a percentage'
+'of the overall UA value. '
 *enditem
             CALL EASKABCD('This zone:','(see help)',
-*item LINTHBRDG
-'The underlying assumptions about heat flows via'
-'thermal bridges depend on whether the facade uses'
-'metal cladding. You can setup thermal bridge'
-'definitions to fit the specifics of your design.'
-' '
-'Initial values will be based on the geometry of the'
-'room as well as the boundary conditions. IF YOU'
-'HAVE NOT YET set the boundary conditions for this'
-'zone you should do that first (choose exit). '
-' '
-'The fixed % option sets thermal bridges equivalent'
-'to a percentage of the overall UA value. '
-*enditem
             CALL EASKABCD('This zone:','(see help)',
-*item LINTHBRDG
-'The user needs to define the length of the thermal'
-'bridge around junction/openings/etc. Psi values can'
-'also be defined or the default values can be used'
-'This was based on the BRE IP 1/06 document'
-*enditem
         CALL PHELPD('thermal bridge menu',4,'-',0,0,IER)
-*item LINTHBRDG
-*enditem
           CALL EASKR(thbrpercent,' ',
-*item LINTHBRDG
-'define psi value of thermal bridge '
-*enditem
             CALL EASKR(psiv,phrasepsi(lookfor),msg,
-*item LINTHBRDG
-'define length of thermal bridge in metres.'
-*enditem
               CALL EASKR(lenv,phraselen(lookfor),msg,
-*item LINTHBRDG
-'define psi value of thermal bridge '
-*enditem
           CALL EASKR(psiv,phrasepsi(lookfor),msg,
-*item LINTHBRDG
-'define length of thermal bridge in metres.'
-*enditem
           CALL EASKR(lenv,phraselen(lookfor),msg,
-*item LINTHBRDG
-'define psi value of thermal bridge '
-*enditem
         CALL EASKR(psiv,phrasepsi(lookfor),msg,
-*item LINTHBRDG
-'define lentgh of thermal bridge in metres.'
-*enditem
         CALL EASKR(lenv,phraselen(lookfor),
 *subroutine updatesvfc
 *subroutine IPVCMD
