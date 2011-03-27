@@ -47,14 +47,13 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/GPICK/GS(MGOPT),nopt
       common/user/browse
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       CHARACTER GS*52
       DIMENSION OPTITM(35),SALT(9),IVALSS(9),IGSET(MGOPT)
-      CHARACTER H*72,OPTITM*54,DSOPT*12
+      CHARACTER OPTITM*54,DSOPT*12
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
@@ -67,6 +66,13 @@ C LPRFDB,IPRODB (for event profile database)
       integer IOW     ! for radio button
       logical unixok  ! to check for database path file separators
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDOPT'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -119,64 +125,8 @@ C If a long list include page facility text.
       INO=-4
 
 C Help text for this menu.
-  2   H(1)='Optical properties are used for transparent constructions'
-      H(2)='as well as to support daylighting calculations and the'
-      H(3)='control of casual gains.  All data is used except for '
-      H(4)='that which is marked as (documentation).'
-      H(5)=' '
-      H(6)='For QA purposes you may fill in the surface solar abs'
-      H(7)='& refl values to match the MLC surface properties.'
-      H(8)='The Uvalue is for documentation only. Similarly, '
-      H(9)='solar heat gain coefficients are not used by ESP-r but '
-      H(10)='can be included for documentation purposes. '
-      H(11)=' '
-      H(12)='The angular reflections are derived from the overall '
-      H(13)='solar transmission and layer absorptions. '
-      H(14)=' '
-      H(15)='The import function currently recognises files from '
-      H(16)='the LBL program WINDOW 4.1/5.1/5.2/6.2 Here is a step'
-      H(17)='by step guide to importing optical data. '
-      H(18)=' '
-      H(19)='1) Start up W4.exe and use the Function 5 key to enter '
-      H(20)=' the glazing system library. '
-      H(21)=' '
-      H(22)='2) If you have existing glazing systems select one and '
-      H(23)=' ensure that angular properties have been calculated'
-      H(24)=' via Function 9 key. If the angular properties have not'
-      H(25)=' been calculated press A to turn on angular calcs.'
-      H(26)=' This should fill up the table. Type escape to return'
-      H(27)=' to the main W4 window. For safety type alt S to save'
-      H(28)=' the current description. Then then alt P to print'
-      H(29)=' the data for the currently highlighted glazing system.'
-      H(30)=' '
-      H(31)=' You will be asked if it is Library or Detail, select '
-      H(32)=' Detail and then give it a file name. It may take a few'
-      H(33)=' moments for it to compelete the calculations before'
-      H(34)=' it finishes writing the file.'
-      H(35)=' '
-      H(36)='3) If you want to create a new glazing system type A for'
-      H(37)=' Add and then either N for New or C for Copy. Hint:'
-      H(38)=' scan the Glass Lib via Function 3 to confirm the'
-      H(39)=' glass code numbers you want to use first.'
-      H(40)=' Double check the layer thickness is correct. In W4 (as'
-      H(41)=' in esp-r) layer 1 is at the outside face and sub-'
-      H(42)=' sequent layers are towards the room. Once the layers'
-      H(43)=' have been defined press the space key to force initial'
-      H(44)=' calculations. Escape back to the main menu, and then'
-      H(45)=' type Function 9 to calculate angular properties.'
-      H(46)=' Once this is done escape back to the main menu and use'
-      H(47)=' alt S to save and alt P to print (as described above).'
-      H(48)=' '
-      H(49)='4) Edit the reports from W4 to remove the null character'
-      H(50)=' before the word Temperature Distribution.'
-      H(51)=' '
-      H(52)='5) Transfer edited report to esp-r folder (use dos2unix'
-      H(53)=' if necessary to convert line endings). In the Project'
-      H(54)=' Manger use the import option in the optical database  '
-      H(55)=' facility and supply the W4 print file name. A'
-      H(56)=' correct translation should result in a graph of the'
-      H(57)=' properties. Change the id string and description and'
-      H(58)=' check that the number of layers is correct.'
+  2   helptopic='optical_properties_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Optical Properties db',OPTITM,NITMS,INO)
 
@@ -184,24 +134,21 @@ C Help text for this menu.
 
 C Check for changes/ask user to save.
         if(moddb)then
-          H(1)='In order to reflect changes you have made in this db'
-          H(2)='in the current model you will have to rebuild the '
-          H(3)='zone construction and tmc files.  This is in option '
-          H(4)='`Construction` of the `model definition` menu.'
-          CALL PHELPD('optical db update',4,'-',0,0,IER)
+          CALL PHELPD('optical db update',nbhelp,'-',0,0,IER)
           moddb = .false.
         endif
         RETURN
       ELSEIF(INO.EQ.NITMS-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('optics db',58,'-',0,0,IER)
+        helptopic='optical_properties_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics db',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-2)THEN
 
 C List database.
-        h(1)='You can direct optical details to file or display'
         CALL EASKABC(' Reporting to:',' ',
-     &      'text feedback','file','continue',irpt,1)
+     &      'text feedback','file','continue',irpt,nbhelp)
         if(irpt.eq.1)then
           itu = iuout
         elseif(irpt.eq.2)then
@@ -236,22 +183,13 @@ C Import/Add/Del/Copy if not browsing....
      &                'browse mode. ','P')
           goto 3
         endif
-        h(1)='Options: Import reads from Window4.1 screen dumps'
-        h(2)='or the reports generated by Window 5.1 or 5.2 or'
-        h(3)='Window v6.'
-        h(4)=' '
-        h(5)='Note that Window 5.1/2 & v6 files have the thickness of'
-        h(6)='the layer in an unreadable location so be sure to'
-        h(7)='correct the thickness after the import.'
-        h(8)=' '
-        h(9)='Add/Delete/Copy work on current contents of db. '
         IOW=1
         CALL EASKATOG('Optical actions: ',' ',
-     &    'Import Window4/5/6','Import WIS',
-     &    'Add','Delete','Copy','Ignore',' ',IOW,9)
+     &    'Import Window5/6','Import WIS',
+     &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from WINDOW 4.1 or Window 5.1, 5.2, v6.? )....
+C Import (from Window 5.1, 5.2, v6.? )....
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -272,11 +210,9 @@ C Import (from WINDOW 4.1 or Window 5.1, 5.2, v6.? )....
 
 C Ask for WIS report file and then attempt to scan it.
           lfil='/tmp/testtag.txt'
-          H(1)='This is a WIS report file. You should provide the'
-          H(2)='full path to this file.'
           DFILE='wis.txt'
           CALL EASKS(lfil,'WIS file name?',
-     &     ' ',72,DFILE,'optical properties import file',IER,2)
+     &     ' ',72,DFILE,'optical properties import file',IER,nbhelp)
           IER=0
           iwin4=IPRODB
           CALL EFOPSEQ(iwin4,lfil,1,IER)
@@ -326,20 +262,17 @@ C Add a new item to the optical db
             SALT(8)='Out |glass|air|glass|air|blind|air|glass| Inside'
             SALT(9)='Other                                           '
 
-            H(1)='The layout of glazing, air gaps and blinds can'
-            H(2)='be selected from this list or an alternative '
-            H(3)='defined.'
-            H(4)=' '
-            H(5)='A cancel request leaves the model unchanged.'
+            helptopic='manual_optics_layout'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             IX=1
             CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
-     &        48,9,SALT,'Typical glazing types',IER,3)
+     &        48,9,SALT,'Typical glazing types',IER,nbhelp)
             IOS=IVALSS(1)
             nl=0
             if(IOS.eq.9)then
               nl=1
               CALL EASKI(nl,' ',' Number of layers in the new set ?',
-     &          1,'F',ME,'F',1,'opt set layers',IERI,5)
+     &          1,'F',ME,'F',1,'opt set layers',IERI,nbhelp)
               if(ieri.eq.-3) then
                 INO=-4
                 GOTO 3
@@ -387,17 +320,15 @@ C Delete an optical item. First pick then copy from temp file
 C one by one, skipping the selected item. To read temp optical file
 C as the source optical db temporarily swap file unit numbers. Open
 C and then delete the original optical file.
-          H(1)='Select on of the existing glazings to delete.'
           IX=1
           CALL EPMENSV
           CALL EPICKS(IX,IGSET,' ','Optical set to delete:',
-     &      52,nopt,GS,'Opticals (select one to delete)',IER,1)
+     &      52,nopt,GS,'Opticals (select one to delete)',IER,nbhelp)
           CALL EPMENRC
           IFOC=IGSET(1)
           if(ifoc.ne.0)then
             dok=.false.
-            h(1)='Last chance to avoid deleting the optical set. '
-            CALL ASKOK(' ',' Are you sure?',OK,dok,1)
+            CALL ASKOK(' ',' Are you sure?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 2
             call OPT2TMP(ier)
             WRITE(DSOPT,'(A)')GS(IFOC)(1:12)
@@ -411,11 +342,10 @@ C Copy an optical item. Backup existing db then pick item, edit it and
 C then add it at the end during copying data back from tmp db.
           if(nopt+1.le.MGOPT)then
             call OPT2TMP(ier)
-            H(1)='Select on of the existing glazings to copy.'
             IX=1
             CALL EPMENSV
             CALL EPICKS(IX,IGSET,' ','Optical set to copy:',
-     &        52,nopt,GS,'Opticals (select one to copy)',IER,1)
+     &        52,nopt,GS,'Opticals (select one to copy)',IER,nbhelp)
             CALL EPMENRC
             IFOC=IGSET(1)
             if(ifoc.ne.0)then
