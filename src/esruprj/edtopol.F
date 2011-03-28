@@ -520,7 +520,7 @@ C attributes.
           call askok(' ','Clear items marked BASESIMP?',M6OK,
      &      dok,nbhelp)
           call askok(' ','Clear items marked IDENT_CEN?',M7OK,
-     &      dok,hbhelp)
+     &      dok,nbhelp)
           call usrmsg('Clearing partial contiguity...',bl,'-')
           ICC=0
 
@@ -2636,8 +2636,6 @@ C Within the header so skip request.
 
 C Produce help text for the menu.
         CALL PHELPD('connection pick string',NHELP,'-',0,0,IER)
-  65    format(' Type key to select, repeat as',
-     &         ' required. -Exit to return list.')
       elseif(ivert.eq.mvert-2)then
 
 C If there are enough items allow paging control via EKPAGE.

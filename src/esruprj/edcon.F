@@ -715,7 +715,7 @@ C Optical and geometric properties.
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL told,closemat1,closemat2
+      LOGICAL closemat1,closemat2
 
       DIMENSION ISD(19)
       CHARACTER NAM*72,ISD*46
@@ -729,7 +729,6 @@ C For help messages
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
-      told=.false.
       helpinsub='EDSCON'  ! set for subroutine
 
 C Establish if material data arrays have been filled. If not return

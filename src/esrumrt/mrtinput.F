@@ -641,6 +641,7 @@ C as in filein.f.
          RETURN
        endif
 
+C For surface I derive values for NA NAP IAPNT APOL.
        CALL  ENCPOL(I,NA,NAP,IAPNT,APOL)
 
 C Not used...
