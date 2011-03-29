@@ -1236,7 +1236,7 @@ C mechanical ventilation and infiltration.
       integer idayn
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
-      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT,grad
 
       REAL :: acc,acc1,acc2,aci,acr,amh,amn
       REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
@@ -1544,8 +1544,9 @@ C It is controlled. Establish sensed variable.
             IF(IVAL.GT.4)IVAL=IVAL-10
             TX=TFA(ICOMP)
             IF(IVAL.EQ.2)TX=TFA(ICF)
-            IF(IVAL.EQ.3)TX=TF
+            IF(IVAL.EQ.3)TX=TF ! infil only: ext db temp
             IF(IVAL.EQ.4)TX=VF      
+            IF(IVAL.EQ.5)TX=TF ! infil, ext db t, factors
         endif ChkOprCtl
       
 C Air flow infiltration is specified via the .opr file, 
@@ -1660,8 +1661,9 @@ C new infiltration values according to control scheme.
           OprInfCtl: IF(ITCTL(ICOMP) /= 0 .and. 
      &                  ITCTL(ICOMP) /=-1 .and.
      &                  ITCTL(ICOMP) /=-2 .and.
-     &                  ITCTL(ICOMP) /=-3 )then
-          
+     &                  ITCTL(ICOMP) /=-3 .and.
+     &                  ITCTL(ICOMP) /=-17 )then
+
 C Check if infiltration is thermostatically controlled, according to
 C wind speed.
 C (How can infiltration be thermostatically controlled? Should
@@ -1679,6 +1681,46 @@ C  this code infact be operating on CVVF?)
               ENDIF
               CVIF=ACR*0.33*VOL(ICOMP)
             
+C ITCTL = -15, factors for CVIF which respect day types and periods defined
+              elseif (ITCTL(ICOMP).EQ.-15) then
+                if (TX.LE.TLO(icomp)) then
+                  ! do nothing, i.e. use values from .opr schedule
+                elseif (TX.GT.TLO(ICOMP).AND.TX.LE.TUP(ICOMP)) then
+                  ! multiply .opr-value by ACIL
+                  CVIF = CVIF*ACIL(ICOMP)
+                elseif (TX.GT.TUP(ICOMP).AND.TX.LE.THI(ICOMP)) then
+                  ! multiply .opr-value by ACIU
+                  CVIF = CVIF*ACIU(ICOMP)
+                else
+                  ! multiply .opr-value by ACIH
+                  CVIF = CVIF*ACIH(ICOMP)
+                endif
+C ITCTL = -16, factors for CVIF which respect day types and periods defined
+C              This logic looks at both TF and TFA(ICF) and is designed for
+C              "summer ventilation"
+C << to do: ignore weekends (or better: unoccupied intervals), 
+C           add hysteresis for "ACIH"-case (?) >>
+              elseif (ITCTL(ICOMP).EQ.-16) then
+                if (TF.LE.TLO(icomp)) then
+                  ! do nothing, i.e. use values from .opr schedule
+                elseif (TF.GT.TLO(ICOMP).and.
+     &                   TF.LE.THI(ICOMP)) then
+                  if (TFA(ICOMP).LE.TUP(ICOMP)) then
+                    ! multiply .opr-value by ACIL
+                    CVIF = CVIF*ACIL(ICOMP)
+                  elseif (TFA(ICOMP).GT.TUP(ICOMP).and.
+     &                     TFA(ICOMP).LE.THI(ICOMP)) then
+                    ! multiply .opr-value by ACIU
+                    CVIF = CVIF*ACIU(ICOMP)
+                  else ! TFA(ICOMP) .gt. thi
+                    ! multiply .opr-value by ACIH
+                    CVIF = CVIF*ACIH(ICOMP)
+                  endif
+                else ! TF .gt. THI
+                  ! do nothing, i.e. use values from .opr schedule
+                endif
+C -----END new code (18.08.2010)
+
             endif OprInfWindCtl
             
             OprDiffCooling: if ( TX.LE.TLO(ICOMP) .or. 
@@ -1788,36 +1830,106 @@ C Check for control on wind
             OprVentWndCtl: if ( ITCTL(ICOMP).ne.  -4 .and.
      &                          ITCTL(ICOMP).ne. -11 .and.
      &                          ITCTL(ICOMP).ne. -12 .and.
-     &                          ITCTL(ICOMP).ne. -13       ) then 
-              
+     &                          ITCTL(ICOMP).ne. -13 .and.
+     &                          ITCTL(ICOMP).ne. -15 .and.
+     &                          ITCTL(ICOMP).ne. -16       ) then 
+
 C Control on wind.
-              AMH=ACVH(ICOMP)
-              AMX=ACVU(ICOMP)
-              AMN=ACVL(ICOMP)
-              TAFL=TAL(ICOMP)
-              TAFU=TAU(ICOMP)
-              IF(TX.LT.TLO(ICOMP))THEN
-                ACR=AMN
-                ICF=IVL(ICOMP)
-                TAF=TAL(ICOMP)
-              ELSE IF(TX.GT.TUP(ICOMP).and.TX.LE.THI(ICOMP))THEN
-                ACR=AMX
-                ICF=IVU(ICOMP)
-                TAF=TAU(ICOMP)
-              ELSE IF(TX.GT.THI(ICOMP))THEN
-                ACR=AMH
-                ICF=IVH(ICOMP)
-                TAF=TAH(ICOMP)
-              ELSE IF(TX.GE.TLO(ICOMP).AND.TX.LE.TUP(ICOMP))THEN
-                ACR=AMN+(AMX-AMN)*((TX-TLO(ICOMP))/
-     &              (TUP(ICOMP)-TLO(ICOMP)))
-                TAF=TAFL+(TAFU-TAFL)*((TX-TAFL)/(TAFU-TAFL))
-                ICF=IVL(ICOMP)
-                IF(TX.GT.((TAFL+TAFU)/2.0))ICF=IVU(ICOMP)
-              ENDIF
-              CVVF=ACR*0.33*VOL(ICOMP)
-              CF=CVVF
+              if( ITCTL(ICOMP) == 4 ) then 
+                AMH=ACVH(ICOMP)
+                AMX=ACVU(ICOMP)
+                AMN=ACVL(ICOMP)
+                TAFL=TAL(ICOMP)
+                TAFU=TAU(ICOMP)
+                IF(TX.LT.TLO(ICOMP))THEN
+                  ACR=AMN
+                  ICF=IVL(ICOMP)
+                  TAF=TAL(ICOMP)
+                ELSE IF(TX.GT.TUP(ICOMP).and.TX.LE.THI(ICOMP))THEN
+                  ACR=AMX
+                  ICF=IVU(ICOMP)
+                  TAF=TAU(ICOMP)
+                ELSE IF(TX.GT.THI(ICOMP))THEN
+                  ACR=AMH
+                  ICF=IVH(ICOMP)
+                  TAF=TAH(ICOMP)
+                ELSE IF(TX.GE.TLO(ICOMP).AND.TX.LE.TUP(ICOMP))THEN
+                  ACR=AMN+(AMX-AMN)*((TX-TLO(ICOMP))/
+     &                (TUP(ICOMP)-TLO(ICOMP)))
+                  TAF=TAFL+(TAFU-TAFL)*((TX-TAFL)/(TAFU-TAFL))
+                  ICF=IVL(ICOMP)
+                  IF(TX.GT.((TAFL+TAFU)/2.0))ICF=IVU(ICOMP)
+                ENDIF
+                CVVF=ACR*0.33*VOL(ICOMP)
+                CF=CVVF
             
+C Add own ventilation control, here
+C ITCTL = -17, CVVF is controlled, day types and periods defined are respected.
+C    .opr entries are used in a slightly non-conform way:
+C       ITCTL   TLO   TUP   THI
+C
+C low:    ACIL    ACVL   ICF   TAL
+C mid:    ACIU    ACVU   ICF   TAU
+C high:   ACIH    ACVH   ICF   TAH
+C              << functionality ??>>
+C << to do: ?? >>
+              elseif (ITCTL(ICOMP).EQ.-17) then
+                if (TF.LE.TLO(icomp)) then ! TF is ambient temp.
+                  TAF  = TAL(icomp)
+C   ** "winter control" **
+C
+C   1.0 ---        --------
+C          |     /
+C          |   /
+C   0.4    | /
+C          
+C        ACVL   ACVU
+                  if (TFA(ICOMP).LE.ACVL(icomp)) then
+                    ! ventilation with 100% of scheduled ACH at TAL(icomp),
+                    ! support heating ...
+                  elseif (TFA(ICOMP).LE.ACVU(icomp)) then
+                    ! ventilation rate acc. to ramp between ACVL and ACVU, also at TAL(icomp)
+                    ! Lower end of ramp is 40% of scheduled ACH
+                    call eclose(ACVL(icomp),ACVU(icomp),0.01,closeto0)
+                    if (closeto0) then
+                      grad=1.0
+                    else
+                      grad=0.6/(ACVU(icomp)-ACVL(icomp))
+                    endif
+                    CVVF = CVVF*(grad*TFA(icomp)+0.4-grad*ACVL(icomp))
+                  else
+                    ! ventilation with 100% of scheduled ACH at TAL(icomp),
+                    ! support cooling ...
+!                  CVVF = CVVF*0.4
+                  endif
+                else ! TF gt. TLO
+C   ** transitional / summer season control **
+C << add drawing of logic >>
+                  ! Set TAF according to ambient temp.
+                  if (TF.lt.TUP(ICOMP)) then
+                    TAF = TAU(icomp)
+                  else
+                    TAF = TAH(icomp)
+                  endif
+                  if (TFA(ICOMP).LE.ACVU(icomp)) then
+                    ! ventilation with 40% of scheduled ACH at TAF acc. to ambient temp.
+                    CVVF = CVVF*0.4
+                  elseif (TFA(ICOMP).lt.ACVH(icomp)) then
+                    ! ventilation rate acc. to ramp between ACVU and ACVH, at TAF acc.
+                    ! to ambient temp. Lower end of ramp is 40% of scheduled ACH
+                    call eclose(ACVH(icomp),ACVU(icomp),0.01,closeto0)
+                    if (closeto0) then
+                      grad=1.0
+                    else
+                      grad=0.6/(ACVH(icomp)-ACVU(icomp))
+                    endif
+                    CVVF = CVVF*(grad*TFA(icomp)+0.4-grad*ACVU(icomp))
+                  else
+                    ! ventilation with 100% of scheduled ACH at TAF
+                  endif
+                endif
+C -----END new code (30.08.2010)
+              endif ! if ICTL(ICOMP) .eq. XX
             endif OprVentWndCtl
 
             OprVentOthCtl: if ( TX .LE. TLO(ICOMP) .or. 
