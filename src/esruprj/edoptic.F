@@ -1239,9 +1239,11 @@ C IMPWIS clears common block GOPTED and sets it up for a new set.
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
 
+      CHARACTER GTYPE*12,GDESCR*36
       character lwin4*72,DFILE*72,H*72,outstr*124
       character outs*124
       logical basics,standalone
+      real v1,v2,v3,v4,v5,v6  ! for data being scanned
 
 C Free unit and check if import file exists.
       H(1)='This is a WIS transparent system report file which '
@@ -1266,24 +1268,25 @@ C the layers.
 C Scan file to see if information is direct only or with direct
 C to diffuse information.
   22  CALL STRIPC(iwis,outstr,99,ND,1,'WIS scanning',IIER)
+      write(6,*) outstr(1:lnblnk(outstr))
       if(IIER.ne.0)goto 23
       if(outstr(1:38).eq.'solar direct transmittance outdoor tot')then
         call edisp(iuout,'Direct->diffuse data found.')
       elseif(outstr(1:9).eq.'t_sol_o_d')then
         call edisp(iuout,'Direct->diffuse details found.')
-      elseif(outstr(1:10).eq.'layer 1 is')then
+      elseif(outstr(1:11).eq.' layer 1 is')then
 
 C << also scan for `Pane` `Gap` `Shading` in these lines.
         nl=1
-      elseif(outstr(1:10).eq.'layer 2 is')then
+      elseif(outstr(1:11).eq.' layer 2 is')then
         nl=2
-      elseif(outstr(1:10).eq.'layer 3 is')then
+      elseif(outstr(1:11).eq.' layer 3 is')then
         nl=3
-      elseif(outstr(1:10).eq.'layer 4 is')then
+      elseif(outstr(1:11).eq.' layer 4 is')then
         nl=4
-      elseif(outstr(1:10).eq.'layer 5 is')then
+      elseif(outstr(1:11).eq.' layer 5 is')then
         nl=5
-      elseif(outstr(1:10).eq.'layer 6 is')then
+      elseif(outstr(1:11).eq.' layer 6 is')then
         nl=6
       elseif(outstr(1:4).eq.'prop')then
         if(ND.eq.12)then
@@ -1306,6 +1309,7 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
 C Note: when looking for stand-alone data for each layer the
 C actual data seems to start at column 38 (and after a :)
 
+      IL=0
  11   continue
       CALL STRIPC(iwis,outstr,99,ND,1,'opt data',IEER)
       if(IEER.ne.0)goto 42
@@ -1313,40 +1317,36 @@ C actual data seems to start at column 38 (and after a :)
       if(lnblnk(outstr).le.1)goto 11
       if(outstr(1:10).eq.'--- Basics')then
         basics=.true.
-      elseif(outstr(1:23).eq.'name transparent system')then
-        if(basics)then
-        endif
-      elseif(outstr(1:7).eq.'U-value')then
-        if(basics)then
-        endif
-      elseif(outstr(1:16).eq.'solar factor (g)')then
-        if(basics)then
-        endif
-      elseif(outstr(1:26).eq.'solar direct transmittance')then
-        if(basics)then
-        elseif(standalone)then
-        endif
-      elseif(outstr(1:32).eq.'solar direct reflectance outdoor')then
-        if(basics)then
-        elseif(standalone)then
-        endif
-      elseif(outstr(1:31).eq.'solar direct reflectance indoor')then
+      elseif(outstr(1:24).eq.' name transparent system')then
+        K=39
+        CALL EGETW(outstr,K,GDESCR,'W','opt description',IER)
+      elseif(outstr(1:8).eq.' U-value')then
+        K=39
+        CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)
+      elseif(outstr(1:17).eq.' solar factor (g)')then
+        continue
+      elseif(outstr(1:27).eq.' solar direct transmittance')then
+        K=39
+        CALL EGETWR(outstr,K,DGED(1),0.0,0.999,'W','dir t @0',IER)
+      elseif(outstr(1:33).eq.' solar direct reflectance outdoor')then
+        K=39
+        CALL EGETWR(outstr,K,SRFED,0.0,0.999,'W','sol refl',IER)
+      elseif(outstr(1:32).eq.' solar direct reflectance indoor')then
         if(basics)then
         elseif(standalone)then
         endif
-      elseif(outstr(1:19).eq.'light transmittance')then
+      elseif(outstr(1:20).eq.' light transmittance')then
+        K=39
+        CALL EGETWR(outstr,K,VTRNED,0.0,0.999,'W','visib trn',IER)
+      elseif(outstr(1:26).eq.' light reflectance outdoor')then
         if(basics)then
         elseif(standalone)then
         endif
-      elseif(outstr(1:25).eq.'light reflectance outdoor')then
+      elseif(outstr(1:25).eq.' light reflectance indoor')then
         if(basics)then
         elseif(standalone)then
         endif
-      elseif(outstr(1:24).eq.'light reflectance indoor')then
-        if(basics)then
-        elseif(standalone)then
-        endif
-      elseif(outstr(2:30).eq.'eneral colour rendering index')then
+      elseif(outstr(3:31).eq.'eneral colour rendering index')then
         if(basics)then
         elseif(standalone)then
           continue
@@ -1360,29 +1360,54 @@ C actual data seems to start at column 38 (and after a :)
         if(standalone)then
         else
         endif
-      elseif(outstr(1:5).eq.'name ')then
+      elseif(outstr(1:4).eq.'prop')then
+        continue
+      elseif(outstr(1:6).eq.' t_sol')then
+
+C Angular direct solar transmission.
+        k=8
+        CALL EGETWR(outstr,K,DGED(1),0.0,0.999,'W','dir t @0',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 10deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 20deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 30deg',IER)
+        CALL EGETWR(outstr,K,DGED(2),0.0,0.999,'W','dir t @40',IER)
+        CALL EGETWR(outstr,K,V1,0.0,0.999,'W','skip 50deg',IER)
+        CALL EGETWR(outstr,K,V2,0.0,0.999,'W','skip 60deg',IER)
+        DGED(3)=(V1+V2)/2.
+        CALL EGETWR(outstr,K,DGED(4),0.0,0.999,'W','dir t @70',IER)
+        CALL EGETWR(outstr,K,DGED(5),0.0,0.999,'W','dir t @80',IER)
+      elseif(outstr(1:4).eq.' abs')then
+
+C Angular abs at a layer. The lines follow each other so can increment
+C IL to represent the layering. << how to determine which is an air gap? >>
+        k=10
+        IL=IL+1
+        CALL EGETWR(outstr,K,v1,0.0,0.999,'W','abs @0',IER)
+        ABED(IL,1)=v1
+        if(v1.le.0.01)then
+          RFED(IL)=1.00
+        else
+          RFED(IL)=1.52
+        endif
+        SABED = SABED + v1  ! increment for the normal of each layer
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 10deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 20deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 30deg',IER)
+        CALL EGETWR(outstr,K,v2,0.0,0.999,'W','abs @40',IER)
+        ABED(IL,2)=v2
+        CALL EGETWR(outstr,K,v3,0.0,0.999,'W','skip 50deg',IER)
+        CALL EGETWR(outstr,K,v4,0.0,0.999,'W','skip 60deg',IER)
+        ABED(IL,3)=(V3+V4)/2.
+        CALL EGETWR(outstr,K,v5,0.0,0.999,'W','abs @70',IER)
+        ABED(IL,4)=v5
+        CALL EGETWR(outstr,K,v6,0.0,0.999,'W','abs @80',IER)
+        ABED(IL,5)=v6
+        write(outs,'(6f6.3,a,i2)')v1,v2,v3,v4,v5,v6,IL
+        call edisp(iuout,outs)
+      elseif(outstr(1:24).eq.' name transparent system')then
         if(standalone)then
         elseif(standalone)then
         endif
-      elseif(outstr(1:5).eq.'Name:')then
-        if(standalone)then
-        elseif(standalone)then
-        endif
-      elseif(outstr(1:9).eq.'thickness')then
-        if(standalone)then
-        else
-        endif
-      elseif(outstr(1:19).eq.'thermal conductance')then
-        if(standalone)then
-        else
-        endif
-      elseif(outstr(1:9).eq.'gap width')then
-        if(standalone)then
-        else
-        endif
-      elseif(outstr(1:15).eq.'--- Environment')then
-        basics=.false.
-        standalone=.false.
       elseif(outstr(1:16).eq.'-- Total Network')then
         basics=.false.
         standalone=.false.
