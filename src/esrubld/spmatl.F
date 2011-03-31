@@ -249,10 +249,10 @@ C Diode factor.
 
 C Diffusion current.
       io=(isc/pbrch)/(exp(((e*voc/scell)/(k*df*tref)))-1.)*
-     &                                        (2**((tpnl-tref)/empv))
+     &                                        (2.**((tpnl-tref)/empv))
 
 C Light generated current. 
-      if(qpnl.lt.0.0)qpnl=1E-10
+      if(qpnl.lt.0.0)qpnl=1.E-10
       il=(qpnl/qref)*(isc/pbrch)
 
 C Maximum power point tracking, use iteration to determine the maximum
@@ -280,7 +280,7 @@ C output voltage, vmpmod.
 C Panel power output.
          a1=vmpmod*io*(exp((e*vmpmod)/(k*tpnl*df))-1.)
          a2=vmpmod*il
-         pvpwr=(a1-a2)*scell*pbrch*npnnls*(1.-fMiscLossFactor)
+         pvpwr=(a1-a2)*scell*pbrch*real(npnnls)*(1.-fMiscLossFactor)
          if(pvpwr.gt.0.0)then
             pvpwr=0.0
          else
@@ -319,7 +319,8 @@ C Check that iteration has converged.
 
 C Check the magnitudes of the diode and light generated currents; if
 C id > il set the power output to zero.
-         pvpwr=(a1-a2)**2*valf*scelL*pbrch*npnnls*(1.- fMiscLossFactor)
+         pvpwr=(a1-a2)**2*valf*scelL*pbrch*real(npnnls)*
+     &          (1.- fMiscLossFactor)
          if(a1.gt.a2)then
             pvpwr=0.0  
          else
@@ -828,7 +829,7 @@ C P = 0 and height = 0.
 
 C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3 
                ro=densit(1,drybt)
-               pwr=(dvcoeff/(3*3**(0.5)))*ro*tarea*
+               pwr=(dvcoeff/(3.*3.**(0.5)))*ro*tarea*
      &                             (delta**(0.667))*(wispdm**3)*nturb
                icount=icount+1
                valv=valv+inc
@@ -2259,6 +2260,12 @@ C Phase change material.
       common/pcm02/spcm(mcom,ms,mn),spcmtf,spcmtp
       common/pcm03/pcmfac(mcom,ms,mn),pcmshts(mcom,ms,mn)
 
+C Phase change materials in glazing, state flag
+      common/PcmState/iPcmStateFlag 
+      integer iPcmStateFlag !flag that indicates the state of PCM at each timestep 
+                            !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
+
+
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
@@ -2306,7 +2313,7 @@ C Process the 3 nodes of the PCM layer.
             nloc=inode+1
             efthk=thrmli(icomp,isurf,ielem,4)*0.25
          endif
-         THKsum=THKsum+efthk		!- total PCM thickness
+         THKsum=THKsum+efthk  !- total PCM thickness
 
 C Establish temperature of the PCM material node from tfc if the node
 C is intra-construction and tfs if located at the internal surface.
@@ -2328,12 +2335,15 @@ C             = shtliqa*tfcm + shtliqb for tmelt < tfcm < tsoli (mixed phase).
          if(tfcm.lt.tmelt)then
             appcon=consol
             appsht=shtsol
+            iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
          elseif(tfcm.gt.tsoli)then
             appcon=conliq
             appsht=shtsol
+            iPcmStateFlag=3 ! 1: solid, if 2: mixed, if 3: liquid
          else
             appcon=(consol+conliq)/2.
             appsht=shtsol+(shtliqa*tfcm+shtliqb)
+            iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
          endif
 
 C Parameters for xml output.
@@ -2520,30 +2530,36 @@ C Save total PCM heat stored.
      &                                      spcm(icomp,isurf,inode+1)
        
 C Results output.
-      ndatspm(ispmnod)=4
+      ndatspm(ispmnod)=5
       if(nsinc.le.1)then
-         strspm(ispmnod,1)='/AppCON'
-         unitspm(ispmnod,1)='(W/(m.degC))'
-         txtspm(ispmnod,1)='Average conductivity of PCM layer'
+         strspm(ispmnod,1)='/state'
+         unitspm(ispmnod,1)='(-)'
+         txtspm(ispmnod,1)=
+     &                 'PCM state 1 solid, 2 mixed, 3 liquid'
 
-         strspm(ispmnod,2)='/SHCtot'
-         unitspm(ispmnod,2)='(J/kg)'
-         txtspm(ispmnod,2)='Total heat stored in PCM'
+         strspm(ispmnod,2)='/AppCON'
+         unitspm(ispmnod,2)='(W/(m.degC))'
+         txtspm(ispmnod,2)='Average conductivity of PCM layer'
 
-         strspm(ispmnod,3)='/SHCarea'
-         unitspm(ispmnod,3)='(J/m^2)'
-         txtspm(ispmnod,3)='Heat stored per PCM area'
+         strspm(ispmnod,3)='/SHCtot'
+         unitspm(ispmnod,3)='(J/kg)'
+         txtspm(ispmnod,3)='Total heat stored in PCM'
 
-         strspm(ispmnod,4)='/PCMFAC'
-         unitspm(ispmnod,4)='(-)'
-         txtspm(ispmnod,4)='PCMFAC of middle node'
+         strspm(ispmnod,4)='/SHCarea'
+         unitspm(ispmnod,4)='(J/m^2)'
+         txtspm(ispmnod,4)='Heat stored per PCM area'
+
+         strspm(ispmnod,5)='/PCMFAC'
+         unitspm(ispmnod,5)='(-)'
+         txtspm(ispmnod,5)='PCMFAC of middle node'
       endif
 
-      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot
-      if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
-      dataspm(ispmnod,3)=(spcmtp+spcmtf)/2.0
+      dataspm(ispmnod,1)=real(iPcmStateFlag)
+      if(Rtot.gt.0)dataspm(ispmnod,2)=THKsum/Rtot
+      if(THKsum.gt.0)dataspm(ispmnod,3)=sumSHTTHK
+      dataspm(ispmnod,4)=(spcmtp+spcmtf)/2.0
       spcmtp=spcmtf
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)      
+      dataspm(ispmnod,5)=pcmfac(icomp,isurf,inode)      
 
 C As a temporary measure, use zone-related variable, zspmf1, for
 C for results library storage. Output is limited to one special
@@ -2751,28 +2767,28 @@ C coeficients of nodal energy balance equations.
             x1=0
          endif
          x2=1./pcmsht
-         if(iphnl.eq.1.and.ielem.eq.1)then			!- outermost node
+         if(iphnl.eq.1.and.ielem.eq.1)then !- outermost node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x2
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.2)then					!- centre node
+         elseif(iphnl.eq.2)then !- centre node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then	!- internal surface node
+         elseif(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then !- internal surface node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x1
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.1.or.iphnl.eq.3)then			!- interface node
+         elseif(iphnl.eq.1.or.iphnl.eq.3)then !- interface node
 
 C Redefine modification factors to take account of weighted node
 C thermal capacity.
@@ -3388,14 +3404,20 @@ C Phase change materials.
       common/pcm02/spcm(mcom,ms,mn),spcmtf,spcmtp
       common/pcm03/pcmfac(mcom,ms,mn),pcmshts(mcom,ms,mn)
       common/pcm05/appconp(mcom,ms,mn),appshcp(mcom,ms,mn),
-     &                                                 pk(mcom,ms,mn)
-      integer pk	!- Present value of switch 'k' (-).
+     &             pk(mcom,ms,mn)
+      integer pk   !- Present value of switch 'k' (-).
 
       common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
      &               a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
-      real Lges		!- Total latent heat capacity of PCM (J/kg).
-      logical LHSimple	!- .true. is previous simple model, .false. is
-			!  extended model.
+      real Lges    !- Total latent heat capacity of PCM (J/kg).
+      logical LHSimple  !- .true. is previous simple model, .false. is
+                        !  extended model.
+
+C Phase change materials in glazing, state flag
+      common/PcmState/iPcmStateFlag 
+      integer iPcmStateFlag !flag that indicates the state of PCM at each timestep 
+                            !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
+
 C Local variables.
       real LayFrac(3)
       integer presk
@@ -3531,28 +3553,28 @@ C coeficients of nodal energy balance equations.
             x1=0
          endif
          x2=1./pcmsht
-         if(iphnl.eq.1.and.ielem.eq.1)then			!- outermost node
+         if(iphnl.eq.1.and.ielem.eq.1)then  !- outermost node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x2
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.2)then					!- centre node
+         elseif(iphnl.eq.2)then  !- centre node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factp
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*factf
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then	!- internal surface node
+         elseif(iphnl.eq.3.and.ielem.eq.nelts(icomp,isurf))then  !- internal surface node
             vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factp
             vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x1
             qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
             vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*factf
             vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
             qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-         elseif(iphnl.eq.1.or.iphnl.eq.3)then			!- interface node
+         elseif(iphnl.eq.1.or.iphnl.eq.3)then  !- interface node
 
 C Redefine modification factors to take account of weighted node
 C thermal capacity.
@@ -3660,54 +3682,61 @@ C Save future time row values as present values for next time step.
 10    continue
 
 C Results output.
-      ndatspm(ispmnod)=8
+      ndatspm(ispmnod)=9
       if(nsinc.le.1)then
-         strspm(ispmnod,1)='/AppCON'
-         unitspm(ispmnod,1)='(W/(m.degC))'
-         txtspm(ispmnod,1)='Apparent conductivity of PCM layer'
+         strspm(ispmnod,1)='/state'
+         unitspm(ispmnod,1)='(-)'
+         txtspm(ispmnod,1)=
+     &                 'PCM state 1 solid, 2 mixed, 3 liquid'
 
-         strspm(ispmnod,6)='/APPSHC'
-         unitspm(ispmnod,6)='(J/(kg.degC))'
-         txtspm(ispmnod,6)='Apparent spec. heat capacity of PCM layer'
+         strspm(ispmnod,2)='/AppCON'
+         unitspm(ispmnod,2)='(W/(m.degC))'
+         txtspm(ispmnod,2)='Apparent conductivity of PCM layer'
 
-         strspm(ispmnod,2)='/StoredLH'
-         unitspm(ispmnod,2)='(J/kg)'
-         txtspm(ispmnod,2)='Latent heat stored in PCM'
+         strspm(ispmnod,7)='/APPSHC'
+         unitspm(ispmnod,7)='(J/(kg.degC))'
+         txtspm(ispmnod,7)='Apparent spec. heat capacity of PCM layer'
 
-         strspm(ispmnod,3)='/SHCarea'
-         unitspm(ispmnod,3)='(J/m2)'
-         txtspm(ispmnod,3)='Latent heat stored per PCM area'
+         strspm(ispmnod,3)='/StoredLH'
+         unitspm(ispmnod,3)='(J/kg)'
+         txtspm(ispmnod,3)='Latent heat stored in PCM'
 
-         strspm(ispmnod,4)='/PCMFAC'
-         unitspm(ispmnod,4)='(-)'
-         txtspm(ispmnod,4)='PCMFAC of middle node'
+         strspm(ispmnod,4)='/SHCarea'
+         unitspm(ispmnod,4)='(J/m2)'
+         txtspm(ispmnod,4)='Latent heat stored per PCM area'
 
-         strspm(ispmnod,5)='/kkk'
+         strspm(ispmnod,5)='/PCMFAC'
          unitspm(ispmnod,5)='(-)'
-         txtspm(ispmnod,5)='k for each subnode - outside to inside'
+         txtspm(ispmnod,5)='PCMFAC of middle node'
 
-         strspm(ispmnod,7)='/ccc'
-         unitspm(ispmnod,7)='(-)'
-         txtspm(ispmnod,7)=
+         strspm(ispmnod,6)='/kkk'
+         unitspm(ispmnod,6)='(-)'
+         txtspm(ispmnod,6)='k for each subnode - outside to inside'
+
+         strspm(ispmnod,8)='/ccc'
+         unitspm(ispmnod,8)='(-)'
+         txtspm(ispmnod,8)=
      &                 'case for each subnode - outside to inside'
 
-         strspm(ispmnod,8)='/DT_F-P'
-         unitspm(ispmnod,8)='(K)'
-         txtspm(ispmnod,8)=
+         strspm(ispmnod,9)='/DT_F-P'
+         unitspm(ispmnod,9)='(K)'
+         txtspm(ispmnod,9)=
      &                 'Temperature difference (T_Future - T_Present)'
+
       endif
 
-      if(Rtot.gt.0)dataspm(ispmnod,1)=thrmli(icomp,isurf,ielem,4)/Rtot
-      dataspm(ispmnod,2)=sumStoredLH 
-      dataspm(ispmnod,3)=sumStoredLH*thrmli(icomp,isurf,ielem,2)*
+      dataspm(ispmnod,1)=real(iPcmStateFlag)
+      if(Rtot.gt.0)dataspm(ispmnod,2)=thrmli(icomp,isurf,ielem,4)/Rtot
+      dataspm(ispmnod,3)=sumStoredLH 
+      dataspm(ispmnod,4)=sumStoredLH*thrmli(icomp,isurf,ielem,2)*
      &                                    thrmli(icomp,isurf,ielem,4)
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
-      dataspm(ispmnod,5)=100*pk(icomp,isurf,inode-1)+
+      dataspm(ispmnod,5)=pcmfac(icomp,isurf,inode)
+      dataspm(ispmnod,6)=100*pk(icomp,isurf,inode-1)+
      &                                      10*pk(icomp,isurf,inode)+
      &                                      pk(icomp,isurf,inode+1)
-      dataspm(ispmnod,6)=aveAPPSHC
-      dataspm(ispmnod,7)=100*db(1)+10*db(2)+db(3)
-      dataspm(ispmnod,8)=(tfcm-tpcm)
+      dataspm(ispmnod,7)=aveAPPSHC
+      dataspm(ispmnod,8)=100*db(1)+10*db(2)+db(3)
+      dataspm(ispmnod,9)=(tfcm-tpcm)
 
 C As a temporary measure, use zone-related variables, zspmf1, for
 C results library storage. Output is limited to one special material
@@ -3760,7 +3789,7 @@ C Trace output.
 
 C ***************** LatentHeat *****************
 C Created by Achim Geissler, July 11 2008.
-C This function models PCM materials, which show significant sub-cooling
+C This function models PCM materials which show significant sub-cooling
 C properties, i.e. materials that, once melted, must be sub-cooled by
 C a few degrees below the conversion temperature at which they are
 C completely liquified. The function is called by SPMCPM56 to calculate
@@ -3788,37 +3817,37 @@ C by factor T^f).
 C Phase change material parameters.
       common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
      &                   a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
-      real tsoli		!- solidification temperature (degC)
-      real tmelt		!- melting temperature (degC)
-      real sub			!- sub-cooling temperature difference (degC)
-      real Lges			!- total latent heat capacity of PCM (J/kg)
-      real consol,conliq	!- conductivity of solid and liquid phase (W/(m.K))
-      real shcsol,shcliq	!- specific heat of solid and liquid phase (J/(kg.K)
-      real a1,b1,c1,d1,e1,f1	!- equation parameters for non-subcooling (a1-f1) 
-      real a2,b2,c2,d2,e2,f2	!  and subcooling (a2-f2) states
-      logical LHSimple		!- .true. is simple model, .false. is extended model
+      real tsoli        !- solidification temperature (degC)
+      real tmelt        !- melting temperature (degC)
+      real sub          !- sub-cooling temperature difference (degC)
+      real Lges         !- total latent heat capacity of PCM (J/kg)
+      real consol,conliq      !- conductivity of solid and liquid phase (W/(m.K))
+      real shcsol,shcliq      !- specific heat of solid and liquid phase (J/(kg.K)
+      real a1,b1,c1,d1,e1,f1  !- equation parameters for non-subcooling (a1-f1) 
+      real a2,b2,c2,d2,e2,f2  !  and subcooling (a2-f2) states
+      logical LHSimple        !- .true. is simple model, .false. is extended model
  
 C Local variables.
       real aa,bb,ff,LH_T1,LH_T2,v_func
 
 C Which function?
       if(k.eq.0)then 
-         if(LHSimple)then	!- simple function
+         if(LHSimple)then !- simple function
             aa=a2
             bb=b2
-         else			!- extended function                 
-            ff=f2		!- aa to ee are set in function v_func()
+         else      !- extended function                 
+            ff=f2  !- aa to ee are set in function v_func()
          endif    
-      else			!- function defaults to 'normal' mode
-         if(LHSimple)then	!- simple function
+      else         !- function defaults to 'normal' mode
+         if(LHSimple)then !- simple function
             aa=a1
             bb=b1
-         else			!- extended function
-            ff=f1		!- aa to ee are set in function v_func()	
+         else     !- extended function
+            ff=f1 !- aa to ee are set in function v_func()	
          endif
       endif
 
-      if(LHSimple)then		!- simple function
+      if(LHSimple)then !- simple function
          LatentHeat=exp(aa)/bb*(exp(bb*T1)-exp(bb*T2))
       else    
 
@@ -3849,27 +3878,27 @@ C Functions for extended latent heat integral.
 C Phase change material parameters.
       common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
      &                    a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
-      real tsoli		!- solidification temperature (degC)
-      real tmelt		!- melting temperature (degC)
-      real sub			!- sub-cooling temperature difference (degC)
-      real Lges			!- total latent heat capacity of PCM (J/kg)
-      real consol,conliq	!- conductivity of solid and liquid phase (W/m.K)
-      real shcsol,shcliq	!- specific heat of solid and liquid phase (J/kg.K)
-      real a1,b1,c1,d1,e1,f1	!- equation parameters for non-subcooling (a1-f1)
-      real a2,b2,c2,d2,e2,f2	!  and subcooling (a2-f2) states
-      logical LHSimple		!- .true. is simple model, .false. is extended model
+      real tsoli        !- solidification temperature (degC)
+      real tmelt        !- melting temperature (degC)
+      real sub          !- sub-cooling temperature difference (degC)
+      real Lges         !- total latent heat capacity of PCM (J/kg)
+      real consol,conliq  !- conductivity of solid and liquid phase (W/m.K)
+      real shcsol,shcliq  !- specific heat of solid and liquid phase (J/kg.K)
+      real a1,b1,c1,d1,e1,f1  !- equation parameters for non-subcooling (a1-f1)
+      real a2,b2,c2,d2,e2,f2  !  and subcooling (a2-f2) states
+      logical LHSimple        !- .true. is simple model, .false. is extended model
 
 C Local variables.
       REAL aa,bb,cc,dd,ee,CC1,CC2,C3,C4,C5,C6,C7,C8,C9
 
 C Coefficients for extended function.
-      if(k.eq.0)then		!- subcooling
+      if(k.eq.0)then !- subcooling
          aa=a2
          bb=b2
          cc=c2
          dd=d2
          ee=e2
-      else			!- non-subcooling
+      else           !- non-subcooling
          aa=a1
          bb=b1
          cc=c1
@@ -3905,31 +3934,36 @@ C each PCM node.
 C Parameters.
       real TnS
       real TnS1
-      integer k		!- sub-cooling switch, value of preceding time
-			!  step passed (typically initialised to 1)
-      real storedLH	!- stored latent heat, value of preceeding time
-			!  step passed (typically initialised to 0)
-      real AppCon	!- apparent thermal conductivity
-      real AppSHC	!- apparent specific heat capacity
-      integer Debug	!- output of 'case' as defined below
+      integer k  !- sub-cooling switch, value of preceding time
+                 !  step passed (typically initialised to 1)
+      real storedLH !- stored latent heat, value of preceeding time
+                    !  step passed (typically initialised to 0)
+      real AppCon   !- apparent thermal conductivity
+      real AppSHC   !- apparent specific heat capacity
+      integer Debug !- output of 'case' as defined below
 
 C Phase change material parameters.
       common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
      &                    a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
-      real tsoli		!- solidification temperature (degC)
-      real tmelt		!- melting temperature (degC)
-      real sub			!- sub-cooling temperature difference (degC)
-      real Lges			!- total latent heat capacity of PCM (J/kg)
-      real consol,conliq	!- conductivity of solid and liquid phase (W/m.K)
-      real shcsol,shcliq	!- specific heat of solid and liquid phase (J/(kg.K)
-      real a1,b1,c1,d1,e1,f1	!- equation parameters for non-subcooling (a1-f1)
-      real a2,b2,c2,d2,e2,f2	!  and subcooling (a2-f2) states
-      logical LHSimple		!- .true. is simple model, .false. is extended model
+      real tsoli    !- solidification temperature (degC)
+      real tmelt    !- melting temperature (degC)
+      real sub      !- sub-cooling temperature difference (degC)
+      real Lges     !- total latent heat capacity of PCM (J/kg)
+      real consol,conliq !- conductivity of solid and liquid phase (W/m.K)
+      real shcsol,shcliq !- specific heat of solid and liquid phase (J/(kg.K)
+      real a1,b1,c1,d1,e1,f1 !- equation parameters for non-subcooling (a1-f1)
+      real a2,b2,c2,d2,e2,f2 !  and subcooling (a2-f2) states
+      logical LHSimple !- .true. is simple model, .false. is extended model
+
+C Phase change materials in glazing, state flag
+      common/PcmState/iPcmStateFlag
+      integer iPcmStateFlag !flag that indicates the state of PCM at each timestep 
+                            !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
 
 C Local variables.
-      real tsoli2		!- sub-cooling solidification temperature (degC)
-      real tmelt2		!- sub-cooling melting temperature (degC)
-      real storeThisTS		!- latent heat stored in PCM (J/kg)
+      real tsoli2      !- sub-cooling solidification temperature (degC)
+      real tmelt2      !- sub-cooling melting temperature (degC)
+      real storeThisTS !- latent heat stored in PCM (J/kg)
       real LatentHeat
 
 C Set up sub-cooling temperatures.
@@ -3976,15 +4010,17 @@ C PCM behaves according to non-subcooling properties.
 C PCM is solid (case 1), StoredLH = 0.
                AppCon=consol
                AppSHC=shcsol
+               iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=1
             elseif(TnS.le.tmelt.and.TnS1.gt.tmelt)then
 
 C PCM begins to melt (case 2).
                storeThisTS=LatentHeat(1,tmelt,TnS1)
-               storedLH=0.0E0-storeThisTS		!- storedLH must be >0
+               storedLH=0.0E0-storeThisTS  !- storedLH must be >0
                AppCon=(1.0E0-storedLH/Lges)*consol+
      &                                          storedLH/Lges*conliq
-               AppSHC=shcsol+storeThisTS/(tmelt-TnS1)	!- to be verified
+               AppSHC=shcsol+storeThisTS/(tmelt-TnS1) !- to be verified
+               iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=2
             elseif(TnS.gt.tmelt.and.TnS1.le.tsoli)then
 
@@ -3994,7 +4030,8 @@ C range (k=1, case 3).
                storedLH=storedLH-storeThisTS
                AppCon=(1.0E0-storedLH/Lges)*consol+
      &                                          storedLH/Lges*conliq
-               AppSHC=shcliq+storeThisTS/(TnS-TnS1)	!- to be verified
+               AppSHC=shcliq+storeThisTS/(TnS-TnS1) !- to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=3
             elseif(TnS.gt.tmelt.and.TnS1.gt.tsoli)then
 
@@ -4002,16 +4039,18 @@ C Rest of solid PCM is completely melted and also heated as
 C liquid (case 4).
                storeThisTS=LatentHeat(1,TnS,tsoli)
                storedLH=storedLH-storeThisTS
-          if(storedLH.gt.Lges)storedLH=Lges
+               if(storedLH.gt.Lges) storedLH=Lges
+
                AppCon=(1.0E0-storedLH/Lges)*consol+
      &                                          storedLH/Lges*conliq
-               AppSHC=shcliq+storeThisTS/(TnS-tsoli)	!- to be verified
+               AppSHC=shcliq+storeThisTS/(TnS-tsoli) !- to be verified
 
 C Set new k.
                k=0
+               iPcmStateFlag=3 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=4
-            endif		!- temperature bracketing for k = 1
-         else			!- k=0
+            endif  !- temperature bracketing for k = 1
+         else   !- k=0
 
 C PCM behaves according to sub-cooling properties.
             if(TnS.gt.tsoli2)then
@@ -4020,6 +4059,7 @@ C PCM is completely liquified and heated further (case 5).
                storedLH=Lges
                AppCon=conliq
                AppSHC=shcliq
+               iPcmStateFlag=3 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=5
             elseif(TnS1.gt.tsoli2)then
 
@@ -4027,9 +4067,11 @@ C PCM is sub-cooled partial liquid and is completely
 C (re-)melted (case 6).
                storeThisTS=LatentHeat(0,TnS,tsoli2)
                storedLH=storedLH-storeThisTS
-          if(storedLH.gt.Lges)storedLH=Lges
+               if(storedLH.gt.Lges) storedLH=Lges
+
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
-               AppSHC=shcliq+storeThisTS/(TnS-tsoli2)	!- to be verified
+               AppSHC=shcliq+storeThisTS/(TnS-tsoli2) !- to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=6
             elseif(TnS1.le.tsoli2)then
 
@@ -4038,9 +4080,10 @@ C melted (k=0, case 7).
                storeThisTS=LatentHeat(0,TnS,TnS1)
                storedLH=storedLH-storeThisTS
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
-               AppSHC=shcliq+storeThisTS/(TnS-TnS1)	!- to be verified
+               AppSHC=shcliq+storeThisTS/(TnS-TnS1) !- to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=7
-            endif		!- temperature bracketing for k=0
+            endif  !- temperature bracketing for k=0
          endif
       elseif(TnS.gt.TnS1)then
 
@@ -4053,34 +4096,38 @@ C PCM behaves according to non-subcooling properties.
 C PCM is solid (case 1), StoredLH = 0.
                AppCon=consol
                AppSHC=shcsol
+               iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=1
             elseif(TnS.gt.tmelt.and.TnS1.le.tmelt)then
 
 C PCM non-subcooled solidification is completed (case 2).              
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
                AppSHC=SHCLIQ+storedLH/(TnS-tmelt)
-               storedLH=0.0E0		!- now all PCM is solid
+               storedLH=0.0E0  !- now all PCM is solid
+               iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=2
             elseif(TnS.le.tsoli.and.TnS1.ge.tmelt) then
 
 C PCM is partially liquid and is now cooled (non-subcooling, case 3).
                storeThisTS=LatentHeat(1,TnS,TnS1)
                storedLH=storedLH-storeThisTS
-               if(storedLH.lt.0.0E+0)storedLH=0.0E+0	!- storedLH >= 0
+               if(storedLH.lt.0.0E+0)storedLH=0.0E+0 !- storedLH >= 0
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
                AppSHC=shcliq+storeThisTS/(TnS-TnS1) ! to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=3
-            endif		!- temperature bracketing for k=1
-         else			!- k=0
+            endif  !- temperature bracketing for k=1
+         else  !- k=0
 
 C PCM behaves according to subcooling properties.
             if(TnS1.ge.tsoli2)then
 
 C PCM is completely melted and does not reach sub-cooled
 C solidification temperature (case 5).
-               storedLH=Lges	!- crude
+               storedLH=Lges  !- crude
                AppCon=conliq
                AppSHC=shcliq
+               iPcmStateFlag=3 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=5
              elseif(TnS.gt.tsoli2.and.TnS1.lt.tsoli2)then
 
@@ -4088,7 +4135,8 @@ C PCM begins to solidify in sub-cooled mode (k=0, case 6).
                storeThisTS=LatentHeat(0,tsoli2,TnS1)
                storedLH=Lges-storeThisTS
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
-               AppSHC=shcsol+storeThisTS/(tsoli2-TnS1)	!- to be verified
+               AppSHC=shcsol+storeThisTS/(tsoli2-TnS1) !- to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=6
             elseif(TnS.le.tsoli2.and.TnS1.gt.tmelt2)then
 
@@ -4096,9 +4144,10 @@ C PCM is subcooled partial liquid and not completely
 C solidified (k=0, case 7).
                storeThisTS=LatentHeat(0,TnS,TnS1)
                storedLH=storedLH-storeThisTS 
-               if(storedLH.lt.0.0E+0)storedLH=0.0E+0	!- storedLH >= 0 
+               if(storedLH.lt.0.0E+0)storedLH=0.0E+0 !- storedLH >= 0 
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
-               AppSHC=shcsol+storeThisTS/(TnS-TnS1)	!- to be verified
+               AppSHC=shcsol+storeThisTS/(TnS-TnS1) !- to be verified
+               iPcmStateFlag=2 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=7
              elseif(TnS.gt.tmelt2.and.TnS1.le.tmelt2)then
 
@@ -4110,13 +4159,15 @@ C PCM completely solidifies (k=0, case 8).
 
 C Set new k.
                k=1
+               iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
                Debug=8
-            endif		!- temperature bracketing for k=0
+            endif  !- temperature bracketing for k=0
          endif
       else
-				!- what happens here (TnS = TnS1)?
+         !- what happens here (TnS = TnS1)?
          if(AppCon.le.0.0E+00)AppCon=consol
          if(AppSHC.le.0.0E+00)AppSHC=shcsol
+         iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
          Debug=9
       endif
 
@@ -4438,11 +4489,11 @@ C Commons.
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,MSPMRES),
      &         strspm(mspmnod,MSPMRES),unitspm(mspmnod,MSPMRES),
      &         txtspm(mspmnod,MSPMRES)
-      integer ndatspm		!- number of results items for each special material
-      real dataspm		!- results data for special material
+      integer ndatspm  !- number of results items for each special material
+      real dataspm     !- results data for special material
       character strspm*16
-      character unitspm*16	!- unit for data item
-      character txtspm*72	!- description of data item
+      character unitspm*16  !- unit for data item
+      character txtspm*72   !- description of data item
 
 C Local variables.
       character*2 cZone_Chars, cSurf_Chars, cNode_Chars

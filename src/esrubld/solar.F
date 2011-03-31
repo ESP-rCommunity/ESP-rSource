@@ -376,6 +376,23 @@ C Bidirectional data - explicit definitions:
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
+C PCM state - switching of TMC properties
+      common/spmfxst/ispmxist,spflnam 
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+
+      character spflnam*72
+
+      real fPcmStateFlag !temporarily converting to a real the flag for  
+                         !the PCM state (solid, liquid, mixed) 
+ 
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,MSPMRES),
+     &         strspm(mspmnod,MSPMRES),unitspm(mspmnod,MSPMRES),
+     &         txtspm(mspmnod,MSPMRES)
+    ! dataspm(??,1) contains the flag that indicates the
+    ! state of PCM at each timestep 
+    ! if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
+
       ZAREA=zonetotsurfacearea(ICOMP)
 
 C Debug.
@@ -850,15 +867,56 @@ C If istate not equal to 0, then blinds are down.
                       ecrat(icomp,i)=0.
                       nbpont(icomp,i)=k
                    endif
-                
-                ELSE
+
+                ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.5) THEN 
+
+C State of PCM activation. 
+                  fPcmStateFlag=99.
+                  if(ispmxist.gt.0)then ! special materials are defined
+                    do ispm=1,nspmnod
+                      ispmnod=ispm
+                      ispmtype=ispmtyp(ispm,1)
+                      if(ispmloc(ispm,1).eq.icomp) then
+                        if (ispmloc(ispm,2).eq.I) then
+                          if ((ispmtype.eq.53) .or.  ! legacy PCM model
+c     &                        (ispmtype.eq.54) .or.  ! S. Hoffmann I  (obsolete, no corresponding code added)
+c     &                        (ispmtype.eq.55) .or.  ! S. Hoffmann II (obsolete, no corresponding code added)
+     &                        (ispmtype.eq.56)) then ! extended model with subcooling
+C                             ! PCM is located in current zone & surface
+                              fPcmStateFlag=dataspm(ispmnod,1) 
+                          endif ! valid special material type
+                        endif ! correct surface
+                      endif ! correct zone
+                    enddo ! loop registered special material nodes
+                  else
+                    ! should issue fatal error, here ...
+                  endif
+                  if (fPcmStateFlag .lt. 90.) then
+                    write (6,*)'BACT 1     : ',BACTPT(ICOMP,K,ITMC)
+                    write (6,*)'StateFlag 1: ',fPcmStateFlag   
+                    call eclose(BACTPT(ICOMP,K,ITMC),
+     &                          fPcmStateFlag,0.1,bCloseToZero)
+                    IF (bCloseToZero) THEN 
+                      write (6,*)'BACT     : ',BACTPT(ICOMP,K,ITMC)
+                      write (6,*)'StateFlag: ',fPcmStateFlag   
+                      IBOFOT(ICOMP,I)=1   ! "blinds are down", i.e. alternative properties active for 
+                                          ! zone "ICOMP" and surface "I" ...
+                                          ! BUT: we need 3 possible positions ... ?
+                      ECRAT(ICOMP,I)=0.0  ! ??
+                      NBPONT(ICOMP,I)=K   ! control period "K" ... ??
+                    ELSE ! ??
+C                      ... do nothing 
+                    ENDIF                 
+                  endif ! PCM exists
+
+                ELSE ! NBCTT .ne. 1, 2, 3, 4 or 5
 
 C Radiation activation; check which surface the sensor is on;
 C - if IBCSUR()=0, then current surface.
 C POO/POO2 contains shading factor on corresponding opaque surface.
                   ISUR=IBCSUR(ICOMP,ITMC)
                   IF(ISUR.EQ.0)THEN
-                    RAD=SRADDO(I)*(1.-POO)+SRADF(I)*(1-POFF)
+                    RAD=SRADDO(I)*(1.-POO)+SRADF(I)*(1.-POFF)
                   ELSE
                     IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
                       POO2=0.0
@@ -1103,10 +1161,10 @@ C a non-realistic Rs_glazing)
                 call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
      &                bCloseToZero)
                 if(bCloseToZero)then
-                  Rs_glazing=0-TREXTERNAL(IBIDIR,IBISET_timestep)-
+                  Rs_glazing=0.-TREXTERNAL(IBIDIR,IBISET_timestep)-
      &               TRINTERNAL(IBIDIR,IBISET_timestep)
                 else
-                  Rs_glazing=(1/TUVALUE(IBIDIR,IBISET_timestep))-
+                  Rs_glazing=(1./TUVALUE(IBIDIR,IBISET_timestep))-
      &               TREXTERNAL(IBIDIR,IBISET_timestep)-
      &               TRINTERNAL(IBIDIR,IBISET_timestep)
                 endif
@@ -1425,7 +1483,7 @@ C XX? is the direct-direct component; YY? is the direct-diffuse component
               ENDIF
 
               IF(IBIDIR.EQ.0.AND.IND2(I).EQ.6) THEN
-                XX2=0
+                XX2=0.
               ELSE
                 IF(IBOFOT(ICOMP,I).EQ.2)THEN
                   STMIN=TMCT2(ICOMP,ITMC,IND2(I),KP)
@@ -1648,7 +1706,7 @@ C Calculate CFC system visual beam transmitted, diffuse transmitted.
 C save multilayer results for CFC output
              RadIncDirS(icomp,i)=EXDIR(I)
              RadIncDifS(icomp,i)=EXDIF(I)
-             issur_self_shd(icomp,i)=ians(i)
+             issur_self_shd(icomp,i)=real(ians(i))
 C solar data
              transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
              transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
@@ -2308,24 +2366,25 @@ C Astronomical Tables.
         IYR1=IYEAR-1
         IMT1=IMT+9
       ENDIF
-      INTT1=INT(30.6*IMT1+0.5)
+      INTT1=INT(30.6*real(IMT1)+0.5)
       INTT2=INT(365.25*REAL(IYR1-1976))
-      SMLT=((HOUR/24.0)+IDY+INTT1+INTT2-8707.5)/36525.0
+      SMLT=((HOUR/24.0)+real(IDY)+real(INTT1)
+     &                 +real(INTT2)-8707.5)/36525.0
       EPSILN=23.4393-0.013*SMLT
       CAPG=357.528+35999.050*SMLT
       IF(CAPG.GT.360.0) THEN
-        G360=CAPG-INT(CAPG/360.0)*360.0
+        G360=CAPG-INT(real(CAPG)/360.0)*360.0
       ELSEIF(CAPG.LT.-360.0) THEN
-        G360=CAPG-(INT(CAPG/360.0)-1)*360.0   
+        G360=CAPG-(INT(real(CAPG)/360.0)-1)*360.0   
       ELSE
         G360=CAPG
       ENDIF
       CAPC=1.915*SIN(G360*R)+0.020*SIN(2.0*G360*R)
       CAPL=280.460+36000.770*SMLT+CAPC
       IF(CAPL.GT.360.0) THEN
-        XL360=CAPL-INT(CAPL/360.0)*360.0
+        XL360=CAPL-INT(real(CAPL)/360.0)*360.0
       ELSEIF(CAPL.LT.-360.0) THEN
-        XL360=CAPL-(INT(CAPL/360.0)-1)*360.0
+        XL360=CAPL-(INT(real(CAPL)/360.0)-1)*360.0
       ELSE
         XL360=CAPL
       ENDIF
@@ -2704,7 +2763,7 @@ C and absorption.
          IF( SRADDO .LT. 0.0 ) SRADDO = 0.0
 
          s9=beta*r
-         e=1353.*(1.+0.033*cos(0.017203*idyp))*sin(salt*r)
+         e=1353.*(1.+0.033*cos(0.017203*real(idyp)))*sin(salt*r)
          if(cai.le.0.0)goto 1005
 
 C Add an extra test for solar altitude. For example, if there is a small error in the
@@ -2767,7 +2826,7 @@ C Calculation of the relative air mass.
      &   AIRM = 1. / (SIN(SALT*R) + 0.15 * (SALT + 3.885)**(-1.253))
 
 C Calculation of the extraterrestrial radiation.
-      G0N = 1370. * (1. + 0.033 * COS(0.017214 * IDYP))
+      G0N = 1370. * (1. + 0.033 * COS(0.017214 * real(IDYP)))
 
 C The sky diffuse component:
       PSIC = ((HPPALF - TETA) / ALPHA) / 2.
@@ -2822,7 +2881,7 @@ C Horizontal surfaces treated separately.
 C  beta = 0   : surface facing up.
 C  beta = 180 : surface facing down.
       IF (BETA.GT.-0.01.AND.BETA.LT.0.01)    SKYDIF = QF
-      IF (BETA.GT.179.99.AND.BETA.LT.180.01) SKYDIF = 0
+      IF (BETA.GT.179.99.AND.BETA.LT.180.01) SKYDIF = 0.
 
 C Direct solar radiation incident normally on
 C external construction prior to shading adjustment
@@ -2854,8 +2913,8 @@ C (Muneer: Solar radiation and daylight models 1997)
                                                                        
 C Calculation of the extraterrestrial radiation (normal incidence).
 C (Spencer 1971 plus solar constant from ASTM E-490, 2000)
-      G0N = 1366.1 * (1. + 0.033 * COS(0.017214 * IDYP))
-                                                                        
+      G0N = 1366.1 * (1. + 0.033 * COS(0.017214 * real(IDYP)))
+
 C The sky diffuse component:
       A0 = amax1(CAI,0.)
       A1 = amax1(sin(5.*R),sin(SALT*R))
@@ -3757,9 +3816,9 @@ C (direct and diffuse), convection heat transfer between the
 C snow surface and the ambient air, longwave radiation exchange
 C with the sky, conduction through the snow layer, and conduction
 C to the ground surface.
-      TSNOW=((1.-groundrefl)*QT+4*ESNOW*SBC*(TSKY**4)
+      TSNOW=((1.-groundrefl)*QT+4.*ESNOW*SBC*(TSKY**4)
      &       +GHTC*(TP+ZEROK)+(KSNOW/(SNDEP*CMTOM))*(GTF(1)+ZEROK))
-     &      /(4*ESNOW*SBC*(TSKY**3)+GHTC+KSNOW/(SNDEP*CMTOM))
+     &      /(4.*ESNOW*SBC*(TSKY**3)+GHTC+KSNOW/(SNDEP*CMTOM))
       TSNOW=TSNOW-ZEROK   
       IF (TSNOW.GT.0.) THEN
         SNMLT=.TRUE.

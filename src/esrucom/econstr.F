@@ -975,7 +975,7 @@ C For each period.
           CALL STRIPC(IUA,OUTSTR,0,ND,1,'sensor data',IER)
           IF(IER.NE.0)GOTO 1001
           K=0
-          CALL EGETWI(OUTSTR,K,NCT,-99,4,'W','senor type',IER)
+          CALL EGETWI(OUTSTR,K,NCT,-99,5,'W','sensor type',IER)
           NBCTT(ICOMP,KK,I)=NCT
           CALL EGETWR(OUTSTR,K,ACTP,0.,0.,'-','actuation pt',IER)
           BACTPT(ICOMP,KK,I)=ACTP
@@ -992,6 +992,8 @@ C Reporting.
               msg=' sensing daylight coeff.'
             elseif(NBCTT(ICOMP,KK,I).eq.4)then
               msg=' Lightswitch2002.'
+            elseif(NBCTT(ICOMP,KK,I).eq.5)then
+              msg=' PCM state.'
             elseif(NBCTT(ICOMP,KK,I).eq.-99)then
               msg=' sensing time'
             endif

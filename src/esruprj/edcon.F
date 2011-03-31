@@ -1459,6 +1459,10 @@ C For each of the TMC types.
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
      &        '  # sensing lightswitch @ actuation point'
+          elseif(NBCTT(ICOMP,K,I).eq.5)then 
+            WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98) 
+     &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I), 
+     &        '  # sensing phase change material state' 
           elseif(NBCTT(ICOMP,K,I).eq.-99)then
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
@@ -1733,6 +1737,8 @@ C Display of current information...
             msg=' sensing daylight coeff.'
           elseif(NBCTT(ICOMP,KK,I).eq.4)then
             msg=' Lightswitch2002.'
+          elseif(NBCTT(ICOMP,KK,I).eq.5)then 
+            msg=' sensing state of PCM' 
           elseif(NBCTT(ICOMP,KK,I).eq.-99)then
             msg=' sensing time only'
           endif
@@ -1853,31 +1859,35 @@ C For each control period get the appropriate replacement properties.
           if(n3.eq.-99)then
             call EASKATOG('Controlled on:','(currently time)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           elseif(n3.eq.0)then
             call EASKATOG('Controlled on:','(currently radiation)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           elseif(n3.eq.1)then
             call EASKATOG('Controlled on:','(currently ambient temp.)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           elseif(n3.eq.2)then
             call EASKATOG('Controlled on:','(currently zone temp.)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           elseif(n3.eq.3)then
             call EASKATOG('Controlled on:','(currently daylight coef)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           elseif(n3.eq.4)then
             call EASKATOG('Controlled on:','(currently Lightswitch)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+          elseif(n3.eq.5)then
+            call EASKATOG('Controlled on:','(currently PCM state)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           else
             call EASKATOG('Controlled on:','(currently undefined)',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -1916,6 +1926,14 @@ C << Do not know what sort of question is to be asked here! >>
      &        IER,nbhelp)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
+            NBCTT(ICOMP,ICP,IT)= 5
+            VAL=BACTPT(ICOMP,ICP,IT)
+            CALL EASKR(VAL,' ',
+     &        'State of PCM (1.0=solid 2.0=liquid 3.0=mixed)',
+     &        1.00,'-',3.00,'-',1.0,'PCM State',
+     &        IER,nbhelp)
+            BACTPT(ICOMP,ICP,IT)=VAL
+          elseif(irt.eq.8)then
             return
           ENDIF
           NTL=NGLAZ(IT)
