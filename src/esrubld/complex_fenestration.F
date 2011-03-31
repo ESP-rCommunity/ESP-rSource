@@ -2150,14 +2150,17 @@ C by Natural Convection Across a Vertical Cavity of Large Aspect
 C Ratio', Journal of Heat Transfer, Vol. 118, pp.993-995.
 C
 C ********************************************************************
+c      subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
+c     &                          viscA,viscB,spchtA,spchtB,hc)
       subroutine ConvVertCav(L,TA,TB,mlr_mass,condA,condB,
      &                          viscA,viscB,spchtA,spchtB,hc)
       IMPLICIT NONE
 C gas molar mass, A and B gas property coefficients
       real mlr_mass,condA,condB,viscA,viscB,spchtA,spchtB
 
-      real L,TA,TB,hc
+      real ang,L,TA,TB,hc
       real g,R,P,Tm,ro,cp,k,mu,dT,Ra,Nu
+      real A,n,Gr,Pr
 
 C if gap is evacuated, set hc to 0.01
 C This is a crude idealized treatment.
@@ -2184,11 +2187,25 @@ C Calculate gas properties based on linear Temperature fit
       ro=(P*mlr_mass)/(R*Tm*1000.)     !density [kg/m^3]
       dT=ABS(TA-TB)                    !temp. diff.
 
-C Calculate Rayleigh number
+C Calculate coefficients A and n (EN 673, tilted glass) from tilt angle ang
+      A=0.036 ! (vert) 0.10 (45deg) 0.16 (horiz)
+      n=0.38  ! (vert) 0.31 (45deg) 0.28 (horiz)
+
+C Calculate Prandtl number (EN 673 eqn 8)
+c      Pr=mu*cp/k
+
+C Calculate Grashof number (EN 673 eqn 7)
+c      Gr=g*L**3.*dT*ro**2./(Tm*mu**2.)
+
+C Calculate Rayleigh number (=Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
       Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
+
+C Angle dependant Nusselt number (EN 673 eqn 6)
+c      Nu = A*(Gr*Pr)**n
+c if heat flux downwards, set Nu=1 (!)
 
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
