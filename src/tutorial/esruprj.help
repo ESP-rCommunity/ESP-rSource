@@ -8646,129 +8646,86 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
           CALL EPICKS(IX,IGSET,' ','Optical set to copy:',
 *subroutine OPT2TMP
 *subroutine EDITOPT
-*item EDITOPT
+*item EDITOPT optical_properties_edit
 'Optical properties are used for transparent constructions'
 'as well as to support daylighting calculations and the'
 'control of casual gains.  All data is used except for '
 'that which is marked as (documentation).'
 ' '
-'For QA purposes you may fill in the surface solar abs'
-'& refl values to match the MLC surface properties.'
-'The Uvalue is for documentation only. Similarly, '
-'solar heat gain coefficients are not used by ESP-r but '
-'can be included for documentation purposes. '
+'For QA purposes you may fill in the surface solar abs & refl'
+'values to match the MLC surface properties.'
+'The U-value and solar heat gain coef are for documentation.'
 ' '
-'The angular reflections are derived from the overall '
-'solar transmission and layer absorptions. '
+'The angular reflections are derived from the overall solar'
+'transmission and layer absorptions at normal to the surface, and'
+'at 40 degrees, 55 degrees, 70 degrees and 80 degrees from normal.'
 ' '
-'The import function currently recognises files from '
-'the LBL program WINDOW 4.1 Here is a step by step guide'
-'to importing optical data. '
-' '
-'1) Start up W4.exe and use the Function 5 key to enter '
-' the glazing system library. '
-' '
-'2) If you have existing glazing systems select one and '
-' ensure that angular properties have been calculated'
-' via Function 9 key. If the angular properties have not'
-' been calculated press A to turn on angular calcs.'
-' This should fill up the table. Type escape to return'
-' to the main W4 window. For safety type alt S to save'
-' the current description. Then then alt P to print'
-' the data for the currently highlighted glazing system.'
-' '
-' You will be asked if it is Library or Detail, select '
-' Detail and then give it a file name. It may take a few'
-' moments for it to compelete the calculations before'
-' it finishes writing the file.'
-' '
-'3) If you want to create a new glazing system type A for'
-' Add and then either N for New or C for Copy. Hint:'
-' scan the Glass Lib via Function 3 to confirm the'
-' glass code numbers you want to use first.'
-' Double check the layer thickness is correct. In W4 (as'
-' in esp-r) layer 1 is at the outside face and sub-'
-' sequent layers are towards the room. Once the layers'
-' have been defined press the space key to force initial'
-' calculations. Escape back to the main menu, and then'
-' type Function 9 to calculate angular properties.'
-' Once this is done escape back to the main menu and use'
-' alt S to save and alt P to print (as described above).'
-' '
-'4) Edit the reports from W4 to remove the null character'
-' before the word Temperature Distribution.'
-' '
-'5) Transfer edited report to esp-r folder (use dos2unix'
-' if necessary to convert line endings). In the Project'
-' Manger use the import option in the optical database  '
-' facility and supply the W4 print file name. A'
-' correct translation should result in a graph of the'
-' properties. Change the id string and description and'
-' check that the number of layers is correct.'
+' option a: type is an ID string up to 12 char which is used'
+'   in the constructions database and zone geometry files. It'
+'   should be unique (within the database).'
+'  '
+' option b: descrip is a phrase up to 36 char which you can use'
+'   to clarify the optical system'
+'  '
+' option c: visible transmittance is typically taken from a'
+'   WIS or Window 6 report. It is used when creating visual'
+'   simulations via Radiance.'
+'  '
+' option d: solar absorption and reflectin is typically taken from'
+'   a WIS or Window 6 report and is for documentation purposes. ESP-r'
+'   pays attention to the surface properties defined in the zone'
+'   construction files. Ensure that the materials database has values'
+'   which are consistent with the WIS or Window 6 report.'
+'  '
+' option e: U-value is typically taken from a WIS or Window 6 report'
+'   and is for documentation purposes. You might want to adapt the'
+'   air gap resistance in the construction database to match this.'
+'  '
+' option f: direct solar transmission at 5 angles - typically from'
+'    a WIS or Window 6 report. to importing optical data.'
+'  '
+' reflection data is derived and cannot be directly edited
+'  '
+' option g: solar heat gain is typically imported from a WIS or'
+'    Window 6 report and is for documentation purposes.'
+'  '
+' layer data includes the refractive index of the glass (typically'
+'    1.52) or air layer (typically 1.0) as well as the'
+'    absorption at 5 angles. This is normally found in the WIS or'
+'    Window 6 report. The absorption is relative to the radiation'
+'    arriving at the layer it must be be computed for the glazing'
+'    system rather than independent layers.'
+'  '
+' option 1: management of layers includes the usual functions where'
+'   add will insert at the point you indicate and copy adds a layer'
+'   at the inside face.'
 *enditem
         CALL PHELPD('optics set',58,'-',0,0,IER)
-*item EDITOPT
-'For insert the point of insertion will be at the location'
-'selected. For copy the layer copied will be placed at the'
-'inside face.'
-*enditem
         CALL EASKABCD('Layer actions: ',' ','Add (insert)',
-*item EDITOPT
-'Select a position to add/insert a new layer...'
-*enditem
-            CALL EPICKS(IX,IGSET,' ','Point of insertion:',43,NTLED+1,
-*item EDITOPT
-'Select a layer to delete...'
-*enditem
-          CALL EPICKS(IX,IGSET,' ','Layer to delete:',43,NTLED,
-*item EDITOPT
-'Select a layer to copy. It will become a new inside'
-*enditem
-          CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
-*item EDITOPT
-'This should be a UNIQUE identifier of up to 12 char '
-'with no spaces. '
-*enditem
+        CALL EPICKS(IX,IGSET,' ','Point of insertion:',43,NTLED+1,
+        CALL EPICKS(IX,IGSET,' ','Layer to delete:',43,NTLED,
+        CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
         CALL EASKS(T12,'Id string ?',' ',12,GTYPE,'opt id',IER,2)
-*item EDITOPT
-'This is an aide memorie for this set of optics. '
-*enditem
         CALL EASKS(GDESCR,'Description ?',' ',36,'new','opt desc',IER,1)
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-*enditem
         CALL EASKR(VTRNED,' ','Visable transmission? ',
-*item EDITOPT
-'The overall solar reflectance and absorption are '
-'not yet used in the calculations - documentation only'
-*enditem
         CALL EASKS(hold,'Solar absoption & reflectance?',
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-'The U value is currently for documentation only.'
-*enditem
         CALL EASKR(UVALED,'U value','(documentation): ',
-*item EDITOPT
-'The overall solar transmittance at 5 angles (from '
-'normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Solar trn @ 0 40 55 70 80 deg:',
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-'The overall heat gain (for documentation purposes) at 5 '
-'angles (from normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Overall heat gain @ 0 40 55 70 80 deg:',
-*item EDITOPT
-'The Refraction index for glass is usually 1.52.'
-'Absorption (from normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Refraction index, absorb @ 0 40 55 70 80 deg:',
 *subroutine IMPOPT
-*item IMPOPT
-'This is either a WINDOW 4.1 Optical Properties file or '
-'a WINDOW 4.1 or WINDOW 5.1 or 5.2 glazing system file'
-'or a WINDOW 6.1 or 6.2 glazing system file.'
+*item IMPOPT import_optical_file
+'The import function currently recognises files from the LBL'
+'program WINDOW 5.2/6.2/6.3. Here is a step by step guide:'
+' '
+'Older Window files start with:'
+'Window 5.2a  v5.2.17a Glazing System Thermal and Optical Properties'
+'  '
+'Newer Window files start with:'
+'Window v6.3.9.0 Glazing System Thermal and Optical Properties'
+'  '
+'Take note of the full path to the LBL report file and confirm'
+'how many layers are included in the optical data.'
 *enditem
       CALL EASKS(lwin4,' Optical import file name? ',
 *subroutine IMPWIS

@@ -209,44 +209,22 @@ C Import (from Window 5.1, 5.2, v6.? )....
         elseif(IOW.eq.2)then
 
 C Ask for WIS report file and then attempt to scan it.
-          lfil='/tmp/testtag.txt'
-          DFILE='wis.txt'
-          CALL EASKS(lfil,'WIS file name?',
-     &     ' ',72,DFILE,'optical properties import file',IER,nbhelp)
-          IER=0
+          call OPT2TMP(ier)
           iwin4=IPRODB
-          CALL EFOPSEQ(iwin4,lfil,1,IER)
-  77      CALL STRIPC(iwin4,OUTSTR,99,ND,1,'line 1',IER)
-          IF(IER.NE.0)goto 78
-          K=0
-          CALL EGETW(OUTSTR,K,WORD,'W','tag',IFLAG)
-          if(word(1:18).eq.'*sol_o_tran_direct')then
-            IRVA=20
-            call EGETAGWRA(outstr,K,iwin4,IRVA,RVA,0.00,1.00,'W',
-     &        'solar outside direct trans',IER)
-
-C Debug.
-C            write(6,*) 'sol out ',RVA
-
-          elseif(word(1:18).eq.'*sol_i_tran_direct')then
-            IRVA=20
-            call EGETAGWRA(outstr,K,iwin4,IRVA,RVA,0.00,1.00,'W',
-     &        'solar inside direct trans',IER)
-
-C Debug.
-C            write(6,*) 'sol in',RVA
-
-          elseif(word(1:8).eq.'*sol_int')then
-            IRVA=23
-            call EGETAGWIA(outstr,K,iwin4,IRVA,IVA,0,20,'W',
-     &        'solar int list',IER)
-
-C Debug.
-C            write(6,*) 'sol int',IVA
-
+          call IMPWIS(iwin4,IER)
+          if(ier.eq.0.and.nopt+1.le.MGOPT)then
+            call edisp(iuout,'Please edit the imported item, providing')
+            call edisp(iuout,'an `id` string and description...')
+            GTYPE='UNKNOWN'
+            GDESCR='UNKNOWN'
+            call EDITOPT(nopt+1,GTYPE,GDESCR,edt,IER)
+            cpsopt=GTYPE
+            cpgdescr=GDESCR
+            goto 99
+          else
+            call usrmsg('Optics database can hold no more data sets.',
+     &      'Please revise the database.','W')
           endif
-          goto 77
- 78       CALL ERPFREE(iwin4,ios)
         elseif(IOW.eq.3)then
 
 C Add a new item to the optical db
@@ -583,6 +561,13 @@ C ilabs is string arry for layer insert/delet selection.
       integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDITOPT'  ! set for subroutine
+
       IER=0
       edited=.false.
    3  INO=-2
@@ -735,64 +720,8 @@ C Draw absorption for each layer.
       endif
 
 C Help text for this menu.
-      H(1)='Optical properties are used for transparent constructions'
-      H(2)='as well as to support daylighting calculations and the'
-      H(3)='control of casual gains.  All data is used except for '
-      H(4)='that which is marked as (documentation).'
-      H(5)=' '
-      H(6)='For QA purposes you may fill in the surface solar abs'
-      H(7)='& refl values to match the MLC surface properties.'
-      H(8)='The Uvalue is for documentation only. Similarly, '
-      H(9)='solar heat gain coefficients are not used by ESP-r but '
-      H(10)='can be included for documentation purposes. '
-      H(11)=' '
-      H(12)='The angular reflections are derived from the overall '
-      H(13)='solar transmission and layer absorptions. '
-      H(14)=' '
-      H(15)='The import function currently recognises files from '
-      H(16)='the LBL program WINDOW 4.1 Here is a step by step guide'
-      H(17)='to importing optical data. '
-      H(18)=' '
-      H(19)='1) Start up W4.exe and use the Function 5 key to enter '
-      H(20)=' the glazing system library. '
-      H(21)=' '
-      H(22)='2) If you have existing glazing systems select one and '
-      H(23)=' ensure that angular properties have been calculated'
-      H(24)=' via Function 9 key. If the angular properties have not'
-      H(25)=' been calculated press A to turn on angular calcs.'
-      H(26)=' This should fill up the table. Type escape to return'
-      H(27)=' to the main W4 window. For safety type alt S to save'
-      H(28)=' the current description. Then then alt P to print'
-      H(29)=' the data for the currently highlighted glazing system.'
-      H(30)=' '
-      H(31)=' You will be asked if it is Library or Detail, select '
-      H(32)=' Detail and then give it a file name. It may take a few'
-      H(33)=' moments for it to compelete the calculations before'
-      H(34)=' it finishes writing the file.'
-      H(35)=' '
-      H(36)='3) If you want to create a new glazing system type A for'
-      H(37)=' Add and then either N for New or C for Copy. Hint:'
-      H(38)=' scan the Glass Lib via Function 3 to confirm the'
-      H(39)=' glass code numbers you want to use first.'
-      H(40)=' Double check the layer thickness is correct. In W4 (as'
-      H(41)=' in esp-r) layer 1 is at the outside face and sub-'
-      H(42)=' sequent layers are towards the room. Once the layers'
-      H(43)=' have been defined press the space key to force initial'
-      H(44)=' calculations. Escape back to the main menu, and then'
-      H(45)=' type Function 9 to calculate angular properties.'
-      H(46)=' Once this is done escape back to the main menu and use'
-      H(47)=' alt S to save and alt P to print (as described above).'
-      H(48)=' '
-      H(49)='4) Edit the reports from W4 to remove the null character'
-      H(50)=' before the word Temperature Distribution.'
-      H(51)=' '
-      H(52)='5) Transfer edited report to esp-r folder (use dos2unix'
-      H(53)=' if necessary to convert line endings). In the Project'
-      H(54)=' Manger use the import option in the optical database  '
-      H(55)=' facility and supply the W4 print file name. A'
-      H(56)=' correct translation should result in a graph of the'
-      H(57)=' properties. Change the id string and description and'
-      H(58)=' check that the number of layers is correct.'
+      helptopic='optical_properties_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Optical Property Set',ITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
@@ -800,19 +729,18 @@ C Help text for this menu.
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C List help text for the menu.
-        CALL PHELPD('optics set',58,'-',0,0,IER)
+        helptopic='optical_properties_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics set',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.nitms-2)THEN
-        H(1)='For insert the point of insertion will be at the location'
-        H(2)='selected. For copy the layer copied will be placed at the'
-        H(3)='inside face.'
         CALL EASKABCD('Layer actions: ',' ','Add (insert)',
-     &    ' Delete ','Copy','Ignore',IOW,3)
+     &    ' Delete ','Copy','Ignore',IOW,nbhelp)
         if(IOW.eq.1)then
           if(NTLED.lt.ME)then
             IX=1
-            H(1)='Select a position to add/insert a new layer...'
             CALL EPICKS(IX,IGSET,' ','Point of insertion:',43,NTLED+1,
-     &        ilabs,'Optical layer (select insertion point)',IER,1)
+     &        ilabs,'Optical layer (select insertion point)',
+     &        IER,nbhelp)
             IL=IGSET(1)-1
             if(IL.ne.0)then
               NTLED=NTLED+1
@@ -833,9 +761,8 @@ C List help text for the menu.
           endif
         elseif(IOW.eq.2)then
           IX=1
-          H(1)='Select a layer to delete...'
           CALL EPICKS(IX,IGSET,' ','Layer to delete:',43,NTLED,
-     &      ilabs,'Optical layer (select one to delete)',IER,1)
+     &      ilabs,'Optical layer (select one to delete)',IER,nbhelp)
           IL=IGSET(1)-1
           if(IL.ne.0.and.NTLED.gt.2)then
             do 791 idv=IL,NTLED-1
@@ -851,10 +778,8 @@ C List help text for the menu.
           endif
         elseif(IOW.eq.3)then
           IX=1
-          H(1)='Select a layer to copy. It will become a new inside'
-          H(2)='layer.'
           CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
-     &      ilabs,'Optical layer (select one to copy)',IER,2)
+     &      ilabs,'Optical layer (select one to copy)',IER,nbhelp)
           IL=IGSET(1)-1
           if(IL.gt.0.and.NTLED.lt.ME)then
             NTLED=NTLED+1
@@ -868,46 +793,38 @@ C List help text for the menu.
           endif
         endif
       ELSEIF(INO.EQ.1)THEN
-        H(1)='This should be a UNIQUE identifier of up to 12 char '
-        H(2)='with no spaces. '
         T12=GTYPE
-        CALL EASKS(T12,'Id string ?',' ',12,GTYPE,'opt id',IER,2)
+        CALL EASKS(T12,'Id string ?',' ',12,GTYPE,'opt id',IER,nbhelp)
         call st2name(T12,GTYPE)
         WRITE(GS(IW),'(A12,3X,A36)')GTYPE,GDESCR
         edited=.true.
       ELSEIF(INO.EQ.2)THEN
-        H(1)='This is an aide memorie for this set of optics. '
-        CALL EASKS(GDESCR,'Description ?',' ',36,'new','opt desc',IER,1)
+        CALL EASKS(GDESCR,'Description ?',' ',36,'new','opt desc',
+     &    IER,nbhelp)
         WRITE(GS(IW),'(A12,3X,A36)')GTYPE,GDESCR
         edited=.true.
       ELSEIF(INO.EQ.3)THEN
-        H(1)='The visible transmission is used in daylighting calcs.'
         CALL EASKR(VTRNED,' ','Visable transmission? ',
-     &       0.0,'W',0.99,'W',0.72,'vis trn',IER,1)
+     &       0.0,'W',0.99,'W',0.72,'vis trn',IER,nbhelp)
         edited=.true.
       ELSEIF(INO.EQ.4)THEN
-        H(1)='The overall solar reflectance and absorption are '
-        H(2)='not yet used in the calculations - documentation only'
         write(hold,'(2F8.3)')SABED,SRFED
         CALL EASKS(hold,'Solar absoption & reflectance?',
-     &    '(documentation only): ',40,' 0.  0.','opt sol',IER,2)
-        H(1)='The visible transmission is used in daylighting calcs.'
+     &    '(documentation only): ',40,' 0.  0.','opt sol',
+     &    IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,SABED,0.,0.999,'W','sol abs',IER)
         CALL EGETWR(HOLD,K,SRFED,0.,0.999,'W','sol refl',IER)
         edited=.true.
       ELSEIF(INO.EQ.5)THEN
-        H(1)='The U value is currently for documentation only.'
         CALL EASKR(UVALED,'U value','(documentation): ',
-     &       0.0,'W',9.99,'W',0.72,'U value',IER,1)
+     &       0.0,'W',9.99,'W',0.72,'U value',IER,nbhelp)
         edited=.true.
       ELSEIF(INO.EQ.8)THEN
-        H(1)='The overall solar transmittance at 5 angles (from '
-        H(2)='normal @0deg 40deg 55deg 70deg 80deg)'
         write(hold,'(5F7.3)')DGED(1),DGED(2),DGED(3),DGED(4),DGED(5)
         CALL EASKS(hold,'Solar trn @ 0 40 55 70 80 deg:',
-     &    ' ',40,'0.819, 0.802, 0.761, 0.621, 0.376','opt sol',IER,2)
-        H(1)='The visible transmission is used in daylighting calcs.'
+     &    ' ',40,'0.819, 0.802, 0.761, 0.621, 0.376','opt sol',
+     &    IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,DGED(1),0.,0.999,'W','dir t @ 0',IER)
         CALL EGETWR(HOLD,K,DGED(2),0.,0.999,'W','dir t @ 40',IER)
@@ -916,11 +833,10 @@ C List help text for the menu.
         CALL EGETWR(HOLD,K,DGED(5),0.,0.999,'W','dir t @ 80',IER)
         edited=.true.
       ELSEIF(INO.EQ.10)THEN
-        H(1)='The overall heat gain (for documentation purposes) at 5 '
-        H(2)='angles (from normal @0deg 40deg 55deg 70deg 80deg)'
         write(hold,'(5F7.3)')HGED(1),HGED(2),HGED(3),HGED(4),HGED(5)
         CALL EASKS(hold,'Overall heat gain @ 0 40 55 70 80 deg:',
-     &    ' ',40,'0.86, 0.85, 0.80, 0.65, 0.42','total ht gn',IER,2)
+     &    ' ',40,'0.86, 0.85, 0.80, 0.65, 0.42','total ht gn',
+     &    IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,HGED(1),0.,0.999,'W','ht gn @ 0',IER)
         CALL EGETWR(HOLD,K,HGED(2),0.,0.999,'W','ht gn @ 40',IER)
@@ -929,15 +845,14 @@ C List help text for the menu.
         CALL EGETWR(HOLD,K,HGED(5),0.,0.999,'W','ht gn @ 80',IER)
         edited=.true.
       ELSEIF(INO.GT.13.and.INO.LT.NITMS-3)THEN
+
 C Edit a layer.
         IL=INO-13
-        H(1)='The Refraction index for glass is usually 1.52.'
-        H(2)='Absorption (from normal @0deg 40deg 55deg 70deg 80deg)'
         write(hold,'(f6.3,2x,5F6.3)')RFED(IL),ABED(IL,1),ABED(IL,2),
      &    ABED(IL,3),ABED(IL,4),ABED(IL,5)
         CALL EASKS(hold,'Refraction index, absorb @ 0 40 55 70 80 deg:',
      &   ' ',40,' 1.52  0.149 0.163 0.173 0.179 0.169 ','refr & absorb',
-     &   IER,2)
+     &   IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,RFED(IL),0.,2.999,'W','refrac',IER)
         CALL EGETWR(HOLD,K,V1,0.,0.999,'W','ht gn @ 0',IER)
@@ -1087,31 +1002,36 @@ C CLROPT clears common block GOPTED and sets it up for a new set.
       end
 
 C ************* IMPOPT
-C IMPOPT reads in an optical report from Window 4.1 or 5.1 or 5.2.
+C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
       SUBROUTINE IMPOPT(iwin4,IER)
 #include "building.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
 
 C wlname is Window 4 name for layer, wlthk is mm thickness.
       dimension wlname(ME),wlthk(ME)
-      character lwin4*72,DFILE*72,H*72,outstr*124,word*20,wdum*20
+      character lwin4*72,DFILE*72,outstr*124,word*20,wdum*20
       character outs*124,wlname*12
       logical LOK,close
       integer iwversion    ! the version of the import file
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='IMPOPT'  ! set for subroutine
+
 C Free unit and check if import file exists.
-      H(1)='This is either a WINDOW 4.1 Optical Properties file or '
-      H(2)='a WINDOW 4.1 or WINDOW 5.1 or 5.2 glazing system file'
-      H(3)='or a WINDOW 6.1 or 6.2 glazing system file.'
+      helptopic='import_optical_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='wdata.tab'
       CALL EASKS(lwin4,' Optical import file name? ',
-     &     ' ',72,DFILE,'optical properties import file',IER,3)
+     &  ' ',72,DFILE,'optical properties import file',IER,nbhelp)
       IER=0
       CALL EFOPSEQ(iwin4,lwin4,1,IER)
       IF(IER.NE.0)RETURN
@@ -1334,8 +1254,14 @@ C Free unit and check if import file exists.
       CALL EFOPSEQ(iwis,lwin4,1,IER)
       IF(IER.NE.0)RETURN
       call edisp(iuout,lwin4)
+
+C Set initial values. Assume that there are air gaps between
+C the layers.
       basics=.false.
       standalone=.false.
+      UVALED=5.4
+      SABED = 0.0
+      nl=0   ! assume no initial layers
 
 C Scan file to see if information is direct only or with direct
 C to diffuse information.
@@ -1379,11 +1305,6 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
 
 C Note: when looking for stand-alone data for each layer the
 C actual data seems to start at column 38 (and after a :)
-
-C Set initial values. Assume that there are air gaps between
-C the Window 4 "layers".
-      UVALED=5.4
-      SABED = 0.0
 
  11   continue
       CALL STRIPC(iwis,outstr,99,ND,1,'opt data',IEER)
