@@ -42,8 +42,9 @@
     0    0.0250  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
-    2    intern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+    3    intern_wall   OPAQ  OPAQUE        SYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
+  103    0.0120  perlite plasterboard : Perlite plasterboard
     2    0.1500  breeze block : Breeze block
   103    0.0120  perlite plasterboard : Perlite plasterboard
 # layers  description   optics name   symmetry tag

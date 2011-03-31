@@ -312,7 +312,7 @@ C of the menu.
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nbcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -320,10 +320,10 @@ C of the menu.
      &            IBSN(II,1),IBSN(II,2),IBSN(II,3),IBAN(II,1),
      &            IBAN(II,2),IBAN(II,3),calentag(ij),ibcdv(II,IJ,1),
      &            ibcdv(II,IJ,2),nbcdp(II,1)
-              elseif(nbcdt(ii).eq.0)then
+              elseif(nbcdt(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &          calentag(ij),ibcdv(II,2,1),ibcdv(II,2,2),nbcdp(II,2)
+     &          calentag(ij),ibcdv(II,IJ,1),ibcdv(II,IJ,2),nbcdp(II,IJ)
               endif
               if(nbcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -347,7 +347,7 @@ C of the menu.
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(npcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -355,10 +355,10 @@ C of the menu.
      &            IPSN(II,1),IPSN(II,2),IPSN(II,3),IPAN(II,1),
      &            IPAN(II,2),IPAN(II,3),calentag(ij),ipcdv(II,IJ,1),
      &            ipcdv(II,IJ,2),npcdp(II,1)
-              elseif(npcdt(ii).eq.0)then
+              elseif(npcdt(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &          calentag(ij),ipcdv(II,2,1),ipcdv(II,2,2),npcdp(II,2)
+     &          calentag(ij),ipcdv(II,IJ,1),ipcdv(II,IJ,2),npcdp(II,IJ)
               endif
               if(npcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -377,12 +377,12 @@ C of the menu.
       elseif(icfoc.eq.2.and.ncc.gt.0)then
         do 288 II=1,ncc
           NN=NFCDT(II)
-          if(NFCDT(II).eq.0)NN=nbdaytype
+          if(NFCDT(II).eq.0) NN=nbdaytype
           do 287 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II  ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nfcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -390,10 +390,10 @@ C of the menu.
      &            IFSN(II,1),IFSN(II,2),IFSN(II,3),IFAN(II,1),
      &            IFAN(II,2),IFAN(II,3),calentag(ij),ifcdv(II,IJ,1),
      &            ifcdv(II,IJ,2),nfcdp(II,1)
-              elseif(nfcdt(ii).eq.0)then
+              elseif(nfcdt(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &          calentag(ij),ifcdv(II,2,1),ifcdv(II,2,2),nfcdp(II,2)
+     &          calentag(ij),ifcdv(II,IJ,1),ifcdv(II,IJ,2),nfcdp(II,IJ)
               endif
               if(nfcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -417,7 +417,7 @@ C of the menu.
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II  ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(ngcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -425,10 +425,10 @@ C of the menu.
      &            IGSN(II,1),IGSN(II,2),IGSN(II,3),IGAN(II,1),
      &            IGAN(II,2),IGAN(II,3),calentag(ij),igcdv(II,IJ,1),
      &            igcdv(II,IJ,2),ngcdp(II,1)
-              elseif(ngcdt(ii).eq.0)then
+              elseif(ngcdt(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &          calentag(ij),igcdv(II,2,1),igcdv(II,2,2),ngcdp(II,2)
+     &          calentag(ij),igcdv(II,IJ,1),igcdv(II,IJ,2),ngcdp(II,IJ)
               endif
               if(ngcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -457,7 +457,7 @@ C Optical controls.
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II  ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nocdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -465,10 +465,10 @@ C Optical controls.
      &            IOSN(II,1),IOSN(II,2),IOSN(II,3),IOAN(II,1),
      &            IOAN(II,2),IOAN(II,3),calentag(ij),iocdv(II,IJ,1),
      &            iocdv(II,IJ,2),nocdp(II,1)
-              elseif(nocdt(ii).eq.0)then
+              elseif(nocdt(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &          calentag(ij),iocdv(II,2,1),iocdv(II,2,2),nocdp(II,2)
+     &          calentag(ij),iocdv(II,IJ,1),iocdv(II,IJ,2),nocdp(II,IJ)
               endif
               if(nocdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -494,7 +494,7 @@ C Complex fenestration controls.
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
               m=m+1
-              mptback(m)=II
+              mptback(m)=II  ! set pointer from position in display list to the control loop
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nCFCctldaytypes(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -504,11 +504,11 @@ C Complex fenestration controls.
      &          iCFCactuator(II,3),calentag(ij),
      &          iCFCctldatevalid(II,IJ,1),
      &          iCFCctldatevalid(II,IJ,2),nCFCdayctlperiods(II,1)
-              elseif(nCFCctldaytypes(ii).eq.0)then
+              elseif(nCFCctldaytypes(ii).eq.0.and.IJ.gt.1)then
                 iperptbk(m)=ij
                 WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
-     &            calentag(ij),iCFCctldatevalid(II,2,1),
-     &            iCFCctldatevalid(II,2,2),nCFCdayctlperiods(II,2)
+     &            calentag(ij),iCFCctldatevalid(II,IJ,1),
+     &            iCFCctldatevalid(II,IJ,2),nCFCdayctlperiods(II,IJ)
               endif
               if(nCFCctldaytypes(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
@@ -847,8 +847,8 @@ C If there are enough items, allow paging control via EKPAGE.
 
 C Edit control function.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
-        ii=mptback(IVERT)
-        idi=iperptbk(IVERT)
+        ii=mptback(IVERT)    ! get back control loop from the position in display list
+        idi=iperptbk(IVERT)  ! get back day type from the position in display list
 
 C List out the current details of the control loop.
   64    CALL EVCNTRL(icfoc,II,1,1,'S',SSTR)
@@ -912,18 +912,30 @@ C Pull up a multi-choice dialog to see what should be edited.
         elseif(icfoc.eq.6)then
           NN=nCFCctldaytypes(II)
         endif
-        IF(NN.EQ.0.OR.NN.EQ.1)THEN
-          call MENUATOL(outs,'Editing Options',
-     &    'a sensor details','b actuator details',
-     &    'c period data',' ',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
-          IF(ISW.EQ.3)ISW=4
-        ELSE
-          call MENUATOL(outs,'Editing Options',
-     &   'a sensor details','b actuator details',
-     &   'c period of validity','d period data',' ',' ',
-     &   ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
-        ENDIF
+
+C The only time the sensor and actuator choices
+C should be shown and accessed is at the initial day type of
+C the list. If we pick one of the subsequent days then
+C just jump into the period data (to save a step).
+
+C If we are following the calendar day types then ignore the period
+C of validity in the selections.
+        if(idi.eq.1)then
+          IF(NN.EQ.0.OR.NN.EQ.1)THEN
+            call MENUATOL(outs,'Editing Options',
+     &      'a sensor details','b actuator details',
+     &      'c period data',' ',' ',' ',
+     &      ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
+            IF(ISW.EQ.3)ISW=4
+          ELSE
+            call MENUATOL(outs,'Editing Options',
+     &     'a sensor details','b actuator details',
+     &     'c period of validity','d period data',' ',' ',
+     &     ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
+          ENDIF
+        else
+          ISW=4  ! jump directly to the period data
+        endif
         if(ISW.eq.0)then
           goto 92
         elseif(ISW.eq.1)then
@@ -1198,7 +1210,11 @@ C current day type data..
             CALL edit_CFC_control(ITRC,II,idi,IER)
           endif
           CALL EPMENRC
-          goto 64
+          if(idi.eq.1)then
+            goto 64   ! jump back to sensor/actuator/period choice
+          else
+            goto 92   ! jump to main menu
+          endif
         elseif(ISW.eq.0)then
           GOTO 92
         endif
@@ -1219,13 +1235,15 @@ C of type icfoc.
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER nbdaytype,nbcaldays,icalender
 
       if(icfoc.eq.0)then
         ncper=0
         if(ncf.gt.0)then
           do 888 II=1,ncf
             NN=nbcdt(ii)
-            if(nbcdt(ii).eq.0)NN=3
+            if(nbcdt(ii).eq.0)NN=nbdaytype
             do 887 IJ=1,NN
               ncper=ncper+1
   887       continue
@@ -1236,7 +1254,7 @@ C of type icfoc.
         if(ncl.gt.0)then
           do 886 II=1,ncl
             NN=npcdt(ii)
-            if(npcdt(ii).eq.0)NN=3
+            if(npcdt(ii).eq.0)NN=nbdaytype
             do 885 IJ=1,NN
               ncper=ncper+1
   885       continue
@@ -1247,7 +1265,7 @@ C of type icfoc.
         if(ncc.gt.0)then
           do 884 II=1,ncc
             NN=nfcdt(ii)
-            if(nfcdt(ii).eq.0)NN=3
+            if(nfcdt(ii).eq.0) NN=nbdaytype
             do 883 IJ=1,NN
               ncper=ncper+1
   883       continue
@@ -1258,7 +1276,7 @@ C of type icfoc.
         if(ngf.gt.0)then
           do 882 II=1,ngf
             NN=ngcdt(ii)
-            if(ngcdt(ii).eq.0)NN=3
+            if(ngcdt(ii).eq.0)NN=nbdaytype
             do 881 IJ=1,NN
               ncper=ncper+1
   881       continue
@@ -1269,7 +1287,7 @@ C of type icfoc.
         if(necl.gt.0)then
           do 782 II=1,necl
             NN=necdt(ii)
-            if(necdt(ii).eq.0)NN=3
+            if(necdt(ii).eq.0)NN=nbdaytype
             do 781 IJ=1,NN
               ncper=ncper+1
   781       continue
@@ -1280,7 +1298,7 @@ C of type icfoc.
         if(nof.gt.0)then
           do 784 II=1,nof
             NN=nocdt(ii)
-            if(nocdt(ii).eq.0)NN=3
+            if(nocdt(ii).eq.0)NN=nbdaytype
             do 783 IJ=1,NN
               ncper=ncper+1
   783       continue
@@ -6066,6 +6084,10 @@ C    deal with the dialogs using standard sequential method.
       COMMON/OUTIN/IUOUT,IUIN
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
+C Calendar data.
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
+
 C menu (32 char) menu text for each item
 C prompt1 (72 char) first easkr prompt
 C prompt2 (72 char) second easkr prompt
@@ -6147,16 +6169,10 @@ C Initial menu entry setup.
       IVERT=-3
 
       if(loopdaytype.eq.0)then
-        if(iday.eq.1)then
-          write(VERT(1),'(a,i2,a,i2)') '  Loop ',icloop,
-     &     '  day: Weekday  period: ',iper
-        elseif(iday.eq.2)then
-          write(VERT(1),'(a,i2,a,i2)') '  Loop ',icloop,
-     &     '  day: Saturday  period: ',iper
-        elseif(iday.eq.3)then
-          write(VERT(1),'(a,i2,a,i2)') '  Loop ',icloop,
-     &     '  day: Sunday  period: ',iper
-        endif
+
+C Following calendar day types.
+        write(VERT(1),'(a,i2,3a,i2)') '  Loop ',icloop,
+     &   '  day: ',calentag(iday),' period: ',iper
       else
         write(VERT(1),'(a,i2,a,i2,a,i2)') '  Loop ',icloop,
      &    '  day type:',iday,' period: ',iper

@@ -339,8 +339,8 @@
 *root	/usr/esru/esp-r/training/mould
 *item
 *name   mould infested house analysis
-*cfg    /usr/esru/Projects/Shomes/Burdie/cfg/burdie.cfg
-*root	/usr/esru/Projects/Shomes/Burdie
+*cfg    /usr/esru/esp-r/training/burdie/cfg/burdie.cfg
+*root	/usr/esru/esp-r/training/burdie
 *item
 *group	windows and daylighting
 *help	A set of models focusing on glazing system performance.

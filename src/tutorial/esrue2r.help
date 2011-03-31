@@ -21,16 +21,16 @@
             CALL EASKS(ltmp72,
 *item e2r e2r_temporary_folder
 'The e2r module has been working with files in'
-'a temporary folder. If you say `yes` then the'
+'a temporary folder. If you say [yes] then the'
 'files will be copied back into the rad folder'
 'of the ESP-r model.'
 ' '
-'If you say `no` the temporary folder will be'
+'If you say [no] the temporary folder will be'
 'removed and your files deleted.'
 ' '
 'If you are planning to alter the geometry and/'
 'or constructions in your model it is usually'
-'best not to keep the files (i.e. select `no`).'
+'best not to keep the files (i.e. select [no]).'
 *enditem
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
 *item e2r model_config_file_name
@@ -144,13 +144,13 @@
 'current ESP-r materials and geometry specifications'
 '(taking into account the number of zones etc.). '
 ' '
-'After `generating` the files you may then manually'
+'After [generating] the files you may then manually'
 'edit them as required to add in textures or colours.'
 'Note that if you change one of the named material '
 'colours, then any geometric entity referencing it '
 'will be changed. '
 ' '
-'The `outer` face of internal partitions are EXCLUDED'
+'The [outer] face of internal partitions are EXCLUDED'
 'because they are duplicates of the inner face of the '
 'adjacent zone and cannot be seen in any event.  '
 ' '
@@ -162,7 +162,7 @@
 '             | |                '
 '=============| |===========     '
 '              |                 '
-'              `--- other sides of surfs '
+'               --- other sides of surfs '
 '                   not seen and EXCLUDED '
 '  '
 'Options:'
@@ -264,7 +264,7 @@
 ' '
 'For external views the perspective feedback may be '
 'preferable to set views.  You may need to interact  '
-'with the `wireframe control` to fine-tune the view '
+'with the [wireframe control[ to fine-tune the view '
 'as Radiance uses an eyepoint & view vector approach'
 'while e2r is built on an eyepoint & viewed point '
 'approach. '
@@ -509,7 +509,7 @@
           CALL EASKATOG('Interval between views:',' ','one min',
           CALL EASKATOG('Image frame size (pixels):',' ','240',
 *item genimage overwrite_existing_pic
-'The image processing tends to `hang` when trying to'
+'The image processing tends to [hang] when trying to'
 'overwrite an existing image. Choose a different root'
 'name for the image(s) if you can.'
 '  '
@@ -551,7 +551,7 @@
 'be created then change the relevant file name.'
 '  '
 '  '
-'Remember to update the `RIF` file after you have'
+'Remember to update the [RIF] file after you have'
 'made changes to any settings.'
 '  '
 'NOTE: If any of the file names are UNKNOWN then they'
@@ -651,7 +651,7 @@
 *enditem
         CALL EASKS(ltmp,' Calculation options file name ?',' ',
 *item RIFFORM e2r_pic_root_name
-'This is the root name for pictures created with `rad`'
+'This is the root name for pictures created with [rad]'
 *enditem
         CALL EASKS(ltmp,' Picture root file name ?',' ',
 *item RIFFORM e2r_RIF_file_name
@@ -664,14 +664,14 @@
 *enditem
         CALL EASKS(ltmp,' Radiance RIF file ?',
 *item RIFFORM e2r_manual_edit_rif
-'The manual edit function allows for `experts` to work'
+'The manual edit function allows for [experts] to work'
 'their magic on the current contents. After editing'
 'the re-read file function should be used.'
 *enditem
-        CALL EASKABCD(' Options: ',' ','Browse current `rif` file',
+        CALL EASKABCD(' Options: ',' ','Browse current [rif] file',
           CALL ASKOK(' ',' Re-read after editing?',OK,dok,3)
 *item RIFFORM e2r_view_name_for_test
-'Please select one view to associate with the `rad`'
+'Please select one view to associate with the [rad]'
 'test. If no view selected the default used.'
 *enditem
         CALL EPICKS(IX,IVALV,' ',' View for test: ',
