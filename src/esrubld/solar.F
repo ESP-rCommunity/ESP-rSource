@@ -389,6 +389,8 @@ C PCM state - switching of TMC properties
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,MSPMRES),
      &         strspm(mspmnod,MSPMRES),unitspm(mspmnod,MSPMRES),
      &         txtspm(mspmnod,MSPMRES)
+
+      character strspm*16,unitspm*16,txtspm*72
     ! dataspm(??,1) contains the flag that indicates the
     ! state of PCM at each timestep 
     ! if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
