@@ -1709,6 +1709,9 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
       real aprat,height
 
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+
       integer nc,nn,ne,i,j,icomp,isur,icfctp,inode,nnod,itypenext
       integer itype,nd_blnd,nd_cav,nd_glass,IER,ii1,ii2
       integer nd_surf,ii
@@ -1785,6 +1788,7 @@ Cag@07052010 else use logic from below from "inside CFC construction"
 c                  L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                   hc=0.
 
+c                  CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
                   CALL ConvVertCav(L,TA,TB,
      &                             rmlr_mass(icomp,icfctp,i+1),
      &              cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
@@ -1896,7 +1900,9 @@ C If shade is retracted determine gap thickness between glass layers
                   L=THRMLI(icomp,isur,i+1,4)+THRMLI(icomp,isur,i+3,4)
                 endif
                 
-                CALL ConvVertCav(L,TA,TB,rmlr_mass(icomp,icfctp,i+1),
+c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
+                CALL ConvVertCav(L,TA,TB,
+     &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
@@ -1912,7 +1918,9 @@ C If shade is retracted determine gap thickness between glass layers
                 L=lthk
                 hc=0.
 
-                CALL ConvVertCav(L,TA,TB,rmlr_mass(icomp,icfctp,i+1),
+c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
+                CALL ConvVertCav(L,TA,TB,
+     &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
@@ -1938,7 +1946,9 @@ C If shade is retracted determine gap thickness between glass layers
               elseif(itypenext.eq.1)then
                 L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                 hc=0.
-                CALL ConvVertCav(L,TA,TB,rmlr_mass(icomp,icfctp,i+1),
+c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
+                CALL ConvVertCav(L,TA,TB,
+     &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
@@ -2151,7 +2161,6 @@ C Ratio', Journal of Heat Transfer, Vol. 118, pp.993-995.
 C
 C ********************************************************************
 c      subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
-c     &                          viscA,viscB,spchtA,spchtB,hc)
       subroutine ConvVertCav(L,TA,TB,mlr_mass,condA,condB,
      &                          viscA,viscB,spchtA,spchtB,hc)
       IMPLICIT NONE
@@ -2160,7 +2169,7 @@ C gas molar mass, A and B gas property coefficients
 
       real ang,L,TA,TB,hc
       real g,R,P,Tm,ro,cp,k,mu,dT,Ra,Nu
-      real A,n,Gr,Pr
+      real A,n
 
 C if gap is evacuated, set hc to 0.01
 C This is a crude idealized treatment.
@@ -2188,25 +2197,27 @@ C Calculate gas properties based on linear Temperature fit
       dT=ABS(TA-TB)                    !temp. diff.
 
 C Calculate coefficients A and n (EN 673, tilted glass) from tilt angle ang
-      A=0.036 ! (vert) 0.10 (45deg) 0.16 (horiz)
-      n=0.38  ! (vert) 0.31 (45deg) 0.28 (horiz)
+c      A=0.036 ! (0deg, vert) 0.10 (45deg) 0.16 (90deg, horiz)
+	  A=0.036667+0.0013778*ang !  R= 0.99983 
+c      n=0.38  ! (0deg, vert) 0.31 (45deg) 0.28 (90deg, horiz)
+      n=0.38-0.002*ang+(9.8765E-6)*ang**2 ! R=1
 
-C Calculate Prandtl number (EN 673 eqn 8)
-c      Pr=mu*cp/k
-
-C Calculate Grashof number (EN 673 eqn 7)
-c      Gr=g*L**3.*dT*ro**2./(Tm*mu**2.)
-
-C Calculate Rayleigh number (=Gr*Pr)
+C Calculate Rayleigh number (= Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
+c      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
 
 C Angle dependant Nusselt number (EN 673 eqn 6)
-c      Nu = A*(Gr*Pr)**n
-c if heat flux downwards, set Nu=1 (!)
-
+      if (ang.ge.0.) then
+        Nu = A*Ra**n
+      elseif ((ang.lt.0.).and.(ang.gt.-45.)) then
+C       use vertical value for now
+        Nu=0.036*Nu**0.38
+C     if heat flux downwards, set Nu=1 (!)
+      elseif (ang.le.-45.) then
+        Nu=1.0
+      endif
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
 
@@ -4792,7 +4803,9 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
                     RGap1 = 1.0/RGap1
 C calculate nominal convective gap resistance (code from lines 1836 ff.)
             Gap1Width=THRMLI(icomp,i,l,4) ! gap width
-       CALL ConvVertCav(Gap1Width,TA,TB,rmlr_mass(icomp,icfctp,l),
+c       CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
+       CALL ConvVertCav(Gap1Width,TA,TB,
+     &      rmlr_mass(icomp,icfctp,l),
      &      cond_A(icomp,icfctp,l),cond_B(icomp,icfctp,l),
      &      visc_A(icomp,icfctp,l),visc_B(icomp,icfctp,l),
      &      spht_A(icomp,icfctp,l),spht_B(icomp,icfctp,l),hc_nom)

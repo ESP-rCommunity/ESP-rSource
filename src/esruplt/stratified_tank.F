@@ -1983,8 +1983,8 @@ C----     Calculate Reynolds number
           Re = MdotHX*4./(PI*DinHX*mu)
 C----     Check if Reynolds number is above transition to turbulence
 C         Hemisphere (1990), eq. 8
-          Re_crit = 2300*(1.+8.6*(DinHX/DcurvHX)**0.45)
-          Re_turb = 22000
+          Re_crit = 2300.*(1.+8.6*(DinHX/DcurvHX)**0.45)
+          Re_turb = 22000.
 C----       Laminar flow correlation
 C           Hemisphere (1990), eq. 9
           if (Re <= Re_crit) then
@@ -1996,7 +1996,7 @@ C           Gnielinski, cited in Incropera & DeWitt (1990), eq 8.63a, 8.63b
           else if (Re >= Re_turb) then
             f = 1.0 / (0.79*log(Re)-1.64)**2.
             Nu = (f/8.) * (Re-1000.)
-     &         * Pr/(1 + 12.7*sqrt(f/8.)*(Pr**(2./3.)-1.))
+     &         * Pr/(1. + 12.7*sqrt(f/8.)*(Pr**(2./3.)-1.))
 C----       Transition area
 C           Hemisphere (1990) eq. 12 and 13
           else
@@ -2016,7 +2016,7 @@ C----     Convert Nu into thermal conductance, expressed per unit length of coil
 C================= Conduction of heat through wall of coil ===============
 C         Kreith and Bohn, 2001, eq. 2.39
         
-          U_wall = 2*PI*kHX/log(DoutHX/DinHX)  
+          U_wall = 2.*PI*kHX/log(DoutHX/DinHX)  
         
         
 C================= Outside of coil ===============
@@ -2046,7 +2046,7 @@ C----     Forced convection
 C         Zhukauskas correlation. In Incropera & DeWitt (1990) eq. 7.56
           V = Mdot(i)/rho_s/CrossArea
           Re_s = abs(V)*DoutHX/(mu_s/rho_s)
-          if (Re_s < 40) then
+          if (Re_s < 40.) then
             C = 0.75
             m = 0.4
           else if (Re_s < 1000) then
@@ -2056,7 +2056,7 @@ C         Zhukauskas correlation. In Incropera & DeWitt (1990) eq. 7.56
             C = 0.26
             m = 0.6
           endif
-          if (Pr < 10) then
+          if (Pr < 10.) then
             n = 0.37
           else
             n = 0.36
@@ -2097,7 +2097,7 @@ C         Note that LMTD = (DeltaTHXin-DeltaTHXout)/log(DeltaTHXin/DeltaTHXout)
 C         with DeltaTHXin = (THXin - Ts)
 C         and  DeltaTHXout = (THXout - Ts)
 C         which is simplified using the expression for THXout above 
-          LMTD = -eps/log(1-eps)*(THXin-Ts)
+          LMTD = -eps/log(1.-eps)*(THXin-Ts)
           THX = Ts + LMTD             ! this is the average HX fluid temperature
 
 C----     Update inside and outside wall temperatures, for next iteration
