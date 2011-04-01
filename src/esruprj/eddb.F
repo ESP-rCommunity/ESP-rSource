@@ -530,6 +530,13 @@ C Ask user for ascii Materials database to convert.
      &        144,DFILE,'materials db (ascii)',IER,nbhelp)
             goto 155
           endif
+        elseif(IER.eq.3)then
+          write(outs248,'(3a)') 
+     &    ' Not enough constructions found in Constructions db',
+     &     lworking(1:lnblnk(lworking)),'!'
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
         else
 
 C Scan was ok so set mldbok to true.
