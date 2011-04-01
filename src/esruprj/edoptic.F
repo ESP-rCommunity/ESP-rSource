@@ -211,19 +211,22 @@ C Import (from Window 5.1, 5.2, v6.? )....
 C Ask for WIS report file and then attempt to scan it.
           call OPT2TMP(ier)
           iwin4=IPRODB
-          call IMPWIS(iwin4,IER)
+          GDESCR='UNKNOWN'
+          call IMPWIS(iwin4,GDESCR,IER)
           if(ier.eq.0.and.nopt+1.le.MGOPT)then
             call edisp(iuout,'Please edit the imported item, providing')
             call edisp(iuout,'an `id` string and description...')
             GTYPE='UNKNOWN'
-            GDESCR='UNKNOWN'
             call EDITOPT(nopt+1,GTYPE,GDESCR,edt,IER)
             cpsopt=GTYPE
             cpgdescr=GDESCR
             goto 99
-          else
+          elseif(nopt+1.ge.MGOPT)then
             call usrmsg('Optics database can hold no more data sets.',
-     &      'Please revise the database.','W')
+     &        'Please revise the database.','W')
+          else
+            call usrmsg('File to import was not found. No change',
+     &        'in the database.','W')
           endif
         elseif(IOW.eq.3)then
 
@@ -533,7 +536,6 @@ C EDITOPT edits one set of optical properties via common block.
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -543,7 +545,7 @@ C EDITOPT edits one set of optical properties via common block.
 
 C ilabs is string arry for layer insert/delet selection.
       DIMENSION ITEMS(32),sr(5),ilabs(ME),IGSET(ME)
-      CHARACTER GTYPE*12,GDESCR*36,h*72,ITEMS*43,hold*72
+      CHARACTER GTYPE*12,GDESCR*36,ITEMS*43,hold*72
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
@@ -1178,7 +1180,7 @@ C Newer files do not have a # after air layers.
         ABED(IL,4)=v5
         CALL EGETWR(outstr,K,v6,0.0,0.999,'W','abs @80',IER)
         ABED(IL,5)=v6
-        write(outs,'(6f6.3,a,i2)')v1,v2,v3,v4,v5,v6,wdum,IL
+        write(outs,'(6f6.3)')v1,v2,v3,v4,v5,v6
         call edisp(iuout,outs)
 
 C If inserting air gaps do it here, except for the inside layer.
@@ -1229,17 +1231,22 @@ C If inserting air gaps do it here, except for the inside layer.
 
 C ************* IMPWIS
 C IMPWIS clears common block GOPTED and sets it up for a new set.
-      SUBROUTINE IMPWIS(iwis,IER)
+      SUBROUTINE IMPWIS(iwis,GDESCR,IER)
 #include "building.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameters
+      integer iwis  ! file unit number
+      character GDESCR*36  ! description from WIS
+      integer ier   ! zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
 
-      CHARACTER GTYPE*12,GDESCR*36
+      CHARACTER GTYPE*12
       character lwin4*72,DFILE*72,H*72,outstr*124
       character outs*124
       logical basics,standalone
@@ -1268,7 +1275,6 @@ C the layers.
 C Scan file to see if information is direct only or with direct
 C to diffuse information.
   22  CALL STRIPC(iwis,outstr,99,ND,1,'WIS scanning',IIER)
-      write(6,*) outstr(1:lnblnk(outstr))
       if(IIER.ne.0)goto 23
       if(outstr(1:38).eq.'solar direct transmittance outdoor tot')then
         call edisp(iuout,'Direct->diffuse data found.')
@@ -1293,6 +1299,7 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
           call edisp(iuout,'Angles 0->90 @10deg + diffuse')
         elseif(ND.eq.21)then
           call edisp(iuout,'Angles 0->90 & -10->-90 @10deg + diffuse')
+          call edisp(iuout,'Complex optical properties not supported')
         endif
       elseif(outstr(1:10).eq.'-- layer :')then
       else
@@ -1300,6 +1307,8 @@ C << also scan for `Pane` `Gap` `Shading` in these lines.
       endif
       goto 22
 
+C Initial pass looking for the number of layers is complete. Now re-wind
+C and read in the details. 
   23  continue
       REWIND(iwis,ERR=999)
       NTLED=nl
@@ -1317,42 +1326,186 @@ C actual data seems to start at column 38 (and after a :)
       if(lnblnk(outstr).le.1)goto 11
       if(outstr(1:10).eq.'--- Basics')then
         basics=.true.
+      elseif(outstr(1:27).eq.'--- Registered WIS user ---')then
+        continue  ! not yet used
+      elseif(outstr(1:25).eq.'Registered organisation :')then
+        continue  ! not yet used
+      elseif(outstr(1:25).eq.'Registered user name    :')then
+        continue  ! not yet used
+      elseif(outstr(1:31).eq.'--- Report transparent system :')then
+        continue  ! not yet used
       elseif(outstr(1:24).eq.' name transparent system')then
         K=39
-        CALL EGETW(outstr,K,GDESCR,'W','opt description',IER)
+        CALL EGETP(outstr,K,GDESCR,'W','opt description',IER)
       elseif(outstr(1:8).eq.' U-value')then
         K=39
         CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)
       elseif(outstr(1:17).eq.' solar factor (g)')then
-        continue
-      elseif(outstr(1:27).eq.' solar direct transmittance')then
+        continue  ! not yet used
+      elseif(outstr(1:38).eq.
+     &  ' solar direct transmittance          :')then
         K=39
         CALL EGETWR(outstr,K,DGED(1),0.0,0.999,'W','dir t @0',IER)
-      elseif(outstr(1:33).eq.' solar direct reflectance outdoor')then
+      elseif(outstr(1:38).eq.
+     &  ' solar direct reflectance outdoor    :')then
         K=39
         CALL EGETWR(outstr,K,SRFED,0.0,0.999,'W','sol refl',IER)
-      elseif(outstr(1:32).eq.' solar direct reflectance indoor')then
-        if(basics)then
-        elseif(standalone)then
-        endif
+      elseif(outstr(1:38).eq.
+     &  ' solar direct reflectance indoor     :')then
+        continue  ! not yet used
       elseif(outstr(1:20).eq.' light transmittance')then
         K=39
         CALL EGETWR(outstr,K,VTRNED,0.0,0.999,'W','visib trn',IER)
       elseif(outstr(1:26).eq.' light reflectance outdoor')then
-        if(basics)then
-        elseif(standalone)then
-        endif
+        continue  ! not yet used
       elseif(outstr(1:25).eq.' light reflectance indoor')then
-        if(basics)then
-        elseif(standalone)then
-        endif
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.' UV transmittance')then
+        continue  ! not yet used
+      elseif(outstr(1:23).eq.' UV reflectance outdoor')then
+        continue  ! not yet used
+      elseif(outstr(1:22).eq.' UV reflectance indoor')then
+        continue  ! not yet used
       elseif(outstr(3:31).eq.'eneral colour rendering index')then
-        if(basics)then
-        elseif(standalone)then
-          continue
-        endif
+        continue  ! not yet used
+      elseif(outstr(1:21).eq.'--- Split U-value ---')then
+        continue  ! not yet used
+      elseif(outstr(1:6).eq.' Uconv')then
+        continue  ! not yet used
+      elseif(outstr(1:4).eq.' Uir')then
+        continue  ! not yet used
+      elseif(outstr(1:6).eq.' Uvent')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' Utotal')then
+        continue  ! not yet used
+      elseif(outstr(1:13).eq.'--- Split all')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' h_conv')then
+        continue  ! not yet used
+      elseif(outstr(1:5).eq.' h_ir')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' h_vent')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' checksum')then
+        continue  ! not yet used
+      elseif(outstr(1:22).eq.'--- Split solar factor')then
+        continue  ! not yet used
+      elseif(outstr(1:41).eq.
+     &  ' solar direct transmittance   	         :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar factor convective                 :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar factor thermal radiative ir       :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar factor ventilation                :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar factor (g)                        :')then
+        continue  ! not yet used
+      elseif(outstr(1:33).eq.'--- Split solar gain coefficients')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar fraction reflected to outdoor     :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar fraction convected to outdoor     :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar fraction th. radiated to outdoor  :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar fraction ventilated to outdoor    :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar fraction to outdoor               :')then
+        continue  ! not yet used
+      elseif(outstr(1:29).eq.'--- Split all solar fractions')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar direct transmittance              :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar direct reflectance                :')then
+        continue  ! not yet used
+      elseif(outstr(1:26).eq.' solar absorption fraction')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' solar absorbed                          :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' conv indoor                             :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' ir indoor                               :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' conv outdoor                            :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' ir outdoor                              :')then
+        continue  ! not yet used
+      elseif(outstr(1:42).eq.
+     &  ' gap vent                                :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.'--- Short description conditions')then
+        continue  ! not yet used
+      elseif(outstr(1:24).eq.' For angular and diffuse')then
+        continue  ! not yet used
+      elseif(outstr(1:30).eq.' awaiting results from ongoing')then
+        continue  ! not yet used
+      elseif(outstr(1:29).eq.' Calculated using setting: No')then
+        continue  ! not yet used
+      elseif(outstr(1:33).eq.' Therefore results are calculated')then
+        continue  ! not yet used
+      elseif(outstr(1:23).eq.' For solar calculations')then
+        continue  ! not yet used
+      elseif(outstr(1:25).eq.' The solar spectrum of EN')then
+        continue  ! not yet used
       elseif(outstr(1:28).eq.'--- Short system description')then
         basics=.false.
+      elseif(outstr(1:24).eq.'(from outdoor to indoor)')then
+        continue  ! not yet used
+      elseif(outstr(1:11).eq.' layer 1 is')then
+        continue  ! already used
+      elseif(outstr(1:11).eq.' layer 2 is')then
+        continue  ! already used
+      elseif(outstr(1:11).eq.' layer 3 is')then
+        continue  ! already used
+      elseif(outstr(1:11).eq.' layer 4 is')then
+        continue  ! already used
+      elseif(outstr(1:11).eq.' layer 5 is')then
+        continue  ! already used
+      elseif(outstr(1:11).eq.' layer 6 is')then
+        continue  ! already used
+      elseif(outstr(1:27).eq.' --- Detailed Thermal Solar')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'abs x      :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'t_sol      :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_sol_o    :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_sol_i    :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'t_vis      :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_vis_o    :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_vis_i    :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'t_uv       :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_uv_o     :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'r_uv_i     :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'g_val      :')then
+        continue  ! not yet used
+      elseif(outstr(1:12).eq.'diff       :')then
+        continue  ! not yet used
       elseif(outstr(1:22).eq.'--- System description')then
         standalone=.true.
         basics=.false.
@@ -1404,14 +1557,118 @@ C IL to represent the layering. << how to determine which is an air gap? >>
         ABED(IL,5)=v6
         write(outs,'(6f6.3,a,i2)')v1,v2,v3,v4,v5,v6,IL
         call edisp(iuout,outs)
-      elseif(outstr(1:24).eq.' name transparent system')then
-        if(standalone)then
-        elseif(standalone)then
-        endif
+      elseif(outstr(1:8).eq.' r_sol_o')then
+        continue  ! not yet used
+      elseif(outstr(1:8).eq.' r_sol_i')then
+        continue  ! not yet used
+      elseif(outstr(1:6).eq.' t_vis')then
+        continue  ! not yet used
+      elseif(outstr(1:8).eq.' r_vis_o')then
+        continue  ! not yet used
+      elseif(outstr(1:8).eq.' r_vis_i')then
+        continue  ! not yet used
+      elseif(outstr(1:5).eq.' t_uv')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' r_uv_o')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' r_uv_i')then
+        continue  ! not yet used
+      elseif(outstr(1:6).eq.' g_val')then
+
+C Stuff angular g value into the heat gain slot.
+        k=8
+        CALL EGETWR(outstr,K,HGED(1),0.0,0.999,'W','ht gn @0',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 10deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 20deg',IER)
+        CALL EGETWR(outstr,K,DUM,0.0,0.999,'W','skip 30deg',IER)
+        CALL EGETWR(outstr,K,HGED(2),0.0,0.999,'W','ht gn @40',IER)
+        CALL EGETWR(outstr,K,V1,0.0,0.999,'W','skip 50deg',IER)
+        CALL EGETWR(outstr,K,V2,0.0,0.999,'W','skip 60deg',IER)
+        HGED(3)=(V1+V2)/2.
+        CALL EGETWR(outstr,K,HGED(4),0.0,0.999,'W','ht gn @70',IER)
+        CALL EGETWR(outstr,K,HGED(5),0.0,0.999,'W','ht gn @80',IER)
+      elseif(outstr(1:28).eq.'(Solar absorption assumed in')then
+        continue  ! not yet used
+      elseif(outstr(1:21).eq.' --- temperatures ---')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Outdoor air temperature       :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Outdoor radiant temperature   :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' incidence angle               :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Outdoor surface temperature   :')then
+        continue  ! not yet used
+      elseif(outstr(1:15).eq.' layer (center)')then
+        continue  ! not yet used
+      elseif(outstr(1:7).eq.' border')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Indoor surface temperature    :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Indoor air temperature        :')then
+        continue  ! not yet used
+      elseif(outstr(1:32).eq.' Indoor radiant temperature    :')then
+        continue  ! not yet used
+      elseif(outstr(1:15).eq.'--- Network ---')then
+        continue  ! not yet used
+      elseif(outstr(1:25).eq.'Layer and node properties')then
+        continue  ! not yet used
+      elseif(outstr(1:29).eq.'-- solar absorption fractions')then
+        continue  ! not yet used
+      elseif(outstr(1:28).eq.'Solar absorption fraction of')then
+        continue  ! not yet used
+      elseif(outstr(1:13).eq.'-- conduction')then
+        continue  ! not yet used
+      elseif(outstr(1:22).eq.'IR and ventilation not')then
+        continue  ! not yet used
+      elseif(outstr(1:28).eq.'Heat transfer coeff of layer')then
+        continue  ! not yet used
+      elseif(outstr(1:31).eq.'Network of thermal coefficients')then
+        continue  ! not yet used
       elseif(outstr(1:16).eq.'-- Total Network')then
         basics=.false.
         standalone=.false.
-      elseif(outstr(1:2).eq.' ')then
+      elseif(outstr(1:31).eq.' hs are given between all nodes')then
+        continue  ! not yet used
+      elseif(outstr(1:33).eq.' nodes are from outdoor to indoor')then
+        continue  ! not yet used
+      elseif(outstr(1:11).eq.' all layers')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' 1      :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' 2      :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' o_air  :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' o_rad  :')then
+        continue  ! not yet used
+      elseif(outstr(1:9).eq.' i      :')then
+        continue  ! not yet used
+      elseif(outstr(1:11).eq.'')then
+        continue  ! not yet used
+      elseif(outstr(1:28).eq.'-- gap properties conduction')then
+        continue  ! not yet used
+      elseif(outstr(1:8).eq.' Layer :')then
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.' Nusselt_number :')then
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.' Prandtl_number :')then
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.' Grashof_number ;')then
+        continue  ! not yet used
+      elseif(outstr(1:18).eq.'--- Disclaimer ---')then
+        continue  ! not yet used
+      elseif(outstr(1:24).eq.'The WIS Consortium makes')then
+        continue  ! not yet used
+      elseif(outstr(1:22).eq.'responsibility for the')then
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.'the WIS Software.')then
+        continue  ! not yet used
+      elseif(outstr(1:25).eq.'The user has agreed to be')then
+        continue  ! not yet used
+      elseif(outstr(1:17).eq.'Software package.')then
+        continue  ! not yet used
+      elseif(outstr(1:2).eq.'  ')then
         goto 11
       else
         write(outs,'(2a)') 'Unrecognised ',outstr(1:50)
