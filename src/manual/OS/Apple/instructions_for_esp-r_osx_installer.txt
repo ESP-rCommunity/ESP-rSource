@@ -1,18 +1,10 @@
 
         Steps to create or use the ESP-r installers on OSX
-                             September 2010
+                             March 2011
 
-There are two patterns used to create an installer for ESP-r for use
-on OSX machines.  One is via a single-file self extractor based on
-the 'makeself' script typically used in Linux and the second is to 
-use compressed archive files. Both of these will be covered in this 
-document.
-
-If you want to USE the self-extractor or compressed archive file
-please skip down to the relevant section.  On some OSX computers
-the single-file self extractor does not work correctly.
-
-
+Pre-compiled versions of ESP-r on OSX are usually distributed in
+the form of a compressed tar archive of a newly compiled and working
+ESP-r distribution.
 
 Compiling ESP-r from source
 
@@ -50,101 +42,18 @@ version of esp-r.
 Again remove the subversion files from the /opt/esru folders.
 
 
-
-
-Building a self-extractor
-
-The self-extractor for ESP-r on a Mac is based on a package called 
-makeself (which also works on Linux and in the Cygwin environment
-of Windows PCs). Makeself is a script which can be installed as part
-of the Darwin Ports and is also  downloaded from
-<http://megastep.org/makeself>. It allows a pre-compiled version 
-of ESP-r to be extracted on a users computer with minimal interaction.
-Unfortunately it does not seem to extract properly on most OSX 10.5 and
-10.6 computers.
-
-Create a folder /opt/precompiled_for_osx
-
-  sudo mkdir /opt/precompiled_for_osx
-
-Then create a tar file of the /opt/esru/esp-r folders (the example below 
-includes a version in the name of the tar file which you may
-wish to change to reflect the current version number). If you compiled
-an X11 version of ESP-r use the following:
-
- cd /opt/
- sudo tar cf esp-r_X11_11.9_osx.tar esru
- sudo gzip -9 esp-r_X11_11.9_osx.tar
-
-and move it into /opt/precompiled_for_osx.
-
-Compile and create the tar file of the GTK distribution and gzip it and
-place it in the precompiled_for_osx folder (as above). 
-
- cd /opt/
- sudo tar cf esp-r_GTK_11.9_osx.tar esru
- sudo gzip -9 esp-r_GTK_11.9_osx.tar
-
-Remember to remove any older *.tar.gz files from the precompiled_for_osx
-folder so that are not included in the installer run file.
-
-Next, Edit the setup script (setup) to include the specific names 
-of the gzipped tar files.
-
-In folder /opt/precompiled_for_osx along with the gziped tar files
-there are several other files as follows:
-
-License (text which is used to advise the user on license conditions).
-setup_osx (a script which tells makeself.sh what to do during the 
-extraction process.
-
-The file that does most of the work is setup_osx.  This needs to be edited
-slightly to include the specific ...tar.gz files.  The other
-files are helper applications that setup_osx is going to copy.
-
-The way that the self extractor is created is via a command similar
-to the one below (adapt for your makeself location and version):
-
-sudo /opt/local/bin/makeself pre_compiled_for_osx esp-r_v11.9_osx_precomp_intel.run "ESP-r V11.9 distribution Intel for OSX (/opt/esru)" ./setup
-
-The tokens in the above command are as follows:
-
-makeself.sh or makeself is a general script that creates installers. makeself-2.1.5 
-can be downloaded from the web and it will create its own executables.  
-The command includes the full path to where makeself.sh is located on your 
-machine. 
-
-The 2nd token is the name of the folder where the files to be installed are 
-located (as noted in the first step). 
-
-The 3rd token is the name of the 'run' file that is going to be created (a run 
-file is the finished esp-r installer that will be placed on the web). 
-
-The 4th token is a quoted string which is the message that will be printed 
-out when the installer runs. 
-
-The 5th token ./setup_osx or ./setup are the edited setup scripts within the 
-pre_compiled_for_osx folder. This script needs to have a chmod a+x done on it.
-
-It is A REALLY GOOD IDEA to test use of the self-extractor on a clean machine.
-
-
-
-Creating the compressed tar files for alternative install procedure
-
-For machines where the self-extractor does not work it is possible to
-take the newly compiled distribution of ESP-r in /opt/esru/esp-r and
-put it in a tar file and compress it.
+Creating the compressed tar files
 
 Follow the instructions above to compile the X11 version of ESP-r to 
 the /opt/esru folder structure. Be sure to remove the .svn folders as 
 described above. Just to be certain, try running several of the new
 ESP-r executables.  To ensure the correct path is included in the tar 
-file create the tar file via the following commands:
+file create the tar file (alter the v11.10 to match the actual
+version of ESP-r) via the following commands:
 
   cd /
-  sudo tar cf esp-r_x11_v11.9_osx_intel_in_opt.tar opt/esru
-  sudo gzip -9 esp-r_x11_v11.9_osx_intel_in_opt.tar
+  sudo tar cf esp-r_x11_v11.10_osx_intel_in_opt.tar opt/esru
+  sudo gzip -9 esp-r_x11_v11.10_osx_intel_in_opt.tar
 
 Now clean up the source distribution via a 'make clean' command. As the
 example models and databases will be ok all you need to do is to remove
@@ -155,10 +64,8 @@ After compiling the GTK version create a compressed tar file for
 this via the commands
 
   cd /
-  sudo tar cf esp-r_gtk_v11.9_osx_intel_in_opt.tar opt/esru
-  sudo gzip -9 esp-r_gtk_v11.9_osx_intel_in_opt.tar
-
-  
+  sudo tar cf esp-r_gtk_v11.10_osx_intel_in_opt.tar opt/esru
+  sudo gzip -9 esp-r_gtk_v11.10_osx_intel_in_opt.tar
 
 
 Dependencies
@@ -224,39 +131,20 @@ These need to be placed in /usr/local/lib if the machine does
 not have the full GNU GCC compiler tool set.
 
 
-
-Using/testing the self-extractor
-
-If you have just created an installer you should test this on a 
-separate machine to confirm that it works.  If you have downloaded 
-the self-extractor `run` file it can be used via either the OSX 
-terminal (which supports text interactions) or within an OSX X11 
-graphics terminal.
-
-Typically the `run` file you downloaded should be placed in /opt 
-and run via a sudo command from that folder via a command (adapt 
-to reflect the actual name of the `run` file).
- 
-  sudo ./esp-r_v11.9_osx_precomp.run
-
-On most OSX machines a file ending in .run will be treated as 
-an executable. If the installer does not execute you may have 
-to issue the following command to change its permissions:
-
-  sudo chmod a+x ./esp-r_v11.9_osx_precomp.run
+Using/testing the compressed archive
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
 is an almost complete port of ESP-r using the GTK library. There
 are a few functions which are not available in the GTK version
-so this is generally viewed as BETA software.  The GTK version also
-has a number of library dependencies which are not required of
-the X11 version. If you are using the self-extractor (as opposed
-to compiling ESP-r) you are limited to installing either the
+(e.g. click-on-bitmap).  The GTK version also has library
+dependencies which are not required with the X11 version.
+
+If you are using a pre-compiled archvie (as opposed to compiling
+ESP-r) you are limited to installing only one of the
 X11 or GTK version as they are installed to the same folder.
 
-The installer will ask you a number of yes/no questions and, if
-successful it will place an ESP-r distribution in the folders:
+The extraction process will place an ESP-r distribution in the folders:
 
   /opt/esru/esp-r/
     bin
@@ -265,61 +153,6 @@ successful it will place an ESP-r distribution in the folders:
 	manual
 	training
 	validation
-
-and it will create a link from /usr/esru to /opt/esru
-
-During the install process LOOK FOR DIRECTIONS for
-adapting your PATH environment variable (if required).
-Once you have checked that ESP-r modules run you can
-remove the installer.
-
-
-Adapting your environment
-
-You will need to set an environment variable PATH so that
-the folder /opt/esru/esp-r/bin is known. Go back to your
-home folder and see if there is a .cshrc or a .profile file.
-
-  cd
-  ls -al
-
-Some users of ESP-r prefer to use the "C" shell. And the closest
-thing on OSX is the tcsh interpreter (available within the fink
-package management system). The entry in the .cshrc file in
-your home folder might look something like:
-
-set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /Users/fred/bin \
-/opt/esru/esp-r/bin /opt/esru/bin /sw/bin )
-
-If you are running the bash shell then you would look for an entry
-in the .profile file something like:
-
-export PATH=/usr/local/bin:/opt/esru/bin:/opt/esru/esp-r/bin:/Users/fred/bin:/sw/bin:$PATH
-
-Once you have updated either the .cshrc file or the .profile file then you
-will need to log out and then back in again.  To see if the environment
-variables are correct give the following command:
-
-  which prj
-
-If the answer back is '/opt/esru/esp-r/bin/prj' then the environment variable
-is set.  Most users will want to run ESP-r in graphics mode so you need to
-give the command to start esp-r from within and X11 command window rather
-than the OSX terminal (which only handles text based applications).
-
-
-Where to get more information
-
-The ESP-r download pages have separate folders for each operating 
-system. Further information is available on issues related to setup 
-of an OSX machine to work with ESP-r.
-
-
-
-Installing via compressed archive files
-
-The following is a list of steps that users should take in order to install 
-via a compressed archive file.
 
 The first step is to prepare a folder to install the ESP-r distribution. The
 usual location is /opt/esru.  If you already have an /opt folder then skip
@@ -348,13 +181,6 @@ drwxr-xr-x    60 jon  jon       2040 Jul 15 06:49 testing
 the first jon is the user name and the second instance is the 
 name of the group. In some cases the second instance might 
 be staff or users.
-
-There are two version of ESP-r for OSX. One is based on 
-the X11 graphics library and is a complete version of ESP-r 
-but is an older style of interaction. The other version of 
-ESP-r uses the GTK graphics library with a modern style of 
-interaction (but it is not quite a complete port of ESP-r). 
-The web page gives more information on the specific differences.
 
 To determine if it is necessary to create the /opt folder start
 up either a terminal or and X11 terminal. In the terminal
@@ -385,7 +211,7 @@ assume that your login name is fred and your group is staff.
   sudo chmod u+w esru
 
 
-Section two
+Machines with an existing /opt folder
 
 This section assumes that a /opt folder exists. As a standard
 user you probably do not have permission to write new files and
@@ -408,9 +234,7 @@ the procedures above) to the / folder via the following commands
  cd to_the_folder_with_the_tar.gz file
  sudo cp the_file_name.tar.gz /
  cd /
- sudo gzip -d the_file_name.tar.gz
- 
- sudo tar xf the_file_name.tar
+ sudo tar xfz the_file_name.tar.gz
 
 This will create the ESP-r folder structure within /opt/esru
 but it will be owned by the root user.  You now need to
@@ -433,20 +257,41 @@ then we need to alter this via the following commands:
   sudo chown -R fred esru
   sudo chgrp -R staff esru
 
-You will need to set an environment variable PATH as explained above.
-You will probably also need to log out and then back in again to
-have the new environment variables established.
 
-To check and see if ESP-r can be found try typing in the 
-following command(s) in an X11 terminal (the OSX terminal
-is only suitable for text based applications).
+Adapting your environment
+
+You will need to set an environment variable PATH so that
+the folder /opt/esru/esp-r/bin is known. Go back to your
+home folder and see if there is a .cshrc or a .profile file.
+
+  cd
+  ls -al
+
+Some users of ESP-r prefer to use the "C" shell. And the closest
+thing on OSX is the tcsh interpreter (available within the fink
+package management system). The entry in the .cshrc file in
+your home folder might look something like:
+
+set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /Users/fred/bin \
+/opt/esru/esp-r/bin /opt/esru/bin /sw/bin )
+
+If you are running the bash shell then you would look for an entry
+in the .profile file something like:
+
+export PATH=/usr/local/bin:/opt/esru/bin:/opt/esru/esp-r/bin:/Users/fred/bin:/sw/bin:$PATH
+
+Once you have updated either the .cshrc file or the .profile file then you
+will need to log out and then back in again.  To see if the environment
+variables are correct give the following command:
 
   which prj
   which bps
 
-If there is a response then you should be able to start up the
-ESP-r project manager via the command 'prj'.  If the application
-does start up then the environment variables have been set
+If the answer back is '/opt/esru/esp-r/bin/prj' then the environment variable
+is set.  Most users will want to run ESP-r in graphics mode so you need to
+give the command to start esp-r from within and X11 command window rather
+than the OSX terminal (which only handles text based applications).
+If the application does start up then the environment variables have been set
 correctly.  
 
 If you are working with existing models you should change the
@@ -455,8 +300,13 @@ and start the project manager with the pattern:
 
   prj -model my_model.cfg
 
-Once ESP-r is working you can remove the_file_name.tar
+Once ESP-r is working you can remove the_file_name.tar.gz
 
 
+Where to get more information
+
+The ESP-r download pages have separate folders for each operating 
+system. Further information is available on issues related to setup 
+of an OSX machine to work with ESP-r.
 
 

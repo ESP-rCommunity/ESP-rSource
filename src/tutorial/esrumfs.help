@@ -30,9 +30,9 @@ subroutine ASKNOD
 *item ASKNOD mfs_node_selection
 'A node within a mass flow network is normally '
 'selected via its position in the list. '
-'The `<` command selects it by index.'
+'The [<] command selects it by index.'
 ' '
-'To exit / signal end of browse/editing pick `-` Exit.'
+'To exit / signal end of browse/editing pick [-] Exit.'
 *enditem
         CALL PHELPD('node connection selection',5,'-',0,0,IER)
 *item ASKNOD mfs_node_management
@@ -45,9 +45,9 @@ subroutine ASKNOD
 *item ASKCMP mfs_component_selection
 'A node, component or connection within a mass flow'
 'network is normally selected via its position in the'
-' list.  The `<` command selects it by index.'
+' list.  The [<] command selects it by index.'
 ' '
-'To exit / signal end of browse/editing pick `-` Exit.'
+'To exit / signal end of browse/editing pick [-] Exit.'
 *enditem
         CALL PHELPD('node connection selection',5,'-',0,0,IER)
 *item ASKCMP mfs_component_management
@@ -60,7 +60,7 @@ subroutine ASKNOD
 *item ASKCON mfs_connection_menu
 'A connection within a mass flow network is normally'
 ' selected via its position in the list.  '
-'To exit pick `-` Exit.'
+'To exit pick [-] Exit.'
 *enditem
         CALL PHELPD('connection selection',3,'-',0,0,IER)
 *item ASKCON connection_management
@@ -194,12 +194,12 @@ subroutine ASKNOD
 *item MFPLOT mfs_graph_menu
 ' This module allows you to define or create a plot of'
 ' of node coupled fluid mass flow results.'
-' The `1 nodes` must be used to define the node for '
-' output. `p Period` may be used to restrict the'
-' output period, and `u Units` to change expression '
+' The [1 nodes] must be used to define the node for '
+' output. [p Period] may be used to restrict the'
+' output period, and [u Units] to change expression '
 ' of flow rate results.'
-' The graph is plotted through the `d Draw` command, '
-' and may be re-defined after it has been `c Cleared`.'
+' The graph is plotted through the [d Draw] command, '
+' and may be re-defined after it has been [c Cleared].'
 *enditem
 *item MFPLOT mfs_graph_period_change
 'Option to specify a different period to display. '
@@ -224,9 +224,9 @@ subroutine ASKNOD
 *item ASKRNOD mfs_node_selection_menu
 'A node within a mass flow network is normally '
 'selected via its position in the list. '
-'The `<` command selects it by index.'
+'The [<] command selects it by index.'
 ' '
-'To exit / signal end of browse/editing pick `-` Exit.'
+'To exit / signal end of browse/editing pick [-] Exit.'
 *enditem
         CALL PHELPD('node connection selection',5,'-',0,0,IER)
 *item ASKRNOD mfs_text_index_of_node
@@ -238,9 +238,9 @@ subroutine ASKNOD
 *item ASKRCMP component_selection_menu 
 'A node, component or connection within a mass flow'
 'network is normally selected via its position in the'
-' list.  The `<` command selects it by index.'
+' list.  The [<] command selects it by index.'
 ' '
-'To exit / signal end of browse/editing pick `-` Exit.'
+'To exit / signal end of browse/editing pick [-] Exit.'
 *enditem
         CALL PHELPD('node connection selection',5,'-',0,0,IER)
 *item ASKRCMP component_selection_text
@@ -252,8 +252,8 @@ subroutine ASKNOD
 *item ASKRCON connect_selection_menu
 'A connection within a mass flow network is normally'
 ' selected via its position in the list.  '
-'The `<` command selects it by index.'
-'To exit pick `-` Exit.'
+'The [<] command selects it by index.'
+'To exit pick [-] Exit.'
 *enditem
         CALL PHELPD('connection selection',4,'-',0,0,IER)
 *item ASKRCON connect_selection_text
@@ -301,11 +301,11 @@ subroutine MFTABL
 'This module allows you to define/create a table of'
 'of node related pressure and flow results. 1NODES'
 'command must be used to select the nodes for output.'
-'The `pERIOD` command may be used to restrict'
-'the output period, and with `uNITS` one of several'
+'The [pERIOD] command may be used to restrict'
+'the output period, and with [uNITS] one of several'
 'options with respect to expressing flow rate results'
-'may be chosen. The table is printed with `fLUSH`, and'
-'may be re-defined after is has been `rESET`.'
+'may be chosen. The table is printed with [fLUSH], and'
+'may be re-defined after is has been [rESET].'
 *enditem
         CALL EASKPER('Output period:',IDAYF,IDAYL,IFDAY,IER)
 *item MFTABL mfs_express_flow_results
@@ -320,10 +320,10 @@ subroutine MFTABL
           CALL EASKR(VOLUME,' ',
 *subroutine MFRTBL
 *item MFRTBL mfs_raw_table_overview
-'This module allows you to define/create a `raw` table'
+'This module allows you to define/create a [raw] table'
 'of data sets, perhaps for results export to some '
 'external data analysis package. '
-'The table starts with some comments (`#` in column 1).'
+'The table starts with some comments (# in column 1).'
 'Subsequent lines hold the simulation results for each'
 'time step in the output period (pERIOD). The 1st item'
 'on a line is the date and time expressed as Julian'
@@ -333,10 +333,10 @@ subroutine MFTABL
 ' '
 '*u  allows flows to be expressed in various units.'
 '    THIS SHOULD BE SET BEFORE NODES ARE CHOSEN!'
-'*!  writes the current data set (+ a single `&` to'
+'*!  writes the current data set (+ a single & to'
 '    mark the end of this set) via stdout/stderr '
 '    (depending on terminal type), or to a file '
-'    (defined via menu pick `>DESTINATIONS`).'
+'    (defined via menu pick [>DESTINATIONS]).'
 '*c  resets the current table definition. '
 *enditem
         CALL ASKOK(PERST3,' Different output period? ',OK,dok,1)

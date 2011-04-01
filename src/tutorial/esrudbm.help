@@ -63,7 +63,7 @@
 *item edselcat dbm_db_documentation
 'Documentation of the database is encouraged. You '
 'can enter one or several lines of text.'
-'Retain the `: ` in the first two columns as it is '
+'Retain the [: ] in the first two columns as it is '
 'used within the db and not seen by the user.'
 *enditem
           CALL ASKOK(' ','Edit database documentation?',primod,
@@ -104,14 +104,14 @@
 '  or colrimetry.'
 '  '
 ' Option 1 - a descriptive phrase (up to 32 char) is required for'
-'   display purposes (selection menu`s etc).'
+'   display purposes (selection menu-s etc).'
 '  '
 ' Option 2 - each category is identified by a unique name (up to '
 '   12 char).'
 '  '
 ' Option 3 - notes documentation of categories is encouraged. You'
 '   can enter one or several lines of text.'
-'   Retain the `: ` in the first two columns as it is '
+'   Retain the [: ] in the first two columns as it is '
 '   used within the db and will not be seen by the user.'
 '  '
 ' Option * you may remove an empty category (i.e. which has no'
@@ -134,7 +134,7 @@
 *item edcatdoc dbm_category_doc_edit
 'Documentation of categories is encouraged. You can'
 'enter one or several lines of text.'
-'Retain the `: ` in the first two columns as it is '
+'Retain the [: ] in the first two columns as it is '
 'used within the db and will not be seen by the user.'
 *enditem
         CALL EASKS248(t248,outs,' ',72,': ','cd',IER,4)
@@ -364,14 +364,14 @@
 *subroutine selcat
 *item selcat dbm_select_category
 'This menu displays the current categories in the'
-'database for selection purposes. Use item `3` to'
+'database for selection purposes. Use item [3] to'
 'look at the database documentation.'
 *enditem
         CALL PHELPD('category list',3,'-',0,0,IER)
 *subroutine selitem
 *item selitem dbm_category_contents
 'The category contents are shown in this menu for'
-'selection purposes. The `3 Documentation` option'
+'selection purposes. The [3 Documentation] option'
 'will display notes specific to this category.'
 '  '
 'When you select an item you will be asked to confirm'
@@ -389,10 +389,10 @@
 'All database items have a set of common atrributes:'
 '  '
 'A unique identity (up to 12 char) is required and it'
-'should contain no blanks or `wild-card` characters.'
+'should contain no blanks or [wild-card] characters.'
 '  '
 'A descriptive phrase (up to 32 char) is required for'
-'display purposes (selection menu`s etc).'
+'display purposes (selection menu-s etc).'
 '  '
 'Documentation of database entries is encouraged.'
 'You can enter up to 248 characters of text.'
@@ -681,11 +681,11 @@
 'LCIA other: can represent any other surface related '
 'object. For a glue or coating or membrane use the real'
 'thickness. For nails or structural supports give the'
-'`equivalent` thickness that will have the same mass as '
+'[equivalent] thickness that will have the same mass as '
 'object. Impacts are expressed per unit of mass.'
 ' '
 ' Manage layers - you  can delete an existing layer, append a new'
-'   layer at the `inside face` of the surface (remember the '
+'   layer at the [inside face] of the surface (remember the '
 '   order is other-side to zone-side), or insert a layer'
 '   (you will be asked to select a point of insertion and'
 '   existing inner layers will be shifted).'

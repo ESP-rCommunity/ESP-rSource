@@ -43,7 +43,7 @@
 *item EDMRTC position_dep_mrt_menu
 'This menu allows position dependent Mean Radiant '
 'Temperature analysis to be carried out base on one'
-'or more `sensors` placed within a zone. '
+'or more [sensors] placed within a zone. '
 ' '
 'The size and placement of MRT sensors is defined via'
 'the zone viewfactor file which may be created and'

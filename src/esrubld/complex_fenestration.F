@@ -1565,7 +1565,7 @@ C on isolvis
       bp(1)=-IBM
       CALL TDMAsol(ae,ap,aw,bp,n,BB)
       BB(m+1)=rfbb(1)*GBM+tbbb(1)*BB(m)
-!Diffuse-beam fluxes	
+!Diffuse-beam fluxes
       CALL SETCoef(tbdd,tfdd,rbdd,rfdd,GBM,n,aw,ap,ae,bp)
       bp(1)=-0.00001*BB(1)
       bp(2)=-(rbbd(n-2)*BB(2)+tfbd(n-2)*BB(3))
@@ -1726,7 +1726,7 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real nstar,TA,TB,hc
       real diff
       real Rgap_shd_retracted
-	  
+  
       CHARACTER outs*124
 
       IER=0
@@ -1777,8 +1777,8 @@ C cfcRgap(,,,1) relates to present time-row, (,,,2) to future
 Cag@07052010 else use logic from below from "inside CFC construction"
               else ! adjacent to zone
                 if(i_shd(icomp,icfctp).eq.0)then ! blind is retracted
-				  ! here we could also insert a fancy calculation that takes the temp. of the
-				  ! "other zone" surface into account ...
+                  ! here we could also insert a fancy calculation that takes the temp. of the
+                  ! "other zone" surface into account ...
                   cfcRgap(icomp,isur,i+1,2)=0.09 ! "ventilated gap" assumption
                   nd_surf=nd_glass
                 else
@@ -1787,9 +1787,7 @@ Cag@07052010 else use logic from below from "inside CFC construction"
                   lthk=THRMLI(icomp,isur,i+1,4) ! thickness of air gap layer [m]
 c                  L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                   hc=0.
-
-c                  CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-                  CALL ConvVertCav(L,TA,TB,
+                  CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
      &                             rmlr_mass(icomp,icfctp,i+1),
      &              cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &              visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
@@ -1900,8 +1898,7 @@ C If shade is retracted determine gap thickness between glass layers
                   L=THRMLI(icomp,isur,i+1,4)+THRMLI(icomp,isur,i+3,4)
                 endif
                 
-c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-                CALL ConvVertCav(L,TA,TB,
+                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
      &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
@@ -1918,8 +1915,7 @@ c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
                 L=lthk
                 hc=0.
 
-c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-                CALL ConvVertCav(L,TA,TB,
+                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
      &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
@@ -1946,8 +1942,7 @@ c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
               elseif(itypenext.eq.1)then
                 L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                 hc=0.
-c                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-                CALL ConvVertCav(L,TA,TB,
+                CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
      &          rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
@@ -2160,8 +2155,7 @@ C by Natural Convection Across a Vertical Cavity of Large Aspect
 C Ratio', Journal of Heat Transfer, Vol. 118, pp.993-995.
 C
 C ********************************************************************
-c      subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
-      subroutine ConvVertCav(L,TA,TB,mlr_mass,condA,condB,
+      subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
      &                          viscA,viscB,spchtA,spchtB,hc)
       IMPLICIT NONE
 C gas molar mass, A and B gas property coefficients
@@ -2198,7 +2192,7 @@ C Calculate gas properties based on linear Temperature fit
 
 C Calculate coefficients A and n (EN 673, tilted glass) from tilt angle ang
 c      A=0.036 ! (0deg, vert) 0.10 (45deg) 0.16 (90deg, horiz)
-	  A=0.036667+0.0013778*ang !  R= 0.99983 
+      A=0.036667+0.0013778*ang !  R= 0.99983 
 c      n=0.38  ! (0deg, vert) 0.31 (45deg) 0.28 (90deg, horiz)
       n=0.38-0.002*ang+(9.8765E-6)*ang**2 ! R=1
 
@@ -2209,17 +2203,21 @@ C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
 c      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
 
 C Angle dependant Nusselt number (EN 673 eqn 6)
-      if (ang.ge.0.) then
-        Nu = A*Ra**n
-      elseif ((ang.lt.0.).and.(ang.gt.-45.)) then
+c      Nu = A*Ra**(n)
+      Nu=1.0
+      if (Ra.gt.0) Nu=A*exp(n*log(Ra)) ! x**y
+
+      if ((ang.lt.0.).and.(ang.gt.-45.)) then
 C       use vertical value for now
-        Nu=0.036*Nu**0.38
-C     if heat flux downwards, set Nu=1 (!)
+        Nu=0.036*exp(0.38*log(Ra))
+C     if heat flux downwards, set Nu=0.1 (very small convective coefficent)
       elseif (ang.le.-45.) then
-        Nu=1.0
+        Nu=0.1
       endif
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
+c      write(*,*)'A=',A,'; n=',n,'; Ra=',
+c     &        Ra,'; Nu=',Nu,'; hc=',hc
 
  1000 return
       end
@@ -2786,7 +2784,7 @@ C OUTPUT VARIABLES
             RHOSFBD =       0.0 
             TAUSFBB =       0.0  
             TAUSFBD =       0.0
-	     DE = S * ABS(COS(OMEGA) / SIN(OMEGA + PHI))
+            DE = S * ABS(COS(OMEGA) / SIN(OMEGA + PHI))
 !----------------------------------------------------------------------------
 
 !  CHECK TO SEE IF THERE IS DIRECT BEAM TRANSMISSION
@@ -3063,7 +3061,7 @@ C OUTPUT VARIABLES
             IF(W.LT.S) THEN      !YES, THERE ARE GAPS IN BETWEEN SLATS
                   RHOSFBD = (W/S)*RHO4
                   TAUSFBD = (W/S)*TAU
-            ELSE	! NO, THERE ARE NO GAPS IN BETWEEN SLATS
+            ELSE  ! NO, THERE ARE NO GAPS IN BETWEEN SLATS
                   RHOSFBD = RHO4
                   TAUSFBD = TAU
             ENDIF    ! END OF CHECK FOR GAPS IN BETWEEN SLATS
@@ -3150,7 +3148,7 @@ C ********************************************************************
 
       SUBROUTINE VB_SOL6(S,W,OMEGA,DE,PHI,RHO35, RHO46, TAU,
      &                  RHOSFBD, TAUSFBD)
-	IMPLICIT NONE
+      IMPLICIT NONE
       REAL S 
       REAL W 
       REAL PHI
@@ -3350,8 +3348,8 @@ C OUTPUT VARIABLES
             ELSE
                   PHI = 89.5*PI/180.0
             ENDIF
-      ELSE	
-            PHI = PHI_RAD	! USUAL ACTION
+      ELSE
+            PHI = PHI_RAD ! USUAL ACTION
       ENDIF
 !-----------------------------------------------------------------------------------
 
@@ -3381,7 +3379,7 @@ C OUTPUT VARIABLES
      &      ABS(SIN(PHI)))/(H/T + 1./ABS(COS(PHI))))
 
       TAUSDD = (1.-FEDGE_DIFF)*(F12 + (F14*K3) + (F13*K4)) 
-	
+
       IF (TAUSDD.LT.0.0) TAUSDD = 0.0
 
       RHOSFDD =   (1.-FEDGE_DIFF)*((F13*K3) + (F14*K4)) + 
@@ -4229,8 +4227,8 @@ C *** this needs checking (neg inc angles!) ****
      &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
      &                       *cos(psazi*R) )/R - psazi
                   endif
-				endif ! iact1 .eq. 4, aka. "cut-off angle"
-				
+                endif ! iact1 .eq. 4, aka. "cut-off angle"
+
               else ! sensor surface not external ... error!
                 write(msgout,'(A,i3)')
      &               'In CFC control function: ', ictlfun
@@ -4295,7 +4293,7 @@ C Perform actual control of shade ON/OFF and slat angle here
                 if(iact1.eq.0)then
                   vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
                   i_shd(iact2,iact3)     = 1                    ! shade state ON
-				elseif(iact1.eq.1)then
+                elseif(iact1.eq.1)then
                   vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
                   i_shd(iact2,iact3)     = 1                    ! shade state ON
                 endif
@@ -4594,7 +4592,7 @@ C ********************************************************************
       T0=273.15         ! 0°C in K
 
       TA=17.5
-	  TB=2.5   ! DT = 15 K for approx. U_nom
+      TB=2.5   ! DT = 15 K for approx. U_nom
 
 C Basic names (should be defined in a header, somewhere ...)
       cBuildingName='bui'
@@ -4803,8 +4801,7 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
                     RGap1 = 1.0/RGap1
 C calculate nominal convective gap resistance (code from lines 1836 ff.)
             Gap1Width=THRMLI(icomp,i,l,4) ! gap width
-c       CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-       CALL ConvVertCav(Gap1Width,TA,TB,
+       CALL ConvVertCav(PELV(icomp,i),Gap1Width,TA,TB,
      &      rmlr_mass(icomp,icfctp,l),
      &      cond_A(icomp,icfctp,l),cond_B(icomp,icfctp,l),
      &      visc_A(icomp,icfctp,l),visc_B(icomp,icfctp,l),
