@@ -1,16 +1,16 @@
 [Setup]
 OutputDir=C:\Installer_for_ESP-r\Installer
 SourceDir=C:\Installer_for_ESP-r\Source
-OutputBaseFilename=ESP-r_setup_native_windows_gtk_txt_v11_9_trunk_GCC4
-VersionInfoVersion=11.9.5471
+OutputBaseFilename=ESP-r_setup_native_windows_gtk_txt_v11_10_dev6394
+VersionInfoVersion=11.10.6394
 VersionInfoCompany=ESRU and others
-VersionInfoDescription=version 11.9.5471 trunk GCC4 XML GTK text for native windows
+VersionInfoDescription=version 11.10.6394 GCC4 XML GTK text for native windows
 VersionInfoCopyright=ESRU and others 2001-2010
 Compression=zip
 MinVersion=0,5.0.2195
 AppCopyright=Copywrite ESRU and Natural Resources Canada 2001-2010
 AppName=ESP-r for Windows
-AppVerName=ESP-r for Windows V11.9.5471
+AppVerName=ESP-r for Windows V11.10.6394
 InfoAfterFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_after_installer.txt
 InfoBeforeFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_before_installer.txt
 LicenseFile=C:\Installer_for_ESP-r\Source\Esru\GPL.txt
@@ -27,7 +27,7 @@ ShowLanguageDialog=no
 UsePreviousGroup=false
 AppPublisher=Energy System Research Unit, Glasgow (and others)
 AppPublisherURL=http://www.esru.strath.ac.uk
-AppVersion=ESP-r Version 11.9.5471
+AppVersion=ESP-r Version 11.10.6394
 UninstallDisplayName=ESP-r
 MergeDuplicateFiles=false
 DisableDirPage=true
@@ -52,6 +52,8 @@ Name: {app}\esp-r\climate
 Name: {app}\esp-r\databases
 Name: {app}\esp-r\electric_loads
 Name: {app}\esp-r\manual
+Name: {app}\esp-r\etc
+Name: {app}\esp-r\lib
 Name: {app}\esp-r\training
 Name: {app}\esp-r\validation
 Name: {app}\esp-r\xsl
