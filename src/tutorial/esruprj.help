@@ -8570,17 +8570,64 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item EDOPT optical_properties_menu
 'Optical properties are used for transparent constructions as well'
 'as for daylighting calculations and the control of casual gains.'
+'  '
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3 or the EU WIS (Window Information'
+'System) from TNO. Import functions are part of option * in the menu.'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included. For example, a double glazed'
+'unit with internal blinds might be represented via the DCF7671_06mb'
+'optical property which has 5 layers (glass air blind air glass) and'
+'its open state via DCF7671_6omb which also has 5 layers. This'
+'needs to be associated with a relevant construction such as'
+'switched_gl (which points to the open version of the optical'
+'properties. Enable optical switching in the zone constructions'
+'menu and nominate the internal blind as the alternative state.'
+'  '
+'The list of available optical properties includes the short name'
+'of the optical property plus a documentation string. The short name'
+'must be unique and be up to 12 characters with no blanks.'
+'  '
+'Take care when deleting an optical property or re-naming an'
+'optical property. Other constructions may reference it. Consider'
+'using the copy facility to create variants of an optical property.' 
 'All data is used except for items marked as (documentation).'
 ' '
-'For QA purposes fill in the surface solar abs & refl values to'
-'match the MLC surface properties. The U value and solar heat gain'
-'are for documentation.'
+'Optical data in ESP-r is representative of the whole transparent'
+'system and their inter-relationships. The absorption at an inner'
+'layer is relative to the radiation arriving at that layer (thus'
+'the need for 3rd party applications such as WIS and Window 6.2).'
+'  '
+'Often glass manufacturers will only publish the aggregate optical'
+'data in terms of the overall transmission rather than the layer'
+'by layer data needed by ESP-r.'
+'  '
+'Imported data includes inforation that is not directly used by ESP-r'
+'but which is documentation - the U value and solar heat gain factors'
+'are examples of this.'
 ' '
-'The angular reflections are derived from the overall solar'
-'transmission and layer absorptions. '
-' '
-'The import function currently recognises files from the LBL'
-'program WINDOW 5.2/6.2/6.3. Here is a step by step guide:'
+'Note that the materials database has slots for single layer optics'
+'which will be used in the future (currently they are un-used.'
+'  '
+'To reflect changes you have made in the constuction db you will'
+'have to rebuild the zone construction and tmc files.  This is in'
+'option [Construction] of the [model definition] menu.'
+*enditem
+        CALL PHELPD('optical db update',4,'-',0,0,IER)
+        CALL PHELPD('optics db',58,'-',0,0,IER)
+        CALL EASKABC(' Reporting to:',' ',
+        CALL EASKATOG('Optical actions: ',' ',
+        CALL EASKS(lfil,'WIS file name?',
+*subroutine EDOPT
+*item EDOPT optical_import_win6
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3. Here is a step by step guide:'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included.'
 ' '
 'Older Window files start with:'
 'Window 5.2a  v5.2.17a Glazing System Thermal and Optical Properties'
@@ -8620,24 +8667,45 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   [Optical properties] option. This will open the optics db so'
 '   locate and select the new optical set. If the reported ISO'
 '   6946 value does not match the LBL report adjust it.'
-'  '
-'To reflect changes you have made in the constuction db you will'
-'have to rebuild the zone construction and tmc files.  This is in'
-'option [Construction] of the [model definition] menu.'
 *enditem
-        CALL PHELPD('optical db update',4,'-',0,0,IER)
-        CALL PHELPD('optics db',58,'-',0,0,IER)
-        CALL EASKABC(' Reporting to:',' ',
-        CALL EASKATOG('Optical actions: ',' ',
-        CALL EASKS(lfil,'WIS file name?',
-*item EDOPT manual_optics_layout
-'The layout of glazing, air gaps and blinds can'
-'be selected from this list or an alternative defined.'
+*item EDOPT optical_import_wis
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the TNO WIS (Windows Information System). This is free'
+'download from http://www.windat.org/wis/html/index.html. It is'
+'implemented as an ACCESS database interface. The download file'
+'unpacks to a folder of files which includes a standard Windows'
+'setup.exe application. Typically you will be asked to confirm the'
+'install of a Microsoft Jet engine, but otherwise if you have'
+'Office installed it should run without any other dependencies.'
 '  '
-'Note there are limits to the number of layers in a construction'
-'~10 as well as in optical data sets ~7.'
+'Although WIS is an older application it has facilities to work'
+'with diffusing elements. Some glazing systems can result in the'
+'inclusion of direct-to-diffuse attributes at each angle as well'
+'as a full hemisphere of data (-90 to +90). ESP-r cannot deal with'
+'that many angles and it does not yet have the ability to process'
+'angular diffuse information. If that is important you might wish'
+'to explore the ESP-r CFC (complex fenistration) functions.'
 '  '
-'A cancel request leaves the model unchanged.'
+For the purposes of ESP-r, the use of WIS is focused on the'
+'[Transparent System] option. This starts up another proforma with'
+'a scrolling option at the bottom. New systems can be added.'
+'  '
+'The [Calculate] option starts a dialog of data choices for the'
+'report. The default includes basic-oveall, angular-overall, and'
+'angular-elements as well as temperatures and network. ESP-r will'
+'read this default report but does now use the temperature or the'
+'network data (so you can untick that).'
+'  '
+'After confirming the reporting options use the [create] button to'
+'generate the report after with Notepad will start up with the'
+'report loaded. Save this and it can be used in the import option'
+'of the optical database facility. Linux users may need to convert'
+'the file from DOS line endings.'
+'  '
+'WIS includes the concept of g-values. This is not directly used in'
+'ESP-r but is a common descriptor so they are included in the ESP-r'
+'optical database in place of the solar heat gain coefficients.'
+'  '
 *enditem
           CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
           CALL EASKI(nl,' ',' Number of layers in the new set ?',
@@ -8714,9 +8782,13 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKS(hold,'Overall heat gain @ 0 40 55 70 80 deg:',
         CALL EASKS(hold,'Refraction index, absorb @ 0 40 55 70 80 deg:',
 *subroutine IMPOPT
-*item IMPOPT import_optical_file
-'The import function currently recognises files from the LBL'
-'program WINDOW 5.2/6.2/6.3. Here is a step by step guide:'
+*item IMPOPT optical_import_win6
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3. Here is a step by step guide:'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included.'
 ' '
 'Older Window files start with:'
 'Window 5.2a  v5.2.17a Glazing System Thermal and Optical Properties'
@@ -8724,18 +8796,82 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Newer Window files start with:'
 'Window v6.3.9.0 Glazing System Thermal and Optical Properties'
 '  '
-'Take note of the full path to the LBL report file and confirm'
-'how many layers are included in the optical data.'
+'1) Take note of the full path to the LBL report file and confirm'
+'   how many layers are included in the optical data. Decide on'
+'   a descriptive phrase and short ID string for new optical data'
+'   as well as the name of the construction which will use or be'
+'   created to use this optical data.'
+'  '
+'2) In the Database Maintenance facility of prj make sure there'
+'   is a local optical and construction database for your model.'
+'  '
+'3) Browse the optical properties database: optica properties ->'
+'   browse/edit db and locate the * import option. Choose the'
+'   [Import Window4/5/6] button. In the X11 interface you have'
+'   to type in the full file path and name of the LBL report.'
+'   If the import process works you will be presented with a'
+'   new Optical Property Set. Ignore any EOF warnings. The'
+'   contents of the LBL report are echoed in the text feedback.'
+'  '
+'4) Fill in the [a type] with the short optical identifier and'
+'   [b descrip] with the phrase from step 1. Check the visible'
+'   and solar values reported in the interface are crrect and'
+'   that air gaps in the optical report have been detected.'
+'  '
+'5) Take a note of the U-value from the LBL report. You may need to'
+'   adapt the air gap resistance in the construction.'
+'  '
+'6) Exit from the optical facility and browse the constructions'
+'   database. Either locate an existing construction with the'
+'   same number of layers or create a new construction. Check that'
+'   the [General type] is Transparent and then click on the'
+'   [Optical properties] option. This will open the optics db so'
+'   locate and select the new optical set. If the reported ISO'
+'   6946 value does not match the LBL report adjust it.'
 *enditem
-      CALL EASKS(lwin4,' Optical import file name? ',
 *subroutine IMPWIS
-*item IMPWIS
-'This is a WIS transparent system report file which '
-'<< more text >>'
+*item IMPWIS optical_import_wis
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the TNO WIS (Windows Information System). This is free'
+'download from http://www.windat.org/wis/html/index.html. It is'
+'implemented as an ACCESS database interface. The download file'
+'unpacks to a folder of files which includes a standard Windows'
+'setup.exe application. Typically you will be asked to confirm the'
+'install of a Microsoft Jet engine, but otherwise if you have'
+'Office installed it should run without any other dependencies.'
+'  '
+'Although WIS is an older application it has facilities to work'
+'with diffusing elements. Some glazing systems can result in the'
+'inclusion of direct-to-diffuse attributes at each angle as well'
+'as a full hemisphere of data (-90 to +90). ESP-r cannot deal with'
+'that many angles and it does not yet have the ability to process'
+'angular diffuse information. If that is important you might wish'
+'to explore the ESP-r CFC (complex fenistration) functions.'
+'  '
+For the purposes of ESP-r, the use of WIS is focused on the'
+'[Transparent System] option. This starts up another proforma with'
+'a scrolling option at the bottom. New systems can be added.'
+'  '
+'The [Calculate] option starts a dialog of data choices for the'
+'report. The default includes basic-oveall, angular-overall, and'
+'angular-elements as well as temperatures and network. ESP-r will'
+'read this default report but does now use the temperature or the'
+'network data (so you can untick that).'
+'  '
+'After confirming the reporting options use the [create] button to'
+'generate the report after with Notepad will start up with the'
+'report loaded. Save this and it can be used in the import option'
+'of the optical database facility. Linux users may need to convert'
+'the file from DOS line endings.'
+'  '
+'WIS includes the concept of g-values. This is not directly used in'
+'ESP-r but is a common descriptor so they are included in the ESP-r'
+'optical database in place of the solar heat gain coefficients.'
+'  '
 *enditem
       CALL EASKS(lwin4,' WIS report file to import? ',
 *subroutine edbioptics
-*item edbioptics
+*item edbioptics optical_bidirectional
 'ESP-r accepts measured optical properties at 5 degree'
 'intervals over a hemisphere. This high resolution optical'
 'data can be associated with surfaces in the model. Note'
@@ -8795,33 +8931,10 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '90,85,0,0,1 '
 '90,90,0,0,1 '
 '*end_set '
-' '
 *enditem
         CALL PHELPD('bi-directional attributes',60,'-',0,0,IER)
-*item edbioptics
-'This is a high resolution bi-directional optical data'
-'file << more text >>'
-*enditem
         CALL EASKS(lfil,' bi-directional optical data to use?',
-*item edbioptics
-'Select if you want to re-define the bi-directional file'
-*enditem
-          call easkab(' File not found. Do you want to specify again?',
-*item edbioptics
-'If this surface fits your critera then proceed.'
-*enditem
-C          CALL ASKOK(
-*item edbioptics
-'There are a limited number of types. '
-' '
-'A cancel request leaves the model unchanged.'
-*enditem
-C              CALL EASKI(nl,' ',' Which bi-directional type?',
-*item edbioptics
-'This surface uses bi-directional optics and'
-'you can remove this attribute. '
-*enditem
-C          CALL ASKOK(
+        call easkab(' File not found. Do you want to specify again?',
 *subroutine CASFMK
 *item CASFMK
  '   Events Database '

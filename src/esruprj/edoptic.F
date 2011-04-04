@@ -140,10 +140,19 @@ C Check for changes/ask user to save.
         RETURN
       ELSEIF(INO.EQ.NITMS-1)THEN
 
-C Produce help text for the menu.
+C Produce help text for the menu and the import facilities.
+        call edisp(iuout,'Notes about optics...')
         helptopic='optical_properties_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('optics db',nbhelp,'-',0,0,IER)
+        call edisp(iuout,'Notes about importing from TNO WIS...')
+        helptopic='optical_import_wis'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
+        call edisp(iuout,'Notes about importing from LBL Windows 6.2.')
+        helptopic='optical_import_win6'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-2)THEN
 
 C List database.
@@ -183,13 +192,21 @@ C Import/Add/Del/Copy if not browsing....
      &                'browse mode. ','P')
           goto 3
         endif
+
+C Produce help text for both types of import.
+        helptopic='optical_import_wis'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
+        helptopic='optical_import_win6'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('optics db imp',nbhelp,'-',0,0,IER)
         IOW=1
         CALL EASKATOG('Optical actions: ',' ',
      &    'Import Window5/6','Import WIS',
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from Window 5.1, 5.2, v6.? )....
+C Import (from Window 5.1, 5.2, v6.? ).
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -1014,7 +1031,7 @@ C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
 
-C wlname is Window 4 name for layer, wlthk is mm thickness.
+C wlname is LBL Window name for layer, wlthk is mm thickness.
       dimension wlname(ME),wlthk(ME)
       character lwin4*72,DFILE*72,outstr*124,word*20,wdum*20
       character outs*124,wlname*12
@@ -1029,7 +1046,7 @@ C For help messages
       helpinsub='IMPOPT'  ! set for subroutine
 
 C Free unit and check if import file exists.
-      helptopic='import_optical_file'
+      helptopic='optical_import_win6'
       call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='wdata.tab'
       CALL EASKS(lwin4,' Optical import file name? ',
@@ -1242,23 +1259,29 @@ C Passed parameters
       integer ier   ! zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
 
       CHARACTER GTYPE*12
-      character lwin4*72,DFILE*72,H*72,outstr*124
+      character lwin4*72,DFILE*72,outstr*124
       character outs*124
       logical basics,standalone
       real v1,v2,v3,v4,v5,v6  ! for data being scanned
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='IMPWIS'  ! set for subroutine
+
 C Free unit and check if import file exists.
-      H(1)='This is a WIS transparent system report file which '
-      H(2)='<< more text >>'
+      helptopic='optical_import_wis'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='wisdata.txt'
       lwin4=DFILE
-      CALL EASKS(lwin4,' WIS report file to import? ',
-     &     ' ',72,DFILE,'WIS import file',IER,4)
+      CALL EASKS(lwin4,'TNO WIS report file to import? ',
+     &  ' ',72,DFILE,'WIS import file',IER,nbhelp)
       IER=0
       CALL EFOPSEQ(iwis,lwin4,1,IER)
       IF(IER.NE.0)RETURN
@@ -1701,7 +1724,6 @@ C      PARAMETER (MSGAL=40,MANH=37,MANV=37)
       common/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -1715,11 +1737,18 @@ C   Limited to 0 or 1 at present.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
-      character H*72,VERT*54,CXITM*43,key*1,lfil*72
+      character VERT*54,CXITM*43,key*1,lfil*72
       character bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND !,ok,dok
 C      character outs*124
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edbioptics'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1790,66 +1819,8 @@ C If a long list include page facility text.
       VERT(M+5)  ='- exit this menu                      '
 
 C Help text for this menu.
-      h(1)='ESP-r accepts measured optical properties at 5 degree'
-      h(2)='intervals over a hemisphere. This high resolution optical'
-      h(3)='data can be associated with surfaces in the model. Note'
-      h(4)='that each such surface is assumed to have a normal '
-      h(5)='optical attribute.'
-      h(6)=' '
-      h(7)='Currently this data is read in from an external file.'
-      h(8)='See esrucom/econstr.F or ask ESRU for details on the '
-      h(9)='file format. An example is given here. '
-      h(10)='Lines starting with # are optional and for documentation '
-      h(11)='purposes: '
-      h(12)='*BIDIRECTIONAL '
-      h(13)='*types,1 '
-      h(14)='*item, Genius internal with heat mirror DGU '
-      h(15)='##(3 datatypes: Te_g_rho, Te_abs_n_diffuse, Te_g_only) '
-      h(16)='*datatype,Te_g_rho '
-      h(17)='*layers,3 '
-      h(18)='*sets,6 '
-      h(19)='## Next four lines are not used (only for documentation)'
-      h(20)='## Properties of DGU: '
-      h(21)='## WSV Iplus neutral E (4mm/16mm/4mm) '
-      h(22)='## g0 = 0.60; '
-      h(23)='## tauvis0 = 0.80; '
-      h(24)='## udgu := 1.1; '
-      h(25)='*start_set '
-      h(26)='*set_type 1,#slat angle = 0deg '
-      h(27)='*Uvalue 1.1 '
-      h(28)='*Rexternal 0.04 '
-      h(29)='*Rinternal 0.13 '
-      h(30)='#Next 2 lines: only used for datatype 1 (Te_abs_n_diffuse)'
-      h(31)='*diffuse_abs,0.260,0.521,0.002,0.000,0.007 '
-      h(32)='*diffuse_trn,0.345 '
-      h(33)='*direct_angs,37,37 '
-      h(34)='*data '
-      h(35)='#Azimuth,Height,Te,g,rho '
-      h(36)='-90,-90,0,0,1 '
-      h(37)='-90,-85,0,0,1 '
-      h(38)='-90,-80,0,0,1 '
-      h(39)='... '
-      h(40)='90,85,0,0,1 '
-      h(41)='90,90,0,0,1 '
-      h(42)='*end_set '
-      h(43)='*start_set '
-      h(44)='*set_type 2,#slat angle = 15deg '
-      h(45)='*Uvalue 1.1 '
-      h(46)='*Rexternal 0.04 '
-      h(47)='*Rinternal 0.13 '
-      h(48)='#Next 2 lines: only used for datatype 1 (Te_abs_n_diffuse)'
-      h(49)='*diffuse_abs,0.260,0.521,0.002,0.000,0.007 '
-      h(50)='*diffuse_trn,0.345 '
-      h(51)='*direct_angs,37,37 '
-      h(52)='*data '
-      h(53)='#Azimuth,Height,Te,g,rho '
-      h(54)='-90,-90,0,0,1 '
-      h(55)='-90,-85,0,0,1 '
-      h(56)='... '
-      h(57)='90,85,0,0,1 '
-      h(58)='90,90,0,0,1 '
-      h(59)='*end_set '
-      h(60)=' '
+      helptopic='optical_bidirectional'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU('  Bi-directional attributes',VERT,MVERT,IVERT)
@@ -1859,7 +1830,9 @@ C Now display the menu.
 C Return.
         return
       elseif(ivert.eq.mvert-1)then
-        CALL PHELPD('bi-directional attributes',60,'-',0,0,IER)
+        helptopic='optical_bidirectional'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('bi-directional attributes',nbhelp,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
 
 C Save associations.
@@ -1878,15 +1851,13 @@ C If there are enough items allow paging control via EKPAGE.
       elseif(ivert.eq.1)then
 
 C File with raw bi-directional data.
- 77     H(1)='This is a high resolution bi-directional optical data'
-        H(2)='file << more text >>'
-        DFILE='bidata.txt'
+ 77     DFILE='bidata.txt'
         if(bidirfile(1:2).eq.'  '.or.bidirfile(1:4).eq.'UNKN')then
           lfil=DFILE
           bidirfile=DFILE
         endif
         CALL EASKS(lfil,' bi-directional optical data to use?',
-     &   ' ',72,DFILE,'bi-directional data file',IER,2)
+     &   ' ',72,DFILE,'bi-directional data file',IER,nbhelp)
         if(lfil(1:2).ne.'  ')then
           bidirfile=lfil
         else
@@ -1903,9 +1874,8 @@ C Open and scan the file.
         else
           call edisp(iuout,'There was a problem reading the bi-')
           call edisp(iuout,'directional data. Please specify again...')
-          H(1)='Select if you want to re-define the bi-directional file'
           call easkab(' File not found. Do you want to specify again?',
-     &      ' ','Yes','No/exit',iyesno,1)
+     &      ' ','Yes','No/exit',iyesno,nbhelp)
           if(iyesno.EQ.1)then
             goto 77
           else
@@ -1923,20 +1893,16 @@ C Display information about the anchors associated with connection.
         if(NSTMCFL(ifocc).eq.0)then
           NSTMCFL(ifocc)=1
 C          dok=.false.
-C          h(1)='If this surface fits your critera then proceed.'
 C          CALL ASKOK(
 C     &      'Use bi-directional attributes with this surface?',
-C     &      '(only apply to transparent surfaces)',OK,dok,1)
+C     &      '(only apply to transparent surfaces)',OK,dok,nbhelp)
 C          if(OK)then
 C            if(IFLAGBI.eq.1)then
 C              NSTMCFL(ifocc)=1
 C            else
 C              nl=1
-C              h(1)='There are a limited number of types. '
-C              h(2)=' '
-C              h(3)='A cancel request leaves the model unchanged.'
 C              CALL EASKI(nl,' ',' Which bi-directional type?',
-C     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
+C     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,nbhelp)
 C              if(ieri.eq.-3)then
 C                continue
 C              else
@@ -1951,11 +1917,9 @@ C          write(outs,'(a,a,i2)') CXITM(1:lnblnk(CXITM)),
 C     &      ' is associated with bi-type',NSTMCFL(ifocc)
 C          call edisp(iuout,outs)
 C          dok=.false.
-C          h(1)='This surface uses bi-directional optics and'
-C          h(2)='you can remove this attribute. '
 C          CALL ASKOK(
 C     &      'Dereference this bi-directional attribute?',
-C     &      '(for this surface only)',OK,dok,2)
+C     &      '(for this surface only)',OK,dok,nbhelp)
 C          if(OK)NSTMCFL(ifocc)=0
         endif
         goto 3
