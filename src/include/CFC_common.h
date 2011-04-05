@@ -5,6 +5,21 @@ C Created by: Bartosz Lomanowski
 C Initial Creation Date: May 7, 2008
 
 C---------------------------------------------------------------------------------
+C PARAMETERS
+C
+C---------------------------------------------------------------------------------
+
+C Flag (manually set for now) for calculation of ground and sky diffuse components
+      integer i_ground_sky_diff_calc
+      parameter ( i_ground_sky_diff_calc = 1 )
+
+C Flags for solar_multilayer subroutine to indicate which diffuse properties 
+C (sky or ground) to use for the venetian blind layer. 
+      integer i_ground, i_sky
+      parameter ( i_sky = 1 )
+      parameter ( i_ground = 2 )
+
+C---------------------------------------------------------------------------------
 C IMPORT COMMONS
 C
 C Used in the import process for creation of *.cfc zone file based
@@ -652,6 +667,41 @@ C Front diffuse-diffuse transmittance
 
 C Back diffuse-diffuse transmittance
       REAL SolTBdd
+
+C---------------------------------------------------------------------------------
+C Solar Sky and Ground Diffuse-Diffuse properties
+      COMMON/cfcSGDD/SolRFskydd(mcom,ms,mcfc,me),
+     &                SolRBskydd(mcom,ms,mcfc,me),
+     &                SolTFskydd(mcom,ms,mcfc,me),
+     &                SolTBskydd(mcom,ms,mcfc,me),
+     &                SolRFgrddd(mcom,ms,mcfc,me),
+     &                SolRBgrddd(mcom,ms,mcfc,me),
+     &                SolTFgrddd(mcom,ms,mcfc,me),
+     &                SolTBgrddd(mcom,ms,mcfc,me)
+
+C Front diffuse-diffuse sky reflectance
+      REAL SolRFskydd
+
+C Back diffuse-diffuse sky reflectance
+      REAL SolRBskydd
+
+C Front diffuse-diffuse sky transmittance
+      REAL SolTFskydd
+
+C Back diffuse-diffuse sky transmittance
+      REAL SolTBskydd
+
+C Front diffuse-diffuse ground reflectance
+      REAL SolRFgrddd
+
+C Back diffuse-diffuse ground reflectance
+      REAL SolRBgrddd
+
+C Front diffuse-diffuse ground transmittance
+      REAL SolTFgrddd
+
+C Back diffuse-diffuse ground transmittance
+      REAL SolTBgrddd
 
 C---------------------------------------------------------------------------------
 C Visible Beam-Beam properties
