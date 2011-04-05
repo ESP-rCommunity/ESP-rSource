@@ -3538,7 +3538,7 @@ C ********************************************************************
       real pazi,pelv
 
       integer icomp,isurf,icfctp
-      real proang,pi,r
+      real proang,pi,r,pang_vh,pang_ih
 
       pi = 4.0 * ATAN(1.0)
       r=pi/180.
@@ -3547,11 +3547,36 @@ C Check if slat blind is horizontal or vertical and apply appropriate
 C equation (ref. Lomanowski 2008)
       IF(vb_VorH(icomp,icfctp).eq.'HORZ')then
 
-           proang=ATAN(TAN(SALT*r)/COS(SAZI*r-PAZI(icomp,isurf)*r))/r
+        proang=ATAN(TAN(SALT*r)/COS(SAZI*r-PAZI(icomp,isurf)*r))/r
+
+C Correct for blind assembly tilt angle PELV if not vertical 
+C (A. Geissler, 2011)
+C In ESP-r, PELV is defined as:
+C     0°   for vertical surfaces (accept +- 5° as vertical, here)
+C    90°   for horizontal surfaces facing upward ('ceiling') and
+C   -90°   for horizontal surfaces facing downward ('floor')
+        if (abs(PELV(icomp,isurf)).gt.5.) then
+C In ref. C. Chantrasrisalai, PhD Thesis 2007, Oklahoma State University, 
+C page 61 eqn. 4-1b the blind assembly tilt angle (Sig) is defined as
+C     0°   for blind assembly facing upward,
+C    90°   for blind assembly vertical and
+C   180°   for blind assembly facing the ground.
+C         Eqn. 4-1b for the ESP-r angle reference system becomes
+          proang=proang - PELV(icomp,isurf)
+        endif
 
       ELSEIF(vb_VorH(icomp,icfctp).eq.'VERT')then
 
-           proang=SAZI-PAZI(ICOMP,ISURF)
+        proang=SAZI-PAZI(ICOMP,ISURF)
+
+C Correct for blind assembly tilt angle PELV if not vertical 
+C (A. Geissler, 2011)
+        if (abs(PELV(icomp,isurf)).gt.5.) then
+          pang_vh=ATAN(TAN(SALT*r)/COS(SAZI*r-PAZI(icomp,isurf)*r))/r
+          pang_ih=pang_vh-PELV(icomp,isurf)
+C         Eqn. 4-1d:
+          proang=atan(cos(pang_vh)*tan(proang)/cos(pang_ih))
+        endif
 
       ELSE
            proang=90.
