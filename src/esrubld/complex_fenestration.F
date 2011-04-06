@@ -1779,17 +1779,21 @@ C in a Glazing/Shading Layer Array',ASHRAE Transactions, Vol. 112,
 C Pt. 2. pp. 3-12.
 C
 C INPUT:
-C GBM - External beam solar irradiance [W/m2]
-C GDF - External diffuse solar irradiance [W/m2]
-C IBM - Internal beam solar irradiance [W/m2]
-C IDF - Internal diffuse solar irradiance [W/m2]
-C isolvis - Switch for solar (0) or visual (1) data
+C icalc_mode - switch for 'traditional' (0) or 'sky and ground' (1)
+C icomp      - current zone
+C isurf      - current surface in zone
+C icfctp     - current cfc type in zone
+C GBM        - External beam solar irradiance [W/m2]
+C GDF        - External diffuse solar irradiance [W/m2]
+C IBM        - Internal beam solar irradiance [W/m2]
+C IDF        - Internal diffuse solar irradiance [W/m2]
+C isolvis    - Switch for solar (0) or visual (1) data
 C 
 C OUTPUT:
 C TRANSBB_SYS - Total transmitted beam solar flux [W/m2]
-C TRANSD_SYS - Total transmitted diffuse solar flux [W/m2]
-C REFL_SYS - Total reflected solar flux (beam+diffuse) [W/m2]
-C AbsSol - Absorbed solar flux at each layer [W/m2]
+C TRANSD_SYS  - Total transmitted diffuse solar flux [W/m2]
+C REFL_SYS    - Total reflected solar flux (beam+diffuse) [W/m2]
+C AbsSol      - Absorbed solar flux at each layer [W/m2]
 C
 C ********************************************************************
       subroutine solar_multilayer(icalc_mode,icomp,isurf,icfctp,
@@ -2039,7 +2043,7 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       integer nc,nn,ne,i,j,icomp,isur,icfctp,inode,nnod,itypenext
       integer itype,nd_blnd,nd_cav,nd_glass,IER,ii1,ii2
       integer nd_surf,ii
-      real Tsurf,Tadj,fnnod,Tavg
+      real Tsurf,Tadj,fnnod,Tavg,Text,Tglass
       real q_gen_glass
       real b,air_cond,q_blind_airnd,q_glass_airnd
       real h_glass_blind,h_blind_room,h_glass_room
@@ -2083,97 +2087,46 @@ C and previous gas gap for computing convection coefficient
         end if
 
         if (i.eq.1.and.itype.ge.2) then !outside blind present
-            if (itypenext.eq.1) then  !next non-gap layer is glass, OK
+            if(itypenext.eq.1)then  !next non-gap layer is glass, OK
 
 C OUTDOOR SLAT-TYPE BLIND CONVECTION MODEL
+
+C cavity is fully vented, no convective exchange between blind and glass
+C cavity resistance is set to a very high value - essentially an open
+C circuit
+              cfcRgap(icomp,isur,i+1,2)=1000.
+
+C Determine source term for convective exchange between external glass
+C layer and outdoor air.
               nd_blnd=nndl(icomp,isur,1)
               nd_cav=nd_blnd+nndl(icomp,isur,2)
               nd_glass=nd_cav+1
-
-              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
-C               cavity is fully vented, no convective exchange between 
-C               blind and glass cavity resistance is set to a very high 
-C               value - essentially an open circuit
-C cfcRgap(,,,1) relates to present time-row, (,,,2) to future
-                cfcRgap(icomp,isur,i+1,2)=1000.
-                nd_surf=nd_glass
-
-Cag@07052010 else use logic from below from "inside CFC construction"
-              else ! adjacent to zone
-                if(i_shd(icomp,icfctp).eq.0)then ! blind is retracted
-                  ! here we could also insert a fancy calculation that takes the temp. of the
-                  ! "other zone" surface into account ...
-                  cfcRgap(icomp,isur,i+1,2)=0.09 ! "ventilated gap" assumption
-                  nd_surf=nd_glass
-                else
-                  TA=tfc(icomp,isur,nd_blnd)    ! blind temperature [C]
-                  TB=tfc(icomp,isur,nd_glass)   ! glass temperature [C]
-                  lthk=THRMLI(icomp,isur,i+1,4) ! thickness of air gap layer [m]
-c                  L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
-                  hc=0.
-                  CALL ConvVertCav(PELV(icomp,isur),L,TA,TB,
-     &                             rmlr_mass(icomp,icfctp,i+1),
-     &              cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
-     &              visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
-     &              spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),
-     &              hc)
-                  cfcRgap(icomp,isur,i+1,2)=1.0/hc
-                  nd_surf=nd_blnd
-                endif
-              endif
-
-C Determine source term for convective exchange between external 
-C layer and adjacent air.
-              Tsurf=tfc(icomp,isur,nd_surf)
-
-              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
-                Tadj=(ATP(icomp,isur)+ATF(icomp,isur))/2.
-              else ! use adjacent zone air node temperature
-C               Get the connection index.
-                II=IE(ICOMP,ISUR)
-C               Get the number of the adjacent zone.
-                II1=IC2(II)
-C               Get the number of the corresponding mlc.
-                II2=IE2(II)
-                Tadj=(TPA(ii1)+TFA(ii1))/2.
-              endif
+              Tglass=tfc(icomp,isur,nd_glass)
+              Text=(ATP(icomp,isur)+ATF(icomp,isur))/2.
 
               q_gen_glass=(hcof(icomp,isur)
-     &                       *SNA(icomp,isur)*(Tsurf-Tadj))*(-1.)
+     &        *SNA(icomp,isur)*(Tglass-Text))*(-1.)
               q_glass_extS(icomp,isur)=q_gen_glass/SNA(icomp,isur) !save for output
 
 C Double the external convective heat transfer coefficient (calculated in MZCONV)
 C to account for front and back surface of the outdoor blind layer.
-              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
-                if(i_shd(icomp,icfctp).eq.0)then
-                  ! if shade is retracted, decouple it from thermal zone
-                  hcof(icomp,isur)=0.001
-                else
-                  hcof(icomp,isur)=2.*hcof(icomp,isur)
-                endif
-              else ! adjacent to zone
-c                hcof(icomp,isur) remains unchanged
+              if(i_shd(icomp,icfctp).eq.0)then
+                ! if shade is retracted, decouple it from thermal zone
+                hcof(icomp,isur)=0.001
+              else  
+                hcof(icomp,isur)=2.*hcof(icomp,isur)
               endif
+              
+C Assign source terms to external glass layer nodes
 
-C Assign source terms to external layer nodes
-C first node of external layer
-              inode=nd_surf
+C first node of external glass layer
+              inode=nd_glass
 
-C Divide source term by surface area SNA() to get [W/m^2].
+C Divide source term by surface area to get [W/m^2].
 C 'W' time-dependent coefficients in MZSETU require [W/m^2].
               q_gen_glass=q_gen_glass/SNA(icomp,isur)
 
-              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
-                nnod=nndl(icomp,isur,3) ! no. of nodes of outermost glass layer
-              else
-                if (i_shd(icomp,icfctp).eq.0) then
-                  ! if shade is retracted
-                  nnod=nndl(icomp,isur,3) ! no. of nodes of outermost glass layer
-                else
-                  nnod=nndl(icomp,isur,1) ! no. of nodes of blind
-                endif
-              endif
-
+              nnod=nndl(icomp,isur,3) !no. of nodes of outermost glass layer
               fnnod=float(nnod)
 
               qcfc_cv(icomp,isur,inode,2)=
@@ -2274,6 +2227,8 @@ C If shade is retracted determine gap thickness between glass layers
 C If shade is retracted assign appropriate resistance calculated above
                 if(i_shd(icomp,icfctp).eq.0)then
                   cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
+        write(*,*)'i_shd(',icomp,',',icfctp,')= ',i_shd(icomp,icfctp),
+     &            '; R= ',cfcRgap(icomp,isur,i+1,2)
                 else
                   cfcRgap(icomp,isur,i+1,2)=1./hc
                 endif
@@ -2482,12 +2437,16 @@ C ********************************************************************
       subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
      &                          viscA,viscB,spchtA,spchtB,hc)
       IMPLICIT NONE
+#include "building.h"
+#include "CFC_common.h" 
+C provides i_hcond
+
 C gas molar mass, A and B gas property coefficients
       real mlr_mass,condA,condB,viscA,viscB,spchtA,spchtB
 
       real ang,L,TA,TB,hc
       real g,R,P,Tm,ro,cp,k,mu,dT,Ra,Nu
-      real A,n
+      real A,n,PI,rad
       real gam,Nu1,Nu2,GG,Agv,XX,YY,Nu_v,Nu_60
 
       logical closea
@@ -2499,9 +2458,11 @@ C This is a crude idealized treatment.
             goto 1000
       endif
 
-      g=9.806402                       !gravity [m/s2]
-      P=101325.                         !abs pressure [Pa]
-      R=8.314472                       !universal gas constant [J/mol.K]
+      g=9.806402                       ! gravity [m/s2]
+      P=101325.                        ! abs pressure [Pa]
+      R=8.314472                       ! universal gas constant [J/mol.K]
+      PI = 4.0 * ATAN(1.0)
+      rad=PI/180.                      ! conversion grad -> rad
 
 C Convert temperature to Kelvin
       TA=TA+273.15 ! "outer" temperature
@@ -2520,98 +2481,108 @@ C Calculate gas properties based on linear Temperature fit
 C Calculate Rayleigh number (= Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
+      call eclose(Ra,0.00,0.01,closea)
+      if (closea) Ra=1.0
+
+      if (i_hconv.eq.0) then
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-c      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
+        Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
 
-C ***  EN 673 ***
-C     Calculate coefficients A and n (EN 673, tilted glass) from tilt angle ang
-c      A=0.036 ! (0deg, vert) 0.10 (45deg) 0.16 (90deg, horiz)
-      A=0.036667+0.0013778*ang !  R= 0.99983 
-c      n=0.38  ! (0deg, vert) 0.31 (45deg) 0.28 (90deg, horiz)
-      n=0.38-0.002*ang+(9.8765E-6)*ang**2 ! R=1
+      elseif (i_hconv.eq.1) then
+C ***  Nusselt number acc. to EN 673:1996 ***
+C       Calculate coefficients A and n (EN 673, tilted glass) from tilt angle ang
+c        A=0.036 ! (0deg, vert) 0.10 (45deg) 0.16 (90deg, horiz)
+        A=0.036667+0.0013778*ang !  R= 0.99983 
+c        n=0.38  ! (0deg, vert) 0.31 (45deg) 0.28 (90deg, horiz)
+        n=0.38-0.002*ang+(9.8765E-6)*ang**2 ! R=1
 
-C     Angle dependant Nusselt number (EN 673 eqn 6)
-c      Nu = A*Ra**(n)
-      Nu=1.0
-      if (Ra.gt.0.) Nu=A*exp(n*log(Ra)) ! x**y
+C       Angle dependant Nusselt number (EN 673 eqn 6)
+c        Nu = A*Ra**(n)
+        Nu=1.0
+        if (Ra.gt.0.) Nu=A*exp(n*log(Ra)) ! x**y
 C
-C     'ang' is PELV(icomp,isurf) and defined as
-C     0°   for vertical surfaces
-C    90°   for horizontal surfaces facing upward ('ceiling') and
-C   -90°   for horizontal surfaces facing downward ('floor')
+C       'ang' is PELV(icomp,isurf) and defined as
+C       0°   for vertical surfaces
+C      90°   for horizontal surfaces facing upward ('ceiling') and
+C     -90°   for horizontal surfaces facing downward ('floor')
 
-      if ((ang.lt.0.).and.(ang.gt.-45.)) then
-C       use vertical value for now
-        Nu=0.036*exp(0.38*log(Ra))
-C     if heat flux downwards, set Nu=0.1 (very small convective coefficent)
-      elseif (ang.le.-45.) then
-        Nu=0.1
-      endif
+        if ((ang.lt.0.).and.(ang.gt.-45.)) then
+C         use vertical value for now
+          Nu=0.036*exp(0.38*log(Ra))
+C       if heat flux downwards, set Nu=0.1 (very small convective coefficent)
+        elseif (ang.le.-45.) then
+          Nu=0.1
+        endif
+C       Now Nu is set according to EN 
+C *** END EN 673:1996 ***
+      else ! i_hconv.eq.2
 
 C *** Nusselt number acc. to ISO 15099:2003 ***
-C     Section 5.3.3
-C     gam =   0° ... horizontal glazing, heat flow upwards
-C     gam =  90° ... vertical glazing, heat flow horizontal
-C     gam = 180° ... horizontal glazing, heat flow downwards
-C
-C     It is assumed that TA is "outside" and TB is "inside". Base eqns
-C     assume that TA < TB, i.e. heat flow from inside to outside. If 
-C     TA > TB, the complement of the tilt angle is to be used, i.e.
-C     180° - gam instead of gam. and calculations done with 180° - gam!
-C
-      if (TA .le. TB) then
-        gam = 90. - ang
-      else ! TA > TB, use complement angles
-        gam = 90. + ang ! 180 - (90. - ang)
-      endif
-
-C     Vertical value (eqn. 49) is necessary for more than one angle, always calculate:
-      if (Ra .gt. 50000.) then
-        Nu1=0.673838*exp(0.333333*log(Ra))
-      elseif ((Ra.le. 50000.) .and. (Ra .gt. 10000.)) then
-        Nu1=0.028154*exp(0.4134*log(Ra))
-      else ! Ra < 10000.
-        Nu1=1.+1.7596678E-10*exp(2.2984755*log(Ra))
-      endif
-      Nu2=0.242*exp(0.272*log(Ra/Agv))
-      Nu_v=max(Nu1,Nu2)! Nusselt for vertical cavity
-
-C     Value for 60° is also used for more than one angle, also always calculate:
-      GG = 0.5/exp(0.1*log(1.+exp(20.6*log(Ra/3160.))))
-      Nu1= exp((1./7.)*log(1.+
-     &            exp(7.*log(0.0936*exp(0.314*log(Ra)))/(1.+GG))))
-      Nu2= (0.104+0.175/Agv)*exp(0.283*log(Ra))
-      Nu_60=max(Nu1,Nu2) ! Nusselt for 60 deg tilt
-
-c     Check if vertical
-      call eclose(ang,0.00,0.01,closea)
-
-      Agv=22. ! Ag,v = H / dg,v ??? height ??? where from ???
-
-      if ((0. .le.gam) .and. (gam.lt. 60.)) then
-        XX = (1.-1708./(Ra*cos(gam)))
-        XX = (XX + abs(XX))/2.
-        YY = (exp(0.333333*log(Ra*cos(gam)/5830.))-1.)
-        YY = (YY + abs(YY))/2.
-        Nu = 1.+1.44*XX*
-     &       (1.-(1708.*exp(1.6*log(sin(1.8*gam))))/(Ra*cos(gam)))+YY
-
-      elseif (gam .eq. 60.) then
-        Nu = Nu_60
-
-      elseif ((60. .lt.gam) .and. (gam.lt. 90.)) then
-C     linear interpolation between Nu_60 and Nu_v
-        Nu = gam*(Nu_v-Nu_60)/30.+Nu_60-2.*(Nu_v-Nu_60)
-        
-      elseif (closea) then ! vertical
-        Nu = Nu_v 
-
-      else ! between 90 and 180 deg
-        Nu=1.+(Nu_v-1.)*sin(gam)
-
-      endif
+C       Section 5.3.3
+C       gam =   0° ... horizontal glazing, heat flow upwards
+C       gam =  90° ... vertical glazing, heat flow horizontal
+C       gam = 180° ... horizontal glazing, heat flow downwards
+C   
+C       It is assumed that TA is "outside" and TB is "inside". Base eqns
+C       assume that TA < TB, i.e. heat flow from inside to outside. If 
+C       TA > TB, the complement of the tilt angle is to be used, i.e.
+C       180° - gam instead of gam. and calculations done with 180° - gam!
+C   
+        if (TA .le. TB) then
+          gam = 90. - ang
+        else ! TA > TB, use complement angles
+          gam = 90. + ang ! 180 - (90. - ang)
+        endif
+    
+C       Vertical value (eqn. 49) is necessary for more than one angle, always calculate:
+        Agv=22. ! Ag,v = H / dg,v ??? height ??? where from ???
+    
+        if (Ra .gt. 50000.) then
+          Nu1=0.673838*exp(0.333333*log(Ra))
+        elseif ((Ra.le. 50000.) .and. (Ra .gt. 10000.)) then
+          Nu1=0.028154*exp(0.4134*log(Ra))
+        else ! Ra < 10000.
+          Nu1=1.+1.7596678E-10*exp(2.2984755*log(Ra))
+        endif
+        Nu2=0.242*exp(0.272*log(Ra/Agv))
+        Nu_v=max(Nu1,Nu2)! Nusselt for vertical cavity
+    
+C       Value for 60° is also used for more than one angle, also always calculate:
+        GG = 0.5/exp(0.1*log(1.+exp(20.6*log(Ra/3160.))))
+        Nu1= exp((1./7.)*log(1.+
+     &              exp(7.*log(0.0936*exp(0.314*log(Ra)))/(1.+GG))))
+        Nu2= (0.104+0.175/Agv)*exp(0.283*log(Ra))
+        Nu_60=max(Nu1,Nu2) ! Nusselt for 60 deg tilt
+     
+c       Check if vertical
+        call eclose(ang,0.00,0.01,closea)
+     
+        if ((0. .le.gam) .and. (gam.lt. 60.)) then
+          XX = (1.-1708./(Ra*cos(gam*rad)))
+          XX = (XX + abs(XX))/2.
+          YY = (exp(0.333333*log(Ra*cos(gam*rad)/5830.))-1.)
+          YY = (YY + abs(YY))/2.
+          Nu = 1.+1.44*XX*
+     &         (1.-(1708.*exp(1.6*log(sin(1.8*gam*rad))))/
+     &                                         (Ra*cos(gam*rad)))+YY
+    
+        elseif (gam .eq. 60.) then
+          Nu = Nu_60
+    
+        elseif ((60. .lt.gam) .and. (gam.lt. 90.)) then
+C       linear interpolation between Nu_60 and Nu_v
+          Nu = gam*(Nu_v-Nu_60)/30.+Nu_60-2.*(Nu_v-Nu_60)
+          
+        elseif (closea) then ! vertical
+          Nu = Nu_v 
+    
+        else ! between 90 and 180 deg
+          Nu=1.+(Nu_v-1.)*sin(gam*rad)
+    
+        endif
 C     Now Nu is set according to ISO
 C *** END ISO 15099:2003 ***
+      endif ! which model?
 
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
@@ -4086,14 +4057,14 @@ C ********************************************************************
       nc=nconst(icomp)
 C loop through zone surfaces
       do 100 i=1,nc
-            icfctp=icfcfl(icomp,i)  !CFC type index
+        icfctp=icfcfl(icomp,i)  !CFC type index
 
-C if cfc is detected AND indoor slat blind is present
-                 if(icfctp.gt.0)then
+C if cfc is detected AND outdoor slat blind is present
+        if(icfctp.gt.0)then
 
-                   if(icfcltp(icomp,icfctp,1).ge.2)QELWF(I)=0.
+          if(icfcltp(icomp,icfctp,1).ge.2) QELWF(I)=0.
 
-                 end if
+        end if
  100  continue
 
 C Save future time-row values for use as present
