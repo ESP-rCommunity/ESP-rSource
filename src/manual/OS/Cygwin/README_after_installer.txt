@@ -57,6 +57,17 @@ If there is an answer then the environment is ok.
 IF YOU NEED TO EDIT a text file in cygwin you have the option of using an editor within the Cygwin environment or you can use something like NotePad++ in Windows. DO NOT USE WORD to edit a text file in Cygwin.
 
 
+Dependencies:
+
+If ESP-r executables do not run it may be because dll (library) files are missing or are not the correct version. Here is a list of what you need for the X11 version of the simulator:
+CygX11-6.dll, Cygwin1.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
+Here is a list of what is required for the GTK version of the simulator:
+Cygwin1.dll, Cyggdk-X11-2.0.dll, Cyggdk_Pixbuf-2.0-0.dll, Cygglib-2.0-0.dll, Cyggobject-2.0-0.dll, Cyggtk-X11-2.0-0.dll, Cygpango-1.0-0.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
+To find about dependencies the tool dependency walker 2.2 sort of works (it expects dll to be in the same folder as the executable and does not know about Cygwin paths). You can find it at http://www.dependencywalker.com
+
+
 Starting ESP-r modules within Cygwin
 
 To run graphic applications (such as ESP-r modules) inside Cygwin you need to use a graphic command window. The initial Cygwin window only takes text commands. A common command to start up a graphic command window is to issue the following command in the Cygwin command window:
