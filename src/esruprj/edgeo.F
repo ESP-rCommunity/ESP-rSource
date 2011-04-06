@@ -387,7 +387,7 @@ C Report on any duplicate surface names.
             call edisp(iuout,outs)
           endif
 
-C Report on possible construction issues.
+C Report on possible construction issues between zones.
           if(showother.and.icoth.ne.0)then
             do 17 ii=1,nmlc
               if(SSMLCN(ioc)(1:12).eq.DESC(ii)(1:12)) then
@@ -483,8 +483,8 @@ C Read current zone back in and then update the configuration file.
  40     continue
       endif
 
-      WRITE(ITEMS(1),'(A,1X,A12)')  'a name:',zname(ICOMP)
-      WRITE(ITEMS(2),'(A,1X,A24)')  'b desc:',zdesc(ICOMP)(1:24)
+      WRITE(ITEMS(1),'(A,A12)')  'a name: ',zname(ICOMP)
+      WRITE(ITEMS(2),'(A,A24)')  'b desc: ',zdesc(ICOMP)(1:24)
       ITEMC=2
       ITEMC=ITEMC+1
       if(.not.attribok)then
@@ -497,7 +497,7 @@ C Read current zone back in and then update the configuration file.
         ITEMC=ITEMC+1
       endif
 
-      WRITE(ITEMS(ITEMC),'(A,1X,3F6.1)')'   origin @',X(1),Y(1),Z(1)
+      WRITE(ITEMS(ITEMC),'(A,3F6.1)')'   origin @ ',X(1),Y(1),Z(1)
       call SIGFIG(VOL(icomp),NSIGFIG,RNO,SIGSTR,LSTR)
       WRITE(ITEMS(ITEMC+1),'(3a)')'   volume:      ',SIGSTR(1:LSTR),
      &  ' m^3'
@@ -2222,7 +2222,7 @@ C For help messages
       helpinsub='EDINSUL'  ! set for subroutine
 
       IER=0
-      changed=.false.
+      changed=.false. ! user has not altered any directives yet
       newgeo=.false.  ! assume older format geometry.
 
       call isunix(unixok)
@@ -2322,7 +2322,7 @@ C Menu control.
       CALL EMENU(' Zone shading and insolation',ISD,ISDN,INODA)
       if(INODA.EQ.ISDN)then
 
-C If any changes update and then save geometry file.
+C If any changes update and then save geometry file prior to exiting.
         if(changed)then
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -2344,6 +2344,7 @@ C Insolation, present a list of current default insolation choices.
 
 C If any changes update and then save geometry file before invoking ish.
         if(changed)then
+          call edisp(iuout,'Updating zone for changed directives.')
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
@@ -2352,7 +2353,9 @@ C If any changes update and then save geometry file before invoking ish.
           changed=.false.
         endif
 
-C Allow user to start shading analysis.
+C Allow user to start shading analysis. If user does not cancel suggest
+C a new file name, ask the user to confirm that name and update the model
+C cfg file and then if the user says do it now call comission ish.
         CALL EASKABC('Shading & insolation analysis options: ',' ',
      &   'do now','do later','cancel',IW,nbhelp)
         if(IW.eq.1.or.IW.eq.2)then
@@ -2373,6 +2376,8 @@ C Allow user to start shading analysis.
               CALL EMKCFG('-',IER)
             endif
           endif
+        else
+          continue
         endif
 
 C If existing db out of date the perform recalculation.
@@ -2386,6 +2391,8 @@ C If existing db out of date the perform recalculation.
           ishold=.false.
         endif
       elseif(INODA.eq.2)then
+
+C Set static insolation.
         IALT(1)='specified insolation to 1 surface   '
         IALT(2)='specified insolation to 2 surfaces  '
         IALT(3)='specified diffuse insol distribution'
@@ -2395,7 +2402,7 @@ C If existing db out of date the perform recalculation.
         IF(IX.EQ.0) goto 13
         IF(IVAL(1).EQ.1)THEN
 
-C Insolation to 1 surface, including internal windows.
+C Insolation to a specific surface.
           IS=1
           CALL EASKSUR(ICOMP,IS,'A','Select surface for insolation.',
      &      ' ',IER)
@@ -2406,7 +2413,7 @@ C Insolation to 1 surface, including internal windows.
           changed=.true.
         ELSEIF(IVAL(1).EQ.2)THEN
 
-C Insolation to 2 surf, including internal windows on both.
+C Insolation to two user selected surfaces.
           IS=1
           CALL EASKSUR(ICOMP,IS,'A','Select first insolated surface.',
      &      ' ',IER)
@@ -2430,7 +2437,7 @@ C Diffuse distribution.
         endif
       elseif(INODA.eq.6)then
 
-C Set diffuse distribution and ask for shading directives.
+C Set shading directives.
         if(IOBS(icomp).eq.0)then
           call usrmsg('Only insolation can be calculated because there',
      &      'are no shading obstructions associated with the zone.','W')
@@ -2493,7 +2500,7 @@ C Set up nsurfinso isurfinso list (insolation sources).
 
       END
 
-C ******************** PICKSSUR  << to here >>
+C ******************** PICKSSUR
 C PICKSSUR selects surfaces for shading & insolation analysis.
 C IZONE is the focus zone, NP is the number of surfaces selected,
 C act = 's or S' shading, act = 'i or I' insolation

@@ -1024,7 +1024,6 @@ C Ask for relevent nodes. If CTLST is true then ask for containments.
             PROMPT2=' '
             helptopic='mass_flow_cntm_select'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            NH=0
             CALL ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,nbhelp)
           ELSE
             call edisp(iuout,' No contaminants defined')
@@ -1192,7 +1191,6 @@ C Note: return INPKT and NNPKT for total entering.
             if(idh.eq.5)then
               NNPKT=NNOD
               PROMPT1='Select second node'
-              NH=0
               call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,nbhelp)
             endif
             INODE=0

@@ -2341,7 +2341,6 @@ C anchlist allows selection and list management of anchor points (a list of conn
 C associated with a concept).
       subroutine anchlist(iasel,ier)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
 
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -2526,9 +2525,6 @@ C Select one or more connections from a list.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -2729,7 +2725,7 @@ C IDST tool commands.
       character LCFGF*72,cfgroot*24
       character CXITM*43,outs*124,LTMP*72
       character clmdb*144
-      character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
+      character doit*248,tmode*8,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,alias*32,donegdst*72
       character longtfile*144,longtfiledos*144
@@ -3069,8 +3065,8 @@ C << only do this for the actual number of sets >>
       call edisp(iuout,'GDST COMMANDS FINISHED.')
       return
 
- 3    CALL ERPFREE(idf,ISTAT)
-      return
+C 3    CALL ERPFREE(idf,ISTAT)
+C      return
 
       end
 
@@ -3283,6 +3279,8 @@ C << of TRAN for SSOTF.
           QUIET=.FALSE.
         endif
       elseif(act.eq.'a')then
+        helptopic='search_constructions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('global attributions',nbhelp,'-',0,0,IER)
 
         CALL EPKMLC(ISEL,'Select construction for matching surfaces',

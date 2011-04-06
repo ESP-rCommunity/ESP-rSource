@@ -2567,6 +2567,7 @@ C be included in the version 1.1 geometry file.
             iobs(icomp)=0
             nbobs(icomp)=0
           endif
+
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf
             ncf=isilentncf
@@ -3361,6 +3362,14 @@ C format if type 'obs' and 'obs3'
           endif
 
 C << usage information goes here >>
+
+C Control definitions. Scan the current control data to determine if the
+C current zone has an ideal control - if so set i_ctl_link() to one.
+C Next need to determine the number of periods - if one period then
+C straightforware to get heating and cooling setpoints and periods. If
+C multiple periods then there might be a setback. If free floating then
+C this needs to be represented.
+          if(icascf(nsz).gt.0) i_ctl_link(nsz)=1
 
 C Idea control information is work in progress.
           write(ifilg,'(2a,F6.2,a)',IOSTAT=ios,ERR=13)

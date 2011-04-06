@@ -1741,7 +1741,7 @@ C IER=0 OK.
       LOGICAL XST,comold,tmcold,vwfold,ishold,cfcold
 
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         call FINDFIL(LTHRM(ICOMP),XST)
         if(XST)then
           comold = .true.
@@ -1753,7 +1753,7 @@ C IER=0 OK.
 C Check for implications of surface addition or removal or attribution change.
 C << refine testing for setting tmcold >>
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         if(ITW(ICOMP).eq.1)then
           call FINDFIL(LTWIN(ICOMP),XST)
           if(XST)then
@@ -1764,14 +1764,14 @@ C << refine testing for setting tmcold >>
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         if(icfc(ICOMP).eq.1)then
           call FINDFIL(lcfcin(ICOMP),XST)
           if(XST)cfcold = .true.
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'str')then
+     &   act(1:3).eq.'str')then
         if(IVF(ICOMP).eq.1)then
           call FINDFIL(LVIEW(ICOMP),XST)
           if(XST)then
@@ -1782,7 +1782,7 @@ C << refine testing for setting tmcold >>
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'str')then
+     &   act(1:3).eq.'str')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
           if(XST)then
@@ -2005,6 +2005,9 @@ C and change any / to \.
 
       if(act(1:3).eq.'sr ')then
 
+C Silent recalculate (try not to ask the user anything if there
+C is an existing shading file but if there is no exisitng file
+C set ier=3 and return to calling code.
         if(XST)then
           write(doit,'(5a)') 'ish -mode text -file ',
      &      longtfile(1:lnblnk(longtfile)),' -zone ',
@@ -2024,6 +2027,8 @@ C rather than starting up a new xterm.
 
       elseif(act(1:3).eq.'sra')then
 
+C Silent recalculate whether or not there is an existing shading
+C file.
         write(doit,'(5a)') 'ish -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -zone ',
      &    ZN(1:lnz),' -act update_silent'
@@ -2038,8 +2043,9 @@ C rather than starting up a new xterm.
 
       elseif(act(1:3).eq.'ir ')then
 
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
+C Interactive recalculate of zone shading if there is an existing
+C shading file. If prj initial size is a % of default pass this\
+C on to child with an offset from prj start position.
         if(XST)then
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,5a)') 'ish -mode ',
@@ -2062,8 +2068,9 @@ C an offset from prj start position.
         endif
       elseif(act(1:3).eq.'ira')then
 
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
+C Interactive recalculate of zone shading without checking if
+C a shading file exists. If prj initial size is a % of default
+C pass this on to child with an offset from prj start position.
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &        tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
@@ -2082,6 +2089,7 @@ C an offset from prj start position.
 
       elseif(act(1:3).eq.'in ')then
 
+C Interactive shading calculation for a new shading database.
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,4a)') 'ish -mode ',tmode,
      &      ' -s ',iappw,iappx+15,iappy+50,' -file ',

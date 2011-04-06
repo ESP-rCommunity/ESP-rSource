@@ -589,7 +589,7 @@ C and change any / to \.
      &  cadlbl(1:lnblnk(cadlbl)),' ?'
       dok=.true.
       CALL ASKOK(outs,'(no will just generate the file)',
-     &  OK,dok,nbehlp)
+     &  OK,dok,nbhelp)
       IF(OK)then
 
 C << might do a cd to the current configuration location? before running zip >>
