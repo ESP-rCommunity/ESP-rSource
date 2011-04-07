@@ -5644,7 +5644,7 @@ C Tidy up the wireframe image.
 C Alter vertex list by deleting/ copy / replicate / editing.
         write(outs,'(A,I3,A)')' Up to ',MTV-NTV,
      &    ' vertices may be added or copied.'
-        call edisp(iuout,outs)
+        call edisp(itru,outs)
         IRT=1
         CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
      &    'replicate','edit several','cancel',' ',IRT,nbhelp)
@@ -6616,54 +6616,28 @@ C the final name uses the allowed character set.
             endif
           endif
 
-C Up the surface count and zone surface attributes.
+C Up the surface count and zone surface attributes. Because the
+C user cannot see the newly extruded surface it is pointless to
+C ask them about its use and composition.
           ICONT=IZSTOCN(icomp,nsur)+1
           NSUR=NSUR+1
           NZSUR(ICOMP)=NZSUR(ICOMP)+1
           SNAME(ICOMP,NSUR)=SNAME1
           SMLCN(NSUR)='UNKNOWN'
           SVFC(NSUR)='UNKN'
+          SOTF(NSUR)='OPAQUE'
           SOTHER(NSUR,1)='UNKNOWN'
           SOTHER(NSUR,2)='0'
           SOTHER(NSUR,3)='0'
           SPARENT(NSUR)='-'
           SUSE(NSUR,1)='-'
           SUSE(NSUR,2)='-'
-
-C Ask user about the use of the new surface.
           guesstype='any_type'
           iz=ICOMP
           isur=NSUR
           icon=ICONT
-          call edituse(iz,isur,icon,guesstype)
-
-          CALL EPMENSV
-          write(msgv,'(2a)') SNAME1(1:lnblnk(SNAME1)),
-     &      ' of the extrusion.'
-          if(icount.eq.1)then
-            CALL EPKMLC(ISEL,'Select one of the constructions for ',
-     &        msgv,IER)
-          else
-            CALL EPKMLC(ISEL,'Select one of the constructions for ',
-     &        msgv,IER)
-          endif
-          CALL EPMENRC
-          IF(ISEL.GT.0)then
-            WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
-            ssthick(icon)=THKMLC(isel)  ! update the thermophysical thickness
-
-C Use logic similar to parsemlcdesc to find the optical name.
-            OPT=' '
-            IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
-              SOTF(NSUR)='OPAQUE'
-            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
-              SOTF(NSUR)='CFC '
-            ELSE
-              WRITE(OPT,'(A)') DESC(ISEL)(21:32)
-              IF(OPT.EQ.' ')OPT='UNKNOWN'
-              write(SOTF(NSUR),'(a)') OPT
-            ENDIF
-          endif
+          SSUSE(icon,1)='-'
+          SSUSE(icon,2)='-'
 
 C Add surface to the connection list (icont) assuming an unknown boundary. 
           call addedsurf(icomp,icont,1,ier)
@@ -6673,6 +6647,9 @@ C where geometry and configuration is saved and re-display managed.
           if(icount.lt.iwcount)then
             goto 141
           else
+            call usrmsg(
+     &        'Note you must attribute the extruded surfaces and it',
+     &        'is recommended that you turn on surface normals!','W')
             goto 77
           endif
         endif   ! of the new surface options (IRT)
