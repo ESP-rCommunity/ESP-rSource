@@ -357,9 +357,9 @@
 *cfg	/usr/esru/esp-r/training/el_chr_ctl/cfg/office.cfg
 *root	/usr/esru/esp-r/training/el_chr_ctl
 *item
-*name	College La Vanoise, Modane, France (lightshelves and atrium)
-*cfg	/usr/esru/Projects/Dl-e/Vanoise/Cfg/mod_as_is.cfg
-*root	/usr/esru/Projects/Dl-e/Vanoise
+*name	Model using temporal climate data
+*cfg	/usr/esru/esp-r/training/Temporal_Clm/Temporal_Clm_Test.cfg
+*root	/usr/esru/esp-r/training/Temporal_Clm
 *item
 *group	air movement
 *help	These models demonstrate ESP-r's CFD capabilities.
