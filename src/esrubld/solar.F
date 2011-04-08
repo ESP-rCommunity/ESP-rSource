@@ -1636,7 +1636,8 @@ C Set TD, TFF for a type 3 surface (internal surface with adjacent zone).
             AIRT(ICOMP,I)=0.0
           ENDIF
 
-C PROCESS FOR EXTERNAL CFC
+C-----------------PROCESS FOR EXTERNAL CFC
+C                 ------------------------------
          elseif(icfctp.gt.0)then
 
           if(IE(icomp,i).eq.0)then  !only external CFCs supported

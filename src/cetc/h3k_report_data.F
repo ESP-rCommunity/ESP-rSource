@@ -69,6 +69,7 @@ c      USE Building
 #include "model.h"
 #include "geometry.h"
 #include "control.h"
+#include "CFC_common.h"
 #include "blc25_open_windows.h"
 C.....Passed variable
       integer iZone            ! Zone number
@@ -427,6 +428,10 @@ C      REAL TMA                  ! Mean air point temperature (oC)
 
       real SBC                              ! Stephan-Boltzmann constant
       parameter ( SBC=56.7E-9 )
+
+C.....CFC 
+       integer icfctp,itype          ! CFC type, layer type
+       integer nd_blnd,nd_cav,nd_ext ! dummy variables for node bookkeeping
 
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
@@ -1106,9 +1111,26 @@ C-----------------------------------------------------------------------
 C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
-C........External facing surfaces -> Surface temperature
+C.......External facing surfaces -> Surface temperature
+C       Check for CFC and external blind. If present, check if retracted,
+C       if retracted, search for external glass node and output this temperature!
+        icfctp=icfcfl(iZone,iSurface) ! CFC type
+
+        nd_ext=1 ! default setting
+        if(icfctp.gt.0) then ! surface is CFC
+          itype=icfcltp(iZone,icfctp,1) ! external (first)layer type
+          if (itype.ge.2) then ! it is blind
+            if(i_shd(iZone,icfctp).eq.0)then
+C             code from complex_fenestration.f, line 2101 ff.
+              nd_blnd=nndl(iZone,iSurface,1)
+              nd_cav=nd_blnd+nndl(iZone,iSurface,2)
+              nd_ext=nd_cav+1
+            endif
+          endif
+        endif
+
             call add_to_xml_reporting (
-     &          tfc(iZone,iSurface,1),
+     &          tfc(iZone,iSurface,nd_ext),
      &          H3K_rep_Name(1:iH3K_NameLen) // '/temp/outside',
      &          'units', '(oC)',
      &          'Temperature on external surface facing "exterior" ' )
@@ -1499,7 +1521,7 @@ c        closi=0.90*0.155
         call TSENMRT(iZone,0,NSENS,tr)
         if (NSENS.gt.0) then
          bc_loop: do iBC = 1,4
-          closi=(0.70+iBC*0.10)*0.155
+          closi=(0.70+real(iBC)*0.10)*0.155
           mrt_loop: do iCUB = 1, NSENS
              call fanger(act,wk,closi,TFA(iZone),tr(iCUB),vel,pa,pmv)
              write(MRTSEN,'(A,I1)')'/MRT_',iCUB

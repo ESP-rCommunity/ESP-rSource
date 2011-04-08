@@ -11,7 +11,7 @@ C-------------------------------------------------------------------------------
 
 C Flag (manually set for now) for calculation of ground and sky diffuse components
       integer i_ground_sky_diff_calc
-      parameter ( i_ground_sky_diff_calc = 0 )
+      parameter ( i_ground_sky_diff_calc = 1 )
 
 C Flags for solar_multilayer subroutine to indicate which diffuse properties 
 C (sky or ground) to use for the venetian blind layer. 
@@ -24,7 +24,7 @@ C 0 ... original model, no angle dependance
 C 1 ... EN 673
 C 2 ... ISO 15099
       integer i_hconv
-      parameter ( i_hconv = 0 )
+      parameter ( i_hconv = 2 )
 
 C---------------------------------------------------------------------------------
 C IMPORT COMMONS

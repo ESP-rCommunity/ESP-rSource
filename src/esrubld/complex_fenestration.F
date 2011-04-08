@@ -38,6 +38,7 @@ C      CFC_thermal_processing
 C      qlwCFC
 C      FSsolve
 C      cfc_eff_opt_prop
+C      groundskydiffcalc
 C      solar_multilayer
 C      cfc_convection
 C      ConvVertCav
@@ -148,9 +149,9 @@ C Save efective back reflectance into common variable
             
 C If shade is retracted, set longwave transmittance to 1.             
             if(i_shd(icomp,icfctp).eq.0)then
-                  rlwEF(icomp,icfctp,j)=0.001
-                  rlwEB(icomp,icfctp,j)=0.001
-                  rlwT(icomp,icfctp,j)=0.999
+                  rlwEF(icomp,icfctp,j)=0.0001
+                  rlwEB(icomp,icfctp,j)=0.0001
+                  rlwT(icomp,icfctp,j)=0.9999
             endif
 
             end if
@@ -1089,24 +1090,21 @@ C need thickness of glass layers for Fresnel calcs
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+
       integer icomp,isurf,icfctp
-      real proang, anginc
+      real proang, anginc, tilt
       real pi,r
       real w,s,phi,crown,wr,t !local slat width, spacing, crown, w/r ratio, thickness
       real sl_rad_overw
+      logical Curved
 
 C variables for calculation of sky and ground diffuse transmittance
-      real element_proang_sky ! profile angle of sky element
-      real element_proang_grd ! profile angle of ground element
-      integer nelements       ! number of integration slices
-      real SolTFskydiff       ! front sky diffuse transmittance (slat blinds with horizontal slats)
-      real SolRFskydiff       ! front sky diffuse reflectance (slat blinds with horizontal slats)
-      real SolTFgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
-      real SolRFgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
-      real SolTBskydiff       ! back sky diffuse transmittance (slat blinds with horizontal slats)
-      real SolRBskydiff       ! back sky diffuse reflectance (slat blinds with horizontal slats)
-      real SolTBgrddiff       ! back ground diffuse transmittance (slat blinds with horizontal slats)
-      real SolRBgrddiff       ! back ground diffuse reflectance (slat blinds with horizontal slats)
+      real SolTXskydiff       ! front sky diffuse transmittance (slat blinds with horizontal slats)
+      real SolRXskydiff       ! front sky diffuse reflectance (slat blinds with horizontal slats)
+      real SolTXgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
+      real SolRXgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
 
       integer iter,j ,jj      ! iterators
 
@@ -1216,18 +1214,18 @@ C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
 C for glass template based on extinction coefficient and refractive
 C index.
         THETA1=51.*r
-	      THETA2 = ASIN((SIN(THETA1))/N2)
-	      TAU_A = EXP(-1.0*KL/COS(THETA2))
-	      RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	      RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	      TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+        THETA2 = ASIN((SIN(THETA1))/N2)
+        TAU_A = EXP(-1.0*KL/COS(THETA2))
+        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+        TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	      TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+        TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	      RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	      RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	      TclearON = (TAUPERP+TAUPARL)/2.0
-	      RclearON = (RHOPERP+RHOPARL)/2.0
+        RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+        RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+        TclearON = (TAUPERP+TAUPARL)/2.0
+        RclearON = (RHOPERP+RHOPARL)/2.0
 
 C calculate diffuse-diffuse for given glass layer
         SolTFdd(icomp,isurf,icfctp,i)=
@@ -1297,42 +1295,44 @@ C If shade is retracted set solar transmittance to 1 and skip to next layer
 
         else ! continue as usual
 
-C set beam-beam reflectances to zero
-         SolRFbb(icomp,isurf,icfctp,i)=0.0
-         SolRBbb(icomp,isurf,icfctp,i)=0.0
-         
-         VisRFbb(icomp,isurf,icfctp,i)=0.0
-         VisRBbb(icomp,isurf,icfctp,i)=0.0
-
-C assign direct normal solar/visible properties to local variables
-         SolRufs=solRF(icomp,icfctp,i)
-         SolRdfs=solRB(icomp,icfctp,i)
-         SolTslat=solT(icomp,icfctp,i)
-         
-         VisRufs=visRF(icomp,icfctp,i)
-         VisRdfs=visRB(icomp,icfctp,i)
-         VisTslat=visT(icomp,icfctp,i)
-
-C assign slat blind descriptors to local variables
-         w=vb_w(icomp,icfctp)
-         s=vb_s(icomp,icfctp)
-         phi=vb_phiNew(icomp,icfctp)*r
-         crown=vb_crown(icomp,icfctp)
-         wr=vb_wr(icomp,icfctp)
-         t=vb_t(icomp,icfctp)
-
-         if(crown.gt. 1.0 .and.crown.gt.t)then !slat is CURVED
+C         Set beam-beam reflectances to zero
+          SolRFbb(icomp,isurf,icfctp,i)=0.0
+          SolRBbb(icomp,isurf,icfctp,i)=0.0
+          
+          VisRFbb(icomp,isurf,icfctp,i)=0.0
+          VisRBbb(icomp,isurf,icfctp,i)=0.0
+       
+C         Assign direct normal solar/visible properties to local variables
+          SolRufs=solRF(icomp,icfctp,i)
+          SolRdfs=solRB(icomp,icfctp,i)
+          SolTslat=solT(icomp,icfctp,i)
+          
+          VisRufs=visRF(icomp,icfctp,i)
+          VisRdfs=visRB(icomp,icfctp,i)
+          VisTslat=visT(icomp,icfctp,i)
+       
+C         Assign slat blind descriptors to local variables
+          w=vb_w(icomp,icfctp)
+          s=vb_s(icomp,icfctp)
+          phi=vb_phiNew(icomp,icfctp)*r
+          crown=vb_crown(icomp,icfctp)
+          wr=vb_wr(icomp,icfctp)
+          t=vb_t(icomp,icfctp)
+          tilt=PELV(icomp,isurf)
+       
+          if(crown.gt. 1.0 .and.crown.gt.t)then !slat is CURVED
 
             sl_rad_overw=1./wr
+            Curved=.true.
 
-C calculate front effective solar optical properties and assign to commons
+C           Calculate front effective solar optical properties and assign to commons
             call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
      &            SolRdfs,SolRufs,SolTslat,OutRFbd,OutTFbb,OutTFbd)
             SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
             SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
             SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
-C calculate front effective visible properties and assign to commons
+C           Calculate front effective visible properties and assign to commons
             call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
      &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
             VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
@@ -1340,98 +1340,48 @@ C calculate front effective visible properties and assign to commons
             VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (FRONT SURFACE)
-C...........Check whether calculation of ground and sky diffuse
-C...........components has been requested. 
+C           Check whether calculation of ground and sky diffuse
+C           components has been requested. 
             
             if (i_ground_sky_diff_calc.eq.1) then
 
-              nelements    = 9   ! number of integration slices (10 deg increments)
-              SolTFskydiff = 0.0 ! reset the sky diffuse transmittance
-              SolRFskydiff = 0.0 ! reset the sky diffuse reflectance  
-              SolTFgrddiff = 0.0 ! reset the ground diffuse transmittance
-              SolRFgrddiff = 0.0 ! reset the ground diffuse reflectance            
-            
-C.............Perform integration of sky elements based on the midpoint rule:
-C.............integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
-              integrate_sky_elements1: do iter = 1, nelements
-      
-                element_proang_sky = (90./float(nelements)) * 
-     &                               (float(iter)-0.5) * 1.
- 
-                element_proang_sky = element_proang_sky * r       ! convert to radians
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               proang,tilt,
+     &                               SolRdfs,SolRufs,SolTslat,
+     &                               SolTXskydiff,SolRXskydiff,
+     &                               SolTXgrddiff,SolRXgrddiff)
 
-                element_proang_grd = element_proang_sky * (-1.0)    ! profile angle for ground
+              SolTFskydd(icomp,isurf,icfctp,i)=SolTXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=SolRXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
 
-C SKY CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current sky element profile angle
-                call  VB_SOL46_CURVE(s,w,t,phi,
-     &                              element_proang_sky,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRFbd,OutTFbb,OutTFbd)      ! overall effective properties output
+            end if ! end sky/ground diffuse request for Curved, FRONT
 
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTFskydiff = SolTFskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTFbb + OutTFbd) * 
-     &                     cos(element_proang_sky))         ! f(a + (i-1/2)(b-a)/n)
-                SolRFskydiff = SolRFskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRFbd) * cos(element_proang_sky))  ! f(a + (i-1/2)(b-a)/n)
-C END SKY CALCULATION
-
-C GROUND CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current ground element profile angle
-                call  VB_SOL46_CURVE(s,w,t,phi,
-     &                              element_proang_grd,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRFbd,OutTFbb,OutTFbd)      ! overall effective properties output
-
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTFgrddiff = SolTFgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTFbb + OutTFbd) * 
-     &                      cos(element_proang_grd))         ! f(a + (i-1/2)(b-a)/n)
-                SolRFgrddiff = SolRFgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRFbd) * cos(element_proang_grd))  ! f(a + (i-1/2)(b-a)/n)
-C END GROUND CALCULATION
-
-              end do integrate_sky_elements1
-
-              SolTFskydd(icomp,isurf,icfctp,i)=SolTFskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=SolRFskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=SolTFgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=SolRFgrddiff
-
-            end if ! end sky/ground diffuse request
-
-C...........Calculate front effective diffuse (hemispherical) 
-C...........properties and assign to commons
+C           Calculate front effective diffuse (hemispherical) 
+C           properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,SolRufs,
      &            SolRdfs,SolTslat,OutRFdd,OutTFdd)
             SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
             SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
-C calculate front effective visible diffuse properties and assign to commons
+C           Calculate front effective visible diffuse properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,VisRufs,
      &            VisRdfs,VisTslat,OutRFdd,OutTFdd)
             VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
             VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
+C...........Complementary angle for BACK
             phi=phi*(-1.0)
 
-C calculate back effective solar optical properties adn assign to commons
+C           Calculate back effective solar optical properties adn assign to commons
             call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
      &            SolRdfs,SolRufs,SolTslat,OutRBbd,OutTBbb,OutTBbd)
             SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
             SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
             SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
-C calculate back effective visible properties and assign to commons
+C           Calculate back effective visible properties and assign to commons
             call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
      &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
             VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
@@ -1439,98 +1389,48 @@ C calculate back effective visible properties and assign to commons
             VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (BACK SURFACE)
-C...........Check whether calculation of ground and sky diffuse
-C...........components has been requested. 
+C           Check whether calculation of ground and sky diffuse
+C           components has been requested. 
             
             if (i_ground_sky_diff_calc.eq.1) then
 
-              nelements    = 9   ! number of integration slices (10 deg increments)
-              SolTBskydiff = 0.0 ! reset the sky diffuse transmittance
-              SolRBskydiff = 0.0 ! reset the sky diffuse reflectance  
-              SolTBgrddiff = 0.0 ! reset the ground diffuse transmittance
-              SolRBgrddiff = 0.0 ! reset the ground diffuse reflectance            
-            
-C.............Perform integration of sky elements based on the midpoint rule:
-C.............integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
-              integrate_ground_elements1: do iter = 1, nelements
-      
-                element_proang_sky = (90./float(nelements)) * 
-     &                               (float(iter)-0.5) * 1.
- 
-                element_proang_sky = element_proang_sky * r       ! convert to radians
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               proang,tilt,
+     &                               SolRdfs,SolRufs,SolTslat,
+     &                               SolTXskydiff,SolRXskydiff,
+     &                               SolTXgrddiff,SolRXgrddiff)
 
-                element_proang_grd = element_proang_sky * (-1.0)    ! profile angle for ground
+              SolTBskydd(icomp,isurf,icfctp,i)=SolTXskydiff
+              SolRBskydd(icomp,isurf,icfctp,i)=SolRXskydiff
+              SolTBgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
+              SolRBgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
 
-C SKY CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current sky element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_sky,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRBbd,OutTBbb,OutTBbd)      ! overall effective properties output
+            end if ! end sky/ground diffuse request for Curved, BACK
 
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTBskydiff = SolTBskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTBbb + OutTBbd) * 
-     &                     cos(element_proang_sky))         ! f(a + (i-1/2)(b-a)/n)
-                SolRBskydiff = SolRBskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRBbd) * cos(element_proang_sky))  ! f(a + (i-1/2)(b-a)/n)
-C END SKY CALCULATION
-
-C GROUND CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current ground element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_grd,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRBbd,OutTBbb,OutTBbd)      ! overall effective properties output
-
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTBgrddiff = SolTBgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTBbb + OutTBbd) * 
-     &                      cos(element_proang_grd))         ! f(a + (i-1/2)(b-a)/n)
-                SolRBgrddiff = SolRBgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRBbd) * cos(element_proang_grd))  ! f(a + (i-1/2)(b-a)/n)
-C END GROUND CALCULATION
-
-              end do integrate_ground_elements1
-
-              SolTBskydd(icomp,isurf,icfctp,i)=SolTBskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=SolRBskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=SolTBgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=SolRBgrddiff
-
-            end if ! end sky/ground diffuse request
-
-C...........Calculate back effective diffuse (hemispherical) 
-C...........properties and assign to commons
+C           Calculate back effective diffuse (hemispherical) 
+C           properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,SolRufs,
      &            SolRdfs,SolTslat,OutRBdd,OutTBdd)
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-C calculate back effective visible diffuse properties and assign to commons
+C           Calculate back effective visible diffuse properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,VisRufs,
      &            VisRdfs,VisTslat,OutRBdd,OutTBdd)
             VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
             VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-         else ! slat is considered FLAT with thickness t [mm]
+          else ! slat is considered FLAT with thickness t [mm]
+            Curved=.false.
 
-C calculate front effective solar optical properties and assign to commons
+C           Calculate front effective solar optical properties and assign to commons
             call VB_SOL46_THICK(s,w,t,phi,proang,
      &            SolRdfs,SolRufs,SolTslat,OutRFbd,OutTFbb,OutTFbd)
             SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
             SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
             SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
-C calculate front effective visible properties and assign to commons
+C           Calculate front effective visible properties and assign to commons
             call VB_SOL46_THICK(s,w,t,phi,proang,
      &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
             VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
@@ -1538,98 +1438,49 @@ C calculate front effective visible properties and assign to commons
             VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (FRONT SURFACE)
-C...........Check whether calculation of ground and sky diffuse
-C...........components has been requested. 
+C           Check whether calculation of ground and sky diffuse
+C           components has been requested. 
             
             if (i_ground_sky_diff_calc.eq.1) then
 
-              nelements    = 9   ! number of integration slices (10 deg increments)
-              SolTFskydiff = 0.0 ! reset the sky diffuse transmittance
-              SolRFskydiff = 0.0 ! reset the sky diffuse reflectance  
-              SolTFgrddiff = 0.0 ! reset the ground diffuse transmittance
-              SolRFgrddiff = 0.0 ! reset the ground diffuse reflectance            
-            
-C.............Perform integration of sky elements based on the midpoint rule:
-C.............integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
-              integrate_sky_elements2: do iter = 1, nelements
-      
-                element_proang_sky = (90./float(nelements)) * 
-     &                               (float(iter)-0.5) * 1.
- 
-                element_proang_sky = element_proang_sky * r       ! convert to radians
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               proang,tilt,
+     &                               SolRdfs,SolRufs,SolTslat,
+     &                               SolTXskydiff,SolRXskydiff,
+     &                               SolTXgrddiff,SolRXgrddiff)
 
-                element_proang_grd = element_proang_sky * (-1.0)    ! profile angle for ground
+              SolTFskydd(icomp,isurf,icfctp,i)=SolTXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=SolRXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
 
-C SKY CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current sky element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_sky,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRFbd,OutTFbb,OutTFbd)      ! overall effective properties output
+            end if ! end sky/ground diffuse request for Flat, FRONT
 
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTFskydiff = SolTFskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTFbb + OutTFbd) * 
-     &                     cos(element_proang_sky))         ! f(a + (i-1/2)(b-a)/n)
-                SolRFskydiff = SolRFskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRFbd) * cos(element_proang_sky))  ! f(a + (i-1/2)(b-a)/n)
-C END SKY CALCULATION
-
-C GROUND CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current ground element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_grd,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRFbd,OutTFbb,OutTFbd)      ! overall effective properties output
-
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTFgrddiff = SolTFgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTFbb + OutTFbd) * 
-     &                      cos(element_proang_grd))         ! f(a + (i-1/2)(b-a)/n)
-                SolRFgrddiff = SolRFgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRFbd) * cos(element_proang_grd))  ! f(a + (i-1/2)(b-a)/n)
-C END GROUND CALCULATION
-
-              end do integrate_sky_elements2
-
-              SolTFskydd(icomp,isurf,icfctp,i)=SolTFskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=SolRFskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=SolTFgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=SolRFgrddiff
-
-            end if ! end sky/ground diffuse request
-
-C...........Calculate front effective diffuse (hemispherical) 
-C...........properties and assign to commons
+C           Calculate front effective diffuse (hemispherical) 
+C           properties and assign to commons
             call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
      &            SolTslat,OutRFdd,OutTFdd)
             SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
             SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
-C calculate front effective visible diffuse properties and assign to commons
+C           Calculate front effective visible diffuse properties 
+C           and assign to commons
             call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
      &            VisTslat,OutRFdd,OutTFdd)
             VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
             VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
+C...........Complementary angle for BACK
             phi=phi*(-1.0)
 
-C calculate back effective solar optical properties adn assign to commons
+C           Calculate back effective solar optical properties adn assign to commons
             call VB_SOL46_THICK(s,w,t,phi,proang,
      &            SolRdfs,SolRufs,SolTslat,OutRBbd,OutTBbb,OutTBbd)
             SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
             SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
             SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
-C calculate back effective visible properties and assign to commons
+C           Calculate back effective visible properties and assign to commons
             call VB_SOL46_THICK(s,w,t,phi,proang,
      &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
             VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
@@ -1637,92 +1488,41 @@ C calculate back effective visible properties and assign to commons
             VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (BACK SURFACE)
-C...........Check whether calculation of ground and sky diffuse
-C...........components has been requested. 
+C           Check whether calculation of ground and sky diffuse
+C           components has been requested. 
             if (i_ground_sky_diff_calc.eq.1) then
 
-              nelements    = 9   ! number of integration slices (10 deg increments)
-              SolTBskydiff = 0.0 ! reset the sky diffuse transmittance
-              SolRBskydiff = 0.0 ! reset the sky diffuse reflectance  
-              SolTBgrddiff = 0.0 ! reset the ground diffuse transmittance
-              SolRBgrddiff = 0.0 ! reset the ground diffuse reflectance            
-            
-C.............Perform integration of sky elements based on the midpoint rule:
-C.............integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
-              integrate_ground_elements2: do iter = 1, nelements
-      
-                element_proang_sky = (90./float(nelements)) * 
-     &                               (float(iter)-0.5) * 1.
- 
-                element_proang_sky = element_proang_sky * r       ! convert to radians
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               proang,tilt,
+     &                               SolRdfs,SolRufs,SolTslat,
+     &                               SolTXskydiff,SolRXskydiff,
+     &                               SolTXgrddiff,SolRXgrddiff)
 
-                element_proang_grd = element_proang_sky * (-1.0)    ! profile angle for ground
+              SolTBskydd(icomp,isurf,icfctp,i)=SolTXskydiff
+              SolRBskydd(icomp,isurf,icfctp,i)=SolRXskydiff
+              SolTBgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
+              SolRBgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
 
-C SKY CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current sky element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_sky,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRBbd,OutTBbb,OutTBbd)      ! overall effective properties output
+            end if ! end sky/ground diffuse request for Flat, BACK
 
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTBskydiff = SolTBskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTBbb + OutTBbd) * 
-     &                     cos(element_proang_sky))         ! f(a + (i-1/2)(b-a)/n)
-                SolRBskydiff = SolRBskydiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRBbd) * cos(element_proang_sky))  ! f(a + (i-1/2)(b-a)/n)
-C END SKY CALCULATION
-
-C GROUND CALCULATION
-C...............calculate the beam-beam and beam-diffuse transmission
-C...............at the current ground element profile angle
-                call  VB_SOL46_THICK(s,w,t,phi,
-     &                              element_proang_grd,           ! profile angle of sky element
-     &                              SolRdfs,SolRufs,SolTslat,     ! slat properties input
-     &                              OutRBbd,OutTBbb,OutTBbd)      ! overall effective properties output
-
-C...............Sum up each sky element's contribution to the sky
-C...............diffuse transmittance and reflectance.
-                SolTBgrddiff = SolTBgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutTBbb + OutTBbd) * 
-     &                      cos(element_proang_grd))         ! f(a + (i-1/2)(b-a)/n)
-                SolRBgrddiff = SolRBgrddiff + 
-     &                     ((pi/2.)/float(nelements))*                  ! (b-a)/n
-     &                     ((OutRBbd) * cos(element_proang_grd))  ! f(a + (i-1/2)(b-a)/n)
-C END GROUND CALCULATION
-
-              end do integrate_ground_elements2
-
-              SolTBskydd(icomp,isurf,icfctp,i)=SolTBskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=SolRBskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=SolTBgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=SolRBgrddiff
-
-            end if ! end sky/ground diffuse request
-
-C...........Calculate back effective diffuse (hemispherical) 
-C...........properties and assign to commonss
+C           Calculate back effective diffuse (hemispherical) 
+C           properties and assign to commonss
             call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
      &            SolTslat,OutRBdd,OutTBdd)
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-C calculate back effective diffuse properties and assign to commons
+C           Calculate back effective diffuse properties and assign to commons
             call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
      &            VisTslat,OutRBdd,OutTBdd)
             VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
             VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-         end if ! slat considered flat
+          end if ! slat considered flat
         endif !  i_shd() .eq. 0 
 
-       elseif(itype.eq.0)then
-C set gas gap properties to 0 except for bb and dd transmission, set to 1. 
+       elseif(itype.eq.0)then ! gas filled cavity
+C       Set gas gap properties to 0 except for bb and dd transmission, set to 1. 
         SolTFbb(icomp,isurf,icfctp,i)=0.99999999
         SolTBbb(icomp,isurf,icfctp,i)=0.99999999
         SolRFbb(icomp,isurf,icfctp,i)=0.0
@@ -1764,6 +1564,167 @@ C set gas gap properties to 0 except for bb and dd transmission, set to 1.
 
       end
 
+C ********************************************************************
+C                        --groundskydiffcalc--
+C
+C Calculate GROUND and SKY diffuse components. FRONT and BACK are defined
+C by parameter "phi" at call time.
+C
+C
+C
+C
+      subroutine GroundSkyDiffCalc(Curved,s,w,t,phi,proang,tilt,
+     &                             SolRdfs,SolRufs,SolTslat,
+     &                             SolTXskydiff,
+     &                             SolRXskydiff,
+     &                             SolTXgrddiff,
+     &                             SolRXgrddiff)
+
+      IMPLICIT NONE
+#include"building.h"
+#include"CFC_common.h"
+
+C.....Parameters
+      logical Curved
+      real s,w,t,phi,proang,tilt
+
+C     Return values (sky and ground diffuse transmittance)
+      real SolTXskydiff       ! sky diffuse transmittance (slat blinds with horizontal slats)
+      real SolRXskydiff       ! sky diffuse reflectance (slat blinds with horizontal slats)
+      real SolTXgrddiff       ! ground diffuse transmittance (slat blinds with horizontal slats)
+      real SolRXgrddiff       ! ground diffuse reflectance (slat blinds with horizontal slats)
+
+C.....Local variables
+C     Temporary INPUT variables to hold solar and visible properties as
+C     read from *.cfc file
+      real SolRdfs,SolRufs,SolTslat
+C     Temporary OUTPUT variables to hold effective solar properties
+      real OutRXbd,OutTXbb,OutTXbd
+
+      real skyang,grdang
+      real element_proang_sky     ! profile angle of sky element
+      real element_proang_grd     ! profile angle of ground element
+      integer nelem_sky,nelem_grd ! number of integration slices
+      integer iter
+      real pi,r,beta,skyfrac
+
+      pi = 4.0 * ATAN(1.0)
+      r=pi/180.
+
+      SolTXskydiff = 0.0 ! reset the sky diffuse transmittance
+      SolRXskydiff = 0.0 ! reset the sky diffuse reflectance  
+      SolTXgrddiff = 0.0 ! reset the ground diffuse transmittance
+      SolRXgrddiff = 0.0 ! reset the ground diffuse reflectance            
+
+C.....Sky / ground fraction as function of surface >tilt< angle
+C     Surface tilt angle (PELV(icomp,isurf)) is defined as
+C       0°   for vertical surfaces
+C      90°   for horizontal surfaces facing upward ('ceiling') and
+C     -90°   for horizontal surfaces facing downward ('floor')
+C
+C     Local tilt angle beta is defined as
+C       0°   is horizontal facing upward, no ground view
+C      90°   is vertical, 50/50 sky/ground view
+C     180°   is horizontal facing downward, no sky view
+      beta    = (90.-tilt)
+      skyfrac = (180.-beta)/180.
+      skyang  = skyfrac*180.
+      if (skyang.lt.0.) skyang=0.
+      grdang  = 180.-skyang
+      if (grdang.lt.0.) grdang=0.
+
+C     Set number of integration slices. Use a minimum of 5 deg increments and a 
+C     maximum of 10 slices
+      nelem_sky = int(skyang/5.)
+      nelem_sky = min(nelem_sky,10)
+
+      nelem_grd = int(grdang/5.)
+      nelem_grd = min(nelem_grd,10)
+
+c      write(*,*)'skyang= ',skyang,'; nelem_sky= ',nelem_sky,
+c     &          '; grdang= ',grdang,'; nelem_grd= ',nelem_grd
+
+C SKY CALCULATION
+      if (skyang.gt.0.) then
+C       Perform integration of sky elements based on the midpoint rule:
+C       integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
+        integrate_sky_elements: do iter = 1, nelem_sky
+        
+           element_proang_sky = (skyang/float(nelem_sky)) * 
+     &                          (float(iter)-0.5) * 1.
+           
+           element_proang_sky = element_proang_sky * r       ! convert to radians
+        
+C          Calculate the beam-beam and beam-diffuse transmission
+C          at the current sky element profile angle
+           if (Curved) then
+             call  VB_SOL46_CURVE(s,w,t,phi,
+     &                          element_proang_sky,           ! profile angle of sky element
+     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
+           else ! flat / thick
+             call  VB_SOL46_THICK(s,w,t,phi,
+     &                          element_proang_sky,           ! profile angle of sky element
+     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
+           endif
+        
+C          Sum up each sky element's contribution to the sky
+C          diffuse transmittance and reflectance.
+           SolTXskydiff = SolTXskydiff + 
+     &              ((pi/2.)/float(nelem_sky))*           ! (b-a)/n
+     &              ((OutTXbb + OutTXbd) * 
+     &              cos(element_proang_sky))              ! f(a + (i-1/2)(b-a)/n)
+           SolRXskydiff = SolRXskydiff + 
+     &              ((pi/2.)/float(nelem_sky))*           ! (b-a)/n
+     &              ((OutRXbd) * cos(element_proang_sky)) ! f(a + (i-1/2)(b-a)/n)
+        
+        end do integrate_sky_elements
+      else ! no sky view
+C         do nothing, return values for sky are 0.
+      endif
+
+C GROUND CALCULATION
+      if (grdang.gt.0.) then
+C       Perform integration of ground elements based on the midpoint rule:
+C       integral(a to b) f(x)dx = Sum(1 to n) f(a + (i-1/2)(b-a)/n) * ((b-a)/n)
+        integrate_grd_elements: do iter = 1, nelem_grd
+        
+           element_proang_grd = (grdang/float(nelem_grd)) * 
+     &                          (float(iter)-0.5) * 1.
+           
+           element_proang_grd = element_proang_grd * r * (-1.0)  ! profile angle for ground in radians
+        
+C          Calculate the beam-beam and beam-diffuse transmission
+C          at the current ground element profile angle
+           if (Curved) then
+             call  VB_SOL46_CURVE(s,w,t,phi,
+     &                          element_proang_grd,           ! profile angle of sky element
+     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
+           else ! flat / thick
+             call  VB_SOL46_THICK(s,w,t,phi,
+     &                          element_proang_grd,           ! profile angle of sky element
+     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
+           endif
+        
+C          Sum up each sky element's contribution to the sky
+C          diffuse transmittance and reflectance.
+           SolTXgrddiff = SolTXgrddiff + 
+     &               ((pi/2.)/float(nelem_grd))*           ! (b-a)/n
+     &               ((OutTXbb + OutTXbd) * 
+     &                cos(element_proang_grd))             ! f(a + (i-1/2)(b-a)/n)
+           SolRXgrddiff = SolRXgrddiff + 
+     &               ((pi/2.)/float(nelem_grd))*           ! (b-a)/n
+     &               ((OutRXbd) * cos(element_proang_grd)) ! f(a + (i-1/2)(b-a)/n)
+        
+        end do integrate_grd_elements
+      else ! no ground view
+C       do nothing, return values for ground are 0.
+      endif
+      return
+      end
 
 C ********************************************************************
 C                        --solar_multilayer--
@@ -2101,7 +2062,7 @@ C layer and outdoor air.
               nd_blnd=nndl(icomp,isur,1)
               nd_cav=nd_blnd+nndl(icomp,isur,2)
               nd_glass=nd_cav+1
-              Tglass=tfc(icomp,isur,nd_glass)
+              Tglass=tfc(icomp,isur,nd_glass) ! external glass surface temp
               Text=(ATP(icomp,isur)+ATF(icomp,isur))/2.
 
               q_gen_glass=(hcof(icomp,isur)
@@ -2227,8 +2188,6 @@ C If shade is retracted determine gap thickness between glass layers
 C If shade is retracted assign appropriate resistance calculated above
                 if(i_shd(icomp,icfctp).eq.0)then
                   cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
-        write(*,*)'i_shd(',icomp,',',icfctp,')= ',i_shd(icomp,icfctp),
-     &            '; R= ',cfcRgap(icomp,isur,i+1,2)
                 else
                   cfcRgap(icomp,isur,i+1,2)=1./hc
                 endif
@@ -2533,7 +2492,7 @@ C
         else ! TA > TB, use complement angles
           gam = 90. + ang ! 180 - (90. - ang)
         endif
-    
+
 C       Vertical value (eqn. 49) is necessary for more than one angle, always calculate:
         Agv=22. ! Ag,v = H / dg,v ??? height ??? where from ???
     
@@ -4343,9 +4302,9 @@ C
 C ********************************************************************
       subroutine CFC_control()
       IMPLICIT NONE
-#include "building.h"
-#include "control.h"
-#include "CFC_common.h"
+#include "building.h" 
+#include "control.h" 
+#include "CFC_common.h" 
 C  for NABS, the number of alternative blind states:
 #include "e2r_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -4361,6 +4320,9 @@ C  for NABS, the number of alternative blind states:
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       real TFS,QFS
       
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       
@@ -4607,22 +4569,32 @@ C Check that ext. rad sensor is on external surface
      &                                   solrad_diff,
      &                                   ang,psazi,pselv)
                 solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
-C               calculate cut-off angle if appropriate
+
+C=============== CUT OFF =====================================
                 if (iact1.eq.4) then
+C                 Calculate cut-off angle
+C                 Blind assembly tilt angle PELV(icomp,isurf) is defined as
+C                   0°   for vertical surfaces
+C                  90°   for horizontal surfaces facing upward ('ceiling') and
+C                 -90°   for horizontal surfaces facing downward ('floor')
 C                 determin if horizontal or vertical and calc cut-off angle
                   if (vb_VorH(iact2,iact3)(1:4).eq.'HORZ') then
                     cutoff=
      &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
      &                       *cos(pselv*R) )/R - pselv
-C                   allow control to horizontal, not negativ
-                    if (cutoff.lt.0.0) cutoff=0.0
+C                                                pselv = salt - pelv!
+C                   allow control to horizontal, not negativ (??)
+C                   blind restrictions should be part of the blind description in .cfc IMO !!
+c                    if (cutoff.lt.0.0) cutoff=0.0
                   else ! vertical venetian type blind
 C *** this needs checking (neg inc angles!) ****
                     cutoff=     
      &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
      &                       *cos(psazi*R) )/R - psazi
+C                                                psazi = sazi - pazi!
                   endif
                 endif ! iact1 .eq. 4, aka. "cut-off angle"
+C=============== END CUT OFF ==================================
 
               else ! sensor surface not external ... error!
                 write(msgout,'(A,i3)')
@@ -4788,6 +4760,7 @@ C ********************************************************************
       subroutine get_incident_solrad(icomp,isur,solrad_dir, 
      &                                          solrad_diff, 
      &                               inc_ang,psazi2,pselv2)
+      IMPLICIT NONE
 #include "building.h"    
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -4812,7 +4785,8 @@ C ********************************************************************
       real grddif       ! ground diffuse component (currently not used here)
       real POO
       real POFF
-      
+
+      integer icomp,isur
       real solrad_dir   ! RETURN: direct solar radiation incident on isur and corrected for shading
       real solrad_diff  ! RETURN: diffuse solar radiation incident on isur and corrected for shading
       real inc_ang      ! RETURN: angle of incidence on surface
