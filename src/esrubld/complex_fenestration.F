@@ -1106,7 +1106,7 @@ C variables for calculation of sky and ground diffuse transmittance
       real SolTXgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
       real SolRXgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
 
-      integer iter,j ,jj      ! iterators
+      integer j ,jj      ! iterators
 
 C temporary INPUT variables to hold solar and visible properties as
 C read from *.cfc file
@@ -1346,7 +1346,7 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               proang,tilt,
+     &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
      &                               SolTXskydiff,SolRXskydiff,
      &                               SolTXgrddiff,SolRXgrddiff)
@@ -1395,7 +1395,7 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               proang,tilt,
+     &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
      &                               SolTXskydiff,SolRXskydiff,
      &                               SolTXgrddiff,SolRXgrddiff)
@@ -1444,7 +1444,7 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               proang,tilt,
+     &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
      &                               SolTXskydiff,SolRXskydiff,
      &                               SolTXgrddiff,SolRXgrddiff)
@@ -1493,7 +1493,7 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               proang,tilt,
+     &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
      &                               SolTXskydiff,SolRXskydiff,
      &                               SolTXgrddiff,SolRXgrddiff)
@@ -1573,7 +1573,7 @@ C
 C
 C
 C
-      subroutine GroundSkyDiffCalc(Curved,s,w,t,phi,proang,tilt,
+      subroutine GroundSkyDiffCalc(Curved,s,w,t,phi,tilt,
      &                             SolRdfs,SolRufs,SolTslat,
      &                             SolTXskydiff,
      &                             SolRXskydiff,
@@ -1581,12 +1581,11 @@ C
      &                             SolRXgrddiff)
 
       IMPLICIT NONE
-#include"building.h"
-#include"CFC_common.h"
 
 C.....Parameters
       logical Curved
-      real s,w,t,phi,proang,tilt
+      real s,w,t,phi,tilt
+      real SolRdfs,SolRufs,SolTslat
 
 C     Return values (sky and ground diffuse transmittance)
       real SolTXskydiff       ! sky diffuse transmittance (slat blinds with horizontal slats)
@@ -1595,9 +1594,6 @@ C     Return values (sky and ground diffuse transmittance)
       real SolRXgrddiff       ! ground diffuse reflectance (slat blinds with horizontal slats)
 
 C.....Local variables
-C     Temporary INPUT variables to hold solar and visible properties as
-C     read from *.cfc file
-      real SolRdfs,SolRufs,SolTslat
 C     Temporary OUTPUT variables to hold effective solar properties
       real OutRXbd,OutTXbb,OutTXbd
 
@@ -4320,9 +4316,6 @@ C  for NABS, the number of alternative blind states:
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       real TFS,QFS
       
-      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
-      real PAZI,PELV
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       
