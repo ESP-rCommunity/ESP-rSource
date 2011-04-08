@@ -5647,7 +5647,8 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         call edisp(itru,outs)
         IRT=1
         CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
-     &    'replicate','edit several','cancel',' ',IRT,nbhelp)
+     &    'replicate','edit several','delete unused','cancel',
+     &    IRT,nbhelp)
         if(IRT.eq.1)then
 
 C If user cancels jump back to menu setup, otherwise add the requested
@@ -5694,6 +5695,7 @@ C order so that compating of list works correctly.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
+            MODLEN=.TRUE.
             iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.3)then
@@ -5785,6 +5787,23 @@ C Present vertex coords for editing then parse data from HOLD.
               call warnmod(ICOMP,'str')
  145        continue
           endif
+        elseif(IRT.eq.6)then
+
+C Delete unused vertices quietly, start at end and work back calling
+C addvert silently.
+          jipm=IPM
+          do 139 ij=NTV,1,-1
+            CALL ADDVERT(icomp,ij,'Q',IER)
+  139     continue
+          ILEN=NTV
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+          IPACT= -1*jipm
+          CALL EKPAGE(IPACT)
+          MODGEO=.TRUE.
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          iZBFLG(ICOMP)=0
         endif
         call usrmsg(' ',' ','-')
       ELSEIF(IVERT.EQ.(MVERT-5))THEN
@@ -5871,9 +5890,8 @@ C Make use of VERINFO to display the current vertex surface connections.
       CHARACTER VERT*34,options*34,KEY*1,SN*12,T14*14,D14*14
       character head*32,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
-      CHARACTER SNAME1*12,SNAMED*12,msgv*48
+      CHARACTER SNAME1*12,SNAMED*12
       character hold64*64,t248*248,OPT*12
-      character guesstype*24  ! for context of surface addition
       character constr*12     ! to pass to addmass
 
 C Strings for surface attributes to pass to insrec.
@@ -6632,9 +6650,6 @@ C ask them about its use and composition.
           SPARENT(NSUR)='-'
           SUSE(NSUR,1)='-'
           SUSE(NSUR,2)='-'
-          guesstype='any_type'
-          iz=ICOMP
-          isur=NSUR
           icon=ICONT
           SSUSE(icon,1)='-'
           SSUSE(icon,2)='-'

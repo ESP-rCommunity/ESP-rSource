@@ -7618,9 +7618,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   if it is not being referenced by a surface, copy a vertex'
 '   (you will be given the option to edit the X Y Z values after'
 '   the copy), replicate a vertex allows a number of copies to be'
-'   made (useful if only one coordinate needs to be altered).'
-'   If you are in graphics mode you can click on the vertex to'
-'   select it.'
+'   made (useful if only one coordinate needs to be altered) or'
+'   delete ALL UNREFERENCED vertices in the zone. If you are in'
+'   graphics mode you can click on the vertex to select it.'
 '  '
 'Transforms - provides a number of options which reduce the need'
 '   to get out your calculator:
