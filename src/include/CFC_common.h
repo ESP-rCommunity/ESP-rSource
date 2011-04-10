@@ -608,7 +608,7 @@ C-------------------------------------------------------------------------------
 C CFC SOLAR AND VISIBLE OPTICAL PROPERTIES COMMONS
 C
 C These commons store SOLAR and VISIBLE properties of each layer in a CFC
-C at each time step as a function of the sun's position.
+C at each time step as a function of the suns position.
 C
 C Each layer is described by 12 optical properties:
 C
@@ -759,13 +759,48 @@ C Front diffuse-diffuse reflectance
       REAL VisRFdd
 
 C Back diffuse-diffuse reflectance
-      REAL VisRBdd
+      REAL VisRBdd 
 
 C Front diffuse-diffuse transmittance
-      REAL VisTFdd
+      REAL VisTFdd 
 
 C Back diffuse-diffuse transmittance
-      REAL VisTBdd
+      REAL VisTBdd 
+
+C------------------------------------------------------------------
+C Visible Sky and Ground Diffuse-Diffuse properties
+COMMON/cfcSGDDvis/VisRFskydd(mcom,ms,mcfc,me),
+     &            VisRBskydd(mcom,ms,mcfc,me),
+     &            VisTFskydd(mcom,ms,mcfc,me),
+     &            VisTBskydd(mcom,ms,mcfc,me),
+     &            VisRFgrddd(mcom,ms,mcfc,me),
+     &            VisRBgrddd(mcom,ms,mcfc,me),
+     &            VisTFgrddd(mcom,ms,mcfc,me),
+     &            VisTBgrddd(mcom,ms,mcfc,me)
+
+C Front diffuse-diffuse sky reflectance
+c      REAL VisRFskydd
+
+C Back diffuse-diffuse sky reflectance
+c      REAL VisRBskydd
+
+C Front diffuse-diffuse sky transmittance
+c      REAL VisTFskydd
+
+C Back diffuse-diffuse sky transmittance
+c      REAL VisTBskydd
+
+C Front diffuse-diffuse ground reflectance
+c      REAL VisRFgrddd
+
+C Back diffuse-diffuse ground reflectance
+c      REAL VisRBgrddd
+
+C Front diffuse-diffuse ground transmittance
+c      REAL VisTFgrddd
+
+C Back diffuse-diffuse ground transmittance
+c      REAL VisTBgrddd
 
 C---------------------------------------------------------------------------------
 C COMMONS FOR CFC type CONSTRUCTIONS 

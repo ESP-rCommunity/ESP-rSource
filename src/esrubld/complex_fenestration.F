@@ -1101,10 +1101,10 @@ C need thickness of glass layers for Fresnel calcs
       logical Curved
 
 C variables for calculation of sky and ground diffuse transmittance
-      real SolTXskydiff       ! front sky diffuse transmittance (slat blinds with horizontal slats)
-      real SolRXskydiff       ! front sky diffuse reflectance (slat blinds with horizontal slats)
-      real SolTXgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
-      real SolRXgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
+      real TXskydiff       ! front sky diffuse transmittance (slat blinds with horizontal slats)
+      real RXskydiff       ! front sky diffuse reflectance (slat blinds with horizontal slats)
+      real TXgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
+      real RXgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
 
       integer j ,jj      ! iterators
 
@@ -1348,13 +1348,25 @@ C           components has been requested.
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
      &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
-     &                               SolTXskydiff,SolRXskydiff,
-     &                               SolTXgrddiff,SolRXgrddiff)
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=SolTXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=SolRXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
+              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+
+C             Visual properties
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               tilt,
+     &                               VisRdfs,VisRufs,VisTslat,
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
+
+              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Curved, FRONT
 
@@ -1397,13 +1409,25 @@ C           components has been requested.
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
      &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
-     &                               SolTXskydiff,SolRXskydiff,
-     &                               SolTXgrddiff,SolRXgrddiff)
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
 
-              SolTBskydd(icomp,isurf,icfctp,i)=SolTXskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=SolRXskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
+              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+
+C             Visual properties
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               tilt,
+     &                               VisRdfs,VisRufs,VisTslat,
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
+
+              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Curved, BACK
 
@@ -1446,13 +1470,25 @@ C           components has been requested.
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
      &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
-     &                               SolTXskydiff,SolRXskydiff,
-     &                               SolTXgrddiff,SolRXgrddiff)
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=SolTXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=SolRXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
+              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+
+C             Visual properties
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               tilt,
+     &                               VisRdfs,VisRufs,VisTslat,
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
+
+              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Flat, FRONT
 
@@ -1495,13 +1531,25 @@ C           components has been requested.
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
      &                               tilt,
      &                               SolRdfs,SolRufs,SolTslat,
-     &                               SolTXskydiff,SolRXskydiff,
-     &                               SolTXgrddiff,SolRXgrddiff)
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
 
-              SolTBskydd(icomp,isurf,icfctp,i)=SolTXskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=SolRXskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=SolTXgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=SolRXgrddiff
+              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+
+C             Visual properties
+              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
+     &                               tilt,
+     &                               VisRdfs,VisRufs,VisTslat,
+     &                               TXskydiff,RXskydiff,
+     &                               TXgrddiff,RXgrddiff)
+
+              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Flat, BACK
 
@@ -1574,24 +1622,24 @@ C
 C
 C
       subroutine GroundSkyDiffCalc(Curved,s,w,t,phi,tilt,
-     &                             SolRdfs,SolRufs,SolTslat,
-     &                             SolTXskydiff,
-     &                             SolRXskydiff,
-     &                             SolTXgrddiff,
-     &                             SolRXgrddiff)
+     &                             Rdfs,Rufs,Tslat,
+     &                             TXskydiff,
+     &                             RXskydiff,
+     &                             TXgrddiff,
+     &                             RXgrddiff)
 
       IMPLICIT NONE
 
 C.....Parameters
       logical Curved
       real s,w,t,phi,tilt
-      real SolRdfs,SolRufs,SolTslat
+      real Rdfs,Rufs,Tslat
 
 C     Return values (sky and ground diffuse transmittance)
-      real SolTXskydiff       ! sky diffuse transmittance (slat blinds with horizontal slats)
-      real SolRXskydiff       ! sky diffuse reflectance (slat blinds with horizontal slats)
-      real SolTXgrddiff       ! ground diffuse transmittance (slat blinds with horizontal slats)
-      real SolRXgrddiff       ! ground diffuse reflectance (slat blinds with horizontal slats)
+      real TXskydiff       ! sky diffuse transmittance (slat blinds with horizontal slats)
+      real RXskydiff       ! sky diffuse reflectance (slat blinds with horizontal slats)
+      real TXgrddiff       ! ground diffuse transmittance (slat blinds with horizontal slats)
+      real RXgrddiff       ! ground diffuse reflectance (slat blinds with horizontal slats)
 
 C.....Local variables
 C     Temporary OUTPUT variables to hold effective solar properties
@@ -1607,10 +1655,10 @@ C     Temporary OUTPUT variables to hold effective solar properties
       pi = 4.0 * ATAN(1.0)
       r=pi/180.
 
-      SolTXskydiff = 0.0 ! reset the sky diffuse transmittance
-      SolRXskydiff = 0.0 ! reset the sky diffuse reflectance  
-      SolTXgrddiff = 0.0 ! reset the ground diffuse transmittance
-      SolRXgrddiff = 0.0 ! reset the ground diffuse reflectance            
+      TXskydiff = 0.0 ! reset the sky diffuse transmittance
+      RXskydiff = 0.0 ! reset the sky diffuse reflectance  
+      TXgrddiff = 0.0 ! reset the ground diffuse transmittance
+      RXgrddiff = 0.0 ! reset the ground diffuse reflectance            
 
 C.....Sky / ground fraction as function of surface >tilt< angle
 C     Surface tilt angle (PELV(icomp,isurf)) is defined as
@@ -1656,22 +1704,22 @@ C          at the current sky element profile angle
            if (Curved) then
              call  VB_SOL46_CURVE(s,w,t,phi,
      &                          element_proang_sky,           ! profile angle of sky element
-     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          Rdfs,Rufs,Tslat,              ! slat properties input
      &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
            else ! flat / thick
              call  VB_SOL46_THICK(s,w,t,phi,
      &                          element_proang_sky,           ! profile angle of sky element
-     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          Rdfs,Rufs,Tslat,              ! slat properties input
      &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
            endif
         
 C          Sum up each sky element's contribution to the sky
 C          diffuse transmittance and reflectance.
-           SolTXskydiff = SolTXskydiff + 
+           TXskydiff = TXskydiff + 
      &              ((pi/2.)/float(nelem_sky))*           ! (b-a)/n
      &              ((OutTXbb + OutTXbd) * 
      &              cos(element_proang_sky))              ! f(a + (i-1/2)(b-a)/n)
-           SolRXskydiff = SolRXskydiff + 
+           RXskydiff = RXskydiff + 
      &              ((pi/2.)/float(nelem_sky))*           ! (b-a)/n
      &              ((OutRXbd) * cos(element_proang_sky)) ! f(a + (i-1/2)(b-a)/n)
         
@@ -1696,22 +1744,22 @@ C          at the current ground element profile angle
            if (Curved) then
              call  VB_SOL46_CURVE(s,w,t,phi,
      &                          element_proang_grd,           ! profile angle of sky element
-     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          Rdfs,Rufs,Tslat,              ! slat properties input
      &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
            else ! flat / thick
              call  VB_SOL46_THICK(s,w,t,phi,
      &                          element_proang_grd,           ! profile angle of sky element
-     &                          SolRdfs,SolRufs,SolTslat,     ! slat properties input
+     &                          Rdfs,Rufs,Tslat,              ! slat properties input
      &                          OutRXbd,OutTXbb,OutTXbd)      ! overall effective properties output
            endif
         
 C          Sum up each sky element's contribution to the sky
 C          diffuse transmittance and reflectance.
-           SolTXgrddiff = SolTXgrddiff + 
+           TXgrddiff = TXgrddiff + 
      &               ((pi/2.)/float(nelem_grd))*           ! (b-a)/n
      &               ((OutTXbb + OutTXbd) * 
      &                cos(element_proang_grd))             ! f(a + (i-1/2)(b-a)/n)
-           SolRXgrddiff = SolRXgrddiff + 
+           RXgrddiff = RXgrddiff + 
      &               ((pi/2.)/float(nelem_grd))*           ! (b-a)/n
      &               ((OutRXbd) * cos(element_proang_grd)) ! f(a + (i-1/2)(b-a)/n)
         
@@ -1790,6 +1838,7 @@ C Assign optical properties for each layer from commons to temp arrays depending
 C on isolvis
       if (isolvis .eq. 0) then
         do 10 i=1,LayNo
+C           direct-direct and direct-diffuse
             rfbb(i)=SolRFbb(icomp,isurf,icfctp,i)
             rbbb(i)=SolRBbb(icomp,isurf,icfctp,i)
             tfbb(i)=SolTFbb(icomp,isurf,icfctp,i)
@@ -1798,14 +1847,14 @@ C on isolvis
             rbbd(i)=SolRBbd(icomp,isurf,icfctp,i)
             tfbd(i)=SolTFbd(icomp,isurf,icfctp,i)
             tbbd(i)=SolTBbd(icomp,isurf,icfctp,i)
-            rfdd(i)=SolRFdd(icomp,isurf,icfctp,i)
-            rbdd(i)=SolRBdd(icomp,isurf,icfctp,i)
-            tfdd(i)=SolTFdd(icomp,isurf,icfctp,i)
-            tbdd(i)=SolTBdd(icomp,isurf,icfctp,i)
+cx            rfdd(i)=SolRFdd(icomp,isurf,icfctp,i)
+cx            rbdd(i)=SolRBdd(icomp,isurf,icfctp,i)
+cx            tfdd(i)=SolTFdd(icomp,isurf,icfctp,i)
+cx            tbdd(i)=SolTBdd(icomp,isurf,icfctp,i)
 
             itype=icfcltp(icomp,icfctp,i)
 
-C...........set sky and ground diffuse properties for slat blinds, if requested
+C           diffuse properties, sky and ground for slat blinds if requested
             if(itype.eq.2 .and. icalc_mode.eq.i_sky) then
               rfdd(i)=SolRFskydd(icomp,isurf,icfctp,i)
               rbdd(i)=SolRBskydd(icomp,isurf,icfctp,i)
@@ -1824,8 +1873,10 @@ C...........set sky and ground diffuse properties for slat blinds, if requested
             end if
 
  10     continue
+ 
       else ! visual properties
         do 11 i=1,LayNo
+C           direct-direct and direct-diffuse
             rfbb(i)=VisRFbb(icomp,isurf,icfctp,i)
             rbbb(i)=VisRBbb(icomp,isurf,icfctp,i)
             tfbb(i)=VisTFbb(icomp,isurf,icfctp,i)
@@ -1834,10 +1885,31 @@ C...........set sky and ground diffuse properties for slat blinds, if requested
             rbbd(i)=VisRBbd(icomp,isurf,icfctp,i)
             tfbd(i)=VisTFbd(icomp,isurf,icfctp,i)
             tbbd(i)=VisTBbd(icomp,isurf,icfctp,i)
-            rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
-            rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
-            tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)
-            tbdd(i)=VisTBdd(icomp,isurf,icfctp,i)
+cx            rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
+cx            rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
+cx            tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)
+cx            tbdd(i)=VisTBdd(icomp,isurf,icfctp,i)
+
+            itype=icfcltp(icomp,icfctp,i)
+
+C           diffuse properties, sky and ground for slat blinds if requested
+            if(itype.eq.2 .and. icalc_mode.eq.i_sky) then
+              rfdd(i)=VisRFskydd(icomp,isurf,icfctp,i)
+              rbdd(i)=VisRBskydd(icomp,isurf,icfctp,i)
+              tfdd(i)=VisTFskydd(icomp,isurf,icfctp,i)
+              tbdd(i)=VisTBskydd(icomp,isurf,icfctp,i)
+            elseif(itype.eq.2 .and. icalc_mode.eq.i_ground) then
+              rfdd(i)=VisRFgrddd(icomp,isurf,icfctp,i)
+              rbdd(i)=VisRBgrddd(icomp,isurf,icfctp,i)
+              tfdd(i)=VisTFgrddd(icomp,isurf,icfctp,i)
+              tbdd(i)=VisTBgrddd(icomp,isurf,icfctp,i)
+            else
+              rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
+              rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
+              tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)
+              tbdd(i)=VisTBdd(icomp,isurf,icfctp,i)
+            end if
+
  11     continue
       endif
  

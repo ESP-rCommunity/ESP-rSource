@@ -1669,38 +1669,41 @@ C Determine profile angle
 
              proang_s(icomp,icfctp,i)=proang    !save profile angle for CFC output
 
-C............Determine beam-beam, beam-diffuse and diffuse-diffuse solar properties for
-C............each CFC layer. Glazing layers have incidence angle dependence. Slat-blind
-C............layers have profile angle dependency
+C............Determine beam-beam, beam-diffuse and diffuse-diffuse solar and visual 
+C            properties for each CFC layer. 
+C            Glazing layers have incidence angle dependence. Slat-blind layers 
+C            have profile angle dependency
              call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang)
 
-C............Check whether sky and ground diffuse calc. is requested
+C............SOLAR PROPERTIES
+             iSolVis=0
+
+C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
 
-               iSolVis=0
-C..............Calculate CFC system solar BEAM transmitted
+C              Calculate CFC system solar BEAM transmitted
                call solar_multilayer(0,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
 
-C..............Calculate CFC system solar SKY diffuse transmitted
+C              Calculate CFC system solar SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
      &                       tmpIBM,EXDIFSKY(I),
      &                       tmpIBM,tmpIDF,iSolVis,
      &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
 
-C..............Calculate CFC system solar GROUND diffuse transmitted
+C              Calculate CFC system solar GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
      &                       tmpIBM,EXDIFGRD(I),
      &                       tmpIBM,tmpIDF,iSolVis,
      &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
 
-C..............Sum up diffuse transmitted contributions (sky + ground)
+C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYS = TRANSD_SYS_BD +
      &                      TRANSD_SYS_SKY + TRANSD_SYS_GRD 
 
-C..............Sum up solar absorbed contributions (direct + sky diff + ground diff)
+C              Sum up solar absorbed contributions (direct + sky diff + ground diff)
                do jj=1,ncfc_el(icomp,icfctp)
                     AbsSol(jj)=AbsSolDir(jj) + 
      &                         AbsSolDifSky(jj) +
@@ -1708,59 +1711,94 @@ C..............Sum up solar absorbed contributions (direct + sky diff + ground d
                end do
 
              else
-
-C..............Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
-C..............and absorbed fluxes in each CFC layer.
-               iSolVis=0
+C              Legacy model.
+C              Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
+C              and absorbed fluxes in each CFC layer
                call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
      &           tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,
      &           AbsSol)
              endif
 
-C            Calculate CFC system visual beam transmitted, diffuse transmitted.
-             iSolVis=1
-             call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
-     &        REFL_SYSV,AbsVis)
 
-            ELSE     !surface is self-shaded
+C............REPEAT for VISUAL
+			 iSolVis=1
+
+C            Check whether sky and ground diffuse calc. is requested
+             if (i_ground_sky_diff_calc.eq.1) then
+
+C              Calculate CFC system solar BEAM transmitted
+               call solar_multilayer(0,icomp,i,icfctp,
+     &                     EXDIR(I),tmpIDF,
+     &                     tmpIBM,tmpIDF,iSolVis,
+     &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
+
+C              Calculate CFC system solar SKY diffuse transmitted
+               call solar_multilayer(i_sky,icomp,i,icfctp,
+     &                       tmpIBM,EXDIFSKY(I),
+     &                       tmpIBM,tmpIDF,iSolVis,
+     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+
+C              Calculate CFC system solar GROUND diffuse transmitted
+               call solar_multilayer(i_ground,icomp,i,icfctp,
+     &                       tmpIBM,EXDIFGRD(I),
+     &                       tmpIBM,tmpIDF,iSolVis,
+     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+
+C              Sum up diffuse transmitted contributions (sky + ground)
+               TRANSD_SYSV = TRANSD_SYS_BD +
+     &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
+
+C              Absorbed visual is of no interest
+
+             else 
+C             Legacy model.
+C             Calculate CFC system visual beam transmitted, diffuse transmitted.
+              call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &         tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &         REFL_SYSV,AbsVis)
+             endif
+
+C...........surface is self-shaded
+            ELSE
 
              temp1=0.
              temp2=0.
 
              proang_s(icomp,icfctp,i)=-1.    !save profile angle for CFC output, -1 indicates self shaded
 
-C Determine diffuse-diffuse solar properties for
-C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
+C            Determine diffuse-diffuse solar properties for
+C            each CFC layer. Incidence and profile angles set to 0 since self-shaded.
              call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2)
 
-C............Check whether sky and ground diffuse calc. is requested
+C............SOLAR PROPERTIES
+             iSolVis=0
+
+C            Check whether sky and ground diffuse calc. is requested
              if(i_ground_sky_diff_calc.eq.1)then
 
-               iSolVis=0
-C..............Calculate CFC system solar BEAM transmitted
+C              Calculate CFC system solar BEAM transmitted
                call solar_multilayer(0,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
 
-C..............Calculate CFC system solar SKY diffuse transmitted
+C              Calculate CFC system solar SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
      &                       tmpIBM,EXDIFSKY(I),
      &                       tmpIBM,tmpIDF,iSolVis,
      &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
 
-C..............Calculate CFC system solar GROUND diffuse transmitted
+C              Calculate CFC system solar GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
      &                       tmpIBM,EXDIFGRD(I),
      &                       tmpIBM,tmpIDF,iSolVis,
      &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
 
-C..............Sum up diffuse transmitted contributions (sky + ground)
+C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYS = TRANSD_SYS_BD +
      &                      TRANSD_SYS_SKY + TRANSD_SYS_GRD 
 
-C..............Sum up solar absorbed contributions (direct + sky diff + ground diff)
+C              Sum up solar absorbed contributions (direct + sky diff + ground diff)
                do jjj=1,ncfc_el(icomp,icfctp)
                     AbsSol(jjj)=AbsSolDir(jjj) + 
      &                         AbsSolDifSky(jjj) +
@@ -1768,21 +1806,53 @@ C..............Sum up solar absorbed contributions (direct + sky diff + ground d
                end do
 
              else
-C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
-C and absorbed fluxes in each CFC layer.
-               iSolVis=0
+C              Legacy model.
+C              Calculate CFC system solar beam transmitted, diffuse transmitted, 
+C              total reflected and absorbed fluxes in each CFC layer.
                call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),
      &             EXDIF(I),tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,
      &             TRANSD_SYS,REFL_SYS,AbsSol)
-             endif
+             endif ! sky/ground or legacy
 
-C Calculate CFC system VISUAL beam transmitted, diffuse transmitted.
-             iSolVis=1
-             call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
-     &        REFL_SYSV,AbsVis)
+C............REPEAT for VISUAL
+			 iSolVis=1
 
-            END IF
+C            Check whether sky and ground diffuse calc. is requested
+             if (i_ground_sky_diff_calc.eq.1) then
+
+C              Calculate CFC system visual BEAM transmitted (TRANSBB_SYSV)
+               call solar_multilayer(0,icomp,i,icfctp,
+     &                     EXDIR(I),tmpIDF,
+     &                     tmpIBM,tmpIDF,iSolVis,
+     &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
+
+C              Calculate CFC system visual SKY diffuse transmitted
+               call solar_multilayer(i_sky,icomp,i,icfctp,
+     &                       tmpIBM,EXDIFSKY(I),
+     &                       tmpIBM,tmpIDF,iSolVis,
+     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+
+C              Calculate CFC system visual GROUND diffuse transmitted
+               call solar_multilayer(i_ground,icomp,i,icfctp,
+     &                       tmpIBM,EXDIFGRD(I),
+     &                       tmpIBM,tmpIDF,iSolVis,
+     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+
+C              Sum up diffuse transmitted contributions (sky + ground)
+               TRANSD_SYSV = TRANSD_SYS_BD +
+     &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
+
+C              Absorbed visual is of no interest
+
+             else 
+C              Legacy model.
+C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted.
+               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &                 tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &                 REFL_SYSV,AbsVis)
+			 endif ! sky/ground or legacy
+
+            END IF ! self-shaded?
 
 C save multilayer results for CFC output
              RadIncDirS(icomp,i)=EXDIR(I)
@@ -1797,7 +1867,7 @@ C visual data
              transD_V(icomp,i)=TRANSD_SYSV!*SNA(ICOMP,I)
              refl_V(icomp,i)=REFL_SYSV!*SNA(ICOMP,I)
 
-C Calculate total absorbed in CFC
+C Calculate total solar absorbed in CFC
              CFCabs=0.
              do 999 ij=1,ncfc_el(icomp,icfctp)
                     CFCabs=CFCabs+AbsSol(ij)
