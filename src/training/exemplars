@@ -161,6 +161,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_cvvt/cfg/cellular_optst.cfg
 *root	/usr/esru/esp-r/training/cellular_cvvt
 *item
+*name	... with associated measured temperatures
+*cfg	/usr/esru/esp-r/training/cellular_bc/cfg/cellular_measured.cfg
+*root	/usr/esru/esp-r/training/cellular_bc
+*item
 *label	___ More comprehensive models:
 *item
 *group	realistic scale
