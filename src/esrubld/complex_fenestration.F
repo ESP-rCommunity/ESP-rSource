@@ -1363,10 +1363,10 @@ C             Visual properties
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Curved, FRONT
 
@@ -1412,10 +1412,10 @@ C           components has been requested.
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
 C             Visual properties
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
@@ -1485,10 +1485,10 @@ C             Visual properties
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+              VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+              VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
             end if ! end sky/ground diffuse request for Flat, FRONT
 
@@ -1534,10 +1534,10 @@ C           components has been requested.
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+              SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+              SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+              SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
 
 C             Visual properties
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
@@ -4741,7 +4741,7 @@ C Perform actual control of shade ON/OFF and slat angle here
             endif
 
           ELSEIF(ictype.eq.6)then                   ! senses wind direction, actuates shade ON/OFF
-      
+
             if(isen1.eq.-3.and.isen2.eq.3)then
 C Perform actual control of shade ON/OFF and slat angle here
               if(DF.gt.shdONsetpoint)then
@@ -4762,7 +4762,7 @@ C Perform actual control of shade ON/OFF and slat angle here
                 endif
               endif  
             endif
-        
+
           ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
             i_shd(iact2,iact3) = ischedule_shdstateONorOFF
             vb_phiNew(iact2,iact3) = schedule_slat_angle
@@ -4776,20 +4776,23 @@ C     -90 (deg.) < vb_phiNew < 90 (deg.)
           icomp=iact2     ! zone index
           icfctp=iact3    ! CFC type
 
-          if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
-     &      .gt.89.9)then
+          if(vb_phiNew(icomp,icfctp).lt.-89.9 .or.
+     &              vb_phiNew(icomp,icfctp).gt.89.9) then
 C send warning error message and overwrite angle to 89.9 deg
-            write(outs,'(a,a,i2,a,i2,a)')
-     &        'WARNING: Calculated slat angle for CFC',
-     &        ' type ',icfctp, 'in zone ',icomp, ' is out of range.'
+            write(outs,'(a,f4.1,a,i2,a,i2,a)')
+     &       'WARNING: Calculated slat angle ',vb_phiNew(icomp,icfctp),
+     &       ' deg. for CFC type ',icfctp,
+     &       ' in zone ',icomp,' is out of range.'
             CALL EDISP(IUOUT,outs)
-            write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
+C           set to max. abs value with correct sign ...
+            vb_phiNew(icomp,icfctp)=sign(89.9,vb_phiNew(icomp,icfctp))
+            write(outs,'(a,f4.1,a)')'    Reset slat angle to ',
+     &      vb_phiNew(icomp,icfctp),' deg.'
             CALL EDISP(IUOUT,outs)
-            vb_phiNew(icomp,icfctp)=89.9
           end if
-      
+
   10    continue  
-  
+
       ELSE
         goto 9999
       ENDIF

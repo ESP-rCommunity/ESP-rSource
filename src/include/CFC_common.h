@@ -769,38 +769,38 @@ C Back diffuse-diffuse transmittance
 
 C------------------------------------------------------------------
 C Visible Sky and Ground Diffuse-Diffuse properties
-COMMON/cfcSGDDvis/VisRFskydd(mcom,ms,mcfc,me),
-     &            VisRBskydd(mcom,ms,mcfc,me),
-     &            VisTFskydd(mcom,ms,mcfc,me),
-     &            VisTBskydd(mcom,ms,mcfc,me),
-     &            VisRFgrddd(mcom,ms,mcfc,me),
-     &            VisRBgrddd(mcom,ms,mcfc,me),
-     &            VisTFgrddd(mcom,ms,mcfc,me),
-     &            VisTBgrddd(mcom,ms,mcfc,me)
+      COMMON/cfcSGDDvis/VisRFskydd(mcom,ms,mcfc,me),
+     &                  VisRBskydd(mcom,ms,mcfc,me),
+     &                  VisTFskydd(mcom,ms,mcfc,me),
+     &                  VisTBskydd(mcom,ms,mcfc,me),
+     &                  VisRFgrddd(mcom,ms,mcfc,me),
+     &                  VisRBgrddd(mcom,ms,mcfc,me),
+     &                  VisTFgrddd(mcom,ms,mcfc,me),
+     &                  VisTBgrddd(mcom,ms,mcfc,me)
 
 C Front diffuse-diffuse sky reflectance
-c      REAL VisRFskydd
+      REAL VisRFskydd
 
 C Back diffuse-diffuse sky reflectance
-c      REAL VisRBskydd
+      REAL VisRBskydd
 
 C Front diffuse-diffuse sky transmittance
-c      REAL VisTFskydd
+      REAL VisTFskydd
 
 C Back diffuse-diffuse sky transmittance
-c      REAL VisTBskydd
+      REAL VisTBskydd
 
 C Front diffuse-diffuse ground reflectance
-c      REAL VisRFgrddd
+      REAL VisRFgrddd
 
 C Back diffuse-diffuse ground reflectance
-c      REAL VisRBgrddd
+      REAL VisRBgrddd
 
 C Front diffuse-diffuse ground transmittance
-c      REAL VisTFgrddd
+      REAL VisTFgrddd
 
 C Back diffuse-diffuse ground transmittance
-c      REAL VisTBgrddd
+      REAL VisTBgrddd
 
 C---------------------------------------------------------------------------------
 C COMMONS FOR CFC type CONSTRUCTIONS 

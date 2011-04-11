@@ -1721,7 +1721,7 @@ C              and absorbed fluxes in each CFC layer
 
 
 C............REPEAT for VISUAL
-			 iSolVis=1
+             iSolVis=1
 
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
@@ -1815,7 +1815,7 @@ C              total reflected and absorbed fluxes in each CFC layer.
              endif ! sky/ground or legacy
 
 C............REPEAT for VISUAL
-			 iSolVis=1
+             iSolVis=1
 
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
@@ -1850,7 +1850,7 @@ C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted
                call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
      &                 tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
      &                 REFL_SYSV,AbsVis)
-			 endif ! sky/ground or legacy
+             endif ! sky/ground or legacy
 
             END IF ! self-shaded?
 
