@@ -280,7 +280,7 @@ C Interface setup, initialise output device, assume minimal trace.
         if(iappx.lt.0)iappx=10
         if(iappy.lt.0)iappy=10
         if(iappw.le.200)then
-          iappwi=int(660*iappw*0.01)
+          iappwi=int(660.*real(iappw)*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -292,9 +292,9 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       iappwi=int(real(iappw)*(1024.0/780.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(38*iappw*0.01),16)
-        LIMTTY= MAX0(int(12*iappw*0.01),6)
-        LIMIT = MAX0(int(12*iappw*0.01),6)
+        menuchw = MAX0(int(38.*real(iappw)*0.01),16)
+        LIMTTY= MAX0(int(12.*real(iappw)*0.01),6)
+        LIMIT = MAX0(int(12.*real(iappw)*0.01),6)
       else
         menuchw = 38
         LIMTTY = 12

@@ -105,15 +105,15 @@ C List of constants
         Tair = TairC + 273.15
 C Molar concentration h
         p = -6.8346*(To1/Tair)**1.261 + 4.6151
-        h = RH * 10**p
+        h = RH * 10.**p
 C Relaxation frequencies
         FrN =(Tair/To)**(-1./2.)*
      &               (9.+280.*h*exp(-4.170*(((Tair/To)**(-1./3.))-1.)))
         FrO = 24. + 4.04*10000.*h*(0.02+h)/(0.391+h)
  
         factorM = 3.68E-11*IFreq**2*sqrt(Tair/To) + (Tair/To)**(-5./2.)*
-     &     (0.1068*exp(-3352.0/Tair)*2*IFreq**2/(FrN + (IFreq**2/FrN))+
-     &      0.0128*exp(-2239.1/Tair)*2*IFreq**2/(FrO + (IFreq**2/FrO)))
+     &    (0.1068*exp(-3352.0/Tair)*2.*IFreq**2./(FrN+(IFreq**2./FrN))+
+     &     0.0128*exp(-2239.1/Tair)*2.*IFreq**2./(FrO+(IFreq**2./FrO)))
       ENDIF
 
 666   RETURN
