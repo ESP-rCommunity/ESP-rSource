@@ -8782,40 +8782,37 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKS(lfil,' bi-directional optical data to use?',
         call easkab(' File not found. Do you want to specify again?',
 *subroutine CASFMK
-*item CASFMK
- '   Events Database '
- ' '
- 'Profiles in this database are currently used to assist in the  '
- 'defintion of zone operations.  The standard is found in'
- '/usr/esru/esp-r/databases '
- ' '
- ' The data requirements are summarised below :- '
- ' '
-' for each profile - number of events.'
+*item CASFMK events_db_overview
+'   Profiles Database '
+' '
+'Profiles in this database are currently used to assist in the '
+'defintion of zone operations.  The standard database is found in'
+'/usr/esru/esp-r/databases or the databases folder of your ESP-r'
+'distribution.'
+' '
+' The data requirements are summarised below :- '
+' '
+' for each profile - number of events during the day'
 ' '
 ' for each event - start and finish time'
 '                  percentage of first (sensible) value'
 '                  percentage of second (latent) value'
 ' '
+'  option * add a profile - add a profile to the end of the current'
+'    list of profiles. You will be asked how many events in the'
+'    profile.'
+'  '
+'  option ! list profiles - produces a compact listing of the'
+'    current profiles database.'
+'  '
 'If you edit data in the database the ASCII file will be'
 'updated. Consider using a model specific file if you'
 'need custom profiles.'
 *enditem
         CALL PHELPD('event profiles',18,'-',0,0,IER)
-*item CASFMK
-'An event is equivalent to a period of time with'
-'associated values. '
-' '
-'A cancel request leaves the model unchanged.'
-*enditem
         CALL EASKI(IV,' ','Number of events in profile: ',
 *subroutine EDPROF
-*item EDPROF
-'If you edit in actual start times the subsequent '
-'editing tasks will be easier. '
-*enditem
-        CALL EASKS(CSTR,' Start hour of each event',
-*item EDPROF
+*item EDPROF events_db_start
 'You may alter the start and/or stop times of any period as well as'
 'the associated values. For casual gain type profiles the first'
 'value is the sensible and the second is the latent. '
@@ -8825,36 +8822,33 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 ' '
 'Models pointing to binary versions of this file will be converted'
 'to ASCII versions after editing.'
+'  '
+'If you provide the actual start times the subsequent '
+'editing tasks will be easier (there is no sort function).'
+'  '
+'Each profile includes a description (up to 40 char) is provided as'
+'a way to select from the profile list.  Please make the'
+'description unique.'
 *enditem
+        CALL EASKS(CSTR,' Start hour of each event',
         CALL PHELPD('pro edit',10,'-',0,0,IER)
-*item EDPROF
-'The description (up to 40 char) is provided as a way to select'
-'profile.  It helps to make the description unique.'
-*enditem
         CALL EASKS(TMP,' Description ? ',
 *subroutine EDEVENT
-*item EDEVENT
+*item EDEVENT events_item_edit
 'An event may start between hours 0 and 23. '
+' '
+'An event may finish  between hours 1 and 24.'
+'  '
+'Each event has two associated data:'
+'  percentage of sensible gain'
+'  percentage of latent gain'
 ' '
 'A cancel request leaves the model unchanged.'
 *enditem
       CALL EASKI(IES,outs,' start hour : ',
-*item EDEVENT
-'An event may finish  between hours 1 and 24.'
-' '
-'A cancel request leaves the model unchanged.'
-*enditem
       CALL EASKI(IEF,outs,' finish hour: ',
-*item EDEVENT
-*enditem
-        CALL EASKAB(' Finish time overlaps next event...',
-*item EDEVENT
-'The first value is the percentage of sensible gain.'
-*enditem
+      CALL EASKAB(' Finish time overlaps next event...',
       CALL EASKR(EC,' ',' First value (sensible) percentage ? ',
-*item EDEVENT
-'The second value is the percentage of latent gain.'
-*enditem
       CALL EASKR(EL,' ',' Second value (latent) percentage ? ',
 *subroutine EDSPLIST
 *item EDSPLIST
