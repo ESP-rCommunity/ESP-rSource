@@ -1834,6 +1834,13 @@ C ********************************************************************
 
       LayNo=ncfc_el(icomp,icfctp)
 
+C Initialise return values to zero
+      TRANSBB_SYS = 0.0
+      TRANSBD_SYS = 0.0
+      TRANSDD_SYS = 0.0
+      TRANSD_SYS  = 0.0
+      REFL_SYS    = 0.0
+
 C Assign optical properties for each layer from commons to temp arrays depending
 C on isolvis
       if (isolvis .eq. 0) then
@@ -1999,8 +2006,8 @@ c        endif ! only calculate values if SW radiation present
         enddo
       endif
 
-      IF (GBM.lt.0.01) THEN
-            GBM=0.0     ! reset back to zero
+      IF (GBM.lt.0.001) THEN
+            GBM=0.0     ! reset back to zero (???)
       ENDIF
 
       RETURN
