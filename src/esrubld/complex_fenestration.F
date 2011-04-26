@@ -1074,8 +1074,11 @@ C details.
 C
 C Visible properties enabled & necessary extensions inserted. A.G., 25.09.2009
 C
+C isolvis    - Switch for solar (0) or visual (1) data
+C
 C ********************************************************************
-      subroutine cfc_eff_opt_prop(icomp,isurf,icfctp,anginc,proang)
+      subroutine cfc_eff_opt_prop(icomp,isurf,icfctp,anginc,
+     &                             proang,isolvis)
       IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
@@ -1093,8 +1096,8 @@ C need thickness of glass layers for Fresnel calcs
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       real PAZI,PELV
 
-      integer icomp,isurf,icfctp
-      real proang, anginc, tilt
+      integer icomp,isurf,icfctp,isolvis
+      real proang, anginc, tilt, SolVisT
       real pi,r
       real w,s,phi,crown,wr,t !local slat width, spacing, crown, w/r ratio, thickness
       real sl_rad_overw
@@ -1141,9 +1144,15 @@ C set these to 1.
        if(itype.eq.1)then
 
 C Establish extinction coefficient (KL) and refractive index (N2).
-C IF normal solar transmittance >0.645, use clear reference glass
-C IF normal solar transmittance <= 0.645, use bronze reference glass
-        if(SolT(icomp,icfctp,i).gt.0.645)then
+C IF normal solar/visual transmittance >0.645, use clear reference glass
+C IF normal solar/visual transmittance <= 0.645, use bronze reference glass
+        if (isolvis.eq.0) then ! solar
+          SolVisT = SolT(icomp,icfctp,i)
+        else ! visual
+          SolVisT = VisT(icomp,icfctp,i)
+        endif
+
+        if(SolVisT.gt.0.645)then
             N2 = 1.526
             KL = 25.7*THRMLI(icomp,isurf,i,4) ![thickness in m]
         else
@@ -1170,8 +1179,8 @@ C reference glass based on extinction coefficient and refractive index
 C using Snell's law, Fresnel equations.
         THETA2 = ASIN((SIN(THETA1))/N2)
         TAU_A = EXP(-1.0*KL/COS(THETA2))
-        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
+        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
         TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
         TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
@@ -1213,11 +1222,11 @@ C and reflectance based on clear glass off-normal and normal values.
 C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
 C for glass template based on extinction coefficient and refractive
 C index.
-        THETA1=51.*r
+        THETA1 = 51.*r
         THETA2 = ASIN((SIN(THETA1))/N2)
         TAU_A = EXP(-1.0*KL/COS(THETA2))
-        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
+        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
         TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
         TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
@@ -1618,7 +1627,7 @@ C
 C Calculate GROUND and SKY diffuse components. FRONT and BACK are defined
 C by parameter "phi" at call time.
 C
-C
+C For slat type (Venetian) blinds, only!
 C
 C
       subroutine GroundSkyDiffCalc(Curved,s,w,t,phi,tilt,
@@ -1784,7 +1793,7 @@ C in a Glazing/Shading Layer Array',ASHRAE Transactions, Vol. 112,
 C Pt. 2. pp. 3-12.
 C
 C INPUT:
-C icalc_mode - switch for 'traditional' (0) or 'sky and ground' (1)
+C icalc_mode - switch for 'traditional' (0) or 'sky' (1) or 'ground' (2)
 C icomp      - current zone
 C isurf      - current surface in zone
 C icfctp     - current cfc type in zone
@@ -1841,6 +1850,15 @@ C Initialise return values to zero
       TRANSD_SYS  = 0.0
       REFL_SYS    = 0.0
 
+      do i=1,LayNo,1
+        AbsSol(i)=0.0
+      enddo
+
+C If no radiation, opt out
+      if (GBM.le.0. .and. GDF.le.0.) then
+        return
+      endif
+
 C Assign optical properties for each layer from commons to temp arrays depending
 C on isolvis
       if (isolvis .eq. 0) then
@@ -1854,25 +1872,23 @@ C           direct-direct and direct-diffuse
             rbbd(i)=SolRBbd(icomp,isurf,icfctp,i)
             tfbd(i)=SolTFbd(icomp,isurf,icfctp,i)
             tbbd(i)=SolTBbd(icomp,isurf,icfctp,i)
-cx            rfdd(i)=SolRFdd(icomp,isurf,icfctp,i)
-cx            rbdd(i)=SolRBdd(icomp,isurf,icfctp,i)
-cx            tfdd(i)=SolTFdd(icomp,isurf,icfctp,i)
-cx            tbdd(i)=SolTBdd(icomp,isurf,icfctp,i)
 
             itype=icfcltp(icomp,icfctp,i)
 
 C           diffuse properties, sky and ground for slat blinds if requested
             if(itype.eq.2 .and. icalc_mode.eq.i_sky) then
+c?            if(icalc_mode.eq.i_sky) then
               rfdd(i)=SolRFskydd(icomp,isurf,icfctp,i)
               rbdd(i)=SolRBskydd(icomp,isurf,icfctp,i)
               tfdd(i)=SolTFskydd(icomp,isurf,icfctp,i)
               tbdd(i)=SolTBskydd(icomp,isurf,icfctp,i)
             elseif(itype.eq.2 .and. icalc_mode.eq.i_ground) then
+c?            elseif(icalc_mode.eq.i_ground) then
               rfdd(i)=SolRFgrddd(icomp,isurf,icfctp,i)
               rbdd(i)=SolRBgrddd(icomp,isurf,icfctp,i)
               tfdd(i)=SolTFgrddd(icomp,isurf,icfctp,i)
               tbdd(i)=SolTBgrddd(icomp,isurf,icfctp,i)
-            else
+            else ! traditional
               rfdd(i)=SolRFdd(icomp,isurf,icfctp,i)
               rbdd(i)=SolRBdd(icomp,isurf,icfctp,i)
               tfdd(i)=SolTFdd(icomp,isurf,icfctp,i)
@@ -1892,25 +1908,23 @@ C           direct-direct and direct-diffuse
             rbbd(i)=VisRBbd(icomp,isurf,icfctp,i)
             tfbd(i)=VisTFbd(icomp,isurf,icfctp,i)
             tbbd(i)=VisTBbd(icomp,isurf,icfctp,i)
-cx            rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
-cx            rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
-cx            tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)
-cx            tbdd(i)=VisTBdd(icomp,isurf,icfctp,i)
 
             itype=icfcltp(icomp,icfctp,i)
 
 C           diffuse properties, sky and ground for slat blinds if requested
             if(itype.eq.2 .and. icalc_mode.eq.i_sky) then
+c?            if(icalc_mode.eq.i_sky) then
               rfdd(i)=VisRFskydd(icomp,isurf,icfctp,i)
               rbdd(i)=VisRBskydd(icomp,isurf,icfctp,i)
               tfdd(i)=VisTFskydd(icomp,isurf,icfctp,i)
               tbdd(i)=VisTBskydd(icomp,isurf,icfctp,i)
             elseif(itype.eq.2 .and. icalc_mode.eq.i_ground) then
+c?            elseif(icalc_mode.eq.i_ground) then
               rfdd(i)=VisRFgrddd(icomp,isurf,icfctp,i)
               rbdd(i)=VisRBgrddd(icomp,isurf,icfctp,i)
               tfdd(i)=VisTFgrddd(icomp,isurf,icfctp,i)
               tbdd(i)=VisTBgrddd(icomp,isurf,icfctp,i)
-            else
+            else ! traditional
               rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
               rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
               tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)

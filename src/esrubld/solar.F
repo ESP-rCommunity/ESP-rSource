@@ -525,6 +525,15 @@ C Set solar gain to zero for all nodes and jump to end of routine.
           QSOLE(I,2)=0.
           ITMC=ITMCFL(ICOMP,I)
           IF((ITMC.GE.1).or.(icfcfl(icomp,i).ge.1)) THEN
+C           solar data
+            transBB_S(icomp,i)=0.
+            transD_S(icomp,i)=0.
+            refl_S(icomp,i)=0.
+C           visual data
+            transBB_V(icomp,i)=0.
+            transD_V(icomp,i)=0.
+            refl_V(icomp,i)=0.
+
             NN=NNDC(ICOMP,I)
             DO 130 J=1,NN
               QTMCA(I,J,2)=0.
@@ -1673,10 +1682,11 @@ C............Determine beam-beam, beam-diffuse and diffuse-diffuse solar and vis
 C            properties for each CFC layer. 
 C            Glazing layers have incidence angle dependence. Slat-blind layers 
 C            have profile angle dependency
-             call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang)
-
 C............SOLAR PROPERTIES
              iSolVis=0
+             call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang,
+     &                                                     iSolVis)
+
 
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
@@ -1723,6 +1733,9 @@ C              and absorbed fluxes in each CFC layer
 C............REPEAT for VISUAL
              iSolVis=1
 
+             call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang,
+     &                                                     iSolVis)
+
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
 
@@ -1768,10 +1781,12 @@ C...........surface is self-shaded
 
 C            Determine diffuse-diffuse solar properties for
 C            each CFC layer. Incidence and profile angles set to 0 since self-shaded.
-             call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2)
 
 C............SOLAR PROPERTIES
              iSolVis=0
+
+             call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2,
+     &                                                    iSolVis)
 
 C            Check whether sky and ground diffuse calc. is requested
              if(i_ground_sky_diff_calc.eq.1)then
@@ -1816,6 +1831,9 @@ C              total reflected and absorbed fluxes in each CFC layer.
 
 C............REPEAT for VISUAL
              iSolVis=1
+
+             call cfc_eff_opt_prop(icomp,i,icfctp,temp1,temp2,
+     &                                                    iSolVis)
 
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
