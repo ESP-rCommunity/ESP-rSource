@@ -2003,13 +2003,13 @@ c        endif ! only calculate values if SW radiation present
       else ! visual data
 !  Visual transmittance and reflectance calculation, for visual, we want fractions
         if (GBM .gt. 0.0) then
-          TRANSBB_SYS = BB(1)/GBM
-          TRANSBD_SYS = BD(1)/GBM
+          TRANSBB_SYS = BB(1)!/GBM
+          TRANSBD_SYS = BD(1)!/GBM
         endif
         if (GDF .gt. 0.0) then
-          TRANSDD_SYS = DD(1)/GDF
+          TRANSDD_SYS = DD(1)!/GDF
         endif
-        TRANSD_SYS=max(0.0,TRANSDD_SYS+TRANSBD_SYS)
+        TRANSD_SYS=max(0.0,(TRANSDD_SYS+TRANSBD_SYS))
 !      TRANS_SYS =(BB(1)+D(1)) !/(GBM+GDF)
         if ((GBM+GDF) .gt. 0.0) then
           REFL_SYS=(BB(m+1)+D(m+1))/(GBM+GDF)
@@ -4850,7 +4850,8 @@ C ********************************************************************
      &                                          solrad_diff, 
      &                               inc_ang,psazi2,pselv2)
       IMPLICIT NONE
-#include "building.h"    
+#include "building.h"
+#include "CFC_common.h"
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
       real SAZI, SALT
@@ -4982,6 +4983,11 @@ C -------------------------------------------------------------------
       solrad_diff = SRADF*(1.-POFF)
       inc_ang=ANGI
 
+      RadIncDirS(icomp,isur)=solrad_dir
+      RadIncDifS(icomp,isur)=solrad_diff
+      RadIncDifSky(icomp,isur)=SKYDIF*(1.-POFF)
+      RadIncDifGrd(icomp,isur)=GRDDIF*(1.-POFF)
+
  1000 return
       end
       
@@ -5105,15 +5111,27 @@ C CFC ON/OFF flag
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
 C       RadIncDifS(icomp,i),
-            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,
-     &                                 ang,psazi,pselv)
+cx            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,
+cx     &                                 ang,psazi,pselv)
 
             call add_to_xml_reporting (
-C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
-     &           solrad_dir + solrad_diff,
+     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
+cx     &           solrad_dir + solrad_diff,
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/totRad',
      &           'units', '(W/m2)',
      &           'CFC total radiation incidence (dir+diff)' )
+
+            call add_to_xml_reporting (
+     &           RadIncDifSky(icomp,i),
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifSky',
+     &           'units', '(W/m2)',
+     &           'CFC diffuse radiation incidence from sky' )
+
+            call add_to_xml_reporting (
+     &           RadIncDifGrd(icomp,i),
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifGrd',
+     &           'units', '(W/m2)',
+     &           'CFC diffuse radiation incidence from ground' )
 
             call add_to_xml_reporting (
      &           ang,

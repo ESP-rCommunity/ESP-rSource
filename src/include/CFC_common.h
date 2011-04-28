@@ -805,11 +805,13 @@ C Back diffuse-diffuse ground transmittance
 C---------------------------------------------------------------------------------
 C COMMONS FOR CFC type CONSTRUCTIONS 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
+     &      RadIncDifSky(mcom,ms),RadIncDifGrd(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
      &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
      &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+      real RadIncDifSky,RadIncDifGrd
       real transBB_V,transD_V,refl_V
       real issur_self_shd,proang_s,qtmca_ext
 

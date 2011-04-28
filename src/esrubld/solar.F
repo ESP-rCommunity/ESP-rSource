@@ -1760,7 +1760,6 @@ C              Calculate CFC system solar GROUND diffuse transmitted
 C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYSV = TRANSD_SYS_BD +
      &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
-
 C              Absorbed visual is of no interest
 
              else 
@@ -1860,6 +1859,7 @@ C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYSV = TRANSD_SYS_BD +
      &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
 
+               TRANSD_SYSV = TRANSD_SYSV
 C              Absorbed visual is of no interest
 
              else 
@@ -1873,17 +1873,41 @@ C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted
             END IF ! self-shaded?
 
 C save multilayer results for CFC output
-             RadIncDirS(icomp,i)=EXDIR(I)
-             RadIncDifS(icomp,i)=EXDIF(I)
+cx             RadIncDirS(icomp,i)=EXDIR(I)
+cx             RadIncDifS(icomp,i)=EXDIF(I)
+cx             RadIncDifSky(icomp,i)=EXDIFSKY(I)
+cx             RadIncDifGrd(icomp,i)=EXDIFGRD(I)
              issur_self_shd(icomp,i)=real(ians(i))
 C solar data
              transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
              transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
              refl_S(icomp,i)=REFL_SYS!*SNA(ICOMP,I)
-C visual data
-             transBB_V(icomp,i)=TRANSBB_SYSV!*SNA(ICOMP,I)
-             transD_V(icomp,i)=TRANSD_SYSV!*SNA(ICOMP,I)
-             refl_V(icomp,i)=REFL_SYSV!*SNA(ICOMP,I)
+
+C visual data, normalise to radiation available for output/storing of 
+C fraction. These fractions are used in "casual.F/DWINVT()" as light 
+C transmittance values (direct/diffuse) ...
+             if (EXDIR(I).gt.0.) then
+               transBB_V(icomp,i)=TRANSBB_SYSV/EXDIR(I)
+             else
+               transBB_V(icomp,i)=0.
+             endif
+             if (i_ground_sky_diff_calc.eq.1) then
+               if ((EXDIR(I)+EXDIFSKY(I)+EXDIFGRD(I)).gt.0.) then
+                 transD_V(icomp,i)=TRANSD_SYSV/(EXDIR(I)+EXDIFSKY(I)
+     &                                     +EXDIFGRD(I))
+               else
+                 transD_V(icomp,i)=0.
+               endif
+             else ! legacy
+               if ((EXDIR(I)+EXDIF(I)).gt.0.) then
+                 transD_V(icomp,i)=TRANSD_SYSV/(EXDIR(I)+EXDIF(I))
+               else
+                 transD_V(icomp,i)=0.
+               endif
+             
+             endif
+
+             refl_V(icomp,i)=REFL_SYSV
 
 C Calculate total solar absorbed in CFC
              CFCabs=0.
@@ -2043,7 +2067,8 @@ C A) OPAQUE SURFACE
                 QIREF=QIREF+(1.-AI(ICOMP,KS))*PAREA*X1
                 q2wall(2)=q2wall(2)+x1*PAREA*AI(ICOMP,KS)
 
-C B) CFC SURFACE (external only) - run solar_multilayer with inside diffuse source and adjust abosrptances
+C B) CFC SURFACE (external only) - run solar_multilayer with inside 
+C    diffuse source and adjust abosrptances
               elseif(icfcfl(icomp,ks).gt.0.and.ie(icomp,ks).eq.0)then
                 icfctp=icfcfl(icomp,ks)
 
