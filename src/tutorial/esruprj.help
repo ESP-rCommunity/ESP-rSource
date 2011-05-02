@@ -8851,24 +8851,24 @@ For the purposes of ESP-r, the use of WIS is focused on the'
       CALL EASKR(EC,' ',' First value (sensible) percentage ? ',
       CALL EASKR(EL,' ',' Second value (latent) percentage ? ',
 *subroutine EDSPLIST
-*item EDSPLIST
+*item EDSPLIST special_file_and_data
 'If you know of the name of an existing file click on ok. If you'
 'want to create one say no. '
+'  '
+'If you say no (so that a new file is to be created you must'
+'also confirm that you have the data needed to define a special'
+'materials database.'
 *enditem
         CALL ASKOK('Does a special components file exist?',' ',OK,dok,2)
-*item EDSPLIST
-'If you have the data needed to create this portion of the model'
-'say ok. '
-*enditem
-          CALL ASKOK('Would you like to create a new special',
-*item EDSPLIST
+        CALL ASKOK('Would you like to create a new special',
+*item EDSPLIST special_file_contents
 'This file contains information about special components integrated'
 'into the building fabric. Examples include:'
 'facade integrated photovoltaics, ducted wind turbines,'
 'phase change materials, thermochromic glazing, etc.'
 *enditem
         call easks(lfil,' ',' Special components filename?',72,
-*item EDSPLIST
+*item EDSPLIST special_file_menu
 'This menu controls the definition of special components in the'
 'model. Special component properties supports features such as'
 'integrated photovoltaics or and phase change materials. '
@@ -8877,24 +8877,25 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'link it to a surface/layer within the building model.  NOTE that'
 'changes to zones such as adding/deleting surfaces or changing'
 'composition is not automatically updated. '
+'  '
+'Management facilities:'
+'  delect component - removes an existing special component'
+'  add component - add a new component (be sure you have your'
+'     data for the new component available)'
+'  edit component - change details in an existing component you'
+'     will be asked to confirm that you want to edit.'
 *enditem
         CALL PHELPD('special component edit',10,'-',0,0,IER)
-*item EDSPLIST
-' '
-*enditem
         CALL EASKABCD('Options:',' ','delete component',
-*item EDSPLIST
-'Last chance to avoid editing the component. '
-*enditem
-            CALL ASKOK('Edit this component?',' ',OK,dok,1)
+        CALL ASKOK('Edit this component?',' ',OK,dok,1)
 *subroutine EDSPM
-*item EDSPM
+*item EDSPM special_file_cat
 'The menu options relate to different categories of special'
 'components which may be selected for integration into the'
 'building. Select a category'
 *enditem
         call phelpd('Special component',3,'-',0,0,IER)
-*item EDSPM
+*item EDSPM special_file_select
 'Select a special component from the list. Each material shown'
 'is associated with a set of pre-defined parameters,these can be'
 'altered if required. '
@@ -8902,32 +8903,21 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Switching the "component info" toggle to ON lets the user view'
 'any more information associated with the special component; this'
 'appears in the text window. '
+'  '
+'You will be asked to supply a label for the material (no spaces).'
+'  '
+'You will then be asked to supply each of the data items that'
+'are associated with the special materials type. You can either'
+'accept the default data or enter you own values.'
+'  '
+'At the end of editing you will be asked if you want to save it.'
 *enditem
           CALL PHELPD('Special material',8,'-',0,0,IER)
-*item EDSPM
-*enditem
       call easks(labl,' ',' Label for material (no spaces)?',16,
-*item EDSPM
-'Enter the required data for the special component. Either accept'
-'the default values or enter your own data.'                                            '
-*enditem
       call phelpd('Special mat data',3,'-',0,0,IER)
-*item EDSPM
-*enditem
-            call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
-*item EDSPM
-*enditem
-            call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
-*item EDSPM
-*enditem
-      CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
-*item EDSPM
-*enditem
-        CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','inlet.',IER)
-*item EDSPM
-*enditem
-        CALL EASKSUR(IZ,ISO,'-','Select surface for special',
-*item EDSPM
+      call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
+      call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
+*item EDSPM special_file_wind
 'To enable the calculation of wind-induced surface pressures'
 '(as required by the ducted wind turbine model), a database of'
 'angle dependent pressure coefficients is provided.'
@@ -8961,47 +8951,18 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '   simi-exposed - rural with some obstructions'
 '   sheltered - urban, surrounded on all sides by obstructions'
 '     of similar size.'
-*enditem
-          CALL PHELPD('databases overview',36,'-',0,0,IER)
-*item EDSPM
-'A chance to correct selection error.'
-*enditem
-        CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
-*item EDSPM
-'This angle is used to derive the boundary pressure, which is angular'
-'dependent, from the pressure coef db and the current wind speed and'
-'direction.'
-*enditem
-        CALL EASKR(VAL,' ',
-*item EDSPM
-*enditem
-        CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
-*item EDSPM
-*enditem
-        CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','outlet.',IER)
-*item EDSPM
-'To enable the calculation of wind-induced surface pressures'
-'(as required by the ducted wind turbine model), a database of'
-'angle dependent pressure coefficients is provided.'
 '  '
-'The default ESP-r set contains wind pressure coefficients for'
-'surfaces in typical positions and within several different'
-'exposure categories. They can be used (with care) for low-rise'
-'buildings.'
-' '
-'It is also possible to calculate pressure coefficients using'
-'CpCalc (see database maintenance).'
-' '
-'Select the pressure coefficient from this list, which is most'
-'appropriate for the location of the ducted wind turbine.'
+'After selection of the pressure set you will be asked for'
+'confirmation.'
+'  '
+'You will then be asked to specify the angle of the surface'
+'in degrees from the north clockwise. This will be the same'
+'as is reported on in the surface attributes.'
 *enditem
-          CALL PHELPD('databases overview',16,'-',0,0,IER)
-*item EDSPM
-'A chance to correct selection made in error. '
-*enditem
+        CALL PHELPD('databases overview',36,'-',0,0,IER)
         CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
-*item EDSPM
-*enditem
+        CALL EASKR(VAL,' ',
+        CALL PHELPD('databases overview',16,'-',0,0,IER)
         CALL EASKR(VAL,' ',
 *item EDSPM
 'Choose a layer at which to situate a special materials node.'
@@ -9016,12 +8977,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'A cancel request leaves the model unchanged.'
 *enditem
           call easki(nodloc,' Position component at ',
-*item EDSPM
-'This is a location that can accept another node.'
-*enditem
-                call askok(' An existing special component exists at',
-*item EDSPM
-*enditem
+          call askok(' An existing special component exists at',
           call phelpd('Special material',2,'-',0,0,IER)
 *subroutine EDCONN
 *item EDCONN topology_choice_menu
@@ -9433,32 +9389,17 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *enditem
         CALL PHELPD('global attributions',17,'-',0,0,IER)
         CALL EASKABC(' Surfaces to update:',' ',
-        CALL EPICKS(INPIC,IVALS,' ',' Search zones:',
-        CALL ASKOK(' ',outs,OK,dok,1)
-        CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
-        CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
-        CALL ASKOK('Apply this construction?',' ',OK,dok,1)
-        CALL ASKOK(
-        CALL PHELPD('global attributions',11,'-',0,0,IER)
-        CALL EASKABCD(' First filter--surface opacity:',' ',
-        call EASKATOG(' Second filter--surface contiguity:',' ',
-        call EASKATOG(' Third filter--surface orientation:',' ',
-        CALL EASKABCD(' Surfaces to update:',' ',
-        CALL EPICKS(INPIC,IVALS,' ',' Which zones to update: ',
-        CALL ASKOK(' ',outs,OK,dok,2)
 *subroutine SCRZONE
-*item SCRZONE
-'The zone description is used for descriptive and bookkeeping'
-'purposes. It should be unique, be less than 12 characters and'
-'contain no spaces.'
+*item SCRZONE zone_name
+'The zone name is used for selection and bookkeeping purposes.'
+'It should be unique, be less than 12 characters and no spaces.'
+'  '
+'The zone description allows further information about the zone form'
+'and composition and use to be recorded (<64 characters).'
 *enditem
       CALL EASKS(ZN,'New zone description?','(<12 chars, no spaces)',
-*item SCRZONE
-'The zone description allows further information about the zone form'
-'and composition and use to be recorded.'
-*enditem
  43   CALL EASKS(zd,'What does it represent?','(<64 characters)',
-*item SCRZONE
+*item SCRZONE zone_initial_shapes
 'You have the option to describe zone geometry as an extruded'
 'rectangle, a floor plan extrusion or a general polyhedra. Keeping'
 'the geometry as simple as possible will simplify the constructional'
@@ -9482,7 +9423,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 ' length (to get scaling from).'
 *enditem
       CALL EASKABCD(' ','Base zone geometry on:',
-*item SCRZONE
+*item SCRZONE zone_initial_rect
 'The specification of a rectangular extrusion requires the user'
 'enter an origin (relative to the site coordinate system, and a'
 'length, depth and height.'
@@ -9492,64 +9433,53 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'height dimension is along the Z axis.'
 '  '
 'The rectangle may then be rotated by an angle measured'
-'from the X axis, anticlockwise positive.'
-*enditem
-        CALL EASKS(HOLD,' ','Origin X,Y,Z?',
-*item SCRZONE
-'The length (with no rotation) is along the X axis. The width'
-'(with no rotation) is along the Y axis. The height is along'
-'the Z axis.'
-*enditem
-        CALL EASKS(HOLD,' ','Rectangle length, width and height?',
-*item SCRZONE
-'Orientation is the angle between the length (DX) side of the'
-'rectangle and the X-axis, anticlockwise +ve.'
-*enditem
-        CALL EASKR(ANGR,' ','Rectangle orientation?',
-*item SCRZONE
+'from the X axis and the length side of the rectangle,'
+'anticlockwise positive about the Z axis.'
+'  '
 'Elevation is the angle between the length (DX) side of the'
 'rectangle and the horizon, +ve is an upwards incline and -ve'
 'is a downwards incline. Zero results in a standard horizontal base.'
 *enditem
+        CALL EASKS(HOLD,' ','Origin X,Y,Z?',
+        CALL EASKS(HOLD,' ','Rectangle length, width and height?',
+        CALL EASKR(ANGR,' ','Rectangle orientation?',
         CALL EASKR(ANGE,' ','Rectangle elevation (see help)?',
-*item SCRZONE
+*item SCRZONE zone_initial_extrude
+'A zone created from an extruded plan requires the following:'
+'  '
 'The base surface (probably floor) height relative to the'
 'site coordinate system.'
-*enditem
-        CALL EASKR(Z1,' ','Z value of the base surface?',
-*item SCRZONE
+'  '
 'The top surface (probably ceiling) height relative to the site'
 'coordinate system. Note that this is not necessarily the same'
 'as the base-top distance!'
-*enditem
-        CALL EASKR(Z2,' ','Z value of the top surface?',
-*item SCRZONE
+'  '
 'The number of walls excluding the base and the top. Think about'
 'this - each boundary condition requires a separate surface so'
 'a long partition which connects with two other zones needs to be'
 'two separate surfaces. Easier to do this in the initial planning'
 'than to split the surface later.'
-*enditem
-        CALL EASKI(NW,' ','Number of walls?',
-*item SCRZONE
+'  '
 'The coordinates should be entered in anti-clockwise order when'
 'viewed from the top. The specific starting point is not all that'
 'important - if you follow a consistent pattern it make make model'
 'quality checking easier.'
-*enditem
-          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',IER,2)
-*item SCRZONE
+'  '
 'If you have ANY DOUBT as to whether you entered the correct vertex'
 'coordinates you can save time by respecifying them now. Usually'
 'this takes less time than trying to correct problems later.'
+'  '
+'After accepting the vertices you are asked if you want to rotate'
+'the zone around the 1st vertex of the zone (anticlockwise is'
+'positive.'
 *enditem
+        CALL EASKR(Z1,' ','Z value of the base surface?',
+        CALL EASKR(Z2,' ','Z value of the top surface?',
+        CALL EASKI(NW,' ','Number of walls?',
+          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',IER,2)
         CALL ASKOK(' ','Accept base vertices?',OK,dok,4)
-*item SCRZONE
-'Rotation is the angle between the site y-axis and north,'
-'anticlockwise positive.'
-*enditem
         CALL EASKR(AR,' ','Rotation angle?',
-*item SCRZONE
+*item SCRZONE zone_initial_polyhedra
 'A general polyhedra is appropriate for complex shapes.'
 'A set of vertices is defined and then linked together to'
 'form surfaces that bound the zone. Vertices are linked'
@@ -9570,115 +9500,97 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'initial surface.'
 *enditem
         CALL PHELPD('gen start popup',15,'-',0,0,IER)
-*item SCRZONE
-'The zone origin is located at the first surface.'
-*enditem
         CALL EASKS(HOLD,' ','Origin X Y Z?',
-*item SCRZONE
+*item SCRZONE zone_initial_write
 'When attempting to write the geometry a problem was encountered.'
 'Check that you have permission to write this type of file and that'
 'you have sufficient disk space.'
 *enditem
         CALL ASKOK('Problem creating geometry file.','Try again?',
 *subroutine NEWZONE
-*item NEWZONE
+*item NEWZONE zone_source_files
 'You may read in an existing ESP-r zone geometry file (e.g. copied'
 'from another ESP-r model), convert a cflow3/IES zip file into one'
 'or more zones (i.e. whole model conversion) or create a zone by'
 'inputing data related to one of the primitive initial shapes. '
-' '
-'NOTE: a cflow3/IES zip file is NOT a DXF file. If you want to'
-'import DXF use the Model Management -> import CAD file facility.'
+'  '
+'If you asked for an existing file and there was no existing geometry'
+'file found in the ../zones folder then you must supply'
+'a file name. It should be relative to the cfg folder.'
 ' '
 'NOTE: it is assumed that the zone geometry file that you'
 'specify to read is not one that is NOT already used in your'
 'model! Otherwise the Project Manager may get confused because'
 'two zones point to the same file and have the same name! '
+'  '
+'NOTE: a cflow3/IES zip file is NOT a DXF file. If you want to'
+'import DXF use the Model Management -> import CAD file facility.'
 ' '
 'Check the zone name after you have loaded the existing zone'
 'geometry file to make sure it is unique. '
 *enditem
       CALL EASKABCD(' ','New zone options:','input dimensions',
-*item NEWZONE
-'If there was no existing geometry file found in the ../zones'
-'folder then you must supply a file name. It should be relative'
-'to the cfg folder.'
-' '
-'NOTE: it is assumed that if you attempt to scan data from an'
-'existing ESP-r geometry file that it is NOT already used in'
-'your model! Otherwise the Project Manager may get confusted'
-'because two zones point to the same fie! '
-*enditem
-        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,8)
-*item NEWZONE
-*enditem
-          CALL ASKOK(' ','Geometry file not found, try again?',OK,
-*item NEWZONE
-'While scanning the geometry file a problem was encountered. Check'
-'that the file is of the correct type and that it has not been'
-'corrupted.'
-*enditem
-          CALL ASKOK(OUTSTR,
-*item NEWZONE
+      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,8)
+      CALL ASKOK(' ','Geometry file not found, try again?',OK,
+      CALL ASKOK(OUTSTR,
+*item NEWZONE zone_also_schedules
 'If you are extending a model via the use of existing zone geometry'
 'files you might also have existing zone schedules to reference. You'
 'can do that here. '
-*enditem
-        CALL ASKOK(' ','Also use an existing operation file?',OK,dok,3)
-*item NEWZONE
+'  '
 'If there was not existing operations file found in the ../zones'
 'folder then you must supply a file name which is relative to the'
 'model cfg folder. '
 *enditem
- 295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,3)
-*item NEWZONE
-*enditem
-            CALL ASKOK(' ','Operations file not found, try again?',
-*item NEWZONE
+        CALL ASKOK(' ','Also use an existing operation file?',OK,dok,3)
+ 295    CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,3)
+        CALL ASKOK(' ','Operations file not found, try again?',
+*item NEWZONE zone_also_constructions
 'If you are extending a model via the use of existing zone geometry'
 'files you might also have existing zone constructions to reference.'
 'You can do that here. '
-*enditem
-        CALL ASKOK(' ','Also use an existing constructions file? ',
-*item NEWZONE
+'  '
 'If there was not existing constructions file found in the ../zones'
 'folder then you must supply a file name that is relative to the'
 'model cfg folder. '
 *enditem
- 297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,3)
-*item NEWZONE
-*enditem
-            CALL ASKOK(' ','Constructions file not found, try again?',
-*item NEWZONE
-'If there is no existing geometry file found in the ../zones'
+        CALL ASKOK(' ','Also use an existing constructions file? ',
+ 297    CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,3)
+        CALL ASKOK(' ','Constructions file not found, try again?',
+*item NEWZONE zone_also_zip_source
+'If there is no existing zip geometry file found in the ../zones'
 'folder then you must supply a file name including a path relative'
 'to the cfg folder.'
 *enditem
  396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,3)
-*item NEWZONE
-*enditem
-          CALL ASKOK('Zip file not found!','Try again?',OK,
-*item NEWZONE
-'While scanning the geometry file a problem was encountered. Check'
-'that the file is of the correct type and that it has not been'
-'corrupted.'
-*enditem
-          CALL ASKOK('Problem scanning CAD file!',
+        CALL ASKOK('Zip file not found!','Try again?',OK,
+        CALL ASKOK('Problem scanning CAD file!',
 *subroutine DELZONE
-*item DELZONE
-'             - W A R N I N G - '
+*item DELZONE zone_delete_warning
+'                  - W A R N I N G - '
 'Because of the many inter-connections within a model, the '
 'removal of a zone requires a number of steps and you will'
-'be asked to confirm some actions. '
-' '
+'be asked to confirm several actions to resolve dependencies.'
+'  '
+'If ventilation definitions or controls in zone operation files'
+'point to the zone-to-be-deleted you will be asked what to do.'
+'If control loops reference the zone-to-be-deleted then you'
+'will be asked if you want to delete the control loop.'
+'  '
+'Other zones which have surfaces which point to this zone will'
+'have their attributes reset to UNKNOWN.'
+'  '
+'You will also be asked if you want to delete the zone files'
+'associated with the zone-to-delete.'
+'  '
 'Upon completion, carefully review the model to ensure that'
 'the new inter-connections are appropriate. '
-' '
+'  '
 'If in doubt ARCHIVE of the model before embarking on a'
 'major restructuring - there is no [undo] command! '
 *enditem
       CALL ASKOK(outs,'(see help)',OK,dok,10)
-*item DELZONE
+*item DELZONE zone_delete_net_node
 'A linked network ventilation node will take the current zone'
 'temperature during assessments. If, after deleting a zone,'
 'the link points to a non-existant zone then flows may not be'
@@ -9690,72 +9602,72 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'removed. '
 *enditem
               CALL ASKOK(outs,'Remove this link? (see help)',OK,DOK,9)
-*item DELZONE
+*item DELZONE zone_delete_control
+'The system control file holds the definition of all of the'
+'building/plant controls.  This file is optional but if it exists'
+'in your model it should be updated.'
+'  '
 'The removal of a zone may result in zone or ventilation'
 'control loops which specifically sense the removed zone'
 'causing incorrect assessments. Also references to subsequent'
-'zones in control loops need to be adjusted. '
+'zones in control loops need to be adjusted.'
+'  '
+'If a control loop sensor references the deleted zone then'
+'you should probably remove the control loop (say yes). Otherwise'
+'make sure to edit the control loop to sense something that'
+'exists.'
 *enditem
         CALL ASKOK(' System zone-based controls should also be',
-*item DELZONE
-*enditem
         CALL ASKOK(' System zone-based controls should also be',
-*item DELZONE
-'The system control file holds the definition of all of the'
-'building/plant controls.  This file is optional.'
-*enditem
         CALL EASKS(ltmp,' Control file ? ',
-*item DELZONE
-'The control sensor or actuator references this specific zone.'
+        CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+*item DELZONE zone_delete_net_control
+'The network flow control sensor or actuator references this'
+'specific zone (as the source of air). You should remove the'
+'ventilation control (say yes) or ensure that you revise the'
+'control to point to an air source that exists.'
 *enditem
                   CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
-*item DELZONE
-'The ventilation control sensor or actuator references this specific'
-'zone.'
+*item DELZONE zone_delete_cfc_control
+'The complex fenistration control sensor or actuator references'
+'his specific zone. You should remove the control (say yes) or'
+'ensure that you revise the control to point to a zone that exists.'
 *enditem
                   CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
-*item DELZONE
-'The control sensor or actuator references this specific zone. '
-*enditem
-                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
-*item DELZONE
+*item DELZONE zone_delete_files
 'You can de-reference a zone in the current model, and you have the'
 'option to also remove the zone files. If you might have a use for the'
 'files later keep them. '
 *enditem
       CALL ASKOK(' In addition to de-referencing this zone do you',
-*item DELZONE
-'             - W A R N I N G - '
+*item DELZONE zone_net_delete_warning
+'                 - W A R N I N G - '
 'Ventilation network nodes linked to the deleted zone have been'
 'unlinked (i.e. they are assumed to be at a static temperature).'
 'If connections related to this node need to be revised use'
 'the ventilation network facility.'
 *enditem
         CALL PHELPD('mfs update popup',6,'-',0,0,IER)
-*item DELZONE
+*item DELZONE zone_ctl_delete_warning
 '             - W A R N I N G - '
 'Links to the deleted zone by zone and/or ventilation control loops'
 'have been adjusted and are being saved.'
 *enditem
         CALL PHELPD('control update popup',3,'-',0,0,IER)
-*item DELZONE
-'The current model description will be placed into this file.'
+*item DELZONE zone_delete_update_cfg
+'The updated model description (with dependencies of the deleted'
+'zone sorted out) will be placed into this model cfg file. Some'
+'users prefer to rename model cfg files after such changes.'
 *enditem
  49   CALL EASKS(ltmp,' Updated configuration file? ',
 *subroutine WARNMOD
 *subroutine SUMRCHG
-*item SUMRCHG
-' (rebuild via construction facility) '
-' (rebuild via construction facility) '
-' (recalculate via [Options viewfactors])'
-*enditem
-            CALL PHELPD('files out of date',nh,'-',0,0,IER)
-*item SUMRCHG
+*item SUMRCHG change_for_shading
 'Shading should be recalculated if the changes you made affect'
 'isolation distribution. When in doubt it is best to recalculate.'
 *enditem
           CALL EASKABC(' Reflect zone change in shading options:',' ',
-*item SUMRCHG
+*item SUMRCHG change_for_constructions
 'Zone construction files should be rebuilt after surface'
 'attributes change or surfaces are added or deleted. '
 *enditem
