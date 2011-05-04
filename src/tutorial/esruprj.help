@@ -9673,78 +9673,77 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *enditem
         CALL ASKOK('Update the zone construction and/ or TMC and/ or',
 *subroutine ELECNET
-*item ELECNET
+*item ELECNET elec_net_pre_warning
 'You have picked electrical network definition. This network'
 'is best created after both the plant and building side have'
 'been fully defined as power loads in each zone and plant'
 'components can be connected to the electrical network.'
 ' '
 'If you have not defined the building and plant yet then'
-'you are advised to exit this section.               '
+'you are advised to exit this section.'
+'  '
+'If you proceed you will be asked if you want to see a synopsis'
+'of the current electrical network (if it exists).'
 *enditem
       CALL ASKOK(' ','Proceed with electrical network definition?',
-*item ELECNET
-'The synopsis is one way to review the current network.'
-*enditem
-        CALL ASKOK(OUTS,
-*item ELECNET
+      CALL ASKOK(OUTS,
+*item ELECNET elec_net_menu
+'This part of the Project Manager allows you to define an electrical'
+'network, which can be simulated in tandem with your building/plant/'
+'flow model. The electrical network consists of several elements:'
 ' '
-'This part of the Project Manager allows you to define an'
-'electrical network, which can be simulated in tandem  '
-'with your building/plant/flow model. The electrical   '
-'network consists of several elements:  '
+'NODES - these are the calculation points in the network and should'
+'be placed where conductors join, or where loads or power sources'
+'connect to the network. In multi-phase systems, multi-phase nodes'
+'are grouped in phase-sets, one node of the set represents a phase.'
 ' '
-'NODES - these are the calculation points in the network '
-'and should be placed where conductors join, or where '
-'loads or power sources connect to the network.'
-'In multi-phase systems, multi-phase nodes are grouped'
-'in phase-sets, one node of the set represents a phase.'
+'CONNECTING COMPONENTS - these convey electrical current between'
+'the nodes in the network. They are impedance models of the '
+'distribution components in an electrical system: lines, cables,'
+'transformers. In addition to conveying power, the transformer'
+'component also changes the voltage between two nodes.'
 ' '
-'CONNECTING COMPONENTS - these convey electrical current'
-'between the nodes in the network. They are impedance  '
-'models of the distribution components in an electrical '
-'system: lines, cables transformers. In addition to con-'
-'veying power, the transformer component also changes the'
-'voltage between two nodes.'
+'HVAC/PV/LIGHTS/EQUIPMENT and POWER-ONLY COMPONENTS - these link'
+'into the network and either draw power from or inject power into'
+'the network. HVAC components etc. are components which exist in'
+'other areas of your model, i.e. lighting loads a PV array or a fan.'
+'Power-only components exist only in the electrical world e.g. '
+'a wind turbine or a diesel generator set.'
 ' '
-'HVAC/PV/LIGHTS/EQUIPMENT and POWER-ONLY COMPONENTS - '
-'these link into the network and either draw power '
-'from or inject power into the network. HVAC components  '
-'etc. are components which exist in other areas of your  '
-'model, i.e. lighting loads a PV array or a fan. '
-'Power-only components exist only in the electrical  '
-'world e.g. a wind turbine or a diesel generator set.'
+'CONNECTIONS - these link the entire network together. A connection'
+'links two or more nodes using a connecting component, connections'
+'can be multi-phase, single-phase d.c. or balanced. Single phase'
+'components can be used in the connection of multi-phase sets of'
+'nodes but not vice versa. Phase-set nodes can be linked to single '
+'nodes, but only if the phase numbers of the connected nodes'
+'match. An a.c. to d.c. connection is possible, but only with'
+'AC/DC conversion devices.'
 ' '
-'CONNECTIONS - these link the entire network together.'
-'A connection links two or more nodes using a connecting'
-'component, connections can be multi-phase, single-phase'
-'d.c. or balanced. Single phase components can be used'
-'in the connection of multi-phase sets of nodes but not'
-'vice versa. Phase-set nodes can be linked to single '
-'nodes, but only if the phase numbers of the connected '
-'nodes match. An a.c. to d.c. connection is possible,'
-'but only with AC/DC conversion devices.'
-' '
-'The complete NETWORK consists of all the above elements'
-'connected together. Other information required includes'
-'the type of network: a.c., d.c., mixed or balanced plus'
-'BASE VALUES of voltage and power. These are needed as'
-'network solution is done in PER UNIT notation. Voltage '
-'base values for each node are generated automatically.'
-'If required you can enter a short description of your'
-'electrical enetwork here.                            '
+'The complete NETWORK consists of all the above elements connected'
+'together. Other information required includes the type of network:'
+'a.c., d.c., mixed or balanced plus BASE VALUES of voltage and power.'
+'These are needed as network solution is done in PER UNIT notation.'
+'Voltage base values for each node are generated automatically.'
+'If required you can enter a short description of your electrical'
+'network here.
+'  '
+' option a: the name of the eletrical network file'
+'  '
+' option b: user supplied description of the network'
+'  '
+' option c: type of network:                            '
+'   d.c      - direct current only'
+'   1,2,3    - phase a.c. only '
+'   Balanced - a balanced 3-phase system '
+'   Mixed    - Mix of 1,2,3-phase elements and possibly d.c.'
+'                         <the default> '
+'  '
+' option i: phase angles in the time domain e.g. 3 phase is'
+'   a 120 degree phase angle
 *enditem
         CALL EASKS(ENDESC,'The electrical network description:',' ',
-*item ELECNET
-'Select the network type which describes your network: '
-'d.c      - direct current only'
-'1,2,3    - phase a.c. only '
-'Balanced - a balanced 3-phase system '
-'Mixed    - Mix of 1,2,3-phase elements and possibly d.c.'
-'                         <the default> '
-*enditem
         CALL EASKATOG('Select network type:',' ',
-*item ELECNET
+*item ELECNET elec_net_phase_angle
 'The phase angles for the system are the phase in the time'
 'domain in which each phase in the system operates where the'
 'difference in each phase angle is given by 360/No. of phases.'
@@ -9752,7 +9751,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'by 120 degrees.          '
 *enditem
         CALL EASKS(STR,'Enter the phase angle for each network phase.',
-*item ELECNET
+*item ELECNET elec_net_base_power
 'The base power value is used in the conversion of all network '
 'power values to per-unit, where the per-unit power is defined by:'
 '  Pp.u.=Actual Power/Base Power'
@@ -9768,86 +9767,78 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'entered. The system base value will be this value divided by three.'
 *enditem
         CALL EASKR(ENODBASEP,'Enter the system base power value (VA)',
-*item ELECNET
-*enditem
-        CALL PHELPD('pwr net help',43,'-',0,0,IER)
-*item ELECNET
+*item ELECNET elec_net_base_volt
 'If you have the required support information you may proceed with'
 'the base voltage calculation.'
 *enditem
           CALL ASKOK(' ','Proceed with base voltage calculation?',
-*item ELECNET
+*item ELECNET elec_net_request_save
 'Recent changes are held in memory and may be lost if you do not'
 'save them to file. '
 *enditem
         CALL ASKOK('Save any changes you have made?',' ',OK,dok,2)
 *subroutine ELNODLST
-*item ELNODLST
+*item ELNODLST elec_net_mode_e
 'The list shows the currently available nodes in the electrical'
 'network. Click in a node to edit it or choose to add/delete/copy'
 'a node.'
-'  '
+*enditem
+*item ELNODLST elec_net_mode
 'The list shows the currently available nodes in the electrical'
 'network. Please select one from the list displayed.'
 *enditem
         CALL PHELPD('Select node',3,'-',0,0,IER)
-*item ELNODLST
-*enditem
-          CALL EASKABCD('Select option or continue',' ','Add node',
+        CALL EASKABCD('Select option or continue',' ','Add node',
 *subroutine ELHYBLST
-*item ELHYBLST
+*item ELHYBLST hybrid_elec_net_mode_e
 'The list shows the HVAC, PV, lights, etc,. connected to the electrical'
 'network. Please select one from the list or choose to add/delete/copy'
 'a component. '
-'  '
+*enditem
+*item ELHYBLST hybrid_elec_net_mode
 'The list shows the HVAC, PV, lights, etc., connected to the '
 'electrical network. Please select one from the list displayed.'
 *enditem
         CALL PHELPD('Select node',3,'-',0,0,IER)
-*item ELHYBLST
-*enditem
-          CALL EASKABCD('Select option or continue',' ',
+        CALL EASKABCD('Select option or continue',' ',
 *subroutine ELPOWLST
-*item ELPOWLST
+*item ELPOWLST elec_net_power_mode_e
 'The list shows the available power only components in the electrical'
 'network. Click on one to edit it or chose to add/delete/copy a'
 'component.'
-'  '
+*enditem
+*item ELPOWLST elec_net_power_mode
 'The list shows the available power only components in the'
 'electrical network. Please select one from the list displayed.'
 *enditem
         CALL PHELPD('Select node',3,'-',0,0,IER)
-*item ELPOWLST
-*enditem
-          CALL EASKABCD('Select option or continue',' ',
+        CALL EASKABCD('Select option or continue',' ',
 *subroutine ELCNCLST
-*item ELCNCLST
+*item ELCNCLST elec_net_connect_e
 'The list shows the current connecting components in the'
 'electrical network. Click on one to edit it or chose to'
 'add/delete/copy a component.'
-'  '
+*enditem
+*item ELCNCLST elec_net_connect
 'The list shows the current connecting components in the'
 'electrical network. Please select one from the list displayed.'
 *enditem
         CALL PHELPD('Select node',3,'-',0,0,IER)
-*item ELCNCLST
-*enditem
-          CALL EASKABCD('Select option or continue',' ',
+        CALL EASKABCD('Select option or continue',' ',
 *subroutine ELCONLST
-*item ELCONLST
+*item ELCONLST elec_connections_e
 'The list shows the currently defined connections in the'
 'electrical network. Click on one to edit it or chose to'
 'add/delete/copy a component.'
-'  '
+*enditem
+*item ELCONLST elec_connections
 'The list shows the currently defined connections in the'
 'electrical network. Please select one from the list displayed.'
 *enditem
         CALL PHELPD('Select node',3,'-',0,0,IER)
-*item ELCONLST
-*enditem
-          CALL EASKABCD('Select option or continue',' ',
+        CALL EASKABCD('Select option or continue',' ',
 *subroutine EDENOD
-*item EDENOD
+*item EDENOD elec_net_edit_node
 'The user has the option to add up to three nodes depending'
 'on the nature of the point in the network being modelled:                             '
 '  1 - a one phase or balanced system node             '
@@ -9861,7 +9852,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
 *enditem
         CALL EASKATOG
-*item EDENOD
+*item EDENOD elec_net_node_type
 'The voltage type specifies whether the nodal voltage is fixed'
 'by the user or calculated during the simulation. Generally'
 'nodal voltages should be calculated; however, those connected'
@@ -9875,34 +9866,23 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '    a component in the plant domain.                '
 *enditem
             CALL EASKABCD('What is the node type?',' ',
-*item EDENOD
+*item EDENOD elec_net_watsun
 'Only the original esp-r PV model or a type 5 WATSUN-PV can be used.'
 *enditem
                     CALL ASKOK(
-*item EDENOD
+*item EDENOD elec_net_invalid
 'Please select a valid component. If you say no then it gets'
 'you out of the question loop.'
 *enditem
                   CALL ASKOK('No special material component picked.',
-*item EDENOD
-*enditem
-                CALL ASKPCMP('Select plant comp: ','-',IPCOMP,IER)
-*item EDENOD
-'Please select a valid component. If you say no then it gets you'
-'out of the question loop.'
-*enditem
-                    CALL ASKOK(
-*item EDENOD
-'duplicate names. If the node is one of a multi-phase set then the'
+*item EDENOD elec_net_duplicate
+'Enter a 12 char or less name for the node. Do not duplicate
+'names. If the node is one of a multi-phase set then the'
 'name will be the root name.'
 *enditem
             CALL EASKS(SHSTR,
-*item EDENOD
-'duplicate names. If the node is one of a multi-phase set then this'
-'name will be the root name.'
-*enditem
-              CALL EASKS(SHSTR(1:10),
-*item EDENOD
+            CALL EASKS(SHSTR(1:10),
+*item EDENOD elec_net_node_phase
 'Specify which phase of the electrical network the node is'
 'associated with. Note, for balanced and d.c. nodes simply'
 'specify 1.'
@@ -9911,10 +9891,8 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'same phase! '
 *enditem
             CALL EASKI(ENODPH(IENOD),OUTS,' ',1,'F',5,'F',
-*item EDENOD
-*enditem
             CALL EASKI(ENODPH(IENOD),OUTS,' ',1,'F',5,'F',
-*item EDENOD
+*item EDENOD elec_net_node_delete
 'When deleting a node any connections assoctated with that node'
 'must also be deleted. Also if the node is part of a multi-phase'
 'set then the other members of that set must also be deleted.'
@@ -9923,12 +9901,13 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'only components or hybrid components are nulled.'
 *enditem
         CALL ASKOK(OUTS,' ',OK,dok,6)
-*item EDENOD
+*item EDENOD elec_net_continue_if
 'A chance to continue if wrong node selected. '
 *enditem
         CALL ASKOK('Edit this node?',' ',OK,dok,1)
-*item EDENOD
-'duplicate names. If the node is one of a multi-phase set then'
+*item EDENOD elec_net_edit_name
+'Enter a 12 char or less name for the node. Do not duplicate'
+'names. If the node is one of a multi-phase set then'
 'this name will be the root name.           '
 ' '
 'Editing of nodal data is restricted to altering the component'
@@ -9937,7 +9916,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'a new one with the desired properties.    '
 *enditem
         CALL EASKS(SHSTR(1:ISTRL),
-*item EDENOD
+*item EDENOD elec_net_new_node_type
 'The voltage type specifies whether the nodal voltageis fixed'
 'by the user or calculated during the simulation. Generally'
 'nodal voltages should be calculated; however, those connected'
@@ -9953,33 +9932,16 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '    a component in the plant domain.                 '
 *enditem
         CALL EASKABCD('What is the node type?',' ',
-*item EDENOD
-'Only the original esp-r PV model or a type 5 WATSUN-PV can be used.'
-*enditem
-                  CALL ASKOK(
-*item EDENOD
-'Please select a valid component. If you say no then it gets you'
-'out of the question loop.'
-*enditem
-               CALL ASKOK('No special material component picked.',
-*item EDENOD
-*enditem
-            CALL ASKPCMP('Select plant comp: ','-',IPCOMP,IER)
-*item EDENOD
-'Please select a valid component. If you say no then it gets you'
-'out of the question loop.'
-*enditem
-                CALL ASKOK(
-*item EDENOD
+*item EDENOD elec_net_root_name
 'Give the copied node a unique name or root name.'
 *enditem
         CALL EASKS(SHSTR,
 *subroutine EDEHYB
-*item EDEHYB
+*item EDEHYB elec_net_beam_me_up
 'A chance to continue without editing component. '
 *enditem
           CALL ASKOK('Edit this component?',' ',OK,dok,1)
-*item EDEHYB
+*item EDEHYB elec_net_attach_loads
 'You can attach electrical loads and power sources to the'
 'electrical network. Please select the type of component '
 'you wish to attach: '
@@ -9991,15 +9953,12 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'already, you will not be able to attach anything.'
 *enditem
         CALL EASKABCD('Add which type of component ?',' ',
-*item EDEHYB
-*enditem
- 10       CALL ASKZONE(IZ,0,OUTS,'Select zone','-','load locate',IER)
-*item EDEHYB
+*item EDEHYB elec_net_opr_no_data
 'The zone operation file selected did not contain any eletrical'
 'data. You can select another zone.'
 *enditem
              CALL ASKOK('Zone has no electrical loads',
-*item EDEHYB
+*item EDEHYB elec_net_opr_type
 'Each user specified gain type in each zone can be associated'
 'with a node in the electrical network. '
 '  '
@@ -10008,55 +9967,47 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'provided load electrical data has been specified.'
 *enditem
  16       CALL EASKABCD('What is the type of load do',
-*item EDEHYB
+*item EDEHYB elec_net_select_again
 'ESP-r expected you to have selected a component and so here'
 'is your chance to try again. '
 *enditem
             CALL ASKOK(outs,'to the network. Try again?',OK,dok,2)
-*item EDEHYB
-*enditem
- 12       CALL ASKPCMP('Select plant comp: ','-',IPCOMP,IER)
-*item EDEHYB
-*enditem
-               call askok('Is the plant component connected to',
-*item EDEHYB
-'ESP-r expected you to have selected a component with eletrical'
-'data so here is your chance to try again.'
-*enditem
-               CALL ASKOK(
-*item EDEHYB
+*item EDEHYB elec_net_select_phase
 'Please select the phase type of this component from the list.'
 *enditem
           CALL EPICKS(IX,IVALS,'Which phase type',
-*item EDEHYB
+*item EDEHYB elec_net_no_overwrite
 'Here is your chance to continue without over-writing the node'
 'already referencing this phase.'
 *enditem
               CALL ASKOK(OUTS,'Overwrite it?', OK,dok,2)
-*item EDEHYB
+*item EDEHYB elec_net_select_ac_dc
 'Please select a different nodes for AC and DC. Say no to get'
 'you out of the question loop.'
 *enditem
               call askok(
-*item EDEHYB
+*item EDEHYB elec_component_name
+'Supply a name for the component (12 char no blanks).'
 *enditem
         CALL EASKS(SHSTR,
-*item EDEHYB
+*item EDEHYB elec_component_descr
+'A description (up to 72 char) can be given to clarify the nature'
+'of the component within the network or its attributes.'
 *enditem
         CALL EASKS(LNGSTR,
 *subroutine EDEPOW
-*item EDEPOW
+*item EDEPOW elec_net_beam_me_up
 'Chance to continue without editing the component.'
 *enditem
           CALL ASKOK('Edit this component?',' ',OK,dok,1)
-*item EDEPOW
+*item EDEPOW elec_power_comp_menu
 'The menu options relate to different categories of power-'
 'only components which may be selected for connection to'
 'the electrical network       '
 'Select a category'
 *enditem
           CALL PHELPD('Power-only comp.',4,'-',0,0,IER)
-*item EDEPOW
+*item EDEPOW elec_power_comp_add
 'Select a power-only component from the list. Each one'
 'shown is associated with a set of pre-defined [arameters,'
 'these can be altered if required. '
@@ -10066,61 +10017,53 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'this appears in the text window. '
 *enditem
             CALL PHELPD('Special material',8,'-',0,0,IER)
-*item EDEPOW
+*item EDEPOW elec_net_component_name
+'Each power component has a short name (12 char no blanks)'
+'for use in selection and bookkeepping.'
 *enditem
  99     CALL EASKS(SHSTR,' ',' name for component ?',12,
-*item EDEPOW
+*item EDEPOW elec_net_component_desc
+'Each power component has a descriptive string (< 72 char)'
+'which can be used to document its attributes or purpose.'
 *enditem
         CALL EASKS(LNGSTR,'You can take this oportunity to ',
-*item EDEPOW
+*item EDEPOW elec_net_component_data
 'Enter the required data for the power only component. '
 'Either accept the default values or enter your own'
 'data.                                             '
 *enditem
         CALL PHELPD('Power comp data',3,'-',0,0,IER)
-*item EDEPOW
-*enditem
         CALL EASKI(NPOWCDAT(IEPOW),' ',' Number of data items ?',1,'-',
-*item EDEPOW
-*enditem
-            CALL EASKR(DATSP,OUTS,' ',1.,'-',99.,'-',1.0,'SPM data',
-*item EDEPOW
-*enditem
+        CALL EASKR(DATSP,OUTS,' ',1.,'-',99.,'-',1.0,'SPM data',
         CALL EASKI(NPOWCDATS(IEPOW),' ','Number of string data items ?',
-*item EDEPOW
-'Enter the required data string for the power only component. '
-'Either accept the default values or give your own data.                                     '
-*enditem
-            CALL PHELPD('Power comp data',3,'-',0,0,IER)
-*item EDEPOW
-*enditem
-            CALL EASKS(DATSTR,OUTS,' ',72,'UNKNOWN',' pow str',IER,0)
-*item EDEPOW
+        CALL PHELPD('Power comp data',3,'-',0,0,IER)
+        CALL EASKS(DATSTR,OUTS,' ',72,'UNKNOWN',' pow str',IER,0)
+*item EDEPOW elec_net_select_phase
 'Please select the phase type of this component from the list.'
 *enditem
           CALL EPICKS(IX,IVALS,'Which phase type',
-*item EDEPOW
+*item EDEPOW elec_net_no_overwrite
 'Here is your chance to continue without over-writing the node;
 'already referencing this phase.'
 *enditem
               CALL ASKOK(
-*item EDEPOW
+*item EDEPOW elec_net_send_receive
 'Please select different nodes for sending and receiving. Say no'
 'to get out of the question loop.'
 *enditem
               CALL ASKOK(
 *subroutine EDECNC
-*item EDECNC
+*item EDECNC elec_net_beam_me_up
 'Chance to continue without editing the component.'
 *enditem
           CALL ASKOK('Edit this component?',' ',OK,dok,1)
-*item EDECNC
+*item EDECNC elec_connecting_menu
 'The menu options relate to different categories of connecting'
 'components which may be selected for connection to the'
 'electrical network. Select a category:'
 *enditem
           CALL PHELPD('Power-only comp.',4,'-',0,0,IER)
-*item EDECNC
+*item EDECNC elec_connecting_add
 'Select a connecting component from the list. Each one shown'
 'is associated with a set of pre-defined parameters, these can'
 'be altered if required. '
@@ -10130,92 +10073,71 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'this appears in the text window. '
 *enditem
             CALL PHELPD('Connecting component',8,'-',0,0,IER)
-*item EDECNC
+*item EDECNC elec_connecting_name
+'Components used for connecting have a short name of up to'
+'12 characters (no blanks) for use in selection lists and'
+'reports.'
 *enditem
   99    CALL EASKS(SHSTR,' ',' name for component ?',12,
-*item EDECNC
+*item EDECNC elec_connecting_desc
+'Components used for connecting have a descriptive string'
+'of up to 72 char for use in clarifying their use or their'
+'context in the network.'
 *enditem
         CALL EASKS(LNGSTR,'You can take this oportunity to',
-*item EDECNC
+*item EDECNC elec_connecting_data
 'Enter the required data for the power only component. '
 'Either accept the default values or enter your own'
 'data.                                             '
 *enditem
         CALL PHELPD('Power comp data',3,'-',0,0,IER)
-*item EDECNC
-*enditem
         CALL EASKI(NCONECOMDAT(IECNC),' ',' Number of data items ?',1,
-*item EDECNC
-*enditem
             CALL EASKR(DATSP,OUTS,' ',1.,'-',99.,'-',1.0,'cnc data',
-*item EDECNC
+*item EDECNC elec_connecting_phase
 'Please select the phase type of this component from the list.'
 *enditem
         CALL EPICKS(IX,IVALS,'Which phase type',
-*item EDECNC
+*item EDECNC elec_connecting_delete
 'If a conecting component is deleted, the connections containing this'
 'component must also be deleted.      '
 *enditem
         CALL ASKOK('Delete connections containing this component?',
 *subroutine EDECON
-*item EDECON
+*item EDECON elec_net_beam_me_up
 'Chance to continue without editing the connection.'
 *enditem
           CALL ASKOK('Do you want to edit this connection?',' ',
-*item EDECON
+*item EDECON elec_net_2nd_chance
 'This is a chance to correct this error.'
 *enditem
           CALL ASKOK('You cannot connect a node to itself.',
-*item EDECON
-'This is your chance to correct this error. '
-*enditem
-            CALL ASKOK('You cannot connect nodes of different',
-*item EDECON
-'This is your chance to correct this error.'
-*enditem
+          CALL ASKOK('You cannot connect nodes of different',
           CALL ASKOK('You can only connect a BALANCED connector to',
-*item EDECON
-'This is your chance to correct this error. '
-*enditem
-            CALL ASKOK('You can only connect a DC connector to',
-*item EDECON
-'This is your chance to correct this error. '
-*enditem
+          CALL ASKOK('You can only connect a DC connector to',
           CALL ASKOK(
-*item EDECON
-'This is your chance to correct this error. '
-*enditem
           CALL ASKOK(
-*item EDECON
+*item EDECON elec_net_2_to_3
 'As you are connecting a two phase component to a three phase'
 'set, the program needs to know which phase combination the'
 'component connects. For example 1 and 2, 2 and 3 or 1 and 3.            '
 'please pick the other phase.                    '
 *enditem
  50       CALL EASKABCD('Which other phase of the three-phases does',
-*item EDECON
-'This is your chance to correct this error.'
-*enditem
-            CALL ASKOK('This phase is already filled!','Try again',
 *subroutine ENETBASEV
-*item ENETBASEV
+*item ENETBASEV elec_net_one_voltage
 'In order to set the network base voltage values of the network'
 'you must define at least one voltage in the network, usually one'
 'which attaches to the grid and/or has a fixed voltage. The other'
 'base voltage values will then be automatically calculated .                             '
 *enditem
       CALL PHELPD('Set base value',5,'-',0,0,IER)
-*item ENETBASEV
+*item ENETBASEV elec_net_2nd_chance
 'This is your chance to correct this error. '
 *enditem
         CALL ASKOK('Warning: this is NOT a node with a fixed ',
-*item ENETBASEV
-*enditem
       CALL EASKR(ENODBASEV(IENODPK),'Base voltage (V) for ',
-*subroutine ENETCHECK
-*subroutine scheddt
 *subroutine EDTITEM
-*item EDTITEM
+*item EDTITEM temporal_static_menu
 'This display includes static and temporal information'
 'about this instance.  The items proceeded by a key'
 'character may be edited. To edit an item, select it and'
@@ -10224,20 +10146,10 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 ' '
 'Use the ! option to focus the graph on a shorter period.'
 'Use the page option to jump to other periods.'
-'This display includes static and temporal information'
-'about this instance.  The items proceeded by a key'
-'character may be edited. To edit an item, select it and'
-'follow the prompts supplied.  Fields are filled with '
-'default values for a new instance. '
 ' '
-'Use the ! option to focus the graph on a shorter period.'
-'Use the page option to jump to other periods.'
-' '
-'Type specific help follows:'
-'No type specific help available.'
 *enditem
         CALL PHELPD('static fields',10+NHELP,'-',0,0,IER)
-*item EDTITEM
+*item EDTITEM temporal_graph_menu
 'You can graph the current day or a sequence of days or the'
 'whole period. '
 ' '
@@ -10251,10 +10163,8 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Methodology Activity (operations) data '
 *enditem
           CALL PHELPD('data options',10,'-',0,0,IER)
-*item EDTITEM
-*enditem
           CALL EASKPER('Display period:',igbdoy,igedoy,IFDAY,IER)
-*item EDTITEM
+*item EDTITEM temporal_timestep_import
 'These options allow you to set the timestep within the'
 'temporal file where the data you are importing is to be inserted.'
 ' '
@@ -10279,65 +10189,53 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'established.'
 *enditem
           CALL EASKABC('Import data options: ','(see help)',
-*item EDTITEM
+*item EDTITEM temporal_import_source
 'One import source file will be assumed throughout this sesion.'
 'If this needs to be altered then the user should return to'
 'this menu to give the new name.'
 *enditem
           CALL EASKS(tfile,' Import file name? ',
-*item EDTITEM
-*enditem
-          CALL EASKS(LINE,GDHDRT(3)(1:68),' ',
-*item EDTITEM
-*enditem
-          CALL EASKSCMD(LINE,GDHDRT(3)(1:68),' ',
-*item EDTITEM
-*enditem
-            CALL EPICKS(IX,IVAL,' ',PROMP,
-*item EDTITEM
+*item EDTITEM temporal_unique_id
 'In order to find items in the TDF db a unique id must be assigned'
 'to each item. This id is a character string up to 12 characters'
 'long with no blanks.'
 *enditem
         CALL EASKS(TTAG,' ',' Unique id string? ',
-*item EDTITEM
+*item EDTITEM temporal_unique_menu
 'This is your chance to verbosely identify this item of the'
 'temporal db (up to 36 char). Word of advice: giving a good'
 'description may save your sanity at a future date.'
 *enditem
         CALL EASKS(TTAIDE,' ',' Item description ',
-*item EDTITEM
-*enditem
-          CALL EASKR(TMAR(IFOC,IA),' ',PROMP,TMIN(IFOC,IA),
-*item EDTITEM
-*enditem
-          CALL EPICKS(IX,IVAL,' ',PROMP,
-*item EDTITEM
-*enditem
-          CALL EASKI(ITMAR(IFOC,IA),' ',PROMP,ITMIN(IFOC,IA),
 *subroutine STRTIM
 *subroutine EDIMPT
-*item EDIMPT
-'This display allows the user to specify parameters which'
-'control the importation of data into this temporal file.'
+*item EDIMPT temporal_import_parameters
+'This display allows the user to specify parameters which controls'
+'the importation of data into this temporal file.'
 ' '
-'After supplying the name of the file of column data that'
-'you want to import (space or comma or tab separated) you'
-'can view the initial lines of the file to confirm which columns'
-'the relevant data is in as well as how many lines (if any)'
-'to ignore at the start of the file. If the file name is not'
-'local, specify the whole path. '
+'One import source file will be assumed throughout this session.'
+'If this needs to be altered then the user should return to this'
+'menu to give the new name.'
+'  '
+'The import file is assumed to be an ASCII file and to contain'
+'column data (there can be a header or other text at the start'
+'of the file which you can skip over).'
 ' '
-'If the column data file includes information prior to the'
-'point in time that you are interested in you can use the'
-'[begin reading @] instruction to skip past the unwanted'
-'information (take care when deciding how many lines to'
-'skip as there is no way to shift time once the data is
-imported). '
+'After supplying the name of the file of column data that you want'
+'to import (space or comma or tab separated) you can view the initial'
+'lines of the file to confirm which columns the relevant data is in'
+'as well as how many lines (if any) to ignore at the start of the file.'
+'If the file name is not local, specify the whole path. '
 ' '
-'You must specify the column within the import file which'
-'corresponds to each of the fields which contain timestep'
-'data ( a zero means no import for a field).'
+'If the column data file includes information prior to the point in'
+'time that you are interested in you can use the [bein reading @]'
+'instruction to skip past the unwanted information (take care when'
+'deciding how many lines to skip as there is no way to shift time'
+'once the data is imported). '
+' '
+'You must specify the column within the import file which corresponds'
+'to each of the fields which contain timestep data (a zero means no'
+'import for a particular field).'
 'NOTE: blank characters, tabs, and commas are all treated as'
 'separators. In the following db temp is actually in column 5. '
 ' '
@@ -10353,26 +10251,11 @@ imported). '
 'Interpolation of data during the import is not supported'
 '(i.e. you cannot import hourly data into a temporal file'
 'with a frequency of ten minutes. '
-'One import source file will be assumed throughout this'
-'session. If this needs to be altered then the user'
-'should return to this menu to give the new name.'
 *enditem
         CALL EASKS(tfile,' Import file name? ',
-*item EDIMPT
-'It is possible to import temporal information via an ASCII'
-'file with columns of data.'
-*enditem
-        CALL EASKABC('Import options:',' ',
-*item EDIMPT
-'To allow flexibility you may specify that the imported'
-'data should begin at a particular line of the import'
-'file.  Comment lines (which begin with a # are not'
-*enditem
         CALL EASKI(IV,' ','Begin reading @ import file line no:',
-*item EDIMPT
-*enditem
         CALL PHELPD('period fields',36,'-',0,0,IER)
-*item EDIMPT
+*item EDIMPT temporal_warn_casgains
 'The file you are importing appears to be a timestep'
 'casual gain file.  NOTE that such files required '
 'that the data included the startup period except for'
@@ -10382,30 +10265,28 @@ imported). '
 'period so you may need to edit the import file to take'
 'this into account. '
 *enditem
-          CALL PHELPD('timestep import warning',8,'-',0,0,IER)
-*item EDIMPT
-'Please specify which column of the import file is associated'
-'with this data field. A [0] indicates that no data will be'
-'imported into this field.'
-*enditem
+        CALL PHELPD('timestep import warning',8,'-',0,0,IER)
         CALL EASKI(IV,' ','Associated column in import file:',
 *subroutine EDSTATICIMPT
-*item EDSTATICIMPT
-'This display allows the user to specify parameters'
-'which control the importation of data into this'
-'temporal file.  '
+*item EDSTATICIMPT temporal_import_parameters
+'This display allows the user to specify parameters which control'
+'the importation of data into this temporal file.  '
+'  '
+'One import source file is assumed thoughout this session unless'
+'you alter the name of the file.'
 ' '
-'After supplying the name of the file of column data that'
-'you want to import you can view the initial lines of the'
-'file to confirm which items the relevant data is in as well'
-'as how many lines (if any) to ignore at the start of the file.'
-'If the file name is not local, specify the whole path. '
+'After supplying the name of the file of column data that you want'
+'to import you can view the initial lines of the file to confirm'
+'which items the relevant data is in as well as how many lines'
+'(if any) to ignore at the start of the file. If the file name is'
+'not local, specify the whole path. '
 ' '
 'If the data file includes information prior to the point in'
 'time that you are interested in you can use the '
 '[begin reading @] instruction to skip past the unwanted'
 'information (take care when deciding how many lines to skip'
 'as there is no way to shift time once the data is imported).'
+'Note that comment lines which begin with a # are not counted.'
 ' '
 'You must specify the item number within the import file which'
 'corresponds to each of the fields which contain data ( a zero'
@@ -10419,20 +10300,7 @@ imported). '
 'this menu to give the new name.'
 *enditem
         CALL EASKS(tfile,' Import file name? ',
-*item EDSTATICIMPT
-'To allow flexibility you may specify that the imported data'
-'should begin at a particular line of the import file. Comment'
-'lines (which begin with a # are not counted.'
-*enditem
         CALL EASKI(IV,' ','Begin reading @ import file line no:',
-*item EDSTATICIMPT
-*enditem
-        CALL PHELPD('period fields',23,'-',0,0,IER)
-*item EDSTATICIMPT
-'Please specify which item (e.g. separated by commas but at the'
-'same line) of the import file is associated with this data field.'
-'A [0] indicates that no data is imported into this field.'
-*enditem
         CALL EASKI(IV,' ','Associated item number in import file:',
 *subroutine pregist
 *item pregist
