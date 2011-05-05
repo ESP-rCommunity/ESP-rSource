@@ -1,6 +1,6 @@
 # composite construction db defined in ./multicon.db3
 # based on materials db ./material.db3.a
-   38     # no of composites 
+   39     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -133,6 +133,12 @@
     1    fictitious    TRAN  SC_fictit     SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
   245    0.0040  fict : fictitious material (almost not there) with matching single laye
+# layers  description   optics name   symmetry tag
+    3    insul_frame   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0040  grey cotd alum : Grey coated aluminium
+  281    0.0800  glass fibre quilt : Glass Fibre Quilt
+   46    0.0040  grey cotd alum : Grey coated aluminium
 # layers  description   optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
