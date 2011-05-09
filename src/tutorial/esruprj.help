@@ -10303,7 +10303,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKI(IV,' ','Begin reading @ import file line no:',
         CALL EASKI(IV,' ','Associated item number in import file:',
 *subroutine pregist
-*item pregist
+*item pregist cfg_overview
 'The model configuration file holds the definition of the building,'
 'plant, flow and control systems to be simulated, including'
 'references to associated files.'
@@ -10313,7 +10313,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Up to 24 characters allowed.'
 *enditem
         CALL EASKSCMD(LCFTMP,' ','Model root name?',
-*item pregist
+*item pregist cfg_overwrite_warning
 'If you overwrite the existing configuration file its contents'
 'will be lost unless you have backed up your data.'
 ' '
@@ -10321,77 +10321,79 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'a different file name.'
 *enditem
           call askok('There is an existing configuration with',
-*item pregist
+*item pregist cfg_standard_folders
 'ESP-r organises a model within a standard set of folders (the
 'usual response is to use these folders to organize the data in'
-'the model. '
+'the model.'
+'  '
+'The root name of the model is generally the same as the name'
+'of the model folder structure. In it will be the following'
+'folders:'
+' cfg (system files)'
+' ctl (control files)'
+' aim2 (aim2 files)'
+' zones (zone files)'
+' hvac (ideal hvac files)'
+' nets (networks for flow and power and systems)
+' doc (reports and notes)'
+' tmp (odds+ends)'
+' dbs (model specific databases)'
+' bsm (BASESIMP files)'
 '  '
 'Or, if the model will be small (one or two zones) all the'
 'files can be in one folder.'
 ' '
 *enditem
         CALL EASKABC(' Create model in:',
-*item pregist
+*item pregist cfg_model_descriptor
 'A model has an associated descriptor (<72 characters, which is'
 'used later as an identifier, e.g. Low energy building with'
 'optimum start/stop plant control.'
 *enditem
       CALL EASKS(ltmp,' ','Model description?',
-*item pregist
+*item pregist cfg_model_log_file
 'The project log file holds a description of the project and the'
 'analysis intentions. It is located in the [cgf] folder. Keep it'
 'up to date via a text editor.'
-*enditem
-      CALL EASKS(ltmp,' ','Project log file?',
-*item pregist
-'The log file exists, but could not be scanned. Check that it is'
-'not an empty file or contains non-printable characters. '
-*enditem
-          CALL ASKOK('Problem detected with log file!',
-*item pregist
-'The log file is used to document your model and record the'
-'purpose and outcomes of commissioned simulations. Update'
-'it using a text editor as your modelling project evolves.'
-'The file is located in the [cfg] directory of your model'
 ' '
 'Assuming you have an editor associated with ESP-r (defined'
-'via your .esprc file), you can edit the log file now.'
+'via your .esprc file), you can edit the log file.'
+'  '
+'Note: if the log file was found but could not be scanned and'
+'opened it might be that it has unprintable characters in it.'
 *enditem
+      CALL EASKS(ltmp,' ','Project log file?',
+      CALL ASKOK('Problem detected with log file!',
       CALL ASKOK(' ','Edit log file?',OK,dok,8)
-*item pregist
+*item pregist cfg_model_images
 'A model can usefully include references to images depicting'
 'different model aspects such as geometry, flow networks,'
 'simulation results, site conditions and the like.'
 'Such images are usually located in the [images] folder.'
+'  '
+'Notes (<248 char) for images can help with communicating'
+'the intent of the image. This is particularly true for.'
+'images which are used for training purposes.
 ' '
 'You can either identify such images now or add them later via'
 'the [model context->images] menu item.'
 *enditem
       CALL ASKOK(' ','Associate images now?',OKI,dok,7)
-*item pregist
-'Notes (<248 char) for images can help with communicating'
-'the intent of the image. This is particularly true for.'
-'images which are used for training purposes.
-*enditem
-            CALL EASKS248(tcname,' ','Image notes:',
-*item pregist
-'If you have more images select ok.'
-*enditem
-          CALL ASKOK(' ',' Another image?',OK,dok,1)
-*item pregist
+      CALL EASKS248(tcname,' ','Image notes:',
+      CALL ASKOK(' ',' Another image?',OK,dok,1)
+*item pregist cfg_latitude_longitude
 'Site latitude in degrees, where North is +ve, e.g. 55.9'
 'for Glasgow.  In the southern hemisphere use negative'
 'numbers. In both cases the positive Y axis of the model'
 'faces North.'
-*enditem
-        CALL EASKR(SLAT,' ','Site latitude?',
-*item pregist
+'  '
 'Site longitude difference is the difference in degrees'
 'from the local time reference meridian, East is +ve, e.g.'
 '-4.1 for Glasgow (relative to the Greenwich Meridian).'
 *enditem
+        CALL EASKR(SLAT,' ','Site latitude?',
         CALL EASKR(SLON,' ','Longitude difference?',
-*item pregist
+*item pregist cfg_model_year
 'The assessment year is required for event scheduling.(e.g.'
 'to determine which day of the week is 1 January. You can'
 'either use the value offered or provide an alternative.'
@@ -10400,7 +10402,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'the climate file used in a simultion.'
 *enditem
         CALL EASKI(IYEART,' ','Assessment year?',
-*item pregist
+*item pregist cfg_model_other
 'Other site information, such as ground reflectivity and'
 'wind exposure, have been automatically set to default'
 'values and these may be changed via the [model context]'
@@ -10413,134 +10415,92 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *enditem
         CALL PHELPD('new site',9,'-',0,0,IER)
 *subroutine pfolders
-*item pfolders
+*item pfolders cfg_path_overview
 'This menu allows you to edit the information related'
 'to a project-s folders and files.'
 ' '
 'The path options allow new files to be positioned in standard'
 'folders. The paths are relative to the location of the model'
 'configuration file.'
+'  '
+'If you select each of the standard paths to model details'
+'you can alter the relative path from the location of the model'
+'cfg file to the relevant folder.  Be careful, if you revise'
+'an existing path you may isolate several model files!'
+'  '
+'The path for:
+'  zone files is typically ../zones'
+'  control files is typically ../ctl'
+'  Alberta Infiltration Method files is ../aim2'
+'  network (air/power/system) files is ../nets'
+'  image files is ../images'
+'  documents and notes are in ../docs'
+'  temporary files are in ../tmp'
+'  Radiance files are in ../rad'
+'  local databases are always in ../dbs'
+'  idalized HVAC descriptions are in ../hvac'
+'  BASESIMP descriptions are in ../bsm'
 ' '
 'The option to examine a specified ASCII file is useful if'
 'you have need to directly view the contents of a file such'
 'as the model configuration file or a zone geometry file or'
-'the model log file.'
+'the model log file.  The contents of the file will be sent'
+'to the text feedback window of the application.'
 ' '
 'Editing an ASCII file - such as the project log file - requires'
 'a text editor. This can be re-defined in your .esprc file.'
 '  '
-'ESP-r thinks that recent model changes have been'
-'made. Because these changes are held only in'
-'computer memory they will be lost if not saved to'
-'file. Agree to updating the file.'
+'If ESP-r thinks that recent model changes have been'
+'made such changes may only be held in memory and will'
+'be lost if not saved to file. Agree to updating the file
+'if you want to save what is memory and say no if you do'
+'not want to record recent changes.
 *enditem
-            CALL ASKOK(' ','Update system configuration file?',
-*item pfolders
-*enditem
+        CALL ASKOK(' ','Update system configuration file?',
         CALL PHELPD('folders and files',19,'-',0,0,IER)
-*item pfolders
-'Give relative path from cfg to zones folder.'
-'For example ../zones .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to controls folder.'
-'For example ../ctl .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to AIM2 folder.'
-'For example ../aim2 .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to networks folder.'
-'For example ../nets .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to images folder.'
-'For example ../images .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to documents folder.'
-'For example ../docs .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to temporary folder.'
-'For example ../tmp .'
-'Holds transient information.'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to Radiance folder.'
-'For example ../rad .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg folder',
-*item pfolders
-'Give relative path from cfg to hvac folder.'
-'For example ../hvac .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-'Give relative path from cfg to BASESIMP folder.'
-'For example ../bsm .'
-*enditem
-          CALL EASKS(t24,'Relative path from cfg',
-*item pfolders
-*enditem
- 254    CALL EASKGEOF('Select a zone to focus on:',CFGOK,IC,'-',IER)
-*item pfolders
-'The specified ASCII file will be read and displayed'
-'in the text window page by page.'
-*enditem
+        CALL EASKS(t24,'Relative path from cfg',
     6   CALL EASKS(LFIL,' ','ASCII file name?',
-*item pfolders
-'Chance to correct error in file name or location.'
-*enditem
-          CALL ASKOK(' Problem detected while trying to open',
-*item pfolders
-'An ASCII format file can be edited using the currently'
-'defined text editor.'
-*enditem
+        CALL ASKOK(' Problem detected while trying to open',
         CALL EASKS(LFIL,' ','ASCII file to edit?',
 *subroutine edimage
-*item edimage
+*item edimage image_overview
 'Images will be displayed when the project is loaded.'
 'The default image type is GIF but JPEG can also be viewed.'
+'  '
+'Standard image types that can be tagged in the model'
+'cfg file are:'
+'  GIF   TIFF  XBM (X11 bitmap) and other'
+'  '
+'If you select the [other] type of image you will be asked to'
+'supply a 4 charcter tag which then needs to be linked to'
+'the display tool specification in the .esprc file.'
+'  '
+'Images are displayed via an external image tool (in the X11'
+'interface or via a pop-up image if running the GTK version'
+'of ESP-r.'
+'  '
+'If you make a mistake you are given a 2nd chance.'
 *enditem
       CALL EASKS(limg,' ','Name of image file?',
-*item edimage
-'Chance to change file name or location.'
-*enditem
-        CALL ASKOK('Could not locate image file.','Try again?',
-*item edimage
-'Select one of these standard image types. Each type'
-'must have a related display application specified'
-'in your .esprc file, e.g. *image_display GIF display.'
-*enditem
+      CALL ASKOK('Could not locate image file.','Try again?',
       call EASKATOG(' ','Image format?',
-*item edimage
-'Image files can have a 4 character format. Special'
-'format tags can be linked to display applications '
-'in the .esprc file.'
-*enditem
-        CALL EASKS(t5,' ','Image type character code?',
-*item edimage
+      CALL EASKS(t5,' ','Image type character code?',
+*item edimage image_topic
+'Each image can be tagged for a specific or general topic'
+'so that ESP-r can better choose when the image is displayed'
+'to the user.'
+'  '
 'If an image is tagged [general] then it will be displayed'
 'when the model is loaded, otherwise it will only be'
 'displayed when requested via a graphic display button.'
+'  '
+'If you selected the [other] topic then you are asked to'
+'supply a 4 character focus tag.'
 *enditem
       call EASKATOG(' ','Image focus?',
-*item edimage
-'Image files have a 4 character focus tag, e.g. FZON for'
-'zones, FNET for networks etc.'
-*enditem
-        CALL EASKS(t5,' ','Image type character code?',
+      CALL EASKS(t5,' ','Image type character code?',
 *subroutine edbuild
-*item edbuild
+*item edbuild cfg_zone_files
 'The files defining the composition of a zone are listed in'
 'this menu. In the case of a blank entry, the file is'
 'optional and is not currently defined.'
@@ -10559,94 +10519,70 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'model definition will be updated after each change you make.'
 *enditem
         CALL PHELPD('utility file contents',18,'-',0,0,IER)
-*item edbuild
+*item edbuild cfg_zone_name
 'The zone name is used as an identifier during results analysis'
 'Names should be unique.'
 *enditem
         CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
-*item edbuild
+*item edbuild cfg_geo_file_name
 'The zone geometry file is mandatory and defines the composition'
 'of a closed poluygon body of a thermal zone.'
 *enditem
    41   CALL EASKS(L,outs,' ',72,D,'Z geom',IER,2)
-*item edbuild
+*item edbuild cfg_con_file_name
 'The zone construction file is mandatory and defines the thermo-'
 'physical properties of the thermal zone.'
 *enditem
         CALL EASKABC(' For zone construction file',
-*item edbuild
-*enditem
    42   CALL EASKS(L,outs,' ',72,D,'Z constr',IER,2)
-*item edbuild
+*item edbuild cfg_opr_file_name
 'The zone operation file is mandatory and defines  infiltration,'
 'ventilation and casual gains.'
 *enditem
         CALL EASKABC(' For zone operation file',
-*item edbuild
-*enditem
    40   CALL EASKS(L,outs,' ',72,D,'Z operations',IER,2)
-*item edbuild
+*item edbuild cfg_obs_file_name
 'The zone obstructions file contains the geometry of'
 'obstruction blocks for use in shading/ insolation'
 'calculations. You may browse for existing files.'
 *enditem
-            CALL EASKABCD(' For zone obstruction file',' :',
-*item edbuild
-*enditem
-            CALL EASKABC(' For zone obstruction file',
-*item edbuild
-*enditem
+          CALL EASKABCD(' For zone obstruction file',' :',
+          CALL EASKABC(' For zone obstruction file',
    47     CALL EASKS(L,outs,' ',72,D,'Z obstr',IER,3)
-*item edbuild
+*item edbuild cfg_tmc_file_name
 'The zone optics (TMC) file contains the optical'
 'properties of transparent surfaces and offering'
 'a more exact treatment of, for example, windows.'
 *enditem
           CALL EASKABCD(' For the zone TMC file',' :',
-*item edbuild
-*enditem
           CALL EASKABC(' For the zone TMC file',' :',
-*item edbuild
-*enditem
    51   CALL EASKS(L,outs,' ',72,D,'tmc file',IER,6)
-*item edbuild
+*item edbuild cfg_vwf_file_name
 'The zone view factor file supports a more exact'
 'treatment of longwave radiation exchange.'
 'You may also browse for existing files.'
 *enditem
-          CALL EASKABCD(' For zone view factor file',' :',
-*item edbuild
-*enditem
-          CALL EASKABC(' For zone view factor file',' :',
-*item edbuild
-*enditem
+        CALL EASKABCD(' For zone view factor file',' :',
+        CALL EASKABC(' For zone view factor file',' :',
    46   CALL EASKS(L,outs,' ',72,D,'view factor',IER,4)
-*item edbuild
+*item edbuild cfg_cgc_file_name
 'The zone casual gain control file allows a casual'
 'gain type to be controlled on the basis of daylight'
 'levels as sensed by one or more sensors located within'
 'or outwith a zone and against a selected control law.'
 *enditem
           CALL EASKABCD(' For zone casual gain control file',' :',
-*item edbuild
-*enditem
           CALL EASKABC(' For zone casual gain control file',' :',
-*item edbuild
-*enditem
    52   CALL EASKS(L,outs,' ',72,D,'casual gain control file',IER,6)
-*item edbuild
+*item edbuild cfg_shd_file_name
 'The shading/ insolation file contains the results of'
 'a separate shading and insolation analysis for use'
 'throughout a simulation to dictate solar injection'
 *enditem
           CALL EASKABCD(' For zone shading/ insolation file',' :',
-*item edbuild
-*enditem
           CALL EASKABC(' For zone shading /insolation file',' :',
-*item edbuild
-*enditem
    48   CALL EASKS(L,outs,' ',72,D,'shd db',IER,6)
-*item edbuild
+*item edbuild cfg_htc_file_name
 'The convection regime file contains data for'
 'controlling the calculation of internal and/or external'
 'surface convection heat transfer for selected surfaces.'
@@ -10658,288 +10594,158 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'convection calculations.'
 *enditem
           CALL EASKABCD(' For the convection regime file',' :',
-*item edbuild
-*enditem
           CALL EASKABC(' For zone convection regime file',' :',
-*item edbuild
-*enditem
    49   CALL EASKS(L,outs,' ',72,D,'Z hc',IER,6)
-*item edbuild
+*item edbuild cfg_cfd_file_name
 'The domain flow file allows the association of a'
 'computational fluid dynamics (CFD) domain with a'
 'zone.  This allows intra-zone air movement to be'
 *enditem
           CALL EASKABC(' For the zone domain flow file',
-*item edbuild
-*enditem
    53   CALL EASKS(L,outs,' ',72,D,'Domain flow model file',IER,6)
-*item edbuild
+*item edbuild cfg_grd_file_name
 'There are four adaptive gridding files which must be'
 'specified for each zone to which such gridding is to'
 'be applied. Check documentation for more information.'
+'  '
+' 3D control volumes file'
+' 3D connections file'
+' 3D coordinates file'
+' 3D nodes temperatures file defines the location of additional'
+'    construction nodes corresponding to the finer discretisation'
+'    of a multi-layered construction.'
+'
 *enditem
           CALL EASKABC(' For addaptive gridding files',
-*item edbuild
-'The 3D control volumes file defines ...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(L,outs,' ',72,D,'control volumes',IER,2)
-*item edbuild
-'The 3D node connections file defines ...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(L,' 3D volumes connections file?',
-*item edbuild
-'The 3D nodes coordinates file defines ...'
-'<< more text to be added here >>'
-*enditem
         CALL EASKS(L,' 3D coordinates file?',
-*item edbuild
-'The 3D nodes temperatures file defines the'
-'location of additional construction nodes'
-'corresponding to the finer discretisation'
-'of a multi-layered construction.'
-*enditem
         CALL EASKS(L,' 3D node temperatures file?',
-*item edbuild
+*item edbuild moist_transp_file_name
 'Moisture transport data is required for adaptive '
 'gridding use in the current zone.'
 'Check documentation for more information.'
 *enditem
           CALL EASKABC(' For moisture transport file',
-*item edbuild
-'The moisture file holds moisture transport data'
-'for nodes. << more text to be added here >>'
-*enditem
         CALL EASKS(L,outs,' ',72,D,'moisture file',IER,2)
-*item edbuild
+*item edbuild struc_mesh_file_name
 'structure mesh configuration file is required for '
 'structured gridding of the current zone.'
 'Check documentation for more information.'
 *enditem
           CALL EASKABC(' For structured mesh file',
-*item edbuild
-'The structured mesh file holds structured mesh data'
-'for a zone.'
-*enditem
         CALL EASKS(L,outs,' ',72,D,'structured file',IER,2)
-*item edbuild
+*item edbuild cfg_cfc_file_name
 'The zone complex fenestration constructions (CFC)'
 'provides a more exact treatment for windows which'
 'can include operable slat-type shading layers.'
 *enditem
           CALL EASKABCD(' For the zone CFC file',' :',
-*item edbuild
-*enditem
           CALL EASKABC(' For the zone CFC file',' :',
-*item edbuild
-*enditem
   511   CALL EASKS(L,outs,' ',72,D,'cfc file',IER,6)
 *subroutine GTOPOL
-*item GTOPOL
+*item GTOPOL ground_form_overview
 'This file contains a description of a ground form '
 'for use by Radiance and viewing (later by esp). '
+'  '
+'The ground form has a short (15 char) description'
 *enditem
  46   CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-*item GTOPOL
-'This is a reminder of the ground type.'
-*enditem
-        CALL EASKS(t15,' Description of the ground?',
-*item GTOPOL
-'As an option the default assumption of a flat uniform'
-'ground attributed only by a reflectance you can define'
-'a gound topology and geometry.  Currently this infor-'
-'mation is passed to imaging software such as Radiance'
-'for wire-frame viewing packages.  In the FUTURE it  '
-'will be included in shading calculations. '
+      CALL EASKS(t15,' Description of the ground?',
+*item GTOPOL ground_form_menu
+'As an option the default assumption of a flat uniform ground'
+'attributed only by a reflectance you can define a ground topology'
+'and geometry.  Currently this information is passed to imaging'
+'software such as Radiance for wire-frame viewing packages.'
+'  '
+'In the FUTURE it will be included in shading calculations. '
 ' '
-'Geometry is similar to that of zone enclosures but'
-'is primarily a collection of triangles which need not'
-'form a [closed] body - rather a mesh which approx- '
-'imates the contours of the site. '
+'Geometry is similar to that of zone enclosures but is primarily'
+'a collection of triangles which need not form a [closed]'
+'body - rather a mesh which approximates the contours of the site.'
 ' '
-'Each surface has an composition attribute (mlc db'
-'name) so that surface properties are known. '
-' '
-'An automated building of triangles from a list of '
-'vetices is provided. '
+' option d - Each surface has an composition attribute (construction'
+'   database name) so that surface properties are known. This is'
+'   for use by Radiance only.'
+'  '
+' option * -  auto triangulation method is most robust when'
+'   applied to a ground topography with no existing surface.'
+'   If you say yes, existing surfaces are cleared before'
+'   beginning triangulation. '
+'  '
+' option # - rotation and translation options are the same as '
+'   for thermal zones. Rotation is applied around vertex 1 or'
+'   the site origin or a user defined point. The rotation angle'
+'   is positive anticlockwise. Transform options shifts the'
+'   ground form by a given amount in each axis.'
 ' '
 'If you are creating the initial vertices via a click-'
 'on-bitmap the ESP-r cookbook has a useful guide. '
 ' '
-'<< to be written>> '
 *enditem
         CALL PHELPD('grnd topo section',22,'-',0,0,IER)
-*item GTOPOL
-'This is a reminder of the ground (like zone names) '
-*enditem
         CALL EASKS(t15,' Description of the ground?',
-*item GTOPOL
-*enditem
-        CALL EASKGSUR(IS,'M','Select surface(s) to attribute.',' ',IER)
-*item GTOPOL
-'Select the surfaces for which the composition '
-'is to be defined.'
-*enditem
-            CALL EPICKS(INPICK,IVALS,' ',' ',32,NGT,VERTS,
-*item GTOPOL
-'The auto triangulation method is most robust when'
-'applied to a ground topography with no existing'
-'surface. If you say yes, existing surfaces are'
-'cleared before beginning triangulation. '
-*enditem
-            call askok('Existing surfaces will be removed prior to',
-*item GTOPOL
-'Rotation and translation options are the same as '
-'for thermal zones. '
-*enditem
+        CALL EPICKS(INPICK,IVALS,' ',' ',32,NGT,VERTS,
+        call askok('Existing surfaces will be removed prior to',
         CALL EASKAB(' Adjust location of ground:',' ',
-*item GTOPOL
-'The rotation is applied around vertex 1 and positive'
-'is anticlockwise. '
-*enditem
-          CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
-*item GTOPOL
-'You may wish to rotate it about the site '
-'origin X=0., Y=0. or at a user specified point. '
-*enditem
-            CALL EASKABC(' Rotation choices :',' ','Site origin',
-*item GTOPOL
-'Point is in the site coordinate system.'
-*enditem
-              CALL EASKR(x1,' ',' X point (metres) ? ',
-*item GTOPOL
-*enditem
-              CALL EASKR(y1,' ',' Y point (metres) ? ',
-*item GTOPOL
-'Transform shifts the zone by a given amount in'
-'each axis.'
-*enditem
-          CALL EASKR(VALX,' ',' X shift (metres) ? ',
-*item GTOPOL
-*enditem
-          CALL EASKR(VALY,' ',' Y shift (metres) ? ',
-*item GTOPOL
-*enditem
-          CALL EASKR(VALZ,' ',' Z shift (metres) ? ',
-*item GTOPOL
-'This file contains a description of a ground form '
-'for use by Radiance and viewing (later by esp). '
-*enditem
-        CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
+        CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
+        CALL EASKABC(' Rotation choices :',' ','Site origin',
+        CALL EASKR(x1,' ',' X point (metres) ? ',
+        CALL EASKR(y1,' ',' Y point (metres) ? ',
+        CALL EASKR(VALX,' ',' X shift (metres) ? ',
+        CALL EASKR(VALY,' ',' Y shift (metres) ? ',
+        CALL EASKR(VALZ,' ',' Z shift (metres) ? ',
 *subroutine EDGVERT
-*item EDGVERT
+*item EDGVERT ground_form_verticies
 'This menu allows existing vertices to be viewed and'
 'edited. Edit by selecting an item or -Exit to escape.'
+'  '
+' option + to manage ground verticies you can add new vertices,'
+'   delete existing vertices, copy (and then edit) existing'
+'   verticies, replicate existing verticies and edit vertex'
+'   coordinates.'
+'  '
+' option ^ vertex transforms includes a number of useful'
+'   facilities to modify vertices:'
+'   *--x-* Vertex on a line: finds one or more points along a'
+'   line (defined by specifying two vertices). You can add more'
+'   vertices along the same line.'
 ' '
-'The [> find vertex] option is useful to predict an'
-'intermediate vertex along an edge. '
+'   *<-?->* Distance between vertices: gives distance in '
+'   metres given two vertices. '
 ' '
-'The [^ distance along] option is useful to confirm'
-'actual dimension of a surface.'
-*enditem
-        CALL PHELPD('configuration section',8,'-',0,0,IER)
-*item EDGVERT
-'ESP-r includes triangulation routines which require'
-'you to identify which vertices are at an edge. '
-'*--x-* Vertex on a line: finds one or more points '
-'along a line (defined by specifying two vertices). '
+'   Vertex at angle: finds a (new) vertex relative to a given'
+'   vertex at a specified distance, azimuth angle north=0'
+'   +degrees clockwise and elevation (90 is vertical). '
 ' '
-'*<-?->* Distance between vertices: gives distance in '
-'metres given two vertices. '
-' '
-'Vertex at angle: finds a (new) vertex relative to '
-'a given vertex at a specified distance, angle and '
-'elevation. '
-' '
-'Angel between lines: finds angle A between two lines'
-'given 3 vertex as in:      * 1 '
+'   Angel between lines: finds angle A between two lines'
+'   given 3 vertex as in:      * 1 '
 '                       a  /    '
 '                3 *------* 2   '
+'  '
+'   Find close vertices - looks for and lists vertices that'
+'   are close to each other
+'  '
+' option ! triangulation routines which require you to '
+'   identify which vertices are at an edge. '
 *enditem
+        CALL PHELPD('configuration section',8,'-',0,0,IER)
         call MENUATOL('available vertex transforms (see help):',
-*item EDGVERT
-'Distance along the line in metres.'
-*enditem
-            CALL EASKR(vdis,' Distance along the line (metres): ',
-*item EDGVERT
-'This can become a new vertex. '
-*enditem
-              CALL EASKABC(outs,' ','new vertex',
-*item EDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
- 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
-*item EDGVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface (so the rules about'
-'matching edges is followed). '
-*enditem
-                        call askok('Insert this vertex?','(see help)',
-*item EDGVERT
-'If you have several vertices along one line you '
-'can click ok to continue defining them. '
-*enditem
-            call askok('Another vertex along the line? ',' ',ok,dok,2)
-*item EDGVERT
-'Distance is in metres, azimuth assumes north=0 '
-'+ degrees clockwise, elevation 90 is vertical. '
-*enditem
- 342        CALL EASKS(HOLD,
-*item EDGVERT
-'This can become a new vertex. '
-*enditem
-              CALL EASKABC(outs,' ','new vertex',
-*item EDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
- 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
-*item EDGVERT
-'If you have several vertices to create '
-'can click ok to continue defining them.'
-*enditem
-            call askok('Another vertex from this origin?',' ',ok,dok,2)
-*item EDGVERT
-'Last chance to change the vertex position. '
-*enditem
-            call askok('Is this aligned vertex ok?',' ',ok,dok,1)
-*item EDGVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface (so the rules about'
-'matching edges is followed). '
-*enditem
-                      call askok('Insert this vertex?','(see help)',
-*item EDGVERT
-'If there are vertices which are near duplicates, this'
-'function will list them all or find ones close to one.'
-*enditem
-          CALL EASKABC('Options:',' ','find any close vertices',
-*item EDGVERT
-'Distance along the line in metres. Positive'
-'will be towards the 2nd vertex. Negavie will '
-'be away from 2nd vertex.'
-*enditem
-            CALL EASKR(vdis,' Move along the line (metres): ',
-*item EDGVERT
-'Last chance to abort the change. '
-*enditem
-            call askok('Apply this move?',' ',OK,dok,1)
-*item EDGVERT
-'This can become a new vertex. '
-*enditem
-            CALL EASKABC(outs,' ','new vertex',
-*item EDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
-  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
-*item EDGVERT
+        CALL EASKR(vdis,' Distance along the line (metres): ',
+        CALL EASKABC(outs,' ','new vertex',
+ 443    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+        call askok('Insert this vertex?','(see help)',
+        call askok('Another vertex along the line? ',' ',ok,dok,2)
+ 342    CALL EASKS(HOLD,
+        CALL EASKABC(outs,' ','new vertex',
+ 543    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+        call askok('Another vertex from this origin?',' ',ok,dok,2)
+        call askok('Is this aligned vertex ok?',' ',ok,dok,1)
+        CALL EASKR(vdis,' Move along the line (metres): ',
+        call askok('Apply this move?',' ',OK,dok,1)
+        CALL EASKABC(outs,' ','new vertex',
+  43    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+*item EDGVERT ground_form_vertex_manage
 'If a new vertex is a minor variation of an existing '
 'point then it may be easier to copy and then edit. '
 ' '
@@ -10957,183 +10763,117 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'A cancel request leaves the model unchanged. '
 *enditem
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
-*item EDGVERT
-*enditem
-          CALL EASKI(IADD,' ',' How many vertices to add ? ',
-*item EDGVERT
-*enditem
-            CALL EASKI(IADD,' ',' Replicate how many times ? ',
-*item EDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
- 146          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
-*item EDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
-*enditem
+        CALL EASKI(IADD,' ',' How many vertices to add ? ',
+        CALL EASKI(IADD,' ',' Replicate how many times ? ',
+ 146    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
   42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',IER,2)
-*subroutine EPKGVERT
-*item EPKGVERT
-*enditem
-        CALL PHELPD('ground vertex pick',NHELP,'-',0,0,IER)
 *subroutine ADDGVERT
-*item ADDGVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
+*item ADDGVERT ground_add_vertex
+'The vertex coordinates for the ground form should be in metres.'
+'It is not advisable for Z to be negative (tends to confuse).'
+'  '
+'If you add a new vertex within 3mm of an existing edge the logic'
+'may ask you whether it should be included in the other edge. Also'
+'it can be very confusing if there are identical vertices in the'
+'ground form.'
+'  '
+'Currently a ground form can contain up to 400 surfaces and'
+'up to 500 vertices. Each surface can have up to 8 edges.'
 *enditem
-          CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-*item ADDGVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface (so the rules about'
-'matching edges is followed). '
-*enditem
-                      call askok('Insert this vertex?','(see help)',
-*item ADDGVERT
-'The vertex coordinates should be in metres. '
-'Exact duplicate vertices should be avoided.'
-'It is not advisable for Z to be negative.'
-*enditem
+        CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
+        call askok('Insert this vertex?','(see help)',
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-*item ADDGVERT
-'The new vertex is within 3mm of an'
-'edge of another surface. Probably the'
-'vertex should also be included in that'
-'other surface (so the rules about'
-'matching edges is followed). '
-*enditem
-                    call askok('Insert this vertex?','(see help)',
+        call askok('Insert this vertex?','(see help)',
 *subroutine EASKGSUR
-*item EASKGSUR
+*item EASKGSUR ground_surf_selection
 'A ground surface will be selected via its name'
 'in the list. (This may be edited elsewhere.)'
 *enditem
         CALL PHELPD('ground surface file section',2,'-',0,0,IER)
-*subroutine ADDGSUR
-*item ADDGSUR
-*enditem
-        CALL EASKGSUR(IS,'-','Select surface to copy.',' ',IER)
 *item ADDGSUR
 *enditem
           CALL EASKS(SNAME1,'Revised surface name','Please edit.',
-*item ADDGSUR
+*item ADDGSUR ground_surf_transforms
+'Actions:'
 ' Shift surface along (+ = outwards) surface normal.'
-' Transform vertices by X,Y,Z.'
-' Rotate surface about one of its vertices.'
-' Invert ordering (to swop front & back faces).'
-' Do several operations to the surface.'
+' Transform all surface associated vertices by X,Y,Z (m).'
+' Rotate surface about one of its vertices (you are asked which'
+'   vertex to rotate around). Note a positive rotation is'
+'   anticlockwise.' 
+' Invert ordering (to swop front & back faces) if the surface was'
+'   originally specified with an incorrect order. If you look at'
+'   a surface from the outside you would order the edges anti-'
+'   clockwise.'
+'  '
+' Do several (of the above) operations to the surface.'
 ' Continue with no action.'
+'  '
+'If in one of these actions a vertex is transformed into a position'
+'within 3mm of an existing edge of an surface you may be asked if'
+'you want to include it in the adjacent surface.'
 *enditem
           CALL EASKATOG(' ','Surface action options:',
-*item ADDGSUR
-'Distance along the normal (+ = out).'
-*enditem
-            CALL EASKR(vdis,' ','Distance along normal?',
-*item ADDGSUR
-*enditem
- 152        CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-*item ADDGSUR
-'The rotation is applied around one vertex of'
-'the surface.'
-*enditem
-            CALL EASKI(IRV,' ','Rotate about which vertex?',
-*item ADDGSUR
-'A positive rotation is anticlockwise.'
-*enditem
-            CALL EASKR(ANGR,' ','Rotation degrees?',
-*item ADDGSUR
-'The new vertex is within 3mm of an'
-'edge of another surface. The vertex'
-'should probably also be included in'
-'the other surface in order that the'
-'rules about matching edges is followed). '
-*enditem
-                      call askok(' ','Insert this vertex?',
-*item ADDGSUR
-'You can swop the front/back faces of a surface, e.g.'
-'is the surface is facing the wrong way.'
-*enditem
-              CALL EASKAB('Reverse the edge ordering of',
-*item ADDGSUR
+          CALL EASKR(vdis,' ','Distance along normal?',
+ 152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
+          CALL EASKI(IRV,' ','Rotate about which vertex?',
+          CALL EASKR(ANGR,' ','Rotation degrees?',
+          call askok(' ','Insert this vertex?',
+          CALL EASKAB('Reverse the edge ordering of',
+*item ADDGSUR ground_surf_create
 'A surface is composed of an ordered list of vertices.'
 'The order is anticlockwise when viewed from outside'
 'the model. The total number of vertices defining a'
-'surface must be less than 24. Note that the last line'
+'surface must be less than 8. Note that the last line'
 'of the surface is from the last to the first vertex. '
 ' '
 'You may mouse click on existing vertices, ending with'
 'an [e]. A match is assumed if the location is within'
 '5 pixels.'
+'  '
+'Currently a ground form can contain up to 400 surfaces and'
+'up to 500 vertices. Each surface can have up to 8 edges.'
+'  '
+'Each ground form surface has a name which must be less than'
+'6 characters with no blanks.'
 *enditem
-          CALL EASKS(HOLD,' ','Vertex list?',
-*item ADDGSUR
-*enditem
-          CALL EASKSCMD(HOLD,' ','Vertex list?','via mouse',
-*item ADDGSUR
-*enditem
-            CALL EASKS(HOLD,' Associated vertices (confirm):',
-*item ADDGSUR
-*enditem
+        CALL EASKS(HOLD,' ','Vertex list?',
+        CALL EASKSCMD(HOLD,' ','Vertex list?','via mouse',
+        CALL EASKS(HOLD,' Associated vertices (confirm):',
         CALL EASKS(SN,'Surface name','(unique word <=6char):',
 *subroutine EDGVLIST
-*item EDGVLIST
+*item EDGVLIST ground_vertex_edits
 'This menu allows existing vertices to be viewed and'
 'edited. Edit by selecting an item or -Exit to escape.'
 ' '
-'The transforms for ground surfaces are similar to'
-'those provided for zone surfaces.'
-' '
-'The add/copy/delete functions are similar to those'
-'offered for zone surfaces (but ground surfaces are'
-'can only have 6 vertices so some functions are omitted.'
-' '
-*enditem
-        CALL PHELPD('ground vertex section',10,'-',0,0,IER)
-*item EDGVLIST
-*enditem
-        CALL EASKGSUR(IS,'-','Select surface to transform.',' ',IER)
-*item EDGVLIST
-'Actions: '
+'The transforms for ground surface vertices are similar to'
+'those provided for zone surfaces and vertices. Actions: '
 ' Shift surface along (+=outwards) surface normal.'
 ' Transform vertices by X,Y,Z metres.'
-' Rotate surface about one of its vertices.'
+' Rotate surface about one of its vertices (you are asked which'
+'   vertex in the surface to rotate about). A positive rotation is'
+'   anticlockwise.
 ' Invert ordering (to swop front & back faces).'
 ' Do several operations to the surface.'
 ' Continue with no action.'
-*enditem
-        CALL EASKATOG(outs,' :','shift along normal','transform xyz',
-*item EDGVLIST
-'Distance along the normal (+=out) in metres.'
-*enditem
-          CALL EASKR(vdis,' Distance along the normal (metres): ',
-*item EDGVLIST
-*enditem
- 152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-*item EDGVLIST
-'The rotation is applied around one vertex of'
-'the surface. The index is to the 1st, 2nd, 3rd,'
-'vertex in the surface. '
 ' '
-'A cancel leaves the model unchanged. '
+'The add/copy/delete functions are similar to those'
+'offered for zone surfaces (but ground surfaces are'
+'can only have 8 vertices so some functions are omitted.'
+' '
 *enditem
-          CALL EASKI(IRV,'Rotate about which vertex index: ',
-*item EDGVLIST
-'The rotation is applied with positive'
-'being anticlockwise. '
-*enditem
-          CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
-*item EDGVLIST
-'If not then no change is made to the ground geometry.'
-*enditem
+        CALL PHELPD('ground vertex section',10,'-',0,0,IER)
+        CALL EASKGSUR(IS,'-','Select surface to transform.',' ',IER)
+        CALL EASKATOG(outs,' :','shift along normal','transform xyz',
+        CALL EASKR(vdis,' Distance along the normal (metres): ',
+ 152    CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
+        CALL EASKI(IRV,'Rotate about which vertex index: ',
+        CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
         CALL ASKOK('Is it ok to apply the transformed points  ',
-*item EDGVLIST
-*enditem
         CALL EASKGSUR(IS,'-','Select surface to delete.',' ',IER)
-*item EDGVLIST
+*item EDGVLIST ground_insert_surf
 'Insertion into an existing surface is a common way '
-'to create a door or window opening. '
+'to create a rectuangular body within the surface (such as'
+'a rectangular foundation.'
 ' '
 'You may copy (and then transform) a surface within this '
 'zone to make a new surface. An example an identical shape'
@@ -11146,40 +10886,29 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'You may create a rectangular surface by specifying its'
 'origin and either an azimuth (for vertical) or a '
 'rotation between the X axis and its [length edge] for.'
-'a horizontal rectangle. '
+'a horizontal rectangle.
+'The origin of the new surface tends to be the lower left'
+'hand corner when viewed from the outside. Note: Azimuth 0.0'
+'is north, 180 is south, 270 is west. Length and height of the'
+'new rectangle are in metres. Rotation is in relation to the'
+'first edge along the [length] edge and the X axis (positive'
+'is anticlockwise and negative is clockwise.'
+'  '
+'If you accept the rectangle it will be converted into '
+'a surface within the ground form. If you elect to revise it'
+'you will be presented with several options. '
+'  '
+'And after you define the form of the surface you must give the'
+'new surface a name (< 6 characters with no blanks).
 *enditem
         call MENUATOL(' ','new surface options',
-*item EDGVLIST
-'The origin of the surface will be its lower left hand '
-'corner when viewed from the outside. '
-*enditem
-          CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-*item EDGVLIST
-'Azimuth 0.0 is north, 180 is south, 270 is west. '
-'Length and height are in metres.'
-*enditem
-          CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
-*item EDGVLIST
-'The origin of the surface will be its lower left hand '
-'corner when viewed from the outside. '
-*enditem
-          CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-*item EDGVLIST
-'Rotation is in relation to the first edge along the '
-'[length] edge and the X axis (positive is anticlockwise'
-'and negative is clockwise.'
-*enditem
-          CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
-*item EDGVLIST
-'If you accept the rectangle it will be converted into '
-'a surface within the zone. If you elect to revise it'
-'you will be presented with several options. '
-*enditem
-          CALL EASKABC('Options for this rectangle:',' ',
-*item EDGVLIST
-*enditem
-          CALL EASKS(SN,' ',' Inserted surface name: ',
-*item EDGVLIST
+        CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
+        CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
+        CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
+        CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
+        CALL EASKABC('Options for this rectangle:',' ',
+        CALL EASKS(SN,' ',' Inserted surface name: ',
+*item EDGVLIST ground_surf_edge_list
 'The list of associated vertices should be given in'
 'anticlockwise order as one faces the outside of the'
 'surface.  If one is looking at the inside face then'
@@ -11193,11 +10922,13 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *subroutine pointtogline
 *subroutine UGRNDR
 *subroutine TRIANG
-*item TRIANG
-'Option to include vertex indices in drawing. '
+*item TRIANG ground_include_indices
+'When displaying the ground form you have the option to include'
+'vertex indices in drawing. '
+'  '
 *enditem
         CALL ASKOK(' ','Draw vertices?',OK,dok,1)
-*item TRIANG
+*item TRIANG ground_alt_logic_triang
 'Alternative logic will be used to check for surfaces'
 'which might use this vertex. '
 *enditem

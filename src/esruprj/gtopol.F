@@ -36,7 +36,6 @@ C ****** GTOPOL
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -56,7 +55,7 @@ C ****** GTOPOL
       character*32 VERTS(MGRT)
       dimension ivals(MGRT)
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
-      CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
+      CHARACTER outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
       integer nitms,INO ! max items and current menu item
 
@@ -66,15 +65,22 @@ C ****** GTOPOL
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GTOPOL'  ! set for subroutine
+
       grmod=.true.
 
 C Read ground file, if not found use data.
       IFILG=IFIL+1
-      H(1)='This file contains a description of a ground form '
-      H(2)='for use by Radiance and viewing (later by esp). '
+      helptopic='ground_form_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ltmp=gtgeom
  46   CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-     &      ' ',72,'grnd.geo','ground geom file',IER,2)
+     &      ' ',72,'grnd.geo','ground geom file',IER,nbhelp)
       if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
         gtgeom=ltmp
       else
@@ -108,10 +114,9 @@ C Clear the commons.
           IF(ijj.GT.99)WRITE(GSNAME(ijj),'(a,i3)')'gt-',ijj
           GMLCN(ijj)='UNKNOWN'
   37    continue
-        H(1)='This is a reminder of the ground type.'
   39    t15=GTNAME
         CALL EASKS(t15,' Description of the ground?',
-     &        ' ',15,'flat','not flat',IER,1)
+     &        ' ',15,'flat','not flat',IER,nbhelp)
         if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
           GTNAME=t15
         else
@@ -173,28 +178,8 @@ C If ground needs drawing or updating do it here.
       endif
 
 C Help text for this menu.
-      H(1)='As an option the default assumption of a flat uniform'
-      H(2)='ground attributed only by a reflectance you can define'
-      H(3)='a gound topology and geometry.  Currently this infor-'
-      H(4)='mation is passed to imaging software such as Radiance'
-      H(5)='for wire-frame viewing packages.  In the FUTURE it  '
-      H(6)='will be included in shading calculations. '
-      H(7)=' '
-      H(8)='Geometry is similar to that of zone enclosures but'
-      H(9)='is primarily a collection of triangles which need not'
-      H(10)='form a `closed` body - rather a mesh which approx- '
-      H(11)='imates the contours of the site. '
-      H(12)=' '
-      H(13)='Each surface has an composition attribute (mlc db'
-      H(14)='name) so that surface properties are known. '
-      H(15)=' '
-      H(16)='An automated building of triangles from a list of '
-      H(17)='vetices is provided. '
-      H(18)=' '
-      H(19)='If you are creating the initial vertices via a click-'
-      H(20)='on-bitmap the ESP-r cookbook has a useful guide. '
-      H(21)=' '
-      H(22)='<< to be written>> '
+      helptopic='ground_form_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Ground Topology',ITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
@@ -202,7 +187,9 @@ C Help text for this menu.
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C List help.
-        CALL PHELPD('grnd topo section',22,'-',0,0,IER)
+        helptopic='ground_form_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('grnd topo section',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.nitms-2)THEN
         call edisp(iuout,'Current list of vertices.... ')
         DO 335, I=1, NGTV
@@ -211,10 +198,9 @@ C List help.
  335    CONTINUE
         call gtinfo(iuout)
       ELSEIF(INO.EQ.1)THEN
-        H(1)='This is a reminder of the ground (like zone names) '
         t15=GTNAME
         CALL EASKS(t15,' Description of the ground?',
-     &        ' ',15,'flat','not flat',IER,1)
+     &        ' ',15,'flat','not flat',IER,nbhelp)
         if(t15(1:2).ne.'  '.and.t15(1:4).ne.'UNKN')then
           GTNAME=t15
         endif
@@ -261,10 +247,8 @@ C Now edit the composition.
               WRITE(VERTS(L),'(a,1x,a)')GSNAME(L),GMLCN(L)
   10        continue
             INPICK=NGT
-            H(1)='Select the surfaces for which the composition '
-            H(2)='is to be defined.'
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NGT,VERTS,
-     &        'Surface  composition',IER,2)
+     &        'Surface  composition',IER,nbhelp)
             do 11 i=1,inpick
               iss = ivals(i)
               WRITE(GMLCN(ISS),'(A12)')DESC(ISEL)(1:12)
@@ -290,12 +274,8 @@ C Set to draw only ground and then after figuring out triangles
 C swop back to previous.
           if(NGT.gt.1)then
             dok=.true.
-            h(1)='The auto triangulation method is most robust when'
-            h(2)='applied to a ground topography with no existing'
-            h(3)='surface. If you say yes, existing surfaces are'
-            h(4)='cleared before beginning triangulation. '
             call askok('Existing surfaces will be removed prior to',
-     &        'auto triangulate. Is this ok?',ok,dok,4)
+     &        'auto triangulate. Is this ok?',ok,dok,nbhelp)
           else
             ok=.true.
           endif
@@ -320,48 +300,39 @@ C swop back to previous.
       ELSEIF(INO.EQ.8)THEN
 
 C Rotate ground.
-        h(1)='Rotation and translation options are the same as '
-        h(2)='for thermal zones. '
         CALL EASKAB(' Adjust location of ground:',' ',
-     &    'rotate ground','transform X,Y or Z',IW,2)
+     &    'rotate ground','transform X,Y or Z',IW,nbhelp)
         if(IW.eq.1)then
-          H(1)='The rotation is applied around vertex 1 and positive'
-          H(2)='is anticlockwise. '
           VAL=0.
           CALL EASKR(VAL,' ',' Rotation (deg + = anticlockwise) ? ',
-     &      -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
+     &      -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
           if(VAL.LT.-.01.OR.VAL.GT..01)then
 
 C Rotation choices.
-            H(1)='You may wish to rotate it about the site '
-            H(2)='origin X=0., Y=0. or at a user specified point. '
             CALL EASKABC(' Rotation choices :',' ','Site origin',
-     &        'User specified X & Y','cancel  ?',IRT,4)
+     &        'User specified X & Y','cancel  ?',IRT,nbhelp)
             if(IRT.eq.1)then
               CALL EGTROT(VAL,0.,0.)
             elseif(IRT.EQ.2)THEN
-              H(1)='Point is in the site coordinate system.'
               x1=0.
               CALL EASKR(x1,' ',' X point (metres) ? ',
-     &          0.0,'-',0.0,'-',0.0,'x point',IER,1)
+     &          0.0,'-',0.0,'-',0.0,'x point',IER,nbhelp)
               y1=0.
               CALL EASKR(y1,' ',' Y point (metres) ? ',
-     &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
+     &          0.0,'-',0.0,'-',0.0,'y point',IER,nbhelp)
               CALL EGTROT(VAL,x1,y1)
             endif
           endif
         elseif(IW.eq.2)then
-          H(1)='Transform shifts the zone by a given amount in'
-          H(2)='each axis.'
           VALX=0.
           CALL EASKR(VALX,' ',' X shift (metres) ? ',
-     &           -50.0,'W',50.0,'W',0.0,'x shift',IER,2)
+     &           -50.0,'W',50.0,'W',0.0,'x shift',IER,nbhelp)
           VALY=0.
           CALL EASKR(VALY,' ',' Y shift (metres) ? ',
-     &           -50.0,'W',50.0,'W',0.0,'y shift',IER,2)
+     &           -50.0,'W',50.0,'W',0.0,'y shift',IER,nbhelp)
           VALZ=0.
           CALL EASKR(VALZ,' ',' Z shift (metres) ? ',
-     &           -50.0,'W',50.0,'W',0.0,'y shift',IER,2)
+     &           -50.0,'W',50.0,'W',0.0,'y shift',IER,nbhelp)
           DO 62 I=1,NGTV
             XGT(I)=XGT(I)+VALX
             YGT(I)=YGT(I)+VALY
@@ -373,11 +344,11 @@ C Rotation choices.
       ELSEIF(INO.EQ.9)THEN
 
 C Save ground file.
-        H(1)='This file contains a description of a ground form '
-        H(2)='for use by Radiance and viewing (later by esp). '
+        helptopic='ground_form_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=gtgeom
         CALL EASKS(ltmp,' Ground topology/geometry file name ? ',
-     &        ' ',72,'grnd.geo','ground geom file',IER,2)
+     &        ' ',72,'grnd.geo','ground geom file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           gtgeom=ltmp
         endif
@@ -403,7 +374,6 @@ C IER=0 OK, IER=1 problem.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/GTFIL/GTGEOM
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -417,7 +387,7 @@ C IER=0 OK, IER=1 problem.
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
 
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
-      CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
+      CHARACTER VERT*35,KEY*1,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
       integer IRT  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
@@ -427,6 +397,13 @@ C IER=0 OK, IER=1 problem.
 #else
       integer*8 iix,iiy
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDGVERT'  ! set for subroutine
 
 C Initial values for vertex at angle facility.
       V1=1.0
@@ -492,14 +469,8 @@ C Update display.
       endif
 
 C Help text for this menu.
-      H(1)='This menu allows existing vertices to be viewed and'
-      H(2)='edited. Edit by selecting an item or -Exit to escape.'
-      H(3)=' '
-      H(4)='The `> find vertex` option is useful to predict an'
-      H(5)='intermediate vertex along an edge. '
-      H(6)=' '
-      H(7)='The `^ distance along` option is useful to confirm'
-      H(8)='actual dimension of a surface.'
+      helptopic='ground_form_verticies'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU(' Ground Vertices',VERT,MVERT,IVERT)
@@ -518,16 +489,16 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help.
-        CALL PHELPD('configuration section',8,'-',0,0,IER)
+        helptopic='ground_form_verticies'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('configuration section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Mark vertices which act as edges.
         inpick=NGTV
         CALL EPMENSV
-        h(1)='ESP-r includes triangulation routines which require'
-        h(2)='you to identify which vertices are at an edge. '
         call EPKGVERT(INPICK,IVLST,'Vertices at edge',
-     &    'Select vertices at edge of ground...',' ',2,ier)
+     &    'Select vertices at edge of ground...',' ',nbhelp,ier)
         CALL EPMENRC
         if(inpick.gt.0)then
           do 44 ij=1,inpick
@@ -537,20 +508,8 @@ C Mark vertices which act as edges.
         endif
         goto 3
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
-        H(1)='*--x-* Vertex on a line: finds one or more points '
-        H(2)='along a line (defined by specifying two vertices). '
-        H(3)=' '
-        H(4)='*<-?->* Distance between vertices: gives distance in '
-        H(5)='metres given two vertices. '
-        H(6)=' '
-        H(7)='Vertex at angle: finds a (new) vertex relative to '
-        H(8)='a given vertex at a specified distance, angle and '
-        H(9)='elevation. '
-        H(10)=' '
-        H(11)='Angel between lines: finds angle A between two lines'
-        H(12)='given 3 vertex as in:      * 1 '
-        H(13)='                       a  /    '
-        H(14)='                3 *------* 2   '
+        helptopic='ground_form_verticies'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         idno=2
         call MENUATOL('available vertex transforms (see help):',
      &   ' Vertex transform options ','a vertices along a line',
@@ -559,7 +518,7 @@ C Mark vertices which act as edges.
      &   'd angle between two lines','e -',
      &   'f distance from vertex to a line',
      &   'g align vertex with a line','h find close vertices',
-     &   'i move vetices along a line',' ',' ',' ',ino,idno,14)
+     &   'i move vetices along a line',' ',' ',' ',ino,idno,nbhelp)
         if(ino.eq.0.or.ino.eq.10)then
           continue
         elseif(ino.eq.1)then
@@ -568,7 +527,7 @@ C Vertices along a line between two verts.
           inpick=2
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices for *---x--*',
-     &      'Select two vertices to define a line...',' ',14,ier)
+     &      'Select two vertices to define a line...',' ',nbhelp,ier)
           CALL EPMENRC
   72      if(inpick.eq.2)then
             iwhich1=IVLST(1)
@@ -579,9 +538,9 @@ C Vertices along a line between two verts.
      &        IWHICH1,' & v ',IWHICH2,' =',tdis
             call edisp(iuout,outs)
 
-            H(1)='Distance along the line in metres.'
             CALL EASKR(vdis,' Distance along the line (metres): ',
-     &        ' : ',0.001,'F',99.999,'W',0.1,'dist along line',IER,1)
+     &        ' : ',0.001,'F',99.999,'W',0.1,'dist along line',
+     &        IER,nbhelp)
 
 C Use ratio calculation.
             r2 = tdis - vdis
@@ -605,10 +564,9 @@ C Show the new point on the current wireframe.
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
-              h(1)='This can become a new vertex. '
               write(outs,'(a,i3,a)') 'Make this (',NGTV+1,') a:'
               CALL EASKABC(outs,' ','new vertex',
-     &          'new vertex after editing','cancel',INVT,1)
+     &          'new vertex after editing','cancel',INVT,nbhelp)
               if(INVT.eq.1)then
                 NGTV=NGTV+1
                 xgt(ngtv)=x3
@@ -617,10 +575,9 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NGTV=NGTV+1
                 WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
-                H(1)='The vertex coordinates should be in metres. '
-                H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i3,a)')' Vertex (',ngtv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 443            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',
+     &            IER,nbhelp)
                 K=0
                 CALL EGETWR(HOLD,K,XGT(ngtv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,YGT(ngtv),-999.,999.,'W','Y cd',IER)
@@ -676,13 +633,10 @@ C JGVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                       if(NGVER(ivj)+1.le.8)then
                         dok=.true.
-                        h(1)='The new vertex is within 3mm of an'
-                        h(2)='edge of another surface. Probably the'
-                        h(3)='vertex should also be included in that'
-                        h(4)='other surface (so the rules about'
-                        h(5)='matching edges is followed). '
+                        helptopic='ground_coord_very_close'
+                        call gethelptext(helpinsub,helptopic,nbhelp)
                         call askok('Insert this vertex?','(see help)',
-     &                    ok,dok,5)
+     &                    ok,dok,nbhelp)
                       else
                         ok=.false.
                       endif
@@ -709,9 +663,8 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
             endif
             dok=.false.
             call forceflush()
-            h(1)='If you have several vertices along one line you '
-            h(2)='can click ok to continue defining them. '
-            call askok('Another vertex along the line? ',' ',ok,dok,2)
+            call askok('Another vertex along the line? ',' ',
+     &        ok,dok,nbhelp)
             if(ok)goto 72
           else
             goto 3
@@ -722,7 +675,7 @@ C Distance between two vertices.
           inpick=2
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices for *<--?-->*',
-     &      'Select two vertices...',' ',14,ier)
+     &      'Select two vertices...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
@@ -740,18 +693,16 @@ C Distance between two vertices.
           inpick=1
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertex for origin',
-     &      'Select vertex to act as origin...',' ',14,ier)
+     &      'Select vertex to act as origin...',' ',nbhelp,ier)
           CALL EPMENRC
   73      if(inpick.eq.1)then
             iwhich=IVLST(1)
 
 C Present distance, azimuth and elevation then parse data from HOLD.
             write(hold,'(f10.4,f9.3,f8.3)') V1,AZ,EL
-            H(1)='Distance is in metres, azimuth assumes north=0 '
-            H(2)='+ degrees clockwise, elevation 90 is vertical. '
  342        CALL EASKS(HOLD,
      &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
+     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,nbhelp)
             K=0
             CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
             CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
@@ -789,10 +740,9 @@ C Show the new point on the current wireframe.
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
-              h(1)='This can become a new vertex. '
               write(outs,'(a,i3,a)') 'Make this (',NGTV+1,') a:'
               CALL EASKABC(outs,' ','new vertex',
-     &          'new vertex after editing','cancel',INVT,1)
+     &          'new vertex after editing','cancel',INVT,nbhelp)
               if(INVT.eq.1)then
                 NGTV=NGTV+1
                 xgt(ngtv)=x3
@@ -801,10 +751,9 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NGTV=NGTV+1
                 WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
-                H(1)='The vertex coordinates should be in metres. '
-                H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i3,a)')' Vertex (',ngtv,') X  Y  Z (m):'
- 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+ 543            CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',
+     &            IER,nbhelp)
                 K=0
                 CALL EGETWR(HOLD,K,XGT(ngtv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,YGT(ngtv),-999.,999.,'W','Y cd',IER)
@@ -827,9 +776,8 @@ C Show the new point on the current wireframe.
               endif
             endif
             dok=.false.
-            h(1)='If you have several vertices to create '
-            h(2)='can click ok to continue defining them.'
-            call askok('Another vertex from this origin?',' ',ok,dok,2)
+            call askok('Another vertex from this origin?',' ',
+     &        ok,dok,nbhelp)
             if(ok)goto 73
           endif
           MODIFY=.true.
@@ -844,7 +792,8 @@ C Angle between two lines.
           inpick=3
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Angle between 3 vertices',
-     &      'Select three vertices (see help for rules).',' ',14,ier)
+     &      'Select three vertices (see help for rules).',' ',
+     &      nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.3)then
             iwhich1=IVLST(1)
@@ -866,7 +815,7 @@ C Distance between point and a line.
           inpick=2
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices defining line',
-     &      'Select two vertices...',' ',14,ier)
+     &      'Select two vertices...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
@@ -875,7 +824,7 @@ C Distance between point and a line.
           inpick=1
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertex to test',
-     &      'Select a vertex...',' ',14,ier)
+     &      'Select a vertex...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.1)iwhich3=IVLST(1)
 
@@ -897,7 +846,7 @@ C distance between point and the line.
           inpick=2
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices defining line',
-     &      'Select two vertices...',' ',14,ier)
+     &      'Select two vertices...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
@@ -906,7 +855,7 @@ C distance between point and the line.
           inpick=1
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertex to align',
-     &      'Select a vertex...',' ',14,ier)
+     &      'Select a vertex...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.1)iwhich3=IVLST(1)
 
@@ -953,8 +902,7 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
               call forceflush()
             endif
             dok=.true.
-            h(1)='Last chance to change the vertex position. '
-            call askok('Is this aligned vertex ok?',' ',ok,dok,1)
+            call askok('Is this aligned vertex ok?',' ',ok,dok,nbhelp)
             if(ok)then
               XGT(IWHICH3)=x3
               YGT(IWHICH3)=y3
@@ -991,13 +939,10 @@ C JGVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                     if(NGVER(ivj)+1.le.8)then
                       dok=.true.
-                      h(1)='The new vertex is within 3mm of an'
-                      h(2)='edge of another surface. Probably the'
-                      h(3)='vertex should also be included in that'
-                      h(4)='other surface (so the rules about'
-                      h(5)='matching edges is followed). '
+                      helptopic='ground_coord_very_close'
+                      call gethelptext(helpinsub,helptopic,nbhelp)
                       call askok('Insert this vertex?','(see help)',
-     &                  ok,dok,5)
+     &                  ok,dok,nbhelp)
                     else
                       ok=.false.
                     endif
@@ -1025,10 +970,8 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
         elseif(ino.eq.8)then
         
 C Find close vertices.
-          h(1)='If there are vertices which are near duplicates, this'
-          h(2)='function will list them all or find ones close to one.'
           CALL EASKABC('Options:',' ','find any close vertices',
-     &          'find closest to one vertex','cancel',INVT,2)
+     &          'find closest to one vertex','cancel',INVT,nbhelp)
           if(INVT.eq.1)then
             do 102 iwhich1=1,NGTV
               write(headv,'(a,i3,a,3f10.4)') ' Vert',iwhich1,
@@ -1049,7 +992,7 @@ C Find close vertices.
             inpick=1
             CALL EPMENSV
             call EPKGVERT(INPICK,IVLST,'Focus vertex',
-     &        '(close vertices will be listed)',' ',14,ier)
+     &        '(close vertices will be listed)',' ',nbhelp,ier)
             CALL EPMENRC
             if(inpick.eq.1)then
               iwhich1=IVLST(1)
@@ -1078,7 +1021,7 @@ C Move an existing vertex along an existing line.
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices for <-x->---*',
      &      'Select two vertices along a line...',
-     &      '(first one is the vertex to move)',14,ier)
+     &      '(first one is the vertex to move)',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
@@ -1089,12 +1032,9 @@ C Move an existing vertex along an existing line.
      &        IWHICH1,' & v ',IWHICH2,' =',tdis
             call edisp(iuout,outs)
 
-            H(1)='Distance along the line in metres. Positive'
-            H(2)='will be towards the 2nd vertex. Negavie will '
-            H(3)='be away from 2nd vertex.'
             CALL EASKR(vdis,' Move along the line (metres): ',
      &        '(see help)',-1.0,'W',99.999,'W',0.1,'dist along line',
-     &        IER,2)
+     &        IER,nbhelp)
 
 C Use ratio calculation.
             r2 = tdis - vdis
@@ -1118,8 +1058,7 @@ C Show the new point on the current wireframe.
               call forceflush()
             endif
             dok=.true.
-            h(1)='Last chance to abort the change. '
-            call askok('Apply this move?',' ',OK,dok,1)
+            call askok('Apply this move?',' ',OK,dok,nbhelp)
             if(OK)then
               xgt(IWHICH1)=x3
               ygt(IWHICH1)=y3
@@ -1143,10 +1082,9 @@ C If possible to add another vertex ask if calculated point should
 C be a new vertex and update the wireframe.
         if(ino.eq.5)then
           if(NGTV.lt.MGTV)then
-            h(1)='This can become a new vertex. '
             write(outs,'(a,i3,a)') 'Make this (',NGTV+1,') a:'
             CALL EASKABC(outs,' ','new vertex',
-     &        'new vertex after editing','cancel',INVT,1)
+     &        'new vertex after editing','cancel',INVT,nbhelp)
             if(INVT.eq.1)then
               NGTV=NGTV+1
               xgt(ngtv)=x3
@@ -1155,10 +1093,9 @@ C be a new vertex and update the wireframe.
             elseif(INVT.eq.2)then
               NGTV=NGTV+1
               WRITE(HOLD,'(1x,3f10.5)')x3,y3,z3
-              H(1)='The vertex coordinates should be in metres. '
-              H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i3,a)')' Vertex (',ngtv,') X  Y  Z (m):'
-  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
+  43          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',
+     &          IER,nbhelp)
               K=0
               CALL EGETWR(HOLD,K,XGT(ngtv),-999.,999.,'W','X cd',IER)
               CALL EGETWR(HOLD,K,YGT(ngtv),-999.,999.,'W','Y cd',IER)
@@ -1186,30 +1123,15 @@ C            endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Alter vertex list by deleting/ copy / replicate / editing.
-        write(H(1),'(A,I3,A)')' Up to ',MGTV-NGTV,
-     &    ' vertices may be added or copied.'
-        H(2)='If a new vertex is a minor variation of an existing '
-        H(3)='point then it may be easier to copy and then edit. '
-        h(4)=' '
-        h(5)='You may delete one or more vertices (but only those'
-        h(6)='which are unlinked to surfaces may be deleted). '
-        h(7)='In graphic mode click on the vertices (end with and `e`)'
-        h(8)=' '
-        h(9)='Replication can be used make several varitants of a'
-        h(10)='single vertex (useful where only one coordinate needs'
-        h(11)='to be altered). '
-        h(12)=' '
-        h(13)='In graphic mode you can edit a number of vertices by '
-        h(14)='clicking on the wire-frame image. '
-        h(15)=' '
-        h(16)='A cancel request leaves the model unchanged. '
+        helptopic='ground_form_vertex_manage'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IRT=1
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',
-     &    'replicate','edit (several)','do nothing',' ',IRT,14)
+     &    'replicate','edit (several)','do nothing',' ',IRT,nbhelp)
         if(IRT.eq.1)then
           IADD=1
           CALL EASKI(IADD,' ',' How many vertices to add ? ',
-     &     1,'F',MGTV-NGTV,'F',1,'+ vertex',IERI,16)
+     &     1,'F',MGTV-NGTV,'F',1,'+ vertex',IERI,nbhelp)
           if(iadd.eq.0)then
             goto 92
           else
@@ -1231,7 +1153,7 @@ C order so that compating of list works correctly.
           inpick=MIN0(12,NGTV-1)
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices to delete',
-     &      'Select vertices to delete from list...',' ',14,ier)
+     &      'Select vertices to delete from list...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.gt.0)then
             KFLAG = -1
@@ -1258,7 +1180,7 @@ C no more than will overrange MTV.
           inpick=MIN0(NGTV,MGTV-NGTV)
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices to copy',
-     &      'Select vertices to copy from list...',' ',14,ier)
+     &      'Select vertices to copy from list...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.ge.1)then
             do 143 ij=1,inpick
@@ -1280,12 +1202,12 @@ C only up to MTV.
           inpick=1
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertex to replicate',
-     &      'Select vertex to replicate from list...',' ',14,ier)
+     &      'Select vertex to replicate from list...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.eq.1)then
             iwhich=IVLST(1)
             CALL EASKI(IADD,' ',' Replicate how many times ? ',
-     &        1,'F',MGTV-NGTV,'F',1,'+ replicate vertex',IERI,16)
+     &        1,'F',MGTV-NGTV,'F',1,'+ replicate vertex',IERI,nbhelp)
             if(ieri.eq.-3)then
               goto 92
             elseif(ieri.eq.0)then
@@ -1308,7 +1230,7 @@ C Select (possibly via mouse) and then edit.
           inpick=MIN0(NGTV,MGTV-NGTV)
           CALL EPMENSV
           call EPKGVERT(INPICK,IVLST,'Vertices to edit',
-     &      'Select vertex to edit from list...',' ',14,ier)
+     &      'Select vertex to edit from list...',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.ge.1)then
             do 145 ij=1,inpick
@@ -1316,12 +1238,10 @@ C Select (possibly via mouse) and then edit.
 
 C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(1x,3f10.5)')XGT(IFOC),YGT(IFOC),ZGT(IFOC)
-              H(1)='The vertex coordinates should be in metres. '
-              H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i3,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
  146          CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
-     &          IER,2)
+     &          IER,nbhelp)
               K=0
               CALL EGETWR(HOLD,K,XGT(IFOC),-999.9,999.9,'W','Xcord',IER)
               CALL EGETWR(HOLD,K,YGT(IFOC),-999.9,999.9,'W','Ycord',IER)
@@ -1348,10 +1268,9 @@ C Edit vertex identified by KEYIND.
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(1x,3f10.5)')XGT(IFOC),YGT(IFOC),ZGT(IFOC)
-        H(1)='The vertex coordinates should be in metres. '
-        H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i3,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
-  42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',IER,2)
+  42    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vertex coord',
+     &    IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,XGT(IFOC),-999.9,999.9,'W','X cord',IER)
         CALL EGETWR(HOLD,K,YGT(IFOC),-999.9,999.9,'W','Y cord',IER)
@@ -1389,6 +1308,9 @@ C IER=0 OK, IER=1 problem.
       CHARACTER item*33,outs*124,KEY*1
       logical found
       integer MVERT,IVERT ! max items and current menu item
+
+C It is assumed that contextual help will have been setup before
+C calling this subroutine.
 
 #ifdef OSI
       integer iix,iiy,ixd,iyd
@@ -1580,7 +1502,6 @@ C added at the end of the list.
       SUBROUTINE ADDGVERT(NUM,ACTION,IER)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
@@ -1590,8 +1511,15 @@ C added at the end of the list.
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
-      CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*32,outs*124
+      CHARACTER OUTSTR*124,ACTION*1,HOLD*32,outs*124
       character GMLCN*12,GSNAME*6
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDGVERT'  ! set for subroutine
 
       check = .false.
       if(NUM.eq.0)then
@@ -1653,6 +1581,8 @@ C Increment NGTV and present vertex coords (use previous
 C in case of repitition), then parse. Check to see if the
 C new vertex is unique (i.e. not within 1mm of an existing
 C vertex.
+        helptopic='ground_add_vertex'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IADD=NUM
         DO 18 I=1,IADD
           if(I.eq.1)then
@@ -1660,10 +1590,8 @@ C vertex.
           else
             WRITE(HOLD,'(1x,3f8.3)')X1(I-1),Y1(I-1),Z1(I-1)
           endif
-          H(1)='The vertex coordinates should be in metres. '
-          H(2)='It is not advisable for Z to be negative.'
           CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-     &     '  ',32,' 0. 0. 0. ','vertex coord',IER,2)
+     &     '  ',32,' 0. 0. 0. ','vertex coord',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,X1(I),-999.9,999.9,'W','Xcoord',IER)
           CALL EGETWR(HOLD,K,Y1(I),-999.9,999.9,'W','Ycoord',IER)
@@ -1728,13 +1656,8 @@ C JGVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                     if(NGVER(ivj)+1.le.8)then
                       dok=.true.
-                      h(1)='The new vertex is within 3mm of an'
-                      h(2)='edge of another surface. Probably the'
-                      h(3)='vertex should also be included in that'
-                      h(4)='other surface (so the rules about'
-                      h(5)='matching edges is followed). '
                       call askok('Insert this vertex?','(see help)',
-     &                  ok,dok,5)
+     &                  ok,dok,nbhelp)
                     else
                       ok=.false.
                     endif
@@ -1766,15 +1689,14 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 
 C Copy vertex index and then increment NGTV and present vertex coords 
 C then parse into new vertex.
+        helptopic='ground_add_vertex'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call tstamp('>','PRJ: copy vertex')
         WRITE(HOLD,'(1x,3f8.3)')XGT(NUM),YGT(NUM),ZGT(NUM)
-        H(1)='The vertex coordinates should be in metres. '
-        H(2)='Exact duplicate vertices should be avoided.'
-        H(3)='It is not advisable for Z to be negative.'
         write(outs,'(a,i3,a,i3,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NGTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-     &    32,' 0. 0. 0. ','vertex coord',IER,3)
+     &    32,' 0. 0. 0. ','vertex coord',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,X1(1),-999.9,999.9,'W','X coord',IER)
         CALL EGETWR(HOLD,K,Y1(1),-999.9,999.9,'W','Y coord',IER)
@@ -1836,13 +1758,8 @@ C JGVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                   if(NGVER(ivj)+1.le.8)then
                     dok=.true.
-                    h(1)='The new vertex is within 3mm of an'
-                    h(2)='edge of another surface. Probably the'
-                    h(3)='vertex should also be included in that'
-                    h(4)='other surface (so the rules about'
-                    h(5)='matching edges is followed). '
                     call askok('Insert this vertex?','(see help)',
-     &                ok,dok,5)
+     &                ok,dok,nbhelp)
                   else
                     ok=.false.
                   endif
@@ -1891,7 +1808,6 @@ C show attributes in list.
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT/GTNAME
@@ -1899,13 +1815,20 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,VERT*20,VERTS*33,KEY*1,MOD*1,title*29
+      CHARACTER VERT*20,VERTS*33,KEY*1,MOD*1,title*32
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EASKGSUR'  ! set for subroutine
+
       IER=0
-      write(title,'(2a)') 'Surface attributes in ',
+      write(title,'(2a)') 'Surface attribs: ',
      &                    GTNAME(1:lnblnk(GTNAME))
 
 C Initialise surface menu variables based on window size. 
@@ -1973,8 +1896,8 @@ C If MOD has been passed as a M then return -2 to indicate further processing
       VERTS(M+4)  ='- exit this menu    '
 
 C Display the menu.
-      H(1)='A ground surface will be selected via its name'
-      H(2)='in the list. (This may be edited elsewhere.)'
+      helptopic='ground_surf_selection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call usrmsg(PROMPT1,PROMPT2,'-')
       if(MOD.eq.'-')then
         CALL EMENU('Surfaces',VERT,MVERT,IVERT)
@@ -1991,7 +1914,9 @@ C If no selection has been made before exit then return with 0.
         call usrmsg(' ',' ','-')
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('ground surface file section',2,'-',0,0,IER)
+        helptopic='ground_surf_selection'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('ground surface file section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Allow user to say several to be attributed.
@@ -2042,7 +1967,6 @@ C Method checks for minimally linked vertices.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
@@ -2055,7 +1979,7 @@ C Method checks for minimally linked vertices.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(8)
 
       CHARACTER GMLCN*12,GSNAME*6
-      CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
+      CHARACTER ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
       integer IRT  ! for radio button
 #ifdef OSI
@@ -2063,6 +1987,13 @@ C Method checks for minimally linked vertices.
 #else
       integer*8 iix,iiy,ixd,iyd
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDGSUR'  ! set for subroutine
     
       IER=0
       DOK=.false.
@@ -2137,27 +2068,21 @@ C Up the surface count.
         GSNAME(NGT)=SNAME1
         GMLCN(NGT)=SMLCN1
 
-        H(1)='Actions:'
-        H(2)=' Shift surface along (+ = outwards) surface normal.'
-        H(3)=' Transform vertices by X,Y,Z.'
-        H(4)=' Rotate surface about one of its vertices.'
-        H(5)=' Invert ordering (to swop front & back faces).'
-        H(6)=' Do several operations to the surface.'
-        H(7)=' Continue with no action.'
+        helptopic='ground_surf_transforms'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(.NOT.DOK)then
           IRT=1
           CALL EASKATOG(' ','Surface action options:',
      &      'shift along normal','transform X Y Z','rotate','invert',
-     &      'combination','cancel',' ',IRT,7)
+     &      'combination','cancel',' ',IRT,nbhelp)
         endif
         if(IRT.eq.1.or.IRT.eq.5)then
 
 C Shift along normal and copy transformed points back to X1,Y1,Z1 array.
-          H(1)='Distance along the normal (+ = out).'
           if(.NOT.DOK)then
             vdis=0.0
             CALL EASKR(vdis,' ','Distance along normal?',
-     &        -9.999,'F',9.999,'W',0.0,'d along normal',IER,1)
+     &        -9.999,'F',9.999,'W',0.0,'d along normal',IER,nbhelp)
           endif
           CALL TRANGSUR(ITRC,iuout,NVER1,X1,Y1,Z1,vdis,XT,YT,ZT,
      &      gsname(ngt))
@@ -2173,7 +2098,7 @@ C Transform all surface vertices.
           if(.NOT.DOK)then
             HOLDS= ' 0.  0.  0. '
  152        CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &        36,' 0. 0. 0. ','offsets',IER,9)
+     &        36,' 0. 0. 0. ','offsets',IER,nbhelp)
             K=0
             CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
             CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -2189,11 +2114,9 @@ C Transform all surface vertices.
         if(IRT.eq.3.or.IRT.eq.5)then
 
 C Rotate around a point in the surface.
-          H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface.'
           if(.NOT.DOK)then
             CALL EASKI(IRV,' ','Rotate about which vertex?',
-     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,2)
+     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,nbhelp)
             if(ieri.eq.-3)then
 
 C User asked to cancel so retract new information and return.
@@ -2204,10 +2127,9 @@ C User asked to cancel so retract new information and return.
               NGT=NGT-1
               return
             endif
-            H(1)='A positive rotation is anticlockwise.'
             ANGR=0.
             CALL EASKR(ANGR,' ','Rotation degrees?',
-     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,1)
+     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
           endif
           if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
@@ -2294,13 +2216,8 @@ C JGVN indices up one until at the current edge (ivjj) and then
 C inserting the new vertex index.
                     if(NGVER(ivj)+1.le.8)then
                       dok=.true.
-                      h(1)='The new vertex is within 3mm of an'
-                      h(2)='edge of another surface. The vertex'
-                      h(3)='should probably also be included in'
-                      h(4)='the other surface in order that the'
-                      h(5)='rules about matching edges is followed). '
                       call askok(' ','Insert this vertex?',
-     &                            ok,dok,5)
+     &                            ok,dok,nbhelp)
                     else
                       ok=.false.
                     endif
@@ -2329,15 +2246,13 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 
 C Reverse the ordering.
         if(IRT.eq.4.or.IRT.eq.5.or.IRT.eq.6)then
-          H(1)='You can swop the front/back faces of a surface, e.g.'
-          H(2)='is the surface is facing the wrong way.'
           write(outs,'(3a)') ' surface ',SNAME1(1:lnblnk(SNAME1)),'?'
           if(.NOT.DOK)then
             if(IRT.eq.4)then
               IOK=1
             else
               CALL EASKAB('Reverse the edge ordering of',
-     &                  outs,'yes','no',IOK,2)
+     &                  outs,'yes','no',IOK,nbhelp)
             endif
           endif
           if(IOK.eq.1)then
@@ -2369,21 +2284,14 @@ C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
 C the individual vertex numbers from the list.
    41   HOLD=' '
-        H(1)='A surface is composed of an ordered list of vertices.'
-        H(2)='The order is anticlockwise when viewed from outside'
-        H(3)='the model. The total number of vertices defining a'
-        H(4)='surface must be less than 24. Note that the last line'
-        H(5)='of the surface is from the last to the first vertex. '
-        h(6)=' '
-        h(7)='You may mouse click on existing vertices, ending with'
-        h(8)='an `e`. A match is assumed if the location is within'
-        h(9)='5 pixels.'
+        helptopic='ground_surf_create'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(MMOD.ne.8)then
           CALL EASKS(HOLD,' ','Vertex list?',
-     &            72,' ','associated vertices',IER,5)
+     &      72,' ','associated vertices',IER,nbhelp)
         else
           CALL EASKSCMD(HOLD,' ','Vertex list?','via mouse',
-     &             clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
+     &      clkok,72,' 1 2 3','assoc vert+mouse',IER,nbhelp)
           if(clkok)then
             ijvn=0
             call edisp(iuout,
@@ -2423,7 +2331,7 @@ C the individual vertex numbers from the list.
             HOLD=' '
             WRITE(HOLD,'(9I4)')(JJVN(J),J=1,ijvn)
             CALL EASKS(HOLD,' Associated vertices (confirm):',
-     &        '  ',72,' ','associated vertices',IIER,8)
+     &        '  ',72,' ','associated vertices',IIER,nbhelp)
           endif
         endif
         NV = iCountWords(HOLD)
@@ -2439,7 +2347,7 @@ C Fill default attributes.
         IF(ngt.GT.9.and.I.LE.99)WRITE(SN,'(a,i2)')'gt-',ngt
         IF(ngt.GT.99)WRITE(SN,'(a,i3)')'gt-',ngt
         CALL EASKS(SN,'Surface name','(unique word <=6char):',
-     &      6,'new_surf','surface name',IER,0)
+     &      6,'new_surf','surface name',IER,nbhelp)
         call st2name(SN,SN2)
         GSNAME(NGT)=SN2
         GMLCN(NGT)='UNKNOWN'
@@ -2464,7 +2372,6 @@ C IER=1 problem.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GTFIL/GTGEOM
@@ -2487,7 +2394,7 @@ C IER=1 problem.
 
       DIMENSION VERT(36)
       DIMENSION  XX(8),YY(8),ZZ(8),XT(8),YT(8),ZT(8),jvn1(8)
-      CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
+      CHARACTER VERT*35,KEY*1,HOLD*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       integer IRT   ! for radio button
@@ -2498,6 +2405,13 @@ C IER=1 problem.
 #else
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDGVLIST'  ! set for subroutine
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -2559,16 +2473,8 @@ C Update display.
       endif
 
 C Help text for this menu.
-      H(1)='This menu allows existing vertices to be viewed and'
-      H(2)='edited. Edit by selecting an item or -Exit to escape.'
-      H(3)=' '
-      H(4)='The transforms for ground surfaces are similar to'
-      H(5)='those provided for zone surfaces.'
-      H(6)=' '
-      H(7)='The add/copy/delete functions are similar to those'
-      H(8)='offered for zone surfaces (but ground surfaces are'
-      H(9)='can only have 6 vertices so some functions are omitted.'
-      H(10)=' '
+      helptopic='ground_vertex_edits'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       write(head,'(A,A)')'Topology of ',GTNAME(1:15)
@@ -2583,7 +2489,9 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text for the vertex menu.
-        CALL PHELPD('ground vertex section',10,'-',0,0,IER)
+        helptopic='ground_vertex_edits'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('ground vertex section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List info in vertices.
@@ -2603,26 +2511,18 @@ C Miscel. geometric transforms. Ask which surface and setup temp array.
           ZZ(J) = ZGT(JGVN(IS,J))
   150   CONTINUE
 
-        H(1)='Actions: '
-        H(2)=' Shift surface along (+=outwards) surface normal.'
-        H(3)=' Transform vertices by X,Y,Z metres.'
-        H(4)=' Rotate surface about one of its vertices.'
-        H(5)=' Invert ordering (to swop front & back faces).'
-        H(6)=' Do several operations to the surface.'
-        H(7)=' Continue with no action.'
         write(outs,'(a,a)') ' Actions to take on ',GSNAME(is)
         IRT=1
         CALL EASKATOG(outs,' :','shift along normal','transform xyz',
-     &    'rotate','invert ','combination','continue ?',' ',IRT,7)
+     &    'rotate','invert ','combination','continue ?',' ',IRT,nbhelp)
         if(IRT.eq.1.or.IRT.eq.5)then
 
 C Shift along normal and copy transformed points back to XX,YY,ZZ array.
           call tstamp('>','PRJ: do surface shift along normal')
-          H(1)='Distance along the normal (+=out) in metres.'
           vdis=0.0
           CALL EASKR(vdis,' Distance along the normal (metres): ',
      &      '(0.0 = none) :',-9.999,'F',9.999,'W',0.0,'d along normal',
-     &      IER,1)
+     &      IER,nbhelp)
           CALL TRANGSUR(ITRC,ITRU,N,XX,YY,ZZ,vdis,XT,YT,ZT,gsname(is))
           do 151 nt1=1,N
             XX(nt1)=XT(nt1)
@@ -2636,7 +2536,7 @@ C Transform all surface vertices.
           call tstamp('>','PRJ: do surface vertex tranform')
           HOLDS= ' 0.  0.  0. '
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &      36,' 0. 0. 0.  ','offsets',IER,9)
+     &      36,' 0. 0. 0.  ','offsets',IER,nbhelp)
           K=0
           CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
           CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -2652,23 +2552,16 @@ C Transform all surface vertices.
 
 C Rotate around a point in the surface.
           call tstamp('>','PRJ: do surface rotation')
-          H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
-          H(3)='vertex in the surface. '
-          H(4)=' '
-          H(5)='A cancel leaves the model unchanged. '
           CALL EASKI(IRV,'Rotate about which vertex index: ',
      &       '(ie. 1st, 2nd or 3rd in the surface) ',
-     &       1,'F',N,'F',1,'rotation anchor',IERI,5)
+     &       1,'F',N,'F',1,'rotation anchor',IERI,nbhelp)
           if(ieri.eq.-3)then
             MODIFY=.FALSE.
             goto 92
           endif
-          H(1)='The rotation is applied with positive'
-          H(2)='being anticlockwise. '
           ANGR=0.
           CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
-     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
+     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
           if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
             A=-ANGR*PI/180.
@@ -2747,9 +2640,9 @@ C Show these points as small circles...
 C Then draw the revised and if acceptable then used transformed
 C points within the zone in place of the originals....
         DOK=.true.
-        h(1)='If not then no change is made to the ground geometry.'
         CALL ASKOK('Is it ok to apply the transformed points  ',
-     &             'to the surface (and attached surfaces) ?',OK,DOK,1)
+     &             'to the surface (and attached surfaces) ?',
+     &             OK,DOK,nbhelp)
         if(OK)then
           MODIFY=.TRUE.
           DO 155 J = 1,N
@@ -2792,21 +2685,8 @@ C Update the image.
       ELSEIF(IVERT.EQ.(MVERT-5))THEN
 
 C Add/insert a surface.
-   30   H(1)='Insertion into an existing surface is a common way '
-        H(2)='to create a door or window opening. '
-        H(3)=' '
-        H(4)='You may copy (and then transform) a surface within this '
-        H(5)='zone to make a new surface. An example an identical shape'
-        H(6)='which is repeated in several locations. '
-        H(7)=' '
-        H(8)='You may copy (and then transform) a surface from another '
-        H(9)='zone for use in this zone. For example, a partition which'
-        H(10)='shared between two zones. '
-        H(11)=' '
-        H(12)='You may create a rectangular surface by specifying its'
-        H(13)='origin and either an azimuth (for vertical) or a '
-        H(14)='rotation between the X axis and its `length edge` for.'
-        H(15)='a horizontal rectangle. '
+   30   helptopic='ground_insert_surf'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         irt=0
         ilrt=irt
         idrt=2
@@ -2817,7 +2697,7 @@ C Add/insert a surface.
      &   'd - ',
      &   'e vertical rectangle (origin&azim)',
      &   'f horizontal rectangle (origin&rot)',' ',
-     &   ' ',' ',' ',' ',' ',irt,idrt,15)
+     &   ' ',' ',' ',' ',' ',irt,idrt,nbhelp)
         call usrmsg(' ',' ','-')
         IF(ilrt.eq.irt)GOTO 92
         IF(irt.eq.0.or.irt.eq.7)GOTO 92
@@ -2841,8 +2721,6 @@ C Get vertical rectangular surface orgin.
             RETURN
           ENDIF
           call tstamp('>','PRJ: add vertical surface')
-          H(1)='The origin of the surface will be its lower left hand '
-          H(2)='corner when viewed from the outside. '
           HOLDS= ' 0.  0.  0. '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
      &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
@@ -2853,10 +2731,8 @@ C Get vertical rectangular surface orgin.
 
 C Get azimuth and length and height.
           HOLDS= ' 180.0   1.0  1.0 '
-          h(1)='Azimuth 0.0 is north, 180 is south, 270 is west. '
-          h(2)='Length and height are in metres.'
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height: ',
-     &      ' ',36,' 180.0 1.0 1.0  ','azim length height',IER,2)
+     &      ' ',36,' 180.0 1.0 1.0  ','azim length height',IER,nbhelp)
           K=0
           CALL EGETWR(HOLDS,K,VALA,0.0,360.0,'W','Azim',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
@@ -2902,11 +2778,9 @@ C Get horizontal rectangular surface orgin.
             RETURN
           ENDIF
           call tstamp('>','PRJ: add horizontal surface')
-          H(1)='The origin of the surface will be its lower left hand '
-          H(2)='corner when viewed from the outside. '
           HOLDS= ' 0.  0.  0. '
           CALL EASKS(HOLDS,' Surface origin X Y & Z: ',' ',
-     &      36,' 0. 0. 0.  ','origin XYZ',IER,2)
+     &      36,' 0. 0. 0.  ','origin XYZ',IER,nbhelp)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
@@ -2914,11 +2788,9 @@ C Get horizontal rectangular surface orgin.
 
 C Get rotation and length and height.
           HOLDS= ' 0.0    1.0  1.0 '
-          h(1)='Rotation is in relation to the first edge along the '
-          h(2)='`length` edge and the X axis (positive is anticlockwise'
-          h(3)='and negative is clockwise.'
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
-     &      ' ',36,' 180.0 1.0 1.0  ','rotation length height',IER,3)
+     &      ' ',36,' 180.0 1.0 1.0  ','rotation length height',
+     &      IER,nbhelp)
           K=0
           CALL EGETWR(HOLDS,K,ANGR,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
@@ -3009,11 +2881,8 @@ C Complete rec.
           CALL EDISP(ITRU,OUTS)
 
 C Confirm opening.
-          h(1)='If you accept the rectangle it will be converted into '
-          h(2)='a surface within the zone. If you elect to revise it'
-          h(3)='you will be presented with several options. '
           CALL EASKABC('Options for this rectangle:',' ',
-     &       'accept position','revise position','abort',INVT,2)
+     &       'accept position','revise position','abort',INVT,nbhelp)
           if(INVT.eq.2)then
             ITVNO=0
             ITSNM=0
@@ -3041,7 +2910,7 @@ C following code is similar to that in addsur in edzone.f.
           NGTV=NGTV+4
           SN=' '
           CALL EASKS(SN,' ',' Inserted surface name: ',
-     &      6,'new_door','surface name',IER,0)
+     &      6,'new_door','surface name',IER,nbhelp)
           GSNAME(NGT)=SN
           NV=NGVER(NGT)
           if(MMOD.ge.8)then
@@ -3103,14 +2972,8 @@ C a thick line. Calling egrndr twice seems to force hilight of surface.
           CALL INLNSTG(3)
         endif
 
-        H(1)='The list of associated vertices should be given in'
-        H(2)='anticlockwise order as one faces the outside of the'
-        H(3)='surface.  If one is looking at the inside face then'
-        H(4)='think of the list in clockwise order.  It is a con-'
-        H(5)='vention that the first vertex is located at the'
-        H(6)='bottom-left corner of the surface (looking from the'
-        H(7)='outside) with the next vertex moving horizontally.'
-        H(8)='It helps to follow a consistent pattern!'
+        helptopic='ground_surf_edge_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
    93   HOLD=' '
 
 C Incrementally write out vertex information (within 72 chars).
@@ -3129,7 +2992,8 @@ C Incrementally write out vertex information (within 72 chars).
           endif
   42    continue
         write(outs,'(2a)') ' Associated vertices for ',gsname(ifoc)
-  43    CALL EASKS(HOLD,outs,'  ',72,' ','associated vertices',IIER,8)
+  43    CALL EASKS(HOLD,outs,'  ',72,' ','associated vertices',
+     &    IIER,nbhelp)
         NV = iCountWords(HOLD)
 
 C Debug.
@@ -3330,7 +3194,6 @@ C output: triangle list
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
@@ -3344,14 +3207,22 @@ C output: triangle list
 
       DIMENSION CG(2), CCR(MGRT), CENT(MGRT,2), IVSEL(90)
       DIMENSION PTA(2), ITSEL(90), ITCHK(90)
-      CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
+      CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='TRIANG'  ! set for subroutine
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV
@@ -3435,8 +3306,9 @@ C Clear current viewing box.
 
         OK=.FALSE.
         dok=.false.
-        h(1)='Option to include vertex indices in drawing. '
-        CALL ASKOK(' ','Draw vertices?',OK,dok,1)
+        helptopic='ground_include_indices'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ','Draw vertices?',OK,dok,nbhelp)
         IF(OK)then
           ix=NGTV
           call UGRNDR(ix,0,'initial',IER)
@@ -3579,9 +3451,10 @@ C Finally check to see if all the vertices have been used.
           write(outs,*)' Vertex number is unused ',I
           call edisp(iuout,outs)
           dok=.true.
-          h(1)='Alternative logic will be used to check for surfaces'
-          h(2)='which might use this vertex. '
-          call askok('Try again to find this vertex?',' ',ok,dok,2)
+          helptopic='ground_alt_logic_triang'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('Try again to find this vertex?',' ',
+     &      ok,dok,nbhelp)
           if(ok)goto 150
         ELSE
           write(outs,*)' Vertices number has been used ',I
