@@ -2,9 +2,6 @@ C ESP-r building-related definition file setting maximum
 C parameter values.
 C 72 zone 62 surface version 12.08 updated
 
-C Version: 52 zones, 62 surfaces/zone
-C          (modify via MCOM and MS respectively).
-
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
       integer MTS,MGT,MCT,MTRACE,MGRDP,MLCOM,MDF,MDCFP,MDCFS,MDCFV
@@ -36,7 +33,7 @@ C Construction.
       PARAMETER (ME=30)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MMLC=120)	!- Multilayered constructions in model.
+      PARAMETER (MMLC=200)	!- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
 C Glazing.
@@ -44,7 +41,7 @@ C Glazing.
       PARAMETER (MTMC=7)	!- Glazing systems/zone, 
       PARAMETER (MGAL=2)	!- Optical sets per optics db item. 
       PARAMETER (MANG=9)	!- Angles at which optical data is held.
-      PARAMETER (MGOPT=90)	!- Set size in optics database.
+      PARAMETER (MGOPT=150)	!- Set size in optics database.
 
 C Shading/insolation.
       PARAMETER (MB=180)	!- Site obstruction blocks.

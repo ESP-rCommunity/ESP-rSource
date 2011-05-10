@@ -1350,6 +1350,7 @@ C GS7/GS8 are defined in geometry.h
       character MLCN*12      ! local string for comparison
       logical dll,checkbase
       logical havec24
+      logical optcorrected   ! set to true if optics corrected
       integer nbo   ! local value of nbobs
       integer lsn   ! length of currentfile
       integer lno,lnow     ! length of optics name
@@ -1364,6 +1365,7 @@ C Set initial values.
       ZN=' '
       phrase=' '
       checkbase=.false.
+      optcorrected=.false.
       havec24=.false.  ! true if connections list has data
       NTV=0    ! counter for vertices, assume no vertices
       NEDGE=0  ! counter for surfaces in the edge list, assume no surfaces
@@ -1751,14 +1753,26 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
+
+C When scanning geometry warn users if the optical description in the
+C geometry file is different from that of the optical property associated
+C with the construction (TRAN is an ok mis-match).
                 lnow=lnblnk(word)   ! length for token in file
                 lno=lnblnk(OPT)     ! length for mlc optics
-		if(WORD(1:lnow).ne.OPT(1:lno))then
-		  write(outs,*) 'Optics ',WORD(1:lnow),' in geo file ',
-     &              ' does not match optics of the MLC ',
-     &              DESC(ICF)(1:12),' ',OPT(1:lno)
-                  call edisp(iuout,outs)
+                if(WORD(1:lnow).ne.OPT(1:lno))then
+                  if(WORD(1:4).eq.'TRAN')then
+                    continue
+                  else
+		    write(outs,*) 'Optics ',WORD(1:lnow),
+     &                ' in geo file does not match optics of the MLC ',
+     &                DESC(ICF)(1:12),' ',OPT(1:lno)
+                    call edisp(iuout,outs)
+                    optcorrected=.true.
+                  endif
                 endif
+
+C The matched optical property is saved to memory. The geometry file
+C would need to be written to record the matched property.
                 write(SOTF(NS),'(a)') OPT
                 if(havec24) write(SSOTF(icn),'(a)') OPT
               else
@@ -2325,7 +2339,15 @@ C If surface `flor` not included in the list add it.
      &    ' (probably an older file).'
         call edisp(itru,outs)
         if(lastlist.gt.0)iuzbasea(icomp)=0
-      endif     
+      endif
+
+C If optics were corrected during the scan advise user to save the
+C geometry file to record the correction.   
+      if(optcorrected)then
+        call edisp(iuout,
+     &  ' Optic mismatch corrected in memory. Save geometry to record.')
+        optcorrected=.false.
+      endif
 
 C Leave it to calling code to report on contents of zone geometry
 C as extended reporting needs to know of the context of the zone.

@@ -7941,163 +7941,97 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *subroutine updatesvfc
 *subroutine IPVCMD
 *subroutine ipvdat
-*item ipvdat
-'Definition of an Integrated Performance View (IPV) '
+*item ipvdat ipv_menu_overview
+'An Integrated Performance View (IPV) is a facility which allows'
+'users to define (hopefully at the plannning stage) performance'
+'issues that are of interest in the project (e.g. comfort, solar'
+'entering rooms), their location in the model (e.g. a set of offices)'
+'and the assessment periods (e.g. one typical week in each season'
+'or all days in the summer).'
 ' '
-'It includes descriptive information: title, version'
-'and synopsis and one or more images. These can be'
-'edited directly.'
+'It includes descriptive information: title, version and synopsis'
+'as well as one or more images. These can be edited directly.'
 ' '
-'Performance metrics (comfort, zone dry bulb temp, etc.)'
-'are associated with a set of thermal zones and have'
-'weighting factors (to assist in ranking performance).'
+'Performance metrics (comfort, zone dry bulb temp, etc.) are linked'
+'with sets of thermal zones'
 ' '
-'Demand sets are sets of zones for which heating, cooling'
-'lighting, small power and DHW are reported. Each set'
-'has a scaling factor so that, for example 2 offices'
-'zones can be scaled to represent 15 offices.'
+'Demand sets are sets of zones for which heating, cooling, lighting,'
+'small power and DHW are reported. Each set has a scaling factor so'
+'has a scaling factor so that, for example 2 office zones can be'
+'scaled to represent 15 offices.'
 ' '
-'Annual performance is scaled from an annual run, three'
-'seasonal runs: winter/transition/summer, or five runs:'
-'1st winter/spring/summer/autumn/2nd winter. Each run '
-'has date and heating and cooling degree day ratio '
-'attributes. Periods can be setup based on a best-fit'
-'scan of climate data (see option 5).'
+'One useful facility of an IPV is to allow annual performance to be'
+'derived from an actual annual assessment or scaled from three'
+'seasonal runs: winter/transition/summer, or five runs: 1st winter/'
+'spring/summer/autumn/2nd winter. Each run has a start/stop date'
+'time frequency and heating and cooling degree day ratios. Periods'
+'can be setup based on a best-fit scan of climate data (see option 5).'
 ' '
-'Display days: are specific days (up to 10) for which'
-'timestep data is recorded.'
+'Display days: are specific days (up to 10) for which timestep data'
+'is recorded. There is an option to turn off timestep reporting.'
 ' '
-'Seasons are based on information in the [climatelist]'
-'file. This information is included to clarify the'
-'relationship between each season and the 1/3/5 sim-'
-'ulations being run. '
+'Seasons are based on information in the [climatelist] file. This'
+'information is included to clarify the relationship between each'
+'climate season and the 1/3/5 simulations being run. '
 ' '
-'Ratios: are typically ratios between the number of'
-'days (or heating/cooling degree days) of the season'
-'and the assessment period. For an annual simulation'
-'the ratios are 1.00.'
+'Ratios: are typically ratios between the number of days (for'
+'lighting (or heating/cooling degree days for heating and cooling)'
+'of the assessment period and the season. For an annual simulation'
+'the ratios are 1.00. A typical winter week performance might be'
+'multiplied by 8.9 to represent the whole 1st winter season. This'
+'can save lots of computation time and if properly calibrated for'
+'the building type and location can also be quite accurate.'
 ' '
-'Option 5 [re-scan climate] is a two step process;'
-'the first to scan the [climatelist] file for the '
-'days in each season; the second being scanning the'
-'climate data to find the best fit week in each'
-'season. '
+'Option 5 [re-scan climate] is a two step process; the first step'
+'is to scan the [climatelist] file for the days in each season'
+'e.g. 1st winter might be defined from 1 Jan to 10 March; the'
+'second being scanning the climate data to find the best fit week'
+'based on heating and cooling degree days and solar radiation.'
 ' '
 'Setting up an integrated performance view: '
-'a) edit the title version and synopsis, '
-'b) select relevant performance metrics for the project,'
-'c) select the number of simulations,'
-'d) re-scan the climate file for seasons,'
-'e) re-scan the climate for ratios,'
-'f) select display days (within the simulations).'
+'a) edit the title (up to 40 char), version (up to 40 char) and'
+'   synopsis (up to 248 char), '
+'d) images (up to 5 GIF file names),'
+'e) format of report (normal spaces, tab, Java I2PV)'
+'1) select/edit/manage performance metrics,'
+'2) select/edit/manage demand (heating/cooling) sets'
+'3) select the number and type of simulations,'
+'4) select display days (up to 10 within the simulations),'
+'5) re-scan the climate file for seasons and day ratios'
 ' '
-'This file holds a description of an Integrated'
-'Performance View of this model, including periods,'
-'climatic degree day information & associated zones.'
+'For older models a file holds a description of an IPV, in newer'
+'models the information is held in the model configuration file.'
 *enditem
-            CALL EASKS(ltmp,'IPV description file ?',
-*item ipvdat
-*enditem
+        CALL EASKS(ltmp,'IPV description file ?',
         CALL PHELPD('IPV setup',10,'-',0,0,IER)
-*item ipvdat
-'The main IPV title (<=40 char). '
-*enditem
         CALL EASKS(t40,'IPV tile?',' ',40,'TITLE','IPV Tile',IER,1)
-*item ipvdat
-'The version of the project or IPV (<=40 char). As in'
-'base case or reference 1 etc. '
-*enditem
         CALL EASKS(t40,'version ?',' ',40,'base','version',IER,2)
-*item ipvdat
-'The synopsis is up to 248 characters of text to describe'
-'the model and intent of the ipv. You will be presented'
-'with the synopsis in sections for purposes of editing.'
-'(you can skip to the left and right within the block'
-'as required). '
-*enditem
         CALL EASKS248(t248,'Synopsis',' ',72,
-*item ipvdat
-'Images (GIF) can be included in an IPV.'
-*enditem
         CALL EASKABCD(outs,'Choices: ','list',
-*item ipvdat
-'Images (GIF) can be included in an IPV.'
-' '
-'A cancel results in no change in your model. '
-*enditem
-          CALL EASKI(IFOC,'Which image (give index) ? ',' ',
-*item ipvdat
-'This image file will be associated with the IPV. '
-*enditem
-          CALL EASKS(t72,'Image file name:',' ',72,'xxx','image file',
-*item ipvdat
-*enditem
-            CALL EASKS(t72,'Image file name:',' ',72,'xx','image file',
-*item ipvdat
-'Simulation start day & month and finish day and month. '
-' '
-*enditem
-        CALL PHELPD('periods',4,'-',0,0,IER)
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'Simulation period: start (day & month) and',
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'Winter period: start (day & month) and',
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'1st winter period: start (day & month) and',
-*item ipvdat
-'Simulation start day & month and finish day and month. '
-' '
-*enditem
-        CALL PHELPD('periods',4,'-',0,0,IER)
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'Transition period: start (day & month) and',
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'Spring period: start (day & month) and',
-*item ipvdat
-'Simulation start day & month and finish day and month. '
-' '
-*enditem
-        CALL PHELPD('periods',4,'-',0,0,IER)
-*item ipvdat
-*enditem
+        CALL EASKI(IFOC,'Which image (give index) ? ',' ',
+        CALL EASKS(t72,'Image file name:',' ',72,'xxx','image file',
+        CALL EASKS(t72,'Image file name:',' ',72,'xx','image file',
+        CALL EASKS(HOLD,'Simulation period: start (day & month) and',
+        CALL EASKS(HOLD,'Winter period: start (day & month) and',
+        CALL EASKS(HOLD,'1st winter period: start (day & month) and',
+        CALL EASKS(HOLD,'Transition period: start (day & month) and',
+        CALL EASKS(HOLD,'Spring period: start (day & month) and',
         CALL EASKS(HOLD,'Summer period: start (day & month) and',
-*item ipvdat
-'Simulation start day & month and finish day and month. '
-' '
-*enditem
-        CALL PHELPD('periods',4,'-',0,0,IER)
-*item ipvdat
-*enditem
         CALL EASKS(HOLD,'Autumn period: start (day & month) and',
-*item ipvdat
-'Simulation start day & month and finish day and month. '
-' '
-*enditem
-        CALL PHELPD('periods',4,'-',0,0,IER)
-*item ipvdat
-*enditem
         CALL EASKS(HOLD,'2nd winter period: start (day & month) and',
-*item ipvdat
-'Display day & month. This is a day (one of up to 10)'
-'where detailed hourly data will be recovered.'
-*enditem
-            CALL EASKS(HOLD,'Display day & month: (should be',
-*item ipvdat
-*enditem
+        CALL EASKS(HOLD,'Display day & month: (should be',
         CALL EASKAB('Options: ',' ','add another day','continue',IW,1)
-*item ipvdat
-*enditem
-          CALL EASKS(HOLD,'Display day & month: (should be',
-*item ipvdat
+        CALL EASKS(HOLD,'Display day & month: (should be',
+*item ipvdat ipv_season_multip
 'These multipliers allow for scaling of predictions'
 'from a simulation period to a season.  If the'
 'simulation period equals the season then use 1.0 or'
 'use either a heating degree day ratio or a day ratio'
+'for the heating or cooling degree day ratio for cooling.'
+' '
+'For items (such as lighting) that are not sensitive to HDD and'
+'CDD ratios use a ratio of the days in the assessment to the days'
+'in the season.'
 ' '
 'If single simulation only edit first number. '
 'If three simulations only edit first three numbers.'
@@ -8107,80 +8041,21 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'find these ratios if the simulation period is a '
 *enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for heating:',
-*item ipvdat
-'These multipliers allow for scaling of predictions'
-'from a simulation period to a season.  If the'
-'simulation period equals the season then use 1.0 or'
-'use either a cooling degree day ratio or a day ratio'
-' '
-'If single simulation only edit first number. '
-'If three simulations only edit first three numbers.'
-'If five simulations edit all numbers.'
-' '
-'Note: the [rescan climate] function can be used to'
-'find these ratios if the simulation period is a '
-*enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for cooling:',
-*item ipvdat
-'These multipliers allow for scaling of predictions'
-'from a simulation period to a season.  If the'
-'simulation period equals the season then use 1.0 or'
-'use either a daylighting ratio or a day ratio'
-' '
-'If single simulation only edit first number. '
-'If three simulations only edit first three numbers.'
-'If five simulations edit all numbers.'
-' '
-'Note: the [rescan climate] function can be used to'
-'find these ratios if the simulation period is a '
-*enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for lighting:',
-*item ipvdat
-'These multipliers allow for scaling of predictions'
-'from a simulation period to a season.  If the'
-'simulation period equals the season then use 1.0 or'
-'use a day ratio (simulation period -> season)'
-' '
-'If single simulation only edit first number. '
-'If three simulations only edit first three numbers.'
-'If five simulations edit all numbers.'
-' '
-'Note: the [rescan climate] function can be used to'
-'find these ratios if the simulation period is a '
-*enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for small power:',
-*item ipvdat
-'These multipliers allow for scaling of predictions'
-'from a simulation period to a season.  If the'
-'simulation period equals the season then use 1.0 or'
-'use a day ratio (simulation period -> season)'
-' '
-'If single simulation only edit first number. '
-'If three simulations only edit first three numbers.'
-'If five simulations edit all numbers.'
-' '
-'Note: the [rescan climate] function can be used to'
-'find these ratios if the simulation period is a '
-*enditem
         CALL EASKS(HOLD5,'Seasonal multiplier for fans & pumps:',
-*item ipvdat
-'These multipliers allow for scaling of predictions'
-'from a simulation period to a season.  If the'
-'simulation period equals the season then use 1.0 or'
-'use a day ratio (simulation period -> season).'
-' '
-'If single simulation only edit first number. '
-'If three simulations only edit first three numbers.'
-'If five simulations edit all numbers.'
-' '
-'Note: the [rescan climate] function can be used to'
-'find these ratios if the simulation period is a '
-*enditem
         CALL EASKS(HOLD5,'Seasonal multipliers for domestic hot water:',
-*item ipvdat
+*item ipvdat ipv_season_scan
 'Each climate data set may have different seasons and'
-'different typical assessment periods. Choosing this '
-'will rescan a [climatelist] file and update display.'
+'different typical assessment periods. This is often based'
+'on local knowledge of the region and preferences of people'
+'in the region. For example, the first flowering of specific'
+'trees in the spring may generally signal a switch in clothing'
+'and heating preferences which can impact building controls.'
+'  '
+'Choosing this option will rescan the [climatelist] file and'
+'update display with the standard assumptions for the location.'
 ' '
 'Both the climate tool and the project manager can scan'
 'the current climate file to locate the best fit week '
@@ -8189,97 +8064,92 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'simulations to whole seasons.'
 *enditem
         CALL EASKABC('Options: ',' ',
-*item ipvdat
-'Definition of an Integrated Performance View (IPV)'
-'includes one or more performance metrics. These are'
-'a subset of the metrics which can be found in the'
-'results analysis module. '
-' '
-'Each selected metric has an associated list of zones,'
-'and a weighting factor (to give priority in multi-'
-'criteria assessments.'
-'You can add another metric set or delete an existing set'
-*enditem
         CALL EASKABC('Metric set options:',' ','add','delete',
-*item ipvdat
-'You can delete an existing set. If you request a'
-'rather than supplying an index then the model is '
-'not changed. '
-*enditem
-          CALL EASKI(IFOC,'Which metric set (give index) ? ',
-*item ipvdat
-*enditem
+        CALL EASKI(IFOC,'Which metric set (give index) ? ',
         CALL PHELPD('IPV metrics',8,'-',0,0,IER)
-*item ipvdat
-'This is a sub-set of the metrics that can be selected'
-'in the results analysis module. '
-' '
+*item ipvdat ipv_metric_overview
+'This is a sub-set of the metrics that can be selected in the'
+'results analysis module. '
+'  '
 'For each metric the IPV will include statistics,'
 'frequency reporting and timestep data for display days.'
-' '
+'  '
+'Each metric has a short name  (12 char or less) unique'
+'identifier for the group of zones associated with this metric.'
+'Each metric has a floor area for the associated zones so that'
+'reports can also include W/m2 data.'
+'  '
+'  zone resultant temperature is a useful proxy for comfort in'
+'    rooms (it does not require all of the descriptive data'
+'    needed for a Fanger comfort assessment)'
+'  '
+'  zone dry bulb temperature is equivalent to a shielded'
+'    temperature sensors in each of the associated zones'
+'  '
+'  zone relative humidity % might be of interest to check if'
+'    humidity controls are working or are needed
+'  '
+'  zone infiltration load is the energy impact of air entering'
+'    the zone(s) by natural or forced means
+'  '
+'  zone ventilation load is the energy impact of air entering'
+'    from other rooms in the model
+'  '
+'  zone casual gains (all) is the sum of all of the types of'
+'    casual gains and includes both the radiant and convective'
+'    portion of the gains'
+'  '
+'  zone solar (from outside) is solar radiation which has passed'
+'    the outside facing glazing in the zone'
+'  '
+'  zone solar (absorbed in) is solar radiation which has been'
+'    absorbed in the surfaces of the zone'
+'  '
+'  Visual comfort (Guth and glare) are not operational'
+'  '
+'If the metric only makes sense if filtered for occupancy then'
+'you are asked which casual gain index is to be used as a filter'
+'criteria. For no filter (full time) then select zero.'
+'  '
 'If you need to cancel select the NO CHOICE option. '
 *enditem
         CALL PHELPD('metric options',7,'-',0,0,IER)
-*item ipvdat
-*enditem
       CALL EPICKS(INPIC,IVALS,' ',
-*item ipvdat
-'Give a short (12 char or less) unique identifier for the'
-'group of zones associated with this metric. '
-*enditem
       CALL EASKS(t12,
-*item ipvdat
-'Floor area for zones associated with this metric.'
-*enditem
       CALL EASKR(TFLA,' ',' Associated floor area (m^2)? ',
-*item ipvdat
-'If metric is to be assessed only during occupied '
-'periods then supply the casual gain type assiciated '
-'with occupancy. A zero means full time occupancy. '
-' '
-'If you cancel then no changes are made to the metric.'
-*enditem
       CALL EASKI(icgv,'Casual gain type associated with occupancy',
-*item ipvdat
-'Definition of an Integrated Performance View (IPV)'
-'include one or more energy demand sets. These are groups'
-'of zones which can be combined and/or scaled for'
-'reporting and/or analysis purposes.'
-'You can add another demand set or delete an existing set'
+*item ipvdat ipv_demand_overview
+'An IPV can include one or more ehergy demand sets. These are'
+'groupsnof zones which can be combined and/or scaled for reporting'
+'and/or analysis purposes.  For example, a number of offices might'
+'associated with a demand set so that the aggregate heating and '
+'cooling can be reported on and core zones treated with a separate'
+'demand set.'
+'  '
+'There is an option to scale the performance of the demand set so'
+'that a subset of the building model can be made to represent a'
+'larger area. For example, all the offices on the 4th level can'
+'be in a demand set and multiplied by 8 to represent the performance'
+'of the middle 8 levels of an office building.'
+'  '
+'Each demand set has a short unique idenfier (12 char or less)'
+'to help identify the purpose of the set. Useful if there are'
+'a number of demand sets in the model.'
+'  '
+'As with performance metrics, demand sets have a floor area'
+'associated with the set so that W/m2 values can be reported.'
+'  '
+'You can add another demand set or delete an existing set.'
 *enditem
-        CALL EASKABC('Demand set options:',' ','add','delete',
-*item ipvdat
-'You can add delete an existing set and if you choose'
-'to cancel then no changes are made to the demand sets.'
-*enditem
-          CALL EASKI(IFOC,'Which demand set (give index) ? ',
-*item ipvdat
-*enditem
-        CALL PHELPD('IPV demand sets',4,'-',0,0,IER)
-*item ipvdat
-'Give a short (12 char or less) identifier for this '
-'energy demand set to help you remember why you'
-'created this set.'
-*enditem
+      CALL EASKABC('Demand set options:',' ','add','delete',
+      CALL EASKI(IFOC,'Which demand set (give index) ? ',
+      CALL PHELPD('IPV demand sets',4,'-',0,0,IER)
       CALL EASKS(t12,'Identifier for this demand set ?',
-*item ipvdat
-'Pick one, several or all zones for inclusion. You can'
-'have one or two sets of zones which can be scaled up '
-'to represent a whole building. One set might'
-'represent offices and the other support zones.'
-*enditem
       CALL EPICKS(INPIC,IVALS,' ',
-*item ipvdat
-'Floor area for this energy related set of zones.'
-*enditem
       CALL EASKR(edgflr(iset),' ','Energy set floor area (m^2)? ',
-*item ipvdat
-'Multiplier from this set to building. Example: if'
-'set results needed to be multiplied by 4.2 '
-*enditem
       CALL EASKR(edgsca(iset),' ','Multiplier for energy set? ',
 *subroutine ipvseasons
-*item ipvseasons
+*item ipvseasons ipv_assessment_regime
 'Select an assessment regime from the list provided.'
 'The [winter/spring/summer/autumn] options are based on'
 'information in the [climatelist] file for the current'
@@ -8298,675 +8168,461 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'The five season option does winter (jan..) spring summer'
 'autumn and winter (dec..) for a typical week or fortnight'
 'or every day in each season. '
+'  '
+'You have the option to run simultions for a typcial week'
+'or for all the days of the season. This choice depends on'
+'whether the project is well represented by a typical week'
+'and whether the computational time needed for all the days'
+'matches project resources.'
 *enditem
         CALL PHELPD('IPV seasons',18,'-',0,0,IER)
-*subroutine ipvdatinit
-*subroutine ipv2simpar
 *subroutine getmultip
-*item getmultip
-'Degree day calculations are derived from a specific '
-'base temperature (deg C). '
-*enditem
-      CALL EASKR(HBT,' ',' Heating base temperature ? ',
-*item getmultip
-*enditem
-      CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-*item getmultip
-'There is one winter assessment to represent the first and'
+*item getmultip seasonal_climate_scan
+'Seasonal multipliers are based on the following values:'
+'  heating degree days (HDD) and a base temperature (C)'
+'  '
+'  cooling degree days (CDD) and a base temperature (C)'
+'  '
+'  solar radiation 
+'  '
+'Depending on the number of assessments to be undertaken the'
+'ratios have slightly different meanings:'
+'  '
+'If there is one winter assessment to represent the first and'
 'second winter seasons. The ratios is of the winter'
 'assessment period to all winter days and/or degree days.'
-*enditem
-        call easkab(
-*item getmultip
-'There is one transition assessment to represent spring'
+'  '
+'If there is one transition assessment to represent spring'
 'and autumn seasons. The ratios is of the transition'
 'assessment period to all transition days and/or DD.'
 *enditem
-        call easkab(
+      CALL EASKR(HBT,' ',' Heating base temperature ? ',
+      CALL EASKR(CBT,' ',' Cooling base temperature ? ',
+      call easkab(
+      call easkab(
 *subroutine makeCFCfile
-*item makeCFCfile
+*item makeCFCfile CFC_creation_overview
+'Complex fenistrations are based on information collected in'
+'a separate application (which creates so-called GSL files.'
+'  '
+'Each CFC type requires a corresponding *.GSL file except'
+'when the only difference between two CFCs is the shade layer'
+'slat angle. The slat angle is set during the import process.'
+'  '
 ' For instructions on importing *.GSL files'
 ' see "Appendix F: CFC User Reference" from'
 ' http://uwspace.uwaterloo.ca'
 ' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-' If GSL files have already been imported, select'
-' continue.'
-' To download the Glazing Shading Layer Editor go to'
-' the ESRU website downloads section.'
+'  '
+' If GSL files have already been imported, select continue'
+'  '
+' The initial scan of the GSL file will establish how many'
+' CFC are available and the zone attributes are also scanned'
+' to determine the miniminum number of CFC types required. This'
+' minimum value is the default in the dialog requesting the CFC'
+' type index for the surface.'
+'  '
+' For each surface in the zone which is attributed as a CFC the'
+' interface will ask you to assign a CFC type.'
+'  '
+' You are asked to confirm the name of the GSL file. (again'
+' check Appendix F in the CC User Refernce). If the file does'
+' not exist then you are asked to use GSLedit to create the'
+' GSL file and then copy it into the model [zones] folder.
+'  '
+'To download the Glazing Shading Layer Editor go to'
+'the ESRU website downloads section.'
 *enditem
       CALL EASKAB(outs,'Options:',
-*item makeCFCfile
-' Each CFC type requires a corresponding *.GSL file'
-' except when the only difference between two CFCs '
-' is the shade layer slat angle. The slat angle is '
-' set during the import process.'
-' The minimum number of CFC types required is given as'
-' default,'
-*enditem
       CALL EASKI(ncfctypes,' ','Number of CFC types?',
-*item makeCFCfile
- 'Assign CFC type to surface. '
-' For an example of usage see'
-' "Appendix F: CFC User Reference" from'
-' http://uwspace.uwaterloo.ca'
-' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-*enditem
-          CALL EASKI(itype,'CFC type for: ',outs,1,'F',
-*item makeCFCfile
-' Provide the path and file name of the *.GSL file  '
-' that corresponds to this CFC type.'
-' For an example of usage see'
-' "Appendix F: CFC User Reference" from'
-' http://uwspace.uwaterloo.ca'
-' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-*enditem
-        CALL EASKS(ltmp,outs,' ',72,ltmp,'GSLedit file name',IER,7)
-*item makeCFCfile
-' Generate *.GSL file using GSLedit and copy file'
-' to desired location within the Model folders.'
-' Make sure path is correct.'
-' For an example of usage see'
-' "Appendix F: CFC User Reference" from'
-' http://uwspace.uwaterloo.ca'
-' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-*enditem
-          CALL EASKAB('File not found! ','Options:',
+      CALL EASKI(itype,'CFC type for: ',outs,1,'F',
+      CALL EASKS(ltmp,outs,' ',72,ltmp,'GSLedit file name',IER,7)
+      CALL EASKAB('File not found! ','Options:',
 *subroutine importGSLedit
-*item importGSLedit
-' Vertical or Horizontal Slats: '
-' '
-' For slat angle sign convention, see Figure F.12 in:'
+*item importGSLedit slat_angle_convention
+'You are asked whether the slats are Vertical or Horizontal. Use'
+'the slat angle convention shown in Figure F.12 in:'
 ' "Appendix F: CFC User Reference" from'
 ' http://uwspace.uwaterloo.ca'
 ' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+'  '
+'You are then asked to set the initial slat angle. This is constant'
+'if there is no control applied to the slat. The slat angle'
+'convention is also shows in Figure F.12 For Appendix F.'
 *enditem
           CALL EASKAB(outs(1:ln_outs),' ',
-*item importGSLedit
-' Initial Slat angle:'
-' This is a constant if there is not slat control'
-' For slat angle sign convention, see Figure F.12 in:'
-' "Appendix F: CFC User Reference" from'
-' http://uwspace.uwaterloo.ca'
-' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-*enditem
           CALL EASKR(rphi,' ',outs(1:ln_outs),-89.999,'F',
-*item importGSLedit
-' CFCs must contain more than one layer.'
-*enditem
-        CALL PHELPD('file error',2,'-',0,0,IER)
 *subroutine read_in_cfc_file
 *subroutine askCFCtype
-*item askCFCtype
+*item askCFCtype CFC_type_select
 'Select CFC type to apply shading schedule/control.'
+'  '
+'The CFC data file must exist before you can select a CFC'
+'type. Please sort this out first.'
 *enditem
-          CALL PHELPD('Choose CFC type',1,'-',0,0,IER)
-*item askCFCtype
-'*.cfc file not found'
-'CFC input data must first be imported before'
-'editing the shading schedule can commence.'
-*enditem
+        CALL PHELPD('Choose CFC type',1,'-',0,0,IER)
         CALL PHELPD('CFC file not found',4,'-',0,0,IER)
 *subroutine EDMRT
-*item EDMRT
-'The zone viewfactor file contains data from the'
-'ESRU espvwf program which allows a more robust treatment'
-'of longwave radiation within a zone.'
+*item EDMRT mrt_menu_overview
+'This menu allows zone viewfactors or MRT sensors to be viewed'
+'and edited.  These are then passed to the program [espvwf] for'
+'further processing if a robust evaluation of view factors or'
+'position dependent mean radiant temperatures is required. '
 ' '
-'If you want to ignore the existing viewfactors for this'
-'zone click on dereference. '
+'MRT sensors are rectangular bodies similar to those used for'
+'zone obstructions. The default size is a 100x100x100mm cube.'
+'They are placed within a zone (you are asked for an origin'
+'and a rotation angle) and are used to find position-specific'
+'view-factor weighted mean radiant temperatures. You may alter'
+'the initial shape of the cube to approximate an occupant or'
+'other object. It is possible to define several MRT sensors'
+'in a zone for projects which require detailed information in'
+'several locations.'
+' '
+'View factors may also be created from scratch in the current'
+'facility.  Note that the default treatment in ESP-r is to use'
+'area weighted viewfactors which do not require the creation of'
+'a zone view factor file.'
+'  '
+'Your initial choice of whether to use area-weighted or ray-'
+'traced calculations can be altered later on.'
+'  '
+'If you choose ray-traced calculations an initial viewfactor'
+'file is created with zeros in it and then this is passed to'
+'the calculation module. When the computations are complete'
+'yu will be asked whether you want to use the data.'
+'  '
+'If you choose to edit viewfactors it is suggested that you'
+'pay particular attention to the summation of values so that'
+'the total view from a surface does not exceed 1.0. If the'
+'total is less than 1.0 then you will be asked if you want to'
+'re-edit the values.'
+'  '
+'You are asked to confirm the name of the zone viewfactor file.'
+'The intial name will be based on the name of the zone. If you' 
+'want to ignore the existing viewfactors for this zone click on'
+'the dereference option. '
 *enditem
    46   CALL EASKSCMD(LTMP,'Zone viewfactor file? ',' ',
-*item EDMRT
-'The zone viewfactor file contains data from the'
-'ESRU vwf program which allows a more robust treatment'
-'of longwave radiation within a zone.'
-' '
-'If you want to ignore the existing viewfactors for this'
-'zone click on dereference. '
-*enditem
    47   CALL EASKSCMD(LTMP,'Zone viewfactor file? ',' ',
-*item EDMRT
-'This menu allows zone viewfactors or MRT sensors to'
-'be viewed and edited.  These are then passed to the '
-'program [espvwf] for further processing if a robust '
-'evaluation of view factors or position dependent '
-'mean radiant temperatures is required. '
-' '
-'View factors may also be created from scratch in'
-'this section of prj.  Note that the default treatment'
-'is to have area weighted viewfactors which do not'
-'require the creation of a view factor file.'
-' '
-'MRT sensors are rectangular bodies similar to those'
-'used for zone obstructions. The default size is a'
-'100mm cube.  They are placed within a zone to find '
-'the view-factor weighted mean radiant temperature. '
-' '
-'If you wish you may alter the dimension of the sensor'
-'to approximate an occupant or other object. '
-*enditem
         CALL PHELPD('mrt sensor',18,'-',0,0,IER)
-*item EDMRT
-'The zone viewfactor file contains data from the'
-'ESRU vwf program which allows a more robust treatment'
-'of longwave radiation within a zone.'
-*enditem
    48   CALL EASKS(LTMP,' Zone viewfactor file? ',
-*item EDMRT
-*enditem
         CALL EASKSUR(ICOMP,IS,'-',
-*item EDMRT
-*enditem
-            CALL EASKR(V,outs,' view factor: ',
-*item EDMRT
-'If the total is not close to one then we suggest'
-'that you re-edit the values.'
-*enditem
-          call easkab(outs,' ','re-edit','continue',IW,2)
-*item EDMRT
-'The ray-tracing calcs will start a calculation module.'
-*enditem
+        CALL EASKR(V,outs,' view factor: ',
+        call easkab(outs,' ','re-edit','continue',IW,2)
         call easkabc(' Zone viewfactor calculations can be either',
-*item EDMRT
+*item EDMRT pause_for_calcs
 'When the computation is completed you will be '
 'asked whether you want to make use of this data.'
 'The computation may take some time... do not '
 'attempt to use the data until it is finished. '
 *enditem
           CALL PHELPD('espvwf running',4,'-',0,0,IER)
-*item EDMRT
-'The previous pop-up message applies.'
-*enditem
           CALL EASKABC(' Post calculation choices :',' ',
 *subroutine EDMRTS
-*item EDMRTS
-'The specification of MRT sensors is currently based'
-'on a sensor being a prism.  Assuming there is no'
-'rotation the width of the sensor is its distance'
-'along the X axis, the depth is along the Y axis, and'
-'the height is along the Z axis.  The sensor may then'
-'be rotated with the angle being measured anticlockwise'
-'from the X axis.'
-'The origin of the sensor is in site coords. '
+*item EDMRTS mrt_sensor_dimensions
+'The specification of MRT sensors is currently based on a sensor'
+'being a prism.  Assuming there is no rotation the width of the'
+'sensor is its distance along the X axis, the depth is along the'
+'Y axis, and the height is along the Z axis.'
+'  '
+'The sensor may be rotated with the angle being measured anticlockwise'
+'in degrees between the lenth side of the sensor an the X axis.'
+'  '
+'The origin of the sensor is in site coords X Y Z (as are other'
+'zone geometric entities).'
+'  '
+'Each sensor should have a unique name (up to 6 char) for'
+'identification in wire-frame images and in reporting.'
 *enditem
         CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
-*item EDMRTS
-'The origin of the sensor is in site coords. '
-*enditem
         CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
-*item EDMRTS
-'The origin of the sensor is in site coords. '
-*enditem
         CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
-*item EDMRTS
-'The width (with no rotation) is along the X axis.'
-*enditem
         CALL EASKR(DXC(ICUB),MSG,' Sensor width? ',
-*item EDMRTS
-'The depth (with no rotation) is along the Y axis.'
-*enditem
         CALL EASKR(DYC(ICUB),MSG,' Sensor depth? ',
-*item EDMRTS
-'The height (with no rotation) is along the Z axis.'
-*enditem
         CALL EASKR(DZC(ICUB),MSG,' Sensor height? ',
-*item EDMRTS
-'Rotation is anticlockwise degrees between the '
-'length side of the sensor and the X axis.'
-*enditem
         CALL EASKR(CANG(ICUB),MSG,' Sensor rotation? ',
-*item EDMRTS
-'A descriptive name (up to 6 char) is recommended.'
-*enditem
         CALL EASKS(S6,' ',' Name of MRT sensor ? ',
-*item EDMRTS
-*enditem
         CALL PHELPD('sensor menu',7,'-',0,0,IER)
 *subroutine EDOBS
-*item EDOBS
-'In order to account for external shading devices,'
-'window reveals, trees, outside walls, etc. in a'
-'detailed shading analysis the user should approx-'
-'imate such objects as one or more prisms.'
+*item EDOBS solar_obs_overview
+'The default treatment of shading of outside surfaces is to assume'
+'that a surface is un-obstructed. The default treatment of'
+'insolation is that solar radiation entering rooms is diffusely'
+'distributed.'
+'  '
+'In order to account for external shading devices, window reveals,'
+'trees, outside walls, etc. in a detailed shading analysis the'
+'user should approximate such objects as one or more prisms.'
 ' '
-'The obstruction composition defaults to NONE, but'
-'can be set to a multi-layer construction for use in'
-'visualisation studies. '
-' '
-'After defining obstructions select the shading and'
-'insolation directives menu option from where you'
-'can also ask for a shading & insolation calculations'
-'to be run.'
+'The obstruction composition defaults to NONE, but can be set to'
+'a multi-layer construction for use in visualisation studies. The'
+'construction attribute is NOT used in thermal analysis.'
+'  '
+'Obstructions are typically prism shaped and you will be asked to'
+'define an origin X Y and Z (m) as well as a length width and'
+'height (m) and one or two rotations. A 2nd obstruction form is'
+'a six sided body derived from an initial prism shape after which'
+'the coordinates can be edited.'
+'  '
+'Existing obstructions can be rotated as required. When editing'
+'an obstruction rotations are applied to the block origin with'
+'anticlockwise direction positive in the edit menu. Multiple.'
+'obstructions can be rotated about the site origin or another user'
+'defined point.'
+'  '
+'Transforms (X Y Z) can be applied to one or more obstructions.'
+'  '
+'You can manage the list of obstructions by adding new obstructions'
+'or deleting existing obstructions or copying (with option to'
+'rotate and transform) existing obstructions. New obstructions must'
+'be given a unique name (up to 12 characters).'
+'  '
+'Where facade elements, such as window reveals, are thick and thus'
+'reduce the solar radiation entering the zone it is useful to'
+'represent window reveals as obstruction blocks.  This is automated'
+'by adding 4 blocks 5mm away from the surface with a thickness of'
+'the adjacent wall (m) check the construction database or the'
+'geometry menu for the thickness.'
+'  '
+'Each of the reveal blocks will share a root name with the block'
+'name ending in s being the sill, ending in h the head, ending'
+'in l the left reveal and r the right reveal.'
+'  '
+'Prior to undertaking shading calculations you should set the'
+'gridding density to be used. This varies between 4 and 80 points'
+'in each direction. The higher the density the more time it takes'
+'to calculate - but a high density is required if there are small'
+'dimensions e.g. a thin frame around a window.'
+'  '
+'After defining obstructions select the shading and insolation'
+'directives menu option from where you can also ask for a'
+'shading & insolation calculation to be run.'
 *enditem
         CALL PHELPD('obstr menu',13,'-',0,0,IER)
-*item EDOBS
-'For shading and daylighting analysis it is useful to'
-'use obstruction blocks to represent the thickness '
-'of an opening (ie. window reveal). This is automated'
-'by adding 4 blocks 5mm away from the surface with a'
-'thickness of the adjacent wall.'
-' '
-'Each of the blocks will share an root name.'
-*enditem
         CALL PHELPD('obstr reveal',7,'-',0,0,IER)
-*item EDOBS
-*enditem
         CALL EASKSUR(ICOMP,IRS,'-','Which surface should the reveal',
-*item EDOBS
-'This root name will be added to for each of the 4 '
-'obstructions: nglz -> nglzs, nglzh, nglzl, nglzr '
-'where nglzs is the sill, nglzh is the head, nglzl and'
-'nglzr are the left and right fins (seen from outside)'
-*enditem
-          CALL EASKS(blkroot,' Root name for related obstructions?',
-*item EDOBS
-'Thickness associated with surrounding wall (m). Check'
-'the multi-layer construction for this. '
-*enditem
-          CALL EASKR(RTK,' ',' Thickness of the wall (m)?',
-*item EDOBS
-'Choose one or more blocks to rotate or transform'
-'within the site coordinate system.'
-*enditem
+        CALL EASKS(blkroot,' Root name for related obstructions?',
+        CALL EASKR(RTK,' ',' Thickness of the wall (m)?',
         CALL EASKABC(' Choices:',' ','rotate','transform',
-*item EDOBS
-'Choose one or more blocks to rotate.'
-*enditem
-          CALL EPICKS(INPIC,IVALB,' ',' Which obstructions to rotate:',
-*item EDOBS
-'The rotation is applied at the obstruction origin,'
-'with the anticlockwise direction positive. '
-*enditem
-          CALL EASKR(ANGR,' ','Rotation (degrees, anticlockwise +ve)?',
-*item EDOBS
-'Rotate obstruction about the site origin or about'
-'a specified point.  To rotate about the '
-'obstruction origin use the edit option.'
-*enditem
-            CALL EASKAB(' Rotate about the:',' ',
-*item EDOBS
-'Point is in the site coordinate system.'
-*enditem
-              CALL EASKR(x1,' ',' X coordinate (m)?',
-*item EDOBS
-*enditem
-              CALL EASKR(y1,' ',' Y coordinate (m)?',
-*item EDOBS
-'Choose one or more blocks to transform.'
-*enditem
-          CALL EPICKS(INPIC,IVALB,' ','Transform which obstructions:',
-*item EDOBS
-'Offsets are from block origin in metres. '
-*enditem
- 152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-*item EDOBS
-'Use this to add / delete / copy obstructions. '
-*enditem
+        CALL EPICKS(INPIC,IVALB,' ',' Which obstructions to rotate:',
+        CALL EASKR(ANGR,' ','Rotation (degrees, anticlockwise +ve)?',
+        CALL EASKAB(' Rotate about the:',' ',
+        CALL EASKR(x1,' ',' X coordinate (m)?',
+        CALL EASKR(y1,' ',' Y coordinate (m)?',
+        CALL EPICKS(INPIC,IVALB,' ','Transform which obstructions:',
+ 152    CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
         CALL EASKATOG('Modify obstruction list:',' ',
-*item EDOBS
-'Choose block(s) to delete.'
-*enditem
-          CALL EPICKS(INPIC,IVALB,' ','Delete which obstruction(s):',
-*item EDOBS
-'Choose a block to copy.'
-*enditem
-          CALL EPICKS(INPIC,IVALB,' ','Copy which obstruction:',
-*item EDOBS
-'Supply a unique block name for this copy (perhaps'
-'modifying thenname of the original block) '
-*enditem
-            CALL EASKS(tbn,' Re-name the obstruction copy:',
-*item EDOBS
-'Transform shifts a solar obstruction origin'
-'by a given amount in X Y Z axis. Leave these'
-'at zero if copy should overlay the original. '
-*enditem
- 243        CALL EASKS(HOLDS,'Transform obstruction (X Y Z metres):',
-*item EDOBS
-'In order to determine the shading distribution '
-'a grid is superimposed on each surface.  This '
-'may be between 4 and 20 points in each direction.'
-'Detailed grids require more processing time but'
-'will allow greater resolution, especially for'
-'complex surfaces or those with thin edges.'
-*enditem
+        CALL EPICKS(INPIC,IVALB,' ','Delete which obstruction(s):',
+        CALL EPICKS(INPIC,IVALB,' ','Copy which obstruction:',
+        CALL EASKS(tbn,' Re-name the obstruction copy:',
+ 243    CALL EASKS(HOLDS,'Transform obstruction (X Y Z metres):',
         CALL EASKS(HOLD,' Surface X & Z grid density:',' ',
 *subroutine ECROBS
-*item ECROBS
-'In order to account for external shading devices,'
-'window reveals, trees, outside walls, etc. in a '
-'detailed shading analysis the user should'
-'approximate such objects as one or more prisms'
+*item ECROBS obstruction_creation
+'In order to account for external shading devices, window reveals,'
+'trees, outside walls, etc. in a detailed shading analysis the user'
+'should approximate such objects as one or more prisms'
 'which are described in a site obstruction file.'
 ' '
-'The browse option presents a file list in the project'
-'[zones] folder to allow import of legacy obstructions'
-'(overwriting any obstructions already held in the zone'
-'geometry file.  '
+'For new models the browse option presents a file list in the project'
+'[zones] folder to allow import of legacy obstructions (overwriting'
+'any obstructions already held in the zone geometry file.'
 ' '
-' '
-'The browse option presents a file list in the project'
-'[zones] folder to associate with obstructions in an'
+'For older models the browse option presents a file list in the'
+'project [zones] folder to associate with obstructions in an'
 'exising zone obstruction file. '
 ' '
-'The dereference option removes the reference to any'
-'currently associated obstruction file. '
+'The dereference option removes the reference to any currently'
+'associated obstruction file. '
 *enditem
-            CALL EASKSCMD(LTMP,'Legacy obstructions import (see help):',
-*item ECROBS
-*enditem
-            CALL EASKSCMD(LTMP,'Zone obstructions file (see help):',
-*item ECROBS
-*enditem
-           CALL EASKS2CMD(LTMP,'Legacy obstructions import (see help):',
-*item ECROBS
-*enditem
-           CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',
-*item ECROBS
-*enditem
+          CALL EASKSCMD(LTMP,'Legacy obstructions import (see help):',
+          CALL EASKSCMD(LTMP,'Zone obstructions file (see help):',
+          CALL EASKS2CMD(LTMP,'Legacy obstructions import (see help):',
+          CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',
           CALL EASKS2CMD(LTMP,
-*item ECROBS
-*enditem
           CALL EASKS2CMD(LTMP,'Obstructions file (see help):',
-*item ECROBS
-*enditem
-            CALL EASKS(LTMP,
-*item ECROBS
-*enditem
+          CALL EASKS(LTMP,
           CALL EASKS(LTMP,
 *subroutine EDOBSB
-*item EDOBSB
-'The specification of obstructions is currently based'
-'on an obstruction being a prism.  Assuming there is'
-'no rotation the width of the block is its distance'
-'along the X axis, the depth is along the Y axis, and'
+*item EDOBSB obstruction_prism
+'The specification of obstructions is currently based on obstructions'
+'being a prism.  Assuming there is no rotation the width of the block'
+'is its distance along the X axis, the depth is along the Y axis, and'
 'the height is along the Z axis.'
 '  '
+'Obstructions must have a unique name (up to 12 char). This will be'
+'seen in the wire-frame view as well as in reports.'
+'  '
 'Rotations: '
-' First rotation: Assuming the block length dimension is'
-' along the X axis the 1st rotation is in the Z axis'
-' with a positive angle being measured anticlockwise'
-' from the X axis. Note this is currently a different'
-' syntax from the rotation of zones.'
+' First rotation: Assuming the block length dimension is along the'
+' X axis the 1st rotation is in the Z axis with a positive angle'
+' being measured anticlockwise from the X axis. Note this is'
+' currently a different syntax from the rotation of zones.'
 ' '
-' Second rotation: Assuming the block has no first '
-' rotation, the 2nd axis of rotation is about the Y axis'
-' with the angle being measured between the base face'
-' and the horizon + is elevation, - is depression.'
+' Second rotation: Assuming the block has no first rotation, the'
+' 2nd axis of rotation is about the Y axis with the angle being'
+' measured between the base face and the horizon + is elevation,'
+' - is depression.'
 ' '
-' Third rotation: Tilt is not yet implemented but will.'
-' be in the X axis (assuming no other rotations).'
+' Third rotation: Tilt is not yet implemented but will.be in the'
+' bX axis (assuming no other rotations).'
 '  '
-' The combination of two rotations can be use to make'
-' a sloped roof eve or an external shading slat that'
-' is horizonal along its length but slanted in a short'
-' dimension.'
+' The combination of two rotations can be use to make a sloped roof'
+' eve or an external shading slat that is horizonal along its'
+' length but slanted in a short dimension.'
 '  '
-'To assist in determining the placement of obstruc- '
-'tion blocks the site coordinates of the 4 corners:'
+'To assist in determining the placement of obstruction blocks '
+'the site coordinates of the 4 corners:'
 ' Front Left  = Block origin, '
 ' Front Right = Right side (along initial X axis), '
 ' Back Right  = Side diagonal from block origin '
 ' '
-'The associated zone bounds are also show. '
-'The construction gives surfaces properties for use'
-'in visualisation applications. '
+'The associated zone bounds are also shown in the menu as well as '
+'the construction gives surfaces properties for use in visualisation.'
 ' '
-'A block type obstruction can be converted into a general'
-'polygon enclosure with six sides (as long as each face is'
-'flat). Such general obstructions could represent non- '
-'rectangular objects. '
+'A block type obstruction can be converted into a general polygon'
+'enclosure with six sides (as long as each face is flat). Such'
+'general obstructions could represent non-rectangular objects. '
 ' '
 'The base of a general polygon obstruction is made up of'
 'vertices 1 4 3 2. The upper surface is 5 6 7 8. The front'
 'surface is 1 2 6 5. The left surface is 4 1 5 8. The '
 'right surface is 2 3 7 6. The back surface is 3 4 8 7.'
+'Thus the 1st coordinate is the lower front left. The 2nd coordinate'
+'is the lower front right. The 3rd coordinate is the lower back right.'
+'The 4th coordinate is the lower back left. The 5th coordinate is'
+'the upper front left. The 6th coordiante is the upper front right.'
+'The 7th coordinate is the upper back right and the 8th is the'
+'upper back left.'
 ' '
-'Obstructions (will in the future) have an attribute of '
-'opacity where 0.0 is transparent and 1.0 is opaque. '
-'You can edit the origin of the block, make it the same'
-'as a vertex in the zone, or the same as a vertex in'
-'the zone after editing.'
+'Obstructions also have an attribute of opacity where 0.0 is'
+'transparent and 1.0 is opaque. Perforated devices can thus be'
+'represented without altering their size.'
+'  '
+'You can edit the origin of the block, make it the same as a vertex'
+'in the zone, or the same as a vertex in the zone after editing.'
 *enditem
           CALL EASKABCD('Choices:',' ','edit origin','use zone vertex',
-*item EDOBSB
-'Distance is in metres, azimuth assumes north=0 '
-'+ degrees clockwise, elevation 90 is vertical. '
-*enditem
- 342          CALL EASKS(HOLD,
-*item EDOBSB
-'The origin of the block is in site coords. '
-*enditem
+ 342      CALL EASKS(HOLD,
           CALL EASKS(HOLD,MSG,
-*item EDOBSB
-'The width (with no rotation) is along the X axis.'
-*enditem
           CALL EASKS(HOLD,MSG,' width (X), depth (Y), height (Z) ',
-*item EDOBSB
-'First rotation: Assuming the block length dimension is'
-'along the X axis the 1st rotation is in the Z axis'
-'with a positive angle being measured anticlockwise'
-'from the X axis. Note this is currently a different'
-'syntax from the rotation of zones.'
-*enditem
           CALL EASKR(VX,MSG,' Block Z rotation? ',
-*item EDOBSB
-'Second rotation: Assuming the block has no first '
-'rotation, the 2nd axis of rotation is about the Y axis'
-'with the angle being measured between the base face'
-'and the horizon: + is elevation, - is depression.'
-'  '
-'The combination of two rotations can be use to make'
-'a sloped roof eve or an external shading slat that'
-'is horizonal along its length but slanted in a short'
-*enditem
           CALL EASKR(VX,MSG,' Block Y rotation (see help)? ',
-*item EDOBSB
-'A descriptive name (up to 12 char) is required.'
-*enditem
           CALL EASKS(S12,' ',' Name of obstruction? ',
-*item EDOBSB
-'Some shading devices are perforated or otherwise let'
-'light pass and thus have an equivalent opacity. This '
-'value is 0.0-1.0 where 0.0 is transparent and 1.0 '
-'is fully opaque. '
-*enditem
           CALL EASKR(VX,MSG,' Block opacity (see help)? ',
-*item EDOBSB
-*enditem
           CALL PHELPD('obstr menu',48,'-',0,0,IER)
-*item EDOBSB
-'The first coordinate is the lower front left.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 2nd coordinate is the lower front right.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 3rd coordinate is the lower back right.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 4th coordinate is the lower back left.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 5th coordinate is the upper front left.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 6th coordinate is the upper front right.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 7th coordinate is the upper back right.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'The 8th coordinate is the upper back left.'
-*enditem
           CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
-*item EDOBSB
-'A descriptive name (up to 12 char) is required.'
-*enditem
           CALL EASKS(S12,' ',' Name of obstruction? ',
-*item EDOBSB
-'Some shading devices are perforated or otherwise let'
-'light pass and thus have an equivalent opacity. This '
-'value is 0.0-1.0 where 0.0 is transparent and 1.0 '
-'is fully opaque. '
-*enditem
           CALL EASKR(VX,MSG,' Block opacity (see help)? ',
-*item EDOBSB
-*enditem
           CALL PHELPD('obstr menu',48,'-',0,0,IER)
 *subroutine EREVEAL
-*item EREVEAL
+*item EREVEAL window_reveal
 'Reveals only created around a rectangular opening. '
 'You can specify 4 corners (i.e. 4 vertices, '
 'beginning lower left and going anti-clockwise). '
+'  '
 *enditem
         CALL EASKAB('The selected surface doesn-t have 4 sides.',
-*item EREVEAL
-'You can specify 4 corners (i.e. 4 vertices, '
-'beginning lower left and going anti-clockwise). '
-*enditem
- 153      CALL EASKS(HOLDS,' 4 vertices defining corners: ',' ',
+153     CALL EASKS(HOLDS,' 4 vertices defining corners: ',' ',
 *subroutine EDACONN
-*item EDACONN
-'The problem contiguity (boundary conditions at surfaces)'
-'are set in this menu.  Before a simulation can be'
-'performed it is necessary that it be complete.'
+*item EDACONN boundary_choice_menu
+'The model contiguity (boundary conditions at surfaces) are set in'
+'this menu.  Before a simulation can be performed it is necessary'
+'that all surface have an assigned boundary condtion.'
 ' '
 'There are several means to define the topology: '
-' a) attribute surfaces via the zone geometry facility'
-'    as they are created,'
+' a) attribute surfaces via the zone geometry facility,'
 '    '
 ' b) manually edit them via this list, '
 '    '
-' c) search for matching vertices within the problem to'
-'    fill in all partitions and then complete this list'
-'    by editing or importing surface attributes.'
+' c) search for matching vertices within the model to fill in all'
+'    partitions and then complete this list by editing or '
+'    importing surface attributes.'
 ' '
-'The automated facility is considerably faster than'
-'manual methods and best used when all the zones have'
-'been created. '
-*enditem
-        CALL PHELPD('connection section',17,'-',0,0,IER)
-*item EDACONN
-'The boundary conditions at the other face of this sur-'
-'face is specified via the selection of one of these'
-'choices.  The default is OUTSIDE.'
+'The automated facility is considerably faster than manual methods'
+'and best used when all the zones have been created. '
+'  '
+'The boundary conditions at the other face of a surface is selected'
+'from one of these choices.  The default is OUTSIDE.'
 ' '
-' Exterior - the other face of the surface is exposed to'
-'  ambient air temperature, wind and solar radiation.'
+' Exterior - the other face of the surface is exposed to ambient air'
+'  temperature, wind and solar radiation.'
 ' '
-' Dynamic/similar - the other face of the surface is'
-'  exposed to the same conditions as the inside face'
-'  (except that when direct sunlight is falling on the'
-'  inside face it cannot be falling on the other face'
-'  only the diffuse component is used on the other face.'
-'  where both sides get the same radiation.'
-'  A dynamic/similar connection can include an offset'
-'  temperature (C) and radiation (W/m^2).'
+' Dynamic/similar - the other face of the surface is exposed to the'
+'  same conditions as the inside face. A dynamic/similar connection'
+'  can include an offset temperature (C) and radiation (W/m^2).'
 ' '
-' Static - requires that a constant temperature and'
-'  radiation be supplied. You might use this to represent'
-'  a cold storage room.'
+' Static - requires that a constant temperature and radiation is'
+'  supplied. You might use this to represent a cold storage room.'
 ' '
-' Surface in another zone - the other face of the surface'
-'  gets its boundary conditions from the last known state'
-'  of the other surface. There is a thermophysical con-'
-'  nection established between the two zones.'
+' Surface in another zone - the other face of the surface gets its'
+'  boundary conditions from the last known state of the other surface.'
+'  There is a thermophysical connection established between the zones.'
+'  Usually you will also want to update the other zone surface.'
 ' '
-' Ground (standard profile) - the other face of the'
-'  surface is in direct contact with one of the standard'
-'  monthly temperature profiles embedded in ESP-r.'
+' Ground (standard profile) - the other face of the surface is in'
+'  direct contact with one of the standard monthly temperature'
+'  profiles embedded in ESP-r.'
 ' '
-' Ground (user defined profile) - the other face of the'
-'  surface is in direct contact with a monthly profile'
-'  previously created by the user (in the model context)'
+' Ground (user defined profile) - the other face of the surface is'
+'  in direct contact with a monthly profile previously created by'
+'  the user (in the model context)'
 ' '
-' Ground (3D conduction) - the other face connects to a'
-'  3D ground representation. This is not often used.'
+' Ground (3D conduction) - the other face connects to a 3D ground'
+'  representation. This is not often used.'
 ' '
-' Adiabatic boundary - typically used for back-to-back'
-'  surfaces in a zone representing thermal mass. There'
-'  is no heat flux passed beyond the other-face. '
+' Adiabatic boundary - typically used for back-to-back surfaces in'
+'  a zone representing thermal mass. There is no heat flux passed'
+'  beyond the other-face. '
 ' '
-' BASESIMP is used to represent one of several basement'
-'  configurations and precalculated patterns of heat'
-'  transfer. For this to be useful there must be a'
-'  basesimp file created for the zone giving a number'
+' BASESIMP is used to represent one of several basement configuration'
+'  and precalculated patterns of heat transfer. For this to be useful'
+'  there must be a basesimp file created for the zone giving a number'
 '  of dimensions and computational parameters.'
 ' '
-' CEN 13791 partition which is like the SIMILAR'
-'  but for CEN 13791 test. The offset temperauture'
-'  and radiation (W/m^2) in SIMILAR is not available'
-'  for the CEN 13791 partition type. For details see'
-'  section 4.4.2 CEN 13791 standard. '
+' CEN 13791 partition which is like the SIMILAR but for CEN 13791'
+'  test. The offset temperauture and radiation (W/m^2) in SIMILAR'
+'  is not available for the CEN 13791 partition type. For details see'
+'  section 4.4.2 CEN 13791 standard. As it results in equal solar'
+'  radiation on both sides of a partition it is [unrealistic] and'
+'  thus not recommended for normal use.'
 *enditem
+        CALL PHELPD('connection section',17,'-',0,0,IER)
         call MENUATOL(outs,' Connection options ',
-*item EDACONN
-'A similar (type 1) connection can include an offset'
-'temperature and radiation (W/m^2) from that of the'
-'current zone. For example, if the adjacent space'
-'which has not been geometrically defined tends to '
-'be 2degC cooler then use a -2 offset. '
-' '
-'(units are in whole degC and whole W) '
-' '
-'Use care when setting a high offset temperature.'
-*enditem
-          CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-*item EDACONN
-*enditem
-          CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-*item EDACONN
-'A type 2 connection requires that a constant '
-'temperature and radiation (Watts) be entered.'
-' '
-'Use care when setting a high adjacent temperature.'
-*enditem
-          CALL EASKR(VAL,' ',' Constant temperature ? ',
-*item EDACONN
-*enditem
-          CALL EASKR(VAL,' ',
-*item EDACONN
-*enditem
-          CALL EASKGEOF('Select zone on other side:',CFGOK,IZ,'-',IER)
-*item EDACONN
-*enditem
-          CALL EASKSUR(IZ,IS,'-','Select surface in the adjacent',
-*item EDACONN
-'Where a pair of surfaces form a partition between'
-'two zones changes in one sides attributes should'
-'be reflected in the other side to maintain model'
-'consistency. Usually you want to update the other'
-'side.  '
-*enditem
-            CALL ASKOK(' ','Update other side?',updoth,dok,5)
-*item EDACONN
+        CALL EASKR(VALT,' Offset temperature? [default=0.0]',
+        CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
+        CALL EASKR(VAL,' ',' Constant temperature ? ',
+        CALL EASKR(VAL,' ',
+        CALL EASKGEOF('Select zone on other side:',CFGOK,IZ,'-',IER)
+        CALL EASKSUR(IZ,IS,'-','Select surface in the adjacent',
+        CALL ASKOK(' ','Update other side?',updoth,dok,5)
+*item EDACONN boundary_ground
 'A ground connection allows either:'
-'> 0 a connection to one of several standard profiles'
-'    in which case the profile number is required.'
-'= 0 a connection to a user defined profile in which'
-'    case a 0 followed by a profile number is '
-'    required.'
+'> 0 a connection to one of several standard profiles in which'
+'    case the profile number is required. A listing of the known'
+'    profiles will be shown.'
+'  '
+'= 0 a connection to a user defined profile in which case a zero is'
+'    followed by a user defined profile number is required.'
+'  '
 '-3  a connection to a 3D ground model.'
 *enditem
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-*item EDACONN
-'One of the user defined profile numbers is'
-'required at this point.'
-*enditem
-            CALL EASKI(IIE2,' User defined ground profile index ?',
-*item EDACONN
+          CALL EASKI(IIE2,' User defined ground profile index ?',
+*item EDACONN boundary_basesimp
 'Specify the BASESIMP configuration number (iconfig). '
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
 'correspondence between iconfig and standard BASESIMP '
 'descriptors (e.g. BCIN_1).'
+'  '
 'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
@@ -8976,252 +8632,311 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *enditem
           CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
 *subroutine EDOPT
-*item EDOPT
-'Optical properties are used for transparent constructions'
-'as well as to support daylighting calculations and the'
-'control of casual gains.  All data is used except for '
-'that which is marked as (documentation).'
+*item EDOPT optical_properties_menu
+'Optical properties are used for transparent constructions as well'
+'as for daylighting calculations and the control of casual gains.'
+'  '
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3 or the EU WIS (Window Information'
+'System) from TNO. Import functions are part of option * in the menu.'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included. For example, a double glazed'
+'unit with internal blinds might be represented via the DCF7671_06mb'
+'optical property which has 5 layers (glass air blind air glass) and'
+'its open state via DCF7671_6omb which also has 5 layers. This'
+'needs to be associated with a relevant construction such as'
+'switched_gl (which points to the open version of the optical'
+'properties. Enable optical switching in the zone constructions'
+'menu and nominate the internal blind as the alternative state.'
+'  '
+'The list of available optical properties includes the short name'
+'of the optical property plus a documentation string. The short name'
+'must be unique and be up to 12 characters with no blanks.'
+'  '
+'Take care when deleting an optical property or re-naming an'
+'optical property. Other constructions may reference it. Consider'
+'using the copy facility to create variants of an optical property.' 
+'All data is used except for items marked as (documentation).'
 ' '
-'For QA purposes you may fill in the surface solar abs'
-'& refl values to match the MLC surface properties.'
-'The Uvalue is for documentation only. Similarly, '
-'solar heat gain coefficients are not used by ESP-r but '
-'can be included for documentation purposes. '
+'Optical data in ESP-r is representative of the whole transparent'
+'system and their inter-relationships. The absorption at an inner'
+'layer is relative to the radiation arriving at that layer (thus'
+'the need for 3rd party applications such as WIS and Window 6.2).'
+'  '
+'Often glass manufacturers will only publish the aggregate optical'
+'data in terms of the overall transmission rather than the layer'
+'by layer data needed by ESP-r.'
+'  '
+'Imported data includes inforation that is not directly used by ESP-r'
+'but which is documentation - the U value and solar heat gain factors'
+'are examples of this.'
 ' '
-'The angular reflections are derived from the overall '
-'solar transmission and layer absorptions. '
-' '
-'The import function currently recognises files from '
-'the LBL program WINDOW 4.1/5.1/5.2/6.2 Here is a step'
-'by step guide to importing optical data. '
-' '
-'1) Start up W4.exe and use the Function 5 key to enter '
-' the glazing system library. '
-' '
-'2) If you have existing glazing systems select one and '
-' ensure that angular properties have been calculated'
-' via Function 9 key. If the angular properties have not'
-' been calculated press A to turn on angular calcs.'
-' This should fill up the table. Type escape to return'
-' to the main W4 window. For safety type alt S to save'
-' the current description. Then then alt P to print'
-' the data for the currently highlighted glazing system.'
-' '
-' You will be asked if it is Library or Detail, select '
-' Detail and then give it a file name. It may take a few'
-' moments for it to compelete the calculations before'
-' it finishes writing the file.'
-' '
-'3) If you want to create a new glazing system type A for'
-' Add and then either N for New or C for Copy. Hint:'
-' scan the Glass Lib via Function 3 to confirm the'
-' glass code numbers you want to use first.'
-' Double check the layer thickness is correct. In W4 (as'
-' in esp-r) layer 1 is at the outside face and sub-'
-' sequent layers are towards the room. Once the layers'
-' have been defined press the space key to force initial'
-' calculations. Escape back to the main menu, and then'
-' type Function 9 to calculate angular properties.'
-' Once this is done escape back to the main menu and use'
-' alt S to save and alt P to print (as described above).'
-' '
-'4) Edit the reports from W4 to remove the null character'
-' before the word Temperature Distribution.'
-' '
-'5) Transfer edited report to esp-r folder (use dos2unix'
-' if necessary to convert line endings). In the Project'
-' Manger use the import option in the optical database  '
-' facility and supply the W4 print file name. A'
-' correct translation should result in a graph of the'
-' properties. Change the id string and description and'
-' check that the number of layers is correct.'
-'In order to reflect changes you have made in this db'
-'in the current model you will have to rebuild the '
-'zone construction and tmc files.  This is in option '
-'[Construction] of the [model definition] menu.'
+'Note that the materials database has slots for single layer optics'
+'which will be used in the future (currently they are un-used.'
+'  '
+'To reflect changes you have made in the constuction db you will'
+'have to rebuild the zone construction and tmc files.  This is in'
+'option [Construction] of the [model definition] menu.'
 *enditem
-          CALL PHELPD('optical db update',4,'-',0,0,IER)
-*item EDOPT
-*enditem
+        CALL PHELPD('optical db update',4,'-',0,0,IER)
         CALL PHELPD('optics db',58,'-',0,0,IER)
-*item EDOPT
-'You can direct optical details to file or display'
-*enditem
         CALL EASKABC(' Reporting to:',' ',
-*item EDOPT
-'Options: Import reads from Window4.1 screen dumps'
-'or the reports generated by Window 5.1 or 5.2 or'
-'Window v6.'
-' '
-'Note that Window 5.1/2 & v6 files have the thickness of'
-'the layer in an unreadable location so be sure to'
-'correct the thickness after the import.'
-' '
-'Add/Delete/Copy work on current contents of db. '
-*enditem
         CALL EASKATOG('Optical actions: ',' ',
-*item EDOPT
-'This is a WIS report file. You should provide the'
-'full path to this file.'
-*enditem
-          CALL EASKS(lfil,'WIS file name?',
-*item EDOPT
-'The layout of glazing, air gaps and blinds can'
-'be selected from this list or an alternative '
+        CALL EASKS(lfil,'WIS file name?',
+*subroutine EDOPT
+*item EDOPT optical_import_win6
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3. Here is a step by step guide:'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included.'
 ' '
-'A cancel request leaves the model unchanged.'
+'Older Window files start with:'
+'Window 5.2a  v5.2.17a Glazing System Thermal and Optical Properties'
+'  '
+'Newer Window files start with:'
+'Window v6.3.9.0 Glazing System Thermal and Optical Properties'
+'  '
+'1) Take note of the full path to the LBL report file and confirm'
+'   how many layers are included in the optical data. Decide on'
+'   a descriptive phrase and short ID string for new optical data'
+'   as well as the name of the construction which will use or be'
+'   created to use this optical data.'
+'  '
+'2) In the Database Maintenance facility of prj make sure there'
+'   is a local optical and construction database for your model.'
+'  '
+'3) Browse the optical properties database: optica properties ->'
+'   browse/edit db and locate the * import option. Choose the'
+'   [Import Window4/5/6] button. In the X11 interface you have'
+'   to type in the full file path and name of the LBL report.'
+'   If the import process works you will be presented with a'
+'   new Optical Property Set. Ignore any EOF warnings. The'
+'   contents of the LBL report are echoed in the text feedback.'
+'  '
+'4) Fill in the [a type] with the short optical identifier and'
+'   [b descrip] with the phrase from step 1. Check the visible'
+'   and solar values reported in the interface are crrect and'
+'   that air gaps in the optical report have been detected.'
+'  '
+'5) Take a note of the U-value from the LBL report. You may need to'
+'   adapt the air gap resistance in the construction.'
+'  '
+'6) Exit from the optical facility and browse the constructions'
+'   database. Either locate an existing construction with the'
+'   same number of layers or create a new construction. Check that'
+'   the [General type] is Transparent and then click on the'
+'   [Optical properties] option. This will open the optics db so'
+'   locate and select the new optical set. If the reported ISO'
+'   6946 value does not match the LBL report adjust it.'
 *enditem
-            CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
-*item EDOPT
+*item EDOPT optical_import_wis
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the TNO WIS (Windows Information System). This is free'
+'download from http://www.windat.org/wis/html/index.html. It is'
+'implemented as an ACCESS database interface. The download file'
+'unpacks to a folder of files which includes a standard Windows'
+'setup.exe application. Typically you will be asked to confirm the'
+'install of a Microsoft Jet engine, but otherwise if you have'
+'Office installed it should run without any other dependencies.'
+'  '
+'Although WIS is an older application it has facilities to work'
+'with diffusing elements. Some glazing systems can result in the'
+'inclusion of direct-to-diffuse attributes at each angle as well'
+'as a full hemisphere of data (-90 to +90). ESP-r cannot deal with'
+'that many angles and it does not yet have the ability to process'
+'angular diffuse information. If that is important you might wish'
+'to explore the ESP-r CFC (complex fenistration) functions.'
+'  '
+For the purposes of ESP-r, the use of WIS is focused on the'
+'[Transparent System] option. This starts up another proforma with'
+'a scrolling option at the bottom. New systems can be added.'
+'  '
+'The [Calculate] option starts a dialog of data choices for the'
+'report. The default includes basic-oveall, angular-overall, and'
+'angular-elements as well as temperatures and network. ESP-r will'
+'read this default report but does now use the temperature or the'
+'network data (so you can untick that).'
+'  '
+'After confirming the reporting options use the [create] button to'
+'generate the report after with Notepad will start up with the'
+'report loaded. Save this and it can be used in the import option'
+'of the optical database facility. Linux users may need to convert'
+'the file from DOS line endings.'
+'  '
+'WIS includes the concept of g-values. This is not directly used in'
+'ESP-r but is a common descriptor so they are included in the ESP-r'
+'optical database in place of the solar heat gain coefficients.'
+'  '
 *enditem
-              CALL EASKI(nl,' ',' Number of layers in the new set ?',
-*item EDOPT
-'Select on of the existing glazings to delete.'
-*enditem
+          CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
+          CALL EASKI(nl,' ',' Number of layers in the new set ?',
           CALL EPICKS(IX,IGSET,' ','Optical set to delete:',
-*item EDOPT
-'Last chance to avoid deleting the optical set. '
-*enditem
-            CALL ASKOK(' ',' Are you sure?',OK,dok,1)
-*item EDOPT
-'Select on of the existing glazings to copy.'
-*enditem
-            CALL EPICKS(IX,IGSET,' ','Optical set to copy:',
+          CALL ASKOK(' ',' Are you sure?',OK,dok,1)
+          CALL EPICKS(IX,IGSET,' ','Optical set to copy:',
 *subroutine OPT2TMP
 *subroutine EDITOPT
-*item EDITOPT
+*item EDITOPT optical_properties_edit
 'Optical properties are used for transparent constructions'
 'as well as to support daylighting calculations and the'
 'control of casual gains.  All data is used except for '
 'that which is marked as (documentation).'
 ' '
-'For QA purposes you may fill in the surface solar abs'
-'& refl values to match the MLC surface properties.'
-'The Uvalue is for documentation only. Similarly, '
-'solar heat gain coefficients are not used by ESP-r but '
-'can be included for documentation purposes. '
+'For QA purposes you may fill in the surface solar abs & refl'
+'values to match the MLC surface properties.'
+'The U-value and solar heat gain coef are for documentation.'
 ' '
-'The angular reflections are derived from the overall '
-'solar transmission and layer absorptions. '
+'The angular reflections are derived from the overall solar'
+'transmission and layer absorptions at normal to the surface, and'
+'at 40 degrees, 55 degrees, 70 degrees and 80 degrees from normal.'
 ' '
-'The import function currently recognises files from '
-'the LBL program WINDOW 4.1 Here is a step by step guide'
-'to importing optical data. '
-' '
-'1) Start up W4.exe and use the Function 5 key to enter '
-' the glazing system library. '
-' '
-'2) If you have existing glazing systems select one and '
-' ensure that angular properties have been calculated'
-' via Function 9 key. If the angular properties have not'
-' been calculated press A to turn on angular calcs.'
-' This should fill up the table. Type escape to return'
-' to the main W4 window. For safety type alt S to save'
-' the current description. Then then alt P to print'
-' the data for the currently highlighted glazing system.'
-' '
-' You will be asked if it is Library or Detail, select '
-' Detail and then give it a file name. It may take a few'
-' moments for it to compelete the calculations before'
-' it finishes writing the file.'
-' '
-'3) If you want to create a new glazing system type A for'
-' Add and then either N for New or C for Copy. Hint:'
-' scan the Glass Lib via Function 3 to confirm the'
-' glass code numbers you want to use first.'
-' Double check the layer thickness is correct. In W4 (as'
-' in esp-r) layer 1 is at the outside face and sub-'
-' sequent layers are towards the room. Once the layers'
-' have been defined press the space key to force initial'
-' calculations. Escape back to the main menu, and then'
-' type Function 9 to calculate angular properties.'
-' Once this is done escape back to the main menu and use'
-' alt S to save and alt P to print (as described above).'
-' '
-'4) Edit the reports from W4 to remove the null character'
-' before the word Temperature Distribution.'
-' '
-'5) Transfer edited report to esp-r folder (use dos2unix'
-' if necessary to convert line endings). In the Project'
-' Manger use the import option in the optical database  '
-' facility and supply the W4 print file name. A'
-' correct translation should result in a graph of the'
-' properties. Change the id string and description and'
-' check that the number of layers is correct.'
+' option a: type is an ID string up to 12 char which is used'
+'   in the constructions database and zone geometry files. It'
+'   should be unique (within the database).'
+'  '
+' option b: descrip is a phrase up to 36 char which you can use'
+'   to clarify the optical system'
+'  '
+' option c: visible transmittance is typically taken from a'
+'   WIS or Window 6 report. It is used when creating visual'
+'   simulations via Radiance.'
+'  '
+' option d: solar absorption and reflectin is typically taken from'
+'   a WIS or Window 6 report and is for documentation purposes. ESP-r'
+'   pays attention to the surface properties defined in the zone'
+'   construction files. Ensure that the materials database has values'
+'   which are consistent with the WIS or Window 6 report.'
+'  '
+' option e: U-value is typically taken from a WIS or Window 6 report'
+'   and is for documentation purposes. You might want to adapt the'
+'   air gap resistance in the construction database to match this.'
+'  '
+' option f: direct solar transmission at 5 angles - typically from'
+'    a WIS or Window 6 report. to importing optical data.'
+'  '
+' reflection data is derived and cannot be directly edited
+'  '
+' option g: solar heat gain is typically imported from a WIS or'
+'    Window 6 report and is for documentation purposes.'
+'  '
+' layer data includes the refractive index of the glass (typically'
+'    1.52) or air layer (typically 1.0) as well as the'
+'    absorption at 5 angles. This is normally found in the WIS or'
+'    Window 6 report. The absorption is relative to the radiation'
+'    arriving at the layer it must be be computed for the glazing'
+'    system rather than independent layers.'
+'  '
+' option 1: management of layers includes the usual functions where'
+'   add will insert at the point you indicate and copy adds a layer'
+'   at the inside face.'
 *enditem
         CALL PHELPD('optics set',58,'-',0,0,IER)
-*item EDITOPT
-'For insert the point of insertion will be at the location'
-'selected. For copy the layer copied will be placed at the'
-'inside face.'
-*enditem
         CALL EASKABCD('Layer actions: ',' ','Add (insert)',
-*item EDITOPT
-'Select a position to add/insert a new layer...'
-*enditem
-            CALL EPICKS(IX,IGSET,' ','Point of insertion:',43,NTLED+1,
-*item EDITOPT
-'Select a layer to delete...'
-*enditem
-          CALL EPICKS(IX,IGSET,' ','Layer to delete:',43,NTLED,
-*item EDITOPT
-'Select a layer to copy. It will become a new inside'
-*enditem
-          CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
-*item EDITOPT
-'This should be a UNIQUE identifier of up to 12 char '
-'with no spaces. '
-*enditem
+        CALL EPICKS(IX,IGSET,' ','Point of insertion:',43,NTLED+1,
+        CALL EPICKS(IX,IGSET,' ','Layer to delete:',43,NTLED,
+        CALL EPICKS(IX,IGSET,' ','Layer to copy:',43,NTLED,
         CALL EASKS(T12,'Id string ?',' ',12,GTYPE,'opt id',IER,2)
-*item EDITOPT
-'This is an aide memorie for this set of optics. '
-*enditem
         CALL EASKS(GDESCR,'Description ?',' ',36,'new','opt desc',IER,1)
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-*enditem
         CALL EASKR(VTRNED,' ','Visable transmission? ',
-*item EDITOPT
-'The overall solar reflectance and absorption are '
-'not yet used in the calculations - documentation only'
-*enditem
         CALL EASKS(hold,'Solar absoption & reflectance?',
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-'The U value is currently for documentation only.'
-*enditem
         CALL EASKR(UVALED,'U value','(documentation): ',
-*item EDITOPT
-'The overall solar transmittance at 5 angles (from '
-'normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Solar trn @ 0 40 55 70 80 deg:',
-*item EDITOPT
-'The visible transmission is used in daylighting calcs.'
-'The overall heat gain (for documentation purposes) at 5 '
-'angles (from normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Overall heat gain @ 0 40 55 70 80 deg:',
-*item EDITOPT
-'The Refraction index for glass is usually 1.52.'
-'Absorption (from normal @0deg 40deg 55deg 70deg 80deg)'
-*enditem
         CALL EASKS(hold,'Refraction index, absorb @ 0 40 55 70 80 deg:',
 *subroutine IMPOPT
-*item IMPOPT
-'This is either a WINDOW 4.1 Optical Properties file or '
-'a WINDOW 4.1 or WINDOW 5.1 or 5.2 glazing system file'
-'or a WINDOW 6.1 or 6.2 glazing system file.'
+*item IMPOPT optical_import_win6
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the LBL Window 5.2/6.2/6.3. Here is a step by step guide:'
+'  '
+'Gather your information and decide how the glazing will be treated'
+'e.g. is the glazing coated, are their multiple states such as'
+'blinds that need to be included.'
+' '
+'Older Window files start with:'
+'Window 5.2a  v5.2.17a Glazing System Thermal and Optical Properties'
+'  '
+'Newer Window files start with:'
+'Window v6.3.9.0 Glazing System Thermal and Optical Properties'
+'  '
+'1) Take note of the full path to the LBL report file and confirm'
+'   how many layers are included in the optical data. Decide on'
+'   a descriptive phrase and short ID string for new optical data'
+'   as well as the name of the construction which will use or be'
+'   created to use this optical data.'
+'  '
+'2) In the Database Maintenance facility of prj make sure there'
+'   is a local optical and construction database for your model.'
+'  '
+'3) Browse the optical properties database: optica properties ->'
+'   browse/edit db and locate the * import option. Choose the'
+'   [Import Window4/5/6] button. In the X11 interface you have'
+'   to type in the full file path and name of the LBL report.'
+'   If the import process works you will be presented with a'
+'   new Optical Property Set. Ignore any EOF warnings. The'
+'   contents of the LBL report are echoed in the text feedback.'
+'  '
+'4) Fill in the [a type] with the short optical identifier and'
+'   [b descrip] with the phrase from step 1. Check the visible'
+'   and solar values reported in the interface are crrect and'
+'   that air gaps in the optical report have been detected.'
+'  '
+'5) Take a note of the U-value from the LBL report. You may need to'
+'   adapt the air gap resistance in the construction.'
+'  '
+'6) Exit from the optical facility and browse the constructions'
+'   database. Either locate an existing construction with the'
+'   same number of layers or create a new construction. Check that'
+'   the [General type] is Transparent and then click on the'
+'   [Optical properties] option. This will open the optics db so'
+'   locate and select the new optical set. If the reported ISO'
+'   6946 value does not match the LBL report adjust it.'
 *enditem
-      CALL EASKS(lwin4,' Optical import file name? ',
 *subroutine IMPWIS
-*item IMPWIS
-'This is a WIS transparent system report file which '
-'<< more text >>'
+*item IMPWIS optical_import_wis
+'Optical properties in ESP-r must be derived from 3rd party apps'
+'such as the TNO WIS (Windows Information System). This is free'
+'download from http://www.windat.org/wis/html/index.html. It is'
+'implemented as an ACCESS database interface. The download file'
+'unpacks to a folder of files which includes a standard Windows'
+'setup.exe application. Typically you will be asked to confirm the'
+'install of a Microsoft Jet engine, but otherwise if you have'
+'Office installed it should run without any other dependencies.'
+'  '
+'Although WIS is an older application it has facilities to work'
+'with diffusing elements. Some glazing systems can result in the'
+'inclusion of direct-to-diffuse attributes at each angle as well'
+'as a full hemisphere of data (-90 to +90). ESP-r cannot deal with'
+'that many angles and it does not yet have the ability to process'
+'angular diffuse information. If that is important you might wish'
+'to explore the ESP-r CFC (complex fenistration) functions.'
+'  '
+For the purposes of ESP-r, the use of WIS is focused on the'
+'[Transparent System] option. This starts up another proforma with'
+'a scrolling option at the bottom. New systems can be added.'
+'  '
+'The [Calculate] option starts a dialog of data choices for the'
+'report. The default includes basic-oveall, angular-overall, and'
+'angular-elements as well as temperatures and network. ESP-r will'
+'read this default report but does now use the temperature or the'
+'network data (so you can untick that).'
+'  '
+'After confirming the reporting options use the [create] button to'
+'generate the report after with Notepad will start up with the'
+'report loaded. Save this and it can be used in the import option'
+'of the optical database facility. Linux users may need to convert'
+'the file from DOS line endings.'
+'  '
+'WIS includes the concept of g-values. This is not directly used in'
+'ESP-r but is a common descriptor so they are included in the ESP-r'
+'optical database in place of the solar heat gain coefficients.'
+'  '
 *enditem
       CALL EASKS(lwin4,' WIS report file to import? ',
 *subroutine edbioptics
-*item edbioptics
+*item edbioptics optical_bidirectional
 'ESP-r accepts measured optical properties at 5 degree'
 'intervals over a hemisphere. This high resolution optical'
 'data can be associated with surfaces in the model. Note'
@@ -9281,33 +8996,10 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '90,85,0,0,1 '
 '90,90,0,0,1 '
 '*end_set '
-' '
 *enditem
         CALL PHELPD('bi-directional attributes',60,'-',0,0,IER)
-*item edbioptics
-'This is a high resolution bi-directional optical data'
-'file << more text >>'
-*enditem
         CALL EASKS(lfil,' bi-directional optical data to use?',
-*item edbioptics
-'Select if you want to re-define the bi-directional file'
-*enditem
-          call easkab(' File not found. Do you want to specify again?',
-*item edbioptics
-'If this surface fits your critera then proceed.'
-*enditem
-C          CALL ASKOK(
-*item edbioptics
-'There are a limited number of types. '
-' '
-'A cancel request leaves the model unchanged.'
-*enditem
-C              CALL EASKI(nl,' ',' Which bi-directional type?',
-*item edbioptics
-'This surface uses bi-directional optics and'
-'you can remove this attribute. '
-*enditem
-C          CALL ASKOK(
+        call easkab(' File not found. Do you want to specify again?',
 *subroutine CASFMK
 *item CASFMK
  '   Events Database '
@@ -9568,79 +9260,80 @@ C          CALL ASKOK(
 *enditem
           call phelpd('Special material',2,'-',0,0,IER)
 *subroutine EDCONN
-*item EDCONN
-'The model contiguity ie. the boundary conditions'
-'at surfaces are set in this menu.  Before a simulation'
-'can be performed it is necessary that it be complete.'
+*item EDCONN topology_choice_menu
+'The model contiguity (boundary conditions at surfaces) are set in'
+'this menu.  Before a simulation can be performed it is necessary'
+'that all surface have an assigned boundary condtion.'
 ' '
-'There are several means to define the topology: '
-' a) attribute surfaces via the zone geometry facility'
-'    as they are created,'
-'    '
-' b) manually edit them via the [cfg] facility, '
-'    '
-' c) search for matching vertices within the model'
-'    to fill in all partitions and then complete this'
-'    list by editing or importing surface attributes.'
+'In the automated search the coord tolerance is expressed in mm'
+'and edge not-quite-straight in degrees so you can control how'
+'much of a change in direction along a line constitutes a surface'
+'corner. '
+'  '
+'You are also asked to set toggle about which kinds of connections'
+'need to have user confirmation of. Typically you would want to'
+'re-confirm partitions and surfaces which do not match.'
+'  '
+'Be careful with the toggle for surfaces which do not have a match.'
+'These you probably want to confirm rather than just assume that'
+'they face the outside.'
 ' '
-'If internal mass in zone or explicit blinds have been'
-'defined as back-to-back surfaces then they will be'
-'treated as partitions unless you force confirmation.'
+'NOTE: If internal mass in zone or explicit blinds have been defined'
+'as a back-to-back surfaces then they will be treated as partitions'
+'unless you force confirmation.'
 ' '
-'The automated facility is considerably faster than'
-'manual methods and best used when all the zones have'
-'been created. '
+'The boundary conditions opts are:'
+' Exterior - the other face of the surface is exposed to ambient air'
+'  temperature, wind and solar radiation.'
+' '
+' Dynamic/similar - the other face of the surface is exposed to the'
+'  same conditions as the inside face. A dynamic/similar connection'
+'  can include an offset temperature (C) and radiation (W/m^2).'
+' '
+' Static - requires that a constant temperature and radiation is'
+'  supplied. You might use this to represent a cold storage room.'
+' '
+' Surface in another zone - the other face of the surface gets its'
+'  boundary conditions from the last known state of the other surface.'
+' '
+' Ground (standard profile) - the other face of the surface is in'
+'  direct contact with one of the standard monthly temperature sets.'
+' '
+' Ground (user defined profile) - the other face of the surface is'
+'  in direct contact with a monthly profile previously created by'
+'  the user (in the model context)'
+' '
+' Ground (3D conduction) - the other face connects to a 3D ground'
+'  representation. This is not often used.'
+' '
+' Adiabatic boundary - typically used for back-to-back surfaces in'
+'  a zone representing thermal mass. There is no heat flux passed'
+'  beyond the other-face. '
+' '
+' BASESIMP is used to represent one of several basement configuration'
+'  and precalculated patterns of heat transfer. For this to be useful'
+'  there must be a basesimp file created for the zone giving a number'
+'  of dimensions and computational parameters.'
+' '
+' CEN 13791 partition which is like the SIMILAR but for CEN 13791'
+'  test. The offset temperauture and radiation (W/m^2) in SIMILAR'
+'  is not available for the CEN 13791 partition type. For details see'
+'  section 4.4.2 CEN 13791 standard.'
 *enditem
         CALL PHELPD('connection section',21,'surf_topo   ',0,0,IER)
-*item EDCONN
-'The tolerance is expressed in metres and applies to'
-'the X, Y & Z of each vertex.'
-*enditem
         CALL EASKR(CACC,' ',' Tolerance (metres) ? ',
-*item EDCONN
-'The tolerance is expressed in degrees and allows the'
-'user to control how much of a change in direction'
-'along a line constitutes a surface corner.  If set '
-'too small, it will pick up minor vertices along a '
-'side as corners. '
-*enditem
         CALL EASKR(DACC,' ',' Corner tolerance (degrees) ?',
-*item EDCONN
-'Within cfg the shape of a surface is determined by'
-'the number of corners within the surface polygon.'
-'Vertices which lie along a line are not counted unless'
-'the angle of the line changes by several degrees.'
-'If the difference is 0 then both surfaces must have '
-'the same number of corners and they must be within '
-'the distance tolerance specified.  Increasing this'
-'number will allow for one or more of the corners to'
-'be out of tolerance and still be presented to the'
-'user for confirmation. '
-*enditem
         CALL EASKI(IACC,' Number of corners which are allowed outside',
-*item EDCONN
-'Typically, you would want to include existing '
-'partitions in the list of surfaces to check.'
-'You are allowed to exclude them even though it '
-'is a dangerous option for expert users. '
-*enditem
-          call askok('Are you sure you want to skip marked partitions?',
-*item EDCONN
-'This option will result in any surface which does'
-'not conform to the geometric matching criteria to be'
-'assumed to have an EXTERNAL boundary condition.'
-'If you want to choose the boundary condition then'
-'you should toggle [no match found] to YES.'
-*enditem
-          CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
-*item EDCONN
+        call askok('Are you sure you want to skip marked partitions?',
+        CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
+*item EDCONN boundary_back_to_back
 'Typically, back-to-back surfaces in a room represent'
 'mass and/or blinds and if these surfaces are connected'
 'to each other heat will flow. If you want the option'
 'to reset these to ADIABETIC say YES. '
 *enditem
           call askok('Do you want to confirm back-to-back surfaces',
-*item EDCONN
+*item EDCONN boundary_clear_all
 'In restructuring a model it is sometimes useful to '
 'redefine the topology.'
 ' '
@@ -9649,73 +9342,38 @@ C          CALL ASKOK(
 ' '
 'The [clear all] will rebuild the whole master list '
 'and this should be done if the list has been corrupted.'
-*enditem
-        CALL EASKABC(' Topology Options:',' ','clear all topology',
-*item EDCONN
-*enditem
-          call askok('About to clear ALL contiguity.','Is this ok',
-*item EDCONN
-'After clearing contiguity you can re-establish some of'
-'the connections via surface attributes (adiabetic,'
-'similar, constant and ground connections). If these.'
-'attributes are YES in the list of boundary type'
-'toggles (choices c-h) then you will be asked for '
-'confirmation. '
-' '
-'Answering yes to this question can save you lots of '
-'time. '
-*enditem
-          call askok('Recover surface attribute data?',
-*item EDCONN
+'  '
+'How would you know if these topology was corrupted? Well if'
+'you focus on a surface and the wire-frame does not highlight'
+'that surface the list is probably messed up.'
+'  '
 'The [clear subset] asks for each type of connection '
 '(partitions/identical etc.) to clear. '
 ' '
 'Say yes to SIMILAR and/or CONSTANT and/or GROUND'
 'and/or ADIABETIC if you want to clear connections'
 'of surfaces matching these boundary types. '
-*enditem
-          call askok(' ','Clear items marked SIMILAR?',M1OK,dok,6)
-*item EDCONN
-*enditem
-          call askok(' ','Clear items marked CONSTANT?',M2OK,dok,6)
-*item EDCONN
-*enditem
-          call askok(' ','Clear items marked GROUND?',M4OK,dok,6)
-*item EDCONN
-*enditem
-          call askok(' ','Clear items marked ADIABETIC?',M5OK,dok,6)
-*item EDCONN
-*enditem
-          call askok(' ','Clear items marked BASESIMP?',M6OK,dok,6)
-*item EDCONN
-*enditem
-          call askok(' ','Clear items marked IDENT_CEN?',M7OK,dok,6)
-*item EDCONN
+'  '
 'After clearing contiguity you can re-establish some of'
 'the connections via surface attributes (adiabetic,'
 'similar, constant and ground connections). If these.'
 'attributes are YES in the list of boundary type'
 'toggles (choices c-h) then you will be asked for '
 'confirmation. '
-'This facility might save lots of time. '
 *enditem
-          call askok('Recover surface attribute data?',
-*item EDCONN
-'The surface topology of the problem is held'
-'in a connections file.'
-*enditem
-          CALL EASKS(LCNN,' Updated surface connections file ?',' ',
-*item EDCONN
-'The current problem description will be placed'
-'into this file. It is suggested that you define'
-'a new file (ie. project.cfg > project_a.cfg).'
-*enditem
-          CALL EASKS(CFGFN,
-*item EDCONN
-'The surface topology of the problem is held'
-'in a connections file.'
-*enditem
-          CALL EASKS(LCNN,' Updated surface connections file ?',' ',
+        CALL EASKABC(' Topology Options:',' ','clear all topology',
+        call askok('About to clear ALL contiguity.','Is this ok',
+        call askok('Recover surface attribute data?',
+        call askok(' ','Clear items marked SIMILAR?',M1OK,dok,6)
+        call askok(' ','Clear items marked CONSTANT?',M2OK,dok,6)
+        call askok(' ','Clear items marked GROUND?',M4OK,dok,6)
+        call askok(' ','Clear items marked ADIABETIC?',M5OK,dok,6)
+        call askok(' ','Clear items marked BASESIMP?',M6OK,dok,6)
+        call askok(' ','Clear items marked IDENT_CEN?',M7OK,dok,6)
+        call askok('Recover surface attribute data?',
+        CALL EASKS(LCNN,' Updated surface connections file ?',' ',
+        CALL EASKS(CFGFN,
+        CALL EASKS(LCNN,' Updated surface connections file ?',' ',
 *item EDCONN
 'The current problem description will be placed'
 'into this file. It is suggested that you define'
@@ -9723,103 +9381,86 @@ C          CALL ASKOK(
 *enditem
           CALL EASKS(CFGFN,
 *subroutine CONFIG
-*item CONFIG
-' Pick one, several or all zones for inclusion'
+*item CONFIG setting_up_topol
+'The process of checking topology in a model usually involves'
+'all of the zones in the model because there is a significant'
+'risk that if you only do a portion of the model there may be'
+'inconsistencies that are not identified.'
+'  '
+'You are given a few chances to halt the proces but if you do'
+'it will probably leave the model in an inconsistent state.'
+'  '
 *enditem
       CALL EPICKS(ICPIC,ICVALS,' ',' Which zones to include: ',
-*item CONFIG
-'Normally you would check all of the zones. And '
-'if you need to exit this process (ran out of '
-'coffee) this is a place you can do this. NOTE '
-'that this can leave the model in an inconsistent'
-'state. '
-*enditem
-            CALL ASKOK(outs,'(see help)',OK,dok,5)
-*item CONFIG
-'The boundary conditions at the other face of this sur-'
-'face is specified via the selection of one of these'
-'choices.  The default is OUTSIDE.'
+      CALL ASKOK(outs,'(see help)',OK,dok,5)
+*item CONFIG boundary_choices
+'The boundary conditions at the other face of a surface is selected'
+'from one of these choices.  The default is OUTSIDE.'
 ' '
-' Exterior - the other face of the surface is exposed to'
-'  ambient air temperature, wind and solar radiation.'
+' Exterior - the other face of the surface is exposed to ambient air'
+'  temperature, wind and solar radiation.'
 ' '
-' Dynamic/similar - the other face of the surface is'
-'  exposed to the same conditions as the inside face'
-'  (except that when direct sunlight is falling on the'
-'  inside face it cannot be falling on the other face'
-'  only the diffuse component is used on the other face.'
-'  where both sides get the same radiation.'
-'  A dynamic/similar connection can include an offset'
-'  temperature (C) and radiation (W/m^2).'
+' Dynamic/similar - the other face of the surface is exposed to the'
+'  same conditions as the inside face. A dynamic/similar connection'
+'  can include an offset temperature (C) and radiation (W/m^2).'
 ' '
-' Static - requires that a constant temperature and'
-'  radiation be supplied. You might use this to represent'
-'  a cold storage room.'
+' Static - requires that a constant temperature and radiation is'
+'  supplied. You might use this to represent a cold storage room.'
 ' '
-' Surface in another zone - the other face of the surface'
-'  gets its boundary conditions from the last known state'
-'  of the other surface. There is a thermophysical con-'
-'  nection established between the two zones.'
+' Surface in another zone - the other face of the surface gets its'
+'  boundary conditions from the last known state of the other surface.'
+'  There is a thermophysical connection established between the zones.'
+'  Usually you will also want to update the other zone surface.'
 ' '
-' Ground (standard profile) - the other face of the'
-'  surface is in direct contact with one of the standard'
-'  monthly temperature profiles embedded in ESP-r.'
+' Ground (standard profile) - the other face of the surface is in'
+'  direct contact with one of the standard monthly temperature'
+'  profiles embedded in ESP-r.'
 ' '
-' Ground (user defined profile) - the other face of the'
-'  surface is in direct contact with a monthly profile'
-'  previously created by the user (in the model context)'
+' Ground (user defined profile) - the other face of the surface is'
+'  in direct contact with a monthly profile previously created by'
+'  the user (in the model context)'
 ' '
-' Ground (3D conduction) - the other face connects to a'
-'  3D ground representation. This is not often used.'
+' Ground (3D conduction) - the other face connects to a 3D ground'
+'  representation. This is not often used.'
 ' '
-' Adiabatic boundary - typically used for back-to-back'
-'  surfaces in a zone representing thermal mass. There'
-'  is no heat flux passed beyond the other-face. '
+' Adiabatic boundary - typically used for back-to-back surfaces in'
+'  a zone representing thermal mass. There is no heat flux passed'
+'  beyond the other-face. '
 ' '
-' BASESIMP is used to represent one of several basement'
-'  configurations and precalculated patterns of heat'
-'  transfer. For this to be useful there must be a'
-'  basesimp file created for the zone giving a number'
+' BASESIMP is used to represent one of several basement configuration'
+'  and precalculated patterns of heat transfer. For this to be useful'
+'  there must be a basesimp file created for the zone giving a number'
 '  of dimensions and computational parameters.'
 ' '
-' CEN 13791 partition which is like the SIMILAR'
-'  but for CEN 13791 test. The offset temperauture'
-'  and radiation (W/m^2) in SIMILAR is not available'
-'  for the CEN 13791 partition type. For details see'
-'  section 4.4.2 CEN 13791 standard. '
-' '
-'There is a module of ESP-r which uses polygon adjacency'
-'to automatically link partitions together. '
-' '
+' CEN 13791 partition which is like the SIMILAR but for CEN 13791'
+'  test. The offset temperauture and radiation (W/m^2) in SIMILAR'
+'  is not available for the CEN 13791 partition type. For details see'
+'  section 4.4.2 CEN 13791 standard. As it results in equal solar'
+'  radiation on both sides of a partition it is [unrealistic] and'
+'  thus not recommended for normal use.'
 *enditem
                 call MENUATOL(outs,' Connection options ',
-*item CONFIG
-'A type 2 connection requires that a constant'
-'temperature and radiation (Watts) be entered.'
-*enditem
-                  CALL EASKR(VAL,' ',' Constant temperature ? ',
-*item CONFIG
-*enditem
-                  CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
-*item CONFIG
+                CALL EASKR(VAL,' ',' Constant temperature ? ',
+                CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
+*item CONFIG boundary_ground
 'A ground connection allows either:'
-'> 0 a connection to one of several standard'
-'    profiles. Supply its index.'
-'= 0 a connection to a user defined profile. '
-'    supply 0 plus user profile index. '
+'> 0 a connection to one of several standard profiles in which'
+'    case the profile number is required. A listing of the known'
+'    profiles will be shown.'
+'  '
+'= 0 a connection to a user defined profile in which case a zero is'
+'    followed by a user defined profile number is required.'
+'  '
 '-3  a connection to a 3D ground model.'
 *enditem
   777             CALL EASKI(IIC2,' Monthly (standard) profile index?',
-*item CONFIG
-'One of the user defined profile numbers is'
-'required at this point.'
-*enditem
                     CALL EASKI(IIE2,
-*item CONFIG
-'Specify the BASESIMP configuration index.'
+*item CONFIG boundary_basesimp
+'Specify the BASESIMP configuration number (iconfig). '
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
-'correspondence between iconfig and standard '
-'BASESIMPdescriptors (e.g. BCIN_1).'
+'correspondence between iconfig and standard BASESIMP '
+'descriptors (e.g. BCIN_1).'
+'  '
 'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
@@ -9828,26 +9469,20 @@ C          CALL ASKOK(
 'sum of surfaces representing a founcation is 100%.'
 *enditem
                   CALL EASKI(Ifrac,
-*item CONFIG
+*item CONFIG multi_match_partn
 'You asked to specify connection if a match was'
 'found to another surface in the same room. '
-*enditem
-                CALL EASKABC('Matched surface within room:',' ',
-*item CONFIG
+'  '
 'If there is more than ONE possible matching '
 'geometric connection you are asked to confirm'
 'which one. Exercise care - the interface does'
 'not tell you how many possible matches it will'
 'be showing you. '
 *enditem
-              CALL ASKOK(outs,' Accept this? (see help)',OK,dok,5)
-*item CONFIG
-'If you continue, the current connection type '
-'will be retained.  You can edit this connection '
-'after all of the surfaces have been checked.'
-*enditem
+            CALL EASKABC('Matched surface within room:',' ',
+            CALL ASKOK(outs,' Accept this? (see help)',OK,dok,5)
             CALL EASKABCD(' None of the suggestions taken:',' ',
-*item CONFIG
+*item CONFIG save_to_cnn_file
 'At this point the zone geometry files will have updated'
 'surface attributes. And the master connections list is '
 'still held in memory and needs to be written out to file'
@@ -9859,53 +9494,43 @@ C          CALL ASKOK(
 *enditem
       CALL EASKS(LCNN,' Surface connections file name?',' ',
 *subroutine ESACON
-*item ESACON
-'This pause allows you to correct errors. '
+*item ESACON importing_surf_conn
+'Even if some of the connections are incorrect in the master'
+'list there may be some surface attributes are ok and can be'
+'used so this facility allows you to selectively import the'
+'existing surface attributes to help build the master connections'
+'list.'
+'  '
+'There are a few places where a pause is inserted so that you'
+'can confirm the data.'
+' '
 *enditem
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
-'A type 2 connection requires that a constant '
-'temperature and radiation (Watts) be entered.'
-*enditem
+          CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+          CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-*item ESACON
-*enditem
           CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
+          CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+*item ESACON fill_out_ground
 'A ground connection allows either:'
-'> 0 - a connection to one of several standard profiles'
-'  in which case the profile number is required.'
-'= 0 - a connection to a user defined profile:'
-'    a 0 followed by a profile number is required.'
+'> 0 a connection to one of several standard profiles in which'
+'    case the profile number is required. A listing of the known'
+'    profiles will be shown.'
+'  '
+'= 0 a connection to a user defined profile in which case a zero is'
+'    followed by a user defined profile number is required.'
+'  '
 '-3  a connection to a 3D ground model.'
 *enditem
           CALL EASKI(IVAL,' Monthly profile (0 = user defined) ? ',
-*item ESACON
-'One of the user defined profiles numbers is'
-'required at this point.'
-*enditem
             CALL EASKI(IVAL,' User defined profile: ',
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
             CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
             CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
+*item ESACON boundary_basesimp
 'Specify the BASESIMP configuration index.'
 'Refer to src/esp-r/esrubld/bscoeff.F for the '
 'correspondence between iconfig and standard '
 'BASESIMPdescriptors (e.g. BCIN_1).'
+'  '
 'BASESIMP is a [whole-foundation model]. Therefore, when'
 'a foundation is represented by numerous ESP-r surfaces'
 '(e.g. four walls + floor to represent a basement), you'
@@ -9914,22 +9539,11 @@ C          CALL ASKOK(
 'sum of surfaces representing a founcation is 100%.'
 *enditem
           CALL EASKI(Ifrac,
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
             CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
-'This pause allows you to correct errors. '
-*enditem
           CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
-*item ESACON
-'Assuming the last task was successful you need to '
-'save the topology to file to preserve any changes '
-'made to the model.  '
-*enditem
-      CALL ASKOK(' ','Save updated topology?',OK,dok,3)
+     CALL ASKOK(' ','Save updated topology?',OK,dok,3)
 *subroutine anchor
-*item anchor
+*item anchor anchor_options
 'Anchor points allow a user to line a number of items '
 '(such as surfaces) to a concept so that global actions'
 '(such as attribution or performance enquiries) can be '
@@ -9962,54 +9576,23 @@ C          CALL ASKOK(
 '   two flow nodes.'
 *enditem
         CALL PHELPD('anchor points',30,'-',0,0,IER)
-*item anchor
-*enditem
         call easkconn(inpic,iconnpk,60,
-*item anchor
-'A chance to abort incorrect selection. '
-*enditem
         call askok('Edit anchor name or type?',' ',ok,dok,1)
-*item anchor
-*enditem
-          call MENUATOL('Select a type for the anchor:',
-*item anchor
-*enditem
-            CALL EASKS(AL,' Label for anchor: ',
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
-*item anchor
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
-*item anchor
-'A chance to abort de-reference of link. '
-*enditem
-          call askok('De-reference link(s) to this surface?',' ',
-*item anchor
-'A chance not to dereference this anchor. '
-*enditem
-                    call askok(outs,' ',okd,dok,1)
+        call MENUATOL('Select a type for the anchor:',
+        CALL EASKS(AL,' Label for anchor: ',
+        CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
+        call askok('De-reference link(s) to this surface?',' ',
+        call askok(outs,' ',okd,dok,1)
 *subroutine anchlist
-*item anchlist
-'Anchor points allow a user to line a number of items '
+*item anchlist anchor_choices
+'Anchor points allow a user to aline a number of items '
 '(such as surfaces) to a concept so that global actions'
 '(such as attribution or performance enquiries) can be '
 'undertaken. An achor point consists of name (12 char),'
@@ -10041,55 +9624,26 @@ C          CALL ASKOK(
 '   two flow nodes.'
 *enditem
         CALL PHELPD('anchor points',30,'-',0,0,IER)
-*item anchlist
-*enditem
         CALL EASKABC('Anchor point options:',' ',
-*item anchlist
-*enditem
-          call MENUATOL('Select a type for the anchor:',
-*item anchlist
-*enditem
-            CALL EASKS(AL,' Label for anchor: ',
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
-*item anchlist
-*enditem
-            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
-*subroutine easkconn
-*item easkconn
-*enditem
-          CALL PHELPD('connection pick string',NHELP+1,'-',0,0,IER)
-*item easkconn
-*enditem
-          CALL PHELPD('connection pick string',2,'-',0,0,IER)
+        call MENUATOL('Select a type for the anchor:',
+        CALL EASKS(AL,' Label for anchor: ',
+        CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
+        CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
 *subroutine procgdst
-*item procgdst
+*item procgdst interactive_ipv
 'Interactive mode uses simulation parameters as '
 'defaults. The silent running mode uses the'
 'parameters to run in automatic mode. '
 *enditem
         CALL EASKAB('Simulation interaction options: (see help)',
 *subroutine serchrpl
-*item serchrpl
+*item serchrpl search_constructions
 'Often it is convenient to search a model for one  '
 'constructional attribute and replace this by'
 'another. You can do this by searching for occurances'
@@ -10107,80 +9661,39 @@ C          CALL ASKOK(
 'NOTE: After using the search & replace facility '
 'zone construction files should be rebuilt for the'
 'new attributes to take effect. '
-*enditem
-        CALL PHELPD('global attributions',17,'-',0,0,IER)
-*item serchrpl
-*enditem
-          CALL EASKABC(' Surfaces to update:',' ',
-*item serchrpl
-' Pick one, several or all zones to update.'
-*enditem
-          CALL EPICKS(INPIC,IVALS,' ',' Search zones:',
-*item serchrpl
-'Just in case you want to be selective...'
-*enditem
-                  CALL ASKOK(' ',outs,OK,dok,1)
-*item serchrpl
-'Indicate which anchor to use. '
-*enditem
-          CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
-*item serchrpl
-*enditem
-            CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
-*item serchrpl
-'A chance to abort if incorrect construction selected.'
-*enditem
-          CALL ASKOK('Apply this construction?',' ',OK,dok,1)
-*item serchrpl
+'  '
 'A search & replace only changes the surface attribute'
 'it does not update the raw thermophysical data held in'
 'the zone construction files. It is recommended that '
 'you also update the zone files. '
-*enditem
-          CALL ASKOK(
-*item serchrpl
-'Often it is convenient to supply surface construct-'
-'ional attribution by globally applying a material to'
-'a subset of surfaces and then attend to exceptions. '
-' '
-'The following dialogue will allow you to define a '
-'subset of surfaces via filters for position,  '
-'orientation, opacity, etc. '
-' '
+'  '
+'Often it is convenient to supply surface constructional'
+'attribution by globally applying a material to a subset of'
+'surfaces and then attend to exceptions.'
+'  '
+'In the gloal seach and replace you can restric the updating'
+'to surfaces which fit a specific type like opaque surfaces'
+'or surfaces which face specific boundary conditions.'
+'  '
 'NOTE: After using the global attribution facility '
 'you must then rebuild the zone construction files'
 'for the new attributes to take effect. '
 *enditem
+        CALL PHELPD('global attributions',17,'-',0,0,IER)
+        CALL EASKABC(' Surfaces to update:',' ',
+        CALL EPICKS(INPIC,IVALS,' ',' Search zones:',
+        CALL ASKOK(' ',outs,OK,dok,1)
+        CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
+        CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
+        CALL ASKOK('Apply this construction?',' ',OK,dok,1)
+        CALL ASKOK(
         CALL PHELPD('global attributions',11,'-',0,0,IER)
-*item serchrpl
-'You may restrict updating to only opaque surfaces,'
-'transparent surfaces or apply to both. '
-*enditem
         CALL EASKABCD(' First filter--surface opacity:',' ',
-*item serchrpl
-'You may restrict updating to only surfaces which '
-'face the outside, partitions (internal) etc. '
-*enditem
         call EASKATOG(' Second filter--surface contiguity:',' ',
-*item serchrpl
-'You may restrict updating to only surfaces which '
-'have a particular orientation. '
-*enditem
         call EASKATOG(' Third filter--surface orientation:',' ',
-*item serchrpl
-'You may restrict update to avoid already attributed'
-'surfaces. '
-*enditem
         CALL EASKABCD(' Surfaces to update:',' ',
-*item serchrpl
-' Pick one, several or all zones to update.'
-*enditem
         CALL EPICKS(INPIC,IVALS,' ',' Which zones to update: ',
-*item serchrpl
-'The criter you set were matched. And you can'
-'still opt not to apply it in all cases. '
-*enditem
-                CALL ASKOK(' ',outs,OK,dok,2)
+        CALL ASKOK(' ',outs,OK,dok,2)
 *subroutine SCRZONE
 *item SCRZONE
 'The zone description is used for descriptive and'

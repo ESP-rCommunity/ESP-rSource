@@ -99,7 +99,7 @@ C Hourly ventilation conductances and temperature of incoming air.
       DOUBLE PRECISION PCOF(MNOD,MNOD),TNDL(MNOD),TRHS(MNOD),
      &                                 XNOD(MNOD),XRHS(MNOD)
       REAL CVI,CVV,CVVM
-      INTEGER IDAY,IDTY
+C      INTEGER IDAY,IDTY  ! uncomment if code near line 285 changes
 
 C Initialise AMFR to zero.
       DO 12 JNOD=1,NNOD

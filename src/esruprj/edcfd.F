@@ -1514,13 +1514,12 @@ C #include "geometry.h"
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
-      COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
 
       dimension IDEL(MNVLS)
 
       character ITEM(MNVLS+8)*40
-      character KEY*1,t24*24,SRCE*12
+      character KEY*1,t24*24
       character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND

@@ -802,6 +802,8 @@ C        call edisp(iuout,helpfil)   ! debug
         ihfil=ifil+11              ! set file unit number for prj
       elseif(folder(1)(1:7).eq.'esrures')then
         ihfil=ifil+8              ! set file unit number for res
+      elseif(folder(1)(1:7).eq.'esrumrt')then
+        ihfil=ifil+8              ! set file unit number for mrt
       else
         ihfil=ifil+2              ! set file unit number
       endif

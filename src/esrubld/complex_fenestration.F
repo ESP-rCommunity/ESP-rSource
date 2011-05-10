@@ -1164,7 +1164,7 @@ C Calculate beam DIRECT NORMAL incidence transmittance and reflectance
 C for reference glass based on extinction coefficient and refractive
 C index.
         TAU_A = EXP(-1.*KL)
-        RPERP=((N2-1.)/(N2+1.))**2
+        RPERP=((N2-1.)/(N2+1.))**2.
         TclearDN=TAU_A*(1.-RPERP)*(1.-RPERP)
      &      /(1.-(RPERP*RPERP*TAU_A*TAU_A))
         RclearDN=RPERP*(1.+(TAU_A*TclearDN))

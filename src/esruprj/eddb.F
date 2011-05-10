@@ -61,9 +61,6 @@ C default file names for databases
       common/rpath/path
       common/user/browse
 
-C Default esp-r distribution path.
-      common/deflt4/dinstpath
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -74,7 +71,6 @@ C Default esp-r distribution path.
 
       character path*72
       character*72 ITEMS(15)
-      character dinstpath*48
       
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
@@ -534,6 +530,13 @@ C Ask user for ascii Materials database to convert.
      &        144,DFILE,'materials db (ascii)',IER,nbhelp)
             goto 155
           endif
+        elseif(IER.eq.3)then
+          write(outs248,'(3a)') 
+     &    ' Not enough constructions found in Constructions db',
+     &     lworking(1:lnblnk(lworking)),'!'
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
         else
 
 C Scan was ok so set mldbok to true.
@@ -1488,7 +1491,6 @@ C Make up additional options depending on graphics lib. The second
 C option (list select) is not available for plant database. If using
 C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         opte='e edit file name'
         optf='   '
@@ -1952,8 +1954,6 @@ C Generate file name lltmp taking into account ipathprodb for use later.
       helptopic='events_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       CALL ERPFREE(IPRODB,ISTAT)
 
 C If local or absolute path call addpath otherwise if a standard
@@ -2571,8 +2571,6 @@ C Inform user.
       helptopic='mlc_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       CALL ERPFREE(IFMUL,ISTAT)
 
 C If local or absolute path call addpath otherwise if a standard
@@ -3028,8 +3026,6 @@ C Inform user.
       helptopic='optic_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       CALL ERPFREE(IOPTDB,ISTAT)
 
 C If local or absolute path call addpath otherwise if a standard
@@ -3490,8 +3486,6 @@ C Inform user.
       helptopic='pressure_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       CALL ERPFREE(IAPRES,ISTAT)
 
 C If local or absolute path call addpath otherwise if a standard
@@ -4665,8 +4659,6 @@ C Inform user.
       helptopic='misc_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       IMCFIL=IFIL+1
       CALL ERPFREE(IMCFIL,ISTAT)
 
