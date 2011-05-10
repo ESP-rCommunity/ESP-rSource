@@ -206,13 +206,13 @@ C Check boundary node supplementary data items.
           if(NDTYP(INOD).eq.3)then
             IF(SUPNOD(INOD,1).LT.1..OR.SUPNOD(INOD,1).GT.NPRE)then
               write(outs,'(3a,i2,a)') 'For node ',NDNAM(INOD),
-     &          ' the referenced pressure coef ',SUPNOD(INOD,1),
+     &          ' the referenced pressure coef ',int(SUPNOD(INOD,1)),
      &          ' was not found!'
               call edisp(iuout,outs)
             endif
             IF(SUPNOD(INOD,2).LT.0..OR.SUPNOD(INOD,2).GT.360.)then
-              write(outs,'(3a,i2,a)') 'For node ',NDNAM(INOD),
-     &          ' the orientation ',SUPNOD(INOD,2),
+              write(outs,'(3a,i3,a)') 'For node ',NDNAM(INOD),
+     &          ' the orientation ',int(SUPNOD(INOD,2)),
      &          ' is not in the range of 0 to 360!'
               call edisp(iuout,outs)
             endif
