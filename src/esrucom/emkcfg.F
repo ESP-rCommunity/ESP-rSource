@@ -981,8 +981,6 @@ C the external IPV file (also notify the user they can remove it).
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             continue
           else
-	    call usrmsg('Info merged. Remove the separate IPV file',
-     &      lipvdatf,'W')
 	    lipvdatf=' '  ! ensure old file name is no longer referenced
           endif
         endif

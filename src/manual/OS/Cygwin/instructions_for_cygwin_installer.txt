@@ -1,6 +1,6 @@
 
         Steps to create or use the ESP-r self extractor on Cygwin
-                            March 2011
+                            April 2011
 
 There are three patterns used to create an installer for ESP-r for use
 on Cygwin emulators within Windows computers.  One is via a single-file 
@@ -185,6 +185,32 @@ and the version number to reflect the SVN revision and branch name.
 
 Compile the installer with Inno Setup and test the resulting executable
 on a different machine.
+
+
+Building a compressed archive
+
+This is similar to creating the run file. The X11 version of ESP-r
+is compiled into /usr/esru (as normal). Next create a folder for
+the X11 executables and copy them into bin_X11:
+ cd /usr/esru/esp-r
+ mkdir bin_X11
+ cd bin
+ cp * ../bin_X11
+
+Clean up the source and compile the GTK version as normal. Then
+create a folder for the GTK executables
+  cd /usr/esru/esp-r
+  mkdir bin_GTK
+  cd bin
+  cp * ../bin_GTK
+
+Next create a tar file to hold it all plus some very useful files
+like the link_to script, the GPL.txt and the README files.
+
+  cd /usr/esru
+  tar cf esp-r_X11_GTK_11.10_cygwin.tar esp-r link_to bash_profile *.txt
+  gzip -9 esp-r_X11_GTK_11.10_cygwin.tar
+
 
 
 Using/testing the self-extractor

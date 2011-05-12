@@ -111,7 +111,6 @@ C definition.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
@@ -169,7 +168,7 @@ C Type casting (all varaiables and arrays cast explicitly)
 C Characters
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,PHTYPSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,CONECOMDESC,
-     &ENTFLNAM,H,STR
+     &ENTFLNAM,STR
       CHARACTER*40 ITEM
       CHARACTER*124 OUTS
 
@@ -177,20 +176,21 @@ C Characters
       integer INP  ! for radio button
       integer NITEM,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELECNET'  ! set for subroutine
+
 C Give a message to user explaining they should have fully defined the 
 C building side and the plant network prior to defining the electrical
 C network.
-      H(1)='You have picked electrical network definition. This '
-      H(2)='network is best created after both the plant and '   
-      H(3)='building side have been fully defined as power loads'
-      H(4)='in each zone and plant components can be connected to '
-      H(5)='the electrical network.'
-      H(6)=' '
-      H(7)='If you have not defined the building and plant yet then'
-      H(8)='you are advised to exit this section.               '
+      helptopic='elec_net_pre_warning'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.false.
       CALL ASKOK(' ','Proceed with electrical network definition?',
-     &              OK,dok,8)
+     &  OK,dok,nbhelp)
       IF(.NOT.OK) RETURN
       IENTXIST=0
       BASEV=.FALSE.
@@ -204,9 +204,9 @@ C Read in any existing electrical file information.
         WRITE(OUTS,'(A,A)') 'Current network: ',
      &ENTFLNAM(1:LNBLNK(ENTFLNAM))
         dok=.true.
-        h(1)='The synopsis is one way to review the current network.'
         CALL ASKOK(OUTS,
-     &'Display a synopsis of the electrical network?',OK,dok,1)
+     &    'Display a synopsis of the electrical network?',
+     &    OK,dok,nbhelp)
         IF(OK) THEN
           CALL ENETREAD('R') 
         ELSE
@@ -266,49 +266,8 @@ C Display a menu of options
       NITEM=29     
       
 C Help text for this menu.
-      H(1)=' '
-      H(2)='This part of the Project Manager allows you to define an'
-      H(3)='electrical network, which can be simulated in tandem  '
-      H(4)='with your building/plant/flow model. The electrical   '
-      H(5)='network consists of several elements:  '
-      H(6)=' '
-      H(7)='NODES - these are the calculation points in the network '
-      H(8)='and should be placed where conductors join, or where '
-      H(9)='loads or power sources connect to the network.'
-      H(10)='In multi-phase systems, multi-phase nodes are grouped'
-      H(11)='in phase-sets, one node of the set represents a phase.'
-      H(12)=' '
-      H(13)='CONNECTING COMPONENTS - these convey electrical current' 
-      H(14)='between the nodes in the network. They are impedance  '
-      H(15)='models of the distribution components in an electrical '
-      H(16)='system: lines, cables transformers. In addition to con-'
-      H(17)='veying power, the transformer component also changes the'
-      H(18)='voltage between two nodes.'
-      H(19)=' '
-      H(20)='HVAC/PV/LIGHTS/EQUIPMENT and POWER-ONLY COMPONENTS - '
-      H(21)='these link into the network and either draw power '
-      H(22)='from or inject power into the network. HVAC components  '
-      H(23)='etc. are components which exist in other areas of your  '
-      H(24)='model, i.e. lighting loads a PV array or a fan. '
-      H(25)='Power-only components exist only in the electrical  '
-      H(26)='world e.g. a wind turbine or a diesel generator set.'
-      H(27)=' '
-      H(28)='CONNECTIONS - these link the entire network together.'
-      H(29)='A connection links two or more nodes using a connecting'
-      H(30)='component, connections can be multi-phase, single-phase'
-      H(31)='d.c. or balanced. Single phase components can be used'
-      H(32)='in the connection of multi-phase sets of nodes but not'
-      H(33)='vice versa. Phase-set nodes can be linked to single ' 
-      H(34)='nodes, but only if the phase numbers of the connected '
-      H(35)='nodes match. An a.c. to d.c. connection is possible,'
-      H(36)='but only with AC/DC conversion devices.' 
-      H(37)=' '    
-      H(38)='The complete NETWORK consists of all the above elements'
-      H(39)='connected together. Other information required includes'
-      H(40)='the type of network: a.c., d.c., mixed or balanced plus' 
-      H(41)='BASE VALUES of voltage and power. These are needed as' 
-      H(42)='network solution is done in PER UNIT notation. Voltage '
-      H(43)='base values for each node are generated automatically.'  
+      helptopic='elec_net_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Electrical network definition',ITEM,NITEM,INO)
       IF(INO.EQ.1) THEN
@@ -322,24 +281,16 @@ C Read in a network (firstly clearing the current problem)
       ELSEIF(INO.EQ.2) THEN
 
 C Ask for a new network description
-        H(1)='If required you can enter a short description of your'
-        H(2)='electrical enetwork here.                            '
         CALL EASKS(ENDESC,'The electrical network description:',' ',
-     &    72,'none','net desc',IER,2)
+     &    72,'none','net desc',IER,nbhelp)
         GOTO 5
       ELSEIF(INO.EQ.5) THEN
 
 C Assign new network type
-        H(1)='Select the network type which describes your network: '
-        H(2)='d.c      - direct current only'
-        H(3)='1,2,3    - phase a.c. only '
-        H(4)='Balanced - a balanced 3-phase system '
-        H(5)='Mixed    - Mix of 1,2,3-phase elements and possibly d.c.'
-        H(6)='                         <the default> '
         INP=1
         CALL EASKATOG('Select network type:',' ',
      &'d.c.','1-phase','2-phase','3-phase','Balanced','Mixed',
-     &'Continue',INP,6)
+     &'Continue',INP,nbhelp)
         IF(INP.EQ.1)THEN
           ENTYPE=1
         ELSEIF(INP.EQ.2)THEN
@@ -362,20 +313,16 @@ C  Set phase angles
           CALL EDISP(IUOUT,'this type of system.')
           GOTO 5
         ENDIF
-        H(1)='The phase angles for the system are the phase in the'
-        H(2)='time domain in which each phase in the system operates'
-        H(3)='where the difference in each phase angle is given by '
-        H(4)='360/No. of phases. So for a three phase system the    '
-        H(5)='phase angles should separated by 120 degrees.          '
+        helptopic='elec_net_phase_angle'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(STR,'(3(F4.0,3X))')(PHASEANG(I),I=1,MPHAS)
         CALL EASKS(STR,'Enter the phase angle for each network phase.',
-     &'A -1. implies a particular phase is redundant.',72,
-     &'0.   120.   240.',
-     &'netwk phase angs',IER,5)
+     &    'A -1. implies a particular phase is redundant.',72,
+     &    '0.   120.   240.','netwk phase angs',IER,nbhelp)
         K=0
         DO 10,I=1,MPHAS
         CALL EGETWR(STR,K,PHASEANG(I),0.,360.,'-','phase vals',
-     &IER)
+     &    IER)
  10     CONTINUE
         GOTO 5   
       ELSEIF(INO.EQ.11) THEN
@@ -386,20 +333,10 @@ C Set the base voltages for all the nodes in the network.
       ELSEIF(INO.EQ.13) THEN
 
 C  Set base power value 
-        H(1)='The base power value is used in the conversion of all  '
-        H(2)='network power values to per-unit, where the per-unit   '
-        H(3)='power is defined by: Pp.u.=Actual Power/Base Power     '
-        H(4)='Choose a value that reflects the size of the power     '
-        H(5)='system being modelled, e.g:                            ' 
-        H(6)='1000    - small offices or dwellings                   '
-        H(7)='10000   - medium sized buildings, small communities    '
-        H(8)='1000000 - large CHP or community energy schemes        '
-        H(9)='For multi-phase system enter the multi-phase base value'
-        H(10)='e.g. for a three-phase system the three-phase base    '
-        H(11)='value should be entered. The system base value will be'
-        H(12)='this value divided by three.'
+        helptopic='elec_net_base_power'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(ENODBASEP,'Enter the system base power value (VA)',
-     &' ',0.,'F',0.,'-',1000.,'base pwr',IER,8)
+     &    ' ',0.,'F',0.,'-',1000.,'base pwr',IER,nbhelp)
         GOTO 5 
       ELSEIF(INO.EQ.16) THEN
         CALL ELNODLST('E',IDUM)
@@ -427,25 +364,28 @@ C Check the network for errors.
       ELSEIF(INO.EQ.NITEM-1) THEN
 
 C Display help menu.
-        CALL PHELPD('pwr net help',43,'-',0,0,IER) 
+        helptopic='elec_net_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('pwr net help',nbhelp,'-',0,0,IER) 
         GOTO 5
       ELSEIF(INO.EQ.NITEM) then
         IF(.NOT.BASEV) THEN
           CALL EDISP(IUOUT,'Warning: base voltages not set!')
           OK=.FALSE.
           dok=.false.
-          h(1)='If you have the required support information you'
-          h(1)='may proceed with the base voltage calculation.'
+          helptopic='elec_net_base_volt'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' ','Proceed with base voltage calculation?',
-     &      OK,dok,1)
+     &      OK,dok,nbhelp)
           IF(OK) CALL ENETBASEV
           BASEV=.TRUE.
         ENDIF
         OK=.FALSE.
         dok=.true.
-        h(1)='Recent changes are held in memory and may be lost if'
-        h(2)='you do not save them to file. '
-        CALL ASKOK('Save any changes you have made?',' ',OK,dok,2)
+        helptopic='elec_net_request_save'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Save any changes you have made?',' ',
+     &    OK,dok,nbhelp)
         IF(OK) CALL ENETWRITE
         RETURN
       ELSE
@@ -472,8 +412,6 @@ C of which is selected
 #include "power.h"
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
      &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
@@ -505,9 +443,15 @@ C Characters
       CHARACTER*54 VERT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
       integer MVERT,IVERT,ID ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELNODLST'  ! set for subroutine
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -539,8 +483,8 @@ C current menu line index. Build up text strings for the menu.
             iNUM = 0
           ENDIF
           WRITE(VERT(M),14)KEY,ENODNAM(L)(1:12),
-     &PHTYPSTR(ENODPHTYP(L))(1:12),ENODPH(L),ENODTYPSTR(L)(1:12),
-     &ENODBASEV(L),iNUM
+     &      PHTYPSTR(ENODPHTYP(L))(1:12),ENODPH(L),ENODTYPSTR(L)(1:12),
+     &      ENODBASEV(L),iNUM
    14     FORMAT(A1,1X,A12,1X,A12,1X,I2,1X,A12,1X,F5.0,1x,i3)
         ENDIF
    10 CONTINUE
@@ -568,13 +512,11 @@ C If a long list include page facility text.
 
 c Help text for this menu.
       IF(MODE.EQ.'E')THEN
-        H(1)='The list shows the currently available nodes in the '
-        H(2)='electrical network. Click in a node to edit it      '
-        H(3)='or chose to add/delete/copy a node.                 '
+        helptopic='elec_net_mode_e'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ELSE
-        H(1)='The list shows the currently available nodes in the '
-        H(2)='electrical network. Please select one from the list'
-        H(3)='displayed.                                          '
+        helptopic='elec_net_mode'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ENDIF
 
 C Now display the menu.
@@ -588,7 +530,7 @@ C Within the header so skip request.
         IPK=-3
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN 
-        CALL PHELPD('Select node',3,'-',0,0,IER)
+        CALL PHELPD('Select node',nbhelp,'-',0,0,IER)
          GOTO 7
       ELSEIF(IVERT.EQ.MVERT-3)THEN 
         IF(MODE.EQ.'E') THEN
@@ -596,7 +538,7 @@ C Within the header so skip request.
 C Add/delete or copy a node. 
 C Delete the chosen node.
           CALL EASKABCD('Select option or continue',' ','Add node',
-     &'Delete node','Copy node','Continue',IOPT,0)
+     &      'Delete node','Copy node','Continue',IOPT,nbhelp)
           IF(IOPT.EQ.1) THEN
             NODE=NENOD+1
             CALL EDENOD('ADD',NODE)
@@ -654,6 +596,7 @@ C Return the picked node and allow editing
 
       RETURN 
       END
+
 C ******************************* ELHYBLST  ********************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
@@ -668,8 +611,6 @@ C of which is selected
 #include "power.h"
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C The connected hybrid components
       COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
      &HYCOMPHTYP(MHYCOM),HYCONEN(MHYCOM,MPHAS),HYLOC(MHYCOM,MPHAS),
@@ -699,9 +640,14 @@ C Characters
       CHARACTER*66 VERT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELHYBLST'  ! set for subroutine
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -726,8 +672,8 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,HYCOMNAM(L)(1:12),
-     &HYCOMTYPSTR(L)(1:12),PHTYPSTR(HYCOMPHTYP(L))(1:12),
-     &(HYCONEN(L,J),J=1,MPHAS),(HYLOC(L,K),K=1,3)
+     &      HYCOMTYPSTR(L)(1:12),PHTYPSTR(HYCOMPHTYP(L))(1:12),
+     &      (HYCONEN(L,J),J=1,MPHAS),(HYLOC(L,K),K=1,3)
    14     FORMAT(A1,1X,A12,2X,A12,2X,A12,2X,3(I2,1X),2X,3(I2,1X))
         ENDIF
    10 CONTINUE
@@ -756,13 +702,11 @@ C If a long list include page facility text.
 
 C Help text for this menu.
       IF(MODE.EQ.'E')THEN
-        H(1)='The list shows the HVAC, PV, lights, etc,. connected to'
-        H(2)='the electrical network. Please select one from the    '
-        H(3)='or chose to add/delete/copy a component.              '
+        helptopic='hybrid_elec_net_mode_e'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ELSE
-        H(1)='The list shows the HVAC, PV, lights, etc., connected to'
-        H(2)='the electrical network. Please select one from the    '
-        H(3)='list displayed.                                       '
+        helptopic='hybrid_elec_net_mode'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ENDIF                                           
 
 C Now display the menu.
@@ -775,12 +719,12 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.MVERT)THEN
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN 
-        CALL PHELPD('Select node',3,'-',0,0,IER)
+        CALL PHELPD('Select node',nbhelp,'-',0,0,IER)
         GOTO 7
       ELSEIF(IVERT.EQ.MVERT-3)THEN 
         IF(MODE.EQ.'E') THEN
           CALL EASKABCD('Select option or continue',' ',
-     &'Add','Delete','Copy','Continue',IWCH,0)
+     &'Add','Delete','Copy','Continue',IWCH,nbhelp)
           IF(IWCH.EQ.1) THEN
             IHYB=99
             CALL EDEHYB('ADD',IHYB)
@@ -839,6 +783,7 @@ C Return or edit the picked component
 
       RETURN 
       END
+
 C ******************************* ELPOWLST  ********************************************
 C Presents a list of hybrid components to the user and returns the selected 
 C component number.
@@ -853,8 +798,6 @@ C of which is selected
 #include "power.h"
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C The connected power only components
       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
      &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
@@ -884,9 +827,14 @@ C Characters
       CHARACTER*46 VERT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELPOWLST'  ! set for subroutine
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -910,7 +858,7 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,POWCOMNAM(L)(1:12),POWCOMID(L),
-     &PHTYPSTR(POWCOMPHTYP(L))(1:12),(POWCONEN(L,J),J=1,MPHAS)
+     &      PHTYPSTR(POWCOMPHTYP(L))(1:12),(POWCONEN(L,J),J=1,MPHAS)
    14     FORMAT(A1,1X,A12,2X,I2,2X,A12,2X,3(I2,1X))
         ENDIF
    10 CONTINUE
@@ -940,13 +888,11 @@ C If a long list include page facility text.
 
 C Help text for this menu.
    7  IF(MODE.EQ.'EDT')THEN
-        H(1)='The list shows the available power only components '
-        H(2)='in the electrical network. Click on one to edit it '
-        H(3)='or chose to add/delete/copy a component.           '
+        helptopic='elec_net_power_mode_e'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ELSE
-        H(1)='The list shows the available power only components    '
-        H(2)='in the electrical network. Please select one from the '
-        H(3)='list displayed.                                       '
+        helptopic='elec_net_power_mode'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ENDIF                                   
 
 C Now display the menu.
@@ -959,12 +905,12 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.MVERT)THEN
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN
-        CALL PHELPD('Select node',3,'-',0,0,IER)
+        CALL PHELPD('Select node',nbhelp,'-',0,0,IER)
         GOTO 7
       ELSEIF(IVERT.EQ.MVERT-3)THEN 
         IF(MODE.EQ.'E') THEN
           CALL EASKABCD('Select option or continue',' ',
-     &'Add','Delete','Copy','Continue',IWCH,0)
+     &      'Add','Delete','Copy','Continue',IWCH,nbhelp)
           IF(IWCH.EQ.1) THEN
             IPOW=99
             CALL EDEPOW('ADD',IPOW)
@@ -1041,8 +987,6 @@ C of which is selected
 #include "power.h"
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C The connecting components
       COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
      &CONECOMPHTYP(MCONECOM),NCONECOMDAT(MCONECOM),
@@ -1070,9 +1014,15 @@ C Characters
       CHARACTER*34 VERT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
       integer MVERT,IVERT,ID ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELCNCLST'  ! set for subroutine
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1096,7 +1046,7 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,CONECOMNAM(L)(1:12),
-     &CONECOMID(L),PHTYPSTR(CONECOMPHTYP(L))(1:12)
+     &      CONECOMID(L),PHTYPSTR(CONECOMPHTYP(L))(1:12)
    14     FORMAT(A1,1X,A12,2X,I2,2X,A12)
         ENDIF
    10 CONTINUE
@@ -1126,13 +1076,11 @@ C If a long list include page facility text.
 
 C Help text for this menu.
    7  IF(MODE.EQ.'E')THEN
-        H(1)='The list shows the current connecting components '
-        H(2)='in the electrical network. Click on one to edit it    '
-        H(3)='or chose to add/delete/copy a component.              '
+        helptopic='elec_net_connect_e'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ELSE
-        H(1)='The list shows the current connecting components '
-        H(2)='in the electrical network. Please select one from the '
-        H(3)='list displayed.                                       '
+        helptopic='elec_net_connect'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ENDIF                                 
 
 C Now display the menu.
@@ -1145,12 +1093,12 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.MVERT)THEN
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN 
-        CALL PHELPD('Select node',3,'-',0,0,IER)
+        CALL PHELPD('Select node',nbhelp,'-',0,0,IER)
         GOTO 7
       ELSEIF(IVERT.EQ.MVERT-3)THEN 
         IF(MODE.EQ.'E') THEN
           CALL EASKABCD('Select option or continue',' ',
-     &      'Add','Delete','Copy','Continue',IWCH,0)
+     &      'Add','Delete','Copy','Continue',IWCH,nbhelp)
           IF(IWCH.EQ.1) THEN
             ICNC=99
             CALL EDECNC('ADD',ICNC)
@@ -1229,8 +1177,6 @@ C of which is selected
 #include "power.h"
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
      &CONPH(MECON,MPHAS),CCNO(MECON),SENOD(MECON,MPHAS),
@@ -1256,9 +1202,15 @@ C Characters
       CHARACTER*60 VERT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
       integer MVERT,IVERT,ID ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELCONLST'  ! set for subroutine
 
 C Initialise special material menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1284,9 +1236,9 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,CONECOMNAM(CCNO(L))(1:12),
-     &PHTYPSTR(CONPHTYP(L))(1:12),
-     &(CONPH(L,I),I=1,MPHAS),(SENOD(L,J),J=1,MPHAS),
-     &(EENOD(L,K),K=1,MPHAS)
+     &      PHTYPSTR(CONPHTYP(L))(1:12),
+     &     (CONPH(L,I),I=1,MPHAS),(SENOD(L,J),J=1,MPHAS),
+     &     (EENOD(L,K),K=1,MPHAS)
 
    14     FORMAT(A1,1X,A12,2X,A12,2X,3(1X,I1),2X,3(1X,I2),2X,3(1X,I2))
         ENDIF
@@ -1294,6 +1246,7 @@ C current menu line index. Build up text strings for the menu.
 
       VERT(1)=
      &'   Conn comp  | Phase type   | Phase | Strt nod | End nod '
+
 C Number of actual items displayed.
       MVERT=M+MCTL
 
@@ -1316,13 +1269,11 @@ C If a long list include page facility text.
 
 C Help text for this menu.
    7   IF(MODE.EQ.'E')THEN
-        H(1)='The list shows the currently defined connections      '
-        H(2)='in the electrical network. Click on one to edit it    '
-        H(3)='or chose to add/delete/copy a component.              '
+        helptopic='elec_connections_e'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ELSE
-        H(1)='The list shows the currently defined connections      '
-        H(2)='in the electrical network. Please select one from the '
-        H(3)='list displayed.                                       '
+        helptopic='elec_connections'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       ENDIF                                 
 
 C Now display the menu.
@@ -1335,12 +1286,12 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.MVERT)THEN
         RETURN
       ELSEIF(IVERT.EQ.MVERT-1)THEN 
-        CALL PHELPD('Select node',3,'-',0,0,IER)
+        CALL PHELPD('Select node',nbhelp,'-',0,0,IER)
         GOTO 7
       ELSEIF(IVERT.EQ.MVERT-3)THEN 
         IF(MODE.EQ.'E') THEN
           CALL EASKABCD('Select option or continue',' ',
-     &      'Add','Delete','Copy','Continue',IWCH,0)
+     &      'Add','Delete','Copy','Continue',IWCH,nbhelp)
           IF(IWCH.EQ.1) THEN
             ICON=99
             CALL EDECON('ADD',ICON)
@@ -1348,6 +1299,7 @@ C Within the header so skip request.
             IPACT=CREATE
             CALL EKPAGE(IPACT)
           ELSEIF(IWCH.EQ.2) THEN
+
 C Add/delete or copy a node. 
 C Delete the chosen node.
 C But first check that the node is not connected to anything.
@@ -1419,7 +1371,6 @@ C 'CPY' - copy a node in the current list.
       integer lnblnk  ! function definition
 
 C Commons
-      COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical nodes
@@ -1481,10 +1432,16 @@ C Characters
       CHARACTER*10 ROOT
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR,STR,SHSTR
-      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H
+      CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC
       CHARACTER*124 OUTS
       integer INODT  ! for radio button
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDENOD'  ! set for subroutine
 
 C Set up the local phase string endings
       STREN(1)='_1'
@@ -1497,24 +1454,15 @@ C Edit the node according to the calling mode
         JLEN=0
 
 C Ask the user how many nodes they want to add.
-        H(1)='The user has the option to add up to three nodes    '
-        H(2)='depending on the nature of the point in the         '
-        H(3)='network being modelled:                             '
-        H(4)='1 - a one phase or balanced system node             '
-        H(5)='2 - a two phase point in the network                '
-        H(6)='3 - a three phase point in the network              '
-        H(7)='Points of more than one phase in an a.c. system are '
-        H(8)='described by a "multi-phase set" of 2-3 nodes, each '
-        H(9)='of the form: root_name_phase_extension.             '
-        H(10)='For example: generator_1, generator_2, generator_3 '
-        H(11)='or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
+        helptopic='elec_net_edit_node'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         NANOD=0
         INODT=1
-        CALL EASKATOG
-     &  ('What type of node(s) do you want to add (see help)? ',
-     &'(No. in brackets = No. of nodes added).',
-     &'d.c (1)','1-phase (1)','2-phase (2) ','3-phase (3)',
-     &'Balanced (1)','Continue',' ',INODT,11)
+        CALL EASKATOG(
+     &    'What type of node(s) do you want to add (see help)?',
+     &    '(No. in brackets = No. of nodes added).',
+     &    'd.c (1)','1-phase (1)','2-phase (2) ','3-phase (3)',
+     &    'Balanced (1)','Continue',' ',INODT,nbhelp)
         
         IF(INODT.EQ.7.OR.INODT.EQ.6) RETURN
 
@@ -1535,7 +1483,7 @@ C Ask the user how many nodes they want to add.
 C Check the maximum number of nodes is not exceeded
         IF((NENOD+NANOD).GT.MENOD) THEN
           CALL EDISP(IUOUT,
-     &'ERROR: the maximum number of nodes will be exceeded.')
+     &      'ERROR: the maximum number of nodes will be exceeded.')
           RETURN
         ENDIF 
 
@@ -1568,25 +1516,14 @@ C Set the node number
             IENT=0
 
 C Determine the type of the node in question
-            H(1)='The voltage type specifies whether the nodal voltage'
-            H(2)='is fixed by the user or calculated during the       '
-            H(3)='simulation. Generally nodal voltages should be      '
-            H(4)='calculated; however, those connected to the grid or '
-            H(5)='a large power source can be considered as fixed.    '
-            H(6)='Three methods are available for calculating nodal   '
-            H(7)='voltages:                                           '
-            H(8)='  - `Variable` means that the voltage is determined '
-            H(9)='    by the solution of the power flow matrix of eqs.'
-           H(10)='  - `PV` means that the voltage is calculated by    '
-           H(11)='     the buiding domain`s PV model.                 '
-           H(12)='  - `Plant` means that the voltage is calculated by '
-           H(13)='    a component in the plant domain.                '
+            helptopic='elec_net_node_type'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKABCD('What is the node type?',' ',
      &                    'Variable voltage',
      &                    'Fixed voltage',
      &                    'Calc by PV',
      &                    'Calc by plant component',
-     &                    ENODTYP(IENOD),13)
+     &                    ENODTYP(IENOD),nbhelp)
 
 C Set the node type for the multi-phase set
             IENT=ENODTYP(IENOD)
@@ -1619,22 +1556,22 @@ C Check that the special material chosen is a PV model that calculates the
 C voltage - i.e. of type 1 (ESP-r's original PV model)or type 5 (WATSUN-PV).
                   if ( (ispmtyp(ispm,1) .ne. 1) .and.
      &                 (ispmtyp(ispm,1) .ne. 5) ) then
-                    h(1)='Only the original esp-r PV model or a type 5'
-                    h(2)='WATSUN-PV can be used. '
+                    helptopic='elec_net_watsun'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     dok=.true.
                     CALL ASKOK(
      &                'The selected item is not a valid PV component.',
-     &                'Try again?',ok,dok,2)
+     &                'Try again?',ok,dok,nbhelp)
                   else
                     iPV_calcV_LOC(IENOD) = ISPM
                     ok = .false.
                   endif
                 else
                   dok=.true.
-                  h(1)='Please select a valid component. If you say no'
-                  h(2)='then it get you out of the question loop.'
+                  helptopic='elec_net_invalid'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL ASKOK('No special material component picked.',
-     &              'Try again?',ok,dok,2)
+     &              'Try again?',ok,dok,nbhelp)
                 endif
               end do          
             ELSEIF(ENODTYP(IENOD).EQ.4)THEN
@@ -1660,12 +1597,12 @@ C-------------Ensure that plant component has electrical data.
                     OK = .false.
                   ELSE
                     dok=.true.
-                    h(1)='Please select a valid component. If you say'
-                    h(2)='no then it get you out of the question loop.'
+                    helptopic='elec_net_invalid'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     CALL ASKOK(
      &      'No elec info associated with this plant component so it',
      &      'cannot calc a nodal voltage. Try another component?',
-     &                OK,DOK,2)
+     &                OK,DOK,nbhelp)
                   ENDIF
                 ENDIF
               END DO
@@ -1684,14 +1621,12 @@ C Phase type for this node also set string length for naming conventions
           IF(NANOD.EQ.1) THEN
             ISTRL=12
             STR='Node_name'
-            WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
-            H(2)='duplicate names. If the node is one of a multi'
-            H(3)='-phase set then the name will be the root name.'
+            helptopic='elec_net_duplicate'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             SHSTR=ENODNAM(IENOD)
             CALL EASKS(SHSTR,
      &        'The name or root name of this node (see help) ?',
-     &        '(No blanks) ',ISTRL,STR,'Node name',IER,3)
+     &        '(No blanks) ',ISTRL,STR,'Node name',IER,nbhelp)
             ENODNAM(IENOD)=SHSTR
           ELSEIF(NANOD.GT.1) THEN
             ISTRL=10
@@ -1700,14 +1635,13 @@ C Allow the root to be set for the first node only.
             IF(IADD.EQ.1) THEN
               ROOT='Root_name'
               ENODNAM(IENOD)=ROOT
-              WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
-              H(2)='duplicate names. If the node is one of a multi'
-              H(3)='-phase set then this name will be the root name.'
+              helptopic='elec_net_duplicate'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               SHSTR=ENODNAM(IENOD)
               CALL EASKS(SHSTR(1:10),
-     &          'The name or root name of this node (see help) ?',
-     &          '(No blanks) ',ISTRL,ROOT,'Node name',IER,3)
+     &          'The name or root name of this node (see help)?',
+     &          '(<=10 char No blanks) ',ISTRL,ROOT,'Node name',
+     &          IER,nbhelp)
               ENODNAM(IENOD)=SHSTR(1:10)
               JLEN=LNBLNK(ENODNAM(IENOD))
               ROOT=ENODNAM(IENOD)(1:JLEN)
@@ -1716,17 +1650,14 @@ C Allow the root to be set for the first node only.
 
 C Determine which phase the node is connected to.
           ENODPH(IENOD)=IADD
-          H(1)='Specify which phase of the electrical network the node'
-          H(2)='is associated with. Note, for balanced and d.c. nodes'
-          H(3)='simply specify 1.'
-          H(4)='NOTE: two nodes in a multi-phase set cannot have the'
-          H(5)='same phase! ' 
+          helptopic='elec_net_node_phase'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL USRMSG(' ',' ','-')   
           IF(NANOD.GT.1)THEN                             
             WRITE(OUTS,'(A,I3,3A)')'What phase is node ',IADD,' of ',
      &        ROOT(1:LNBLNK(ROOT)),' associated with (see help) ?'
             CALL EASKI(ENODPH(IENOD),OUTS,' ',1,'F',5,'F',
-     &        IADD,'node phase',IER,5)
+     &        IADD,'node phase',IER,nbehlp)
 
 C Add the phase ending to the node name for nodes which form part of a 
 C multi-phase set.  
@@ -1738,7 +1669,7 @@ C multi-phase set.
      &        ENODNAM(IENOD)(1:LNBLNK(ENODNAM(IENOD))),
      &        ' associated with (see help) ?'
             CALL EASKI(ENODPH(IENOD),OUTS,' ',1,'F',5,'F',
-     &        IADD,'node phase',IER,5)
+     &        IADD,'node phase',IER,nbhelp)
           ENDIF  
 
 Check for duplicate names
@@ -1769,15 +1700,11 @@ C Ask if it is OK to delete associated connections and nodes, if not then return
         STR=' '
         ISTRL=0
         IENOD=INOD
-        H(1)='When deleting a node any connections assoctated with'
-        H(2)='that node must also be deleted. Also if the node is part'
-        H(3)='of a multi-phase set then the other members of that set' 
-        H(4)='must also be deleted. These deletions are done  '
-        H(5)='automatically. Any linkages to power only components or'
-        H(6)='hybrid components are nulled.'
+        helptopic='elec_net_node_delete'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTS,'(A)')'Delete associated connections and/or nodes?'
         dok=.false.
-        CALL ASKOK(OUTS,' ',OK,dok,6)
+        CALL ASKOK(OUTS,' ',OK,dok,nbhelp)
         IF(.NOT.OK) RETURN
 
 C Firstly check for connections incorporating the node and delete 
@@ -1934,24 +1861,17 @@ C Also account for the change in the nodal list.
         ISTRL=0
         STR=' '
         dok=.false.
-        h(1)='A chance to continue if wrong node selected. '
-        CALL ASKOK('Edit this node?',' ',OK,dok,1)
+        helptopic='elec_net_continue_if'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Edit this node?',' ',OK,dok,nbhelp)
         IF(.NOT.OK) RETURN
         IENOD=INOD
 C To be added
 
         ISTRL=12
         IF(ENODPHTYP(IENOD).EQ.3.OR.ENODPHTYP(IENOD).EQ.4) ISTRL=10
-        WRITE(H(1),'(A,I2,A)')
-     &'Enter a ',ISTRL,' letter descriptive name for the node. Do not'
-        H(2)='duplicate names. If the node is one of a multi-phase'
-        H(3)='set then this name will be the root name.           '
-        H(4)=' '
-        H(5)='Editing of nodal data is restricted to altering         '
-        H(6)='the component name and the nodal type. If the phase type'
-        H(7)='or phase number needs to be changed then please delete  '
-        H(8)='the node and create a new one with the desired          '
-        H(9)='properties.    '
+        helptopic='elec_net_edit_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Save the old node name 
         STR=ENODNAM(IENOD)
@@ -1959,7 +1879,7 @@ C Save the old node name
         SHSTR=ENODNAM(IENOD)
         CALL EASKS(SHSTR(1:ISTRL),
      &'The name or root name of this node (see help) ?','(No blanks) ',
-     &ISTRL,ENODNAM(IENOD)(1:ISTRL),'Node name',IER,9)
+     &ISTRL,ENODNAM(IENOD)(1:ISTRL),'Node name',IER,nbhelp)
         ENODNAM(IENOD)(1:ISTRL)=SHSTR(1:ISTRL)
         IF(ENODPHTYP(IENOD).EQ.3.OR.ENODPHTYP(IENOD).EQ.4) THEN
           JLEN=LNBLNK(ENODNAM(IENOD))
@@ -1969,25 +1889,14 @@ C Save the old node name
 
 
 C Ask for the new node type. 
-        H(1) ='The voltage type specifies whether the nodal voltage '
-        H(2) ='is fixed by the user or calculated during the        '
-        H(3) ='simulation. Generally nodal voltages should be       '
-        H(4) ='calculated; however, those connected to the grid or  '
-        H(5) ='a large power source can be considered as fixed.     '
-        H(6) ='Three methods are available for calculating nodal    '
-        H(7) ='voltages:                                            '
-        H(8) ='  - `Variable` means that the voltage is determined  '
-        H(9) ='    by the solution of the power flow matrix of eqs. '
-        H(10)='  - `PV` means that the voltage is calculated by     '
-        H(11)='     the buiding domain`s PV model.                  '
-        H(12)='  - `Plant` means that the voltage is calculated by  '
-        H(13)='    a component in the plant domain.                 '
+        helptopic='elec_net_new_node_type'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD('What is the node type?',' ',
      &                'Variable voltage',
      &                'Fixed voltage',
      &                'Calc by PV',
      &                'Calc by plant component',
-     &                ENODTYP(IENOD),13)
+     &                ENODTYP(IENOD),nbhelp)
 
 C Set the node type for the multi-phase set
         IENT=ENODTYP(IENOD)
@@ -2017,22 +1926,22 @@ C Check that the special material chosen is a PV model that calculates the
 C voltage - i.e. of type 1 (ESP-r's original PV model)or type 5 (WATSUN-PV).
                 if ( (ispmtyp(ispm,1) .ne. 1) .and.
      &               (ispmtyp(ispm,1) .ne. 5) ) then
-                  h(1)='Only the original esp-r PV model or a type 5 '
-                  h(2)='WATSUN-PV can be used. '
+                  helptopic='elec_net_watsun'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   dok=.true.
                   CALL ASKOK(
      &              'The selected item is not a valid PV component.',
-     &              'Try again?',ok,dok,2)
+     &              'Try again?',ok,dok,nbhelp)
                 else
                   iPV_calcV_LOC(IENOD) = ISPM
                   ok = .false.
                 endif
              else
                dok=.true.
-               h(1)='Please select a valid component. If you say no'
-               h(2)='then it get you out of the question loop.'
+               helptopic='elec_net_invalid'
+               call gethelptext(helpinsub,helptopic,nbhelp)
                CALL ASKOK('No special material component picked.',
-     &           'Try again',ok,dok,2)
+     &           'Try again',ok,dok,nbhelp)
              endif
           end do          
         ELSEIF(ENODTYP(IENOD).EQ.4)THEN
@@ -2058,12 +1967,12 @@ C---------Ensure that plant component has electrical data.
                 OK = .false.
               ELSE
                 dok=.true.
-                h(1)='Please select a valid component. If you say no'
-                h(2)='then it get you out of the question loop.'
+                helptopic='elec_net_invalid'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 CALL ASKOK(
      &   'No elec info associated with this plant component so it',
      &   'cannot calc a nodal voltage. Try another component?',
-     &            OK,DOK,2)
+     &            OK,DOK,nbhelp)
               ENDIF
             ENDIF
           END DO
@@ -2111,12 +2020,13 @@ C Check the maximum number of nodes is not exceeded
 C Firstly get the new name
   11    ISTRL=12
         IF(NANOD.GT.1) ISTRL=10
-        H(1)='Give the copied node a unique name or root name.'
+        helptopic='elec_net_root_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ENODNAM(IENOD)='Copy_node'
         SHSTR=ENODNAM(IENOD)
         CALL EASKS(SHSTR,
      &'A name for the the copied node?','(no blanks) ',ISTRL,
-     &ENODNAM(IENOD)(1:ISTRL),'copy name',IER,2)
+     &ENODNAM(IENOD)(1:ISTRL),'copy name',IER,nbhelp)
          ENODNAM(IENOD)=SHSTR
 Check for duplicate names
          DO 210 IND=1,NENOD-1
@@ -2201,7 +2111,6 @@ C 'CPY' - copy a HVAC/PV/Lighting/equipment load component.
 #include "plant.h"
 #include "building.h"
 
-      COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
@@ -2269,9 +2178,16 @@ C Characters
       CHARACTER*12 ENTYPESTR,ENODTYPSTR,ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM,PHTYPSTR,TMPTYPSTR,SHSTR
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H,TMPDESC,LNGSTR
+     &TMPDESC,LNGSTR
       CHARACTER*124 OUTS
       LOGICAL OK,dok,PHCPT
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDEHYB'  ! set for subroutine
 
       IF(MODE.EQ.'ADD'.OR.MODE.EQ.'EDT') THEN
 
@@ -2280,9 +2196,11 @@ C Set counter for a new hybrid component.
           IEHYB=NHYBCOM+1
         ELSE
           dok=.false.
-          h(1)='A chance to continue without editing component. '
-          CALL ASKOK('Edit this component?',' ',OK,dok,1)
+          helptopic='elec_net_beam_me_up'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
           IF(.NOT.OK) RETURN
+
 C Set the number of the editing component to be edited and allow
 C user to define component information (uses same code as new comp
 C definition). 
@@ -2291,6 +2209,7 @@ C definition).
 
 C Initialize flag for plant component node connections
         iplt_conn_nodes(iehyb) = 0
+
 C Zero the node index variables
         iplt_dcnode_id(iehyb) = 0
         iplt_acnode_id(iehyb) = 0
@@ -2308,17 +2227,11 @@ C Set default component descriptions, names and type names
 
 C Ask the user if they want to add a zone/plant/special material component to the network
 C and set the type and type string.
-        H(1)='You can attach electrical loads and power sources to the'
-        H(2)='electrical network. Please select the type of component '
-        H(3)='you wish to attach: '
-        H(4)='- a zone-side electrical load i.e. lighting;'
-        H(5)='- a plant-side electrical load i.e. pump;   '
-        H(6)='- a pv material in the building facade.     '
-        H(7)='Note if none of these elements exist in the model     '
-        H(8)='already, you will not be able to attach anything.      '
+        helptopic='elec_net_attach_loads'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD('Add which type of component ?',' ',
      &  'Zone electrical load','PV array','Plant component','Continue',
-     &  IPHYB,8)   
+     &  IPHYB,nbhelp)   
 
         IF(IPHYB.EQ.4) RETURN 
 
@@ -2331,7 +2244,7 @@ C For the case of a zone load present a list of zones
           CALL USRMSG(' ',' ','-')
           IZ=-1
           WRITE(OUTS,'(A)') 
-     &'In which zone is the load located?. '
+     &      'In which zone is the load located?. '
  10       CALL ASKZONE(IZ,0,OUTS,'Select zone','-','load locate',IER)
           IF(IZ.EQ.0) RETURN
 
@@ -2341,10 +2254,10 @@ C Read in the selected zone's operations data ...
 
           IF(IELF(IZ).EQ.0) THEN
              dok=.true.
-             h(1)='The zone operation file selected did not contain'
-             h(2)='any electrical data. You can select another zone.'
+             helptopic='elec_net_opr_no_data'
+             call gethelptext(helpinsub,helptopic,nbhelp)
              CALL ASKOK('Zone has no electrical loads',
-     &'try another zone?',OK,dok,2)
+     &         'try another zone?',OK,dok,nbhelp)
              IF(OK) THEN
                GOTO 10
              ELSE
@@ -2353,12 +2266,8 @@ C Read in the selected zone's operations data ...
           ENDIF
 
 C Get the appropriate day type and load. 
-          H(1)='Each user specified gain type in each zone can be '
-          H(2)='associated with a node in the electrical network. '
-          H(3)='The cumulative power consumption of all the gains'
-          H(4)='of that type (both absolute and per m2) is then   '
-          H(5)='attributed to the node; provided load electrical data '
-          H(6)='has been specified.'
+          helptopic='elec_net_opr_type'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Scan through the zone loads and determine the active types
           TMPTYPSTR(1)=' '
@@ -2395,8 +2304,8 @@ C Loop through each casual gain and determine if it is applicable or not.
 C Replace this with a menu if the number of load types increases.
           CALL USRMSG(' ',' ','-')
  16       CALL EASKABCD('What is the type of load do',
-     &'you want to connect',TMPTYPSTR(1),TMPTYPSTR(2),
-     &TMPTYPSTR(3),'Continue',ILOD,5)
+     &      'you want to connect',TMPTYPSTR(1),TMPTYPSTR(2),
+     &      TMPTYPSTR(3),'Continue',ILOD,nbhelp)
           IF(ILOD.EQ.4) THEN
             RETURN
           ELSEIF(IAPPF(ILOD).EQ.0) THEN
@@ -2417,12 +2326,12 @@ C For the case of a PV material present a list of the current special materials
             HYLOC(IEHYB,1)=ISPM
           ELSE
             dok=.true.
-            h(1)='ESP-r expected you to have selected a component and'
-            h(2)='so here is your chance to try again. '
+            helptopic='elec_net_select_again'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             WRITE(OUTS,'(A)')
      & 'No special material component picked so it cannot be connected'
             CALL EDISP(IUOUT,OUTS)
-            CALL ASKOK(outs,'to the network. Try again?',OK,dok,2)
+            CALL ASKOK(outs,'to the network. Try again?',OK,dok,nbhelp)
             IF(OK) THEN
               GOTO 13
             ELSE
@@ -2452,7 +2361,7 @@ C This is to support cases where a plant component draws power from or
 C generates power to two distinct nodes (one AC and the other DC).
 C This feature is only supported for single phase types.
                call askok('Is the plant component connected to',
-     &           'more than one node?', OK, .false.,1)
+     &           'more than one node?', OK, .false.,nbhelp)
                if ( ok ) then
                  iplt_conn_nodes(iehyb) = 2
                else
@@ -2460,12 +2369,12 @@ C This feature is only supported for single phase types.
                endif
              ELSE
                dok=.true.
-            h(1)='ESP-r expected you to have selected a component with'
-            h(2)='electrical data so here is your chance to try again.'
+               helptopic='elec_net_select_again'
+               call gethelptext(helpinsub,helptopic,nbhelp)
                CALL ASKOK(
      &'No electrical information associated with this plant component',
      &'so it cannot be connected to the network. Try another?',
-     &OK,dok,2)
+     &OK,dok,nbhelp)
                IF(OK) THEN
                  GOTO 12
                ELSE
@@ -2482,12 +2391,12 @@ C If the hybrid component is not a plant component or if it is but it is
 C connected to one node then ask for the component phase type and
 C based on this determine which node(s) hybrid component connects. 
         if ( iplt_conn_nodes(iehyb) .ne. 2 ) then
-          H(1)='Please select the phase type of this component from'
-          H(2)='the list.'
+          helptopic='elec_net_select_phase'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IX=1
           CALL EPICKS(IX,IVALS,'Which phase type',
      &      'is this hybrid component?',12,5,PHTYPSTR,'phase type',
-     &      IER,2)
+     &      IER,nbhelp)
 
           IF(IVALS(1).EQ.0) RETURN
           HYCOMPHTYP(IEHYB)=IVALS(1)
@@ -2541,11 +2450,11 @@ Check the same node hasn't been picked twice
               HYCONEN(IEHYB,ENODPH(INOD))=INOD
             ELSE
               dok=.false.
-              h(1)='Here is your chance to continue without over- '
-              h(2)='writing the node already referencing this phase.'
+              helptopic='elec_net_no_overwrite'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               WRITE(OUTS,'(A)')
      &'A node has already been picked which occupies this phase'
-              CALL ASKOK(OUTS,'Overwrite it?', OK,dok,2)
+              CALL ASKOK(OUTS,'Overwrite it?', OK,dok,nbhelp)
               IF(.NOT.OK) GOTO 35
               HYCONEN(IEHYB,ENODPH(INOD))=INOD
               WRITE(OUTS,'(A)') 'Node has been overwritten ....'
@@ -2607,11 +2516,11 @@ C Ensure that the AC node selected is not the same as the DC node
               ok = .false.
             else
               dok=.true.
-              h(1)='Please select a different nodes for AC and DC. Say'
-              h(2)='no to get you out of the question loop.'
+              helptopic='elec_net_select_ac_dc'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               call askok(
      &          'The AC node and DC node cannot be the same.',
-     &          'Try again?',OK,dok,2)
+     &          'Try again?',OK,dok,nbhelp)
             endif
           enddo
 
@@ -2629,18 +2538,22 @@ C       <<HYBRID COMPONENT ADDITIONAL DATA>>
 C Ask for the name of the component from the user
         ISTRL=12
         SHSTR=HYCOMNAM(IEHYB)
+        helptopic='elec_component_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(SHSTR,
      &    'Enter a descriptive name for the component (see help)?',
-     &    '(No blanks) ',ISTRL,' ','Hyb name',IER,3)
+     &    '(No blanks) ',ISTRL,' ','Hyb name',IER,nbhelp)
         HYCOMNAM(IEHYB)=SHSTR
 
 C Ask for a description of the component from the user
         ISTRL=72
         LNGSTR=HYDESC(IEHYB)
+        helptopic='elec_component_descr'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LNGSTR,
      &    'You can take this opportunity to enter a description ',
      &    'of this attached component. ',ISTRL,HYDESC(IEHYB),
-     &    'Hyb desc',IER,3)
+     &    'Hyb desc',IER,nbhelp)
         HYDESC(IEHYB)=LNGSTR
         CALL USRMSG(' ',' ','-')
 
@@ -2699,7 +2612,6 @@ C 'CPY' - copy a power component.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)  
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -2750,13 +2662,20 @@ C Characters
       CHARACTER*16 PODEFNAM
       CHARACTER*32 POWITEM,POWITEM2
       CHARACTER*72 ENDESC,HYDESC,POWCOMDESC,POWCDATS,CONECOMDESC,
-     &H,SSTR,POWDESC,DADESC,POSTR,DATSTR,TMPDESC,LNGSTR
+     &SSTR,POWDESC,DADESC,POSTR,DATSTR,TMPDESC,LNGSTR
       CHARACTER*124 OUTS
 
       REAL POWCDAT,SPMISC,VAR,ENODBASEV,ENODBASEP 
 
       LOGICAL POREPT,PHCPT,OK,dok
       integer NPOWITEM,IMOUT,NPOWITEM2,IMOUT2 ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDEPOW'  ! set for subroutine
 
       POREPT=.FALSE.
 
@@ -2768,8 +2687,9 @@ C Set counter for a new power component.
           IEPOW=NPOWCOM+1
         ELSE
           dok=.false.
-          h(1)='Chance to continue without editing the component.'
-          CALL ASKOK('Edit this component?',' ',OK,dok,1)
+          helptopic='elec_net_beam_me_up'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
           IF(.NOT.OK) RETURN
 
 C Set the number of the editing component to be edited and allow
@@ -2800,10 +2720,8 @@ C Display a list of power only classes to add, and select the class
         IMOUT=-1
 
 C Help text for this menu.
-  9     H(1)='The menu options relate to different categories'
-        H(2)='of power-only components which may be selected '
-        H(3)='for connection to the electrical network       '
-        H(4)='. Select a category'
+  9     helptopic='elec_power_comp_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EMENU('Available Components',POWITEM,NPOWITEM,IMOUT)
         CALL USRMSG(' ',' ','-')
@@ -2812,7 +2730,9 @@ C Help text for this menu.
 C Store the number of the selected power-only components category      
           NIT=IMOUT
         ELSEIF(IMOUT.EQ.NPOWITEM-1) then
-          CALL PHELPD('Power-only comp.',4,'-',0,0,IER)
+          helptopic='elec_power_comp_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Power-only comp.',nbhelp,'-',0,0,IER)
           GOTO 9
         ELSEIF(IMOUT.EQ.NPOWITEM-3) THEN
           GOTO 99
@@ -2844,14 +2764,8 @@ C Variable NIT is overloaded and returns the number of menu items.
           NPOWITEM2=NIT+4
       
 C Help text for this menu.
- 17       H(1)='Select a power-only component from the list. Each one'
-          H(2)='shown is associated with a set of pre-defined '
-          H(3)='parameters, these can be altered if required. '
-          H(4)='  '
-          H(5)='  '
-          H(6)='Switching the "additional info" toggle to ON lets the'
-          H(7)='user view any more information associted with the   '
-          H(8)='component; this appears in the text window. '
+ 17       helptopic='elec_power_comp_add'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
           CALL EMENU('Components in category',POWITEM2,
      &    NPOWITEM2,IMOUT2)
@@ -2860,7 +2774,9 @@ C Help text for this menu.
           IF(IMOUT2.EQ.NPOWITEM2) THEN
             GOTO 9
           ELSEIF(IMOUT2.EQ.NPOWITEM2-1) THEN
-            CALL PHELPD('Special material',8,'-',0,0,IER)
+            helptopic='elec_power_comp_add'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Special material',nbhelp,'-',0,0,IER)
             GOTO 17
           ELSEIF(IMOUT2.EQ.NPOWITEM2-2) THEN
             IF(POREPT) THEN
@@ -2916,25 +2832,28 @@ C Set up the menu
         ENDIF
 
 C Enter a name for the component. 
+        helptopic='elec_net_component_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         SHSTR=POWCOMNAM(IEPOW)
  99     CALL EASKS(SHSTR,' ',' name for component ?',12,
-     &  PODEFNAM(1:12),' pow nam ', IER,0)
+     &  PODEFNAM(1:12),' pow nam ', IER,nbhelp)
         POWCOMNAM(IEPOW)=SHSTR
 
 C Enter a description for the component. 
+        helptopic='elec_net_component_desc'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         LNGSTR=POWCOMDESC(IEPOW)
         CALL EASKS(LNGSTR,'You can take this oportunity to ',
-     &'enter a description of this component ?',72,'none',' pow desc ',
-     &IER,0)
+     &    'enter a description of this component ?',72,'none',
+     &    ' pow desc ',IER,nbhelp)
         POWCOMDESC(IEPOW)=LNGSTR
 
 C Get data items for the component.
-        H(1)='Enter the required data for the power only component. '
-        H(2)='Either accept the default values or enter your own'
-        H(3)='data.                                             '
-        CALL PHELPD('Power comp data',3,'-',0,0,IER)
-        CALL EASKI(NPOWCDAT(IEPOW),' ',' Number of data items ?',1,'-',
-     &  MPWDAT,'-',1,'power only mat. data',IER,3)
+        helptopic='elec_net_component_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Power comp data',nbhelp,'-',0,0,IER)
+        CALL EASKI(NPOWCDAT(IEPOW),' ',' Number of data items ?',
+     &    1,'-',MPWDAT,'-',1,'power only mat. data',IER,nbhelp)
         IF(IER.EQ.0) THEN
           DATSP=0.0        
           DO 30 IDAT=1,NPOWCDAT(IEPOW)
@@ -2945,27 +2864,28 @@ C Get data items for the component.
             ENDIF
             DATSP=POWCDAT(IEPOW,IDAT)
             CALL EASKR(DATSP,OUTS,' ',1.,'-',99.,'-',1.0,'SPM data',
-     &         IER,0)
+     &         IER,nbhelp)
             POWCDAT(IEPOW,IDAT)=DATSP
   30      CONTINUE
 
 C Recover the string data  
-        CALL EASKI(NPOWCDATS(IEPOW),' ','Number of string data items ?',
-     &  1,'-',MPWDAT,'-',1,'power only mat. data',IER,3)
+          CALL EASKI(NPOWCDATS(IEPOW),' ',
+     &      'Number of string data items ?',
+     &      1,'-',MPWDAT,'-',1,'power only mat. data',IER,nbhelp)
           DO 32 IDAT=2,NPOWCDATS(IEPOW)*2,2
             IDATI=INT(IDAT/2)
             IF(DADESC(NPOWCDAT(IEPOW)+IDATI)(1:4).EQ.'none'.OR.
-     &DADESC(NPOWCDAT(IEPOW)+IDATI)(1:2).EQ.'  ') THEN
+     &         DADESC(NPOWCDAT(IEPOW)+IDATI)(1:2).EQ.'  ') THEN
               WRITE(OUTS,'(A,A2)') ' Enter string data item: ',IDATI
             ELSE
               WRITE(OUTS,'(A)') DADESC(NPOWCDAT(IEPOW)+IDATI)
             ENDIF
-            H(1)='Enter the required data string for the power only  '
-            H(2)='component. Either accept the default values or give'
-            H(3)='your own data.                                     '
-            CALL PHELPD('Power comp data',3,'-',0,0,IER)
+            helptopic='elec_net_component_data'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Power comp data',nbhelp,'-',0,0,IER)
             DATSTR=POWCDATS(IEPOW,IDATI)
-            CALL EASKS(DATSTR,OUTS,' ',72,'UNKNOWN',' pow str',IER,0)
+            CALL EASKS(DATSTR,OUTS,' ',72,'UNKNOWN',' pow str',
+     &        IER,nbhelp)
             POWCDATS(IEPOW,IDATI)=DATSTR(1:LNBLNK(DATSTR))
   32      CONTINUE
 
@@ -2984,11 +2904,11 @@ C blank the temporary data description array
 C Connect the component  to the network
 C Ask for the component phase type and based on this determine which node(s)
 C hybrid component connects. 
-          H(1)='Please select the phase type of this component from'
-          H(2)='the list.'
+          helptopic='elec_net_select_phase'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IX=1
           CALL EPICKS(IX,IVALS,'Which phase type',
-     &      'is this component?',12,5,PHTYPSTR,'phase type',IER,2)
+     &      'is this component?',12,5,PHTYPSTR,'phase type',IER,nbhelp)
 
           IF(IVALS(1).EQ.0) RETURN
           POWCOMPHTYP(IEPOW)=IVALS(1)
@@ -3042,11 +2962,11 @@ Check the same node hasn't been picked twice
               POWCONEN(IEPOW,ENODPH(INOD))=INOD
             ELSE
               dok=.false.
-              h(1)='Here is your chance to continue without over- '
-              h(2)='writing the node already referencing this phase.'
+              helptopic='elec_net_no_overwrite'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               CALL ASKOK(
      &   'A node has already been picked which occupies this phase',
-     &   'Overwrite it?',OK,dok,2)
+     &   'Overwrite it?',OK,dok,nbhelp)
               IF(.NOT.OK) GOTO 55
               POWCONEN(IEPOW,ENODPH(INOD))=INOD
               WRITE(OUTS,'(A)') 'Node has been overwritten ....'
@@ -3104,11 +3024,11 @@ C Set phase type to d.c. - variable not used in power-only component model
               ok = .false.
             else
               dok=.true.
-              h(1)='Please select different nodes for sending and'
-              h(2)='receiving. Say no to get out of the question loop.'
+              helptopic='elec_net_send_receive'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               CALL ASKOK(
      &          'The PCU receiving node cannot be the same as the ',
-     &          'sending node. Try again?',OK,DOK,2)
+     &          'sending node. Try again?',OK,DOK,nbhelp)
             endif
           enddo
 
@@ -3199,7 +3119,6 @@ C 'CPY' - copy a connection.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
 
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
@@ -3240,11 +3159,18 @@ C Characters
       CHARACTER*16 CCDEFNAM
       CHARACTER*32 CCITEM,CCITEM2
       CHARACTER*72 SSTR,CNCDESC,DADESC,CCSTR,HYDESC,ENDESC,POWCDATS,
-     &CONECOMDESC,POWCOMDESC,H,LNGSTR
+     &CONECOMDESC,POWCOMDESC,LNGSTR
       CHARACTER*124 OUTS
       integer NCCITEM,IMOUT,NCCITEM2,IMOUT2 ! max items and current menu item
 
       LOGICAL OK,DOK,CCREPT
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDECNC'  ! set for subroutine
       CCREPT=.FALSE.
 
       IF(MODE.EQ.'ADD'.OR.MODE.EQ.'EDT') THEN
@@ -3254,9 +3180,11 @@ C Firstly set the affected connection number
           IECNC=NCONECOM+1
         ELSE
           dok=.false.
-          h(1)='Chance to continue without editing the component.'
-          CALL ASKOK('Edit this component?',' ',OK,dok,1)
+          helptopic='elec_net_beam_me_up'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
           IF(.NOT.OK) RETURN
+
 C Set the number of the editing component to be edited and allow
 C user to define component information (uses same code as new comp
 C definition). 
@@ -3285,10 +3213,8 @@ C Display a list of connecting component classes to add, and select the class
         IMOUT=-1
 
 C Help text for this menu.
-  9     H(1)='The menu options relate to different categories'
-        H(2)='of connecting components which may be selected '
-        H(3)='for connection to the electrical network       '
-        H(4)='. Select a category'
+  9     helptopic='elec_connecting_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EMENU('Available Components',CCITEM,NCCITEM,IMOUT)
 
@@ -3297,7 +3223,9 @@ C Help text for this menu.
 C Store the number of the selected connecting components category      
           NIT=IMOUT
         ELSEIF(IMOUT.EQ.NCCITEM-1) THEN
-          CALL PHELPD('Power-only comp.',4,'-',0,0,IER)
+          helptopic='elec_connecting_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Power-only comp.',nbhelp,'-',0,0,IER)
           GOTO 9
         ELSEIF(IMOUT.EQ.NCCITEM-3) THEN
           GOTO 99
@@ -3329,21 +3257,17 @@ C Variable NIT is overloaded and returns the number of menu items.
           NCCITEM2=NIT+4
       
 C Help text for this menu.
-  17      H(1)='Select a connecting component from the list. Each one'
-          H(2)='shown is associated with a set of pre-defined '
-          H(3)='parameters, these can be altered if required. '
-          H(4)='  '
-          H(5)='  '
-          H(6)='Switching the "additional info" toggle to ON lets the'
-          H(7)='user view any more information associted with the   '
-          H(8)='component; this appears in the text window. '
+  17      helptopic='elec_connecting_add'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
           CALL EMENU('Components in category',CCITEM2,NCCITEM2,IMOUT2)
         
           IF(IMOUT2.EQ.NCCITEM2) THEN
             GOTO 9
           ELSEIF(IMOUT2.EQ.NCCITEM2-1) THEN
-            CALL PHELPD('Connecting component',8,'-',0,0,IER)
+            helptopic='elec_connecting_add'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Connecting component',nbhelp,'-',0,0,IER)
             GOTO 17
           ELSEIF(IMOUT2.EQ.NCCITEM2-2) THEN
             IF(CCREPT) THEN
@@ -3392,24 +3316,27 @@ C Set up the menu
 
 C Enter a name for the component. 
         SHSTR=CONECOMNAM(IECNC)
+        helptopic='elec_connecting_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   99    CALL EASKS(SHSTR,' ',' name for component ?',12,
-     &  CCDEFNAM(1:12),' cnc nam ', IER,0)
+     &  CCDEFNAM(1:12),' cnc nam ', IER,nbhelp)
         CONECOMNAM(IECNC)=SHSTR
 
 C Enter a description for the component. 
+        helptopic='elec_connecting_desc'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         LNGSTR=CONECOMDESC(IECNC)
         CALL EASKS(LNGSTR,'You can take this oportunity to',
-     &'enter a description of this component ?',72,'none',' cnc desc ',
-     &IER,0)
+     &    'enter a description of this component ?',72,
+     &    'none',' cnc desc ',IER,nbhelp)
         CONECOMDESC(IECNC)=LNGSTR
 
 C Get data items for the component.
-        H(1)='Enter the required data for the power only component. '
-        H(2)='Either accept the default values or enter your own'
-        H(3)='data.                                             '
-        CALL PHELPD('Power comp data',3,'-',0,0,IER)
-        CALL EASKI(NCONECOMDAT(IECNC),' ',' Number of data items ?',1,
-     &'-',MPWDAT,'-',1,'con comp data',IER,3)
+        helptopic='elec_connecting_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Power comp data',nbhelp,'-',0,0,IER)
+        CALL EASKI(NCONECOMDAT(IECNC),' ',' Number of data items ?',
+     &    1,'-',MPWDAT,'-',1,'con comp data',IER,nbhelp)
         IF(IER.EQ.0) THEN
           DATSP=0.0        
           DO 30 IDAT=1,NCONECOMDAT(IECNC)
@@ -3420,7 +3347,7 @@ C Get data items for the component.
             ENDIF
             DATSP=CONECOMDAT(IECNC,IDAT)
             CALL EASKR(DATSP,OUTS,' ',1.,'-',99.,'-',1.0,'cnc data',
-     &         IER,0)
+     &         IER,nbhelp)
             CONECOMDAT(IECNC,IDAT)=DATSP
   30      CONTINUE
 
@@ -3436,11 +3363,11 @@ C blank the temporary data description array
 C Connect the component  to the network
 C Ask for the component phase type and based on this determine which node(s)
 C hybrid component connects. 
-        H(1)='Please select the phase type of this component from'
-        H(2)='the list.'
+        helptopic='elec_connecting_phase'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IX=1
         CALL EPICKS(IX,IVALS,'Which phase type',
-     &'is this component?',12,5,PHTYPSTR,'phase type',IER,2)
+     &'is this component?',12,5,PHTYPSTR,'phase type',IER,nbhelp)
 
         IF(IVALS(1).EQ.0) RETURN
         CONECOMPHTYP(IECNC)=IVALS(1)
@@ -3459,10 +3386,10 @@ C connection.
 
 C Ask if it is OK to delete associated connections, if not then return
         dok=.false.
-        H(1)='If a conecting component is deleted, the connections '
-        H(2)='containing this component must also be deleted.      '
+        helptopic='elec_connecting_delete'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Delete connections containing this component?',
-     &    ' ',OK,dok,2)
+     &    ' ',OK,dok,nbhelp)
         IF(.NOT.OK) RETURN
         DO 50 ICON=NECON,1,-1
           IF(CCNO(ICON).EQ.IECNC) THEN
@@ -3527,7 +3454,6 @@ C 'CPY' - copy a connection.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -3558,10 +3484,17 @@ C Node and component names
       CHARACTER*3 MODE
       CHARACTER*12 STR1,STR2
       CHARACTER*12 ENODNAM,HYCOMTYPSTR,HYCOMNAM,POWCOMNAM,CONECOMNAM
-      CHARACTER*72 POWCDATS,H
+      CHARACTER*72 POWCDATS
       CHARACTER*124 OUTS
 
       LOGICAL OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDECON'  ! set for subroutine
       
       IF(MODE.EQ.'ADD'.OR.MODE.EQ.'EDT') THEN
 
@@ -3570,9 +3503,10 @@ C Set the connection number.
           IECON=NECON+1
         ELSE
           dok=.false.
-          h(1)='Chance to continue without editing the connection.'
+          helptopic='elec_net_beam_me_up'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Do you want to edit this connection?',' ',
-     &      OK,dok,1)
+     &      OK,dok,nbhelp)
           IF(OK)THEN
             IECON=ICON
           ELSE
@@ -3594,9 +3528,10 @@ C Select the nodes to connect also note if connection is multi-phase.
 
         IF(INOD2.EQ.INOD1) THEN
           dok=.true.
-          h(1)='This is a chance to correct this error.'
+          helptopic='elec_net_2nd_chance'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('You cannot connect a node to itself.',
-     &      'Try again?',OK,dok,1)
+     &      'Try again?',OK,dok,nbhelp)
           IF(OK) THEN
             GOTO 10
           ELSE
@@ -3609,9 +3544,10 @@ C Exception for DC nodes
             CONTINUE
           ELSE
             dok=.true.
-            h(1)='This is your chance to correct this error. '
+            helptopic='elec_net_2nd_chance'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('You cannot connect nodes of different',
-     &        'phases together. Try again?',OK,dok,1)
+     &        'phases together. Try again?',OK,dok,nbhelp)
       
             IF(OK) THEN
               GOTO 10
@@ -3632,9 +3568,11 @@ C First balanced type components to balanced type nodes.
         IF((CONECOMPHTYP(ICNC).EQ.5.AND.ENODPHTYP(INOD1).NE.5).OR.
      &(CONECOMPHTYP(ICNC).NE.5.AND.ENODPHTYP(INOD1).EQ.5)) THEN
           dok=.true.
-          h(1)='This is your chance to correct this error.'
+          helptopic='elec_net_2nd_chance'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('You can only connect a BALANCED connector to',
-     &      'BALANCED-type node or vice-versa. Try again?',OK,dok,1)
+     &      'BALANCED-type node or vice-versa. Try again?',
+     &      OK,dok,nbhelp)
           IF(OK) THEN
             GOTO 20
           ELSE
@@ -3652,9 +3590,11 @@ C Exception for AC/DC of DC/AC conversion components
             CONTINUE
           ELSE
             dok=.true.
-            h(1)='This is your chance to correct this error. '
+            helptopic='elec_net_2nd_chance'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('You can only connect a DC connector to',
-     &        'DC-type nodes or vice-versa. Try again?',OK,dok,1)
+     &        'DC-type nodes or vice-versa. Try again?',
+     &        OK,dok,nbhelp)
             IF(OK) THEN
               GOTO 20
             ELSE
@@ -3664,11 +3604,12 @@ C Exception for AC/DC of DC/AC conversion components
 
         ELSEIF(CONECOMPHTYP(ICNC).EQ.3.AND.ENODPHTYP(INOD1).EQ.2)THEN
           dok=.true.
-          h(1)='This is your chance to correct this error. '
+          helptopic='elec_net_2nd_chance'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &      'You cannot connect a two-phase connector to a single-',
      &      'phase node, use a single phase connector. Try again?',
-     &      OK,dok,1)
+     &      OK,dok,nbhelp)
           IF(OK) THEN
             GOTO 20
           ELSE
@@ -3677,10 +3618,12 @@ C Exception for AC/DC of DC/AC conversion components
         ELSEIF(CONECOMPHTYP(ICNC).EQ.4.AND.(ENODPHTYP(INOD1).EQ.2.OR.
      &ENODPHTYP(INOD1).EQ.3))THEN
           dok=.true.
-          h(1)='This is your chance to correct this error. '
+          helptopic='elec_net_2nd_chance'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      & 'You cannot connect a three-phase connector to a single-phase',
-     & 'or two-phase node. Use another connector. Try again?',OK,dok,1)
+     & 'or two-phase node. Use another connector. Try again?',
+     & OK,dok,nbhelp)
           IF(OK) THEN
             GOTO 20
           ELSE
@@ -3751,21 +3694,19 @@ C Case of a two-phase component in a three phase nodal group
         ELSEIF(CONECOMPHTYP(ICNC).EQ.3.AND.ENODPHTYP(INOD1).EQ.4) THEN
 
 C Ask the user the other phase the component links
-          H(1)='As you are connecting a two phase component to a ' 
-          H(2)='three phase set, the program needs to know which'
-          H(3)='phase combination the component connects. For   '
-          H(4)='example 1 and 2, 2 and 3 or 1 and 3.            '
-          H(5)='please pick the other phase.                    '
+          helptopic='elec_net_2_to_3'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  50       CALL EASKABCD('Which other phase of the three-phases does',
-     &'the two phase connector link to','one','two','three','continue',
-     &IPH,5)
+     &      'the two phase connector link to','one','two','three',
+     &      'continue',IPH,nbhelp)
           IF(IPH.EQ.4) THEN
             RETURN
           ELSEIF(IPH.EQ.ENODPH(INOD1)) THEN
             dok=.true.
-            h(1)='This is your chance to correct this error.'
+            helptopic='elec_net_2nd_chance'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('This phase is already filled!','Try again',
-     &        OK,dok,1)
+     &        OK,dok,nbhelp)
             IF(OK) THEN
               GOTO 50
             ELSE
@@ -3862,8 +3803,6 @@ C voltage values on either side of the node are the same.
       integer lnblnk  ! function definition
 
 C Commons
-      COMMON/POPHELP/H(60)
-
 C Trace
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
@@ -3900,9 +3839,16 @@ C Type casting (all varaiables and arrays cast explicitly)
 
 C Characters      
       CHARACTER*12 ENODNAM,HYCOMTYPSTR,HYCOMNAM,POWCOMNAM,CONECOMNAM
-      CHARACTER*72 H,POWCDATS
+      CHARACTER*72 POWCDATS
 
       LOGICAL MOVE,TFOK,BVSET,NEW_START,OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ENETBASEV'  ! set for subroutine
 
 C Loop through each node and set the local flag BVSET to .false., this
 C changes to .true. when the base voltage is set. 
@@ -3913,12 +3859,9 @@ C changes to .true. when the base voltage is set.
   5   CONTINUE
 
 C Ask the user for the root node no the network.
-      H(1)='In order to set the network base voltage values of the    '
-      H(2)='network you must define at least one voltage in the       '
-      H(3)='network; usually one which attaches to the grid and/or has'
-      H(4)='a fixed voltage. The other base voltage values will then  '
-      H(5)='be automatically calculated .                             '                   
-      CALL PHELPD('Set base value',5,'-',0,0,IER)
+      helptopic='elec_net_one_voltage'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('Set base value',nbhelp,'-',0,0,IER)
 
 C Present the user with a list of nodes. 
       CALL USRMSG('Select a node to act as reference :',' ','P')      
@@ -3933,15 +3876,16 @@ C Present the user with a list of nodes.
 C Check the node type and issue a warning if it is not fixed. 
       IF(ENODTYP(IENODPK).NE.2) THEN
         dok=.true.
-        h(1)='This is your chance to correct this error. '
+        helptopic='elec_net_2nd_chance'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Warning: this is NOT a node with a fixed ',
-     &    'voltage. Select another node?',OK,dok,1)
+     &    'voltage. Select another node?',OK,dok,nbhelp)
         IF(OK) GOTO 3
       ENDIF
 
 C Ask the user to set the base voltage value. 
       CALL EASKR(ENODBASEV(IENODPK),'Base voltage (V) for ',
-     &'this node ? ',0.,'F',9999.,'W',240.,'Base volt',IER,5)
+     &'this node ? ',0.,'F',9999.,'W',240.,'Base volt',IER,nbhelp)
       BVSET(IENODPK)=.TRUE.
       NSET=1
       ISET(NSET)=IENODPK
@@ -3951,7 +3895,7 @@ C if the node is two/three phase) the same base voltage value.
       DO 10 IENOD=1,NENOD
         LSTR=LNBLNK(ENODNAM(IENOD))-2
         IF(ENODNAM(IENOD)(1:LSTR).EQ.
-     &ENODNAM(IENODPK)(1:LSTR)) THEN
+     &     ENODNAM(IENODPK)(1:LSTR)) THEN
           IF(IENOD.NE.IENODPK) THEN
             ENODBASEV(IENOD)=ENODBASEV(IENODPK)
             BVSET(IENOD)=.TRUE. 

@@ -3744,7 +3744,7 @@ C Scan the model topology and report on any problems encountered.
      &         ' ','W')
           else
             call usrmsg(
-     &      'Model opology (surface connections) is inconsistent.',
+     &      'Model topology (surface connections) is inconsistent.',
      &      'Clear current topology and use topology tool to resolve.',
      &      'W')
           endif

@@ -2498,7 +2498,18 @@ C and change any / to \.
           longtfile=longtfiledos
         endif
 
-C Run only the number of assessments required.
+C Run only the number of assessments required. Currently there is
+C an assumption that the IPV will use fixed names for the 3 and 5
+C season assessments.
+ 
+C << todo rather than fixing the name ann for a single assessment
+C << see about allowing a user defined name.
+C <<  Later consider if there can be more parameter sets than IPV 
+C << assessments so that a model could have both seasonal and annual
+C << parameter sets. Or simply that the user can add their own
+C << simulation parameter set as long as it does not clash and the
+C << IPV will still run as required.
+
         if(nipvassmt.eq.1)then
           assmttag(1)=' -p ann'
         elseif(nipvassmt.eq.3)then

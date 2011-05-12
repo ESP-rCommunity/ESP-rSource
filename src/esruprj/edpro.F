@@ -58,10 +58,9 @@ C   control information to the configuration control file.
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       DIMENSION ITEM(35)
-      CHARACTER outs*124,KEY*1,H*72,ITEM*42
+      CHARACTER outs*124,KEY*1,ITEM*42
       character LLASCI*144
       character ermsg*48  ! for read error messages
       character fs*1
@@ -69,6 +68,13 @@ C   control information to the configuration control file.
       logical asciupdate   ! to signal if user has edited data.
       logical unixok    ! to check for database path file separators
       integer MVERT,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CASFMK'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -134,29 +140,16 @@ C If a long list include page facility text.
       ITEM(M+4)  ='? help                            '
       ITEM(M+5)  ='- exit                            '
 
-      H(1)= '   Events Database '
-      H(3)= ' '
-      H(4)= 'Profiles in this database are currently used to  '
-      H(5)= 'assist in the defintion of zone operations.  The'
-      H(6)= 'standard is found in /usr/esru/esp-r/databases '
-      H(7)= ' '
-      H(8)= ' The data requirements are summarised below :- '
-      H(9)= ' '
-      H(10)=' for each profile - number of events.'
-      H(11)=' '
-      H(12)=' for each event - start and finish time'
-      H(13)='                  percentage of first (sensible) value'
-      H(14)='                  percentage of second (latent) value'
-      H(15)=' '
-      H(16)='If you edit data in the database the ASCII file will be'
-      H(17)='updated. Consider using a model specific file if you'
-      H(18)='need custom profiles.'
+      helptopic='events_db_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(' Event profiles',ITEM,MVERT,INO)
       IF(INO.EQ.MVERT)THEN
         return
       ELSEIF(INO.EQ.(MVERT-1))THEN
-        CALL PHELPD('event profiles',18,'-',0,0,IER)
+        helptopic='events_db_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('event profiles',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
 C List contents of database.
@@ -178,15 +171,12 @@ C Insert a profile.
         WRITE(outs,'(a,I3)') ' Profile  ',NPDBITEMS
         call edisp(iuout,outs)
 
-        write(H(1),'(a,I3,a)') 'Between 1 and ',MPRFDBPER,
+        write(outs,'(a,I3,a)') 'Between 1 and ',MPRFDBPER,
      &    ' events can be acommodated.'
-        H(2)='An event is equivalent to a period of time with'
-        H(3)='associated values. '
-        H(4)=' '
-        H(5)='A cancel request leaves the model unchanged.'
+        call edisp(iuout,outs)
         IV=NCG(NPDBITEMS)
         CALL EASKI(IV,' ','Number of events in profile: ',
-     &       1,'F',MPRFDBPER,'F',1,'no events',IERI,5)
+     &       1,'F',MPRFDBPER,'F',1,'no events',IERI,nbhelp)
         if(ieri.eq.-3) then
           NPDBITEMS = NPDBITEMS - 1
           goto 92
@@ -324,12 +314,11 @@ C << as multiple casual gain types
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       DIMENSION ITEM(30)
       character NFLAG*1
       CHARACTER KEY*1,TMP*40
-      character ITEM*33,H*72,cstr*72
+      character ITEM*33,cstr*72
       character llasci*144 ! for writing the ascii file.
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
@@ -337,6 +326,13 @@ C << as multiple casual gain types
       logical asciupdate   ! signal if user edits data
       logical unixok    ! to check for database path file separators
       integer MVERT,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDPROF'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -381,10 +377,11 @@ C Make up an editing string for the start of each period.
           WRITE(CSTR(K:K1),'(i2)')ICGS1(ITM,J)
           K=K1+1
    60   CONTINUE
-        h(1)='If you edit in actual start times the subsequent '
-        h(2)='editing tasks will be easier. '
+
+        helptopic='events_db_start'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(CSTR,' Start hour of each event',
-     &    ' ',72,' 0  4   6   8','profile starts',IER,2)
+     &    ' ',72,' 0  4   6   8','profile starts',IER,nbhelp)
 
 C Extract the start timings and then sort out the finishes.
         K=0
@@ -474,16 +471,8 @@ C Display information about the profile.
       endif
 
 C Help text for this menu.
-      H(1)='You may alter the start and/or stop times of any '
-      H(2)='period as well as the associated values. For casual'
-      H(3)='gain type profiles the first value is the sensible '
-      H(4)='and the second is the latent. '
-      H(5)=' '
-      H(6)='When a change is made to the data a fresh copy of '
-      H(7)='the ASCII version will be written out. '
-      H(8)=' '
-      H(9)='Models pointing to binary versions of this file will'
-      H(10)='will be converted to ASCII versions after editing.'
+      helptopic='events_db_start'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('  Profile editing',ITEM,MVERT,INO)
       IF(INO.EQ.MVERT)THEN
@@ -498,7 +487,9 @@ C If in graphic mode restore the standard win3d values for prj.
       ELSEIF(INO.EQ.(MVERT-1))THEN
 
 C HELP information.
-        CALL PHELPD('pro edit',10,'-',0,0,IER)
+        helptopic='events_db_start'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('pro edit',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
 C Update the ascii database in all cases.
@@ -563,10 +554,8 @@ C If there are enough items allow paging control via EKPAGE.
 
 C New profile name.
         TMP=PDBDESC(ITM)
-        H(1)='The description (up to 40 char) is provided as a way '
-        H(2)='to select a profile.  It helps to make it unique.'
         CALL EASKS(TMP,' Description ? ',
-     &    ' ',40,'new profile','profile descr',IER,2)
+     &    ' ',40,'new profile','profile descr',IER,nbhelp)
         PDBDESC(ITM)=TMP
         CALL USRMSG(' ',' ','-')
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(MVERT-MCTL+1))THEN
@@ -586,9 +575,15 @@ C EDEVENT: Edit details of a profile event.
 #include "esprdbfile.h"
 #include "profile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      character outs*124,H*72
+      character outs*124
       logical shiftnext
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDEVENT'  ! set for subroutine
 
 C << probably need to pass in the day type index as well >>
 
@@ -601,11 +596,10 @@ C Set notification of need to shift next period start to false
       call edisp(iuout,outs)
 
   11  IES=ICGS1(IPR,IFOC)
-      H(1)='An event may start between hours 0 and 23. '
-      H(2)=' '
-      H(3)='A cancel request leaves the model unchanged.'
+      helptopic='events_item_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(IES,outs,' start hour : ',
-     &    0,'F',23,'F',0,'start',IERI,3)
+     &    0,'F',23,'F',0,'start',IERI,nbhelp)
       if(ieri.eq.-3) return
 
 C Checks that need to be made on the start time: a) is it between
@@ -620,30 +614,26 @@ C not exactly the same as another start time.
       CALL USRMSG(' ',' ','-')
 
   12  IEF=ICGF1(IPR,IFOC)
-      H(1)='An event may finish  between hours 1 and 24.'
-      H(2)=' '
-      H(3)='A cancel request leaves the model unchanged.'
       CALL EASKI(IEF,outs,' finish hour: ',
-     &    IES,'F',24,'F',0,'finish',IERI,3)
+     &    IES,'F',24,'F',0,'finish',IERI,nbehlp)
       if(ieri.eq.-3) return
 
       if(IFOC.lt.NCG(IPR).and.IEF.gt.ICGS1(IPR,IFOC+1))then
         CALL EASKAB(' Finish time overlaps next event...',
-     &     ' ','respecify finish','shift next event start',IW,0)
+     &     ' ','respecify finish','shift next event start',
+     &     IW,nbhelp)
         if(IW.eq.1)goto 12
         shiftnext=.true.
       endif
       CALL USRMSG(' ',' ','-')
 
       EC=CGS1(IPR,IFOC)
-      H(1)='The first value is the percentage of sensible gain.'
       CALL EASKR(EC,' ',' First value (sensible) percentage ? ',
-     &   0.,'F',100.,'F',50.,'first value',IER,1)
+     &   0.,'F',100.,'F',50.,'first value',IER,nbhelp)
 
       EL=CGL1(IPR,IFOC)
-      H(1)='The second value is the percentage of latent gain.'
       CALL EASKR(EL,' ',' Second value (latent) percentage ? ',
-     &   0.,'F',100.,'F',50.,'first value',IER,1)
+     &   0.,'F',100.,'F',50.,'first value',IER,nbhelp)
 
       if(IER.ne.0)then
         CALL usrmsg('A problem was detected during input...',

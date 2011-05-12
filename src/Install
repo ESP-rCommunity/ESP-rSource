@@ -1885,6 +1885,8 @@ if [ "$install_training" = "yes" ]; then
      
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     cd ${SRCdir}/training/Temporal_Clm
+     $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
      cd ${SRCdir}
      echo " Done."
      echo -n "   - Updating climate databases in validation models..."
