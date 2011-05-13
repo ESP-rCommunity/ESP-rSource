@@ -10934,7 +10934,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *enditem
           call askok('Try again to find this vertex?',' ',ok,dok,2)
 *subroutine HCFMK
-*item HCFMK
+*item HCFMK zone_htc_overview
 'A zone heat transfer coefficient file holds directives'
 'instructing esp-r to either use a specific set of heat'
 'transfer coefficients (e.g. related to ceiling diffusers'
@@ -10944,7 +10944,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'file click on dereference. '
 *enditem
   245   CALL EASKSCMD(LTMP,'Zone conv regime file ?',
-*item HCFMK
+*item HCFMK zone_htc_expected
 'The file was not of the expected (heat transfer'
 'regime) and you should double check before you'
 'agree to overwrite it with hc regime data. '
@@ -10955,88 +10955,80 @@ For the purposes of ESP-r, the use of WIS is focused on the'
                 CALL ASKOK(outs,
 *item HCFMK
 'Answering yes will create a new file to hold the'
-'conv regime data. '
+'convective regime data. '
 ' '
 'A no answer will return without changing the model.'
 *enditem
             CALL ASKOK(
-*item HCFMK
-'A zone heat transfer coefficient file holds directives'
-'instructing esp-r to either use a specific set of heat'
-'transfer coefficients (e.g. related to ceiling diffusers'
-'or user supplied data for surfaces in a zone. '
-*enditem
-  246   CALL EASKSCMD(LTMP,'Zone conv regime file ?',
-*item HCFMK
+*item HCFMK zone_htc_menu
 'The choice of algorithm for calculating internal surface'
 'convection coefficients (int-hc) can significantly affect'
 'simulation results and can even impact design decisions.'
-'It is important to recognize that by default int-hc'
-'values are calculated using a buoyancy-flow relation. The'
-'facility implemented here allows you to drop this'
-'assumption and to calculate int-hc values in a more'
-'rigorous fashion.'
+'It is important to recognize that by default int-hc values'
+'are calculated using a buoyancy-flow relation. The facility'
+'implemented here allows you to drop this assumption and to'
+'calculate int-hc values in a more rigorous fashion.'
 ' '
-'The adaptive convection algorithm (ACA) implemented'
-'under options [a] through [n] controls the calculation'
-'of int-hc in a dynamic fashion. Based upon minimal data'
-'input, the ACA appraises a configuration to assign an'
-'appropriate set of int-hc correlation equations to each'
-'internal surface. Then as the simulation evolves, the'
-'ACA toggles between the int-hc equations in response to'
-'the prevailing convective regime.'
+'The adaptive convection algorithm (ACA) implemented under'
+'options [a] through [n] controls the calculation of int-hc'
+'in a dynamic fashion. Based upon minimal data input, the'
+'ACA appraises a configuration to assign an appropriate set'
+'of int-hc correlation equations to each internal surface.'
+'Then as the simulation evolves, the ACA toggles between the'
+'int-hc equations in response to the prevailing convective regime.'
 ' '
-'Choose the option that best describes the principle'
-'convection regime within the zone. You will be'
-'prompted for supplementary data in subsequent menus.'
+'Choose the option that best describes the principle convection'
+'regime within the zone. You will be prompted for supplementary'
+'data in subsequent menus.'
 ' '
-'Simulation time-steps of 15 minutes or less are'
-'recommended when this facility is used.'
+'Simulation time-steps of 15 minutes or less are recommended'
+'when this facility is used.'
 ' '
 'Options a-c are appropriate when convection in the zone'
-'is driven primarily by buoyancy resulting from surface-'
-'to-air temperature differences caused by in-floor'
-'heating, a heated wall panel, sun-patch or cold window.'
+'is driven primarily by buoyancy resulting from surface-to-air'
+'temperature differences caused by in-floor heating, a heated'
+'wall panel, sun-patch or cold window.'
 ' '
 'Options d-e are appropriate when convection is driven'
 'primarily by buoyancy resulting from a heating device'
 '(e.g. radiator, stove) located either undeer a window'
 'or at some other location in the zone.'
 ' '
-'Options f-g are specific for treating convection inside'
-'open vertical channels with bouyancy driven flow.'
-'The correlations apply to the vertical surfaces'
-'and operate all the time'
+'Options f-g are specific for treating convection inside open'
+'vertical channels with bouyancy driven flow. The correlations'
+'apply to the vertical surfaces and operate all the time'
 ' '
-'Options h-j are appropriate when convection is driven'
-'primarily by an air-handling system that supplies'
-'heated or cooled air to the zone through ceiling'
-'floor or wall-mounted diffusers. It should not be used'
-'when buoyancy is also a significant factor.'
+'Options h-j are appropriate when convection is driven primarily'
+'by an air-handling system that supplies heated or cooled air to'
+'the zone through ceiling floor or wall-mounted diffusers. It'
+'should not be used when buoyancy is also a significant factor.'
 ' '
-'Option k is appropriate when convection in the zone'
-'is driven primarily by a heating or cooling device that'
-'circulates air within the zone. There is no intentional'
-'supply or extract of air from the zone.'
+'Option k is appropriate when convection in the zone is driven'
+'primarily by a heating or cooling device that circulates air'
+'within the zone. There is no intentional supply or extract'
+'of air from the zone.'
 ' '
-'Options l-m are appropriate when convection in the zone'
-'is driven by both mechanical and buoyant forces. The'
-'mechanical forces are caused by an air handling system'
-'(AHU) that supplies heated or cooled air to the zone'
-'through ceiling, floor, or wall-mounted diffusers. The'
-'buoyant forces are caused by surface-to-air temperature'
-'differences. This option is preferred over the'
+'Options l-m are appropriate when convection in the zone is driven'
+'by both mechanical and buoyant forces. The mechanical forces are'
+'caused by an air handling system (AHU) that supplies heated or'
+'cooled air to the zone through ceiling, floor, or wall-mounted'
+'diffusers. The buoyant forces are caused by surface-to-air'
+'temperature differences. This option is preferred over the'
 '[air-based HVAC system] convective regime as it captures'
 'the combined influence of buoyant and forced effects.'
 *enditem
         CALL PHELPD('convective calculations',59,'-',0,0,IER)
 *subroutine EconvA
-*item EconvA
-'There are lots of options. You probably want to '
-'review the synopsis before selecting anything! '
+*item EconvA zone_htc_buoyancy_ok
+'The buoyancy choice is appropriate when convection in the zone'
+'is driven primarily by buoyancy resulting from'
+'surface-to-air temperature differences.'
+'  '
+'There are lots of options. You probably want to review the'
+'synopsis before selecting anything! '
 *enditem
       call askok('View a synopsis of Bouyancy-driven flow',
-*item EconvA
+*item EconvA htc_buoyancy_floor
 'This choice is appropriate when convection in the zone'
 'is driven primarily by buoyancy resulting from'
 'surface-to-air temperature differences.'
@@ -11067,15 +11059,21 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'references to the int-hc correlations.'
 *enditem
          CALL PHELPD('Cause of dT',28,'-',0,0,IER)
-*item EconvA
+*item EconvA htc_buoyancy_wall_panel
+'This choice is appropriate when convection in the zone'
+'is driven primarily by buoyancy resulting from'
+'surface-to-air temperature differences.'
+' '
 'Use option [heated wall panel] when you have defined a'
 'zone with surface(s) heated by flux injection into the'
 'panel construction or by flux injection into a zone'
 'which represents a panel heater. It is assumed that'
 'such a zone control is or will be defined.'
 ' '
-'You will be prompted for the surface(s) which are '
-'heated. '
+'You will be prompted for the surface(s) which are heated.'
+'The treatment for each wall depends on whether it is a'
+'heated surface.'
+'
 ' '
 'ESP-r models convection as follows: '
 '  heated walls: Awbi-Hatton heated wall eq when heat'
@@ -11098,12 +11096,15 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'references to the int-hc correlations.'
 *enditem
          CALL PHELPD('Cause of dT',32,'-',0,0,IER)
-*item EconvA
+*item EconvA htc_buoyancy_temp_diff
+'This choice is appropriate when convection in the zone'
+'is driven primarily by buoyancy resulting from'
+'surface-to-air temperature differences.'
+' '
 'The option [other temp diff] is the appropriate choice'
 'when the temperature diff is caused by a sun patch or'
 'by heat transfer through the fabric (e.g. a cold window '
 'surface). '
-' '
 ' '
 'ESP-r models convection as follows: '
 ' walls:   Alamdari-Hammond vertical eq (or sim toggle)'
@@ -11122,32 +11123,28 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'references to the int-hc correlations.'
 *enditem
          CALL PHELPD('Cause of dT',25,'-',0,0,IER)
-*item EconvA
-'Treatment for wall depends on whether it is a'
-'heated surface.'
-*enditem
-            CALL ASKOK(' ',outs,OK,dok,2)
 *subroutine EconvB
-*item EconvB
+*item EconvB zone_htc_device_ok
+'The heating device choice is appropriate when convection in the'
+'zone is driven primarily by buoyancy resulting from a heating'
+'device (e.g. radiator, stove) located within the zone.'
+' '
 'There are lots of options. You probably want to '
 'review the synopsis before selecting anything! '
 *enditem
       call askok('View a synopsis of Bouyancy-driven flow',
-*item EconvB
-'This choice is appropriate when convection in the zone'
-'is driven primarily by buoyancy resulting from'
-'a heating device (e.g. radiator, stove) located within'
-'the zone.'
+*item EconvB zone_htc_device_options
+'The heating device choice is appropriate when convection in the'
+'zone is driven primarily by buoyancy resulting from a heating'
+'device (e.g. radiator, stove) located within the zone.'
 ' '
-'Indicate whether the heating device is located beneath'
-'a window or not as this will influence the convective'
-'regime within the zone.'
+'Indicate whether the heating device is located beneath a window or'
+'not as this will influence the convective regime within the zone.'
 ' '
-'You will be prompted to indicate whether you want to'
-'apply Khalifa-s window correlations or alternate'
-'equations. As discussed in Section 5.2 of'
-'Beausoleil-Morrison (2000), it is suspected that'
-'Khalifa-s window correlations overpredict int-hc.'
+'You will be prompted to indicate whether you want to apply'
+'Khalifa-s window correlations or alternate equations. As discussed'
+'in Section 5.2 of Beausoleil-Morrison (2000), it is suspected'
+'that Khalifa-s window correlations overpredict int-hc.'
 ' '
 'For option [a] the ACA models convection as follows:'
 '  walls:   Khalifa eq 6 when heat on; Alamdari-Hammond'
@@ -11165,7 +11162,8 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 ' '
 'For option [b] the ACA models convection as follows:'
 '(you will be prompted to indicate which wall surfaces'
-'are adjacent to the heating device):'
+'are adjacent to the heating device as well as whether'
+'the surface is a window or wall):'
 '  walls close to heater:'
 '           Khalifa eq 5 when heat on; Alamdari-Hammond'
 '           vertical eq (or sim toggle) when heat off.'
@@ -11188,51 +11186,40 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'references to the int-hc correlations.'
 *enditem
         CALL PHELPD('Location of heater',52,'-',0,0,IER)
-*item EconvB
-'Surface transparent. Use Khalifa window correlation'
-'(yes) or wall correlation (no)? '
-*enditem
-              CALL ASKOK(outs,'(see help)',OK,dok,2)
-*item EconvB
-'Surface transparent. Use Khalifa window correlation'
-'(yes) or wall correlation (no)? '
-*enditem
-              CALL ASKOK(outs,'(see help)',OK,dok,2)
-*item EconvB
-'Surface is a wall. If it is close to the heater'
-'say yes if not say no.'
-*enditem
-              CALL ASKOK(outs,'(see help)',OK,dok,2)
 *subroutine EconvC
-*item EconvC
+*item EconvC zone_htc_mechanical_ok
+'The mechaical dominated choice is appropriate when convection in'
+'the zone is driven primarily by an air-handling system that'
+'supplies heated or cooled air to the zone through ceiling'
+'floor or wall-mounted diffusers.'
+'  '
 'There are lots of options. You probably want to '
 'review the synopsis before selecting anything! '
 *enditem
       call askok('View a synopsis of Mechanically-driven flow',
-*item EconvC
-'This choice is appropriate when convection in the zone'
-'is driven primarily by an air-handling system that'
+*item EconvC zone_htc_mechanical_opt
+'The mechaical dominated choice is appropriate when convection in'
+'the zone is driven primarily by an air-handling system that'
 'supplies heated or cooled air to the zone through ceiling'
-'floor or wall-mounted diffusers. It should not be used'
-'when buoyancy is also a significant factor. Buoyancy is'
-'often negligible for cooling situations, but usually'
-'important for heating situations. The [mixed flow]'
-'convective regime is generally recommended as an'
-'alternative to this choice as it can capture the combined'
-'influence of buoyant and forced effects.'
+'floor or wall-mounted diffusers.'
+'  '
+'It should not be used when buoyancy is also a significant factor.'
+'Buoyancy is often negligible for cooling situations, but usually'
+'important for heating situations. The [mixed flow] convective'
+'regime is recommended as an alternative to this choice as it'
+'can capture the combined influence of buoyant and forced effects.'
 ' '
-'Indicate the air-handling system type. This determines'
-'the temperature and flowrate of air introduced to the'
+'You are asked to indicate the air-handling system type. This'
+'determines the temperature and flowrate of air introduced to the'
 'zone and thus the convective regime.'
 ' '
-'NOTES: variable air volume system with constant volume'
-'heating. When the zone requires cooling, the supply'
-'air is chilled to a constant temp while the system'
-'adjusts the air flow to meet the cooling load. When the'
-'zone requires heat, the system supplies air at a fixed'
-'flow rate, equal to the min damper position of the VAV'
-'box. Reheat coils warm the air upstream of the diffuser'
-'to meet the zone-s heating load.'
+'NOTES: variable air volume system with constant volume heating.'
+'When the zone requires cooling, the supply air is chilled'
+'to a constant temp while the system adjusts the air flow'
+'to meet the cooling load. When the zone requires heat,'
+'the system supplies air at a fixed flow rate, equal to the'
+'minimum damper position of the VAV box. Reheat coils warm the'
+'air upstream of the diffuser to meet the zone-s heating load.'
 ' '
 'NOTE: variable air volume system with variable volume'
 'heating. It operates the same as VAV with CV in'
@@ -11248,7 +11235,6 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'delivers a constant flow of air, varying the temperature'
 'of the supply air in response to the zone load.'
 ' '
-' '
 'It is important to note that the description given here'
 'is used to simulate the convective regime induced in the'
 'zone by the HVAC air handling system. It does not model'
@@ -11258,54 +11244,52 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'the explicit plant data that describes the HVAC system.'
 *enditem
         CALL PHELPD('HVAC system type',46,'-',0,0,IER)
-*item EconvC
-'Enter the air flow rate supplied by the system to the'
-'zone. This is expressed in terms of zone air changes per'
+*item EconvC zone_htc_mech_sys_4
+'Enter the air flow rate supplied by the system to the zone.'
+'This is expressed in terms of zone air changes per hour.'
+'  '
+'You are asked for the following:'
+'  The minimum air temperature that can be supplied by the'
+'  system to the zone. This is the design temperature'
+'  for cooling and is measured at the diffuser.'
+'  '
+'  The maximum air temperature that can be supplied by the'
+'  system to the zone. This is the design temperature'
+'  for heating and is measured at the diffuser.'
+'  '
 *enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvC
-'Enter the minimum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for cooling and is measured at the diffuser.'
+        CALL EASKR(Tmin,outs,' ',
+        CALL EASKR(Tmax,outs,' ',
+*item EconvC zone_htc_mech_VAV_VT
+'You are asked for the following:'
+'  '
+'  The temperature at which air is supplied to the'
+'  zone when the system is cooling.'
+'  '
+'  The minimum air flow rate that the system can supply'
+'  to the zone. This is flow rate that occurs when the dampers'
+'  in the VAV box are at their minimum position. Thi is'
+'  expressed in terms of zone air changes per hour.'
+'  '
+'  The maximum air flow rate that the system can supply'
+'  to the zone. This is design flow rate and occurs when the'
+'  dampers in the VAV box are at their max position. This'
+'  is expressed in terms of zone air changes per hour.'
+'  '
+'  The maximum air temperature that can be supplied by the'
+'  system to the zone. This is the design temperature for'
+'  heating and is measured at the diffuser. Note that if the'
+'  zone-s heating load cannot be satisfied by this supply'
+'  air temp, it is assumed that any remaining heat is'
+'  supplied from another source (e.g. baseboard heaters)'
+'  which does not affect the flow regime.'
 *enditem
         CALL EASKR(Tmin,outs,' ',
-*item EconvC
-'Enter the maximum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for heating and is measured at the diffuser.'
-*enditem
-        CALL EASKR(Tmax,outs,' ',
-*item EconvC
-'Enter the temperature at which air is supplied to the'
-'zone when the system is cooling.'
-*enditem
-        CALL EASKR(Tmin,outs,' ',
-*item EconvC
-'Enter the minimum air flow rate that the system can'
-'supply to the zone. This is flow rate that occurs when'
-'the dampers in the VAV box are at their minimum'
-'position. This is expressed in terms of zone air'
-'changes per hour.'
-*enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvC
-'Enter the max air flow rate that the system can supply'
-'to the zone. This is design flow rate and occurs when the'
-'dampers in the VAV box are at their max position. This'
-'is expressed in terms of zone air changes per hour.'
-*enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvC
-'Enter the maximum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for heating and is measured at the diffuser. Note that'
-'if the zone-s heating load cannot be satisfied by this'
-'supply air temp, it is assumed that any remaining heat is'
-'supplied from another source (e.g. baseboard heaters)'
-'which does not affect the flow regime.'
-*enditem
         CALL EASKR(Tmax,outs,' ',
-*item EconvC
+*item EconvC zone_htc_mech_menu
 'Typically the air handling unit (AHU) conditions outdoor'
 'air. In this case, the conditioning of the outdoor air'
 'is performed by the AHUs heating or cooling coil.'
@@ -11331,7 +11315,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Use option [a] if you have no outdoor air in your model.'
 *enditem
         CALL PHELPD('Outdoor air treated as',23,'-',0,0,IER)
-*item EconvC
+*item EconvC zone_htc_mech_diffuers
 'The location of the supply diffusers affects the'
 'convective regime in the zone. Select the option'
 'that most closely describes the location of the'
@@ -11350,6 +11334,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Refer to Section 5.2 and in particular Table 5.1 of'
 'Beausoleil-Morrison (2000) for further details and'
 'references to the int-hc correlations.'
+'  '
 'Two alternate correlations are available to calculate'
 'int-hc values for AHUs that supply air through ceiling'
 'diffusers. Both were generated from the same'
@@ -11357,22 +11342,25 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'forms. Refer to Appendix C of Beausoleil-Morrison'
 '(2000) for a discussion of this topic.'
 *enditem
-          CALL PHELPD('Which correlations',6,'-',0,0,IER)
-*item EconvC
-*enditem
+        CALL PHELPD('Which correlations',6,'-',0,0,IER)
         CALL PHELPD('Diffuser location',18,'-',0,0,IER)
 *subroutine EconvD
-*item EconvD
+*item EconvD zone_htc_circ_fan_ok
+'The circulation fan choice is appropriate when convection in'
+'the zone is driven primarily by a heating or cooling device'
+'that circulates air within the zone and there is NO intentional'
+'supply or extract of air from the zone.'
+'  '
 'There are lots of options. You probably want to '
 'review the synopsis before selecting anything! '
 *enditem
       call askok(
-*item EconvD
-'This choice is appropriate when convection in the zone'
-'is driven primarily by a heating or cooling device that'
-'circulates air within the zone. There is no intentional'
+*item EconvD zone_htc_circ_fan_synop
+'The circulation fan choice is appropriate when convection in'
+'the zone is driven primarily by a heating or cooling device'
+'that circulates air within the zone and there is NO intentional'
 'supply or extract of air from the zone.'
-' '
+'  '
 'You will be prompted to indicate which surfaces are'
 'struck by the fan as this augments heat transfer.'
 ' '
@@ -11397,59 +11385,55 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '           (or sim toggle) when heat off.'
 *enditem
         CALL PHELPD('Outdoor air treated as',27,'-',0,0,IER)
-*item EconvD
-'Surface is oriented so it might get air from the '
-'fan heater. If this is the case say yes. '
-*enditem
-          CALL ASKOK(outs,'(see help)',OK,dok,2)
+        CALL ASKOK(outs,'(see help)',OK,dok,2)
 *subroutine EconvE
-*item EconvE
+*item EconvE zone_htc_mixed_ok
+'The mixed choice is appropriate when convection in the zone'
+'is driven by both mechanical and buoyant forces.'
+'  '
 'There are lots of options. You probably want to '
 'review the synopsis before selecting anything! '
 *enditem
       call askok(
-*item EconvE
-'This choice is appropriate when convection in the zone'
-'is driven by both mechanical and buoyant forces. The'
-'mechanical forces are caused by an air handling system'
-'(AHU) that supplies heated or cooled air to the zone'
-'through ceiling, floor, or wall-mounted diffusers. The'
-'buoyant forces are caused by surface-to-air temperature'
-'differences. This option is preferred over the'
-'[air-based HVAC system] convective regime as it captures'
+*item EconvE zone_htc_mixed_opts
+'The mixed choice is appropriate when convection in the zone'
+'is driven by both mechanical and buoyant forces. The mechanical'
+'forces are caused by an air handling system (AHU) that supplies'
+'heated or cooled air to the zone through ceiling, floor, or'
+'wall-mounted diffusers. The buoyant forces are caused by'
+'surface-to-air temperature differences. This option is preferred'
+'over the [air-based HVAC system] convective regime as it captures'
 'the combined influence of buoyant and forced effects.'
 ' '
-'Indicate the air-handling system type. This determines'
-'the temperature and flow rate of air introduced to the'
-'zone and thus the convective regime.'
+'Indicate the air-handling system type. This determines the'
+'temperature and flow rate of air introduced to the zone and'
+'thus the convective regime.'
 ' '
-'Option [VAV with CV heating] is a variable air volume'
-'system with constant vol heating.'
-'When the zone requires cooling, the supply air'
-'is chilled to a constant temp while the system'
-'adjusts the air flow to meet the cooling load. When the'
-'zone requires heat, the system supplies air at a fixed'
-'flow rate, equal to the min damper position of the VAV'
-'box. Reheat coils warm the air upstream of the diffuser'
-'to meet the zone-s heating load.'
+'Option [VAV with CV heating] is a variable air volume system'
+'with constant vol heating.'
+'  When the zone requires cooling, the supply air'
+'  is chilled to a constant temp while the system'
+'  adjusts the air flow to meet the cooling load. When the'
+'  zone requires heat, the system supplies air at a fixed'
+'  flow rate, equal to the min damper position of the VAV'
+'  box. Reheat coils warm the air upstream of the diffuser'
+'  to meet the zone-s heating load.'
 ' '
 'Option [VAV with VV heating] is a variable air volume'
-'system with variable volume heating. It operates the'
-'same as [VAV with CV heating] in cooling model. In '
-'heating mode, the dampers and reheat coils work in'
-'in conjunction to satisfy the heating load.'
-'At low heat loads the system delivers air at the low'
-'flowrate and the reheat coil heats the air to meet the'
-'load. If the reheat coil cannot meet the load,'
-'the damper opens to increase the flowrate.'
+'system with variable volume heating.'
+'  It operates the same as [VAV with CV heating] in cooling model.'
+'  In 'heating mode, the dampers and reheat coils work in'
+'  in conjunction to satisfy the heating load.'
+'  At low heat loads the system delivers air at the low'
+'  flowrate and the reheat coil heats the air to meet the'
+'  load. If the reheat coil cannot meet the load,'
+'  the damper opens to increase the flowrate.'
 ' '
-'Option [n] is a constant-volume variable-temperature'
-'system. It delivers a constant flow of air, varying the'
-'temperature of the supply air in response to the zone'
-' '
-'<< more comments to be added... >> '
-' '
-' '
+'Option [n] is a constant-volume variable-temperature system.'
+'  It delivers a constant flow of air, varying the temperature'
+'  of the supply air in response to the zone. You are asked for'
+'  the air flow rate in ac/h and the minimum air temperature'
+'  that can be supplied (at the diffuser) for cooling.
 ' '
 'It is important to note that the description given here'
 'is used to simulate the convective regime induced in the'
@@ -11469,54 +11453,53 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'references to the int-hc correlations.'
 *enditem
         CALL PHELPD('Mixed convection',39,'-',0,0,IER)
-*item EconvE
-'Enter the air flow rate supplied by the system to the'
-'zone. This is expressed in terms of zone air changes per'
+*item EconvE zone_htc_CVVT
+'The constant-volume variable-temperature system delivers'
+'a constant flow of air, varying the temperature of the'
+'supply air in response to the zone. You are asked for"'
+'  '
+'  the air flow rate in ac/h'
+'  '
+'  the minimum air temperature that can be supplied by'
+'  the system to the zone. This is the design temperature'
+'  for cooling and is measured at the diffuser.'
+'  '
+'  the maximum air temperature that can be supplied by the'
+'  system to the zone. This is the design temperature for'
+'  heating and is measured at the diffuser.
 *enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvE
-'Enter the minimum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for cooling and is measured at the diffuser.'
+        CALL EASKR(Tmin,outs,' ',
+        CALL EASKR(Tmax,outs,' ',
+*item EconvE zone_htc_VAVVT
+'You are asked for the following:'
+'  Supply air temperature (at diffuser) when the system is'
+'  cooling
+'  '
+'  The minimum air flow rate that the system can'
+'  supply to the zone. This is flow rate that occurs when'
+'  the dampers in the VAV box are at their minimum'
+'  position. This is expressed in terms of zone air'
+'  changes per hour.'
+'  '
+'  The max air flow rate that the system can supply'
+'  to the zone. This is design flow rate and occurs when the'
+'  dampers in the VAV box are at their max position. This'
+'  is expressed in terms of zone air changes per hour.'
+'  '
+'  The maximum air temperature that can be supplied by'
+'  the system to the zone. This is the design temperature'
+'  for heating and is measured at the diffuser. Note that'
+'  if the zone-s heating load cannot be satisfied by this'
+'  supply air temp, it is assumed that any remaining heat is'
+'  supplied from another source (e.g. baseboard heaters)'
+'  which does not affect the flow regime.'
 *enditem
         CALL EASKR(Tmin,outs,' ',
-*item EconvE
-'Enter the maximum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for heating and is measured at the diffuser.'
-*enditem
-        CALL EASKR(Tmax,outs,' ',
-*item EconvE
-'Enter the temperature at which air is supplied to the'
-'zone when the system is cooling.'
-*enditem
-        CALL EASKR(Tmin,outs,' ',
-*item EconvE
-'Enter the minimum air flow rate that the system can'
-'supply to the zone. This is flow rate that occurs when'
-'the dampers in the VAV box are at their minimum'
-'position. This is expressed in terms of zone air'
-'changes per hour.'
-*enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvE
-'Enter the max air flow rate that the system can supply'
-'to the zone. This is design flow rate and occurs when the'
-'dampers in the VAV box are at their max position. This'
-'is expressed in terms of zone air changes per hour.'
-*enditem
         CALL EASKR(airflow,outs,' ',
-*item EconvE
-'Enter the maximum air temperature that can be supplied'
-'by the system to the zone. This is the design temperature'
-'for heating and is measured at the diffuser. Note that'
-'if the zone-s heating load cannot be satisfied by this'
-'supply air temp, it is assumed that any remaining heat is'
-'supplied from another source (e.g. baseboard heaters)'
-'which does not affect the flow regime.'
-*enditem
         CALL EASKR(Tmax,outs,' ',
-*item EconvE
+*item EconvE zone_htc_ahu_outside
 'Typically the air handling unit (AHU) conditions outdoor'
 'air. In this case, the conditioning of the outdoor air'
 'is performed by the AHUs heating or cooling coil.'
@@ -11543,7 +11526,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *enditem
         CALL PHELPD('Outdoor air treated as',23,'-',0,0,IER)
 *subroutine EHCMAN
-*item EHCMAN
+*item EHCMAN zone_htc_manual_overview
 'The convection calculations file contains data for'
 'controlling the calculation of internal and/or external'
 'surface convection heat transfer for selected surfaces.'
@@ -11580,6 +11563,14 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Note that the [outside] surface of a mlc may be interior'
 'to the building, ie. it may face the air-point of an '
 'adjacent zone. '
+'  '
+' Option * to find heat transfer coefficients for an equivalent'
+'   m/s  you may supply an air velocity (m/s) and an APPROXIMATE'
+'   set of hc values will be returned.  The method used is as in'
+'   esp-r external hc calculations. '
+'   For comparison, typcial inside correlations based on '
+'   Alamdari & Hammond (assuming 1 degree C delta T and a'
+'   typical surface dimension of 2m.). '
 ' '
 'Remember to save any changes before you leave this menu.'
 ' '
@@ -11587,33 +11578,23 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'check to ensure the model).'
 *enditem
         CALL EASKI(ihcftp,' ',' Number of control periods ?',
-*item EHCMAN
-*enditem
         CALL EASKI(IN,' ',' Which control period ? ',
-*item EHCMAN
-*enditem
         CALL EASKI(IN,' ',' Delete which control period ? ',
-*item EHCMAN
-'To give guidence on setting hc values you may supply '
-'an air velocity (m/s) and an APPROXIMATE set of '
-'hc values will be returned.  The method used is as in'
-'esp-r external hc calculations. '
-' '
-'For comparison, typcial inside correlations based on '
-'Alamdari & Hammond (assuming 1 degree C delta T and a'
-'typical surface dimension of 2m.). '
-*enditem
         CALL EASKR(V1,' ','Air velocity (m/s) [see help message] : ',
 *item EHCMAN
 *enditem
         CALL PHELPD('conv coef data',37,'-',0,0,IER)
 *subroutine EconvF
-*item EconvF
+*item EconvF zone_htc_vert_chan_ok
+'This choice is appropriate for open vertical channels'
+'with flow driven primarily by buoyancy resulting from'
+'surface-to-air temperature differences.'
+' '
 'There are lots of options. You probably want to '
 'review the synopsis before selecting anything! '
 *enditem
       call askok('View a synopsis of Bouyancy-driven flow in open ',
-*item EconvF
+*item EconvF zone_htc_vert_chan_data
 'This choice is appropriate for open vertical channels'
 'with flow driven primarily by buoyancy resulting from'
 'surface-to-air temperature differences.'
@@ -11626,23 +11607,19 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Bar-Cohen and Rosenhow is a generic correlation for    '
 'open vertical channels. See Fundamentals of Heat and '
 'Mass Transfer, Incroppera and DeWitt for more details. '
+'  '
+'For Molina or Bar-Cohen you are asked if the air enters from'
+'the outside or another zone. If the latter you will be asked'
+'to select which zone.'
+'  '
+'For Bar-Cohen you are asked for the channel width (inside'
+'bane-to-pane distance) as well as the channel height.'
 *enditem
         CALL PHELPD('Channel correlations',12,'-',0,0,IER)
-*item EconvF
-*enditem
         CALL EASKAB(' ','Air enters channel from','Outdoor',
-*item EconvF
-*enditem
-          CALL ASKZONE(IAORZ,0,' Air enters channel from which zone?',
-*item EconvF
-'Enter the channel width'
-'(inside pane-to-pane distance)'
-*enditem
         CALL EASKR(CWIDTH,'Channel width ?',
-*item EconvF
-'Enter the channel height'
-*enditem
         CALL EASKR(CHEIGHT,'Channel height ?',
+        CALL << edited to this point >>
 *subroutine EPHCF
 *item EPHCF
 'Time must be between 0. and 24. '
