@@ -11621,50 +11621,48 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKR(CHEIGHT,'Channel height ?',
         CALL << edited to this point >>
 *subroutine EPHCF
-*item EPHCF
-'Time must be between 0. and 24. '
-*enditem
-      CALL EASKR(V1,' ',' Start time ? ',
-*item EPHCF
-'Time must be between 0. and 24. '
-*enditem
-      CALL EASKR(V2,' ',' End time ? ',
-*item EPHCF
+*item EPHCF zone_htc_control_edit
+'A number of user inputs are required to define a control period'
+'for control of heat transfer coefficients:
+'  '
+'  The start and end of the control period where time is a real'
+'  number between 0. and 24. '
+'  '
 'Four [convection-calculation control] methods are'
 'supported: '
 ' '
 'fixed coefficients - allows coefficients to be specified '
-'for each surface (interior and exterior to the building).'
+'  for each surface (interior and exterior to the building).'
+'  This data is usually taken from measurements. If you enter'
+'  a -1 then the default calculated values will be used for the'
+'  surface.
 ' '
 'fixed correlations - allows you to specify a correlation '
-'to use for each surface (only applicable for interior '
-'surfaces). This could allow, for example, the use of'
-'the Alamdari & Hammond correlations for a wall, while '
-'using one of the Khalifa & Marshall correlations for a '
-'window. '
+'  to use for each surface (only applicable for interior '
+'  surfaces). This could allow, for example, the use of'
+'  the Alamdari & Hammond correlations for a wall, while '
+'  using one of the Khalifa & Marshall correlations for a '
+'  window. '
 ' '
 'adaptive - allows adaptive control of the calculations '
-'(only applicable for interior surfaces). '
+'  (only applicable for interior surfaces). '
 ' '
 'CEN - supports CEN standard coefficient regimes or'
-'regimes which are similar in approach. '
+'  regimes which are similar in approach. '
 ' '
 'Note that the [outside] surface of a mlc may be interior'
 'to the building, ie. it may face the air-point of an '
 'adjacent zone. '
+'  '
+'If you select a specific surface to edit you have the option'
+'of changing the value to -1 to signal use of the default value.'
 *enditem
+      CALL EASKR(V1,' ',' Start time ? ',
+      CALL EASKR(V2,' ',' End time ? ',
       CALL EASKATOG('calculation control (see help):',' ',
-*item EPHCF
-'This data is usually from measurements. '
-'A -1 signals use of calculated values. '
-*enditem
-          CALL PHELPD('conv coef data',2,'-',0,0,IER)
-*item EPHCF
-'This data is usually from measurements. '
-'A -1 signals use of calculated values. '
-*enditem
-          CALL EASKS(SN,outs,'inside, outside?',12,' -1.0 -1.0',
-*item EPHCF
+      CALL PHELPD('conv coef data',2,'-',0,0,IER)
+      CALL EASKS(SN,outs,'inside, outside?',12,' -1.0 -1.0',
+*item EPHCF zone_htc_correlation_edit
 'A number of empirical correlations and fixed values, '
 'extracted from the following sources, are supported: '
 ' '
@@ -11726,10 +11724,8 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'surfaces exterior to the building will be ignored. '
 *enditem
           CALL EASKI(IH,outs,' (-1.= simulation toggle = default) ? ',
-*item EPHCF
-*enditem
           CALL EASKI(IH,outs,' (-1.= simulation toggle = default) ? ',
-*item EPHCF
+*item EPHCF zone_htc_adaptive_edit
 'It is possible for the convection calculations to '
 '[adapt] as the simulation progresses.  You must assign '
 'a [control law] for each interior surface, which '
@@ -11754,7 +11750,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'A cancel leaves the current control law unchanged.'
 *enditem
           CALL EASKI(Ilaw,outs,' (99=no control for this surface)',
-*item EPHCF
+*item EPHCF zone_htc_adaptive_c1
 'Correlation for ON = correlation to use when plant'
 'is heating zone. '
 ' '
@@ -11770,7 +11766,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'based on the simulation toggle. '
 *enditem
   102       CALL EASKS(stuff,' correlation indices',
-*item EPHCF
+*item EPHCF zone_htc_adaptive_sim
 'It is possible for the convection calculations to '
 '[adapt] as the simulation progresses.  You must assign '
 'a [control law] for each interior surface, which '
@@ -11795,32 +11791,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'A cancel leaves the current control law unchanged.'
 *enditem
           CALL EASKI(Ilaw,outs,' (99=no control for this surface)',
-*item EPHCF
-'Correlation for ON = correlation to use when plant '
-'is heating zone. '
-' '
-'Correlation for OFF = correlation to use when zone '
-'is unheated. '
-' '
-'Each correlation is identified by an index.  Refer '
-'to /usr/esru/src/esp-r/esrubld/convect.F, '
-'subroutine HTBUOY, where the index numbers are '
-'assigned to ICOR. '
-' '
-'-1 indicates that a correlation will be chosen '
-'based on the simulation toggle. '
-*enditem
-  103       CALL EASKS(stuff,' correlation for ON',
-*item EPHCF
-'Default values are: '
-' heat flow upwards (floor/ceiling/sloped) 5.0'
-' heat flow downwards (floor/ceiling/sloped) 0.7'
-' heat flow at walls (inside/partition side/) 2.5'
-' heat flow at otherside exterior 8.0 (4+4v) where'
-'  v is assumed to be 1m/s'
-*enditem
-          CALL ASKOK('This is probably your initial description for',
-*item EPHCF
+*item EPHCF zone_htc_cen_default
 'CEN standards impose specific hc values for surfaces'
 'facing specific directions and if the surface is a '
 'floor or ceiling the direction of heat flow is taken'
@@ -11848,51 +11819,20 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'in this case you would need to edit the standard '
 'value of 8.0. '
 *enditem
-            CALL ASKOK('The base and top surfaces of the room have',
-*item EPHCF
-*enditem
+          CALL ASKOK('This is probably your initial description for',
+          CALL ASKOK('The base and top surfaces of the room have',
           CALL PHELPD('CEN conv coef data',20,'-',0,0,IER)
-*item EPHCF
-*enditem
-          CALL EASKSUR(IZ,IS,'A','Select surface for base of room.',
-*item EPHCF
-*enditem
-          CALL EASKSUR(IZ,IS,'A','Select surface for top of room.',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for upwards heat flow at floors?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for downwards heat flow at floors?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at outside (exterior) floors?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for upwards heat flow at ceilings?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for downwards heat flow at ceilings?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at outside (exterior) ceilings?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for upwards heat flow at sloped?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc for downwards heat flow at sloped?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at outside (exterior) sloped?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at inside face of walls?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at other (partition) face of walls?',
-*item EPHCF
-*enditem
           CALL EASKR(V1,' ','Hc at outside (exterior) walls?',
 *subroutine HVACGIN
 *item HVACGIN
