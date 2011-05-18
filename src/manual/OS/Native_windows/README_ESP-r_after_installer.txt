@@ -18,7 +18,7 @@ The best way to browse or work with a existing model is to find the 'cfg' folder
 
 If you have trouble starting ESP-r...
 
-The installer updates the system 'path' environment variables so that the various ESP-r modules can be found. If ESP-r modules do not start you might need to get your friendly IT guru to look in the system environment variables to include C:\Esru\esp-r\bin as well as C:\GTK\bin
+The installer updates the system 'path' environment variables so that the various ESP-r modules can be found. If ESP-r modules do not start you might need to get your friendly IT guru to look in the system environment variables to include C:\Esru\esp-r\bin.
 
 Learning how to use ESP-r....
 
