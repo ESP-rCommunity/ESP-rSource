@@ -1,5 +1,5 @@
 # materials db defined in ../dbs/north_american.materialdb.a
-   22    #  number of classifications
+   21    #  number of classifications
 # class|no elements|description
     1   10   Brick
     1   Paviour brick
@@ -510,5 +510,3 @@
         0.798,    1.000,    1.000,  0.900,  0.500,     10.000
   406   TestSpectralDataSet
         0.798,    1.000,    1.000,  0.900,  0.500,     10.000
-# class|no elements|description
-   22    0   EMPTY
