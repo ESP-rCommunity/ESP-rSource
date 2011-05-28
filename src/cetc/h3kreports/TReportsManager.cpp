@@ -876,7 +876,7 @@ void TReportsManager::OutputXMLSummary(  const std::string& outFilePath )
 }
 
 /*
- * Ouptput Dictionary simply dumps a listing of all valid tags
+ * Output Dictionary simply dumps a listing of all valid tags
  * encountered during a simulation run.
  *
  */
@@ -897,12 +897,13 @@ bool TReportsManager::OutputDictionary( const std::string& outFilePath )
     dictionaryFile.open(outFilePath.c_str());
 
     for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      dictionaryFile << trim(pos->first) << ":\n\n";
-      dictionaryFile << "     "
+      dictionaryFile << "\""
+                     << trim(pos->first)
+                     << "\",\""
                      << pos->second.RetrieveMeta("description")
-                     << " "
+                     << "\",\""
                      << pos->second.RetrieveMeta("units")
-                     << "\n\n";
+                     << "\"\n";
     }
     dictionaryFile.close();
   }

@@ -925,20 +925,26 @@ C restore last one.
 C Don't use correlation if artificial emissivity used (>1)
         IF(ABS(QELWF(I)).GT.495.0.AND.EE(ICOMP,I).LE.1.)THEN
           call zsid(icomp,I,ZSDES,ZSDESC,ZSDESS)
-          write(outs,'(A,F9.1,A,A,A,I6)')
+          write(outs,'(A,F9.1,A,A,A,F5.1,A,I6)')
      &    ' MZELWE: a longwave flux of',QELWF(I),
-     &    ' Watts has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
-     &    ' @ increment',NSINC
+     &    ' W/m^2 has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
+     &    ' (T=',TFC(ICOMP,I,1)+ZEROK,'K) @ increment',NSINC
           call edisp(iuout,outs)
-          write(outs,'(A)')
-     &    ' This is considered high and a correlation will be used.'
+          write(outs,'(A,F7.1,A,F5.1,A,F7.1,A,F5.1,A,F7.1,A,F5.1,A)')
+     &    '  Components: sky = ',QELWFK(I),' (T=',TSKY,
+     &    '), buildings = ',QELWFB(I),' (T=',TBLD(I),'), ground = ',
+     &    QELWFG(I),' (T=',TGRD,')'
           call edisp(iuout,outs)
-          write(outs,'(A,F7.1,A,F6.1,A,F6.1)')
-     &    ' <sky = ',QELWFK(I),' <buildings = ',QELWFB(I),
-     &    ' <ground = ',QELWFG(I)
-          call edisp(iuout,outs)
+
+!         CORRELATION?
           QELWF(I)=(3.0+1.7*VF)*(TF-TFC(ICOMP,I,1))
+
+          write(outs,'(A,F9.1,A)')
+     &    '  A correlation long wave flux value of',QELWF(I),
+     &    ' W/m^2 will be used instead.'
+          call edisp(iuout,outs)
         ENDIF
+
    49   QELWS(ICOMP,I)=QELWF(I)
         QELWB(ICOMP,I)=QELWFB(I)
         QELWK(ICOMP,I)=QELWFK(I)

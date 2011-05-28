@@ -3484,12 +3484,12 @@ C Save snow reflectivity information.
 
 C Pass time step ground reflectivity for XML output.
       call add_to_xml_reporting(groundrefl,
-     &  'Building/Ground_Reflectivity','units','dimensionless',
+     &  'climate/ground_reflectivity','units','dimensionless',
      &  'Reflectivity of the ground for solar radiation')
 
 C Pass snow depth to XML output.
       call add_to_xml_reporting(SNDEP,
-     &  'Climate/SnowDepth','units','cm',
+     &  'climate/snow_depth','units','cm',
      &  'Depth of the snow on the ground')
 
 C-----------------------------------------------------------------------

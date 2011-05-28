@@ -171,6 +171,7 @@ c-----for BASESIMP vs BASECALC ('999') types.
         fMaxSoilCond = 10.0     ! W/mK
         fMinWaterTable = 5.0    ! meter
         fMaxWaterTable = 20.0   ! meter
+
       ELSE                 ! set parameter windows on BASESIMP dimensions
         fMinFoundLength = 5.0   ! meter
         fMaxFoundLength = 100.0 ! meter
@@ -209,7 +210,7 @@ C BASESIMP correlations.
         goto 1000
       endif
       if( bsDEPT(icomp).gt.0.05 .and. bsDEPT(icomp).lt.0.65 ) then
-        t60='Slab-on-grade depth >0.05m or basement depth >0.65m '
+        t60='Slab-on-grade depth >0.05m or basement depth <0.65m '
         goto 1000
       endif
 
