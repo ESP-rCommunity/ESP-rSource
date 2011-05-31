@@ -19,27 +19,26 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ***************  MFSBLD
-C This file contains the following modules which are mfs's specific
-C counterparts to be used by bld and bps: MFLW2B
+C This file contains subroutine MFLW2B.
 
 C ************** MFLW2B 
-C Transfers mass flow results to the main energy simulation modules
-C by calculating building energy zone ventilation conductances (W/K)
+C Transfers network flow results to bps in the form of
+C zone ventilation conductances (W/K).
 
-C All common block variables are described in emfnetw.F
-C The main local variables in this subroutine are:
+C mfs variables are described in emfnetw.F.
+C The local variables used in this subroutine are as follows.
 C     AMFR   - air mass flow rate (kg/s); AMFR(I,J) is 'positive' air
-C              flow from node I to node J, ie we are only interested in
-C              receiving nodes; AMFR(J,J) is flow of outside air to
-C              node J. NB Node I assumed outside when: NDTYP(I)=2 and
-C              SUPNOD(I,2)=1 or when NDTYP(I)=3
-C     INDX   - holds pivoting information in case of LU-decomposition
-C     PCOF   - holds air mass balance related proportional coefficients
-C     TNDL   - (local) air temperature of each node in the network (C)
-C     XNOD   - water vapour content of each node in the network (kg/kg)
-C     TRHS   - right hand side vector of matrix eq PCOF . TNDL = TRHS
-C     XRHS   - right hand side vector of matrix eq PCOF . XNOD = XRHS
-C
+C              flow from node I to node J, i.e. only receiving nodes
+C              are considered; AMFR(J,J) is flow of outside to
+C              node J (node I is assumed outside when NDTYP(I)=2 and
+C              SUPNOD(I,2)=1; or when NDTYP(I)=3).
+C     INDX   - pivoting information in case of LU-decomposition.
+C     PCOF   - Jacobian matrix coefficients.
+C     TNDL   - temperature of each node in the network.
+C     XNOD   - water vapour content of each node in the network.
+C     TRHS   - right hand side vector of matrix equation: PCOF . TNDL = TRHS
+C     XRHS   - right hand side vector of matrix equation: PCOF . XNOD = XRHS
+
       SUBROUTINE MFLW2B
 
 #include "building.h"
@@ -61,13 +60,14 @@ C conductances to building domain
       COMMON/AfnToBldData/fAfnCondInfil,fAfnCondVent,iAfnIndex,
      &                    fAfnCondNorm, bAfnZoneActive,fZoneMassBalance
      
-      real fAfnCondInfil(MCOM)   
-      real fAfnCondVent(MCOM)
-      real fAfnCondNorm(MCOM)
+      real fAfnCondInfil(MCOM)	! Ventilation conductance (infiltration)
+      real fAfnCondVent(MCOM)	! Ventilation conductance (zone coupled)
+      real fAfnCondNorm(MCOM)	! fAfnCondVent(MCOM) after normalisation
+				! to external temperature.
       integer iAfnIndex(MCOM)
       logical bAfnZoneActive(MCOM)
       real fZoneMassBalance(MCOM,4)
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
@@ -101,68 +101,76 @@ C Hourly ventilation conductances and temperature of incoming air.
       REAL CVI,CVV,CVVM
 C      INTEGER IDAY,IDTY  ! uncomment if code near line 285 changes
 
-C Initialise AMFR to zero.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      logical znotair
+
+C Initialise AMFR.
       DO 12 JNOD=1,NNOD
         DO 10 INOD=1,NNOD
           AMFR(INOD,JNOD)=0.
    10   CONTINUE
    12 CONTINUE
 
-C Sum flows to each node; we are only interested in receiving nodes
-C of connections with fluid type = air.
+C Sum flows to each node; we are only interested in receiving zones
+C of connections with the same fluid type.
       DO 20 ICNN=1,NCNN
-      IF(INT(SUPCMP(ITPCON(ICNN),1)).NE.1) GOTO 20
-      IF(FLW1(ICNN).GT.0.) THEN
-        IDSND=NODPS(ICNN)
-        IDREC=NODNE(ICNN)
-      ELSE
-        IDSND=NODNE(ICNN)
-        IDREC=NODPS(ICNN)
-      END IF
-      IF((NDTYP(IDSND).EQ.2.AND.INT(SUPNOD(IDSND,2)).EQ.1)
-     &    .OR.NDTYP(IDSND).EQ.3) THEN
-        AMFR(IDREC,IDREC)=AMFR(IDREC,IDREC)+real(ABS(FLW1(ICNN)))
-      ELSE
-        AMFR(IDSND,IDREC)=AMFR(IDSND,IDREC)+real(ABS(FLW1(ICNN)))
-      END IF
-      IF(FLW2(ICNN).GT.0.) THEN
-        IDSND=NODPS(ICNN)
-        IDREC=NODNE(ICNN)
-      ELSE IF(FLW2(ICNN).LT.0.) THEN
-        IDSND=NODNE(ICNN)
-        IDREC=NODPS(ICNN)
-      ELSE
-        GOTO 20
-      END IF
-      IF((NDTYP(IDSND).EQ.2.AND.INT(SUPNOD(IDSND,2)).EQ.1)
-     &   .OR.NDTYP(IDSND).EQ.3) THEN
-        AMFR(IDREC,IDREC)=AMFR(IDREC,IDREC)+real(ABS(FLW2(ICNN)))
-      ELSE
-        AMFR(IDSND,IDREC)=AMFR(IDSND,IDREC)+real(ABS(FLW2(ICNN)))
-      END IF
+        if(znotair(ITPCON(ICNN)).and.
+     &     INT(SUPCMP(ITPCON(ICNN),1)).NE.2)goto 20
+        if(.not.znotair(ITPCON(ICNN)).and.
+     &     INT(SUPCMP(ITPCON(ICNN),1)).NE.1)goto 20
+        IF(FLW1(ICNN).GT.0.) THEN
+          IDSND=NODPS(ICNN)
+          IDREC=NODNE(ICNN)
+        ELSE
+          IDSND=NODNE(ICNN)
+          IDREC=NODPS(ICNN)
+        END IF
+        IF((NDTYP(IDSND).EQ.2.AND.INT(SUPNOD(IDSND,2)).EQ.1)
+     &      .OR.NDTYP(IDSND).EQ.3) THEN
+          AMFR(IDREC,IDREC)=AMFR(IDREC,IDREC)+real(ABS(FLW1(ICNN)))
+        ELSE
+          AMFR(IDSND,IDREC)=AMFR(IDSND,IDREC)+real(ABS(FLW1(ICNN)))
+        END IF
+        IF(FLW2(ICNN).GT.0.) THEN
+          IDSND=NODPS(ICNN)
+          IDREC=NODNE(ICNN)
+        ELSE IF(FLW2(ICNN).LT.0.) THEN
+          IDSND=NODNE(ICNN)
+          IDREC=NODPS(ICNN)
+        ELSE
+          GOTO 20
+        END IF
+        IF((NDTYP(IDSND).EQ.2.AND.INT(SUPNOD(IDSND,2)).EQ.1)
+     &     .OR.NDTYP(IDSND).EQ.3) THEN
+          AMFR(IDREC,IDREC)=AMFR(IDREC,IDREC)+real(ABS(FLW2(ICNN)))
+        ELSE
+          AMFR(IDSND,IDREC)=AMFR(IDSND,IDREC)+real(ABS(FLW2(ICNN)))
+        END IF
    20 CONTINUE
 
-C To be able to calculate ventilation conductances and to fill zonal
-C air flow moisture balance info array, we first need to know the
-C the (local) air temperature TNDL and air moisture content XNOD at each
-C mass flow network node (ie. including nodes not corresponding to a
-C building zone). We assume that temperature and water vapour are
-C distributed through the network proportional to the air mass flows
-C (ie. disregarding any storage effects; which are handled by BMATSU/V
-C and MZVAPC resp.).
-C For each node, a linear equation can be set up:
+C To calculate the zone ventilation conductances and moisture balance,
+C we first need to know the nodal temperatures, TNDL, and moisture
+C content, XNOD, including network nodes not corresponding to a
+C building zone. We assume that temperature and water vapour are
+C distributed through the network in proportion to the mass flows
+C (i.e. disregarding any storage effects, which are handled by BMATSU/V
+C and MZVAPC respectively).
+
+C For each node, a linear equation is established:
 C TNDL(J) = SUM{ AMFR(I,J) TNDL(I)} / SUM{ AMFR(I,J)} and
 C XNOD(J) = SUM{ AMFR(I,J) XNOD(I)} / SUM{ AMFR(I,J)} or
 C TNDL(J) = temperature of ambient air or building zone
-C XNOD(J) = moisture content ambient air or building zone
+C XNOD(J) = moisture content of ambient air or building zone
 C which can be combined into the matrix equations:
 C PCOF.TNDL = TRHS  and  PCOF.XNOD = XRHS
-C Set up the proportional coefficients matrix PCOF and the right hand
-C sides TRHS and XRHS
-C NB In case of 'known' temperature nodes TNDL will be equal to TNOD
+C Set up the coefficients matrix PCOF and the right hand
+C sides, TRHS and XRHS (in the case of a 'known' temperature
+C node, TNDL will be equal to TNOD).
+
       DO 35 INOD=1,NNOD
 
-C First zeroize moisture content.
+C Zeroize arrays.
       XNOD(INOD)=0.0
       TRHS(INOD)=0.0
       XRHS(INOD)=0.0
@@ -170,7 +178,7 @@ C First zeroize moisture content.
          PCOF(INOD,JNOD)=0.0
    30 CONTINUE
 
-C If it is not an air node.
+C If not an air node.
       IF(NDFLD(INOD).NE.1) THEN
          PCOF(INOD,INOD)=DBLE(1.0)
          TRHS(INOD)=TNOD(INOD)
@@ -178,8 +186,7 @@ C If it is not an air node.
          GOTO 35
       END IF
 
-C If it is an ambient air node (known temperature
-C and moisture content).
+C If an ambient air node, temperature and moisture content known.
       call eclose(SUPNOD(INOD,2),1.00,0.0001,close)
       IF((NDTYP(INOD).EQ.2.AND.close).OR.NDTYP(INOD).EQ.3) THEN
          PCOF(INOD,INOD)=DBLE(1.0)
@@ -188,8 +195,8 @@ C and moisture content).
          GOTO 35
       END IF
 
-C If it is a boundary node but not an ambient air node (known
-C temperature; moisture content assumed zero).
+C If a boundary node, but not an ambient air node, then temperature
+C is known and moisture content is set to zero.
       call eclose(SUPNOD(INOD,2),0.00,0.0001,close)
       IF(NDTYP(INOD).EQ.2.AND.close) THEN
          PCOF(INOD,INOD)=DBLE(1.0)
@@ -198,8 +205,9 @@ C temperature; moisture content assumed zero).
          GOTO 35
       END IF
 
-C If this node corresponds to a building zone, set moisture content
-C equal to GFA (zone air water vapour content, future time-row).
+C If node corresponds to a building zone, set temperature to zone
+C temperature and moisture content to GFA (water vapour content
+C at the future time-row).
       DO 32 ICOMP=1,NCOMP
       IF(ICAAS(ICOMP).EQ.INOD) THEN
          PCOF(INOD,INOD)=DBLE(1.0)
@@ -209,8 +217,8 @@ C equal to GFA (zone air water vapour content, future time-row).
       END IF
    32 CONTINUE
 
-C If none of previous cases, establish PCOF and T/XRHS
-C from mass flows.
+C If none of the previous cases, establish PCOF and T/XRHS from mass
+C flows at last iteration.
       DO 34 JNOD=1,NNOD
       IF(AMFR(JNOD,INOD).GT.0.0) THEN
          PCOF(INOD,INOD)=PCOF(INOD,INOD)+AMFR(JNOD,INOD)
@@ -223,8 +231,8 @@ C from mass flows.
       END IF
    34 CONTINUE
 
-C It is possible that a node does not receive any air at all; if this
-C is the case, zeroise node temperature and moisture content.
+C It is possible that a node does not receive any mass flow; in this
+C case, zeroise node temperature and moisture content.
       call eclose(real(PCOF(INOD,INOD)),0.00,0.00001,close)
       IF(close) THEN
          PCOF(INOD,INOD)=DBLE(1.0)
@@ -233,8 +241,7 @@ C is the case, zeroise node temperature and moisture content.
       END IF
    35 CONTINUE
 
-C Now solve TNDL/XNOD from matrix equations
-C PCOF . TNDL/XNOD = T/XRHS
+C Now solve TNDL/XNOD from matrix equations PCOF . TNDL/XNOD = T/XRHS
       CALL LUDCMP(PCOF,NNOD,MNOD,INDX,D)
       CALL LUBKSB(PCOF,NNOD,MNOD,INDX,TRHS)
       CALL LUBKSB(PCOF,NNOD,MNOD,INDX,XRHS)
@@ -243,7 +250,7 @@ C PCOF . TNDL/XNOD = T/XRHS
       XNOD(INOD)=XRHS(INOD)
    36 CONTINUE
 
-C Start calculating infiltration and ventilation conductances
+C Calculate infiltration and ventilation conductances
 C depending on defined fluid flow network and (local) air
 C temperatures.
       DO 49 ICOMP=1,NCOMP
@@ -255,20 +262,21 @@ C temperatures.
           GOTO 49
         END IF
 
-C For the time being, assume air specific heat to be constant.
-        CP=1006.0
+C Assign fluid specific heat.
+        CP=1006.0			! air
+        if(znotair(ICOMP))CP=zfldC	! alternative zone fluid
 
 C Zone infiltration conductance.
         CVI=AMFR(JNOD,JNOD)*CP
 
 C Sum zone coupling ventilation conductances.
 C Normalise ventilation conductance to external
-C to facilitate subsequent matrix processing -
-C ie ventilation can then be treated as if it were
-C infiltration.  Also, when temperature of
-C sending node equals outside air then assume
-C this is also infiltration air (ie. adjust
-C infiltration load).
+C temperature to facilitate subsequent matrix 
+C processing, i.e. ventilation is treated as if
+C it were infiltration.  Also, when the temperature
+C of the sending node equals the outside temperature
+C then assume this is also infiltration by adjusting
+C the infiltration load.
         CVV=0.0
         CVVM=0.0
         DO 40 INOD=1,NNOD
@@ -282,7 +290,9 @@ C infiltration load).
             ENDIF
    40   CONTINUE
 
-!C Now overwrite appropriate COMMON block PREC5 variable
+C Following code no longer required because transfer of flows
+C to building-side equations is now via COMMON/AfnToBldData/.
+!C Now overwrite appropriate COMMON block PREC5 variable.
 !C Jump depending on day of week.
 !        IDAY=IDYP
 !        IF(IHRF.EQ.1)IDAY=IDYP+1
@@ -306,7 +316,8 @@ C Now overwrite appropriate COMMON block PREC5 variable
 !       ICCN(IDTY,ICOMP,IHRF)=0
 !       TIAN(IDTY,ICOMP,IHRF)=CVVM 
 
-C Store zone conductances in common for transfer to building. 
+C Store zone conductances in COMMON/AfnToBldData/ for transfer
+C to building. 
         fAfnCondInfil(iComp) = CVI
         fAfnCondVent(iComp)  = CVV
         iAfnIndex(iComp)     = 0
@@ -314,7 +325,7 @@ C Store zone conductances in common for transfer to building.
 
  49   CONTINUE
 
-C Now, zone by zone, check if there is a corresponding mass flow node
+C Check if there is a corresponding mass flow node
 C and if so fill the zone moisture balance array.
       DO 55 ICOMP=1,NCOMP
       fZoneMassBalance(ICOMP,1)=0.0
@@ -328,8 +339,8 @@ C Infiltration.
          fZoneMassBalance(ICOMP,1)=AMFR(INOD,INOD)
          fZoneMassBalance(ICOMP,4)=AMFR(INOD,INOD)
 
-C Node by node, check for intra-node air flows. ZCVNT added to help
-C in checking zone moisture balance info.
+C Check for intra-node fluid flows. ZCVNT is used elsewhere to help
+C in the checking of zone moisture balance information.
          DO 52 JNOD=1,NNOD
          IF(JNOD.NE.INOD.AND.AMFR(JNOD,INOD).GT.0.0) THEN
             ZCVENT(ICOMP)=ZCVENT(ICOMP)+AMFR(JNOD,INOD)
