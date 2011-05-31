@@ -128,12 +128,13 @@ public:
     bool bSummarySearchStatus;
     bool bLogSearchStatus;
     bool bStepSearchStatus;
-    
+    bool bDumpAllDataSearchStatus;    
 
     // Results of serches
     bool bSummarySearchResult;
     bool bLogSearchResult;
     bool bStepSearchResult;
+    bool bDumpAllDataSearchResult;
 
 };
 
