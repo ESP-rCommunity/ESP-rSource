@@ -2491,11 +2491,10 @@ c to meet the load. Set part-load ratio to 1. in this case
 c Keep track of number of hours space is under cooled
             ihrs_under_cool(isys) = ihrs_under_cool(isys) + 1
 
-      write(iuout,*) 'ASHPC_PLR_PLF_LATENTLOAD: plr_heat_pump = '
-      write(iuout,*) store_plr, ' > 1'
-      write(iuout,*) 'AC does not have enough capacity to meet total'
-      write(iuout,*) 'cooling load. Need to increase total capacity of'
-      write(iuout,*) 'equipment'
+      write(iuout,*) 'ASHPC_PLR_PLF_LATENTLOAD: plr_heat_pump = ',
+     & store_plr, ' > 1.'
+      write(iuout,*) 'AC does not have enough capacity to meet total',
+     & ' cooling load. Need to increase total capacity of equipment.'
           endif
 
 c Set part load factor of heat pump

@@ -21,9 +21,10 @@
 #define DEBUG 0
 #define DEBUG_1 0
 
-#define SUMMARY 0
-#define LOG     1
-#define STEP    2
+#define SUMMARY     0
+#define LOG         1
+#define STEP        2
+#define DUMPALLDATA 3
 
 
 using namespace std;
@@ -291,14 +292,14 @@ void add_to_xml_reporting__(float* value,
                         int sDescriptionLength)
 {
    std::string varName =std::string(sVarName, sVarNameLength);
-   std::string metaName =std::string(sMetaName, sMetaNameLength);
-   std::string metaValue =std::string(sMetaValue, sMetaValueLength);
-   std::string metaDesc =std::string(sDescription, sDescriptionLength);
-   // Note: SetMeta does not need to be called with every report. Improvements
-   // possible!
-   
-   TReportsManager::Instance()->SetMeta(varName, metaName, metaValue);
-   TReportsManager::Instance()->SetMeta(varName, "description", metaDesc);
+
+   // Save meta items and do not convert to std strings here to avoid
+   // computational overhead. These items are retrieved in function 
+   // TReportsManager::SearchVars only once per varialbe. The meta data
+   // is then converted to std::strings and then pushed to the m_metadata
+   // storage map using function TReportsManager::SetMeta.
+   TReportsManager::Instance()->SaveMetaItems( sMetaName,sMetaValue,sDescription,sMetaNameLength,sMetaValueLength,sDescriptionLength);  
+
    TReportsManager::Instance()->Report(varName, *value);
 
   }
@@ -876,7 +877,7 @@ void TReportsManager::OutputXMLSummary(  const std::string& outFilePath )
 }
 
 /*
- * Ouptput Dictionary simply dumps a listing of all valid tags
+ * Output Dictionary simply dumps a listing of all valid tags
  * encountered during a simulation run.
  *
  */
@@ -897,12 +898,13 @@ bool TReportsManager::OutputDictionary( const std::string& outFilePath )
     dictionaryFile.open(outFilePath.c_str());
 
     for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      dictionaryFile << trim(pos->first) << ":\n\n";
-      dictionaryFile << "     "
+      dictionaryFile << "\""
+                     << trim(pos->first)
+                     << "\",\""
                      << pos->second.RetrieveMeta("description")
-                     << " "
+                     << "\",\""
                      << pos->second.RetrieveMeta("units")
-                     << "\n\n";
+                     << "\"\n";
     }
     dictionaryFile.close();
   }
@@ -1546,35 +1548,42 @@ bool TReportsManager::SearchVars( const std::vector<std::string>& txtlist,
 
   bool result;
 
-  // If all data has been requested, return *match*
-  if ( bDumpEverything ){
+  // Check if search has been performed perviously
+  if ( ! Variable.QuerySearchStatus(mode) ){
 
-    return true;
-
-  }else{
-
-    // Check if search has been performed perviously
-    if ( ! Variable.QuerySearchStatus(mode) ){
-
-      // run search
+    // run search
+    if(bDumpEverything){// If all data has been requested, return *match*
+      result = true;
+    }
+    else{
       result = testForMatch( txtlist,  trim(search_text));
-
-      // Save search result to ensure that we don't
-      // have to run test-for-match again for this
-      // variable!
-
-      // update variable result
-      Variable.UpdateSearchResult( mode, result);
-
-      // Update search status
-      Variable.UpdateSearchStatus( mode, true);
-
     }
 
-    // return result
-    return Variable.QuerySearchResult(mode);
+    // Save search result to ensure that we don't
+    // have to run test-for-match again for this
+    // variable!
+
+    // update variable result
+    Variable.UpdateSearchResult( mode, result);
+
+    // Update search status
+    Variable.UpdateSearchStatus( mode, true);
+
+    // If processing variable the first time, set the meta data (units and description).
+    // Now the saved meta data passed by add_to_xml_reporting is converted to 
+    // std::strings so that it can be pushed onto the storage map using the SetMeta
+    // function. This approach makes use of the existing search functionality and 
+    // results in a 35-40% runtime reduction compared to the previous method. 
+    std::string metaName =std::string(sMetaName_sv, sMetaNameLength_sv);
+    std::string metaValue =std::string(sMetaValue_sv, sMetaValueLength_sv);
+    std::string metaDesc =std::string(sDescription_sv, sDescriptionLength_sv);               
+    SetMeta(search_text, metaName, metaValue);
+    SetMeta(search_text, "description", metaDesc);
 
   }
+
+  // return result
+  return Variable.QuerySearchResult(mode);
 
 }
 
@@ -1589,16 +1598,43 @@ bool TReportsManager::SearchAllVars(const std::vector<std::string>& txtlist1,
                                     const std::string& search_text,
                                     TVariableData& Variable){
 
-  if ( SearchVars(txtlist1, search_text, Variable, LOG )){
-    return true;
+  if ( bDumpEverything ){
+    return SearchVars(m_dummy_list, search_text, Variable, DUMPALLDATA);
   }
-  if ( SearchVars(txtlist2, search_text, Variable, STEP  )){
-    return true;
-  }
-  if ( SearchVars(txtlist3, search_text, Variable, SUMMARY )){
-    return true;
+  else{
+
+    if ( SearchVars(txtlist1, search_text, Variable, LOG )){
+      return true;
+    }
+    if ( SearchVars(txtlist2, search_text, Variable, STEP  )){
+      return true;
+    }
+    if ( SearchVars(txtlist3, search_text, Variable, SUMMARY )){
+      return true;
+    }
   }
   return false;
+}
+
+/**
+ * Save meta data passed from add_to_xml_reporting call
+ *
+ */
+void TReportsManager::SaveMetaItems( char* sMetaName,
+                        char* sMetaValue,
+                        char* sDescription,
+                        int sMetaNameLength,
+                        int sMetaValueLength,
+                        int sDescriptionLength)
+{
+      sMetaName_sv          = sMetaName;
+      sMetaValue_sv         = sMetaValue;
+      sDescription_sv       = sDescription;	
+      sMetaNameLength_sv    = sMetaNameLength;
+      sMetaValueLength_sv   = sMetaValueLength;
+      sDescriptionLength_sv = sDescriptionLength;
+
+      return;
 }
 
 /**
