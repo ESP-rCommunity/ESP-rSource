@@ -1832,7 +1832,6 @@ C << should mode Z be visible when user first enters flow facility? >>
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
@@ -1880,7 +1879,7 @@ C associated with the largest ventilation rate.
       LOGICAL MODIFY,MODLEN,MODBND,XST
       logical closevz,closeiz,close,foundit
       character NDNAM*12, outs*124, MODE*1
-      character*72 LAPROB,H
+      character LAPROB*72
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 
 C Variables to keep track of the component index of the standard
@@ -1889,9 +1888,18 @@ C components needed for a network equivalent of zone operations.
       integer gr02forcurrent,gr04forcurrent,gr06forcurrent
       integer nodeforcurrent,IGN
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFNAUTO'  ! set for subroutine
+
       IF(MODE.EQ.'N')THEN
 
 C Auto generate internal nodes based on zone names and volumes.
+        helptopic='flow_auto_generate_int'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTS,'(A)') 
      &    'Which zones to include in the fluid flow network?'
         IZN=NCOMP
@@ -1900,8 +1908,8 @@ C Clear zone->node mapping
         DO 7 ICZ=1,IZN
           ICAAS(ICZ)=0
   7     CONTINUE
-        H(1)='Select the zones to be included in the flow network.'
-        CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',IER,1)
+        CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',
+     &    IER,nbhelp)
    
         IF(IZN.EQ.0)THEN
           CALL USRMSG('No zones selected, returning.',' ','W')
@@ -2006,7 +2014,7 @@ C Ask if the user wants a connection between these two zones.
      &          NDNAM(ICAAS(IC1(ICN))),' and ',
      &          NDNAM(ICAAS(IC2(ICN)))
               CALL EASKABC(OUTS,'Make this a fluid flow link?',
-     &          'Yes','No','Exit auto-connect',IOPT,0)
+     &          'Yes','No','Exit auto-connect',IOPT,nbhelp)
               IF(IOPT.EQ.1)THEN
                 IFCN=NCNN+1
                 NODPS(IFCN)=ICAAS(IC1(ICN))
@@ -2082,8 +2090,8 @@ C Clear zone->node mapping
           ICAAS(ICZ)=0
  27     CONTINUE
         WRITE(OUTS,'(A)') 'Which zones to include?'
-        H(1)='Select the zones to be included in the flow network.'
-        CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',IER,1)
+        CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',
+     &    IER,nbhelp)
    
         IF(IZN.EQ.0)THEN
           CALL USRMSG('No zones were selected. Returning...',' ','W')

@@ -13070,19 +13070,25 @@ c              call askok(outs,
         CALL EASKR(CF4,' ',' z0 for meteo site [~ 1.0]: ',
         CALL EASKR(CF5,' ',' d for meteo site [~ 0.15]  : ',
 *subroutine MFNAUTO
-*item MFNAUTO
-'Select the zones to be included in the flow network.'
+*item MFNAUTO flow_auto_generate_int
+'Auto generation of flow networks looks in zones nominated by the'
+'user and creates equivalent flow nodes (name volume and height) are'
+'taken from the zone inforation.'
+'  '
+'The other mode of auto generation looks for partitions between'
+'zones (walls, ceilings, floors, doors) which might be locations'
+'of flow connections.  You are asked to confirm each of the'
+'potential linkage points.  If your model has lots of partitions'
+'but few connections between zones you may not want to use the'
+'auto generate facility.'
+'  '
+Another mode is to scan the zone operations file and to compose'
+'equivalent flow components which will induce the same flow as'
+'the operations infiltration and ventilation descriptions.'
+'  '
 *enditem
         CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',IER,1)
-*item MFNAUTO
-*enditem
-              CALL EASKABC(OUTS,'Make this a fluid flow link?',
-*item MFNAUTO
-*enditem
-                CALL ASKRCMP('Select connecting component:','-',IS,IER)
-*item MFNAUTO
-'Select the zones to be included in the flow network.'
-*enditem
+        CALL EASKABC(OUTS,'Make this a fluid flow link?',
         CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',IER,1)
 *subroutine MF010I
 *item MF010I
