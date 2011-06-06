@@ -11835,7 +11835,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
           CALL EASKR(V1,' ','Hc at other (partition) face of walls?',
           CALL EASKR(V1,' ','Hc at outside (exterior) walls?',
 *subroutine HVACGIN
-*item HVACGIN
+*item HVACGIN zone_hvac_file
 'A hvac file holds the definition for an idealized      '
 'building hvac system, which can supply the building    '
 'with heating, cooling, and/or ventilation.             '
@@ -11845,130 +11845,57 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'project [hvac] folder. If you do not select one then it'
 'is assumed that you do not want an hvac system.        '
 'If you cancel then nothing will be changed.            '
-*enditem
-          CALL EASKS2CMD(def_hvacfile,'HVAC file? (suggested name)',' ',
-*item HVACGIN
-'A hvac file holds the definition for an idealized      '
-'building hvac system, which can supply the building    '
-'with heating, cooling, and/or ventilation.             '
-'The file is optional.                                  '
+'  '
 'The dereference option dereferences the hvac file from '
 'your model but does not delete it. Your may re-        '
 'establish this hvac by referencing the hvac file at a  '
-'later time.                                            '
-' '
-'The browse option presents a list of files in the      '
-'project [hvac] folder. If you do not select one then it'
-'is assumed that you do not want an hvac system.       '
-'If you cancel then nothing will be changed.           '
+'later point in time.'
+'  '
+'If you are creating a new hvac file you will be asked to'
+'specify the altitude of the site (needed to determine the'
+'density of the air) in metres.'
+'  '
+'You will also aske to specify whether there is an air'
+'conditioning unit in addition to a furnace.'
 *enditem
+          CALL EASKS2CMD(def_hvacfile,'HVAC file? (suggested name)',' ',
           CALL EASKS2CMD(def_hvacfile,'HVAC file? (see help)',
-*item HVACGIN
-*enditem
-            call EASKAB(' File not found.','Options:',
-*item HVACGIN
-*enditem
-            CALL EASKR(site_altitude,
-*item HVACGIN
-'Please select whether there is an air conditioning'
-'unit in addition to the furnace.'
-*enditem
-              call EASKABC('Furnace',' ','With A/C','Without A/C',
-*item HVACGIN
- 'Now entering options for associated a/c'
-*enditem
-              CALL PHELPD('Airconditioning',1,'-',0,0,ier)
-*item HVACGIN
-'Please select whether the ASHP is used for heating,'
- 'cooling, or both. You will have the option to add'
- 'a furnace backup in the next option'
+          call EASKAB(' File not found.','Options:',
+          CALL EASKR(site_altitude,
+          call EASKABC('Furnace',' ','With A/C','Without A/C',
+*item HVACGIN zone_hvac_ashp
+'Please select whether the ASHP is used for heating, cooling,'
+'or both. You will have the option to add a furnace backup.'
+'  '
+'If you reach the maximum number of hvac systems you will be asked'
+'to delete an existing system in order to add an additional system.'
 *enditem
               call EASKABCD('Please select unit use',' ','Heating',
-*item HVACGIN
- 'You have reached the maximum number of hvac '
- 'systems. Please delete an hvac system manually '
- 'if you would like to add another.'
-*enditem
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
-*item HVACGIN
- 'Please select whether there is a furnace backup'
- 'for the air source heat pump.'
-*enditem
-                call EASKABC('Select backup',' ','Furnace backup',
-*item HVACGIN
- 'You have reached the maximum number of hvac '
- 'systems. Please delete an hvac system manually '
- 'if you would like to add another.'
-*enditem
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
-*item HVACGIN
- 'If you did not choose heating & cooling'
- 'when you initially defined this system'
- 'Please exit this menu and choose either only'
- 'heating or cooling, and add in the second'
- 'system afterwards, otherwise another system '
- 'may be overwritten.'
+              CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+              call EASKABC('Select backup',' ','Furnace backup',
+              CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+*item HVACGIN zone_hvac_ashp_no_heat
+'If you did not choose heating & cooling when you initially'
+'defined this system. Please exit this menu and choose either only'
+'heating or cooling, and add in the second system afterwards,'
+'otherwise another system may be overwritten.'
 *enditem
                   CALL PHELPD('Possible Overwrite',2,'-',0,0,ier)
-*item HVACGIN
-*enditem
                   CALL EASKAB('', ' ','Continue (dangerous)', 'Go back',
-*item HVACGIN
-'Begin entering options for associated heating'
- 'cycle'
-*enditem
-                  CALL PHELPD('Heating Cycle',2,'-',0,0,ier)
-*item HVACGIN
-'Now entering options for cooling cycle'
-*enditem
-                  CALL PHELPD('Cooling Cycle',1,'-',0,0,ier)
-*item HVACGIN
-'Please select whether the GSHP is used for heating,'
-'cooling, or both. You will have the option to add a'
- 'furnace backup in the next option'
+*item HVACGIN zone_hvac_gshp
+'Please select whether the GSHP is used for heating, cooling or'
+'both. You will have the option to add a furnace backup.'
+'  '
+'If you reach the maximum number of hvac systems you will be asked'
+'to delete an existing system in order to add an additional system.'
 *enditem
               call EASKABCD('Please select unit use',' ','Heating',
-*item HVACGIN
- 'You have reached the maximum number of hvac '
- 'systems. Please delete an hvac system manually '
- 'if you would like to add another.'
-*enditem
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
-*item HVACGIN
- 'Please select whether there is a furnace backup'
- 'for the ground-source heat pump.'
-*enditem
-                call EASKABC('Select backup',' ','Furnace backup',
-*item HVACGIN
- 'You have reached the maximum number of hvac '
- 'systems. Please delete an hvac system manually '
- 'if you would like to add another.'
-*enditem
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
-*item HVACGIN
- 'If you did not choose heating & cooling'
- 'when you initially defined this system'
- 'Please exit this menu and choose either only'
- 'heating or cooling, and add in the second'
- 'system afterwards, otherwise another system '
- 'may be overwritten.'
-*enditem
-                  CALL PHELPD('Possible Overwrite',2,'-',0,0,ier)
-*item HVACGIN
-*enditem
-                  CALL EASKAB(' ', ' ','Continue (DANGEROUS! Eek!!!)',
-*item HVACGIN
-'Begin entering options for associated'
- 'heating cycle'
-*enditem
-                CALL PHELPD('Heating Cycle',2,'-',0,0,ier)
-*item HVACGIN
-'Begin entering options for associated'
- 'cooling cycle'
-*enditem
-                CALL PHELPD('Cooling Cycle',2,'-',0,0,ier)
+              CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+              call EASKABC('Select backup',' ','Furnace backup',
+              CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+              CALL EASKAB(' ', ' ','Continue (DANGEROUS! Eek!!!)',
 *subroutine HVAC_type
-*item HVAC_type
+*item HVAC_type zone_hvac_primary
 'Select the primary HVAC component - You will have the     '
 'option to add additional information in the next section. '
 '                                                          '
@@ -11984,487 +11911,409 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'Ground-source heat pump:                                  '
 'You can choose with or without furnace backup             '
 'in the next menu.                                         '
-'                                                          '
-'                                                          '
-'                                                          '
 *enditem
       CALL EPICKS(hvac_selections,hvac_choice,
 *subroutine FURNOPT
-*item FURNOPT
+*item FURNOPT zone_system_priority
+'If the priority has not been set you are asked to define'
+'the priority of the system:'
+' 1 default priority'
+' 2 backup'
 *enditem
         CALL EASKI(ipriority(i),'Specify the system priority',
-*item FURNOPT
- 'Select furnace type.  Only certain fuels can be matched'
- 'with each furnace type.  If a furnace has only one'
- 'acceptable fuel type, it will be assigned automatically'
- 'otherwise you will be presented with a list of fuel'
- 'options to choose from.'
+*item FURNOPT zone_furnace_type
+'Select furnace type.  Only certain fuels can be matched'
+'with each furnace type.  If a furnace has only one'
+'acceptable fuel type, it will be assigned automatically'
+'otherwise you will be presented with a list of fuel'
+'options to choose from.'
 *enditem
       CALL EPICKS(ipck,chosen_sys,' ','Select a furnace type:',30,
-*item FURNOPT
+*item FURNOPT zone_furnace_fuel_type
 'Not all furnace types work with each fuel type.'
- 'Electric'
- 'Electric forced-air.'
- ' '
- 'Natural gas or propane'
+'Electric'
+'Electric forced-air.'
+' '
+'Natural gas or propane'
 'Spark-iginition with and without damper,continuous'
 'pilot, condensing furnace, and induced draft.'
- ' '
+' '
 'Oil'
 'Flame retention head, flue vent damper,condensing'
- 'Mid efficiency, and oil furnace or boiler.'
- ' '
- 'Wood'
- 'Advanced air tight wood stove, catalytic'
- 'converter, wood furnace.'
+'Mid efficiency, and oil furnace or boiler.'
+' '
+'Wood'
+'Advanced air tight wood stove, catalytic'
+'converter, wood furnace.'
 *enditem
           CALL EPICKS(ipck, chosen_fuel, ' ','Select fuel type:',30,
-*item FURNOPT
- 'Please reenter a valid fuel type'
+*item FURNOPT zone_valid_fuel_type
+'Please reenter a valid fuel type'
 *enditem
-              CALL PHELPD('Incorrect combination', 1, '-',0,0, ier)
-*item FURNOPT
- 'Please reenter a valid fuel type'
-*enditem
+            CALL PHELPD('Incorrect combination', 1, '-',0,0, ier)
             CALL PHELPD('Incorrect combination', 1, '-',0,0, ier)
 *item FURNOPT
 *enditem
       CALL EASKI(num_sys_zones(i),' ',
-*item FURNOPT
- 'Enter the number of zones that the furnace system'
- 'serves. Your model may be split into several zones,'
- 'with different HVAC systems serving different zones.'
- 'Number of zones chosen must be equal to'
- 'or less than the number of zones in the model.'
- 'Once number of zones being supplied has been'
- 'picked, the fraction of supplied energy to each'
- 'zone must be stated.'
+*item FURNOPT zone_furnace_zones
+'Enter the number of zones that the furnace system'
+'serves. Your model may be split into several zones,'
+'with different HVAC systems serving different zones.'
+'  '
+'Note: the number of zones chosen must be equal to'
+'or less than the number of zones in the model.'
+'Once number of zones being supplied has been'
+'picked, the fraction of supplied energy to each'
+'zone must be stated.'
 *enditem
       CALL EPICKS(ival, sys_zone_number, ' ',
-*item FURNOPT
- 'Enter the fraction of the system capacity associated'
- 'with this zone.  The sum of the fractions to all zones'
- 'must be equal to 1'
+*item FURNOPT zone_furnace_frac
+'Enter the fraction of the system capacity associated'
+'with this zone.  The sum of the fractions to all zones'
+'must be equal to 1.'
+'  '
+'If fractions do not add to one you will be asked to re-enter'
+'the zone index and fractions.'
 *enditem
         CALL EASKR(sys_zone_cap_frac(i,k),
-*item FURNOPT
- 'Fractions must equal to one.  You will be redirected'
- 'to re-enter zone number and their respective'
- 'fractions.'
-*enditem
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
-*item FURNOPT
+        CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
+*item FURNOPT zone_furnace_capacity
+'Each system has a steady state capacity (W) up to 100000.'
+'  '
+'Each system also has an efficiency between 0. and 1.'
+'  '
+'A primary system should have the same fan mode as its backup system.'
 *enditem
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
-*item FURNOPT
- 'Enter the steady state efficiency of the system.'
-*enditem
       CALL EASKR(ss_efficiency(i), ' ',
-*item FURNOPT
- 'Primary system should have same fan mode as backup'
- 'system.'
-*enditem
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated',
-*item FURNOPT
- 'Enter the fan power of the system in Watts.'
- 'If -1 is entered, the power is estimated internally.'
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
+*item FURNOPT zone_sys_fan_cap
+'Enter the fan power of the system in Watts.'
+'If -1 is entered, the power is estimated internally.'
+'  '
+'If the fan is in continuous mode, fan power need to'
+'be included as internal gain in the ESP-r operations file.'
 *enditem
         CALL EASKR(fan_power(i), ' ', 'Fan power (W)', -1.,'F',1.E4,'F',
-*item FURNOPT
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
         CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
-*item FURNOPT
- 'Enter the draft fan power of the system in Watts.'
- 'If unknown, a selection of 75W is suggested.'
+*item FURNOPT zone_draft_fan_cap
+'Enter the draft fan power of the system in Watts.'
+'If unknown, a selection of 75W is suggested.'
 *enditem
         CALL EASKR(draft_fan_power(i), ' ', 'Draft fan power (W)', -1.,
-*item FURNOPT
- 'Enter the pilot power. If not known, 500W is suggested.'
+*item FURNOPT zone_furnace_pilot
+'Enter the pilot power. If not known, 500W is suggested.'
 *enditem
         CALL EASKR(pilot_power(i),' ','Pilot power (W)',0.1,'F',1000.,
-*item FURNOPT
- 'Specify whether there is a duct system associated'
- 'with the HVAC system.  This is not used now but the'
- 'value is needed.'
+*item FURNOPT zone_ducts_included
+'Specify whether there is a duct system associated'
+'with the HVAC system.  This is not used now but the'
+'value is needed.'
 *enditem
       CALL EASKI(iduct_sys_flag(i),'Specify if there is a duct system',
 *subroutine BASEBOARD_INPUTS
 *item BASEBOARD_INPUTS
- 'Select whether the baseboard system is a primary'
- 'system, or whether it serves as a backup system'
- 'in the zones.'
+'Select whether the baseboard system is a primary'
+'system, or whether it serves as a backup system'
+'in the zones.'
 *enditem
 C        CALL EASKI(ipriority(i),'Specify the system priority',
-*item BASEBOARD_INPUTS
- 'Enter the number of zones that the baseboard system'
- 'serves. Your model may be split into several zones,'
- 'with different HVAC systems serving different zones.'
+*item BASEBOARD_INPUTS zone_baseboard_data
+'Baseboard systems have a number of attributes. You will be'
+'asked for:'
+'  '
+'  The number of zones that the baseboard system serves.'
+'  Your model may be split into several zones, with different'
+'  HVAC systems serving different zones.'
+'  '
+'  The number of zones chosen must be equal to or less than'
+'  the number of zones in the model. Once number of zones being'
+'  supplied has been picked, the fraction of supplied energy to each'
+'  zone must be stated.'
+'  '
+'  You are asked for the fraction of the system capacity associated'
+   with each zone.  The sum of the fractions to all zones must'
+'  equal to 1.  If not you will be asked to re-enter the zones and'
+'  their fractions.'
+'  '
+'  The steady state capacity of the system (W) is needed.'
+'  '
+'  The steady state efficiency of the system (between 0. and 1.)'
+'  is needed.'
+'  '
+'  If the baseboard is a backup, this should be the same'
+'  as that for the primary system except when the primary'
+'  system has a fan and the baseboard has no fan.  In this'
+'  case, select no fan for the backup baseboard here, and'
+'  then choose auto or continuous mode for the primary system.'
+'  '
+'  The baseboard fan power of the system in Watts. If a'
+'  -1 is entered, the power is estimated internally.'
+'  If the fan is in continuous mode, fan power need to'
+'  be included as internal gain in the ESP-r operation file.'
+
 *enditem
       CALL EASKI(num_sys_zones(i),' ',
-*item BASEBOARD_INPUTS
- 'Number of zones chosen must be equal to'
- 'or less than the number of zones in the model.'
- 'Once number of zones being supplied has been'
- 'picked, the fraction of supplied energy to each'
- 'zone must be stated.'
-*enditem
       CALL EPICKS(ival, sys_zone_number, ' ',
-*item BASEBOARD_INPUTS
- 'Enter the fraction of the system capacity associated'
- 'with this zone.  The sum of the fractions to all zones'
- 'must be equal to 1'
-*enditem
-        CALL EASKR(sys_zone_cap_frac(i,k),
-*item BASEBOARD_INPUTS
- 'Fractions must equal to one.  You will be redirected'
- 'to reenter zone number and their respective'
- 'fractions.'
-*enditem
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
-*item BASEBOARD_INPUTS
- 'Enter the steady state capacity of the system in Watts.'
-*enditem
+      CALL EASKR(sys_zone_cap_frac(i,k),
+      CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
-*item BASEBOARD_INPUTS
- 'Enter the steady state efficiency of the system.'
-*enditem
       CALL EASKR(ss_efficiency(i),
-*item BASEBOARD_INPUTS
- 'If the baseboard is a backup, this should be the same'
- 'as that for the primary system except when the primary'
- 'system has a fan and the baseboard has no fan.  In this'
- 'case, select no fan for the backup baseboard here, and'
- 'then choose auto or continuous mode for the primary'
- 'system. '
-*enditem
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated',
-*item BASEBOARD_INPUTS
- 'Enter the fan power of the system in Watts.'
- 'If -1 is entered, the power is estimated internally.'
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL EASKR(fan_power(i), ' ', 'Fan power (W)',-1.,'F',1.E4,'F',
-*item BASEBOARD_INPUTS
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
+      CALL EASKR(fan_power(i), ' ', 'Fan power (W)',-1.,'F',1.E4,'F',
+      CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
 *subroutine HPHOT
-*item HPHOT
- 'Select whether the heat pump system is a primary'
- 'system, or whether it serves as a backup system'
- 'in the zones.'
+*item HPHOT zone_hvac_hp_primary
+'Select whether the heat pump system is a primary'
+'system, or whether it serves as a backup system'
+'in the zones.'
 *enditem
         CALL EASKI(ipriority(i),'Specify the system priority',
-*item HPHOT
+*item HPHOT zone_hvac_hp_poor
 'If the heating system is an air source heat pump, select'
- 'whether it is typical, good, or poor.'
+'whether it is typical, good, or poor.'
 *enditem
         CALL EASKABC(' ', 'Enter the heat pump unit type',
-*item HPHOT
- 'Enter the number of zones that the system'
- 'serves. Your model may be split into several zones,'
- 'with different HVAC systems serving different zones.'
+*item HPHOT zone_hvac_hp_zones
+'Enter the number of zones that the system'
+'serves. Your model may be split into several zones,'
+'with different HVAC systems serving different zones.'
+'  '
+'Note: the number of zones chosen must be equal to'
+'or less than the number of zones in the model.'
+'Once number of zones being supplied has been'
+'picked, the fraction of supplied energy to each'
+'zone must be stated.'
 *enditem
       CALL EASKI(num_sys_zones(i),' ',
-*item HPHOT
- 'Number of zones chosen must be equal to'
- 'or less than the number of zones in the model.'
- 'Once number of zones being supplied has been'
- 'picked, the fraction of supplied energy to each'
- 'zone must be stated.'
-*enditem
       CALL EPICKS(ival,sys_zone_number,'','Select zones being supplied',
-*item HPHOT
- 'Enter the fraction of the system capacity associated'
- 'with this zone.  The sum of the fractions to all zones'
- 'must be equal to 1'
+*item HPHOT zone_hvac_hp_zfrac
+'Enter the fraction of the system capacity associated'
+'with this zone.  The sum of the fractions to all zones'
+'must be equal to 1. If it does not you will be asked to'
+'reselect the zones and their fraction.'
 *enditem
         CALL EASKR(sys_zone_cap_frac(i,k),
-*item HPHOT
- 'Fractions must equal to one.  You will be redirected'
- 'to reenter zone number and their respective'
- 'fractions.'
-*enditem
           CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
-*item HPHOT
- 'Enter the steady state capacity of the system in Watts.'
+*item HPHOT zone_hvac_hp_data
+'Heat pumps have a number of attributes:
+' '
+'  steady state capacity of the system in Watts.'
+'  '
+'  COP (Max = 50)
+'  '
+'  Flow rate - if set < 0, the value is set internally'
+'  This is the flow rate that occurs during the actual'
+'  operation of the heat pump system.'
+'  '
+'  Flow rate at rated conditions. If < 0 the value is set'
+'  internally.'
+'  '
+'  Fan mode (no fan, automatic mode, continuous mode) which'
+'  should be the same for the primary and the backup.'
+'  '
+'  If the fan is automatic or continuous you must specify whether'
+'  the fan is positioned to 1) blow through or 2) draw through.'
+'  '
+'  If there is an automatic or continupus fan specify the'
+'  circulation fan power of the system in Watts.'
+'  If -1 is entered, the power is estimated internally.'
+'  If the fan is in continuous mode, fan power also needs to'
+'  be included as internal gain in the ESP-r opr file.'
+'  '
+'  The fan power for the outdoor evaporator of the heat pump is'
+'  also required (although not used while heating).'
+'  '
+'  In auto mode there is an fan power which, although not used'
+'  during heating is still a required value.'
+'  '
+'  Heat pumps fan position with repspect to the heat exchanger'
+'  during a ratings test are 1) blow through or 2) draw through.'
+'  '
+'  Also during the ratings test the circulation fan power will be'
+'  recorded. This is not used while heating but is a required value.'
+'  If the power is <0 then the value is set internally.'
 *enditem
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
-*item HPHOT
- 'Enter the heat pump COP'
- 'Max = 50'
-*enditem
       CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F',
-*item HPHOT
- 'If flow rate set < 0, value is set internally'
- 'This is the flow rate that occurs during the actual'
- 'operation of the heat pump system.'
-*enditem
       CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0.,
-*item HPHOT
- 'If flow rate set < 0, value is set internally'
-*enditem
       CALL EASKR(flow_rate_r(i),' ',
-*item HPHOT
- 'Primary system should have same fan mode as backup'
- 'system.'
-*enditem
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated',
-*item HPHOT
- 'Currently not used but value needed.'
- '1 - Blow through'
- '2 - Draw Through'
-*enditem
-        CALL EASKI(ifan_position(i),
-*item HPHOT
- 'Enter the circulation fan power of the system in Watts.'
- 'If -1 is entered, the power is estimated internally.'
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)',
-*item HPHOT
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
-*item HPHOT
- 'This is the fan for the outdoor evaporator of the heat'
- 'pump. Not used for ashp in heating but value needed.'
-*enditem
-        CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)',
-*item HPHOT
- 'This is the fan power associated with auto mode.'
- 'Not used for heat pump in heating but value needed.'
-*enditem
-        CALL EASKR(fan_power_auto(i),' ',
-*item HPHOT
- 'Currently not used but value needed.'
- '1 - Blow through'
- '2 - Draw Through'
- 'Position of circulation fan with respect to heat'
- 'exchanger (heating or cooling) during rating test'
-*enditem
-        CALL EASKI(ifan_position_r(i),
-*item HPHOT
- 'This is the circulation fan power during the rating'
- 'test. Not used for heat pump in heating but value'
- 'needed. If flow rate set < 0, value is set internally'
-*enditem
-        CALL EASKR(fan_power_r(i),' ',
-*item HPHOT
- 'Temperature Control'
- '1 - Balanced Point'
- '2 - Restricted'
- '3 - Unrestricted'
+      CALL EASKI(ifan_position(i),
+      CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)',
+      CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
+      CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)',
+      CALL EASKR(fan_power_auto(i),' ',
+      CALL EASKI(ifan_position_r(i),
+      CALL EASKR(fan_power_r(i),' ',
+*item HPHOT zone_hvac_hp_temp_ctl
+'Temperature Control'
+'  1 - Balanced Point'
+'  2 - Restricted (term to be defined)'
+'  3 - Unrestricted (term to be defined)'
+'  '
+'You are also aked for a cutoff temperature in degrees C.'
 *enditem
       CALL EASKI(itemp_control(i), 'Temperature Control',
-*item HPHOT
- 'Cutoff Temperature in C'
-*enditem
       CALL EASKR(cutoff_temp(i),' ','Cutoff T in C',-1., 'F', 50.,'F',
 *subroutine HPCOLD
-*item HPCOLD
- 'Select whether the heat pump system is a primary'
- 'system, or whether it serves as a backup system'
- 'in the zones.'
+*item HPCOLD zone_hvac_hp_primary
+'Select whether the heat pump system is a primary'
+'system, or whether it serves as a backup system'
+'in the zones.'
 *enditem
         CALL EASKI(ipriority(i),'Specify the system priority',
-*item HPCOLD
+*item HPCOLD zone_hvac_hp_poor
 'If the heating system is an air source heat pump, select'
- 'whether it is typical, good, or poor.'
+'whether it is typical, good, or poor.'
 *enditem
         CALL EASKABC(' ', 'Enter the heat pump unit type',
 *item HPCOLD
- 'Enter the number of zones that the system'
- 'serves. Your model may be split into several zones,'
- 'with different HVAC systems serving different zones.'
- 'Enter the number of zones that the heat pump system'
- 'serves. Your model may be split into several zones,'
- 'with different HVAC systems serving different zones.'
+'Enter the number of zones that the system'
+'serves. Your model may be split into several zones,'
+'with different HVAC systems serving different zones.'
+'  '
+'Note that the number of zones chosen must be equal to'
+'or less than the number of zones in the model.'
+'  '
+'Once number of zones being supplied has been'
+'picked, the fraction of supplied energy to each'
+'zone must be stated. If the total fraction is not 1'
+'you will be asked to respecify the zones and fractions.'
 *enditem
       CALL EASKI(num_sys_zones(i),' ',
-*item HPCOLD
- 'Number of zones chosen must be equal to'
- 'or less than the number of zones in the model.'
- 'Once number of zones being supplied has been'
- 'picked, the fraction of supplied energy to each'
- 'zone must be stated.'
-*enditem
       CALL EPICKS(ival, sys_zone_number, ' ',
+      CALL EASKR(sys_zone_cap_frac(i,k),
+      CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
 *item HPCOLD
- 'Enter the fraction of the system capacity associated'
- 'with this zone.  The sum of the fractions to all zones'
- 'must be equal to 1'
+'Heat pumps have a number of attributes:
+' '
+'  steady state capacity of the system in Watts.'
+'  '
+'  COP (Max = 50)
+'  '
+'  Flow rate - if set < 0, the value is set internally'
+'  This is the flow rate that occurs during the actual'
+'  operation of the heat pump system.'
+'  '
+'  Flow rate at rated conditions. If < 0 the value is set'
+'  internally.'
+'  '
+'  Fan mode (no fan, automatic mode, continuous mode) which'
+'  should be the same for the primary and the backup execpt'
+'  when the primary system has a fan and the heat pump has'
+'  no fan. In this case, select no fan for the backup hp and'
+'  then choose auto or continuous for the primary system.'
+'  '
+'  If the fan is automatic or continuous you must specify whether'
+'  the fan is positioned to 1) blow through or 2) draw through.'
+'  '
+'  If there is an automatic or continupus fan specify the'
+'  circulation fan power of the system in Watts.'
+'  If -1 is entered, the power is estimated internally.'
+'  If the fan is in continuous mode, fan power also needs to'
+'  be included as internal gain in the ESP-r opr file.'
+'  '
+'  The fan power for the outdoor evaporator of the heat pump is'
+'  also required (although not used while heating).'
+'  '
+'  In auto mode there is an fan power which, although not used'
+'  during heating is still a required value.'
+'  '
+'  Heat pumps fan position with repspect to the heat exchanger'
+'  during a ratings test are 1) blow through or 2) draw through.'
+'  '
+'  Also during the ratings test the circulation fan power will be'
+'  recorded. This is not used while heating but is a required value.'
+'  If the power is <0 then the value is set internally.'
 *enditem
-        CALL EASKR(sys_zone_cap_frac(i,k),
-*item HPCOLD
- 'Fractions must equal to one.  You will be redirected'
- 'to reenter zone number and their respective'
- 'fractions.'
-*enditem
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
-*item HPCOLD
- 'Enter the steady state capacity of the system in Watts.'
-*enditem
-      CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
-*item HPCOLD
- 'Enter the heat pump COP'
- 'Max = 50'
-*enditem
-      CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F',
-*item HPCOLD
- 'If flow rate set < 0, value is set internally'
- 'This is the flow rate that occurs during the actual'
- 'operation of the heat pump system.'
-*enditem
-      CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0.,
-*item HPCOLD
- 'If flow rate set < 0, value is set internally'
-*enditem
-      CALL EASKR(flow_rate_r(i),' ',
-*item HPCOLD
- 'If the hp is a backup, this should be the same'
- 'as that for the primary system except when the primary'
- 'system has a fan and the hp has no fan.  In this'
- 'case, select no fan for the backup hp here, and'
- 'then choose auto or continuous mode for the primary'
- 'system. '
-*enditem
-      CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated',
-*item HPCOLD
- 'Currently not used but value needed.'
- '1 - Blow through'
- '2 - Draw Through'
-*enditem
-        CALL EASKI(ifan_position(i),
-*item HPCOLD
- 'Enter the circulation fan power of the system in Watts.'
- 'If -1 is entered, the power is estimated internally.'
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)',
-*item HPCOLD
- 'If the fan is in continuous mode, fan power need to'
- 'be included as internal gain in the ESP-r opr file.'
-*enditem
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
-*item HPCOLD
- 'This is the fan for the outdoor evaporator of the heat'
- 'pump. Not used for ashp in heating but value needed.'
-*enditem
-        CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)',
-*item HPCOLD
- 'This is the fan power associated with auto mode.'
- 'Not used for heat pump in heating but value needed.'
-*enditem
-        CALL EASKR(fan_power_auto(i),' ',
-*item HPCOLD
- 'Currently not used but value needed.'
- '1 - Blow through'
- '2 - Draw Through'
- 'Position of circulation fan with respect to heat'
- 'exchanger (heating or cooling) during rating test'
-*enditem
-        CALL EASKI(ifan_position_r(i),
-*item HPCOLD
- 'This is the circulation fan power during the rating'
- 'test. Not used for heat pump in heating but value'
- 'needed. If flow rate set < 0, value is set internally'
-*enditem
-        CALL EASKR(fan_power_r(i),' ',
-*item HPCOLD
- 'This is capacity at ARI rating conditions (26.7 oC Tdb'
- 'and 19.4 Twb oC).'
+     CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
+     CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F',
+     CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0.,
+     CALL EASKR(flow_rate_r(i),' ',
+     CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated',
+     CALL EASKI(ifan_position(i),
+     CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)',
+     CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
+     CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)',
+     CALL EASKR(fan_power_auto(i),' ',
+     CALL EASKI(ifan_position_r(i),
+     CALL EASKR(fan_power_r(i),' ',
+*item HPCOLD zone_hvac_hp_sensible
+'This is capacity at ARI rating conditions (26.7 oC Tdb'
+'and 19.4 Twb oC).'
+'  '
+'You are also asked whether the cooling is a conventional system'
+'or one with an economizer.'
+'  '
+'If you select the conventional system you can define the outdoor'
+'air flow into the duct system as a function of days (multiple types'
+'are supported) with periods in each of these day types.'
+'The following information is required:'
+'  The number of different day types used to define the outdoor air'
+'  schedule (fresh air into the duct system).'
+'  '
+'  For each day type you are asked for:'
+'    - the number of periods'
+'    - the hour of the year (out of 8760) at the end of the day type'
+'  '
+'  For each period (in a given day type) you are asked for the'
+'  hour (between 0 and 24) at the end of the period. The first'
+'  period of the day is assumed to start at 0.'
+'  You are also asked for the air flow rate in m^3/s.'
 *enditem
       CALL EASKR(shrr(i),' ','Sensible Heat Ratio',
-*item HPCOLD
-*enditem
       CALL EASKI(icooling_type(i),'Cooling Type',
-*item HPCOLD
- 'This is the number of different day types for the'
- 'description of the outdoor air schedule through the'
- 'duct system'
-*enditem
-        CALL EASKI(num_out_air_day_types(i),' ',
-*item HPCOLD
-'This is the number of periods that make up this day'
-'type.'
-*enditem
-          CALL EASKI(num_outside_air_day_periods(i,day),
-*item HPCOLD
- 'This is a number out of 8760. The hour indicates the'
- 'hour of the year after which day type 1 is not valid'
- 'anymore.'
-*enditem
-          CALL EASKI(iend_hour_out_air_daytype(i,day),
-*item HPCOLD
-'This is an hour number up until 24. This is the hour'
- 'after which the given period for the given day type'
- 'is not valid anymore.'
-*enditem
-            CALL EASKI(iend_hour_out_air_dayperiod(i,period_counter),
-*item HPCOLD
- 'Outdoor air flow rate for given period of given day'
- 'type. In m3/s'
-*enditem
-            CALL EASKR(day_period_out_air_flow(i,period_counter),
-*item HPCOLD
- '1. Indoor/Outdoor Temp integrated compressor control '
- 'and option of outdoor dry-bulb temp limit control. This'
- 'is a temperature based control with the compressor and'
- 'the economizer running together to meet the load when'
- 'the economizer can not meet the load by itself.'
- ' '
+      CALL EASKI(num_out_air_day_types(i),' ',
+      CALL EASKI(num_outside_air_day_periods(i,day),
+      CALL EASKI(iend_hour_out_air_daytype(i,day),
+      CALL EASKI(iend_hour_out_air_dayperiod(i,period_counter),
+      CALL EASKR(day_period_out_air_flow(i,period_counter),
+*item HPCOLD zone_hvac_hp_economizer
+'1. Indoor/Outdoor Temp integrated compressor control '
+'   and option of outdoor dry-bulb temp limit control. This'
+'   is a temperature based control with the compressor and'
+'   the economizer running together to meet the load when'
+'   the economizer can not meet the load by itself.'
+'   You will be asked for the outdoor temperature limit in'
+'   degrees C aboe which the economizer is turned off.'
+' '
 '2. Indoor/Outdoor Temp non-integrated compressor control'
- 'and option outdoor dry-bulb temp limit control. This is'
- 'a temperature based control with the compressor and the'
-'economizer not allowed to run together to meet the load'
- 'when the economizer can not meet the load by itself.'
- ' '
- '3. Enthalpy integrated compressor control and enthalpy'
- 'limit control. This is an enthyalpy based control with'
- 'the compressor and the economizer running together to'
-'meet the load when the economizer can not meet the load'
- 'by itself.'
- ' '
- '4. Enthalpy non-integrated compressor control and'
- 'enthalpy limit control. This is an enthalpy based'
- 'control with the compressor and the economizer not'
- 'allowed to run together to meet the load when the'
- 'economizer can not meet the load by itself.'
+'   and option outdoor dry-bulb temp limit control. This is'
+'   a temperature based control with the compressor and the'
+'   economizer not allowed to run together to meet the load'
+'   when the economizer can not meet the load by itself.'
+'   You will be asked for the outdoor temperature limit in'
+'   degrees C aboe which the economizer is turned off.'
+' '
+'3. Enthalpy integrated compressor control and enthalpy'
+'   limit control. This is an enthyalpy based control with'
+'   the compressor and the economizer running together to'
+'   meet the load when the economizer can not meet the load'
+'   by itself.'
+'   You will be asked for the outdoor enthalpy limit (J/kg)'
+'   above which the economizer is turned off.'
+' '
+'4. Enthalpy non-integrated compressor control and'
+'   enthalpy limit control. This is an enthalpy based'
+'   control with the compressor and the economizer not'
+'   allowed to run together to meet the load when the'
+'   economizer can not meet the load by itself.'
+'   You will be asked for the outdoor enthalpy limit (J/kg)'
+'   above which the economizer is turned off.'
+'  '
+'Once the control type has been defined you are asked for:'
+'  - minimum outdoor air flow in m^3/s.'
+'  '
+'  - the indoor temperature set point below which the'
+'    economizer is turned off.' 
 *enditem
         CALL EASKI(ieconomizer_control(i), 'Economizer Control Type ',
-*item HPCOLD
- 'Economizer minimum outdoor air flow. M3/S'
-*enditem
         CALL EASKR(economizer_min_out_air_flow(i),
-*item HPCOLD
- 'Economizer indoor space set point. C.'
-'This is the indoor temperature set point below which the'
- 'economizer is tuned off.'
-*enditem
         CALL EASKR(economizer_ind_temp_setpoint(i),
-*item HPCOLD
- 'Economizer outdoor temperature limit. C.'
- 'This is the outdoor dry bulb temperature above which'
- 'the economizer is turned off.'
-*enditem
-          CALL EASKR(economizer_out_temp_limitcon(i),
-*item HPCOLD
- 'Economizer outdoor enthalpy limit control. J/kg.'
- 'This is the outdoor air enthalpy above which'
- 'the economizer is turned off.'
-*enditem
-          CALL EASKR(economizer_out_enth_limitcon(i),
-*item HPCOLD
+        CALL EASKR(economizer_out_temp_limitcon(i),
+        CALL EASKR(economizer_out_enth_limitcon(i),
+*item HPCOLD zone_hvac_hp_z_ctl
 'The control function type in the ESP-r ctl file that is'
 'associated with the heat pump operation in cooling mode'
 'must be listed here.'
@@ -12473,7 +12322,7 @@ C        CALL EASKI(ipriority(i),'Specify the system priority',
 *enditem
       CALL EASKAB(' ',
 *subroutine HVAC_MAIN_SUMMARY
-*item HVAC_MAIN_SUMMARY
+*item HVAC_MAIN_SUMMARY zone_hvac_sys_types
 'Displays the various systems present in the hvac file '
 'and options for adding a new system (maximum of 5) or '
 'saving the current file. To view a summary of specific'
@@ -12483,19 +12332,16 @@ C        CALL EASKI(ipriority(i),'Specify the system priority',
 'Further options to edit each individual system are    '
 'available in the next menu once the desired system is '
 'chosen.                                               '
+'  '
+'If you are about to exceed the maximum number of havc'
+'systems you will have to delete a system manually or'
+'choose to overwrite an existing system description.'
 *enditem
           CALL ASKOK('You will lose new info. if file hasnt been saved',
-*item HVAC_MAIN_SUMMARY
-*enditem
           call PHELPD('Main HVAC Summary Menu:',9,'-',0,0,IER)
-*item HVAC_MAIN_SUMMARY
- 'You have reached the maximum number of hvac systems'
- 'Please delete an hvac system manually if you would'
- 'like to add another.'
-*enditem
-            CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+          CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
 *subroutine HVAC_SYS_SUMMARY
-*item HVAC_SYS_SUMMARY
+*item HVAC_SYS_SUMMARY zone_hvac_sys_summary
 'The system summary menu shows a summary of system   '
 'characteristics of the system chosen from the main  '
 'HVAC menu. This menu is not interactive, as many of '
@@ -12509,148 +12355,142 @@ C        CALL EASKI(ipriority(i),'Specify the system priority',
 'choose edit and accept the default suggestions.     '
 *enditem
           call PHELPD('System Summary Menu:',11,'-',0,0,IER)
-*item HVAC_SYS_SUMMARY
-*enditem
           call PHELPD('Currently not an option, but will be added',9,
 *subroutine ADDSUR
-*item ADDSUR
-'Vertex is used in an existing edge. It'
-'probably should also be removed but you'
-'are asked to confirm this action (so that'
+*item ADDSUR remove_vert_as_well
+'Vertex is used in an existing edge. It probably should be'
+'removed... but you are asked to confirm this action (so that'
 'the edge topology is consistent). '
 *enditem
 c              call askok(outs,
-*item ADDSUR
-*enditem
-          CALL EASKGEOF('Select source zone to copy from:',
-*item ADDSUR
+*item ADDSUR duplicate_surf_name
+'Each surface within a zone must have a unique name. A duplicate'
+'name was detected so you are being asked to revise the surface'
+'name.'
 *enditem
           CALL EASKS(T14,'Revised surface name','(duplicate found)',
-*item ADDSUR
-'Actions: '
-' Shift surface along (+=outwards) surface normal.'
-' Transform vertices by X,Y,Z metres.'
-' Rotate surface about one of its vertices.'
-' Invert ordering (to swop front & back faces).'
-' Do several operations to the surface.'
+*item ADDSUR copied_surf_actions
+'Actions possible for the newly copied surface: '
+'  '
+' Shift surface along (+=outwards) the surface normal (in'
+' metres). All vertices attached to the surface will be'
+' transformed. E.g. raise or lower a ceiling by Xm.j A zero'
+' value does nothing.
+'  '
+' Transform vertices of the surface by X,Y,Z metres. Other'
+' surfaces which share vertices will be impacted by this'
+' transform.'
+'  '
+' Rotate surface about one of its vertices. The index of the'
+' vertex is its position in the edge list of the surface. The'
+' rotation is applied around this point. Positive is'
+' anticlockwise. A zero results in no rotation.'
+'  '
+' Invert ordering (to swop front & back faces). The order of'
+' the surface edges determines the direction of the surface'
+' normal e.g. which side faces away from the zone). If you are'
+' copying a surface (such as a partion) from one zone to '
+' another you will usually want to invert the copied surface.'
+' If you are creating back-to-back surfaces within the room'
+' the copied surface is usually inverted to form the matching'
+' orientation.
+'  '
+' Do several operations to the surface.  You are asked to provide'
+' values for several options. A zero entry in the relevant entry'
+' will skip that specific transform.'
+'  '
 ' Continue with no action.'
+'  '
+'Often the transforms that are required for one surface'
+'should also be applied to the other surfaces that you copied.'
+' '
+'Hint: Double check the zone after you have finished copying'
+'the surfaces to ensure they are located correctly and face the'
+'correct direction.'
 *enditem
           CALL EASKATOG(' Actions to take on the new surface :',' ',
-*item ADDSUR
-'Distance along the normal (+=out) in metres.'
-'Transform vertices by X,Y,Z metres.'
-'Rotate surface about one of its vertices (index).'
-'Rotation angle (degrees) '
+ 552      CALL EASKS(hold64,
+          CALL EASKR(vdis,' Distance along the normal (metres): ',
+ 152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
+          CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
+          CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
+          call askok(
+          CALL EASKAB(' Reverse the edge ordering of',
+          CALL ASKOK(outs,'(see help)',DDOK,dok,7)
+*item ADDSUR create_new_surface
+'A surface is composed of a list of vertices which form the'
+'edges of the polygon. Type this list in order (anticlockwise'
+'viewed from the outside). If in the wireframe view what you'
+'see is the inside face of the polygon then the order will be'
+'clockwise.'
+'  '
+'The indices in the list are integer positions of the'
+'zone vertex e.g. the 3rd vertex is the 3rd in the'
+'vertices associated with the zone.'
+'  '
+'Note: the last edge of the polygon is from the last vertex'
+'to the start vertex.  Note that a polygon can have up to 32 edges.'
 ' '
-'If you leave transform values and/or rotation as'
-'zero then that transform will have no effect. '
-*enditem
- 552        CALL EASKS(hold64,
-*item ADDSUR
-'Distance along the normal (+=out) in metres.'
-*enditem
-            CALL EASKR(vdis,' Distance along the normal (metres): ',
-*item ADDSUR
-*enditem
- 152        CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-*item ADDSUR
-'The rotation is applied around one vertex of'
-'the surface. The index is to the 1st, 2nd, 3rd,'
-'vertex in the surface. '
-' '
-'The rotation is applied around at and positive'
-'is anticlockwise. '
-' '
-'A cancel leaves skips the rotation step. '
-*enditem
-            CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
-*item ADDSUR
-*enditem
-            CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
-*item ADDSUR
-'Vertex is close to an existing edge. It'
-'probably should also be included in the'
-'list of the adjacent surface (so that'
-'the edge topology is consistent). '
-*enditem
-                        call askok(
-*item ADDSUR
-'You can swop the front:back faces of a surface. This'
-'is necessary for partitions copied from another '
-'zone or where you are creating back-to-back surfaces'
-'to represent internal mass. '
-*enditem
-              CALL EASKAB(' Reverse the edge ordering of',
-*item ADDSUR
-'Often the transforms that are required for one'
-'surface should also be applied to the other'
-'surfaces that you copied.  '
-' '
-'Double check the zone after you have finished'
-'copying the surfaces to ensure they are located'
-'correctly and face the correct direction. '
-*enditem
-            CALL ASKOK(outs,'(see help)',DDOK,dok,7)
-*item ADDSUR
-'The number of vertices must be less than 24. '
-'A surface is composed of a list of vertices. Type'
-'this list in order (anticlockwise viewed from the'
-'outside).  Note: the last line of the polygon is'
-'from the last vertex to the start vertex. '
-' '
-'Or click mouse on existing vertices, ending with an '
-'[e]. A match is assumed if within 5 pixels.'
-'You will be given an oportunity to confirm the list. '
+'Or click mouse on existing vertices, ending with an [e]/ '
+'A match is assumed if within 5 pixels. You will be given an'
+'oportunity to confirm the list. '
 *enditem
           CALL EASKS(HOLD,
-*item ADDSUR
-*enditem
-              CALL EASKS248(t248,' Associated vertices (type indices)?',
-*item ADDSUR
-*enditem
-              CALL EASKS248(t248,' Associated vertices (type indices)?',
-*item ADDSUR
-*enditem
-            CALL EASKS248(t248,'Associated vertices (type indices)?',
-*item ADDSUR
+          CALL EASKS248(t248,' Associated vertices (type indices)?',
+          CALL EASKS248(t248,' Associated vertices (type indices)?',
+          CALL EASKS248(t248,'Associated vertices (type indices)?',
+*item ADDSUR new_surface_name
+'Good surface names can speed up subequent editing and selection'
+'tasks as well as making reports easier to read.  The name should'
+'be unique within this zone.'
 *enditem
  52     CALL EASKS(T14,'Surface name','(unique word <=12char):',
 *subroutine ADDMASS
-*item ADDMASS
+*item ADDMASS addmass_overview
+'ESP-r zones can include surfaces floating within the zone which'
+'represent mass. The interface allows you to create simple shaped'
+'pairs of rectangular surfaces to represent mass. The origin and'
+'the size of the rectangle will be shown on the wire-frame view.'
+'  '
 'If you accept the rectangle it will be converted into '
 'a surface within the zone. If you elect to revise it'
 'you will be presented with several options. '
 *enditem
         CALL EASKABC('Options for this rectangle:',' ',
 *subroutine ADDVERT
-*item ADDVERT
-'The vertex coordinates should be in metres. '
-'It is not advisable for Z to be negative.'
+*item ADDVERT vert_add_overview
+'A zone includes associated vertices which its surfaces may'
+'reference. Vertices are located within the model coordinate'
+'system and are in metres with sufficient resolution to ~a'
+'tenth of a mm.'
+'  '
+'Z coordinates can be in specified relative to the model '
+'coordinates.  If a building actually starts at 56m above'
+'sea level you can use 56m as the coordinate or you can'
+'consider this actual point as zero in the model coordinate'
+'system. Height in geometry does not imply a change in air'
+'density. Many people get confused if Z values are negative.'
 *enditem
           CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-*item ADDVERT
-'Vertex is close to an existing edge. It'
-'probably should also be included in the'
-'list of the adjacent surface (so that'
+*item ADDVERT vertex_near_edge
+'Vertex is close to an existing edge. It probably should also'
+'be included in the list of the adjacent surface (so that'
 'the edge topology is consistent). '
 *enditem
                         call askok(
-*item ADDVERT
+*item ADDVERT vert_copy_overview
+'When you copy a vertex remember that exact duplicates should'
+'be avoided.  Vertices within 4mm are considered to be the'
+'same and will tend to cause problems. '
+'  '
+'Usually one would copy a vertex and edit one of the coordinate'
+'values e.g. to get a new point in the zone.'
+'  '
 'The vertex coordinates should be in metres. '
-'Exact duplicate vertices should be avoided.'
-'It is not advisable for Z to be negative.'
 *enditem
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-*item ADDVERT
-'Vertex is close to an existing edge. It'
-'probably should also be included in the'
-'list of the adjacent surface (so that'
-'the edge topology is consistent). '
-*enditem
-                      call askok(
-*subroutine CKVERT
 *subroutine INSREC
-*item INSREC
+*item INSREC add_rect_overview
 'When adding a rectangular opening (e.g. a window or'
 'door) to a surface you specify its position within'
 'the parent surface. For a window, this is an X Y'
@@ -12676,11 +12516,12 @@ c              call askok(outs,
 'and vertical surfaces.'
 *enditem
       CALL EASKABCD(' Insert rectangular surface:','(see help)',
-*item INSREC
+*item INSREC add_rect_offsets
 'The X offset is the distance from the lower left '
 'corner of the parent surface (looking at the'
 'outside face) to the left side of the new surface.'
-'The X offset should be at least 20mm. '
+'The X offset should be at least 25mm for the edge'
+'generation logic to work.'
 ' '
 'The Z offset is the distance from the bottom  '
 'edge of the parent surface (looking at the '
@@ -12691,18 +12532,8 @@ c              call askok(outs,
 'opening dimensions should be at least 100mm. '
 *enditem
         CALL EASKS(hold,
-*item INSREC
-'The X offset is the distance from the left edge'
-'of the parent surface (looking at the outside '
-'face) to the left side of the new surface. It should'
-'be at least 25mm (the edge generation will not be '
-'correct with a zero offset)! '
-' '
-'The opening width and height are in metres. The'
-'door dimensions should be at least 100mm.'
-*enditem
         CALL EASKS(hold,
-*item INSREC
+*item INSREC opening_percent_overview
 'Define the surface area of the opening as a percentage'
 'value of the parent surface (e.g. 40%).'
 'The new surface will be located in the centre of the'
@@ -12713,18 +12544,18 @@ c              call askok(outs,
 'and may result in strange shapes if it is not. '
 *enditem
         CALL EASKR(PERC,'Percentage of parent surface.',
-*item INSREC
+*item INSREC confirm_location
 'If the location appears to be correct in the preview'
 'you can accept it by saying yes. If you are in doubt'
 'then say no for a chance to modify it. '
 *enditem
         CALL ASKOK('Position OK?','(see help)',OK,dok,3)
-*item INSREC
+*item INSREC surface_name_logic
 'Well named surfaces (e.g. call a door a door) '
 'can help you understand a model better! '
 *enditem
         CALL EASKS(T14,' ',' Inserted surface name (12 char max):',
-*item INSREC
+*item INSREC surface_topology
 'The topology of the current surface indicates that '
 'there is probably an existing [hole] in the surface'
 '(typically used for glazing). '
@@ -12751,19 +12582,15 @@ c              call askok(outs,
 'resolve this issue at a later point!'
 *enditem
           CALL PHELPD('tmc insert warning',24,'-',0,0,IER)
-*item INSREC
-*enditem
           CALL EASKAB('There is already a `hole` in the surface - ',
-*item INSREC
-*enditem
  8795     CALL EASKI(IVH,
-*item INSREC
-'The vertex is close to another edge. To'
-'maintain the edge topology you probably want'
+*item INSREC vertex_close_to_edge
+'The vertex is close to another edge. To maintain the'
+'edge topology of the adjacent surface you probably want'
 'to update the edges of the adjacent surface.'
 *enditem
                     call askok(
-*item INSREC
+*item INSREC mods_need_checking
 'The modifications to the geometry of the zone, surface'
 'attributes and topology which have been made need to'
 'be checked closely.  For example the original surface'
@@ -12772,7 +12599,7 @@ c              call askok(outs,
 *enditem
         CALL PHELPD('surface details',5,'-',0,0,IER)
 *subroutine ITINSRT
-*item ITINSRT
+*item ITINSRT temporal_item_name
 'In order to find items in the TDF db a unique name'
 'must be assigned to each entry. This name is a '
 'string up to 12 characters long with no blanks.'
@@ -12780,33 +12607,43 @@ c              call askok(outs,
 *enditem
       CALL EASKS(TTAG,' ','Name for entry? ',
 *subroutine MFPROB
-*item MFPROB
+*item MFPROB flow_network_file_name
 'The flow network file holds the definition of network'
-'flow regime for this project. The file is optional.'
+'flow regime for this model. The file is optional.'
 'The dereference option clears the name of the network '
 'file but does not alter information within the network'
 'description. You can re-establish the network by '
 'including the file name and then re-linking to thermal '
 'zones. '
+'  '
+'If the file name cannot be found you will be given an'
+'opportunity to respecify the name.'
+'  '
+'As you evolve the network be sure to save often so that'
+'the information in memory is not lost!'
 *enditem
       CALL EASKSCMD(LTMP,' Flow network file ?',
-*item MFPROB
+*item MFPROB flow_network_synopsis
 'A listing of the current flow network is available.'
+'It includes information about the flow nodes and flow'
+'components and the connections within the network.'
 *enditem
         CALL ASKOK('Display a synopsis of the flow network?',' ',
-*item MFPROB
-'The Project Manager could not find this file please'
-'ensure that the filename and path are entered correctly.'
-*enditem
         CALL EASKABCD(' File not found.','Options:',
-*item MFPROB
-'Begin the network description by specifying a'
-'few nodes, components and connections.  Once'
-'this is done save the network. You can '
-'the go on to expand and update the network. '
+*item MFPROB begin_flow_network
+'Before you create the network, sketch the network out and'
+'determine a naming scheme for the nodes and components. The'
+'sketch is an important part of the QA process!'
+'  '
+'Begin the network description by specifying at least a few'
+'of the nodes, components and connections in the network. Once'
+'this is done save the network. You can the go on to expand'
+'and update the network. '
 ' '
-'The description of a flow network begins with the'
-'description of flow nodes. A functioning network '
+'The description of a flow network begins with the description'
+'of flow nodes. Internal nodes are typically associated with'
+'the zones of the model. Boundary nodes represent locations on'
+'the facade where leakage may occurr. A functioning network '
 'must have at least three nodes. '
 ' '
 'You can select the zones to be included in the network'
@@ -12817,18 +12654,20 @@ c              call askok(outs,
 'between the nodes in your network, but define the '
 'linking components (door, vents) first. '
 ' '
-'  a) REMEMBER to include boundary nodes in your '
-'  b) network. These are NOT auto generated at the '
-'     moment. Also remember to connect them into your '
-'     network!  '
+'  a) REMEMBER to include boundary nodes in your network.'
+'     These are NOT auto generated. '
+'  b) Also remember to connect boundary nodes into your '
+'     network!'
+'  '
+'A flow network can include air, liquids or a mix of'
+'air and liquids (as long as the fluids do not mix).'
+'  '
+'There is one flow network in the model, even if there is'
+'more than one building in the model.'
 *enditem
           CALL PHELPD('create net',22,'-',0,0,IER)
-*item MFPROB
-'A flow network can be all air, all water or '
-'a mix (as long as the fluids do not mix) '
-*enditem
           CALL EASKABC(' Is the new network:',' ',
-*item MFPROB
+*item MFPROB flow_network_from_opr
 'This option scans existing zone operations files'
 'and creates (at a minimum) one node for each zone'
 'with the same name as the zone.'
@@ -12853,7 +12692,6 @@ c              call askok(outs,
 'of the boundary node is a guess as wind pressures '
 'are not taken into account in such components. '
 ' '
-' '
 'This is only a rough network, it will need to '
 'be checked. '
 ' '
@@ -12866,23 +12704,19 @@ c              call askok(outs,
 'are not yet supported.  '
 *enditem
           CALL PHELPD('create oper net',35,'-',0,0,IER)
-*item MFPROB
-*enditem
           CALL ASKOK('Do you want to auto-generate flow nodes?',
-*item MFPROB
-'Esp-r simulates one-dimensional fluid flow '
-'in building and/or plant configurations. '
-'This involves the calculation of fluid flow through'
-'branches and nodes in a network which represents the'
-'building and/or plant configuration. The nodes and '
-'branches define boundary pressure points, internal '
-'node characteristics and flow restrictions. '
+*item MFPROB flow_network_menu_synop
+'Esp-r simulates one-dimensional fluid flow within the model'
+'zones and/or plant network. This involves the calculation'
+'of fluid flow through branches and nodes in a network which'
+'represents the building and/or plant network. The nodes and '
+'branches define boundary pressure points, internal node'
+'characteristics and flow restrictions. '
 ' '
-'Esp-r uses an iterative mass balance approach in '
-'which nodal pressures are adjusted until the mass'
-'residual of internal nodes satisfies some criterion.'
+'Esp-r uses an iterative mass balance approach in which nodal'
+'pressures are adjusted until the mass residual of internal'
+'nodes satisfies some criterion.'
 ' '
-'Fluid flow network description data summary '
 'Fluid flow NODE data:'
 '  Name (up to 12 characters with no blanks) '
 '  Fluid (1=air, 2=water) '
@@ -12903,10 +12737,9 @@ c              call askok(outs,
 ' * note that pressure of a type 3 node includes '
 '   stack pressure evaluated with P=0 at height=0. '
 ' '
-'Mass flow network description data summary  '
 'Fluid flow COMPONENT data: '
 '  Name (up to 12 characters with no blanks)'
-'  Type (from current list)'
+'  Type (from list)'
 '  Number of supplementary data items '
 '  Supplementary data: '
 '     (number of data items depends on component type;'
@@ -12928,203 +12761,128 @@ c              call askok(outs,
 'option. This is useful when you started a model with'
 'schedules and want to increase resolution/complexity'
 'or better track flow rates. '
-'The current network description will be lost if you '
+'  '
+'Note: The current network description will be lost if you '
 'read in a new network file or create a new network.'
-'If it is ok to loose the current data say yes. '
 *enditem
         CALL ASKOK(' Reading or creating a new model file will',
-*item MFPROB
-*enditem
-          CALL EASKS(LTMP,' Fluid flow network file ? ',
-*item MFPROB
+        CALL EASKS(LTMP,' Fluid flow network file ? ',
+*item MFPROB flow_auto_generate
 'You now have the option of automatically generating'
 'flow nodes from the building description. Select'
 'the zones you wish to include in the flow network and'
 'a corresponding flow node will be generated with'
 'the same name and with the correct volume.'
+'  '
+'However, you should have up-to-date building connections'
+'information and defined the linking components (doors, vents,'
+'etc.) you will need before commencing the automatic connection'
+'generation. If you have not done either then DO NOT select the '
+'auto detection option.  '
 ' '
 'Note: a flow network should include all of the zones in'
 'your model. Any information about infiltration and'
 'ventilation in zone operation files will be ignored.'
 *enditem
           CALL ASKOK('Do you want to auto-generate flow nodes?',
-*item MFPROB
-*enditem
-        CALL ASKNOD(' Nodes','M',IS,IER)
-*item MFPROB
-*enditem
-        CALL ASKCMP(' Components','M',IS,IER)
-*item MFPROB
-'You have the option of automatically generating'
-'flow connections from your building model.'
-'However, you should have up-to-date building '
-'connections information and defined the linking '
-'components (doors, vents, etc.) you will need before'
-'commencing the automatic connection generation. '
-' '
-'If you have not done either then DO NOT select the '
-'auto detection option.  '
-*enditem
           CALL ASKOK('Auto-generate flow connections?','(see help)',
-*item MFPROB
-*enditem
-        CALL ASKCON(' Connections','M',INODPS,INODNE,IS,IER)
-*item MFPROB
-'You can have nodes which are not linked to a '
-'thermal zone, but if you do link nodes and zones '
-'then their temperature will match the zone. '
+*item MFPROB link_node_to_zone
+'You can have flow nodes which are not linked to a thermal'
+'zone, but if you do link nodes and zones then their temperature'
+'will match the zone temperature as the simulation progresses. '
 *enditem
             CALL EASKABC(outs,' ','accept',
-*item MFPROB
-*enditem
-              call ASKRNOD(' available nodes','-',IC,IER)
-*item MFPROB
-*enditem
             CALL EASKAB(outs,' ','accept','select a node',iacc,3)
-*item MFPROB
-*enditem
-              call ASKRNOD(' available nodes','-',IC,IER)
-*item MFPROB
-*enditem
-   80   CALL EASKS(ltmp,' Fluid flow network file ? ',
-*item MFPROB
-*enditem
-        CALL PHELPD('network data summary',58,'-',0,0,IER)
-*item MFPROB
-'Recent changes to the network may be lost if you do'
-'not save the changes. '
-*enditem
-        CALL ASKOK('Do you want to save any changes?',' ',OK,dok,2)
-*item MFPROB
-*enditem
-   81     CALL EASKS(ltmp,' Fluid flow network file ? ',
 *subroutine MFNDES
-*item MFNDES
-'Node names should be <= 12 characters and have '
-'no blanks. Use logical names for clarity.'
+*item MFNDES flow_node_names
+'Node names should be <= 12 characters and have no blanks.'
+'Use logical names for clarity where possible. An internal node'
+'might follow the name of the zone, a boundary node name can'
+'reflect its orientation or position.'
+'  '
+'Each node name must be unique. If you specify a duplicate name'
+'then you will be asked to revise it.'
 *enditem
         CALL EASKS(T12,' ',' Node name (<= 12 characters): ',12,
-*item MFNDES
-'You cannot have duplicate node names in a flow '
-'network. This is a chance to correct this. '
-*enditem
-            call askok('This a duplicate name...','Try again?',
-*item MFNDES
+        call askok('This a duplicate name...','Try again?',
+*item MFNDES node_fluid_type
 'For a node related to a building select air as the '
 'fluid type. Water nodes are only required in hydronic '
-'plant systems. '
+'plant systems or where the zone is being used as an explicit'
+'representation of a plant component.'
 *enditem
             CALL EASKAB(outs,'(currently air)','air','water',IW,3)
-*item MFNDES
-*enditem
             CALL EASKAB(outs,'(currently water)','air','water',IW,3)
-*item MFNDES
-*enditem
             CALL EASKAB(outs,'(currently undefined)','air','water',IW,3)
-*item MFNDES
+*item MFNDES node_type_summary
 'The node types are as follows: '
 ' '
-'internal:unknown - a node describing a volume of air'
-'inside the building (usually a zone) the pressure'
-'and (usually) temperture of this node are unknown '
-'and is solved at each time step. This is the most '
-'commonly used fluid flow node.'
+'internal:unknown - a node describing a volume of air inside the'
+'  building (usually a zone) the pressure and (usually) temperture'
+'  of this node are unknown and is solved at each time step.'
+'  This is the most commonly used fluid flow node.'
 ' '
-'internal:known - another node describing a volume of'
-'air  inside the building (usually a zone) the pressure'
-'is fixed and specified by the user (e.g. the outlet of'
- 'a fan could be specified as an internal:known node.)'
+'  Additional internal nodes can be used to implement controls'
+'  (e.g. an extra node to allow for components in series).'
+'  These additional nodes are not associated with the thermal'
+'  zone, but take their temperature from another flow node which'
+'  is associated with a thermal zone. If you want to create such'
+'  an additional bookkeepping node then say no to questions about'
+'  zone linking and later you will be asked which flow node to take'
+'  its temperature from. '
+' '
+'internal:known - another node describing a volume of air'
+'  inside the building (usually a zone) the pressure is fixed'
+'  and specified by the user (e.g. the outlet of a fan could be'
+'  specified as an internal:known node.)  This type of node is'
+'  infrequently used because we tend not to know the pressure'
+'  or the pressure varies. You will be asked for the gauge'
+'  pressure in  Pa.'
 ' '
 'boundary:known - a node describing conditions at the '
-'boundary of the flow network. The pressure of this node'
-'(and sometimes temperature) is assigned by the user. '
+'  boundary of the flow network. The pressure of this node'
+'  (and sometimes temperature) is assigned by the user. An'
+'  example might be to approximate a blower door test. Again'
+'  this type of node is infrequently used. You will be asked'
+'  for the gauge pressure in  Pa as well as a constant'
+'  temperature at the node or a choice of ambient temperature.'
 ' '
-'internal:wind induced - another node describing the'
-'conditions at the boundary of the network. In this case'
-'the pressure of this node is generated by wind '
-'impinging upon a surface. The pressure is a function of'
-'wind velocity, wind direction and a pressure '
-'coefficient, Cp, (assigned based on the orientation and'
-'geometry of the surface): P=f(V,D,Cp).'
+'boundary:wind induced - another node describing the conditions'
+'  at the boundary of the network. In this case the pressure of'
+'  this node is generated by wind impinging upon a surface. The'
+'  pressure is a function of wind velocity, wind direction and a'
+'  pressure coefficient, Cp, (assigned based on the orientation'
+'  and geometry of the surface): P=f(V,D,Cp). You will be asked'
+'  to identify a surface in the model which is associated with'
+'  the bounday node wind pressure (to get orientation and height).'
+'  '
+'To aid results recovery when the user is interested in reporting'
+'flow as ACH it is necessary to associate a volume with internal'
+'nodes.  Ideally this should match that of any linked thermal zone.'
 *enditem
         CALL EASKATOG(prt,' ',
-*item MFNDES
-'An internal node is usually associated with a thermal'
-'zone (i.e. takes that zones temperature). If this is'
-'is what you want say yes.'
+        CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
+        CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
+        CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
+   60   CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
+        CALL EASKAB(' ','temperature flag indicating: ',
+        CALL PHELPD('wind-pressure surface',8,'-',0,0,IER)
+*item MFNDES overview_pressure_db
+'To enable the calculation of wind-induced surface pressures'
+'(as required by ESP-r-s fluid flow simulators), a database'
+'of angle dependent pressure coefficients is associated with'
+'the model.'
+'  '
+'The default ESP-r set contains wind pressure coeffients for'
+'surfaces in typical positions and within several different'
+'exposure categories. They can be used (with care) for low-rise'
+'buildings. See the ESP manual for additional information.'
 ' '
-'Additional internal nodes can be used to implement'
-'controls (e.g. an extra node to allow for components'
-'in series). These additional nodes are not associated'
-'with the thermal zone, but take their temperature from'
-'a node that is associated with a thermal zone. If the'
-'you want to create is an additional node then say no'
-'and later you will be asked which flow node to take'
-'its temperature from. '
-*enditem
-          CALL ASKOK('Is this node associated with a zone?',
-*item MFNDES
-*enditem
-            CALL ASKZONE(IC,0,OUTS,'Select zone:','-','mfn locate',IER)
-*item MFNDES
-'To aid results recovery when the user is interested'
-'in reporting in the context of ACH it is necessary to'
-'associate a volume with internal nodes.  Ideally this '
-'should match that of any linked thermal zone. '
-*enditem
-          CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
-*item MFNDES
-'Specify the pressure of this node - usually gauge '
-'pressure (Pa) '
-*enditem
-          CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
-*item MFNDES
-'To aid results recovery when the user is interested'
-'in reporting in the context of ACH it is necessary to'
-'associate a volume with internal nodes.  Ideally this '
-'should match that of any linked thermal zone. '
-*enditem
-          CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
-*item MFNDES
-*enditem
-   60     CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
-*item MFNDES
-*enditem
-          CALL EASKAB(' ','temperature flag indicating: ',
-*item MFNDES
-'You have selected a wind-induced pressure node: wind'
-'impinging upon, or flowing over a surface creates '
-'a pressure difference with the inside of the building,'
-'driving infiltration and exfiltration through any '
-'openings in that surface. '
+'It is also possible to calculate pressure coefficients'
+'using CpCalc (see database maintenance).'
 ' '
-'You should select the zone and surface subjected to '
-'this wind pressure.'
-*enditem
-          CALL PHELPD('wind-pressure surface',8,'-',0,0,IER)
-*item MFNDES
-*enditem
-          CALL ASKZONE(IZ,0,OUTS,'Select zone','-','wpn locate',IER)
-*item MFNDES
-*enditem
-          CALL EASKSUR(IZ,ISO,'-',OUTS,' ',IER)
-*item MFNDES
-'To enable the calculation of wind-induced surface'
-'pressures (as required by ESP-r-s fluid flow'
-'simulators), a database of angle dependent'
-'pressure coefficients is provided.'
-'The default ESP-r set contains wind pressure coeffi-'
-'cients for surfaces in typical positions and within '
-'several different exposure categories.'
-'They can be used (with care) for low-rise buildings.'
-'See the ESP manual for additional info.'
-' '
-'It is also possible to calculate pressure coeffi-'
-'cients using CpCalc (see database maintenance).'
-' '
-'Select the pressure coefficient from this list, '
-'which is most appropriate for the location of the '
-'external node.'
+'Select the pressure coefficient from this list which is'
+'most appropriate for the location of the boundary node.'
 ' '
 'Notes about pressure coefficients: '
 'The first 27 data sets in the standard pressure coef'
@@ -13137,33 +12895,32 @@ c              call askok(outs,
 ' '
 'Each data set is described with the following terms:'
 ' a) facade or roof at different roof pitch angles'
-' b) the ratio of the building length to width and'
-'    for a non square building there will be a long'
-'    and a short wall to select'
+' b) the ratio of the building length to width and for a'
+'    non-square building there will be a long and a short'
+'    wall to select'
 ' c) site shielding as follows:'
 '   exposed - open countryside with no obstructions'
 '   simi-exposed - rural with some obstructions'
 '   sheltered - urban, surrounded on all sides by'
 '     obstructions of similar size.'
+'  '
+'Some user actions you will be asked to confirm (in case you'
+'made an error.'
 *enditem
-            CALL PHELPD('databases overview',36,'-',0,0,IER)
-*item MFNDES
-'Chance to correct an erronious selection. '
-*enditem
+          CALL PHELPD('databases overview',36,'-',0,0,IER)
           CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
-*item MFNDES
-'This angle is used to derive the boundary pressure, '
-'which is angular dependent, from the pressure coef db'
+*item MFNDES boundary_angle_height
+'For boundary nodes an azimuth angle is used to derive the boundary'
+'pressure, (which is angular dependent), from the pressure coef db'
 'and the current wind speed and direction.'
-*enditem
-          CALL EASKR(VAL,' ',
-*item MFNDES
-'Height is used to support buoyancy calculations.'
-'and is the height above some arbitrary datum'
+'  '
+'All nodes have a height attribute which is used to support buoyancy'
+'calculations. It is the height above some arbitrary datum'
 'usually ground level (height=0.0m).'
 *enditem
+        CALL EASKR(VAL,' ',
    21   CALL EASKR(VALH,' ',' Node reference height above datum (m)?',
-*item MFNDES
+*item MFNDES initail_node_temp
 'The inital temperature is the temperature assumed for'
 'the node at the beginning of the simulation. If the'
 'flow network is part of a thermal model then this'
@@ -13175,29 +12932,19 @@ c              call askok(outs,
 'this node will pick up the temperature of a designated'
 *enditem
           CALL EASKAB('Node temperature: ','(see help)',
-*item MFNDES
-*enditem
-            CALL EASKR(VAL,' ','Node temperature (C) ? ',
-*item MFNDES
-*enditem
-            call ASKRNOD('  associated node','-',I,IER)
-*item MFNDES
+          CALL EASKR(VAL,' ','Node temperature (C) ? ',
+*item MFNDES flow_node_volume
 'The current node can either take the volume of the'
 'associated node or have a nominal volume. It only'
 'affects the reported air change rates. It should not'
 'matter to the flow solver. '
 *enditem
             call askok('Use volume of associated node?',' ',OK,dok,4)
-*item MFNDES
+*item MFNDES flow_node_delete
 'When deleting a node any connections associated with'
 'that node must also be deleted.'
 *enditem
         CALL ASKOK('Delete connections associated with this node?',
-*item MFNDES
-'Node names should be <= 12 characters and have '
-'no blanks. Use logical names for clarity.'
-*enditem
-        CALL EASKS(T12,' ',' Node name (<= 12 characters): ',12,
 *subroutine MFCDES
 *item MFCDES
 'Component names should be <= 12 characters and '
