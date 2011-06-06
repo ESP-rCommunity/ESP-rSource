@@ -50,7 +50,6 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       
@@ -70,13 +69,20 @@ C LPRFDB,IPRODB (for event profile database)
 
       CHARACTER*33 ITEM1(24)
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER H*72,LTMP*72,outs*124,outstr*124
+      CHARACTER LTMP*72,outs*124,outstr*124
       character cfgroot*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       integer NITMS1,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFPROB'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -122,15 +128,10 @@ C unix and non-unix machine types).
         endif
       endif
       LTMP=LAPROB
-      H(1)='The flow network file holds the definition of network'
-      H(2)='flow regime for this project. The file is optional.'
-      H(3)='The dereference option clears the name of the network '
-      H(4)='file but does not alter information within the network'
-      H(5)='description. You can re-establish the network by '
-      H(6)='including the file name and then re-linking to thermal '
-       H(7)='zones. '
+      helptopic='flow_network_file_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKSCMD(LTMP,' Flow network file ?',
-     &  ' ','dereference',clkok,72,' ','flow network file',IER,7)
+     &  ' ','dereference',clkok,72,' ','flow network file',IER,nbhelp)
       call usrmsg(' ',' ','- ')
 
 C If user wishes to deselect the current file name to
@@ -221,16 +222,17 @@ C Check boundary node supplementary data items.
 
 C List contents of file if required.
         dok=.true.
-        h(1)='A listing of the current flow network is available.'
+        helptopic='flow_network_synopsis'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Display a synopsis of the flow network?',' ',
-     &    OK,dok,1)
+     &    OK,dok,nbhelp)
         IF(OK) CALL MFLIST(iuout)
       else
-        h(1)='The Project Manager could not find this file please'
-        h(1)='ensure that the filename and path are entered correctly.'
+        helptopic='flow_network_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD(' File not found.','Options:',
      &    'specify another file','make new file',
-     &    'make network from zone schedules','cancel',IW,2)
+     &    'make network from zone schedules','cancel',IW,nbhelp)
         if(IW.eq.1)then
           goto 179
         elseif(iw.eq.2)then
@@ -247,34 +249,12 @@ C to no flow network.
 C Set up a the flow network. 
 C Input node data, components data, linkage data, local wind speed 
 C reduction factor.
-          H(1) ='Begin the network description by specifying a'
-          H(2) ='few nodes, components and connections.  Once'
-          H(3) ='this is done save the network. You can '
-          H(4) ='the go on to expand and update the network. '
-          H(5) =' '
-          H(6) ='The description of a flow network begins with the'
-          H(7) ='description of flow nodes. A functioning network '
-          H(8) ='must have at least three nodes. '
-          H(9) =' '
-          H(10)='You can select the zones to be included in the network'
-          H(11)='the program will then automatically generate the '
-          H(12)='internal nodes associated with those zones.'
-          H(13)='  '
-          H(14)='You also automatically generate internal connections'
-          H(15)='between the nodes in your network, but define the '
-          H(16)='linking components (door, vents) first. '
-          H(17)=' '
-          H(18)='NB:'
-          H(19)='  a) REMEMBER to include boundary nodes in your '
-          H(20)='  b) network. These are NOT auto generated at the '
-          H(21)='     moment. Also remember to connect them into your '
-          H(22)='     network!  '
-          CALL PHELPD('create net',22,'-',0,0,IER)
+          helptopic='begin_flow_network'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('create net',nbhelp,'-',0,0,IER)
 
-          h(1)='A flow network can be all air, all water or '
-          h(2)='a mix (as long as the fluids do not mix) '
           CALL EASKABC(' Is the new network:',' ',
-     &      'all air','all water','mixed',IMIX,1)
+     &      'all air','all water','mixed',IMIX,nbhelp)
         elseif(iw.eq.3)then
 
 C Place in memory the names of the various flow components and reset
@@ -292,47 +272,14 @@ C operation files (at least for simple infiltration and ventilation
 C settings). 
 C Create a node for each zone selected, guess where necessary and
 C give warnings to the user.
-          H(1) ='This option scans existing zone operations files'
-          H(2) ='and creates (at a minimum) one node for each zone'
-          H(3) ='with the same name as the zone.' 
-          H(4) =' '
-          H(5) ='It creates fixed volume flow rate components'
-          H(6) ='to represent simple infiltration patterns (it finds'
-          H(7) ='the peak value of infiltration in each zone) and'
-          H(8) ='names the component infil.xxxx where xxxx is the'
-          H(9) ='flow rate in m3/s. '
-          H(10)=' '
-          H(11)='It creates fixed volume flow rate components to'
-          H(12)='represent simple ventilation patterns (via the '
-          H(13)='peak ventilation rate) and names the components '
-          H(14)='vent.xxxx where xxxx is the flow rate in m3/s. '
-          H(15)=' '
-          H(16)='It creates a source boundary wind pressure node'
-          H(17)='and a sink boundary wind pressure node as well'
-          H(18)='as a set of orifices from each zone to the sink'
-          H(19)='to allow exfiltration. Note that because the'
-          H(20)='flow into the zone via infiltration is represented'
-          H(21)='as a volume flow rate component the orientation '
-          H(22)='of the boundary node is a guess as wind pressures '
-          H(23)='are not taken into account in such components. '
-          H(24)=' '
-          H(25)=' '
-          H(26)='This is only a rough network, it will need to '
-          H(27)='be checked. '
-          H(28)=' '
-          H(29)='Many zone operation files where ventilation and/or'
-          H(30)='infiltration rates change during the day will'
-          H(31)='require flow controls to be created. This is not'
-          H(32)='yet done automatically. '
-          H(33)=' '
-          H(34)='Zone operation control of infiltration & ventilation'
-          H(35)='are not yet supported.  '
-          CALL PHELPD('create oper net',35,'-',0,0,IER)
+          helptopic='flow_network_from_opr'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('create oper net',nbhelp,'-',0,0,IER)
 
 C << also should provide user dialog to create flow controls >>
           dok=.true.
           CALL ASKOK('Do you want to auto-generate flow nodes?',
-     &      'from zone operation file data (see help)',OK,dok,35)
+     &      'from zone operation file data (see help)',OK,dok,nbhelp)
           IF(OK)THEN
             CALL MFNAUTO('Z',IER)
           ENDIF
@@ -390,75 +337,16 @@ C File handling functions.
       NITMS1=24
 
 C Help text for this menu.
-      H(1) ='Esp-r simulates one-dimensional fluid flow '
-      H(2) ='in building and/or plant configurations. '
-      H(3) ='This involves the calculation of fluid flow through'
-      H(4) ='branches and nodes in a network which represents the'
-      H(5) ='building and/or plant configuration. The nodes and '
-      H(6) ='branches define boundary pressure points, internal '
-      H(7) ='node characteristics and flow restrictions. '
-      H(8) =' '
-      H(9) ='Esp-r uses an iterative mass balance approach in '
-      H(10)='which nodal pressures are adjusted until the mass'
-      H(11)='residual of internal nodes satisfies some criterion.'
-      H(12)=' '
-      H(13)='Fluid flow network description data summary '
-      H(14)='Fluid flow NODE data:'
-      H(15)='  Name (up to 12 characters with no blanks) '
-      H(16)='  Fluid (1=air, 2=water) '
-      H(17)='  Type  (0=internal; unknown pressure '
-      H(18)='         1=internal; known total pressure '
-      H(19)='         2=boundary; known total pressure  * '
-      H(20)='         3=boundary; wind induced pressure *) '
-      H(21)='  Reference height above datum (m)         * '
-      H(22)='  Fluid temperature (C)'
-      H(23)='     optionally equal to temperature of some node'
-      H(24)='     if type=2: optionally equal to outside temp.'
-      H(25)='        type=3: outside air dry bulb temperature'
-      H(26)='  Supplementary data'
-      H(27)='     if type=0: volume (m^3)'
-      H(28)='        type=1: pressure (Pa) & volume (m^3)'
-      H(29)='        type=2: pressure & node fluid temp flag'
-      H(30)='        type=3: wind pressure index & surf azimuth'
-      H(31)=' * note that pressure of a type 3 node includes '
-      H(32)='   stack pressure evaluated with P=0 at height=0. '
-      H(33)=' '
-      H(34)='Mass flow network description data summary  '
-      H(35)='Fluid flow COMPONENT data: '
-      H(36)='  Name (up to 12 characters with no blanks)'
-      H(37)='  Type (from current list)'
-      H(38)='  Number of supplementary data items '
-      H(39)='  Supplementary data: '
-      H(40)='     (number of data items depends on component type;'
-      H(41)='      first item always fluid type) '
-      H(42)=' '
-      H(43)='Fluid flow LINKAGE data: '
-      H(44)='  Name of 1st node (+ve side of connection) '
-      H(45)='  Height of linkage point relative to 1st node (m) '
-      H(46)='  Name of 2nd node (-ve side of connection) '
-      H(47)='  Height of linkage point relative to 2nd node (m) '
-      H(48)='  Name of linking fluid flow component '
-      H(49)=' '
-      H(50)='Local WIND speed REDUCTION factor : '
-      H(51)='  (= ratio of local wind speed at roof height'
-      H(52)='     and measured wind speed) '
-      H(53)=' '
-      H(54)='Converting zone infiltration and ventilation schedules'
-      H(55)='into a (roughly) equivalent flow network is also an'
-      H(56)='option. This is useful when you started a model with'
-      H(57)='schedules and want to increase resolution/complexity'
-      H(58)='or better track flow rates. '
+      helptopic='flow_network_menu_synop'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
    12 CALL EMENU('Fluid Flow Network',ITEM1,NITMS1,INO)
       IF(INO.EQ.1)THEN
 
 C First check if we're not overwriting existing data
         dok=.false.
-        h(1)='The current network description will be lost if you '
-        h(2)='read in a new network file or create a new network.'
-        h(3)='If it is ok to loose the current data say yes. '
-        CALL ASKOK(' Reading or creating a new model file will',
-     &    ' overwrite any existing data! Is this ok?',OK,dok,3)
+        CALL ASKOK(' Reading or creating a new model file will ',
+     &    'overwrite any existing data! Is this ok?',OK,dok,nbhelp)
         IF(.NOT.OK)THEN
           GOTO 10
         ELSE
@@ -469,9 +357,11 @@ C First check if we're not overwriting existing data
           fndegc=20.0
 
 C Transfer data to fluid flow file and return to main menu.
+          helptopic='flow_network_file_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
    78     LTMP=LAPROB
           CALL EASKS(LTMP,' Fluid flow network file ? ',
-     &      '(non-grapic version)',72,' ','mass flow file',IER,5)
+     &      '(non-grapic version)',72,' ','mass flow file',IER,nbhelp)
           if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN')then
             LAPROB=LTMP
           else
@@ -491,18 +381,11 @@ C Display a list of the currently defined nodes.
 C Allow the user to auto generate a network from the existing building
 C description. At the moment only nodes are generated.
         IF(NNOD.EQ.0)THEN
-          H(1)='You now have the option of automatically generating'
-          H(2)='flow nodes from the building description. Select'
-          H(3)='the zones you wish to include in the flow network and'
-          H(4)='a corresponding flow node will be generated with'
-          H(5)='the same name and with the correct volume.'
-          H(6)=' ' 
-          H(7)='Note: a flow network should include all of the zones in' 
-          H(8)='your model. Any information about infiltration and'
-          H(9)='ventilation in zone operation files will be ignored.'
+          helptopic='flow_auto_generate'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
           CALL ASKOK('Do you want to auto-generate flow nodes?',
-     &      '(see help)',OK,dok,9)
+     &      '(see help)',OK,dok,nbhelp)
           IF(OK)THEN
             CALL MFNAUTO('N',IER)
           ENDIF
@@ -519,17 +402,10 @@ C At the begining detect if there are any conenctions, if not allow the
 C user to select "auto-detect" - nifty!
         IF(NCNN.EQ.0)THEN
           dok=.false.
-          H(1)='You have the option of automatically generating'
-          H(2)='flow connections from your building model.'
-          H(3)='However, you should have up-to-date building '
-          H(4)='connections information and defined the linking '
-          H(5)='components (doors, vents, etc.) you will need before' 
-          H(6)='commencing the automatic connection generation. ' 
-          H(7)=' '
-          H(8)='If you have not done either then DO NOT select the '
-          H(9)='auto detection option.  '
+          helptopic='flow_auto_generate'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Auto-generate flow connections?','(see help)',
-     &      OK,dok,9)
+     &      OK,dok,nbhelp)
           IF(OK) THEN
             CALL MFNAUTO('L',IER)
           ENDIF
@@ -546,11 +422,10 @@ C Link nodes and zones.
           if(ICAAS(IZ).gt.0)then
             write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &         ' is currently linked to: ',NDNAM(ICAAS(IZ))
-            h(1)='You can have nodes which are not linked to a '
-            h(2)='thermal zone, but if you do link nodes and zones '
-            h(3)='then their temperature will match the zone. '
+            helptopic='link_node_to_zone'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKABC(outs,' ','accept',
-     &        'select another','free link',iacc,3)
+     &        'select another','free link',iacc,nbhelp)
             if(iacc.eq.1)then
               goto 33
             elseif(iacc.eq.2)then
@@ -561,9 +436,11 @@ C Link nodes and zones.
               ICAAS(IZ)=0
             endif
           else
+            helptopic='link_node_to_zone'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
      &                          ' has no mass flow node.'
-            CALL EASKAB(outs,' ','accept','select a node',iacc,3)
+            CALL EASKAB(outs,' ','accept','select a node',iacc,nbhelp)
             if(iacc.eq.1)then
               ICAAS(IZ)=0
             elseif(iacc.eq.2)then
@@ -580,9 +457,11 @@ C Link nodes and zones.
 
 C Transfer data to network flow file and return to main menu.
 C Free the file after writing it.
+        helptopic='flow_network_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=LAPROB
    80   CALL EASKS(ltmp,' Fluid flow network file ? ',
-     &    ' ',72,' ','mass flow file',IER,0)
+     &    ' ',72,' ','mass flow file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LAPROB=LTMP
         else
@@ -601,18 +480,21 @@ C << to a graphic network flow file.
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')
       ELSEIF(INO.EQ.23)THEN
-        CALL PHELPD('network data summary',58,'-',0,0,IER)
+        helptopic='flow_network_menu_synop'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('network data summary',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.24)THEN
 
 C Ask if changes need to be saved
         dok=.true.
-        h(1)='Recent changes to the network may be lost if you do'
-        h(2)='not save the changes. '
-        CALL ASKOK('Do you want to save any changes?',' ',OK,dok,2)
+        helptopic='flow_network_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Do you want to save any changes?',' ',
+     &    OK,dok,nbhelp)
         IF(OK)THEN
           ltmp=LAPROB
    81     CALL EASKS(ltmp,' Fluid flow network file ? ',
-     &      ' ',72,' ','mass flow file',IER,0)
+     &      ' ',72,' ','mass flow file',IER,nbhelp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LAPROB=LTMP
           else
@@ -687,7 +569,6 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -709,13 +590,20 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
-      CHARACTER H*72,outs*124,prt*60,DEPRE*40
+      CHARACTER outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       integer IVV  ! for radio button
       integer NITMS,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFNDES'  ! set for subroutine
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 
@@ -728,8 +616,8 @@ C Add/Edit a node to the network.
           IFNOD=INOD
         ENDIF
 
-        h(1)='Node names should be <= 12 characters and have '
-        h(2)='no blanks. Use logical names for clarity.'
+        helptopic='flow_node_names'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(MOD.EQ.'A')THEN
           NODID='new_node'
         ELSE
@@ -737,15 +625,13 @@ C Add/Edit a node to the network.
         ENDIF
    11   T12=NODID
         CALL EASKS(T12,' ',' Node name (<= 12 characters): ',12,
-     &' ','node name',IER,2)
+     &' ','node name',IER,nbhelp)
         call st2name(T12,NODID)
         DO 16 IN=1,NNOD
           IF(NODID(1:12).EQ.NDNAM(IN)(1:12).AND.IN.NE.IFNOD)THEN
             dok=.true.
-            h(1)='You cannot have duplicate node names in a flow '
-            h(2)='network. This is a chance to correct this. '
             call askok('This a duplicate name...','Try again?',
-     &        OK,dok,2)
+     &        OK,dok,nbhelp)
             IF(.NOT.OK)RETURN
             goto 11
           endif
@@ -754,20 +640,22 @@ C Add/Edit a node to the network.
 
 C Input node characteristics; start with node fluid
         write(outs,'(3a)') 'Fluid through node ',NDNAM(IFNOD),':'
-        h(1)='For a node related to a building select air as the '
-        h(2)='fluid type. Water nodes are only required in hydronic '
-        h(3)='plant systems. '
+        helptopic='node_fluid_type'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(imix.eq.1)then
           NDFLD(IFNOD)=1
         elseif(imix.eq.2)then
           NDFLD(IFNOD)=2
         else
           if(NDFLD(IFNOD).eq.1)then
-            CALL EASKAB(outs,'(currently air)','air','water',IW,3)
+            CALL EASKAB(outs,'(currently air)','air','water',
+     &        IW,nbhelp)
           elseif(NDFLD(IFNOD).eq.2)then
-            CALL EASKAB(outs,'(currently water)','air','water',IW,3)
+            CALL EASKAB(outs,'(currently water)','air','water',
+     &        IW,nbhelp)
           else
-            CALL EASKAB(outs,'(currently undefined)','air','water',IW,3)
+            CALL EASKAB(outs,'(currently undefined)','air','water',
+     &        IW,nbhelp)
           endif
           NDFLD(IFNOD)=IW
         endif
@@ -783,34 +671,12 @@ C Node type
           prt=
      &'Node type & pressure: (currently: boundary & wind induced)'
         endif
-        h(1)='The node types are as follows: '
-        h(2)=' '
-        h(3)='internal:unknown - a node describing a volume of air'
-        h(4)='inside the building (usually a zone) the pressure'
-        h(5)='and (usually) temperture of this node are unknown '  
-        h(6)='and is solved at each time step. This is the most '
-        h(7)='commonly used fluid flow node.'
-        h(8)=' '
-        h(9)='internal:known - another node describing a volume of'
-        h(10)='air  inside the building (usually a zone) the pressure'
-        h(11)='is fixed and specified by the user (e.g. the outlet of'
-        h(12)= 'a fan could be specified as an internal:known node.)'
-        h(13)=' '
-        h(14)='boundary:known - a node describing conditions at the '
-        h(15)='boundary of the flow network. The pressure of this node'
-        h(16)='(and sometimes temperature) is assigned by the user. '
-        h(17)=' '
-        h(18)='internal:wind induced - another node describing the'
-        h(19)='conditions at the boundary of the network. In this case'
-        h(20)='the pressure of this node is generated by wind '
-        h(21)='impinging upon a surface. The pressure is a function of'
-        h(22)='wind velocity, wind direction and a pressure '
-        h(23)='coefficient, Cp, (assigned based on the orientation and'
-        h(24)='geometry of the surface): P=f(V,D,Cp).'
+        helptopic='node_type_summary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IVV=1
         CALL EASKATOG(prt,' ',
      &  'internal:unknown','internal:known','boundary:known',
-     &  'boundary:wind induced','continue',' ',' ',IVV,24)
+     &  'boundary:wind induced','continue',' ',' ',IVV,nbhelp)
         IF(IVV.EQ.5) RETURN
         NDTYP(IFNOD)=IVV-1
         IF(NDTYP(IFNOD).EQ.3.AND.NDFLD(IFNOD).NE.1)THEN
@@ -822,20 +688,10 @@ C Node type
 C Get associated zone volume and height if type 0 or 1.
         IF(NDTYP(IFNOD).EQ.0.or.NDTYP(IFNOD).EQ.1.AND.NCOMP.gt.0)THEN
           dok=.true.
-          h(1)='An internal node is usually associated with a thermal'
-          h(2)='zone (i.e. takes that zones temperature). If this is'
-          h(3)='is what you want say yes.'
-          h(4)=' '
-          h(5)='Additional internal nodes can be used to implement'
-          h(6)='controls (e.g. an extra node to allow for components'
-          h(7)='in series). These additional nodes are not associated'
-          h(8)='with the thermal zone, but take their temperature from'
-          h(9)='a node that is associated with a thermal zone. If the'
-          h(10)='you want to create is an additional node then say no'
-          h(11)='and later you will be asked which flow node to take'
-          h(12)='its temperature from. '
-          CALL ASKOK('Is this node associated with a zone?',
-     &      '(see help)',OK,dok,12)
+          helptopic='node_type_summary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Is this flow node associated with a zone?',
+     &      '(see help)',OK,dok,nbhelp)
           IF(OK)THEN
 
 C Redraw the bluiding in the graphic screen.
@@ -865,11 +721,11 @@ C (Re)Set all surfaces to standard line width.
             endif
 
             write(outs,'(a,a)')'Which zone is associated with ',
-     &NDNAM(IFNOD)
+     &        NDNAM(IFNOD)
             IC=-1
             IZ=-1
             WRITE(OUTS,'(A)') 
-     &'Select zone to associated with this node. '
+     &        'Select zone to associated with this node. '
             CALL ASKZONE(IC,0,OUTS,'Select zone:','-','mfn locate',IER)
             call usrmsg(' ',' ','-')
             if(IC.EQ.0.OR.IC.EQ.-1)then
@@ -897,29 +753,19 @@ C Depending on the node type:
         IF(NDTYP(IFNOD).EQ.0)THEN
 
 C NDTYP=0; internal node, unknown pressure.
-  22      H(1)='To aid results recovery when the user is interested'
-          H(2)='in reporting in the context of ACH it is necessary to'
-          H(3)='associate a volume with internal nodes.  Ideally this '
-          H(4)='should match that of any linked thermal zone. '
-          CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
-     &         0.0,'F',0.,'-',1.0,'node volume',IER,4)
+  22      CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
+     &         0.0,'F',0.,'-',1.0,'node volume',IER,nbhelp)
           if(IER.ne.0)goto 22
           SUPNOD(IFNOD,2)=ZVOL
         ELSEIF(NDTYP(IFNOD).EQ.1)THEN
 
 C NDTYP=1; internal node, known pressure.
-   23     H(1)='Specify the pressure of this node - usually gauge '
-          H(1)='pressure (Pa) '
-          VAL=SUPNOD(IFNOD,1)
+   23     VAL=SUPNOD(IFNOD,1)
           CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
-     &       0.0,'-',0.0,'-',1.0,'node pressure',IER,1)
+     &       0.0,'-',0.0,'-',1.0,'node pressure',IER,nbhelp)
           SUPNOD(IFNOD,1)=VAL
-          H(1)='To aid results recovery when the user is interested'
-          H(2)='in reporting in the context of ACH it is necessary to'
-          H(3)='associate a volume with internal nodes.  Ideally this '
-          H(4)='should match that of any linked thermal zone. '
           CALL EASKR(ZVOL,' ',' Node volume (m^3) ? ',
-     &       0.0,'F',0.,'-',1.0,'node volume',IER,0)
+     &       0.0,'F',0.,'-',1.0,'node volume',IER,nbhelp)
           if(IER.ne.0)goto 23
           SUPNOD(IFNOD,2)=ZVOL
         ELSEIF(NDTYP(IFNOD).EQ.2)THEN
@@ -927,11 +773,11 @@ C NDTYP=1; internal node, known pressure.
 C NDTYP=2; boundary node, known pressure and temperature flag.
           VAL=SUPNOD(IFNOD,1)
    60     CALL EASKR(VAL,' ',' Node pressure (Pa) ? ',
-     &       0.0,'-',0.0,'-',1.0,'node pressure',IER,0)
+     &       0.0,'-',0.0,'-',1.0,'node pressure',IER,nbhelp)
           SUPNOD(IFNOD,1)=VAL
           CALL EASKAB(' ','temperature flag indicating: ',
      &    'temperature is a constant',
-     &    'use outside air temperature',IW,0)
+     &    'use outside air temperature',IW,nbhelp)
           IF(IER.NE.0)GOTO 60
           SUPNOD(IFNOD,2)=FLOAT(IW-1)
         ELSEIF(NDTYP(IFNOD).EQ.3)THEN
@@ -940,15 +786,9 @@ C NDTYP=3; boundary node, wind induced pressure.
 
 C Allow the user to determine the surface associated with this node. 
           IZ=-1
-          H(1)='You have selected a wind-induced pressure node: wind'
-          H(2)='impinging upon, or flowing over a surface creates '
-          H(3)='a pressure difference with the inside of the building,'
-          H(4)='driving infiltration and exfiltration through any '
-          H(5)='openings in that surface. '
-          H(6)=' '
-          H(7)='You should select the zone and surface subjected to '
-          H(8)='this wind pressure.' 
-          CALL PHELPD('wind-pressure surface',8,'-',0,0,IER)
+          helptopic='node_type_summary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('wind-pressure surface',nbhelp,'-',0,0,IER)
 
 C Redraw the building in the graphic screen.
           MODBND=.TRUE.
@@ -1018,7 +858,7 @@ C (signal by passing a blank string to erprcdb).
           CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
             CALL EDISP(IUOUT,
-     &'Error opening pressure coefficients database.')
+     &        'Error opening pressure coefficients database.')
             RETURN
           endif
 
@@ -1063,42 +903,8 @@ C If a long list include page facility text.
           IVERT=-1
 
 C Help text for this menu.
-          H(1)='To enable the calculation of wind-induced surface'
-          H(2)='pressures (as required by ESP-r`s fluid flow'
-          H(3)='simulators), a database of angle dependent'
-          H(4)='pressure coefficients is provided.'
-          H(5)='The default ESP-r set contains wind pressure coeffi-'
-          H(6)='cients for surfaces in typical positions and within '
-          H(7)='several different exposure categories.'
-          H(8)='They can be used (with care) for low-rise buildings.'
-          H(9)='See the ESP manual for additional info.'
-          h(10)=' '
-          h(11)='It is also possible to calculate pressure coeffi-' 
-          h(12)='cients using CpCalc (see database maintenance).'
-          h(13)=' '
-          h(14)='Select the pressure coefficient from this list, ' 
-          h(15)='which is most appropriate for the location of the '
-          h(16)='external node.'
-          h(17)=' '
-          h(18)='Notes about pressure coefficients: '
-          H(19)='The first 27 data sets in the standard pressure coef'
-          H(20)='database are from the Air Infiltration & Ventilation'
-          H(21)='Centre Handbook called <Air Infiltration Calculation'
-          H(22)='Techniques - An Applications Guide>. The 27 data '
-          H(23)='sets are only applicable for buildings up to 3 '
-          H(24)='storeys andcome with the usual warnings about usage'
-          H(25)='of the data. '
-          H(26)=' '
-          H(27)='Each data set is described with the following terms:'
-          H(28)=' a) facade or roof at different roof pitch angles'
-          H(29)=' b) the ratio of the building length to width and'
-          H(30)='    for a non square building there will be a long'
-          H(31)='    and a short wall to select'
-          H(32)=' c) site shielding as follows:'
-          H(33)='   exposed - open countryside with no obstructions'
-          H(34)='   simi-exposed - rural with some obstructions'
-          H(35)='   sheltered - urban, surrounded on all sides by'
-          H(36)='     obstructions of similar size.'
+          helptopic='overview_pressure_db'
+          call gethelptext(helpinsub,helptopic,nbhelp)
   
 C Now display the menu.
           call USRMSG('Select the pressure coefficient set which',
@@ -1109,7 +915,9 @@ C Now display the menu.
      &      'You must select one pressure coefficient set!',' ','W')
             GOTO 70
           ELSEIF(IVERT.EQ.NITMS-1)THEN
-            CALL PHELPD('databases overview',36,'-',0,0,IER)
+            helptopic='overview_pressure_db'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('databases overview',nbhelp,'-',0,0,IER)
             GOTO 70
           ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -1132,14 +940,13 @@ C Let user select a pc set.
 C Ask whether choice is OK.
           write(t72,'(a,a)')'Use ',DEPRE(IFOC)
           dok=.true.
-          h(1)='Chance to correct an erronious selection. '
-          CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
+          CALL ASKOK(t72,'as the pressure coefficient set?',
+     &      OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 70
 
 C Input angle external node.
-          H(1)='This angle is used to derive the boundary pressure, '
-          H(2)='which is angular dependent, from the pressure coef db'
-          H(3)='and the current wind speed and direction.'
+          helptopic='boundary_angle_height'
+          call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Ask the user to select the external surface associated with the node.
 C and extract the azimuth info (via SSPAZI). 
@@ -1151,17 +958,16 @@ C and extract the azimuth info (via SSPAZI).
           ENDIF
           CALL EASKR(VAL,' ',
      &       'Surface azimuth angle (degrees clockwise from north): ',
-     &        0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
+     &        0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,nbhelp)
           IF(IER.NE.0)GOTO 70
           SUPNOD(IFNOD,2)=VAL
         ENDIF
 
 C Node reference height.
-        H(1)='Height is used to support buoyancy calculations.'
-        H(2)='and is the height above some arbitrary datum'
-        H(3)='usually ground level (height=0.0m).'
+        helptopic='boundary_angle_height'
+        call gethelptext(helpinsub,helptopic,nbhelp)
    21   CALL EASKR(VALH,' ',' Node reference height above datum (m)?',
-     &  -1000.0,'F',1000.0,'F',1.0,'reference height',IER,3)
+     &  -1000.0,'F',1000.0,'F',1.0,'reference height',IER,nbhelp)
         if(IER.ne.0)goto 21
         HNOD(IFNOD)=VALH
 
@@ -1172,19 +978,11 @@ C user for temperature.
         TNOD(IFNOD)=0.0
         IF(NDTYP(IFNOD).NE.3.AND.
      &    (NDTYP(IFNOD).NE.2.AND.SUPNOD(IFNOD,2).gt.0.001)) THEN
-          h(1)='The inital temperature is the temperature assumed for'
-          h(2)='the node at the beginning of the simulation. If the'
-          h(3)='flow network is part of a thermal model then this'
-          h(4)='temperature is updated with calculated values as the'
-          h(5)='simulation progresses. Otherwise this value is fixed'
-          h(6)='as the nodal temperature. '
-          h(7)=' '
-          h(8)='If "Set to temperature of another node" is chosen then'
-          h(9)='this node will pick up the temperature of a designated'
-          h(10)='node.'
+          helptopic='initail_node_temp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Node temperature: ','(see help)',
      &    'Set initial or constant value',
-     &    'Set to temperature of another flow node',IW,10)
+     &    'Set to temperature of another flow node',IW,nbhelp)
           IT=IW-1
           IF(IT.EQ.0) THEN
              ITND(IFNOD)=0
@@ -1194,7 +992,8 @@ C user for temperature.
                VAL=TNOD(IFNOD)
             endif
             CALL EASKR(VAL,' ','Node temperature (C) ? ',
-     &        -100.0,'F',1000.0,'F',fndegc,'Node temperature',IER,9)
+     &        -100.0,'F',1000.0,'F',fndegc,'Node temperature',IER,
+     &        nbhelp)
              TNOD(IFNOD)=VAL
           ELSE
 
@@ -1210,11 +1009,10 @@ C recursion.
             write(outs,*)'Associated node volume is ',SUPNOD(I,2)
             call edisp(iuout,outs)
             dok=.true.
-            h(1)='The current node can either take the volume of the'
-            h(2)='associated node or have a nominal volume. It only'
-            h(3)='affects the reported air change rates. It should not'
-            h(4)='matter to the flow solver. '
-            call askok('Use volume of associated node?',' ',OK,dok,4)
+            helptopic='flow_node_volume'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call askok('Use volume of associated node?',' ',
+     &        OK,dok,nbhelp)
             if(ok)SUPNOD(IFNOD,2)=SUPNOD(I,2)
           END IF
           call usrmsg(' ',' ','-')
@@ -1226,11 +1024,11 @@ C recursion.
 C Delete a mode from the network
 C Ask if it is OK to delete associated connections if not then return
         IFNOD=INOD
-        H(1)='When deleting a node any connections associated with'
-        H(2)='that node must also be deleted.' 
+        helptopic='flow_node_delete'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
         CALL ASKOK('Delete connections associated with this node?',
-     &    '(Recommended)',OK,dok,2)
+     &    '(Recommended)',OK,dok,nbhelp)
         IF(.NOT.OK) RETURN  
       
 C Delete associated connections
@@ -1271,8 +1069,8 @@ C Firstly check that the maximum number of nodes is not exceeded.
         IFNOD=NNOD+1
 
 C Get a (unique) name for the copied node. 
-        h(1)='Node names should be <= 12 characters and have '
-        h(2)='no blanks. Use logical names for clarity.'
+        helptopic='flow_node_names'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(MOD.EQ.'A')THEN
           NODID='new_node'
         ELSE
@@ -1280,7 +1078,7 @@ C Get a (unique) name for the copied node.
         ENDIF
  111    T12=NODID
         CALL EASKS(T12,' ',' Node name (<= 12 characters): ',12,
-     &' ','node name',IER,2)
+     &' ','node name',IER,nbhelp)
         call st2name(T12,NODID)
         DO 161 IN=1,NNOD
           IF(NODID(1:12).EQ.NDNAM(IN)(1:12).AND.IN.NE.IFNOD)THEN
@@ -1317,7 +1115,6 @@ C       'C' - Copy
 
 #include "net_flow.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW6/IVALCM(MCMV)
       COMMON/MFLOW7/LVALCM(MCMV)
@@ -1327,9 +1124,16 @@ C       'C' - Copy
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       dimension clist(MCMV),IVALC(MCMV)
-      CHARACTER outs*124,clist*68,prompt*32,h*72,T12*12
+      CHARACTER outs*124,clist*68,prompt*32,T12*12
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12,CMPID*12, MOD*1
       LOGICAL OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFCDES'  ! set for subroutine
    
       IF(MOD.EQ.'A'.OR.MOD.EQ.'E')THEN
 
