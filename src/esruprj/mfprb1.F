@@ -1144,11 +1144,11 @@ C For help messages
           IFCMP=ICMP
           CMPID=CMNAM(IFCMP)
         ENDIF
-        h(1)='Component names should be <= 12 characters and '
-        h(2)='have no blanks. Use logical names for clarity.'
+        helptopic='flow_network_comp_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  4      T12=CMPID
         CALL EASKS(T12,' ',' Component name (<= 12 characters):',
-     &    12,' ','comp name',IER,0)
+     &    12,' ','comp name',IER,nbhelp)
         call st2name(T12,CMPID)
         ICMP=0
         DO 5 I=1,NCMP
@@ -1168,7 +1168,8 @@ C if adding a component.
         endif
       
 C Input component characteristics; start with component type.
-   20   H(1)=' This list includes all available mass flow components.'
+   20   helptopic='flow_cmp_type_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC=1
 
 C Make up a list of component types.
@@ -1183,7 +1184,7 @@ C Make up a list of component types.
           write(prompt,'(a)') 'Current component type is: NONE'
         ENDIF
         CALL EPICKS(INPIC,IVALC,' Select a component: ',prompt,
-     &      68,MCMV,clist,'Component type & description',IER,1)
+     &      68,MCMV,clist,'Component type & description',IER,nbhelp)
         IF(INPIC.EQ.0) RETURN
         if(IVALC(1).ne.0)then
           IC=IVALC(1)
@@ -1261,10 +1262,10 @@ C Then call appropriate supplementary data input subroutine.
 
 C Ask if it is OK to delete associated connections if not then return
         dok=.true.
-        H(1)='When deleting a component, any connections with that'
-        H(2)='component must also be deleted.'
+        helptopic='flow_component_delete'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Delete connections associated with component?',
-     &    '(see help)',OK,dok,2)
+     &    '(see help)',OK,dok,nbhelp)
         IF(.NOT.OK) RETURN  
       
 C Delete associated connections
@@ -1294,11 +1295,11 @@ C Now delete the component
       ELSEIF(MOD.EQ.'C')THEN
         IFCMP=NCMP+1
         CMPID='New_comp'
-        h(1)='Component names should be <= 12 characters and '
-        h(2)='have no blanks. Use logical names for clarity.'
+        helptopic='flow_network_comp_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  47     T12=CMPID
         CALL EASKS(T12,' ',' Component name (<= 6 characters):',
-     &    12,' ','comp name',IER,0)
+     &    12,' ','comp name',IER,nbhelp)
         call st2name(T12,CMPID)
         DO 57 I=1,NCMP
           if(CMPID(1:12).EQ.CMNAM(I)(1:12).AND.I.NE.IFCMP)then
@@ -1340,7 +1341,6 @@ C             connections between nodes I and J
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -1351,9 +1351,16 @@ C             connections between nodes I and J
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
       DIMENSION ICONS(MCNN,MCNN)
-      CHARACTER outs*124,h*72
+      CHARACTER outs*124
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,MOD*1
       LOGICAL OK,dok,DMFCON
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFLDES'  ! set for subroutine
 
 C Zeroise ICONS
       DO 5 I=1,MCNN
@@ -1394,19 +1401,19 @@ C types and return data.
         IF(IE.EQ.0) RETURN
         if(IS.EQ.IE)then
           dok=.true.
-          h(1)='You still cannot connect a node to itself. To correct'
-          h(2)='this say yes. '
+          helptopic='flow_connect_to_self'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok('You cannot connect a node to itself...',
-     &      'try again?',OK,dok,2)
+     &      'try again?',OK,dok,nbhelp)
           IF(.NOT.OK) RETURN
           goto 19
         endif
         if(NDFLD(IS).NE.NDFLD(IE))then
           dok=.true.
-          h(1)='The fluid at the start and end of this connection does'
-          h(2)='not match. Check the components as well. '
+          helptopic='flow_fluid_not_match'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok('Fluid types to not match...','try again?',
-     &      OK,dok,2)
+     &      OK,dok,nbhelp)
           IF(.NOT.OK) RETURN
           goto 19
         endif
@@ -1426,28 +1433,27 @@ C Confirm if a new connection is to be added.
             IF(MOD.EQ.'A'.AND.ICNN.NE.IFCN)THEN
               IF(.NOT.DMFCON)THEN
                 dok=.true.
-                h(1)='An existing connection between the two nodes has'
-                h(2)='been detected. If your network requires parallel'
-                h(3)='flow paths (such as an orifice and a crack) then'
-                h(4)='answer yes. '
+                helptopic='flow_additional_con'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 CALL ASKOK
      &            ('A connection already exists between these ',
-     &            ' two nodes - do you want to add another? ',OK,dok,4)
+     &            ' two nodes - do you want to add another? ',
+     &            OK,dok,nbhelp)
                 IF(.NOT.OK) RETURN  
                   DMFCON=.TRUE. 
-                ENDIF 
+                ENDIF
+ 
 C Look for a component type 220, 230, 240 or 250.
                 ICMP=ITPCON(ICNN)
                 ICMPTP=ITPCMP(ICMP)
                 IF(ICMPTP.EQ.220.OR.ICMPTP.EQ.230.OR.
      &             ICMPTP.EQ.240.OR.ICMPTP.EQ.250) THEN
                   dok=.true.
-                  h(1)='Some types of components should not be used'
-                  h(2)='in parallel between two nodes. This is a chance'
-                  h(3)='to correct this. '
+                  helptopic='flow_not_allowed_con'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL ASKOK(
      &'You cannot have a duplicate connection between nodes for',
-     &'types 220, 230, 240 and 250. Try again?',OK,dok,3)  
+     &'types 220, 230, 240 and 250. Try again?',OK,dok,nbhelp)  
                 IF(.NOT.OK)THEN
                   RETURN
                 ELSE
@@ -1473,8 +1479,10 @@ C Calculate a suggested linkage height.
           VAL=((HNOD(NODPS(IFCN))+HNOD(NODNE(IFCN)))/2.)
      &-HNOD(NODPS(IFCN))
         ENDIF
+        helptopic='flow_node_height_diff'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(VAL,outs,' ? ',
-     &      -100.0,'W',100.0,'W',0.0,'+relative node height',IER,0)
+     &    -100.0,'W',100.0,'W',0.0,'+relative node height',IER,nbhelp)
         IF(IER.NE.0) GOTO 60
         HGTPS(IFCN)=VAL
 
@@ -1488,7 +1496,7 @@ C Height of -ve linkage point relative to NODNE.
      &-HNOD(NODNE(IFCN))
         ENDIF
         CALL EASKR(VAL,outs,' ? ',
-     &      -100.0,'W',100.0,'W',0.0,'- relative node height',IER,0)
+     &    -100.0,'W',100.0,'W',0.0,'- relative node height',IER,nbhelp)
         IF(IER.NE.0) GOTO 70
         HGTNE(IFCN)=VAL
 
@@ -1522,12 +1530,11 @@ C duplicate connection.
  88       CONTINUE
           IF(DMFCON)THEN
             dok=.true.
-            h(1)='Some types of components should not be used'
-            h(2)='twice between two nodes. This is a chance'
-            h(3)='to correct this. '
+            helptopic='flow_not_allowed_con'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(
      &    'You cannot use types 220, 230, 240 and 250 twice between',
-     &    'the same two nodes. Try again?',OK,dok,3)  
+     &    'the same two nodes. Try again?',OK,dok,nbhelp)  
             IF(.NOT.OK)THEN
               RETURN
             ELSE
@@ -1630,7 +1637,6 @@ C Fluid flow model file: edit or input wind speed reduction factor
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -1640,52 +1646,48 @@ C Fluid flow model file: edit or input wind speed reduction factor
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      CHARACTER outs*124,H*72
+      CHARACTER outs*124
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFWRED'  ! set for subroutine
+
 C Warn if current wind reduction factor is zero
-      H(1)='Edit / input local wind speed reduction factor'
-      H(2)=' -------------------------------------------- '
-      H(3)='which is the ratio of local wind speed at roof'
-      H(4)='height (= reference level for wind pressure) '
-      H(5)='and coefficients the measured wind speed, as '
-      H(6)='read from the climate file.  '
+      helptopic='flow_wind_reduction'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IF(WRED.LE.0.0)CALL usrmsg(' The current wind reduction factor ',
      &  ' effectively suggests zero wind pressure !!','W')
       WRITE(outs,1010) WRED
  1010 FORMAT(' Wind speed reduction factor [current value = ',F6.3,'];',
      &       ' edit this ?')
       dok=.true.
-      CALL ASKOK(outs,' edit this (see help)?',OK,dok,6)
+      CALL ASKOK(outs,' edit this (see help)?',OK,dok,nbhelp)
       IF(.NOT.OK)RETURN
 
 C Calculation model ?
-   11 H(1)=' Wind calculation models: '
-      H(2)=' 0: input wind speed reduction factor directly'
-      H(3)='    or calculate it, on the basis of: '
-      H(4)=' 1: powerlaw wind profile '
-      H(5)=' 2: logarithmic wind profile '
-      H(6)=' 3: LBL air infiltration model wind profile'
+   11 helptopic='wind_reduction_opts'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ICALC=0
       CALL EASKABCD('Which calculation model: ','(see help)',
-     &'Input a value','Powerlaw','Logarithmic','LBL model',ICLC,6)
+     &  'Input a value','Powerlaw','Logarithmic','LBL model',
+     &  ICLC,nbhelp)
       ICALC=ICLC-1
 
 C Direct input of wind speed reduction factor.
       IF(ICALC.EQ.0)THEN
         WRED=1.
-        H(1)='This is a value between 0.0-1.0'
   88    CALL EASKR(WRED,' ',' Local wind speed reduction factor ? ',
-     &    0.0,'F',100.0,'W',1.0,'- wind speed reduction',IER,1)
+     &    0.0,'F',100.0,'W',1.0,'- wind speed reduction',IER,nbhelp)
         IF(IER.NE.0)GOTO 88
         RETURN
       ENDIF
 
 C Allow the user to select the roof of the building
-      H(1)='The roof height is a parameter required'
-      H(2)='for this calculation. Please select the '
-      H(3)='zone containing the roof.'
-      CALL PHELPD('wind model',6,'-',0,0,IER)
+      CALL PHELPD('wind model',nbhelp,'-',0,0,IER)
       IZ=0
       CALL ASKZONE(IZ,0,'Select the zone containing the roof.',
      &  'Select zone','-','wpn locate',IER)
@@ -1734,63 +1736,39 @@ C Use SSURCOG as the average height of this surface
       ROOFH=ZAVE
 
 C Roof height ?
-      h(1)='Height is in metres. '
   89  CALL EASKR(ROOFH,' ',' Roof height ? ',
-     &    0.0,'F',1000.0,'W',1.0,'Roof height',IER,1)
+     &    0.0,'F',1000.0,'W',1.0,'Roof height',IER,nbhelp)
       IF(IER.NE.0)GOTO 89
 
 C Depending on wind profile model
       IF(ICALC.EQ.1)THEN
 
 C 'powerlaw' wind profile.
-  90    H(1)=' '
-        H(2)=' [powerlaw] wind profile : '
-        H(3)='      U/Um = K.z**a   {BS5925} '
-        H(4)=' '
-        H(5)=' eg.: terrain                       K    a '
-        H(6)='   open flat country              0.68  0.17'
-        H(7)='   country, scattered wind breaks 0.52  0.20'
-        H(8)='   urban                          0.35  0.25'
-        H(9)='   city                           0.21  0.33'
-        CALL EASKR(CF1,'(see help)',' K factor: ',
-     &    0.0,'F',100.0,'W',1.0,'K factor',IER,9)
+  90    CALL EASKR(CF1,'(see help)',' K factor: ',
+     &    0.0,'F',100.0,'W',1.0,'K factor',IER,nbhelp)
         CALL EASKR(CF2,'(see help)',' a factor: ',
-     &    0.0,'F',100.0,'W',1.0,'K factor',IER,9)
+     &    0.0,'F',100.0,'W',1.0,'K factor',IER,nbhelp)
         if(ier.ne.0)goto 90
         WRED=CF1*ROOFH**CF2
         WRITE(outs,1011) WRED
  1011   FORMAT(' Wind speed reduction factor [new value = ',F6.3,'];')
         dok=.true.
-        h(1)='Please confirm the derived value.'
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
+        CALL ASKOK(outs,' Is this OK ?',OK,dok,nbhelp)
         IF(OK)RETURN
         GOTO 11
       ELSEIF(ICALC.EQ.2)THEN
 
 C Logarithmic wind profile.
-  91    H(1)=' '
-        H(2)=' Logarithmic wind profile:'
-        H(3)='    U    {Us ln((z-d)/z0)}loc  '
-        H(4)='    -- = --------------------  '
-        H(5)='    Um   {Us ln((z-d)/z0)}met  '
-        H(6)=' '
-        H(7)='    ------------------------------------  '
-        H(8)=' eg.: terrain                       z0    d  '
-        H(9)='   open flat country               0.03  0.0'
-        H(10)='   country, scattered wind breaks  0.1   0.0'
-        H(11)='   rural                           0.5   0.7h'
-        H(12)='   urban                           1.0   0.8h'
-        H(13)='   city                           >2.0   0.8h'
-        CALL EASKR(CF1,'(see help)',' z0 for local site: ',
-     &    0.0,'F',100.0,'W',1.0,'z0 factor',IER,13)
+  91    CALL EASKR(CF1,'(see help)',' z0 for local site: ',
+     &    0.0,'F',100.0,'W',1.0,'z0 factor',IER,nbhelp)
         CALL EASKR(CF2,'(see help)',' d  for local site: ',
-     &    0.0,'F',ROOFH,'F',1.0,'d factor',IER,13)
+     &    0.0,'F',ROOFH,'F',1.0,'d factor',IER,nbhelp)
         CALL EASKR(CF3,'(see help)',' z for meteo site [~ 10]   : ',
-     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,13)
+     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,nbhelp)
         CALL EASKR(CF4,'(see help)',' z0 for meteo site [~ 0.03]: ',
-     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,13)
+     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,nbhelp)
         CALL EASKR(CF5,'(see help)',' d for meteo site [~ 0.0]  : ',
-     &    0.0,'F',CF3,'F',1.0,'z0 factor',IER,13)
+     &    0.0,'F',CF3,'F',1.0,'z0 factor',IER,nbhlep)
         if(ier.ne.0)goto 91
 
 C Based on:
@@ -1800,43 +1778,30 @@ C Us,l/Us,m = (z0,l/z0,m)**0.1 (acc. dictaat Wisse 1990)
         WRITE(outs,1012) WRED
  1012   FORMAT(' Wind speed reduction factor [new value = ',F6.3,'];')
         dok=.true.
-        h(1)='Please confirm the derived value.'
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
+        CALL ASKOK(outs,' is this OK ?',OK,dok,nbhelp)
         IF(OK)RETURN
         GOTO 11
       ELSEIF(ICALC.EQ.3)THEN
 
 C LBL model wind profile.
- 92     H(1)=' '
-        H(2)=' wind profile - '
-        H(3)=' LBL model  : U    {a (z/10)**b}loc  '
-        H(4)='              -- = ----------------  '
-        H(5)='              Um   {a (z/10)**b}met  '
-        H(6)=' ----------------------------------  '
-        H(7)=' eg.: terrain                     a     b  '
-        H(8)='      open flat country        1.00  0.15  '
-        H(9)='      rural                    0.85  0.20  '
-        H(10)='      urban                    0.67  0.25  '
-        H(11)='      city                     0.47  0.35  '
-        CALL PHELPD('Logarithmic wind profile.',11,'-',0,0,IER)
+ 92     CALL PHELPD('Logarithmic wind profile.',nbhelp,'-',0,0,IER)
         CALL EASKR(CF1,' ',' a for local site: ',
-     &    0.0,'F',0.0,'-',1.0,'a factor',IER,11)
+     &    0.0,'F',0.0,'-',1.0,'a factor',IER,nbhelp)
         CALL EASKR(CF2,' ',' b  for local site: ',
-     &    0.0,'F',0.0,'-',1.0,'b factor',IER,11)
+     &    0.0,'F',0.0,'-',1.0,'b factor',IER,nbhelp)
         CALL EASKR(CF3,' ',' z for meteo site [~ 10]   : ',
-     &    0.0,'F',0.0,'-',1.0,'z factor',IER,11)
+     &    0.0,'F',0.0,'-',1.0,'z factor',IER,nbhelp)
         CALL EASKR(CF4,' ',' z0 for meteo site [~ 1.0]: ',
-     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,11)
+     &    0.0,'F',0.0,'-',1.0,'z0 factor',IER,nbhelp)
         CALL EASKR(CF5,' ',' d for meteo site [~ 0.15]  : ',
-     &    0.0,'F',0.0,'-',1.0,'d factor',IER,11)
+     &    0.0,'F',0.0,'-',1.0,'d factor',IER,nbhelp)
         if(ier.ne.0)goto 92
 
         WRED=CF1*(ROOFH/10.)**CF2/(CF4*(CF3/10.)**CF5)
         WRITE(outs,1013) WRED
  1013   FORMAT(' Wind speed reduction factor [new value = ',F6.3,'];')
         dok=.true.
-        h(1)='Please confirm the derived value.'
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
+        CALL ASKOK(outs,' is this OK ?',OK,dok,nbhelp)
         IF(OK)RETURN
         GOTO 11
       ENDIF

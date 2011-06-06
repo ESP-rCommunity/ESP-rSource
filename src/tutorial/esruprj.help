@@ -12946,78 +12946,61 @@ c              call askok(outs,
 *enditem
         CALL ASKOK('Delete connections associated with this node?',
 *subroutine MFCDES
-*item MFCDES
-'Component names should be <= 12 characters and '
-'have no blanks. Use logical names for clarity.'
+*item MFCDES flow_network_comp_name
+'Component names should be <= 12 characters and have no blanks.'
+'Use logical and/or descriptive names for clarity.'
 *enditem
         CALL EASKS(T12,' ',' Component name (<= 12 characters):',
-*item MFCDES
-' This list includes all available mass flow components.'
+*item MFCDES flow_cmp_type_list
+'Components used in a flow network must be selected from known'
+'types. This list includes all available mass flow components.'
+'One of the planning tasks for designing flow networks is to'
+'define component types.'
 *enditem
         CALL EPICKS(INPIC,IVALC,' Select a component: ',prompt,
-*item MFCDES
-'When deleting a component, any connections with that'
-'component must also be deleted.'
+*item MFCDES flow_component_delete
+'When deleting a component, any connections with that component'
+'must also be deleted.  Note: deltion of components is optional'
+'because unused components are allowed in a network.  Indeed,'
+'some users plan several variants of components so that they can'
+'test out alternatives easily.'
 *enditem
         CALL ASKOK('Delete connections associated with component?',
-*item MFCDES
-'Component names should be <= 12 characters and '
-'have no blanks. Use logical names for clarity.'
-*enditem
-        CALL EASKS(T12,' ',' Component name (<= 6 characters):',
 *subroutine MFLDES
-*item MFLDES
-*enditem
-        call ASKRNOD(outs,'-',IS,IER)
-*item MFLDES
-*enditem
-        call ASKRNOD(outs,'-',IE,IER)
-*item MFLDES
-'You still cannot connect a node to itself. To correct'
-'this say yes. '
+*item MFLDES flow_connect_to_self
+'You cannot connect a node to itself. To correct this you need'
+'to say yes to the prompt to respecify the connection. '
 *enditem
           call askok('You cannot connect a node to itself...',
-*item MFLDES
+*item MFLDES flow_fluid_not_match
 'The fluid at the start and end of this connection does'
 'not match. Check the components as well. '
 *enditem
           call askok('Fluid types to not match...','try again?',
-*item MFLDES
-'An existing connection between the two nodes has'
-'been detected. If your network requires parallel'
-'flow paths (such as an orifice and a crack) then'
-'answer yes. '
+*item MFLDES flow_additional_con
+'An existing connection between the two nodes has been detected.'
+'If your network requires parallel flow paths (such as an orifice'
+'and a crack) then answer yes.'
 *enditem
                 CALL ASKOK
-*item MFLDES
-'Some types of components should not be used'
-'in parallel between two nodes. This is a chance'
-'to correct this. '
+*item MFLDES flow_not_allowed_con
+'Some types of components (e.g. 220 230 240 or 250)should not be'
+'used in parallel between two nodes. This is a chance to re-specify'
+'this connection. '
 *enditem
                   CALL ASKOK(
-*item MFLDES
+*item MFLDES flow_node_height_diff
+'To support bouyancy calculations the relative difference between'
+'the two nodes of the connection and the component need to be'
+'specified.  One technique is to imagine placing your view point'
+'at the component and look at the node. If you are looking up the'
+'difference is positive, if you are looking down the difference is'
+'negative.'
 *enditem
         CALL EASKR(VAL,outs,' ? ',
-*item MFLDES
-*enditem
         CALL EASKR(VAL,outs,' ? ',
-*item MFLDES
-*enditem
-        call ASKRCMP(outs(1:lnblnk(outs)),'-',ICMP,IER)
-*item MFLDES
-'Some types of components should not be used'
-'twice between two nodes. This is a chance'
-'to correct this. '
-*enditem
-            CALL ASKOK(
-*item MFLDES
-*enditem
-          call ASKRNOD('  supplementary node','-',ISN,IER)
-*item MFLDES
-*enditem
-          call ASKRNOD(' 2nd supplementary node','-',ISN2,IER)
 *subroutine MFWRED
-*item MFWRED
+*item MFWRED flow_wind_reduction
 'Edit / input local wind speed reduction factor'
 ' -------------------------------------------- '
 'which is the ratio of local wind speed at roof'
@@ -13026,119 +13009,66 @@ c              call askok(outs,
 'read from the climate file.  '
 *enditem
       CALL ASKOK(outs,' edit this (see help)?',OK,dok,6)
-*item MFWRED
+*item MFWRED wind_reduction_opts
 ' Wind calculation models: '
-' 0: input wind speed reduction factor directly'
+' 0: input wind speed reduction factor directly with'
+'    values in the range 0.0 to 1.0.'
+'  '
 '    or calculate it, on the basis of: '
-' 1: powerlaw wind profile '
-' 2: logarithmic wind profile '
-' 3: LBL air infiltration model wind profile'
-*enditem
-      CALL EASKABCD('Which calculation model: ','(see help)',
-*item MFWRED
-'This is a value between 0.0-1.0'
-*enditem
-  88    CALL EASKR(WRED,' ',' Local wind speed reduction factor ? ',
-*item MFWRED
-'The roof height is a parameter required'
-'for this calculation. Please select the '
-'zone containing the roof.'
-*enditem
-      CALL PHELPD('wind model',6,'-',0,0,IER)
-*item MFWRED
-*enditem
-      CALL ASKZONE(IZ,0,'Select the zone containing the roof.',
-*item MFWRED
-*enditem
-      CALL EASKSUR(ISZONE,ISO,'-',OUTS,' ',IER)
-*item MFWRED
-'Height is in metres. '
-*enditem
-  89  CALL EASKR(ROOFH,' ',' Roof height ? ',
-*item MFWRED
-' '
-' [powerlaw] wind profile : '
+' 1: powerlaw wind profile with the following options:
 '      U/Um = K.z**a   {BS5925} '
 ' '
-' eg.: terrain                       K    a '
-'   open flat country              0.68  0.17'
-'   country, scattered wind breaks 0.52  0.20'
-'   urban                          0.35  0.25'
-'   city                           0.21  0.33'
-*enditem
-        CALL EASKR(CF1,'(see help)',' K factor: ',
-*item MFWRED
-*enditem
-        CALL EASKR(CF2,'(see help)',' a factor: ',
-*item MFWRED
-'Please confirm the derived value.'
-*enditem
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
-*item MFWRED
+'   eg.: terrain                       K    a '
+'     open flat country              0.68  0.17'
+'     country, scattered wind breaks 0.52  0.20'
+'     urban                          0.35  0.25'
+'     city                           0.21  0.33'
+'
+' 2: logarithmic wind profile with the following options:'
+'      U    {Us ln((z-d)/z0)}loc  '
+'      -- = --------------------  '
+'      Um   {Us ln((z-d)/z0)}met  '
 ' '
-' Logarithmic wind profile:'
-'    U    {Us ln((z-d)/z0)}loc  '
-'    -- = --------------------  '
-'    Um   {Us ln((z-d)/z0)}met  '
-' '
-'    ------------------------------------  '
-' eg.: terrain                       z0    d  '
-'   open flat country               0.03  0.0'
-'   country, scattered wind breaks  0.1   0.0'
-'   rural                           0.5   0.7h'
-'   urban                           1.0   0.8h'
-'   city                           >2.0   0.8h'
-*enditem
-        CALL EASKR(CF1,'(see help)',' z0 for local site: ',
-*item MFWRED
-*enditem
-        CALL EASKR(CF2,'(see help)',' d  for local site: ',
-*item MFWRED
-*enditem
-        CALL EASKR(CF3,'(see help)',' z for meteo site [~ 10]   : ',
-*item MFWRED
-*enditem
-        CALL EASKR(CF4,'(see help)',' z0 for meteo site [~ 0.03]: ',
-*item MFWRED
-*enditem
-        CALL EASKR(CF5,'(see help)',' d for meteo site [~ 0.0]  : ',
-*item MFWRED
-'Please confirm the derived value.'
-*enditem
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
-*item MFWRED
-' '
-' wind profile - '
-' LBL model  : U    {a (z/10)**b}loc  '
-'              -- = ----------------  '
-'              Um   {a (z/10)**b}met  '
+'      ------------------------------------  '
+'   eg.: terrain                       z0    d  '
+'     open flat country               0.03  0.0'
+'     country, scattered wind breaks  0.1   0.0'
+'     rural                           0.5   0.7h'
+'     urban                           1.0   0.8h'
+'     city                           >2.0   0.8h'
+'  '
+' 3: LBL air infiltration model wind profile'
+'      U    {a (z/10)**b}loc  '
+'            -- = ----------------  '
+'      Um   {a (z/10)**b}met  '
 ' ----------------------------------  '
-' eg.: terrain                     a     b  '
+'    eg.: terrain                 a     b  '
 '      open flat country        1.00  0.15  '
 '      rural                    0.85  0.20  '
 '      urban                    0.67  0.25  '
 '      city                     0.47  0.35  '
+'  '
+'Options 1 2 or 3 require the following:'
+'  - roof height - you will be asked to select a zone and a surface'
+'    which represents the roof and then you can confirm the height.'
 *enditem
-        CALL PHELPD('Logarithmic wind profile.',11,'-',0,0,IER)
-*item MFWRED
-*enditem
+      CALL EASKABCD('Which calculation model: ','(see help)',
+  88  CALL EASKR(WRED,' ',' Local wind speed reduction factor ? ',
+      CALL PHELPD('wind model',6,'-',0,0,IER)
+  89  CALL EASKR(ROOFH,' ',' Roof height ? ',
+      CALL EASKR(CF1,'(see help)',' K factor: ',
+      CALL EASKR(CF2,'(see help)',' a factor: ',
+      CALL EASKR(CF1,'(see help)',' z0 for local site: ',
+      CALL EASKR(CF2,'(see help)',' d  for local site: ',
+      CALL EASKR(CF3,'(see help)',' z for meteo site [~ 10]   : ',
+      CALL EASKR(CF4,'(see help)',' z0 for meteo site [~ 0.03]: ',
+      CALL EASKR(CF5,'(see help)',' d for meteo site [~ 0.0]  : ',
+      CALL PHELPD('Logarithmic wind profile.',11,'-',0,0,IER)
         CALL EASKR(CF1,' ',' a for local site: ',
-*item MFWRED
-*enditem
         CALL EASKR(CF2,' ',' b  for local site: ',
-*item MFWRED
-*enditem
         CALL EASKR(CF3,' ',' z for meteo site [~ 10]   : ',
-*item MFWRED
-*enditem
         CALL EASKR(CF4,' ',' z0 for meteo site [~ 1.0]: ',
-*item MFWRED
-*enditem
         CALL EASKR(CF5,' ',' d for meteo site [~ 0.15]  : ',
-*item MFWRED
-'Please confirm the derived value.'
-*enditem
-        CALL ASKOK(outs,' is this OK ?',OK,dok,1)
 *subroutine MFNAUTO
 *item MFNAUTO
 'Select the zones to be included in the flow network.'
