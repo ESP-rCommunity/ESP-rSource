@@ -1,6 +1,6 @@
              Setting OSX 10.5 or 10.6 for ESP-r
                       Jon W. Hand, ESRU
-                       2 June 2011
+                       7 June 2011
 
 INTRODUCTION
 
@@ -46,7 +46,11 @@ Note that there is an issue with shading calculations on OSX 10.6
 which limits the application of ESP-r on this platform if you
 are using the older compilers - however the GCC 4.6 compilers
 from the HPC Mac site (see below) in conjunction with the standard
-Install script produces an ish module which works.
+Install script produces an ish module which works.  Also note that
+the X11 version can be compiled with the standard Install script
+which forces a 32bit executable. The GTK version requires the
+Install script to be edited to change -m32 to -m64 because the
+GTK libraries are 64bit.
 
 FINK
 
