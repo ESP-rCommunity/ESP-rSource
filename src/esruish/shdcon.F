@@ -47,11 +47,13 @@ C geometry.h provides commons G0 and G2.
       common/outin/iuout,iuin
 
       common/contr/mon,isc(ms),iyd
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/ract/paction
 
       dimension irecs(ms),iavdec(12)
-      character ltrns*72,tbase*72,outs*124
+      character tbase*72,outs*124
       character*3 month(12)
       character act*1,paction*16
       logical ok,dok

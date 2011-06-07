@@ -53,6 +53,8 @@ C                 in common.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -60,7 +62,7 @@ C                 in common.
 
       dimension month(12),iavdec(12)
       character paction*16
-      character month*3,outs*124,tbase*72,ltrns*72,act*1
+      character month*3,outs*124,tbase*72,act*1
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc

@@ -123,6 +123,8 @@ C IEEE callback (Solaris)
       common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       
       integer ncomp,ncon
@@ -153,7 +155,7 @@ C Name of current application.
       common/appname/cAppName
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
-      character*72 lname,ltrns,tbase
+      character*72 lname,tbase
       character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
@@ -577,7 +579,7 @@ C A new binary file was created from an existing ascii so
 C the requested useupdate_silent task has been completed.
                  loaded_existing=.true.
                  if(paction(1:16).eq.'useupdate_silent')then
-                   call pauses(1)
+C                   call pauses(1)
                    call epagend
                    stop
                  endif
@@ -635,7 +637,6 @@ C asci2bin.
 
 C There are no files to cleanup so just convert and exit.
                 call sifimport(icomp,ascif,ier)
-                call pauses(1)
                 call epagend
                 stop     
               endif
@@ -688,7 +689,6 @@ C starting conversion.
 
 C There are no files to cleanup so just convert and exit.
                call sifimport(icomp,ascif,ier)
-               call pauses(1)
                call epagend
                stop     
              endif
@@ -1617,7 +1617,6 @@ C or if the user requested a file conversion.
      &           exportfile(1:lnblnk(exportfile)),'...'
                call edisp(iuout,outs)
                call sifimport(icomp,exportfile,ier)
-               call pauses(1)
                ifstat=8   ! signal import was done
              endif
            endif
