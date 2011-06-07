@@ -90,6 +90,7 @@ C no selection.  'iva' is the array of selections.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c24/izstocn(mcom,ms)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation;

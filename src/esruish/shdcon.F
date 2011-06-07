@@ -46,6 +46,7 @@ C geometry.h provides commons G0 and G2.
       common/filep/ifil
       common/outin/iuout,iuin
 
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       character ltrns*72
       integer multic,mons,monf
@@ -130,9 +131,11 @@ C Calculate shading for specified period.
          monf=12
          mon=mons
       else
+         if(mons.gt.12) mons=1  ! if mons was clobbered reset
          call easki(mons,' ','Start month number?',
      &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
+         if(monf.gt.12) monf=12  ! if monf was clobbered reset
          call easki(monf,' ','End month number?',
      &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
@@ -191,6 +194,7 @@ c   icont  - >0 if shaded surfaces were found
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
@@ -328,6 +332,7 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/shad4/oshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ihtime/ihour
       common/sangl1/sazi1,salt1

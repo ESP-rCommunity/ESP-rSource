@@ -106,7 +106,8 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       CHARACTER OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
-      integer ivalold
+      integer ivalold   ! to remember passed value in case of cancel
+      integer IVALUE    ! for passing to askint
 
       IER=0
 

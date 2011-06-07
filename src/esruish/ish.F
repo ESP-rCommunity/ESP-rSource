@@ -121,6 +121,7 @@ C IEEE callback (Solaris)
      &            itobs,ithls,ithlz,itgrd,grdis,itppsw
       common/ray3/modify,modlen,modbnd
       common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
       character ltrns*72
@@ -1159,6 +1160,7 @@ C in the zone transitional shading file or from common blocks).
             helptopic='synopsis_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)
             call tstamp('>','Ish: shading synopsis')
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
   202       call easki(mon,' ','Computation month number?',
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
@@ -1212,6 +1214,7 @@ C shading file.
          else
             helptopic='graph_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
    66       mon=mons
   203       call easki(mon,' ','Computation month number?',
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
@@ -1319,6 +1322,7 @@ C held in the zone shading & insolation db.)
             goto 201
          else
             call tstamp('>','Ish: list insolation synopsis')
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
             helptopic='synopsis_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)

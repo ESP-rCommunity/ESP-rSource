@@ -41,6 +41,7 @@ C geometry.h provides commons G0, G2, GS5, GS6.
 
       common/outin/iuout,iuin
       common/filep/ifil
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/find/irecl
       character outs*124
@@ -339,6 +340,7 @@ C geometry.h provides commons G0,G2,GS5,GS6,GS7,GS8.
 
       common/outin/iuout,iuin
       common/filep/ifil
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
 

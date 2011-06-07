@@ -57,6 +57,7 @@ C                 in common.
       integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
@@ -137,9 +138,11 @@ C Establish calculation period.
          monf=12
          mon=mons
       else
+         if(mons.gt.12) mons=1  ! if mons was clobbered reset
          call easki(mons,' ','Start month number?',
      &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
+         if(monf.gt.12) monf=12  ! if monf was clobbered reset
          call easki(monf,' ','End month number?',
      &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
@@ -208,6 +211,7 @@ C                 in common.
 
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/tmc/itmc(ms),nwins
       common/ract/paction
@@ -406,6 +410,7 @@ C            in the misur list.
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad1/isunup
       common/cai/caii(ms),caie(ms)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/proji/xp,yp,zp
       common/inswin/igins(mox,moz)
