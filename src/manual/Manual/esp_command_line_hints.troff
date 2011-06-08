@@ -1,0 +1,705 @@
+.TL
+Command line tips for Linux, OSX and Cygwin users of Esp-r
+.AU
+Dr. Jon W. Hand, ESRU
+8 June 2011
+.SH
+Introduction
+.LP
+Graphic environments are great until you want to do something that
+isn't included. If you are using ESP-r within a Cygwin environment
+on a Windows or an Apple computer (or even a Linux computer)
+it is occassionally useful to put on a geek hat and do some
+magic on the command line.
+.LP
+Another reason for going geek is to sort out problems in your
+models of the 'it was working a few minutes ago' variety or
+the 'Fred sent me a model and I can't get it working' variety.
+.LP
+And sometimes a bit of geek magic allows you automate 
+tasks - e.g. create scripts that run a dozen assessments and 
+extract specific performane data.
+.LP
+And sometimes a remote IT support or simulation expert 
+will be using a lot of jargon and asking you to type in
+commands for them.  What the expert thinks is a simple statement
+like "in the command window go to the folder with the model 
+configuration file" is loaded with implied knowledge that 
+you might not have. And thus a 15 second task takes a lot 
+longer or causes a lot of frustration. Wouldn't it be great 
+to understand a bit of that jargon and more easily follow 
+their instructions?
+.LP
+And sometimes you will want to archive models
+or find the difference in today's model and one from a
+week ago. Folk with an IT background know this stuff but
+if it becomes your job to manage projects this primer
+includes some of those IT skills.
+.LP
+And lastly, under the user interface is an industrial strength
+engine for virtual physics which can be coerced far beyond its 
+normal bounds via the command line.
+.SH
+A command line primer
+.LP
+The command line facilties within Cygwin, OSX and Linux are
+similar so skills tend to be transferable. A subset of
+commands are equivalent to graphical interactions e.g. navigation 
+within the folders of the computer, managing files, 
+searching for text, archiving work, transferring models to
+colleagues and the like.  This primer should cover most
+of what normal users of ESP-r need to know. Those who maintain
+the system and work with the source code will of course, need 
+additional skills and should look into the ESP-r Developers
+Guide (see the ESRU web pages) as well as books on Unix
+and Linux.
+.LP
+Lets start with some high level concepts:
+.IP "a)" 3
+The commands that will be described below are interpreted via a
+command interpretors (also known as a command shell). One
+interpretor is known as the bash shell and another
+is 'csh'. Most commands are interpreted the same way
+in both command shells although some of the optional parameters
+are slightly different.  
+.IP "b)" 3
+The command shell runs in either a command or graphic window.
+A command window only works with text based tasks and a
+graphic window can work with either text or graphic
+applications.  For example:
+.IP "   Cygwin" 6
+The inital command window (typiclly white text on a black 
+background with a fixed width) that starts up supports text commands and
+can only be used to invoke ESP-r in a pure-text mode (for example
+to run automated tasks). If you try to invoke ESP-r in graphic
+mode from the initial command window nothing will happen or you
+will get a warning about cannot open display. To work with the 
+graphic version of ESP-r you need to startup a graphic window
+via a command like:
+.br
+\fBstartxwin.sh\fR
+.br
+which will start a graphic window (black text on a white background
+and with an X in the top border). You can resize the graphic
+window if you want. If you want you can have multiple graphic
+windows open at the same time. When you are finished close the graphic
+window (via the command exit). Then you can type exit in the
+original command window.
+.IP "   OSX 10.5 and 10.6" 6
+OSX includes a default 'terminal' which can take either text or
+graphic commands (??).  There is also an X11 graphic window
+(typically called an xterm) which is available as part of the X11
+environment. As X11 is required for ESP-r use you have a choice.
+X11 supports networked displays (where what you see in the
+xterm could be an application running on a different computer).
+This feature can be useful for accessing a compute server
+as well as for IT support staff to access your computer.
+.IP "   Linux" 6
+On linux machines the overall graphic environment is dictated
+by whether the computer is using KDE or Gnome.  Each come with
+a different set of tools and several choices for graphic windows.
+As with Cygwin and OSX you can have multiple graphic windows running
+at the same time as well as networked displays.
+.IP "c)" 3
+You will have a login account and an area to work in which 
+is protected from the chaos of other users. On Linux and
+OSX it is possible to have multiple users working simultaneously
+on the computer.  Sometimes it is useful to have an alternative 
+user account for testing so that your normal working area is 
+not altered.  Cygwin is dependent on Windows for the
+user account so one must switch users but may not have two
+users simultaneously. Login accound names might cause 
+problems if it includes spaces or unprintable characters.
+.IP "d)" 3
+The permissions associated with files and folders can help
+as well as hinder your work. Files you get from another person 
+might not have the correct permissions for use in your account 
+and you might find that changes you make in your model
+might not be written to the model files. Commands to identify
+and correct permissions is thus a common task.
+.IP "   Cygwin" 6
+The underlying Windows platform supports a different concept
+of permissions for folders and files than OSX and Linux. For
+example is easier to overwrite and corrupt critical databases
+in Cygwin than it is in OSX or Linux.  To change permissions
+set by another user one must switch to that user.
+.IP "   OSX and Linux" 6
+Since OSX and Linux are derived from Unix, both able to
+set permissions on files and folders at find resolution.
+Both support the concept of 'the current user', the
+group that the user is in, and 'others'. It is possible 
+ensure that only specific staff are able to update databases. 
+It is possible to set read and write permissions separately
+for the user, group and others. To change perissions
+set by another user one would typically use a sudo prefix
+to a command to temporarily become that user.
+.IP "e)" 3
+Cygwin and OSX and Linux use a hierarchical directory structure
+beginning at "/" (equivalent to c:\ on a PC) which is the 
+so called 'root' directory and everything else hangs off of that.
+There is no A:B:C:D:E: drive. 
+.IP "   Cygwin" 6
+The Cygwin command window you will be able to navigate to folders 
+in the A:B:C:... drives.  The path within Cygwin 
+becomes /cygdrive/c or /cygdrive/d.  Note the use of /
+rather than \\ when working within the Cygwin environment.
+.IP "f)" 3
+Paths to files which are included in an ESP-r model
+are sensitive to the operating system they were created
+with.  A model created with a 'native windows' version
+of ESP-r will include paths in the form C:\\Esru\\databases while
+ESP-r models created on Linux will follow the
+path pattern /home/fred/databases and on OSX will follow
+the pattern /Users/fred/databases.
+.br
+Path conventions thus complicate the task of moving a model between
+computers with different operating systems - a C:\\Esru path
+will tend to confuse ESP-r running on a different type of
+computer. There are scripts which can convert models which you need to 
+know about.
+.IP "g)" 3
+Your HOME folder on Linux might be in /home/jackson 
+(if you name is jackson).  On OSX user folders would typically 
+follow the pattern of /Users/jackson.  Within Cygwin the
+users home tends to be C:\\Documents and Settings\\user_name 
+although when setting up Cyginw there will be a /home/user_name.
+.IP "h)" 3
+Case sensitivity differs in OSX and Linux and Cygwin:
+.IP "   Cygwin" 6
+Cyginw is not case sensitive for the names of files and 
+folders (for a folder namde /home/fred/Src the commands:
+.br
+cd /home/fred/src and cd /home/fred/Src are equivalent.
+.IP "   OSX" 6
+By default OSX is not case sensitive. OSX drives can be
+formatted to support case sensitivity. This tends
+not to be a problem unles working with a model which was
+created on Linux which might have Readme.txt and readme.txt
+as separate files.
+.IP "   Linux" 6
+Linux is case sensitive.  A folder named Src is different 
+from a folder named src which is different from a folder
+named SRC.
+.IP "i)" 3
+The ESP-r executables and databases and example models
+tend to be installed in standard locations for Cyginw
+(/usr/esru), OSX (/opt/esru), Linux (/opt/esru or /usr/esru).
+The layout of the ESP-r distribution is the same in each
+so the navigation skills needed to investigate the
+ESP-r distribution are common.
+.SH
+Examples
+.LP
+The following discussion will help you gain a basic understanding
+and serve as a reference. Items in <> would be replaced by your 
+own text. Items in () are comments.
+.LP
+Commands tend to be terse - "cp" for copy, "mv" for move 
+etc. Each has a dozen options so that copies can be recursive, 
+file listings can be brief, extensive, sorted by some key. Those
+that remember the DOS command line will find the facilities
+are much richer (but also sensitive to capital and lower
+case).
+.LP
+It is possible to find out more about a specific command
+by giving the commands in the following form:
+.nf
+  man <command name>
+  
+  man ls
+
+NAME
+     ls -- list directory contents
+
+SYNOPSIS
+     ls [-ABCFGHLOPRSTUW@abcdefghiklmnopqrstuwx1] [file ...]
+
+DESCRIPTION
+     For each operand that names a file of a type other than directory,
+     ls displays its name as well as any requested, associated informa-
+     tion.  For each operand that names a file of type directory, ls
+     displays the names of files contained within that directory, as
+     well as any requested, associated information.
+  
+  . . .
+     The following options are available:
+
+     -@      Display extended attribute keys and sizes in long (-l) out-
+             put.
+
+     -1      (The numeric digit ``one''.)  Force output to be one entry
+             per line.  This is the default when output is not to a ter-
+             minal.
+
+     -A      List all entries except for . and ...  Always set for the
+             super-user.
+ . . .
+.fi
+.LP
+So you can see that the command to list a directory has more than a
+dozen options. Over time you will identify which options are useful
+to you.
+.SH
+Moving around:
+.LP
+Given the following directories and files:
+.nf
+
+\fB /				(root)
+ /home/jackson			(the home of jackson)
+              /project_a	(folder for a project)
+              /memos		(folder for memos)
+                    /fax_121196_gary, fax_1106_mark, fax
+
+              /email		(folder for emails)
+
+ /usr/esru			(the home of esp-r) 
+          /esp-r
+                /bin		(where esp-r executables live)
+                    /bps, prj res	(esp-r modules)
+                /training	(where training models live)
+                         /simple
+                                /cfg
+                                    /bld_simple.cfg
+\fR
+.fi
+.LP
+When you log in you will be in your home folder.
+If you get confused about where you happen to be
+at any time then give the command
+.nf
+
+  \fBpwd\fR
+.fi
+.LP
+(print working folder) which will return information like: /home/jackson/memos
+.LP
+To move around use the command "cd  <folder_name>" to 
+go there. Ensure there is a space after the command and before
+the argument used by the command.
+To move to the set of folders used by esp-r use the command
+.nf
+
+  \fBcd /usr/esru/esp-r\fR
+.fi
+.LP
+The <folder_name> can be relative -
+in which case ".." means go up a level. To move
+to the folder above give the command
+.nf
+
+  \fBcd ..\fR
+.fi
+.LP
+The <folder_name> can also be absolute -
+so to go into the folder of esp-r executables
+(from your current location) to see how big they 
+are you can use the command
+.nf
+
+  \fBcd /usr/esru/esp-r/bin\fR
+.fi
+.LP
+If no folder_name is given then you are returned to
+your home folder:
+.nf
+
+  \fBcd \fR
+.fi
+.LP
+The use of absolute paths within an ESP-r model can cause
+problems if you need to pass the model to a colleague. For
+example, if your model references the database
+.nf
+   \fB /home/fred/databases/fred-materials.db\fR
+.fi
+.LP
+and you send the model to a colleague who does not
+have a \fB /home/fred \fR on their machine then
+the model files would need to be edited to stipulate
+an alternative location for fred-materials.db.
+.SH
+Copying files:
+.LP
+In your home folder structure, say you wanted
+to copy a file (say fax_121109_gary) for use as the basis for a new fax.
+.nf
+
+  \fBcp fax_121109_gary fax_050210\fR
+
+the syntax is cp  <soure>  <destination>
+.fi
+.LP
+If, while in your home folder you want to
+copy a model file in /usr/esru/esp-r/training/simple
+to the memos folder for printing or editing then
+.nf
+
+  \fBcp  /usr/esru/esp-r/training/simple/cfg/bld_simple.cfg  .\fR
+.fi
+.LP
+in this case the "." is short for "where I am now". Because
+no name was given in the destination the copied file
+will have the same name as the source. If you wanted
+to change the name as you copied it you use the command:
+.nf
+
+  \fBcp  /usr/esru/esp-r/training/simple/cfg/bld_simple.cfg  ralph.cfg\fR
+.fi
+.LP
+You could also change the name by the command:
+.nf
+
+  \fBmv  bld_simple.cfg  ralph.cfg\fR
+
+where the syntax is mv  <source>  <destination>
+.fi
+.SH
+Viewing files:
+.LP
+To view the contents of a text file, one option is to use the command:
+.nf
+
+  \fBmore  bld_simple.cfg\fR
+
+where the syntax is more  <file name>
+.fi
+.LP
+If the displayed text does not fit within the display
+then more will pause before displaying further pages
+of text. 
+.SH
+Creating directories:
+.LP
+In the above folder structure, say you wanted
+to begin a new project. There is already a folder
+called project-a and if you want to create a project-b
+at the same level give the following commands:
+.nf
+
+  \fBcd  /home/jackson
+  mkdir  project-b\fR
+.fi
+.LP
+you can then move into this new folder via the command:
+.nf
+
+  \fBcd  project-b\fR
+.fi
+.SH
+Finding out what is in a folder:
+.LP
+The normal way to find out the contents of a folder 
+is to use the "ls" command.  For example a listing
+of the contents of "memos" is
+.nf
+
+ls  memos
+Beattie                 home_off_cover2         roosvlt_280196
+bepac_lmia              home_off_cover3         roosvlt_280196.ps
+home_off_cover          pcs210394
+lambda: jon/textfR 
+.fi
+.LP
+Unless you know what these names represent you might want to
+find out more. A long listing is:
+.nf
+
+ls -l memos
+total 44
+-rw-r--r--  1 jon          1990 May 24  1993 Beattie
+-rw-r--r--  1 jon          1665 May 30  1995 bepac_lmia
+-rw-r--r--  1 jon          3102 Mar 12  1993 home_off_cover
+-rw-r--r--  1 jon          4078 Feb  5  1994 home_off_cover2
+-rw-r--r--  1 jon          4163 Mar 27  1995 home_off_cover3
+-rw-r--r--  1 jon          2133 Nov 30  1994 pcs210394
+-rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
+-rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
+.fi
+.LP
+The "-rw-r--r--" represents the permissions and file types. In this
+case the user has read & write permission and the "group" of the
+user and "others" can read these files but they cannot modify
+them. The "-" in the first column denotes a file. The owner
+of the file comes next and then the size of the file, a date
+stamp and then the name.
+.LP
+Lets say we want to prevent others from reading the contents
+of the file home_off_cover2 but we want to allow people
+in our group to write to the file we could do this via the
+commands:
+.nf
+
+\fBchmod o-r home_off_cover2\fR
+\fBchmod g+w home_off_cover2\fR
+
+ls -l memos
+total 44
+-rw-r--r--  1 jon          1990 May 24  1993 Beattie
+-rw-r--r--  1 jon          1665 May 30  1995 bepac_lmia
+-rw-r--r--  1 jon          3102 Mar 12  1993 home_off_cover
+-rw-rw----  1 jon          4078 Feb  5  1994 home_off_cover2
+-rw-r--r--  1 jon          4163 Mar 27  1995 home_off_cover3
+-rw-r--r--  1 jon          2133 Nov 30  1994 pcs210394
+-rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
+-rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
+
+.fi
+.LP
+The above commands would work in OSX and Linux and Cygwin. If
+someone else owned the files you would need to preface the
+command with a 'sudo' in OSX and Linux.  In Cygwin you would
+have to switch users to change the permissions.
+.LP
+A common problem with permissions is for so-called scripts
+which can automate tasks. If you copy a script or get it
+via an email transfer the execute permissions may get lost.
+When this happens the script does not run. You might get
+a message about permissions and you might get no response
+at all.  To restore the permissions you would need to
+give a command like:
+.nf
+  \fBchmod a+x myscript.sh\fR
+.fi
+.SH
+Finding what is in files:
+.LP
+Often we are confronted by the need to locate a topic or
+key word within a file. There is a command line tool
+named 'grep' which is designed to do this.  As an example
+if I wanted to quickly check the location of the word fred
+in a text file the command response would be:
+.nf
+
+\fB grep -ni fred esp_command_line_hints.text
+17:the 'Fred sent me a model and I can't get it working' variety.
+153:path pattern /home/fred/databases and on OSX will follow
+154:the pattern /Users/fred/databases.
+171:folders (for a folder namde /home/fred/Src the commands:
+173:cd /home/fred/src and cd /home/fred/Src are equivalent.
+315:   /home/fred/databases/fred-materials.db
+319:have a /home/fred on their machine then
+321:an alternative location for fred-materials.db. \fR
+
+.fi
+.LP
+The option -n requests the line number and the -i says
+ignore the case (Fred = fred). Grep can be used to search
+multiple files and folder structures.
+.SH
+Finding differences in files:
+.LP
+Many people assume that determining the differences between
+text files (e.g. model files or reports) is a tedius
+process.  We have many options beginning with a command
+line tool called 'diff'.  If there are two model configration
+files and I want to see the differences:
+.fi
+
+ diff bld_simple.cfg  bld_simple_fzy.cfg
+3,5c3,5
+< # bld_simple.cfg
+< *date Fri Jul 23 16:07:40 2010  # latest file modification 
+< *root bld_simple
+---
+> # bld_simple_fzy.cfg
+> *date Fri Jul 23 16:10:41 2010  # latest file modification 
+> *root bld_simple_fzy
+28c28
+< *ctl  ../ctl/bld_simple.ctl
+---
+> *ctl  ../ctl/bld_simple_fzy.ctl
+63c63,65
+< *imdoc no documentation (yet) for this image
+---
+> *imdoc there are 4 control periods in the day
+> *img GIF   FCTL  ../images/fzzy_montg.gif
+> *imdoc figures indicate the control via fuzzy logic
+73c75
+< *sps    1   2   2  10   4   0
+---
+> *sps    1   2   1  10   2   0
+75c77
+< *sblr bld_simple.res
+---
+> *sblr bld_simple_fzy.res
+96c98
+< bld_simple.log
+---
+> bld_simple_fzy.log
+98c100
+< L-shaped reception, convective heating, ideal control
+---
+> L-shaped reception, convective heating, fuzzy control
+106c108
+< *cnn bld_simple.cnn  # connections
+---
+> *cnn bld_simple_fzy.cnn  # connections
+bash-3.2$ 
+
+.nf
+.LP
+Lines with < are the first file and > signals the second
+file in the original command.  The tool diff and its
+variants are available on all the platforms.
+.IP "   OSX" 6
+OSX offers a comparison tool as part of the XCode source code
+development environment. It is used via:
+.br
+opendiff <file name> <file name>
+.IP "   Linux" 6
+Depending on whether you are using Gnome or KDE there will
+be a slightly different choice of file differencing utilities
+to choose from.  kompare shows a side-by-side graphic view
+of file differences. It also is capable of copying specific
+differences between files.
+.LP
+One of the most valuable uses for file differencing tools
+is for looking at two different model contents reports.  
+.SH
+Removing files:
+.LP
+Sometimes you want to get rid of a file. Unlike other operating
+systems, when you do this you REALLY delete it. The syntax is:
+.nf
+
+  \fBrm  <file_name>\fR
+.fi
+.LP
+Remove has lots of powerful options which experts occassionally
+use. The operating system also provides facilities for archiving
+your work (see next discussion).
+.SH
+Making backups of files and/or directories:
+.LP
+Anyone who has lost half a weeks work by a disk crash or one 
+of "rm's" more powerful options has an interest in archiving
+their work. Linux and OSX and Cygwin provide a simple way to save your projects 
+similar to how one might use zip to create archives on a PC. It is called
+"tar". Tar creates an archive file out of the contents
+of many files or folders and sub-folders.  Say
+I wanted to archive the memos folder I would give the
+following command:
+.nf
+
+\fBlambda: jon/text% tar  cvf  memos_030297.tar  memos
+memos/
+memos/pcs210394
+memos/Beattie
+memos/home_off_cover
+memos/home_off_cover2
+memos/roosvlt_280199
+memos/home_off_cover3
+memos/bepac_lmia
+memos/roosvlt_280199.ps
+lambda: jon/text% \fR
+.fi
+.LP
+This says create verbosely the file memos_030297.tar with
+the contents of the folder memos. The resulting file:
+.nf
+
+\fB  ls -l memos_030297.tar
+-rw-r--r--  1 jon         51200 Feb  4 19:16 memos_030297.tar\fR
+.fi
+.LP
+To find out what it contains I give the command:
+.nf
+
+\fBlambda: jon/text% tar  tvf  memos_030297.tar
+drwxr-xr-x1002/10       0 Oct 28 14:05 1996 memos/
+-rw-r--r--1002/10    2133 Nov 30 11:14 1994 memos/pcs210394
+-rw-r--r--1002/10    1990 May 24 11:57 1993 memos/Beattie
+-rw-r--r--1002/10    3102 Mar 12 14:10 1993 memos/home_off_cover
+-rw-r--r--1002/10    4078 Feb  5 14:56 1994 memos/home_off_cover2
+-rw-r--r--1002/10    1678 Oct 28 14:04 1999 memos/roosvlt_280199
+-rw-r--r--1002/10    4163 Mar 27 19:26 1995 memos/home_off_cover3
+-rw-r--r--1002/10    1665 May 30 09:39 1995 memos/bepac_lmia
+-rw-r--r--1002/10   22035 Oct 28 14:05 1999 memos/roosvlt_280199.pfR
+.nf
+.LP
+which says tell me (verbosely) the contents of memos_030297.tar.
+.LP
+Perhaps I managed to corrupt the file roosvlt_280196.ps. I can
+recover it via the command:
+.nf
+
+\fB tar  xvf  memos_030297.tar  memos/roosvlt_280196.ps\fR
+.fi
+.LP
+which say extract (verbosely) from the archive memos_030297.tar the
+specific file memos/roosvlt_280196.ps.
+.LP
+This tar archive, being a single file is easy to send to others. A typical
+use is to create a "tar" file of a project, have someone halfway around
+the world pick it up and then expand the project to recreate exactly
+the same structure of project that you have.
+.SH
+Compressing files:
+.LP
+Sometimes you have work or simulation results which you will not
+be needing for a few days. You can compress files with the
+command gzip:
+.nf
+
+  \fBgzip  <file_name>\fR
+.fi
+.LP
+which adds a ".gz" to the end of the file and makes it 20-80%
+smaller. To reverse the process use the command:
+.nf
+
+  \fBgzip  -d  <compressed_file_name>\fR
+.fi
+.LP
+For example the "tar" file of the memos folder can be compressed:
+.nf
+
+\fBlambda: jon/text% gzip -9 memos_030297.tar
+lambda: jon/text% ls -l memos_030297.tar.gz
+-rw-r--r--  1 jon         21290 Feb  4 19:16 memos_030297.tar.gz\fR
+
+the -9 directs gzip to take more time for greater compression.
+.fi
+.LP
+On Cygwin you could also use a native Windows compression utility on
+files which live within the C:\cygwin folder structure. Consider
+using the 7z utility (it is free). OSX allows you to right-click 
+with a compression option.
+.LP
+Creating archives and compressing them is useful in archiving
+models.  Disks die, files get removed by accident and thus
+model archives are part of good working procedures. What we
+include in our archives is a policy decision.  For example,
+simulation results files can take up many hundreds of megabytes 
+even in a compressed form.  Some groups prefer to archive
+results files and others prefer to archive the instructions
+about how to recreate the result file.
+.SH
+Model transfer
+.LP
+The transfer of models within a team that is geographically
+dispersed can be made simpler if the procedure is regularized
+and models are designed for transport. Here are a few
+suggestions:
+.IP "a)" 3
+Ensure that documentation and images associated with the
+model are located in the doc and images folders of the
+model.
+.IP "b)" 3
+Ensure that project specific databases are included in
+the model dbs folder and include a readme file which
+identifies the version of the standard databases that
+are assumed to exist on the source and recipient computers.
+.IP "c)" 3
+Include model contents reports with the model so that
+ther recipient can quickly scan the contents of the model
+without needing to invoke ESP-r modules.
+.LP
+If you are using Cygwin or OSX or Linux the ESP-r project
+manager includes a facility to 'archive current model'
+which scans the model configuration file and creates
+a tar file with the referenced model files. This is
+particularly useful if a model folder structure includes
+multiple model variants - only the referenced files
+are included in the archive.
