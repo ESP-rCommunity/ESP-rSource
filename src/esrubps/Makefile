@@ -56,7 +56,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  temper.o fanger.o AirFlowModelRoutines.o 
+	  temper.o fanger.o AirFlowModelRoutines.o Res_elec_Ctl.o   
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod 
 
@@ -597,6 +597,9 @@ plt_bc_components.F:
 RE-H2-ctl.F:
 	rm -f RE-H2-ctl.F
 	ln -s $(CETCdir)/RE-H2-ctl.F
+Res_elec_Ctl.F:
+	rm -f Res_elec_Ctl.F
+	ln -s $(CETCdir)/Res_elec_Ctl.F
 Hydrogen_appliances.F:
 	rm -f Hydrogen_appliances.F
 	ln -s $(PLTdir)/Hydrogen_appliances.F
@@ -721,5 +724,4 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	temper.F fanger.F AirFlowModelRoutines.F 
-
+	temper.F fanger.F AirFlowModelRoutines.F Res_elec_Ctl.F

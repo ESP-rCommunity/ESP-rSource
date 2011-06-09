@@ -132,7 +132,7 @@ C Display format for date is Fri 10 Jan.
         dok=.false.
         helptopic='mfs_display_period'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL ASKOK(PERST3,' Different output period?',OK,dok,nbhelp)
+        CALL ASKOK(PERST3,'Different output period?',OK,dok,nbhelp)
         if(OK)then
           CALL EASKPER('Output period:',IDAYF,IDAYL,IFDAY,IER)
           IF(IER.NE.0) GOTO 60
@@ -141,7 +141,7 @@ C Display format for date is Fri 10 Jan.
           dok=.false.
           helptopic='mfs_data_integration'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL ASKOK(PERST3,' Integrate over each hour?',OK,dok,nbhelp)
+          CALL ASKOK(PERST3,'Integrate over each hour?',OK,dok,nbhelp)
           if(OK)then
             intg=.true.
             NOUT=NTSPH
@@ -318,7 +318,7 @@ C Calculate energy via flow path.
         if(itnfld.eq.1)then
           PW=DT*real(SFLW1+SFLW2)*1006.
         elseif(itnfld.eq.2)then
-          PW=DT*real(SFLW1+SFLW2)*4600.
+          PW=DT*real(SFLW1+SFLW2)*4190.
         endif
 
 C Write data.  Increment ix, if equal to NOUT print.

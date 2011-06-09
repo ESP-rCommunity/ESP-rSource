@@ -1684,6 +1684,9 @@ C List function details.
       elseif(icfoc.eq.6)then
         nn=nCFCctldaytypes(ii)
       endif
+
+C NN is overloaded - zero can mean weekday/sat/sun if there are 3 calendar
+C day types, otherwise this signals the use of the current calendar day types.
       IF(nn.EQ.0)THEN
           call edisp(itru,' The following day types are defined: ') 
           DO 30 ID=1,NBDAYTYPE 

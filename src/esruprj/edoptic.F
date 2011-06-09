@@ -57,9 +57,8 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
-      character OUTSTR*124,lfil*72,DFILE*72,word*24,outs248*248
+      character outs248*248
       character lworking*144,fs*1
-      dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
       integer lndbp   ! for length of standard database path
@@ -1265,7 +1264,7 @@ C Passed parameters
       CHARACTER GTYPE*12
       character lwin4*72,DFILE*72,outstr*124
       character outs*124
-      logical basics,standalone
+      logical standalone
       real v1,v2,v3,v4,v5,v6  ! for data being scanned
 
 C For help messages
@@ -1289,7 +1288,6 @@ C Free unit and check if import file exists.
 
 C Set initial values. Assume that there are air gaps between
 C the layers.
-      basics=.false.
       standalone=.false.
       UVALED=5.4
       SABED = 0.0
@@ -1348,7 +1346,7 @@ C actual data seems to start at column 38 (and after a :)
       call edisp(iuout,outstr)
       if(lnblnk(outstr).le.1)goto 11
       if(outstr(1:10).eq.'--- Basics')then
-        basics=.true.
+        continue
       elseif(outstr(1:27).eq.'--- Registered WIS user ---')then
         continue  ! not yet used
       elseif(outstr(1:25).eq.'Registered organisation :')then
@@ -1488,7 +1486,7 @@ C actual data seems to start at column 38 (and after a :)
       elseif(outstr(1:25).eq.' The solar spectrum of EN')then
         continue  ! not yet used
       elseif(outstr(1:28).eq.'--- Short system description')then
-        basics=.false.
+        continue
       elseif(outstr(1:24).eq.'(from outdoor to indoor)')then
         continue  ! not yet used
       elseif(outstr(1:11).eq.' layer 1 is')then
@@ -1531,7 +1529,6 @@ C actual data seems to start at column 38 (and after a :)
         continue  ! not yet used
       elseif(outstr(1:22).eq.'--- System description')then
         standalone=.true.
-        basics=.false.
       elseif(outstr(1:10).eq.'-- layer :')then
         if(standalone)then
         else
@@ -1649,7 +1646,6 @@ C Stuff angular g value into the heat gain slot.
       elseif(outstr(1:31).eq.'Network of thermal coefficients')then
         continue  ! not yet used
       elseif(outstr(1:16).eq.'-- Total Network')then
-        basics=.false.
         standalone=.false.
       elseif(outstr(1:31).eq.' hs are given between all nodes')then
         continue  ! not yet used

@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -22,9 +22,9 @@ C Contains:
 C  PLOT - monitors itteration process.
 
 C ********************* PLOT *********************
-C PLOT - This routine traces the iteration processes by 
+C PLOT - This routine traces the iteration processes by
 C  ploting residuals of the equation and monitoring values.
-C Up to 4 variables can be displayed MFRP iteration values are plotted. 
+C Up to 4 variables can be displayed MFRP iteration values are plotted.
 C IPLT   - Index for the current value to be plotted.
 C NPLT   - Number of iterations between plotting.
 C ITM    - Time-step index.
@@ -65,10 +65,11 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 
       DATA LINE/'-----','- - -','.....','-.-.-'/
       DATA ILINE/100,-3,-204,-105/
-     
-      RDR=.FALSE.
 
-C Increment plot counter.  Check if negative (indicates max iterations 
+      RDR=.FALSE.
+      RDR=.TRUE.
+
+C Increment plot counter.  Check if negative (indicates max iterations
 C have been increased, therefore force redraw).
       if (iplt.lt.0) then
         iplt=iplt*(-1)
@@ -184,7 +185,7 @@ C Print title. IPS is used to keep track of number of title lines.
       IPS=1
       write(title,'(12x,a,36x,a)') 'RESIDUALS','MONITORING VALUES'
       iside=IPS
-      isize=0
+      isize=1
       ifont=0
       call viewtext(title,iside,isize,ifont)
 
@@ -268,10 +269,10 @@ C Else just plot current iteration value.
 C Label curves.
       do 50 I=1,NCRV
         IPS=IPS+1
-        write(title,'(2(2(a,1x),a,1PE11.3,1x))') 
+        write(title,'(2(2(a,1x),a,1PE11.3,1x))')
      &          LINE(I),LRES(I),'=',CRES(I),LINE(I),LMON(I),'=',CMON(I)
         iside=IPS
-        isize=0
+        isize=1
         ifont=0
         call viewtext(title,iside,isize,ifont)
  50   continue

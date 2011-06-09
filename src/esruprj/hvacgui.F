@@ -72,8 +72,6 @@ C -------------------------------HVACGIN-------------------------------
       
       COMMON/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
-      CHARACTER h*72                   ! help arrays
       COMMON/rpath/path
       
       CHARACTER path*72                !path
@@ -113,6 +111,13 @@ C -------------------------------HVACGIN-------------------------------
       LOGICAL save_flag                ! returned from HVAC_MAIN_SUMMARY as true if user wishes to save the system
       LOGICAL add_flag                 ! returned from HVAC_MAIN_SUMMARY as true if user wishes to add a system
       LOGICAL lexist                   ! true if hvac folder exists
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HVACGIN'  ! set for subroutine
 
       new_hvac=.false.
       hvacfile_good=.false.
@@ -179,17 +184,10 @@ C one. If an existing name also provide option to deference it.
 C Present current/default name and a browse option. If browse selected
 C then set ichoice variable and jump to browse functions.
           def_hvacfile=hvacfile
-          H(1)='A hvac file holds the definition for an idealized      '
-          H(2)='building hvac system, which can supply the building    '
-          H(3)='with heating, cooling, and/or ventilation.             '
-          H(4)='The file is optional.                                  '
-          H(5)=' '
-          H(6)='The browse option presents a list of files in the      '
-          H(7)='project `hvac` folder. If you do not select one then it'
-          H(8)='is assumed that you do not want an hvac system.        '
-          H(9)='If you cancel then nothing will be changed.            '
+          helptopic='zone_hvac_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS2CMD(def_hvacfile,'HVAC file? (suggested name)',' ',
-     &      'cancel','browse',ichoice,72,' ','HVAC file',IER,9)
+     &      'cancel','browse',ichoice,72,' ','HVAC file',IER,nbhelp)
           if(ichoice.eq.1)then         ! If user wishes to cancel then return to networks menu
             CALL USRMSG(' ',' ','-') ! Clear Screen
             return
@@ -211,21 +209,11 @@ C or browse through existing files
               return
             endif
           else
-          H(1)='A hvac file holds the definition for an idealized      '
-          H(2)='building hvac system, which can supply the building    '
-          H(3)='with heating, cooling, and/or ventilation.             '
-          H(4)='The file is optional.                                  '
-          H(3)='The dereference option dereferences the hvac file from '
-          H(4)='your model but does not delete it. Your may re-        '
-          H(5)='establish this hvac by referencing the hvac file at a  '
-          H(7)='later time.                                            '
-          H(8)=' '
-          H(8)='The browse option presents a list of files in the      '
-          H(9)='project `hvac` folder. If you do not select one then it'
-          H(10)='is assumed that you do not want an hvac system.       '
-          H(11)='If you cancel then nothing will be changed.           '
+          helptopic='zone_hvac_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS2CMD(def_hvacfile,'HVAC file? (see help)',
-     &    ' ','dereference','browse',ichoice,72,' ','HVAC file',IER,11)
+     &      ' ','dereference','browse',ichoice,72,' ','HVAC file',
+     &      IER,nbhelp)
      
 C If user wishes to dereference the current hvac file, reset the hvac
 C file path and hvac flag, and call EMKCFG to save the configuration
@@ -297,7 +285,7 @@ C If no files are present in the hvac folder, display a warning
             new_hvac=.false.
           else
             call EASKAB(' File not found.','Options:',
-     &                  'specify another','make new file',IW,0)
+     &                  'specify another','make new file',IW,nbhelp)
             if(IW.eq.1)then
               hvacfile='  '        ! Clear hvac file path
               def_hvacfile='  '    ! Clear temporary hvac file path
@@ -368,6 +356,7 @@ C for each system within the hvac file
             ihvacflag=1
             CALL EMKCFG('-',IER)
             call USRMSG('File Saved!',' ','-')
+
 C     If user chooses to edit a specific system, set the variable 'i' to 
 C     the system number to be edited and continue to the definition stage
           elseif(edit_unit_number.ne.0)then
@@ -385,13 +374,14 @@ C     the system number to be edited and continue to the definition stage
             i = num_hvac_sys + 1
           endif
         endif
+
 C     Continue with hvac file definition.
         if(new_hvac .or. add_flag .or. (edit_unit_number.gt.0))then
           if(new_hvac)then
             i=1
             CALL EASKR(site_altitude,  
      &        ' ','Select site altitude',
-     &        0.,'F',8000.0, 'F',0., 'Altitude', ier,1)  
+     &        0.,'F',8000.0, 'F',0., 'Altitude', ier,nbhelp)  
           endif
           if(edit_unit_number .eq. 0) then
             num_hvac_sys = num_hvac_sys +1
@@ -403,11 +393,9 @@ C If user makes no selection, or selects exit, go back to Plants & Networks Menu
             return
 C Display menu for furnace options
           elseif(hvac_typ.eq.1) then
-            h(1)='Please select whether there is an air conditioning'  
-            h(2)='unit in addition to the furnace.'
             if(edit_unit_number .eq. 0 .and. num_hvac_sys .le. 4) then     
               call EASKABC('Furnace',' ','With A/C','Without A/C',
-     &                   'Cancel',ichoice,2)
+     &                   'Cancel',ichoice,nbhelp)
             else
               ichoice = 2
             endif
@@ -421,8 +409,8 @@ C Display menu for furnace options
 C hvac_typ assigns the air conditioner to be ASHP 
 C not sure if we need to change this to give the choice of ASHP or GSHP
               hvac_typ = 3
-              h(1) = 'Now entering options for associated a/c'
-              CALL PHELPD('Airconditioning',1,'-',0,0,ier)
+              call edisp(iuout,
+     &          'Now entering options for associated a/c')
               i = i+1
               num_hvac_sys=num_hvac_sys+1
               CALL HPCOLD(hvac_typ,priority,fbackup,i,heatok,exitflag)
@@ -437,31 +425,25 @@ C Call for Baseboard
             CALL BASEBOARD_INPUTS(priority,i,exitflag)
             CALL USRMSG(' ',' ','-') ! Clear Screen
             i = num_hvac_sys
-		
-C Display menu for Air-Souce Heat Pumps Option
+
+C Display menu for Air-Souce Heat Pumps Option.
           elseif(hvac_typ.eq.3)then
             do while(ipck.ne.2)
-              h(1)='Please select whether the ASHP is used for heating,'
-              h(2)= 'cooling, or both. You will have the option to add'
-              h(3) = 'a furnace backup in the next option'
+              helptopic='zone_hvac_ashp'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               call EASKABCD('Please select unit use',' ','Heating',
      &                    'Cooling','Heating & Cooling',
-     &                    'Cancel',modechoice,3)      
+     &                    'Cancel',modechoice,nbhelp)      
               if(modechoice.eq.4)then 
                 return
               end if
               if(modechoice.eq.3 .and. num_hvac_sys .eq. 5) then
-                h(1) = 'You have reached the maximum number of hvac '
-                h(2) = 'systems. Please delete an hvac system manually '
-                h(3) = 'if you would like to add another.'
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+                CALL PHELPD('Too many HVAC Sys', nbhelp,'-',0,0,ier)
                 return
               end if  
               if(edit_unit_number .eq. 0)then
-                h(1) = 'Please select whether there is a furnace backup'
-                h(2) = 'for the air source heat pump.'
                 call EASKABC('Select backup',' ','Furnace backup',
-     &                   'no backup','Cancel',ichoice,2)      
+     &                   'no backup','Cancel',ichoice,nbhelp)      
                 if(ichoice.eq.3)then 
                   return
                 elseif(ichoice.eq.1) then
@@ -475,10 +457,7 @@ C Display menu for Air-Souce Heat Pumps Option
               if((modechoice.eq.3 .and. ichoice.eq.1 .and. 
      &               num_hvac_sys .eq. 4) .or. (ichoice.eq.1 .and. 
      &               num_hvac_sys .eq. 5)) then
-                h(1) = 'You have reached the maximum number of hvac '
-                h(2) = 'systems. Please delete an hvac system manually '
-                h(3) = 'if you would like to add another.'
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+                CALL PHELPD('Too many HVAC Sys',nbhelp,'-',0,0,ier)
                 return
               end if       
               if(ichoice.eq.1)then
@@ -499,15 +478,11 @@ C Display menu for Air-Souce Heat Pumps Option
               elseif(modechoice.eq.3)then
                 priority=1
                 if(edit_unit_number .ne. 0) then
-                  h(1) = 'If you did not choose heating & cooling'
-                  h(2) = 'when you initially defined this system'
-                  h(3) = 'Please exit this menu and choose either only'
-                  h(4) = 'heating or cooling, and add in the second'
-                  h(5) = 'system afterwards, otherwise another system '
-                  h(6) = 'may be overwritten.'
-                  CALL PHELPD('Possible Overwrite',2,'-',0,0,ier)
+                  helptopic='zone_hvac_ashp_no_heat'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
+                  CALL PHELPD('Possible Overwrite',nbhelp,'-',0,0,ier)
                   CALL EASKAB('', ' ','Continue (dangerous)', 'Go back',
-     &              ipck, 6)
+     &              ipck,nbhelp)
                   if(ipck.eq.1) then !continue)
                     continue
                   elseif(ipck.eq.2) then !go back to choices
@@ -515,12 +490,11 @@ C Display menu for Air-Souce Heat Pumps Option
                     exit
                   end if
                 endif
-                  h(1)='Begin entering options for associated heating' 
-                  h(2) = 'cycle'
-                  CALL PHELPD('Heating Cycle',2,'-',0,0,ier)
+                call edisp(iuout,
+     &            'Enter options for associated heating cycle')
                   CALL HPHOT(hvac_typ,priority,fbackup,i,exitflag)
-                  h(1)='Now entering options for cooling cycle'
-                  CALL PHELPD('Cooling Cycle',1,'-',0,0,ier)
+                call edisp(iuout,
+     &            'Enter options for associated cooling cycle')
                   i = i+1
                    num_hvac_sys=num_hvac_sys+1
                   heatok=1
@@ -531,30 +505,24 @@ C Display menu for Air-Souce Heat Pumps Option
               exit
             end do
             
-C Display menu for Ground Source Heat Pumps Options			
+C Display menu for Ground Source Heat Pumps Options.
           elseif(hvac_typ.eq.4)then
             do while(ipck.ne.2)
-              h(1)='Please select whether the GSHP is used for heating,'
-              h(2)='cooling, or both. You will have the option to add a'
-              h(3) = 'furnace backup in the next option'
+              helptopic='zone_hvac_gshp'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               call EASKABCD('Please select unit use',' ','Heating',
      &                    'Cooling','Heating & Cooling','Cancel',
-     &                    modechoice,3)
+     &                    modechoice,nbhelp)
               if(modechoice.eq.4)then 
                 return
               end if
               if(modechoice.eq.3 .and. num_hvac_sys .eq. 5) then
-                h(1) = 'You have reached the maximum number of hvac '
-                h(2) = 'systems. Please delete an hvac system manually '
-                h(3) = 'if you would like to add another.'
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+                CALL PHELPD('Too many HVAC Sys',nbhelp,'-',0,0,ier)
                 return
               end if
               if(edit_unit_number .eq. 0)then 
-                h(1) = 'Please select whether there is a furnace backup'
-                h(2) = 'for the ground-source heat pump.'
                 call EASKABC('Select backup',' ','Furnace backup',
-     &                   'no backup','Cancel',ichoice,2)      
+     &                   'no backup','Cancel',ichoice,nbhelp)      
                 if(ichoice.eq.3)then 
                   return
                 elseif(ichoice.eq.1) then
@@ -568,10 +536,7 @@ C Display menu for Ground Source Heat Pumps Options
               if((modechoice.eq.3 .and. ichoice.eq.1 .and. 
      &               num_hvac_sys .eq. 4) .or. (ichoice.eq.1 .and. 
      &               num_hvac_sys .eq. 5)) then
-                h(1) = 'You have reached the maximum number of hvac '
-                h(2) = 'systems. Please delete an hvac system manually '
-                h(3) = 'if you would like to add another.'
-                CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+                CALL PHELPD('Too many HVAC Sys',nbhelp,'-',0,0,ier)
                 return
               end if  
               if(ichoice.eq.1)then
@@ -597,15 +562,11 @@ C Display menu for Ground Source Heat Pumps Options
               elseif(modechoice.eq.3)then
                 priority =1
                 if(edit_unit_number .ne. 0) then
-                  h(1) = 'If you did not choose heating & cooling'
-                  h(2) = 'when you initially defined this system'
-                  h(3) = 'Please exit this menu and choose either only'
-                  h(4) = 'heating or cooling, and add in the second'
-                  h(5) = 'system afterwards, otherwise another system '
-                  h(6) = 'may be overwritten.'
-                  CALL PHELPD('Possible Overwrite',2,'-',0,0,ier)
+                  helptopic='zone_hvac_ashp_no_heat'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
+                  CALL PHELPD('Possible Overwrite',nbhelp,'-',0,0,ier)
                   CALL EASKAB(' ', ' ','Continue (DANGEROUS! Eek!!!)', 
-     &              'Go back',ipck, 6)
+     &              'Go back',ipck,nbhelp)
                   if(ipck.eq.1) then !continue)
                     continue
                   elseif(ipck.eq.2) then !go back to choices
@@ -613,13 +574,11 @@ C Display menu for Ground Source Heat Pumps Options
                     exit
                   end if
                 endif
-                h(1)='Begin entering options for associated'
-                h(2) = 'heating cycle'
-                CALL PHELPD('Heating Cycle',2,'-',0,0,ier)
+                call edisp(iuout,
+     &            'Enter options for associated heating cycle')
                 CALL HPHOT(hvac_typ,priority,fbackup,i,exitflag)
-                h(1)='Begin entering options for associated'
-                h(2) = 'cooling cycle'
-                CALL PHELPD('Cooling Cycle',2,'-',0,0,ier)
+                call edisp(iuout,
+     &            'Enter options for associated cooling cycle')
                 i = i+1
                 num_hvac_sys=num_hvac_sys+1
                 heatok=1
@@ -653,9 +612,6 @@ C ---------------------------------------------------------------------
       
 #include "hvac_parameters.h"
 C hvac_parameters.h for variable max_hvac_types
-
-      COMMON/pophelp/h(60)
-      CHARACTER h*72
       
       INTEGER hvac_typ          ! choice to be returned from this subroutine
       INTEGER hvac_systems      ! number of hvac systems to choose from 
@@ -667,6 +623,13 @@ C defined in hvac_parameters.h as max_hvac_types (=8)
       DIMENSION hvac_choice(max_hvac_types)
       CHARACTER*26 hvac_sys_typ(hvac_systems) ! array of strings for system types
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HVAC_type'  ! set for subroutine
+
 C Fill in array of Idealized HVAC system types
       hvac_sys_typ(1)=' Furnace                '
       hvac_sys_typ(2)=' Baseboard Heating      '
@@ -675,30 +638,14 @@ C Fill in array of Idealized HVAC system types
 C     hvac_sys_typ(n)=' New Idealized HVAC type'   ! enter new future system(s) here
 
 C Help message            
-      h(1) ='Select the primary HVAC component - You will have the     '
-      h(2) ='option to add additional information in the next section. '
-      h(3) ='                                                          '
-      h(4) ='Furnace:                                                  '
-      h(5) ='You can choose with or without a/c in the next menu.      '
-      h(6) ='                                                          '
-      h(7) ='Baseboard Heating:                                        '
-      h(8) ='                                                          '
-      h(9) ='Air-source heat pump:                                     '
-      h(10)='You can choose with or without furnace backup             '
-      h(11)='in the next menu.                                         '
-      h(12)='                                                          '
-      h(13)='Ground-source heat pump:                                  '
-      h(14)='You can choose with or without furnace backup             '
-      h(15)='in the next menu.                                         '
-      h(16)='                                                          '
-      h(17)='                                                          '
-      h(18)='                                                          '
+      helptopic='zone_hvac_primary'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Present list to user.     
       hvac_selections = 1   ! user can only make one selection
       CALL EPICKS(hvac_selections,hvac_choice,
      &   'Select Idealized HVAC System Type','(See Help for Help) ',
-     &   26,hvac_systems,hvac_sys_typ,'HVAC System Type:',IER,18)
+     &   26,hvac_systems,hvac_sys_typ,'HVAC System Type:',IER,nbhelp)
       
       if(hvac_selections.eq.0)then
         hvac_typ = 0                ! user made no selection so return zero
@@ -731,8 +678,6 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
 #include "hvac_common.h"
 #include "furnace_common.h"
 
-
-      common/pophelp/h(60)
       common/C1/NCOMP, NCON
       
       INTEGER ipck                ! Integer returned from epicks menu
@@ -748,7 +693,6 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
       CHARACTER*50 furntyp(14)    ! Character array of all furnace options
       CHARACTER*50 fueltyp(14)    ! Character array of all fuel options
       CHARACTER*50 zoneopt(ncomp+1)  !Character array of all zone names
-      character h*72              ! help
       REAL fraction               ! Fraction of power assigned to zones so far
       REAL ifraction              ! 1-fraction, fraction which remains to be assigned
       LOGICAL exit                ! Returns as true if user ends system definition early
@@ -756,6 +700,13 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
       LOGICAL fuel_logic2         ! used for re-entering fuel type if not valid match with furnace type
       INTEGER chosen_sys(14)
       INTEGER chosen_fuel(5)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='FURNOPT'  ! set for subroutine
 
       ipck=1
       nfurntyp=14
@@ -765,14 +716,16 @@ C IER=0 indicates no error. if -3, error button clicked (in ESP-r Code documenta
       exit=.false.
       
       if(priority .eq. 0) then
+        helptopic='zone_system_priority'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(ipriority(i),'Specify the system priority',
      &             '1 for primary (default),2 for backup',1,'F',
-     &             2,'F',1,'value must be 1 or 2',ier,0)
+     &             2,'F',1,'value must be 1 or 2',ier,nbhelp)
       else
   	    ipriority(i) = priority
       endif
       
-C Furnace Type	
+C Furnace Type
       furntyp(1)='Advanced air tight wood stove'
       furntyp(2)='Catalytic converter'
       furntyp(3)='Flame retention head'
@@ -788,14 +741,12 @@ C Furnace Type
       furntyp(13)='Wood furnace'
       furntyp(14)='Oil furnace or boiler'
       
-      h(1) = 'Select furnace type.  Only certain fuels can be matched'
-      h(2) = 'with each furnace type.  If a furnace has only one'
-      h(3) = 'acceptable fuel type, it will be assigned automatically'
-      h(4) = 'otherwise you will be presented with a list of fuel'
-      h(5) = 'options to choose from.'
+      helptopic='zone_furnace_type'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       CALL EPICKS(ipck,chosen_sys,' ','Select a furnace type:',30,
-     &      nfurntyp, furntyp,'Furnace types for idealized HVAC',ier,5)
+     &  nfurntyp, furntyp,'Furnace types for idealized HVAC',
+     &  ier,nbhelp)
       if(ipck.eq.0) then !nothing selected
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -814,21 +765,8 @@ C Furnace Type
         ifuel_type(i) = 5
       else         
              
-        h(1) ='Not all furnace types work with each fuel type.'
-        h(2) = 'Electric'
-        h(3) = 'Electric forced-air.'
-        h(4) = ' '
-        h(5) = 'Natural gas or propane'
-        h(6) ='Spark-iginition with and without damper,continuous'
-        h(7) ='pilot, condensing furnace, and induced draft.'
-        h(8) = ' '
-        h(9) ='Oil'
-        h(10) ='Flame retention head, flue vent damper,condensing'
-        h(11) = 'Mid efficiency, and oil furnace or boiler.'
-        h(12) = ' '
-        h(13) = 'Wood'
-        h(14) = 'Advanced air tight wood stove, catalytic'
-        h(15) = 'converter, wood furnace.'
+        helptopic='zone_furnace_fuel_type'
+        call gethelptext(helpinsub,helptopic,nbhelp)
          
 C Fuel Type            
         fuel_logic = .true.
@@ -843,25 +781,25 @@ C Fuel Type
       
           CALL EPICKS(ipck, chosen_fuel, ' ','Select fuel type:',30,
      &             nfueltyp,fueltyp,'Fuel types - see help for options',
-     &             ier,15)
+     &      ier,nbhelp)
           if(ipck.eq.0)then !nothing selected
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
             return
           endif
           ifuel_type(i) = chosen_fuel(1)
+          helptopic='zone_valid_fuel_type'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           if((isys_type(i) .eq. 5) .or. (isys_type(i) .eq. 6) .or. 
      &     (isys_type(i) .eq. 7) .or. (isys_type(i) .eq. 10)) then
             if (ifuel_type(i) .ne. 2 .and. ifuel_type(i) .ne. 4) then
-              h(1) = 'Please reenter a valid fuel type'
-              CALL PHELPD('Incorrect combination', 1, '-',0,0, ier)
+              CALL PHELPD('Incorrect combination',nbhelp,'-',0,0,ier)
             fuel_logic2 = .false.
             end if
           endif  
           if((isys_type(i) .eq. 8) .and. (ifuel_type(i) .ne. 2).and. 
      &       (ifuel_type(i) .ne. 3) .and. (ifuel_type(i) .ne. 4)) then
-            h(1) = 'Please reenter a valid fuel type'
-            CALL PHELPD('Incorrect combination', 1, '-',0,0, ier)
+            CALL PHELPD('Incorrect combination',nbhelp,'-',0,0,ier)
             fuel_logic2 = .false.
           endif
           if(fuel_logic2) then
@@ -870,11 +808,13 @@ C Fuel Type
         end do
       endif
       
+      helptopic='zone_furnace_fuel_type'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(num_sys_zones(i),' ',
      &           'Total number of zones served by furnace system:',
      &           1,'F',NCOMP,'F',1,
      &          'Enter a number of zones within the range of your model'
-     &           ,ier,3)
+     &    ,ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -882,11 +822,10 @@ C Fuel Type
       endif
             
 C Choosing the zones associated with the system
-C Select the number of zones the system is linked to	
+C Select the number of zones the system is linked to
 
-      h(1) = 'Enter the number of zones that the furnace system'
-      h(2) = 'serves. Your model may be split into several zones,'
-      h(3) = 'with different HVAC systems serving different zones.'
+      helptopic='zone_furnace_zones'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    
       K=1    
       do while (K.LE.NCOMP)
@@ -895,16 +834,10 @@ C Select the number of zones the system is linked to
      		K=K+1
       enddo
       
-      h(1) = 'Number of zones chosen must be equal to'
-      h(2) = 'or less than the number of zones in the model.'
-      h(3) = 'Once number of zones being supplied has been'
-      h(4) = 'picked, the fraction of supplied energy to each'
-      h(5) = 'zone must be stated.' 
-      
-      ival = num_sys_zones(i) 			
+      ival = num_sys_zones(i)
       CALL EPICKS(ival, sys_zone_number, ' ',
      &            'Select zones being supplied:',30, ncomp, zoneopt,
-     &            'Zones - see help for options',ier,5)   
+     &            'Zones - see help for options',ier,nbhelp)   
       if(ival.eq.0)then !nothing selected
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -917,24 +850,23 @@ C Select the number of zones the system is linked to
         isys_zone_num(i,k) = sys_zone_number(k)
 
       enddo
-	
+
 C The value isys_zone_num(i,k)' is the zone number of the zone picked in the epicks
 C menu above, therefore this is the value that needs to be written to the 
 C HVAC file in 'zones being supplied' section.
       fraction = 0
-      ifraction = 1			
+      ifraction = 1
       k=1
       
-      h(1) = 'Enter the fraction of the system capacity associated'
-      h(2) = 'with this zone.  The sum of the fractions to all zones'
-      h(3) = 'must be equal to 1'
+      helptopic='zone_furnace_frac'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       do while (k.LE.num_sys_zones(i))
  	  ifraction = 1-fraction
  		nnm=sys_zone_number(k)
         CALL EASKR(sys_zone_cap_frac(i,k),  
      &             'Select fraction supplied to',zname(nnm),
-     &             0.,'F',ifraction,'F',ifraction,'Fraction', ier,3)
+     &        0.,'F',ifraction,'F',ifraction,'Fraction',ier,nbhelp)
         fraction = fraction + sys_zone_cap_frac(i,k)
         if(ier.eq.-3)then
           exit=.true.
@@ -945,10 +877,7 @@ C HVAC file in 'zones being supplied' section.
 C Check to make sure sum of fractions is 1. If not, redirect back to top
 C of loop - can be added later when fractions matter        
         if ((k .eq. num_sys_zones(i)) .and. (fraction .ne. 1)) then
-          h(1) = 'Fractions must equal to one.  You will be redirected'
-          h(2) = 'to re-enter zone number and their respective'
-          h(3) = 'fractions.' 
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
+          CALL PHELPD('Unequated fractions',nbhelp,'-',0,0,ier)
           K = 1
           fraction = 0
         else
@@ -957,32 +886,29 @@ C of loop - can be added later when fractions matter
         
       enddo
       
+      helptopic='zone_furnace_capacity'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
      &           '(W):', 0.0, 'F', 1000000.0, 'F', 100.0, 
-     &           'Please enter a capacity greater than 0',ier, 1)
+     &           'Please enter a capacity greater than 0',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
         return
       endif
-      
-      h(1) = 'Enter the steady state efficiency of the system.'
       
       CALL EASKR(ss_efficiency(i), ' ', 
      &           'Steady state efficiency of the system', 
-     &           0.0, 'F', 1.0,'F', 1.0,'efficiency',ier, 1)
+     &           0.0, 'F', 1.0,'F', 1.0,'efficiency',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
         return
       endif
       
-      h(1) = 'Primary system should have same fan mode as backup'
-      h(2) = 'system.'
-      
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated', 
      &              'Auto Mode', 'Continuous Mode','Cancel',
-     &              ifan_operation(i), 2)
+     &              ifan_operation(i),nbhelp)
       if(ifan_operation(i).eq.4) then !cancel selected
         ifan_operation(i) = 0
         exit=.true.
@@ -991,35 +917,28 @@ C of loop - can be added later when fractions matter
       endif
       
       if(ifan_operation(i).ne.1)then
-        h(1) = 'Enter the fan power of the system in Watts.'
-        h(2) = 'If -1 is entered, the power is estimated internally.'
-        h(3) = 'If the fan is in continuous mode, fan power need to'
-        h(4) = 'be included as internal gain in the ESP-r opr file.'
-      
+        helptopic='zone_sys_fan_cap'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(fan_power(i), ' ', 'Fan power (W)', -1.,'F',1.E4,'F',
-     &             100.0, 'Invalid input, please see help file',ier,4)
+     &    100.0, 'Invalid input, please see help file',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         endif
      
-        h(1) = 'If the fan is in continuous mode, fan power need to'
-        h(2) = 'be included as internal gain in the ESP-r opr file.'
-      
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
+        CALL PHELPD('Continuous Mode Operation of Fan',nbhelp,'-',
+     &    0,0,ier)
       else
         fan_power(i) = 0.
       end if
       
       if (isys_type(i) .eq. 10 .OR. isys_type(i) .eq. 8) then
-      
-        h(1) = 'Enter the draft fan power of the system in Watts.'
-        h(2) = 'If unknown, a selection of 75W is suggested.'
-            
+        helptopic='zone_draft_fan_cap'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(draft_fan_power(i), ' ', 'Draft fan power (W)', -1.,
      &             'F',200.,'F', 75.0,
-     &             'Invalid input, please see help file',ier, 2)
+     &             'Invalid input, please see help file',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1030,10 +949,10 @@ C of loop - can be added later when fractions matter
       endif
       
       if (isys_type(i) .eq. 7) then
-        h(1) = 'Enter the pilot power. If not known, 500W is suggested.'
-
+        helptopic='zone_furnace_pilot'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(pilot_power(i),' ','Pilot power (W)',0.1,'F',1000.,
-     &             'F', 500., 'Pilot Power',ier, 1)
+     &             'F', 500., 'Pilot Power',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1041,13 +960,11 @@ C of loop - can be added later when fractions matter
         endif
       endif
       
-      h(1) = 'Specify whether there is a duct system associated'
-      h(2) = 'with the HVAC system.  This is not used now but the'
-      h(3) = 'value is needed.'
-      
+      helptopic='zone_ducts_included'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(iduct_sys_flag(i),'Specify if there is a duct system',
      &           '1 yes, 0 no (default)',0,'F',1,'F',0,
-     &           'value must be 0 or 1',ier,3)
+     &           'value must be 0 or 1',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1080,11 +997,10 @@ C ---------------------------------------------------------------------
 #include "hvac_common.h"
 #include "furnace_common.h"
 
-      common/pophelp/h(60)
       common/C1/NCOMP, NCON
 
 C	Common it up here.
-			
+
       INTEGER ier                    ! Returned if error/nothing selected
       INTEGER priority               ! Passed as primary/backup
       INTEGER i                      ! Identifier for system number
@@ -1092,12 +1008,18 @@ C	Common it up here.
       INTEGER sys_zone_number(NCOMP) ! Zone numbers of zones associated with the system
       INTEGER K                      ! Counter used for zone association
       INTEGER nnm                    ! Counter used for zone association
-      character h*72                 ! help
       INTEGER zonenum(ncomp)         ! Array of zone numbers associated with the system
       REAL fraction                  ! Fraction of power assigned to zones so far
       REAL ifraction                 ! 1-fraction, fraction which remains to be assigned
       CHARACTER*50 zoneopt(ncomp+1)  ! Array of zone names associated with system
       LOGICAL exit                   ! returns as true if user does not complete system definition
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='BASEBOARD_INPUTS'  ! set for subroutine
 
       ier = 0
       exit=.false.
@@ -1113,7 +1035,7 @@ C      if(priority.eq.0) then
 C        h(1) = 'Select whether the baseboard system is a primary'
 C        h(2) = 'system, or whether it serves as a backup system'
 C        h(3) = 'in the zones.'
-	
+
 C        CALL EASKI(ipriority(i),'Specify the system priority',
 C     &             '1 for primary (default), 2 for backup', 1, 
 C     &             'F', 2, 'F', 1,'value must be 1 or 2',ier,3)
@@ -1125,17 +1047,16 @@ C      else
 C        ipriority(i) = priority
 C      end if
      
-C Select the number of zones the system is linked to	
+C Select the number of zones the system is linked to
 
-      h(1) = 'Enter the number of zones that the baseboard system'
-      h(2) = 'serves. Your model may be split into several zones,'
-      h(3) = 'with different HVAC systems serving different zones.'
+      helptopic='zone_baseboard_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    
       CALL EASKI(num_sys_zones(i),' ',
      &           'Total number of zones served by baseboard system:',
      &           1,'F',NCOMP,'F',1,
      &          'Enter a number of zones within the range of your model'
-     &           ,ier,3)
+     &           ,ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1149,16 +1070,10 @@ C Select the number of zones the system is linked to
      		K=K+1
       enddo
       
-      h(1) = 'Number of zones chosen must be equal to'
-      h(2) = 'or less than the number of zones in the model.'
-      h(3) = 'Once number of zones being supplied has been'
-      h(4) = 'picked, the fraction of supplied energy to each'
-      h(5) = 'zone must be stated.' 
-      
       ival = num_sys_zones(i) 			
       CALL EPICKS(ival, sys_zone_number, ' ',
      &            'Select zones being supplied:',30, ncomp, zoneopt,
-     &            'Zones - see help for options',ier,5)
+     &            'Zones - see help for options',ier,nbhelp)
       if(ival.ne.num_sys_zones(i)) then !nothing selected or not enough
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1172,7 +1087,7 @@ C Select the number of zones the system is linked to
         isys_zone_num(i,k) = sys_zone_number(k)
 
       end do
-	
+
 C The value 'num_sys_zones(i)' is the zone number of the zone picked in the epicks
 C menu above, therefore this is the value that needs to be written to the 
 C HVAC file in 'zones being supplied' section.
@@ -1180,16 +1095,12 @@ C HVAC file in 'zones being supplied' section.
       ifraction = 1
       k=1
       
-      h(1) = 'Enter the fraction of the system capacity associated'
-      h(2) = 'with this zone.  The sum of the fractions to all zones'
-      h(3) = 'must be equal to 1'
-      
       do while (k.LE.num_sys_zones(i))
  	  ifraction = 1-fraction
  		nnm=sys_zone_number(k) 				 			 
         CALL EASKR(sys_zone_cap_frac(i,k),  
      &             'Select fraction supplied to',zname(nnm),
-     &              0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,3)
+     &        0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,nbhelp)
         fraction = fraction + sys_zone_cap_frac(i,k)
         if(ier.eq.-3)then
           exit=.true.
@@ -1200,10 +1111,7 @@ C HVAC file in 'zones being supplied' section.
 C Check to make sure sum of fractions is 1. If not, redirect back to top 
 C of loop - can be added later when fractions matter        
         if ((k .eq. num_sys_zones(i)) .and. (fraction .ne. 1)) then
-          h(1) = 'Fractions must equal to one.  You will be redirected'
-          h(2) = 'to reenter zone number and their respective'
-          h(3) = 'fractions.' 
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
+          CALL PHELPD('Unequated fractions',nbehlp,'-',0,0,ier)
           k = 1
           fraction = 0
         else
@@ -1212,39 +1120,28 @@ C of loop - can be added later when fractions matter
         
       end do
       
-      h(1) = 'Enter the steady state capacity of the system in Watts.'
-      
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
      &           '(W):', 0.0, 'F', 1000000.0, 'F', 100.0, 
-     &           'Please enter a capacity greater than 0',ier, 1)
+     &       'Please enter a capacity greater than 0',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
         return
       end if
      
-      h(1) = 'Enter the steady state efficiency of the system.'
-      
       CALL EASKR(ss_efficiency(i), 
      &           'Steady state efficiency of the system', 
      &           '(1 for electric baseboards)', 0., 'F', 1.,'F', 1.0,
-     &           'Please enter an efficiency between 1 and 0',ier, 1)
+     &       'Please enter an efficiency between 1 and 0',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
         return
       end if
       
-      h(1) = 'If the baseboard is a backup, this should be the same'
-      h(2) = 'as that for the primary system except when the primary'
-      h(3) = 'system has a fan and the baseboard has no fan.  In this'
-      h(4) = 'case, select no fan for the backup baseboard here, and'
-      h(5) = 'then choose auto or continuous mode for the primary' 
-      h(6) = 'system. '
-      
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated', 
      &              'Auto Mode', 'Continuous Mode','Cancel',
-     &              ifan_operation(i),6)
+     &              ifan_operation(i),nbehlp)
       if(ifan_operation(i).eq.4) then !cancel selected
         ifan_operation(i) = 0
         exit=.true.
@@ -1252,23 +1149,17 @@ C of loop - can be added later when fractions matter
       endif
 
       if(ifan_operation(i).ne.1)then
-        h(1) = 'Enter the fan power of the system in Watts.'
-        h(2) = 'If -1 is entered, the power is estimated internally.'
-        h(3) = 'If the fan is in continuous mode, fan power need to'
-        h(4) = 'be included as internal gain in the ESP-r opr file.'
       
         CALL EASKR(fan_power(i), ' ', 'Fan power (W)',-1.,'F',1.E4,'F',
-     &             100.0,'Invalid input, please see help file',ier, 4)
+     &        100.0,'Invalid input, please see help file',ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         end if
      
-        h(1) = 'If the fan is in continuous mode, fan power need to'
-        h(2) = 'be included as internal gain in the ESP-r opr file.'
-      
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
+        CALL PHELPD('Continuous Mode Operation of Fan',nbhelp,'-',
+     &     0,0,ier)
       else
         fan_power(i) = 0.
       endif
@@ -1301,12 +1192,10 @@ C ---------------------------------------------------------------------
 #include "hvac_common.h"
 #include "ashp_common.h"
 
-
-      common/pophelp/h(60)
       common/C1/NCOMP, NCON
 
 C	Common it up here.
-			
+
       INTEGER hpunit                  ! Passed system type from HVACGIN
       INTEGER ier                     ! Returned if there is an error/no options selected
       INTEGER I                       ! Identifier for current system
@@ -1316,17 +1205,23 @@ C	Common it up here.
       INTEGER sys_zone_number(ncomp)  ! Array of zone numbers associated with the system
       REAL fraction                   ! Fraction of power assigned to zones so far
       REAL ifraction                  ! 1-fraction, fraction which remains to be assigned
-      character h*72                  ! help
       INTEGER zonenum(ncomp)          ! Array of zone number associated with hvac
       CHARACTER*50 zoneopt(ncomp+1)   ! Chacter array of zone names associated with hvac
       LOGICAL exit                    ! Returns as true if user does not complete system definition
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HPHOT'  ! set for subroutine
 
 C Need to put something here about the GCEP
 
       ier = 0
       
 C assign as heating
-      iunit_function(i) = 1	
+      iunit_function(i) = 1
 
 C assign whether ASHP, GSHP, GCEP      
       if(hpunit.eq.3) then 
@@ -1338,15 +1233,14 @@ C assign whether ASHP, GSHP, GCEP
 
 C Select the priority of the system
 	if(priority .eq. 0) then
-	
-        h(1) = 'Select whether the heat pump system is a primary'
-        h(2) = 'system, or whether it serves as a backup system'
-        h(3) = 'in the zones.'
-	
+
+        helptopic='zone_hvac_hp_primary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
         CALL EASKI(ipriority(i),'Specify the system priority',
      &             '1 for primary (default), 2 for backup', 
      &             1, 'F', 2, 'F', 1,
-     &             'value must be 1 or 2',ier,3)
+     &             'value must be 1 or 2',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1357,24 +1251,24 @@ C Select the priority of the system
       end if
       
       if(hpunit.eq.3) then
-        h(1) ='If the heating system is an air source heat pump, select'
-        h(2) = 'whether it is typical, good, or poor.'
+        helptopic='zone_hvac_hp_poor'
+        call gethelptext(helpinsub,helptopic,nbhelp)
        
         CALL EASKABC(' ', 'Enter the heat pump unit type', 
-     &     'ASHP Typical','ASHP Good','ASHP Poor',isys_type(i),2)
+     &     'ASHP Typical','ASHP Good','ASHP Poor',isys_type(i),
+     &     nbhelp)
       end if
       
-C Select the number of zones the system is linked to	
+C Select the number of zones the system is linked to
 
-      h(1) = 'Enter the number of zones that the system'
-      h(2) = 'serves. Your model may be split into several zones,'
-      h(3) = 'with different HVAC systems serving different zones.'
+      helptopic='zone_hvac_hp_zones'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       CALL EASKI(num_sys_zones(i),' ',
      &           'Total number of zones served by heat pump system:',
      &           1,'F',NCOMP,'F',1,
      &         'Enter a number of zones within the range of your model',
-     &           ier,3)
+     &           ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1388,15 +1282,10 @@ C Select the number of zones the system is linked to
      		K=K+1
       enddo
       
-      h(1) = 'Number of zones chosen must be equal to'
-      h(2) = 'or less than the number of zones in the model.'
-      h(3) = 'Once number of zones being supplied has been'
-      h(4) = 'picked, the fraction of supplied energy to each'
-      h(5) = 'zone must be stated.' 
-      
       ival = num_sys_zones(i)       			
       CALL EPICKS(ival,sys_zone_number,'','Select zones being supplied',
-     &         30, ncomp, zoneopt,'Zones - see help for options',ier,5)
+     &         30, ncomp, zoneopt,'Zones - see help for options',
+     &         ier,nbhelp)
       if(ival.ne.num_sys_zones(i))then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1409,7 +1298,7 @@ C Select the number of zones the system is linked to
         isys_zone_num(i,k) = sys_zone_number(k)
 
       end do
-	
+
 C The value 'isys_zone_num(i,k)' is the zone number of the zone picked in the epicks
 C menu above, therefore this is the value that needs to be written to the 
 C HVAC file in 'zones being supplied' section.
@@ -1417,16 +1306,15 @@ C HVAC file in 'zones being supplied' section.
       ifraction = 1
       k=1
       
-      h(1) = 'Enter the fraction of the system capacity associated'
-      h(2) = 'with this zone.  The sum of the fractions to all zones'
-      h(3) = 'must be equal to 1'
+      helptopic='zone_hvac_hp_zfrac'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       do while (k.LE.num_sys_zones(i))
  	  ifraction = 1-fraction
  		nnm=sys_zone_number(k) 				 			 
         CALL EASKR(sys_zone_cap_frac(i,k),  
      &    'Select fraction supplied to',zname(nnm),
-     &    0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,3)     
+     &    0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,nbhelp)     
         fraction = fraction + sys_zone_cap_frac(i,k)
         if(ier.eq.-3)then
           exit=.true.
@@ -1437,10 +1325,7 @@ C HVAC file in 'zones being supplied' section.
 C Check to make sure sum of fractions is 1. If not, redirect back to top
 C of loop - can be added later when fractions matter        
         if ((k .eq. num_sys_zones(i)) .and. (fraction .ne. 1)) then
-          h(1) = 'Fractions must equal to one.  You will be redirected'
-          h(2) = 'to reenter zone number and their respective'
-          h(3) = 'fractions.' 
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
+          CALL PHELPD('Unequated fractions',nbhelp,'-',0,0,ier)
           k = 1
           fraction = 0
         else
@@ -1450,11 +1335,12 @@ C of loop - can be added later when fractions matter
 
 
 C Set heat pump capacity       
-      h(1) = 'Enter the steady state capacity of the system in Watts.'
+      helptopic='zone_hvac_hp_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
      &           '(W):', 0., 'F', 1.E6, 'F', 100.,
-     &           'Enter a capacity greater than 0',ier, 1)
+     &           'Enter a capacity greater than 0',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1462,11 +1348,8 @@ C Set heat pump capacity
       end if
      
 C Set heat pump COP       
-      h(1) = 'Enter the heat pump COP'
-      h(2) = 'Max = 50'
-        
       CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F', 
-     &           0., 'COP', ier, 2)
+     &           0., 'COP', ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1474,12 +1357,8 @@ C Set heat pump COP
       end if
 
 C Set heat pump flow rate
-      h(1) = 'If flow rate set < 0, value is set internally'
-      h(2) = 'This is the flow rate that occurs during the actual'
-      h(3) = 'operation of the heat pump system.'
-       
       CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0., 
-     &           'Flow rate.', ier, 3)
+     &           'Flow rate.', ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1487,11 +1366,9 @@ C Set heat pump flow rate
       end if
       
 C Set flow rate at rating conditions.
-      h(1) = 'If flow rate set < 0, value is set internally'
-       
       CALL EASKR(flow_rate_r(i),' ',
      &           'Flow Rate at rating conditions',-1.,'F', 10.0,'F',0.,
-     &           'Rated Flow rate.', ier, 1)
+     &           'Rated Flow rate.', ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1500,12 +1377,9 @@ C Set flow rate at rating conditions.
       
       
 C set circulation fan mode
-      h(1) = 'Primary system should have same fan mode as backup'
-      h(2) = 'system.'
-      
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated', 
      &              'Auto Mode', 'Continuous Mode','Cancel',
-     &              ifan_operation(i), 2)
+     &              ifan_operation(i), nbhelp)
       if(ifan_operation(i).eq.4) then !cancel selected
         ifan_operation(i) = 0
         exit=.true.
@@ -1515,14 +1389,10 @@ C set circulation fan mode
       if(ifan_operation(i).ne.1)then
 
 C set circulation fan position
-        h(1) = 'Currently not used but value needed.'
-        h(2) = '1 - Blow through'
-        h(3) = '2 - Draw Through'
-       
         CALL EASKI(ifan_position(i),
      &             'Specify the circulation fan position',
      &             '1 for blow through (default), 2 for draw through',
-     &             1, 'F', 2, 'F', 1, 'value must be 1 or 2', ier, 3)
+     &         1, 'F', 2, 'F', 1, 'value must be 1 or 2', ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1530,35 +1400,25 @@ C set circulation fan position
         end if
 
 C set circulation fan power
-
-        h(1) = 'Enter the circulation fan power of the system in Watts.'
-        h(2) = 'If -1 is entered, the power is estimated internally.'
-        h(3) = 'If the fan is in continuous mode, fan power need to'
-        h(4) = 'be included as internal gain in the ESP-r opr file.'
-       
         CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)', 
      &             -1., 'F', 1.E4,'F', 100.,'Circulation Fan',
-     &             ier, 4)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         end if
  
-        h(1) = 'If the fan is in continuous mode, fan power need to'
-        h(2) = 'be included as internal gain in the ESP-r opr file.'
+        CALL PHELPD('Continuous Mode Operation of Fan',nbhelp,'-',
+     &    0,0,ier)
        
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
         
         
-      
 C set outdoor  fan power
-        h(1) = 'This is the fan for the outdoor evaporator of the heat' 
-        h(2) = 'pump. Not used for ashp in heating but value needed.'
-       
-        CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)', 
+        CALL EASKR(outdoor_fan_power(i), ' ',
+     &             'Outdoor (evaporator) Fan power (W)', 
      &             -1., 'F', 1.E4,'F', 100., 'Outdoor fan power',
-     &             ier, 2)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1566,13 +1426,10 @@ C set outdoor  fan power
         end if
      
 C set auto mode  fan power     
-        h(1) = 'This is the fan power associated with auto mode.'
-        h(2) = 'Not used for heat pump in heating but value needed.'
-       
         CALL EASKR(fan_power_auto(i),' ',
      &             'Fan power associated with auto mode',
      &             -1., 'F', 1.E4,'F',100., 'Auto Fan Power',
-     &             ier, 2)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1580,17 +1437,11 @@ C set auto mode  fan power
         end if
  
 C set circulation fan position during rating test
-    
-        h(1) = 'Currently not used but value needed.'
-        h(2) = '1 - Blow through'
-        h(3) = '2 - Draw Through'
-        h(4) = 'Position of circulation fan with respect to heat'
-        h(5) = 'exchanger (heating or cooling) during rating test'
-
         CALL EASKI(ifan_position_r(i), 
      &             'circulation fan position during rating test', 
      &             '1 for blow through (default), 2 for draw through',
-     &             1, 'F', 2, 'F', 1, 'value must be 1 or 2', ier, 5)
+     &             1, 'F', 2, 'F', 1, 'value must be 1 or 2', ier,
+     &             nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1598,14 +1449,11 @@ C set circulation fan position during rating test
         end if
      
 C set circulation mode  fan power during rating test
-        h(1) = 'This is the circulation fan power during the rating'
-        h(2) = 'test. Not used for heat pump in heating but value'
-        h(3) = 'needed. If flow rate set < 0, value is set internally'
-      
         CALL EASKR(fan_power_r(i),' ',
      &             'circulation fan power during rating test',
      &             -1., 'F', 1.E4,'F',100.,
-     &             'Invalid input, please see help file',ier, 2)
+     &             'Invalid input, please see help file',ier,
+     &             nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1621,14 +1469,11 @@ C set circulation mode  fan power during rating test
       end if
 
 C Temperature control
-      h(1) = 'Temperature Control'
-      h(2) = '1 - Balanced Point'
-      h(3) = '2 - Restricted'
-      h(4) = '3 - Unrestricted'
-
+      helptopic='zone_hvac_hp_temp_ctl'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(itemp_control(i), 'Temperature Control', 
      &           '1 - balanced point, 2 - Restricted, 3 - Unrestricted',
-     &           1, 'F', 3, 'F', 1, 'value must be 1,2, or 3', ier, 4)
+     &           1,'F',3,'F',1,'value must be 1,2, or 3', ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1636,10 +1481,8 @@ C Temperature control
       end if
      
 C cutoff temperature
-      h(1) = 'Cutoff Temperature in C'
-      
       CALL EASKR(cutoff_temp(i),' ','Cutoff T in C',-1., 'F', 50.,'F',
-     &           50., 'Cutoff Temperature',ier, 1)
+     &           50., 'Cutoff Temperature',ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1688,11 +1531,10 @@ C ---------------------------------------------------------------------
 
 C    fbackup = 1 if there is a backup, 0 if not
 
-      common/pophelp/h(60)
       common/C1/NCOMP, NCON
 
 C	Common it up here.
-		
+
       INTEGER hpunit                 ! Passed system type from HVACGIN
       INTEGER ier                    ! Returned if there is an error/no options selected
       INTEGER I                      ! Identifier for current system
@@ -1702,7 +1544,6 @@ C	Common it up here.
       INTEGER sys_zone_number(ncomp) ! Array of zone numbers associated with the system
       REAL fraction                  ! Fraction of power assigned to zones so far
       REAL ifraction                 ! 1-fraction, fraction which remains to be assigned
-      character h*72                 ! help
       INTEGER zonenum(ncomp)         ! Array of zone number associated with hvac
       CHARACTER*50 zoneopt(ncomp+1)  ! Chacter array of zone names associated with hvac
       LOGICAL exit                   ! returns as true if user does not complete system definition
@@ -1712,12 +1553,19 @@ C	Common it up here.
       CHARACTER*6 dayout             ! Variable used for writing out current day
       CHARACTER*9 periodout          ! Variable used for writing out current period
       INTEGER period_counter         ! Variable used for counting up until total number of periods
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HPCOLD'  ! set for subroutine
       
       ier =0
       exit=.false.
       
 C assign as cooling
-      iunit_function(i) = 2	
+      iunit_function(i) = 2
 C assign whether ASHP, GSHP, GCEP      
       if(hpunit.eq.3) then 
         ihvac_type(i) = 7
@@ -1727,14 +1575,13 @@ C assign whether ASHP, GSHP, GCEP
       end if
 C Select the priority of the system
 	  if(priority .eq. 0) then
-	
-        h(1) = 'Select whether the heat pump system is a primary'
-        h(2) = 'system, or whether it serves as a backup system'
-        h(3) = 'in the zones.'
-	
+
+        helptopic='zone_hvac_hp_primary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
         CALL EASKI(ipriority(i),'Specify the system priority',
      &             '1 for primary (default), 2 for backup',1,
-     &             'F',2,'F',1,'value must be 1 or 2',ier,3)
+     &             'F',2,'F',1,'value must be 1 or 2',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1745,31 +1592,22 @@ C Select the priority of the system
       end if
       
       if(hpunit.eq.3) then
-        h(1) ='If the heating system is an air source heat pump, select'
-        h(2) = 'whether it is typical, good, or poor.'
-       
+        helptopic='zone_hvac_hp_poor'
+        call gethelptext(helpinsub,helptopic,nbhelp)
        
         CALL EASKABC(' ', 'Enter the heat pump unit type', 
-     &            'ASHP Typical','ASHP Good','ASHP Poor',isys_type(i),2)
+     &    'ASHP Typical','ASHP Good','ASHP Poor',isys_type(i),nbhelp)
       end if
      
-C Select the number of zones the system is linked to	
-
-      h(1) = 'Enter the number of zones that the system'
-      h(2) = 'serves. Your model may be split into several zones,'
-      h(3) = 'with different HVAC systems serving different zones.'
-   
-C Select the number of zones the system is linked to	
-
-      h(1) = 'Enter the number of zones that the heat pump system'
-      h(2) = 'serves. Your model may be split into several zones,'
-      h(3) = 'with different HVAC systems serving different zones.'
+C Select the number of zones the system is linked to
+      helptopic='zone_hvac_hp_zones'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    
       CALL EASKI(num_sys_zones(i),' ',
      &           'Total number of zones served by heat pump system:',
      &           1,'F',NCOMP,'F',1,
      &          'Enter a number of zones within the range of your model'
-     &           ,ier,3)
+     &           ,ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1783,16 +1621,10 @@ C Select the number of zones the system is linked to
      		K=K+1
       enddo
       
-      h(1) = 'Number of zones chosen must be equal to'
-      h(2) = 'or less than the number of zones in the model.'
-      h(3) = 'Once number of zones being supplied has been'
-      h(4) = 'picked, the fraction of supplied energy to each'
-      h(5) = 'zone must be stated.' 
-      
       ival = num_sys_zones(i) 			
       CALL EPICKS(ival, sys_zone_number, ' ',
      &            'Select zones being supplied:',30,ncomp,zoneopt,
-     &            'Zones - see help for options',ier,5)
+     &            'Zones - see help for options',ier,nbhelp)
       if(ival.eq.0) then !nothing selected
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1804,7 +1636,7 @@ C Select the number of zones the system is linked to
         isys_zone_num(i,k) = sys_zone_number(k)
 
       end do
-	
+
 C The value 'isys_zone_num(i,k)' is the zone number of the zone picked in the epicks
 C menu above, therefore this is the value that needs to be written to the 
 C HVAC file in 'zones being supplied' section.
@@ -1812,16 +1644,12 @@ C HVAC file in 'zones being supplied' section.
       ifraction = 1
       k=1
       
-      h(1) = 'Enter the fraction of the system capacity associated'
-      h(2) = 'with this zone.  The sum of the fractions to all zones'
-      h(3) = 'must be equal to 1'
-      
       do while (k.LE.num_sys_zones(i))
 	  ifraction = 1-fraction
  		nnm=sys_zone_number(k) 				 			 
         CALL EASKR(sys_zone_cap_frac(i,k),  
      &            'Select fraction supplied to',zname(nnm),
-     &            0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,3)     
+     &        0.,'F',ifraction, 'F',ifraction, 'Fraction', ier,nbhelp)     
         fraction = fraction + sys_zone_cap_frac(i,k)
         if(ier.eq.-3)then
           exit=.true.
@@ -1832,10 +1660,7 @@ C HVAC file in 'zones being supplied' section.
 C Check to make sure sum of fractions is 1. If not, redirect back to top
 C of loop - can be added later when fractions matter        
         if ((k .eq. num_sys_zones(i)) .and. (fraction .ne. 1)) then
-          h(1) = 'Fractions must equal to one.  You will be redirected'
-          h(2) = 'to reenter zone number and their respective'
-          h(3) = 'fractions.' 
-          CALL PHELPD('Unequated fractions',3,'-',0,0,ier)
+          CALL PHELPD('Unequated fractions',nbhelp,'-',0,0,ier)
           k = 1
           fraction = 0
         else
@@ -1845,11 +1670,12 @@ C of loop - can be added later when fractions matter
 
 
 C Set heat pump capacity       
-      h(1) = 'Enter the steady state capacity of the system in Watts.'
+      helptopic='zone_hvac_hp_zfrac'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       CALL EASKR(ss_capacity(i),'Steady state capacity of the system',
      &           '(W):', 0.0, 'F', 1000000.0, 'F', 100.0, 
-     &           'Please enter a capacity greater than 0',ier, 1)
+     &           'Please enter a capacity greater than 0',ier,nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1857,11 +1683,8 @@ C Set heat pump capacity
       end if
      
 C Set heat pump COP       
-      h(1) = 'Enter the heat pump COP'
-      h(2) = 'Max = 50'
-        
       CALL EASKR(ss_cop(i),' ','Heat pump COP', 0., 'F', 1000., 'F', 
-     &           0., 'COP', ier, 2)
+     &           0., 'COP', ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1869,12 +1692,8 @@ C Set heat pump COP
       end if
 
 C Set heat pump flow rate
-      h(1) = 'If flow rate set < 0, value is set internally'
-      h(2) = 'This is the flow rate that occurs during the actual'
-      h(3) = 'operation of the heat pump system.'
-       
       CALL EASKR(flow_rate(i),' ','Flow Rate',-1., 'F', 10.0, 'F', 0., 
-     &           'Flow rate.', ier, 3)
+     &           'Flow rate.', ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1882,11 +1701,9 @@ C Set heat pump flow rate
       end if
      
 C Set flow rate at rating conditions.
-      h(1) = 'If flow rate set < 0, value is set internally'
-       
       CALL EASKR(flow_rate_r(i),' ',
      &           'Flow Rate at rating conditions',-1.,'F', 10.0, 'F',0.,
-     &           'Rated Flow rate.', ier, 1)
+     &           'Rated Flow rate.', ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1894,16 +1711,9 @@ C Set flow rate at rating conditions.
       end if
 
 C set circulation fan mode
-      h(1) = 'If the hp is a backup, this should be the same'
-      h(2) = 'as that for the primary system except when the primary'
-      h(3) = 'system has a fan and the hp has no fan.  In this'
-      h(4) = 'case, select no fan for the backup hp here, and'
-      h(5) = 'then choose auto or continuous mode for the primary' 
-      h(6) = 'system. '
-      
       CALL EASKABCD(' ','circulation fan mode', 'No Fan Associated', 
      &              'Auto Mode', 'Continuous Mode','Cancel',
-     &              ifan_operation(i),2)
+     &              ifan_operation(i),nbhelp)
       if(ifan_operation(i).eq.4) then ! cancel selected
         ifan_operation(i) = 0
         exit=.true.
@@ -1913,14 +1723,10 @@ C set circulation fan mode
       if(ifan_operation(i).ne.1)then
 
 C set circulation fan position
-        h(1) = 'Currently not used but value needed.'
-        h(2) = '1 - Blow through'
-        h(3) = '2 - Draw Through'
-       
         CALL EASKI(ifan_position(i),
      &             'Specify the circulation fan position', 
      &             '1 for blow through (default), 2 for draw through',
-     &             1, 'F', 2, 'F', 1, 'value must be 1 or 2', ier, 3)
+     &             1, 'F',2,'F',1,'value must be 1 or 2',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1928,33 +1734,22 @@ C set circulation fan position
         end if
 
 C set circulation fan power
-
-        h(1) = 'Enter the circulation fan power of the system in Watts.'
-        h(2) = 'If -1 is entered, the power is estimated internally.'
-        h(3) = 'If the fan is in continuous mode, fan power need to'
-        h(4) = 'be included as internal gain in the ESP-r opr file.'
-       
         CALL EASKR(fan_power(i), ' ', 'Circulation Fan power (W)', 
      &             -1., 'F', 1.E4,'F', 100.,'Circulation Fan',
-     &             ier, 4)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         end if
  
-        h(1) = 'If the fan is in continuous mode, fan power need to'
-        h(2) = 'be included as internal gain in the ESP-r opr file.'
+        CALL PHELPD('Continuous Mode Operation of Fan',nbhelp,'-',
+     &    0,0,ier)
        
-        CALL PHELPD('Continuous Mode Operation of Fan',2,'-',0,0,ier)
-      
 C set outdoor  fan power
-        h(1) = 'This is the fan for the outdoor evaporator of the heat' 
-        h(2) = 'pump. Not used for ashp in heating but value needed.'
-       
         CALL EASKR(outdoor_fan_power(i), ' ', 'Outdoor Fan power (W)', 
      &             -1., 'F', 1.E4,'F', 100., 'Outdoor fan power',
-     &             ier, 2)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1962,13 +1757,10 @@ C set outdoor  fan power
         end if
      
 C set auto mode  fan power     
-        h(1) = 'This is the fan power associated with auto mode.'
-        h(2) = 'Not used for heat pump in heating but value needed.'
-       
         CALL EASKR(fan_power_auto(i),' ',
      &             'Fan power associated with auto mode',
      &             -1.,'F',1.E4,'F',100.,'Auto Fan Power',
-     &             ier, 2)
+     &             ier, nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1976,16 +1768,10 @@ C set auto mode  fan power
         end if
  
 C set circulation fan position during rating test
-    
-        h(1) = 'Currently not used but value needed.'
-        h(2) = '1 - Blow through'
-        h(3) = '2 - Draw Through'
-        h(4) = 'Position of circulation fan with respect to heat'
-        h(5) = 'exchanger (heating or cooling) during rating test'
         CALL EASKI(ifan_position_r(i),
      &             'circulation fan position during rating test',
      &             '1 for blow through (default), 2 for draw through',
-     &             1,'F',2,'F',1,'value must be 1 or 2',ier,5)
+     &             1,'F',2,'F',1,'value must be 1 or 2',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -1993,14 +1779,10 @@ C set circulation fan position during rating test
         end if
      
 C set circulation mode  fan power during rating test
-        h(1) = 'This is the circulation fan power during the rating'
-        h(2) = 'test. Not used for heat pump in heating but value'
-        h(3) = 'needed. If flow rate set < 0, value is set internally'
-      
         CALL EASKR(fan_power_r(i),' ',
      &             'circulation fan power during rating test',
      &             -1.,'F',1.E4,'F',100.,
-     &             'Invalid input, please see help file',ier,3)
+     &             'Invalid input, please see help file',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2016,11 +1798,11 @@ C set circulation mode  fan power during rating test
       end if
       
 C sensible heat ratio
-      h(1) = 'This is capacity at ARI rating conditions (26.7 oC Tdb'
-      h(2) = 'and 19.4 Twb oC).'
+      helptopic='zone_hvac_hp_sensible'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       CALL EASKR(shrr(i),' ','Sensible Heat Ratio',
-     &           0., 'F', 1.0,'F', 100., 'Heat Ratio',ier, 2)
+     &           0., 'F', 1.0,'F', 100., 'Heat Ratio',ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2030,7 +1812,7 @@ C sensible heat ratio
 C Cooling Type
       CALL EASKI(icooling_type(i),'Cooling Type',
      &           '1 - conventional, 2 - economizer',1,'F',2,'F',1,
-     &           'Cooling Type', ier, 0)
+     &           'Cooling Type', ier, nbhelp)
       if(ier.eq.-3)then
         exit=.true.
         CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2040,14 +1822,11 @@ C Cooling Type
 C If Conventional
       if(icooling_type(i).eq.1) then
         period_counter = 0
+
 C Number of Outdoor Air Day Types
-        h(1) = 'This is the number of different day types for the'
-        h(2) = 'description of the outdoor air schedule through the'
-        h(3) = 'duct system'
-       
         CALL EASKI(num_out_air_day_types(i),' ', 
      &            'Number of Outdoor Air Day Types',1
-     &            ,'F',365,'F',1,'Air Types',ier,3)
+     &            ,'F',365,'F',1,'Air Types',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2056,17 +1835,16 @@ C Number of Outdoor Air Day Types
        
         day=0
         do while (day.ne.num_out_air_day_types(i))
+
 C Number of different periods in each day type.  This entry and the next
 C for as many times as there are day types
           day = day +1
           write(dayout,'(A4,I2)') "day", day
           period = 0
-          h(1) ='This is the number of periods that make up this day' 
-          h(2) ='type.'
        
           CALL EASKI(num_outside_air_day_periods(i,day),
      &               'Number of different periods in',
-     &               dayout,1,'F',10,'F',1,'Periods',ier,2)
+     &               dayout,1,'F',10,'F',1,'Periods',ier,nbhelp)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2076,13 +1854,9 @@ C for as many times as there are day types
      &      num_outside_air_day_periods(i,day)
           end if
        
-          h(1) = 'This is a number out of 8760. The hour indicates the'
-          h(2) = 'hour of the year after which day type 1 is not valid'
-          h(3) = 'anymore.'
-       
           CALL EASKI(iend_hour_out_air_daytype(i,day),
      &               'Hour of the year end for end day type ',dayout, 
-     &               1,'F',8760,'F',1,'Hour of year ',ier,3)
+     &               1,'F',8760,'F',1,'Hour of year ',ier,nbhelp)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2096,13 +1870,9 @@ C Number of end hour for each period in each day type.  This entry and the next 
             period = period+1
             write(periodout,'(I2)') period
 C End hour for period m for day type n
-            h(1) ='This is an hour number up until 24. This is the hour'
-            h(2) = 'after which the given period for the given day type'
-            h(3) = 'is not valid anymore.'
-
             CALL EASKI(iend_hour_out_air_dayperiod(i,period_counter), 
      &                 'End hour for period',periodout,
-     &                 1,'F',24,'F',1,'Periods',ier,3)
+     &                 1,'F',24,'F',1,'Periods',ier,nbhelp)
             if(ier.eq.-3)then
               exit=.true.
               CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2110,12 +1880,9 @@ C End hour for period m for day type n
             end if
          
 C Outdoor air flow rate for m for day type n         
-            h(1) = 'Outdoor air flow rate for given period of given day'
-            h(2) = 'type. In m3/s'
-       
             CALL EASKR(day_period_out_air_flow(i,period_counter),
      &                 'Outdoor air flow rate for period', periodout,
-     &                 0.,'F',10.,'F',1.,'Periods',ier,2)
+     &                 0.,'F',10.,'F',1.,'Periods',ier,nbhelp)
             if(ier.eq.-3)then
               exit=.true.
               CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2126,57 +1893,30 @@ C Outdoor air flow rate for m for day type n
       else
 C Economizer Option
 C Economizer control type       
-        h(1) = '1. Indoor/Outdoor Temp integrated compressor control '
-        h(2) = 'and option of outdoor dry-bulb temp limit control. This'
-        h(3) = 'is a temperature based control with the compressor and'
-        h(4) = 'the economizer running together to meet the load when'
-        h(5) = 'the economizer can not meet the load by itself.'
-        h(6) = ' ' 
-        h(7) ='2. Indoor/Outdoor Temp non-integrated compressor control'
-        h(8) = 'and option outdoor dry-bulb temp limit control. This is'
-        h(9) = 'a temperature based control with the compressor and the'
-        h(10) ='economizer not allowed to run together to meet the load'
-        h(11) = 'when the economizer can not meet the load by itself.'
-        h(12) = ' '
-        h(13) = '3. Enthalpy integrated compressor control and enthalpy'
-        h(14) = 'limit control. This is an enthyalpy based control with'
-        h(15) = 'the compressor and the economizer running together to'
-        h(16) ='meet the load when the economizer can not meet the load'
-        h(17) = 'by itself.'
-        h(18) = ' '
-        h(19) = '4. Enthalpy non-integrated compressor control and'
-        h(20) = 'enthalpy limit control. This is an enthalpy based'
-        h(21) = 'control with the compressor and the economizer not'
-        h(22) = 'allowed to run together to meet the load when the'
-        h(23) = 'economizer can not meet the load by itself.'
+        helptopic='zone_hvac_hp_economizer'
+        call gethelptext(helpinsub,helptopic,nbhelp)
        
         CALL EASKI(ieconomizer_control(i), 'Economizer Control Type ',
      &             'See help for details',1,'F',4,'F',1,
-     &             'Economizer Type',ier,23)
+     &             'Economizer Type',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         end if
        
-        h(1) = 'Economizer minimum outdoor air flow. M3/S'
-       
         CALL EASKR(economizer_min_out_air_flow(i),
      &             'Economizer minimum outdoor air flow',
-     &             'm3/s',0.,'F',10.0,'F',100.0,'Min. Air flow.',ier,1)
+     &       'm3/s',0.,'F',10.0,'F',100.0,'Min. Air flow.',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
           return
         end if
      
-        h(1) = 'Economizer indoor space set point. C.'
-        h(2) ='This is the indoor temperature set point below which the'
-        h(3) = 'economizer is tuned off.'
-       
         CALL EASKR(economizer_ind_temp_setpoint(i),
      &             'Economizer indoor space set point',
-     &             'C',0.,'F',100.0,'F',22.0,'Indoor Set Point',ier,3)
+     &       'C',0.,'F',100.0,'F',22.0,'Indoor Set Point',ier,nbhelp)
         if(ier.eq.-3)then
           exit=.true.
           CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2185,13 +1925,10 @@ C Economizer control type
      
         if (ieconomizer_control(i).eq.1 .or. 
      &    ieconomizer_control(i).eq.2) then
-          h(1) = 'Economizer outdoor temperature limit. C.'
-          h(2) = 'This is the outdoor dry bulb temperature above which'
-          h(3) = 'the economizer is turned off.'
        
           CALL EASKR(economizer_out_temp_limitcon(i),
      &               'Economizer outdoor temperature limit',
-     &               'C',0.,'F',100.0,'F',25.0,'Temp limit',ier,3)
+     &           'C',0.,'F',100.0,'F',25.0,'Temp limit',ier,nbhelp)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2199,13 +1936,9 @@ C Economizer control type
           end if
      
         else
-          h(1) = 'Economizer outdoor enthalpy limit control. J/kg.'
-          h(2) = 'This is the outdoor air enthalpy above which'
-          h(3) = 'the economizer is turned off.'
-       
           CALL EASKR(economizer_out_enth_limitcon(i),
      &               'Economizer outdoor enthalpy limit control',
-     &              'J/kg',0.,'F',100.0,'F',50.0,'enthalpy limit',ier,3)
+     &        'J/kg',0.,'F',100.0,'F',50.0,'enthalpy limit',ier,nbhelp)
           if(ier.eq.-3)then
             exit=.true.
             CALL USRMSG(' ',' ','-') ! Clear Screen
@@ -2220,15 +1953,12 @@ C Economizer control type
         isys_num_heating(i)=0
       end if
       
-      h(1)='The control function type in the ESP-r ctl file that is'
-      h(2)='associated with the heat pump operation in cooling mode'
-      h(3)='must be listed here.'
-      h(4)='It can be found either in the ctl module of the ESP-r'
-      h(5)='interface, or in the .ctl file itself.' 
+      helptopic='zone_hvac_hp_z_ctl'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKAB(' ', 
      &           'control function type associated with cooling system', 
      &           'Ideal Controller', 'On/Off with Deadband',
-     &           icontrol_function(i),5)
+     &           icontrol_function(i),nbhelp)
 
       CALL USRMSG(' ',' ','-') ! Clear Screen
       return
@@ -2425,8 +2155,6 @@ C ---------------------------------------------------------------------
 #include "furnace_common.h"
 #include "ashp_common.h"
 
-      COMMON/pophelp/h(60)
-      CHARACTER h*72                              ! help array
       COMMON/hvacinfo/ihvacflag,hvacfile
       
       CHARACTER*72 hvacfile                       ! name of hvacfile
@@ -2443,6 +2171,13 @@ C ---------------------------------------------------------------------
       LOGICAL editflag                            ! logical returned from HVAC_SYS_SUMMARY as true if user chooses to edit a system
       LOGICAL exit_flag                           ! logical returned to main HVAGIN as true if user chooses to exit
       LOGICAL ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HVAC_MAIN_SUMMARY'  ! set for subroutine
 
       nhvac_summary=10
       edit=0
@@ -2489,15 +2224,8 @@ C       DEBUG
         hvac_summary(10)='- exit                '
         
 C Help text for the main hvac summary menu
-        H(1) ='Displays the various systems present in the hvac file '
-        H(2) ='and options for adding a new system (maximum of 5) or '
-        H(3) ='saving the current file. To view a summary of specific'
-        H(4) ='system characteristics within the hvac file, click on '
-        H(5) ='the desired system.                                   '
-        H(6) =' '
-        H(7) ='Further options to edit each individual system are    '
-        H(8) ='available in the next menu once the desired system is '
-        H(9) ='chosen.                                               '
+        helptopic='zone_hvac_sys_types'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Create the menu display
         CALL EMENU('HVAC Summary',hvac_summary,nhvac_summary,ipck)
@@ -2521,16 +2249,15 @@ C If one of the systems is chosen, call the system summary routine
           end if
           exit
         elseif(ipck.eq.9)then
-          call PHELPD('Main HVAC Summary Menu:',9,'-',0,0,IER)
+          helptopic='zone_hvac_sys_types'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call PHELPD('Main HVAC Summary Menu:',nbhelp,'-',0,0,IER)
         elseif(ipck.eq.8)then
           save_flag=.true.
           exit
         elseif(ipck.eq.7)then
           if(num_hvac_sys .eq. 5) then
-            h(1) = 'You have reached the maximum number of hvac systems'
-            h(2) = 'Please delete an hvac system manually if you would'
-            h(3) = 'like to add another.'
-            CALL PHELPD('Too many HVAC Sys', 3, '-', 0, 0, ier)
+            CALL PHELPD('Too many HVAC Sys',nbhelp, '-', 0, 0, ier)
           else
             add=.true.
             exit
@@ -2566,9 +2293,6 @@ C ---------------------------------------------------------------------
 #include "furnace_common.h"
 #include "ashp_common.h"
 
-      COMMON/pophelp/h(60)
-      CHARACTER h*72                         ! help array
-      
       INTEGER nsys_summary                   ! number of items in system summary
       PARAMETER (nsys_summary=12)            ! set number here
       INTEGER sys_number                     ! system number passed from main menu
@@ -2580,6 +2304,13 @@ C ---------------------------------------------------------------------
       CHARACTER*38 sys_summary(nsys_summary) ! array of items in system summary
       CHARACTER*7 unitfunction(2)            ! array of heat pump modes
       LOGICAL editflag                       ! return to main summary as true if user wishes to edit current system
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HVAC_SYS_SUMMARY'  ! set for subroutine
       
       editflag=.false.
       ipick=0
@@ -2654,17 +2385,8 @@ C efficiency, otherwise display the steady state COP
         sys_summary(12)='- Back to main HVAC summary  '
         
 C Help text for the main hvac summary menu
-        H(1) ='The system summary menu shows a summary of system   '
-        H(2) ='characteristics of the system chosen from the main  '
-        H(3) ='HVAC menu. This menu is not interactive, as many of '
-        H(4) ='the system characteristics are interdependent. To   '
-        H(5) ='change a system property, choose the edit option and'
-        H(6) ='find the property in question. All other default    '
-        H(7) ='suggestions will be the current system properties.  '
-        H(8) =' '
-        H(9) ='Note: Not all system properties are shown here, to  '
-        H(10)='ensure that the system will operate as expected     '
-        H(11)='choose edit and accept the default suggestions.     '
+        helptopic='zone_hvac_sys_summary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       
 C Create the system summary menu display
         CALL EMENU('System Summary',sys_summary,nsys_summary,ipick)
@@ -2674,11 +2396,13 @@ C Create the system summary menu display
         elseif(ipick.eq.nsys_summary)then
           exit
         elseif(ipick.eq.nsys_summary-1)then
-          call PHELPD('System Summary Menu:',11,'-',0,0,IER)
+          helptopic='zone_hvac_sys_summary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call PHELPD('System Summary Menu:',nbhelp,'-',0,0,IER)
         elseif(ipick.eq.nsys_summary-2)then
           ! do something here that will delete the system
-          call PHELPD('Currently not an option, but will be added',9,
-     &                '-',0,0,IER)
+          call PHELPD('Currently not an option but will be added',
+     &                nbhelp,'-',0,0,IER)
         elseif(ipick.eq.nsys_summary-3)then
           editflag=.true.
           exit

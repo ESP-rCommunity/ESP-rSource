@@ -21,41 +21,42 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 
 C      MZBCTL: control executive.
-C      MZMIXT: calculate `weighted' zone temperature.
+C      MZMIXT: calculate weighted zone temperature.
 C      CFVAR: get sensed condition for single sensor control.
 C      CFMVAR: get sensed conditions for multi-sensor control.
-C      BCL00: `weighted' temperature control.
-C      BCL01: basic control.
+C      BCL00:  weighted temperature control.
+C      BCL01:  ideal control.
 C      BCL02: free float.
-C      BCL03: basic (exponential) pre-heat (or cool) control.
+C      BCL03:  exponential pre-heat/cool control.
 C      BCL04: fixed heat injection/extraction control.
 C      BCL05: proportional+integral+derivative control action.
 C      BCL06: plant to building linker.
 C      BCL07: multi-stage controller with hysteresis.
-C      BCL08: CAV HAVC variable supply temperature system.
+C      BCL08:  CAV HVAC variable supply temperature system.
 C      BCL09: heat pipe.
 C      BCL10: on/off control.
 C      BCL11: temperature brought to multi-sensor value (ideal).
 C      BCL12: temperature brought to multi-sensor value (on-off).
 C      BCL13: time-proportioning on/off control.
-C      BCL14: floating (`three-position') control.
-C      BCL15: optimum start logic controller.
-C      BCL16: optimum stop logic controller.
-C      BCL17: fuzzy logic PI/PD Controller.
-C      BCL18: null controller.
-C      bcl19: multi-sensor basic controller.
-C      BCL20: evaporative source (defined as a controller).
-C      BCL21: master slave capacity inj/ext controller
-C      BCL22: VAV with CAV with reheat air supply controller
-C      BCL23: Match sensed values (ideal:2 setpoints)
-C      BCL24: Adaptive human comfort model
-C      BCL25_open_windows: Control switching between different 
-C             airflow computation methods.
+C      BCL14:  floating ('three-position') control.
+C      BCL15:  optimum start control.
+C      BCL16:  optimum stop control.
+C      BCL17:  fuzzy logic PI/PD control.
+C      BCL18:  null control.
+C      bcl19:  multi-sensor basic control.
+C      BCL20:  evaporative source.
+C      BCL21:  master/slave control.
+C      BCL22:  VAV cooling with CAV heating.
+C      BCL23:  match sensed value elsewhere.
+C      BCL24:  adaptive human comfort model.
+C      BCL25_open_windows: switch between different 
+C             air flow computation methods.
+C      BCL26:  heat exchanger model controlling zone flux extraction.
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
-C      ZRHCTL: relative humidity controlling routine
-C      ZRH01:  room relative humidity control to compliment BCL01
-C      FZINIT:intialise fuzzy membership variables.
+C      ZRHCTL: relative humidity controlling routine.
+C      ZRH01:  relative humidity control (complements BCL01).
+C      FZINIT: intialise fuzzy membership variables.
 
 C ******************** MZBCTL
 
@@ -74,11 +75,11 @@ C The main building control function executive.
       logical dll
 
       logical bNested 
-      
+
 C Check if running in dll mode.
       call isadll(dll)
 
-C 25 control functions active at present + thermo-physical
+C 26 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
@@ -89,7 +90,7 @@ C regardless of control function prevailing at this time.
 C (default to free-float)
       IF(IBAN(ICF,1).EQ.-1.OR.(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).NE.
      &IICOMP).OR.(IBAN(ICF,1).GT.0.AND.IBAN(ICF,1).NE.IICOMP)) IFUNC=2  
-   
+
 C For the special case of current zone, mixed node control only.
       IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP
      &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
@@ -113,7 +114,6 @@ C CL2 is a free-floating controller.
       case (2)
         CALL BCL02
 
-
 C CL3 is a pre-heating/pre-cooling condition.  Limiting
 C heating and cooling capacities are supplied and within these
 C constraints temperatures will evolve exponentially towards
@@ -121,46 +121,38 @@ C the set point temperature of the control period which follows.
       case(3) 
         CALL BCL03
 
-
 C CL4 is a fixed heat injection or extraction period.
       case(4) 
         CALL BCL04
 
-
 C CL5 is a three-term PID controller.
       case(5)
         CALL BCL05
-
 
 C CL6 allows zone input or extract flux to be set
 C as a function of the plant network status.
       case(6)
         CALL BCL06(icomp)
 
-
 C CL7 allows a multi-stage energy supply to
 C be defined.
       case(7) 
         CALL BCL07
-
 
 C CL8 is a variable supply temperature system
 C with limit constraints.
       case(8)
         CALL BCL08
 
-
 C CL9 is a heat pipe which allows heat to be extracted from one
 C node and transferred to another.
       case(9) 
         CALL BCL09
 
-
 C CL10 allows separate flux ON and flux OFF set points to
 C be specified for both heating and cooling.
       case(10) 
         CALL BCL10
-
 
 C CL11 is a multi-sensor controller which will bring the 
 C temperature of the associated zone to a specified
@@ -169,7 +161,6 @@ C Heating and cooling restrictions are allowed.
       case(11)
         CALL BCL11
 
-
 C CL12 is a multi-sensor on/off controller. It will bring
 C the temperature of the associated zone to a specified
 C function of the sensed temperature at other locations.
@@ -177,75 +168,65 @@ C Heating and cooling restrictions are allowed.
       case(12)
         CALL BCL12
 
-
 C CL13 is a time-proportioning on/off controller.
 C Separate ON and OFF set-points may be specified.      
       case(13)
         CALL BCL13
 
-
 C CL14 is a floating ('three-position') controller.   
       case(14)
         CALL BCL14
-
 
 C CL15 is an optimum start logic controller. 
       case(15)
         CALL BCL15
 
-
 C CL16 is an optimum stop logic controller. 
       case(16)
         CALL BCL16
-
 
 C CL17 is a Fuzzy Logic controller. 
       case(17)
         CALL BCL17
 
-
 C CL18 is a null controller. 
       case(18)
         CALL BCL18
-
 
 C CL19 is a multi-sensor basic controller
       case(19)
         CALL BCL19
 
-
 C CL20 evaporative source (e.g. swimming pool).
       case(20)
         call BCL20
-
 
 C CL21 slave capacity controller
       case(21)
         call BCL21
 
-
 C CL22 VAV and CAV air based controller
       case(22)
         call BCL22
 
-      
 C CL23 sensed setpoint based controller
       case(23)
         call BCL23
 
-      
 C CL24 Adaptive human comfort model
       case(24)
         call BCL24(ier)
 
-
-C Simple window opening model      
+C CL25 simple window opening model      
       case (25)
         bNested = .false. 
         iCtlFuncIndex = ICF
         call BCL25_open_windows(ICOMP,iCtlFuncIndex,IER,.false.)
 
-
+C CL26 uses a heat exchanger model to determine the heat flux
+C to remove from the associated zone.
+      case (26)
+        call BCL26(ier)
       
 C New control laws should be inserted here.
       case default 
@@ -264,7 +245,7 @@ C New control laws should be inserted here.
         endif
       
       end select CtlLaw 
-      
+
 C Nested conrol functions:
 C CL99 will modify the thermo-physical properties of
 C the specified multi-layered constructions. BCL25 will 
@@ -851,6 +832,7 @@ C Trace output ?
       IF(ITRACE(30).EQ.0.OR.NSINC.GT.ITCF.OR.IZNTRC(IICOMP).NE.1)
      &GOTO 9999
       write(outs,'(A,I4)')' Subroutine BCL00     Trace output',ICNT
+      call edisp(itu,' ')
       call edisp(itu,outs)
       ICNT=ICNT+1
       CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -1138,7 +1120,7 @@ C control.
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
 C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
+C by BCL25_open_windows below.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
      &                         fHeatSetpoint, fCoolSetpoint
 
@@ -1165,13 +1147,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL01')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -1215,8 +1200,6 @@ C Set minimum heating capacity
 
 C Set maximum cooling capacity:
       if(cont_fun_cool_cap(IICOMP).gt.0 ) then
-
-
             QCM = - cont_fun_cool_cap(IICOMP)
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
@@ -1485,6 +1468,7 @@ C A free-float controller.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL02')
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
@@ -1545,13 +1529,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
+          call edisp(itu,' ')
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL03 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL03')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -1711,13 +1698,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL04 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL04')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -1840,13 +1830,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL05 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL05')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -2161,6 +2154,7 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
@@ -2185,8 +2179,11 @@ C QCMAX : maximum cooling flux allowed (W)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL06')
-
+     &   ITRACE(41).NE.0)then
+        call edisp(itu,' ')
+        call edisp(itu,' Entering subroutine BCL06')
+        call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C Determine the coupling type
       ISIND=IFIX(BMISCD(ICF,IDTYP,IPER,4)) 
@@ -2546,6 +2543,7 @@ C A multi-stage controller with hysteresis.
       COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
 
 C Special common block for this controller. The variable
 C stored retains the previous controller signal. ISTG07 records
@@ -2572,11 +2570,15 @@ C Heating and cooling setpoint (oC)
       DIMENSION QH(4),QC(4)
 
 C Fatal error test.
-      IF(BMISCD(ICF,IDTYP,IPER,1).LT.12.)GOTO 99
+      if(BMISCD(ICF,IDTYP,IPER,1).LT.12.)GOTO 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL07')
+     &   ITRACE(41).NE.0)then
+        call edisp(itu,' ')
+        call edisp(itu,' Entering subroutine BCL07')
+        call DAYCLK(IDYP,BTIMEF,ITU)
+      endif 
 
 C Initialise ISTG07 at first increment
       IF(NSINC.EQ.1)ISTG07(ICF)=0
@@ -2806,6 +2808,7 @@ C Fatal error test if there are less than 6 misecel items.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL08')
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
@@ -3089,6 +3092,7 @@ c Fatal error test.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL10')
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
@@ -3206,6 +3210,7 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
@@ -3241,7 +3246,11 @@ C Fatal error tests:
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL11')
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL11')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -3481,6 +3490,7 @@ C It is suitable for use with a type 0 controller.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
 
@@ -3510,8 +3520,12 @@ C Fatal error tests:
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL12')
-      
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL12')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
       QFUT=0.
       TFUT=TNP
       TEMPTO=0.0
@@ -3698,8 +3712,9 @@ C Fatal error test:
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL13')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
+        call DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
       QFUT=0.0
@@ -3883,8 +3898,9 @@ C Fatal error tests:
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL14')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
+        call DAYCLK(IDYP,BTIMEF,ITU)
       endif
       
       QFUT=0.0
@@ -4132,8 +4148,9 @@ C FATAL ERROR TESTS,
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL15')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
+        call DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
 C SET COMFORT TEMPERATURE UPPER AND LOWER LIMITS;
@@ -4382,8 +4399,12 @@ C FATAL ERROR TEST,
       if(int(bmiscd(icf,idtyp,iper,1)).ne.9)goto 99
 
 C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL16')
+      if(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL16')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C SET TIME INCREMENT,  
       deltat=1./float(ntstep)
@@ -4607,6 +4628,7 @@ C Fuzzy Logic PI/PD Controller.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
@@ -4624,7 +4646,11 @@ C Fuzzy Logic PI/PD Controller.
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) CALL EDISP(ITU,' Entering subroutine BCL17')
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call EDISP(ITU,' Entering subroutine BCL17')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -4925,6 +4951,7 @@ C is identically the same as the sensor input.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
       
@@ -4932,7 +4959,11 @@ C is identically the same as the sensor input.
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL18')
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL18')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -4996,6 +5027,7 @@ C This control law is suitable for a type 0 controller.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
@@ -5022,8 +5054,12 @@ C Fatal error tests:
       endif
 
 C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL19')
+      if(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL19')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -5192,7 +5228,7 @@ C ******************** BCL20
 C Encapsulation of an evaporative source (such as a swimming pool or
 C a wetted surface. The sensor location is used to define the zone
 C and surface. It has two operational modes:
-C a) a wetted surface, no additional data required
+C a) a wetted surface, no additional data required;
 C b) a swimming pool, 9 additional data items required.
 c
 C The driving equation for evaporation is:
@@ -5223,8 +5259,9 @@ C geometry.h provides commons G0/G1/G2.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/FILEP/IFIL
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -5243,12 +5280,16 @@ C Evaporation common block for use in MZVAPC.
       logical unixok
 
 C Fatal error test.
-c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
-c     &(BMISCD(ICF,IDTYP,IPER,1).NE.10.0))GOTO 99
+      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
+     &   (BMISCD(ICF,IDTYP,IPER,1).NE.10.0))GOTO 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
+     &   ITRACE(41).NE.0)then
+         call edisp(itu,' ')
+         call edisp(itu,' Entering subroutine BCL20')
+         call DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
       QFUT=0.
       TFUT=TNP
@@ -5294,7 +5335,8 @@ C Emissivity of the surface should have been set to zero for the model
         tsupply= BMISCD(ICF,IDTYP,IPER,9)  
         abasw= BMISCD(ICF,IDTYP,IPER,10)  
         ubasw= BMISCD(ICF,IDTYP,IPER,11) 
-C Calculate the vapour into the space (kg/s)
+
+C Calculate the vapour into the space (kg/s).
 C Use zone moisture content (xi), x at saturation to evaluate Ev.  
         wi=gfa(icomp)
         CP= SPHTC2(TD,wi)*1000
@@ -5328,8 +5370,8 @@ C Pool basin energy balance:
         Qloss=Qconv+Qrad+Qevap+Qtrans+Qsupply
         Qbas=Qloss-Qcasual-Qsolar
 
-C Transfer the convective and radiant heat transfers associated with the pool to the
-C rest of the building model.
+C Transfer the convective and radiant heat transfers associated with
+C the pool to the rest of the building model.
         QFUT=Qconv+Qrad
  
       endif
@@ -5366,11 +5408,10 @@ C Trace output.
 
       return
 
-C The fatal error test commented out so this block is as well.
-C   99 call edisp(iuout,' BCL20: data incomplete.')
-C      call epwait
-C      call epagend
-C      STOP
+   99 call edisp(iuout,' BCL20: data incomplete, terminating!')
+      call epwait
+      call epagend
+      STOP
       END
 
 C ******************** BCL21
@@ -5415,13 +5456,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL21 with master zone ',
      &      IBSN(ICF,1),' and slave zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL21')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -5568,8 +5612,9 @@ C Fatal error test if there are less than ?? misecel items.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL22')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
+        call DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
       mode = ' '
@@ -5752,8 +5797,9 @@ C Fatal error test.
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
         call edisp(itu,' Entering subroutine BCL23')
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
+        call DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
 C Determine sensed temperature.
@@ -5821,7 +5867,7 @@ C Now get the column for cooling.
       CSP=VAL(COLUMNSETP)
         cmsg=' via column'
       endif
-        
+
 C Call RCTCFB to find occupancy fraction and return in VALO (to be used
 C for filtering cooling in UKNCM reference building)
       CALL RCTDFB(itrc,btimef,VALO,ISDO,itdi,IER)       
@@ -5997,13 +6043,16 @@ C Trace output
           write(outs,'(a,i2)') 
      &      'Entering subroutine BCL24 sensing in zone ',
      &      IBSN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
      &      'Entering subroutine BCL01 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
           call edisp(itu,outs)
         else
+          call edisp(itu,' ')
           call edisp(itu,' Entering subroutine BCL24')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -6192,7 +6241,7 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
      &            'i/o exception handler',0,0,IER)
       RETURN
       END
-      
+
 C ******************** BCL25_open_windows
 C This is a fairly simple algorithm that sets a flag approximating
 C window operation in residential houses. It's primary purpose is 
@@ -6438,7 +6487,322 @@ C Set error flag
       
       return 
       end subroutine BCL25_open_windows
+
+C ******************** BCL25
+C A heat exchanger model (after Chunying Li) used to determine the heat
+C extracted (QFUT) from a zone established to represent the closed circuit
+C working fluid circulating in a building-connected network.
+
+      SUBROUTINE BCL26
+#include "building.h"
+#include "control.h"
+
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      logical znotair
+      CHARACTER OUTS*124
+
+C Fatal error test.
+      IF(BMISCD(ICF,IDTYP,IPER,1).NE.5.0)GOTO 99
+
+C Set heat exchanger parameters using data in system control file.
+      WGACF=BMISCD(ICF,IDTYP,IPER,2)		! specific heat capacity
+      WGDIINERPIPE=BMISCD(ICF,IDTYP,IPER,3)	! inner pipe diameter
+      WGDIOUTERPIPE=BMISCD(ICF,IDTYP,IPER,4)	! outer pipe diameter
+      WGALHEAT=BMISCD(ICF,IDTYP,IPER,5)		! heat exchanger length
+      WGFMOUTER=BMISCD(ICF,IDTYP,IPER,6)	! open circuit flow rate
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
+          write(outs,'(a,i2)') 
+     &      'Entering subroutine BCL25 sensing in zone ',
+     &      IBSN(ICF,1)
+          call edisp(itu,' ')
+          call edisp(itu,outs)
+        elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
+          write(outs,'(a,i2,a,i2)') 
+     &      'Entering subroutine BCL25 sensing in zone ',
+     &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,' ')
+          call edisp(itu,outs)
+        else
+          call edisp(itu,' ')
+          call edisp(itu,' Entering subroutine BCL25')
+        endif
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+      QFUT=0.
+      TFUT=TNP
+
+      WGPI=3.14159	! pi
+
+C Set the temperature of the fluid at inlet of the inner pipe to the
+C temperature of the fluid at the outlet of the fluid-filled glazing
+C system.
+      WGT10=TFA(IICOMP-1)
+
+C Set the temperature of the fluid at inlet of the outer pipe to the
+C temperature of the dummy zone representing measured values determined
+C from experiment. 
+      WGT20=TFA(IICOMP+1)
+
+C Heat exchange area.! Li delete the laster letter C
+      WGAEXCHANGE=WGPI*(WGDIINERPIPE+0.0024)*WGALHEAT
+
+C Mass flow rate in inner pipe (heat exchanger closed circuit).
+      WGFMINNER=CVF(IICOMP)/zfldC
+
+      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
+     &          (WGDIINERPIPE+0.0024)**2)/4)
+      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
+
+      WGCMAX=WGFMOUTER*WGACF
+      WGCMIN=WGFMINNER*WGACF
+
+      IF (WGCMIN.GT.WGCMAX) THEN
+         WGCINTER=WGCMIN
+         WGCMIN=WGCMAX
+         WGCMAX=WGCINTER
+      END IF
+
       
+C IF WGT20 > WGT10, set the heat transfer to zero. 
+      IF (WGT10.LT.WGT20.OR.WGFMINNER.LT.0.0001) THEN
+         WGHEXCHANGE=0
+         WGT22=WGT20
+         WGT11=WGT10 
+         GOTO 109
+      END IF
+
+C Water properties of inner and outer pipes: assume WGT11 is the average of
+C WGT10 AND WGT20.
+      WGT11=0.5*(WGT10+WGT20)
+      WGT22=((WGT10-WGT11)*WGFMINNER)/WGFMOUTER+WGT20
+
+      WGT1=WGT10/2.0+WGT11/2.0
+      WGT2=WGT20/2.0+WGT22/2.0
+
+      WGAK=55.001
+      WGBK1=0.277
+      WGBK2=-0.002
+      WGBK3=3.652/1000000
+
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
+       
+      WGAV=1.759
+      WGBV1=-0.047
+      WGBV2=0.001
+      WGBV3=-2.59/1000000
+    	    
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
+
+      WGAP=13.39
+      WGBP1=-1.0*0.406
+      WGBP2=0.005
+      WGBP3=-2.367/100000
+
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
+
+      WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
+      WGREI=WGVFIN*WGDIINERPIPE/WGVISI
+
+C Calculate the heat transfer coefficient.
+      IF (WGREO.LT.2300.0) THEN
+         WGANUO=7.37
+      ELSE IF (WGREO.LT.10000) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
+     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE
+         WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
+      END IF
+      WGAHWOHE=WGANUO*WGAKWEXO/(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)
+
+      IF (WGREI.LT.2300.0) THEN
+         WGAJUDGE=WGREI*WGPRTI*WGDIINERPIPE/WGALHEAT
+         IF (WGAJUDGE.GT.10.0) THEN
+         WGANUI=1.86*(WGAJUDGE**0.333)
+         ELSE
+         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
+         END IF
+      ELSE IF (WGREI.LT.10000) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
+     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE
+         WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
+      END IF
+      WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
+
+      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
+
+      IF (WGCMIN.GT.0.1) THEN
+      WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
+      IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
+         WGEWGPI=WGANTU/(1+WGANTU)
+      ELSE 
+         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
+     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
+      END IF
+      WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
+      GOTO 107
+      END IF
+      WGHEXCHANGE=WGEXCHANGERK*WGAEXCHANGE*(WGT10-WGT20)
+
+107   WGT11=WGT10-WGHEXCHANGE/WGFMINNER/WGACF
+      WGT22=WGT20+WGHEXCHANGE/WGFMOUTER/WGACF
+
+C Recalculate the water properties of the inner and outer pipes
+C using updated guesstimate of outlet water temperature.
+      WGT1=WGT10/2.0+WGT11/2.0
+      WGT2=WGT20/2.0+WGT22/2.0
+
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
+    	    
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
+
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
+
+      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
+     &          (WGDIINERPIPE+0.0024)**2)/4)
+      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
+      WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
+      WGREI=WGVFIN*WGDIINERPIPE/WGVISI
+
+C Calculate the heat transfer coefficient.
+      IF (WGREO.LT.2300.0) THEN
+         WGANUO=7.37
+      ELSE IF (WGREO.LT.10000) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
+     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE
+         WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
+      END IF
+      WGAHWOHE=WGANUO*WGAKWEXO/(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)
+
+      IF (WGREI.LT.2300.0) THEN
+         WGAJUDGE=WGREI*WGPRTI*WGDIINERPIPE/WGALHEAT
+         IF (WGAJUDGE.GT.10.0) THEN
+         WGANUI=1.86*(WGAJUDGE**0.333)
+         ELSE
+         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
+         END IF
+      ELSE IF (WGREI.LT.10000) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
+     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE
+         WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
+      END IF
+      WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
+
+      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
+
+      IF (WGCMIN.GT.0.1) THEN
+      WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
+      IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
+         WGEWGPI=WGANTU/(1+WGANTU)
+      ELSE 
+         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
+     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
+      END IF
+      WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
+      GOTO 108
+      END IF
+             
+      WGHEXCHANGE=WGEXCHANGERK*WGAEXCHANGE*(WGT10-WGT20)
+
+  108 CONTINUE
+      WGT11=WGT10-WGHEXCHANGE/WGFMINNER/WGACF
+      WGT22=WGT20+WGHEXCHANGE/WGFMOUTER/WGACF
+  109 CONTINUE
+      QFUT=WGHEXCHANGE
+      TFUT=(BB3-BB2*QFUT)/BB1
+     
+      IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
+     &IPLT,QMX,QMN,TFUT,QFUT)
+
+C Trace output.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+         write(outs,'(5(A,F12.6))') ' WGT10 = ',WGT10,
+     &                              ' WGT20 = ',WGT20,
+     &                              ' QFUT  = ',QFUT,
+     &                              ' TFUT  = ',TFUT,
+     &                              ' WGEWGPI  = ',WGEWGPI
+          
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+         write(outs,'(5(A,F12.6))') ' WGT11 = ',WGT11,
+     &                              ' WGT22 = ',WGT22,
+     &                              ' WGCMIN  = ',WGCMIN,
+     &                              ' WGCMAX  = ',WGCMAX,
+     &                              ' WGANTU  = ',WGANTU
+
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+         write(outs,'(4(A,F12.6))') ' WGEXCHANGERK = ',WGEXCHANGERK,
+     &                              ' WGAEXCHANGE = ',WGAEXCHANGE,
+     &                              ' WGAHWOHE  = ',WGAHWOHE,
+     &                              ' WGAHWIHE  = ',WGAHWIHE
+
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+        write(outs,'(5(A,F12.6))') ' BB1 = ',BB1,
+     &                             ' BB2 = ',BB2,
+     &                             ' BB3 = ',BB3,
+     &                             ' WGFMINNER  = ',WGFMINNER,
+     &                             ' WGFMOUTER = ',WGFMOUTER
+
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+        write(outs,'(5(A,F12.6))') ' WGVFOUT = ',WGVFOUT,
+     &                             ' WGVFIN = ',WGVFIN,
+     &                             ' WGREO = ',WGREO,
+     &                             ' WGREI  = ',WGREI,
+     &                             ' WGAKWEXO  = ',WGAKWEXO
+
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+        write(outs,'(5(A,F12.6))') ' WGANUI = ',WGANUI,
+     &                             ' WGANUO  = ',WGANUO,
+     &                             ' WGAKWEXI  = ',WGAKWEXI,
+     &                             ' WGAJUDGE = ',WGAJUDGE,
+     &                             ' WGPRTI  = ',WGPRTI
+
+
+         call edisp(itu,outs)
+         call edisp(itu,' ')
+
+      END IF
+
+      RETURN
+   99 call edisp(iuout,' BCL25: data incomplete')
+      call epwait
+      call epagend
+      STOP
+      END
 
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
@@ -6761,7 +7125,7 @@ c Check that a valid control law is calling this routine !
 c Inform user of problems!
       call edisp(iuout,
      &  ' Actuator and sensor not available with this')
-      call edisp(iuout,' release. Simulation terminated !')
+      call edisp(iuout,' release. Simulation terminated!')
       call epwait
       call epagend
       STOP
@@ -6771,7 +7135,9 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0)atrace = .true.
       if(atrace)then
+        call edisp(itu,' ')
         call edisp(ITU,' Entering subroutine MZRCPL')
+        call DAYCLK(IDYP,BTIMEF,ITU)
         call edisp(ITU,
      &  ' Entry parameters: Zone,AA,BB,CC,TCTL,TR,IPLT,QMX,QMN,TE,Q')
         write(outs,*)IC,AA,BB,CC,TCTL,TR,IPLT,QMX,QMN,TE,Q
@@ -6856,7 +7222,7 @@ c Present term coefficient.
       B3=E(N1,N3)
 
       TNEW=B3/B1
-C Trace...
+C Trace.
       if(atrace)then
         write(outs,*)'B1 B2 B3 TNEW TOLD',B1,B2,B3,TNEW,TOLD
         call edisp(ITU,outs)

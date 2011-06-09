@@ -1827,14 +1827,14 @@ C.....Envelope heat loss
 C.....Zone air change rate (AIM2)
       call add_to_xml_reporting (
      &         fZoneInfiltrationACH,
-     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
+     &         H3K_rep_NAME(1:iH3K_NameLen)//'/envelope/infiltration/'
      &                           //'air_changes_per_hour',
      &         'units', '(ACH)',
      &         'Zone infiltration (air changes per hour)') 
       
       call add_to_xml_reporting (
      &         fZoneHeatGainInfiltration,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_NAME(1:iH3K_NameLen)
      &            // '/envelope/infiltration/heat_gain',
      &         'units', '(W)',
      &         'Contribution of infiltration to cooling load' )      
@@ -1848,7 +1848,7 @@ C.....Zone air change rate (AIM2)
 
       call add_to_xml_reporting (
      &         fZoneInfiltrationLoad,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_NAME(1:iH3K_NameLen)
      &            // '/envelope/infiltration/net_flux',
      &         'units', '(W)',
      &         'Contribution of infiltration to heating load' )     
@@ -1856,14 +1856,14 @@ C.....Zone air change rate (AIM2)
      
             call add_to_xml_reporting (
      &         ZMBI(iZone,1),
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_NAME(1:iH3K_NameLen)
      &            // '/envelope/infiltration/balance/air',
      &         'units', '(kg/s?)',
      &         'Air movement into zone' )   
      
                   call add_to_xml_reporting (
      &         ZMBI(iZone,1) / 1.275  * 3600. / vol(iZone)  ,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_NAME(1:iH3K_NameLen)
      &            // '/envelope/infiltration/balance/air_exchange',
      &         'units', '(ACH)',
      &         'Air movement into zone' )  

@@ -18,7 +18,7 @@ C Type declarations.
 
 C Geometry.
       PARAMETER (MCOM=72)	!- Zones.
-      PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to MS).
+      PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
       PARAMETER (MCON=2200)	!- Edges/zone.
       PARAMETER (MTV=200)	!- Vertices/zone.
       PARAMETER (MV=42)		!- Vertices/surface.
@@ -38,8 +38,8 @@ C Construction.
 
 C Glazing.
       PARAMETER (MGT=MS)	!- Insolated glazings in zone
-      PARAMETER (MTMC=7)	!- Glazing systems/zone, 
-      PARAMETER (MGAL=2)	!- Optical sets per optics db item. 
+      PARAMETER (MTMC=7)	!- Glazing systems/zone,
+      PARAMETER (MGAL=2)	!- Optical sets per optics db item.
       PARAMETER (MANG=9)	!- Angles at which optical data is held.
       PARAMETER (MGOPT=150)	!- Set size in optics database.
 

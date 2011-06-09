@@ -475,13 +475,13 @@ C If newer format then scan for hcfpdescr.
 
         if(Itype.eq.1) then
 
-C User specifies coefficients for each surface.
-C Convection coefficients - read one for each surface (inside face)
-C and then read one for each surface (other side face).Note that
-C the `use default value` indicator is -1 to allow that in range
-C checking. 
-          CALL EGETWRA(iunit,HCIA,NS,-1.,99.,'W','ins face hc',IER)
-          CALL EGETWRA(iunit,HCEA,NS,-1.,99.,'W','other face hc',IER)
+C User has specified surface convection coefficients for inside and/or
+C surface outermost zone surfaces. Note that a value of -1 for any
+C surface indicates that no user prescription is active and that the
+C defualt value should be used (hence -1 is included in the following
+C range check).
+          CALL EGETWRA(iunit,HCIA,NS,-1.,999.,'W','ins face hc',IER)
+          CALL EGETWRA(iunit,HCEA,NS,-1.,999.,'W','other face hc',IER)
           DO 114 KV=1,NS
             IF(ABS(HCEA(KV)).LT.0.00001.AND.EMISE(KV).GT.0.0)goto 1009
             HCFVI(ICOMP,KV,I)=HCIA(KV)

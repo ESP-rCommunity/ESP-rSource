@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C This is the stand-alone CFD module. It is able to simulate air flows 
-C inside rectangular or cubic zones of buildings. It employs the finite 
+C This is the stand-alone CFD module. It is able to simulate air flows
+C inside rectangular or cubic zones of buildings. It employs the finite
 C volume method in order to discretize the equations.
 
 C ********************* DFS *********************
@@ -35,7 +35,7 @@ C if these are 0 then use default values.
 #include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -87,7 +87,7 @@ C Small openings.
       common/SSOinit/areaSSO
 
 C Common precz when conflated should be cleared in stand alone mode.
-      
+
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
@@ -133,7 +133,7 @@ C Clear 'conflated only' commons.
         zdesc(I)=' '
         lnzdesc(I)=0
  2    continue
- 
+
 C Set defaults.
       GGDH=.false.
 
@@ -326,7 +326,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 C << set trace on for debugging purposes >>
       itrc=1
 
-C Set additional output units to stdout. Then redirect warning 
+C Set additional output units to stdout. Then redirect warning
 C messages to stderr in case of rule script program control.
       IMFTU=IUOUT
       ICOUT=IUOUT
@@ -396,7 +396,7 @@ C plot grid.
       ELSE
         INPOK=.FALSE.
       ENDIF
-  
+
 C Let the user pick a menu item.
    10 INO=-4
       ITEM(1) ='a Problem definition '
@@ -415,7 +415,7 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('dfs ',1)
 
       CALL EMENU(' dfs',ITEM,NITMS,INO)
-      IF(INO.EQ.1)THEN 
+      IF(INO.EQ.1)THEN
 
 C change configuration file name
 C << Note: array index 1 is hard coded below! >>
@@ -494,20 +494,20 @@ C Help text for this sub-menu.
         IF(INOt.EQ.1)THEN
           ILISOL=ILISOL+1
           if (ILISOL.gt.4) ILISOL=3
-        ELSEIF(INOt.EQ.2)THEN 
+        ELSEIF(INOt.EQ.2)THEN
           if (GGDH) then
             GGDH=.false.
           else
             GGDH=.true.
           endif
           if (ITURB(ICFD).ne.1.or.IBUOY(ICFD).eq.0) GGDH=.false.
-        ELSEIF(INOt.EQ.4)THEN 
+        ELSEIF(INOt.EQ.4)THEN
 
 C HELP
           helptopic='dfs_simulation_toggles'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('dfs simul toggles',nbhelp,'-',0,0,IER)
-        ELSEIF(INOt.EQ.5)THEN 
+        ELSEIF(INOt.EQ.5)THEN
           goto 10
         endif
         goto 62
@@ -599,16 +599,17 @@ C Check for model (set bounds on domain for visualisation).
         ITEM(1) ='a ASCII format file '
         ITEM(2) ='b PHOTON analysis   '
         ITEM(3) ='c MATLAB analysis   '
-        ITEM(4) ='d TECPLOT format file'
-        ITEM(5) ='e Flow visualization '
-        ITEM(6) ='- Exit               '
-        NITMS=6
+        ITEM(4) ='d ParaView format file'
+        ITEM(5) ='e TECPLOT format file'
+        ITEM(6) ='f Flow visualization '
+        ITEM(7) ='- Exit               '
+        NITMS=7
 
 C Help text for results sub-menu.
         helptopic='dfs_results_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EMENU(' results',ITEM,NITMS,INO1)
-        IF(INO1.EQ.1)THEN 
+        IF(INO1.EQ.1)THEN
 
 C The following will drive xten to view the ASCII output file.
 C This should be make more generic later, by using the text
@@ -666,9 +667,9 @@ C Let the user pick a menu item.
             xslice=.FALSE.
             yslice=.FALSE.
             zslice=.FALSE.
-            ITEM(1) ='a Slice in x-direction' 
-            ITEM(2) ='b Slice in y-direction' 
-            ITEM(3) ='c Slice in z-direction' 
+            ITEM(1) ='a Slice in x-direction'
+            ITEM(2) ='b Slice in y-direction'
+            ITEM(3) ='c Slice in z-direction'
             ITEM(4) ='- Exit                '
             NITMS=4
   72        CALL EMENU(' Matlab',ITEM,NITMS,INO2)
@@ -730,6 +731,11 @@ C For stand-alone: only one file is written (current timestep)!
           call PARAVIEWEND(1)
         ELSEIF(INO1.EQ.5)THEN
 
+C Write TecPlot file for each timestep.
+C For stand-alone: only one file is written (current timestep)!
+          call TECPLOTEND(1)
+        ELSEIF(INO1.EQ.6)THEN
+
 C Visualise flow.
 C Check that we have results to visualise.
           if (.not.SIMOK) then
@@ -774,7 +780,7 @@ C has not yet been performed.
 C Hard wire as elsewhere in dfs code for one esp-r thermal zone only.
           IZ=1
           call VISOUT(IZ)
-        ELSEIF(INO1.EQ.6)THEN
+        ELSEIF(INO1.EQ.7)THEN
           goto 10
         ENDIF
         GOTO 20
@@ -821,7 +827,7 @@ C ************* imgdisp *************
 C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-     
+
       return
       end
 

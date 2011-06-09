@@ -190,6 +190,14 @@ Memory should be at least 512Mb (1GB is better). On some machines increases in R
 
 ESP-r is disk-intensive so a faster disk is a good investment. The ESP-r distribution takes up about 350MB of disk space. Depending on the complexity of your models you need to allows for at least another Gb of working space. 
 
+Dependencies:
+
+If ESP-r executables do not run it may be because dll (library) files are missing or are not the correct version. Here is a list of what you need for the X11 version of the simulator:
+CygX11-6.dll, Cygwin1.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
+Here is a list of what is required for the GTK version of the simulator:
+Cygwin1.dll, Cyggdk-X11-2.0.dll, Cyggdk_Pixbuf-2.0-0.dll, Cygglib-2.0-0.dll, Cyggobject-2.0-0.dll, Cyggtk-X11-2.0-0.dll, Cygpango-1.0-0.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
 What else does ESP-r run on? 
 
 There are versions of ESP-r which run Native on a Windows PC as well as OSX (v10.5) and various Linux computers.  

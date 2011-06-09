@@ -39,8 +39,6 @@ C IER=0 OK, IER=1 problem.
       COMMON/OUTIN/IUOUT,IUIN
       common/filep/ifil
 
-      common/pophelp/h(60)
-
       common/spmfxst/ispmxist,spflnam 
       common/spmopn/ispopen 
 
@@ -49,13 +47,20 @@ C IER=0 OK, IER=1 problem.
       common/spmatlbl/spmlabel(mspmnod)
 
       DIMENSION VERT(35), ITKEY(MSPMNOD)
-      CHARACTER VERT*36,KEY*1,H*72,spmlabel*16
+      CHARACTER VERT*36,KEY*1,spmlabel*16
       character*72 spflnam
 
       CHARACTER deflnam*72,lfil*72
       CHARACTER*2 MODE,MOD
       LOGICAL ISPOPEN, XST,NEW,OK,OKK,DOK
       integer MVERT,IVERT,ID ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSPLIST'  ! set for subroutine
 
       OK=.FALSE.
       OKK=.FALSE.
@@ -69,18 +74,17 @@ C Remind the user what we know prior to asking them to confirm.
       call edisp(iuout,spflnam)
 
       if(.not.ispopen)then
+        helptopic='special_file_and_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
-        h(1)='If you know of the name of an existing file click on'
-        h(2)='ok. If you want to create one say no. '
-        CALL ASKOK('Does a special components file exist?',' ',OK,dok,2)
+        CALL ASKOK('Does a special components file exist?',' ',
+     &    OK,dok,nbhelp)
         IF(OK)THEN
           CONTINUE
         ELSE
           dok=.false.
-          h(1)='If you have the data needed to create this portion of'
-          h(2)='the model say ok. '
           CALL ASKOK('Would you like to create a new special',
-     & 'components file?',OKK,dok,2)
+     &      'components file?',OKK,dok,nbhelp)
           IF(OKK)THEN
             CONTINUE
           ELSE
@@ -91,13 +95,11 @@ C Remind the user what we know prior to asking them to confirm.
 C Open or create a special materials/components file.
         deflnam='data.spm'
         lfil=spflnam
-        h(1)='This file contains information about special components'
-        h(2)='integrated into the building fabric. Examples include:'
-        h(3)='facade integrated photovoltaics, ducted wind turbines,'
-        h(4)='phase change materials, thermochromic glazing, etc.'
+        helptopic='special_file_contents'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         
         call easks(lfil,' ',' Special components filename?',72,
-     &    deflnam,' SPM filename',IER,4)
+     &    deflnam,' SPM filename',IER,nbhelp)
         if(lfil(1:2).ne.'  ')spflnam=lfil
         XST=.false.
         call FINDFIL(spflnam,XST)
@@ -207,16 +209,8 @@ C If a long list include page facility text.
       ENDIF
 
 C Help text for this menu.
-      H(1)='This menu controls the definition of special'
-      H(2)='components in the model. Special component properties '
-      H(3)='supports features such as integrated photovoltaics or'
-      H(4)='and phase change materials. '
-      H(5)=' '
-      H(6)='Each entry is given a name and includes positional '
-      H(7)='information to link it to a surface/layer within'
-      H(8)='the building model.  NOTE that changes to zones such '
-      H(9)='as adding/deleting surfaces or changing composition '
-      H(10)='is not automatically updated. '
+      helptopic='special_file_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       IF(MODE.EQ.'LM'.OR.MODE.EQ.'EM')THEN
@@ -235,7 +229,9 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the vertex menu.
-        CALL PHELPD('special component edit',10,'-',0,0,IER)
+        helptopic='special_file_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('special component edit',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2).AND.MODE(1:1).NE.'L')THEN
         ispmxist = 1
         call spmwrit
@@ -243,11 +239,8 @@ C List help text for the vertex menu.
       ELSEIF(IVERT.EQ.(MVERT-3).AND.MODE(1:1).NE.'L')THEN
 
 C Alter list by deleting/ editing.
-        write(H(1),'(A,I2,A)')' Up to ',mspmnod-nspmnod,
-     &                             ' items may be added. '
-        H(2)=' '
         CALL EASKABCD('Options:',' ','delete component',
-     &    'add component','edit component','continue ?',IRT,2)
+     &    'add component','edit component','continue ?',IRT,nbhelp)
         if(IRT.eq.1)then
           
 C Delete the chosen special component.
@@ -307,8 +300,7 @@ C If there are enough items allow paging control via EKPAGE.
             MOD=MODE
             NEW=.FALSE.
             dok=.true.
-            h(1)='Last chance to avoid editing the component. '
-            CALL ASKOK('Edit this component?',' ',OK,dok,1)
+            CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
             IF(OK)THEN
               CALL KEYIND(MVERT,IVERT,IFOC,IO)
               ISPE=ITKEY(IFOC)
@@ -357,7 +349,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/FILEP/IFIL
 
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
@@ -397,12 +388,19 @@ C sstr in spdesc.
       LOGICAL MODIFY,MODLEN,MODBND
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
-      CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
+      CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16
       CHARACTER DADESC*72,spitem2*32
       CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
       integer nspitm,imout,NSPITEM2,IMOUT2,NITMS,IVERT,ino ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSPM'  ! set for subroutine
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.
@@ -456,9 +454,8 @@ C or embedded renewables (categories 1-50).
       imout=-1
 
 C Help text for this menu.
-  9   h(1)='The menu options relate to different categories'
-      h(2)='of special components which may be selected for'
-      h(3)='integration into the building. Select a category'
+  9   helptopic='special_file_cat'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       call emenu('Available Components',spitem,nspitm,imout)
       if(IMOUT.GT.0.AND.IMOUT.LE.NIT) THEN 
@@ -470,7 +467,9 @@ C Store the number of the selected special materials category
         NIT=IMOUT
       ENDIF     
       elseif(imout.eq.nspitm-1) then
-        call phelpd('Special component',3,'-',0,0,IER)
+        helptopic='special_file_cat'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call phelpd('Special component',nbhelp,'-',0,0,IER)
         goto 9
       elseif(imout.eq.nspitm-3) then
         goto 99
@@ -499,20 +498,16 @@ C Variable NIT is overloaded and returns the number of menu items.
         SPITEM2(NIT+4)='- exit this menu '
         NSPITEM2=NIT+4
  13     IMOUT2=-1      
-        H(1)='Select a special component from the list. Each material  '
-        H(2)='shown is associated with a set of pre-defined parameters'
-        H(3)=',these can be altered if required. '
-        H(4)='  '
-        H(5)='  '
-        H(6)='Switching the "component info" toggle to ON lets the'
-        H(7)='user view any more information associated with the   '
-        H(8)='special component; this appears in the text window. '
+        helptopic='special_file_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EMENU('Components in category',SPITEM2,NSPITEM2,IMOUT2)
         
         IF(IMOUT2.EQ.NSPITEM2) THEN
           RETURN
         ELSEIF(IMOUT2.EQ.NSPITEM2-1) THEN
-          CALL PHELPD('Special material',8,'-',0,0,IER)
+          helptopic='special_file_select'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Special material',nbhelp,'-',0,0,IER)
           IMOUT=-1
           IMOUT2=-1
           GOTO 13
@@ -560,15 +555,12 @@ C Set up the menu
 C Label lthe material according to type
   99  labl=spdefnam
       call easks(labl,' ',' Label for material (no spaces)?',16,
-     &  spdefnam,'  spm label ', IER,0)
+     &  spdefnam,'  spm label ', IER,nbhelp)
       spmlabel(ispmn)=labl
 
 C Get data items for special component.
       idfspdat=1
-      h(1)='Enter the required data for the special component. '
-      h(2)='Either accept the default values or enter your own'
-      h(3)='data.                                             '
-      call phelpd('Special mat data',3,'-',0,0,IER)
+      call phelpd('Special mat data',nbhelp,'-',0,0,IER)
       nspdat=nnodat(ispmn)
       if(ier.eq.0) then
         datsp=0.0   
@@ -587,7 +579,7 @@ C for the outlet.
             endif
             datsp=spmdat(ispmn,idat)
             call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
-     &           IER,16)
+     &        IER,nbhelp)
             spmdat(ispmn,idat)=datsp
   29      continue
 C       if(ispmtyp(ispmn,1).eq.?)then
@@ -601,7 +593,7 @@ C         <<other special cases here>>
             endif
             datsp=spmdat(ispmn,idat)
             call easkr(datsp,outs,' ',1.,'-',99.,'-',1.0,'SPM data',
-     &           IER,16)
+     &        IER,nbhelp)
             spmdat(ispmn,idat)=datsp
   30      continue
         endif
@@ -764,42 +756,8 @@ C If a long list include page facility text.
         IVERT=-1
 
 C Help text for this menu.
-        H(1)='To enable the calculation of wind-induced surface'
-        H(2)='pressures (as required by the ducted wind turbine'
-        H(3)='model), a database of angle dependent pressure'
-        H(4)='coefficients is provided.'
-        H(5)='The default ESP-r set contains wind pressure coeffi-'
-        H(6)='cients for surfaces in typical positions and within '
-        H(7)='several different exposure categories.'
-        H(8)='They can be used (with care) for low-rise buildings.'
-        H(9)='See the ESP manual for additional info.'
-        h(10)=' '
-        h(11)='It is also possible to calculate pressure coeffi-' 
-        h(12)='cients using CpCalc (see database maintenance).'
-        h(13)=' '
-        h(14)='Select the pressure coefficient from this list, ' 
-        h(15)='which is most appropriate for the location of the '
-        h(16)='ducted wind turbine.'
-        h(17)=' '
-        h(18)='Notes about pressure coefficients: '
-        H(19)='The first 27 data sets in the standard pressure coef'
-        H(20)='database are from the Air Infiltration & Ventilation'
-        H(21)='Centre Handbook called <Air Infiltration Calculation'
-        H(22)='Techniques - An Applications Guide>. The 27 data '
-        H(23)='sets are only applicable for buildings up to 3 '
-        H(24)='storeys andcome with the usual warnings about usage'
-        H(25)='of the data. '
-        H(26)=' '
-        H(27)='Each data set is described with the following terms:'
-        H(28)=' a) facade or roof at different roof pitch angles'
-        H(29)=' b) the ratio of the building length to width and'
-        H(30)='    for a non square building there will be a long'
-        H(31)='    and a short wall to select'
-        H(32)=' c) site shielding as follows:'
-        H(33)='   exposed - open countryside with no obstructions'
-        H(34)='   simi-exposed - rural with some obstructions'
-        H(35)='   sheltered - urban, surrounded on all sides by'
-        H(36)='     obstructions of similar size.'
+        helptopic='special_file_wind'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
         call USRMSG('Select the pressure coefficient set which',
@@ -810,7 +768,9 @@ C Now display the menu.
      &      'You must select one pressure coefficient set!',' ','W')
           GOTO 71
         ELSEIF(IVERT.EQ.NITMS-1)THEN
-          CALL PHELPD('databases overview',36,'-',0,0,IER)
+          helptopic='special_file_wind'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('databases overview',nbhelp,'-',0,0,IER)
           GOTO 71
         ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -833,15 +793,12 @@ C            SUPNOD(IFNOD,1)=IFOC
 
 C Ask whether choice is OK.
         dok=.true.
-        h(1)='A chance to correct selection error.'
         write(t72,'(a,a)')'Use ',DEPRE(IFOC)
-        CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
+        CALL ASKOK(t72,'as the pressure coefficient set?',
+     &    OK,dok,nbhelp)
         IF(.NOT.OK)GOTO 71
 
 C Input angle external node.
-        H(1)='This angle is used to derive the boundary pressure, '
-        H(2)='which is angular dependent, from the pressure coef db'
-        H(3)='and the current wind speed and direction.'
 
 C Ask the user to select the external surface associated with the node.
 C and extract the azimuth info. 
@@ -852,7 +809,7 @@ C and extract the azimuth info.
         ENDIF
         CALL EASKR(VAL,' ',
      &     'Surface azimuth angle (degrees clockwise from north): ',
-     &      0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
+     &      0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,nbhelp)
         SPMDAT(ISPMN,4)=VAL
       ENDIF
 
@@ -966,22 +923,8 @@ C If a long list include page facility text.
         IVERT=-1
 
 C Help text for this menu.
-        H(1)='To enable the calculation of wind-induced surface'
-        H(2)='pressures (as required by the ducted wind turbine'
-        H(3)='model), a database of angle dependent pressure'
-        H(4)='coefficients is provided.'
-        H(5)='The default ESP-r set contains wind pressure coeffi-'
-        H(6)='cients for surfaces in typical positions and within '
-        H(7)='several different exposure categories.'
-        H(8)='They can be used (with care) for low-rise buildings.'
-        H(9)='See the ESP manual for additional info.'
-        h(10)=' '
-        h(11)='It is also possible to calculate pressure coeffi-' 
-        h(12)='cients using CpCalc (see database maintenance).'
-        h(13)=' '
-        h(14)='Select the pressure coefficient from this list, ' 
-        h(15)='which is most appropriate for the location of the '
-        h(16)='ducted wind turbine.'
+        helptopic='special_file_wind'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
         call USRMSG('Select the pressure coefficient set which',
@@ -992,7 +935,9 @@ C Now display the menu.
      &     'You must select one pressure coefficient set!',' ','W')
           GOTO 70
         ELSEIF(IVERT.EQ.NITMS-1)THEN
-          CALL PHELPD('databases overview',16,'-',0,0,IER)
+          helptopic='special_file_wind'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('databases overview',nbhelp,'-',0,0,IER)
           GOTO 70
         ELSEIF(IVERT.EQ.NITMS-3)THEN
 
@@ -1015,9 +960,9 @@ C            SUPNOD(IFNOD,1)=IFOC
 
 C Ask whether choice is OK.
         dok=.true.
-        h(1)='A chance to correct selection made in error. '
         write(t72,'(a,a)')'Use ',DEPRE(IFOC)
-        CALL ASKOK(t72,'as the pressure coefficient set?',OK,dok,1)
+        CALL ASKOK(t72,'as the pressure coefficient set?',
+     &    OK,dok,nbhelp)
         IF(.NOT.OK)GOTO 70   
 
 C Ask the user to select the external surface associated with the node.
@@ -1029,7 +974,7 @@ C and extract the azimuth info.
         ENDIF
         CALL EASKR(VAL,' ',
      &    'Surface azimuth angle (degrees clockwise from north): ',
-     &     0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,3)
+     &     0.0,'F',359.0,'F',1.0,'surf azimuth angle',IER,nbhelp)
         SPMDAT(ISPMN,5)=VAL
 
 C Set the nodal location to 0 for the DWT - this information is not needed.
@@ -1087,8 +1032,8 @@ C And if matarrayindex is zero then reestablish NAM.
         call edisp(iuout,'Select a layer to locate special component.')
 
 C Help text for this menu.
-   7    h(1)='Choose a layer at which to situate a special'
-        h(2)='materials node.                                     '
+   7    helptopic='special_layer_position'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         call emenu('Special Components',item,nitms,ino)
         if(ino.le.header.and.ino.gt.ndisp) ino=-1
@@ -1100,19 +1045,12 @@ C Help text for this menu.
 
 C Ask for the nodal location. Firstly calculate the default
           nodloc=2*(ino-header)
-          h(1)='Select a node within the layer in which to position' 
-          h(2)='the special component. The value given is the node in'
-          h(3)='the centre of the layer.'
-          h(4)='  '
-          h(5)='If a PV component is chosen and the ALL the '
-          h(6)='construction layers are opaque then the node should'
-          h(7)='be placed at the outside surface (node no. 1).'
-          H(8)=' '
-          H(9)='A cancel request leaves the model unchanged.'
+          helptopic='special_layer_position'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           nodlocd=nodloc
           call easki(nodloc,' Position component at ',
      &      ' which node (for PV material see help) ? ',
-     &      nodloc-1,'W',nodloc+1,'W',nodlocd,'spm node',IERI,9)
+     &      nodloc-1,'W',nodloc+1,'W',nodlocd,'spm node',IERI,nbhelp)
           if(ieri.eq.-3)then
             goto 7
           endif
@@ -1125,9 +1063,8 @@ C Check if the node has an existing special component.
               if(iso.eq.ispmloc(k,2).and.iz.eq.ispmloc(k,1).and.nodloc
      &              .eq.ispmloc(k,3).and.k.ne.ispmn) then
                 dok=.false.
-                h(1)='This is a location that can accept another node.'
                 call askok(' An existing special component exists at',
-     &            ' this node. Do you want add another?',OK,dok,1)
+     &            ' this node. Do you want add another?',OK,dok,nbhelp)
                 if(.not.ok) then
                   ino=-4
                   goto 7
@@ -1145,7 +1082,9 @@ C Check if the node has an existing special component.
   20        continue
           endif
         elseif(ino.eq.ndisp+footer-1) then
-          call phelpd('Special material',2,'-',0,0,IER)
+          helptopic='special_layer_position'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call phelpd('Special material',nbhelp,'-',0,0,IER)
           ino=-1
           goto 7
         elseif (ino.eq.ndisp+footer) then

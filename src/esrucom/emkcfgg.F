@@ -231,6 +231,11 @@ C GCEP(begin)
        character gcepfile*72 
 C GCEP(end)
 
+C HRV inputs
+      Integer iMech
+      Character *72 LMech
+      Common /mechvdef/ iMech, LMech
+
 C Bidirectional raw optical data file.
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
@@ -486,6 +491,12 @@ C AIM-2.
       IF (iAIM2.EQ.1)then
         WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2) '*aim   ',
      &    LAIM2(1:lnblnk(LAIM2))
+      endif
+
+C MVNT
+      IF (iMECH.EQ.1)then
+        WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2) '*mvnt   ',
+     &    LMECH(1:lnblnk(LMECH))
       endif
 
 C Fuel cell.

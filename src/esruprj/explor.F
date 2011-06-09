@@ -70,17 +70,20 @@ C IALT is the number of text alternatives available for a text field.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL      
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/GDPER/igbdoy,igedoy
-      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
+
+C Explicit use of pophelp required because of dynamic generation.
+      common/pophelp/h(60)
+      character h*72  
                         
       DIMENSION SALT(6),IVAL(6),IPD(34)
-      CHARACTER KEY*1,SALT*16,H*72
+      CHARACTER KEY*1,SALT*16
       CHARACTER PROMP*32,MSG*32,head*52
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32,TTAG*12,TTAIDE*36
@@ -98,6 +101,13 @@ C IALT is the number of text alternatives available for a text field.
 #else
       integer*8 impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDTITEM'  ! set for subroutine
       
       IER=0
 
@@ -296,14 +306,8 @@ C Loop through and find longest string in menu.
 
 C Help text for this menu.
   13  continue
-      H(1)='This display includes static and temporal information'
-      H(2)='about this instance.  The items proceeded by a key'
-      H(3)='character may be edited. To edit an item, select it and'
-      H(4)='follow the prompts supplied.  Fields are filled with '
-      H(5)='default values for a new instance. '
-      H(6)=' '
-      H(7)='Use the ! option to focus the graph on a shorter period.'
-      H(8)='Use the page option to jump to other periods.'
+      helptopic='temporal_static_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       INODA=-2
       write(head,'(a,a,2x,a)') '  Tabular: ',TMENU(IFOC),TTYPE(IFOC)
@@ -334,27 +338,18 @@ C Help text for this menu.
       ELSEIF(INODA.EQ.IPDL-1)THEN
 
 C Produce help text for this menu, including specific help text for
-C this type by stripping info from from GMH.
+C this type by stripping info from from GMH. NHELP is the number
+C of additional lines.
         K=0
         CALL EGETWI(GMH,K,NHELP,0,MHEL,'F','help',IER)
-        H(1)='This display includes static and temporal information'
-        H(2)='about this instance.  The items proceeded by a key'
-        H(3)='character may be edited. To edit an item, select it and'
-        H(4)='follow the prompts supplied.  Fields are filled with '
-        H(5)='default values for a new instance. '
-        H(6)=' '
-        H(7)='Use the ! option to focus the graph on a shorter period.'
-        H(8)='Use the page option to jump to other periods.'
-        H(9)=' '
-        IF(NHELP.GE.1)THEN
-          H(10)='Type specific help follows:'
+        helptopic='temporal_static_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        IF(nhelp.GE.1)THEN
           DO 202 IHH=1,NHELP
-            write (H(10+IHH),'(a)') GHELP(IHH)(1:lnblnk(GHELP(IHH)))
-  202     CONTINUE 
-        ELSE
-          H(10)='No type specific help available.'
+            write(H(nbhelp+IHH),'(a)')GHELP(IHH)
+  202     CONTINUE
         ENDIF
-        CALL PHELPD('static fields',10+NHELP,'-',0,0,IER)
+        CALL PHELPD('static fields',nbhelp+nhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.IPDL-2)THEN
 
 C Begin with emenu.
@@ -376,18 +371,11 @@ C Begin with emenu.
           ITEMS(7)= '? help                          '
           ITEMS(8)= '- exit this menu                '
           nitms=8  
-        endif         
+        endif
+       
 C Reset the graphic display period. 
-        h(1)='You can graph the current day or a sequence of days'
-        h(2)='or the whole period. '
-        h(3)=' '
-        h(4)='You can insert column data (from a text file of column'
-        h(5)='data beginning at the startor at some timestep. '
-        h(6)=' '
-        h(7)='You can insert static values (from a text file of data'
-        h(8)='listed sequentially. '
-        h(9)='You can also automatically insert UK National'
-        h(10)='Calculation Methodology Activity (operations) data '
+        helptopic='temporal_graph_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EMENU('Model Context',ITEMS,nitms,INO)
         IF(INO.EQ.nitms)THEN
@@ -396,7 +384,9 @@ C Reset the graphic display period.
         ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-          CALL PHELPD('data options',10,'-',0,0,IER)
+          helptopic='temporal_graph_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('data options',nbhelp,'-',0,0,IER)
 
         ELSEIF(INO.EQ.1)THEN
           CDAY=itdbdoy+AINT(FLOAT(IST)/FLOAT(NTSPH*24))
@@ -432,35 +422,11 @@ C Define the beginning and ending dates for the TDF display.
           call edisp(iuout,outs)
           changed = .true.
         ELSEIF(INO.EQ.4)THEN
-          h(1)='These options allow you to set the timestep within '
-          h(2)='the temporal file where the data you are importing is'
-          h(3)='to be inserted. '
-          h(4)=' '
-          h(5)=' start @ timestep one - this is the initial timestep'
-          h(5)='    of the temporal file. If the temporal file begins'
-          h(6)='    on the first day of February the data will be'
-          h(7)='    inserted from this point.'
-          h(8)=' '
-          h(9)=' start @ other timestep - use this if you want to'
-          h(10)='   begin inserting the data at a different point'
-          h(11)='   in the temporal file. For example if you want'
-          h(12)='   the imported data to write on the third day of'
-          h(13)='   the temporal file you would use the timestep '
-          h(14)='   X = 24 * frequency * 3 '
-          h(15)=' '
-          h(16)='Later you will be asked to specify what line of '
-          h(17)='the data import file to begin reading from (e.g. '
-          h(18)='if there are labels or not-relevant data then you'
-          h(19)='can skip such lines at the beginning of the import'
-          h(20)='file. '
-          h(21)=' '
-          h(22)='These timing relationships might take a few trys'
-          h(23)='to get sorted. It works best if you work out what'
-          h(24)='you want to do on paper first and try importing '
-          h(25)='data several times until the process is established.'
+          helptopic='temporal_timestep_import'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Import data options: ','(see help)',
      &      'start @ temporal timestep one','start @ other timestep',
-     &      'cancel',IWI,25)
+     &      'cancel',IWI,nbhelp)
           if(IWI.eq.1)then
             IPS=1
             CALL EDIMPT(ITRC,IFOC,IPS,IER)
@@ -507,14 +473,13 @@ C Check if there is an activity data type from SBEM//DOE to
 C import NCM data for UK
         ELSEIF(TTYPE(IFOC)(1:8).EQ.'ACTIVITY'.AND.INO.EQ.6)THEN
           IPS=1
-          H(1)='One import source file will be assumed throughout this'
-          H(2)='session. If this needs to be altered then the user'
-          H(3)='should return to this menu to give the new name.'
+          helptopic='temporal_import_source'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DFILE='/tmp/71.csv'
           tfile=DFILE
           CALL EASKS(tfile,' Import file name? ',
-     &     ' ',72,DFILE,'import file name',IER,3)
-          if(tfile(1:2).ne.'  ')LIMP=tfile
+     &      ' ',72,DFILE,'import file name',IER,nbhelp)
+          if(tfile(1:2).ne.'  ') LIMP=tfile
           IF(ITIMP.EQ.1)THEN
             CALL ERPFREE(IUIMP,ISTAT)
             call findfil(LIMP,XST)
@@ -542,10 +507,8 @@ C Read value, associate with proper column and check if it changes
 C the minimum/maximum of that column.
             K=0
             VAL=0.
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
-     &                  IER)
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
-     &                  IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,12))=VAL
             if(TABU(ITCOL(IFOC,12)).lt.TABUMN(ITCOL(IFOC,12)))
      &        TABUMN(ITCOL(IFOC,12))=TABU(ITCOL(IFOC,12))
@@ -568,16 +531,14 @@ C the minimum/maximum of that column.
             if(TABU(ITCOL(IFOC,14)).gt.TABUMX(ITCOL(IFOC,14)))
      &        TABUMX(ITCOL(IFOC,14))=TABU(ITCOL(IFOC,14))
                     
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
-     &                  IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,15))=INT(VAL)
             if(TABU(ITCOL(IFOC,15)).lt.TABUMN(ITCOL(IFOC,15)))
      &        TABUMN(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
             if(TABU(ITCOL(IFOC,15)).gt.TABUMX(ITCOL(IFOC,15)))
      &        TABUMX(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
 
-            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
-     &                  IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             TABU(ITCOL(IFOC,16))=INT(VAL)
             if(TABU(ITCOL(IFOC,16)).lt.TABUMN(ITCOL(IFOC,16)))
      &        TABUMN(ITCOL(IFOC,16))=TABU(ITCOL(IFOC,16))
@@ -677,6 +638,8 @@ C index INT(TABU(ITCOL(IFOC,J))) rather than the text itself.
           ENDIF
           K=K1+1
   601   CONTINUE
+
+C Use explicit help from the temporal data.
         IF(NHELP.GE.1)THEN
           DO 29 IH=1,NHELP
             H(IH)=GHELP(IH)
@@ -745,27 +708,25 @@ C index INT(TABU(ITCOL(IFOC,J))) rather than the text itself.
         ITREC=ITS+49
         CALL EWTABU(ITRC,ITREC,IER)
         msgl2=' Problem detected...'
-        IF(IER.EQ.1)CALL USRMSG(' ',msgl2,'-')
+        IF(IER.EQ.1) CALL USRMSG(' ',msgl2,'-')
         changed = .true.
         edited = .true.
       ELSEIF(INODA.EQ.1)THEN
-        H(1)='In order to find items in the TDF db a unique id must'
-        H(2)='be assigned to each item. This id is a character'
-        H(3)='string up to 12 characters long with no blanks.'
+        helptopic='temporal_unique_id'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         TTAG=TAG(IFOC)
         CALL EASKS(TTAG,' ',' Unique id string? ',
-     &     12,'new_item','item id',IER,3)
+     &    12,'new_item','item id',IER,nbhelp)
         if(TTAG(1:2).ne.'  ')then
           TAG(IFOC)=TTAG
           edited = .true.
         endif
       ELSEIF(INODA.EQ.2)THEN
-        H(1)='This is your chance to verbosely identify this item of'
-        H(2)='the TDF db (up to 36 char). Word of advice: use of'
-        H(3)='this facility may save your sanity at a future date.'
+        helptopic='temporal_unique_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         TTAIDE=TAIDE(IFOC)
         CALL EASKS(TTAIDE,' ',' Item description ',
-     &    36,'no comment','aide',IER,3)
+     &    36,'no comment','aide',IER,nbhelp)
         if(TTAIDE(1:2).ne.'  ')then
           TAIDE(IFOC)=TTAIDE
           edited = .true.
@@ -773,6 +734,7 @@ C index INT(TABU(ITCOL(IFOC,J))) rather than the text itself.
 
 C Static fields: Display text attributes in format defined by generic 
 C type with the current item data. Treat differently if Text or Real field.
+C Use explicit h for this section.
       ELSEIF(INODA.GT.2.AND.INODA.LE.(2+IFIELD))THEN
         IFLD=INODA-2
         IA=IATDF(IFOC,IFLD)
@@ -899,17 +861,23 @@ C IPS is the timestep to insert data at.
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       DIMENSION IMPT(21),IMSTC(MBITS),SALT(6)
-      CHARACTER IMPT*42,H*72,KEY*1,OUTSTR*124,WORD*20,OUTS*124
+      CHARACTER IMPT*42,KEY*1,OUTSTR*124,WORD*20,OUTS*124
       CHARACTER*72 LIMP,LEXP
       CHARACTER SALT*16
       CHARACTER DFILE*72,tfile*72,msgl2*48
       logical warncas,XST
       integer IMPTL,INODA ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDIMPT'  ! set for subroutine
 
 C Clear column association.
       DO 27 I=1,MBITS
@@ -962,43 +930,8 @@ C Set the menu control text.
       IMPTL=M
 
 C Help text for this menu.
-      H(1)= 'This display allows the user to specify parameters'
-      H(2)= 'which control the importation of data into this'
-      H(3)= 'temporal file.  '
-      H(4)= ' '
-      H(5)= 'After supplying the name of the file of column '
-      H(6)= 'data that you want to import you can view the '
-      H(7)= 'initial lines of the file to confirm which columns'
-      H(8)= 'the relevant data is in as well as how many lines'
-      H(9)= '(if any) to ignore at the start of the file. If the'
-      H(10)='file name is not local, specify the whole path. '
-      H(11)=' '
-      H(12)='If the column data file includes information '
-      H(13)='prior to the point in time that you are interested'
-      H(14)='in you can use the `begin reading @` instruction '
-      H(15)='to skip past the unwanted information (take care '
-      H(16)='when deciding how many lines to skip as there is '
-      H(17)='no way to shift time once the data is imported). '
-      H(18)=' '
-      H(19)='You must specify the column within the import file'
-      H(20)='which corresponds to each of the fields which contain'
-      H(21)='timestep data ( a zero means no import for a field).'
-      H(22)='NOTE: blank characters, tabs, and commas are all '
-      H(23)='treated as separators. In the following db temp'
-      H(24)='is actually in column 5. '
-      H(25)=' '
-      H(26)='# place year month day time direct_solar dbT '
-      H(27)='Berlin 2001-10-12 09.00 100.0  19.2 '
-      H(28)='Berlin 2001-10-12 09.50 112.0  19.3 '
-      H(29)='Berlin 2001-10-12 10.00 142.0  19.6 '
-      H(30)=' '
-      H(31)='And the data that you are reading in is not transformed'
-      H(32)='as it is read (e.g. taking an integer value in tenths'
-      H(33)='of a m/s 105 to the value 10.5 m/s is not supported.'
-      H(34)=' '
-      H(35)='Interpolation of data is not supported (i.e. you cannot'
-      H(36)='import hourly data into a temporal file with a frequency'
-      H(37)='of ten minutes. '
+      helptopic='temporal_import_parameters'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
    13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
@@ -1006,13 +939,10 @@ C Help text for this menu.
       IF(INODA.EQ.IMPTL)THEN
         RETURN
       ELSEIF(INODA.EQ.3)THEN
-        H(1)='One import source file will be assumed throughout this'
-        H(2)='session. If this needs to be altered then the user'
-        H(3)='should return to this menu to give the new name.'
         DFILE='data.imp'
         tfile=LIMP
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,3)
+     &   ' ',72,DFILE,'import file name',IER,nbhelp)
         if(tfile(1:2).ne.'  ')LIMP=tfile
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
@@ -1025,10 +955,8 @@ C Help text for this menu.
       ELSEIF(INODA.EQ.4)THEN
 
 C Define import file format.
-        H(1)='It is possible to import temporal information via'
-        H(2)='an ASCII file with columns of data.'
         CALL EASKABC('Import options:',' ',
-     &    'UNKNOWN','ASCII column data','continue',IWM,2)
+     &    'UNKNOWN','ASCII column data','continue',IWM,nbhelp)
         if(IWM.ge.3)goto 13
         ITIMP=IWM-1
       ELSEIF(INODA.EQ.5)THEN
@@ -1037,15 +965,13 @@ C Specify that read of import file begins at (non_comment) line IMSTL.
 C Later extend logic to deal with specific file types such as timestep
 C casual gain files.
         IV=IMSTL
-        H(1)='To allow flexibility you may specify that the imported'
-        H(2)='data should begin at a particular line of the import'
-        H(3)='file.  Comment lines (which begin with a # are not'
-        H(4)='counted)'
         CALL EASKI(IV,' ','Begin reading @ import file line no:',
-     &    0,'F',43800,'W',1,'begin read @',IER,4)
+     &    0,'F',43800,'W',1,'begin read @',IER,nbhelp)
         IMSTL=IV
       ELSEIF(INODA.EQ.IMPTL-1)THEN
-        CALL PHELPD('period fields',36,'-',0,0,IER)
+        helptopic='temporal_import_parameters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('period fields',nbhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.IMPTL-2)THEN
 
 C Import data - open the import file and read until the user defined
@@ -1212,15 +1138,9 @@ C casual gain file provide a warning to the user.
         CALL EDISP(IUOUT,' ')
         CALL ERPFREE(IUNIT,ISTAT)
         if(warncas)then
-          H(1)='The file you are importing appears to be a timestep'
-          H(2)='casual gain file.  NOTE that such files required '
-          H(3)='that the data included the startup period except for'
-          H(4)='the first hour of the first day (which was omitted)'
-          H(5)=' '
-          H(6)='A temporal file includes the entire period of '
-          H(7)='the startup period so you may need to edit the '
-          H(8)='import file to take this into account. '
-          CALL PHELPD('timestep import warning',8,'-',0,0,IER)
+          helptopic='temporal_warn_casgains'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('timestep import warning',nbhelp,'-',0,0,IER)
         endif
         GOTO 28
 
@@ -1234,11 +1154,10 @@ C Specify the column to be read in for each of the timestep fields.
 C If 0 then ignore.
         IFLD=INODA-MHEAD-1+ISFLDS
         IV=IMSTC(IFLD)
-        H(1)='Please specify which column of the import file is'
-        H(2)='associated with this data field. A `0` indicates that'
-        H(3)='no data will be imported into this field.'
+        helptopic='temporal_import_parameters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IV,' ','Associated column in import file:',
-     &    0,'F',0,'-',1,'associated column',IER,3)
+     &    0,'F',0,'-',1,'associated column',IER,nbhelp)
         IMSTC(IFLD)=IV
       ELSE
         INODA=-1
@@ -1265,15 +1184,21 @@ C from a file and to which static value it matches.
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
      
       DIMENSION IMPT(27),IMSTC(MBITS)
-      CHARACTER IMPT*42,H*72,KEY*1,OUTSTR*124,WORD*20,OUTS*124
+      CHARACTER IMPT*42,KEY*1,OUTSTR*124,WORD*20,OUTS*124
       CHARACTER*72 LIMP,LEXP
       CHARACTER DFILE*72,tfile*72,msgl2*48
       logical XST
       integer IMPTL,INODA ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSTATICIMPT'  ! set for subroutine
 
 C Static item association.
       DO 27 I=1,MBITS
@@ -1327,29 +1252,8 @@ C Set the menu control text.
       IMPTL=M
 
 C Help text for this menu.
-      H(1)= 'This display allows the user to specify parameters'
-      H(2)= 'which control the importation of data into this'
-      H(3)= 'temporal file.  '
-      H(4)= ' '
-      H(5)= 'After supplying the name of the file of column '
-      H(6)= 'data that you want to import you can view the '
-      H(7)= 'initial lines of the file to confirm which items'
-      H(8)= 'the relevant data is in as well as how many lines'
-      H(9)= '(if any) to ignore at the start of the file. If the'
-      H(10)='file name is not local, specify the whole path. '
-      H(11)=' '
-      H(12)='If the data file includes information '
-      H(13)='prior to the point in time that you are interested'
-      H(14)='in you can use the `begin reading @` instruction '
-      H(15)='to skip past the unwanted information (take care '
-      H(16)='when deciding how many lines to skip as there is '
-      H(17)='no way to shift time once the data is imported). '
-      H(18)=' '
-      H(19)='You must specify the item number within the import file'
-      H(20)='which corresponds to each of the fields which contain'
-      H(21)='data ( a zero means no import for a field).'
-      H(22)='NOTE: blank characters, tabs, and commas are all '
-      H(23)='treated as separators. '
+      helptopic='temporal_import_parameters'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
    13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
@@ -1357,13 +1261,10 @@ C Help text for this menu.
       IF(INODA.EQ.IMPTL)THEN
         RETURN
       ELSEIF(INODA.EQ.3)THEN
-        H(1)='One import source file will be assumed throughout this'
-        H(2)='session. If this needs to be altered then the user'
-        H(3)='should return to this menu to give the new name.'
         DFILE='data.csv'
         tfile=LIMP
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,3)
+     &   ' ',72,DFILE,'import file name',IER,nbhelp)
         if(tfile(1:2).ne.'  ')LIMP=tfile
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
@@ -1378,15 +1279,13 @@ C Help text for this menu.
 
 C Specify that read of import file begins at (non_comment) line IMSTL.
         IV=IMSTL
-        H(1)='To allow flexibility you may specify that the imported'
-        H(2)='data should begin at a particular line of the import'
-        H(3)='file.  Comment lines (which begin with a # are not'
-        H(4)='counted)'
         CALL EASKI(IV,' ','Begin reading @ import file line no:',
-     &    0,'F',43800,'W',1,'begin read @',IER,4)
+     &    0,'F',43800,'W',1,'begin read @',IER,nbhelp)
         IMSTL=IV
       ELSEIF(INODA.EQ.IMPTL-1)THEN
-        CALL PHELPD('period fields',23,'-',0,0,IER)
+        helptopic='temporal_import_parameters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('period fields',nbhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.IMPTL-2)THEN      
 
 C Import data - open the import file and read until the user defined
@@ -1431,8 +1330,7 @@ C the import file. Parse the import line until the data item is located.
             DO 33 N1=1,IMSTC(J)
               IF(N1.EQ.IMSTC(J))THEN
                 VAL=0.
-                CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
-     &                      IER)
+                CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
                 TMAR(IFOC,IA)=VAL
               ELSE
                 CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
@@ -1459,8 +1357,7 @@ C the import file. Parse the import line until the data item is located.
 C Here although we are looking for an integer, the csv files usually
 C convert everything to real. So, the scan is for a real at the moment
 C and then this is taken an integer.
-                CALL EGETWR(OUTSTR,K,VAL,0.0,0.0,'-','imp data',
-     &                      IER)
+                CALL EGETWR(OUTSTR,K,VAL,0.0,0.0,'-','imp data',IER)
                 ITMAR(IFOC,IA)=NINT(VAL)
               ELSE
                 CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
@@ -1509,12 +1406,8 @@ C Specify the item number to be read in for each of the fields.
 C If 0 then ignore.
         IFLD=INODA-MHEAD
         IV=IMSTC(IFLD)
-        H(1)='Please specify which item (e.g. separated by commas'
-        H(2)='but at the same line) of the import file is associated'
-        H(3)='with this data field. A `0` indicates that no data will'
-        H(4)='be imported into this field.'
         CALL EASKI(IV,' ','Associated item number in import file:',
-     &    0,'F',0,'-',1,'associated item',IER,4)
+     &    0,'F',0,'-',1,'associated item',IER,nbhelp)
         IMSTC(IFLD)=IV
       ELSE
         INODA=-1

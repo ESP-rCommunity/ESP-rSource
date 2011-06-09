@@ -21,9 +21,10 @@
 #define DEBUG 0
 #define DEBUG_1 0
 
-#define SUMMARY 0
-#define LOG     1
-#define STEP    2
+#define SUMMARY     0
+#define LOG         1
+#define STEP        2
+#define DUMPALLDATA 3
 #define DUMPALLDATA 3
 
 
@@ -904,7 +905,7 @@ void TReportsManager::OutputXMLSummary(  const std::string& outFilePath )
 }
 
 /*
- * Ouptput Dictionary simply dumps a listing of all valid tags
+ * Output Dictionary simply dumps a listing of all valid tags
  * encountered during a simulation run.
  *
  */
@@ -925,11 +926,13 @@ bool TReportsManager::OutputDictionary( const std::string& outFilePath )
     dictionaryFile.open(outFilePath.c_str());
 
     for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      dictionaryFile << trim(pos->first) << ":\t";
-      dictionaryFile << pos->second.RetrieveMeta("description")
-                     << " "
+      dictionaryFile << "\""
+                     << trim(pos->first)
+                     << "\",\""
+                     << pos->second.RetrieveMeta("description")
+                     << "\",\""
                      << pos->second.RetrieveMeta("units")
-                     << "\n";
+                     << "\"\n";
     }
     dictionaryFile.close();
   }
@@ -1584,10 +1587,10 @@ bool TReportsManager::SearchVars( const std::vector<std::string>& txtlist,
 
   bool result;
 
-    // Check if search has been performed perviously
-    if ( ! Variable.QuerySearchStatus(mode) ){
+  // Check if search has been performed perviously
+  if ( ! Variable.QuerySearchStatus(mode) ){
 
-      // run search
+    // run search
     if(bDumpEverything){// If all data has been requested, return *match*
       result = true;
     }
@@ -1595,15 +1598,15 @@ bool TReportsManager::SearchVars( const std::vector<std::string>& txtlist,
       result = testForMatch( txtlist,  trim(search_text));
     }
 
-      // Save search result to ensure that we don't
-      // have to run test-for-match again for this
-      // variable!
+    // Save search result to ensure that we don't
+    // have to run test-for-match again for this
+    // variable!
 
-      // update variable result
-      Variable.UpdateSearchResult( mode, result);
+    // update variable result
+    Variable.UpdateSearchResult( mode, result);
 
-      // Update search status
-      Variable.UpdateSearchStatus( mode, true);
+    // Update search status
+    Variable.UpdateSearchStatus( mode, true);
 
     // If processing variable the first time, set the meta data (units and description).
     // Now the saved meta data passed by add_to_xml_reporting is converted to 
@@ -1616,10 +1619,10 @@ bool TReportsManager::SearchVars( const std::vector<std::string>& txtlist,
     SetMeta(search_text, metaName, metaValue);
     SetMeta(search_text, "description", metaDesc);
 
-    }
+  }
 
-    // return result
-    return Variable.QuerySearchResult(mode);
+  // return result
+  return Variable.QuerySearchResult(mode);
 
 }
 
@@ -1639,15 +1642,15 @@ bool TReportsManager::SearchAllVars(const std::vector<std::string>& txtlist1,
   }
   else{
 
-  if ( SearchVars(txtlist1, search_text, Variable, LOG )){
-    return true;
-  }
-  if ( SearchVars(txtlist2, search_text, Variable, STEP  )){
-    return true;
-  }
-  if ( SearchVars(txtlist3, search_text, Variable, SUMMARY )){
-    return true;
-  }
+    if ( SearchVars(txtlist1, search_text, Variable, LOG )){
+      return true;
+    }
+    if ( SearchVars(txtlist2, search_text, Variable, STEP  )){
+      return true;
+    }
+    if ( SearchVars(txtlist3, search_text, Variable, SUMMARY )){
+      return true;
+    }
   }
   return false;
 }

@@ -171,6 +171,7 @@ c-----for BASESIMP vs BASECALC ('999') types.
         fMaxSoilCond = 10.0     ! W/mK
         fMinWaterTable = 5.0    ! meter
         fMaxWaterTable = 20.0   ! meter
+
       ELSE                 ! set parameter windows on BASESIMP dimensions
         fMinFoundLength = 5.0   ! meter
         fMaxFoundLength = 100.0 ! meter
@@ -184,9 +185,9 @@ c-----for BASESIMP vs BASECALC ('999') types.
         fMaxWaterTable = 15.0   ! meter
       ENDIF
 
-      CALL EGETWR(OUTSTR,K,VAL,1.0,2.5,'F',' found. height',IER)
+      CALL EGETWR(OUTSTR,K,VAL,1.0,2.5,'F',' basement height',IER)
       if(IER.NE.0)then
-        t60=' Cannot read height of foundation '
+        t60='Cannot read height of foundation or out of range'
         goto 1000
       endif
       bsHEIG(icomp)=VAL
@@ -197,7 +198,7 @@ C Read foundation depth.
       K=0
       CALL EGETWR(OUTSTR,K,VAL,0.05,2.4,'F',' found. depth',IER)
       if(IER.NE.0)then
-        t60=' Cannot read depth of foundation '
+        t60='Cannot read depth of foundation or of range '
         goto 1000
       endif
       bsDEPT(icomp)=VAL
@@ -209,7 +210,7 @@ C BASESIMP correlations.
         goto 1000
       endif
       if( bsDEPT(icomp).gt.0.05 .and. bsDEPT(icomp).lt.0.65 ) then
-        t60='Slab-on-grade depth >0.05m or basement depth >0.65m '
+        t60='Slab-on-grade depth >0.05m or basement depth <0.65m '
         goto 1000
       endif
 
@@ -220,7 +221,7 @@ C Read foundation length.
       CALL EGETWR(OUTSTR,K,VAL,fMinFoundLength,fMaxFoundLength,
      &            'F',' found. length',IER)
       if(IER.NE.0)then
-        t60=' Cannot read length of foundation '
+        t60='Cannot read length of foundation or out of range '
         goto 1000
       endif
       bsLENG(icomp)=VAL
@@ -232,7 +233,7 @@ C Read foundation width.
       CALL EGETWR(OUTSTR,K,VAL,fMinFoundWidth,fMaxFoundWidth,
      &            'F',' found. width',IER)
       if(IER.NE.0)then
-        t60=' Cannot read width of foundation '
+        t60='Cannot read width of foundation or out of range '
         goto 1000
       endif
       bsWIDT(icomp)=VAL
@@ -250,7 +251,7 @@ C present, but only used for combination cases, eg. BCCN_1 and BCCN_2.
       K=0
       CALL EGETWR(OUTSTR,K,VAL,0.,2.4,'F',' overlap',IER)
       if(IER.NE.0)then
-        t60=' Cannot read inside/outside overlap '
+        t60='Cannot read inside/outside overlap or out of range '
         goto 1000
       endif
       bsOVER(icomp)=VAL
@@ -268,7 +269,7 @@ C Read insulation resistance.
       CALL EGETWR(OUTSTR,K,VAL,fMinInsulRSI,fMaxInsulRSI,
      &            'F',' insulation RSI',IER)
       if(IER.NE.0)then
-        t60=' Cannot read insulation RSI '
+        t60='Cannot read insulation RSI or out of range '
         goto 1000
       endif
       bsRSI(icomp)=VAL
@@ -280,7 +281,7 @@ C Read soil conductivity.
       CALL EGETWR(OUTSTR,K,VAL,fMinSoilCond,fMaxSoilCond,
      &            'F',' soil cond.',IER)
       if(IER.NE.0)then
-        t60=' Cannot read soil conductivity '
+        t60='Cannot read soil conductivity or out of range '
         goto 1000
       endif
       bsSOIL(icomp)=VAL
@@ -292,7 +293,7 @@ C Read depth of water table.
       CALL EGETWR(OUTSTR,K,VAL,fMinWaterTable,fMaxWaterTable,
      &            'F',' water table',IER)
       if(IER.NE.0)then
-        t60=' Cannot read water-table depth '
+        t60='Cannot read water-table depth or out of range'
         goto 1000
       endif
       bsWTD(icomp)=VAL
@@ -328,7 +329,7 @@ C To allow for negative ground temperatures in permafrost
 C locations.
         CALL EGETWR(OUTSTR,K,VAL,-10.,20.,'F',' Tgavg ',IER)
         if(IER.NE.0)then
-          t60=' Cannot read average of ground Temp '
+          t60='Cannot read average of ground Temp or out of range'
           goto 1000
         endif
         bsTGavg(icomp)=VAL	
@@ -339,7 +340,7 @@ C Read amplitude of ground-temperature's annual sine wave.
         K=0
         CALL EGETWR(OUTSTR,K,VAL,0.,25.,'F',' Tgamp ',IER)
         if(IER.NE.0)then
-          t60=' Cannot read amplitude of ground Temp '
+          t60='Cannot read amplitude of ground Temp or out of range'
           goto 1000
         endif
         bsTGamp(icomp)=VAL	
@@ -396,7 +397,7 @@ C Read phase angle (phase).
           K=0
           CALL EGETWR(OUTSTR,K,VAL,0.,5.,'F',' phase ',IER)
           if(IER.NE.0)then
-            t60=' Cannot read phase angle (phase) '
+            t60='Cannot read phase angle (phase) or out of range'
             goto 1000
           endif
           Bphase999(icomp)=VAL !this variable is only used for basement type 999
@@ -424,6 +425,7 @@ C Error handling.
 	
 C modified Feb 4, 2004 SPH
 C Exit instead of returning
+        call pauses(3)  ! time for user to see message
         CALL EXIT(1)
       endif
 

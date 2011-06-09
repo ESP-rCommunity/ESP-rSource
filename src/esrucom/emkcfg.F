@@ -221,6 +221,11 @@ C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
       INTEGER :: ihvacflag
 
+C HRV Inputs
+      Integer iMech
+      Character *72 LMech
+      Common /mechvdef/ iMech, LMech
+
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -663,6 +668,12 @@ C AIM-2.
      &    LAIM2(1:lnblnk(LAIM2))
       endif
 
+C MVNT
+      IF (iMECH.EQ.1)then
+        WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2) '*mvnt   ',
+     &    LMECH(1:lnblnk(LMECH))
+      endif
+
 C Fuel cell.
       IF (iFClds.EQ.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*fcl   ',
@@ -983,8 +994,6 @@ C the external IPV file (also notify the user they can remove it).
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             continue
           else
-	    call usrmsg('Info merged. Remove the separate IPV file',
-     &      lipvdatf,'W')
 	    lipvdatf=' '  ! ensure old file name is no longer referenced
           endif
         endif

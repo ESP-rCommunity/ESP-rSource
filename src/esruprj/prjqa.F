@@ -1268,19 +1268,27 @@ C the climate file and attempt to print out IPV contents.
                 if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
+
+C Set Default season definitions.
+                  CALL EDAY(1,1,is1wins)
+                  CALL EDAY(28,2,is1winf)
+                  CALL EDAY(1,11,is2wins)
+                  CALL EDAY(31,12,is2winf)
+                  CALL EDAY(1,3,is1sprs)
+                  CALL EDAY(30,4,is1sprf)
+                  CALL EDAY(1,9,is2sprs)
+                  CALL EDAY(31,10,is2sprf)
+                  CALL EDAY(1,5,is1sums)
+                  CALL EDAY(31,8,is1sumf)
                   call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                  call edisp(itu,'IPV details might be incorrect.')
-                  if(ieripv.eq.0)then
+     &              'The climate used was not in the climatelist and')
+                  call edisp(itu,
+     &              'no local seasons set - default seasons assumed.')
                     call listipvdat(itu,'a',ier)
-                  else
-                    call edisp(itu,
-     &              'The IPV description was incomplete or missing.')
                   endif
                 endif
               endif
             endif
-          endif
         else
           call edisp(itu,
      &     'An Integrated Performance View is incomplete or missing.')

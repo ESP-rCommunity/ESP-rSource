@@ -715,6 +715,9 @@ C the matname and if that fails against matdoc
 
 C Find a matching matname.
         do 44 imt=1,matdbitems
+C check first the lenght of strings, if the stringsa re not equal the
+C material is different
+          if(lnblnk(matname(imt)).eq.lnam) then        
           if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
 
 C Debug.
@@ -722,6 +725,7 @@ C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
 C     &        matname(imt)(1:lnblnk(matname(imt)))
             matarrayindex=imt
             return
+          endif
           endif
   44    continue
 

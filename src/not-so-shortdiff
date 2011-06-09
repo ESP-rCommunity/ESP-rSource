@@ -1,0 +1,35 @@
+#!/bin/csh
+# take esp-r source code directories and compare them with an
+# achive in another location. Assumes location above the
+# individual esrubld esrubps etc. directories (i.e. esp-r/src).
+
+echo "usage example: first cd to esp-r/src directory level, then" >mydiff
+echo "usage example: shortdiff /usr4/esp-r/src" >>mydiff
+echo "where /usr4/esp-r/src is the location of an archive to check against" >>mydiff
+echo "currently comparing $PWD and $1" >>mydiff
+
+echo "usage example: first cd to esp-r/src directory level, then"
+echo "usage example: shortdiff /usr4/esp-r/src"
+echo "where /usr4/esp-r/src is the location of an archive to check against"
+echo currently working on $PWD and $1
+
+foreach i ( `ls -d archive esru* cetc cetc/h3kreports include lib shocc` )
+ echo $i >>mydiff
+ if ( -d $i ) then
+   echo looking at $i $1/$i
+   echo looking at $i $1/$i >>mydiff
+   /usr/bin/diff -b $i $1/$i >>mydiff
+ endif
+end
+foreach i ( Install Makefile Makefile Readme* common_list Version )
+ echo $i >>mydiff
+ if ( -f $i ) then
+   echo looking at $i $1/$i
+   echo looking at $i $1/$i >>mydiff
+   /usr/bin/diff -b $i $1/$i >>mydiff
+ endif
+end
+echo "stripping out the .svn lines..."
+grep -v .svn mydiff > mydiffs
+rm -f mydiff
+echo "finished with comparison."

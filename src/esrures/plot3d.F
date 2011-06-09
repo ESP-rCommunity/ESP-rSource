@@ -76,6 +76,7 @@ C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer IUNIT      ! for the scratch file used in drawing
 
       helpinsub='MO3DPL'  ! set for subroutine
 
@@ -609,6 +610,13 @@ C series data ie. timesteps-vs-day-vs-data.
 #include "building.h"
 #include "geometry.h"
 
+C Parameters passed
+      integer LU1        ! file unit to read and write from
+      real ROTNXX,ROTNYY ! rotation in X and Y axis
+      real YS,ZS         ! scale factor for X and Y
+      real xxmin,xxmax   ! data range minimum and maximum
+      logical zlist      ! if true indicate zone name
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -617,6 +625,9 @@ C series data ie. timesteps-vs-day-vs-data.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+C << Question about sizing of arrays. 3D plot crashes if there are many
+C << points (e.g. the period exceeds some number of timesteps). Perhaps
+C << the 100 below needs to be bigger? 
       REAL MARGIN
       PARAMETER ( MARGIN=75.0,BMARGN=55.0,IRANDR=1,
      &            NPR=10,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
@@ -629,7 +640,7 @@ C series data ie. timesteps-vs-day-vs-data.
       CHARACTER*40 TITLE,NAME
       CHARACTER*10 AXIS(3),ANAME,ANAME1
       character detail*72
-      logical close,zlist
+      logical close
       real z1,x1  ! to avoid conflicts with G1 common
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

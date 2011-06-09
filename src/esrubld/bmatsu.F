@@ -510,7 +510,6 @@ C      common/evapht/qevapf(mcom,ms,mn),qevapp(mcom,ms,mn)
 C Generic nodal flux common - allows a flux to be added or subtracted 
 C from a node.
       COMMON/GENFLUX/GENFLXF(MCOM,MS,MN),GENFLXP(MCOM,MS,MN)
-      COMMON/AIRWAT/WATERZ(MCOM),WATCAP
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -532,13 +531,18 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
       character outs*144,LCFD*72
       logical atrace,MSTROK,MSTRZN
-      logical WATERZ
       
-C.....Named constnats for timerows
+C.....Named constants for timerows.
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2)
 
       real zoar  ! local for zonetotsurfacearea(MCOM)
+
+C zSWA? (set in solar.F) is the shortwave flux absorption to add to the
+C zone fluid node if the zone is not air filled.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      logical znotair
 
 C Check for trace request.
       atrace = .false.
@@ -924,9 +928,8 @@ C present term.
         ACAP=1.0/(NTSTEP*0.33*VOL(ICOMP))
       ENDIF
 
-C Replace ACAP if it is a water-filled (or other fluid) zone.
-      IF (WATERZ(ICOMP))
-     &   ACAP=1.0/(NTSTEP*WATCAP*1000.0*VOL(ICOMP)/3600.0)
+C Replace ACAP if zone is not air filled.
+      IF(znotair(ICOMP))ACAP=1.0/(NTSTEP*zfldC*1000.0*VOL(ICOMP)/3600.0)
 
       DO 50 I=1,NC
 
@@ -938,7 +941,8 @@ C Convection terms.
       SUM3=SUM3+XX
    50 CONTINUE
 
-C Air node term.
+C Air (or other fluid if set via the 'simulation toggles' menu in bps)
+C node term.
 C First set thermal bridge term: tbrig (W/K).
       tbrig=totheatloss(icomp)      
       E(N1,N1)=1.0+SUM1+(ZAUGEF+ZAUGIF+CVIF+CVVF+tbrig)*GAM*ACAP
@@ -964,7 +968,7 @@ C Calculate thermal bridge term.
 C Set-up present coefficient.
       E(N1,N3)=SUM2*RGAM+(1.-SUM3*RGAM)*TNair+
      &ACAP*RGAM*(QNair+QCASC(1)+QWCP+
-     &QVNP+PADDC+q_airndConv_to_cfc(icomp,1))
+     &QVNP+PADDC+zSWAp(icomp)+zSWAf(icomp)+q_airndConv_to_cfc(icomp,1))
      &+(XX1+XX3+QCASC(2)+q_airndConv_to_cfc(icomp,2))*ACAP*GAM
      &+qtbridge
 
