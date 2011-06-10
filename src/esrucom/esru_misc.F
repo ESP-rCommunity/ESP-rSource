@@ -3365,7 +3365,7 @@ C Checks the surfaces in the current zone to see if any of the surface
 C attributes are 'BASESIMP'.  If there are any then present the
 C BASESIMP editing facility (once).
         usesbasesimp=.false.   ! assume no basesimp attributed surfaces
-        loopstart=0
+        loopstart=1
         loopend=NZSUR(IZONE)
         DO i=loopstart,loopend
           icc=IZSTOCN(izone,i)
