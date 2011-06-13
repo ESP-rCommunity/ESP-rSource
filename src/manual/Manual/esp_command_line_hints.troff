@@ -2,7 +2,7 @@
 Command line tips for Linux, OSX and Cygwin users of Esp-r
 .AU
 Dr. Jon W. Hand, ESRU
-8 June 2011
+13 June 2011
 .SH
 Introduction
 .LP
@@ -55,19 +55,19 @@ Guide (see the ESRU web pages) as well as books on Unix
 and Linux.
 .LP
 Lets start with some high level concepts:
-.IP "a)" 3
+.IP "\(bu " 2
 The commands that will be described below are interpreted via a
 command interpretors (also known as a command shell). One
 interpretor is known as the bash shell and another
 is 'csh'. Most commands are interpreted the same way
 in both command shells although some of the optional parameters
 are slightly different.  
-.IP "b)" 3
+.IP "\(bu " 2
 The command shell runs in either a command or graphic window.
 A command window only works with text based tasks and a
 graphic window can work with either text or graphic
 applications.  For example:
-.IP "   Cygwin" 6
+.IP "   Cygwin" 4
 The inital command window (typiclly white text on a black 
 background with a fixed width) that starts up supports text commands and
 can only be used to invoke ESP-r in a pure-text mode (for example
@@ -85,7 +85,7 @@ window if you want. If you want you can have multiple graphic
 windows open at the same time. When you are finished close the graphic
 window (via the command exit). Then you can type exit in the
 original command window.
-.IP "   OSX 10.5 and 10.6" 6
+.IP "   OSX 10.5 and 10.6" 4
 OSX includes a default 'terminal' which can take either text or
 graphic commands (??).  There is also an X11 graphic window
 (typically called an xterm) which is available as part of the X11
@@ -94,13 +94,13 @@ X11 supports networked displays (where what you see in the
 xterm could be an application running on a different computer).
 This feature can be useful for accessing a compute server
 as well as for IT support staff to access your computer.
-.IP "   Linux" 6
+.IP "   Linux" 4
 On linux machines the overall graphic environment is dictated
 by whether the computer is using KDE or Gnome.  Each come with
 a different set of tools and several choices for graphic windows.
 As with Cygwin and OSX you can have multiple graphic windows running
 at the same time as well as networked displays.
-.IP "c)" 3
+.IP "\(bu " 2
 You will have a login account and an area to work in which 
 is protected from the chaos of other users. On Linux and
 OSX it is possible to have multiple users working simultaneously
@@ -110,20 +110,20 @@ not altered.  Cygwin is dependent on Windows for the
 user account so one must switch users but may not have two
 users simultaneously. Login accound names might cause 
 problems if it includes spaces or unprintable characters.
-.IP "d)" 3
+.IP "\(bu " 2
 The permissions associated with files and folders can help
 as well as hinder your work. Files you get from another person 
 might not have the correct permissions for use in your account 
 and you might find that changes you make in your model
 might not be written to the model files. Commands to identify
 and correct permissions is thus a common task.
-.IP "   Cygwin" 6
+.IP "   Cygwin" 4
 The underlying Windows platform supports a different concept
 of permissions for folders and files than OSX and Linux. For
 example is easier to overwrite and corrupt critical databases
 in Cygwin than it is in OSX or Linux.  To change permissions
 set by another user one must switch to that user.
-.IP "   OSX and Linux" 6
+.IP "   OSX and Linux" 4
 Since OSX and Linux are derived from Unix, both able to
 set permissions on files and folders at find resolution.
 Both support the concept of 'the current user', the
@@ -133,17 +133,17 @@ It is possible to set read and write permissions separately
 for the user, group and others. To change perissions
 set by another user one would typically use a sudo prefix
 to a command to temporarily become that user.
-.IP "e)" 3
+.IP "\(bu " 2
 Cygwin and OSX and Linux use a hierarchical directory structure
 beginning at "/" (equivalent to c:\ on a PC) which is the 
 so called 'root' directory and everything else hangs off of that.
 There is no A:B:C:D:E: drive. 
-.IP "   Cygwin" 6
+.IP "   Cygwin" 4
 The Cygwin command window you will be able to navigate to folders 
 in the A:B:C:... drives.  The path within Cygwin 
 becomes /cygdrive/c or /cygdrive/d.  Note the use of /
 rather than \\ when working within the Cygwin environment.
-.IP "f)" 3
+.IP "\(bu " 2
 Paths to files which are included in an ESP-r model
 are sensitive to the operating system they were created
 with.  A model created with a 'native windows' version
@@ -157,30 +157,30 @@ computers with different operating systems - a C:\\Esru path
 will tend to confuse ESP-r running on a different type of
 computer. There are scripts which can convert models which you need to 
 know about.
-.IP "g)" 3
+.IP "\(bu " 2
 Your HOME folder on Linux might be in /home/jackson 
 (if you name is jackson).  On OSX user folders would typically 
 follow the pattern of /Users/jackson.  Within Cygwin the
 users home tends to be C:\\Documents and Settings\\user_name 
 although when setting up Cyginw there will be a /home/user_name.
-.IP "h)" 3
+.IP "\(bu " 2
 Case sensitivity differs in OSX and Linux and Cygwin:
-.IP "   Cygwin" 6
+.IP "   Cygwin" 4
 Cyginw is not case sensitive for the names of files and 
 folders (for a folder namde /home/fred/Src the commands:
 .br
 cd /home/fred/src and cd /home/fred/Src are equivalent.
-.IP "   OSX" 6
+.IP "   OSX" 4
 By default OSX is not case sensitive. OSX drives can be
 formatted to support case sensitivity. This tends
 not to be a problem unles working with a model which was
 created on Linux which might have Readme.txt and readme.txt
 as separate files.
-.IP "   Linux" 6
+.IP "   Linux" 4
 Linux is case sensitive.  A folder named Src is different 
 from a folder named src which is different from a folder
 named SRC.
-.IP "i)" 3
+.IP "\(bu " 2
 The ESP-r executables and databases and example models
 tend to be installed in standard locations for Cyginw
 (/usr/esru), OSX (/opt/esru), Linux (/opt/esru or /usr/esru).
@@ -224,9 +224,6 @@ DESCRIPTION
   . . .
      The following options are available:
 
-     -@      Display extended attribute keys and sizes in long (-l) out-
-             put.
-
      -1      (The numeric digit ``one''.)  Force output to be one entry
              per line.  This is the default when output is not to a ter-
              minal.
@@ -246,7 +243,7 @@ Given the following directories and files:
 .nf
 
 \fB /				(root)
- /home/jackson			(the home of jackson)
+ /home/jackson		(the home of jackson)
               /project_a	(folder for a project)
               /memos		(folder for memos)
                     /fax_121196_gary, fax_1106_mark, fax
@@ -254,6 +251,7 @@ Given the following directories and files:
               /email		(folder for emails)
 
  /usr/esru			(the home of esp-r) 
+ /opt/esru			(alternative home of esp-r) 
           /esp-r
                 /bin		(where esp-r executables live)
                     /bps, prj res	(esp-r modules)
@@ -332,7 +330,7 @@ the syntax is cp  <soure>  <destination>
 .LP
 If, while in your home folder you want to
 copy a model file in /usr/esru/esp-r/training/simple
-to the memos folder for printing or editing then
+to your home folder for printing or editing then
 .nf
 
   \fBcp  /usr/esru/esp-r/training/simple/cfg/bld_simple.cfg  .\fR
@@ -407,12 +405,12 @@ find out more. A long listing is:
 
 ls -l memos
 total 44
--rw-r--r--  1 jon          1990 May 24  1993 Beattie
--rw-r--r--  1 jon          1665 May 30  1995 bepac_lmia
--rw-r--r--  1 jon          3102 Mar 12  1993 home_off_cover
--rw-r--r--  1 jon          4078 Feb  5  1994 home_off_cover2
--rw-r--r--  1 jon          4163 Mar 27  1995 home_off_cover3
--rw-r--r--  1 jon          2133 Nov 30  1994 pcs210394
+-rw-r--r--  1 jon          1990 May 24  2003 Beattie
+-rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
+-rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
+-rw-r--r--  1 jon          4078 Feb  5  2004 home_off_cover2
+-rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
+-rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
 -rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
 -rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
 .fi
@@ -435,12 +433,12 @@ commands:
 
 ls -l memos
 total 44
--rw-r--r--  1 jon          1990 May 24  1993 Beattie
--rw-r--r--  1 jon          1665 May 30  1995 bepac_lmia
--rw-r--r--  1 jon          3102 Mar 12  1993 home_off_cover
--rw-rw----  1 jon          4078 Feb  5  1994 home_off_cover2
--rw-r--r--  1 jon          4163 Mar 27  1995 home_off_cover3
--rw-r--r--  1 jon          2133 Nov 30  1994 pcs210394
+-rw-r--r--  1 jon          1990 May 24  2003 Beattie
+-rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
+-rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
+-rw-rw----  1 jon          4078 Feb  5  2004 home_off_cover2
+-rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
+-rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
 -rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
 -rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
 
@@ -459,8 +457,69 @@ a message about permissions and you might get no response
 at all.  To restore the permissions you would need to
 give a command like:
 .nf
+
   \fBchmod a+x myscript.sh\fR
 .fi
+.SH
+Finding executables
+.LP
+Most operating systems include options for searching within a 
+disk drive for specific files but that can take a long time 
+to run. Sometimes it is useful to quickly find out where your computer
+operating system thinks is the location of an executable (
+such as one of the ESP-r executables). An IT support person
+might ask you about this.  For Cygwin and OSX and Linux
+there is the \fBwhich\fR command.  Lets look for the
+ESP-r simulator via the command:
+.nf
+
+   \fBwhich bps
+   /usr/esru/esp-r/bin/bps\fR
+.fi
+.LP
+If you have used the link_to script to set a short-cut to
+the ESP-r distribution you might get the following:
+.nf
+
+   \fBwhich bps
+   /home/fred/bin/bps\fR
+.fi
+.LP
+which is a link. In which case if you really want to locate the actual
+simulator you would need to give a further command:
+.nf
+
+  \fBls -l /home/fred/bin/bps\fR
+.fi
+.LP
+The \fBwhich\fR command makes use of the PATH information in
+your account.  If there is a response to the command then that
+indicates that the ESP-r module has been located in one of the
+standard paths known to your account.  If there is \fBno\fR
+response then it could indicated that your environment variables
+have not been correctly setup.
+.LP
+If \fBwhich\fR did not work then on Cygwin and OSX and Linux 
+you could try an alternative file search technique via the \fBfind\fR
+command.  The general form of find is:
+.nf
+
+  \fBfind . -name <name_of_file> -print
+  
+  find . -name bps.exe -print
+  
+  find . -name "*.cfg" -print\fR
+.fi
+.LP
+In the above the dot after the find command is equivalent to
+my-current-location (and implicitly all of the sub-folders
+within my-current-location).  The -print is required so that you can
+see the result of the search.  The -name command indicates
+that the next token in the command line will indicate the
+name of the file.  Use double quotes if there are spaces in
+the file name or if you are going to use a wild-card. Thus
+the last command above will report on all files which end
+in .cfg within all sub-folders of the current location.
 .SH
 Finding what is in files:
 .LP
@@ -487,6 +546,41 @@ The option -n requests the line number and the -i says
 ignore the case (Fred = fred). Grep can be used to search
 multiple files and folder structures.
 .SH
+Editing files
+.LP
+ESP-r models are largely composed of ASCII text files. We recommend
+your first choice for manipulating ESP-r models is via the ESP-r
+interface.  There are times when direct editing of files is
+required so \fIif you must edit\fR then do so with tools which
+are least likely to corrupt your model files.
+.LP
+Firstly, ESP-r model files may be sensitive to formatting
+rules so if you use an editor that automatically warps text
+lines then you may corrupt the file.  Second ESP-r model
+files must maintain the so-called line ending characters
+that they started out with.
+.IP "Cygwin" 3
+There are several editors which can run within Cygwin via one
+of the graphic command windows - nedit and nano are examples
+of text editors that can be installed within Cygwin.
+.br
+Cywin lives within the Windows file structure and you can
+also invoke editors from Windows. Avoid Word or Notepad
+for edit ESP-r model files. A great free editor is Notepad++
+(easily found on the web).  WordPad can be used with care.
+.IP "OSX" 3
+If you used the Fink or MacPorts environments when you setup
+your computer for ESP-r use then you can install one of the
+standard Linux editors (nedit or medit) for use with ESP-r files.
+The (not free) BBedit editor works well with ESP-r model files.
+.IP "Linux" 3
+There are dozens of text editors available on Linux. Almost
+any of them can be used with ESP-r model files.
+.LP
+Settings within text editors:  a) turn off line warping, b) avoid tab
+characters in ESP-r model files, c) generally stick with Unix line
+endings on OSX, Linux and Cygwin.
+.SH
 Finding differences in files:
 .LP
 Many people assume that determining the differences between
@@ -494,7 +588,7 @@ text files (e.g. model files or reports) is a tedius
 process.  We have many options beginning with a command
 line tool called 'diff'.  If there are two model configration
 files and I want to see the differences:
-.fi
+.nf
 
  diff bld_simple.cfg  bld_simple_fzy.cfg
 3,5c3,5
@@ -537,7 +631,7 @@ files and I want to see the differences:
 > *cnn bld_simple_fzy.cnn  # connections
 bash-3.2$ 
 
-.nf
+.fi
 .LP
 Lines with < are the first file and > signals the second
 file in the original command.  The tool diff and its
@@ -555,7 +649,7 @@ of file differences. It also is capable of copying specific
 differences between files.
 .LP
 One of the most valuable uses for file differencing tools
-is for looking at two different model contents reports.  
+is for looking at two different model contents reports!  
 .SH
 Removing files:
 .LP
@@ -607,15 +701,15 @@ To find out what it contains I give the command:
 .nf
 
 \fBlambda: jon/text% tar  tvf  memos_030297.tar
-drwxr-xr-x1002/10       0 Oct 28 14:05 1996 memos/
--rw-r--r--1002/10    2133 Nov 30 11:14 1994 memos/pcs210394
--rw-r--r--1002/10    1990 May 24 11:57 1993 memos/Beattie
--rw-r--r--1002/10    3102 Mar 12 14:10 1993 memos/home_off_cover
--rw-r--r--1002/10    4078 Feb  5 14:56 1994 memos/home_off_cover2
--rw-r--r--1002/10    1678 Oct 28 14:04 1999 memos/roosvlt_280199
--rw-r--r--1002/10    4163 Mar 27 19:26 1995 memos/home_off_cover3
--rw-r--r--1002/10    1665 May 30 09:39 1995 memos/bepac_lmia
--rw-r--r--1002/10   22035 Oct 28 14:05 1999 memos/roosvlt_280199.pfR
+drwxr-xr-x1002/10       0 Oct 28 14:05 2009 memos/
+-rw-r--r--1002/10    2133 Nov 30 11:14 2004 memos/pcs210394
+-rw-r--r--1002/10    1990 May 24 11:57 2003 memos/Beattie
+-rw-r--r--1002/10    3102 Mar 12 14:10 2003 memos/home_off_cover
+-rw-r--r--1002/10    4078 Feb  5 14:56 2004 memos/home_off_cover2
+-rw-r--r--1002/10    1678 Oct 28 14:04 2009 memos/roosvlt_280199
+-rw-r--r--1002/10    4163 Mar 27 19:26 2005 memos/home_off_cover3
+-rw-r--r--1002/10    1665 May 30 09:39 2005 memos/bepac_lmia
+-rw-r--r--1002/10   22035 Oct 28 14:05 2009 memos/roosvlt_280199.pfR
 .nf
 .LP
 which says tell me (verbosely) the contents of memos_030297.tar.
@@ -703,3 +797,55 @@ a tar file with the referenced model files. This is
 particularly useful if a model folder structure includes
 multiple model variants - only the referenced files
 are included in the archive.
+.LP
+If the resulting archive file is not large then you might
+choose to send it to others as-is.  If you compress it then
+make sure that the person you are sending it to has the
+necessary decompression software.
+.LP
+If someone sends you a model as a 'zip'file then it was
+probably created on a Windows computer.  If you are running
+Cygwin or Linux or OSX you can deal with this file on the
+command line via the unzip command:
+.nf
+
+  \fBunzip <the_file_name>\fR
+.fi
+.SH
+Finding library dependencies
+.LP
+Say you just updated your ESP-r distribution and you can edit details
+of an ESP-r model file but the simulator does not start.  Most frustrating!
+This might be because of a missing or corrupted library (dll) file.  You can
+use a command line command to investigate this.
+.LP
+Essentially what is needed is to go to the folder where the ESP-r module
+executable lives on your machine and then use some command line magic
+to find out more about the executable. 
+.IP "Cygwin" 3
+ESP-r executables tend to live (within the Cygwin folder structure) in
+/usr/esru/esp-r/bin so if you Cygwin includes the utility ldd.exe then
+you can find out about dependencies via:
+.br
+.nf
+  \fBcd /usr/esru/esp-r/bin
+  ldd bps\fR
+.fi
+.IP "OSX" 3
+ESP-r executables tend to live in /opt/esru and the utility that identifies
+dependencies is named otool so you can find out about dependencies via:
+.br
+.nf
+  \fBcd /opt/esru/esp-r/bin
+  otool -L bps\fR
+.fi
+.IP "Linux" 3
+ESP-r executables tend to live in either /usr/esru or /opt/esru and the
+utility that identifies dependencies is named ldd so you can find out
+about dependencies via:
+.br
+.nf
+  \fBcd /opt/esru/esp-r/bin
+  ldd bps\fR
+.fi
+
