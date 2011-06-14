@@ -6741,6 +6741,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 ' '
 'd) copy default database: a project copy of the default database'
 '   will be made and you will be offered a chance to rename it.'
+'   The initial name of the copy is based on the model name.'
 ' '
 'The GTK interface includes the following options:'
 'e) browse ../dbs allows you to look in the model ../dbs'
@@ -6752,7 +6753,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '   the previous value will be restored.'
 ' '
 ' g) copy another database to the project allows you to locate'
-'  a database and get a project copy of it.'
+'   a database and get a project copy of it.'
+'   The initial name of the copy is based on the model name.'
 '  '
 'The X11 interface provides the following options: '
 'e) select a file (X11 only): edit the file name and if it is found'
@@ -6764,6 +6766,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'The miscellaneous components database can be edited with'
 'the current defined text editor (as defined in the default file).'
 'BE CAREFUL!  The format may be sensitive to user edits! '
+'  '
 'If you alter the file name when saving the text'
 'in the editor then you will have to browse to'
 'find the new file.'
@@ -13091,13 +13094,16 @@ Another mode is to scan the zone operations file and to compose'
         CALL EASKABC(OUTS,'Make this a fluid flow link?',
         CALL EPICKS(IZN,IVALS,' ',OUTS,12,NCOMP,zname,'zone list',IER,1)
 *subroutine MF010I
-*item MF010I
+*item MF010I flow_cmp_010
 'Type 10 is a power law volume flow resistance.'
 'Power law relationships are correlations rather than'
 'physical law.  It is a convenient characterization of'
 'openings for building air infiltration calculations'
 'and much data is available in this form.'
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.1.'
 ' '
 '  (m = rho . a . dP^b [m^3/s]) '
 ' '
@@ -13106,12 +13112,10 @@ Another mode is to scan the zone operations file and to compose'
 '  (2) flow coef a, '
 '  (3) flow exponent b.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
-*item MF010I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
   43  CALL EASKS(hold,'Coef `a` and exponent `b` in Q=a.dP^b(m^3/s) ?',
 *subroutine MF011I
-*item MF011I
+*item MF011I flow_cmp_011
 'Type 11 approximates self regulating devices which have'
 'a rated flow rate of 15m3/h at 20 Pa. or 30m3/h.'
 ' '
@@ -13130,15 +13134,16 @@ Another mode is to scan the zone operations file and to compose'
 'for details of the method.'
 *enditem
       CALL PHELPD('comp 11',17,'-',0,0,IER)
-*item MF011I
-*enditem
   43  CALL EASKS(hold,
 *subroutine MF015I
-*item MF015I
+*item MF015I flow_cmp_015
 'Type 15 is a power law mass flow resistance component.'
 'Power law relationships are correlations rather than'
 'physical law. See discussion of type 10 as well as'
-'ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.1.'
 ' '
 '(m = a . dP^b [kg/s]) '
 ' '
@@ -13147,16 +13152,17 @@ Another mode is to scan the zone operations file and to compose'
 '  (2) flow coef a,'
 '  (3) flow exponent b.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,12)
-*item MF015I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,12)
   43  CALL EASKS(hold,'Coef `a` and exponent `b` in m=a.dP^b [kg/s]?',
 *subroutine MF017I
-*item MF017I
+*item MF017I flow_cmp_017
 'Type 17 is a power law mass flow component.'
 'Power law relationships are correlations rather than'
 'physical law. See discussion of type 10 as well as'
-'ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.1.'
 '  '
 '(m = a.rho^1/2.dP^b [kg/s]) '
 '  '
@@ -13166,12 +13172,10 @@ Another mode is to scan the zone operations file and to compose'
 '  (3) flow exponent b.'
 '  '
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,13)
-*item MF017I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,13)
   43  CALL EASKS(hold,
 *subroutine MF020I
-*item MF020I
+*item MF020I flow_cmp_020
 'Type 20 is a quadratic law volume flow component.'
 'Quadratic law relationships are included because some'
 'sources regard this is a superior form for building'
@@ -13185,15 +13189,15 @@ Another mode is to scan the zone operations file and to compose'
 '  (1) fluid type (1=air, 2=water),'
 '  (2) flow coef a (Pa.s/m^3),'
 '  (3) flow exponent b (Pa.(s/m^3)^2).'
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.2.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,16)
-*item MF020I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,16)
   43  CALL EASKS(hold,
 *subroutine MF025I
-*item MF025I
+*item MF025I flow_cmp_025
 'Type 25 is a quadratic law mass flow component which'
 'is similar to type 20.'
 ' '
@@ -13203,15 +13207,15 @@ Another mode is to scan the zone operations file and to compose'
 ' (1) fluid type (1=air, 2=water),'
 ' (2) flow coef a (Pa.s/kg),'
 ' (3) flow exponent b (Pa.(s/kg)^2).'
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.2.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,12)
-*item MF025I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,12)
   43  CALL EASKS(hold,
 *subroutine MF030I
-*item MF030I
+*item MF030I flow_cmp_030
 'Type 30 is a constant flow rate component which is'
 'included as a convenient constant flow inducer'
 'which can be combined with other components.'
@@ -13228,38 +13232,23 @@ Another mode is to scan the zone operations file and to compose'
 'The flow rate can be modified by the use of a range'
 'based controller (see control definition facility) or'
 'by application of an on-off controller. '
-'For other details see ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.3.'
 *enditem
         CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,18)
-*item MF030I
-*enditem
-      CALL EASKABCD(prompt,' ','direct edit','l/s/person',
-*item MF030I
-*enditem
+        CALL EASKABCD(prompt,' ','direct edit','l/s/person',
    20   CALL EASKR(VAL,prompt,'(help for synopsis)',0.,'W',0.,'-',1.,
-*item MF030I
-*enditem
   43    CALL EASKS(hold,' litres/sec/person and number of people?',
-*item MF030I
-*enditem
         call askok(prompt,' Is this ok? ',OK,dok,18)
-*item MF030I
-*enditem
    21   CALL EASKR(VAL2,prompt,'(help for synopsis)',0.,'W',0.,'-',10.,
-*item MF030I
-*enditem
         call askok(prompt,' Is this ok? ',OK,dok,18)
-*item MF030I
-*enditem
         call ASKRNOD(' volume from which node','-',IV,IER)
-*item MF030I
-*enditem
    22   CALL EASKR(VAL2,prompt,'(help for synopsis)',0.,'W',0.,'-',
-*item MF030I
-*enditem
         call askok(prompt,' Is this ok? ',OK,dok,18)
 *subroutine MF035I
-*item MF035I
+*item MF035I flow_cmp_035
 'Type 35 is a constant flow rate component which is'
 'included as a convenient constant flow inducer which'
 'can be combined with other components.'
@@ -13272,14 +13261,15 @@ Another mode is to scan the zone operations file and to compose'
 'The flow rate can be modified by the use of a range'
 'based controller (see control definition facility) or'
 'by application of an on-off controller. '
-'For other details see ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.3.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
-*item MF035I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
    20 CALL EASKR(VAL,prompt,'(help for synopsis)',0.,'W',0.,'-',1.,
 *subroutine MF040I
-*item MF040I
+*item MF040I flow_cmp_040
 'Type 40 is a common orifice flow component which is a'
 'basic expression for turbulent flow through relatively'
 'large openings such as a vent in the case of buildings'
@@ -13293,14 +13283,15 @@ Another mode is to scan the zone operations file and to compose'
 'The opening area can be modified by the use of a range'
 'based controller (see control definition facility) or'
 'by application of an on-off controller. '
-'For other details see ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.4.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,15)
-*item MF040I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,15)
   43  CALL EASKS(hold,' Opening area (m^2) and discharge factor (-)?',
 *subroutine MF050I
-*item MF050I
+*item MF050I flow_cmp_050
 'Type 50 is a laminar pipe flow component which is a'
 'basic expression for laminar flow through relatively'
 'long flow paths.  A warning is given if the '
@@ -13312,15 +13303,15 @@ Another mode is to scan the zone operations file and to compose'
 ' (1) fluid type (1=air, 2=water), , '
 ' (2) path length (m),'
 ' (3) opening radius (m).'
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.5.'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
-*item MF050I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,14)
   43  CALL EASKS(hold,' Length of flow path (m) & opening radius (m)?',
 *subroutine MF110I
-*item MF110I
+*item MF110I flow_cmp_110
 'Type 110 is an air flow opening (type 40) with the'
 'fluid type set to air and a discharge factor of 0.65.'
 ' '
@@ -13331,23 +13322,28 @@ Another mode is to scan the zone operations file and to compose'
 'The opening area can be modified by the use of a range'
 'based controller (see control definition facility) or'
 'by application of an on-off controller. '
-'For other details see ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.6.'
 *enditem
    20 CALL EASKR(VAL,'(help for synopsis)',prompt,0.,'F',0.,'-',1.,
 *subroutine MF120I
-*item MF120I
+*item MF120I flow_cmp_120
 'Type 120 is an air flow crack component.'
 ' '
 'Supplemental data:'
 ' (1) fluid type (air only)'
 ' (2) crack width (mm),'
 ' (3) crack length(m)'
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.6.'
 *enditem
   43  CALL EASKS(hold,' Crack width (mm) and length (m) ?',
 *subroutine MF130I
-*item MF130I
+*item MF130I flow_cmp_130
 'Type 130 is an air flow door component which is '
 'applicable to vertical opening where bi-directional'
 'flow may exist. Based on an expression by Cockroft.'
@@ -13363,12 +13359,14 @@ Another mode is to scan the zone operations file and to compose'
 '     you should create multiple door components.'
 ' (5) discharge factor (-) typically 0.6 but can be smaller'
 '     to represent a door that is partially open.'
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.6.3'
 *enditem
   43  CALL EASKS(hold,
 *subroutine MF210I
-*item MF210I
+*item MF210I flow_cmp_210
 'Type 210 is a general flow conduit component which'
 'takes into account frictional and dynamic losses'
 'within a duct or pipe assuming a uniform x-section,'
@@ -13385,17 +13383,16 @@ Another mode is to scan the zone operations file and to compose'
 ' conduit length (m), absolute wall roughness(mm),'
 ' sum of local dynamic loss factors (suggest looking'
 '   this up in a handbook)'
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.7'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,17)
-*item MF210I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,17)
   43  CALL EASKS(hold,
-*item MF210I
-*enditem
    60 CALL EASKR(VAL,' Sum of local dynamic loss factors',
 *subroutine MF211I
-*item MF211I
+*item MF211I flow_cmp_211
  'Type 211 represents roof top ventilation cowl which is'
  'based on experimental data and which takes into account'
  'head losses and wind effects. '
@@ -13431,19 +13428,10 @@ Another mode is to scan the zone operations file and to compose'
 '     1 include wind effect '
 *enditem
       CALL PHELPD('comp 211',30,'-',0,0,IER)
-*item MF211I
-*enditem
   44  CALL EASKS(hold,
-*item MF211I
-*enditem
    20 CALL EASKR(VAL,' ',prompt,0.,'W',0.,'-',1.,'flow in comp',IER,14)
 *subroutine MF220I
-*item MF220I
-'Details of this flow component are available if you'
-'answer yes. '
-*enditem
-      CALL ASKOK(outs,'Synopsis of this component type?',OK,dok,2)
-*item MF220I
+*item MF220I flow_cmp_220
 'Type 220 is a variant of a general flow conduit which'
 'ends in a converging 3-leg junction.  It represents'
 'only half of a junction and the branch must be rep-'
@@ -13460,23 +13448,16 @@ Another mode is to scan the zone operations file and to compose'
 'this conduit and the common section, respectively and'
 'Y is the ratio between the volume flow rate in the '
 'other entrance of the junction and the common. '
-' '
-'See ESP-r manual section 3.6.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.8'
 *enditem
       if(OK) CALL PHELPD('comp 220',19,'-',0,0,IER)
-*item MF220I
-*enditem
    20 CALL EASKR(VAL,
-*item MF220I
-*enditem
-        CALL EASKR(VAL,outs,' ? ',0.,'-',0.,'-',0.,'Cf a0',IER,19)
+      CALL EASKR(VAL,outs,' ? ',0.,'-',0.,'-',0.,'Cf a0',IER,19)
 *subroutine MF230I
-*item MF230I
-'Details of this flow component are available if you'
-'answer yes. '
-*enditem
-      CALL ASKOK(outs,'Synopsis of this component type?',OK,dok,2)
-*item MF230I
+*item MF230I flow_cmp_230
 'Type 230 is a variant of a general flow conduit which'
 'ends in a diverging 3-leg junction. '
 ' '
@@ -13497,22 +13478,15 @@ Another mode is to scan the zone operations file and to compose'
 'other entrance of the junction and the common. '
 ' '
 'See discussion of type 210 & 220 as well as'
-'the ESP-r manual section 3.6.'
+'Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.8'
 *enditem
       if(OK) CALL PHELPD('comp 230',22,'-',0,0,IER)
-*item MF230I
-*enditem
    20 CALL EASKR(VAL,
-*item MF230I
-*enditem
-        CALL EASKR(VAL,outs,' ? ',
+      CALL EASKR(VAL,outs,' ? ',
 *subroutine MF240I
-*item MF240I
-'Details of this flow component are available if you'
-'answer yes. '
-*enditem
-      CALL ASKOK(outs,'Synopsis of this component type?',OK,dok,2)
-*item MF240I
+*item MF240I flow_cmp_240
 'Type 240 is a variant of a general flow conduit which'
 'ends in a converging 4-leg junction. '
 ' '
@@ -13535,22 +13509,15 @@ Another mode is to scan the zone operations file and to compose'
 'the other entrances of the junction and the common. '
 ' '
 'See discussion of type 210 & 220 as well as Hensen'
-'the ESP-r manual section 3.6.'
+'J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems,'
+'Eindhoven University of Technology section 4.4.8'
 *enditem
       if(OK) CALL PHELPD('comp 240',24,'-',0,0,IER)
-*item MF240I
-*enditem
    20 CALL EASKR(VAL,
-*item MF240I
-*enditem
-        CALL EASKR(VAL,outs,' ? ',
+      CALL EASKR(VAL,outs,' ? ',
 *subroutine MF250I
-*item MF250I
-'Details of this flow component are available if you'
-'answer yes. '
-*enditem
-      CALL ASKOK(outs,'Synopsis of this component type?',OK,dok,2)
-*item MF250I
+*item MF250I flow_cmp_250
 'Type 250 is a variant of a general flow conduit which'
 'starts with a diverging 4-leg junction. '
 ' '
@@ -13576,14 +13543,10 @@ Another mode is to scan the zone operations file and to compose'
 'the ESP-r manual section 3.6.'
 *enditem
       if(OK) CALL PHELPD('comp 250',26,'-',0,0,IER)
-*item MF250I
-*enditem
    20 CALL EASKR(VAL,
-*item MF250I
-*enditem
-        CALL EASKR(VAL,outs,' ? ',
+      CALL EASKR(VAL,outs,' ? ',
 *subroutine MF310I
-*item MF310I
+*item MF310I flow_cmp_310
 'Type 310 is a general flow inducer which approximates '
 'a pump or fan by a performance curve (cubic polynomial)'
 'which relates the total pressure rise to the volume '
@@ -13597,50 +13560,30 @@ Another mode is to scan the zone operations file and to compose'
 ' (2,3) volume flow rate lower and upper limits (m^3/s),'
 ' (4-7) flow coef a0 (Pa),     a1 (Pa/(m^3/s)),'
 '           a2 (Pa.(m^3/s)^2), a3 (Pa.(m^3/s)^3)'
+'  '
 ' four or more coordinates read off a performance curve'
-' in which case flow coef are not required'
-' '
-'See ESP-r manual section 3.6.'
+' in which case flow coef are not required. Coordinates'
+' for the performance curve entered should be over the '
+' entire range of the performance curve. (Not just the'
+' preferred operating range) Ideally values for near max'
+' and near min flow should also be used.'
+'  '
+'See Hensen J L M (1991) PhD Thesis On the thermal interaction of'
+'building structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.9'
 *enditem
         CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,20)
-*item MF310I
-*enditem
    20 CALL EASKR(VAL,
-*item MF310I
-*enditem
    30 CALL EASKR(VAL,' ',
-*item MF310I
-*enditem
       CALL EASKAB(' ',prompt,'coefficients','perf curve',IIW,20)
-*item MF310I
-*enditem
-  43    CALL EASKS(hold,
-*item MF310I
-' Coordinates entered should be over the '
-' entire range of the performance curve. '
-' (Not just the preferred operating range)'
-' Ideally values for near max and near min'
-' flow should also be used.'
-' '
-'Cancel option not yet implemented. '
-*enditem
-        CALL PHELPD('curve fit',5,'-',0,0,IER)
-*item MF310I
-*enditem
- 88     CALL EASKI(IVAL,
-*item MF310I
-*enditem
- 63       CALL EASKS(HOLD,
-*item MF310I
-'Chance to correct the data if incorrect. '
-*enditem
-        CALL ASKOK(' ',' Accept values?  ',OK,dok,1)
-*item MF310I
-'Chance to adjust the values you edited.'
-*enditem
-        CALL ASKOK(' ',' Accept this?  ',OK,dok,1)
+  43  CALL EASKS(hold,
+      CALL PHELPD('curve fit',5,'-',0,0,IER)
+ 88   CALL EASKI(IVAL,
+ 63   CALL EASKS(HOLD,
+      CALL ASKOK(' ',' Accept values?  ',OK,dok,1)
+      CALL ASKOK(' ',' Accept this?  ',OK,dok,1)
 *subroutine MF410I
-*item MF410I
+*item MF410I flow_cmp_410
 'Type 410 is a general flow corrector or variable '
 'flow resistance such as a valve or damper. Actuation'
 'of this component requires a configuration control '
@@ -13656,30 +13599,20 @@ Another mode is to scan the zone operations file and to compose'
 ' (6) theoretical flow when closed, k,v0 (%)'
 ' (7) lower validity limit k,vr (%).'
 ' '
-'There is a lengthy discussion of this in the '
-'ESP-r manual section 3.6.'
+'There is a lengthy discussion of this in Hensen J L M'
+'(1991) PhD Thesis On the thermal interaction of building'
+'structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.10'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,18)
-*item MF410I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,18)
    20 CALL EASKR(VAL,
-*item MF410I
-*enditem
    30 CALL EASKR(VAL,
-*item MF410I
-*enditem
       CALL EASKAB(' ',' Characteristic index: ',
-*item MF410I
-*enditem
    50 CALL EASKR(VAL,' ',
-*item MF410I
-*enditem
    60 CALL EASKR(VAL,' ',
-*item MF410I
-*enditem
    70 CALL EASKR(VAL,' ',
 *subroutine MF420I
-*item MF420I
+*item MF420I flow_cmp_420
 'Type 420 is a flow corrector or variable flow resis-'
 'tance such as a valve or damper which is represented'
 'as a polynomial. This approach is as if it were a'
@@ -13697,16 +13630,17 @@ Another mode is to scan the zone operations file and to compose'
 '    C = a0+a1.(H/H100)+a2.(H/H100)^2+a3.(H/H100)^3'
 ' where H/H100 is the relative valve/damper position'
 ' (ie. valve stem displacement of damper blade angle),'
+' '
+'There is a lengthy discussion of this in Hensen J L M'
+'(1991) PhD Thesis On the thermal interaction of building'
+'structure and heating and ventilating systems, Eindhoven'
+'University of Technology section 4.4.11'
 *enditem
-        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,18)
-*item MF420I
-*enditem
+      CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,18)
    20 CALL EASKR(VAL,
-*item MF420I
-*enditem
   43  CALL EASKS(hold,
 *subroutine MF460I
-*item MF460I
+*item MF460I flow_cmp_460
 'Type 460 is a fixed flow rate device, which unlike'
 'types 30 or 35  responds to a wide range of signals'
 'which are defined by the user.  A typical use of this'
@@ -13725,11 +13659,9 @@ Another mode is to scan the zone operations file and to compose'
 'See ESP-r manual section 3.6.'
 *enditem
         CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,16)
-*item MF460I
-*enditem
   43  CALL EASKS(hold,' Flows when S < Ssp and S > Ssp (m3/s) ?',
 *subroutine MF500I
-*item MF500I
+*item MF500I flow_cmp_500
 'Type 500 is a multiple configuration flow component.'
 'It assumes the properties of three PREVIOUSLY DEFINED'
 'components depending upon control action at simulation'
@@ -13751,16 +13683,8 @@ Another mode is to scan the zone operations file and to compose'
 ' Component three is active below control action 2'
 *enditem
         CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,21)
-*item MF500I
-*enditem
         call ASKRCMP('select component','-',ICOMPN,IER)
-*item MF500I
-'Type 500 is a multiple configuration flow component.'
-'It assumes the properties of three PREVIOUSLY DEFINED'
-'components depending upon control action at simulation'
-'run time. For example it can assume the action of a '
-*enditem
-          CALL EASKR(VAL,'Enter control action for this component',
+        CALL EASKR(VAL,'Enter control action for this component',
 *subroutine MMGFUN
 *item MMGFUN
 'Assessment period choices allow you to do quick'
