@@ -2,7 +2,7 @@
 Command line tips for Linux, OSX and Cygwin users of Esp-r
 .AU
 Dr. Jon W. Hand, ESRU
-13 June 2011
+15 June 2011
 .SH
 Introduction
 .LP
@@ -67,7 +67,7 @@ The command shell runs in either a command or graphic window.
 A command window only works with text based tasks and a
 graphic window can work with either text or graphic
 applications.  For example:
-.IP "   Cygwin" 4
+.IP "    Cygwin" 4
 The inital command window (typiclly white text on a black 
 background with a fixed width) that starts up supports text commands and
 can only be used to invoke ESP-r in a pure-text mode (for example
@@ -85,7 +85,7 @@ window if you want. If you want you can have multiple graphic
 windows open at the same time. When you are finished close the graphic
 window (via the command exit). Then you can type exit in the
 original command window.
-.IP "   OSX 10.5 and 10.6" 4
+.IP "    OSX 10.5 and 10.6" 4
 OSX includes a default 'terminal' which can take either text or
 graphic commands (??).  There is also an X11 graphic window
 (typically called an xterm) which is available as part of the X11
@@ -94,7 +94,7 @@ X11 supports networked displays (where what you see in the
 xterm could be an application running on a different computer).
 This feature can be useful for accessing a compute server
 as well as for IT support staff to access your computer.
-.IP "   Linux" 4
+.IP "    Linux" 4
 On linux machines the overall graphic environment is dictated
 by whether the computer is using KDE or Gnome.  Each come with
 a different set of tools and several choices for graphic windows.
@@ -117,13 +117,13 @@ might not have the correct permissions for use in your account
 and you might find that changes you make in your model
 might not be written to the model files. Commands to identify
 and correct permissions is thus a common task.
-.IP "   Cygwin" 4
+.IP "    Cygwin" 4
 The underlying Windows platform supports a different concept
 of permissions for folders and files than OSX and Linux. For
 example is easier to overwrite and corrupt critical databases
 in Cygwin than it is in OSX or Linux.  To change permissions
 set by another user one must switch to that user.
-.IP "   OSX and Linux" 4
+.IP "    OSX and Linux" 4
 Since OSX and Linux are derived from Unix, both able to
 set permissions on files and folders at find resolution.
 Both support the concept of 'the current user', the
@@ -138,7 +138,7 @@ Cygwin and OSX and Linux use a hierarchical directory structure
 beginning at "/" (equivalent to c:\ on a PC) which is the 
 so called 'root' directory and everything else hangs off of that.
 There is no A:B:C:D:E: drive. 
-.IP "   Cygwin" 4
+.IP "    Cygwin" 4
 The Cygwin command window you will be able to navigate to folders 
 in the A:B:C:... drives.  The path within Cygwin 
 becomes /cygdrive/c or /cygdrive/d.  Note the use of /
@@ -165,18 +165,18 @@ users home tends to be C:\\Documents and Settings\\user_name
 although when setting up Cyginw there will be a /home/user_name.
 .IP "\(bu " 2
 Case sensitivity differs in OSX and Linux and Cygwin:
-.IP "   Cygwin" 4
+.IP "    Cygwin" 4
 Cyginw is not case sensitive for the names of files and 
 folders (for a folder namde /home/fred/Src the commands:
 .br
 cd /home/fred/src and cd /home/fred/Src are equivalent.
-.IP "   OSX" 4
+.IP "     OSX" 4
 By default OSX is not case sensitive. OSX drives can be
 formatted to support case sensitivity. This tends
 not to be a problem unles working with a model which was
 created on Linux which might have Readme.txt and readme.txt
 as separate files.
-.IP "   Linux" 4
+.IP "     Linux" 4
 Linux is case sensitive.  A folder named Src is different 
 from a folder named src which is different from a folder
 named SRC.
@@ -204,6 +204,9 @@ case).
 It is possible to find out more about a specific command
 by giving the commands in the following form:
 .nf
+.fam C
+
+  \s-2
   man <command name>
   
   man ls
@@ -219,8 +222,7 @@ DESCRIPTION
      ls displays its name as well as any requested, associated informa-
      tion.  For each operand that names a file of type directory, ls
      displays the names of files contained within that directory, as
-     well as any requested, associated information.
-  
+     well as any requested, associated information.  
   . . .
      The following options are available:
 
@@ -230,7 +232,9 @@ DESCRIPTION
 
      -A      List all entries except for . and ...  Always set for the
              super-user.
- . . .
+  . . .
+  \s0
+.fam T
 .fi
 .LP
 So you can see that the command to list a directory has more than a
@@ -262,8 +266,13 @@ Given the following directories and files:
 \fR
 .fi
 .LP
+For example in the project manager when you select one of the exemplar
+models the software will be looking in the training folder for the
+orignal of the example model. If you 'own' the model that folder
+structure will be copied to your HOME folder.
+.LP
 When you log in you will be in your home folder.
-If you get confused about where you happen to be
+If you get confused about which folder you are in
 at any time then give the command
 .nf
 
@@ -391,28 +400,36 @@ The normal way to find out the contents of a folder
 is to use the "ls" command.  For example a listing
 of the contents of "memos" is
 .nf
-
-ls  memos
-Beattie                 home_off_cover2         roosvlt_280196
-bepac_lmia              home_off_cover3         roosvlt_280196.ps
-home_off_cover          pcs210394
-lambda: jon/textfR 
+.fam C
+  \s-2
+  
+  ls  memos
+  Beattie                 home_off_cover2         roosvlt_280196
+  bepac_lmia              home_off_cover3         roosvlt_280196.ps
+  home_off_cover          pcs210394
+  lambda: jon/text
+  \s0
+.fam T
 .fi
 .LP
 Unless you know what these names represent you might want to
 find out more. A long listing is:
 .nf
-
-ls -l memos
-total 44
--rw-r--r--  1 jon          1990 May 24  2003 Beattie
--rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
--rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
--rw-r--r--  1 jon          4078 Feb  5  2004 home_off_cover2
--rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
--rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
--rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
--rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
+.fam C
+  \s-2
+  
+  ls -l memos
+  total 44
+  -rw-r--r--  1 jon          1990 May 24  2003 Beattie
+  -rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
+  -rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
+  -rw-r--r--  1 jon          4078 Feb  5  2004 home_off_cover2
+  -rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
+  -rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
+  -rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
+  -rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps
+  \s0
+.fam T
 .fi
 .LP
 The "-rw-r--r--" represents the permissions and file types. In this
@@ -427,21 +444,23 @@ of the file home_off_cover2 but we want to allow people
 in our group to write to the file we could do this via the
 commands:
 .nf
-
-\fBchmod o-r home_off_cover2\fR
-\fBchmod g+w home_off_cover2\fR
-
-ls -l memos
-total 44
--rw-r--r--  1 jon          1990 May 24  2003 Beattie
--rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
--rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
--rw-rw----  1 jon          4078 Feb  5  2004 home_off_cover2
--rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
--rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
--rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
--rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps\fR
-
+.fam C
+  \s-2
+  
+  chmod o-r home_off_cover2
+  chmod g+w home_off_cover2
+  ls -l memos
+  total 44
+  -rw-r--r--  1 jon          1990 May 24  2003 Beattie
+  -rw-r--r--  1 jon          1665 May 30  2005 bepac_lmia
+  -rw-r--r--  1 jon          3102 Mar 12  2003 home_off_cover
+  -rw-rw----  1 jon          4078 Feb  5  2004 home_off_cover2
+  -rw-r--r--  1 jon          4163 Mar 27  2005 home_off_cover3
+  -rw-r--r--  1 jon          2133 Nov 30  2004 pcs210394
+  -rw-r--r--  1 jon          1678 Oct 28 14:04 roosvlt_280196
+  -rw-r--r--  1 jon         22035 Oct 28 14:05 roosvlt_280196.ps
+  \s0
+.fam T
 .fi
 .LP
 The above commands would work in OSX and Linux and Cygwin. If
@@ -529,22 +548,46 @@ named 'grep' which is designed to do this.  As an example
 if I wanted to quickly check the location of the word fred
 in a text file the command response would be:
 .nf
-
-\fB grep -ni fred esp_command_line_hints.text
-17:the 'Fred sent me a model and I can't get it working' variety.
-153:path pattern /home/fred/databases and on OSX will follow
-154:the pattern /Users/fred/databases.
-171:folders (for a folder namde /home/fred/Src the commands:
-173:cd /home/fred/src and cd /home/fred/Src are equivalent.
-315:   /home/fred/databases/fred-materials.db
-319:have a /home/fred on their machine then
-321:an alternative location for fred-materials.db. \fR
-
+.fam C
+ \s-2
+ grep -ni fred esp_command_line_hints.text
+ 17:the 'Fred sent me a model and I can't get it working' variety.
+ 153:path pattern /home/fred/databases and on OSX will follow
+ 154:the pattern /Users/fred/databases.
+ 171:folders (for a folder namde /home/fred/Src the commands:
+ 173:cd /home/fred/src and cd /home/fred/Src are equivalent.
+ 315:   /home/fred/databases/fred-materials.db
+ 319:have a /home/fred on their machine then
+ 321:an alternative location for fred-materials.db. \fR
+\s0
+.fam T
 .fi
 .LP
 The option -n requests the line number and the -i says
 ignore the case (Fred = fred). Grep can be used to search
 multiple files and folder structures.
+.LP
+Another example is to locate which zones in a model use a construction
+named \fIinsul_frame\fR:
+.nf
+.fam C
+ \s-2
+  cd zones
+  grep -ni insul_frame *.geo
+  coridor.geo:66:*surf,part_frame,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,01,02  #   8 ||< part_frame:manager_a
+  coridor.geo:68:*surf,part_frameb,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,02,02  #  10 ||< part_frame:manager_b
+  manager.geo:47:  2, part_frame    OPAQ  VERT  insul_frame  SIMILAR        
+  manager.geo:52:  7, spandral      OPAQ  VERT  insul_frame  EXTERIOR       
+  manager.geo:53:  8, frame         OPAQ  VERT  insul_frame  EXTERIOR       
+  manager_a.geo:57:*surf,part_frame,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,03,08  #   2 ||< part_frame:coridor
+  manager_a.geo:62:*surf,spandral,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+  manager_a.geo:63:*surf,frame,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+  manager_b.geo:57:*surf,part_frame,VERT,-,-,-,insul_frame,OPAQUE,ANOTHER,03,10  #   2 ||< part_frameb:coridor
+  manager_b.geo:62:*surf,spandral,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+  manager_b.geo:63:*surf,frame,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+  \s0
+.fam T
+.fi
 .SH
 Editing files
 .LP
@@ -589,6 +632,8 @@ process.  We have many options beginning with a command
 line tool called 'diff'.  If there are two model configration
 files and I want to see the differences:
 .nf
+.fam C
+\s-2
 
  diff bld_simple.cfg  bld_simple_fzy.cfg
 3,5c3,5
@@ -630,18 +675,27 @@ files and I want to see the differences:
 ---
 > *cnn bld_simple_fzy.cnn  # connections
 bash-3.2$ 
-
+\s0
+.fam T
 .fi
 .LP
 Lines with < are the first file and > signals the second
-file in the original command.  The tool diff and its
-variants are available on all the platforms.
-.IP "   OSX" 6
+file in the original command.  In the above we see that the
+bld_simple_fzy.cfg is newer than bld_simple.cfg, it uses
+a different zone control file and includes an additional
+image and is associated with a different simulation results
+file.  
+.LP
+The tool diff and its variants are available on all the platforms.
+In a graphical side-by-side tool the differences might be easier 
+to notice.  Different graphic tools are available on different
+computer types:
+.IP "  OSX" 4
 OSX offers a comparison tool as part of the XCode source code
 development environment. It is used via:
 .br
 opendiff <file name> <file name>
-.IP "   Linux" 6
+.IP "  Linux" 4
 Depending on whether you are using Gnome or KDE there will
 be a slightly different choice of file differencing utilities
 to choose from.  kompare shows a side-by-side graphic view
@@ -675,18 +729,22 @@ of many files or folders and sub-folders.  Say
 I wanted to archive the memos folder I would give the
 following command:
 .nf
-
-\fBlambda: jon/text% tar  cvf  memos_030297.tar  memos
-memos/
-memos/pcs210394
-memos/Beattie
-memos/home_off_cover
-memos/home_off_cover2
-memos/roosvlt_280199
-memos/home_off_cover3
-memos/bepac_lmia
-memos/roosvlt_280199.ps
-lambda: jon/text% \fR
+.fam C
+ \s-2
+ 
+ lambda: jon/text% tar  cvf  memos_030297.tar  memos
+ memos/
+ memos/pcs210394
+ memos/Beattie
+ memos/home_off_cover
+ memos/home_off_cover2
+ memos/roosvlt_280199
+ memos/home_off_cover3
+ memos/bepac_lmia
+ memos/roosvlt_280199.ps
+ lambda: jon/text%
+ \s0
+.fam T
 .fi
 .LP
 This says create verbosely the file memos_030297.tar with
@@ -699,17 +757,21 @@ the contents of the folder memos. The resulting file:
 .LP
 To find out what it contains I give the command:
 .nf
-
-\fBlambda: jon/text% tar  tvf  memos_030297.tar
-drwxr-xr-x1002/10       0 Oct 28 14:05 2009 memos/
--rw-r--r--1002/10    2133 Nov 30 11:14 2004 memos/pcs210394
--rw-r--r--1002/10    1990 May 24 11:57 2003 memos/Beattie
--rw-r--r--1002/10    3102 Mar 12 14:10 2003 memos/home_off_cover
--rw-r--r--1002/10    4078 Feb  5 14:56 2004 memos/home_off_cover2
--rw-r--r--1002/10    1678 Oct 28 14:04 2009 memos/roosvlt_280199
--rw-r--r--1002/10    4163 Mar 27 19:26 2005 memos/home_off_cover3
--rw-r--r--1002/10    1665 May 30 09:39 2005 memos/bepac_lmia
--rw-r--r--1002/10   22035 Oct 28 14:05 2009 memos/roosvlt_280199.pfR
+.fam C
+  \s-2
+  
+  lambda: jon/text% tar  tvf  memos_030297.tar
+  drwxr-xr-x1002/10       0 Oct 28 14:05 2009 memos/
+  -rw-r--r--1002/10    2133 Nov 30 11:14 2004 memos/pcs210394
+  -rw-r--r--1002/10    1990 May 24 11:57 2003 memos/Beattie
+  -rw-r--r--1002/10    3102 Mar 12 14:10 2003 memos/home_off_cover
+  -rw-r--r--1002/10    4078 Feb  5 14:56 2004 memos/home_off_cover2
+  -rw-r--r--1002/10    1678 Oct 28 14:04 2009 memos/roosvlt_280199
+  -rw-r--r--1002/10    4163 Mar 27 19:26 2005 memos/home_off_cover3
+  -rw-r--r--1002/10    1665 May 30 09:39 2005 memos/bepac_lmia
+  -rw-r--r--1002/10   22035 Oct 28 14:05 2009 memos/roosvlt_280199.ps
+  \s0
+.fam T
 .nf
 .LP
 which says tell me (verbosely) the contents of memos_030297.tar.
@@ -811,6 +873,13 @@ command line via the unzip command:
 
   \fBunzip <the_file_name>\fR
 .fi
+.LP
+Sometimes when someone sends you a model it is worthwhile
+opening up the model cfg file in a text editor to check
+which files and databases it references.  Be sure to
+ask the person sending the file to provide information
+about the version of ESP-r they were using as well as
+the operating system.
 .SH
 Automation of performance data extraction
 .LP
@@ -834,7 +903,120 @@ you used and then use this to quickly generate the remaining
 reports.
 .LP
 The text mode and X11 graphic mode imvocations of ESP-r listen
-to the keyboard as well as the mouse position. 
+to the keyboard as well as the mouse position. In a command
+window (graphic or text-only) the following sequence illustrates
+what the results analysis module looks like in text mode:
+.nf
+.fam C
+\s-2
+
+  bash-3.2$ ls -l *res
+  -rw-r--r--  1 jon  staff  218918344 Jun 15 12:50 holmes_aut.res
+  bash-3.2$ res -mode text -file holmes_aut.res
+  ESP-r Results Analysis Tool (res).
+  This is a development copy of res, based on ESP-r release 11.10.
+ 
+  Copyright resides with the member organisations of the ESP-r
+  development consortium as listed at:
+  http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm
+  
+  (currently: holmes_aut.res)
+  Library name ? 
+  The name (holmes_aut.res) will be used.
+  MORFIL: cmd line file is holmes_aut.res
+  Databases scan (ok)
+ 
+  Set|Control    |Start |Finish| Time   | Save |Average|Pre|Slr_hr|Aid memoire
+  no.| name      | day  | day  |steps/hr|option| Flag  |sim| Flag |(for this set)
+   1 heating 5C o 22, 9  28, 9      10      4       0   18      0  Results for holmes_b
+  
+  Checking existence of descriptive files...
+  Checking existence of descriptive files...done.
+ 
+  All zones considered for output.
+  Period: Thu-22-Sep@00h03(1994) to Wed-28-Sep@23h57(1994)
+  Output time-step interval = 1
+  Pre-scanning database...
+  Pre-scanning database...done.
+ 
+  results analysis:  1 Select result file     f Indoor env. quality 
+                     2 Select result set      g Electrical results  
+                     3 Define output period   h CFD                 
+                     4 Select zones           i Sensitivity         
+                       -------------------    j IPV                 
+                     a Graphs                   ------------------- 
+                     c Timestep reports       r Report >> silent    
+                     d Enquire about          * Preferences         
+                     e Plant results          ? Help                
+                  :  - Quit
+
+  results analysis:?> 
+  results analysis:?> 4
+  Output zone definition
+ 
+  Which zones to include:
+
+  ::  a common_str       j lower         
+      b kiten_util   *   k lower_ne      
+      c bedroom1     *   l upper         
+      d bath         *   m upper_ne      
+      e bedroom2     *   * All items     
+      f living       *     ______________
+      g hall         *   < index select  
+      h study        *   ? help          
+      i family       *   - exit this menu
+
+  ::?> 
+  ::?> -
+
+  results analysis:  1 Select result file     f Indoor env. quality 
+                     2 Select result set      g Electrical results  
+                     3 Define output period   h CFD                 
+                     4 Select zones           i Sensitivity         
+                       -------------------    j IPV                 
+                     a Graphs                   ------------------- 
+                     c Timestep reports       r Report >> silent    
+                     d Enquire about          * Preferences         
+                     e Plant results          ? Help                
+                  :  - Quit
+
+  results analysis:?> d
+  
+  Enquire about:  2 select result set      h zone energy balance 
+                  3 define output period   i surface energy balnc
+                  4 select zones           j surface condensation
+                    -------------------    k intrstl condensation
+                  a summary statistics       ------------------- 
+                  b frequency table        l monthy gains/losses 
+                    -------------------    m monthy temp. stats  
+                  c hours above a value      ------------------- 
+                  d hours below a value    > output >> screen    
+                    -------------------    ^ delim >> normal     
+                  f energy delivered       ? help                
+                  g casual gains distrib   - exit                
+
+  Enquire about:?> 
+    . . .
+  \s0
+.fam T
+.fi
+.LP
+The command:
+.nf
+  \fBres -mode text -file holmes_aut.res\fR
+.fi
+.LP
+Starts the results analysis module in text mode and with
+the file holmes_aut.res.  A \fBcarrage return\fR is typed to
+accept the passed file name. Next a \fB4\fR is typed
+to select from the list of zones. As each zone is selected
+a \fB*\fR is added to that selection.  When the list is
+done a \fB-\fR is typed to end the list and then a \fBd\fR
+is typed to enter the \fBEnquire about\fR menu.
+It is thus possible to carry out tasks by typing in a few
+characters. And what can be typed can be recorded into a
+script to be \fIreplayed\fR.
+.LP
 Below are the key strokes recorded during the initial res
 session and enbedded into a script file.  The 1st line
 ensures the csh command interpreter is used. The 2nd line
@@ -846,43 +1028,46 @@ the following lines until it reaches the characters XXX.
 The last line of the script has the characters XXX.
 .LP
 Once the ESP-r module starts the initial character of the
-command is used.  For example in the 5th line the
-characters 'select zone' are a comment.
+command is used subsequen characters in the line are
+ignored and thus can be used to comment the script.
 .nf
-#!/bin/csh -fb
-set RESFILE=$1
-res -file $RESFILE -mode text<<XXX
+.fam C
+  \s-2
+  #!/bin/csh -fb
+  set RESFILE=$1
+  res -file $RESFILE -mode text<<XXX
 
-4  select zones
-b
-c
-d
-e
-f
-g
-h
-i
--
-d  enquire
->
-$1.txt
-$1 summary
-a  summary stats
-b
-a  dry bulb
-b
-e  resultant
--
-f  energy delivered
-a  stats
-h  heating 
-e  sensible
--
->  close output
--
--
-XXX
-
+  4  select zones
+  b
+  c
+  d
+  e
+  f
+  g
+  h
+  i
+  -
+  d  enquire
+  >
+  $1.txt
+  $1 summary
+  a  summary stats
+  b
+  a  dry bulb
+  b
+  e  resultant
+  -
+  f  energy delivered
+  a  stats
+  h  heating 
+  e  sensible
+  -
+  >  close output
+  -
+  -
+  XXX
+  \s0
+.fam T
 .fi
 .LP
 If the script name is extract.sh then it could be invoked
@@ -890,10 +1075,11 @@ via commands like (the 2nd token is the name of the
 results library:
 .nf
 
+ \fB
   ./extract.sh holmes_aut_dg.res
   ./extract.sh holmes_aut_dl.res
   ./extract.sh holmes_aut_gf.res
-
+ \fR
 .fi
 .LP
 The 1st report generated by the first of the commands is included below
@@ -914,7 +1100,6 @@ living      21.348 24-Sep@08h22  15.000 22-Sep@03h52 19.512    1.9426
 hall        21.122 22-Sep@07h22  16.697 24-Sep@05h52 19.957    1.1262
 study       22.342 24-Sep@19h37  15.671 22-Sep@05h52 19.974    1.5202
 family      21.212 27-Sep@19h22  15.555 22-Sep@05h52 19.709    1.5169
- 
    All      22.342      --       15.000      --      19.691       --
  
 # Lib: holmes_aut.res: Results for holmes_b
@@ -929,8 +1114,8 @@ living      21.155 25-Sep@08h52 15.781 22-Sep@05h52 19.413    1.4278
 hall        20.800 25-Sep@18h37 17.514 22-Sep@05h52 19.892    0.73674
 study       21.623 24-Sep@19h37 16.449 22-Sep@05h52 19.764    1.1073
 family      20.523 24-Sep@19h37 16.571 22-Sep@05h52 19.505    0.96236
- 
    All      22.363      --      15.781      --      19.681       --
+   
 Lib: holmes_aut.res: Results for holmes_b
 Period: Mon-22-Sep@00h07(1986) to Sun-28-Sep@23h52(1986) : sim@15m, output@15m
  
@@ -946,9 +1131,7 @@ Period: Mon-22-Sep@00h07(1986) to Sun-28-Sep@23h52(1986) : sim@15m, output@15m
   7 hall        27.68  118.0       0.00    0.0       0.00    0.0       0.00    0.0
   8 study       12.67   94.5       0.00    0.0       0.00    0.0       0.00    0.0
   9 family      32.13  124.0       0.00    0.0       0.00    0.0       0.00    0.0
- 
     All        264.53  780.8       0.00    0.0       0.00    0.0       0.00    0.0
- 
  
 # Lib: holmes_aut.res: Results for holmes_b
 # Period: Mon-22-Sep@00h07(1986) to Sun-28-Sep@23h52(1986) : sim@15m, output@15m
@@ -962,8 +1145,7 @@ living      1.6467 22-Sep@06h37  0.00000 22-Sep@00h22  0.35162  0.38454
 hall        0.77728 24-Sep@06h37 0.00000 22-Sep@00h22  0.16476  0.17797
 study       0.45479 22-Sep@06h37 0.00000 22-Sep@00h22  0.07544  0.10675
 family      0.89996 22-Sep@06h37 0.00000 22-Sep@00h22  0.19125  0.22004
- 
-   All      7.8464 24-Sep@06h22  0.00000 22-Sep@00h00       --       --
+    All     7.8464 24-Sep@06h22  0.00000 22-Sep@00h00       --       --
    \s0
 .fam T
 
