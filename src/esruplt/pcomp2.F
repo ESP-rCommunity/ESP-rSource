@@ -1325,7 +1325,7 @@ C during the previous time-step
             FGAS=BDATA(IPCOMP,2)*BDATA(IPCOMP,1)
             PHIW=ETA*FGAS*BDATA(IPCOMP,3)
             PHISB=(BDATA(IPCOMP,7)
-     &             +BDATA(IPCOMP,8)*(CSVF(INOD1,1)-PCNTMF(IPCOMP)))
+     &             *BDATA(IPCOMP,8)*(CSVF(INOD1,1)-PCNTMF(IPCOMP)))
      &            *BDATA(IPCOMP,1)*BDATA(IPCOMP,3)
          END IF
 
