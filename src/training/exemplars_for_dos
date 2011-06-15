@@ -1,0 +1,429 @@
+*EXEMPLARS
+*help	Some models of increasing complexity that provide a
+*help	basic introduction to ESP-r problem definition.
+*label	___ Models for the beginner:
+*item
+*group	simple
+*help	A set of models demonstrating some basic ESP-r functionality.
+*item
+*name	1 zone with convective heating & basic control
+*cfg	C:\Esru\esp-r\training\simple\cfg\bld_simple.cfg
+*root	C:\Esru\esp-r\training\simple
+*item
+*name	... with underfloor heating
+*cfg	C:\Esru\esp-r\training\simple\cfg\bld_simple_ufh.cfg
+*root	C:\Esru\esp-r\training\simple
+*item
+*name	... with external shading device
+*cfg	C:\Esru\esp-r\training\simple\cfg\bld_simple_shd.cfg
+*root	C:\Esru\esp-r\training\simple
+*item
+*name	... with convective heating system & fuzzy control
+*cfg	C:\Esru\esp-r\training\simple\cfg\bld_simple_fzy.cfg
+*root	C:\Esru\esp-r\training\simple
+*item
+*name	3 zones with convective heating & basic control
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with window reveal & external shading
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_shd.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with scheduled infiltration
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_af1.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with scheduled infiltration & ventilation
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_af2.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with pre-heat controller
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_prht.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with zone ambient temperature matching
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_tm1.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with zone temperature matching (avg of sensors)
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_tm2.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*name	... with convective heating & PID control
+*cfg	C:\Esru\esp-r\training\pid\cfg\pid.cfg
+*root	C:\Esru\esp-r\training\pid
+*item
+*name	... with load shedding controller
+*cfg	C:\Esru\esp-r\training\basic\cfg\bld_basic_prht.cfg
+*root	C:\Esru\esp-r\training\basic
+*item
+*group	technical features
+*help	A simple office model with various technical features applied.
+*item
+*name	base case model: two offices and a passageway
+*cfg	C:\Esru\esp-r\training\cellular_bc\cfg\cellular_bc.cfg
+*root	C:\Esru\esp-r\training\cellular_bc
+*item
+*name	... with high resolution
+*cfg	C:\Esru\esp-r\training\cellular_hires\cfg\cellular_hires.cfg
+*root	C:\Esru\esp-r\training\cellular_hires
+*item
+*name	... with high resolution and internal mass
+*cfg	C:\Esru\esp-r\training\cellular_furn\cfg\cellular_furn.cfg
+*root	C:\Esru\esp-r\training\cellular_furn
+*item
+*name	... with shading
+*cfg	C:\Esru\esp-r\training\cellular_shd\cfg\cellular_shd.cfg
+*root	C:\Esru\esp-r\training\cellular_shd
+*item
+*name	... with natural ventilation
+*cfg	C:\Esru\esp-r\training\cellular_natv\cfg\cellular_natv.cfg
+*root	C:\Esru\esp-r\training\cellular_natv
+*item
+*name	... with earth tube air heating\cooling 
+*cfg	C:\Esru\esp-r\training\cellular_earth\cfg\cellular_earth.cfg
+*root	C:\Esru\esp-r\training\cellular_earth
+*item
+*name	... with  bounding zones above\below 
+*cfg	C:\Esru\esp-r\training\cellular_bound\cfg\cellular_bounded.cfg
+*root	C:\Esru\esp-r\training\cellular_bound
+*item
+*name	... with CO2 tracking (open windows)
+*cfg	C:\Esru\esp-r\training\cellular_contam\cfg\cellular_contam_bc.cfg
+*root	C:\Esru\esp-r\training\cellular_contam
+*item
+*name	... with CO2 tracking (high occupancy)
+*cfg	C:\Esru\esp-r\training\cellular_contam\cfg\cellular_contam_ho.cfg
+*root	C:\Esru\esp-r\training\cellular_contam
+*item
+*name	... with CO2 tracking (mechanical ventilation)
+*cfg	C:\Esru\esp-r\training\cellular_contam\cfg\cellular_contam_mv.cfg
+*root	C:\Esru\esp-r\training\cellular_contam
+*item
+*name	... with CO2 control of mechanical ventilation system
+*cfg	C:\Esru\esp-r\training\cellular_contam\cfg\cellular_contam_mvctl.cfg
+*root	C:\Esru\esp-r\training\cellular_contam
+*item
+*name	... with photovoltaic-integrated facade
+*cfg	C:\Esru\esp-r\training\cellular_pv\cfg\cellular_pv.cfg
+*root	C:\Esru\esp-r\training\cellular_pv
+*item
+*name	... with multiple input single output controller
+*cfg	C:\Esru\esp-r\training\cellular_miso\cfg\cellular_miso.cfg
+*root	C:\Esru\esp-r\training\cellular_miso
+*item
+*name	... with occupant controlled natural ventilation
+*cfg	C:\Esru\esp-r\training\cellular_natv\cfg\cellular_natv.cfg
+*root	C:\Esru\esp-r\training\cellular_natv
+*item
+*name	... with hybrid natural & mechanical ventilation
+*cfg	C:\Esru\esp-r\training\cellular_hybrid\cfg\cellular_mctl.cfg
+*root	C:\Esru\esp-r\training\cellular_hybrid
+*item
+*name	... with component based HVAC
+*cfg	C:\Esru\esp-r\training\cellular_hvac\cfg\cellular_hvac.cfg
+*root	C:\Esru\esp-r\training\cellular_hvac
+*item
+*name	... with floor heating & chilled ceiling
+*cfg	C:\Esru\esp-r\training\cellular_flh\cfg\cellular_flh.cfg
+*root	C:\Esru\esp-r\training\cellular_flh
+*item
+*name	... with constant volume HVAC controller
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_cvvt.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with ideal VAV\CAV HVAC controller
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_vav.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with ON\OFF control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_onoff.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with alternative ON\OFF control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_onoffpro.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with master-slave control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_master.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with ON\OFF and 3 position control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_3pos.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with P and P+I control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_pi.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with optimum start control
+*cfg	C:\Esru\esp-r\training\cellular_cvvt\cfg\cellular_optst.cfg
+*root	C:\Esru\esp-r\training\cellular_cvvt
+*item
+*name	... with associated measured temperatures
+*cfg	C:\Esru\esp-r\training\cellular_bc\cfg\cellular_measured.cfg
+*root	C:\Esru\esp-r\training\cellular_bc
+*item
+*label	___ More comprehensive models:
+*item
+*group	realistic scale
+*help	A set of relatively detailed models.
+*item
+*name	house with sun-space, winter operation
+*cfg	C:\Esru\esp-r\training\house\sun_space\cfg\house_win.cfg
+*root	C:\Esru\esp-r\training\house\sun_space
+*item
+*name	... summer operation
+*cfg	C:\Esru\esp-r\training\house\sun_space\cfg\house_sum.cfg
+*root	C:\Esru\esp-r\training\house\sun_space
+*item
+*name	house with solar ventilation pre-heat
+*cfg	C:\Esru\esp-r\training\house\svph\cfg\linford.cfg
+*root	C:\Esru\esp-r\training\house\svph
+*item
+*name	office with natural ventilation
+*cfg	C:\Esru\esp-r\training\office\cfg\office_sum.cfg
+*root	C:\Esru\esp-r\training\office
+*item
+*name	comfort in hospital rooms with radiant pannel heating
+*cfg	C:\Esru\esp-r\training\rad_room_heat\cfg\rad_rooms_heat.cfg
+*root	C:\Esru\esp-r\training\rad_room_heat
+*item
+*group	real projects
+*help	These models were built for use in consultancy\research projects.
+*item
+*name	Office building section, Ottawa, Canada 
+*cfg	C:\Esru\esp-r\training\office_vent\cfg\office_vent.cfg
+*root	C:\Esru\esp-r\training\office_vent
+*item
+*name	... with network air flow infiltration model
+*cfg	C:\Esru\esp-r\training\office_vent\cfg\office_vent_netinf.cfg
+*root	C:\Esru\esp-r\training\office_vent
+*item
+*name	... with controlled facade vents
+*cfg	C:\Esru\esp-r\training\office_vent\cfg\office_vent_ctl.cfg
+*root	C:\Esru\esp-r\training\office_vent
+*item
+*label	___ Models with a special focus:
+*item
+*group	training workshops
+*help	A set of models associated with ESP-r Cookbook.
+*item
+*name	Office for a doctor
+*cfg	C:\Esru\esp-r\training\office_doctor\cfg\office_for_doctor.cfg
+*root	C:\Esru\esp-r\training\office_doctor
+*item
+*group	network ventilation
+*help	These models demonstrate the nodal network approach to flow modelling.
+*item
+*name	natural ventilation network
+*cfg	C:\Esru\esp-r\training\flow\cfg\bld_flw_simp.cfg
+*root	C:\Esru\esp-r\training\flow
+*item
+*name	... with controlled window opening
+*cfg    C:\Esru\esp-r\training\flow\cfg\bld_flw_ctl.cfg
+*root	C:\Esru\esp-r\training\flow
+*item
+*name	forced ventilation network with controlled recirculation
+*cfg    C:\Esru\esp-r\training\flow\cfg\bld_mech_ven.cfg
+*root	C:\Esru\esp-r\training\flow
+*item
+*name	... with thermal mixing
+*cfg    C:\Esru\esp-r\training\flow\cfg\bld_mech_ven_th.cfg
+*root	C:\Esru\esp-r\training\flow
+*item
+*name   radiant heating system
+*cfg    C:\Esru\esp-r\training\cfd\rad_htg\cfg\rad_htg.cfg
+*root	C:\Esru\esp-r\training\cfd\rad_htg
+*item
+*name	alternative facade ventilation schemes, text network
+*cfg    C:\Esru\esp-r\training\3_windows\cfg\3_windows_legacy.cfg
+*root	C:\Esru\esp-r\training\3_windows
+*item
+*name	... graphic network
+*cfg    C:\Esru\esp-r\training\3_windows\cfg\3_windows_do6.cfg
+*root	C:\Esru\esp-r\training\3_windows
+*item
+*group	systems + control
+*help	These models demonstrate plant modelling.
+*item
+*name	rudimentary mechanical ventilation system
+*cfg	C:\Esru\esp-r\training\plant\vent_simple\cfg\vent.cfg
+*root	C:\Esru\esp-r\training\plant\vent_simple
+*item
+*name	detailed mechanical ventilation system
+*cfg	C:\Esru\esp-r\training\plant\vent_detailed\cfg\vent_det.cfg
+*root	C:\Esru\esp-r\training\plant\vent_detailed
+*item
+*name   simple building & plant heating system, ON\OFF control
+*cfg    C:\Esru\esp-r\training\plant\hvac_bas\cfg\bld_basic.cfg-onoff
+*root	C:\Esru\esp-r\training\plant\hvac_bas
+*item
+*name   ... with PID control
+*cfg    C:\Esru\esp-r\training\plant\hvac_bas\cfg\bld_basic.cfg-pid
+*root	C:\Esru\esp-r\training\plant\hvac_bas
+*item
+*name	zone, with air handling unit and humidity control
+*cfg	C:\Esru\esp-r\training\plant\ahu\cfg\ahu_hum.cfg
+*root	C:\Esru\esp-r\training\plant\ahu
+*item
+*name	... with wet central heating system
+*cfg	C:\Esru\esp-r\training\plant\wch\cfg\wch.cfg
+*root	C:\Esru\esp-r\training\plant\wch
+*item
+*name   ... with ventilation heat recovery
+*cfg    C:\Esru\esp-r\training\plant\ahu\cfg\vent_recovery.cfg
+*root	C:\Esru\esp-r\training\plant\ahu
+*item
+*name   4 zones serviced by an active solar system
+*cfg    C:\Esru\esp-r\training\plant\solar\cfg\systems.cfg
+*root	C:\Esru\esp-r\training\plant\solar
+*item
+*name   constant volume air conditioning system
+*cfg    C:\Esru\esp-r\training\plant\conv_ac_sys\heat.cfg
+*root	C:\Esru\esp-r\training\plant\conv_ac_sys
+*item
+*name   Primitive Parts approach, fan duct with zone reheat
+*cfg    C:\Esru\esp-r\training\plant\ac_pp\cfg\ac_PP.cfg
+*root	C:\Esru\esp-r\training\plant\ac_pp
+*item
+*name   ... 4 row cooling coil
+*cfg    C:\Esru\esp-r\training\plant\coil_pp\cfg\coil_pp.cfg
+*root	C:\Esru\esp-r\training\plant\coil_pp
+*item
+*name   ... air conditioning system
+*cfg    C:\Esru\esp-r\training\plant\mixed_ac_sys\ahuPP.cfg
+*root	C:\Esru\esp-r\training\plant\mixed_ac_sys
+*item
+*group  systems + network fluid flow
+*help	These models demonstrate the integration of plant and network fluid flow.
+*item
+*name   simple plant with damper controlled recirculation
+*cfg    C:\Esru\esp-r\training\plant\hvac_bas\cfg\bld_recirc.cfg-pid
+*root	C:\Esru\esp-r\training\plant\hvac_bas
+*item
+*name   multi-zone VAV system with damper and fan speed control
+*cfg    C:\Esru\esp-r\training\plant\hvac_vav\cfg\office1VAV.cfg
+*root	C:\Esru\esp-r\training\plant\hvac_vav
+*item
+*name   house with underfloor heating
+*cfg    C:\Esru\esp-r\training\plant\CaseStudy-RHC\cfg\rhc-plant.cfg
+*root	C:\Esru\esp-r\training\plant\CaseStudy-RHC
+*item
+*group	construction-related issues
+*help	These models demonstrate the modelling of construction processes.
+*item
+*name	thermophysical property substitution
+*cfg	C:\Esru\esp-r\training\constr\tp_sub\cfg\bld_tp_sub.cfg
+*root	C:\Esru\esp-r\training\constr\tp_sub
+*item
+*name   transparent insulation
+*cfg    C:\Esru\esp-r\training\constr\adapt\cfg\tim.cfg
+*root	C:\Esru\esp-r\training\constr\adapt
+*item
+*name   adaptive 1-D gridding
+*cfg    C:\Esru\esp-r\training\constr\adapt\cfg\g1d.cfg
+*root	C:\Esru\esp-r\training\constr\adapt
+*item
+*name   adaptive 3-D gridding
+*cfg    C:\Esru\esp-r\training\constr\adapt\cfg\g3d.cfg
+*root	C:\Esru\esp-r\training\constr\adapt
+*item
+*name   3-D ground conduction
+*cfg    C:\Esru\esp-r\training\constr\adapt\cfg\grd.cfg
+*root	C:\Esru\esp-r\training\constr\adapt
+*item
+*name   moisture flow
+*cfg    C:\Esru\esp-r\training\constr\adapt\cfg\mst.cfg
+*root	C:\Esru\esp-r\training\constr\adapt
+*item
+*name   mould growth
+*cfg    C:\Esru\esp-r\training\mould\cfg\mould.cfg
+*root	C:\Esru\esp-r\training\mould
+*item
+*name   mould infested house analysis
+*cfg    C:\Esru\esp-r\training\burdie\cfg\burdie.cfg
+*root	C:\Esru\esp-r\training\burdie
+*item
+*group	windows and daylighting
+*help	A set of models focusing on glazing system performance.
+*item
+*name	office, with photocells for luminaire control
+*cfg	C:\Esru\esp-r\training\cg_ctl\static\cfg\cg_ctl.cfg
+*root	C:\Esru\esp-r\training\cg_ctl\static
+*item
+*name	... with luminaire control and illuminance prediction
+*cfg	C:\Esru\esp-r\training\cg_ctl\coupling\cfg\coupling.cfg
+*root	C:\Esru\esp-r\training\cg_ctl\coupling
+*item
+*name	... with luminaire control and electrochromic glazing
+*cfg	C:\Esru\esp-r\training\el_chr_ctl\cfg\office.cfg
+*root	C:\Esru\esp-r\training\el_chr_ctl
+*item
+*name	Model using temporal climate data
+*cfg	C:\Esru\esp-r\training\Temporal_Clm\Temporal_Clm_Test.cfg
+*root	C:\Esru\esp-r\training\Temporal_Clm
+*item
+*group	air movement
+*help	These models demonstrate ESP-r's CFD capabilities.
+*item
+*name   CFD only model, no buoyancy
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_room.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   ... with buoyancy
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_room_buoy.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   ... with pollutant sources
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_src.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   ... with blockages
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_room_blk.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   integrated CFD model (i.e. thermally conflated)
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_room1.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   ... with adaptive conflation
+*cfg    C:\Esru\esp-r\training\CFD_room\cfg\CFD_room4.cfg
+*root	C:\Esru\esp-r\training\CFD_room
+*item
+*name   ... with thermal and mass flow conflation
+*cfg    C:\Esru\esp-r\training\cfd\CFD_room\cfg\CFD_room_afn.cfg
+*root	C:\Esru\esp-r\training\cfd\CFD_room
+*item
+*name   displacement ventilation system
+*cfg    C:\Esru\esp-r\training\cfd\displ_vent\cfg\displ_vent.cfg
+*root	C:\Esru\esp-r\training\cfd\displ_vent
+*item
+*name	... conflated within cellular office
+*cfg	C:\Esru\esp-r\training\office_dfs\cfg\office_vent_dfs_conf.cfg
+*root	C:\Esru\esp-r\training\office_dfs
+*item
+*name   IEA Annex 20, isothermal test case
+*cfg    C:\Esru\esp-r\training\cfd\IEA_A20\isotherm\cfg\dfs_iso.cfg
+*root	C:\Esru\esp-r\training\cfd\IEA_A20\isotherm
+*item
+*name   ... non-isothermal test case
+*cfg    C:\Esru\esp-r\training\cfd\IEA_A20\nonisotherm\cfg\dfs_niso.cfg
+*root	C:\Esru\esp-r\training\cfd\IEA_A20\nonisotherm
+*item
+*group	combined heat and power
+*help	These models demonstrate combined thermal and electrical modelling
+*item
+*name   Elsa Building, Ispra, Italy, photovoltaic facade
+*cfg    C:\Esru\esp-r\training\pv_facade\cfg\elsa.cfg
+*root	C:\Esru\esp-r\training\pv_facade
+*item
+*name   engine-based CHP system
+*cfg    C:\Esru\esp-r\training\chp\unit\cfg\unit.cfg
+*root	C:\Esru\esp-r\training\chp\unit
+*item
+*name   sports centre with CHP
+*cfg    C:\Esru\esp-r\training\chp\sport_cen\cfg\sport_cen.cfg
+*root	C:\Esru\esp-r\training\chp\sport_cen
+*end
