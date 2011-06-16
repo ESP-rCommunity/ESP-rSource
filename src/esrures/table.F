@@ -244,7 +244,7 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       character outs*124,outs248*248 ! string buffers
-      character outs400*400,outs400d*400  ! really long string buffers
+      character outs400*800,outs400d*800  ! really long string buffers
       character act*1,sq*1,unit*7,t28*28,dg*1
       character LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
@@ -475,8 +475,8 @@ C If writing to file remove blanks from label.
                 endif
               endif
 
-C For writing to file also fill the 400 char buffer
-              if(KE4.le.400)then
+C For writing to file also fill the 800 char buffer
+              if(KE4.le.800)then
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
                   write(outs400(K4:KE4),'(3a)') ' ',
