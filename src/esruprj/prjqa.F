@@ -220,11 +220,13 @@ C Remember if each zone is fully attributed.
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+      character lworking*144
 
 C For thermal bridge reporting
       character TBRIDGE*58
       dimension phrasemenu(16)
       character phrasemenu*34
+      character fs*1
       logical havebrdge
       
 C Topic variables: value of zero = none, one = compact, two = verbose
@@ -233,6 +235,7 @@ C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
       integer destination
+      integer lndbp
 
       integer iercl  ! error state returned for scanning climate list.
       integer llbm,llbn  ! string lengths for obstructions
@@ -270,6 +273,11 @@ C in the current model. A -1 means not applicable
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       changedit=.false.
       newgeo=.false.  ! assume older format geometry.
@@ -320,6 +328,27 @@ C If silent mode then set file name and jump to report generation.
           itu = iuout
           ier=-3
           return
+        endif
+C Prior to silent reporting rescan the construction database (sometimes
+C database gets its name corrupted requiring a re-scan).
+        CALL ERPFREE(IFMUL,ISTAT)
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lworking=lfmul  ! use as is
+        elseif(ipathmul.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+        call FINDFIL(lworking,XST)
+        if(XST)then
+          CALL ERMLDB(0,IUOUT,IER)
+        else
+
+C Could not find Constructions db at this time, report to user.
+          write(outs248,'(3a)') 'Constructions db ',
+     &       LFMUL(1:lnblnk(LFMUL)),' not found!'
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
         endif
 
 C Generate the report based on current options.
