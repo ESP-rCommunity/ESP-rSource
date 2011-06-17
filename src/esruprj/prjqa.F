@@ -26,7 +26,7 @@ C   mupdate: checks current model to see if it should be updated.
 C ************ prjqa
 C Prjqa writes out a QA report (to screen or file) for
 C the current model.
-      subroutine prjqa(ier)
+      subroutine prjqa(inpic,ivals,silent,ier)
 C AIM-2.
 C IAIM2 set to 1 if AIM-2 infiltration model active.
 C LAIM2 (72 char) file holding AIM-2 infiltration model data.
@@ -60,6 +60,12 @@ C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
       
       integer lnblnk  ! function definition
+
+C Parameters passed into subroutine:
+      integer inpic,ivals   ! number of zones to include
+      dimension ivals(MCOM) ! list of zones
+      logical silent        ! if true do not interact with user
+      integer ier           ! non-zero if a problem
 
       common/FILEP/IFIL
       INTEGER :: ifil
@@ -186,7 +192,7 @@ C bridgelen was calculated in subroutine suredgeadj
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
       logical allattribok,changedit,ok,dok,concat,unixok,showother
-      dimension IVALS(MCOM),areamlc(MCOM)
+      dimension areamlc(MCOM)
       real areamlc
       dimension items(25)
 
@@ -253,10 +259,10 @@ C in the current model. A -1 means not applicable
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
       
-      INTEGER :: ier,i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
-      INTEGER :: ins4,inss1,inpic,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: ins4,inss1,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
-      INTEGER :: itb,istat,isc,is,ic,ins1,isel,ivals,iz,izo,izc,izz
+      INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
@@ -299,13 +305,33 @@ C Check if Unix-based or DOS based.
         zoneextrainfo=-1
       endif
 
+C Assume no extra file names required and no MLC selected for filter.
+      fileinfo=0
+      isel = 0
+
+C If silent mode then set file name and jump to report generation.
+      if(silent)then
+        destination=1
+        itu = ixunit
+        write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
+        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+        if(ier.eq.-3)then
+          destination = 0
+          itu = iuout
+          ier=-3
+          return
+        endif
+
+C Generate the report based on current options.
+        goto 55
+      else
+
 C Assume file names not included and destination to screen (zero)
 C and itu set so QA report is written to screen.
-      fileinfo=0
-      destination=0
-      itu = iuout
-      inpic = 0
-      isel = 0
+        destination=0
+        itu = iuout
+
+      endif
 
 C Setup the selection menu.
     3 INO=-4
@@ -2233,6 +2259,11 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
         call edisp(iuout,
      &    'The new QA file can be edited via the `edit file` option.')
         call edisp(iuout,' ')
+      endif
+
+C If in silent model return without user intervention.
+      if(silent)then
+        return
       endif
       goto 3
 

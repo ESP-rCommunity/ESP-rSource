@@ -579,7 +579,8 @@ C Clear allocatable arrays
             endif
           endif
         endif
-      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate')then
+      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
+     &       inact(1:2).eq.'QA')then
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -600,19 +601,15 @@ C Clear allocatable arrays
               STOP
             endif
 
-C Open core of databases if not already done so.
-            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
-              continue
-            else
-              call opendb(ier)
-              if(ier.ne.0)then
-                call usrmsg('Possible problem with the Constructions',
-     &               'or Optical Properties db. Exiting.','W')
+C Open core databases.
+            call opendb(ier)
+            if(ier.ne.0)then
+              call usrmsg('Possible problem with the Constructions',
+     &          'or Optical Properties db. Exiting.','W')
 C Clear allocatable arrays
               CALL DeallocateAllArrays
-                CALL EPAGEND
-                STOP
-              endif
+              CALL EPAGEND
+              STOP
             endif
 
 C Scan control file if one exists.
@@ -634,16 +631,18 @@ C            silent= .false.
 	      ivals(iz)=iz
   29        continue
   
-C Perform either the transform or rotation.
+C Perform either the transform or rotation or generate QA report.
             if(inact(1:9).eq.'transform')then
               call globaltransform(d1,d2,d3,inpic,ivals,
      &          silent,itru,ier)
             elseif(inact(1:6).eq.'rotate')then
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
+            elseif(inact(1:2).eq.'QA')then
+              call prjqa(inpic,ivals,silent,ier)
 	    endif
             if(silent)then 
               call usrmsg(
-     &          'Processing of transform or rotate complete.',
+     &          'Processing of transform:rotate:QA complete.',
      &          'Exiting from project manager','W')
 
 C Clear allocatable arrays
