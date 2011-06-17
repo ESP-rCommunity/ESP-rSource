@@ -148,19 +148,19 @@ C Degree days.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKATOG('Degree day or hour reporting:',' ',
      &    'DD daily','DD weekly','DD monthly','DD seasonal',
-     &    'DH daily','continue',' ',iddc,nbhelp)
-C        CALL EASKABCD(' Degree day reporting: ',' ','daily','weekly',
-C     &    'monthly','seasonal',iddc,nbhelp)
+     &    'DH daily','DH monthly','continue',iddc,nbhelp)
         if(iddc.eq.1)then
           CALL CLMDEG('d')
         elseif(iddc.eq.2)then
           CALL SYNOPWDEG
         elseif(iddc.eq.3)then
-          call SYNOPDEG
+          call SYNOPDEG('d')
         elseif(iddc.eq.4)then
           call SYNOPDEGS
         elseif(iddc.eq.5)then
           CALL CLMDEG('h')
+        elseif(iddc.eq.6)then
+          call SYNOPDEG('h')
         endif
       elseif(ino.eq.15)then
 
@@ -962,8 +962,11 @@ C AV DEGDAYS PER DAY OVER PERIOD
 C ********* SYNOPDEG *******
 C SYNOPDEG computes monthly heating and cooling DEGREE DAYS 
 C for the given period.
-      SUBROUTINE SYNOPDEG
+      SUBROUTINE SYNOPDEG(act)
       PARAMETER (MT=24)
+
+C Passed parameter
+      character act*1  ! d for degree day h for degree hour reporting
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -976,6 +979,7 @@ C for the given period.
      &              CDIR(MT),CHUM(MT)
 
       character outs*124
+      logical ddok  ! true if DD reporting false if DH reporting
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -993,6 +997,13 @@ C For help messages
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
      &  -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
 
+C Set logical for degree day reporting.
+      if(act.eq.'d'.or.act.eq.'D'.or.act.eq.'-')then
+        ddok=.true.
+      else
+        ddok=.false.
+      endif
+
 C If output to file alter the edisp unit number.
       itru = icout
       if(ixopen.eq.1)then
@@ -1006,12 +1017,21 @@ C If output to file alter the edisp unit number.
       UPMC=0.
       HRMC=0.
 
-      WRITE(outs,12)HBT,CBT
-  12  FORMAT(' Degree day analysis: heating base at',F6.1,' & cooling',
-     &       F6.1,' Deg C')
+      if(ddok)then
+        WRITE(outs,'(a,F6.1,a,F6.1,a)')
+     &    ' Degree day analysis: heating base at',HBT,' & cooling',
+     &    CBT,' Deg C'
+      else
+        WRITE(outs,'(a,F6.1,a,F6.1,a)')
+     &    ' Degree hour analysis: heating base at',HBT,' & cooling',
+     &    CBT,' Deg C'
+      endif
       call edisp(itru,outs)
-      WRITE(outs,16)
-  16  FORMAT(' Month              Heat dd   Cool dd')
+      if(ddok)then
+        WRITE(outs,'(a)')' Month             Heat dd  Cool dd'
+      else
+        WRITE(outs,'(a)')' Month              Heat dh   Cool dh'
+      endif
       call edisp(itru,outs)
 
 C INITIALISE PARAMETERS FOR WHOLE PERIOD
@@ -1070,11 +1090,21 @@ C TOTAL DEGDAYS FOR MONTH
 C AV DEGDAYS PER DAY OVER MONTH
         YDN=XHR*XDN
         YUPC=XHRC*XUPC
-        WRITE(outs,102)IMM-1,YDN,YUPC
- 102    FORMAT(' Month:',I2,' avg/day',2F8.2)
+        if(ddok)then
+          WRITE(outs,'(a,i2,a,2F8.2)')' Month:',IMM-1,' av/day ',
+     &      YDN,YUPC
+        else
+          WRITE(outs,'(a,i2,a,2F9.1)')' Month:',IMM-1,' av/day ',
+     &      YDN*24.,YUPC*24.
+        endif
         call eddisp(itru,outs)
-        WRITE(outs,101)IMM-1,XDN,XUPC
- 101    FORMAT(' Month:',I2,' total  ',2F8.2)
+        if(ddok)then
+          WRITE(outs,'(a,i2,a,2F8.2)')' Month:',IMM-1,' total  ',
+     &      XDN,XUPC
+        else
+          WRITE(outs,'(a,i2,a,2F9.1)')' Month:',IMM-1,' total  ',
+     &      XDN*24.,XUPC*24.
+        endif
         call eddisp(itru,outs)
 
         MTH1=IMM
@@ -1114,9 +1144,21 @@ C TOTAL DEGDAYS FOR MONTH
 C AV DEGDAYS PER DAY OVER MONTH
       YDN=XHR*XDN
       YUPC=XHRC*XUPC
-      WRITE(outs,102)IMM,YDN,YUPC
+      if(ddok)then
+        WRITE(outs,'(a,i2,a,2F8.2)')' Month:',IMM,' av/day ',
+     &    YDN,YUPC
+      else
+        WRITE(outs,'(a,i2,a,2F9.1)')' Month:',IMM,' av/day ',
+     &    YDN*24.,YUPC*24.
+      endif
       call eddisp(itru,outs)
-      WRITE(outs,101)IMM,XDN,XUPC
+      if(ddok)then
+        WRITE(outs,'(a,i2,a,2F8.2)')' Month:',IMM,' total  ',
+     &    XDN,XUPC
+      else
+        WRITE(outs,'(a,i2,a,2F9.1)')' Month:',IMM,' total  ',
+     &    XDN*24.,XUPC*24.
+      endif
       call eddisp(itru,outs)
 
 C COMPUTE PARAMETERS FOR WHOLE PERIOD
@@ -1134,11 +1176,17 @@ C TOTAL DEGDAYS FOR PERIOD
 C AV DEGDAYS PER DAY OVER PERIOD
       YDN=XHR*XDN
       YUPC=XHRC*XUPC
-      WRITE(outs,104)YDN,YUPC
- 104  FORMAT(' Total:av/day    ',2F8.2)
+      if(ddok)then
+        WRITE(outs,'(a,2F8.2)')' Total:av/day    ',YDN,YUPC
+      else
+        WRITE(outs,'(a,2F9.1)')' Total:av/day    ',YDN*24.,YUPC*24.
+      endif
       call eddisp(itru,outs)
-      WRITE(outs,103)XDN,XUPC
- 103  FORMAT(' Period total   ',2F8.1)
+      if(ddok)then
+        WRITE(outs,'(a,2F8.2)')' Period total    ',XDN,XUPC
+      else
+        WRITE(outs,'(a,2F9.1)')' Period total    ',XDN*24.,XUPC*24.
+      endif
       call eddisp(itru,outs)
 
       RETURN
