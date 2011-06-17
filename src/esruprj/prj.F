@@ -1035,7 +1035,7 @@ C based on the current compiled in limits.
         write(H(nbhelp+10),'(a,i3)') 'Mass flow connections ',MCNN
         write(H(nbhelp+11),'(a,i3)')'Ground temperature profiles ',MGRDP
         write(H(nbhelp+12),'(a,i3)') 'Constructions in model ',MMLC
-        write(H(nbhelp+13),'(a,i3)') 'Optical sets in model ',MGOP
+        write(H(nbhelp+13),'(a,i3)') 'Optical sets in model ',MGOPT
         CALL PHELPD('Introduction',nbhelp+13,'-',0,0,IER)
         call tstamp('>','PRJ: intro help')
 
