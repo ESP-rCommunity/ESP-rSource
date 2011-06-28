@@ -25,6 +25,9 @@ C  scancdblist - scan list for documentation and typical periods
 C  itemclimatelist - parse and extract information about one entry
 C     in climatelist file.
 
+C NOTE: currently up to 124 climate name references are supported. If
+C the climatelist file exceeds this the array name should be revised.
+
 C ********* rdblist
 C Scan list of climate databases and present selection to user.
       subroutine rdblist(idblfil,clmdb,ier)
@@ -48,7 +51,7 @@ C seasons.h provides typper and typsea
       character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
-      dimension name(80), mitem(35)
+      dimension name(124), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character group*32,key*1,look*32,tlook*32
       character clmdb*144,llclmdb*144,h*72,actreturn*1
@@ -296,7 +299,7 @@ C Scan list of climate databases for name and return database.
       character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
-      dimension name(80)
+      dimension name(124)
       character name*32,OUTSTR*124,WORD*20
       character group*32,tlook*32,outs*124,louts*248
       character clmdb*144,avail*10,alias*32

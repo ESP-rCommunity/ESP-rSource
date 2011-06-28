@@ -121,8 +121,11 @@ C IEEE callback (Solaris)
      &            itobs,ithls,ithlz,itgrd,grdis,itppsw
       common/ray3/modify,modlen,modbnd
       common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       
       integer ncomp,ncon
@@ -153,7 +156,7 @@ C Name of current application.
       common/appname/cAppName
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
-      character*72 lname,ltrns,tbase
+      character*72 lname,tbase
       character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
@@ -577,7 +580,7 @@ C A new binary file was created from an existing ascii so
 C the requested useupdate_silent task has been completed.
                  loaded_existing=.true.
                  if(paction(1:16).eq.'useupdate_silent')then
-                   call pauses(1)
+C                   call pauses(1)
                    call epagend
                    stop
                  endif
@@ -635,7 +638,6 @@ C asci2bin.
 
 C There are no files to cleanup so just convert and exit.
                 call sifimport(icomp,ascif,ier)
-                call pauses(1)
                 call epagend
                 stop     
               endif
@@ -688,7 +690,6 @@ C starting conversion.
 
 C There are no files to cleanup so just convert and exit.
                call sifimport(icomp,ascif,ier)
-               call pauses(1)
                call epagend
                stop     
              endif
@@ -1159,6 +1160,7 @@ C in the zone transitional shading file or from common blocks).
             helptopic='synopsis_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)
             call tstamp('>','Ish: shading synopsis')
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
   202       call easki(mon,' ','Computation month number?',
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
@@ -1212,6 +1214,7 @@ C shading file.
          else
             helptopic='graph_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
    66       mon=mons
   203       call easki(mon,' ','Computation month number?',
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
@@ -1319,6 +1322,7 @@ C held in the zone shading & insolation db.)
             goto 201
          else
             call tstamp('>','Ish: list insolation synopsis')
+            if(mons.gt.12) mons=1  ! if mons was clobbered reset
             mon=mons
             helptopic='synopsis_period_options'
             call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1617,7 +1621,6 @@ C or if the user requested a file conversion.
      &           exportfile(1:lnblnk(exportfile)),'...'
                call edisp(iuout,outs)
                call sifimport(icomp,exportfile,ier)
-               call pauses(1)
                ifstat=8   ! signal import was done
              endif
            endif

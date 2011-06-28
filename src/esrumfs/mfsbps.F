@@ -82,9 +82,9 @@ C LAPRES,IAPRES (for wind pressure databases)
       COMMON/ER1/IER1
 
       integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+C      COMMON/C1/NCOMP,NCON
+C      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
@@ -193,38 +193,38 @@ C Assign pressure to fixed pressure nodes and initialise other nodes.
       RETURN
 
 C Error messages.
-    1 call edisp(outs,
-     & ' MFLWSU: error in mass flow network.')
+    1 write(outs,'(A)')
+     & ' MFLWSU: error in mass flow network.'
       GOTO 50
-    2 call edisp(outs,
-     & ' MFLWSU: pressure coefficients file problem.')
+    2 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file problem.'
       GOTO 50
-    3 call edisp(outs,
-     & ' MFLWSU: pressure coefficients file read error.')
+    3 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file read error.'
       GOTO 50
-    4 call edisp(outs,
-     & ' MFLWSU: pressure coefficients file premature end.')
+    4 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file premature end.'
       GOTO 50
-    6 call edisp(outs,
-     & ' MFLWSU: Fluid flow results file problem.')
+    6 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file problem.'
       GOTO 50
-    7 call edisp(outs,
-     & ' MFLWSU: Fluid flow results file read error.')
+    7 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file read error.'
       GOTO 50
-    8 call edisp(outs,
-     & ' MFLWSU: Fluid flow results file premature end.')
+    8 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file premature end.'
       GOTO 50
-    9 call edisp(outs,
-     & ' MFLWSU: Number of network nodes out of range.')
+    9 write(outs,'(A)')
+     & ' MFLWSU: Number of network nodes out of range.'
       GOTO 50
-   11 call edisp(outs,
-     & ' MFLWSU: Number of network components out of range.')
+   11 write(outs,'(A)')
+     & ' MFLWSU: Number of network components out of range.'
       GOTO 50
-   12 call edisp(outs,
-     & ' MFLWSU: Number of network connections out of range.')
+   12 write(outs,'(A)')
+     & ' MFLWSU: Number of network connections out of range.'
 
    50 call edisp(iuout,outs)
-      call edisp(outs,' Terminating simulation!')
+      write(outs,'(A)')' Terminating simulation!'
       call edisp(iuout,outs)
       IER1=1
       CALL ERPFREE(IUNIT,ISTAT)
@@ -555,7 +555,7 @@ C plant side.
 
       RETURN
 
-   99 call edisp(outs,' MFLWCA: simulation terminating!')
+   99 write(outs,'(A)')' MFLWCA: simulation terminating!'
       call edisp(iuout,outs)
       stop
       END

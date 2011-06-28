@@ -119,6 +119,8 @@ C iotmp2 for miscel output files. Iotobs is obstruction block
 C storage.
       call ezero
       call curmodule('ecnv')
+      cAppName = 'ecnv'
+
       lineno = 0
       nrep=0        
       ioin=1        
@@ -135,7 +137,6 @@ C storage.
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
-      cAppName = 'encv'
 
 C Get command line parameters.
       call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,

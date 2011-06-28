@@ -73,67 +73,66 @@ C-------------------------------------------------------------------------------
       IMPLICIT NONE
 
 #include "BATTERY.h"
-#include "building.h"
-#include "plant.h"
-#include "model.h"
-#include "geometry.h"
-#include "cetc_cogen.h"
+c #include "building.h"
+c #include "plant.h"
+c #include "model.h"
 
 C House hvac + non hvac load determined in subroutine POWOC_OUTSIDE_ld
       common/Res_elec_ctl/house_load
 
 C ESP-r COMMONs
-       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-       INTEGER IHRP            !-hour of present time-step
-       INTEGER IHRF            !-hour of future time-step
-       INTEGER IDYP            !-year day number of present day
-       INTEGER IDYF            !-year day number of future day
-       INTEGER IDWP            !-day of the week of present day
-       INTEGER IDWF            !-day of the week of future day
-       INTEGER NSINC           !-number of building-side time increments
+c       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+c       INTEGER IHRP            !-hour of present time-step
+c       INTEGER IHRF            !-hour of future time-step
+c       INTEGER IDYP            !-year day number of present day
+c       INTEGER IDYF            !-year day number of future day
+c       INTEGER IDWP            !-day of the week of present day
+c       INTEGER IDWF            !-day of the week of future day
+c       INTEGER NSINC           !-number of building-side time increments
                                !-since start of simulation
-       INTEGER ITS             !-current building time-step within
+c       INTEGER ITS             !-current building time-step within
                                !-current hour
 
-       COMMON/PCTIME/TIMSEC
-       REAL    TIMSEC          !-length of time increment (second)
+c       COMMON/PCTIME/TIMSEC
+c       REAL    TIMSEC          !-length of time increment (second)
       
 C Variable declaration and common blocks
-      real off_cost,  ! Cost of electricity in off period ($/kWh)
-     &     mid_cost,  ! Cost of electricity in mid period ($/kWh)
-     &     on_cost,   ! Cost of electricity in on  period ($/kWh)
-     &     fuel_cost, ! Cost of cogen fuel ($/m^3)
-     &     cost,      ! The cost of fuel based on the simulation timestep
-     &     house_load ! The house load in (W)
+c      real off_cost,  ! Cost of electricity in off period ($/kWh)
+c     &     mid_cost,  ! Cost of electricity in mid period ($/kWh)
+c     &     on_cost,   ! Cost of electricity in on  period ($/kWh)
+c     &     fuel_cost, ! Cost of cogen fuel ($/m^3)
+c     &     cost,      ! The cost of fuel based on the simulation timestep
+ 
+       real     house_load ! The house load in (W)
 
-      integer summ_month_s, ! The month that TOU summer pricing scheme begins
-     &        summ_day_s,   ! The day that TOU summer pricing scheme begins
-     &        wint_month_s, ! The month that TOU winter pricing scheme begins
-     &        wint_day_s,    ! The day that TOU winter pricing scheme begins
-     &        summ_month_e, ! The month that TOU summer pricing scheme ends
-     &        summ_day_e,   ! The day that TOU summer pricing scheme ends
-     &        wint_month_e, ! The month that TOU winter pricing scheme ends
-     &        wint_day_e    ! The day that TOU winter pricing scheme ends
+c      integer summ_month_s, ! The month that TOU summer pricing scheme begins
+c     &        summ_day_s,   ! The day that TOU summer pricing scheme begins
+c     &        wint_month_s, ! The month that TOU winter pricing scheme begins
+c     &        wint_day_s,    ! The day that TOU winter pricing scheme begins
+c     &        summ_month_e, ! The month that TOU summer pricing scheme ends
+c     &        summ_day_e,   ! The day that TOU summer pricing scheme ends
+c     &        wint_month_e, ! The month that TOU winter pricing scheme ends
+c     &        wint_day_e    ! The day that TOU winter pricing scheme ends
           
 C Assign the cost to purchase electricity from the grid 
 C and summer and winter starts according to 
 C Ontario Power Authority's TOU Pricing Scheme
 
-      off_cost = 0.043
-      mid_cost = 0.071
-      on_cost = 0.105
+c      off_cost = 0.043
+c      mid_cost = 0.071
+c      on_cost = 0.105
       
-      summ_month_s = 8 ! Summer starts on Aug 1
-      summ_day_s = 1
+c      summ_month_s = 8 ! Summer starts on Aug 1
+c      summ_day_s = 1
       
-      summ_month_e = 10 ! Summer ends on October 31
-      summ_day_e = 31
+c      summ_month_e = 10 ! Summer ends on October 31
+c      summ_day_e = 31
       
-      wint_month_s = 11 ! Winter starts on Nov 1
-      wint_day_s = 1  
+c      wint_month_s = 11 ! Winter starts on Nov 1
+c      wint_day_s = 1  
       
-      wint_month_e = 2 ! Winter ends on Nov 28
-      wint_day_e = 28
+c      wint_month_e = 2 ! Winter ends on Nov 28
+c      wint_day_e = 28
       
       batDemandP_Lion = -825.-house_load
 
@@ -164,9 +163,9 @@ C-------------------------------------------------------------------------------
       SUBROUTINE thermal_follow
       IMPLICIT NONE
 
-#include "BATTERY.h"
-#include "building.h"
-#include "plant.h"
+c #include "BATTERY.h"
+c #include "building.h"
+c #include "plant.h"
 
 
       END ! thermal follow
