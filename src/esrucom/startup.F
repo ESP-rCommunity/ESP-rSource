@@ -973,7 +973,7 @@ C parpsfh: Help message for parpsf.
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
 
-      if(appn(1:3).eq.'bld'.or.appn(1:3).eq.'bps')then
+      if(appn(1:3).eq.'bps')then
         call edisp(iuout,'This is the ESP-r Simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
@@ -1045,7 +1045,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
-        call edisp(iuout,'       [-act {recalculate|update_silent}]')
         call edisp(iuout,'       [-act [recalculate|update_silent]}')
         call edisp(iuout,'       [     { <action> <file>]}')
         call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
@@ -1055,9 +1054,9 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  where -act recalculate')
         call edisp(iuout,'    interactively recalculates shading.')
         call edisp(iuout,'  where -act update_silent')
-        call edisp(iuout,'    no usr interaction during recalculation.')
+        call edisp(iuout,'    no user interaction during recalculation')
         call edisp(iuout,'  where -act useupdate_silent')
-        call edisp(iuout,'    no usr interaction during recalculation')
+        call edisp(iuout,'    no user interaction during recalculation')
         call edisp(iuout,'    and any existing ascii shading file is')
         call edisp(iuout,'    converted to a binary file otherwise a')
         call edisp(iuout,'    full calculation is performed')
@@ -1081,10 +1080,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'This is the power flow simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
-      elseif(appn(1:3).eq.'plt')then
-        call edisp(iuout,'The stand-alone plant module. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <plant network file>]')
       elseif(appn(1:3).eq.'prj')then
         call edisp(iuout,'The project manager.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1119,18 +1114,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   recovery commands]')
         call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
-      elseif(appn(1:3).eq.'tdf')then
-        call edisp(iuout,'The temporal database manager. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <database file>]')
-        call edisp(iuout,'       [-act {update|extract|export|}')
-        call edisp(iuout,'              import}}')
-        call edisp(iuout,'       [-actf file as follows:')
-        call edisp(iuout,' if act = update, actf gives commands')
-        call edisp(iuout,' if act = extract, actf gives commands')
-        call edisp(iuout,' if act = export, actf holds exported data')
-        call edisp(iuout,' if act = import, actf is data to import')
-        call edisp(iuout,'       [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'vew')then
         call edisp(iuout,'The hidden line viewer. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -2494,6 +2477,8 @@ C parcnv parse command line paramters for ecnv.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/APPNAME/cAppName
+      character*12 cAppName      
 
       integer iargc,m
       integer termtype
@@ -2520,6 +2505,7 @@ C Get number of arguments and command name.
       i = 0
       call getarg(i,prog)
       call findapp(prog,appn)
+      argument = ' '
 
 C If one parameter.
       if(m.eq.0)then
@@ -2528,39 +2514,48 @@ C If one parameter.
   41    i= i+1
         if(i.gt.m)goto 42
         call getarg(i,argument)
+
         if(argument(1:5).eq.'-help')then
-      call edisp(iuout,'The product model filter. ')
-      call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
-      call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
-      call edisp(iuout,
-     &  '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
-      call edisp(iuout,' ')
-      call edisp(iuout,'Where options are:')
-      call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
-      call edisp(iuout,'      (dxf = AutoCAD V11-12)')
-      call edisp(iuout,'      (ww = ww graphic commands)')
-      call edisp(iuout,' -in [file]  = input file')
-      call edisp(iuout,
-     &  ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
-      call edisp(iuout,' -out [file] = output file')
-      call edisp(iuout,' -v          = verbose mode')
-      call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
-      call edisp(iuout,' -keep       = retain scratch files')
-      call edisp(iuout,' -obs        = include esp-r obstructions')
-      call edisp(iuout,' ')
-      call edisp(iuout,'The following combinations are supported:')
-      call edisp(iuout,'  input format  output format')
-      call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
-      call edisp(iuout,'  dxf           esp-r, viewer')
-      call edisp(iuout,'  zip           esp-r, viewer')
-      call edisp(iuout,' ')
-      call edisp(iuout,'If converting to esp-r then an additional') 
-      call edisp(iuout,'parameter is allowed:')
-      call edisp(iuout,' -u [upgrade] when updating a model from ')
-      call edisp(iuout,'    registration stage.')
-      call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message.')
-      call edisp(iuout,' ')
+          call edisp(iuout,'The product model filter. ')
+          call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
+          call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
+          call edisp(iuout,
+     &    '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
+          call edisp(iuout,' ')
+          call edisp(iuout,'Where options are:')
+          call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
+          call edisp(iuout,'      (dxf = AutoCAD V11-12)')
+          call edisp(iuout,'      (ww = ww graphic commands)')
+          call edisp(iuout,' -in [file]  = input file')
+          call edisp(iuout,
+     &    ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
+          call edisp(iuout,' -out [file] = output file')
+          call edisp(iuout,' -v          = verbose mode')
+          call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
+          call edisp(iuout,' -keep       = retain scratch files')
+          call edisp(iuout,' -obs        = include esp-r obstructions')
+          call edisp(iuout,' ')
+          call edisp(iuout,'The following combinations are supported:')
+          call edisp(iuout,'  input format  output format')
+          call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
+          call edisp(iuout,'  dxf           esp-r, viewer')
+          call edisp(iuout,'  zip           esp-r, viewer')
+          call edisp(iuout,' ')
+          call edisp(iuout,'If converting to esp-r then an additional') 
+          call edisp(iuout,'parameter is allowed:')
+          call edisp(iuout,' -u [upgrade] when updating a model from ')
+          call edisp(iuout,'    registration stage.')
+          call edisp(iuout,' ')
+          call edisp(iuout,' -help :this help message.')
+          call edisp(iuout,' ')
+          stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit
+          CALL ESPrVersion("summary",cAppName,IUOUT)
+          stop
+        elseif( argument(1:10) .eq. '-buildinfo' ) then
+C Display detailed build information and then quit
+          CALL ESPrVersion("details",cAppName,IUOUT)
           stop
         elseif(argument(1:2).eq.'-v')then
           iverb = 2   ! tell application to run with debug on

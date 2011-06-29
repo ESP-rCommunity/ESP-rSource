@@ -93,6 +93,7 @@ TVariableData::TVariableData()
   bSummarySearchStatus = false;
   bLogSearchStatus = false;
   bStepSearchStatus = false;
+  bDumpAllDataSearchStatus = false;
   bNotSet = true; 
 
   UpdateHourly();

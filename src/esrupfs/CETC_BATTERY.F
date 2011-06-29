@@ -3935,7 +3935,6 @@ C *********************************************************************
       REAL FUNCTION temp_factor_lion(IPWC,batTemp)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -4056,7 +4055,6 @@ C *********************************************************************
       REAL FUNCTION rate_factor_lion(IPWC,batCur)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -4177,7 +4175,6 @@ C
 C *********************************************************************
       REAL FUNCTION OCV_Lion(IPWC,batDOD,batTemp)
       IMPLICIT NONE
-#include "BATTERY.h"
 #include "power.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -4331,7 +4328,7 @@ C PARAMETERS FROM SIGNATURE
 C Battery parameters
       INTEGER nParal,nSerie ! number of battery cells connected in series and parallel
 C Coefficients for the capacity equation
-      REAL R5lo,R4lo,R3lo,R2lo,R1lo,R0lo,cellCapRef,
+      REAL R5lo,R4lo,R3lo,R2lo,R1lo,R0lo,
      & R5hi,R4hi,R3hi,R2hi,R1hi,R0hi,Iflag
 
 C************** Initialisation
@@ -4367,17 +4364,17 @@ C************** Initialisation
       ENDIF
       nSerie = int(POWCDAT(IPWC,2))
       nParal = int(POWCDAT(IPWC,1))
-      cellCapRef = POWCDAT(IPWC,3)
+c      cellCapRef = POWCDAT(IPWC,3)
 
 C************** Calculation
 
 
-      IF (R5lo .EQ. 999. .OR. !Check if a second set of Rint curves has been declared
-     &    R4lo .EQ. 999. .OR.
-     &    R3lo .EQ. 999. .OR.
-     &    R2lo .EQ. 999. .OR.
-     &    R1lo .EQ. 999. .OR.
-     &    Iflag .EQ. 999.) THEN !no it hasn't, use original curves
+      IF (R5lo .GE. 999. .OR. !Check if a second set of Rint curves has been declared
+     &    R4lo .GE. 999. .OR.
+     &    R3lo .GE. 999. .OR.
+     &    R2lo .GE. 999. .OR.
+     &    R1lo .GE. 999. .OR.
+     &    Iflag .GE. 999.) THEN !no it hasn't, use original curves
 
         !current for only one cell -> /nParal
         RInt_Lion = FLOAT(nSerie)/FLOAT(nParal)*
@@ -4426,7 +4423,6 @@ c *********************************************************************
 
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -4602,8 +4598,8 @@ C Battery Parameters (technology and configuration)
      &        max_iteration      !max iteration
 
 C Local variables
-      REAL availpower,      ! Available power from the battery (W)
-     &     self_discharge,  ! self discharge of battery in amps
+C      REAL availpower,      ! Available power from the battery (W)
+      REAL self_discharge,  ! self discharge of battery in amps
      &     ko,              ! self discharge constant in amps
      &     E_as,            ! activation energy
      &     heatersRes,      ! Heater resistance in ohms
@@ -4967,15 +4963,15 @@ C POWCDAT (IPWC,5):  maxVolt        DOD=0 (V) of a single cell
 C POWCDAT (IPWC,6):  minVolt        DOD=100% (V) of a single cell
 C POWCDAT (IPWC,7):  currentMax     Maximum charge/discharge current of one cell(Amps)
 C POWCDAT (IPWC,8):  voltMax        Maximum charge/discharge voltage of one cell(V)
-C POWCDAT (IPWC,9):  batTempInit    initial battery temperature  (°C)
+C POWCDAT (IPWC,9):  batTempInit    initial battery temperature  (ï¿½C)
 C POWCDAT (IPWC,10): batinitDOD     initial depth of discharge (probably zero for a charged battery)
 C POWCDAT (IPWC,11): thermalMass    thermal mass of a single cell -mass*Cp (J/Â°C)
 C POWCDAT (IPWC,12): heatLossFact   heat loss factor h*A (W/Â°C)
 C POWCDAT (IPWC,13): heatersRes     resistance of the heaters (Ohm)
 C POWCDAT (IPWC,14): upperBoundDOD  maximum DOD of battery (in percentage... probably 0.8)
 C POWCDAT (IPWC,15): lowerBoundDOD  minimum DOD of battery (in percentage... probably 0)
-C POWCDAT (IPWC,16): tempMax        Maximum battery temperature (°C)
-C POWCDAT (IPWC,17): tempMin        Minimum battery temperature (°C)
+C POWCDAT (IPWC,16): tempMax        Maximum battery temperature (ï¿½C)
+C POWCDAT (IPWC,17): tempMin        Minimum battery temperature (ï¿½C)
 C---------------------------
 C OCV voltage as a function of DOD of a single cell Vocv(DOD) = E5*DOD^5 + E4*DOD^4 + E3*DOD^3 + E2*DOD^2 + E1*DOD + E0
 C---------------------------
