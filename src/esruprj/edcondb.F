@@ -1507,7 +1507,6 @@ C List help text for the menu.
         CALL EMKAMLD(iuout,IER)
         moddb = .false.
         chgdb=.true.
-        CALL PHELPD('construction db save',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-3)THEN
 
 C List database.

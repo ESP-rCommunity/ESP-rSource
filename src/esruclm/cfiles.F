@@ -1286,7 +1286,7 @@ C Comment lines.
       character dcline*248
 
 C Initial guess on string sizes.
-      character city*24,provence*24,country*24,source*24
+      character city*32,provence*24,country*24,source*24
       character dayname*8,clmcomment*72,dpdescr*24
 
       city=' '

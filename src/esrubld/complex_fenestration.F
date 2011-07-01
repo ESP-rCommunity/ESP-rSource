@@ -2499,7 +2499,10 @@ C gas molar mass, A and B gas property coefficients
 
       logical closea
 
-C if gap is evacuated, set hc to 0.01
+C Small real number to check for values close to 0.
+      small = 1.0e-6
+
+C if gap is evacuated, set hc to 0.1
 C This is a crude idealized treatment.
       if(mlr_mass.lt.0.0001)then
             hc=0.01
@@ -2524,10 +2527,12 @@ C Calculate gas properties based on linear Temperature fit
       cp=spchtA+spchtB*Tm              !specific heat [J/kg.K]
 
       ro=(P*mlr_mass)/(R*Tm*1000.)     !density [kg/m^3]
+
       dT=ABS(TA-TB)                    !temp. diff.
 
 C Calculate Rayleigh number (= Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
+
 
       call eclose(Ra,0.00,0.01,closea)
       if (closea) Ra=1.0
@@ -2636,6 +2641,18 @@ C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
 c      write(*,*)'A=',A,'; n=',n,'; Ra=',
 c     &        Ra,'; Nu=',Nu,'; hc=',hc
+
+C...........Calculate Rayleigh number
+            Ra = ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
+
+C...........Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
+            Nu = SQRT(1.+((0.0665*Ra**(0.33333))/
+     &           (1.+(9000./Ra)**1.4))**(2))
+
+C...........Calculate convective heat transfer coefficient.
+            hc = Nu*k/L     !(W/m^2.K)
+
+      end if
 
  1000 return
       end

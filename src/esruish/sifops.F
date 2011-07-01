@@ -53,9 +53,10 @@ C with the db at simulation time.
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
       common/data5/irecx,nsurs,msurs
       common/filech/ixopen,ixunit,ixpunit
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
 
-      character ltrns*72
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
@@ -1129,9 +1130,10 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
       common/data5/irecx,nsurs,msurs
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
 
-      character ltrns*72
       character*3 month(12)
       character outs*124,louts*248,exportfile*72
       character outstr*124,loutstr*248

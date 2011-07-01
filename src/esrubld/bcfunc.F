@@ -226,7 +226,7 @@ C CL25 simple window opening model
 C CL26 uses a heat exchanger model to determine the heat flux
 C to remove from the associated zone.
       case (26)
-        call BCL26(ier)
+        call BCL26
       
 C New control laws should be inserted here.
       case default 
@@ -5278,10 +5278,17 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       logical unixok
+      logical close1, close10
+      real small
+
+C Small real number
+      small = 1.0e-6
+
+      call eclose(BMISCD(ICF,IDTYP,IPER,1),1.0,small,close1)
+      call eclose(BMISCD(ICF,IDTYP,IPER,1),10.0,small,close10)
 
 C Fatal error test.
-      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
-     &   (BMISCD(ICF,IDTYP,IPER,1).NE.10.0))GOTO 99
+      IF((.not.close1).OR.(.not.close10))GOTO 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -6291,9 +6298,9 @@ C      common/fvala/tfa,qfa
 C      real tfa, qfa
       
 C - Environment characteristics 
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      real TP, TF          ! Present & Future time-row temperatures       
-      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
+C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+C      real TP, TF          ! Present & Future time-row temperatures (not used)      
+C      REAL QFP,QFF,QDP,QDF,VP,VF,DP,DF,HP,HF   ! Not used
       
       
 C Control heat injection.      
@@ -6488,7 +6495,7 @@ C Set error flag
       return 
       end subroutine BCL25_open_windows
 
-C ******************** BCL25
+C ******************** BCL26
 C A heat exchanger model (after Chunying Li) used to determine the heat
 C extracted (QFUT) from a zone established to represent the closed circuit
 C working fluid circulating in a building-connected network.
@@ -6503,17 +6510,24 @@ C working fluid circulating in a building-connected network.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
-      COMMON/PREC1/SNA(MCOM,MS)
+C      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
      &              zSWAp(mcom),zSWAf(mcom)
       logical znotair
       CHARACTER OUTS*124
+      logical close5
+      real small
+
+C Small real number
+      small = 1.0e-6
+
+      call eclose(BMISCD(ICF,IDTYP,IPER,1),5.0,small,close5)
 
 C Fatal error test.
-      IF(BMISCD(ICF,IDTYP,IPER,1).NE.5.0)GOTO 99
+      IF(.not.close5)GOTO 99
 
 C Set heat exchanger parameters using data in system control file.
       WGACF=BMISCD(ICF,IDTYP,IPER,2)		! specific heat capacity
@@ -6527,19 +6541,19 @@ C Trace output
      &   ITRACE(41).NE.0) then
         if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
           write(outs,'(a,i2)') 
-     &      'Entering subroutine BCL25 sensing in zone ',
+     &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
           write(outs,'(a,i2,a,i2)') 
-     &      'Entering subroutine BCL25 sensing in zone ',
+     &      'Entering subroutine BCL26 sensing in zone ',
      &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
           call edisp(itu,' ')
           call edisp(itu,outs)
         else
           call edisp(itu,' ')
-          call edisp(itu,' Entering subroutine BCL25')
+          call edisp(itu,' Entering subroutine BCL26')
         endif
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
@@ -6798,7 +6812,7 @@ C Trace output.
       END IF
 
       RETURN
-   99 call edisp(iuout,' BCL25: data incomplete')
+   99 call edisp(iuout,' BCL26: data incomplete')
       call epwait
       call epagend
       STOP

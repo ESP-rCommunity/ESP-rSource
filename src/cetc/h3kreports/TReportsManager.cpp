@@ -139,13 +139,30 @@ extern "C"
   void rep_set_meta__(char *sVarName, char *sMetaName, char *sMetaValue,
                       int sVarNameLength, int sMetaNameLength, int sMetaValueLength)
   {
+    
+    
    std::string varName =std::string(sVarName, sVarNameLength);
-   std::string metaName =std::string(sMetaName, sMetaNameLength);
-   std::string metaValue =std::string(sMetaValue, sMetaValueLength);
 
-    //if(DEBUG) cout << "rep_meta_: " << varName << "\t" << metaName
-    //             << "\t" << metaValue << endl;
-    TReportsManager::Instance()->SetMeta(varName, metaName, metaValue);
+   // (24-Jun-2011 Bart) Added dummy variable description to pass to SaveMetaItems.
+   // Prior to the implementation of add_to_xml_reporting function, the functions 
+   // rep_set_meta and rep_report were used instead. A variable description
+   // was not passed until add_to_xml_reporting was implemented. 
+   //
+   // There are still many calls to the old rep_set_meta routine in esp-r plant code
+   // that do not pass any variable description. As a result, XML reports assigns a bogus 
+   // description to variables passed with rep_set_meta. This went
+   // unnoticed until the optimized meta code, which proesses meta items only once, 
+   // was implemented. 
+   char* sDescription = "";
+   int sDescriptionLength = 0;
+
+   // Save meta items and do not convert to std strings here to avoid
+   // computational overhead. These items are retrieved in function 
+   // TReportsManager::SearchVars only once per variable. The meta data
+   // is then converted to std::strings and then pushed to the m_metadata
+   // storage map using function TReportsManager::SetMeta.
+   TReportsManager::Instance()->SaveMetaItems( sMetaName,sMetaValue,sDescription,sMetaNameLength,sMetaValueLength,sDescriptionLength);  
+
   }
 
   /** 

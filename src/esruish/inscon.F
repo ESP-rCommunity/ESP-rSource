@@ -53,14 +53,17 @@ C                 in common.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
       dimension month(12),iavdec(12)
       character paction*16
-      character month*3,outs*124,tbase*72,ltrns*72,act*1
+      character month*3,outs*124,tbase*72,act*1
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc
@@ -135,9 +138,11 @@ C Establish calculation period.
          monf=12
          mon=mons
       else
+         if(mons.gt.12) mons=1  ! if mons was clobbered reset
          call easki(mons,' ','Start month number?',
      &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
+         if(monf.gt.12) monf=12  ! if monf was clobbered reset
          call easki(monf,' ','End month number?',
      &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
@@ -206,6 +211,7 @@ C                 in common.
 
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/tmc/itmc(ms),nwins
       common/ract/paction
@@ -404,6 +410,7 @@ C            in the misur list.
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad1/isunup
       common/cai/caii(ms),caie(ms)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/proji/xp,yp,zp
       common/inswin/igins(mox,moz)

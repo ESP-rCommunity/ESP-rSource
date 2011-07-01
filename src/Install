@@ -307,7 +307,7 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. The latest ESP-r release (11.9) no longer compiles with GCC3 / g77"
+  echo " 1. The latest ESP-r release (11.11) no longer compiles with GCC3 / g77"
   echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
   echo "    instead. The current reference version is GCC 4.3.2"
   echo " "

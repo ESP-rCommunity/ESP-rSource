@@ -52,6 +52,7 @@ C Parameter
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
       integer icc,is,nv   ! local variables for connextion and vertices
+      integer ih ! hour counter
       
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
@@ -205,6 +206,7 @@ C Draws the elevation of the target surface.
 #include "building.h"
 #include "geometry.h"
 
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/g1T/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)

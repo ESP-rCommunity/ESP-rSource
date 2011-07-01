@@ -1197,7 +1197,8 @@ C Save present values for possible iterations at this time step.
       real TAF
 
 C Declare local logical variable to check if the zone is actually modelled by AIM2
-      logical AIM2_infil_zone_indicator
+C (currently not used)
+C      logical AIM2_infil_zone_indicator
 
 c Mechanical ventilation systems.
       Common /mechvdef/ iMech, LMech
@@ -1249,7 +1250,7 @@ C mechanical ventilation and infiltration.
       real zfldK,zfldD,zfldC,zfldA,zSWAp,zSWAf,cvair,cvother,xmod,
      &     flowi,flowv
 
-      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
+C      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
       
 C Logical flags for indicating which air flow model is in use.      
       logical :: bOPR, bAFN, bAIM2, bNoFlow

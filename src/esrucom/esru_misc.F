@@ -3369,7 +3369,7 @@ C BASESIMP editing facility (once).
         loopend=NZSUR(IZONE)
         DO i=loopstart,loopend
           icc=IZSTOCN(izone,i)
-          IF(SSOTHER(icc,1).EQ.'BASESIMP')THEN
+          IF(SSOTHER(icc,1)(1:8).EQ.'BASESIMP')THEN
             usesbasesimp=.true.
           END IF
         END DO

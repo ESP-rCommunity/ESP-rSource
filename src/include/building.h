@@ -111,7 +111,7 @@ C Results analysis.
       PARAMETER (MIPVA=MSPS)	!- IPV assessments.
       PARAMETER (MIPVM=12)	!- IPV metrics.
       PARAMETER (MZS=90)	!- Number of items to report in res.
-      PARAMETER (MZRL=MS+12)	!- Fields in a zone results library record
+      PARAMETER (MZRL=MCOM+12)	!- Fields in a zone results library record
                                 !  (minimum value is 36; if MCOM>MS use MCOM
                                 !  in formula).
 C Mathematical model.
