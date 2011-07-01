@@ -1987,7 +1987,6 @@ C Note: size of MLED supports a dozen layers in a construction.
       character PNAM*72
       character ZN*12,SN*12,t32*32
       integer NLED,ILED  ! max items and current menu item
-      logical gettingcloser  ! if U value getting closer to desired value
       integer icontinue  ! to control while loop
       real startm, finishm, currentm
       real currentu, deltau, curdeltau ! values for adjust
@@ -2158,8 +2157,6 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       UVALUEU=1.0/RTU
       RTD=RT+0.04+0.17
       UVALUED=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVALUEI=1.0/RTI
       write(MLED(M),'(A,3F6.3)') ' ISO 6946 U h/u/d',
      &    UVALUEH,UVALUEU,UVALUED
       currentu=UVALUEH  ! remember the initial U value
