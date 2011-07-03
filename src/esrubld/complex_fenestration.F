@@ -2471,15 +2471,20 @@ C Save future terms
 C ********************************************************************
 C                        --ConvVertCav--
 C
-C Calculates convection coefficient between two vertical surfaces in 
-C an enclosed cavity based on cavity thickness (L), bounding surface
-C temperatures(TA, TB) and fill gas properties (mlr_mass,condA,condB,
-C viscA,viscB,spchtA,spchtB). Returns (hc).
+C Calculates convection coefficient between two surfaces at tilt 
+C angle (ang) in an enclosed cavity based on cavity thickness (L), 
+C bounding surface temperatures(TA, TB) and fill gas properties 
+C (mlr_mass,condA,condB, viscA,viscB,spchtA,spchtB). Returns
+C convection coefficient (hc) in W/(m2 K).
 C
-C Reference:
+C References:
 C Shewen, E., Hollands, K.G.T., Raithby, G.D. (1996) 'Heat Transfer
 C by Natural Convection Across a Vertical Cavity of Large Aspect
 C Ratio', Journal of Heat Transfer, Vol. 118, pp.993-995.
+C
+C EN 673:1996
+C
+C ISO 15099:2003
 C
 C ********************************************************************
       subroutine ConvVertCav(ang,L,TA,TB,mlr_mass,condA,condB,
@@ -2498,9 +2503,6 @@ C gas molar mass, A and B gas property coefficients
       real gam,Nu1,Nu2,GG,Agv,XX,YY,Nu_v,Nu_60
 
       logical closea
-
-C Small real number to check for values close to 0.
-      small = 1.0e-6
 
 C if gap is evacuated, set hc to 0.1
 C This is a crude idealized treatment.
@@ -2533,13 +2535,13 @@ C Calculate gas properties based on linear Temperature fit
 C Calculate Rayleigh number (= Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
-
       call eclose(Ra,0.00,0.01,closea)
       if (closea) Ra=1.0
 
       if (i_hconv.eq.0) then
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-        Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
+        Nu=SQRT(1.+((0.0665*Ra**(0.33333))/
+     &          (1.+(9000./Ra)**1.4))**(2.0))
 
       elseif (i_hconv.eq.1) then
 C ***  Nusselt number acc. to EN 673:1996 ***
@@ -2547,7 +2549,7 @@ C       Calculate coefficients A and n (EN 673, tilted glass) from tilt angle an
 c        A=0.036 ! (0deg, vert) 0.10 (45deg) 0.16 (90deg, horiz)
         A=0.036667+0.0013778*ang !  R= 0.99983 
 c        n=0.38  ! (0deg, vert) 0.31 (45deg) 0.28 (90deg, horiz)
-        n=0.38-0.002*ang+(9.8765E-6)*ang**2 ! R=1
+        n=0.38-0.002*ang+(9.8765E-6)*ang**2. ! R=1
 
 C       Angle dependant Nusselt number (EN 673 eqn 6)
 c        Nu = A*Ra**(n)
@@ -2572,14 +2574,14 @@ C *** END EN 673:1996 ***
 
 C *** Nusselt number acc. to ISO 15099:2003 ***
 C       Section 5.3.3
-C       gam =   0° ... horizontal glazing, heat flow upwards
-C       gam =  90° ... vertical glazing, heat flow horizontal
-C       gam = 180° ... horizontal glazing, heat flow downwards
+C       gam =   0deg ... horizontal glazing, heat flow upwards
+C       gam =  90deg ... vertical glazing, heat flow horizontal
+C       gam = 180deg ... horizontal glazing, heat flow downwards
 C   
 C       It is assumed that TA is "outside" and TB is "inside". Base eqns
 C       assume that TA < TB, i.e. heat flow from inside to outside. If 
 C       TA > TB, the complement of the tilt angle is to be used, i.e.
-C       180° - gam instead of gam. and calculations done with 180° - gam!
+C       180deg - gam instead of gam. and calculations done with 180deg - gam!
 C   
         if (TA .le. TB) then
           gam = 90. - ang
@@ -2589,6 +2591,7 @@ C
 
 C       Vertical value (eqn. 49) is necessary for more than one angle, always calculate:
         Agv=22. ! Ag,v = H / dg,v ??? height ??? where from ???
+c        use max vertice z - min vertice z per surface?
     
         if (Ra .gt. 50000.) then
           Nu1=0.673838*exp(0.333333*log(Ra))
@@ -2600,7 +2603,7 @@ C       Vertical value (eqn. 49) is necessary for more than one angle, always ca
         Nu2=0.242*exp(0.272*log(Ra/Agv))
         Nu_v=max(Nu1,Nu2)! Nusselt for vertical cavity
     
-C       Value for 60° is also used for more than one angle, also always calculate:
+C       Value for 60deg is also used for more than one angle, also always calculate:
         GG = 0.5/exp(0.1*log(1.+exp(20.6*log(Ra/3160.))))
         Nu1= exp((1./7.)*log(1.+
      &              exp(7.*log(0.0936*exp(0.314*log(Ra)))/(1.+GG))))
@@ -2633,26 +2636,17 @@ C       linear interpolation between Nu_60 and Nu_v
           Nu=1.+(Nu_v-1.)*sin(gam*rad)
     
         endif
-C     Now Nu is set according to ISO
+C       Now Nu is set according to ISO
 C *** END ISO 15099:2003 ***
       endif ! which model?
 
-C Calculate convective heat transfer coefficient.
-      hc=Nu*k/L     !(W/m^2.K)
+C Nusselt number Nu is now set, so finally
+C calculate convective heat transfer coefficient:
+      hc=Nu*k/L     !(W/(m^2.K))
+
+c Debug:
 c      write(*,*)'A=',A,'; n=',n,'; Ra=',
 c     &        Ra,'; Nu=',Nu,'; hc=',hc
-
-C...........Calculate Rayleigh number
-            Ra = ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
-
-C...........Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-            Nu = SQRT(1.+((0.0665*Ra**(0.33333))/
-     &           (1.+(9000./Ra)**1.4))**(2))
-
-C...........Calculate convective heat transfer coefficient.
-            hc = Nu*k/L     !(W/m^2.K)
-
-      end if
 
  1000 return
       end
