@@ -77,7 +77,7 @@ C ipxw and ipyw are associated the pixel coordinates.
       dimension pxw(MTV),pyw(MTV),ipxw(MTV),ipyw(MTV)
 
 C ipxwhis & ipywhis are previous pixel points for floor plan.
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
 
 C iphisznst & iphisznfn are the historical points start and
 C end indices for each zone.
@@ -240,7 +240,7 @@ C Vertices and pixels (clear list of pixels for vertices and corners).
 C Clear history of pixel points. nipwhis is the cummulative number
 C of historical points.
       nipwhis=0
-      do 9 i=1,300
+      do 9 i=1,MGTV
         ipxwhis(i)=0
         ipywhis(i)=0
         if(i.le.MCOM)then
@@ -2027,14 +2027,14 @@ C to the first point in this zone and iphisznfn to the closing
 C point of the zone.
             if(NW.gt.0)then
               do 217 j=1,NW
-                if(nipwhis+1.le.300)then
+                if(nipwhis+1.le.MGTV)then
                   nipwhis=nipwhis+1
                   if(j.eq.1)iphisznst(icomp)=nipwhis
                   ipxwhis(nipwhis)=ipxw(j)
                   ipywhis(nipwhis)=ipyw(j)
                 endif
   217         continue
-              if(nipwhis+1.le.300)then
+              if(nipwhis+1.le.MGTV)then
                 nipwhis=nipwhis+1
                 ipxwhis(nipwhis)=ipxw(1)
                 ipywhis(nipwhis)=ipyw(1)
@@ -2829,7 +2829,7 @@ C inpm is the input mode.
       logical xbmnorth,xbmorigin
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
 
       if(xbmnorth)then
         ixtn1=ixtn1+idfxoffset
@@ -2898,7 +2898,7 @@ C Other is the grid distance if user supplied (iwmg=7).
       logical xbmnorth,xbmorigin,xbmgrid,xbmscale,completed,within
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300),viewlim(6)
+      dimension ipxwhis(MGTV),ipywhis(MGTV),viewlim(6)
       dimension iphisznst(MCOM),iphisznfn(MCOM)
       character fname*72,temp6*6,temp3*3
 #ifdef OSI
@@ -3119,7 +3119,7 @@ C inpm is the input mode.
       logical xbmnorth,xbmorigin
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
       character fname*72
 
 C Debug.
