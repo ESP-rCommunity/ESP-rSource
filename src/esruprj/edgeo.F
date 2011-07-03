@@ -4661,6 +4661,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "geometry.h"
 #include "prj3dv.h"
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -4679,11 +4680,12 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       integer iwhich1,lastv1  ! for 1st and 2nd user selections
       integer iwhich2,lastv2
       integer iwhich3
+      logical greyok
 
 #ifdef OSI
-      integer iix,iiy
+      integer iix,iiy,iicol
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,iicol
 #endif
 
 C For help messages
@@ -4694,6 +4696,10 @@ C For help messages
       helpinsub='EDVERT'  ! set for subroutine
 
 C Initial values for vertex at angle facility.
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
       V1=1.0
       AZ=0.0
       EL=0.0
@@ -4851,7 +4857,11 @@ C Show the new point on the current wireframe.
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           call u2pixel(COG3(1),COG3(2),iix,iiy)
-          call ecirc(iix,iiy,3,1)
+          iicol=0
+          if(greyok)call winscl('z',iicol)
+          call esymbol(iix,iiy,24,1)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
           call forceflush()
 
 C Checking if it should be added into the list of vertices or
@@ -4943,7 +4953,11 @@ C Show the new point on the current wireframe.
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           call u2pixel(COG3(1),COG3(2),iix,iiy)
-          call ecirc(iix,iiy,3,1)
+          iicol=0  ! make another pass to use iicol in winscl
+          if(greyok)call winscl('z',iicol)
+          call esymbol(iix,iiy,24,1)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
           call forceflush()
 
 C Checking if it should be added into the list of vertices or
@@ -5018,7 +5032,11 @@ C Show the new point on the current wireframe.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            call ecirc(iix,iiy,3,1)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
             call forceflush()
 
 C Checking if it should be added into the list of vertices or
@@ -5096,7 +5114,11 @@ C Show the new point on the current wireframe.
                 CALL VECTRN(COG1,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),iix,iiy)
-                call ecirc(iix,iiy,3,0)
+                iicol=0
+                if(greyok)call winscl('z',iicol)
+                call esymbol(iix,iiy,24,1)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
                 call forceflush()
 
 C Ask if it should be added.
@@ -5152,7 +5174,11 @@ C skip over the surface being used to define the plane.
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
               call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
               call forceflush()
               do 446 jivj=1,NSUR
                 if(jivj.eq.is) goto 446  ! skip past surface is
@@ -5327,7 +5353,11 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            call ecirc(iix,iiy,3,1)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
             call forceflush()
             dok=.true.
             call askok('Is this aligned vertex ok?',' ',ok,dok,nbhelp)
@@ -5485,7 +5515,11 @@ C Show the new point on the current wireframe.
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
-            call ecirc(iix,iiy,3,1)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
             call forceflush()
             dok=.true.
             call askok('Apply this move?',' ',OK,dok,nbhelp)
@@ -5793,6 +5827,20 @@ C Select (possibly via mouse) and then edit.
             do 145 ij=1,inpick
               ifoc=IVLST(ij)
 
+C Show the point to be edited on the current wireframe.
+              COG1(1)=X(IFOC)
+              COG1(2)=Y(IFOC)
+              COG1(3)=Z(IFOC)
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+
 C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               write(outs,'(a,i3,a)')
@@ -5842,6 +5890,20 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
+
+C Show the point to be edited on the current wireframe.
+        COG1(1)=X(IFOC)
+        COG1(2)=Y(IFOC)
+        COG1(3)=Z(IFOC)
+        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG2,ETSMAT,COG3,IER)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        iicol=0
+        if(greyok)call winscl('z',iicol)
+        call esymbol(iix,iiy,24,1)
+        iicol=0
+        if(greyok)call winscl('-',iicol)
+        call forceflush()
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
