@@ -4676,6 +4676,9 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       integer IRT  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
       integer INPICK  ! to use with epkvert
+      integer iwhich1,lastv1  ! for 1st and 2nd user selections
+      integer iwhich2,lastv2
+      integer iwhich3
 
 #ifdef OSI
       integer iix,iiy
@@ -4701,6 +4704,8 @@ C Initial values for vertex at angle facility.
       iwhich=0
       iwhich1=0
       iwhich2=0
+      lastv1=0
+      lastv2=0
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4796,9 +4801,13 @@ C Based on users selection or jump back point for 'do another one'.
         elseif(ino.eq.1)then
 
 C Vertices along a line between two verts. Uses common G1 for the
-C current zone.
+C current zone.  The index to rememeber two vertices selected
+C (iwhich1 and iwhich2) might be overwritten in latter parts of
+C the code. Also hold them as lastv1 and lastv2.
           if(anotherone)then
             inpick=2
+            iwhich1=lastv1   ! use rememebered 1st vertex
+            iwhich2=lastv2
           else
             inpick=2
             CALL EPMENSV
@@ -4807,7 +4816,9 @@ C current zone.
             CALL EPMENRC
             if(inpick.eq.2)then
               iwhich1=IVLST(1)
+              lastv1=iwhich1  ! remember this
               iwhich2=IVLST(2)
+              lastv2=iwhich2
             else
               goto 3
             endif
@@ -4856,7 +4867,9 @@ C Distance between two vertices (based on current G1 common block).
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
             vdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2))
             call ln2az(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
@@ -4878,6 +4891,7 @@ C Distance between two vertices (based on current G1 common block).
 C Vertex at distance and angle from another (based on current G1 common).
           if(anotherone)then
             inpick=1
+            iwhich=lastv1   ! use rememebered 1st vertex
           else
             inpick=1
             CALL EPMENSV
@@ -4886,6 +4900,7 @@ C Vertex at distance and angle from another (based on current G1 common).
             CALL EPMENRC
             if(inpick.eq.1)then
               iwhich=IVLST(1)
+              lastv1=iwhich  ! remember this
             else
               goto 3
             endif
@@ -4944,7 +4959,9 @@ C Angle between two lines (based on current G1 common block).
           CALL EPMENRC
           if(inpick.eq.3)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
             iwhich3=IVLST(3)
             call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
@@ -4972,7 +4989,9 @@ C << add option for picking surface in another zone >>
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
             IS=1
             CALL EPMENSV
             CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
@@ -5220,7 +5239,9 @@ C Distance between point and a line (based on current G1 common block).
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
           endif
           inpick=1
           CALL EPMENSV
@@ -5258,7 +5279,9 @@ C block data).
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
           endif
           inpick=1
           CALL EPMENSV
@@ -5431,7 +5454,9 @@ C Move an existing vertex along an existing line.
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
+            lastv1=iwhich1  ! remember this
             iwhich2=IVLST(2)
+            lastv2=iwhich2
             tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2))
             write(outs,'(a,i3,a,i3,a,f9.4)') ' Distance between v',
