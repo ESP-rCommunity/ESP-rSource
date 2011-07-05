@@ -1302,44 +1302,44 @@ Winter season is Mon 26 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
 *help_end
 *item
-*name	Inchon - KOR IWEC 471120
-*aide	Inchon - KOR IWEC 471120 was sourced from US DoE
+*name	Inchon Korea IWEC 471120
+*aide	Inchon Korea IWEC 471120 was sourced from US DoE
 *dbfl	/usr/esru/esp-r/climate/KOR_Inchon_IWEC
 *avail	ONLINE
-*winter_s  1  1 10  3 11 11 31 12
-*spring_s 11  3 16  6  9  9 31 10
-*summer_s 17  6  8  9
-*winter_t 12  2 18  2  2 12  8 12
-*spring_t  6  5 12  5  7 10 13 10
-*summer_t 19  8 25  8
+*winter_s  1  1 17  3 11 11 31 12 # seasons Mon-01-Jan--Sun-17-Mar & Mon-11-Nov--Tue-31-Dec
+*spring_s 18  3  5  5 16  9 10 11 # seasons Mon-18-Mar--Sun-05-May & Mon-16-Sep--Sun-10-Nov
+*summer_s  6  5 15  9 # summer season Mon-06-May--Sun-15-Sep
+*winter_t 12  2 18  2  2 12  8 12 # typical Mon-12-Feb--Sun-18-Feb & Mon-02-Dec--Sun-08-Dec
+*spring_t 15  4 21  4 23  9 29  9 # typical Mon-15-Apr--Sun-21-Apr & Mon-23-Sep--Sun-29-Sep
+*summer_t 15  7 21  7 # typical summer Mon-15-Jul--Sun-21-Jul
 *help_start
 Climate is Inchon - KOR IWEC 471120
  Location: 37.48N  8.45W : 1996
  Month    Minimum  Time          Maximum  Time         Mean
- Jan     -9.9 @ 9h00 Thu  4        8.9 @15h00 Sat 13    -2.2
- Feb     -9.5 @ 6h00 Thu  1       10.3 @12h00 Sat 10    -0.3
- Mar     -5.0 @24h00 Mon 11       13.5 @15h00 Fri 15     4.8
- Apr      2.8 @ 6h00 Fri 12       22.6 @15h00 Tue  9    10.8
- May      9.2 @ 6h00 Wed  1       25.0 @15h00 Sat 11    15.8
- Jun     13.5 @ 6h00 Sat  1       31.9 @15h00 Wed 19    20.5
- Jul     17.6 @21h00 Mon  1       32.7 @15h00 Tue 23    23.6
- Aug     19.5 @ 6h00 Fri  2       32.4 @15h00 Sun 11    25.0
- Sep     10.5 @ 6h00 Sun 29       29.2 @15h00 Sun  8    20.8
- Oct      1.2 @ 6h00 Sat 26       23.7 @12h00 Tue  1    14.5
- Nov     -4.3 @ 6h00 Fri 29       16.6 @12h00 Tue  5     7.6
- Dec    -11.8 @ 6h00 Mon 16       12.0 @15h00 Tue 10     1.2
- Annual -11.8 @ 6h00 Mon 16 Dec   32.7 @15h00 Tue 23 Jul    11.9
+ Jan     -9.9 @ 9h00 Thu-04        8.9 @15h00 Sat-13    -2.2
+ Feb     -9.5 @ 6h00 Thu-01       10.3 @12h00 Sat-10    -0.3
+ Mar     -5.0 @24h00 Mon-11       13.5 @15h00 Fri-15     4.8
+ Apr      2.8 @ 6h00 Fri-12       22.6 @15h00 Tue-09    10.8
+ May      9.2 @ 6h00 Wed-01       25.0 @15h00 Sat-11    15.8
+ Jun     13.5 @ 6h00 Sat-01       31.9 @15h00 Wed-19    20.5
+ Jul     17.6 @21h00 Mon-01       32.7 @15h00 Tue-23    23.6
+ Aug     19.5 @ 6h00 Fri-02       32.4 @15h00 Sun-11    25.0
+ Sep     10.5 @ 6h00 Sun-29       29.2 @15h00 Sun-08    20.8
+ Oct      1.2 @ 6h00 Sat-26       23.7 @12h00 Tue-01    14.5
+ Nov     -4.3 @ 6h00 Fri-29       16.6 @12h00 Tue-05     7.6
+ Dec    -11.8 @ 6h00 Mon-16       12.0 @15h00 Tue-10     1.2
+ Annual -11.8 @ 6h00 Mon-16-Dec   32.7 @15h00 Tue-23-Jul    11.9
  ---Seasons & typical periods---
-Winter season is Mon  1 Jan - Sun 10 Mar
-Typical winter week begins Mon 12 Feb
-Spring season is Mon 11 Mar - Sun 16 Jun
-Typical spring week begins Mon  6 May
-Summer season is Mon 17 Jun - Sun  8 Sep
-Typical summer week begins Mon 19 Aug
-Autumn season is Mon  9 Sep - Thu 31 Oct
-Typical autumn week begins Mon  7 Oct
-Winter season is Mon 11 Nov - Tue 31 Dec
-Typical winter week begins Mon  2 Dec
+Winter season is Mon-01-Jan - Sun-17-Mar
+Typical winter week begins Mon-12-Feb
+Spring season is Mon-18-Mar - Sun-05-May
+Typical spring week begins Mon-15-Apr
+Summer season is Mon-06-May - Sun-15-Sep
+Typical summer week begins Mon-15-Jul
+Autumn season is Mon-16-Sep - Sun-10-Nov
+Typical autumn week begins Mon-23-Sep
+Winter season is Mon-11-Nov - Tue-31-Dec
+Typical winter week begins Mon-02-Dec
 *help_end
 *item
 *name	Kangnung - KOR IWEC 471050
@@ -2751,44 +2751,44 @@ Winter season is Mon 12 Nov - Mon 31 Dec
 Typical winter week begins Mon 12 Nov
 *help_end
 *item
-*name	Ulsan - KOR IWEC 471520
-*aide	Ulsan - KOR IWEC 471520 was sourced from US DoE ASHRAE
+*name	Ulsan - Korea IWEC 471520
+*aide	Ulsan - Korea IWEC 471520 was sourced from US DoE ASHRAE
 *dbfl	/usr/esru/esp-r/climate/KOR_Ulsan_IWEC
 *avail	ONLINE
-*winter_s  1  1  4  3  5 11 31 12
-*spring_s  5  3 27  5 10  9  4 11
-*summer_s 28  5  9  9
-*winter_t 22  1 28  1  3 12  9 12
-*spring_t  9  4 15  4  1 10  7 10
-*summer_t 13  8 19  8
+*winter_s  1  1 17  3 11 11 31 12 # seasons Tue-01-Jan--Sun-17-Mar & Mon-11-Nov--Tue-31-Dec
+*spring_s 18  3  5  5 16  9 10 11 # seasons Mon-18-Mar--Sun-05-May & Mon-16-Sep--Sun-10-Nov
+*summer_s  6  5 15  9 # summer season Mon-06-May--Sun-15-Sep
+*winter_t 22  1 28  1  9 12 15 12 # typical Tue-22-Jan--Mon-28-Jan & Mon-09-Dec--Sun-15-Dec
+*spring_t  1  4  7  4 14 10 20 10 # typical Mon-01-Apr--Sun-07-Apr & Mon-14-Oct--Sun-20-Oct
+*summer_t 10  6 16  6 # typical summer Mon-10-Jun--Sun-16-Jun
 *help_start
-Climate is Ulsan - KOR IWEC 471520
- Location: 35.55N  5.68W : 2001
+Climate is Ulsan - Korea
+ Location: 35.55N  5.68W : 1991
  Month    Minimum  Time          Maximum  Time         Mean
- Jan     -6.4 @ 6h00 Tue  9       12.7 @12h00 Mon  1     1.9
- Feb     -6.7 @ 6h00 Sat 10       14.1 @15h00 Wed 28     3.7
- Mar     -1.3 @ 6h00 Sun 18       18.7 @15h00 Wed 21     7.8
- Apr      1.3 @ 6h00 Sun  1       26.2 @15h00 Tue 10    13.3
- May      7.3 @ 6h00 Thu 10       29.5 @15h00 Mon  7    17.7
- Jun     12.2 @ 6h00 Thu 21       31.2 @15h00 Tue 26    20.9
- Jul     15.7 @ 6h00 Thu 12       35.4 @15h00 Tue 31    24.5
- Aug     20.0 @ 6h00 Mon  6       33.7 @15h00 Thu  2    26.0
- Sep     12.4 @ 6h00 Sat 29       31.1 @12h00 Wed  5    21.7
- Oct      4.5 @ 6h00 Sun 21       27.3 @15h00 Tue  2    15.9
- Nov     -4.1 @ 6h00 Fri 30       21.7 @15h00 Mon 12    10.0
- Dec     -8.8 @ 6h00 Thu 27       19.5 @15h00 Sat  8     4.4
- Annual  -8.8 @ 6h00 Thu 27 Dec   35.4 @15h00 Tue 31 Jul    14.0
+ Jan     -6.4 @ 6h00 Wed-09       12.7 @12h00 Tue-01     1.9
+ Feb     -6.7 @ 6h00 Sun-10       14.1 @15h00 Thu-28     3.7
+ Mar     -1.3 @ 6h00 Mon-18       18.7 @15h00 Thu-21     7.8
+ Apr      1.3 @ 6h00 Mon-01       26.2 @15h00 Wed-10    13.3
+ May      7.3 @ 6h00 Fri-10       29.5 @15h00 Tue-07    17.7
+ Jun     12.2 @ 6h00 Fri-21       31.2 @15h00 Wed-26    20.9
+ Jul     15.7 @ 6h00 Fri-12       35.4 @15h00 Wed-31    24.5
+ Aug     20.0 @ 6h00 Tue-06       33.7 @15h00 Fri-02    26.0
+ Sep     12.4 @ 6h00 Sun-29       31.1 @12h00 Thu-05    21.7
+ Oct      4.5 @ 6h00 Mon-21       27.3 @15h00 Wed-02    15.9
+ Nov     -4.1 @ 6h00 Sat-30       21.7 @15h00 Tue-12    10.0
+ Dec     -8.8 @ 6h00 Fri-27       19.5 @15h00 Sun-08     4.4
+ Annual  -8.8 @ 6h00 Fri-27-Dec   35.4 @15h00 Wed-31-Jul    14.0
  ---Seasons & typical periods---
-Winter season is Mon  1 Jan - Sun  4 Mar
-Typical winter week begins Mon 22 Jan
-Spring season is Mon  5 Mar - Sun 27 May
-Typical spring week begins Mon  9 Apr
-Summer season is Mon 28 May - Sun  9 Sep
-Typical summer week begins Mon 13 Aug
-Autumn season is Mon 10 Sep - Sun  4 Nov
-Typical autumn week begins Mon  1 Oct
-Winter season is Mon  5 Nov - Mon 31 Dec
-Typical winter week begins Mon  3 Dec
+Winter season is Tue-01-Jan - Sun-17-Mar
+Typical winter week begins Tue-22-Jan
+Spring season is Mon-18-Mar - Sun-05-May
+Typical spring week begins Mon-01-Apr
+Summer season is Mon-06-May - Sun-15-Sep
+Typical summer week begins Mon-10-Jun
+Autumn season is Mon-16-Sep - Sun-10-Nov
+Typical autumn week begins Mon-14-Oct
+Winter season is Mon-11-Nov - Tue-31-Dec
+Typical winter week begins Mon-09-Dec
 *help_end
 *item
 *name	Vancouver Int BC CAN
