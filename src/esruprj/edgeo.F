@@ -5980,6 +5980,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       CHARACTER SNAME1*12,SNAMED*12
       character hold64*64,t248*248,OPT*12
       character constr*12     ! to pass to addmass
+      character message*48
 
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
@@ -6882,11 +6883,13 @@ C a thick line.
         NV=NVER(IFOC)
 
 C Set up a long string buffer for editing vertex list for the
-C surface. 
+C surface. Include surface name in the dialog. 
         hold64='                                                      '
         write(t248,'(4a)') hold64,hold64,hold64,'                     '
         WRITE(t248,'(32I4)')(JVN(IFOC,j),J=1,nv)
-        CALL EASKS248(t248,' Associated vertices (type the indices)?',
+        write(message,'(2a)') 'Vertices associated with ',
+     &    SNAME(ICOMP,IFOC)
+        CALL EASKS248(t248,message,
      &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,nbhelp)
         NV = iCountWords(t248)
         K=0
