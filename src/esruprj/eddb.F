@@ -4082,25 +4082,27 @@ C Cast back to LCLIM.
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
 
+ccc ... where can the user chose if he wants to browse?
+
 C << next try using llclmdb for the file opening and then try >>
 C << it instead of longtfile >>
           IER=0
           call EFOPRAN(ICLIM,LCLIM,144,0,IER)
           if(ier.eq.0)then
-            call tstamp('>','PRJ: start clm')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            call addpath(LCLIM,longtfile,concat)
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            endif
-            call runit(doit,tmode)
+c            call tstamp('>','PRJ: start clm')
+c            doit = ' '
+c            call tchild(ICPMOD)
+c            call termode(ICPMOD,tmode)
+c            call addpath(LCLIM,longtfile,concat)
+c            if(iappw.gt.0.and.iappw.le.200)then
+c              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+c     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
+c     &            longtfile(1:lnblnk(longtfile))
+c            else
+c              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+c     &            longtfile(1:lnblnk(longtfile))
+c            endif
+c            call runit(doit,tmode)
           else
             call usrmsg('Problem encountered with Climate db!',
      &                  'Please check db location and content.','W')
