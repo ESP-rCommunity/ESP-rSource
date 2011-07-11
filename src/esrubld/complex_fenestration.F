@@ -4568,7 +4568,7 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule), 3=??, 4=cut-off
           iact2 = iCFCactuator(ictlfun,2)           ! zone index
           iact3 = iCFCactuator(ictlfun,3)           ! CFC type
 
@@ -4598,7 +4598,9 @@ C Actuator controls slat angle of slat-type shade layer between 3 choices
         shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6)
         NABS=2 ! we have two alternative blind states here (for Radiance coupling) ...  !!HACK!!
       elseif (iact1.eq.4) then
-C     don't need anything, here (?)
+C       Set points with which "blind down" or not is decided
+        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
       endif
 
 C -------------------------------------------------------------------
@@ -4680,9 +4682,12 @@ C                 determin if horizontal or vertical and calc cut-off angle
      &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
      &                       *cos(pselv*R) )/R - pselv
 C                                                pselv = salt - pelv!
-C                   allow control to horizontal, not negativ (??)
+C                   Allow control to horizontal, not negativ (??)
 C                   blind restrictions should be part of the blind description in .cfc IMO !!
-c                    if (cutoff.lt.0.0) cutoff=0.0
+                    if (cutoff.lt.0.0) cutoff=0.0
+C                   check if this facade actually gets direct radiation. If not,
+C                   set blind to a "daylight friendly" angle ... (? 11.07.2011)
+                    if (solrad_dir.le.0.0) cutoff=20.0
                   else ! vertical venetian type blind
 C *** this needs checking (neg inc angles!) ****
                     cutoff=     
