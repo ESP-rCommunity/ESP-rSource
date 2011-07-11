@@ -1951,7 +1951,7 @@ C ivimb=1 then we have an unmatched edge.
           bounded=.false.
           ivimb=(abs((matchab+10)-(matchba+10)))
           if(ivimb.eq.2)then
-            write(outs,'(a,i2,a,i2,a,a)')
+            write(outs,'(a,i3,a,i3,a,a)')
      &        'The edge between vertices ',itv1(ip),' &',
      &        itv2(ip),' of ',SNAME(icomp,irelsur(ip))
             if(ivb.ne.0)then
@@ -1961,7 +1961,7 @@ C ivimb=1 then we have an unmatched edge.
             endif
             inve=inve+1
           elseif(ivimb.eq.1)then
-            write(outs,'(a,i2,a,i2,3a)')
+            write(outs,'(a,i3,a,i3,3a)')
      &        'The edge between vertices ',itv1(ip),' &',itv2(ip),
      &        ' of ',SNAME(icomp,irelsur(ip)),' may be unbounded.'
             if(ivb.ne.0)then
