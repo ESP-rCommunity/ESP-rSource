@@ -1241,16 +1241,28 @@ C Finally update the system configuration file if not browsing.
             else
               call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
             endif
-	    silent= .false.
+            silent= .false.
             call sumrchg(ICOMP,'r',silent)
           endif
           goto 42
         elseif(IS.gt.0)then
 
 C Attribute a single surface, set flag to redraw.
-          call tstamp('>','PRJ: enter single surface attribution')
-          CALL EDSURA(ICOMP,IS,ITRC,MODGEO,IER)
+          ianother=0
+  443     call tstamp('>','PRJ: enter single surface attribution')
+          CALL EDSURA(ICOMP,IS,ITRC,MODGEO,ianother,IER)
           MODIFY=.TRUE.
+
+C If user asked for next or prior surface reset IS and call again.
+          if(ianother.eq.0)then
+            continue
+          elseif(ianother.lt.0.and.IS.gt.1)then
+            is=is-1
+            goto 443
+          elseif(ianother.gt.0.and.IS.lt.NZSUR(ICOMP))then
+            is=is+1
+            goto 443
+          endif
           goto 42
         endif
 
@@ -2681,6 +2693,8 @@ C ************* EDSURA
 C Edit zone surface attributes in common block G5 and allow this to be
 C saved to a geometry file ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
+C ianother is returned as +1 if jump to next surface, -1 if jump to
+C    prior surface, otherwise zero.
 
 C << add in additional menu line for external viewfactors >>
 C << add in additional menu line for external diffuse shading >>
@@ -2690,7 +2704,7 @@ C << it would clarify the surface if it was reported which convection >>
 C << correlation is being used for inside face. And should it be >>
 C << possible to alter the inside/outside hc from this interface? >>
 
-      SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
+      SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,ianother,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2699,6 +2713,14 @@ C << possible to alter the inside/outside hc from this interface? >>
 #include "material.h"
       
       integer lnblnk  ! function definition
+
+C Pased parameters
+      integer icomp   ! zone index
+      integer iss     ! surface index
+      integer itrc    ! reporting unit
+      logical modgeo
+      integer ianother ! set if user wants to jump to next/previous
+      integer ier     ! for error state
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2715,12 +2737,12 @@ C << possible to alter the inside/outside hc from this interface? >>
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL MODIFY,MODLEN,MODBND,MODGEO,browse,nameok,close,showother
+      LOGICAL MODIFY,MODLEN,MODBND,browse,nameok,close,showother
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
-      CHARACTER*33 ISD(23)
+      CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12
@@ -2797,12 +2819,6 @@ C If newgeo include a line for ssparent and one for ssuse.
       if(newgeo)then
 
 C Info about children of this surface.
-C Debug.
-C        write(6,*) ' nb children ',nbchild(ioc),
-C     &    ' cnn is ',ichild(ioc,1)
-C        if(ichild(ioc,1).gt.0) then
-C          write(6,*) ' named ',SSNAME(ichild(ioc,1))
-C        endif
         if(nbchild(ioc).gt.0)then
           if(nbchild(ioc).eq.1.and.ichild(ioc,1).gt.0)then
             WRITE(ISD(10),'(2A)') 'g parent of    : ',
@@ -2864,9 +2880,19 @@ C << report other faces inside and outside hc regime here >>
 
         ISD(20)=      '  ____________________________ '
         ISD(21)=      '+ add glazing/door/opening     '
-        ISD(22)=      '? help                         '
-        ISD(23)=      '- exit this menu               '
-        ISDN=23
+        if(is.gt.1.and.is.lt.nzsur(icomp))then
+          ISD(22)=    '< jump to previous surface     '
+          ISD(23)=    '> jump to next surface         '
+        elseif(is.eq.1)then
+          ISD(22)=    '                               '
+          ISD(23)=    '> jump to next surface         '        
+        elseif(is.eq.nzsur(icomp))then
+          ISD(22)=    '< jump to previous surface     '
+          ISD(23)=    '                               '
+        endif
+        ISD(24)=      '? help                         '
+        ISD(25)=      '- exit this menu               '
+        ISDN=25
       else
 
 C << add in additional menu line for external viewfactors >>
@@ -2875,9 +2901,19 @@ C << add in additional menu line for external hc correlation >>
 
         ISD(14)=      '  ____________________________ '
         ISD(15)=      '+ add glazing/door/opening     '
-        ISD(16)=      '? help                         '
-        ISD(17)=      '- exit to zone description     '
-        ISDN=17
+        if(is.gt.1.and.is.lt.nzsur(icomp))then
+          ISD(16)=    '< jump to previous surface     '
+          ISD(17)=    '> jump to next surface         '
+        elseif(is.eq.1)then
+          ISD(16)=    '                               '
+          ISD(17)=    '> jump to next surface         '        
+        elseif(is.eq.nzsur(icomp))then
+          ISD(16)=    '< jump to previous surface     '
+          ISD(17)=    '                               '
+        endif
+        ISD(18)=      '? help                         '
+        ISD(19)=      '- exit to zone description     '
+        ISDN=19
       endif
       INODA=-4
 
@@ -2905,6 +2941,7 @@ C Menu control.
       IF(INODA.EQ.ISDN)THEN
 
 C If an attribute has changed save the geometry file.
+        ianother=0   ! signal no jump to previous or next.
         if(cfgok.and.(.NOT.browse))then
           if(MODGEO)then
             call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -2928,7 +2965,52 @@ C Produce help text for the menu.
         helptopic='surface_attrib_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('surface attributes menu',nbhelp,'-',0,0,IER)
-      ELSEIF(INODA.EQ.ISDN-2)THEN
+     
+      ELSEIF(INODA.eq.ISDN-2)THEN
+
+C Jump to next surface.
+        ianother=1
+        
+C If an attribute has changed save the geometry file.
+        if(cfgok.and.(.NOT.browse))then
+          if(MODGEO)then
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            endif
+          endif
+        endif
+        return
+
+      ELSEIF(INODA.eq.ISDN-3)THEN
+
+C Jump to previous surface.
+        ianother=-1
+        
+C If an attribute has changed save the geometry file.
+        if(cfgok.and.(.NOT.browse))then
+          if(MODGEO)then
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            endif
+          endif
+        endif
+        return
+
+      ELSEIF(INODA.EQ.ISDN-4)THEN
 
 C Add/insert a surface, return to higher level menu when done.
 C The 'ii' request an interactive insertion, the parameters
@@ -5974,9 +6056,10 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION VERT(36),options(9)
       DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
+      dimension ivlst(MTV)  ! for vertex selection
       CHARACTER VERT*34,options*34,KEY*1,SN*12,T14*14,D14*14
       character head*32,HOLDS*36,outs*124
-      CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
+      CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16 
       CHARACTER SNAME1*12,SNAMED*12
       character hold64*64,t248*248,OPT*12
       character constr*12     ! to pass to addmass
@@ -5988,6 +6071,7 @@ C Strings for surface attributes to pass to insrec.
       real XO1,ZO1  ! to prevent name clash in geometry.h
       integer MVERT,IVERT,NITMS,IRT ! max items and current menu item
       integer icmpall  ! to signal request to compare all names
+      integer ibopt    ! to specify which mass origin option
       
 #ifdef OSI
       integer iix,iiy
@@ -6546,7 +6630,77 @@ C Get vertical rectangular surface orgin.
             RETURN
           ENDIF
           call tstamp('>','PRJ: add vertical surface')
-          HOLDS= ' 0.000  0.000  0.000    '
+
+C Offer similar choices to setting up obstructions (see edobs.F)
+          call easkabcd('Origin choices:',' ','edit origin',
+     &      'use zone vertex','@ angle&dist from vertex','continue',
+     &      ibopt,nbhelp)
+          if(ibopt.eq.1)then
+            HOLDS= ' 0.000  0.000  0.000   '
+          elseif(ibopt.eq.2)then
+
+C User current zone G1 common block to present list of points.
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertices for origin',
+     &        'Select a vertex to define the origin...',' ',nbhelp,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              HOLDS=' '
+              WRITE(HOLDS,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
+            else
+              goto 92
+            endif
+          elseif(ibopt.eq.3)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertice in zone',
+     &        'Select a vertex to begin from...',' ',nbhelp,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              write(holds,'(f10.4,f9.3,f8.3)') V1,AZ,EL
+ 343          CALL EASKS(HOLDS,
+     &    'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
+     &    ' ',32,' 1. 0. 0. ','dist azim elev',IER,nbhelp)
+              K=0
+              CALL EGETWR(HOLDS,K,V1,-999.9,999.9,'W','dist',IER)
+              CALL EGETWR(HOLDS,K,AZ,-359.9,359.9,'W','azim',IER)
+              CALL EGETWR(HOLDS,K,EL,-90.0,90.0,'W','elev',IER)
+              if(ier.ne.0)goto 343
+              PI = 4.0 * ATAN(1.0)
+              RAD = PI/180.
+              RYAZI = AZ*RAD
+              RSALT = EL*RAD
+              z3 = V1*SIN(RSALT)
+              XYDIS = V1*COS(RSALT)
+              IF (XYDIS .LT. 1E-6)THEN
+                x3 = 0.
+                y3 = 0.
+              ELSE
+                x3 = XYDIS*SIN(RYAZI)
+                y3 = XYDIS*COS(RYAZI)
+              ENDIF
+              write(outs,'(a,3f10.4)') ' Point @ X,Y,Z:',x3+X(iwhich1),
+     &          y3+Y(iwhich1),z3+Z(iwhich1)
+              call edisp(itru,outs)
+              x3=x3+X(iwhich1)
+              y3=y3+Y(iwhich1)
+              z3=z3+Z(iwhich1)
+              HOLDS=' '
+              WRITE(HOLDS,'(1x,3f9.4)')x3,y3,z3
+              MODIFY=.TRUE.
+            else
+              goto 92
+            endif
+          elseif(ibopt.eq.4)then
+            goto 92
+          endif
+          
           CALL EASKS(HOLDS,' Vertical surface origin X Y & Z: ',' ',
      &      36,' 0.0  0.0   0.0   ','vert origin XYZ',IER,nbehlp)
           K=0
@@ -6572,9 +6726,78 @@ C Get horizontal rectangular surface orgin.
             RETURN
           ENDIF
           call tstamp('>','PRJ: add horizontal surface')
-          HOLDS= ' 0.000  0.000  0.000   '
-          CALL EASKS(HOLDS,' Horizontal surface origin X Y & Z: ',' ',
-     &      36,' 0.00  0.00  0.00  ','horiz origin XYZ',IER,nbhelp)
+
+C Offer similar choices to setting up obstructions (see edobs.F)
+          call easkabcd('Origin choices:',' ','edit origin',
+     &      'use zone vertex','@ angle&dist from vertex','continue',
+     &      ibopt,nbhelp)
+          if(ibopt.eq.1)then
+            HOLDS= ' 0.000  0.000  0.000   '
+          elseif(ibopt.eq.2)then
+
+C User current zone G1 common block to present list of points.
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertices for origin',
+     &        'Select a vertex to define the origin...',' ',nbhelp,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              HOLDS=' '
+              WRITE(HOLDS,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
+            else
+              goto 92
+            endif
+          elseif(ibopt.eq.3)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertice in zone',
+     &        'Select a vertex to begin from...',' ',nbhelp,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              write(holds,'(f10.4,f9.3,f8.3)') V1,AZ,EL
+ 342          CALL EASKS(HOLDS,
+     &    'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
+     &    ' ',32,' 1. 0. 0. ','dist azim elev',IER,nbhelp)
+              K=0
+              CALL EGETWR(HOLDS,K,V1,-999.9,999.9,'W','dist',IER)
+              CALL EGETWR(HOLDS,K,AZ,-359.9,359.9,'W','azim',IER)
+              CALL EGETWR(HOLDS,K,EL,-90.0,90.0,'W','elev',IER)
+              if(ier.ne.0)goto 342
+              PI = 4.0 * ATAN(1.0)
+              RAD = PI/180.
+              RYAZI = AZ*RAD
+              RSALT = EL*RAD
+              z3 = V1*SIN(RSALT)
+              XYDIS = V1*COS(RSALT)
+              IF (XYDIS .LT. 1E-6)THEN
+                x3 = 0.
+                y3 = 0.
+              ELSE
+                x3 = XYDIS*SIN(RYAZI)
+                y3 = XYDIS*COS(RYAZI)
+              ENDIF
+              write(outs,'(a,3f10.4)') ' Point @ X,Y,Z:',x3+X(iwhich1),
+     &          y3+Y(iwhich1),z3+Z(iwhich1)
+              call edisp(itru,outs)
+              x3=x3+X(iwhich1)
+              y3=y3+Y(iwhich1)
+              z3=z3+Z(iwhich1)
+              HOLDS=' '
+              WRITE(HOLDS,'(1x,3f9.4)')x3,y3,z3
+              MODIFY=.TRUE.
+            else
+              goto 92
+            endif
+          elseif(ibopt.eq.4)then
+            goto 92
+          endif
+          CALL EASKS(HOLDS,' Horizontal surface origin X Y & Z: ',
+     &      ' ',36,' 0.00  0.00  0.00  ','horiz origin XYZ',IER,nbhelp)
           K=0
           CALL EGETWR(HOLDS,K,VALOX,-99.0,99.0,'W','X org',IER)
           CALL EGETWR(HOLDS,K,VALOY,-99.0,99.0,'W','Y org',IER)
