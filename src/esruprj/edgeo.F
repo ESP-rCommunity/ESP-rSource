@@ -6550,9 +6550,9 @@ C Get vertical rectangular surface orgin.
           CALL EASKS(HOLDS,' Vertical surface origin X Y & Z: ',' ',
      &      36,' 0.0  0.0   0.0   ','vert origin XYZ',IER,nbehlp)
           K=0
-          CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
-          CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
-          CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
+          CALL EGETWR(HOLDS,K,VALOX,-99.0,99.0,'W','X org',IER)
+          CALL EGETWR(HOLDS,K,VALOY,-99.0,99.0,'W','Y org',IER)
+          CALL EGETWR(HOLDS,K,VALOZ,-99.0,99.0,'W','Z org',IER)
 
 C Get azimuth and length and height.
           HOLDS= ' 180.00   1.000  1.000   '
@@ -6576,9 +6576,9 @@ C Get horizontal rectangular surface orgin.
           CALL EASKS(HOLDS,' Horizontal surface origin X Y & Z: ',' ',
      &      36,' 0.00  0.00  0.00  ','horiz origin XYZ',IER,nbhelp)
           K=0
-          CALL EGETWR(HOLDS,K,VALOX,-50.0,50.0,'W','X org',IER)
-          CALL EGETWR(HOLDS,K,VALOY,-50.0,50.0,'W','Y org',IER)
-          CALL EGETWR(HOLDS,K,VALOZ,-50.0,50.0,'W','Z org',IER)
+          CALL EGETWR(HOLDS,K,VALOX,-99.0,99.0,'W','X org',IER)
+          CALL EGETWR(HOLDS,K,VALOY,-99.0,99.0,'W','Y org',IER)
+          CALL EGETWR(HOLDS,K,VALOZ,-99.0,99.0,'W','Z org',IER)
 
 C Get rotation and length and height.
           HOLDS= ' 0.0    1.000  1.000    '
