@@ -80,7 +80,7 @@ Consider what type of window manager you would like to use. It is possible to re
   Gnome:        optional
   Graphics:     toggle to default and add ImageMagic
   Intepretors:  toggle to default plus gawk and expect 
-  Libs:    toggle to default
+  Libs:         tick all except guile and tetext
   Mail:         toggle to none
   Math:         toggle to default
   Net:          toggle to default
@@ -118,6 +118,7 @@ You should have power user privileges when you run this Installer.
 The following folders will be created:
 C:\cygwin\usr\esru
         - esp-r
+          - bin (holds two useful scripts link_to link_to_bash)
           - bin_X11 (ESP-r executables for X11 interface)
           - bin_GTK (ESP-r executables for GTK interface)
           - databases (corporate databases)
@@ -142,11 +143,11 @@ In the Cygwin command window go back to your home folder and create a bin folder
   cd
   mkdir bin
 
-Copy the file /usr/esru/link_to into the ned bin folder:
+Copy the file /usr/esru/bin/link_to into your new bin folder:
 
   cd
   cd bin
-  cp /usr/esru/link_to .
+  cp /usr/esru/bin/link_to .
 
 Check and if there is a .cshrc or a .profile file in your home folder:
 
@@ -186,20 +187,31 @@ Basic machine requirements:
 
 Windows XP or Vista with 900MHz 32-bit processor as a minimum and a 1.8GHz 32-bit processor recommended. 
 
-Memory should be at least 512Mb (1GB is better). On some machines increases in RAM will allow for results files to be scanned faster.  
+Memory should be at least 1GB (2GB is better). On some machines increases in RAM will allow for results files to be scanned faster.  
 
-ESP-r is disk-intensive so a faster disk is a good investment. The ESP-r distribution takes up about 350MB of disk space. Depending on the complexity of your models you need to allows for at least another Gb of working space. 
+ESP-r is disk-intensive so a faster disk is a good investment. The ESP-r distribution takes up about 350MB of disk space. Depending on the complexity of your models you need to allows for at least another Gb of working space.
 
 Dependencies:
 
-If ESP-r executables do not run it may be because dll (library) files are missing or are not the correct version. Here is a list of what you need for the X11 version of the simulator:
+If ESP-r executables do not run it may be because dll (library) files are missing or are not the correct version. There might also be some fonts (lucidia) that you will need to install. Here is a list of what you need for the X11 version of the simulator:
 CygX11-6.dll, Cygwin1.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
 
 Here is a list of what is required for the GTK version of the simulator:
 Cygwin1.dll, Cyggdk-X11-2.0.dll, Cyggdk_Pixbuf-2.0-0.dll, Cygglib-2.0-0.dll, Cyggobject-2.0-0.dll, Cyggtk-X11-2.0-0.dll, Cygpango-1.0-0.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
 
+If you cannot get ESP-r to run in Cygwin then consider grabbling the source code (see below) and compiling it on your machine. Below is the usual sequence:
+
+  cd
+  mkdir Src
+  cd Src
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch
+  cd development_branch
+  cd src
+  ./Install -d /usr/esru --gcc4 --reuse_ish_calcs
+  (say yes to debug and databases and example models)
+  
 What else does ESP-r run on? 
 
-There are versions of ESP-r which run Native on a Windows PC as well as OSX (v10.5) and various Linux computers.  
+There are versions of ESP-r which run Native on a Windows PC as well as OSX (v10.5 & v10.6) and various Linux computers.  
 
 NOTE: ESP-r is less stable on 64-bit computers and operating systems.  Currently ESP-r requires the GNU compiler collection 4.1 or newer.
