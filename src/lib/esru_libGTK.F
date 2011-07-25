@@ -339,7 +339,7 @@ C    ...
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
       CHARACTER OUTSTR*124,DSTR*124,outs*124
-      character prompt*144
+      character ask*16,prompt*144
       LOGICAL OK,close,DOK,unixok
 
 C If RVAL is outwith range for failure then set to default.
@@ -348,9 +348,26 @@ C If RVAL is outwith range for failure then set to default.
 
 C Check that value is not trivially close to zero (i.e. not
 C instantiated on the Fortran side before the call).
-      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
-      if(close)RVAL=0.0
    20 WORD=' '
+      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
+      if(close)then
+        RVAL=0.0
+        ask='   0.00   '
+      else
+        if(abs(rval).gt.1.E+6)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
+          WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
+          WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
+          WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-4)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        else
+          WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+        endif
+      endif
 
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
@@ -370,7 +387,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -380,11 +397,14 @@ C If in graphic mode use graphic facilities to edit the number.
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
         endif
-        RVALUE=RVAL
-        CALL askreal(PROMPT,RVALUE,IFLG)
 
 C Debug.
-C        write(6,*) 'EASKR',RVALUE,IFLG
+C        write(6,*) '< askr prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askr string ',ask(1:lnblnk(ask))
+        CALL askdialog(PROMPT,ask,IFLG)
+
+C Debug.
+C        write(6,*) 'askr VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -396,22 +416,25 @@ C A cancel answer detected, set ier to -3 and return.
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
-          call edisp(iuout,' ')
           RVAL=DEFLT
-          RETURN
-        ELSEIF(IFLG.eq.-1)THEN
-
-C A blank, carriage return or line feed encountered, assume user
-C wishes to use prior/existing real value.
-          CALL REL16STR(RVAL,STR2,IW2,IER)
-          WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
-          CALL USRMSG(' ',OUTSTR,'-')
+          call usrmsg('  ','  ','-')
           RETURN
         ELSE
 
-C A valid number or interaction, so update RVALT for later use.
-          RVALT=RVALUE
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+          call c2fstr(ask,WORD)
         ENDIF
+        IF(WORD.EQ.' ')THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing real value.
+          CALL EXPSTR(RVAL,STR2,IW2,IER)
+          WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
+          CALL USRMSG(' ',OUTSTR,'-')
+          RETURN
+        ENDIF
+
       ELSE
 
 C In text mode, remind user of current value.
@@ -447,15 +470,15 @@ C use prior/existing real value.
           endif
           RETURN
         ENDIF
+      ENDIF
 
-C Decode the text mode interface string into a real.
-        read(WORD,*,ERR=89)rvalt
-        CALL REL16STR(RVALT,STR1,IW1,IER)
-        IF(IER.NE.0)THEN
-          CALL USRMSG(' ','Did not understand, try again..','-')
-          IER=0
-          GOTO 20
-        ENDIF
+C Decode the string into a real.
+      read(WORD,*,ERR=89)rvalt
+      CALL REL16STR(RVALT,STR1,IW1,IER)
+      IF(IER.NE.0)THEN
+        CALL USRMSG(' ','Did not understand, try again..','-')
+        IER=0
+        GOTO 20
       ENDIF
 
 C Check RVALT against minimum and respond based on MINACT.
@@ -597,7 +620,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -3875,128 +3898,6 @@ C impx impy before recalling fprofma.
 
       end
 
-C ****** invoke graphics capture proforma
-      subroutine profgrdump()
-#include "building.h"
-#include "model.h"
-
-C Path to model and command line file (if any).
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FILEP/IFIL
-      common/rpath/path
-      common/pophelp/h(60)
-      common/C21/IFCFG,cfgroot,LCFGF
-
-C Graphic capture, window dump: label, command.
-      common/gprint/gprlbl,gprcmd
-      common/gxwd/gxwdlbl,gxwdcmd
-
-      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,h*72,tfile*60,uname*24,fs*1
-      character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
-      character LCFGF*72,dh*72,gcmd*90
-      character gprlbl*20,gprcmd*48
-      character gxwdlbl*20,gxwdcmd*60
-
-      logical unixok
-
-      if(MMOD.ne.8)return
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      uname=' '
-      call usrname(uname)
-
-      h(1)='A screen image of a user selected portion '
-      h(2)='of the screen or the whole screen can be   '
-      h(3)='captured. It uses the application defined  '
-      h(4)='in the esprc file (typically import from   '
-      h(5)='the ImageMagick suite). A GIF image is     '
-      h(6)='assumed. Edit the file name as required.   '
-      nhelp=6
-      CALL PHELPW(NHELP,IHW,IER)
-      call dupphelp(NHELP)
-      tfile='  '
-      LNU=max(1,lnblnk(upath))
-      if(cfgroot(1:2).eq.'  ')then
-        LN=max(1,lnblnk(uname))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_.gif'
-      else
-        LN=max(1,lnblnk(cfgroot))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_.gif'
-      endif
-      iswidth(1)=60
-      title='capture graphics'
-      ltypes='ltte'
-      list(1)='options:         '
-      list(2)='user defined area'
-      list(3)='whole of screen  '
-      list(4)='file:            '
-      listact(1) = 0
-      listact(2) = 1
-      listact(3) = 0
-      listact(4) = 0
-      impx = 0
-      impy = 0
-      impcwth = 67
-      nstr = 1
-      nlist = 4
-  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
-     &    iswidth,listact,ino,nhelp)
-
-C Debug.
-C      write(6,*)listact,'  ',ino
-
-      if(ino.eq.-1)then
-
-C If no action return.
-        return
-      elseif(ino.eq.(nlist+1))then
-
-C If signaled ok then attempt to write out file.
-C        write(6,*)sstr(1)
-
-        tfile=sstr(1)
-        ltf=max(1,lnblnk(tfile))
-        if(listact(2).eq.1)then
-          LN=max(1,lnblnk(gprcmd))
-          write(gcmd,'(3a)') gprcmd(1:LN),' ',tfile(1:ltf)
-        elseif(listact(3).eq.1)then
-          LN=max(1,lnblnk(gxwdcmd))
-          write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
-        endif
-
-C Debug
-C        write(6,*)gcmd
-
-        call runit(gcmd,'-')
-        return
-      elseif(ino.eq.1)then
-
-C If user has switched from create to append update display (reset
-C impx impy before recalling fprofma.
-        if(listact(2).eq.1)listact(3)=0
-        impx = 0
-        impy = 0
-        goto 43
-      elseif(ino.eq.2)then
-        if(listact(3).eq.1)listact(2)=0
-        impx = 0
-        impy = 0
-        goto 43
-      else
-        impx = 0
-        impy = 0
-        goto 43
-      endif
-      return
-
-      end
 
 C ************************ PHELPD
 C PHELPD displays the current contents of common pophelp in a form

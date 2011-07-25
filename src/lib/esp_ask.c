@@ -5,7 +5,6 @@
       askdialogcmd - prompt for a text entry (with help, default, cancel, alternative cmd options).
       askdialogcncl - prompt for a text entry (with help, default, user specified cancel cmd options).
       askdialog2cmd - prompt for a text entry (with help, default, cancel, two alternative cmd options).
-      askreal - prompt for a real number entry (with help, default and cancel options).
 
 */
 
@@ -468,106 +467,6 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
      }
    gtk_widget_destroy (askbox);
 
-}
-
-/* ***** askreal_() ask for real number input */
-/* Could pass in:
-    min and max values if 'F' failure flag set (this would
-      trap the error here.
-    number of decimal places to display.
-    title for the pop up box.
-   Fortran side needs updated to account for returned values of IER.
-*/
-
-void askreal_(char *q1, float *reply,long int *ier, int lenq1)
-/* q1 is the question being posed to the user
-   reply is the reply but has the current real value from the fortran side
-   ier tracks if the default (-2 or cancel buttons (-3) have been selected (requires
-     suitable actions on the fortran side).
-   lenq1 is passed from fortran as the length of the question
-*/
-{
-   GtkWidget *askbox, *entry, *label, *spinner;
-   GtkAdjustment *spinner_adj;
-   gchar *question_local;
-   gint result;
-   int no_valid_event;
-   int lnq1;	/* for non-blank length */
-   long int ibx,iby,more;	/* set default position of help */
-   long int ipflg,iuresp;	/* response from pop-up help */
-   gdouble value;
-
-   /* Reset value of ier flag */
-   *ier=0;
-   value = (double) *reply;
-
-/* find out actual length of prompt. */
-   lnq1 = 0;
-   f_to_c_l(q1,&lenq1,&lnq1);
-   question_local = g_strndup(q1, (gsize) lnq1);
-/* debug g_print("r phrase %s\n",question_local); */
-/* debug g_print("r nb of help lines %d\n",help_lines); */
-
-   /* Create the widgets */
-   askbox = gtk_dialog_new_with_buttons("Real number request",
-     GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
-     GTK_STOCK_HELP, GTK_RESPONSE_HELP,"Use default", 99,
-     GTK_STOCK_OK, GTK_RESPONSE_OK,
-     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,NULL);
-
-   label = gtk_label_new (question_local);
-   entry = gtk_entry_new ();
-
-   /* Define entry box properties */
-   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
-   gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
-
-   spinner_adj = (GtkAdjustment *) gtk_adjustment_new (value, -G_MAXFLOAT, G_MAXFLOAT, 0.1, 10., 10.);
-
-   /* creates the spinner, with three decimal places */
-   spinner = gtk_spin_button_new (spinner_adj, 0.1, 3);
-   gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
-   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),label);
-   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),spinner);
-   gtk_widget_show_all (askbox);
-
-   /* Set dialog properties and wait for user response */
-   gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
-   gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
-
-   /* Run this as a while loop 'no_valid-event' so we can call other widgets, for
-      example, a help dialog directly from here */
-   no_valid_event = TRUE;
-   while ( no_valid_event) {
-     result = gtk_dialog_run (GTK_DIALOG (askbox));
-     switch (result) {
-       case GTK_RESPONSE_OK:
-       /*
-       Return 'value' via call to gtk_adjustment_get_value and cast to real reply
-       */
-         value = gtk_adjustment_get_value(spinner_adj);
-         *reply = (gfloat) value;
-         no_valid_event = FALSE;
-         break;
-       case GTK_RESPONSE_HELP:
-         ibx= 0; iby= 0; more = 0;
-         egphelpscroll_(&ibx,&iby,&ipflg,&more,&iuresp);
-         break;
-       case GTK_RESPONSE_CANCEL:
-         *ier=-3;
-         no_valid_event = FALSE;
-         break;
-       case 99:
-         *ier=-2;
-         no_valid_event = FALSE;
-         break;
-       default:
-         *ier=-1;
-         no_valid_event = FALSE;
-         break;
-       }
-     }
-   gtk_widget_destroy (askbox);
 }
 
 
