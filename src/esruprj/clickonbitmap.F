@@ -111,10 +111,12 @@ C an object has been saved the set justentered to false.
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer iicol
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer*8 iicol
 #endif
 
 C For help messages
@@ -769,13 +771,13 @@ C origin if these have been defined.
 
 C Debug.
 C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
-
-              call winscl('z',0)
+              iicol=0
+              call winscl('z',iicol)
               iid1=ixbul; iid2=iybul;
               call esymbol(iid1,iid2,6,1)
               iid1=ixblr; iid2=iyblr;
               call esymbol(iid1,iid2,4,1)
-              call winscl('-',0)
+              call winscl('-',iicol)
               xbmload=.true.
             else
               call usrmsg('This file is not an X11 bitmap file.',
@@ -848,14 +850,15 @@ C Origin within the bitmap.
           call edisp(iuout,' ')
           call usrmsg('Select origin via cursor (click left button)',
      &      ' ','-')
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           CALL trackview(ii,ixo,iyo)
           iid1=ixo; iid2=iyo;
           call esymbol(iid1,iid2,24,1)
           write(temp6,'(A)')'Origin'
           iix=ixo+5; iiy=iyo-5;
           CALL wstxpt(iix,iiy,temp6)
-          call winscl('-',0)
+          call winscl('-',iicol)
           write(outs,'(a,2i6)')' origin X Y pixels =',ixo,iyo
           call edisp(iuout,outs)
           call usrmsg(' ',' ','-')
@@ -875,7 +878,8 @@ C North.
           call edisp(iuout,' ')
           call usrmsg('Select two points defining north axis... ',
      &      ' ','-')
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           CALL trackview(ii,ixtn1,iytn1)
           iid1=ixtn1; iid2=iytn1;
           call esymbol(iid1,iid2,11,1)
@@ -887,7 +891,7 @@ C North.
           write(temp6,'(A)')'North'
           iid1=ixtn2+5; iid2=iytn2-5;
           CALL wstxpt(iid1,iid2,temp6)
-          call winscl('-',0)
+          call winscl('-',iicol)
           call usrmsg(' ',' ','-')
           xbmnorth=.true.
         endif
@@ -905,14 +909,15 @@ C Scaling of a known line. Ask for two points and distance.
           call edisp(iuout,' ')
           call usrmsg('Define the bitmap scale by selecting ',
      &      'two points along a known line... ','-')
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           CALL trackview(ii,ixs1,iys1)
           iid1=ixs1; iid2=iys1;
           call esymbol(iid1,iid2,11,1)
           CALL trackview(ii,ixs2,iys2)
           iid1=ixs1; iid2=iys2;
           call esymbol(iid1,iid2,11,2)
-          call winscl('-',0)
+          call winscl('-',iicol)
           call usrmsg(' ',' ','-')
           disn=1.
           CALL EASKR(disn,' ','Distance (metres) between points?',
@@ -922,7 +927,8 @@ C Scaling of a known line. Ask for two points and distance.
           factor=vdis/disn
           write(outs,*)' There are ',factor,' pixels per metre.'
           call edisp(iuout,outs)
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           iixs1=ixs1; iiys1=iys1; iixs2=ixs2; iiys2=iys2;
           call eswline(iixs1,iiys1,iixs2,iiys2)
 
@@ -975,7 +981,7 @@ C where viewlim(3) and viewlim(4) are the lower and upper boundaries.
           viewlim(3)=float(int(uyoffset))
           viewlim(4)=real(anint(viewlim(3) + bituheight))
           xbmscale=.true.
-          call winscl('z',0)
+          call winscl('z',iicol)
         endif
         goto 142
       elseif(INO.EQ.5+m+n)then
@@ -1426,7 +1432,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             ipyy(INVERT)=iyy
             px(INVERT)=tpx
             py(INVERT)=tpy
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipyy(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.4)then
@@ -1434,7 +1441,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             ipzz(INVERT)=izz
             px(INVERT)=tpx
             pz(INVERT)=tpy
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.5)then
@@ -1442,7 +1450,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             ipzz(INVERT)=izz
             py(INVERT)=tpx
             pz(INVERT)=tpy
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipyy(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
           endif
@@ -1452,7 +1461,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
           if(INVERT.gt.99)write(temp3,'(i3)') INVERT
           if(inpmode.eq.1.or.inpmode.eq.2)then
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             X(INVERT)=px(INVERT)
             Y(INVERT)=py(INVERT)
             if(inpmode.eq.1)then
@@ -1482,7 +1492,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call edisp(iuout,outs)
           elseif(inpmode.eq.4)then
             call textatxy(ipxx(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             X(INVERT)=px(INVERT)
             Z(INVERT)=pz(INVERT)
             Y(INVERT)=Y1
@@ -1499,7 +1510,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             call edisp(iuout,outs)
           elseif(inpmode.eq.5)then
             call textatxy(ipyy(INVERT)+4,ipzz(INVERT)-1,temp3,'z',3)
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             Y(INVERT)=py(INVERT)
             Z(INVERT)=pz(INVERT)
             X(INVERT)=X1
@@ -1518,7 +1530,8 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
 
 C Add to ground topology and confirm Z.
             call textatxy(ipxx(INVERT)+4,ipyy(INVERT)-1,temp3,'z',3)
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             XGT(INVERT)=px(INVERT)
             YGT(INVERT)=py(INVERT)
             if(INVERT.gt.1)then
@@ -1590,7 +1603,8 @@ C instanciate the common blocks.
               LTHRM(ICOMP)=CFILE
               LPROJ(ICOMP)=OFILE
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call edisp(iuout,'Instanciating new objects...')
             if(inpmode.eq.6)then
 
@@ -1926,7 +1940,8 @@ C Corner added draw it and index and a line from the previous to current.
           pxw(NW)=tpxw
           pyw(NW)=tpyw
 
-          call winscl('z',3)
+          iicol=3
+          call winscl('z',iicol)
           iid1=ipxw(NW); iid2=ipyw(NW);
           call esymbol(iid1,iid2,24,1)
           if(NW.gt.0.and.NW.le.9)write(temp3,'(i1)') NW
@@ -1934,7 +1949,8 @@ C Corner added draw it and index and a line from the previous to current.
           if(NW.gt.99)write(temp3,'(i3)') NW
           call textatxy(ipxw(NW)+4,ipyw(NW)-1,temp3,'z',3)
           if(NW.gt.1)then
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipxw(NW-1)
             iid2=ipyw(NW-1)
             iid3=ipxw(NW)
@@ -1961,13 +1977,15 @@ C Selection terminated with `e`, ask user if they want to save the
 C information. If so fill zone common blocks. Draw line from last 
 C corner to first corner and return forground colour to black.
  247      continue
-          call winscl('z',3)
-            iid1=ipxw(NW)
-            iid2=ipyw(NW)
-            iid3=ipxw(1)
-            iid4=ipyw(1)
+          iicol=3
+          call winscl('z',iicol)
+          iid1=ipxw(NW)
+          iid2=ipyw(NW)
+          iid3=ipxw(1)
+          iid4=ipyw(1)
           call edwline(iid1,iid2,iid3,iid4)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           helptopic='user_typed_e'
           call gethelptext(helpinsub,helptopic,nbhelp)
           call easkabc('Options:',' ','clear points & redefine zone',
@@ -2358,7 +2376,8 @@ C Remember the block origin.
           ipyy(INVERT)=iyy1
           px(INVERT)=tpx1
           py(INVERT)=tpy1
-          call winscl('z',3)
+          iicol=3
+          call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
           write(temp6,'(A)')'Org'
@@ -2371,7 +2390,8 @@ C Remember the point at the end of the front edge.
           ipyy(INVERT)=iyy2
           px(INVERT)=tpx2
           py(INVERT)=tpy2
-          call winscl('z',3)
+          iicol=3
+          call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
           twid=crowxyz(tpx1,tpy1,Z1,tpx2,tpy2,Z1)
@@ -2420,7 +2440,8 @@ C Check if tollerably close to an axis.
           ipyy(INVERT)=iyy3
           px(INVERT)=tpx3
           py(INVERT)=tpy3
-          call winscl('z',3)
+          iicol=3
+          call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
           call esymbol(iid1,iid2,24,1)
           tdepth=crowxyz(tpx2,tpy2,Z1,tpx3,tpy3,Z1)
@@ -2642,8 +2663,10 @@ C the user edited the value (iwmg=7).
 C Local variables to pass to edline.
 #ifdef OSI
       integer iix,iiy,iily,iilx,iiuy,iirx
+      integer iicol
 #else
       integer*8 iix,iiy,iily,iilx,iiuy,iirx
+      integer*8 iicol
 #endif       
 
       if(iwmg.eq.1)then
@@ -2654,7 +2677,8 @@ C If libraries and monitor support greyscale then reset forground
 C to 36% grey when drawing dots.
         greyok=.false.
         if(nifgrey.gt.4)then
-          call winscl('i',nifgrey-4)
+          iicol=nifgrey-4
+          call winscl('i',iicol)
           greyok=.true.
         endif
         IF(IFS.GT.0)CALL winfnt(0)
@@ -2687,7 +2711,10 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',xp,ix,ily,iuy
 C If within display range draw vertical line. If spacing less than 1m
 C put label at 1m invervals and draw solid grey line.
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
-              if(greyok)call winscl('i',nifgrey-4)
+              if(greyok)then
+                iicol=nifgrey-4
+                call winscl('i',iicol)
+              endif
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline.
@@ -2707,7 +2734,10 @@ C cast to local variable to pass to edline.
 
 C Do every 2m.
               if(mod(i,2).eq.0)then
-                if(greyok)call winscl('i',nifgrey-4)
+                if(greyok)then
+                  iicol=nifgrey-4
+                  call winscl('i',iicol)
+                endif
                 iix=ix
                 iily=ily
                 iiuy=iuy
@@ -2726,7 +2756,10 @@ C Do every 2m.
 C Check if we are at a metre mark and if so write label.
               call eclose(xp,xpl,0.001,closelabel)
               if(closelabel)then
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 iix=ix
                 iily=ily
                 iiuy=iuy
@@ -2742,7 +2775,10 @@ C Check if we are at a metre mark and if so write label.
   444         xp=xp+other
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 iix=ix
                 iily=ily
                 iiuy=iuy
@@ -2756,7 +2792,10 @@ C Check if we are at a metre mark and if so write label.
             xp=float(i)+0.5
             ix=ixo+int(xp*factor)
             if(ix.gt.ixbul.and.ix.lt.ixblr)then
-              if(greyok)call winscl('i',nifgrey-3)
+              if(greyok)then
+                iicol=nifgrey-3
+                call winscl('i',iicol)
+              endif
               iix=ix
               iily=ily
               iiuy=iuy
@@ -2768,7 +2807,10 @@ C Check if we are at a metre mark and if so write label.
               xp=xp+0.25
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
-                if(greyok)call winscl('i',nifgrey-4)
+                if(greyok)then
+                  iicol=nifgrey-4
+                  call winscl('i',iicol)
+                endif
                 iix=ix
                 iily=ily
                 iiuy=iuy
@@ -2783,7 +2825,10 @@ C Check if we are at a metre mark and if so write label.
               xp=xp+0.1
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
-                if(greyok)call winscl('i',nifgrey-4)
+                if(greyok)then
+                  iicol=nifgrey-4
+                  call winscl('i',iicol)
+                endif
                 iix=ix
                 iily=ily
                 iiuy=iuy
@@ -2822,7 +2867,10 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
 
           if(iy.gt.iybul.and.iy.lt.iyblr)then
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
-              if(greyok)call winscl('i',nifgrey-4)
+              if(greyok)then
+                iicol=nifgrey-4
+                call winscl('i',iicol)
+              endif
               iilx=ilx
               iiy=iy
               iirx=irx
@@ -2837,7 +2885,10 @@ C Debug.
 C              write(6,*) 'i mod ',i,mod(i,2)
 
               if(mod(i,2).eq.0)then
-                if(greyok)call winscl('i',nifgrey-4)
+                if(greyok)then
+                  iicol=nifgrey-4
+                  call winscl('i',iicol)
+                endif
                 iilx=ilx
                 iiy=iy
                 iirx=irx
@@ -2848,7 +2899,10 @@ C              write(6,*) 'i mod ',i,mod(i,2)
             elseif(iwmg.eq.7)then
               call eclose(yp,ypl,0.001,closelabel)
               if(closelabel)then
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 iilx=ilx
                 iiy=iy
                 iirx=irx
@@ -2859,7 +2913,10 @@ C              write(6,*) 'i mod ',i,mod(i,2)
   445         yp=yp+other
               iy=iyo-int(yp*factor)
               if(iy.gt.iybul.and.iy.lt.iyblr)then
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 iilx=ilx
                 iiy=iy
                 iirx=irx
@@ -2871,7 +2928,10 @@ C              write(6,*) 'i mod ',i,mod(i,2)
           if(iwmg.eq.4)then
             yp=yp+0.5
             iy=iyo-int(yp*factor)
-            if(greyok)call winscl('i',nifgrey-4)
+            if(greyok)then
+              iicol=nifgrey-4
+              call winscl('i',iicol)
+            endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
               iilx=ilx
               iiy=iy
@@ -2883,7 +2943,10 @@ C              write(6,*) 'i mod ',i,mod(i,2)
 C Logic for 0.25m.
             yp=yp+0.25
             iy=iyo-int(yp*factor)
-            if(greyok)call winscl('i',nifgrey-4)
+            if(greyok)then
+              iicol=nifgrey-4
+              call winscl('i',iicol)
+            endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
               iilx=ilx
               iiy=iy
@@ -2892,7 +2955,10 @@ C Logic for 0.25m.
             endif
             yp=yp+0.25
             iy=iyo-int(yp*factor)
-            if(greyok)call winscl('i',nifgrey-4)
+            if(greyok)then
+              iicol=nifgrey-4
+              call winscl('i',iicol)
+            endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
               iilx=ilx
               iiy=iy
@@ -2901,7 +2967,10 @@ C Logic for 0.25m.
             endif
             yp=yp+0.25
             iy=iyo-int(yp*factor)
-            if(greyok)call winscl('i',nifgrey-4)
+            if(greyok)then
+              iicol=nifgrey-4
+              call winscl('i',iicol)
+            endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
               iilx=ilx
               iiy=iy
@@ -2915,7 +2984,10 @@ C Logic for 0.1m.
               yp=yp+0.1
               iy=iyo-int(yp*factor)
               if(iy.gt.iybul.and.iy.lt.iyblr)then
-                if(greyok)call winscl('i',nifgrey-4)
+                if(greyok)then
+                  iicol=nifgrey-4
+                  call winscl('i',iicol)
+                endif
                 iilx=ilx
                 iiy=iy
                 iirx=irx
@@ -2930,7 +3002,8 @@ C Logic for 0.1m.
   343   continue
       endif
       IF(IFS.GT.0)CALL winfnt(IFS)
-      call winscl('-',0)
+      iicol=0
+      call winscl('-',iicol)
       return
       end
 
@@ -3021,8 +3094,10 @@ C Other is the grid distance if user supplied (iwmg=7).
       character fname*72,temp6*6,temp3*3
 #ifdef OSI
       integer iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4
+      integer iicol
 #else
       integer*8 iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4
+      integer*8 iicol
 #endif
 
 C Debug.
@@ -3032,12 +3107,13 @@ C      write(6,*) 'refresh bitmap'
       call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &  15,15,ixbul,iybul,ixblr,iyblr)
       call edisp(iuout,'Refreshing bitmap...')
-      call winscl('z',0)
+      iicol=0
+      call winscl('z',iicol)
       iid1=ixbul; iid2=iybul;
       call esymbol(iid1,iid2,6,1)
       iid1=ixblr; iid2=iyblr;
       call esymbol(iid1,iid2,4,1)
-      call winscl('-',0)
+      call winscl('-',iicol)
 
 C If north known and within the displayed area then draw it.
       if(inpm.eq.4.or.inpm.eq.5)then
@@ -3046,7 +3122,8 @@ C If north known and within the displayed area then draw it.
         if(xbmnorth)then
           if(((ixtn1.ge.ixbul).and.(ixtn1.le.ixblr)).and.
      &       ((iytn1.ge.iybul).and.(iytn1.le.iyblr)))then
-            call winscl('z',0)
+            iicol=0
+            call winscl('z',iicol)
             iid1=ixtn1; iid2=iytn1;
             call esymbol(iid1,iid2,11,1)
             iid1=ixtn2; iid2=iytn2;
@@ -3056,7 +3133,7 @@ C If north known and within the displayed area then draw it.
             write(temp6,'(A)')'North'
             iid1=ixtn2+5; iid2=iytn2-5;
             CALL wstxpt(iid1,iid2,temp6)
-            call winscl('-',0)
+            call winscl('-',iicol)
           endif
         endif
       endif
@@ -3065,13 +3142,14 @@ C If origin known and within the displayed area then draw it.
       if(xbmorigin)then
         if(((ixo.ge.ixbul).and.(ixo.le.ixblr)).and.
      &     ((iyo.ge.iybul).and.(iyo.le.iyblr)))then
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           iid1=ixo; iid2=iyo;
           call esymbol(iid1,iid2,24,1)
           write(temp6,'(A)')'Origin'
           iid1=ixo+5; iid2=iyo-5;
           CALL wstxpt(iid1,iid2,temp6)
-          call winscl('-',0)
+          call winscl('-',iicol)
         endif
       endif
       if(xbmgrid)then
@@ -3100,38 +3178,44 @@ C bitmap as drawn on the display).
           if(inpm.eq.1.or.inpm.eq.2.or.inpm.eq.6.or.inpm.eq.7)then
             if(((ipxx(j).ge.ixbul).and.(ipxx(j).le.ixblr)).and.
      &         ((ipyy(j).ge.iybul).and.(ipyy(j).le.iyblr)))then
-              call winscl('z',3)
+              iicol=3
+              call winscl('z',iicol)
               iid1=ipxx(j); iid2=ipyy(j);
               call esymbol(iid1,iid2,24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
               call textatxy(ipxx(j)+4,ipyy(j)-1,temp3,'z',3)
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
           elseif(inpm.eq.4)then
             if(((ipxx(j).ge.ixbul).and.(ipxx(j).le.ixblr)).and.
      &         ((ipzz(j).ge.iybul).and.(ipzz(j).le.iyblr)))then
-              call winscl('z',3)
+              iicol=3
+              call winscl('z',iicol)
               iid1=ipxx(j); iid2=ipzz(j);
               call esymbol(iid1,iid2,24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
               call textatxy(ipxx(j)+4,ipzz(j)-1,temp3,'z',3)
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
           elseif(inpm.eq.5)then
             if(((ipyy(j).ge.ixbul).and.(ipyy(j).le.ixblr)).and.
      &         ((ipzz(j).ge.iybul).and.(ipzz(j).le.iyblr)))then
-              call winscl('z',3)
+              iicol=3
+              call winscl('z',iicol)
               iid1=ipyy(j); iid2=ipzz(j);
               call esymbol(iid1,iid2,24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
               call textatxy(ipyy(j)+4,ipzz(j)-1,temp3,'z',3)
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
           endif
   122   continue
@@ -3145,7 +3229,8 @@ C      if(nipwhis.gt.0.and.inpm.eq.3)then
         do 124 j=1,nipwhis
           if(((ipxwhis(j).ge.ixbul).and.(ipxwhis(j).le.ixblr)).and.
      &       ((ipywhis(j).ge.iybul).and.(ipywhis(j).le.iyblr)))then
-            call winscl('z',2)
+            iicol=2
+            call winscl('z',iicol)
             iid1=ipxwhis(j); iid2=ipywhis(j);
             call esymbol(iid1,iid2,24,1)
             if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
@@ -3153,7 +3238,8 @@ C      if(nipwhis.gt.0.and.inpm.eq.3)then
             if(j.gt.99)write(temp3,'(i3)') j
             call textatxy(ipxwhis(j)+4,ipywhis(j)-1,temp3,'z',2)
             if(j.gt.1)then
-              call winscl('z',2)
+              iicol=2
+              call winscl('z',iicol)
 
 C See which zone this point is in. If past the first point in
 C the zone draw back to the starting point.
@@ -3183,7 +3269,8 @@ C << code needs to be updated to allow for clipping >>
         do 123 j=1,NW
           if(((ipxw(j).ge.ixbul).and.(ipxw(j).le.ixblr)).and.
      &       ((ipyw(j).ge.iybul).and.(ipyw(j).le.iyblr)))then
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipxw(j); iid2=ipyw(j);
             call esymbol(iid1,iid2,24,1)
             if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
@@ -3191,7 +3278,8 @@ C << code needs to be updated to allow for clipping >>
             if(j.gt.99)write(temp3,'(i3)') j
             call textatxy(ipxw(j)+4,ipyw(j)-1,temp3,'z',3)
             if(j.gt.1)then
-              call winscl('z',3)
+              iicol=3
+              call winscl('z',iicol)
               iid1=ipxw(j-1)
               iid2=ipyw(j-1)
               iid3=ipxw(j)
@@ -3208,7 +3296,8 @@ C within the extents of the displayed bitmap.
      &       ((ipyw(1).ge.iybul).and.(ipyw(1).le.iyblr)).and.
      &       ((ipxw(NW).ge.ixbul).and.(ipxw(NW).le.ixblr)).and.
      &       ((ipyw(NW).ge.iybul).and.(ipyw(NW).le.iyblr)))then
-            call winscl('z',3)
+            iicol=3
+            call winscl('z',iicol)
             iid1=ipxw(NW)
             iid2=ipyw(NW)
             iid3=ipxw(1)
@@ -3216,7 +3305,8 @@ C within the extents of the displayed bitmap.
             call edwline(iid1,iid2,iid3,iid4)
           endif
         endif
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
       endif
       return
       end

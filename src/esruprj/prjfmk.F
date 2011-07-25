@@ -5251,12 +5251,12 @@ C Descriptive label for a zone load or casual gain.
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
+      integer iid1,iid2,iicol
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iicol
 #endif
 
       logical COLOK
@@ -5458,7 +5458,10 @@ C Plot curves.
         XST=real(IHR-1)
         XFN=real(IHR)
         do 75 I=1,3
-          if (COLOK) call winscl('z',I)
+          if(COLOK)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           iupdown=0
           isym=0
           CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
@@ -5474,7 +5477,10 @@ C Plot curves.
           if (IHR.lt.24)then
             CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
           endif
-          if (COLOK) call winscl('-',0)
+          if(COLOK)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
  75     continue
         iupdown=0
         isym=0
@@ -5529,7 +5535,10 @@ C Plot curves.
         XST=real(IHR-1)
         XFN=real(IHR)
         do 175 I=1,3
-          if (COLOK) call winscl('z',I)
+          if (COLOK)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           iupdown=0
           isym=0
           CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
@@ -5545,7 +5554,10 @@ C Plot curves.
           if (IHR.lt.24)then
             CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
           endif
-          if (COLOK) call winscl('-',0)
+          if (COLOK)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
  175    continue
         iupdown=0
         isym=0
@@ -5600,7 +5612,10 @@ C Plot curves.
         XST=real(IHR-1)
         XFN=real(IHR)
         do 275 I=1,3
-          if (COLOK) call winscl('z',I)
+          if (COLOK)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           iupdown=0
           isym=0
           CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
@@ -5612,7 +5627,10 @@ C Plot curves.
           iupdown=-4
           CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
           if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
-          if (COLOK) call winscl('-',0)
+          if (COLOK)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
  275    continue
         iupdown=0
         isym=0
@@ -5663,7 +5681,10 @@ C << Hard coded casual gain types revise >>
      &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
         iid1=igr-100; iid2=IY;
         call wstxpt(iid1,iid2,outs)
-        if (COLOK) call winscl('z',I)
+        if (COLOK)then
+          iicol=i
+          call winscl('z',iicol)
+        endif
         call pixel2u(igl+120,IY-4,gx,gy)
         iupdown=0
         isym=0
@@ -5677,7 +5698,10 @@ C << Hard coded casual gain types revise >>
         call pixel2u(igr-180,IY-4,gx,gy)
         iupdown=-4
         CALL etplot(gx,gy,iupdown,isym)
-        if (COLOK) call winscl('-',0)
+        if (COLOK)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
  300  continue
 
       ioff=(int(ipltwd)/3)

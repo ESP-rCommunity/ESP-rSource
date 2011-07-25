@@ -519,9 +519,11 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iixs,iiys,iix,iiy,iixlast,iiylast
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iixs,iiys,iix,iiy,iixlast,iiylast
+      integer*8 iicol
 #endif
 
 C Check in graphics mode.
@@ -580,11 +582,17 @@ C Draw dotted line.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
 
 C Draw the dotted line after casting to local variable.
                 call edline(iixs,iiys,iix,iiy,5)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               endif
             endif
@@ -614,9 +622,15 @@ C Draw line to end point.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call edline(iixs,iiys,iix,iiy,4)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               endif
             endif
@@ -646,9 +660,15 @@ C Draw line to end point.
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call edline(iixs,iiys,iix,iiy,4)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               endif
             endif

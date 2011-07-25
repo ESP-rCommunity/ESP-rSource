@@ -755,9 +755,9 @@ C Explicit local variables
 
 C Local variables to pass to edline.
 #ifdef OSI
-      integer iix,iiy,iix1,iiy1
+      integer iix,iiy,iix1,iiy1,iicol
 #else
-      integer*8 iix,iiy,iix1,iiy1
+      integer*8 iix,iiy,iix1,iiy1,iicol
 #endif       
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -768,7 +768,8 @@ C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
       greyok=.false.
       if(nifgrey.gt.4)then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
         greyok=.true.
       endif
 
@@ -870,7 +871,10 @@ C Move to next grid position.
         YINC=YINC+GRIDD
         GOTO 110
       ENDIF
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       call forceflush()
 
       RETURN
