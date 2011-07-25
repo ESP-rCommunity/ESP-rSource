@@ -116,7 +116,6 @@ C If IVAL is outwith range for failure then set to default.
 
 C Clear string buffers
    20 WORD=' '
-      ask='           '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
@@ -599,7 +598,6 @@ C on the fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.00
    20 WORD=' '
-      ask='           '
       WRITE(ask,'(1PE14.6)')RVAL
 
 C Generate help and default strings.
@@ -1863,7 +1861,6 @@ C If in terminal type 8 use dialogue box.
         WORD=' '
         CALL PHELPW(newnbhelp,IHW,IER)
         call dupphelp(newnbhelp)
-        lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -2608,14 +2605,12 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         optg='  '
         if (DEFLT) then
           if(DOK)then
-            id=1
             iw=1
             opta='default (yes)'
             optb='no'
             call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
      &        iw)
           else
-            id=2
             iw=2
             opta='yes'
             optb='default (no)'
@@ -2623,7 +2618,6 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
      &        iw)
           endif
         else
-          id=0
           iw=0
           opta='yes'
           optb='no'
@@ -2632,7 +2626,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         endif
 	
 C Debug.
-C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
+C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
 
         IF(IW.eq.1)THEN
           OK=.TRUE.
@@ -2996,7 +2990,7 @@ C MMOD=-2 TELETYPE: wait if full, page with blank line.
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,301)
   301       FORMAT(/,' ',50('-'),'>>',$)
-            READ(IUIN,'(A1)')DUMMY
+            READ(IUIN,'(A1)') DUMMY
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -3244,7 +3238,6 @@ C Print out the menu. If text is > 36 char or there are few items
 C then restrict to a single column. If less than 36 characters
 C print double column.
         IF(IMLENG.GT.36.OR.NITMS.LE.6)THEN
-          CALL ELINC(NITMS)
           LN=max(1,LNBLNK(ITEMS(1)))
           WRITE(IUOUT,900,iostat=ios,err=1)NAME(1:ITLENG),ITEMS(1)(1:LN)
   900     FORMAT(/,1X,a,': ',a)
@@ -3256,7 +3249,6 @@ C print double column.
    92     CONTINUE
         ELSEIF(IMLENG.LT.24)THEN
           MNULEN=NITMS/2
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,902,iostat=ios,err=2)NAME(1:ITLENG),
      &      ITEMS(1)(1:IMLENG),ITEMS(MNULEN+1)(1:IMLENG)
   902     FORMAT(/,1X,a,':  ',a,'   ',a)
@@ -3273,7 +3265,6 @@ C print double column.
           ENDIF
         ELSEIF(IMLENG.GE.24.and.IMLENG.LE.36)THEN
           MNULEN=(NITMS/2)
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,'(2a)',iostat=ios,err=2)NAME(1:ITLENG),':'
           DO 193 K=1,MNULEN
             WRITE(IUOUT,'(2X,a,3x,a)',iostat=ios,err=2)
@@ -3723,13 +3714,11 @@ C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
           WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ELSE
-          CALL ELINC(1)
           WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
-        CALL ELINC(1)
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ENDIF
 

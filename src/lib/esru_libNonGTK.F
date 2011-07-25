@@ -2257,7 +2257,6 @@ C Setup a single line menu to pick from via EASKS.
         LN1=max(1,lnblnk(MSG1))
         LN3=max(1,lnblnk(MSG3))
         ans = '  '
-        CALL ELINC(1)
         WRITE(IUOUT,'(a)')MSG1(1:LN1)
         WRITE(IUOUT,'(a)')MSG3(1:LN3)
 
@@ -2707,7 +2706,6 @@ C Print out the menu. If text is > 36 char or there are few items
 C then restrict to a single column. If less than 36 characters
 C print double column.
         IF(IMLENG.GT.36.OR.NITMS.LE.6)THEN
-          CALL ELINC(NITMS)
           LN=max(1,LNBLNK(ITEMS(1)))
           WRITE(IUOUT,900,iostat=ios,err=1)NAME(1:ITLENG),ITEMS(1)(1:LN)
   900     FORMAT(/,1X,a,': ',a)
@@ -2719,7 +2717,6 @@ C print double column.
    92     CONTINUE
         ELSEIF(IMLENG.LT.24)THEN
           MNULEN=NITMS/2
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,902,iostat=ios,err=2)NAME(1:ITLENG),
      &      ITEMS(1)(1:IMLENG),ITEMS(MNULEN+1)(1:IMLENG)
   902     FORMAT(/,1X,a,':  ',a,'   ',a)
@@ -2736,7 +2733,6 @@ C print double column.
           ENDIF
         ELSEIF(IMLENG.GE.24.and.IMLENG.LE.36)THEN
           MNULEN=(NITMS/2)
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,'(2a)',iostat=ios,err=2)NAME(1:ITLENG),':'
           DO 193 K=1,MNULEN
             WRITE(IUOUT,'(2X,a,3x,a)',iostat=ios,err=2)
@@ -3193,13 +3189,11 @@ C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
           WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ELSE
-          CALL ELINC(1)
           WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
-        CALL ELINC(1)
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ENDIF
 

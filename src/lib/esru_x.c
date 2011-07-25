@@ -5217,8 +5217,9 @@ void egdisp_(msg,line,len)
      Note:
        - strncpy can deal with non-null-terminated strings.
        - len <= 124 in all cases
+     use of strncpy is broublesome on gcc4
   */
-  // strncpy(msg2,msg,len);  /* this method is troublesome on gcc4 */
+  // strncpy(msg2,msg,len);
   // msg2[len+1] = '\0';
   
 /* add message to the queue */

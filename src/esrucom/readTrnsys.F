@@ -102,7 +102,6 @@ C Reference
 
       NTRNCMP = NTRNCMP + 1
       IF(NTRNCMP .GT. MTRNCOM) THEN
-         call elinc(1)
          WRITE(IUOUT,*) ' Number of TRNSYS components more than the',
      &         ' maximum value: ', MTRNCOM
          STOP 'TRNPMXT: unresolvable error on num of TRNSYS component'
@@ -283,7 +282,6 @@ C (NPMTYP - 1)
 
       DO 20 inod=1,nnode
          IF(ISV(IPCOMP,inod) .LT. ( min_PM_threshold -1 )*10) THEN
-           call elinc(2)
            WRITE(IUOUT,*) ' Plant matrix type ',NPMTYP,' cannot be',
      &                ' established from'
            WRITE(IUOUT,*) ' component ',IPCOMP,' node ',INOD,
@@ -346,14 +344,12 @@ C Check if connection relates to current component as the receiving one
             IF(IPC1(IPCON).NE.IPCOMP) GOTO 32
             n=IPN1(IPCON)
             IF(n.LT.1 .OR. n.GT.nnode .OR. NDCON(IPCOMP,n).LE.0) THEN
-               call elinc(1)
                WRITE(IUOUT,*) ' No receiving connection allowed',
      &                  ' to component ',IPCOMP,' , node ',n
                STOP ' MZPMXT: unresolvable error'
             END IF
             knhit(n) = knhit(n)+1
             IF(knhit(n) .GT. NDCON(IPCOMP,n)) THEN
-               call elinc(2)
                WRITE(IUOUT,*) ' Max. number of connections exceeded',
      &                  ' for component ',IPCOMP,', node ',n
                STOP ' MZPMXT: unresolvable error'
@@ -366,7 +362,6 @@ C which is only possible in case of a type 3 inter-connection
   32        IF(IPC2(IPCON).NE.IPCOMP .OR. IPCT(IPCON).NE.3) GOTO 39
             n=IPN2(IPCON)
             IF(n.LT.1 .OR. n.GT.nnode .OR. NDCON(IPCOMP,n).EQ.0) THEN
-               call elinc(1)
                WRITE(IUOUT,*) ' No connection allowed to component ',
      &                  IPCOMP,' , node ',n
                STOP ' MZPMXT: unresolvable error'
