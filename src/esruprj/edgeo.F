@@ -6072,6 +6072,8 @@ C Strings for surface attributes to pass to insrec.
       integer MVERT,IVERT,NITMS,IRT ! max items and current menu item
       integer icmpall  ! to signal request to compare all names
       integer ibopt    ! to specify which mass origin option
+      integer mnulen,iwhich2   ! multi column lines
+      logical odd   ! for display of vertex info
       
 #ifdef OSI
       integer iix,iiy
@@ -7084,6 +7086,7 @@ C If there are enough items allow paging control via EKPAGE.
           IPACT=EDIT
           CALL EKPAGE(IPACT)
         ENDIF
+
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit item identified by KEYIND. Treat the list of vertices as a
@@ -7104,6 +7107,42 @@ C a thick line.
    93   helptopic='surface_edge_order'
         call gethelptext(helpinsub,helptopic,nbhelp)
         NV=NVER(IFOC)
+
+C List out the vertices associated with this surface. To save
+C space, use double column as in the emenu code in
+C esru_libNonGTK.F and also for use in the model contents report.
+
+        write(message,'(2a)') 'Vertices (X Y Z) used by ',
+     &    SNAME(ICOMP,IFOC)
+        call edisp(iuout,message)
+
+C See if an even or odd number of items in list.
+        im=MOD(NV,2)
+        odd=.false.
+        if(im.eq.1) odd=.true.
+        if(nv.lt.8)then
+          do 960 i=1,nv
+            iwhich=jvn(ifoc,i)
+            write(outs,'(a,i3,3f11.5)') 'vertex ',iwhich,X(iwhich),
+     &        Y(iwhich),Z(iwhich)
+            call edisp(iuout,outs)
+  960     continue
+        else
+          MNULEN=(NV/2)
+          DO 193 K=1,MNULEN
+            iwhich=jvn(ifoc,k)
+            iwhich2=jvn(ifoc,k+mnulen)
+            WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',iwhich,
+     &        X(iwhich),Y(iwhich),Z(iwhich),'   vertex ',iwhich2,
+     &        X(iwhich2),Y(iwhich2),Z(iwhich2)
+            call edisp(iuout,outs)
+  193     CONTINUE
+          IF(odd)THEN
+            WRITE(outs,'(a,i3,3f11.5)') 'vertex ',nv,X(nv),
+     &        Y(nv),Z(nv)
+            call edisp(iuout,outs)
+          ENDIF
+        endif
 
 C Set up a long string buffer for editing vertex list for the
 C surface. Include surface name in the dialog. 

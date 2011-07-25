@@ -262,6 +262,8 @@ C in the current model. A -1 means not applicable
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
+      integer im,k,mnulen,iwhich2   ! multi column lines
+      logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
       INTEGER :: ins4,inss1,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
@@ -1879,12 +1881,33 @@ C Setup phrases for the menu and for editing length and psi values.
         if(geominfo.eq.3)then    ! Very verbose - include coordinates.
 
 C Write vertices with minimal white space comma separated.
-          call edisp(itu,' Vertices (X Y Z) in the zone...')
-          DO 960 I = 1,NZTV(izz)
-            WRITE(outs,'(a,3F12.5,a,i3)')'*vertex ',
-     &        X(I),Y(I),Z(I),'  # ',I
-            call edisp(itu,outs)
-960       CONTINUE
+C See if an even or odd number of items in list.
+          im=MOD(NZTV(izz),2)
+          odd=.false.
+          if(im.eq.1) odd=.true.
+          call edisp(itu,' Vertices ( index X Y Z) in the zone...')
+          if(NZTV(izz).lt.20)then
+            DO 960 I = 1,NZTV(izz)
+              WRITE(outs,'(a,i3,3F12.5,a,i3)')'*vertex ',I,
+     &          X(I),Y(I),Z(I)
+              call edisp(itu,outs)
+960         CONTINUE
+          else
+            MNULEN=(NZTV(izz)/2)
+            DO 193 K=1,MNULEN
+              WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
+     &        X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
+     &        X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
+              call edisp(itu,outs)
+  193       CONTINUE
+
+C Put odd vertex in right column.
+            if(odd)then
+              WRITE(outs,'(46x,a,i3,3f11.5)') 'vertex ',NZTV(izz),
+     &          X(NZTV(izz)),Y(NZTV(izz)),Z(NZTV(izz))
+              call edisp(itu,outs)
+            endif 
+          endif
 
           call edisp(itu,
      &    ' Number of vertices followed by list of associated vert')
