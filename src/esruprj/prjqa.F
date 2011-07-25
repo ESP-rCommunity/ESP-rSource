@@ -262,7 +262,7 @@ C in the current model. A -1 means not applicable
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
-      integer im,k,mnulen,iwhich2   ! multi column lines
+      integer im,k,mnulen   ! multi column lines
       logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv

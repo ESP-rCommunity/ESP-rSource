@@ -297,7 +297,7 @@ static int f_baseline,f_lbearing;	/* num pixels under baseline and from origin t
 static box	dbx1, viewbx, msgbx, askbx, disp, scroll, scrollbar;
 static box      scrollv, scrollbarv,scrollh, scrollbarh;
 static box	fbb, setup, cpw; /* feedback box background, setup, copyright */
-static box	wire, captext ;	/* wireframe ctl & capture text button */
+static box	wire, capture, captext ;	/* wireframe ctl & capture text button */
 static box	azi,aziplus,aziminus;	/* buttons for view azimuth changes */
 static box	elev,elevplus,elevminus;	/* buttons for view elevation changes */
 static box     altb,altc,querb,defb,okb;	/* boxes for alts,query help, default, confirm */

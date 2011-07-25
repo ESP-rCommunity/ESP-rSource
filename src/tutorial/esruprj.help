@@ -10747,7 +10747,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         call askok('Apply this move?',' ',OK,dok,1)
         CALL EASKABC(outs,' ','new vertex',
   43    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
-*item EDGVERT ground_form_vertex_manage
+*item EDGVERT ground_form_vert_manage
 'If a new vertex is a minor variation of an existing '
 'point then it may be easier to copy and then edit. '
 ' '
@@ -11664,7 +11664,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
       CALL EASKATOG('calculation control (see help):',' ',
       CALL PHELPD('conv coef data',2,'-',0,0,IER)
       CALL EASKS(SN,outs,'inside, outside?',12,' -1.0 -1.0',
-*item EPHCF zone_htc_correlation_edit
+*item EPHCF zone_htc_correlat_edit
 'A number of empirical correlations and fixed values, '
 'extracted from the following sources, are supported: '
 ' '
