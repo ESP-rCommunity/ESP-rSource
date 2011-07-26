@@ -2351,11 +2351,11 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  if (mde == 1) {
    resid = *ymn - (int) *ymn;
    if(*ymn < 0. && resid != 0.) {
-       yticv = (int) *ymn;
+       yticv = *ymn;
        iy = ofb - (int) (((float) yticv + *yadd) * *sca);
        gdk_draw_line(gr_image,gc,ofl,ofb,s_0,iy);
    } else if(*ymn > 0. && resid != 0.) {
-       yticv = (int) (*ymn + ddy);
+       yticv = (*ymn + ddy);
        iy = ofb - (int) (((float) yticv + *yadd) * *sca);
        gdk_draw_line(gr_image,gc,ofl,ofb,s_0,iy);
        nintvl--;
@@ -2364,7 +2364,7 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  }
 
 /* Now put in the interum tic marks and labels. */
- vertadj = (f_height * 0.5);
+ vertadj = (gint)(f_height * 0.5);
  s_1 = nintvl;
 
 /* Initial label position (at bottom of graphic area) to test against.   */
@@ -2525,12 +2525,12 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
    if(*xmn < 0. && fabs(resid) > 0.0001) { /* ?? fabs((double)resid) */
-       xticv = (int) *xmn;
+       xticv = *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
    } else if(*xmn > 0. && fabs(resid) > 0.0001) { /* ?? fabs((double)resid) */
-       xticv = (int) (*xmn + ddx);
+       xticv = (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);

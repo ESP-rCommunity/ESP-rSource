@@ -569,7 +569,7 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
          lnq1 = 0;	/* detect the actual size of reply_local */
          f_to_c_l(reply_local,&lenrep,&lnq1);
 /* debug g_print ("askdialog248 local %d is %s",lnq1,reply_local); */
-         g_snprintf (reply, lnq1+1, "%s", reply_local); /* copy reply_local into reply +1 for null */
+         g_snprintf (reply, (gulong)lnq1+1, "%s", reply_local); /* copy reply_local into reply +1 for null */
 /* debug g_print ("askdialog248 reply is %s",reply); */
          g_free (reply_local);
          no_valid_event = FALSE;

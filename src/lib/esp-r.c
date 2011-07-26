@@ -388,10 +388,8 @@ void text_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* First find the size of the graphic window. Note: do this prior to changing
  * the text feedback display font by using Pango context previously setup in esp-r.c */
@@ -496,10 +494,8 @@ void emenu_feedback_reset ( void)
    gint f_width;	/* pixel width of default font */
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* the following would not be necessary if graphicf extents were remembered globally */
 /* << fix this >> */
@@ -555,10 +551,8 @@ void graphic_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* Create font description to use for resetting the graphic font.
  * Use pango_font_get_metrics to get font width and height. */
@@ -998,7 +992,8 @@ void esru_wire_ctl ( void)
    GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
    GtkWidget *HighDefault, *HighConstr, *HighOpaque, *HighTrans, *HighPartAtt;
 
-   gint nrows, irow, icol, izone, itchar, ichar, result;
+   gint izone, itchar, ichar, result;
+   guint nrows, irow, icol;
    int no_valid_event;
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
@@ -1126,7 +1121,7 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
    /* create zones to display list  <<pick up zone names here>>*/
-   nrows = 1 + c1_.NCOMP/4;
+   nrows = 1 + (guint)(c1_.NCOMP/4);
    irow = 0;
    //fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
    //fprintf(stderr,"number of rows %d\n",nrows);
