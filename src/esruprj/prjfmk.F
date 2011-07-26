@@ -965,19 +965,72 @@ C << must be revised for multiple day types and periods. >>
      &             IVH(MCOM),TAH(MCOM)
       common/p3ver/ip3ver(MCOM)
 
-      DIMENSION IVAL(4), IVALS(3), ALT(4),ALTS(3)
+      DIMENSION IVALS(3), ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
-      CHARACTER ALT*32,ALTS*31,H*72
-      LOGICAL OK,DOK
+      CHARACTER ALTS*31,H*72
+      integer iwhich,iwhich2  ! for user choices
 
 C Flow control browse & editing.
-      DOK=.false.
-      h(1)='This facility supports basic scheduled control of air'
-      h(2)='infiltration and ventilation based on temperatures or'
+      h(1)='This interface supports range based control of scheduled'
+      h(2)='air infiltration and ventilation based on temperatures or'
       h(3)='wind velocity.'
-      CALL ASKOK(' ','Is air flow thermostatically controlled?',
-     &           OK,DOK,3)
-      IF(.NOT.OK)THEN
+      h(4)=' '
+      h(5)='If you do not select control then the nominal infiltration'
+      h(6)='and ventilation rates in the schedules will be used. '
+      h(7)='  '
+      h(8)='Thermostatic control of air flow can be based on one of the'
+      h(9)='the following parameters: '
+      h(10)=' '
+      h(11)='  air temperature within the current zone;'
+      h(12)='  air temperature within another modelled zone;'
+      h(13)='  external air temperature;'
+      h(14)='  '
+      h(15)='For temperature control the limit is in degC.'
+      h(16)='For wind speed control the limit is in m/s.'
+      h(17)=' '
+      h(18)='Infiltration is defined in terms of air changes per hour'
+      h(19)='and ventilation is in air changes (based on the volume '
+      h(20)='of the receiving zone. '
+      h(21)=' '
+      h(22)='The scope of flow control can be restricted to infil-'
+      h(23)='tration (outside), to ventilation (from another zone or'
+      H(24)='at a specified temperature) or to both.'
+      h(25)=' '
+      h(26)='This is a range based control similar to that used in '
+      h(27)='mass flow network control. '
+      h(28)=' '
+      h(29)='Lower limit: point below which an alternative flow'
+      h(30)='  rate takes effect (e.g. closing windows when the'
+      h(31)='  lower limit is reached).'
+      h(32)=' '
+      h(33)='Middle limit: point above which the 1st stage of an'
+      h(34)='  alternative flow regime takes effect).'
+      h(35)=' '
+      h(36)='High limit: point above which a 2nd stage flow'
+      h(37)='  regime takes effect. (Set high, e.g. 100degC,'
+      h(38)='  to prevent use.)'
+      H(39)=' '
+      H(40)='The relationship between control and schedules is'
+      H(41)='as follows.                          '
+      H(42)=' '
+      H(43)='      |       ________               '
+      H(44)=' ac/h |       |      |___            '
+      H(45)='      |    ___|         |____        '
+      H(46)='      |   |   scheduled rate |       '
+      H(47)='      |___|____:_____________|_______'
+      H(48)='               : <- time ->          '
+      H(49)='      |        :                     '
+      H(50)=' ac/h |flow |  V     | flow | flow | '
+      H(51)='      |__x__|________|___y__|__z___| '
+      H(52)='       low   default   high  extreme '
+      H(53)='         <-  temperature ranges  ->  '
+      H(54)='         <-  wind-speed ranges   ->  '
+      H(55)='  '
+      H(56)='Note that thermostatic control applies to a day'
+      H(57)='types within a simulation.'
+      CALL EASKABC('Control of scheduled air flows:',' ',
+     &  'none','thermostatic control','wind-speed control',iwhich,57)
+      if(iwhich.eq.1)then
         ITCTL(ICOMP)=0
         THI(ICOMP)=100.
         TUP(ICOMP)=0.
@@ -986,40 +1039,29 @@ C Flow control browse & editing.
         ctlstr(ICOMP,2)='no control of air flow  '
         ctlstr(ICOMP,3)='no control of air flow  '
         return
+      elseif(iwhich.eq.2)then
+        CALL EASKABCD('Thermostatic control options:',' ',
+     &    'zone air T','other zone air T','ambient air T',
+     &    'Cancel',iwhich2,57)
+        if(iwhich2.eq.1)then
+           ITCTL(icomp)=1
+        elseif(iwhich2.eq.2)then
+           ITCTL(icomp)=2
+        elseif(iwhich2.eq.3)then
+           ITCTL(icomp)=3
+        elseif(iwhich2.eq.4)then
+          return
+        endif
+      elseif(iwhich.eq.3)then
+        ITCTL(icomp)=4 ! wind velocity control
       endif
-
-      ALT(1)='zone air temperature (default) '
-      ALT(2)='adjacent zone air temperature  '
-      ALT(3)='external air temperature       '
-      ALT(4)='wind velocity                  '
-
-      H(1)='Control of air flow can be based on one of the'
-      H(2)='following parameters: '
-      H(3)=' '
-      H(4)='* air temperature within the current zone;'
-      H(5)='* air temperature within another modelled zone;'
-      H(6)='* external air temperature;'
-      H(7)='* external wind velocity.'
-      H(8)=' '
-      H(9)='Note that thermostatic or wind velocity control'
-      H(10)='applies to all days within a simulation.'
-      IX=1
-      CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-     &         32,4,ALT,'air flow control',IER,10)
-
-      IF(IX.EQ.0) RETURN
-      ITCTL(icomp)=IVAL(1)
 
       ALTS(1)='infiltration only'
       ALTS(2)='ventilation only'
       ALTS(3)='infiltration & ventilation'
-
-      H(1)='Air flow control can be restricted to infiltration'
-      H(3)='(outside), to ventilation (from another zone or at'
-      H(3)='specified temperature) or to both.'
       IX=1
    12 CALL EPICKS(IX,IVALS,' ','Air flow control scope:',
-     &         31,3,ALTS,'air flow scope',IER,3)
+     &         31,3,ALTS,'air flow scope',IER,57)
 
       IF(IX.EQ.0) goto 12
       ISCOPE=IVALS(1)
@@ -1076,23 +1118,10 @@ C << to be done >>
 
       endif
 
-      H(1)='For temperature control the limit is in degC.'
-      H(2)='For wind speed control the limit is in m/s.'
-      h(3)=' '
-      h(4)='Lower limit: point below which an alternative flow'
-      h(5)='  rate takes effect (e.g. closing windows when the'
-      h(6)='  lower limit is rached).'
-      h(7)=' '
-      h(8)='Middle limit: point above which the 1st stage of an'
-      h(9)='  alternative flow regime takes effect).'
-      h(10)=' '
-      h(11)='High limit: point above which a 2nd stage flow'
-      h(12)='  regime takes effect. (Set high, e.g. 100degC,'
-      h(13)='  to prevent use.)'
  100  WRITE(HOLD,'(3f8.2,a)')TLO(ICOMP),TUP(ICOMP),THI(ICOMP),'  '
       CALL EASKS(HOLD,' ',
-     &  'Lower, middle and high set points?',
-     &  40,' 15.0  22.0  26.0  ','flow stages ',IER,13)
+     &  'Lower, middle & high set points (see help)?',
+     &  40,' 15.0  22.0  26.0  ','flow stages ',IER,57)
       K=0
       CALL EGETWR(HOLD,K,VALL,-10.,200.,'F','low',IER)
       CALL EGETWR(HOLD,K,VALU,VALL,200.,'F','middle',IER)
@@ -1102,171 +1131,138 @@ C << to be done >>
       TUP(ICOMP)=VALU
       THI(ICOMP)=VALH
 
-c Define air flow when the sensed variable is below
+      if(ISCOPE.EQ.1.or.ISCOPE.EQ.3)then
+
+C If the scope is infiltraiton only or both then ask for all three ranges
+C of infiltraiton.
+
+ 101    WRITE(HOLD,'(3f8.2,a)')ACIL(ICOMP),ACIU(ICOMP),ACIH(ICOMP),'  '
+        CALL EASKS(HOLD,' ',
+     &    'Lower, middle & high infiltration rates (see help)?',
+     &    40,' 0.1  1.0  2.0  ','flow rates',IER,57)
+        K=0
+        CALL EGETWR(HOLD,K,VALL,0.,100.,'F','low ach',IER)
+        CALL EGETWR(HOLD,K,VALU,VALL,100.,'F','middle ach',IER)
+        CALL EGETWR(HOLD,K,VALH,VALU,100.,'F','high ach',IER)
+        if(ier.ne.0)goto 101
+        ACIL(ICOMP)=VALL
+        ACIU(ICOMP)=VALU
+        ACIH(ICOMP)=VALH
+        if(ISCOPE.eq.1) return
+      endif
+
+c Define ventilation air flow when the sensed variable is below
 c the lower range.
-      IF(ISCOPE.EQ.2)goto 304
-
-      h(1)='Infiltration is defined in terms of air changes per'
-      h(2)='hour. This value is used below the lower set point.'
-      VAL=ACIL(ICOMP)
-      CALL EASKR(VAL,' ','Lower range infiltration rate?',
-     &        0.0,'F',200.0,'W',0.0,'lower infiltration',IER,2)
-      ACIL(ICOMP)=VAL
-
-  304 IF(ISCOPE.NE.1)THEN
-        h(1)='Ventilation is defined in air changes per hour. The'
-        h(2)='source can be another modelled zone or a constant'
-        h(3)='temperature source. In both cases the volumer flow'
-        h(4)='rate is relative to the current zone volume.'
-        CALL EASKABC(' ','Ventilation options:',
-     &      'none','from modelled zone','at constant temperature',j,4)
-        if(j.eq.1)then
-          ACVL(ICOMP)=0.
-          IVL(ICOMP)=0
-          TAL(ICOMP)=0.0
-        elseif(j.eq.2)then
-          IV=IVL(ICOMP)
-          call askzone(iv,IVL(icomp),'Ventilation from which zone?',
-     &     'Source Zone','-','Ventilation definition requires a zone.',
-     &      ier)
-          IVL(ICOMP)=IV
-          VAL=ACVL(ICOMP)
-          ratio = VOL(ICOMP)/VOL(IV)
-          write(outs,'(a,F7.3,a)') 
-     &      ' Low range ventilation. (1ac/h in current zone =',
-     &       ratio,' ac/h in source zone.)'
-          write(outs2,'(a,F8.2,a,F8.2,a)') '(vol. current=',VOL(icomp),
-     &      ' vol. source=',VOL(iv),')'
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
-     &      IER,5)
-          ACVL(ICOMP)=VAL
-          TAL(ICOMP)=0.0
-        elseif(j.eq.3)then
-          IVL(ICOMP)=0
-          VAL=ACVL(ICOMP)
-          CALL EASKR(VAL,' ','Lower range ventilation rate?',
-     &        0.0,'F',200.0,'W',1.0,'lower ventilation',IER,4)
-          ACVL(ICOMP)=VAL
-          V=TAL(ICOMP)
-          CALL EASKR(V,' ',
-     &      'Lower range ventilation source temperature?',
-     &      0.0,'-',0.0,'-',18.0,'lower source t',IER,4)
-          TAL(ICOMP)=V
-        endif
-      ENDIF
+      CALL EASKABC('Low range ventilation options:',' ',
+     &  'none','from another zone','at constant temperature',j,57)
+      if(j.eq.1)then
+        ACVL(ICOMP)=0.
+        IVL(ICOMP)=0
+        TAL(ICOMP)=0.0
+      elseif(j.eq.2)then
+        IV=IVL(ICOMP)
+        call askzone(iv,IVL(icomp),'Ventilation from which zone?',
+     &    'Source Zone','-','Ventilation definition requires a zone.',
+     &    ier)
+        IVL(ICOMP)=IV
+        VAL=ACVL(ICOMP)
+        ratio = VOL(ICOMP)/VOL(IV)
+        write(outs,'(a,F7.3,a)') 
+     &    ' Low range ventilation. (1ac/h in current zone =',
+     &     ratio,' ac/h in source zone.)'
+        write(outs2,'(a,F8.2,a,F8.2,a)') '(vol. current=',VOL(icomp),
+     &    ' vol. source=',VOL(iv),')'
+        CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
+     &    IER,57)
+        ACVL(ICOMP)=VAL
+        TAL(ICOMP)=0.0
+      elseif(j.eq.3)then
+        IVL(ICOMP)=0
+        VAL=ACVL(ICOMP)
+        CALL EASKR(VAL,' ','Lower range ventilation rate?',
+     &    0.0,'F',200.0,'W',1.0,'lower ventilation',IER,57)
+        ACVL(ICOMP)=VAL
+        V=TAL(ICOMP)
+        CALL EASKR(V,' ',
+     &    'Lower range ventilation source temperature?',
+     &    0.0,'-',0.0,'-',18.0,'lower source t',IER,57)
+        TAL(ICOMP)=V
+      endif
       call usrmsg(' ',' ','-')
 
 C Define air flow when the sensed variable is above the middle range.
-      IF(ISCOPE.NE.2)THEN
-        h(1)='Infiltration is defined in air changes per hour. This'
-        h(2)='value is used if the temperature is above the mid-leve'
-        h(3)='set point but below the high level set point.'
-        V=ACIU(ICOMP)
-        CALL EASKR(V,' ','1st stage infiltration rate?',
-     &      0.0,'F',200.0,'W',2.0,'middle infiltration',IER,3)
-        ACIU(ICOMP)=V
-      ENDIF
-      call usrmsg(' ',' ','-')
-      IF(ISCOPE.NE.1)THEN
-        h(1)='Mid level ventilation is imposed when the sensed'
-        h(2)='condition is between the middle and high set points.'
-        h(3)='Ventilation (zone coupled air flow) is defined as'
-        h(4)='air changes per hour. The source can be another'
-        h(5)='zone or at a specified constant temperature. In both'
-        h(6)='cases the volume flow rate is relative to the volume'
-        h(7)='of the current zone.'
-        CALL EASKABC(' ','First stage ventilation options:',
-     &      'none','from modelled zone','at constant temperature',j,7)
-        if(j.eq.1)then
-          ACVU(ICOMP)=0.
-          IVU(ICOMP)=0
-          TAU(ICOMP)=0.0
-        elseif(j.eq.2)then
-          IV=IVU(ICOMP)
-          call askzone(iv,IVU(icomp),'Ventilation from which zone?',
-     &     'Source Zone','-','Ventilation definition requires a zone.',
-     &     ier)
-          IVU(ICOMP)=IV
-          VAL=ACVU(ICOMP)
-          ratio = VOL(ICOMP)/VOL(IV)
-          write(outs,'(a,F7.3,a)') 
-     &      ' Mid-range ventil. (ac/h where 1ac/h in current =',
-     &      ratio,' ac/h in source)'
-          write(outs2,'(a,F8.2,a,F8.2,a)') '(vol current=',VOL(icomp),
-     &      ' vol source=',VOL(iv),')'
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt',
-     &       IER,7)
-          ACVU(ICOMP)=VAL
-          TAU(ICOMP)=0.0
-        elseif(j.eq.3)then
-          IVU(ICOMP)=0
-          VAL=ACVU(ICOMP)
-          CALL EASKR(VAL,' ','Mid-range ventilation rate?',
-     &        0.0,'F',200.0,'W',1.0,'mid ventilation',IER,7)
-          ACVU(ICOMP)=VAL
-          V=TAU(ICOMP)
-          CALL EASKR(V,' ','Mid range ventilation source temperature?',
-     &        0.0,'-',0.0,'-',18.0,'mid source t',IER,7)
-          TAU(ICOMP)=V
-        endif
-      ENDIF
+      CALL EASKABC('Mid range ventilation options: ',' ',
+     &  'none','from another zone','at constant temperature',j,57)
+      if(j.eq.1)then
+        ACVU(ICOMP)=0.
+        IVU(ICOMP)=0
+        TAU(ICOMP)=0.0
+      elseif(j.eq.2)then
+        IV=IVU(ICOMP)
+        call askzone(iv,IVU(icomp),'Ventilation from which zone?',
+     &    'Source Zone','-','Ventilation definition requires a zone.',
+     &    ier)
+        IVU(ICOMP)=IV
+        VAL=ACVU(ICOMP)
+        ratio = VOL(ICOMP)/VOL(IV)
+        write(outs,'(a,F7.3,a)') 
+     &    ' Mid-range ventil. (ac/h where 1ac/h in current =',
+     &    ratio,' ac/h in source)'
+        write(outs2,'(a,F8.2,a,F8.2,a)') '(vol current=',VOL(icomp),
+     &    ' vol source=',VOL(iv),')'
+        CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt',
+     &   IER,57)
+        ACVU(ICOMP)=VAL
+        TAU(ICOMP)=0.0
+      elseif(j.eq.3)then
+        IVU(ICOMP)=0
+        VAL=ACVU(ICOMP)
+        CALL EASKR(VAL,' ','Mid-range ventilation rate?',
+     &    0.0,'F',200.0,'W',1.0,'mid ventilation',IER,57)
+        ACVU(ICOMP)=VAL
+        V=TAU(ICOMP)
+        CALL EASKR(V,' ','Mid range ventilation source temperature?',
+     &    0.0,'-',0.0,'-',18.0,'mid source t',IER,57)
+        TAU(ICOMP)=V
+      endif
       call usrmsg(' ',' ','-')
 
 C Define air flow when the sensed variable is above the high range.
-      IF(ISCOPE.NE.2)THEN
-        h(1)='Infiltration is defined in air changes per hour and is'
-        h(2)='used when conditions exceed the high set point. If not'
-        h(3)='needed make the set point high, e.g. 100degC.'
-        V=ACIU(ICOMP)
-        CALL EASKR(V,' ','High stage infiltration rate?',
-     &      0.0,'F',200.0,'W',2.0,'high infiltration',IER,3)
-        ACIH(ICOMP)=V
-      ENDIF
-
-      IF(ISCOPE.NE.1)THEN
-        h(1)='High level ventilation is imposed when the sensed'
-        h(2)='condition exceeds the high set point. Ventilation'
-        h(3)='(zone coupled air flow) is defined as air changes per'
-        h(4)='hour. The source can be another zone or at a specified'
-        h(5)='constant temperature. In both cases the volume flow '
-        h(6)='rate is relative to the volume of the current zone.'
-
-        CALL EASKABC(' ','High stage ventilation options:',
-     &      'none','from modelled zone','at constant temperature',j,6)
-        if(j.eq.1)then
-          ACVH(ICOMP)=0.
-          IVH(ICOMP)=0
-          TAH(ICOMP)=0.0
-        elseif(j.eq.2)then
-          IV=IVH(ICOMP)
-          call askzone(iv,IVH(icomp),'Ventilation from which zone?',
-     &     'Source Zone','-','Ventilation definition requires a zone.',
-     &     ier)
-          IVH(ICOMP)=IV
-          VAL=ACVH(ICOMP)
-          ratio = VOL(ICOMP)/VOL(IV)
-          write(outs,'(a,F7.3,a)') 
-     &      ' High-range ventil. (ac/h where 1ac/h in current =',
-     &      ratio,' ac/h in source)'
-          write(outs2,'(a,F8.2,a,F8.2,a)') '(vol current=',VOL(icomp),
-     &      ' vol source=',VOL(iv),')'
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
-     &      IER,7)
-          ACVH(ICOMP)=VAL
-          TAH(ICOMP)=0.0
-        elseif(j.eq.3)then
-          IVH(ICOMP)=0
-          VAL=ACVH(ICOMP)
-          CALL EASKR(VAL,' ','High-range ventilation rate?',
-     &        0.0,'F',200.0,'W',1.0,'high ventilation',IER,6)
-          ACVH(ICOMP)=VAL
-          V=TAH(ICOMP)
-          CALL EASKR(V,' ',
-     &        'High range ventilation source temperature?',
-     &        0.0,'-',0.0,'-',18.0,'hi source t',IER,6)
-          TAH(ICOMP)=V
-        endif
-      ENDIF
+      CALL EASKABC(' ','High stage ventilation options:',
+     &  'none','from another zone','at constant temperature',j,57)
+      if(j.eq.1)then
+        ACVH(ICOMP)=0.
+        IVH(ICOMP)=0
+        TAH(ICOMP)=0.0
+      elseif(j.eq.2)then
+        IV=IVH(ICOMP)
+        call askzone(iv,IVH(icomp),'Ventilation from which zone?',
+     &    'Source Zone','-','Ventilation definition requires a zone.',
+     &    ier)
+        IVH(ICOMP)=IV
+        VAL=ACVH(ICOMP)
+        ratio = VOL(ICOMP)/VOL(IV)
+        write(outs,'(a,F7.3,a)') 
+     &    ' High-range ventil. (ac/h where 1ac/h in current =',
+     &    ratio,' ac/h in source)'
+        write(outs2,'(a,F8.2,a,F8.2,a)') '(vol current=',VOL(icomp),
+     &    ' vol source=',VOL(iv),')'
+        CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
+     &    IER,57)
+        ACVH(ICOMP)=VAL
+        TAH(ICOMP)=0.0
+      elseif(j.eq.3)then
+        IVH(ICOMP)=0
+        VAL=ACVH(ICOMP)
+        CALL EASKR(VAL,' ','High-range ventilation rate?',
+     &    0.0,'F',200.0,'W',1.0,'high ventilation',IER,57)
+        ACVH(ICOMP)=VAL
+        V=TAH(ICOMP)
+        CALL EASKR(V,' ',
+     &    'High range ventilation source temperature?',
+     &    0.0,'-',0.0,'-',18.0,'hi source t',IER,57)
+        TAH(ICOMP)=V
+      endif
       call usrmsg(' ',' ','-')
 
       RETURN
