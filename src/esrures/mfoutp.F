@@ -111,10 +111,10 @@ C Simulator parameters.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
+      integer iid1,iid2,iicol
 #else
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iicol
 #endif
 
 C For help messages
@@ -724,7 +724,8 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IMFGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
-                    call winscl('z',ICM)
+                    iicol=ICM
+                    call winscl('z',iicol)
                     call forceflush()
                   endif
                 endif
@@ -734,7 +735,10 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(TIME,Yold(IX),iupdown,isym)
-                if(colok)call winscl('-',0)
+                if(colok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -921,12 +925,16 @@ C Finally label lines, matching zone line colour if used.
               ICM=IMFGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IMFGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IMFGETNO(I,2)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
  200    continue
 

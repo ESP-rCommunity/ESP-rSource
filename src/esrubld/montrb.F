@@ -204,10 +204,12 @@ C since not all compilers use the same default.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
+      integer*8 iicol
 #endif
 
 C Test save option selected.
@@ -380,7 +382,10 @@ c If first point then store its coordinates and identify
 c each curve as 'Z??' where 'Z' stands for zone.
             if(icount.eq.0) then
                if(colok)then
-                 if(mzone(i).gt.0)call winscl('z',mzone(i))
+                 if(mzone(i).gt.0)then
+                   iicol=mzone(i)
+                   call winscl('z',iicol)
+                 endif
                endif
                clabel='                    '
 C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
@@ -406,13 +411,19 @@ C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
                call wstxpt(ix,iy,clabel)
                call eswline(ix+5,iy+2,ix+35,iy+2)
                call esymbol(ix+20,iy+2,i,0)
-               if(colok)call winscl('-',0)
+               if(colok)then
+                 iicol=0
+                 call winscl('-',iicol)
+               endif
                call forceflush
 
 c else start plotting.
             else
                if(colok)then
-                 if(mzone(i).gt.0)call winscl('z',mzone(i))
+                 if(mzone(i).gt.0)then
+                   iicol=mzone(i)
+                   call winscl('z',iicol)
+                 endif
                endif
                ti=float(icount)/float(instep)
                ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
@@ -437,7 +448,10 @@ c else start plotting.
                   ncoord1(i,1,1)=ncoord1(i,2,1)
                   ncoord1(i,1,2)=ncoord1(i,2,2)
                endif
-               if(colok)call winscl('-',0)
+               if(colok)then
+                 iicol=0
+                 call winscl('-',iicol)
+               endif
                call forceflush
             endif
    10    continue

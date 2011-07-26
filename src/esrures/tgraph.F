@@ -211,9 +211,11 @@ C act='p' iget parameters already set.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
+      integer*8 iicol
 #endif
 
       logical kwatts,colok
@@ -572,7 +574,10 @@ C look sensible.
 C If plotting colours for different zones then recall which
 C zone we are dealing with.
             if(colok)then
-              if(IGETNO(IX,2).gt.0)call winscl('z',IGETNO(IX,2))
+              if(IGETNO(IX,2).gt.0)then
+                iicol=IGETNO(IX,2)
+                call winscl('z',iicol)
+              endif
             endif
 
 C Plot the current value - this has already been copied to Yold and
@@ -580,7 +585,10 @@ C then reset to forground colour.
             iupdown=IPEN
             isym=MARK
             call etplot(TIME,Yold(IX),iupdown,isym)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
  421      CONTINUE
  400    CONTINUE
@@ -599,11 +607,17 @@ C If IMFS is > zero then use IMFS-1 for line label.
         call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
-          if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
+          if(IGETNO(I,2).gt.0)then
+            iicol=IGETNO(I,2)
+            call winscl('z',iicol)
+          endif
         endif
         call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
         call wstxpt(iid1,iid2,t20)
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
  200  continue
       if(IMFS.gt.0.and.IMFS.lt.4)then

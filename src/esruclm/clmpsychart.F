@@ -50,8 +50,10 @@ C esrures/psychart.F - revised to for plotting climate data.
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iicol
 #endif
 
 C For help messages
@@ -177,7 +179,8 @@ C range of T or RH via colmult.
             call eclose(X,0.000,0.001,close)
             RH=CHUM(K)
             if(iwhich.eq.1)then
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
               icolindex=ncset
             elseif(iwhich.eq.2)then
               colmult=(real(ncset)/trange)
@@ -185,9 +188,11 @@ C range of T or RH via colmult.
               if(icolindex.le.0) icolindex = 1
               if(icolindex.gt.ncset) icolindex = ncset
               if(cscaleok)then
-                call winscl('c',icolindex)
+                iicol=icolindex
+                call winscl('c',iicol)
               else
-                call winscl('-',0)
+                iicol=0
+                call winscl('-',iicol)
               endif
             elseif(iwhich.eq.3)then
               colmult=(real(ncset)/rhrange)
@@ -195,9 +200,11 @@ C range of T or RH via colmult.
               if(icolindex.le.0) icolindex = 1
               if(icolindex.gt.ncset) icolindex = ncset
               if(cscaleok)then
-                call winscl('c',icolindex)
+                iicol=icolindex
+                call winscl('c',iicol)
               else
-                call winscl('-',0)
+                iicol=0
+                call winscl('-',iicol)
               endif
             endif
             GS=1000.*(HUMRT1(CTMP(k),CHUM(k),PATMOS,IOPT))
@@ -215,7 +222,8 @@ C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
             endif
  41       continue
  31     continue
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
       ELSEIF(INO.EQ.2)THEN
 
@@ -306,10 +314,12 @@ C enthmaxy enthalpy y axis maximum
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
 #endif
 
       PATMOS=1013.25
@@ -389,12 +399,18 @@ C Draw the moisture content lines
       isym=0
       CALL etplot(xmax,GS,iupdown,isym)
       GS=GS+GSINT
-C      if(colok)call winscl('z',15)
+C      if(colok)then
+C         iicol=15
+C         call winscl('z',iicol)
+C      endif
       iupdown=0
       isym=0
       CALL etplot(0.,GS,iupdown,isym)
       IF(GS.LE.ymax) goto 30 
-      if(colok)call winscl('-',0)
+      if(colok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw on the RH curves.
       DO 40 IRH=100,10,-10
@@ -409,7 +425,10 @@ C Draw on the RH curves.
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(GS.GT.0..AND.GS.LT.ymax.AND.IPFLAG.EQ.0) THEN
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -420,7 +439,10 @@ C Case where TD<60 and GS>30
   60          TD=TD-0.05
               GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
               IF(GS.GT.ymax) GOTO 60
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -436,13 +458,19 @@ C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN
             write(puts,*) INT(RH),'%'
             if(GS.LE.ymax)then
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               ipos=0
               isize=0
               CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
   50    CONTINUE
   40  CONTINUE
                 
@@ -461,13 +489,19 @@ C Draw on the lines of constant enthalpy.
   110       GS=GS+0.05
             TD=TDB(ENTH,(GS/1000.))
             IF(TD.GT.xmax) GOTO 110
-            if(colok)call winscl('z',24)
+            if(colok)then
+              iicol=24
+              call winscl('z',iicol)
+            endif
             iupdown=0
             isym=0
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(TD.GT.0..AND.TD.LT.xmax.AND.IPFLAG.EQ.0) THEN
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -478,7 +512,10 @@ C Case where TD<60 and GS>30
   90          GS=GS+0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.GT.xmax) GOTO 90
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=1
               isym=0
               CALL etplot(TD,GS,iupdown,isym) 
@@ -487,21 +524,30 @@ C Case where TD<60 and GS>30
  100          GS=GS-0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.LT.0) GOTO 100
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
  
  80     CONTINUE
   
  70   CONTINUE
 
 C Draw on the enthalpy scales
-      if(colok)call winscl('-',0)
+      if(colok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       DO 200 IENTH=0,int(ENTHMAXY),10
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINY.AND.ENTH.LE.ENTHMAXY) THEN

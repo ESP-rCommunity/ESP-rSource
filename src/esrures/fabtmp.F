@@ -521,9 +521,11 @@ C IPRZ is material db ref for each layer.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
 #endif
 
 C Re-establish available colours.
@@ -620,7 +622,8 @@ C each timestep. Pause 200msec at each timestep.
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
-              call winscl('i',nifgrey-1)
+              iicol=nifgrey-1
+              call winscl('i',iicol)
               XX=THKMIN
               iupdown=0
               isym=0
@@ -635,7 +638,8 @@ C If possible reset the foreground colour to white and redraw the line.
               iupdown=1
               call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
 
 C Re-Draw construction section.
