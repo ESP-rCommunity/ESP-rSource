@@ -1266,15 +1266,23 @@ C the climate file and attempt to print out IPV contents.
                 if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
+
+C Set Default season definitions.
+                  CALL EDAY(1,1,is1wins)
+                  CALL EDAY(28,2,is1winf)
+                  CALL EDAY(1,11,is2wins)
+                  CALL EDAY(31,12,is2winf)
+                  CALL EDAY(1,3,is1sprs)
+                  CALL EDAY(30,4,is1sprf)
+                  CALL EDAY(1,9,is2sprs)
+                  CALL EDAY(31,10,is2sprf)
+                  CALL EDAY(1,5,is1sums)
+                  CALL EDAY(31,8,is1sumf)
                   call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                  call edisp(itu,'IPV details might be incorrect.')
-                  if(ieripv.eq.0)then
-                    call listipvdat(itu,'a',ier)
-                  else
-                    call edisp(itu,
-     &              'The IPV description was incomplete or missing.')
-                  endif
+     &              'The climate used was not in the climatelist and')
+                  call edisp(itu,
+     &              'no local seasons set - default seasons assumed.')
+                  call listipvdat(itu,'a',ier)
                 endif
               endif
             endif
@@ -1618,7 +1626,7 @@ C duplicates are found.
  111    continue
 
 C Write out UA information if extra information requested.
-        if(zoneextrainfo.gt.0)then
+        if(zoneextrainfo.gt.1)then
 
 C Debug...
 C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
@@ -1634,8 +1642,8 @@ C          write(itu,*) 'uavwall = ',uavwall(IZZ)
 C          write(itu,*) 'uavslproof = ',uavslproof(IZZ)
 C          write(itu,*) 'uavfltroof = ',uavfltroof(IZZ)
 C          write(itu,*) 'uavgsky = ',uavgsky(IZZ)
-          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
-     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
+C          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
+C     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
 C          write(itu,*) 'UA total = ',uavtotal(IZZ)
 C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 

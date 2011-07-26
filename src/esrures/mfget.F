@@ -111,7 +111,6 @@ C columns listed above.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -152,7 +151,7 @@ C air flow reporting.
 
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
-      character H*72,xfile*144,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,SUFFIX*6
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
@@ -173,6 +172,13 @@ C air flow reporting.
 #else
       integer*8 iid1,iid2
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFMENU'  ! set for cfiles
 
 C The logical variables are required so as user is asked for additional
 C information about the choice of metric if necessary.
@@ -329,28 +335,9 @@ C If plot give graph command and labels command, otherwise list command.
       NITMS=27+nl
       INO=-2
 
-C Instanciate h() strings for this menu.
-      H(1) ='  '
-      write(H(1),'(10x,a)') MTITLE(1:lnblnk(MTITLE))
-      H(2) ='  '
-      H(3) ='Select the required for output.  Some metrics require'
-      H(4) ='extra information e.g. zone number, surface number. '
-      H(5) ='  '
-      write (H(6),'(a,i2,a)')'You have made ',NMFGET,
-     &  ' selections, therefore you have a'
-      NLEFT=(MNGET-NMFGET)
-      write(H(7),'(a,i2,a)')'maximum of ',NLEFT,' selections left.'
-      H(8) ='  '
-      H(9) ='Display can be redirected to a file; be carefull not '
-      H(10)='  to confuse graphical and text output.  '
-      H(11)='Filtering (not yet enabled for flow reporting) is based'
-      H(12)='on the definition of casual gains (typically occupancy).'
-      H(13)='Time can be displayed as hours and minutes (hh,mm) or'
-      H(14)='  as a decimal (Day of year.Fraction of day).'
-      H(15)='Delimiters between tabular output can be changed; '
-      H(16)='  useful when exporting data to 3rd party software.'
-      H(17)='Data can be displayed as raw values (rate of '
-      H(18)='  change of the value is not yet implemented). '
+C Instanciate help strings for this menu.
+      helptopic='res_mass_flow_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(MTITLE,ITEM,NITMS,INO)
 
@@ -693,15 +680,11 @@ C          write(outs,'(a)')'(currently variable)'
 C        else
 C          write(outs,'(a)')'(currently rate of change)'
 C        endif
-C        h(1)='Typical results recovery are of the values within the'
-C        h(2)='results library. An alternative is to report the rate '
-C        h(3)='of change of a variable. The rate of change is expressed'
-C        h(4)='in units per hour (of the normal unit for the variable).'
-C        h(5)=' '
-C        h(6)='Note: all selections cleared when this option is altered.'
+C        helptopic='res_mass_flow_menu'
+C        call gethelptext(helpinsub,helptopic,nbhelp)
 C        CALL EASKABC('Data display options:',outs,
 C     &    'variable (default)','rate of change of variable','contine',
-C     &    II,6)
+C     &    II,nbhelp)
 C        if(II.ne.3.and.(IROC.ne.(II-1)))then
 C          IROC=II-1
 C          call usrmsg ('Clearing current selections....','  ','W')
@@ -728,14 +711,12 @@ C << revise for additional casual gain types >>
             write(ll2,'(1x,a6,1x)') lodlabel(1,2)
             write(ll3,'(1x,a6,1x)') lodlabel(1,3)
             call edisp(iuout,' ')
-            H(1)='Select a casual gain type to base occupancy on.'
-            H(2)='Labels show are from the first zone in the current'
-            H(3)='list. Type 1 usually represents casual gains from '
-            H(4)='people,although any of the three casual gain types'
-            H(5)='can be used. '
+            helptopic='res_casual_gain_type'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
-     &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
+     &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,
+     &         nbhelp)
             if (IOT.gt.1.and.IOT.lt.5) then
               call usrmsg('  ','  ','-')
               iocupf=1
@@ -766,13 +747,13 @@ C the occupany pattern from.
             do 42 i=1,NCOMP
               zn(i)=zname(i)
   42        continue
-            H(1)='Pick one zone to get occupancy pattern from. If'
-            H(2)='none selected then full time occupancy assumed.'
+            helptopic='res_flow_occupancy_zone'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             INPIC=1
             CALL EPICKS(INPIC,IVALS,
      &        'Which thermal zone has the occupancy pattern you',
      &        'want to use for filtering? ',
-     &        12,NCOMP,zn,' zone list',IER,2)
+     &        12,NCOMP,zn,' zone list',IER,nbhelp)
             if(INPIC.eq.0)then
               iocupf=0
               iocut=0
@@ -788,25 +769,26 @@ C the occupany pattern from.
         if(MENUTYPE.eq.3) then
 
 C Set axis limits for the current plot.
-          H(1)='Enter the minimum and maximum value for the y-axis.'
+          helptopic='res_flow_axis_range'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           do 555 Iaxis=1,5
             if (YAXSET(Iaxis).gt.0) then
  501          write (values,'(8(f9.2,1x))') YMIN(Iaxis),YMAX(Iaxis)
               if (Iaxis.eq.1) then
                 call EASKS(values,'  ','Min &max for temperature axis?',
-     &                                 20,' -10 30 ','temp axis',IER,1)
+     &            20,' -10 30 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.2) then
                 call EASKS(values,'  ','Min & max for loads axis?',
-     &                               20,' -100 100 ','temp axis',IER,1)
+     &            20,' -100 100 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.3) then
                 call EASKS(values,'  ','Min & max for intensity axis?',
-     &                                 20,' 0 1000 ','temp axis',IER,1)
+     &            20,' 0 1000 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.4) then
                 call EASKS(values,'  ','Min & max for misc axis?',
-     &                                 20,' 0 100 ','temp axis',IER,1)
+     &            20,' 0 100 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.5) then
                 call EASKS(values,'  ','Min&max for concntration axis?',
-     &                                 20,' 0 0.25 ','conc axis',IER,1)
+     &            20,' 0 0.25 ','conc axis',IER,nbhelp)
               endif
               K=0
               CALL EGETWR(values,K,YN,0.,0.,'-','Y min',IER)
@@ -839,9 +821,10 @@ C Toggle time format and day separators for all other display formats.
             call edisp(iuout,' ')
             call edisp(iuout,'3rd party graphing time=day fraction set')
           endif
-          H(1)='Places a # separator between days of tabular data.'
+          helptopic='res_flow_hash_separator'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Include mark between days when ',
-     &                'displaying or writing data :','no','yes',IDH,1)
+     &      'displaying or writing data :','no','yes',IDH,nbhelp)
           IDHFLG=IDH-1
           goto 1
         endif
@@ -854,17 +837,12 @@ C Add another selection - time series plot only.
         else
 
 C Toggle delimeter.
-          H(1) ='Tabular data can be sent to file with various '
-          H(2) ='delimiters: '
-          H(3) ='  spaces (format using spaces to lineup columns)'
-          H(4) ='  single space between columns'
-          H(5) ='  comma separator (for excel)'
-          H(6) ='  tab separator (for excel)'
-          H(7) ='  tagged - marked up data'
+          helptopic='res_flow_delimeter'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','tagged',
-     &      'continue',' ',IWM,7)
+     &      'continue',' ',IWM,nbhelp)
           if(iwm.eq.1)then
             delim = '-'
           elseif(iwm.eq.2)then
@@ -883,10 +861,11 @@ C Toggle delimeter.
 
 C Control labels if graphic plot.
 C Add in a title for this graph 64 char string graftitle.
- 290      H(1)='A title (up to 64 characters) can be included.'
+ 290      helptopic='res_mass_graph_title'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           t64=graftitle
           CALL EASKS(t64,' Title for graph ? ',
-     &     ' ',64,'  ','graph title',IER,1)
+     &     ' ',64,'  ','graph title',IER,nbhelp)
           if(t64(1:2).ne.'  '.and.t64(1:4).ne.'UNKN')then
             graftitle=t64
           else
@@ -895,8 +874,10 @@ C Add in a title for this graph 64 char string graftitle.
 
 C Add or clear labels within a graph.
           if(ngrlbl.eq.0)then
+            helptopic='res_mass_graph_title'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB('Labels within graph options:',' ',
-     &        'edit/add labels','contine',igopt,0)
+     &        'edit/add labels','contine',igopt,nbhelp)
             if(igopt.eq.1)then
               igrl=0
               grlbl(1)=' '
@@ -908,9 +889,11 @@ C Add or clear labels within a graph.
               goto 1
             endif
           elseif(ngrlbl.gt.0)then
+            helptopic='res_mass_graph_title'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKABC('Labels within graph options:',' ',
      &        'clear existing labels','edit/add labels','contine',
-     &        igopt,0)
+     &        igopt,nbhelp)
             if(igopt.eq.1)then
               ngrlbl=0
               igrl=0
@@ -938,10 +921,12 @@ C If there are no labels or some label start at first, if more than 5 exit.
           else
             igrl=igrl+1
           endif
+          helptopic='mass_graph_edit_label'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           t24=grlbl(igrl)
  292      CALL EASKS(t24,
      &     'Label within graph (AFTER editing select a point on graph',
-     &     'for the label position).',24,'x','graph label',IER,1)
+     &     'for the label position).',24,'x','graph label',IER,nbhelp)
           if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
             grlbl(igrl)=t24
             if(igrl.gt.ngrlbl)ngrlbl=igrl
@@ -957,10 +942,8 @@ C Find out point where text should be drawn.
           iid1=lblpx(igrl); iid2=lblpy(igrl);
           call wstxpt(iid1,iid2,t24)
           dok=.true.
-          h(1)='If you say yes you can insert another label in the'
-          h(2)='graph. Otherwise you will be returned to the menu.'
           CALL ASKOK('Include another user supplied label?',' ',
-     &      OKL,dok,2)
+     &      OKL,dok,nbhelp)
           if(OKL) goto 291
 
         elseif(MENUTYPE.eq.4) then
@@ -1006,6 +989,8 @@ C replicated).
 C At this point we just fall past the end of the INO equals statements.
 
       elseif(INO.EQ.(NITMS-1))then
+        helptopic='res_mass_flow_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD(MTITLE,18,'-',0,0,IER)
         goto 1
       elseif(INO.EQ.NITMS)then
@@ -1029,15 +1014,17 @@ C Ask for relevent nodes. If CTLST is true then ask for containments.
         NNPK=NNOD
         PROMPT1='Select one or more flow nodes.'
         PROMPT2='  '
-        NH=0
-        call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
+        helptopic='res_mass_flow_nod_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
         IF(CTLST)THEN
           IF(NCONTM.GT.0)THEN
             NCPK=NCONTM
             PROMPT1='Select one or more contaminants.'
             PROMPT2=' '
-            NH=0
-            CALL ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,NH)
+            helptopic='mass_flow_cntm_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,nbhelp)
           ELSE
             call edisp(iuout,' No contaminants defined')
             NMFGET=NMFGET-1
@@ -1161,27 +1148,13 @@ C If CRLST is true restrict node lists to internal node types.
 
 C Ask if only flows associated with a single node.
         if (CNLST) then
-          h(1)='Individual connections: get data for each connection'
-          h(2)='  separatly and report separately.'
-          h(3)='Total of connections: sum data for selected con-'
-          h(4)='  nections. You will first be asked for the node which'
-          h(5)='  is related to the connections to be selected (in'
-          h(6)='  order to resolve flow directions.'
-          h(7)='Total entering node: sum of all flows into/towards the'
-          h(8)='  node (e.g. entering a room) from all connections'
-          h(9)='  to other internal and boundary nodes.'
-          h(10)=' Note that total flow exiting a node equals that '
-          h(11)=' entering it for a converged network.'
-          h(12)='Total infiltration: sum of all flows into/toward the'
-          h(13)='   node (e.g. entering a room) from boundary nodes.'
-          h(14)='Inter-node flow: asks for two nodes and reports back'
-          h(15)='  net flow between the nodes by summing up flows to '
-          h(16)='  and from one node to the other and vice versa'
+          helptopic='res_mass_flow_cnn_select'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call MENUATOL('Select a flow option',' ',
      &   'a individual connections','b total of connections',
      &   'c total entering node','d total from ambient',
      &   'e inter-nodal flow ','f cancel ',' ',' ',' ',' ',' ',
-     &   ' ',IDH,IDNO,16)
+     &   ' ',IDH,IDNO,nbhelp)
           if(IDH.eq.1)then
             INODE=0
             itotal=0
@@ -1190,8 +1163,9 @@ C Ask if only flows associated with a single node.
             PROMPT1=
      &       'Select the node which is associated with the connections'
             PROMPT2='you want to display flow information for.'
-            NH=0
-            call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
+            helptopic='res_mass_flow_nod_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
             INODE=INPK(1)
             itotal=0
           elseif(IDH.eq.3)then
@@ -1201,10 +1175,9 @@ C Note: return INPKT and NNPKT for total entering.
             PROMPT1=
      &       'Select the node(s) for which total flow(s) are reported.'
             PROMPT2=' '
-            NH=2
-            h(1)='The total flow reported is equal to'
-            h(2)='the sum of the flows entering the node.'
-            call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,NH)
+            helptopic='res_mass_flow_nod_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,nbhelp)
             INODE=0
             itotal=1
           elseif(IDH.eq.4.or.idh.eq.5)then
@@ -1212,13 +1185,13 @@ C Note: return INPKT and NNPKT for total entering.
             IF(IDH.EQ.5)NNPKT=1
             PROMPT1='Select node for flow'
             PROMPT2=' '
-            NH=0
-            call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,NH)
+            helptopic='res_mass_flow_nod_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,nbhelp)
             if(idh.eq.5)then
               NNPKT=NNOD
               PROMPT1='Select second node'
-              NH=0
-              call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,NH)
+              call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,nbhelp)
             endif
             INODE=0
             itotal=1
@@ -1243,8 +1216,9 @@ C ask for one.
             NNPK=1
             PROMPT1='Select the reference node.'
             PROMPT2='  '
-            NH=0
-            call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
+            helptopic='res_mass_flow_nod_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
             IMFGETNO(NMFGET,3)=INPK(1)
           else
             IMFGETNO(NMFGET,3)=INODE
@@ -1356,12 +1330,11 @@ C flow and the extra entry would be the -ive flow).
                   icompindex=ITPCON(ICPK(I))
                   icomptype=ITPCMP(icompindex)
                   if(icomptype.eq.130) then
-                    h(1)='The reported flow will either be the net'
-                    h(2)='flow through this component or the two'
-                    h(3)='individual flows (+ive and -ive).'
+                    helptopic='res_mass_bidirectional'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     call EASKAB('Bi-directional flow component ',
      &                   'reporting options:','net flow',
-     &                   'individual flows',II,3)
+     &                   'individual flows',II,nbhelp)
 
 C If net flow do nothing (the existing definition is sufficient)
 C otherwise add the extra entry.
@@ -1489,12 +1462,11 @@ C flow and the extra entry would be the -ive flow).
                   icompindex=ITPCON(ICPK(I))
                   icomptype=ITPCMP(icompindex)
                   if(icomptype.eq.130) then
-                    h(1)='The reported flow will either be the net'
-                    h(2)='flow through this component or the two'
-                    h(3)='individual flows (+ive and -ive).'
+                    helptopic='res_mass_bidirectional'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     call EASKAB('Bi-directional flow component ',
      &                   'reporting options:','net flow',
-     &                   'individual flows',II,3)
+     &                   'individual flows',II,nbhelp)
 
 C If net flow do nothing (the existing definition is sufficient)
 C otherwise add the extra entry.
@@ -2448,7 +2420,6 @@ C EDMFGOGET allows removal of output requests for flow networks.
 #include "building.h"
 #include "net_flow.h"
 
-      common/pophelp/h(60)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
@@ -2458,11 +2429,18 @@ C gmflabel char*20 is short label for graphs/tables for flow item
 C glmflabel char*32 is longer label for flow item
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
 
-      character VERT(MZS+3)*36,KEY*1,h*72
+      character VERT(MZS+3)*36,KEY*1
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       integer ORDER,OGET
       dimension INCGET(MFRS),ORDER(MFRS),OGET(MFRS)
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDMFGOGET'  ! set for cfiles
 
 C Sort ORDER of IMFGETNO array for display purposes.
       do 100 I=1,NMFGET
@@ -2517,12 +2495,9 @@ C If a long list include page facility text.
       VERT(M+2)  ='? help                     '
       VERT(M+3)  ='- exit and activate changes'
 
-C Instanciate h() strings for this menu.
-      H(1)='This menu allows existing metric choices to be '
-      H(2)='removed from the list to display. '
-      H(3)='Each item can be toggled on/ off until you are'
-      H(4)='happy with the list as all items which are marked'
-      H(5)='off are removed from the list when you exit.'
+C Instanciate help strings for this menu.
+      helptopic='menu_selection_editing'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       CALL EMENU('Metric selection',VERT,MVERT,IVERT)
@@ -2569,6 +2544,8 @@ C Remove inactive elements.
  20     continue
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
+        helptopic='menu_selection_editing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('metric selection',5,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 

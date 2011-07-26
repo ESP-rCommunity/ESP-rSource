@@ -51,7 +51,6 @@ C results library as well.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -88,7 +87,7 @@ C Active domain common.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character outs*124,ltmp*72,h*72,path*72,longtfile*144
+      character outs*124,ltmp*72,path*72,longtfile*144
       character cfgroot*24,LCFGF*72
       character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -99,6 +98,13 @@ C Active domain common.
       logical CFDOK,concat
 
       integer ier
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZLIBF'  ! set for cfiles
 
 C Check and see if in a remote folder.
 
@@ -215,24 +221,17 @@ C If autook then do not preserve previous results sets.
       else
 
 C Autook not set so ask for confirmation.
-        h(1)='A previous assessment or assessments are stored in'
-        h(2)='this file. If the model is the same it should be safe'
-        h(3)='to append another assessment. '
-        h(4)=' '
-        h(5)='If the model has changed the differences might cause'
-        h(6)='eratic performance results recovery. Take care! '
-        h(7)=' '
-        h(8)='If you do not preserve the pervious assessments the'
-        h(9)='new data will overwrite them. '
+        helptopic='deal_with_prev_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(NSIM.EQ.1)then
           dok=.true.
           CALL ASKOK(' Library contains one result set.',
-     &               ' Preserve (see help)?',OK,dok,9)
+     &               ' Preserve (see help)?',OK,dok,nbhelp)
         elseif(NSIM.gt.1)then
           write(outs,'(A,I3,A)')' Library contains',NSIM,
      &                           ' result sets.'
           dok=.true.
-          CALL ASKOK(outs,' Preserve (see help)?',OK,dok,9)
+          CALL ASKOK(outs,' Preserve (see help)?',OK,dok,nbhelp)
         elseif(NSIM.eq.0)then
           goto 8
         endif
@@ -242,14 +241,10 @@ C Autook not set so ask for confirmation.
 
 C User wants to preserve data. Determine if design data has been changed.
         dok=.false.
-        h(1)='If the model has changed the differences might cause'
-        h(2)='eratic performance results recovery. Take care! '
-        h(3)=' '
-        h(4)='If in doubt, specify a different results file. Note'
-        h(5)='that if the model is newer than the existing predictions'
-        h(6)='you can also get eratic results reporting. '
+        helptopic='preserve_data_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Is the current model different in any way from',
-     &  ' the model of the stored results (see help)?',OK,dok,6)
+     &  ' the model of the stored results (see help)?',OK,dok,nbhelp)
         if(.NOT.OK) goto 121
         GOTO 1
       else
@@ -404,25 +399,18 @@ c Does this library contain results ?
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=107)NSIM
 
 c Response according to number of existing results sets.
-      h(1)='A previous assessment or assessments are stored in'
-      h(2)='this file. If the model is the same it should be safe'
-      h(3)='to append another assessment. '
-      h(4)=' '
-      h(5)='If the model has changed the differences might cause'
-      h(6)='eratic performance results recovery. Take care! '
-      h(7)=' '
-      h(8)='If you do not preserve the pervious assessments the'
-      h(9)='new data will overwrite them. '
+      helptopic='preserve_previous_sets'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IF ( autook ) then
          OK = .FALSE.
       elseIF(NSIM.EQ.1)then
         dok=.true.
         CALL ASKOK(' Library contains one result set.',
-     &             ' Preserve (see help)?',OK,dok,9)
+     &             ' Preserve (see help)?',OK,dok,nbhelp)
       elseif(NSIM.gt.1)then
         write(outs,'(A,I3,A)')' Library contains',NSIM,' result sets.'
         dok=.true.
-        CALL ASKOK(outs,' Preserve (see help)?',OK,dok,9)
+        CALL ASKOK(outs,' Preserve (see help)?',OK,dok,nbhelp)
       elseif(NSIM.eq.0)then
         goto 108
       endif
@@ -431,14 +419,10 @@ c Response according to number of existing results sets.
 
 c Determine if design data has been changed.
         dok=.false.
-        h(1)='If the model has changed the differences might cause'
-        h(2)='eratic performance results recovery. Take care! '
-        h(3)=' '
-        h(4)='If in doubt, specify a different results file. Note'
-        h(5)='that if the model is newer than the existing predictions'
-        h(6)='you can also get eratic results reporting. '
+        helptopic='preserve_data_with_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Is the current model different in any way from',
-     &  ' the model of the stored results (see help)?',OK,dok,6)
+     &  ' the model of the stored results (see help)?',OK,dok,nbhelp)
         if(.NOT.OK)goto 17
         GOTO 100
       else
@@ -663,10 +647,16 @@ C        as 2 if in some other location.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       character topic*2,LFILE*72
-      character h*72,ltmp*72,ltpath*72,filen*72
+      character ltmp*72,ltpath*72,filen*72
       logical unixok,remote
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='dealremote'  ! set for cfiles
 
       iw=1
       if(remote)then
@@ -693,98 +683,70 @@ C the 2nd character is a : then absolute.
 
 C Depending on the domain of the file confirm its name.
       if(topic(1:2).eq.'zi')then
-        H(1)='The zone results library contains one or more simulation'
-        H(2)='result sets. Each result set is comprised of the'
-        H(3)='simulation time-series for the same model but,'
-        H(4)='potentially, for different periods, climate data and '
-        H(5)='control. This file is passed to res for analysis. '
-        H(6)=' '
-        H(7)='It is normally placed in the model configuration folder,'
-        H(8)='however another folder can be specified. '
+        helptopic='multiple_result_sets'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,' Zone results library name ?',
-     &      ' ',72,'libb','zone results lib',IER,8)
+     &      ' ',72,'libb','zone results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/libb'
           CALL EASKS(LFILE,' Zone results library name ?',
-     &      ' ',72,ltmp,'zone results lib',IER,9)
+     &      ' ',72,ltmp,'zone results lib',IER,nbhelp)
         endif
       elseif(topic(1:2).eq.'fi')then
-        H(1)='The results of mass flow simulations are placed in an'
-        H(2)='ASCII file for recovery and analysis by the simlator'
-        H(3)='or the stand-alone mfs solver. '
-        H(4)=' '
-        H(5)='It is normally placed in the model configuration folder,'
-        H(6)='however another folder can be specified. '
+        helptopic='mass_flow_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,' Mass flow results library name ?',
-     &      ' ',72,'libf','mass results lib',IER,6)
+     &      ' ',72,'libf','mass results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/libf'
           CALL EASKS(LFILE,' Mass flow results library name ?',
-     &      ' ',72,ltmp,'mass results lib',IER,6)
+     &      ' ',72,ltmp,'mass results lib',IER,nbhelp)
         endif
       elseif(topic(1:2).eq.'pi')then
-        H(1)='The plant (systems) results library contains one or more'
-        H(2)='simulation result sets. Each set comprises the simulation'
-        H(3)='time-series for the same model but, potentially, for'
-        H(5)='different periods, climate data and control. This file'
-        H(6)='is passed to the results analysis module for analysis.'
-        H(7)=' '
-        H(8)='It is normally placed in the model configuration folder,'
-        H(9)='however another folder can be specified. '
+        helptopic='plant_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,' Plant results library name ?',
-     &      ' ',72,'libp','plnt results lib',IER,9)
+     &      ' ',72,'libp','plnt results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/libp'
           CALL EASKS(LFILE,' Plant results library name ?',
-     &      ' ',72,ltmp,'plnt results lib',IER,9)
+     &      ' ',72,ltmp,'plnt results lib',IER,nbhelp)
         endif
       elseif(topic(1:2).eq.'mi')then
-        H(1)='The results of moisture flow simulations are placed in'
-        H(2)='an ASCII file for recovery and analysis by the mld'
-        H(3)='module. '
-        H(4)=' '
-        H(5)='It is normally placed in the model configuration folder,'
-        H(6)='however another folder can be specified. '
+        helptopic='moisture_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,' Moisture flow results library name ?',
-     &      ' ',72,'libmoist','Moisture results lib',IER,6)
+     &      ' ',72,'libmoist','Moisture results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/libmoist'
           CALL EASKS(LFILE,' Moisture flow results library name ?',
-     &      ' ',72,ltmp,'Moisture results lib',IER,6)
+     &      ' ',72,ltmp,'Moisture results lib',IER,nbhelp)
         endif
       elseif(topic(1:2).eq.'ei')then
-        H(1)='The results of electrical network simulations are '
-        H(2)='placed in an binary database for recovery and'
-        H(3)='analysis by the results analysis module. '
-        H(4)=' '
-        H(5)='It is normally placed in the model configuration folder,'
-        H(6)='however another folder can be specified. '
+        helptopic='electrical_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,'Electrical network results library name ?',
-     &      ' ',72,'libe','electrical results lib',IER,6)
+     &      ' ',72,'libe','electrical results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/libe'
           CALL EASKS(LFILE,'Electrical network results library name ?',
-     &      ' ',72,ltmp,'electrical results lib',IER,6)
+     &      ' ',72,ltmp,'electrical results lib',IER,nbhelp)
         endif
       elseif(topic(1:2).eq.'di')then
-        H(1)='The results of CFD simulations are placed in a binary'
-        H(2)='database for recovery and analysis by the results'
-        H(3)='analysis module. '
-        H(4)=' '
-        H(5)='It is normally placed in the model configuration folder,'
-        H(6)='however another folder can be specified. '
+        helptopic='cfd_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(IW.eq.1)then
           CALL EASKS(LFILE,' CFD results library name ?',
-     &      ' ',72,'CFD.res','CFD results lib',IER,6)
+     &      ' ',72,'CFD.res','CFD results lib',IER,nbhelp)
         elseif(IW.eq.2)then
           write(ltmp,'(2a)') upath(1:lnblnk(upath)),'/CFD.res'
           CALL EASKS(LFILE,' CFD results library name ?',
-     &      ' ',72,ltmp,'CFD results lib',IER,6)
+     &      ' ',72,ltmp,'CFD results lib',IER,nbhelp)
         endif
       endif
       return

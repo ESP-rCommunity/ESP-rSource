@@ -218,12 +218,12 @@ C INRP IS RETURNED WITH THE POSITION OF THE POLYGON
 
 C Decode the polygon structure into AMA
       IDSUR=0
-      AMA(1) = NA
-      AMA(2) = NAP
+      AMA(1) = real(NA)
+      AMA(2) = real(NAP)
 
       K = 3
       DO 100 I = 1,NA
-        AMA(K) = IAPNT(I)
+        AMA(K) = real(IAPNT(I))
         K = K + 1
   100 CONTINUE
 
@@ -233,6 +233,8 @@ C Decode the polygon structure into AMA
   150 CONTINUE
 
 C Write out the polygon structure.
+C << OSX does not like writing via record number to what it thinks is'
+C << is a sequential access file at line 244.
 
       NAMA = NA+NAP+4
       NRFPOL = NAMA/20
@@ -270,7 +272,13 @@ C data structure.
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
 
-      DIMENSION  IAPNT(100),APOL(1000)
+C Parameters
+      integer I   ! supplied index of the surface in the zone
+      integer NA  ! returned counter of polygons
+      integer NAP ! returned counter of points
+      integer IAPNT  ! returned pointer to first vert of each polygon
+      real APOL   ! returned packed coordinant array
+      DIMENSION IAPNT(100),APOL(1000)
 
 C Decode into polygons.
       NA = 1

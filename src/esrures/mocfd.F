@@ -30,20 +30,24 @@ C MOCFD
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       common/CFDSV/IRECPC,ICFDSV,IEQSV(5+MCTM)
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX
 
-      character LTMP*72,H*72, POLNAM*12
+      character LTMP*72,POLNAM*12
       character path*72,LCMDFL*144,ltmpc*144
       logical XST,CALPOL,CALLMA
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOCFD'  ! set for cfiles
+
 C Ask for CFD results library.
-      H(1)='A CFD results library is created by the simulator. It will'
-      H(2)='contain the time series results of one or more CFD'
-      H(3)='simulations. '
-      H(4)='A file called UNKNOWN will allow return to main menu.'
+      helptopic='res_cfd_lib_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       LTMP='UNKNOWN'
       ltmpc='UNKNOWN'
       llt=lnblnk(ltmpc)
@@ -55,20 +59,20 @@ C name with the full path.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
           CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
-     &      'CFDresfl name',IER,4)
+     &      'CFDresfl name',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
           CALL EASKF(ltmpc,'CFD library name?',' ',124,LTMP,
-     &      'CFDresfl name',IER,4)
+     &      'CFDresfl name',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
           CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
-     &      'CFDresfl name',IER,4)
+     &      'CFDresfl name',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
         CALL EASKF(ltmpc,'CFD library name?',' ',144,LTMP,
-     &    'CFDresfl name',IER,4)
+     &    'CFDresfl name',IER,nbhelp)
       else
         CALL EASKF(ltmpc,'CFD library name?',' ',96,LTMP,
-     &    'CFDresfl name',IER,4)
+     &    'CFDresfl name',IER,nbhelp)
       endif
       if(ier.eq.-3) return  ! cancel deteted return.
 
@@ -153,6 +157,13 @@ C ICFDZ - thermal zone associated with each CFD domain
       LOGICAL CALPOL,CALLMA
       CHARACTER LCFD*72,POLNAM*12
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RCFDLIBH'  ! set for cfiles
+
 C Set unit number.
       IER=0
       iunit=IFIL+14
@@ -225,9 +236,11 @@ C Set up contaminants in correct CFD domain
         ICDOM=1
       else
  99     IER=0
+        helptopic='res_cfd_which_res_set'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(I,' There is more than 1 CFD domain.',
      &    ' Output results for which domain? ',
-     &    1,'F',NCDOM,'F',1,' CFD domain',IER,0)
+     &    1,'F',NCDOM,'F',1,' CFD domain',IER,nbhelp)
         if (IER.ne.0) goto 99
         ICDOM=I
       endif
@@ -313,7 +326,6 @@ C MCFDM - define the parameters for the visualization of results.
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -326,10 +338,17 @@ C MCFDM - define the parameters for the visualization of results.
      &              HLSCvw(MCOM,6),HTSCvw(MCOM,6),IFRQvw(MCOM,6)
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
 
-      CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
+      CHARACTER KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24
       integer IWM,IWE  ! for radio buttons
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MCFDM'  ! set for subroutine
 
 C Set vector colour option to velocity and temperature only.
       IMOPTS=0
@@ -386,21 +405,9 @@ C Number of actual items displayed.
       ITEM(M+6)='- exit this menu  '
       INO=-4
 
-C Instanciate h() strings for this menu.
-      h(1) ='This facility is used to generate images of the'
-      h(2) ='flow distribution predicted by the CFD calculations.'
-      h(3) ='The flow at any 2-dimensional slice of the zone can'
-      h(4) ='be viewed.'
-      h(5) =' '
-      h(6) ='Images are generated in various formats and can be'
-      h(7) ='viewed and post-processed with 3rd-party tools such'
-      h(8) ='as xv.'
-      h(9) =' '
-      h(10)='You must specify the name of the file to hold the'
-      h(11)='image data and you must select a view prior to'
-      h(12)='generating the image. The other items are for'
-      h(13)='altering default settings, and their use is'
-      h(14)='optional.'
+C Instanciate help strings for this menu.
+      helptopic='res_cfd_2d_slice'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
   80  CALL EMENU('Flow visualization',ITEM,NITMS,INO)
       if (INO.EQ.0)THEN
@@ -411,7 +418,9 @@ C Try again.
       elseif (INO.EQ.(NITMS))THEN
         return
       elseif (INO.EQ.(NITMS-1))THEN
-        CALL PHELPD('flow vis facility',14,'-',0,0,IER)
+        helptopic='res_cfd_2d_slice'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('flow vis facility',nbhelp,'-',0,0,IER)
       elseif (INO.EQ.(NITMS-2)) THEN
 
 C Generate images.
@@ -492,37 +501,34 @@ C Image frequency (dynamic flow viualisation only).
       elseif (INO.EQ.(NITMS-4)) THEN
 
 C Add/ delete image definition.
-        h(1) ='Define a new view, or delete a current view.'
+        helptopic='res_cfd_new_view'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKABC(' ','View definitions:',
-     &                   'add another','delete one','continue',IW,1)
+     &    'add another','delete one','continue',IW,nbhelp)
         if (IW.eq.1) then
 
 C Add new image definition.
           Nview(ICOMP)=Nview(ICOMP)+1
           NV=Nview(ICOMP)
- 101      h(1)='Please supply a root name for the image.  '
-          h(2)='In the case of a dynamic viualisation the frame number'
-          h(3)='will be appended to this name.'
-          h(4)='Depending on the image format a .??? will be added to'
-          h(5)='the name also e.g. for a GIF image .gif would be added.'
+ 101      helptopic='res_cfd_view_root_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           t12=' new_view'
           CALL EASKS(t12,' ',' Name for image ? ',
-     &                                12,'flowvis','image name',IER,5)
+     &      12,'flowvis','image name',IER,nbhelp)
           if (t12(1:2).eq.'  ') goto 101
           LBITrt(ICOMP,NV)=t12
-          h(1)='Please supply the direction from which the view is'
-          h(2)='made e.g. Chose North if you wist a view from the North'
-          h(3)='looking South.'
+          helptopic='res_cfd_view_direc'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
-     &                    'North','West','Top','Bottom','  ',IWM,3)
+     &      'North','West','Top','Bottom','  ',IWM,nbhelp)
           ISURvw(ICOMP,NV)=IWM
  102      IER=0
           IF(IWM.EQ.1)THEN
 
-C View from north.
+C View from south.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -531,16 +537,16 @@ C View from north.
 
 C View from east.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
             CALL EDISP(IUOUT,'   Z-axis displayed vertically.')
           ELSEIF(IWM.EQ.3)THEN
 
-C View from south.
+C View from north.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -549,7 +555,7 @@ C View from south.
 
 C View from west.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -558,7 +564,7 @@ C View from west.
 
 C View from top.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -567,7 +573,7 @@ C View from top.
 
 C View from bottom.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -576,12 +582,10 @@ C View from bottom.
           ILAYvw(ICOMP,NV) = ilayer + 1
 
 C Image resolution.
-          H(1)='Higher resolution requires greater processing time'
-          H(2)='and disk space. `Low` quality images are often'
-          H(3)='sufficient, although `medium` and `high` quality'
-          H(4)='may be desirable for inclusion in publications.'
+          helptopic='res_cfd_view_resolution'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call EASKABC(' ','Image resolution?','Low','Medium','High',
-     &                                             IWR,4)
+     &      IWR,nbhelp)
           IRESvw(ICOMP,NV)=IWR
 
 C Set defaults for customisation and frequency variables.
@@ -618,36 +622,30 @@ C be deleted or copied, respectively.
  200    write (outs,'(a,a,a)') 'For image definition ',
      &        LBITrt(ICOMP,NV)(1:lnblnk(LBITrt(ICOMP,NV))),' edit:'
         IWE=1
+        helptopic='res_cfd_view_edit'  ! combined messages
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',
-     &           'Customise arrows','Continue','  ','  ',IWE,3)
+     &    'Customise arrows','Continue','  ','  ',IWE,nbhelp)
         if (IWE.eq.1) then
 
 C Image root name.
- 201      h(1)='Please supply a root name for the image.  '
-          h(2)='In the case of a dynamic viualisation the frame number'
-          h(3)='will be appended to this name.'
-          h(4)='Depending on the image format a .??? will be added to'
-          h(5)='the name also e.g. for a GIF image .gif will be added.'
-          CALL EASKS(t12,' ',' Name for image ? ',
-     &                                12,'flowvis','image name',IER,5)
+ 201      CALL EASKS(t12,' ',' Name for image ? ',
+     &      12,'flowvis','image name',IER,nbhelp)
           if (t12(1:2).eq.'  ') goto 201
           LBITrt(ICOMP,NV)=t12
         elseif (IWE.eq.2) then
 
 C View direction and layer.
-          h(1)='Please supply the direction from which the view is'
-          h(2)='made e.g. Chose North if you wist a view from the North'
-          h(3)='looking South.'
           IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
-     &                    'North','West','Top','Bottom','  ',IWM,3)
+     &      'North','West','Top','Bottom','  ',IWM,nbhelp)
           ISURvw(ICOMP,NV)=IWM
  202      IER=0
           IF(IWM.EQ.1)THEN
 
 C View from north.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -656,7 +654,7 @@ C View from north.
 
 C View from east.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -665,7 +663,7 @@ C View from east.
 
 C View from south.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -674,7 +672,7 @@ C View from south.
 
 C View from west.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -683,7 +681,7 @@ C View from west.
 
 C View from top.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -692,7 +690,7 @@ C View from top.
 
 C View from bottom.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -702,23 +700,19 @@ C View from bottom.
 
 C Image resolution.
         elseif (IWE.eq.3) then
-          H(1)='Higher resolution requires greater processing time'
-          H(2)='and disk space. `Low` quality images are often'
-          H(3)='sufficient, although `medium` and `high` quality'
-          H(4)='may be desirable for inclusion in publications.'
           call EASKABC(' ','Image resolution?','Low','Medium','High',
-     &                                             IWR,4)
+     &      IWR,nbhelp)
           IRESvw(ICOMP,NV)=IWR
         elseif (IWE.eq.4) then
 
 C Customise arrows.
  203      write (t24,'(6f6.1)') VLSCvw(ICOMP,NV),VTSCvw(ICOMP,NV),
      &                          HLSCvw(ICOMP,NV),HTSCvw(ICOMP,NV)
-          H(1)='By altering these settings, you can control'
-          H(2)='the appearance of the flow vectors.'
+          helptopic='res_cfd_view_vector_edit'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call EASKS(t24,
      &      'Scale factors: Shaft len; Shaft thK; Head len; Head thk',
-     &                  '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,2)
+     &      '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,nbhep)
           ISC = iCountWords(t24)
           if (ISC.ne.4) goto 203
           K=0

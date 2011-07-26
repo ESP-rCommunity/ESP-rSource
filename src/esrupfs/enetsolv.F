@@ -58,6 +58,11 @@ C Call the residential hydrogen cogen controller routine.
       CALL RESH2_Ctl
 C H2-dep_controller: end
 
+C Residential electric storage: start
+C Call the residential electric storage routine.
+      CALL Res_elec_storage_Ctl
+C Residential electric storage: end
+
 
 C Assign the boundary conditions for this timestep and convert to per-unit.
       CALL ENETASGN

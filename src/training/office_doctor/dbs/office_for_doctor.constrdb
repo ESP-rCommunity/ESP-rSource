@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/office_for_doctor.constrdb
 # based on materials db ../dbs/office_for_doctor.materiald
-   37     # no of composites 
+   36     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -14,11 +14,6 @@
    46    0.0040  grey cotd alum : Grey coated aluminium
   281    0.0800  glass fibre quilt : Glass Fibre Quilt
    47    0.0040  wt cotd alum : White coated aluminium
-# layers  description   optics name   symmetry tag
-    2    intern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-    2    0.1500  breeze block : Breeze block
-  103    0.0120  perlite plasterboard : Perlite plasterboard
 # layers  description   optics name   symmetry tag
     5    partition     OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R

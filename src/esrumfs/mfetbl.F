@@ -39,7 +39,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
@@ -52,7 +51,7 @@ C ICLIM,LCLIM (for climate file)
 
       DOUBLE PRECISION SFLW1,SFLW2
 
-      CHARACTER H*72,LAPROB*72
+      CHARACTER LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER*23     ITEM(10)
       character PERST1*14,PERST2*44,PERST3*44
@@ -60,6 +59,13 @@ C ICLIM,LCLIM (for climate file)
       character WORD*20,NDNAM*12,NR*12,NT*12
       logical OK,DOK,intg
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFETBL' ! set for subroutine
 
 C Integration initially off.
       intg=.false.
@@ -99,15 +105,8 @@ C Set up menu.
       NITMS=8
 
 C Help text for this menu.
-      h(1)='The energy transfer associated with flow between two'
-      h(2)='nodes (not necessarily adjacent, but part of the same'
-      h(3)='flow path) is recovered and displayed. '
-      h(4)=' '
-      h(5)='This requires: '
-      h(6)=' * a reference node (perhaps a boundary node)'
-      h(7)=' * a test node (somewhere along a flow path)'
-      h(8)=' * a connection wich includes the test node (to'
-      h(9)='   find the flow rate)'
+      helptopic='mfs_performance_lists'
+      call gethelptext(helpinsub,helptopic,nbhelp)
      
    12 CALL EMENU('Flow stream energy',ITEM,NITMS,INO)
 
@@ -131,18 +130,18 @@ C Display format for date is Fri 10 Jan.
         call edisp(iuout,outs)
 
         dok=.false.
-        h(1)='Chance to display a different period. '
-        CALL ASKOK(PERST3,' Different output period?',OK,dok,1)
+        helptopic='mfs_display_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(PERST3,'Different output period?',OK,dok,nbhelp)
         if(OK)then
           CALL EASKPER('Output period:',IDAYF,IDAYL,IFDAY,IER)
           IF(IER.NE.0) GOTO 60
         endif
         if(NTSPH.gt.1)then
           dok=.false.
-          h(1)='The simulation was run at more than one timestep per'
-          h(2)='hour. You can integrate the data (i.e. to once per'
-          h(3)='hour) to remove clutter and see overall patterns. '
-          CALL ASKOK(PERST3,' Integrate over each hour?',OK,dok,3)
+          helptopic='mfs_data_integration'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK(PERST3,'Integrate over each hour?',OK,dok,nbhelp)
           if(OK)then
             intg=.true.
             NOUT=NTSPH
@@ -153,7 +152,9 @@ C Display format for date is Fri 10 Jan.
       ELSEIF(INO.EQ.3)THEN
 
 C Define the reference and test node and flow stream.
-        CALL PHELPD('flow path',9,'-',0,0,IER)
+        helptopic='mfs_performance_lists'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('flow path',nbhelp,'-',0,0,IER)
         call edisp(iuout,' Please select the reference node...')
    40   CALL ASKRNOD(' reference node','-',IRNOD,IER)
         IF(IER.NE.0.or.IRNOD.eq.0) GOTO 40
@@ -189,7 +190,9 @@ C List output.
       ELSEIF(INO.EQ.7)THEN
 
 C Explain option.
-        CALL PHELPD('energy in flow',12,'-',0,0,IER)
+        helptopic='mfs_performance_lists'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('energy in flow',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.8)THEN
 
 C Exit.
@@ -315,7 +318,7 @@ C Calculate energy via flow path.
         if(itnfld.eq.1)then
           PW=DT*real(SFLW1+SFLW2)*1006.
         elseif(itnfld.eq.2)then
-          PW=DT*real(SFLW1+SFLW2)*4600.
+          PW=DT*real(SFLW1+SFLW2)*4190.
         endif
 
 C Write data.  Increment ix, if equal to NOUT print.

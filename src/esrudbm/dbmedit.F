@@ -52,7 +52,6 @@ C Icwhich is its category. Idbh is the position in the hash table.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -82,13 +81,20 @@ C Backup of documentation (for editing).
       DIMENSION CLDES(35),ICATSEL(MGCL),catlist(MGCL)
 
       character CLDES*38,action*1,KEY*1,tab*1,catlist*32
-      character head*37,h*72,t72*72,t12*12,c8*8,t248*248
+      character head*37,t72*72,t12*12,c8*8,t248*248
       CHARACTER xfile*144,tg*1,delim*1
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248,LGENDB*72,dstmp*24,bl2*2
       integer IWM  ! for radio button
       integer NCO,ICO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edselcat'  ! set for subroutine
 
 C Read the header.
       IFB=igendbf(idbh)
@@ -173,25 +179,17 @@ C If a long list include page facility text.
 
 C Help text for this menu.
       if (idbh.eq.5) then
-        H(1)='This menu allows to browse/select the category of'
-        H(2)='materials/systems, in order to display the'
-        H(3)='corresponding acoustic absorption coefficients,'
-        H(4)='which is used for room acoustic calculation.'
+        helptopic='dbm_cat_of_acoustic'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       elseif (idbh.eq.6) then
-        H(1)='This menu allows to browse/select a colour category,'
-        H(2)='in order to display the corresponding colorymertry'
-        H(3)='information used for lighting calculation.'
+        helptopic='dbm_cat_of_colour'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       elseif (idbh.eq.8) then
-        H(1)='This menu allows to browse/select the environmental'
-        H(2)='impacts of a phase during the building life span.'
-        H(3)='These impacts are used for the Life Cycle Impact'
-        H(4)='assessment (LCIA) of the project construction.'
+        helptopic='dbm_cat_of_LCIA'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       elseif (idbh.eq.9) then
-        H(1)='This menu allows to browse/select a category of'
-        H(2)='transport, in order to display the corresponding'
-        H(3)='environmental impacts.These impacts are used for'
-        H(4)='the Life Cycle Impact assessment (LCIA) of the '
-        H(5)='project construction. '
+        helptopic='dbm_cat_of_LCIATrn'
+        call gethelptext(helpinsub,helptopic,nbhelp)
       endif
 
       write(head,'(a,a)') ' Db: ',dbmenu(idbh)
@@ -203,13 +201,13 @@ C Now display the menu.
 C Explains main menu.
       ELSEIF(ICO.EQ.NCO-1)THEN
         if (idbh.eq.5) then
-          CALL PHELPD('Category menu',4,'-',0,0,IER)
+          CALL PHELPD('Category menu',nbhelp,'-',0,0,IER)
         elseif (idbh.eq.6) then
-          CALL PHELPD('Category menu',3,'-',0,0,IER)
+          CALL PHELPD('Category menu',nbhelp,'-',0,0,IER)
         elseif (idbh.eq.8) then
-          CALL PHELPD('Category menu',4,'-',0,0,IER)
+          CALL PHELPD('Category menu',nbhelp,'-',0,0,IER)
         elseif (idbh.eq.9) then
-          CALL PHELPD('Category menu',5,'-',0,0,IER)
+          CALL PHELPD('Category menu',nbhelp,'-',0,0,IER)
         endif
       ELSEIF(ICO.EQ.1)THEN
 
@@ -217,11 +215,11 @@ C Display/edit the db note:
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
  333      call edisp(iuout,'The aide memoire for this db is:')
           call edisp(iuout,dbnote(idbh))
-          H(1)='An aide memoire for this instance of the database'
-          H(2)='(separate from the database documentation).'
+          helptopic='dbm_cat_aide'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           t72=dbnote(idbh)
           CALL EASKS(t72,'Aide memoire',' ',72,'This instance... ',
-     &      'db note',IER,2)
+     &      'db note',IER,nbhelp)
           if(ier.ne.0)goto 333
           if(dbnote(idbh)(1:lnblnk(dbnote(idbh))).ne.
      &       t72(1:lnblnk(t72)))then
@@ -252,15 +250,10 @@ C Display/edit the units:
           call edisp(iuout,outs)
   4     continue
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          H(1)='Documentation of the database is encouraged. You '
-          H(2)='can enter information on units used in the database'
-          H(3)='in the form of a 12 characterstring to be displayed '
-          H(4)='and a 72 character explanation as in:'
-          H(5)=' '
-          H(6)='  a    meters/sec    wind velocity from logger'
-          H(7)='  b    degrees       wind direction 0=north'
+          helptopic='dbm_cat_doc'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dprimod=.false.
-          CALL ASKOK(' ','Edit units ?',primod,dprimod,7)
+          CALL ASKOK(' ','Edit units ?',primod,dprimod,nbhelp)
           if(primod)then
             bkdocok=.TRUE.
             bkdoctyp='UN'
@@ -270,36 +263,34 @@ C Display/edit the units:
               write(bk12(ik),'(a)')unitstr(ik)
               write(t12,'(a)')unitstr(ik)
               write(outs,'(3a)')' Unit ',unitchr(ik),' display string:'
-              CALL EASKS(t12,outs,' ',12,'none ','UN',IER,7)
+              CALL EASKS(t12,outs,' ',12,'none ','UN',IER,nbhelp)
               if(ier.eq.0)bk12(ik)=t12
 
               write(bk72(ik),'(a)')unitnote(ik)
               write(t72,'(a)')unitnote(ik)
               write(outs,'(3a)')' Unit ',unitchr(ik),' explanation:'
-              CALL EASKS(t72,outs,' ',72,'none ','UN',IER,7)
+              CALL EASKS(t72,outs,' ',72,'none ','UN',IER,nbhelp)
               if(ier.eq.0)bk72(ik)=t72
   24        continue
 
 C If more units possible check to see if more are to be added.
  154        if(nbkdoc.le.12)then
-              h(1)='Additional unit descriptors can be added as'
-              h(1)='required. '
               dok=.false.
-              CALL ASKOK(' ','Add another unit idbh',ok,dok,7)
+              CALL ASKOK(' ','Add another unit idbh',ok,dok,nbhelp)
               if(OK)then
                 nbkdoc=nbkdoc+1
                 write(bk12(nbkdoc),'(a)')unitstr(nbkdoc)
                 write(t12,'(a)')unitstr(nbkdoc)
                 write(outs,'(3a)')' Unit ',unitchr(nbkdoc),
      &            ' display string:'
-                CALL EASKS(t12,outs,' ',12,'none ','UN',IER,7)
+                CALL EASKS(t12,outs,' ',12,'none ','UN',IER,nbhelp)
                 if(ier.eq.0)bk12(nbkdoc)=t12
 
                 write(bk72(nbkdoc),'(a)')unitnote(nbkdoc)
                 write(t72,'(a)')unitnote(nbkdoc)
                 write(outs,'(3a)')' Unit ',unitchr(nbkdoc),
      &            ' explanation:'
-                CALL EASKS(t72,outs,' ',72,'none ','UN',IER,7)
+                CALL EASKS(t72,outs,' ',72,'none ','UN',IER,nbhelp)
                 if(ier.eq.0)bk72(nbkdoc)=t72
                 goto 154
               endif
@@ -351,13 +342,10 @@ C Reconfigure the database by exporting to ascii file and then re-reading.
           call edisp248(iuout,srcnote(inbsrc),80)
   5     continue
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          H(1)='Documentation of the database is encouraged. You '
-          H(2)='can enter information on sources used in the database'
-          H(3)='in the form of a 248 character description'
-          H(4)=' '
-          H(5)='  a    AIVC document 13.5 table 3'
+          helptopic='dbm_sources_doc'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dprimod=.false.
-          CALL ASKOK(' ','Edit sources ?',primod,dprimod,5)
+          CALL ASKOK(' ','Edit sources ?',primod,dprimod,nbhelp)
           if(primod)then
 
 C Edit the existing sources.
@@ -373,7 +361,8 @@ C Edit the existing sources.
      &          srcnote(inbsrc)(1:lnblnk(srcnote(inbsrc)))
               write(outs,'(2a)')' Source documentation for ',
      &          srcchr(inbsrc)(1:1)
-              CALL EASKS248(t248,outs,': ',72,': ','srcnote',IER,5)
+              CALL EASKS248(t248,outs,': ',72,': ','srcnote',
+     &          IER,nbhelp)
               if(ier.eq.0)then
                 bk248(inbsrc)=t248
                 write(srcnote(inbsrc),'(a)')t248(1:lnblnk(t248))
@@ -382,10 +371,8 @@ C Edit the existing sources.
 
 C Offer to add more sources.
  155        if(nbkdoc.le.24)then
-              h(1)='Additional sources can be added as'
-              h(2)='required. '
               dok=.false.
-              CALL ASKOK(' ','Add another source',ok,dok,2)
+              CALL ASKOK(' ','Add another source',ok,dok,nbhelp)
               if(OK)then
                 nbkdoc=nbkdoc+1
                 write(bk248(nbkdoc),'(a)')
@@ -395,7 +382,8 @@ C Offer to add more sources.
      &            srcnote(nbkdoc)(1:lnblnk(srcnote(nbkdoc)))
                 write(outs,'(2a)')' Source documentation for ',
      &            srcchr(nbkdoc)(1:1)
-                CALL EASKS248(t248,outs,': ',72,': ','srcnote',IER,2)
+                CALL EASKS248(t248,outs,': ',72,': ','srcnote',
+     &            IER,nbhelp)
                 if(ier.eq.0)then
                   bk248(nbkdoc)=t248
                   write(srcnote(nbkdoc),'(a)')t248(1:lnblnk(t248))
@@ -451,13 +439,11 @@ C Db documentation.
           call edisp248(iuout,dbdoc(i),80)
  151    continue
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          H(1)='Documentation of the database is encouraged. You '
-          H(2)='can enter one or several lines of text.'
-          H(3)='Retain the `: ` in the first two columns as it is '
-          H(4)='used within the db and not seen by the user.'
+          helptopic='dbm_db_documentation'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dprimod=.false.
           CALL ASKOK(' ','Edit database documentation?',primod,
-     &      dprimod,4)
+     &      dprimod,nbhelp)
           if(primod)then
             bkdocok=.TRUE.
             bkdoctyp='DD'
@@ -468,18 +454,18 @@ C Db documentation.
               t248=' '
               write(t248,'(a)')dbdoc(ik)(1:lnblnk(dbdoc(ik)))
               write(outs,'(a,I2)')' Documentation line ',ik
-              CALL EASKS248(t248,outs,' ',72,': ','dd',IER,4)
+              CALL EASKS248(t248,outs,' ',72,': ','dd',IER,nbhelp)
               if(ier.eq.0)bk248(ik)=t248
  152        continue
  153        dok=.false.
-            CALL ASKOK(' ','Add another line ?',ok,dok,4)
+            CALL ASKOK(' ','Add another line ?',ok,dok,nbhelp)
             if(OK)then
               nbkdoc=nbkdoc+1
               t248=' '
               write(outs,'(a,I2)')' Documentation line ',nbkdoc
               write(bk248(nbkdoc),'(a)')': '
               write(t248,'(a)')': '
-              CALL EASKS248(t248,outs,' ',72,': ','dd',IER,4)
+              CALL EASKS248(t248,outs,' ',72,': ','dd',IER,nbhelp)
               if(ier.eq.0)bk248(nbkdoc)=t248
               goto 153
             endif
@@ -524,29 +510,22 @@ C Reconfigure the database by exporting to ascii file and then re-reading.
 C List one or more categories.
         CALL EPMENSV
         INPIC=nbcat(idbh)
-        h(1)='You may select one or more classes to list. '
+        helptopic='dbm_category_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(INPIC,ICATSEL,' ',' Which categories to list:',
-     &        32,nbcat(idbh),catlist,'categories',IER,1)
+     &        32,nbcat(idbh),catlist,'categories',IER,nbhelp)
         CALL EPMENRC
         IF(INPIC.EQ.0)GOTO 40
-        h(1)=' Summary reporting can be shown in the text feedback'
-        h(2)=' or a text file.'
         CALL EASKABC(' Reporting to:',' ',
-     &      'text feedback','summary file','cancel',irpt,2)
+     &      'text feedback','summary file','cancel',irpt,nbhelp)
         if(irpt.eq.1)then
           itu = iuout
           delim = '-'
         elseif(irpt.eq.2)then
-          H(1) ='Tabular data can be sent to file with various '
-          H(2) ='delimiters: '
-          H(3) ='  spaces (format using spaces to lineup columns)'
-          H(4) ='  single space between columns'
-          H(5) ='  comma separator (for excel)'
-          H(6) ='  tab separator (for excel)'
           IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','continue',' ',
-     &      ' ',IWM,6)
+     &      ' ',IWM,nbhelp)
           if(iwm.eq.1)then
             delim = '-'
           elseif(iwm.eq.2)then
@@ -580,16 +559,14 @@ C List classess and items and then close the file (if writing to one).
       ELSEIF(ICO.EQ.(NCO-3).and.(ACTION.eq.'M'.or.ACTION.eq.'m'))then
 
 C Modify class list.
-        h(1)='You may remove an empty category (i.e. which has no more'
-        h(2)='than one item in it) or you may add a category at the end'
-        h(3)='of the database. '
+        helptopic='mod_category_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Category options: ',' ',
-     &      'delete','add','continue',IV,3)
+     &      'delete','add','continue',IV,nbhelp)
         if(iv.eq.1)then
           INPIC=1
-          h(1)='Select one category to delete. '
           CALL EPICKS(INPIC,ICATSEL,' ',' Which category to delete?',
-     &        32,nbcat(idbh),catlist,'del category',IER,1)
+     &        32,nbcat(idbh),catlist,'del category',IER,nbhelp)
           IF(INPIC.EQ.0)GOTO 40
           icat=ICATSEL(1)
           if(nbcatit(icat).le.1)then
@@ -679,7 +656,6 @@ C allow choice.  Itwhich is the index of the db item selected.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -711,11 +687,18 @@ C      common/gendb/LGENDB
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
       DIMENSION PDBM(35),ipntrm(35),IVALC(MGCL),catlist(MGCL)
 
-      character action*1,KEY*1,PDBM*38,head*42,h*72,t32*32,t12*12
+      character action*1,KEY*1,PDBM*38,head*42,t32*32,t12*12
       CHARACTER dstmp*24,catlist*32
       character ct*8,bl2*2
       integer IV  ! for radio button
       integer NITMS,INOC,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edselitem'  ! set for subroutine
 
 C Assumes that the db file is open, gather the catg documentation.
       bl2='  '
@@ -839,18 +822,8 @@ C If a long list include page facility text.
       endif
 
 C Help text for this menu.
-      h(1)='This menu lists all the items stored for the category'
-      h(2)='previously selected. '
-      h(3)='Please, select an item to display/edit its'
-      if (idbh.eq.5) then
-        h(4)='acoustical absorption coefficients.'
-      elseif (idbh.eq.6) then
-        h(4)='colorimetry.'
-      elseif (idbh.eq.8) then
-        h(4)='environmental impacts.'
-      elseif (idbh.eq.9) then
-        h(4)='environmental impacts.'
-      endif
+      helptopic='dbm_category_list'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the elements of the classification in a menu.
       INO=-4
@@ -862,15 +835,15 @@ C Display the elements of the classification in a menu.
       elseif(INO.eq.NITMS-1)then
 
 C Help.
-        CALL PHELPD('category list',4,'-',0,0,IER)
+        helptopic='dbm_category_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('category list',nbhelp,'-',0,0,IER)
       elseif(INO.eq.1.and.(ACTION.eq.'M'.or.ACTION.eq.'m'))then
 
 C Cat menu editing if ACTION = 'M'.
-        H(1)='A descriptive phrase (up to 32 char) is required for'
-        H(2)='display purposes (selection menu`s etc).'
         t32=catmenu(ic)
         CALL EASKS(t32,' ',' Category descriptive phrase ? ',
-     &    32,'new category','category descriptor',IER,2)
+     &    32,'new category','category descriptor',IER,nbhelp)
         if(ier.eq.0.and.t32(1:2).ne.'  ')then
           catmenu(ic)=t32
           primod=.true.
@@ -881,11 +854,9 @@ C Cat menu editing if ACTION = 'M'.
 
 C Type and tag editing if ACTION = 'M'.
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          H(1)='Each category is identified by a unique name (up to '
-          H(2)='12 char) .'
           t12=cattag(ic)
           CALL EASKS(t12,' ',' Category identity (unique string) ? ',
-     &      12,'catgx','category tag',IER,2)
+     &      12,'catgx','category tag',IER,nbhelp)
           if(ier.eq.0.and.t12(1:2).ne.'  ')then
             cattag(ic)=t12
             primod=.true.
@@ -902,14 +873,10 @@ C Help. Strip off the first char ":" from the string before displaying.
           call edisp248(iuout,catdoc(i),80)
  152    continue
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          H(1)='Documentation of categories is encouraged. You can'
-          H(2)='enter one or several lines of text.'
-          H(3)='Retain the `: ` in the first two columns as it is '
-          H(4)='used within the db and will not be seen by the user.'
           primod=.FALSE.
           dprimod=.false.
           CALL ASKOK(' ','Edit category documentation ?',primod,
-     &      dprimod,4)
+     &      dprimod,nbhelp)
           if(primod)then
 
 C Mark for update of cat documentation (which requires a reconfiguration
@@ -945,12 +912,9 @@ C If there are enough items allow paging control via EKPAGE.
       elseif(INO.eq.NITMS-3.and.(ACTION.eq.'M'.or.ACTION.eq.'m'))then
 
 C Delete/add/copy/move...
-        h(1)='You may remove an empty category (i.e. which has no more'
-        h(2)='than one item in it) or you may add a category at the end'
-        h(3)='of the database. '
         IV=1
         CALL EASKATOG('Options for items: ',' ','delete','add','copy',
-     &    'move (to another catg)','continue',' ',' ',IV,3)
+     &    'move (to another catg)','continue',' ',' ',IV,nbhelp)
         if(iv.eq.1)then
           call edisp(iuout,'delete function...')
           CALL EPMENSV
@@ -1037,14 +1001,12 @@ C database for it.
           CALL EPMENRC
           iitorig=ipntrm(inoc)
 
-          H(1)='An item can be copied into the current or another '
-          H(2)='category. It will be given a unique identifier. '
           write(outs,'(3a)')'Destination category (currently ',
      &      catmenu(ic)(1:20),'):'
           IX=1
           CALL EPMENSV
 	  CALL EPICKS(IX,IVALC,' ',outs,
-     &      32,nbcat(idbh),catlist,'category list',IER,2)
+     &      32,nbcat(idbh),catlist,'category list',IER,nbhelp)
           CALL EPMENRC
           call usrmsg('Copy item within database...',bl2,'P')
           iccopy=IVALC(1)
@@ -1092,14 +1054,12 @@ C            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
           CALL EPMENRC
           iitorig=ipntrm(inoc)
 
-          H(1)='An item can be moved into another category. It will'
-          H(2)='retain its current identifier. '
           write(outs,'(3a)')'Destination category (i.e. other than ',
      &      catmenu(ic)(1:20),'):'
           IX=1
           CALL EPMENSV
 	  CALL EPICKS(IX,IVALC,' ',outs,
-     &      32,nbc,catlist,'destination category',IER,2)
+     &      32,nbc,catlist,'destination category',IER,nbhelp)
           CALL EPMENRC
           call usrmsg('Move item within database...',bl2,'P')
           icmove=IVALC(1)
@@ -1504,7 +1464,6 @@ C the current database.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C      common/gendb/LGENDB
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -1523,7 +1482,14 @@ C Backup of documentation (for editing).
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character dbnote*72,c8*8,outs*124
       character bkdoctyp*2,bkdoc*72,bk4*4,bk12*12,bk72*72,bk248*248
-      character LGENDB*72,act*1,h*72,dstmp*24,t248*248
+      character LGENDB*72,act*1,dstmp*24,t248*248
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edcatdoc'  ! set for subroutine
 
 C Assumes that the db file is open, gather the catg documentation. 
       IAFIL=IFIL+1
@@ -1539,10 +1505,8 @@ C Debug.
 C          write(6,*) catdoc(ij)
 
   53    continue
-        H(1)='Documentation of categories is encouraged. You can'
-        H(2)='enter one or several lines of text.'
-        H(3)='Retain the `: ` in the first two columns as it is '
-        H(4)='used within the db and will not be seen by the user.'
+        helptopic='dbm_category_doc_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         bkdocok=.TRUE.
         bkdoctyp='CD'
         nbkdoc=nbcatdoc(ic)
@@ -1554,17 +1518,17 @@ C Non-proforma editing of category documentation.
           t248=' '
           write(t248,'(a)')catdoc(ik)(1:lnblnk(catdoc(ik)))
           write(outs,'(a,I2)')' Documentation line ',ik
-          CALL EASKS248(t248,outs,' ',72,': ','cd',IER,4)
+          CALL EASKS248(t248,outs,' ',72,': ','cd',IER,nbhelp)
           if(ier.eq.0)bk248(ik)=t248
  252    continue
  253    dok=.false.
-        CALL ASKOK(' ','Add another line ?',ok,dok,4)
+        CALL ASKOK(' ','Add another line ?',ok,dok,nbhelp)
         if(OK)then
           nbkdoc=nbkdoc+1
           write(bkdoc(nbkdoc),'(a)')': '
           write(t248,'(a)')': '
           write(outs,'(a,I2)')' Documentation line ',nbkdoc
-          CALL EASKS248(t248,outs,' ',72,': ','cd',IER,4)
+          CALL EASKS248(t248,outs,' ',72,': ','cd',IER,nbhelp)
           if(ier.eq.0)bk248(nbkdoc)=t248
           goto 253
         endif
@@ -1629,7 +1593,6 @@ C iitnew is the new item associated with it.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C      common/gendb/LGENDB
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1645,8 +1608,15 @@ C      common/gendb/LGENDB
       dimension clist(8),icatlst(8)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character catdoc*248,cattag*12,cattype*8,catmenu*32,catdate*24
-      character ittag*12,itmenu*32,LGENDB*72,h*72
+      character ittag*12,itmenu*32,LGENDB*72
       character c8*8,c20*20,outs*124,dstmp*24,item*12,clist*28
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='newgcat'  ! set for subroutine
 
 C Position of new item will be at lastr+1 so compute and updated lastr
 C for the current type of database.
@@ -1681,29 +1651,18 @@ C Update category pointers.
 C In the case of acoustics and environmental impacts user must specify
 C which category type to use.
       if(dbtag(idbh)(1:8).eq.'acoustic')then
-        h(1)='An acoustic category can hold items related to individual'
-        h(2)='materials or to constructions (composites of several  '
-        h(3)='layers). '
+        helptopic='dbm_category_acoustic'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkab('Acoustic category options: ',' ',
-     &      'materials','constructions',IV,3)
+     &      'materials','constructions',IV,nbhelp)
         if(iv.eq.1)then
           write(cattype(icl),'(a)') 'MAT     '
         elseif(iv.eq.2)then
           write(cattype(icl),'(a)') 'SYS     '
         endif
       elseif(dbtag(idbh)(1:9).eq.'envir_imp')then
-        h(1) ='An environmental effects category can be one of the'
-        h(2) ='following types:  '
-        h(3) =' '
-        h(4) =' Constructions effects '
-        h(5) =' Constructions assembly '
-        h(6) =' Constructions maintenance '
-        h(7) =' Assembly at the project (for prefabricated items)'
-        h(8) ='  '
-        h(9) =' Material effects  '
-        h(10)=' Recycling processes  '
-        h(11)=' Incineration processes  '
-        h(12)=' Dump processes  '
+        helptopic='dbm_category_enveff'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         clist(1)='constructions effects     '
         clist(2)='constructions assembly    '
         clist(3)='constructions maintenance '
@@ -1715,7 +1674,7 @@ C which category type to use.
         INPIC=1
         CALL EPICKS(INPIC,icatlst,' ',
      &    ' Environmental impacts category options: ',
-     &    28,8,clist,'env impacts categ list',IER,12)
+     &    28,8,clist,'env impacts categ list',IER,nbhelp)
         if(INPIC.EQ.0)then
           write(cattype(icl),'(a)') 'STD     '
         else

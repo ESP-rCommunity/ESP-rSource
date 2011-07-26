@@ -360,7 +360,6 @@ c save set.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -422,7 +421,7 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character LUALF*72,LCNG*15,LLOC*15,H*72
+      character LUALF*72,LCNG*15,LLOC*15
       character LCFGF*72,cfgroot*24
 
 C scname is the first 12 characters of the overall control name.
@@ -443,6 +442,12 @@ C 'simulation toggles' menu.
                                    !- is hour-centered (default) or half-hour centered.
                                    !- 0 = hour-centered; 1 = half-hour centered.
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZLS2'  ! set for subroutine
 
 C Initialise once per hour storage facility.  (Future work could
 C involve storage of results at higher frequency.
@@ -579,14 +584,11 @@ C Generate automatically if an uncertainty analysis.
       if (autook) IASK=1
       if (NRSIM.gt.1) IASK=1
       if (IASK.eq.0) then
-   50   H(1)='A phrase describing what this result-set represents '
-        H(2)='is required. The default phrase includes the root '
-        H(3)='name of the model. '
-        H(4)='  '
-        H(5)='These phrases are generated automatically during an '
-        H(6)='uncertainty analysis. '
+   50   helptopic='user_phrase'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(RSNAME,' Result-set description?',
-     &    ' ',40,'standard simulation','Result-set brief descr.',IER,6)
+     &    ' ',40,'standard simulation','Result-set brief descr.',
+     &    IER,nbhelp)
         IF(RSNAME(1:2).EQ.'  ')GOTO 50
       endif
       IREC=NSIM+2
@@ -2543,18 +2545,23 @@ C -- Energy stored.
      &                     (DELXI/2.)*tfs(ICOMP,ISFN)*real(ntstep)/3600.
         
 C --------- OTHER FACE -----------
-C Calculate only if facing exterior type boundaty condition.
-        IF(IE(icomp,ISFN).EQ.0)THEN
-          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))
+C Calculate only if facing exterior type boundary condition.
+        IF(IE(icomp,ISFN).EQ.0)THEN	! check that it is facing exterior (note that facing attic does not count)
+          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))	! exterior surface layer thickness / exterior layer nodes (typically 2)
           
 C -- Conduction.
-          if(IVTHPZ(icomp))then
+          if(IVTHPZ(icomp))then	! ? is this to set the variable on the first hour?
+	! present timestep
             qconde(ICOMP,ISFN,1)=THCONp(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tpc(icomp,ISFN,2)-tpc(ICOMP,ISFN,1))/DELXE
+	! future timestep
             qconde(ICOMP,ISFN,2)=THCONf(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tfc(ICOMP,ISFN,2)-tfc(ICOMP,ISFN,1))/DELXE
           else
-            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2)
+            ! present timestep
+            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2)	! present equals previous future
+            ! future timestep
+            ! qconde = k * A / l * (node temps 2 - 1
             qconde(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,1)*sna(ICOMP,ISFN)*
      &                       (tfc(ICOMP,ISFN,2)-tfc(ICOMP,ISFN,1))/DELXE
           endif
@@ -2619,6 +2626,7 @@ C -- Shortwave radiation. Test if TMC.
 
 C -- Energy stored.
           qstore(ICOMP,ISFN,1)=qstore(ICOMP,ISFN,2)
+	! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
           qstore(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,2)*
      &                         THRMLI(ICOMP,ISFN,1,3)*sna(ICOMP,ISFN)*
      &                   (DELXE/2.)*tfc(ICOMP,ISFN,1)*real(ntstep)/3600.

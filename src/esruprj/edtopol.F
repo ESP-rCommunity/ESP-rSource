@@ -50,7 +50,6 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -87,12 +86,19 @@ C Pause length during sequentail scan longpause (true=1 sec)
       logical longpause
 
       DIMENSION ITEMS1(23)
-      CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
+      CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
       CHARACTER LCFGF*72
       character cfgroot*24
       character DCNN*72
       character bl*2
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDCONN'  ! set for subroutine
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -278,27 +284,8 @@ C If contiguity has problems then hilight the selection.
       MITEM=23
 
 C Help text for this menu.
-      H(1)='The model contiguity ie. the boundary conditions'
-      H(2)='at surfaces are set in this menu.  Before a simulation'
-      H(3)='can be performed it is necessary that it be complete.'
-      H(4) =' '
-      H(5) ='There are several means to define the topology: '
-      H(6) =' a) attribute surfaces via the zone geometry facility'
-      H(7) ='    as they are created,'
-      H(8) ='    '
-      H(9) =' b) manually edit them via the `cfg` facility, '
-      H(10)='    '
-      H(11)=' c) search for matching vertices within the model'
-      H(12)='    to fill in all partitions and then complete this'
-      H(13)='    list by editing or importing surface attributes.'
-      H(14)=' '
-      H(15)='If internal mass in zone or explicit blinds have been'
-      H(16)='defined as back-to-back surfaces then they will be'
-      H(17)='treated as partitions unless you force confirmation.'
-      H(18)=' '
-      H(19)='The automated facility is considerably faster than'
-      H(20)='manual methods and best used when all the zones have'
-      H(21)='been created. '
+      helptopic='topology_choice_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -330,7 +317,9 @@ C Now display the menu (short heading if in text mode).
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C List help.
-        CALL PHELPD('connection section',21,'surf_topo   ',0,0,IER)
+        helptopic='topology_choice_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Swop the pause length.
@@ -356,32 +345,17 @@ C List connections.
 
 C Set tolerances for vertex comparison.
         call tstamp('>','CFG: enter tolerances')
-        H(1)='The tolerance is expressed in metres and applies to'
-        H(2)='the X, Y & Z of each vertex.'
         CALL EASKR(CACC,' ',' Tolerance (metres) ? ',
-     &             0.001,'W',0.2,'W',0.001,'dist tolerance',IER,2)
+     &             0.001,'W',0.2,'W',0.001,'dist tolerance',IER,nbhelp)
 
-        H(1)='The tolerance is expressed in degrees and allows the'
-        H(2)='user to control how much of a change in direction'
-        H(3)='along a line constitutes a surface corner.  If set '
-        H(4)='too small, it will pick up minor vertices along a '
-        H(5)='side as corners. '
         CALL EASKR(DACC,' ',' Corner tolerance (degrees) ?',
-     &             0.1,'W',5.0,'W',1.0,'degree tolerance',IER,5)
+     &             0.1,'W',5.0,'W',1.0,'degree tolerance',IER,nbhelp)
 
-        H(1)='Within cfg the shape of a surface is determined by'
-        H(2)='the number of corners within the surface polygon.'
-        H(3)='Vertices which lie along a line are not counted unless'
-        H(4)='the angle of the line changes by several degrees.'
-        H(5)='If the difference is 0 then both surfaces must have '
-        H(6)='the same number of corners and they must be within '
-        H(7)='the distance tolerance specified.  Increasing this'
-        H(8)='number will allow for one or more of the corners to'
-        H(9)='be out of tolerance and still be presented to the'
-        H(10)='user for confirmation. '
+        helptopic='surface_corner_detect'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IACC,' Number of corners which are allowed outside',
      &    ' of the distance tolerance ? ',
-     &     0,'F',2,'W',1,'corner tolerance',IER,10)
+     &     0,'F',2,'W',1,'corner tolerance',IER,nbhelp)
 
       ELSEIF(INO.EQ.5)THEN
 
@@ -409,12 +383,8 @@ C Flip logic for partitions.
           M3SKP=.false.
         else
           dok=.false.
-          h(1)='Typically, you would want to include existing '
-          h(2)='partitions in the list of surfaces to check.'
-          h(3)='You are allowed to exclude them even though it '
-          h(4)='is a dangerous option for expert users. '
           call askok('Are you sure you want to skip marked partitions?',
-     &               '(see help)',OK,dok,4)
+     &               '(see help)',OK,dok,nbhelp)
           if(OK)M3SKP=.true.
         endif
       ELSEIF(INO.EQ.8)THEN
@@ -461,12 +431,6 @@ C Flip logic for case of UNKNOWN or no match found.
         if(M0SKP)then
           M0SKP=.false.
         else
-          H(1)='This option will result in any surface which does'
-          H(2)='not conform to the geometric matching criteria to be'
-          H(3)='assumed to have an EXTERNAL boundary condition.'
-          H(4)='If you want to choose the boundary condition then'
-          H(5)='you should toggle `no match found` to YES.'
-          CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
           M0SKP=.true.
         endif
       ELSEIF(INO.EQ.13)THEN
@@ -477,12 +441,10 @@ C Flip logic for back-to-back within zone.
           M8SKP=.false.
         else
           dok=.false.
-          h(1)='Typically, back-to-back surfaces in a room represent'
-          h(2)='mass and/or blinds and if these surfaces are connected'
-          h(3)='to each other heat will flow. If you want the option'
-          h(4)='to reset these to ADIABETIC say YES. '
+          helptopic='boundary_back_to_back'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok('Do you want to confirm back-to-back surfaces',
-     &               'within the room (see help)',OK,dok,4)
+     &               'within the room (see help)',OK,dok,nbhelp)
           if(OK)M3SKP=.true.
         endif
 
@@ -494,20 +456,14 @@ C Edit single connection.
       ELSEIF(INO.EQ.16)THEN
 
 C Clear contiguity.
-        h(1)='In restructuring a model it is sometimes useful to '
-        h(2)='redefine the topology.'
-        h(3)=' '
-        h(4)='The `clear subset` asks for each type of connection '
-        h(5)='(partitions/identical etc.) to clear. '
-        h(6)=' '
-        h(7)='The `clear all` will rebuild the whole master list '
-        h(8)='and this should be done if the list has been corrupted.'
+        helptopic='boundary_clear_all'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Topology Options:',' ','clear all topology',
-     &   'clear subset of topology.','continue',IRT,9)
+     &   'clear subset of topology.','continue',IRT,nbhelp)
         if(IRT.eq.1)then
           dok=.false.
           call askok('About to clear ALL contiguity.','Is this ok',
-     &      OK,dok,8)
+     &      OK,dok,nbhelp)
           if(.NOT.OK)goto 3
 
 C Clear the connections list by scanning each zone geometry
@@ -542,15 +498,6 @@ C different numbers of connections.
 
 C Check if user wants to re-establish connection data from surface
 C attributes.
-          H(1)='After clearing contiguity you can re-establish some of'
-          H(2)='the connections via surface attributes (adiabetic,'
-          H(3)='similar, constant and ground connections). If these.'
-          H(4)='attributes are YES in the list of boundary type'
-          H(5)='toggles (choices c-h) then you will be asked for '
-          H(6)='confirmation. '
-          H(7)=' '
-          H(8)='Answering yes to this question can save you lots of '
-          H(9)='time. '
           dok=.true.
           call askok('Recover surface attribute data?',
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,9)
@@ -561,19 +508,19 @@ C attributes.
           endif
         elseif(IRT.eq.2)then
           call tstamp('>','CFG: clearing partial contiguity')
-          h(1)='The `clear subset` asks for each type of connection '
-          h(2)='(partitions/identical etc.) to clear. '
-          h(3)=' '
-          h(4)='Say yes to SIMILAR and/or CONSTANT and/or GROUND'
-          h(5)='and/or ADIABETIC if you want to clear connections'
-          h(6)='of surfaces matching these boundary types. '
           dok=.false.
-          call askok(' ','Clear items marked SIMILAR?',M1OK,dok,6)
-          call askok(' ','Clear items marked CONSTANT?',M2OK,dok,6)
-          call askok(' ','Clear items marked GROUND?',M4OK,dok,6)
-          call askok(' ','Clear items marked ADIABETIC?',M5OK,dok,6)
-          call askok(' ','Clear items marked BASESIMP?',M6OK,dok,6)
-          call askok(' ','Clear items marked IDENT_CEN?',M7OK,dok,6)
+          call askok(' ','Clear items marked SIMILAR?',M1OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked CONSTANT?',M2OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked GROUND?',M4OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked ADIABETIC?',M5OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked BASESIMP?',M6OK,
+     &      dok,nbhelp)
+          call askok(' ','Clear items marked IDENT_CEN?',M7OK,
+     &      dok,nbhelp)
           call usrmsg('Clearing partial contiguity...',bl,'-')
           ICC=0
 
@@ -646,15 +593,9 @@ C Re-build zone:surface to connection hash array.
 
 C Check if user wants to re-establish connection data from surface
 C attributes.
-          H(1)='After clearing contiguity you can re-establish some of'
-          H(2)='the connections via surface attributes (adiabetic,'
-          H(3)='similar, constant and ground connections). If these.'
-          H(4)='attributes are YES in the list of boundary type'
-          H(5)='toggles (choices c-h) then you will be asked for '
-          H(6)='confirmation. '
-          H(7)='This facility might save lots of time. '
           call askok('Recover surface attribute data?',
-     &      '(adiabetic,similar, constant etc. see help)',OK,dok,7)
+     &      '(adiabetic,similar, constant etc. see help)',
+     &      OK,dok,nbhelp)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
             call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
@@ -668,25 +609,20 @@ C Save current common block information to file, jump back and
 C update the display.  If icfgv = 3 or 4 then only need to update
 C the connections file.  If it changes also update the configuration file.
         if(icfgv.eq.3.or.icfgv.eq.4)then
-  286     H(1)='The surface topology of the problem is held'
-          H(2)='in a connections file.'
-          write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
+  286     write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
           if(LCNN(1:1).eq.' ')LCNN=DCNN
 
           CALL EASKS(LCNN,' Updated surface connections file ?',' ',
-     &      72,DCNN,'system connx file name',IER,2)
+     &      72,DCNN,'system connx file name',IER,nbhelp)
           IF(LCNN.EQ.' ')GOTO 286
           CALL EMKCFG('-',IER)
         elseif(icfgv.lt.3)then
 
 C Older configuration file format, ask for its name.
-          H(1)='The current problem description will be placed'
-          H(2)='into this file. It is suggested that you define'
-          H(3)='a new file (ie. project.cfg > project_a.cfg).'
           CFGFN=LCFGF
           CALL EASKS(CFGFN,
      &     'Updated configuration file name ? (best if a new file) ',
-     &     ' ',72,'xxx.cfg','revised config file',IER,3)
+     &     ' ',72,'xxx.cfg','revised config file',IER,nbhelp)
           if(CFGFN.ne.' ')LCFGF=CFGFN
           CALL EMKCFG('-',IER)
         endif
@@ -697,25 +633,20 @@ C only need to update the connections file. If it changes also update
 C the configuration file.
         ITSNM=0
         if(icfgv.eq.3.or.icfgv.eq.4)then
-  285     H(1)='The surface topology of the problem is held'
-          H(2)='in a connections file.'
-          write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
+  285     write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
           if(LCNN(1:1).eq.' ')then
             LCNN=DCNN
           endif
           CALL EASKS(LCNN,' Updated surface connections file ?',' ',
-     &      72,DCNN,'system connx file name',IER,2)
+     &      72,DCNN,'system connx file name',IER,nbhelp)
           IF(LCNN.EQ.' ')GOTO 285
         elseif(icfgv.lt.3)then
 
 C Older configuration file format, ask for its name.
-          H(1)='The current problem description will be placed'
-          H(2)='into this file. It is suggested that you define'
-          H(3)='a new file (ie. project.cfg > project_a.cfg).'
           CFGFN=LCFGF
           CALL EASKS(CFGFN,
      &     'Updated configuration file name ? (best if a new file) ',
-     &     ' ',72,'xxx.cfg','revised config file',IER,3)
+     &     ' ',72,'xxx.cfg','revised config file',IER,nbhelp)
           if(CFGFN.ne.' ')LCFGF=CFGFN
         endif
 
@@ -760,7 +691,6 @@ C the user to confirm before writing to temporary configuration file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -790,10 +720,16 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      CHARACTER H*72
       character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CONFIG'  ! set for subroutine
 
 C CACC is the tolerance allowed between two vertices.
 C TOTHER is array of temporary new topology attributes for current zone.
@@ -812,10 +748,11 @@ C each edit).
       MODBND=.TRUE.
 
 C Request which zones to include.
-      H(1)=' Pick one, several or all zones for inclusion'
+      helptopic='setting_up_topol'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ICPIC=NZONES
       CALL EPICKS(ICPIC,ICVALS,' ',' Which zones to include: ',
-     &  12,NZONES,zname,' zone list',IER,1)
+     &  12,NZONES,zname,' zone list',IER,nbhelp)
 
 C Loop for each zone, only doing comparison for selected zones.
       DO 100 I=1,NZONES
@@ -833,12 +770,7 @@ C skiped.
           if(IZ.ne.1)then
             write(outs,'(3a)')' Continue with ',zname(IZ),' ?'
             dok=.true.
-            h(1)='Normally you would check all of the zones. And '
-            h(2)='if you need to exit this process (ran out of '
-            h(3)='coffee) this is a place you can do this. NOTE '
-            h(4)='that this can leave the model in an inconsistent'
-            h(5)='state. '
-            CALL ASKOK(outs,'(see help)',OK,dok,5)
+            CALL ASKOK(outs,'(see help)',OK,dok,nbhelp)
             if(.NOT.OK)then
               IC=IC+nzsur(IZ)
               goto 100
@@ -1120,61 +1052,8 @@ C set connection to exterior and proceed.
               else
 
 C Setup contextural help for boundary conditions.
-        H(1) ='The boundary conditions at the other face of this sur-'
-        H(2) ='face is specified via the selection of one of these'
-        H(3) ='choices.  The default is OUTSIDE.'
-        H(4) =' '
-        H(5) =' Exterior - the other face of the surface is exposed to'
-        H(6) ='  ambient air temperature, wind and solar radiation.'
-        H(4) =' '
-        H(5) =' Dynamic/similar - the other face of the surface is'
-        H(6) ='  exposed to the same conditions as the inside face'
-        H(7) ='  (except that when direct sunlight is falling on the'
-        H(8) ='  inside face it cannot be falling on the other face'
-        H(9) ='  only the diffuse component is used on the other face.'
-        H(10)='  where both sides get the same radiation.'
-        H(11)='  A dynamic/similar connection can include an offset'
-        H(12)='  temperature (C) and radiation (W/m^2).'
-        H(13)=' '
-        H(14)=' Static - requires that a constant temperature and'
-        H(15)='  radiation be supplied. You might use this to represent'
-        H(16)='  a cold storage room.'
-        H(17)=' '
-        H(18)=' Surface in another zone - the other face of the surface'
-        H(19)='  gets its boundary conditions from the last known state'
-        H(20)='  of the other surface. There is a thermophysical con-'
-        H(21)='  nection established between the two zones.'
-        H(22)=' '
-        H(23)=' Ground (standard profile) - the other face of the'
-        H(24)='  surface is in direct contact with one of the standard'
-        H(25)='  monthly temperature profiles embedded in ESP-r.'
-        H(26)=' '
-        H(27)=' Ground (user defined profile) - the other face of the'
-        H(28)='  surface is in direct contact with a monthly profile'
-        H(29)='  previously created by the user (in the model context)'
-        H(30)=' '
-        H(31)=' Ground (3D conduction) - the other face connects to a'
-        H(32)='  3D ground representation. This is not often used.'
-        H(33)=' '
-        H(34)=' Adiabatic boundary - typically used for back-to-back'
-        H(35)='  surfaces in a zone representing thermal mass. There'
-        H(36)='  is no heat flux passed beyond the other-face. '
-        H(37)=' '
-        H(38)=' BASESIMP is used to represent one of several basement'
-        H(39)='  configurations and precalculated patterns of heat'
-        H(40)='  transfer. For this to be useful there must be a'
-        H(41)='  basesimp file created for the zone giving a number'
-        H(42)='  of dimensions and computational parameters.'
-        H(43)=' '
-        H(44)=' CEN 13791 partition which is like the SIMILAR'
-        H(45)='  but for CEN 13791 test. The offset temperauture'
-        H(46)='  and radiation (W/m^2) in SIMILAR is not available'
-        H(47)='  for the CEN 13791 partition type. For details see'
-        H(48)='  section 4.4.2 CEN 13791 standard. '
-        H(49)=' '
-        H(50)='There is a module of ESP-r which uses polygon adjacency'
-        H(51)='to automatically link partitions together. '
-        H(52)=' '
+                helptopic='boundary_choices'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 if(ICT(IC).eq.3)then
                   write(outs,'(a,a)') 
      &              'Partition, but no geometric match found. Is ',
@@ -1192,7 +1071,7 @@ C Setup contextural help for boundary conditions.
      &  'g adiabatic (no heat flux)  ','h BASESIMP foundation       ',
      &  'i CEN 13791 partition       ',
      &  'j UNKNOWN (at this time)    ','k accept current            ',
-     &   ' ',iart,idno,52)
+     &   ' ',iart,idno,nbhelp)
                 if(IART.eq.0)then
                   continue
                 elseif(IART.eq.1)then
@@ -1220,12 +1099,11 @@ C Setup contextural help for boundary conditions.
                     UPDGEO=.TRUE.
                   endif
                 elseif(IART.eq.3)then
-                  H(1)='A type 2 connection requires that a constant'
-                  H(2)='temperature and radiation (Watts) be entered.'
                   CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &              -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &              -99.,'F',99.,'F',20.,'adjacent temperature',
+     &              IER,nbhelp)
                   CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
-     &              -999.,'F',999.,'F',0.,'adjacent rad',IER,2)
+     &              -999.,'F',999.,'F',0.,'adjacent rad',IER,nbhelp)
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=2
@@ -1254,15 +1132,11 @@ C profile has not been defined.
                       call edisp(iuout,outs)
                     endif
 21                continue
-                  H(1)='A ground connection allows either:'
-                  H(2)='> 0 a connection to one of several standard'
-                  H(3)='    profiles. Supply its index.'
-                  H(4)='= 0 a connection to a user defined profile. '
-                  H(5)='    supply 0 plus user profile index. '
-                  H(6)='-3  a connection to a 3D ground model.'
+                  helptopic='boundary_ground'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   iic2=ic2(IC)
   777             CALL EASKI(IIC2,' Monthly (standard) profile index?',
-     &              ' ',1,'F',mgrdp,'F',1,'ground profile',IER,7)
+     &              ' ',1,'F',mgrdp,'F',1,'ground profile',IER,nbhelp)
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=4
@@ -1292,11 +1166,10 @@ C profile has not been defined.
                       WRITE(OUTS,'(12F6.1)')(UGRDTP(JG,IGRDP),JG=1,12)
                       call edisp(iuout,outs)
  22                 continue
-                    H(1)='One of the user defined profile numbers is'
-                    H(2)='required at this point.'
                     CALL EASKI(IIE2,
      &                'User defined ground profile index?',
-     &                ' ',0,'F',9,'F',1,'user defined profile',IER,2)
+     &                ' ',0,'F',9,'F',1,'user defined profile',
+     &                IER,nbhelp)
                     IC1(IC)=IZ
                     IE1(IC)=JS
                     ICT(IC)=4
@@ -1347,10 +1220,6 @@ C menu and recover after the call.
                   IC1(IC)=IZ
                   IE1(IC)=JS
                   ICT(IC)=6
-                  H(1)='Specify the BASESIMP configuration index.'
-                  H(2)='Refer to src/esp-r/esrubld/bscoeff.F for the '
-                  H(3)='correspondence between iconfig and standard '
-                  H(4)='BASESIMPdescriptors (e.g. BCIN_1).'
                   IBS=IC2(IC)
                   call bsimtype(ibs)
                   IC2(IC)=IBS
@@ -1358,16 +1227,12 @@ C menu and recover after the call.
 C Get `surface weighting factor', the percentage of the BASESIMP heat loss to
 C attribute to the surface under consideration.
                   Ifrac=IE2(IC)
-          H(1)='BASESIMP is a `whole-foundation model`. Therefore, when'
-          H(2)='a foundation is represented by numerous ESP-r surfaces'
-          H(3)='(e.g. four walls + floor to represent a basement), you'
-          H(4)='must specify the percentage of the whole-foundation'
-          H(5)='heat loss to attribute to each surface. Normally the'
-          H(6)='sum of surfaces representing a founcation is 100%.'
+                  helptopic='boundary_basesimp'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL EASKI(Ifrac,
      &              ' Percent of BASESIMP loss to this surface?'
      &             ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',
-     &              IER,6)
+     &              IER,nbhelp)
                   IE2(IC)=Ifrac
                   if(SO(1:8).ne.'BASESIMP')then
                     TOTHER(IE1(JS),1)='BASESIMP'
@@ -1480,11 +1345,9 @@ C make it a partition without bothering to ask the user.
                 call edisp(iuout,outs)
                 goto 110  ! no need to check further
               else
-                h(1)='You asked to specify connection if a match was'
-                h(2)='found to another surface in the same room. '
                 CALL EASKABC('Matched surface within room:',' ',
      &            'set to back-to-back','set to ADIABETIC',
-     &            'set to UNKNOWN',IRTA,2)
+     &            'set to UNKNOWN',IRTA,nbhelp)
                 if(IRTA.eq.1)then
                   write(TOTHER(JS,1),'(a)') 'ANOTHER'
                   write(tother(JS,2),'(i2.2)') IC2(ic)
@@ -1592,12 +1455,10 @@ C the view on it and calculate the angle of view to that box.
               WRITE(outs,'(4a)')' Probable match to surface ',
      &            SN(1:lnblnk(SN)),' in ',zname(II)(1:lnzname(II))
               dok=.true.
-              h(1)='If there is more than ONE possible matching '
-              h(2)='geometric connection you are asked to confirm'
-              h(3)='which one. Exercise care - the interface does'
-              h(4)='not tell you how many possible matches it will'
-              h(5)='be showing you. '
-              CALL ASKOK(outs,' Accept this? (see help)',OK,dok,5)
+              helptopic='multi_match_partn'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL ASKOK(outs,' Accept this? (see help)',
+     &          OK,dok,nbhelp)
               IF(OK)then
                 IC1(IC)=IZ
                 IE1(IC)=JS
@@ -1628,12 +1489,9 @@ C If reached this point then no surface selected.
             MODBND=.TRUE.
             MODIFY=.TRUE.
             MODLEN=.TRUE.
-            h(1)='If you continue, the current connection type '
-            h(2)='will be retained.  You can edit this connection '
-            h(3)='after all of the surfaces have been checked.'
             CALL EASKABCD(' None of the suggestions taken:',' ',
      &        'loop again','set to UNKNOWN','set to EXTERIOR',
-     &        'continue',IRTA,3)
+     &        'continue',IRTA,nbhelp)
             if(irta.eq.1)then
               goto 840
             elseif(irta.eq.2)then
@@ -1710,18 +1568,12 @@ C          write(6,*) (TOTHER(ij,1),ij=1,10)
   100 CONTINUE
 
 C Ask user if updated information should be saved to different file.
- 289  h(1)='At this point the zone geometry files will have updated'
-      h(2)='surface attributes. And the master connections list is '
-      h(3)='still held in memory and needs to be written out to file'
-      h(4)='or the model will be inconsistent.'
-      h(5)=' '
-      h(6)='This dialog allows you to save the master connections list'
-      h(7)='to a different file name (in case you do not want to'
-      h(8)='overwrite the existing file. '
+ 289  helptopic='save_to_cnn_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
       if(LCNN(1:1).eq.' ')LCNN=DCNN
       CALL EASKS(LCNN,' Surface connections file name?',' ',
-     &  72,DCNN,'system connx file name',IER,2)
+     &  72,DCNN,'system connx file name',IER,nbhelp)
       IF(LCNN.EQ.' ')GOTO 289
       call EMKCFG('-',IER)
 
@@ -1747,7 +1599,6 @@ C Parameters: logical variables set the context of what to check
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1764,8 +1615,15 @@ C Parameters: logical variables set the context of what to check
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
 
       CHARACTER CXSTR*78,outs*124
-      CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
+      CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54
       CHARACTER bl*2
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ESACON'  ! set for subroutine
 
 C General image option flags.
       bl='  '
@@ -1785,6 +1643,10 @@ C Display connection header.
       CALL EDISP(iuout,' ')
       CALL CONXINF(1,0,CXSTR)
       CALL EDISP(iuout,CXSTR)
+
+C Help text for the dialogs.
+      helptopic='importing_surf_conn'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Loop through each connection in turn. Read in the geometry
 C attributes for each set of connections in turn.
@@ -1868,8 +1730,7 @@ C Set connected zone name if one exists.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << SIMILAR.')
@@ -1896,20 +1757,17 @@ C Set connected zone name if one exists.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << CONSTANT.')
           ICT(ICC)=2
-          H(1)='A type 2 connection requires that a constant '
-          H(2)='temperature and radiation (Watts) be entered.'
           VAL=IC2(ICC)
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &        -99.,'F',99.,'F',20.,'adjacent temperature',IER,2)
+     &        -99.,'F',99.,'F',20.,'adjacent temperature',IER,nbhelp)
           VAL2=IE2(ICC)
           CALL EASKR(VAL2,' ',' Constant rad (W/m^2) ? ',
-     &        -999.,'F',999.,'F',0.,'adjacent rad',IER,2)
+     &        -999.,'F',999.,'F',0.,'adjacent rad',IER,nbhelp)
           IC2(ICC)=INT(VAL)
           IE2(ICC)=INT(VAL2)
           GOTO 123
@@ -1925,8 +1783,7 @@ C Set connected zone name if one exists.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << GROUND.')
@@ -1951,24 +1808,18 @@ C profile has not been defined.
               call edisp(iuout,outs)
  22         continue
           endif
-          H(1)='A ground connection allows either:'
-          H(2)='> 0 - a connection to one of several standard profiles'
-          H(3)='  in which case the profile number is required.'
-          H(4)='= 0 - a connection to a user defined profile:'
-          H(5)='    a 0 followed by a profile number is required.'
-          H(6)='-3  a connection to a 3D ground model.'
+          helptopic='fill_out_ground'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IVAL=1
           CALL EASKI(IVAL,' Monthly profile (0 = user defined) ? ',
-     &      ' ',-3,'F',12,'F',1,'ground profile',IER,5)
+     &      ' ',-3,'F',12,'F',1,'ground profile',IER,nbhelp)
           IC2(ICC)=IVAL
           IF(IC2(ICC).GT.0)THEN
             IE2(ICC)=0
           ELSEIF(IC2(ICC).eq.0)THEN
-            H(1)='One of the user defined profiles numbers is'
-            H(2)='required at this point.'
             IVAL=IE2(ICC)
             CALL EASKI(IVAL,' User defined profile: ',
-     &        ' ',0,'F',9,'F',1,'user defined profile',IER,2)
+     &        ' ',0,'F',9,'F',1,'user defined profile',IER,nbhelp)
             IE2(ICC)=IVAL
           ELSEIF(IC2(ICC).eq.-3)THEN
             IE2(ICC)=0
@@ -1986,8 +1837,8 @@ C profile has not been defined.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',
+     &        OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << ADIABATIC.')
@@ -2018,8 +1869,8 @@ C menu and recover after the call.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',
+     &        OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << BASESIMP.')
@@ -2032,10 +1883,6 @@ C menu and recover after the call.
           endif
           ICT(ICC)=6
 
-          H(1)='Specify the BASESIMP configuration index.'
-          H(2)='Refer to src/esp-r/esrubld/bscoeff.F for the '
-          H(3)='correspondence between iconfig and standard '
-          H(4)='BASESIMPdescriptors (e.g. BCIN_1).'
 C          CALL EPMENSV
           IBS=IC2(ICC)
           call bsimtype(ibs)
@@ -2045,15 +1892,12 @@ C           CALL EPMENRC
 C Get `surface weighting factor', the percentage of the BASESIMP heat loss to
 C attribute to the surface under consideration.
           Ifrac=IE2(ICC)
-          H(1)='BASESIMP is a `whole-foundation model`. Therefore, when'
-          H(2)='a foundation is represented by numerous ESP-r surfaces'
-          H(3)='(e.g. four walls + floor to represent a basement), you'
-          H(4)='must specify the percentage of the whole-foundation'
-          H(5)='heat loss to attribute to each surface. Normally the'
-          H(6)='sum of surfaces representing a founcation is 100%.'
+          helptopic='boundary_basesimp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(Ifrac,
-     &      ' Percent of BASESIMP loss to this surface?'
-     &      ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
+     &      ' Percent of BASESIMP loss to this surface?',
+     &      ' ',0,'F',100,'F',100,'BASESIMP heat loss percent',
+     &      IER,nbhelp)
           IE2(ICC)=Ifrac
 C BASESIMP end.
           GOTO 123
@@ -2069,8 +1913,8 @@ C BASESIMP end.
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
             dok=.true.
-            h(1)='This pause allows you to correct errors. '
-            CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+            CALL ASKOK(' ','Use this surface attribute?',
+     &        OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 123
           endif
           CALL EDISP(iuout,'   topology << IDENT_CEN.')
@@ -2096,8 +1940,7 @@ C BASESIMP end.
           call edisp(iuout,OUTSTR)
           call edisp(iuout,TMP)
           dok=.true.
-          h(1)='This pause allows you to correct errors. '
-          CALL ASKOK(' ','Use this surface attribute?',OK,dok,1)
+          CALL ASKOK(' ','Use this surface attribute?',OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 123
           CALL EDISP(iuout,'   topology << EXTERIOR.')
           if(MMOD.eq.8)then
@@ -2138,10 +1981,7 @@ C Not an easy match or mandated match so tell user.
 
 C Ask user if updated info should be saved to file.
       dok=.true.
-      h(1)='Assuming the last task was successful you need to '
-      h(2)='save the topology to file to preserve any changes '
-      h(3)='made to the model.  '
-      CALL ASKOK(' ','Save updated topology?',OK,dok,3)
+      CALL ASKOK(' ','Save updated topology?',OK,dok,nbhelp)
       if(OK)then
         call EMKCFG('-',IER)
       endif
@@ -2159,7 +1999,6 @@ C associated with a concept).
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2179,11 +2018,18 @@ C lstanchr = links for each anchor
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION VERT(35),flag(mcon),iconnpk(60)
-      CHARACTER VERT*54,KEY*1,H*72,outs*124
+      CHARACTER VERT*54,KEY*1,outs*124
       character CXITM*43,flag*9
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       logical found,ok,dok,foundone,okd,MODIFY,MODLEN,MODBND
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='anchor'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -2217,36 +2063,8 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Help text.
-   3  h(1)='Anchor points allow a user to line a number of items '
-      h(2)='(such as surfaces) to a concept so that global actions'
-      h(3)='(such as attribution or performance enquiries) can be '
-      h(4)='undertaken. An achor point consists of name (12 char),'
-      h(5)='a list of item indices and a type indicator. '
-      h(6)=' '
-      h(7)='Anchor types set the context within which esp-r can'
-      h(8)='manipulate items associated with an anchor. Details: '
-      h(9)=' a general surface - supports actions such as changing'
-      h(10)='   attributes or graphing temperatures of a '
-      h(11)='   collection of surfaces).'
-      h(12)=' '
-      h(13)='Tagging surfaces as possible openings or leakage paths'
-      h(14)='in a flow network:'
-      h(15)=' b closed door - surface acts as or includes a closed'
-      h(16)='   door (or crack) between two flow nodes.'
-      h(17)=' c open(able) door - surface acts as or includes an '
-      h(18)='   open door (perhaps controlled) between flow nodes.'
-      h(19)=' d closed window - surface acts as/includes a closed'
-      h(20)='   window (or crack) between two flow nodes.'
-      h(21)=' e open(able) window - surface acts as/includes a'
-      h(22)='   window (perhaps controlled) between flow nodes.'
-      h(23)=' f closed grill - surface acts as/includes a closed'
-      h(24)='   grill (or crack) between two flow nodes.'
-      h(25)=' g open(able) grill - surface includes an grill or'
-      h(26)='   vent (perhaps controlled) between two flow nodes.'
-      h(27)=' h duct or pipe - surface inclues an duct or pipe'
-      h(28)='   between two flow nodes.'
-      h(29)=' i fan or pump - surface near a fan or pump between'
-      h(30)='   two flow nodes.'
+   3  helptopic='anchor_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Set menu header text. Update flag string with * depending on which
 C anchor set(s) is/are associated with a connection.
@@ -2311,7 +2129,9 @@ C Save and return.
         if(NALOC.gt.0)CALL EMKCFG('-',IER)
         return
       elseif(ivert.eq.mvert-1)then
-        CALL PHELPD('anchor points',30,'-',0,0,IER)
+        helptopic='anchor_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('anchor points',nbhelp,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
         if(IALOC(ifoc).eq.0)then
           inpic = 60
@@ -2372,8 +2192,7 @@ C Force redraw of zones, highlighting anchor list.
           CALL ADJVIEW(IER)
         endif
         dok=.false.
-        h(1)='A chance to abort incorrect selection. '
-        call askok('Edit anchor name or type?',' ',ok,dok,1)
+        call askok('Edit anchor name or type?',' ',ok,dok,nbhelp)
         if(ok)then
           ino=0
           if(ALOCTYP(ifoc)(1:4).eq.'SURF')ino=1
@@ -2391,54 +2210,62 @@ C Force redraw of zones, highlighting anchor list.
      &    'Anchor type (options)','a surface (general)','b closed door',
      &    'c open(able) door','d closed window','e open(able) window',
      &    'f closed grill','g openable grill','h duct or pipe',
-     &    'i fan or pump',' ',' ',' ',ino,idno,30)
+     &    'i fan or pump',' ',' ',' ',ino,idno,nbhelp)
           if(ino.eq.0)then
             goto 31
           elseif(ino.eq.1)then
             AL=ALOCLBL(ifoc)
             if(AL(1:4).eq.'unde')AL='  '
             CALL EASKS(AL,' Label for anchor: ',
-     &        ' ',12,'none','anchor label',IER,30)
+     &        ' ',12,'none','anchor label',IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='SURF'
           elseif(ino.eq.2)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='closed_door'
-            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='CLDR'
           elseif(ino.eq.3)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='open_door'
-            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='OPDR'
           elseif(ino.eq.4)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='closed_windw'
-            CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closd win',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='CLWN'
           elseif(ino.eq.5)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='open_window'
-            CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open win',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='OPWN'
           elseif(ino.eq.6)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='closed_grill'
-            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='CLGR'
           elseif(ino.eq.7)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='open_grill'
-            CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open grill',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='OPGR'
           elseif(ino.eq.8)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='duct'
-            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='DUCT'
           elseif(ino.eq.9)then
             if(ALOCLBL(ifoc)(1:4).eq.'unde')AL='fanorpump'
-            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',
+     &        IER,nbhelp)
             ALOCLBL(ifoc)=AL
             ALOCTYP(ifoc)='FANP'
           endif
@@ -2470,9 +2297,8 @@ C Display information about the anchors associated with connection.
    6    continue
         if(foundone)then
           dok=.false.
-          h(1)='A chance to abort de-reference of link. '
           call askok('De-reference link(s) to this surface?',' ',
-     &      ok,dok,1)
+     &      ok,dok,nbhelp)
           if(ok)then
 
 C Loop through all of the anchor lists and check if any reference this
@@ -2486,8 +2312,7 @@ C decrement IALOC.
                   if(k.eq.ifocc)then
                    write(outs,'(3a)')'Dereference ',ALOCLBL(i),'?'
                     dok=.true.
-                    h(1)='A chance not to dereference this anchor. '
-                    call askok(outs,' ',okd,dok,1)
+                    call askok(outs,' ',okd,dok,nbhelp)
                     if(okd)then
                       do 18 ik=j,ikk-1
                         lstanchr(i,j)=lstanchr(i,j+1)
@@ -2516,16 +2341,21 @@ C anchlist allows selection and list management of anchor points (a list of conn
 C associated with a concept).
       subroutine anchlist(iasel,ier)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION AVERT(27)
-      CHARACTER AVERT*36,KEY*1,H*72
+      CHARACTER AVERT*36,KEY*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='anchlist'  ! set for subroutine
 
       iasel=0
 
@@ -2546,36 +2376,8 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Help text.
-   3  h(1)='Anchor points allow a user to line a number of items '
-      h(2)='(such as surfaces) to a concept so that global actions'
-      h(3)='(such as attribution or performance enquiries) can be '
-      h(4)='undertaken. An achor point consists of name (12 char),'
-      h(5)='a list of item indices and a type indicator. '
-      h(6)=' '
-      h(7)='Anchor types set the context within which esp-r can'
-      h(8)='manipulate items associated with an anchor. Details: '
-      h(9)=' a general surface - supports actions such as changing'
-      h(10)='   attributes or graphing temperatures of a '
-      h(11)='   collection of surfaces).'
-      h(12)=' '
-      h(13)='Tagging surfaces as possible openings or leakage paths'
-      h(14)='in a flow network:'
-      h(15)=' b closed door - surface acts as or includes a closed'
-      h(16)='   door (or crack) between two flow nodes.'
-      h(17)=' c open(able) door - surface acts as or includes an '
-      h(18)='   open door (perhaps controlled) between flow nodes.'
-      h(19)=' d closed window - surface acts as/includes a closed'
-      h(20)='   window (or crack) between two flow nodes.'
-      h(21)=' e open(able) window - surface acts as/includes a'
-      h(22)='   window (perhaps controlled) between flow nodes.'
-      h(23)=' f closed grill - surface acts as/includes a closed'
-      h(24)='   grill (or crack) between two flow nodes.'
-      h(25)=' g open(able) grill - surface includes an grill or'
-      h(26)='   vent (perhaps controlled) between two flow nodes.'
-      h(27)=' h duct or pipe - surface inclues an duct or pipe'
-      h(28)='   between two flow nodes.'
-      h(29)=' i fan or pump - surface near a fan or pump between'
-      h(30)='   two flow nodes.'
+   3  helptopic='anchor_choices'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Set menu header text.
       write(AVERT(1),'(a,i2)') '1 anchors: ',NALOC
@@ -2612,10 +2414,12 @@ C Save and return.
         if(NALOC.gt.0)CALL EMKCFG('-',IER)
         return
       elseif(ivert.eq.mvert-1)then
-        CALL PHELPD('anchor points',30,'-',0,0,IER)
+        helptopic='anchor_choices'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('anchor points',nbhelp,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
         CALL EASKABC('Anchor point options:',' ',
-     &    'add an anchor','delete an anchor','contine',II,6)
+     &    'add an anchor','delete an anchor','contine',II,nbhelp)
         if(II.eq.1)then
           NALOC=NALOC+1
           ino=0
@@ -2625,53 +2429,61 @@ C Save and return.
      &    'Anchor type (options)','a surface (general)','b closed door',
      &    'c open(able) door','d closed window','e open(able) window',
      &    'f closed grill','g openable grill','h duct or pipe',
-     &    'i fan or pump',' ',' ',' ',ino,idno,30)
+     &    'i fan or pump',' ',' ',' ',ino,idno,nbhelp)
           if(ino.eq.0)then
             goto 31
           elseif(ino.eq.1)then
             AL=ALOCLBL(NALOC)
             CALL EASKS(AL,' Label for anchor: ',
-     &        ' ',12,'none','anchor label',IER,30)
+     &        ' ',12,'none','anchor label',IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='SURF'
           elseif(ino.eq.2)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='closed_door'
-            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closed dr',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='CLDR'
           elseif(ino.eq.3)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='open_door'
-            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open dr ',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='OPDR'
           elseif(ino.eq.4)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='closed_windw'
-            CALL EASKS(AL,'Label:',' ',12,'none','closd win',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closd win',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='CLWN'
           elseif(ino.eq.5)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='open_window'
-            CALL EASKS(AL,'Label:',' ',12,'none','open win',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open win',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='OPWN'
           elseif(ino.eq.6)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='closed_grill'
-            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','closd grill',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='CLGR'
           elseif(ino.eq.7)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='open_grill'
-            CALL EASKS(AL,'Label:',' ',12,'none','open grill',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','open grill',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='OPGR'
           elseif(ino.eq.8)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='duct'
-            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','ductorpipe',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='DUCT'
           elseif(ino.eq.9)then
             if(ALOCLBL(NALOC)(1:4).eq.'unde')AL='fanorpump'
-            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',IER,30)
+            CALL EASKS(AL,'Label:',' ',12,'none','fanorpump',
+     &        IER,nbhelp)
             ALOCLBL(NALOC)=AL
             ALOCTYP(NALOC)='FANP'
           endif
@@ -2713,17 +2525,13 @@ C Select one or more connections from a list.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER VERT*54,KEY*1,H*72,CXITM*43,flag*1,SEL*50
+      CHARACTER VERT*54,KEY*1,CXITM*43,flag*1,SEL*50
       logical found
       integer MVERT,IVERT ! max items and current menu item
     
@@ -2810,14 +2618,6 @@ C If a long list include page facility text.
       VERT(M+2)  ='? help                                '
       VERT(M+3)  ='- exit this menu                      '
 
-C Help text for the menu.
-      IF(NHELP.GT.0)then
-        WRITE(H(NHELP+1),65)
-      ELSEIF(NHELP.EQ.0)then
-        WRITE(H(1),'(A,A)')' No help available for ',ERMSG
-        WRITE(H(2),65)
-      ENDIF
-
 C Now display the menu.
       CALL EMENU(sel,VERT,MVERT,IVERT)
 
@@ -2831,13 +2631,7 @@ C Within the header so skip request.
       elseif(ivert.eq.mvert-1)then
 
 C Produce help text for the menu.
-        IF(NHELP.GT.0)then
-          CALL PHELPD('connection pick string',NHELP+1,'-',0,0,IER)
-        ELSEIF(NHELP.EQ.0)then
-          CALL PHELPD('connection pick string',2,'-',0,0,IER)
-        ENDIF
-  65    format(' Type key to select, repeat as',
-     &         ' required. -Exit to return list.')
+        CALL PHELPD('connection pick string',NHELP,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
 
 C If there are enough items allow paging control via EKPAGE.
@@ -2909,7 +2703,6 @@ C espriou.h for climatelist file name.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
       
       integer ncomp,ncon
@@ -2929,10 +2722,10 @@ C IDST tool commands.
 
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12
-      character LCFGF*72,cfgroot*24,h*72
+      character LCFGF*72,cfgroot*24
       character CXITM*43,outs*124,LTMP*72
       character clmdb*144
-      character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
+      character doit*248,tmode*8,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,alias*32,donegdst*72
       character longtfile*144,longtfiledos*144
@@ -2946,6 +2739,13 @@ C IDST tool commands.
 #else
       integer*8 ICPMOD     ! passed from tchild
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='procgdst'  ! set for subroutine
 
 C Set flag for zone construction file update.
       updatecon=.false.
@@ -3114,12 +2914,11 @@ C Run the appropriate simulations.
 C << this is similar to code within prj.F subroutine simula >>
 C << consider combining these code blocks  >>
 
-      h(1)='Interactive mode uses simulation parameters as '
-      h(2)='defaults. The silent running mode uses the'
-      h(3)='parameters to run in automatic mode. '
+      helptopic='interactive_ipv'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(runmode(1:11).eq.'interactive')then
         CALL EASKAB('Simulation interaction options: (see help)',
-     &    ' ','run interactively','silent running mode',isauto,3)
+     &    ' ','run interactively','silent running mode',isauto,nbhelp)
       else
         isauto=2
       endif
@@ -3266,8 +3065,8 @@ C << only do this for the actual number of sets >>
       call edisp(iuout,'GDST COMMANDS FINISHED.')
       return
 
- 3    CALL ERPFREE(idf,ISTAT)
-      return
+C 3    CALL ERPFREE(idf,ISTAT)
+C      return
 
       end
 
@@ -3284,7 +3083,6 @@ C Serchrpl handles search and replace of composition attributes.
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/RAY3/MODIFY,MODLEN,MODBND
       
       integer ncomp,ncon
@@ -3302,7 +3100,6 @@ C Serchrpl handles search and replace of composition attributes.
 C     dimension SNA(MS),PAZI(MS),PELV(MS)
 
       character LTMP*72
-      character H*72
       character ZN*12,outs*124,SN*12
       character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
@@ -3310,31 +3107,23 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character AL8*12,AL9*12,CXITM*43
       integer ltype,ins2,ins3   ! for radio buttons
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='serchrpl'  ! set for subroutine
+
       iuf=IFIL+1
       newgeo=.false.  ! assume older format geometry.
       if(act.eq.'c')then
-        H(1)='Often it is convenient to search a model for one  '
-        H(2)='constructional attribute and replace this by'
-        H(3)='another. You can do this by searching for occurances'
-        H(4)='of a particular construction or by selecting an anchor'
-        H(5)='point (with an associated list of surfaces) to apply'
-        H(6)='the new attribute to.'
-        H(7)=' '
-        H(8)='In the first method, choose the construction to search'
-        H(9)='for and then its replacement (you will be asked to '
-        H(10)='confirm each replacement'
-        H(11)=' '
-        H(12)='In the 2nd method, choose an anchor point and then the'
-        H(13)='substutute construction. '
-        H(14)=' '
-        H(15)='NOTE: After using the search & replace facility '
-        H(16)='zone construction files should be rebuilt for the'
-        H(17)='new attributes to take effect. '
-        CALL PHELPD('global attributions',17,'-',0,0,IER)
+        helptopic='search_constructions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('global attributions',nbhelp,'-',0,0,IER)
         if(NALOC.gt.0)then
           CALL EASKABC(' Surfaces to update:',' ',
      &      'which match a construction','linked with an anchor',
-     &      'cancel',ins9,17)
+     &      'cancel',ins9,nbhelp)
         else
           ins9=1
         endif
@@ -3348,10 +3137,9 @@ C Search and replace by finding matching constructions.
      &      'with or -Exit',IER)
           if(ISELR.eq.0)return
 
-          H(1)=' Pick one, several or all zones to update.'
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALS,' ',' Search zones:',
-     &      12,NCOMP,zname,' zone list',IER,1)
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
           IF(INPIC.EQ.0)return
           call tstamp('>','PRJ: global search & replace')
           DO 96 IZ=1,INPIC
@@ -3379,8 +3167,7 @@ C Search and replace by finding matching constructions.
                   write(outs,'(5a)') ' Apply construction to ',
      &              zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
                   dok=.true.
-                  h(1)='Just in case you want to be selective...'
-                  CALL ASKOK(' ',outs,OK,dok,1)
+                  CALL ASKOK(' ',outs,OK,dok,nbhelp)
                   IF(OK)then
                     ioc=IZSTOCN(IVALS(IZ),i)
                     WRITE(SSMLCN(ioc),'(A12)')DESC(ISELR)(1:12)
@@ -3425,10 +3212,9 @@ C Anchor point substitution.
           AL3=ALOCLBL(3)
           AL4=ALOCLBL(4)
           AL5=ALOCLBL(5)
-          h(1)='Indicate which anchor to use. '
           ltype=1
           CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
-     &      'other anchors','continue',ltype,1)
+     &      'other anchors','continue',ltype,nbhelp)
           if(ltype.eq.7)then
             call usrmsg('No anchor selected.',' ','W')
             return
@@ -3439,7 +3225,7 @@ C Anchor point substitution.
             AL9=ALOCLBL(9)
             ltype=1
             CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
-     &        'continue',' ',' ',ltype,1)
+     &        'continue',' ',' ',ltype,nbhelp)
             if(ltype.gt.4)then
               call usrmsg('No anchor selected.',' ','W')
               return
@@ -3451,8 +3237,7 @@ C Anchor point substitution.
      &      'surface list or -Exit',IER)
           if(ISELR.eq.0)return
           dok=.true.
-          h(1)='A chance to abort if incorrect construction selected.'
-          CALL ASKOK('Apply this construction?',' ',OK,dok,1)
+          CALL ASKOK('Apply this construction?',' ',OK,dok,nbhelp)
           IF(.NOT.OK)return
           do 2243 j=1,IALOC(ltype)
             ifoc=lstanchr(ltype,j)
@@ -3483,13 +3268,9 @@ C << of TRAN for SSOTF.
  2243     continue
           QUIET=.FALSE.
           dok=.true.
-          h(1)='A search & replace only changes the surface attribute'
-          h(2)='it does not update the raw thermophysical data held in'
-          h(3)='the zone construction files. It is recommended that '
-          h(4)='you also update the zone files. '
           CALL ASKOK(
      &      'All construction & related files should be updated...',
-     &      'Do this now (recommended - see help) ?',QUIET,dok,4)
+     &      'Do this now (recommended - see help) ?',QUIET,dok,nbhelp)
           if(.NOT.QUIET)return
           call tstamp('>','PRJ: auto update zone construction')
           DO 2492,IZ=1,NCOMP
@@ -3498,62 +3279,44 @@ C << of TRAN for SSOTF.
           QUIET=.FALSE.
         endif
       elseif(act.eq.'a')then
-        H(1)='Often it is convenient to supply surface construct-'
-        H(2)='ional attribution by globally applying a material to'
-        H(3)='a subset of surfaces and then attend to exceptions. '
-        H(4)=' '
-        H(5)='The following dialogue will allow you to define a '
-        H(6)='subset of surfaces via filters for position,  '
-        H(7)='orientation, opacity, etc. '
-        H(8)=' '
-        H(9)='NOTE: After using the global attribution facility '
-        H(10)='you must then rebuild the zone construction files'
-        H(11)='for the new attributes to take effect. '
-        CALL PHELPD('global attributions',11,'-',0,0,IER)
+        helptopic='search_constructions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('global attributions',nbhelp,'-',0,0,IER)
 
         CALL EPKMLC(ISEL,'Select construction for matching surfaces',
      &    'or -Exit',IER)
         if(ISEL.eq.0)return
 
-        H(1)='You may restrict updating to only opaque surfaces,'
-        H(2)='transparent surfaces or apply to both. '
         CALL EASKABCD(' First filter--surface opacity:',' ',
-     &    'opaque','transparent','both','cancel',ins1,2)
+     &    'opaque','transparent','both','cancel',ins1,nbhelp)
         if(ins1.eq.4)return
 
-        H(1)='You may restrict updating to only surfaces which '
-        H(2)='face the outside, partitions (internal) etc. '
         ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
-     &      'adiabatic','cancel',ins2,2)
+     &      'adiabatic','cancel',ins2,nbhelp)
         if(ins2.eq.7)then
           return
         endif
 
-        H(1)='You may restrict updating to only surfaces which '
-        H(2)='have a particular orientation. '
         ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
-     &      'any horizontal','any orien.','cancel',ins3,2)
+     &      'any horizontal','any orien.','cancel',ins3,nbhelp)
         if(ins3.eq.7)then
           return
         endif
 
-        H(1)='You may restrict update to avoid already attributed'
-        H(2)='surfaces. '
         CALL EASKABCD(' Surfaces to update:',' ',
      &    'those already attributed','those marked UNKNOWN','both',
-     &    'cancel',ins4,2)
+     &    'cancel',ins4,nbhelp)
         if(ins4.eq.4)then
           return
         endif
 
-        H(1)=' Pick one, several or all zones to update.'
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVALS,' ',' Which zones to update: ',
-     &      12,NCOMP,zname,' zone list',IER,1)
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
         IF(INPIC.EQ.0)return
         call tstamp('>','PRJ: global construction attribution')
         DO 95 IZ=1,INPIC
@@ -3626,9 +3389,7 @@ C 'any horizontal','any orien.','cancel'.
                 write(outs,'(5a)') ' Apply construction to ',
      &            zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
                 dok=.true.
-                h(1)='The criter you set were matched. And you can'
-                h(2)='still opt not to apply it in all cases. '
-                CALL ASKOK(' ',outs,OK,dok,2)
+                CALL ASKOK(' ',outs,OK,dok,nbhelp)
                 IF(OK)then
                   ioc=IZSTOCN(IVALS(IZ),i)
                   WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)

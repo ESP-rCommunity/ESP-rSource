@@ -1,4 +1,4 @@
-C WRitten by Jon Hand, December 2010
+C Written by Jon Hand, December 2010 updated Jan/Feb 2011
 
 C Console application to take a text file of the
 C source of an esp-r module (usually created by a
@@ -31,7 +31,7 @@ C of subroutine gethelptext for specifics.
       character fileinput*72
       character fileoutput*72
       character outs*124
-      CHARACTER*42 WORDS(24)
+      CHARACTER*42 WORDS(32)
       integer lnl  ! length of outs
       integer lneq ! position of equals
       integer lnparen  ! position of (
@@ -39,10 +39,10 @@ C of subroutine gethelptext for specifics.
       CHARACTER B*124,C*1
       character head*72    ! the *item line
       character buffer*124 ! to remember the help lines
-      dimension buffer(100)
-      integer buflen(100)  ! length of each line in the buffer
+      dimension buffer(500)
+      integer buflen(500)  ! length of each line in the buffer
       integer buflines     ! number of buffer lines recorded
-      character cursub*24  ! name of most recent subroutine
+      character cursub*42  ! name of most recent subroutine
       integer lncursub     ! length of most recent subroutine
       integer nexttok      ! position of next token in CALL
 
@@ -54,7 +54,7 @@ C Initial values and clear arrays.
       cursub='MAIN'   ! assume we are in MAIN until we get a subroutine
       lncursub=4
       buflines=0      ! assume nothing in the buffer and clear it
-      do 21 ij=1,100
+      do 21 ij=1,200
         buffer(ij)= ' '
         buflen(ij)= 0
    21 continue
@@ -83,7 +83,7 @@ C Loop through all the lines in the input file.
 C Find lines which included h(?)=' ' even if there is a
 C label prior to the h(?)=.
 C Debug.
-C       write(6,*) 'first token ',IW,' ',words(1)
+C       write(6,*) 'first token ',IW,buflines,' ',words(1)
 C        if(IW.gt.1) write(6,*) '2nd token ',words(2)
         if(WORDS(1)(1:2).eq.'h('.or.
      &     WORDS(1)(1:2).eq.'H('.or.
@@ -183,6 +183,57 @@ C We reached the next subroutine so dump out the head and buffer.
             write(2,'(a)') outs(1:lnblnk(outs))
             head=' '     ! reset
             buflines=0
+          elseif(WORDS(nexttok)(1:8).eq.'MENUATOL'.or.
+     &           WORDS(nexttok)(1:8).eq.'menuatol')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 25 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   25         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
+          elseif(WORDS(nexttok)(1:6).eq.'EPICKS'.or.
+     &           WORDS(nexttok)(1:6).eq.'epicks')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 26 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   26         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
+          elseif(WORDS(nexttok)(1:6).eq.'FLNAME'.or.
+     &           WORDS(nexttok)(1:6).eq.'flname')then
+            if(lncursub.le.1)then
+              write(head,'(a)') '*item'
+            else
+              write(head,'(2a)') '*item ',cursub(1:lncursub)
+            endif
+            write(2,'(a)') head(1:lnblnk(head))
+            if(buflines.gt.0)then
+              do 27 ij=1,buflines
+                write(2,'(a)') buffer(ij)(1:buflen(ij))
+   27         continue
+            endif
+            write(2,'(a)') '*enditem'  ! mark end of help text block
+            write(2,'(a)') outs(1:lnblnk(outs))
+            head=' '     ! reset
+            buflines=0
           endif
           cycle    ! loop back for more
         elseif(WORDS(1)(1:10).eq.'SUBROUTINE'.or.
@@ -250,19 +301,19 @@ C The jump out point.
 C ********************* GETTOKENS
 C GETTOKENS checks a character string (A), returning the number of data
 C items (IW) separated by a file separator and an array of tokens/words
-C (up to 12 32character words returned) that were in the string.
+C (up to 32 32character words returned) that were in the string.
 C Useful for parsing file paths.  Note to keep from
 C overwriting the string passed, deal with a copy.
       SUBROUTINE GETTOKENS(A,IW,WORDS)
       integer iuout,iuin
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) A
-      CHARACTER*42 WORDS(24)
+      CHARACTER*42 WORDS(32)
       CHARACTER B*124,C*1,outs*248
       integer ier
 
 C Determine the file separator and clear the WORDS to return.
-      do 9 i=1,24
+      do 9 i=1,32
         WORDS(i)='  '
   9   continue
       ier=0

@@ -39,10 +39,6 @@ C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
 C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
 C           to which of the choices has been chosen.
-C  EASKPER: Provides interface to specification of a period of days.
-C eAskPerYear: Provides interface to specification of a multiyear period of days.
-C easkPerGen: Handles specification of both single-year and multi-year
-C           simulation periods.
 
 C  EMPAGE:  Low level screen control for paging based on terminal model.
 C  ELINC:   Controls scratch pad output for text screens.
@@ -92,14 +88,11 @@ C If a space or carriage return is typed then IVAL is not changed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C Examples:
 C Ask user for zone number.
 C        ICOMP=1
-C        H(1)='The zone number is required only for reporting'
-C        H(2)='purposes.'
 C        CALL EASKI(ICOMP,' ','Zone number?',
 C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
@@ -108,14 +101,12 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
-      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,outs*124
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
-      integer ivalold
+      integer ivalold   ! to remember passed value in case of cancel
 
       IER=0
 
@@ -123,8 +114,9 @@ C If IVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.IVAL.LT.MINV)IVAL=IDEFLT
       if(MAXACT.EQ.'F'.and.IVAL.GT.MAXV)IVAL=IDEFLT
 
-C Clear string buffers and instantiate 'ask'
+C Clear string buffers
    20 WORD=' '
+      ask='           '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
@@ -137,31 +129,16 @@ C Generate help and default strings.
 
       CALL INTSTR(IVAL,STR2,IW2,IER)
       CALL INTSTR(IDEFLT,STR1,IW1,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ENDIF
+      call helpcurrentint(ideflt,ival,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic faciltiies to edit the number.
-        iwidth=10
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(NHELP+1)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(2)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
 
-        IVALUE=IVAL
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -176,12 +153,12 @@ C If in graphic mode use graphic faciltiies to edit the number.
         endif
 
 C Debug.
-C        write(6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
-
-        CALL askint(PROMPT,IVALUE,IFLG)
+C        write(6,*) '< ask prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< ask string ',ask(1:lnblnk(ask))
+        CALL askdialog(PROMPT,ask,IFLG)  ! pass it the int as a string
 
 C Debug.
-C        write(6,*) 'EASKI',IVALUE,IVAL,IFLG
+C        write(6,*) 'ask VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -196,7 +173,15 @@ C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
           IVAL=IDEFLT
           RETURN
-        ELSEIF(IFLG.eq.-1)THEN
+        ELSE
+
+C A valid number or interaction.
+          call c2fstr(ask,WORD)
+
+C Debug.
+C          write(6,*) 'ask WORD: ',WORD
+        ENDIF
+        IF(WORD.EQ.' ')THEN
 
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing integer value.
@@ -204,10 +189,6 @@ C wishes to use prior/existing integer value.
           WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
           CALL USRMSG(' ',OUTSTR,'-')
           RETURN
-        ELSE
-
-C A valid number or interaction, so update RVALT for later use.
-          IVALT=IVALUE
         ENDIF
       ELSE
 
@@ -229,11 +210,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user integer',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user integer',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user integer',newnbhelp,'-',0,0,IER)
             GOTO 20
           ENDIF
         ELSEIF(WORD.EQ.' ')THEN
@@ -248,15 +225,15 @@ C wishes to use prior/existing integer value.
           endif
           RETURN
         ENDIF
+      ENDIF
 
-C Decode the string into an integer.
-        read(WORD,*,ERR=999)IVALT
-        CALL INTSTR(IVALT,STR1,IW1,IFLAG)
-        IF(IFLAG.NE.0)THEN
-          CALL USRMSG(' ',' Did not understand, try again.','-')
-          IFLAG=0
-          GOTO 20
-        ENDIF
+C Decode the string (WORD) into an integer.
+      read(WORD,*,ERR=999)IVALT
+      CALL INTSTR(IVALT,STR1,IW1,IFLAG)
+      IF(IFLAG.NE.0)THEN
+        CALL USRMSG(' ',' Did not understand, try again.','-')
+        IFLAG=0
+        GOTO 20
       ENDIF
 
 C Check IVALT against minimum and respond based on MINACT.
@@ -269,7 +246,7 @@ C Check IVALT against minimum and respond based on MINACT.
      &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,newnbhelp)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -291,7 +268,7 @@ C Check IVALT against minimum and respond based on MINACT.
      &         ' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -344,16 +321,12 @@ C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C Example:
 C    ....
 C Read a site latitude.
 C        XLAT=50.0
-C        H(1)='The latitude is required for calculating the sun'
-C        H(2)='position, it should be similar to that assumed for'
-C        H(3)='the climate file.'
 C        CALL EASKR(XLAT,' ',' What is the site latitude (deg) ? ',
 C     &             -89.9,'F',89.9,'F',35.0,'site latitude',IER,3)
 C    ...
@@ -363,11 +336,9 @@ C    ...
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
+      CHARACTER OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,close,DOK,unixok
 
@@ -380,19 +351,6 @@ C instantiated on the Fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.0
    20 WORD=' '
-      if(abs(rval).gt.1.E+6)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
-        WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
-        WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
-        WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-4)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      else
-        WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
-      endif
 
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
@@ -401,30 +359,15 @@ C Generate help and default strings.
 
       CALL REL16STR(DEFLT,STR1,IW1,IER)
       CALL REL16STR(RVAL,STR2,IW2,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   63   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
-      ENDIF
+      call helpcurrentreal(deflt,rval,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
       IF(MMOD.EQ.8)THEN
 
 C If in graphic mode use graphic facilities to edit the number.
-        iwidth=16
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(NHELP+1)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(2)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -489,11 +432,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines of
 C help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user real',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user real',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user real',newnbhelp,'-',0,0,IER)
             GOTO 20
           endif
         ELSEIF(WORD.EQ.' ')THEN
@@ -529,7 +468,7 @@ C Check RVALT against minimum and respond based on MINACT.
      &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -551,7 +490,7 @@ C Check RVALT against minimum and respond based on MINACT.
      &         ')',' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -612,8 +551,7 @@ C DEFLT is the default value if 'D','d', or return typed.
 C ERMSG is a string appended to the range checking or read error
 C to identify the value.
 C IER is the error state, if 0 then OK, if -3 cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 
       SUBROUTINE EASKE(RVAL,PROMP1,PROMP2,RMIN,MINACT,
@@ -621,11 +559,9 @@ C by the user.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
+      CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,close,DOK,unixok
 
@@ -650,36 +586,15 @@ C Generate help and default strings.
 
       CALL EXPSTR(DEFLT,STR1,IW1,IER)
       CALL EXPSTR(RVAL,STR2,IW2,IER)
-      IF(NHELP.GT.0)THEN
-        WRITE(H(NHELP+1),63,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   63   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
-      ELSE
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT(' No help available for ',a)
-        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   65   FORMAT('Type d D (default:',a,
-     &         ') or return (current:',a,')')
-      ENDIF
+      call helpcurrentreal(deflt,rval,ermsg,nhelp,newnbhelp,ier)
 
 C Begin with prompts.
-C If in terminal type 8 (dialogue box) use graphic facilities to get the
-C string to convert.
       IF(MMOD.EQ.8)THEN
 
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
-        iwidth=16
+C If in graphic mode use graphic facilities to edit the number.
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP+1,IHW,IER)
-          call dupphelp(NHELP+1)
-        else
-          CALL PHELPW(2,IHW,IER)
-          call dupphelp(2)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -749,11 +664,7 @@ C A 'D' or 'd' detected, set to default value.
 
 C A probable request for help has been received. Print out the lines of
 C help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user real',NHELP+1,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user real',2,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user real',newnbhelp,'-',0,0,IER)
             GOTO 20
           endif
         ELSEIF(WORD.EQ.' ')THEN
@@ -788,7 +699,7 @@ C Check RVALT against minimum and respond based on MINACT.
    28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this OK ? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this OK ? ',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -809,7 +720,7 @@ C Check RVALT against minimum and respond based on MINACT.
    39   FORMAT(' The value of ',a,' (',a,')',' is greater than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
-          CALL ASKOK(OUTSTR,' Is this ok? ',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this ok? ',OK,DOK,newnbhelp)
           RVAL=RVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -854,8 +765,7 @@ C If a space is typed then FILEN is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK if -3 then user requested CANCEL.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 
@@ -863,12 +773,9 @@ C DSTR is a string to use as a default.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
-      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
 
@@ -887,32 +794,17 @@ C Remember the file name in case user wants to abort.
      &     FILEN(1:7).eq.'Unknown') FILEN='  '
       endif
 
-C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+C Generate custom help text.
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not used in GTK version (yet).
-C        idef=0
-C        iquery=0
         WORD144=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -928,7 +820,8 @@ C        iquery=0
         endif
 
 C << There are potentially several things that need updating >>
-C << to this call and to askf (within esp_file.c). >>
+C << to this call and to askf (within esp_file.c). The GTK browse >>
+C << dialog does not include a help button! >>
         CALL askf(PROMPT,FILEN)
 
 C Debug
@@ -1015,7 +908,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               FILEN=DSTR(1:LN)
               RETURN
@@ -1027,7 +920,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            CALL PHELPD('ask file name',NHL,'-',0,0,IER)
+            CALL PHELPD('ask file name',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1099,15 +992,13 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
-C        H(1)='The site name is a test of the menu help facilities.'
 C        XNAME=' '
 C        DNAME=' '
 C        CALL EASKS(XNAME,' ',' What is the site name ?',
@@ -1118,11 +1009,9 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,A*1,LASTS*96,OUTSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
       integer last    ! last blank (or one) in the string.
@@ -1136,31 +1025,16 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       endif
 
 C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1203,7 +1077,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1252,7 +1126,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)',iostat=ios,err=1)'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1264,7 +1138,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            CALL PHELPD('ask user string',NHL,'-',0,0,IER)
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1337,9 +1211,8 @@ C DSTR is a string to use as a default.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER H*72,t72*72,t72a*72,t72b*72,t72c*72
+      CHARACTER t72*72,t72a*72,t72b*72,t72c*72
       character outstr*248,word*248,prompt*144,LASTS*248,outs*124
       LOGICAL next,OK,DOK,unixok
 
@@ -1353,13 +1226,7 @@ C DSTR is a string to use as a default.
       endif
 
 C Generate custom help text and use local var for NHELP.
-      NHL=NHELP
-      IF(NHL.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-        NHL=1
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
       call edisp(iuout,'Current...')
       call edisp248(iuout,STRVAL,72)
@@ -1369,15 +1236,9 @@ C Generate custom help text and use local var for NHELP.
 
 C For graphic version use the standard GTK widget as does easks.
         IFLG=0
-        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1421,7 +1282,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)',iostat=ios,err=1)' The default is ',
      &      DSTR(1:LN),'.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1488,7 +1349,7 @@ C Logic supports stepwise scrolling within the text. 243 label
 C is the point for editing the initial portion of the text. 244 label
 C is the point for editing 2nd tranche of text.
  243    CALL EASKSCMD(t72,PROMP1,PROMP2,'>',next,ISTRW,DSTR,
-     &    'synp 1',IER,NHELP)
+     &    'synp 1',IER,newnbhelp)
 
 C lt72 is the number of characters found after editing. If this is
 C less than 72 then cut characters from ipvsynop.
@@ -1497,7 +1358,7 @@ C less than 72 then cut characters from ipvsynop.
 
 C Edit second section.
           CALL EASKS2CMD(t72a,PROMP1,PROMP2,'|<','>',
-     &      inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+     &      inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
           lt72a=max(1,lnblnk(t72a))
           if(inext.eq.1)then
 
@@ -1508,7 +1369,7 @@ C If text to left requested go back to start.
 C If text to right requested, load 3rd portion and offer option to
 C jump to earlier or last section of text.
             CALL EASKS2CMD(t72b,PROMP1,PROMP2,'|<','>|',
-     &        inext,ISTRW,DSTR,ERMSG,IER,NHELP)
+     &        inext,ISTRW,DSTR,ERMSG,IER,newnbhelp)
             lt72b=max(1,lnblnk(t72b))
             if(inext.eq.1)then
 
@@ -1520,7 +1381,7 @@ C Go back to start.
 C Work with last portion of string, offer option to jump back
 C to the start.
               CALL EASKSCMD(t72c,PROMP1,PROMP2,'|<..',next,ISTRW,
-     &          DSTR,ERMSG,IER,NHELP)
+     &          DSTR,ERMSG,IER,newnbhelp)
               lt72c=max(1,lnblnk(t72c))
               if(next)then
                 goto 243
@@ -1567,15 +1428,13 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 
 C Example:
 C    ....
 C test getting a string.
-C        H(1)='The site name is a test of the menu help facilities.'
 C        XNAME=' '
 C        DNAME=' '
 C        CALL EASKSCMD(XNAME,' ',' What is the site name ?','Use map',CACT,
@@ -1586,12 +1445,10 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
      &  ERMSG,IER,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,prompt*144
+      CHARACTER WORD*72,A*1,LASTS*72,OUTSTR*124,prompt*144
       LOGICAL OK,CMDACT,DOK,unixok
 
    20 IER=0
@@ -1601,29 +1458,16 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       LASTS=STRVAL(1:last)
 
 C Generate custom help text.
-      IF(NHELP.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1660,7 +1504,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)') 'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1719,7 +1563,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)') 'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1731,11 +1575,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user string',1,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1784,8 +1624,7 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C  IER is the error state, if 0 then OK.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C Assumption is that STRVAL will be up to 96 char wide. This
@@ -1794,12 +1633,10 @@ C should be generalized.
      &  DSTR,ERMSG,IER,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
+      CHARACTER WORD*96,A*1,LASTS*96,OUTSTR*124
       character outstr248*248,prompt*144
       LOGICAL OK,CNCLACT,DOK,unixok
 
@@ -1810,29 +1647,16 @@ C should be generalized.
       LASTS=STRVAL(1:last)
 
 C Generate custom help text.
-      IF(NHELP.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
 C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
-
-C idef and iquery are not currently used in GTK version.
-C        idef=0
-C        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -1864,7 +1688,7 @@ C leading blanks from string returned.
           WRITE(OUTSTR,'(3a)') 'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHL)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -1911,7 +1735,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)') 'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -1923,11 +1747,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user string',1,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -1977,8 +1797,7 @@ C If a space is typed then STRVAL is not changed.
 C ERMSG is a string placed at the top of the selection menu and to
 C any range checking or read errors to identify the value.
 C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
-C NHELP is the number of help lines and H() is the array
-C of text strings to be printed out if '?','H','h' is typed
+C NHELP is the number of help lines if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
 C Assumption is that STRVAL will be up to 96 char wide. This
@@ -1987,7 +1806,6 @@ C should be generalized.
 C Example:
 C    ....
 C test getting a string.
-C        H(1)='The site name is a test of the menu help facilities.'
 C        XNAME=' '
 C        DNAME=' '
 C        CALL EASKS2CMD(XNAME,' ','Site name ?','Use map','Use iwec',ICACT,
@@ -1998,12 +1816,10 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
      &  DSTR,ERMSG,IER,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,prompt*144
+      CHARACTER WORD*96,A*1,LASTS*96,OUTSTR*124,prompt*144
       LOGICAL OK,DOK,unixok
 
    20 IER=0
@@ -2013,11 +1829,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       LASTS=STRVAL(1:last)
 
 C Generate custom help text.
-      IF(NHELP.EQ.0)THEN
-        LN=max(1,LNBLNK(ERMSG))
-        WRITE(H(1),64)ERMSG(1:LN)
-   64   FORMAT('No help available for ',a,'.')
-      ENDIF
+      call helpwithblank(ermsg,nhelp,newnbhelp,ier)
 
 C At this point get user input via dialogue box or Fortran read in
 C the text window.
@@ -2025,15 +1837,9 @@ C Note that the string read in is limited to ISTRW characters wide.
 C If in terminal type 8 use dialogue box.
       IF(MMOD.EQ.8)THEN
         IFLG=0
-        iquery=0
         WORD=' '
-        if(NHELP.GT.0)then
-          CALL PHELPW(NHELP,IHW,IER)
-          call dupphelp(NHELP)
-        else
-          CALL PHELPW(1,IHW,IER)
-          call dupphelp(1)
-        endif
+        CALL PHELPW(newnbhelp,IHW,IER)
+        call dupphelp(newnbhelp)
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
@@ -2071,7 +1877,7 @@ C A cancel answer detected, set ier to -3 and return.
           WRITE(OUTSTR,'(3a)') 'The default is `',
      &      DSTR(1:LN),'`.'
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
           IF(OK)THEN
             STRVAL=DSTR(1:LN)
             RETURN
@@ -2148,7 +1954,7 @@ C A 'D' or 'd' detected, set to default.
             WRITE(OUTSTR,'(3a)') 'The default is `',
      &        DSTR(1:LN),'`.'
             DOK=.true.
-            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+            CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,newnbhelp)
             IF(OK)THEN
               STRVAL=DSTR(1:LN)
               RETURN
@@ -2160,11 +1966,7 @@ C A 'D' or 'd' detected, set to default.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-            IF(NHELP.GT.0)THEN
-              CALL PHELPD('ask user string',NHELP,'-',0,0,IER)
-            ELSE
-              CALL PHELPD('ask user string',1,'-',0,0,IER)
-            ENDIF
+            CALL PHELPD('ask user string',newnbhelp,'-',0,0,IER)
             GOTO 20
           ELSE
 
@@ -2512,14 +2314,12 @@ C Parameters passed.
       integer idindex ! default index
       integer nhelp   ! number of help lines to display
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      character h*72
-      common/pophelp/h(60)
+
       LOGICAL SELECT
 
       DIMENSION VERT(16)
-      CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      CHARACTER VERT*48,KEY*1,prompt2*36
       integer MVERT,IVERT ! max items and current menu item
 
 #ifdef OSI
@@ -2530,10 +2330,7 @@ C Parameters passed.
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
-      if(nhelp.eq.0)then
-        write(H(1),64,iostat=ios,err=1)
-  64    format('No help available for this selection list.')
-      endif
+      call helpwithblank(title,nhelp,newnbhelp,ier)
       DO 9 L=1,16
         VERT(L)='  '
    9  CONTINUE
@@ -2681,7 +2478,7 @@ C otherwise reset index to lindex. before exit then display error message.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text (defined prior to subroutine call).
-        CALL PHELPD(title,nhelp,'-',0,0,IER)
+        CALL PHELPD(title,newnbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2).and.idindex.ne.0)THEN
 
 C Take default item.
@@ -2700,16 +2497,6 @@ C Not one of the legal menu choices.
       IVERT=-2
       goto 92
 
-   1  if(IOS.eq.2)then
-        write(outs,*) 
-     &  'MENUATOL: permissions exception while composing prompt.'
-        call edisp(iuout,outs)
-      else
-        write(outs,*) 'MENUATOL: error composing message or prompt.'
-        call edisp(iuout,outs)
-      endif
-      return
-
       END
 
 C ******************** ASKOK
@@ -2722,26 +2509,22 @@ C If NHELP=-1 there is no default option.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72,opta*14,optb*14,optc*14
+      CHARACTER ANS*2,MSG3*124,opta*14,optb*14,optc*14
       character optd*2,opte*2,optf*2,optg*2,outs*124
-      character head*12
       character prompt*144
       logical ok,dok,DEFLT
 
-C Check if a default defined and use local var for NHELP.
+C Check if a default defined (via overload of nhelp). Later can
+C make use of newnbhelp.
       DEFLT=.true.
       NHL=NHELP
       if (NHL.eq.-1) then
         DEFLT=.false.
         NHL=0
-      endif
-
-C Generate custom help text.
-      if(NHL.eq.0)then
-        H(1)='Sorry, no help available for this dialog.'
-        NHL=1
+        call helpwithblank('Ok dialog',NHL,newnbhelp,ier)
+      else
+        call helpwithblank('Ok dialog',nhelp,newnbhelp,ier)
       endif
 
 C Print out message according to the combination of strings passed. Use
@@ -2762,7 +2545,6 @@ C Setup a single line menu to pick from via EASKS.
         LN1=max(1,lnblnk(MSG1))
         LN3=max(1,lnblnk(MSG3))
         ans = '  '
-        CALL ELINC(1)
         WRITE(IUOUT,'(a)')MSG1(1:LN1)
         WRITE(IUOUT,'(a)')MSG3(1:LN3)
 
@@ -2839,7 +2621,7 @@ C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-          CALL PHELPD('this multi-choice',NHL,'-',0,0,IER)
+          CALL PHELPD('this multi-choice',newnbhelp,'-',0,0,IER)
           GOTO 19
         ENDIF
       ENDIF
@@ -2876,17 +2658,9 @@ C Parameters passed.
       integer nhelp   ! number of lines of help to display
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      CHARACTER ANS*2,MSG3*124,H*72,head*12,outs*124
+      CHARACTER ANS*2,MSG3*124
       character prompt*144
-
-C Generate custom help text and copy NHELP to local variable.
-      NHL=NHELP
-      if(NHL.eq.0)then
-        H(1)='Select an option.'
-        NHL=1
-      endif
 
 C See how many items there are to present.
       nopt=7
@@ -2955,7 +2729,8 @@ C Setup a single line menu to pick from via EASKS.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-           CALL PHELPD('two choice dialog',NHL,'-',0,0,IER)
+           call helpwithblank('two choice dialog',nhelp,newnbhelp,ier)
+           CALL PHELPD('two choice dialog',newnbhelp,'-',0,0,IER)
            GOTO 21
         elseif(ANS(1:2).eq.'  ')then
           call usrmsg('The current answer is blank!',
@@ -2993,16 +2768,14 @@ C        write(6,*) 'call to espabcbox returned ',IW
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-          CALL PHELPD('this multi-choice',NHL,'-',0,0,IER)
+          call helpwithblank(prompt,nhelp,newnbhelp,ier)
+          CALL PHELPD('this multi-choice',newnbhelp,'-',0,0,IER)
           GOTO 19
         ENDIF
         IWHICH=IW
       ENDIF
       RETURN
 
-   1  write(outs,*) 'EASKatog: error composing message or prompt.'
-      call edisp(iuout,outs)
-      return
       END
 
 C ******************** EASKDOZEN
@@ -3020,19 +2793,11 @@ C and the messages will appear in a pop-up dialogue box.
      &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,IWHICH,NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
-      CHARACTER ANS*2,MSG3*124,H*72,head*12,outs*124
+      CHARACTER ANS*2,MSG3*124
       character prompt*144
-
-C Generate custom help text and copy NHELP to local variable.
-      NHL=NHELP
-      if(NHL.eq.0)then
-        H(1)='Sorry, no help available for this dialog.'
-        NHL=1
-      endif
 
 C See how many items there are to present.
       nopt=12
@@ -3142,7 +2907,8 @@ C Setup a single line menu to pick from via EASKS.
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-           CALL PHELPD('two choice dialog',NHL,'-',0,0,IER)
+           call helpwithblank(msg3,nhelp,newnbhelp,ier)
+           CALL PHELPD('multi-choice dialog',newnbhelp,'-',0,0,IER)
            GOTO 21
         elseif(ANS(1:2).eq.'  ')then
           call usrmsg(' The current answer is blank!',
@@ -3177,278 +2943,14 @@ C        write(6,*) 'call to espdozenbox returned ',IW
 
 C A probable request for help has been received. Print out the lines
 C of help supplied and then provide the prompt again.
-          CALL PHELPD('this multi-choice',NHL,'-',0,0,IER)
+          call helpwithblank(prompt,nhelp,newnbhelp,ier)
+          CALL PHELPD('this multi-choice',newnbhelp,'-',0,0,IER)
           GOTO 19
         ENDIF
         IWHICH=IW
       ENDIF
       RETURN
 
-   1  write(outs,*) 'EASKatog: error composing message or prompt.'
-      call edisp(iuout,outs)
-      return
-      END
-
-C ************* EASKPER
-C EASKPER: Provides legacy interface to the more general eAskPerGen below.
-      SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
-      CHARACTER*(*) PROMP1
-      integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
-
-      logical bMY_enabled
-      parameter ( bMY_enabled = .false. )
-
-C Note: initialize iBYr and iEYr even though the are not 
-C returned. They're not referenced when multiyear simulations are disabled
-      iBYr=2000
-      iEYr=2000
-      call eAskPerGen(PROMP1,IBDOY,IEDOY,
-     &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
-
-      return
-      end
-
-
-C ************* EAskPerYear
-C EASKPER: Provides multi-year capable interface to the more general
-C eAskPerGen below.
-      SUBROUTINE eAskPerYear(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,ier)
-      CHARACTER*(*) PROMP1
-      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
-
-      logical bMY_enabled
-      parameter ( bMY_enabled = .true. )
-
-C initial values of iBYr iEYr are not need for single-year simulation
-      call eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,bMY_enabled,
-     &                IER)
-
-      return
-      end
-
-
-C ************* eAskPerGen
-C eAskPerGen: Provides interface to specification of a multiyear period of days. It
-C returns IBDOY and IEDOY based on the current settings of IFDAY.
-C iBYr,iEYr are the begining year and ending year of the period.
-C Promp1 gives the context of the request for a period.
-      SUBROUTINE eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,
-     &                      bMY_enabled,IER)
-      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
-      common/pophelp/h
-      CHARACTER*(*) PROMP1
-      CHARACTER*72 h(60)
-      character HOLD*16
-
-C Error flag
-      logical bDateOK
-
-C Flag indicating if multi-year simulations are in use
-      logical bMY_enabled
-
-      IER=0
-
-      bDateOk = .false.
-
-      do while ( .not. bDateOK )
-
-C Initialize success flag, and character buffer index.
-        bDateOK = .true.
-        k=0
-
-C IFDAY describes how the date will be formatted:
-C   IFDAY = 0 -> DDD (1->365)
-C   IFDAY = 1 -> DD MM (1->31,1->12)
-
-        IF(ifday.EQ.0)THEN
-C Day of year to be provided
-
-          if ( .not. bMY_enabled ) then
-C Single year version
-            H(1)='Period  must be within a calendar year.'
-
-C Get start & end day
-            write(HOLD,'(I4,I4)')ibdoy,iedoy
-            CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
-     &      ' 1  1 ','start & end day of year',IER,1)
-
-            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-
-          else
-C Multi-year version
-            H(1)='Provide day-of-year and year for start'
-            H(2)='and end dates.'
-
-C Get start day and year
-            write(HOLD,'(I4,I5)') ibdoy,iBYr
-            CALL EASKS(HOLD,PROMP1,' Start day and year?',16,
-     &      ' 1  2000 ','start day and year',IER,2)
-
-            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
-            if  ( ier .ne. 0 ) BDateok = .false.
-
-            CALL EGETWI(HOLD,K,iBYr,1900,2100,'F','start year',IER)
-            if  ( ier .ne. 0 ) BDateok = .false.
-
-C Reset string index K
-            K=0
-
-C Get end day and year
-            write(HOLD,'(I4,I5)') iedoy,iEYr
-            CALL EASKS(HOLD,PROMP1,' End day and year?',16,
-     &      ' 365 2000 ','end day and year',IER,2)
-
-            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
-            if  ( ier .ne. 0 ) BDateok = .false.
-
-            CALL EGETWI(HOLD,K,iEYr,1900,2100,'F','end year',IER)
-            if  ( ier .ne. 0 ) BDateok = .false.
-
-          endif !<- matches if ( .not. bMY_enabled )...
-
-        ELSEIF ( ifday .eq. 1 .or. ifday .eq. 2 ) THEN
-
-C Day & month or day, month & year to be provided
-C Start date: Convert to dd mm format:
-
-          CALL EDAYR(ibdoy,IBD,IBM)
-
-          if ( .not. bMY_enabled ) then
-C Get day & month
-            write(HOLD,'(I2,A,I2)') IBD,' ',IBM
-            H(1)='Period must be within a calendar year.'
-            H(2)='( `1 1` to `31 12` )'
-            CALL EASKS(HOLD,PROMP1,' Start day & month (DD MM)?',
-     &        16,' 1  1 ','start day and month',ier,2)
-
-          else
-C Get day, month & year
-C Append year to string
-            write (HOLD, '(I2,A,I2,A,I4)') IBD,' ',IBM,' ',iBYr
-
-            H(1)='Specify simulation start day, month and year'
-            H(2)='in `DD MM YYYY` format. Note: Leap years are'
-            H(3)='not presently supported.'
-            CALL EASKS(HOLD,PROMP1,
-     &        ' Start day, month & year (DD MM YYYY)?',
-     &        16,' 1 1 2000','start day, month and year',IER,3)
-          endif
-
-C Error handling.
-          if ( ier .ne. 0 ) bDateOK = .false.
-
-
-C Convert stings to integers and flag errors
-          K=0
-          CALL EGETWI(HOLD,K,IBD,1,31,'F','start dom',ier)
-          if ( ier .ne. 0 ) bDateOK = .false.
-
-          CALL EGETWI(HOLD,K,IBM,1,12,'F','start month',ier)
-          if ( ier .ne. 0 ) bDateOK = .false.
-
-C Convert year string, if necessary
-          if ( bMY_enabled ) then
-
-            CALL EGETWI ( HOLD, K, iBYr, 1900, 2100, 'F',
-     &        'start year', ier)
-
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-          endif
-
-C Check range, then convert to ibdoy.
-          if ( bDateOK ) CALL EDAYCH(IBD,IBM,ier)
-
-          if ( ier .eq. 1 ) bDateOK = .false.
-
-          if ( bDateOK ) CALL EDAY(IBD,IBM,ibdoy)
-
-C Only ask for end date if start-date successfully defined
-          if ( bDateOK ) then
-
-C End date, set at least equal to the beginning day.
-            if ( .not. bMY_enabled .and. iedoy.le.ibdoy ) then
-              iedoy = ibdoy + 1
-            elseif ( bMY_enabled ) then
-
-C Convert end-date into EDAYR friendly format and
-C check that end date is not before start-date.
-              iedoy = iedoy - ( iEYr - iBYr ) * 365
-              if ( ( iEYr .eq. iBYr .and. iedoy .le. ibdoy ) .or.
-     &             ( iEYr .lt. iBYr ) ) then
-                iedoy=ibdoy+1
-                iEyr=iBYr
-                if (iedoy .gt. 365 ) then
-                  iedoy = 1
-                  iEYr = iEyr + 1
-                endif
-              endif
-            endif ! <- matches ' elseif (bMY_enabled)...
-
-C Convert end-day to day-month format
-            CALL EDAYR(iedoy,IED,IEM)
-
-            if ( .not. bMY_enabled ) then
-              write(HOLD,'(I2,A,I2)') IED,' ',IEM
-              H(1)='Period  must be within a calendar year.'
-              H(2)='( `1 1` to `31 12` )'
-              CALL EASKS(HOLD,PROMP1,' End day & month (DD MM)?',
-     &          16,' 1  1 ','start day and month',ier,2)
-
-            else
-
-C Get day, month & year  and append year to string.
-              write (HOLD, '(I2,A,I2,A,I4)') IED,' ',IEM,' ',iEYr
-              H(1)='Specify simulation start day, month and year'
-              H(2)='in `DD MM YYYY` format. Note: Leap years are'
-              H(3)='not presently supported.'
-
-              CALL EASKS(HOLD,PROMP1,
-     &          ' End day, month & year (DD MM YYYY)?',
-     &          16,' 31 12 2000','end day, month and year',IER,3)
-
-            endif
-
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-C Convert strings to integers and errortrap
-            K=0
-            CALL EGETWI(HOLD,K,IED,1,31,'F','end dom',IER)
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-            CALL EGETWI(HOLD,K,IEM,1,12,'F','end month',IER)
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-C Convert year string, if necessary
-            if ( bMY_enabled ) then
-
-              CALL EGETWI ( HOLD, K, iEYr, 1900, 2100, 'F',
-     &          'end year', ier)
-
-              if ( ier .ne. 0 ) bDateOK = .false.
-
-            endif
-
-C Check range, then convert to iedoy.
-            if ( bDateOK )  CALL EDAYCH(IED,IEM, ier )
-
-            if ( ier .ne. 0 ) bDateOK = .false.
-
-            if ( bDateOK ) CALL EDAY(IED,IEM,iedoy)
-
-C For multi-year simulations, convert iedoy:
-            iedoy = iedoy + ( iEYr - iBYr ) * 365
-
-          endif
-        endif
-      enddo
-
-      RETURN
       END
 
 
@@ -4325,13 +3827,8 @@ C        write(6,*)sstr(1)
         INQUIRE(FILE=tfile(1:ltf),EXIST=there)
         if(there)then
           close(iuf)
-#ifdef F90
           open(iuf,file=tfile(1:ltf),position='APPEND',
      &      status='UNKNOWN',err=1)
-#else
-          open(iuf,file=tfile(1:ltf),ACCESS='APPEND',status='UNKNOWN',
-     &      err=1)
-#endif
         else
           close(iuf)
           open(iuf,file=tfile,status='UNKNOWN',err=1)
@@ -4511,56 +4008,20 @@ C terminal type 8.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      dimension dh(60),lh(30),exh(60)
+      dimension lh(30)
       CHARACTER*(*) MSG,OTHER
-      CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
-      character tut_path*72,ltut*72,IA*3,fs*1,localdh*72
-      logical extra,XST
-      logical unixok
-      integer ltf  ! position of last character in the string.
-      integer ln     ! last actual character in instpath (of espinstalldir.h)
+      CHARACTER h*72,outs*73,lh*73
+      character IA*3
+      integer IBX1,IBY1
 
-C The following include statment is placed after the common block
-C definitions to avoid compile errors.
-#include "espinstalldir.h"
+C Set coordinates IBX and IBY to zero (so parameter not needed).
+      IBX1=0; IBY1=0
+      IPM = 1
 
-C dh is duplicate help list, lh is the list (page) to be displayed.
-C exh is 'show me more' text array read in from external file.
-      extra = .false.
-      ln=lnblnk(instpath)
+C dh is duplicate help list.
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      if(OTHER(1:1).ne.'-')then
-        write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
-        write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
-        iftut=IFIL-1
-        if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
-        XST=.FALSE.
-        ltf=max(1,LNBLNK(ltut))
-        INQUIRE (FILE=ltut(1:ltf),EXIST=XST)
-        if(XST)then
-          open(iftut,FILE=ltut(1:lnblnk(ltut)),ACCESS='SEQUENTIAL',
-     &      STATUS='OLD',IOSTAT=ISTAT)
-          if(ISTAT.eq.0)then
-            extra = .true.
-          else
-            extra = .false.
-          endif
-        else
-          extra = .false.
-        endif
-        CALL ERPFREE(IFTUT,ISTAT)
-      endif
-
- 41   IER=0
+      IER=0
       IF(NHELP.eq.0)THEN
         IF(MMOD.EQ.8)THEN
           if(LNBLNK(MSG).le.50)then
@@ -4596,24 +4057,7 @@ C Set folder separator (fs) to \ or / as required.
       IF(MMOD.EQ.8)THEN
         CALL PHELPW(NHELP,IHW,IER)
         call dupphelp(NHELP)
-        if(extra)then
-          CALL egphelpscroll(IBX,IBY,IPFLG,1,iuresp)
-          if(OTHER(1:1).ne.'-')then
-
-C Use showmeh to find out how many lines of additional help (nhi)
-C there are and then copy from the string array exh into the
-C help buffer via calls to updhelp.
-            call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw2,exh,IER)
-            call clrhelp
-            DO 50 I=1,nhi
-              localdh=exh(I)
-              call updhelp(localdh)
-   50       CONTINUE
-            CALL egphelpscroll(IBX,IBY,IPFLG,0,iuresp)
-          endif
-        else
-          CALL egphelpscroll(IBX,IBY,IPFLG,0,iuresp)
-        endif
+        CALL egphelpscroll(IBX1,IBY1,IPFLG,0,iuresp)
       ELSE
 
 C Loop through the items until the page to be displayed. M is the
@@ -4639,56 +4083,29 @@ C current line index.
           CALL edisp(iuout,outs)
    52   CONTINUE
         if(IPFLG.eq.0)then
-          if(extra)then
-
-C Use text based dialog functions to avoid recursion.
-            call edisp(iuout,'Show additional information (y/n) ?')
-            READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-            if(IA(1:1).eq.'y'.or.IA(1:1).eq.'Y')iw1=4
-            if(IA(1:1).eq.'n'.or.IA(1:1).eq.'N')return
-          else
-            return
-          endif
+          return
         else
           if(IPM.eq.1)then
-            if(extra)then
-              call edisp(iuout,
-     &        ' Options:  a) -, b) next, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) -, b) next, c) continue ')
-            endif
             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           elseif(IPM.eq.MPM)then
-            if(extra)then
-              call edisp(iuout,
-     &    ' Options:  a) previous, b) -, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) previous, b) -, c) continue ')
-            endif
             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           else
-            if(extra)then
-              call edisp(iuout,
-     & ' Options:  a) previous, b) next, c) continue, e) show me more')
-            else
-              call edisp(iuout,
+            call edisp(iuout,
      &        ' Options:  a) previous, b) next, c) continue ')
-            endif
             READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
             if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw1=1
             if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw1=2
             if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw1=3
-            if(IA(1:1).eq.'e'.or.IA(1:1).eq.'E')iw1=4
           endif
         endif
         if(iw1.eq.1)then
@@ -4702,73 +4119,6 @@ C Use text based dialog functions to avoid recursion.
         elseif(iw1.eq.3)then
           call edisp(iuout,'  ')
           return
-        elseif(iw1.eq.4)then
-
-C Recover up to 60 lines of extern text.
-          call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw,exh,IER)
-          ILEN=nhi
-          call HPAGE('create',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-
-C Loop through the extra items until the page to be displayed. M is the
-C current line index.
-  142     m=0
-          DO 151 I=1,ILEN
-            IF(I.GE.IST.AND.(I.LE.(IST+MIFULL)))THEN
-              M=M+1
-              WRITE(lh(m),'(1X,A)',iostat=ios,err=1) exh(I)(1:ihw)
-            ENDIF
-  151     CONTINUE
-          if(IPFLG.eq.1)then
-            M=M+1
-            WRITE(lh(m),'(A)')' ____________________________'
-            M=M+1
-            WRITE(lh(m),216)IPM,MPM
-  216       FORMAT (' Extra --- Part: ',I2,' of ',I2,' ---')
-          endif
-          DO 152 J=1,M
-            LN=max(1,LNBLNK(lh(J)))
-            WRITE(outs,'(A)',iostat=ios,err=1) lh(J)(1:LN)
-            CALL edisp(iuout,outs)
-  152     CONTINUE
-          if(IPFLG.eq.0)then
-            call edisp(iuout,'  ')
-            goto 41
-          else
-            if(IPM.eq.1)then
-              call edisp(iuout,' Options: a) -, b) next, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            elseif(IPM.eq.MPM)then
-              call edisp(iuout,
-     &            ' Options: a) previous, b) -, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            else
-              call edisp(iuout,
-     &          ' Options: a) previous, b) next, c) continue')
-              READ(IUIN,'(A3)',IOSTAT=IOS,ERR=1)IA
-              if(IA(1:1).eq.'a'.or.IA(1:1).eq.'A')iw2=1
-              if(IA(1:1).eq.'b'.or.IA(1:1).eq.'B')iw2=2
-              if(IA(1:1).eq.'c'.or.IA(1:1).eq.'C')iw2=3
-            endif
-            if(iw2.eq.1)then
-              call HPAGE('prev',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-              call edisp(iuout,'  ')
-              goto 142
-            elseif(iw2.eq.2)then
-              call HPAGE('next',ILEN,MIFULL,MFULL,IST,IPM,MPM,IPFLG)
-              call edisp(iuout,'  ')
-              goto 142
-            elseif(iw2.eq.3)then
-              call edisp(iuout,'  ')
-              goto 41
-            endif
-            goto 41
-          endif
         endif
       endif
    64 FORMAT('No help available for ',a,'.')

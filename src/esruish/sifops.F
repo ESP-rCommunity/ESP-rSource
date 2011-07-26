@@ -44,7 +44,6 @@ C with the db at simulation time.
       integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/filep/ifil
 
       common/c24/izstocn(mcom,ms)
@@ -54,13 +53,14 @@ C with the db at simulation time.
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
       common/data5/irecx,nsurs,msurs
       common/filech/ixopen,ixunit,ixpunit
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
 
-      character ltrns*72
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
-      character outs*124,louts*248,h*72,hold*74,expfil*72
+      character outs*124,louts*248,hold*74,expfil*72
       character outl*248,outld*248,outstr*124,loutstr*248
       character message*64
       integer isourcecount  ! to help with sourcename list
@@ -70,10 +70,16 @@ C with the db at simulation time.
 
       logical ok,dok
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &           'Aug','Sep','Oct','Nov','Dec'/
 
 C Display contents of the zone shading & insolation db.
+      helpinsub='sifops'  ! set for subroutine
       ifilsi=ifil+3
       irec=1
       read(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
@@ -117,24 +123,18 @@ C Display contents of the zone shading & insolation db.
 C If there is nothing in the shading file then the user may wish to
 C import from ascii file to fill it.
       if(ims.eq.0)then
-        h(1)='The current shading file is empty. You can fill it with'
-        h(2)='data from an ascii version of the file (if you have one)'
-        h(3)='otherwise you should cancel your request.'
-        h(4)=' '
-        h(5)='The the ASCII file has several months of data the  '
-        h(6)='subsequent months will be scanned. '
+        helptopic='respond_to_empty_shd'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabc('Zone Shading & Insolation db is empty!',
-     &    'Options:','import ascii','return & calculate','cancel',iw,6)
+     &    'Options:','import ascii','return & calculate','cancel',
+     &    iw,nbhelp)
         if(iw.eq.1)then
 
 C An empty shading file so setup some intial information. User is assumed
 C to know which months are included in the ASCII file. Identify a month.
-          h(1)='Specify the month as an integer where Jan=1, Dec=12.'
-          h(2)='You are expected to know the contents of the ASCII'
-          h(3)='that you are about to report.'
           mnth=1
  22       call easki(mnth,' ','Month number to start importing?',1,
-     &      'F',12,'F',1,'month number',ier,3)
+     &      'F',12,'F',1,'month number',ier,nbhelp)
           if(ier.ne.0)goto 22
           ipick=4                 ! this is the import option
           if(irecx.eq.0)irecx=5   ! irecx probably was not set so do it for initial month
@@ -158,9 +158,10 @@ C to know which months are included in the ASCII file. Identify a month.
       endif
 
 C Identify a month.
-      h(1)='Specify the month as an integer where Jan=1, Dec=12 etc.'
+      helptopic='month_of_interest'
+      call gethelptext(helpinsub,helptopic,nbhelp)
     1 call easki(mnth,' ','Month number of interest?',1,'F',12,
-     &           'F',1,'month number',ier,1)
+     &  'F',1,'month number',ier,nbhelp)
       if(ier.ne.0)goto 1
       if(ishd(mnth).eq.0)then
          call edisp(iuout,' ')
@@ -175,21 +176,12 @@ C Read db and fill commons DATA2, DATA3, DATA4 and DATA5 for
 C specified month.
       call sifrd(icomp,mnth,ier)
 
-C Present options menu.
-      h(1)='The list option tabulates the shading and insolation'
-      h(2)='factors as held for the specified month, the edit option'
-      h(3)='allows these factors to be altered and the export/import'
-      h(4)='options transfers the shading factors to/from a text file'
-      h(5)='to support more complex editing, analysis by another tool'
-      h(6)='or trasfser to an operating system with a different binary'
-      h(7)='file representation.'
-      h(8)=' '
-      h(9)='After calculations are completed, during a normal exit'
-      h(10)='from the ish module a backup ASCII file will normally be'
-      h(11)='created. If it is not then used the export option. '
+C Present options menu and generate help text for these dialogs.
+      helptopic='ish_export_list_shading'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ipick=1
       call easkatog(' ','Options:','list','edit','export','import',
-     &              'cancel',' ',' ',ipick,11)
+     &              'cancel',' ',' ',ipick,nbhelp)
 
 C *** Listing requested.
   77  continue
@@ -226,9 +218,8 @@ C Insolation factors. Call insynp in silent mode.
 
 C *** Edit requested.
       elseif(ipick.eq.2)then
-    9    h(1)='Integer number of surface within model.'
-         call easki(isur,' ','Surface number?',
-     &              1,'F',nzsur(icomp),'F',1,'surf number',ier,1)
+    9    call easki(isur,' ','Surface number for editing?',
+     &     1,'F',nzsur(icomp),'F',1,'surf number',ier,nbhelp)
          IF(ier.ne.0)goto 9
 
 C Direct shading.
@@ -237,9 +228,9 @@ C Direct shading.
    11    write(outs,'(3a)')'Direct shading factors for surface `',
      &                         sn(1:lnblnk(sn)),'`,'
          write(hold,'(12f5.2)') (pso(isur,i),i=1,12)
-         h(1)='Direct shading factors for hours 01:00-12:00.'
          call easks(hold,outs,'01:00-12:00; edit as required:',
-     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dir shading',ier,1)
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dir shading',
+     &      ier,nbhelp)
          if(ier.ne.0)goto 11
          ok=.true.
          k=0
@@ -252,9 +243,9 @@ C Direct shading.
    12    write(outs,'(3a)')'Direct shading factors for surface `',
      &                         sn(1:lnblnk(sn)),'`,'
          write(hold,'(12f5.2)') (pso(isur,i),i=13,24)
-         h(1)='Direct shading factors for hours 13:00-24:00.'
          call easks(hold,outs,'13:00-24:00; edit as required:',
-     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dir shading',ier,1)
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dir shading',
+     &      ier,nbhelp)
          if(ier.ne.0)goto 12
          ok=.true.
          k=0
@@ -268,9 +259,9 @@ C Diffuse shading.
    13    write(outs,'(3a)')'Diffuse shading factors for surface `',
      &                         sn(1:lnblnk(sn)),'`,'
          write(hold,'(12f5.2)') (psof(isur,i),i=1,12)
-         h(1)='Diffuse shading factors for hours 01:00-12:00.'
          call easks(hold,outs,'01:00-12:00; edit as required:',
-     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dif shading',ier,1)
+     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','1-12 dif shading',
+     &      ier,nbhelp)
          if(ier.ne.0)goto 13
          ok=.true.
          k=0
@@ -283,9 +274,9 @@ C Diffuse shading.
    14    write(outs,'(3a)')'Diffuse shading factors for surface `',
      &                         sn(1:lnblnk(sn)),'`,'
          write(hold,'(12f5.2)') (psof(isur,i),i=13,24)
-         h(1)='Diffuse shading factors for hours 13:00-24:00.'
          call easks(hold,outs,'13:00-24:00; edit as required:',
-     &      60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dif shading',ier,1)
+     &     60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 dif shading',
+     &     ier,nbhelp)
          if(ier.ne.0)goto 14
          ok=.true.
          k=0
@@ -296,14 +287,12 @@ C Diffuse shading.
          if(.not.ok)goto 14
 
          dok=.false.
-         h(1)='Option to edit the shading factors for another surface.'
-         call askok(' ','Edit another surface?',ok,dok,1)
+         call askok(' ','Edit another surface?',ok,dok,nbhelp)
          if(ok)goto 9
 
          dok=.true.
-         h(1)='Unless saved to the zone shading & insolation file, the'
-         h(2)='edited shading factors will not be preserved.'
-         call askok(' ','Update Shading & Insolation db?',ok,dok,2)
+         call askok(' ','Update Shading & Insolation db?',
+     &     ok,dok,nbhelp)
          if(ok)then
            call sifwrt(icomp,mnth,lastrec)
          endif
@@ -313,11 +302,11 @@ C End of `edit` menu selection.
 C *** Export to ascii file requested.
       elseif(ipick.eq.3)then
          iuj=ifil+10
-         h(1)='A text file to which the contents of the zone'
-         h(2)='shading & insolation file will be written.'
+         helptopic='shading_export_options'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          expfil='siexp.txt'
          call easks(expfil,' ','Export file name?',72,'siexp.txt',
-     &              'shdins export',ier,2)
+     &     'shdins export',ier,nbhelp)
          call efopseq(iuj,expfil,3,ier)
          if(ier.lt.0)then
            ier=1
@@ -408,8 +397,7 @@ C hold 62 indices before it hits an overflow state.
          call edisp(iuout,' ')
          call edisp(iuout,outs)
          dok=.true.
-         h(1)='Option to write data for next month.'
-   15    call askok(' ','Continue with next month?',ok,dok,1)
+   15    call askok(' ','Continue with next month?',ok,dok,nbhelp)
          if(ok)then
            mnth=mnth+1
            if(mnth.gt.12)then
@@ -436,12 +424,12 @@ C update the value of irecx. The previous call to sifwrt returns a
 C value lastrec which is equivalent to irecx.
       elseif(ipick.eq.4)then
          iuj=ifil+10
-         H(1)='A text file from which the contents of the zone'
-         H(2)='shading & insolation db may be written.'
+         helptopic='shading_export_options'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          write(expfil,'(2a)') 
      &     lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
    17    call easks(expfil,' ','Import file name?',72,'siimp.txt',
-     &             'shdins import',ier,2)
+     &     'shdins import',ier,nbhelp)
          call efopseq(iuj,expfil,1,ier)
          if(ier.ne.0)goto 1002
          call stripc(iuj,outstr,0,nd,1,'header',ier)
@@ -548,10 +536,8 @@ C a Month string.
  173     if(ier.ne.0.or.outstr(1:16).ne.'24 hour internal')then
            if(outstr(1:7).eq.'* month')then
              dok=.true.
-             h(1)='Imported data is held in memory and will be lost'
-             h(2)='unless you update the zone shading & insolation db.'
              call askok(' ','Update zone shading & insolation db?',
-     &              ok,dok,2)
+     &         ok,dok,nbhelp)
              if(ok)then
                call sifwrt(icomp,mnth,lastrec)
                if(lastrec.gt.5)then
@@ -647,10 +633,8 @@ C         endif
          if(outstr(1:5).ne.'* end')then
            if(outstr(1:7).eq.'* month')then
              dok=.true.
-             h(1)='Imported data is held in memory and will be lost'
-             h(2)='unless you update the zone shading & insolation db.'
              call askok(' ','Update zone shading & insolation db?',
-     &              ok,dok,2)
+     &         ok,dok,nbhelp)
              if(ok)then
                call sifwrt(icomp,mnth,lastrec)
                if(lastrec.gt.5)then
@@ -668,10 +652,8 @@ C         endif
          call edisp(iuout,' ')
          call edisp(iuout,'Import file closed.')
          dok=.true.
-         h(1)='Imported data is held in memory and will be lost'
-         h(2)='unless you update the zone shading & insolation db.'
          call askok(' ','Update zone shading & insolation db?',
-     &              ok,dok,2)
+     &     ok,dok,nbhelp)
          if(ok)then
            call sifwrt(icomp,mnth,lastrec)
            if(lastrec.gt.5)then
@@ -689,9 +671,8 @@ C *** Cancel requested.
 
 C Consider another month or output option?
     6 dok=.false.
-      h(1)='Option to edit the shading factors for another surface.'
       call askok(' ','Consider another month and/or output option?',
-     &           ok,dok,1)
+     &  ok,dok,nbhelp)
       if(ok)goto 1
       return
 
@@ -1149,9 +1130,10 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
       common/data5/irecx,nsurs,msurs
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
 
-      character ltrns*72
       character*3 month(12)
       character outs*124,louts*248,exportfile*72
       character outstr*124,loutstr*248

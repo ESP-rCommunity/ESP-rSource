@@ -539,7 +539,6 @@ C *********************************************************************
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D05/NVRTB(MS),NVRTD(MS),NVRTA(MS)
@@ -558,10 +557,17 @@ C *********************************************************************
       logical closemat1,closemat2
 
       CHARACTER MSG*72,FLTYP*25,outs*124
-      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
+      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LTMP
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CZCNVS'  ! set for subroutine
 
 C If materials database not opened warn the user.
       call eclose(matver,1.1,0.001,closemat1)
@@ -580,10 +586,11 @@ C Initialize the connections,nodes, and control volumes counters.
       NCNV=0
       IR=0
 
+C Setup help text.
+      helptopic='grd_CZCNVS_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Open the control volumes file.
-      H(1)='   Enter the name for the file in which the associated'
-      H(2)=' control volumes details to be saved. '
-      H(3)=' '
       FLTYP='control volumes'
       LTMP=L3DCVS(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.cvs',3,IER)
@@ -593,7 +600,6 @@ C Open the control volumes file.
       IF(IER.NE.0)RETURN
 
 C Open the connections file.
-      H(2)=' connections details to be saved. '
       FLTYP='connections'
       LTMP=L3DCNC(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.cnc',3,IER)
@@ -604,7 +610,6 @@ C Open the connections file.
 
 C Create a binary file for saving the nodes data (location and the 
 C numbers of the control volumes represented by each node).
-      H(2)=' nodes global coordintes to be saved. '
       FLTYP='nodes coordintes'
       LTMP=L3DNDC(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.ndc',3,IER)
@@ -614,7 +619,6 @@ C numbers of the control volumes represented by each node).
       IF(IER.NE.0)RETURN
 
 C Create a binary file for saving the nodes initial temperatures.
-      H(2)=' nodes initial temperature to be saved. '
       FLTYP='nodes temperature'
       LTMP=L3DTAQ(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.taq',3,IER)
@@ -624,17 +628,10 @@ C Create a binary file for saving the nodes initial temperatures.
       IF(IER.NE.0)RETURN
 
 C Define the degree of boundary nodes modelling.
-      H(1)=' two degrees are supported in this version; '
-      H(2)=' 1. all boundary nodes will have convective,'
-      H(3)='    and radiative boundary conditions.'
-      H(4)=' 2. all boundary nodes will have convective'
-      H(5)='    boundary conditions. And only the surfaces'
-      H(6)='    boundary nodes will have radtiative and'
-      H(7)='    convective boundary conditions.'
       insidx=2
       CALL EASKI(INSIDX,' ',
-     &          'Define the degree of boundary nodes modelling',
-     &           1,'F',2,'F',2,' modelling degree ',IER,7)
+     &  'Define the degree of boundary nodes modelling',
+     &  1,'F',2,'F',2,' modelling degree ',IER,nbhelp)
 
 C Create the nodes ,and control volumes for connection surfaces 
 C ( srf-srf, srf-edge, edge-edge, and edge-crn ).

@@ -32,7 +32,6 @@ C rectangular window caused by overhang and/or side fins.
 #include "building.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
       common/sangl1/sazi1,salt1
@@ -40,14 +39,20 @@ C rectangular window caused by overhang and/or side fins.
       common/wins/isun(mt),shd(mt)
 
       dimension shdx(20),mdays(12),month(12)
-      character outs*124,h*72,month*3
+      character outs*124,month*3
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &          'Sep','Oct','Nov','Dec'/
       data mdays/31,28,31,30,31,30,31,31,30,31,30,31/
 
 C If output to file, alter the edisp unit number.
+      helpinsub='winshd'  ! set for subroutine
       itru = iuout
       if(ixopen.eq.1)then
         itru = ixunit
@@ -55,15 +60,15 @@ C If output to file, alter the edisp unit number.
         call edisp(iuout,'Output directed to file.')
       endif
 
+      helptopic='ashrae_window_calcs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       shdx(1)=1.0
-      h(1)='Width of a vertical, rectangular window in metres.'
       call easkr(shdx(1),' ','Window width?',
-     &   0.0,'F',99.0,'W',2.0,'window width',ier,1)
+     &   0.0,'F',99.0,'W',2.0,'window width',ier,nbhelp)
  
       shdx(2)=1.0
-      h(1)='Height of a vertical, rectangular window in metres.'
       call easkr(shdx(2),' ','Window height?',
-     &   0.0,'F',99.0,'W',1.5,'window height',ier,1)
+     &   0.0,'F',99.0,'W',1.5,'window height',ier,nbhelp)
 
 C Overhang data.
       shdx(3)=0.0
@@ -73,112 +78,92 @@ C Overhang data.
       shdx(7)=0.0
 
       dok=.false.
-      h(1)='An overhang is a horizontal, rectangular feature'
-      h(2)='located at the top of the window.'
-      call askok(' ','Is there an overhang?',ok,dok,2)
+      call askok(' ','Is there an overhang?',ok,dok,nbhelp)
       if(.not.ok)goto 108
 
       shdx(3)=0.25
-      h(1)='Overhang depth in metres.'
       call easkr(shdx(3),'Overhang:','depth?',
-     &   0.0,'F',99.0,'W',0.25,'Overhang: depth',ier,1)
+     &   0.0,'F',99.0,'W',0.25,'Overhang: depth',ier,nbhelp)
 
       shdx(4)=0.1
-      h(1)='Overhang distance from top of window in metres.'
       call easkr(shdx(4),'Overhang:',
      &   'distance from top of window?',
-     &   0.0,'F',99.0,'W',0.1,'Overhang: dist from top',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Overhang: dist from top',ier,nbhelp)
 
       shdx(5)=0.1
-      h(1)='Overhang extension past left window edge in metres.'
       call easkr(shdx(5),'Overhang:',
      &   'extension past left window edge?',
-     &   0.0,'F',99.0,'W',0.1,'Overhang: exten left',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Overhang: exten left',ier,nbhelp)
 
       shdx(6)=0.1
-      h(1)='Overhang extension past right window edge in metres.'
       call easkr(shdx(6),'Overhang:',
      &   'extension past right window edge?',
-     &   0.0,'F',99.0,'W',0.1,'Overhang: exten right',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Overhang: exten right',ier,nbhelp)
 
       shdx(7)=0.1
-      h(1)='This is the dimension, in metres, of any vertical'
-      h(2)='feature located at both ends of the overhang.'
       call easkr(shdx(7),'Overhang:',
      &   'dimension of end vertical feature?',
-     &   0.0,'F',99.0,'W',0.1,'Overhang: vert feature',ier,2)
+     &   0.0,'F',99.0,'W',0.1,'Overhang: vert feature',ier,nbhelp)
   108 shdx(8)=0.0
       shdx(9)=0.0
       shdx(10)=0.0
       shdx(11)=0.0
 
       dok=.false.
-      h(1)='A fin is a vertical, rectangular feature located'
-      h(2)='at the side of the window.'
-      call askok(' ','Is there a left-side fin?',ok,dok,2)
+      call askok(' ','Is there a left-side fin?',ok,dok,nbhelp)
       if(.not.ok)goto 103
 
       shdx(8)=0.1
-      h(1)='Depth in metres.'
       call easkr(shdx(8),'Left side fin:','depth?',
-     &   0.0,'F',99.0,'W',0.1,'Left fin depth',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Left fin depth',ier,nbhelp)
 
       shdx(9)=0.1
-      h(1)='Extension of fin above top of window (in metres).'
       call easkr(shdx(9),'Left side fin:',
      &  'extension above top of window?',
-     &   0.0,'F',99.0,'W',0.1,'Left fin ext top',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Left fin ext top',ier,nbhelp)
 
       shdx(10)=0.1
-      h(1)='Left side fin distance is in metres.'
       call easkr(shdx(10),'Left side fin:',
      &  'distance from window edge?',
-     &   0.0,'F',99.0,'W',0.1,'Left fin dis win edge',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Left fin dis win edge',ier,nbhelp)
 
       shdx(11)=0.1
-      h(1)='Left side fin stop-short distance is in metres.'
       call easkr(shdx(11),'Left side fin:',
      &  'stop-short distance from window bottom?',
-     &   0.0,'F',99.0,'W',0.1,'Left fin stop short',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Left fin stop short',ier,nbhelp)
   103 shdx(12)=0.0
       shdx(13)=0.0
       shdx(14)=0.0
       shdx(15)=0.0
 
       dok=.false.
-      h(1)='A fin is a vertical, rectangular feature located'
-      h(2)='at the side of the window.'
-      call askok(' ','Is there a right-side fin?',ok,dok,2)
+      call askok(' ','Is there a right-side fin?',ok,dok,nbhelp)
       if(.not.ok)goto 71
 
       shdx(12)=0.1
-      h(1)='Depth in metres.'
       call easkr(shdx(12),'Right side fin:','depth?',
-     &   0.0,'F',99.0,'W',0.1,'Right fin depth',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'Right fin depth',ier,nbhelp)
 
       shdx(13)=0.1
-      h(1)='Extension of fin above top of window (in metres).'
       call easkr(shdx(13),'Right side fin:',
      &  'extension above top of window?',
-     &   0.0,'F',99.0,'W',0.1,'R fin ext top',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'R fin ext top',ier,nbhelp)
 
       shdx(14)=0.1
-      h(1)='Right side fin distance is in metres.'
       call easkr(shdx(14),'Right side fin:',
      &  'distance from window edge?',
-     &   0.0,'F',99.0,'W',0.1,'R fin dis win edge',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'R fin dis win edge',ier,nbhelp)
 
       shdx(15)=0.1
-      h(1)='Right side fin stop-short distance is in metres. '
       call easkr(shdx(15),'Right side fin:',
      &  'stop-short distance from window bottom?',
-     &   0.0,'F',99.0,'W',0.1,'R fin stop short',ier,1)
+     &   0.0,'F',99.0,'W',0.1,'R fin stop short',ier,nbhelp)
 
   71  wazi=180.
-      h(1)='The azimuth angle is measured clockwise from North'
-      h(2)='in degrees.'
+      helptopic='ashrae_window_orien'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call easkr(wazi,' ','Window azimuth?',
-     &   0.0,'F',360.0,'F',180.0,'azimuth',ier,2)
+     &   0.0,'F',360.0,'F',180.0,'azimuth',ier,nbhelp)
 
 C Convert to radians relative to south.
       pi = 4.0 * atan(1.0)
@@ -186,14 +171,12 @@ C Convert to radians relative to south.
       wazi=(wazi-180.)*r
       shdx(16)=wazi
 
-      h(1)='January = 1, February = 2 and so on.'
       im=1
       call easki(im,' ','Computation month number?',
-     &    1,'F',12,'F',1,'comp month',ier,1)
+     &    1,'F',12,'F',1,'comp month',ier,nbhelp)
       id=15
-      h(1)='A number between 1 and 28, 29, 30 or 31 as appropriate.'
       call easki(id,' ','Day of the month?',
-     &     1,'F',mdays(im),'F',15,'comp day',ier,1)
+     &     1,'F',mdays(im),'F',15,'comp day',ier,nbhelp)
 
 C Commence hour-by-hour computation.
       call eday(id,im,iyd)

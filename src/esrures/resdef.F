@@ -40,7 +40,6 @@ C routines.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
@@ -61,12 +60,19 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
-      character LTMP*72,H*72,outs*124,outs248*248
+      character LTMP*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MORFIL'  ! set for subroutine
 
       INIT1=0
       INIT2=0
@@ -81,14 +87,10 @@ C unit number = IFIL) but first free any previously
 C assigned database.
       IF(INIT2.EQ.1)CALL ERPFREE(IUNIT,ISTAT)
 
+C Setup help mesages for the file dialogs.
+      helptopic='reslib_files_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    6  if(.NOT.autook)then
-        H(1)='A results library is created by the simulator. It will'
-        H(2)='contain the time series results of one or more'
-        H(3)='simulations. '
-        H(4)='On computers running UNIX, the file: '
-        write(H(5),'(5x,a60)') DEFRLB(1:60)
-        H(6)='usually exists. This is a link to an example results'
-        H(7)='library set up when ESP was first installed.'
         LTMP=' '
         ltmpc=LCMDFL   ! the file name that was passed in the command line
         llt=lnblnk(ltmpc)
@@ -100,20 +102,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
-     &      'library file',IER,7)
+     &        'library file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(ltmpc,' Library name ? ',' ',124,DEFRLB,
-     &      'library file',IER,7)
+     &        'library file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &      'library file',IER,7)
+     &        'library file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(ltmpc,' Library name ? ',' ',144,DEFRLB,
-     &      'library file',IER,7)
+     &      'library file',IER,nbhelp)
         else
           CALL EASKF(ltmpc,' Library name ? ',' ',96,DEFRLB,
-     &    'library file',IER,7)
+     &      'library file',IER,nbhelp)
         endif
 
 C If user cancel set iftype to -2 and return (assume calling code
@@ -245,10 +247,9 @@ C Establish if this database contains result-sets.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=7)NSIM,nzrl,izver,IMET
       IF(NSIM.EQ.0)then
-        H(1)='Take extreme caution in using incomplete or corrupt '
-        H(2)='results libraries. '
         call easkab('Library is incomplete or corrupt...  Do you want',
-     &    ' to:','attempt to continue (DANGEROUS)','give up?',IW,2)
+     &    ' to:','attempt to continue (DANGEROUS)','give up?',IW,
+     &    nbhelp)
         if(IW.eq.2)then
           CALL EPAGEND
           STOP
@@ -256,13 +257,11 @@ C Establish if this database contains result-sets.
           NSIM=1
         endif
       elseif(NSIM.gt.MNRS) then
-        H(1)='Change the variable MNRS in the file building.h to 100'
-        H(2)='as results analysis is curently configured to read a '
-        H(3)='maximum of 30 result sets. '
-        H(4)='You will then have to recompile the results analysis '
-        H(5)='module - good luck ! '
-        call easkab('Library has more than 30 result sets! Do you want',
-     &    ' to:','attempt to continue (DANGEROUS)','give up?',IW,5)
+        helptopic='reslib_nb_sets_dialog'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call easkab('Library has more than 30 result sets! Do you',
+     &    ' want to:','attempt to continue (DANGEROUS)',
+     &    'give up?',IW,nbhelp)
         if(IW.eq.2)then
           CALL EPAGEND
           STOP
@@ -360,7 +359,6 @@ C TNAME (temporary value)
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
       COMMON/FILEP/IFIL
 
@@ -390,7 +388,7 @@ C Versions of libraries (zone, plant, electrical).
       common/recver/izver,ipver,iever
 
 C SCNAME is the first 12 characters of the overall control name.
-      CHARACTER ctldoc*248,LCTLF*72,H*72,outs*124,SCNAME*12
+      CHARACTER ctldoc*248,LCTLF*72,outs*124,SCNAME*12
       CHARACTER RSNAME*40,TNAME*40
 
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -399,6 +397,13 @@ C SCNAME is the first 12 characters of the overall control name.
                                    !- 0 = hour-centered; 1 = half-hour centered.
 
       DIMENSION ITMPSETS(MNRS)
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MORESS'  ! set for subroutine
 
 C Set number of chosen sets to zero and clear array NSNO.
       IMET=0
@@ -494,24 +499,23 @@ C same for all sets.
    10   CONTINUE
         IREC=ITMP
         if(NS.ne.0) then
-          H(1)='It is possible to examine differences between your'
-          H(2)='result sets.  This is conventional when conducting'
-          H(3)='an uncertainty analysis.'
+          helptopic='res_set_diff'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           if (IMET.eq.1) then
             write (outs,'(2a)')'The current result library holds data ',
      &        'from a differential uncertainty analysis'
             call easkab(outs,'Do you wish to analyse:',
-     &        'the uncertainties','a particular set',IW,3)
+     &        'the uncertainties','a particular set',IW,nbhelp)
           elseif (IMET.eq.2) then
             write (outs,'(2a)')'The current result library holds data ',
      &        'from a factorial uncertainty analysis'
             call easkab(outs,'Do you wish to analyse:',
-     &        'the uncertainties','a particular set',IW,3)
+     &        'the uncertainties','a particular set',IW,nbhelp)
           elseif (IMET.eq.3) then
             write (outs,'(2a)')'The current result library holds data ',
      &        'from a monte carlo uncertainty analysis'
             call easkab(outs,'Do you wish to analyse:',
-     &        'the uncertainties','a particular set',IW,3)
+     &        'the uncertainties','a particular set',IW,nbhelp)
           else
             IW=2
           endif
@@ -519,11 +523,10 @@ C same for all sets.
 
 C Choose one of the sets, otherwise set one is the base case and all 
 C other sets are chosen. 
-            H(1)=' Pick a set for analysis.'
             ITMP=1
             ITEMS=NSIM
             CALL EPICKS(ITMP,ITMPSETS,' ',' Which set for analysis: ',
-     &                         40,ITEMS,RSNAME,' result-set list',IER,1)
+     &        40,ITEMS,RSNAME,' result-set list',IER,nbhelp)
             ISIM=ITMPSETS(1)
             NS=0
           else
@@ -539,17 +542,12 @@ C other sets are chosen.
  400        continue
           endif
         else
-          H(1)='This results library contains more than one result'
-          H(2)='set, each one corresponding to the same system '
-          H(3)='configuration but, perhaps, a different period,'
-          H(4)='climate or control.'
-          H(5)='  '
-          H(6)='You are asked to specify the result-set you wish '
-          H(7)='to analyse. The default is result-set 1.'
+          helptopic='res_set_diff'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ITMP=1
           ITEMS=NSIM
           CALL EPICKS(ITMP,ITMPSETS,' ',' Which set for analysis: ',
-     &                         40,ITEMS,RSNAME,' result-set list',IER,7)
+     &      40,ITEMS,RSNAME,' result-set list',IER,nbhelp)
           ISIM=ITMPSETS(1)
 
 C Set NS to zero to prohibit access to sensetivity analysis section of res.
@@ -651,7 +649,6 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
       COMMON/C6/INDCFG
 
@@ -664,8 +661,15 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
-      character outs*124,H*72,PDESCR*60
+      character outs*124,PDESCR*60
       logical ok,dok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOOPER'  ! set for subroutine
 
 C Default set-up: output results for whole of simulation period at same 
 C timestep as simulation, assume that any filtering will be on type 1 
@@ -724,31 +728,16 @@ C Start time must be before finish time.
       endif
 
 C Output time-step increment ?
-   18 H(1) ='The output time-step increment is an integer greater '
-      H(2) ='than 1. It determines the number of simulation '
-      H(3) ='time-steps which constitute 1 recovery step.'
-      H(4) =' '
-      H(5) ='For example, if a one hour time-step simulation was'
-      H(6) ='performed, then an output time-step increment of 1 '
-      H(7) ='would mean that the recovery interval was also one '
-      H(8) ='hour; 2 would mean every 2 hours; and so on.'
-      H(9) ='Conversely a simulation increment of 15 minutes and'
-      H(10)='output increment of 1 is every 15 minutes, 2 every 30'
-      H(11)='minutes; and so on.'
-      H(12)=' '
-      H(13)='If the output increment is greater than 1, irrespective'
-      H(14)='of the simulation time-step, you may opt to average '
-      H(15)='across the intra-interval simulation time-step results.'
-      H(16)='If the interval is greater than one hour only the'
-      H(17)='relevant symbol will be plotted on any graphs.'
+   18 helptopic='res_output_timestep'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKI(NOUT,' ',' Output time-step increment ? ',
-     &  1,'F',60,'F',1,'output time-step',IER,17)
+     &  1,'F',60,'F',1,'output time-step',IER,nbhelp)
 
       IAV=0
       if (NOUT.gt.1) then
         dok=.false.
         call askok(' ','Average results over each output interval?',
-     &    ok,dok,17)
+     &    ok,dok,nbhelp)
         if(ok)then
           IAV=1
         else
@@ -780,7 +769,6 @@ C NZNO - zone number of each.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
@@ -790,7 +778,13 @@ C NZNO - zone number of each.
       COMMON/C1/NCOMP,NCON
 
       DIMENSION IVALS(MCOM)
-      character H*72
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOZDFN'  ! set for subroutine
 
 C If default setup then link in all zones in the model.
       IF(IDEFLT.EQ.1)then
@@ -814,19 +808,15 @@ C Otherwise select the zones from a list of zone names.
       call edisp(iuout,' Output zone definition')
       call edisp(iuout,' ')
 
-    7 if (NS.ne.0) then
-        H(1)='  '
-        H(2)='Pick one zone for analysis purposes.'
-        H(3)='  '
+    7 helptopic='res_zones_for_inclusion'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      if (NS.ne.0) then
         INPIC=1
       else
-        H(1)='Pick one, several or All zones for inclusion in a'
-        H(2)='graph or tabular listing from the list provided. '
-        H(3)='You may choose them in any order. '
         INPIC=NCOMP
       endif
       CALL EPICKS(INPIC,IVALS,' ',' Which zones to include: ',
-     &  12,NCOMP,zname,' zone list',IER,3)
+     &  12,NCOMP,zname,' zone list',IER,nbhelp)
       NZ=INPIC
       DO 40 I=1,INPIC
         NZNO(I)=IVALS(I)
@@ -882,7 +872,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
 
       common/recver/izver,ipver,iever
@@ -919,11 +908,18 @@ C Defaults.
       CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
+      CHARACTER NAME*6,longtmp*144,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4
       character louts*248
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOINIT'  ! set for subroutine
 
       IER=0
       IUNIT=IFIL
@@ -1196,10 +1192,8 @@ C        write(6,*) longtmp
 
         IREC=IREC+1
       ELSE
- 45     H(1)='The system configuration file name is being requested'
-        H(2)='because this is an old library format which does not '
-        H(3)='include this. If you cannot find this file then you'
-        H(4)='cannot proceed.'
+ 45     helptopic='res_old_lib_cfg'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         longtmp=' '
 
 C If using X11 assume that the full path is less than 96 chars
@@ -1208,15 +1202,15 @@ C but if using GTK then we need the full length to avoid truncation.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &      96,' ','configuration file',IER,nbhep)
         elseif(iglib.eq.2)then
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      144,' ','configuration file',IER,4)
+     &      144,' ','configuration file',IER,nbhelp)
         else
           CALL EASKF(longtmp,' ',
      &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &      96,' ','configuration file',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -1263,17 +1257,11 @@ C Not found, might be in a remote folder.  Warn user first.
         call edisp(iuout,outs)
         WRITE(OUTS,'(A,A)')' in the folder ',path
         call edisp(iuout,outs)
-        H(1)='The model configuration file holds the definition of'
-        H(2)='the building/plant which was simulated.'
-        H(3)='This file was not found.  Please supply the model '
-        H(4)='which MATCHES that within the results library.'
-        H(5)='IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
-        H(6)='WILL BE COMPROMISED! '
-        CALL PHELPD('no system file',6,'-',0,0,IER)
 
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated.  It should'
-        H(3)='match the contents held within the results library.'
+        helptopic='res_old_lib_cfg'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('no system file',nbhelp,'-',0,0,IER)
+
         write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
 C If using X11 assume that the full path is less than 96 chars
@@ -1281,13 +1269,13 @@ C but if using GTK then we need the full length to avoid truncation.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(longtmp,' Model configuration file ?',' ',96,
-     &      DFCFG,'config file name',IER,3)
+     &      DFCFG,'config file name',IER,nbhelp)
         elseif(iglib.eq.2)then
           CALL EASKF(longtmp,' Model configuration file ?',' ',144,
-     &      DFCFG,'config file name',IER,3)
+     &      DFCFG,'config file name',IER,nbhelp)
         else
           CALL EASKF(longtmp,' Model configuration file ?',' ',96,
-     &      DFCFG,'config file name',IER,3)
+     &      DFCFG,'config file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -1313,9 +1301,8 @@ C Climate file not found - ask user for name.
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
         call edisp248(iuout,louts,90)
         call erpfree(IUNITC,istat)
-        H(1)=' A climate file defines the model boundary'
-        H(2)=' condition. The one included in the results libary'
-        H(3)=' was not found, type in the correct name.'
+        helptopic='res_clm_not_found'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         longtmp=LCLIM
 
 C If using X11 assume that the full path is less than 96 chars
@@ -1323,13 +1310,13 @@ C but if using GTK then we need the full length to avoid truncation.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
+     &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
           CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
+     &      144,DCLIM,'climate file name',IER,nbhelp)
         else
           CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
+     &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 

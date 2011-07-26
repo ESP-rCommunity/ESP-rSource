@@ -30,6 +30,8 @@ C      MZWINP2
 C      MZTMCA
 C      MZSFSH
 C      MZSHDO
+C      MZGREF
+C      PPGREF
 C      MZSCTL
 
 C ******************** MZSOLR ********************
@@ -382,6 +384,14 @@ C Bidirectional data - explicit definitions:
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
+C Fluid properties to use if a zone is not air filled (set via
+C 'simulation toggles' menu in bps). zSWAp and zSWAf are the
+C zone fluid solar absorptions at the present and future time
+C rows respectively.
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      logical znotair
+
       ZAREA=zonetotsurfacearea(ICOMP)
 
 C Debug.
@@ -408,6 +418,7 @@ C values, skip if iterating (and past first iteration).
         q2tmcp(icomp)=q2tmcf(icomp)
         q2walp(icomp)=q2walf(icomp)
         q2remp(icomp)=q2remf(icomp)
+        zSWAp(icomp)=zSWAf(icomp)
       else
         q1adjz(1)=q1adjp(icomp)
         q1outs(1)=q1outp(icomp)
@@ -461,6 +472,9 @@ C time-row.
           QTMCA(I,II,2)=0.
    20   CONTINUE
    10 CONTINUE
+
+C Initialise zone fluid absorption to zero if not air.
+      zSWAf(icomp)=0.0
 
 C Initialise internal surface reflection, QIREF to zero.
       QIREF=0.0
@@ -1689,8 +1703,18 @@ C Assign nodal absorptions to CFC layer nodes
 
 C------------PROCESS INTERNAL SURFACES
 C            -------------------------
-C Now we know the solar radiation (direct (TD) and diffuse (TFF))
-C entering the zone through TMC.
+C The direct (TD) and diffuse (TFF) solar radiation (W) entering
+C the zone through the current TMC (perhaps internal) is now known.
+
+C Determine shortwave flux absorbed by zone fluid if not air
+C and depreciate TD and TFF correspondingly.
+      if(znotair(icomp))then 
+        zSWAf(icomp)=zSWAf(icomp)+(TD+TFF)*zfldA
+        TD=TD*(1.0-zfldA)
+        if(td.lt.0.0)td=0.0
+        TFF=TFF*(1.0-zfldA)
+        if(tff.lt.0.0)tff=0.0
+      endif
 
 C Determine the solar energy absorbed at internal opaque
 C surfaces and accumulate the corresponding flux reflections.
@@ -1767,7 +1791,6 @@ C NB for default insolation distribution type 3, inssur(1)=inssur(2)=0.
           do 60 k=1,ksurs
             ks=inssur(k)
             pro=pinsur(k)
-
 
 C If KS<0, but TD>0 (possible if at a particular time near sunrise or sunset
 C for the date of insolation analysis, the sun is down, but at the same time of day
@@ -1890,7 +1913,6 @@ C CFC SURFACE (external only) - run solar_multilayer with inside diffuse source 
                 temp1=0.
                 temp2=0.
                 temp3=0.
-
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
@@ -2038,7 +2060,7 @@ C TRANSPARENT SURFACE - Assign absorptances and transmittance.
 
 C For any diffuse remaining at this stage output a warning if it
 C exceeds 2% of the incoming radiation to the zone, or a threshold
-C of 1.0W/m^2, whichever is larger.
+C of 1.0 W/m^2, whichever is larger.
 C Redistribute remaining flux to opaque surfaces on an
 C area/absorptivity basis and continue.
 
@@ -2088,15 +2110,11 @@ C Save future time values for use at next time step.
   150   CONTINUE
   140 CONTINUE
 
-C Energy fluxes of solar that has penetrated zone, then save these
+C Determine solar fluxes that have penetrated zone then save
 C for possible averaging in MZLS3.
       q2rem(2)=rdifr*zarea
       q1tot=q1outs(2)+q1adjz(2)
       q2tot=q2tmc(2)+q2wall(2)+q2rem(2)+q2cfc(2)
-
-C Debug.
-C      write(6,*) 'solsum solar ',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
-C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
       q1adjf(icomp)=q1adjz(2)
       q1outf(icomp)=q1outs(2)
@@ -2109,54 +2127,59 @@ C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
 C-------------------------------TRACE
 C                               -----
-C Trace output ?
+
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
-      write(outs,'(A,I4,3A)')' Subroutine MZSLGN Trace output ',ICNT,
-     &  ' Zone ',zname(ICOMP),' All output W/m^2'
       call edisp(itu,' ')
+      write(outs,'(A,I4,3A,I3,A)')' Subroutine MZSLGN   Trace output',
+     &ICNT,' Zone ',zname(ICOMP),' (',ICOMP,').'
       call edisp(itu,outs)
       ICNT=ICNT+1
       CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Output solar intensity details.
+      call edisp(itu,' ')
       write(outs,9993)SAZI,SALT
- 9993 format( ' Azimuth (deg)=',F6.1,', Altitude (deg)=',F6.1)
+ 9993 format( ' Azimuth = ',F6.1,', Altitude = ',F6.1)
       call edisp(itu,outs)
       write(outs,99931)QD,QF
-99931 format( ' Direct normal intensity =',F6.1,
-     &        ', Diffuse horizontal intensity =',F6.1)
+99931 format( ' Irradiance (W/m^2): direct normal = ',F6.1,';',
+     &        ' diffuse horizontal = ',F6.1)
       call edisp(itu,outs)
-      call edisp(itu,' ')
 
 C Output QSOLE and QSOLI for each construction if sun up.
       if(SALT.lt.-1.0)goto 9992
-      call edisp(itu,' Surface    External  Internal  TMC nodal  ')
-      call edisp(itu,'            Solar     Solar     absorptions')
-      call edisp(itu,'            Abs       Abs       (outside>inside)')
+      call edisp(itu,' ')
+      write(outs,'(a)') ' Solar nodal absorptions (W/m^2):'
+      call edisp(itu,outs)
+      call edisp(itu,' ')
+      call edisp(itu,' Surface     External  Internal  TMC node abs.')
+      call edisp(itu,' name        solar     solar     (from outside)')
+      call edisp(itu,'             abs.      abs.')
       DO 9991 I=1,NC
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.LE.0)then
-          write(outs,'(a,2F9.2)')sname(icomp,I),QSOLE(I,2),QSOLI(I,2)
+          write(outs,'(1X,a,F8.1,2X,F8.1)')sname(icomp,I),QSOLE(I,2),
+     &                                  QSOLI(I,2)
           call edisp(itu,outs)
         else
           NN=NNDC(ICOMP,I)
           if(NN.le.12)then
-            write(outs,'(a,2F9.2,12F6.2)')sname(icomp,I),QSOLE(I,2),
-     &        QSOLI(I,2),(QTMCA(I,J,2),J=1,NN)
+            write(outs,'(1X,a,F8.1,2X,F8.1,12(F6.1,1X))')sname(icomp,I),
+     &                    QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,NN)
             call edisp(itu,outs)
           elseif(NN.gt.12)then
-            write(outs,'(a,2F9.2,12F6.2)')sname(icomp,I),QSOLE(I,2),
-     &        QSOLI(I,2),(QTMCA(I,J,2),J=1,12)
+            write(outs,'(1X,a,F8.1,2X,F8.1,12(F6.1,1X))')sname(icomp,I),
+     &                    QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,12)
             call edisp(itu,outs)
-            write(outs,'(30X,20F6.2)')(QTMCA(I,J,2),J=13,NN)
+            write(outs,'(31X,20(F6.1,1X))')(QTMCA(I,J,2),J=13,NN)
             call edisp(itu,outs)
           endif
 
-C Write out the direct and diffuse solar passing glazing and then clear.
-          write(outs,'(12X,a,F8.2,a,F8.2,a)') ' direct solar trn',
-     &      tdtrace(i),' diffuse solar trn',tfftrace(i),'(W).'
+C Output direct and diffuse solar passing glazing and then clear.
+          write(outs,'(2a,F8.1,a,F8.1,a)') '  Transmissions (W):',
+     &      ' direct = ',tdtrace(i),'; diffuse = ',tfftrace(i)
           call edisp(itu,outs)
           tdtrace(i)=0.
           tfftrace(i)=0.
@@ -2164,25 +2187,26 @@ C Write out the direct and diffuse solar passing glazing and then clear.
  9991 CONTINUE
  9992 continue
 
-
-C Output computed results.
-      write(outs,'(3a,i3,a)') ' Solar energy distribution for ',
-     &  zname(ICOMP),' (',icomp,') in Watts.'
+C Output solar distribution.
       call edisp(itu,' ')
+      write(outs,'(a)') ' Solar flux distribution (W):'
       call edisp(itu,outs)
+      call edisp(itu,' ')
       write(outs,'(8X,A)')
-     &  '|    Sources    |    Losses     |   Absorbed via  |'
+     &  '|  Gains (from) |  Losses (to)  | Absorbed (into) |'
       call edisp(itu,outs)
       write(outs,99962)q1adjz(2),q2adjz(2),q2tmc(2)
-99962 format(8X,'|intrn',F10.2,'|intrn',F10.2,'|Trn mlc',F10.2,'|')
+99962 format(8X,'|Intrn',F10.2,'|Intrn',F10.2,'|Trn mlc',F10.2,'|')
       call edisp(itu,outs)
       write(outs,99963)q1outs(2),q2lost(2),q2wall(2)+q2rem(2)
-99963 format(8X,'|extrn',F10.2,'|extrn',F10.2,'|Qpq mlc',F10.2,'|')
+99963 format(8X,'|Extrn',F10.2,'|Extrn',F10.2,'|Qpq mlc',F10.2,'|')
       call edisp(itu,outs)
-      write(outs,99966)q1tot,q2adjz(2)+q2lost(2),q2tot
-99966 format(' totals |',5X,F10.2,'|',5X,F10.2,'|',7X,F10.2,'|')
+      write(outs,99964)zSWAf(icomp)
+99964 format(8X,'|',15X,'|',15X,'|Z.fluid',F10.2,'|')
       call edisp(itu,outs)
-
+      write(outs,99965)q1tot,q2adjz(2)+q2lost(2),q2tot+zSWAf(icomp)
+99965 format(' Totals |',5X,F10.2,'|',5X,F10.2,'|',7X,F10.2,'|')
+      call edisp(itu,outs)
  9999 RETURN
       END
 
@@ -2367,13 +2391,15 @@ C and hemisphere.
 C Trace output ?
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF)goto 9999
+      call edisp(itu,' ')
       write(outs,'(A,I4)')' Subroutine MZSANG   Trace output',ICNT
       call edisp(itu,outs)
-C      ICNT=ICNT+1
+      ICNT=ICNT+1
+      call DAYCLK(int(DAY),HOUR,itu)
 
 C Output time and solar position.
       write(outs,'(A,F4.0,A,F5.2,A,F5.2)')' Day ',DAY,' Mean time ',
-     &  HOUR,' Solar time',TIME
+     &  HOUR,' Solar time ',TIME
       call edisp(itu,outs)
       IF(ISUNUP.EQ.0)goto 9993
       write(outs,'(A,F6.1,A,F6.1)')' Altitude =',SALT,' Azimuth =',SAZI
@@ -3192,7 +3218,6 @@ c         receiving internal surfaces.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3213,9 +3238,16 @@ C Shading file record width found in mzshin.
 
       CHARACTER*72 LS
       DIMENSION ISS(12),ISADD(12)
-      character outs*124,h*72
+      character outs*124
       logical OK,dok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZSHDO'  ! set for subroutine
 
 c Determine current month number.
       CALL EDAYR(IYRD,ID,IM)
@@ -3320,11 +3352,10 @@ c applied to zone with which error is associated.
 
     3   call edisp(iuout,' ')
         dok=.true.
-        h(1)='Ignoring shading can alter performance predictions.'
-        h(2)='Exercise care when continuing with the current model.'
-        h(3)='SUGGEST - recalculate shading for whole year. '
+        helptopic='ignore_shading_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Continue the simulation and assume zero ',
-     &           ' shading with default plane insolation?',OK,dok,3)
+     &    ' shading with default plane insolation?',OK,dok,nbhelp)
         IF(OK)goto  9
 
 c Terminate simulation.
@@ -3495,6 +3526,7 @@ C-----------------------------------------------------------------------
       
 C Subroutine and simulation time info      
       WRITE(OUTS,'(A,I4)')' Subroutine MZGREF   Trace output ',ICNT
+      call edisp(itu,' ')
       CALL EDISP(ITU,OUTS)
       ICNT=ICNT+1
       CALL DAYCLK(IDYP,BTIMEF,ITU)
@@ -3550,9 +3582,6 @@ C site.h has common C5
 
       INTEGER IFIL      ! Unit number used for processing input/output files      
       COMMON/FILEP/IFIL
-
-      common/pophelp/h(60)
-      CHARACTER H*72
       
 C Local variables      
       CHARACTER OUTS*124
@@ -3563,6 +3592,13 @@ C Local variables
       INTEGER IFILSN    ! unit number associated with snow depth ascii file
       INTEGER ISTAT
       INTEGER IBINSN    ! unit number associated with binary file
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PPGREF'  ! set for subroutine
 
 C Set default error code and return if not advanced albedo model
       IER=0
@@ -3575,15 +3611,14 @@ C ERROR IF CANNOT BE FOUND
         DO WHILE(.NOT.FOUND)
           dok=.true.
           WRITE(OUTS,'(A,A)') 'Could not find snow depth file: ',SNFNAM
-          H(1)='The snow depth file contains hourly values '
-          H(2)='of snow depth. Data should be in a one-column '
-          H(3)='ASCII file, containing snow depth expressed in '
-          H(4)='cm for all 8760 hours of the year. '
+          helptopic='snow_depth_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(OUTS, 
-     &    ' Respecify? (simulator will exit if [no]!)',OK,DOK,4)
+     &      ' Respecify? (simulator will exit if [no]!)',
+     &      OK,DOK,nbhelp)
           IF (OK) THEN
             CALL EASKS(SNFNAM,'Enter name of snow depth file',
-     &        ' ',72,' ','Snow depth file',IER,4)
+     &        ' ',72,' ','Snow depth file',IER,nbhelp)
             CALL FINDFIL(SNFNAM,FOUND)
           ELSEIF(.NOT.OK) THEN
             call tstamp('>','SIM: snow depth file cannot be found')

@@ -1,13 +1,11 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
 LIBdir = $(SRCdir)/lib
@@ -55,9 +53,10 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o
+	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
+	  AirFlowModelRoutines.o Res_elec_Ctl.o   
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_timestep.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod 
 
 $(PROG): $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags) 
@@ -244,7 +243,7 @@ g3dmtx.F:
 	ln -s $(BLDdir)/g3dmtx.F .
 gcfunc.F:
 	rm -f gcfunc.F
-	ln -s $(CTLdir)/gcfunc.F .
+	ln -s $(COMdir)/gcfunc.F .
 gsdmtx.F:
 	rm -f gsdmtx.F
 	ln -s $(BLDdir)/gsdmtx.F .
@@ -253,7 +252,7 @@ inital.F:
 	ln -s $(BLDdir)/inital.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 initalp.F:
 	rm -f initalp.F
 	ln -s $(PLTdir)/initalp.F .
@@ -593,6 +592,9 @@ plt_bc_components.F:
 RE-H2-ctl.F:
 	rm -f RE-H2-ctl.F
 	ln -s $(CETCdir)/RE-H2-ctl.F
+Res_elec_Ctl.F:
+	rm -f Res_elec_Ctl.F
+	ln -s $(CETCdir)/Res_elec_Ctl.F
 Hydrogen_appliances.F:
 	rm -f Hydrogen_appliances.F
 	ln -s $(PLTdir)/Hydrogen_appliances.F
@@ -661,7 +663,11 @@ stratified_tank_1HX.F:
 stratified_tank_2HX.F:
 	rm -f stratified_tank_2HX.F
 	ln -s $(PLTdir)/stratified_tank_2HX.F .
-
+AirFlowModelRoutines.F:
+	rm -f AirFlowModelRoutines.F
+	ln -s $(BLDdir)/AirFlowModelRoutines.F .
+  
+  
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -670,7 +676,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES)\
+	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -705,4 +711,5 @@ clean:
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
-	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F 
+	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
+	AirFlowModelRoutines.F Res_elec_Ctl.F

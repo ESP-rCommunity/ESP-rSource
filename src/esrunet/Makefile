@@ -14,7 +14,7 @@ PROG = net$(EXE)
 
 OBJECTS = aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	common3dv.o egeometry.o edatabase.o e3dviews.o emfnetw.o eroper.o \
-	esru_misc.o icndbscn.o mfcdat.o netwedit.o network.o nwkrewr.o netwkc2f.o \
+	esru_misc.o  filelist.o icndbscn.o mfcdat.o netwedit.o network.o nwkrewr.o netwkc2f.o \
 	netutil.o read3dv.o sort.o startup.o
 
 $(PROG): $(OBJECTS) $(C_OBJ)
@@ -25,7 +25,7 @@ aim2_module.F:
 	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -91,4 +91,4 @@ clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	*.o aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
-	esru_misc.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F
+	esru_misc.F filelist.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F

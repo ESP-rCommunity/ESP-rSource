@@ -89,7 +89,8 @@ C    temperatures, PCNTMF, if defined to exist
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       logical close,closea
 C Contextual buffer
-      character*124 cContext
+      character cContext*124
+      character outs*124  ! for warning messages
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -170,14 +171,17 @@ C New connector types go here!
 
 C Now check direction of flow
         IF(CONVAR(IPCON,2).LT.0..OR.CONVAR(IPCON,3).LT.0.) THEN
-          WRITE(IUOUT,*) ' MZPADJ: reverse mass flow connection ',IPCON
+          WRITE(outs,*) ' MZPADJ: reverse mass flow connection ',IPCON
+          call edisp(iuout,outs)
           CALL DAYCLK(IDYP,PTIMEF,ITU)
           IF(CONVAR(IPCON,2).LT.0.) THEN
-            WRITE(IUOUT,*) ' MZPADJ: 1th phase mass flow reset to zero'
+            WRITE(outs,*) ' MZPADJ: 1th phase mass flow reset to zero'
+            call edisp(iuout,outs)
             CONVAR(IPCON,2)=0.
           END IF
           IF(CONVAR(IPCON,3).LT.0.) THEN
-            WRITE(IUOUT,*) ' MZPADJ: 2nd phase mass flow reset to zero'
+            WRITE(outs,*) ' MZPADJ: 2nd phase mass flow reset to zero'
+            call edisp(iuout,outs)
             CONVAR(IPCON,3)=0.
           END IF
         END IF
@@ -290,7 +294,6 @@ C Dump PCNTMF array
         ELSE
           WRITE(ITU,*) ' There are no plant containments'
         END IF
-        IF(ITU.EQ.IUOUT) call epagew
       END IF
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.

@@ -46,7 +46,6 @@ C geometry.h provides commons G0/G1 and G2.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -67,11 +66,18 @@ C geometry.h provides commons G0/G1 and G2.
 C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
       DIMENSION VERT(35),TOTHER(MS,3),SO(3)
-      CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
+      CHARACTER VERT*46,KEY*1,CXSTR*78,outs*124,DESCRC*25
       character SO*24,TOTHER*24
       character CXITM*43
       logical newgeo  ! to use for testing if new/old geometry file.
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDACONN'  ! set for subroutine
 
 C Set for redraw if image on first entry (if refresh set to after
 C each edit). Set flag for updating geometry file (for changed
@@ -125,23 +131,8 @@ C If a long list include page facility text.
       VERT(M+3)  ='- exit this menu                      '
 
 C Help text for this menu.
-      H(1) ='The problem contiguity (boundary conditions at surfaces)'
-      H(2) ='are set in this menu.  Before a simulation can be'
-      H(3) ='performed it is necessary that it be complete.'
-      H(4) =' '
-      H(5) ='There are several means to define the topology: '
-      H(6) =' a) attribute surfaces via the zone geometry facility'
-      H(7) ='    as they are created,'
-      H(8) ='    '
-      H(9) =' b) manually edit them via this list, '
-      H(10)='    '
-      H(11)=' c) search for matching vertices within the problem to'
-      H(12)='    fill in all partitions and then complete this list'
-      H(13)='    by editing or importing surface attributes.'
-      H(14)=' '
-      H(15)='The automated facility is considerably faster than'
-      H(16)='manual methods and best used when all the zones have'
-      H(17)='been created. '
+      helptopic='boundary_choice_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU('Zone Boundary Conditions',VERT,MVERT,IVERT)
@@ -155,7 +146,9 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the menu.
-        CALL PHELPD('connection section',17,'-',0,0,IER)
+        helptopic='boundary_choice_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -233,57 +226,6 @@ C General image option flags.
         ITPPSW=0
 
 C Editing of items.
-        H(1) ='The boundary conditions at the other face of this sur-'
-        H(2) ='face is specified via the selection of one of these'
-        H(3) ='choices.  The default is OUTSIDE.'
-        H(4) =' '
-        H(5) =' Exterior - the other face of the surface is exposed to'
-        H(6) ='  ambient air temperature, wind and solar radiation.'
-        H(4) =' '
-        H(5) =' Dynamic/similar - the other face of the surface is'
-        H(6) ='  exposed to the same conditions as the inside face'
-        H(7) ='  (except that when direct sunlight is falling on the'
-        H(8) ='  inside face it cannot be falling on the other face'
-        H(9) ='  only the diffuse component is used on the other face.'
-        H(10)='  where both sides get the same radiation.'
-        H(11)='  A dynamic/similar connection can include an offset'
-        H(12)='  temperature (C) and radiation (W/m^2).'
-        H(13)=' '
-        H(14)=' Static - requires that a constant temperature and'
-        H(15)='  radiation be supplied. You might use this to represent'
-        H(16)='  a cold storage room.'
-        H(17)=' '
-        H(18)=' Surface in another zone - the other face of the surface'
-        H(19)='  gets its boundary conditions from the last known state'
-        H(20)='  of the other surface. There is a thermophysical con-'
-        H(21)='  nection established between the two zones.'
-        H(22)=' '
-        H(23)=' Ground (standard profile) - the other face of the'
-        H(24)='  surface is in direct contact with one of the standard'
-        H(25)='  monthly temperature profiles embedded in ESP-r.'
-        H(26)=' '
-        H(27)=' Ground (user defined profile) - the other face of the'
-        H(28)='  surface is in direct contact with a monthly profile'
-        H(29)='  previously created by the user (in the model context)'
-        H(30)=' '
-        H(31)=' Ground (3D conduction) - the other face connects to a'
-        H(32)='  3D ground representation. This is not often used.'
-        H(33)=' '
-        H(34)=' Adiabatic boundary - typically used for back-to-back'
-        H(35)='  surfaces in a zone representing thermal mass. There'
-        H(36)='  is no heat flux passed beyond the other-face. '
-        H(37)=' '
-        H(38)=' BASESIMP is used to represent one of several basement'
-        H(39)='  configurations and precalculated patterns of heat'
-        H(40)='  transfer. For this to be useful there must be a'
-        H(41)='  basesimp file created for the zone giving a number'
-        H(42)='  of dimensions and computational parameters.'
-        H(43)=' '
-        H(44)=' CEN 13791 partition which is like the SIMILAR'
-        H(45)='  but for CEN 13791 test. The offset temperauture'
-        H(46)='  and radiation (W/m^2) in SIMILAR is not available'
-        H(47)='  for the CEN 13791 partition type. For details see'
-        H(48)='  section 4.4.2 CEN 13791 standard. '
         write(outs,'(a,a,a)')' Connection (currently ',
      &    CXSTR(1:lnblnk(CXSTR)),' )'
         idno=ICT(IFOC)
@@ -294,7 +236,7 @@ C Editing of items.
      &  'e ground (standard profile) ','f ground (user def profile) ',
      &  'g ground (3D conduction)    ','h adiabatic (no heat flux)  ',
      &  'i BASESIMP foundation       ','j CEN 13791 partition       ',
-     &  'k continue ',' ',iart,idno,48)
+     &  'k continue ',' ',iart,idno,nbhelp)
         if(iart.eq.0)then
           continue
         elseif(iart.eq.1)then
@@ -311,21 +253,14 @@ C Editing of items.
         elseif(iart.eq.2)then 
           modcfg=.true.
           ICT(IFOC)=1
-          H(1)='A similar (type 1) connection can include an offset'
-          H(2)='temperature and radiation (W/m^2) from that of the'
-          H(3)='current zone. For example, if the adjacent space'
-          H(4)='which has not been geometrically defined tends to '
-          H(5)='be 2degC cooler then use a -2 offset. '
-          H(6)=' '
-          H(7)='(units are in whole degC and whole W) '
-          H(8)=' '
-          H(9)='Use care when setting a high offset temperature.'
           VALT=0.0
           VALW=0.0
           CALL EASKR(VALT,' Offset temperature? [default=0.0]',
-     &      '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',IER,9)
+     &      '(see help) ',-99.,'F',700.,'F',0.0,'offset temp',
+     &      IER,nbhelp)
           CALL EASKR(VALW,' Offset radiation source (W/m^2)?',
-     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
+     &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',
+     &      IER,nbhelp)
           IC2(IFOC)=INT(VALT)
           IE2(IFOC)=INT(VALW)
           if(SO(1)(1:7).ne.'SIMILAR')then
@@ -337,17 +272,14 @@ C Editing of items.
         elseif(iart.eq.3)then 
           modcfg=.true.
           ICT(IFOC)=2
-          H(1)='A type 2 connection requires that a constant '
-          H(2)='temperature and radiation (Watts) be entered.'
-          H(3)=' '
-          H(4)='Use care when setting a high adjacent temperature.'
           CALL EASKR(VAL,' ',' Constant temperature ? ',
-     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,4)
+     &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,nbhelp)
           IC2(IFOC)=INT(VAL)
 
           CALL EASKR(VAL,' ',
-     &    ' Constant radiation source (Watts) ? ',
-     &      0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,2)
+     &      ' Constant radiation source (Watts) ? ',
+     &      0.0,'W',99999.,'W',0.0,'adjacent radiation source',
+     &      IER,nbhelp)
           IE2(IFOC)=INT(VAL)
           if(SO(1)(1:8).ne.'CONSTANT')then
             TOTHER(IE1(IFOC),1)='CONSTANT'
@@ -396,12 +328,7 @@ C If applicable find other surface, return it`s connection number and
 C point it to the current surface.
             updoth=.false.
             dok=.true.
-            h(1)='Where a pair of surfaces form a partition between'
-            h(2)='two zones changes in one sides attributes should'
-            h(3)='be reflected in the other side to maintain model'
-            h(4)='consistency. Usually you want to update the other'
-            h(5)='side.  '
-            CALL ASKOK(' ','Update other side?',updoth,dok,5)
+            CALL ASKOK(' ','Update other side?',updoth,dok,nbhelp)
             if(updoth)then
               CALL SURADJ(IZ,IS,IE,TMP,IZC,ISC,ICO,DESCRC)
               IC1(ICO)=IZ
@@ -437,16 +364,11 @@ C profile has not been defined.
 21        continue
           modcfg=.true.
           ICT(IFOC)=4
-          H(1)='A ground connection allows either:'
-          H(2)='> 0 a connection to one of several standard profiles'
-          H(3)='    in which case the profile number is required.'
-          H(4)='= 0 a connection to a user defined profile in which'
-          H(5)='    case a 0 followed by a profile number is '
-          H(6)='    required.'
-          H(7)='-3  a connection to a 3D ground model.'
+          helptopic='boundary_ground'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           iic2=ic2(IFOC)
   777     CALL EASKI(IIC2,' Monthly (standard) profile index? ',
-     &                  ' ',1,'F',mgrdp,'F',1,'ground profile',IER,7)
+     &      ' ',1,'F',mgrdp,'F',1,'ground profile',IER,nbhelp)
           IF(IIC2.GT.0)THEN
             IC2(IFOC)=iic2
             IE2(IFOC)=0
@@ -473,10 +395,8 @@ C profile has not been defined.
  22         continue
             modcfg=.true.
             ICT(IFOC)=4
-            H(1)='One of the user defined profile numbers is'
-            H(2)='required at this point.'
             CALL EASKI(IIE2,' User defined ground profile index ?',
-     &        ' ',0,'F',9,'F',1,'user defined profile',IER,2)
+     &        ' ',0,'F',9,'F',1,'user defined profile',IER,nbhelp)
             IC2(IFOC)=0
             IE2(IFOC)=iie2
             if(SO(1)(1:6).ne.'GROUND')then
@@ -519,10 +439,8 @@ C BASESIMP start.
 C Get BASESIMP configuration via call to bsimtype. Save state of current
 C menu and recover after the call.
           ICT(IFOC)=6
-          H(1)='Specify the BASESIMP configuration number (iconfig). '
-          H(2)='Refer to src/esp-r/esrubld/bscoeff.F for the '
-          H(3)='correspondence between iconfig and standard BASESIMP '
-          H(4)='descriptors (e.g. BCIN_1).'
+          helptopic='boundary_basesimp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EPMENSV
           IBS=IC2(IFOC)
           call bsimtype(ibs)
@@ -532,14 +450,9 @@ C menu and recover after the call.
 C Get `surface weighting factor', the percentage of the BASESIMP heat loss to
 C attribute to the surface under consideration.
           Ifrac=IE2(IFOC)
-          H(1)='BASESIMP is a `whole-foundation model`. Therefore, when'
-          H(2)='a foundation is represented by numerous ESP-r surfaces'
-          H(3)='(e.g. four walls + floor to represent a basement), you'
-          H(4)='must specify the percentage of the whole-foundation'
-          H(5)='heat loss to attribute to each surface. Normally the'
-          H(6)='sum of surfaces representing a founcation is 100%.'
-          CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
-     &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
+          CALL EASKI(Ifrac,'Percent of BASESIMP loss to this surface?',
+     &      ' ',0,'F',100,'F',100,'BASESIMP heat loss percent',
+     &      IER,nbhelp)
           IE2(IFOC)=Ifrac
           if(SO(1)(1:8).ne.'BASESIMP')then
             TOTHER(IE1(IFOC),1)='BASESIMP'

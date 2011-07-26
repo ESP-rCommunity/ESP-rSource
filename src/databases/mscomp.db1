@@ -904,6 +904,100 @@ This is a very simple short line model that ignores the capacitive properties
 of the conductor. 
 *ENDTEXT
 *END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     6            22
+*DESC
+Lithium Ion Battery (CETC Battery subroutine)
+*SPECDATA
+81 0
+34       Number of cells connected in parrallel
+35       Number of cells connected in series
+1.5      reference capacity for a unit cell (Amp h)
+25.      battery reference operating temperature
+4.3      DOD=0 (V) of a single cell
+3.15     DOD=100% (V) of a single cell
+24.2     Maximum charge/discharge current of one cell(Amps)
+4.3      Maximum charge/discharge voltage of one cell(V)
+25.      initial battery temperature  (?C) 
+0.       initial depth of discharge (probably zero for a charged battery)
+27.3     thermal mass of a single cell -mass*Cp (J/?C)
+42.64    heat loss factor h*A (W/?C)
+582.86   resistance of the heaters (Ohm)
+1.0      maximum DOD of battery (in percentage... probably 0.8)
+0.       minimum DOD of battery (in percentage... probably 0)
+60.      Maximum battery temperature (?C)
+-40.     Minimum battery temperature (?C)
+-.05712  E5 Exponential coefficent for OCV
+-.05255  E4 Exponential coefficent for OCV
+-.20969  E3 Exponential coefficent for OCV
+-.34512  E2 Exponential coefficent for OCV
+-.41175  E1 Exponential coefficent for OCV
+4.2228   E0 Exponential coefficent for OCV
+0.1152   Rint5 Exponential coefficent for Rint
+-0.2556  Rint4 Exponential coefficent for Rint
+0.2007   Rint3 Exponential coefficent for Rint
+-0.0651  Rint2 Exponential coefficent for Rint
+0.0265   Rint1 Exponential coefficent for Rint
+0.0202   Rint0 Exponential coefficent for Rint
+0.0605   The first current discharged at (Amps)
+1.00     The alpha required to discharge/charge at first rate
+0.1210   The second current discharged at (Amps)
+1.00     The alpha required to discharge/charge at second rate
+0.2419   The third current discharged at (Amps) 
+1.00     The alpha required to discharge/charge at third rate 
+1.2096   The fourth current discharged at (Amps) 
+0.985    The alpha required to discharge/charge at fourth rate 
+6.0480   The fifth current discharged at (Amps)
+0.895    The alpha required to discharge/charge at fifth rate
+12.096   The sixth current discharged at (Amps)
+0.775    The alpha required to discharge/charge at sixth rate
+24.192   The seventh current discharged at (Amps)
+0.593    The alpha required to discharge/charge at seventh rate
+999.     The eighth current discharged at (Amps)
+0.593    The alpha required to discharge/charge at eighth rate
+-40.     The first temperature discharged/charged at in Celsius
+0.905    The beta required to discharge/charge at the first temperature
+0.1870   The voltage offset required to discharge/charge at the first temperature (V)
+-20.     The second temperature discharged/charged at in Celsius
+0.985    The beta required to discharge/charge at the second temperature
+0.0366   The voltage offset required to discharge/charge at the second temperature (V)
+0.       The third temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the third temperature
+0.0123   The voltage offset required to discharge/charge at the third temperature (V)
+10.      The fourth temperature discharged/charged at in Celsius 
+1.       The beta required to discharge/charge at the fourth temperature 
+0.0062   The voltage offset required to discharge/charge at the fourth temperature (V) 
+20.      The fifth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the fifth temperature
+0.0024   The voltage offset required to discharge/charge at the fifth temperature (V)
+30.      The sixth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the sixth temperature
+-1.5e-5  The voltage offset required to discharge/charge at the sixth temperature (V)
+40.      The seventh temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the seventh temperature
+-0.0012  The voltage offset required to discharge/charge at the seventh temperature (V)
+60.      The eighth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the eighth temperature
+-0.0012  The voltage offset required to discharge/charge at the eighth temperature (V)
+0.       self discharge constant in amps (keep zero if unknown or for zero self discharge)
+0.       Activation energy for self-discharge in kJ.kmol-1 (keep zero if unknown  or for zero self discharge)
+1        The index of the zone where the battery is located (-)
+0.       The power required to run the li-on BMS circuitry (W)
+0.1972   Second optional Exponential coefficent for Rint
+-0.4749  Second optional Exponential coefficent for Rint
+0.4118   Second optional Exponential coefficent for Rint
+-0.1472  Second optional Exponential coefficent for Rint
+0.0380   Second optional Exponential coefficent for Rint
+0.0154   Second optional Exponential coefficent for Rint
+16.      If the current is above this value, the internal resistance will be calculated with this 2nd set (A)
+3000.    The crucial cycle to indicate the end of the cell's life
+*TEXT
+Lithium Ion Battery
+*ENDTEXT
+*END
 *ENDCONDDB 
 #*LOADSDB
 #*MOGENDB

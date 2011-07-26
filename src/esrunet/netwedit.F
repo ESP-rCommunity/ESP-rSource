@@ -36,7 +36,6 @@ C icnpick is the icon to edit.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/POPHELP/H(60)  
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -64,7 +63,7 @@ C IECDATE is menu array for attribute data
       
 C Return up to 6 real valus from external subroutine.
       dimension AVAL(6),SVAL(6)
-      CHARACTER H*72,NWICNM*12,NWICNHIS*40,NWICNLBL*4
+      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4
       character NWICNTXT*72,KEY*1,outs*124,SVAL*12
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,exttag*12
@@ -81,6 +80,13 @@ C Return up to 6 real valus from external subroutine.
 #else
       integer*8 impx,impy,iwe
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NETICONDATR'  ! set for subroutine
 
 C Clear local storage arrays.
       icn=icnpick
@@ -208,6 +214,10 @@ C If a long list include page facility text.
       NECDATA=M+MCTL  
       CALL NETWDRW
 
+C Help for the menu.
+      helptopic='component_data_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Find width of menu.
       ilwa=0
       do 22 ij=1,necdata
@@ -228,13 +238,8 @@ C Make menu only as wide as it needs to be.
       IF(ICOUT1.EQ.NECDATA)THEN
         RETURN
       ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
-        H(1)='This menu displays data which can be edited for'
-        H(2)='this component. The name of of the component can'
-        H(3)='also be changed (be sure to check other entities'
-        H(4)='which might reverence the name). To view the'
-        H(5)='documentation for the component, choose the '
-        H(6)='view notes option. To edit the component data'
-        H(7)='select the relevant menu entry. '
+        helptopic='component_data_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Data categories',7,'-',0,0,IER)
       ELSEIF(ICOUT1.EQ.NECDATA-2)THEN   
 
@@ -244,11 +249,10 @@ C If there are enough items allow paging control via EKPAGE.
           CALL EKPAGE(IPACT)
         ENDIF
       ELSEIF(ICOUT1.EQ.1)THEN
-        H(1)='Requires a unique name, which contains'
-        H(2)='no blank spaces.'
         CALL NETWDRW
         CALL EASKS(NWICNM(ICN),'Give a (unique) name',
-     &    '(with no blank spaces) ',12,NWICNM(ICN),'edtcmp',IER,2)
+     &    '(with no blank spaces) ',12,NWICNM(ICN),'edtcmp',
+     &    IER,nbhelp)
 
 C Check for duplicate names ....
         call dupicname(icn)
@@ -293,7 +297,7 @@ C blanks at the start and assign back to DATA and ATRICN.
           read(ATRICN(icn,ifocus,1),*,iostat=ios,ERR=99)IVALD
           IF(ATRTAG(ICN,ifocus,5)(1:4).eq.'user')THEN
             CALL EASKI(IVAL,ATRMENU(ICN,ifocus),' ',IVMIN,'W',
-     &        IVMAX,'W',IVALD,'atrib intg data',IER,0)
+     &        IVMAX,'W',IVALD,'atrib intg data',IER,nbhelp)
             if(ier.eq.0)then
               write(istr,'(I8)') IVAL
               call removepad(istr,inpstr,ilena,iflag)
@@ -358,7 +362,7 @@ C pressure the update attributes.
               endif
             else
               CALL EASKR(VAL,ATRMENU(ICN,ifocus),' ',VMIN,'W',
-     &          VMAX,'W',VALD,'atrib real data',IER,0)
+     &          VMAX,'W',VALD,'atrib real data',IER,nbhelp)
             endif
           elseif(ATRTAG(ICN,ifocus,3)(1:2).eq.'- '.and.
      &           ATRTAG(ICN,ifocus,5)(1:4).eq.'user')then
@@ -366,7 +370,7 @@ C pressure the update attributes.
 C Otherwise edit the variable and then write it back to the string VSTR, strip off any
 C blanks at the start and assign back to DATA and ATRICN.
             CALL EASKR(VAL,ATRMENU(ICN,ifocus),' ',VMIN,'W',
-     &        VMAX,'W',VALD,'atrib real data',IER,0)
+     &        VMAX,'W',VALD,'atrib real data',IER,nbhelp)
           endif
 
           if(ier.eq.0)then
@@ -397,16 +401,16 @@ C attribute so check and update the Z value of the icon to match it.
                elseif(iier.eq.0)then
                  VSTR=SVAL(1)
                  CALL EASKS(VSTR,ATRMENU(ICN,ifocus),'(confirm)',12,
-     &            'nothing','atrib text data',IER,0)
+     &            'nothing','atrib text data',IER,nbhelp)
                endif
              else
                CALL EASKS(VSTR,ATRMENU(ICN,ifocus),' ',12,
-     &           'nothing','atrib text data',IER,0)
+     &           'nothing','atrib text data',IER,nbhelp)
              endif
           elseif(atrtag(icn,ifocus,3)(1:2).eq.'- '.and.
      &           atrtag(icn,ifocus,5)(1:4).eq.'user')then
             CALL EASKS(VSTR,ATRMENU(ICN,ifocus),' ',12,
-     &        'nothing','atrib text data',IER,0)
+     &        'nothing','atrib text data',IER,nbhelp)
           endif
           if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
             call removepad(vstr,vnpstr,ilena,iflag)
@@ -433,7 +437,6 @@ C updintunknflow update attributes of internal unkn press flow node
 
 C Icon commons       
       common/outin/iuout,iuin
-      COMMON/POPHELP/H(60)
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
      & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
@@ -444,8 +447,15 @@ C Icon commons
 C User up to 6 real valus from external subroutine.
       dimension AVAL(6),SVAL(6)
       character outs*124,SVAL*12,ATRTAG*12,ATRMENU*32,ATRICN*12
-      character VNPSTR*12,stra*12,strb*12,h*72
+      character VNPSTR*12,stra*12,strb*12
       logical closev,closex,closey,closez,ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='updintunknflow'  ! set for subroutine
 
 C If flow network (INWKTYP = 2) and the component is internal unknown
 C pressure (ATRICN(icn,1,1) is zero) and the fluid type is air
@@ -464,12 +474,8 @@ C location,text,external,*Zones,manager,user,linked zone name
 
       call edisp(iuout,'Internal unknown pressure comp.')
       
-      h(1)='As the model is updated in terms of its form or the'
-      h(2)='network is adjusted a mismatch was detected between'
-      h(3)='the zone volume and the volume of the network node'
-      h(4)='or the height of the network node and the associated'
-      h(5)='zone or its position. '
-      h(6)='If you say yes the zone attributes will be used. '
+      helptopic='network_mismatch_detect'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ECLOSE(AVAL(1),VALV,0.01,CLOSEV)
       CALL ECLOSE(AVAL(2),XYZICON(ICN,1),0.001,CLOSEX)
       CALL ECLOSE(AVAL(3),XYZICON(ICN,2),0.001,CLOSEY)
@@ -480,7 +486,7 @@ C location,text,external,*Zones,manager,user,linked zone name
         write(outs,'(4a)') 'The zone volume ',stra(1:ilena),
      &    ' does not match current ',strb(1:ilenb)
         dok=.true.
-        CALL ASKOK(outs,'Update volume?',OK,dok,6)
+        CALL ASKOK(outs,'Update volume?',OK,dok,nbhelp)
         if(OK)then
           call relstr(AVAL(1),vnpstr,ilena,iflag)
           WRITE(ATRICN(ICN,4,1),'(a)') vnpstr
@@ -492,7 +498,7 @@ C location,text,external,*Zones,manager,user,linked zone name
         write(outs,'(4a)') 'The zone height ',stra(1:ilena),
      &    ' does not match current ',strb(1:ilenb)
         dok=.true.
-        CALL ASKOK(outs,'Update height?',OK,dok,6)
+        CALL ASKOK(outs,'Update height?',OK,dok,nbhelp)
         if(OK)then
 
 C For this icon the hieght is in the attribute category `location` which
@@ -511,7 +517,7 @@ C is the second attribute category.
      &    strb(1:ilenb),' do not match current X Y ',
      &    XYZICON(ICN,1),XYZICON(ICN,2)
         dok=.true.
-        CALL ASKOK(outs,'Update position?',OK,dok,6)
+        CALL ASKOK(outs,'Update position?',OK,dok,nbhelp)
         if(OK)then
 
 C Store old icon position, find DELTAs between positions.
@@ -566,7 +572,7 @@ C Check if the location name is the same as the zone name. << ?2 >>
      &    SVAL(1)(1:lnblnk(SVAL(1))),' do not match current atrribute ',
      &    ATRICN(ICN,6,1)
         dok=.true.
-        CALL ASKOK(outs,'Update name?',OK,dok,6)
+        CALL ASKOK(outs,'Update name?',OK,dok,nbhelp)
         if(OK)then
           WRITE(ATRICN(ICN,6,1),'(a)')SVAL(1)
         endif
@@ -584,7 +590,6 @@ C updwindflow update attributes of boundary wind pressure flow node
 
 C Icon commons       
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/POPHELP/H(60)
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
      & NCONP(MICN),CONCP(MICN,MCNP,2),ICNCT(MICN,MCNP),
@@ -595,8 +600,15 @@ C Icon commons
 C User up to 6 real valus from external subroutine.
       dimension AVAL(6),SVAL(6)
       character outs*124,SVAL*12,ATRTAG*12,ATRMENU*32,ATRICN*12
-      character VNPSTR*12,exttag*12,h*72
+      character VNPSTR*12,exttag*12
       logical ok,dok,close
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='updwindflow'  ! set for subroutine
 
 C If flow network (INWKTYP = 2) and the component is wind pressure
 C pressure (ATRICN(ICN,1,1)=3) and the fluid type is air
@@ -643,18 +655,14 @@ C        write(6,*) 'Window pressure component AZ.'
         endif
 
 C Check if the location zone name is the same as the zone name.
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+        helptopic='network_mismatch_detect'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(SVAL(1)(1:12).ne.ATRICN(ICN,6,1)(1:12))then
           write(outs,'(4a)')'Associated zone name ',
      &      SVAL(1)(1:lnblnk(SVAL(1))),
      &      ' does not match current atrribute ',ATRICN(ICN,6,1)
           dok=.true.
-          CALL ASKOK(outs,'Update name?',OK,dok,6)
+          CALL ASKOK(outs,'Update name?',OK,dok,nbhelp)
           if(OK)then
             WRITE(ATRICN(ICN,6,1),'(a)')SVAL(1)
             WRITE(ATRICN(ICN,7,1),'(a)')SVAL(2)
@@ -702,8 +710,6 @@ C Connection commons
       COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
      & NWICNTXT(MICN,60)
 
-      COMMON/POPHELP/H(60)  
-
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
 
@@ -722,7 +728,7 @@ C IECDATE is menu array for attribute categories.
 
       LOGICAL ISEL,CSEL,icnisnode
 
-      CHARACTER H*72,outs*124,outsd*124
+      CHARACTER outs*124,outsd*124
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,ct*12
       character NWICNTXT*72
@@ -740,6 +746,14 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
       integer*8 impx,impy,iwe
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NETCNNDATR'  ! set for subroutine
+      helptopic='connection_attributes'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       J=imatch
       CSEL(J)=.TRUE.
@@ -910,6 +924,10 @@ C If a long list include page facility text.
       NECDATA=M+MCTL  
       CALL NETWDRW
 
+C Help text.
+      helptopic='connection_attributes'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Find width of menu.
       ilwa=0
       do 22 ij=1,necdata
@@ -930,10 +948,8 @@ C Make menu only as wide as it needs to be.
       IF(ICOUT1.EQ.NECDATA)THEN
         RETURN
       ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
-        H(1)='This menu displays the connection attribute which'
-        H(2)='can be edited.'
-        H(3)='Items in the menu which begin with a letter a-z'
-        H(4)='can be edited.'
+        helptopic='connection_attributes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Connection attributes',4,'-',0,0,IER)
       ELSEIF(ICOUT1.EQ.NECDATA-2)THEN   
 
@@ -974,7 +990,7 @@ C blanks at the start and assign back to ddatrib.
           IF(ddtagatr(J,ifocus,5)(1:4).eq.'user')THEN
             t32=ddmenuatr(J,ifocus)
             CALL EASKI(IVAL,t32,' ',IVMIN,'W',
-     &        IVMAX,'W',IVALD,'atrib intg data',IER,0)
+     &        IVMAX,'W',IVALD,'atrib intg data',IER,nbhelp)
             if(ier.eq.0)then
               write(istr,'(I8)') IVAL
               call removepad(istr,inpstr,ilena,iflag)
@@ -1005,10 +1021,9 @@ C between the node icon and the component icon of this connection.
             call edisp(iuout,outs)
           endif
           IF(ddtagatr(J,ifocus,5)(1:4).eq.'user')THEN
-            h(1)='A real number is expected here.'
             t32=ddmenuatr(J,ifocus)
             CALL EASKR(VAL,t32,' ',VMIN,'W',
-     &        VMAX,'W',VALD,'atrib real data',IER,1)
+     &        VMAX,'W',VALD,'atrib real data',IER,nbhelp)
             if(ier.eq.0)then
               call relstr(val,vnpstr,ilena,iflag)
               WRITE(ddatrib(J,ifocus,1),'(a)') vnpstr
@@ -1019,7 +1034,7 @@ C between the node icon and the component icon of this connection.
           IF(ddtagatr(J,ifocus,5)(1:4).eq.'user')THEN
             t32=ddmenuatr(J,ifocus)
             CALL EASKS(VSTR,t32,' ',12,'nothing',
-     &        'atrib text data',IER,0)
+     &        'atrib text data',IER,nbhelp)
             if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
               call removepad(vstr,vnpstr,ilena,iflag)
               ddatrib(J,ifocus,1)=VNPSTR
@@ -1045,8 +1060,7 @@ C presented by category).
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/POPHELP/H(60)  
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY 
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -1084,7 +1098,7 @@ C CATIES is menu entry for each data field
       
 C Return up to 5 real valus from external subroutine.
       dimension AVAL(6),SVAL(6)
-      CHARACTER H*72,NWICNM*12,NWICNHIS*40,NWICNLBL*4
+      CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4
       character NWICNTXT*72,A*1,KEY*1,outs*124,SVAL*12
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,exttag*12
@@ -1097,11 +1111,18 @@ C Return up to 5 real valus from external subroutine.
       logical closect,closewt,closeft,closev,closex,closey,closez
       integer NECDATA,ICOUT1,NECDATAs,ICOUT2 ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 #ifdef OSI
       integer impx,impy,iwe
 #else
       integer*8 impx,impy,iwe
 #endif
+
+      helpinsub='NETIDATR'  ! set for subroutine
 
       if(INWKTYP.eq.1.or.INWKTYP.eq.3.or.INWKTYP.eq.6)then
         CALL USRMSG('Click on the component to edit',' ','-')
@@ -1233,18 +1254,15 @@ C If a long list include page facility text.
           WRITE(IECDATE(M+3),'(A)') '- exit this menu '
           NECDATA=M+MCTL  
           CALL NETWDRW
+          helptopic='component_cat_edits'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EMENU('Component data ',IECDATE,NECDATA,ICOUT1)
           IF(ICOUT1.EQ.NECDATA)THEN
             RETURN
           ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
-            H(1)='This menu displays the categoties of data which'
-            H(2)='can be edited for this component. The name of'
-            H(3)='the component can also be changed. To view the'
-            H(4)='documentation for the component, choose the '
-            H(5)='view notes option. To edit the component data'
-            H(6)='select a category to contine or exit to the '
-            H(7)='previous menu.'
-            CALL PHELPD('Data categories',7,'-',0,0,IER)
+            helptopic='component_cat_edits'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Data categories',nbhelp,'-',0,0,IER)
           ELSEIF(ICOUT1.EQ.NECDATA-2)THEN   
 
 C If there are enough items allow paging control via EKPAGE.
@@ -1254,11 +1272,10 @@ C If there are enough items allow paging control via EKPAGE.
             ENDIF
           ELSEIF(ICOUT1.EQ.1)THEN
 C            NAMATCH=0
-            H(1)='Requires a unique name, which contains'
-            H(2)='no blank spaces.'
             CALL NETWDRW
             CALL EASKS(NWICNM(ICN),'Give a (unique) name',
-     &        '(with no blank spaces) ',12,NWICNM(ICN),'edtcmp',IER,2)
+     &        '(with no blank spaces) ',12,NWICNM(ICN),'edtcmp',
+     &        IER,nbhelp)
 
 C Check for duplicate names ....
             call dupicname(icn)
@@ -1339,6 +1356,8 @@ C If a long list include page facility text.
             NECDATAs=M+MCTL
             ICOUT2=-1
             CALL NETWDRW
+            helptopic='component_cat_edits'
+            call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Make menu only as wide as it needs to be.
             if(MMOD.eq.8)then
@@ -1356,10 +1375,9 @@ C Restore category menu setup before returning to label 705.
               CALL EPMENRC
               GOTO 705
             ELSEIF(ICOUT2.EQ.NECDATAs-1)THEN
-              h(1)='This list displays the component data for this'
-              h(2)='category; click on the data item to edit its  '
-              h(3)='value.'
-              CALL PHELPD('Data values',3,'-',0,0,IER)
+              helptopic='component_cat_edits'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL PHELPD('Data values',nbhelp,'-',0,0,IER)
             ELSEIF(ICOUT2.EQ.NECDATAs-3)THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -1382,8 +1400,10 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
                 read(DATCATIE(IAST,ISL,1),*,iostat=ios,ERR=99)IVAL
                 read(DATCATIE(IAST,ISL,1),*,iostat=ios,ERR=99)IVALD
                 IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
+                  helptopic='component_cat_edits'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL EASKI(IVAL,CATIES(IAST,ISL),' ',IVMIN,'W',
-     &              IVMAX,'W',IVALD,'atrib intg data',IER,0)
+     &              IVMAX,'W',IVALD,'atrib intg data',IER,nbhelp)
                   if(ier.eq.0)then
                     write(istr,'(I8)') IVAL
                     call removepad(istr,inpstr,ilena,iflag)
@@ -1450,19 +1470,16 @@ C                        write(6,*) 'Internal unknown pressure comp.'
                         CALL ECLOSE(AVAL(4),XYZICON(ICN,3),0.001,CLOSEZ)
                         if(.NOT.CLOSEV)then
 
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+                          helptopic='network_mismatch_detect'
+                          call gethelptext(helpinsub,helptopic,nbhelp)
                           call relstr(AVAL(1),stra,ilena,iflag)
                           call relstr(VALV,strb,ilenb,iflag)
                           write(outs,'(4a)') 'The zone volume ',
      &                      stra(1:ilena),' does not match current ',
      &                      strb(1:ilenb)
                           dok=.true.
-                          CALL ASKOK(outs,'Update volume?',OK,dok,6)
+                          CALL ASKOK(outs,'Update volume?',
+     &                      OK,dok,nbhelp)
                           if(OK)then
                             call relstr(AVAL(1),vnpstr,ilena,iflag)
                             WRITE(DATCATIE(1,4,1),'(a)') vnpstr
@@ -1471,19 +1488,15 @@ C                        write(6,*) 'Internal unknown pressure comp.'
                           endif
                         endif
                         if(.NOT.CLOSEZ)then
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+                          helptopic='network_mismatch_detect'
+                          call gethelptext(helpinsub,helptopic,nbhelp)
                           call relstr(AVAL(4),stra,ilena,iflag)
                           call relstr(XYZICON(ICN,3),strb,ilenb,iflag)
                           write(outs,'(4a)') 'The zone height ',
      &                      stra(1:ilena),' does not match current ',
      &                      strb(1:ilenb)
                           dok=.true.
-                          CALL ASKOK(outs,'Update it?',OK,dok,6)
+                          CALL ASKOK(outs,'Update it?',OK,dok,nbhelp)
                           if(OK)then
 
 C For this icon the hieght is in the attribute category `location` which
@@ -1498,12 +1511,8 @@ C is the second attribute category.
                         if(CLOSEX.and.CLOSEY)then
                           continue
                         else
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+                          helptopic='network_mismatch_detect'
+                          call gethelptext(helpinsub,helptopic,nbhelp)
                           call relstr(AVAL(2),stra,ilena,iflag)
                           call relstr(AVAL(3),strb,ilenb,iflag)
                           write(outs,'(5a,2F8.2)') 'The zone COG X Y ',
@@ -1511,7 +1520,7 @@ C is the second attribute category.
      &                      ' do not match current X Y ',
      &                      XYZICON(ICN,1),XYZICON(ICN,2)
                           dok=.true.
-                          CALL ASKOK(outs,'Update them?',OK,dok,6)
+                          CALL ASKOK(outs,'Update them?',OK,dok,nbhelp)
                           if(OK)then
 
 C Store old icon position, find DELTAs between positions.
@@ -1560,18 +1569,14 @@ C     &   VCICON(ICN,1,2),VCICON(ICN,1,3)
 
 C Check if the location name is the same as the zone name.
                         if(SVAL(1)(1:12).ne.DATCATIE(2,2,1)(1:12))then
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+                          helptopic='network_mismatch_detect'
+                          call gethelptext(helpinsub,helptopic,nbhelp)
                           write(outs,'(4a)') 'The zone name ',
      &                      SVAL(1)(1:lnblnk(SVAL(1))),
      &                      ' do not match current atrribute ',
      &                      DATCATIE(2,2,1)
                           dok=.true.
-                          CALL ASKOK(outs,'Update name?',OK,dok,6)
+                          CALL ASKOK(outs,'Update name?',OK,dok,nbhelp)
                           if(OK)then
                            WRITE(DATCATIE(2,2,1),'(a)') SVAL(1)
                            WRITE(ATRICN(ICN,ICATIE(2,2),1),'(a)')SVAL(1)
@@ -1623,18 +1628,15 @@ C                          write(6,*) 'Window pressure component AZ.'
 
 C Check if the location zone name is the same as the zone name.
                           if(SVAL(1)(1:12).ne.DATCATIE(2,2,1)(1:12))then
-        h(1)='As the model is updated in terms of its form or the'
-        h(2)='network is adjusted a mismatch was detected between'
-        h(3)='the zone volume and the volume of the network node'
-        h(4)='or the height of the network node and the associated'
-        h(5)='zone or its position. '
-        h(6)='If you say yes the zone attributes will be used. '
+                            helptopic='network_mismatch_detect'
+                            call gethelptext(helpinsub,helptopic,nbhelp)
                             write(outs,'(4a)')'Associated zone name ',
      &                        SVAL(1)(1:lnblnk(SVAL(1))),
      &                        ' do not match current atrribute ',
      &                        DATCATIE(2,2,1)
                             dok=.true.
-                            CALL ASKOK(outs,'Update name?',OK,dok,6)
+                            CALL ASKOK(outs,'Update name?',
+     &                        OK,dok,nbhelp)
                             if(OK)then
                              WRITE(DATCATIE(2,2,1),'(a)') SVAL(1)
                              WRITE(ATRICN(ICN,ICATIE(2,2),1),'(a)')
@@ -1662,16 +1664,20 @@ C     &                      DATCATIE(2,4,1)
                       endif
                     endif
                   else
+                    helptopic='component_cat_edits'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     CALL EASKR(VAL,CATIES(IAST,ISL),' ',VMIN,'W',
-     &                VMAX,'W',VALD,'atrib real data',IER,0)
+     &                VMAX,'W',VALD,'atrib real data',IER,nbhelp)
                   endif
                 elseif(TAGCATIE(IAST,ISL,3)(1:2).eq.'- '.and.
      &            TAGCATIE(IAST,ISL,5)(1:4).eq.'user')then
 
 C Otherwise edit the variable and then write it back to the string VSTR, strip off any
 C blanks at the start and assign back to DATCATIE and ATRICN.
+                  helptopic='component_cat_edits'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL EASKR(VAL,CATIES(IAST,ISL),' ',VMIN,'W',
-     &              VMAX,'W',VALD,'atrib real data',IER,0)
+     &              VMAX,'W',VALD,'atrib real data',IER,nbhelp)
                 endif
                 if(ier.eq.0)then
                   call relstr(val,vnpstr,ilena,iflag)
@@ -1699,17 +1705,23 @@ C attribute so check and update the Z value of the icon to match it.
                        continue
                      elseif(iier.eq.0)then
                        VSTR=SVAL(1)
+                       helptopic='component_cat_edits'
+                       call gethelptext(helpinsub,helptopic,nbhelp)
                      CALL EASKS(VSTR,CATIES(IAST,ISL),'(confirm)',12,
-     &                'nothing','atrib text data',IER,0)
+     &                'nothing','atrib text data',IER,nbhelp)
                      endif
                    else
+                     helptopic='component_cat_edits'
+                     call gethelptext(helpinsub,helptopic,nbhelp)
                      CALL EASKS(VSTR,CATIES(IAST,ISL),' ',12,
-     &                'nothing','atrib text data',IER,0)
+     &                'nothing','atrib text data',IER,nbhelp)
                    endif
                 elseif(TAGCATIE(IAST,ISL,3)(1:2).eq.'- '.and.
      &             TAGCATIE(IAST,ISL,5)(1:4).eq.'user')then
+                  helptopic='component_cat_edits'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
                   CALL EASKS(VSTR,CATIES(IAST,ISL),' ',12,
-     &              'nothing','atrib text data',IER,0)
+     &              'nothing','atrib text data',IER,nbhelp)
                 endif
                 if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
                   call removepad(vstr,vnpstr,ilena,iflag)
@@ -1770,8 +1782,6 @@ C Connection commons
       COMMON/NWKICS/NWICNM(MICN),NWICNHIS(MICN),NWICNLBL(MICN,MICND),
      & NWICNTXT(MICN,60)
 
-      COMMON/POPHELP/H(60)  
-
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
 
@@ -1800,7 +1810,7 @@ C CATIES is menu entry for each data field
 
       LOGICAL ISEL,CSEL,MATCH,CLOSEX,CLOSEY,icnisnode
 
-      CHARACTER H*72,outs*124,outsd*124
+      CHARACTER outs*124,outsd*124
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,ct*12
       character NWICNTXT*72
@@ -1813,6 +1823,11 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
       integer NECDATA,ICOUT1,NECDATAs,ICOUT2 ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 #ifdef OSI
       integer impx,impy,iwe
 #else
@@ -1821,6 +1836,8 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
 
 C Let the user select the connection to be edited (click on a 
 C way-point).
+
+      helpinsub='NETCDATR'  ! set for subroutine
       IPX=IX
       IPY=IY
       CALL PIXEL2U(IPX,IPY,GX,GY)
@@ -2005,16 +2022,16 @@ C If a long list include page facility text.
           WRITE(IECDATE(M+3),'(A)') '- exit this menu '
           NECDATA=M+MCTL  
           CALL NETWDRW
+          helptopic='connection_attributes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EMENU('Connection attribute categories',IECDATE,
      &      NECDATA,ICOUT1)
           IF(ICOUT1.EQ.NECDATA)THEN
             RETURN
           ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
-            H(1)='This menu displays the categoties of data which'
-            H(2)='can be edited for this connection.'
-            H(3)='Please select a category to contine or'
-            H(4)='exit to the previous menu.'
-            CALL PHELPD('Data categories',4,'-',0,0,IER)
+            helptopic='connection_attributes'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Data categories',nbhelp,'-',0,0,IER)
           ELSEIF(ICOUT1.EQ.NECDATA-2)THEN   
 
 C If there are enough items allow paging control via EKPAGE.
@@ -2097,6 +2114,8 @@ C If a long list include page facility text.
             CALL NETWDRW
 
 C Make menu only as wide as it needs to be.
+            helptopic='connection_attributes'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             if(MMOD.eq.8)then
               impx=0
               impy=0
@@ -2113,10 +2132,9 @@ C Restore category menu setup before returning to label 705.
               CALL EPMENRC
               GOTO 705
             ELSEIF(ICOUT2.EQ.NECDATAs-1)THEN
-              h(1)='This list displays the attributes for this'
-              h(2)='category; click on the data item to edit its  '
-              h(3)='value.'
-              CALL PHELPD('Data values',3,'-',0,0,IER)
+              helptopic='connection_attributes'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL PHELPD('Data values',nbhelp,'-',0,0,IER)
             ELSEIF(ICOUT2.EQ.NECDATAs-3)THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -2139,7 +2157,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
                 IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
                   t32=CATIES(IAST,ISL)
                   CALL EASKI(IVAL,t32,' ',IVMIN,'W',
-     &              IVMAX,'W',IVALD,'atrib intg data',IER,0)
+     &              IVMAX,'W',IVALD,'atrib intg data',IER,nbhelp)
                   if(ier.eq.0)then
                     write(istr,'(I8)') IVAL
                     call removepad(istr,inpstr,ilena,iflag)
@@ -2171,10 +2189,9 @@ C between the node icon and the component icon of this connection.
                   call edisp(iuout,outs)
                 endif
                 IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
-                  h(1)='A real number is expected here.'
                   t32=CATIES(IAST,ISL)
                   CALL EASKR(VAL,t32,' ',VMIN,'W',
-     &              VMAX,'W',VALD,'atrib real data',IER,1)
+     &              VMAX,'W',VALD,'atrib real data',IER,nbhelp)
                   if(ier.eq.0)then
                     call relstr(val,vnpstr,ilena,iflag)
                     WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
@@ -2186,7 +2203,7 @@ C between the node icon and the component icon of this connection.
                 IF(TAGCATIE(IAST,ISL,5)(1:4).eq.'user')THEN
                   t32=CATIES(IAST,ISL)
                   CALL EASKS(VSTR,t32,' ',12,'nothing',
-     &              'atrib text data',IER,0)
+     &              'atrib text data',IER,nbhelp)
                   if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
                     call removepad(vstr,vnpstr,ilena,iflag)
                     DATCATIE(IAST,ISL,1)=VNPSTR

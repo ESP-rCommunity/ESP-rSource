@@ -41,7 +41,6 @@ C user-specified variable.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -61,7 +60,7 @@ C user-specified variable.
       CHARACTER*10 ITITLX,ITITLY,ITITLZ
       CHARACTER*40 ITITLE
       DIMENSION DATA(10),CQ(MTS)
-      CHARACTER LNAME*72,outs*124,H*72,etxt*10
+      CHARACTER LNAME*72,outs*124,etxt*10
       logical zlist
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -72,6 +71,14 @@ C user-specified variable.
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       integer jsur,jclm,ICI  ! for radio buttons
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+      integer IUNIT      ! for the scratch file used in drawing
+
+      helpinsub='MO3DPL'  ! set for subroutine
 
       DATA ITITLX/'Time-steps'/
       DATA ITITLZ/'Year day  '/
@@ -120,9 +127,10 @@ C Set chosen result set.
       INO=-2
     3 continue
 
-C Instanciate h() array for the menu.
-      h(1)='The contaminant selection menu does not yet have'
-      h(2)='any help associated with it. '
+C Instanciate help array for the menu (including each of the
+C sub-dialogs).
+      helptopic='res_3D_plot_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('  3D profile',ITEM,NITMS,INO)
       write(outs,'(a,a,a)')'In zone ',zname(II)(1:lnzname(II)),
@@ -176,7 +184,7 @@ C IGET = 6  Resultant temperature.
       elseif(INO.EQ.11)then
         jsur=1
         CALL EASKATOG('Surface temperatures:',' ',
-     &    'T inside','T outside','T node',' ',' ',' ',' ',jsur,1)
+     &    'T inside','T outside','T node',' ',' ',' ',' ',jsur,nbhelp)
         zlist=.true.
         if(jsur.eq.1)then
           IGET=4
@@ -205,12 +213,10 @@ C IGET = 6  Resultant temperature.
           ITITLE = 'Surface node temp'
         endif
       elseif(INO.EQ.12)then
-        H(1)='Convection and solar radiation absorbed at the '
-        H(2)='inside and other/external faces. '
         jsur=1
         CALL EASKATOG('Surface fluxes:',' ',
      &    'Convection int','Convection ext','Total convec int',
-     &    'Solar abs ext','Solar abs int',' ',' ',jsur,1)
+     &    'Solar abs ext','Solar abs int',' ',' ',jsur,nbhelp)
         zlist=.true.
         if(jsur.eq.1)then
           if(ISAVE.lt.4.and.izver.lt.2)then
@@ -294,18 +300,15 @@ C IGET = 12  Ventilation
 C IGET = 15  Casual gains  << ? expand, perhaps to total and perhaps by type >>
         zlist=.true.
         IGET=15
-        H(1)='Casual gains are reported separately in terms of their'
-        H(1)='convective and radiant contributions '
         CALL EASKAB(' ','Casual gains:',
-     &    'Convective ','Radiant ',ICRCG,2)
+     &    'Convective ','Radiant ',ICRCG,nbhelp)
         if(ICRCG.eq.1)ITITLE = 'Casual gain convective(w)'
         if(ICRCG.eq.2)ITITLE = 'Casual gain radiant (w)'
       elseif(INO.EQ.22)then
-        H(1)='To select more than one item, rechoose climate pick'
         jclm=1
         CALL EASKATOG('Climate data:',' ',
      &    'Solar direct','Solar diffuse','Wind speed','Ambient rh',' ',
-     &    ' ',' ',jclm,1)
+     &    ' ',' ',jclm,nbhelp)
         zlist=.false.
         if(jclm.eq.1)then
           IGET=19
@@ -325,12 +328,9 @@ C IGET = 15  Casual gains  << ? expand, perhaps to total and perhaps by type >>
 C IGET = 23  Comfort, ask which index and initialise.
         zlist=.true.
         IGET=23
-        H(1) ='Comfort indicies are: Predicted Mean Vote PMV, PMV '
-        H(2) ='using efective temperature and Predicted Percentage '
-        H(3) ='Dissatisfied PPD. '
         ICI=1
         CALL EASKATOG('Comfort indices:',' ',
-     &    'PMV','PMV (set)','PPD',' ',' ',' ',' ',ICI,3)
+     &    'PMV','PMV (set)','PPD',' ',' ',' ',' ',ICI,nbhelp)
         if(ICI.eq.1)ITITLE = 'Comfort PMV'
         if(ICI.eq.2)ITITLE = 'Comfort PMV (set)'
         if(ICI.eq.3)ITITLE = 'Comfort PPD'
@@ -338,21 +338,17 @@ C IGET = 23  Comfort, ask which index and initialise.
       elseif(INO.EQ.25)then
 
 C Set rotations.
-        H(1)='Rotation about the graph (horizontal) in degrees.' 
         CALL EASKR(XR,' ',' X-axis rotation ?',
-     &         0.,'F',90.,'F',0.,'x-axis rotation',IER,1)
+     &    0.,'F',90.,'F',0.,'x-axis rotation',IER,nbhelp)
 
-        H(1)='Rotation about the graph (elevation) in degrees.' 
         CALL EASKR(ZR,' ',' Z-axis rotation ?',
-     &         0.,'F',360.,'F',0.,'z-axis rotation',IER,1)
+     &    0.,'F',360.,'F',0.,'z-axis rotation',IER,nbhelp)
         goto 61
       elseif(INO.EQ.26)then
 
 C Set scale.
-        H(1)='The data scale factor allows the height of the graph'
-        H(2)='to be manipulated.' 
         CALL EASKR(YS,' ',' Data scale factor ?',
-     &    0.,'F',0.,'-',0.,'data scale',IER,2)
+     &    0.,'F',0.,'-',0.,'data scale',IER,nbhelp)
         goto 61
       elseif(INO.EQ.27)then
         goto 2
@@ -614,6 +610,13 @@ C series data ie. timesteps-vs-day-vs-data.
 #include "building.h"
 #include "geometry.h"
 
+C Parameters passed
+      integer LU1        ! file unit to read and write from
+      real ROTNXX,ROTNYY ! rotation in X and Y axis
+      real YS,ZS         ! scale factor for X and Y
+      real xxmin,xxmax   ! data range minimum and maximum
+      logical zlist      ! if true indicate zone name
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -622,6 +625,9 @@ C series data ie. timesteps-vs-day-vs-data.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+C << Question about sizing of arrays. 3D plot crashes if there are many
+C << points (e.g. the period exceeds some number of timesteps). Perhaps
+C << the 100 below needs to be bigger? 
       REAL MARGIN
       PARAMETER ( MARGIN=75.0,BMARGN=55.0,IRANDR=1,
      &            NPR=10,IRSTART=3,ARRLEN=25.0,ARRWID=12.0 )
@@ -634,7 +640,7 @@ C series data ie. timesteps-vs-day-vs-data.
       CHARACTER*40 TITLE,NAME
       CHARACTER*10 AXIS(3),ANAME,ANAME1
       character detail*72
-      logical close,zlist
+      logical close
       real z1,x1  ! to avoid conflicts with G1 common
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

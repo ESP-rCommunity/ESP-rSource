@@ -28,7 +28,6 @@ C facilities are 'hidden' in the current version.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -39,7 +38,7 @@ C facilities are 'hidden' in the current version.
 
       CHARACTER*23 ITEM(12)
       character doit*124,tmode*8
-      character H*72,xfile*144,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       integer NITMS,INO ! max items and current menu item
 
 #ifdef OSI
@@ -47,6 +46,13 @@ C facilities are 'hidden' in the current version.
 #else
       integer*8 ICPMOD     ! passed from tchild
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='iaqmenu'  ! set for cfiles
 
 C Default value for xvgr file = 0 (off).
       IHFLAG=0
@@ -76,19 +82,9 @@ C << put ILFLAG toggle here >>
       ITEM(11)  ='? help                 '
       ITEM(12)  ='- exit                 '
 
-C Instanciate the h() strings for this menu.
-      H(1) ='The output format selection allows you to direct '
-      H(2) ='the listings to the standard text feedback area '
-      H(3) ='or to a named file.  '
-      H(4) ='  '
-      H(5) ='The comfort choice allows you to look at changes '
-      H(6) ='in comfort over time.  Fangers PMV method is used. '
-C      H(7) ='  '
-C      H(8) ='The pollution level reporting, when implemented will'
-C      H(9) ='track concentrations over time.  '
-C      H(10) ='  '
-C      H(11)='The Mycotoxin reporting will ...... '
-C      H(12)='    '
+C Instanciate the help strings for this menu.
+      helptopic='res_iaq_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       INO=-2
       CALL EMENU(' Indoor Quality',ITEM,NITMS,INO)
@@ -179,6 +175,8 @@ C        CALL MOMXMN(14)
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
       elseif(INO.EQ.11)then
+        helptopic='res_iaq_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('iaq_page',6,'-',0,0,IER)
       elseif(INO.EQ.12)then
         return

@@ -35,7 +35,6 @@ C IC = zone number (if in dfs set to 1)
 #include "cfd.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
@@ -49,11 +48,18 @@ C IC = zone number (if in dfs set to 1)
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
-      CHARACTER ITEM(16)*32, H*72
+      CHARACTER ITEM(16)*32
       character outs*124,ETEXT*30
 
       logical GRMODE
       integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='cgd'  ! set for subroutine
 
 C Set default values.
 C GRMODE = graphics mode.
@@ -103,29 +109,8 @@ C Let the user pick a menu item.
       NITMS=16
 
 C Help text for menu.
-      h(1)='This facility displays or lists the CFD grid.'
-      h(2)=' '
-      h(3)='Aspect ratio can be checked when listing x, y, or z' 
-      h(4)='plane points.' 
-      h(5)=' '
-      h(6)='The aspect ratio (set to be greater than 1.) shows the' 
-      h(7)='ratio between distances of the current cell (say cell'
-      h(8)='index 8) and the previous one (say cell index 7). For'  
-      h(9)='a good grid it should never be greater than 1.2 -->'
-      h(10)='check especially cells between two gridding regions.'
-      h(11)=' ' 
-      h(12)='The grid coordinates can be important when mapping from' 
-      h(13)='actual room geometry to CFD boundary cells. It can save' 
-      h(14)='time if you make a note of the critical coordinates in' 
-      h(15)='the room so that you can double check that the gridding' 
-      h(16)='that you set up is correct. ' 
-      h(17)=' ' 
-      h(18)='It is also a good idea to view the domain in 1D 2D and 3D' 
-      h(19)='to ensure the grid is correct before defining other ' 
-      h(20)='of the domain. You also have a number of options for' 
-      h(21)='what you see in the 1/2/3D views: '
-      h(22)='  * cell gridding only'
-      h(23)='  * cells plus boundary volumes and flow openings'
+      helptopic='dfs_display_list_grid'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
    12 CALL EMENU('Grid visualisation',ITEM,NITMS,INO)
       IF(INO.EQ.0)THEN
@@ -152,7 +137,7 @@ C y-z plane grid.
 
 C 3D gridding with zone geometry.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east->west','high->low',IWO,23)
+     &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -166,7 +151,7 @@ C 3D gridding with zone geometry.
 
 C 3D gridding with zone geometry and solids.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east->west','high->low',IWO,23)
+     &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -181,7 +166,7 @@ C 3D gridding with zone geometry and solids.
 
 C 3D gridding with zone geometry and solids and openings.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east->west','high->low',IWO,23)
+     &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('zn ','xyz',ic)
         elseif(iwo.eq.2)then
@@ -197,7 +182,7 @@ C 3D gridding with zone geometry and solids and openings.
 
 C 3D gridding without zone geometry.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east_.west','high->low',IWO,23)
+     &    'south->north','east_.west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -211,7 +196,7 @@ C 3D gridding without zone geometry.
 
 C 3D gridding without zone geometry and with solids.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east->west','high->low',IWO,23)
+     &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -226,7 +211,7 @@ C 3D gridding without zone geometry and with solids.
 
 C 3D gridding without zone geometry and with solids and openings.
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
-     &    'south->north','east->west','high->low',IWO,23)
+     &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
           call VGRID3D('---','xyz',ic)
         elseif(iwo.eq.2)then
@@ -290,7 +275,9 @@ C Text listings
           call edisp(iuout,outs)
   103   CONTINUE
       ELSEIF(INO.EQ.15)THEN
-        CALL PHELPD('grid visualization',23,'-',0,0,IER)
+        helptopic='dfs_display_list_grid'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('grid visualization',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.16)THEN
 
 C Finish grid visualization, returning display to initial state.

@@ -32,7 +32,6 @@ C blocks PCBLKA and PCBLKB.
       SUBROUTINE PCRD
 #include "plantdb.h"
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
@@ -51,8 +50,15 @@ C blocks PCBLKA and PCBLKB.
       character*68 dtdesc
       character*30 adodsc
 
-      character buffer*120, ltmp*80, text*20,H*72
+      character buffer*120, ltmp*80, text*20
       CHARACTER*24 TUNIX
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCRD'   ! set for subroutine
 
 C Reset component index
       INDXPC=0
@@ -65,50 +71,39 @@ C Generic type of plant component.
    10 call edisp(iuout,' ')
       call edisp(iuout,' COMPONENT DESCRIPTION')
       call edisp(iuout,' ---------------------')
-      h(1)='The generic type describes the group under which a '
-      h(2)='component comes under. For instance, a water pump '
-      h(3)='generic type is used for both centrifugal and '
-      h(4)='reciprocating water pumps.'
-      h(5)='A maximum of 40 characters may be used.'
+      helptopic='pdb_generic_type'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(zgtype,' Generic type (<= 40 char.)? ',
-     &    ' ',40,' ',' Generic type',IER,5)
+     &    ' ',40,' ',' Generic type',IER,nbhelp)
       IF(ier.ne.0) GOTO 10
       call edisp(iuout,' ')
       write(buffer,'(a,a)') ' Generic type: ',zgtype
       call edisp(iuout,buffer)
 
 C Description of plant component.
-   20 h(1)='The component description gives an explanation of a '
-      h(2)='component such as a name and any relevant information'
-      h(3)='to uniquely identify a component.'
-      h(4)='A maximum of 80 characters may be used.'
+   20 helptopic='pdb_component_descr'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(zcdesc,' Description (<= 80 char.)? ',
-     &    ' ',80,' ','Component description',IER,4)
+     &    ' ',80,' ','Component description',IER,nbhelp)
       IF(ier.ne.0) GOTO 20
       write(buffer,'(a,a)') ' Description: ',zcdesc
       call edisp(iuout,buffer)
 
 C Component type index.
    40 iv=4
-      h(1)='The component index indicates which type of component'
-      h(2)='is required. At present two types are available.'
-      h(3)='A single component and a meta component. A meta '
-      h(4)='component comprises a number of single components'
-      h(5)='already entered in the database. An example of a meta'
-      h(6)='component is a VAV terminal reheat consisting of'
-      h(7)='a heating coil, dampers and duct arrangement.'
+      helptopic='pdb_component_index'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ictype=0
       CALL EASKI(ictype,' ',
      & ' Component  type index (0 for single, 1 for meta)? ',
-     &             0,'F',1,'F',0,' Comp type index',IER,7)
+     &             0,'F',1,'F',0,' Comp type index',IER,nbhelp)
       IF(ier.ne.0) GOTO 40
       if(ictype.eq.0) text='Single component    '
       if(ictype.eq.1) text='Meta component      '
 
 C Component code.
-   30 h(1)='The component code is an integer value which is used'
-      h(2)='in ESRUbps to point to corresponding coefficient'
-      h(3)='generator.'
+   30 helptopic='pdb_model_code'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       icode=0
       CALL EASKI(icode,' ',' Component model code ? ',
      &             0,'-',0,'-',10,'component code',IER,3)
@@ -124,14 +119,18 @@ C Number of nodes for nodal scheme of component.
    50    call edisp(iuout,' ')
          call edisp(iuout,' Nodal Scheme Description')
          nnode=0
+         helptopic='pdb_nb_of_nodes'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL EASKI(nnode,' ',' Number of nodes ? ',
-     &             1,'F',maxnod,'F',1,'no. of nodes',IER,0)
+     &             1,'F',maxnod,'F',1,'no. of nodes',IER,nbhelp)
          IF(ier.ne.0) GOTO 50
 
 C Number of non-zero matrix coefficients.
    60    nmatx=0
+         helptopic='pdb_nb_of_nonzero'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL EASKI(nmatx,' ',' No. of non-zero matrix coefficients? ',
-     &        1,'F',maxmtx,'F',1,'no. of coefficients',IER,0)
+     &        1,'F',maxmtx,'F',1,'no. of coefficients',IER,nbhelp)
          IF(ier.ne.0) GOTO 60
         WRITE (buffer,61) NNODE, NMATX
    61   FORMAT ('    Number of nodes  : ',I3,5X,
@@ -142,16 +141,11 @@ C Position of non-zero matrix coefficients.
    70    write(buffer,1070) nmatx
  1070    format('Enter position of',i5,
      &          ' non-zero matrix coefficients?')
-         h(1)='Give a list of integer values which represent the'
-         h(2)='position of non-zero matrix coefficients. '
-         h(3)='For example the following matrix contains 2 non-'
-         h(4)='zero coefficients:'
-         h(5)='        |  X  0  | '
-         h(6)='        |  0  X  | '
-         h(7)='the positions of the non-zero corfficients are'
-         h(8)=' 1 and 4.'
+         helptopic='pdb_position_of_non_zero'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=' '
-         CALL EASKS(ltmp,buffer,' ',80,' ','coeff position?',IER,8)
+         CALL EASKS(ltmp,buffer,' ',80,' ','coeff position?',IER,
+     &     nbhelp)
          IF(ier.ne.0) GOTO 70
          k=0
          ierl=0
@@ -175,13 +169,11 @@ C Write position of non-zero matrix coefficients.
    73    continue
 
 C External connectivity of each node.
-   80    h(1)='Give a list of integer values which represent the'
-         h(2)='connectivity value of each node. '
-         h(3)='For example if a node expects to recieve 2 connec-'
-         h(4)='tions then a value of 2 is specified for it.'
+   80    helptopic='pdb_connectivity_list'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=' '
          CALL EASKS(ltmp,' Connectivity of node(s) ?',
-     &       ' ',80,' ','connection values?',IER,4)
+     &       ' ',80,' ','connection values?',IER,nbhelp)
          IF(ier.ne.0) GOTO 80
          k=0
          ierl=0
@@ -205,18 +197,11 @@ C Write external connections for each node.
    82    continue
 
 C State variable definition.
-   90    h(1)='The state variable index indicates the functionality'
-         h(2)='of a plant component model and the nature of a node.'
-         h(3)='The following index values are supported: '
-         h(4)=' '
-         h(5)='       Energy     Energy&1st phase     Energy&2 phase'
-         h(6)='        only        mass balance        mass balances'
-         h(7)='water    0              10                   20'
-         h(8)='air      1              11                   21'
-         h(9)='solid    9              19                   29'
+   90    helptopic='pdb_state_variable_index'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=' '
          CALL EASKS(ltmp,' State variable index of node(s) ?',
-     &       ' ',80,' ','state variable index?',IER,9)
+     &       ' ',80,' ','state variable index?',IER,nbhelp)
          IF(ier.ne.0) GOTO 90
          k=0
          ierl=0
@@ -242,10 +227,12 @@ C Case for meta component.
       elseif(ictype.eq.1) then
 
 C Number of components.
-  100    mncomp=0
+  100    helptopic='pdb_nb_of_meta_comps'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         mncomp=0
          CALL EASKI(mncomp,' ',
      &      ' Total number of components? ',1,'F',maxpc,'F',1,
-     &        ' no. of components',IER,2)
+     &        ' no. of components',IER,nbhelp)
          IF(ier.ne.0) GOTO 100
          call edisp(iuout,' ')
          call edisp(iuout,' Meta component description')
@@ -254,13 +241,11 @@ C Number of components.
          call edisp(iuout,buffer)
 
 C Code number of each component.
-  110    h(1)='A meta component comprises a number of components'
-         h(2)='which exist in database. In order to identify'
-         h(3)='these components, their code numbers must be'
-         h(4)='specified.'
+  110    helptopic='pdb_meta_comp_indexs'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          ltmp=' '
          CALL EASKS(ltmp,' Code number of each component ?',
-     &       ' ',80,' ','conde of each component',IER,8)
+     &       ' ',80,' ','conde of each component',IER,nbhelp)
          IF(ier.ne.0) GOTO 110
          k=0
          ierl=0
@@ -283,10 +268,12 @@ C Write code number of each component.
   112    continue
 
 C Number of connections in meta component.
-  120    mncon=0
+  120    helptopic='pdb_meta_connections'
+         call gethelptext(helpinsub,helptopic,nbhelp)
+         mncon=0
          CALL EASKI(mncon,' ',
-     &      ' Total number of connections? ',1,'F',maxcon,'F',1,
-     &        ' no. of connections',IER,2)
+     &     ' Total number of connections? ',1,'F',maxcon,'F',1,
+     &     ' no. of connections',IER,nbhelp)
          IF(ier.ne.0) GOTO 120
          write(buffer,121) mncon
   121    format('    Number of component inter-connections : ',i5)
@@ -294,23 +281,14 @@ C Number of connections in meta component.
          call edisp(iuout,' ')
 
 C Connections data.
-  130    h(1)=' Describe each connection using the following format'
-         h(2)=' C1  N1  CT  C2  N2  MDR  MISC1  MISC2'
-         h(3)=' Where:'
-         h(4)=' C1   : Sending component'
-         h(5)=' N1   : Sending node'
-         h(6)=' CT   : Connection type'
-         h(7)=' C2   : Receiving component'
-         h(8)=' N2   : Receiving node'
-         h(9)=' MDR  : Mass diversion ratio'
-         h(10)=' MISC1: First miscellaneous data'
-         h(11)=' MISC2: Second miscellaneous data'
+  130    helptopic='pdb_meta_connection_data'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          do 131 i=1,mncon
             write(buffer,132) i
   132       format(' Data for connection',i5,' ?')
             ltmp=' '
             CALL EASKS(ltmp,buffer,
-     &       ' ',80,' ','connection values?',IER,11)
+     &       ' ',80,' ','connection values?',IER,nbhelp)
            IF(ier.ne.0) GOTO 130
             k=0
             ierl=0
@@ -343,16 +321,11 @@ C Write component inter-connections.
       endif
 
 C Miscellaneous data items definition.
-  140 h(1)='The ADATA array holds static data for a component and'
-      h(2)='their values are assumed to be fixed throughout the'
-      h(3)='simulation. The BDATA on the other hand holds dynamic'
-      h(4)='data which is expected to change in a simulation.'
-      h(5)='The CDATA values are specified in ESRUbps configuration'
-      h(6)='file and are used for control on heat flux, mass flow '
-      h(7)='rates, humidity ratio ..etc.'
+  140 helptopic='component_ADATA_array'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ltmp=' '
       CALL EASKS(ltmp,' Number of items for ADATA, BDATA and CDATA?',
-     &       ' ',80,' ','ADATA, BDATA and CDATA',IER,7)
+     &       ' ',80,' ','ADATA, BDATA and CDATA',IER,nbhelp)
       IF(ier.ne.0) GOTO 140
       k=0
       ierl=0
@@ -367,37 +340,40 @@ C Read ADATA.
       if(nadata.gt.0) then
          call edisp(iuout,' ADATA variables:')
          do 152 i=1,nadata
-  151       write(buffer,1150) i
- 1150       format(' Enter description (68 char max) for ADATA item',i5)
-            ltmp=' '
-            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
-            dtdesc(i)=ltmp(1:68)
-            vitem=0.0
-            CALL EASKR(vitem,' ',' Item value? ',0.,'-',0.,'-',0.,
-     &        ' item value?',IER,2)
-            datams(i)=vitem
-            ltmp=' '
-            CALL EASKS(ltmp,' Range (Min Max)?',
-     &       ' ',80,' ','range',IER,0)
+  151      write(buffer,1150) i
+ 1150      format(' Enter description (68 char max) for ADATA item',i5)
+           helptopic='component_ADATA_descr'
+           call gethelptext(helpinsub,helptopic,nbhelp)
+           ltmp=' '
+           CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
+     &       nbhelp)
+           dtdesc(i)=ltmp(1:68)
+           vitem=0.0
+           CALL EASKR(vitem,' ',' Item value? ',0.,'-',0.,'-',0.,
+     &       ' item value?',IER,nbhelp)
+           datams(i)=vitem
+           ltmp=' '
+           CALL EASKS(ltmp,' Range (Min Max)?',
+     &       ' ',80,' ','range',IER,nbhelp)
            IF(ier.ne.0) GOTO 151
-            k=0
-            ierl=0
-            do 153 j=1,2
-               call egetwr(ltmp,k,ra,0.,0.,'-','adata',ierl)
-               if(ierl.ne.0) goto 151
-               range(i,j)=ra
-  153       continue
-            if(datams(i).lt.range(i,1).or.datams(i).gt.range(i,2))
-     &          goto 151
+           k=0
+           ierl=0
+           do 153 j=1,2
+             call egetwr(ltmp,k,ra,0.,0.,'-','adata',ierl)
+             if(ierl.ne.0) goto 151
+             range(i,j)=ra
+  153      continue
+           if(datams(i).lt.range(i,1).or.datams(i).gt.range(i,2))
+     &       goto 151
 
 C Write entered data in text window.
-            write(buffer,154) i,dtdesc(i)
-  154       format(i5,1x,a68)
-            call edisp(iuout,buffer)
-            write(buffer,155) datams(i),range(i,1),range(i,2)
-  155       format(6x,'Value = ',g12.5,4x,
+           write(buffer,154) i,dtdesc(i)
+  154      format(i5,1x,a68)
+           call edisp(iuout,buffer)
+           write(buffer,155) datams(i),range(i,1),range(i,2)
+  155      format(6x,'Value = ',g12.5,4x,
      &               'Range (Min Max): ',2(2x,g12.5))
-            call edisp(iuout,buffer)
+           call edisp(iuout,buffer)
   152    continue
       endif
 
@@ -408,16 +384,19 @@ C Then BDATA.
             ii=i+nadata
             write(buffer,1160) i
  1160       format(' Enter description (68 char max) for BDATA item',i5)
+            helptopic='component_BDATA_descr'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp=' '
-            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
+            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
+     &        nbhelp)
             dtdesc(ii)=ltmp(1:68)
             vitem=0.0
             CALL EASKR(vitem,' ',' Item value? ',0.,'-',0.,'-',0.,
-     &        ' item value?',IER,2)
+     &        ' item value?',IER,nbhelp)
             datams(ii)=vitem
             ltmp=' '
             CALL EASKS(ltmp,' Range (Min Max)?',
-     &       ' ',80,' ','range',IER,0)
+     &       ' ',80,' ','range',IER,nbhelp)
            IF(ier.ne.0) GOTO 160
             k=0
             ierl=0
@@ -446,8 +425,11 @@ C Then CDATA (description only).
   170    do 172 i=1, ncdata
             write(buffer,1170) i
  1170       format(' Enter description (68 char max) for CDATA item',i5)
+            helptopic='component_CDATA_descr'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp=' '
-            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,0)
+            CALL EASKS(ltmp,buffer,' ',80,' ','item description',IER,
+     &        nbhelp)
             IF(ier.ne.0) GOTO 170
             dtdesc(i+nmisc)=ltmp(1:68)
 
@@ -460,10 +442,12 @@ C Write enterd data in text window.
 
 C Read number of additional outputs and description of
 C each output.
-  180 napout=0
+  180 helptopic='comp_additional_outputs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      napout=0
       CALL EASKI(napout,' ',
-     &    ' Number of additional outputs? ',0,'F',20,'F',0,
-     &     ' no. of outputs',IER,0)
+     &  ' Number of additional outputs? ',0,'F',20,'F',0,
+     &  ' no. of outputs',IER,nbhelp)
       IF(ier.ne.0) GOTO 180
       write(buffer,181) napout
   181 format('    Number of additional outputs : ',i5)
@@ -477,11 +461,11 @@ C each output.
      &             i5)
             ltmp=' '
             CALL EASKS(ltmp,buffer,
-     &       ' ',80,' ','item description',IER,0)
+     &       ' ',80,' ','item description',IER,nbhelp)
             adodsc(i)=ltmp(1:30)
             vitem=0.0
             CALL EASKR(vitem,' ',' output type? ',0.,'-',0.,'-',0.,
-     &        ' output type?',IER,2)
+     &        ' output type?',IER,nbhelp)
             IF(ier.ne.0) GOTO 180
             noutyp(i)=int(vitem)
 

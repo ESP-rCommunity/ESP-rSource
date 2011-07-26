@@ -244,7 +244,6 @@ C EDGOGET allows removal of output requests.
 #include "epara.h"
 #include "building.h"
 
-      common/pophelp/h(60)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
@@ -254,10 +253,17 @@ C EDGOGET allows removal of output requests.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      character VERT(MZS+3)*28,KEY*1,h*72
+      character VERT(MZS+3)*28,KEY*1
       integer ORDER,OGET
       dimension INCGET(MZS),ORDER(MZS),OGET(MZS)
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDGOGET'  ! set for subroutine
 
 C Sort ORDER of IGETNO array for display purposes.
       do 100 I=1,NGET
@@ -313,11 +319,8 @@ C If a long list include page facility text.
       VERT(M+3)  ='- exit and activate changes'
 
 C Instanciate help messages for this menu.
-      H(1)='This menu allows existing metric choices to be '
-      H(2)='removed from the list to display. '
-      H(3)='Each item can be toggled on/ off untill you are'
-      H(4)='happy with the list as all items which are marked'
-      H(5)='off are removed from the list when you exit.'
+      helptopic='res_metric_list_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       CALL EMENU('Metric selection',VERT,MVERT,IVERT)
@@ -374,6 +377,8 @@ C Remove inactive elements.
  20     continue
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
+        helptopic='res_metric_list_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('metric selection',5,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
@@ -406,7 +411,6 @@ C above.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
       common/recov01/pifltog,lpifl
@@ -452,7 +456,7 @@ C Comfort parameters and hash table.
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
       CHARACTER ITEMC(21)*24
-      character H*72,xfile*144,tg*1,delim*1
+      character xfile*144,tg*1,delim*1
       character SUFFIX*8
       character ll1*8,ll2*8,ll3*8
       CHARACTER outs*124,pifltog*4,lpifl*72
@@ -481,6 +485,13 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer*8 iid1,iid2
 #endif
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GOMENU'  ! set for subroutine
+
 C The logical variables are required so as user is asked for additional 
 C information about the choice of metric if necessary. NLIST=.true. implies 
 C SLIST=.true. which are asked for all active zones (listed in NZNO).
@@ -501,10 +512,10 @@ C        MNGET=1
       elseif (MENUTYPE.eq.4) then
 
 C Assume we are starting with feedback to text area of interface.
+C Set initial width to 22 columns. If writing to file MNGET is
+C reset later in the code to 42 columns.
         MTITLE='Performance metrics'
         MNGET=22  ! number of columns 11 char wide for 248 char buffer
-C        MNGET=36  ! number of columns 11 char wide for 400 char buffer
-C        MNGET=13
       elseif (MENUTYPE.eq.5) then
         MTITLE='Summary statistics'
         MNGET=1
@@ -561,8 +572,10 @@ C IGET = 62 and MENUTYPE 12: Surface energy balance flux paths.
       elseif (MENUTYPE.eq.13) then
 
 C IGET = 64 Monthly gains & losses. Use IGETNO(NGET,4) = 1 as 100Wh & 2 as kWh.
+        helptopic='res_display_100wh'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' When displaying monthly values round',
-     &    ' :','to nearest 100Wh (default)','to nearest kWh',IR,0)
+     &    ' :','to nearest 100Wh (default)','to nearest kWh',IR,nbhelp)
         MTITLE='Monthly gains/losses'
         MNGET=MZS-1
         NGET=1
@@ -579,22 +592,20 @@ C IGETNO(NGET,4)=1 denote verbose and 0 to be summary.
         MTITLE='Surface condensation'
         MNGET=MZS-1
         NGET=1
-        h(1)='Use a specified RH to test sensitivity to condensation.'
+        helptopic='res_rh_for_condensation'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' Evaluate condensation using:',
-     &    '  ','current zone RH','specified RH',IR,1)
+     &    '  ','current zone RH','specified RH',IR,nbhelp)
         if(IR.eq.1)then
           IGETNO(NGET,3)=0
         else
           iv=70
-          h(1)='This humidity will be used in the evaluation of'
-          h(2)='condensation at surfaces.'
           CALL EASKI(iv,'Specified humidity (%) ? ',' ',
-     &      1,'-',100,'-',70,'Specified RH',IER,2)
+     &      1,'-',100,'-',70,'Specified RH',IER,nbhelp)
           IGETNO(NGET,3)=iv
         endif
-        h(1)='The summary report includes totals for each surface. '
         CALL EASKAB(' Condensation report options:',
-     &    '  ','summary','show each timestep',IR,1)
+     &    '  ','summary','show each timestep',IR,nbhelp)
         if(IR.eq.1)then
           IGETNO(NGET,4)=0
         elseif(IR.eq.2)then
@@ -646,8 +657,9 @@ C Setup menu items.
       if(ixopen.eq.1)then
         ITEM(23)='> Display to >> file '
         if (MENUTYPE.eq.4) then
-          MNGET=36  ! number of columns 11 char wide for 400 char buffer
-          call usrmsg('Resetting max columns to 36',' ','-')
+          MNGET=42  ! number of columns 11 char wide for 800 char buffer
+                    ! is ~70 but must also acommodate heading text
+          call usrmsg('Resetting max columns to 42',' ','-')
         endif
       elseif(ixopen.eq.0)then
         ITEM(23)='> Display to >> screen'
@@ -715,146 +727,40 @@ C << place ILFLAG here to define tabular labels >>
       INO=-2
 
 C Instanciate the help text for this menu.
-      H(1) ='  '
-      write(H(1),'(10x,a)') MTITLE(1:lnblnk(MTITLE))
-      H(2) ='  '
-      H(3) ='Select the required for output.  Some metrics require'
-      H(4) ='extra information e.g. zone number, surface number. '
-      H(5) ='  '
-      write (H(6),'(a,i2,a)')'You have made ',NGET,
-     &  ' selections, therefore you have a'
-      NLEFT=(MNGET-NGET)
-      write(H(7),'(a,i2,a)')'maximum of ',NLEFT,' selections left.'
-      H(8) ='  '
-      H(9) ='Display can be redirected to a file; be carefull not '
-      H(10)='  to confuse graphical and text output.  '
-      H(11)='Filtering is based on the definition of casual gains.'
-      H(12)='  It is usual to filter on occupancy.'
-      H(13)='Time can be displayed as hours and minutes (hh,mm) or'
-      H(14)='  as a decimal (Day of year.Fraction of day).'
-      H(15)='Delimiters between tabular output can be changed; '
-      H(16)='  useful when exporting data to 3rd party software.'
-      H(17)='Data can be displayed as raw values or as rate of '
-      H(18)='  change of the value. '
+      helptopic='res_select_metrics_list'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(MENUTYPE.eq.1) then
-        H(19)=' '
-        nbofhelp=19
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.2) then
-        H(19)=' '
-        H(20)='A frequency histogram is based on a scan of the current'
-        H(21)='performance metric along with some user preferences for'
-        H(22)='the number of binns and frequency.  '
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.3) then
-        H(19)=' '
-        H(20)='A time series plot graphs one or more performance '
-        H(21)='metrics over a user defined period. Typically each '
-        H(22)='type of data is given a different line type and/or '
-        H(23)='symbol and each zone is given a different colour. '
-        nbofhelp=23
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.4) then
-        H(19)=' '
-        H(20)='The selection of `Performance metrics` produces reports'
-        H(21)='of the statistics of one type of data over the period'
-        H(22)='of the assessment or a user defined period. '
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.5) then
-        H(19)=' '
-        H(20)='The selection of `Summary statistics` produces reports'
-        H(21)='of the statistics of one type of data over the period'
-        H(22)='of the assessment or a user defined period. '
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.6) then
-        H(19)=' '
-        H(20)='A sensitivity report is based on data extracted from a'
-        H(21)='sequence of assessments. '
-        nbofhelp=21
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.7) then
-        H(19)=' '
-        H(20)='A `Hrs above query point` report provides additonal'
-        H(21)='statistical information about the number of occurrances'
-        H(22)='that the performance data exceeds a particular value.'
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.8) then
-        H(19)=' '
-        H(20)='A `Hrs below query point` report provides additonal'
-        H(21)='statistical information about the number of occurrances'
-        H(22)='that the performance data is less than a value.'
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.9) then
-        H(19)=' '
-        H(20)='A zone energy balance reports the flux gains and losses'
-        H(21)='for infiltration, ventilation, occupant/lighting/small'
-        H(22)='power and controlled casual gains as well as convection'
-        H(23)='at the inside face of surfaces which have an outside'
-        H(24)='exposure and convection at the inside face of surfaces'
-        H(25)='which are connected to other zones or the ground. It'
-        H(26)='also includes the convection portion of environmental'
-        H(27)='control systems associated with the zone. '
-        H(28)=' '
-        H(29)='There is a TOTAL line which reports the sum of all '
-        H(30)='gains and the sum of all losses and these should '
-        H(31)='balance each other closely if the model is correct. '
-        H(32)=' '
-        H(33)='An energy balance (from the point of view of the air '
-        H(34)='node of the zone) of all of the flux entering & leaving'
-        H(35)='the air node should balance at each timestep of the '
-        H(36)='simulation. The report is an integration of each of the'
-        H(37)='above types of flux over the period of the assessment. '
-        H(38)=' '
-        H(39)='A flux is positive if it adds heat to the air node of '
-        H(40)='the zone and is negative if it removes heat from the '
-        H(41)='air node of the zone.  For example, if exterior surfaces'
-        H(42)='which are opaque are always colder than the air temp '
-        H(43)='then the report will include losses. '
-        nbofhelp=43
+        helptopic='select_energy_bal'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.10) then
-        H(19)=' '
-        H(20)='Energy demands help to be written. '
-        nbofhelp=20
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.11) then
-        H(19)=' '
-        H(20)='Zone casual gain distribution help to be written. '
-        nbofhelp=20
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.12) then
-        H(19)=' '
-        H(20)='A surface energy balance reports the flux gains & losses'
-        H(21)='at the inside and `other-side` face of the surface for:'
-        H(22)='Conduction (just below the surface), convection, long-'
-        H(23)='wave radiation to other surfaces and at the outside face'
-        H(24)='longwave radiation to other buildings/ground/sky.'
-        H(25)='It also includes the radiant portion of occupants,'
-        H(26)='lighting and small power gains as well as heat stored'
-        H(27)='in the construction and the radiant portion of any'
-        H(28)='environmental control systems associated with the zone.'
-        H(29)=' '
-        H(30)='There is a TOTAL line which reports the sum of all '
-        H(31)='gains and the sum of all losses and these should '
-        H(32)='balance each other closely if the model is correct. '
-        H(33)=' '
-        H(33)='An energy balance (from the point of view of a surface)'
-        H(34)='of all of the flux entering and leaving at each face'
-        H(35)='should balance at each timestep of the simulation.'
-        H(36)='The report is an integration of each of the'
-        H(37)='above types of flux over the period of the assessment.'
-        H(38)=' '
-        H(39)='A flux is positive if it adds heat to surface and is '
-        H(40)='negative if it removes heat from the surface.'
-        H(41)='For example, if exterior surfaces which are opaque'
-        H(42)='are always colder than the air temp the the surface'
-        H(43)='energy balance report will indicate gains at the inside'
-        H(44)='face.'
-        nbofhelp=44
+        helptopic='select_surface_bal'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.13) then
-        H(19)=' '
-        H(20)='Monthly gains and losses are a summary of SOME of the'
-        H(21)='gains and losses associated with each zone. This is '
-        H(22)='NOT a complete energy balance. '
-        nbofhelp=22
+        nbofhelp=nbhelp
       elseif (MENUTYPE.eq.14) then
-        H(19)=' '
-        H(20)='Surface condensation - to be written. '
-        nbofhelp=19
+        nbofhelp=nbhelp
       endif
 
       CALL EMENU(MTITLE,ITEM,NITMS,INO)
@@ -899,21 +805,18 @@ C From the allclm type check the 1st static item value.
           endif
         endif
 
-        H(1)='Climate options:'
-        H(2)=' << >>'
-        H(3)=' << >>'
         inoc=0
         idnoc=0
         if(irtype.eq.0)then
           call MENUATOL('Select a climate metric',' Climate choices:',
      &      'a Ambient temperature','b Solar Dir N','c Solar diffuse',
      &      'd Wind speed','e Wind direction','f Ambient RH',
-     &      'g Sky illumunance',' ',' ',' ',' ',' ',inoc,idnoc,3)
+     &      'g Sky illumunance',' ',' ',' ',' ',' ',inoc,idnoc,nbhelp)
         else
           call MENUATOL('Select a climate metric',' Climate choices:',
      &      'a Ambient temperature','b Solar GlobH','c Solar diffuse',
      &      'd Wind speed','e Wind direction','f Ambient RH',
-     &      'g Sky illumunance',' ',' ',' ',' ',' ',inoc,idnoc,3)
+     &      'g Sky illumunance',' ',' ',' ',' ',' ',inoc,idnoc,nbhelp)
         endif
         call usrmsg('  ','  ','-')
         if(inoc.eq.0)goto 1
@@ -1047,17 +950,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
 C Temperatures sub-menu.
         inoc=0
         idnoc=0
-        H(1)='Temperature options:'
-        H(2)=' << >>'
-        H(3)=' << >>'
-        H(4)='The reported MRT can either be area weighted (default)'
-        H(5)='or for a specific sensor defined in the model.'
-        H(6)=' '
-        H(7)='The terms Inside and Outside are defined with respect '
-        H(8)='to the current zone.  Therefore the Outside face of a '
-        H(9)='surface is not necessarily an exterior surface.'
-        H(10)='Delta T dewpoint is difference between inside surface T'
-        H(11)='and zone dew point temperature (Surf T - Dewpoint).'
+        helptopic='res_temperature_metrics'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call MENUATOL('Select a temperature metric.',
      &    ' Temperature choices:','a Zone db T',
      &    'b Zone db T - ambient db T','c Zone db T - other zone db T',
@@ -1065,7 +959,7 @@ C Temperatures sub-menu.
      &    'f Mean Radiant T (area wtd)','g Mean Radiant T (at sensor)',
      &    'h Dew point T ','i Surf inside face T',
      &    'j Surf T - dewpoint T','k Surf outside face T',
-     &    'l Surf node T',inoc,idnoc,11)
+     &    'l Surf node T',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -1283,19 +1177,8 @@ C IGET = 14  Zone dew point.
       elseif(INO.EQ.7)then
 
 C IGET = 23  Comfort, ask which index and initialise.
-        H(1) ='Comfort indicies are: Predicted Mean Vote (PMV), PMV'
-        H(2) ='using efective temperature (PMV set) and Predicted '
-        H(3) ='Percentage Dissatisfied (PPD). '
-        H(3) ='Local comfort indicies are:  '
-        H(4) ='Head/ foot dT: PPD due to delta Tair between head  '
-        H(5) ='   and feet.'
-        H(6) ='Floor T: PPD due to warm floor.'
-        H(7) ='Ceiling: percentage dissatisfied due to warm or'
-        H(8) ='   cool ceiling.  Note this is not a PPD value.'
-        H(9) ='Wall: percentage dissatisfied due to warm or'
-        H(10)='   cool wall. Note this is not a PPD value.'
-        H(11)='NB: ceiling and wall assume delta T between zone air'
-        H(12)='    point and surface.'
+        helptopic='res_comfort_metrics'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         inoc=0
         idnoc=0
         call MENUATOL('Select a comfort metric',' Comfort choices:',
@@ -1303,7 +1186,7 @@ C IGET = 23  Comfort, ask which index and initialise.
      &    'c Percentage Dissatisfied (PPD)','d Local delta T head-foot',
      &    'e Dissatisfied due to floor T','f Diss. warm/ cool ceiling',
      &    'g Diss. wall rad T assymetry','  ','  ','  ','  ','  ',
-     &    inoc,idnoc,12)
+     &    inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -1391,10 +1274,10 @@ C IGET = 23  Comfort, ask which index and initialise.
           IGETNO(NGET,1)=53
           IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           MRTLIST=.true.
-          H(1) ='The question assumes that the sensor has not been '
-          H(2) ='rotated.   '
+          helptopic='comfort_sensor_direction'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Sensor facing which direction:',' ','South',
-     &               'East','North','West',ICF,2)
+     &      'East','North','West',ICF,nbhelp)
           IGETNO(NGET,4)=ICF
           SUFFIX=' PDwall'
           if(IROC.eq.0)then
@@ -1415,36 +1298,15 @@ C IGET = 23  Comfort, ask which index and initialise.
 C Solar processes.
         inoc=0
         idnoc=0
-        h(1)='Solar radiation distribution within a zone is reported'
-        h(2)='as solar radiation (W) entering from all outside-facing'
-        h(3)='glazing, solar radiation (W) entering from adjacent zones'
-        h(4)='and solar radiation absorbed by opaque surfaces within '
-        h(5)='the zone. '
-        h(6)=' '
-        h(7)='Further solar details can be found in the surface energy'
-        h(8)='balance reports. '
+        helptopic='res_menu_solar_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call MENUATOL('Select a solar flux metric',' Solar choices:',
      &    'a Solar entering from outside','b Solar entering from adj',
      &    'c Solar absorbed in zone','  ','  ','  ','  ','  ',
-     &    '  ','  ','  ','  ',inoc,idnoc,8)
+     &    '  ','  ','  ','  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
-        
-C        dok=.false.
-C        h(1)='The normal report is for the whole surface. '
-C        call askok('Report per square meter of surface',' ',OK,dok,1)
-C        if(ok)ISM=1
-C        slist=.true.
-C        if (ISM.eq.0) then
-
-C Report flux.
-C          IGETNO(NGET,4)=inoc
-C        else
-
-C Report flux/m^2.
-C          IGETNO(NGET,4)=-inoc
-C        endif
-        
+                
         NGET=NGET+1
         IGETNO(NGET,6)=-104; IGETNO(NGET,8)=2; IGETNO(NGET,9)=12
         if(inoc.eq.1)then
@@ -1502,22 +1364,8 @@ C Zone flux paths. Additional items could be included if we went
 C to an emenu selection for izver >=4. << to be done >>
         inoc=0
         idnoc=0
-        h(1)='The zone flux options comprise each of the flux paths '
-        h(2)='included in the zone energy balance report. '
-        h(3)=' '
-        h(4)='Convective exchange with the inside face of surfaces in '
-        h(5)='the zone are subdivided as follows: '
-        h(6) =' g -opaque surfaces which are connected to ambient air,'
-        h(7) =' h -opaque partitions (i.e. other boundary conditions)'
-        h(8) =' i -transp surfaces which are connected to ambient air,'
-        h(9) =' j -transp partitions (i.e. other boundary conditions)'
-        h(10)=' '
-        h(11)=' k -is convection at the inside face of all surfaces in'
-        h(12)='   the zone.'
-        h(13)=' '
-        h(14)='Note: there are more options for viewing casual gains'
-        h(15)='under the `Casual gains` menu option. What is shown'
-        h(16)='here is actually the sensible convective + radiant.'
+        helptopic='res_menu_zone_flux'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call MENUATOL('Select a zone flux metric','Zone flux options:',
      &    'a Infiltration (from outside)','b Ventilation (adj zones)',
      &    'c Occupant casual gains (R+C)',
@@ -1710,10 +1558,8 @@ C   13=long wave > buildings
 C   14=long wave > sky, 15=long wave > ground, 16= SW radiation (othr),
 C   17= SW incident radiation (othr),18=heat storage (othr)
 C Set up surface flux selection items.
-        H(1)='The terms Inside and other side are defined with respect '
-        H(2)='to the current zone.  Therefore the other face of a '
-        H(3)='surface is not necessarily an exterior surface.'
-        H(4)='<< make this clear >> '
+        helptopic='res_menu_surface_flux'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ITEMS(1) ='conduction (inside)    '
         ITEMS(2) ='convection (inside)    '
         ITEMS(3) ='LW radiation (inside)  '
@@ -1734,11 +1580,11 @@ C Set up surface flux selection items.
         ITEMS(18)='heat storage (other fc)'
         IX=1
         CALL EPICKS(IX,IVALS,' ',' Surface fluxes:',
-     &         23,18,ITEMS,'surface fluxes',IER,4)
+     &    23,18,ITEMS,'surface fluxes',IER,nbhelp)
         if(IVALS(1).eq.0)goto 1
         dok=.false.
-        h(1)='The normal report is for the whole surface. '
-        call askok('Report per square meter of surface',' ',OK,dok,1)
+        call askok('Report per square meter of surface',' ',OK,dok,
+     &    nbhelp)
         ism=0
         if(ok)ism=1
         inoc=IVALS(1)
@@ -2287,17 +2133,8 @@ C Report flux/m^2.
           endif
         endif
       elseif(INO.EQ.12)then
-        H(1)='You can display either the sensible heating or'
-        H(2)='cooling load for the selected zone (kW). '
-        H(3)='You can also display either the dehumidification'
-        H(4)='or humidification load for the selected zone (kW).'
-        H(5)='  '
-        H(6)='You can also display :  '
-        H(7)=' All sensible loads (heating and cooling) '
-        H(8)=' All latent loads (humidification and dehumidification)'
-        H(9)=' The total load (all sensible plus all latent). '
-        H(10)=' '
-        H(11)=' All values are in kW. '
+        helptopic='res_menu_sensible_latent'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         inoc=0
         idnoc=0
         call MENUATOL('Select an HVAC load metric',' Load choices:',
@@ -2305,7 +2142,7 @@ C Report flux/m^2.
      &    'c Dehumidification load','d Humidification load',
      &    'e All sensible loads','f All latent loads',
      &    'g All Sensible + latent load','  ',
-     &    '  ','  ','  ','  ',inoc,idnoc,11)
+     &    '  ','  ','  ','  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -2444,37 +2281,8 @@ C IGET = 13  Zone RH.
 
 C IGET = 15  Casual gains.
         if(izver.eq.4)then
-          H(1)='Casual gains are reported separately in terms of their'
-          H(2)='convective radiant and latent contributions. The first'
-          H(3)='casual gain type is labeled Occupant, the 2nd casual '
-          H(4)='gain type is labeled Lighting, the 3rd is Equipment.'
-          H(5)=' '
-          H(6)='The casual gains reported include any controls that '
-          H(7)='that have been applied. If you want to see only the '
-          H(8)='part of a casual gain that is controlled use the '
-          H(9)='options labeled control. '
-          H(10)=' '
-          H(11)=' * All sensible casual gains (convective + radiant)'
-          H(12)=' * All sensible convective casual gains'
-          H(13)=' * All sensible radiant casual gains'
-          H(14)=' * All latent gains'
-          H(15)=' * Occupant sensible gains (convective + radiant)'
-          H(16)=' * Occupant sensible convective gains'
-          H(17)=' * Occupant sensible radiant gains'
-          H(18)=' * Occupant latent gains'
-          H(19)=' * Lighting sensible gains (convective + radiant)'
-          H(20)=' * Lighting sensible convective gains'
-          H(21)=' * Lighting sensible radiant gains'
-          H(22)=' * Lighting latent gains'
-          H(23)=' * Equipment sensible gains (convective + radiant)'
-          H(24)=' * Equipment sensible convective gains'
-          H(25)=' * Equipment sensible radiant gains'
-          H(26)=' * Equipment latent gains'
-          H(27)=' * Controlled fraction (typically of lights)'
-          H(28)=' * Controlled sensible gains (convective + radiant)'
-          H(29)=' * Controlled sensible convective gains'
-          H(30)=' * Controlled sensible radiant gains'
-          H(31)=' * Controlled latent gains'
+          helptopic='res_menu_casual_select'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ITEMC(1)='all sensible (conv+rad)'
           ITEMC(2)='all sensible convective'
           ITEMC(3)='all sensible radiant '
@@ -2498,7 +2306,7 @@ C IGET = 15  Casual gains.
           ITEMC(21)='controlled latent'
           IX=1
           CALL EPICKS(IX,IVALC,' ',' Casual sensible and latent:',
-     &      24,21,ITEMC,'Casuaul fluxes',IER,31)
+     &      24,21,ITEMC,'Casuaul fluxes',IER,nbhelp)
           if(IVALC(1).eq.0)goto 1
           inoc=IVALC(1)
           call usrmsg('  ','  ','-')
@@ -2801,20 +2609,16 @@ C IGET = 15  Casual gains.
             endif
           endif
         else
-          H(1)='Casual gains are reported separately in terms of their'
-          H(2)='convective and radiant contributions. '
-          H(3)='The total gain (rad + conv) for a single type, or '
-          H(4)='for the controlled type is given.  The fraction of'
-          H(5)='the controlled type (delivered/maximum *100%) can '
-          H(6)='also be reported.'
-          H(7)='<< expand the list if explicit values available >> '
+          helptopic='casual_convective_select'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           inoc=0
           idnoc=0
           call MENUATOL('Select a casual gain metric',' Choices:',
      &      'a All gains','b Convective portion','c Radiant portion',
      &      'd Total occupant gain','e Total lighting gain',
      &      'f Total small power gain','g Total controlled gain',
-     &      'h Controlled fraction','  ','  ','  ','  ',inoc,idnoc,6)
+     &      'h Controlled fraction','  ','  ','  ','  ',inoc,idnoc,
+     &      nbhelp)
           if(inoc.eq.0)goto 1
           call usrmsg('  ','  ','-')
           NGET=NGET+1
@@ -2954,9 +2758,10 @@ C Test.
 C Electrical power flow.
 C IGET = 27 Real power flow.
 C IGET = 28 Reactive power flow.
-         H(1)='To select more than one item, e.g. real+reactive '  
-         H(2)='reselect the electrical option.'
-        CALL EASKAB(' ','Power flow type:','Real','Reactive',jpwr,2)
+        helptopic='casual_electrical_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKAB(' ','Power flow type:','Real','Reactive',jpwr,
+     &    nbhelp)
 
 C Should set logicals to ask for cas gain type and phase - see surface 
 C and node logic below.
@@ -2998,13 +2803,10 @@ C and node logic below.
 C Renewables/special components output.
 C IGET = 46 component main output.
 C IGET = 47 component secondary output.
-         H(1)='This option displays the ouput from embedded renewables'
-         H(2)='or advanced materials. Choose to display the main '
-         H(3)='output, usually heat or power (W) or a secondary '
-         H(4)='output. Note this option will display a maximum of '
-         H(5)='ONE renewable or material metric per zone.'
+        helptopic='embedded_renew_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Choose a component performance metric',
-     &'Heat/Power output','Misc. output',ispm,5)
+     &    'Heat/Power output','Misc. output',ispm,nbhelp)
 
 C Should set logicals to ask for cas gain type and phase - see surface 
 C and node logic below.
@@ -3071,8 +2873,10 @@ C << then it could be automatically selected
             endif
   189     continue
   188   continue
+        helptopic='res_measured_data_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('Which measured data type',
-     &    ' :','zone db T','surface T',IR,0)
+     &    ' :','zone db T','surface T',IR,nbhelp)
         NGET=NGET+1
         if(ir.eq.1)then
           call ASKZON(IZONE)
@@ -3149,27 +2953,19 @@ C Data presentation format (actual or rate of change).
         elseif(IROC.eq.-1)then
           write(outs,'(a)')'(currently integrated)'
         endif
-        h(1)='Typical results recovery are of the values within the'
-        h(2)='results library. An alternative is to report the rate '
-        h(3)='of change of a variable. The rate of change is expressed'
-        h(4)='in units per hour (of the normal unit for the variable).'
-        h(5)=' '
+        helptopic='data_vs_rate_of_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C The following lines do not allow casual access to the 'integrate data' 
 C functionality.  The commented out lines just below activate this feature.
-C        h(6)='Note: all selections cleared when this option is altered.'
 C        CALL EASKABC('Data display options:',outs,
 C     &    'variable (default)','rate of change of variable','continue',
 C     &    II,6)
 C        if(II.ne.3.and.(IROC.ne.(II-1)))then 
 C         IROC=II-1
-        h(6)='If integrating data the value is espressed as units.hour '
-        h(7)='For example a flux (W) will become energy (Wh). '
-        h(8)=' '
-        h(9)='Note: all selections cleared when this option is altered.'
         CALL EASKABCD('Data display options:',outs,'integrated',
      &    'variable (default)','rate of change of variable','continue',
-     &    II,9)
+     &    II,nbhelp)
         if(II.ne.4.and.(IROC.ne.(II-2)))then 
           IROC=II-2
           call usrmsg ('Clearing current selections....','  ','W')
@@ -3194,14 +2990,12 @@ C << revise for additional casual gain types >>
             write(ll2,'(1x,a6,1x)') lodlabel(NZNO(1),2)
             write(ll3,'(1x,a6,1x)') lodlabel(NZNO(1),3)
             call edisp(iuout,' ')
-            H(1)='Select a casual gain type to base occupancy on.'
-            H(2)='Labels show are from the first zone in the current'
-            H(3)='list. Type 1 usually represents casual gains from '
-            H(4)='people,although any of the three casual gain types'
-            H(5)='can be used. '
+            helptopic='which_casual_gain_type'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
-     &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
+     &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',
+     &         IOT,nbhelp)
             if (IOT.gt.1.and.IOT.lt.5) then
               call usrmsg('  ','  ','-')
               iocupf=1
@@ -3238,22 +3032,23 @@ C << revise for additional casual gain types >>
         if(MENUTYPE.eq.3) then
 
 C Set axis limits.
-          H(1)='Enter the minimum and maximum value for the y-axis.'
+          helptopic='res_menu_3_axis_min_max'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           do 555 Iaxis=1,4
             if (YAXSET(Iaxis).gt.0) then
  501          write (values,'(8(f9.2,1x))') YMIN(Iaxis),YMAX(Iaxis)
               if (Iaxis.eq.1) then
                 call EASKS(values,'  ','Min &max for temperature axis?',
-     &                                 20,' -10 30 ','temp axis',IER,1)
+     &            20,' -10 30 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.2) then
                 call EASKS(values,'  ','Min & max for loads axis?',
-     &                               20,' -100 100 ','temp axis',IER,1)
+     &            20,' -100 100 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.3) then
                 call EASKS(values,'  ','Min & max for intensity axis?',
-     &                                 20,' 0 1000 ','temp axis',IER,1)
+     &            20,' 0 1000 ','temp axis',IER,nbhelp)
               elseif (Iaxis.eq.4) then
                 call EASKS(values,'  ','Min & max for misc axis?',
-     &                                 20,' 0 100 ','temp axis',IER,1)
+     &            20,' 0 100 ','temp axis',IER,nbhelp)
               endif
               call usrmsg('  ','  ','-')
               K=0
@@ -3287,9 +3082,10 @@ C Toggle time format and day separators.
             call edisp(iuout,' ')
             call edisp(iuout,'3rd party graphing time=day fraction set')
           endif
-          H(1)='Places a # separator between days of tabular data.'
+          helptopic='export_hash_separator'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Include mark between days when ',
-     &                'displaying or writing data :','no','yes',IDH,1)
+     &      'displaying or writing data :','no','yes',IDH,nbhelp)
           IDHFLG=IDH-1
         endif
       elseif(INO.EQ.27)then
@@ -3301,17 +3097,12 @@ C Add another selection - time series plot only.
         else
 
 C Toggle delimeter.
-          H(1) ='Tabular data can be sent to file with various '
-          H(2) ='delimiters: '
-          H(3) ='  spaces (format using spaces to lineup columns)'
-          H(4) ='  single space between columns'
-          H(5) ='  comma separator (for excel)'
-          H(6) ='  tab separator (for excel)'
-          H(7) ='  tagged - marked up data'
+          helptopic='tabular_delimiter_choice'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','tagged',
-     &      'continue',' ',IWM,7)
+     &      'continue',' ',IWM,nbhelp)
           if(iwm.eq.1)then
             delim = '-'
           elseif(iwm.eq.2)then
@@ -3349,20 +3140,24 @@ C replicated).
       elseif(INO.EQ.(NITMS-2).and.MENUTYPE.eq.3)then
 
 C Add in a title for this graph 64 char string graftitle.
- 290    H(1)='A title (up to 64 characters) can be included. '
+ 290    helptopic='res_graph_title_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         t64=graftitle
         CALL EASKS(t64,' Title for graph ? ',
-     &     ' ',64,'  ','graph title',IER,1)
+     &     ' ',64,'  ','graph title',IER,nbhelp)
         if(t64(1:2).ne.'  '.and.t64(1:4).ne.'UNKN')then
           graftitle=t64
         else
           goto 290
         endif
 
-C Add or clear labels within a graph.
+C Add or clear labels within a graph. First setup the help
+C messages for the related topics.
+        helptopic='res_graph_label_manage'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(ngrlbl.eq.0)then
           CALL EASKAB('Labels within graph options:',' ',
-     &    'edit/add labels','contine',igopt,0)
+     &    'edit/add labels','contine',igopt,nbhelp)
           if(igopt.eq.1)then
             igrl=0
             grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '
@@ -3372,7 +3167,8 @@ C Add or clear labels within a graph.
           endif
         elseif(ngrlbl.gt.0)then
           CALL EASKABC('Labels within graph options:',' ',
-     &    'clear existing labels','edit/add labels','contine',igopt,0)
+     &    'clear existing labels','edit/add labels','contine',
+     &    igopt,nbhelp)
           if(igopt.eq.1)then
             ngrlbl=0
             igrl=0
@@ -3400,7 +3196,7 @@ C If there are no labels or some label start at first, if more than 5 exit.
         t24=grlbl(igrl)
  292    CALL EASKS(t24,
      &   'Label within graph (AFTER editing select a point on graph',
-     &   'for the label position).',24,'x','graph label',IER,1)
+     &   'for the label position).',24,'x','graph label',IER,nbhelp)
         if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
           grlbl(igrl)=t24
           if(igrl.gt.ngrlbl)ngrlbl=igrl
@@ -3416,10 +3212,8 @@ C Find out point where text should be drawn.
         iid1=lblpx(igrl); iid2=lblpy(igrl);
         call wstxpt(iid1,iid2,t24)
         dok=.false.
-        h(1)='If you say yes you can add another label and if you say'
-        h(2)='no you will be returned to the menu. NOTE you might need'
-        h(3)='to re-draw the graph to see the labels and titles. '
-        CALL ASKOK('Include another user supplied label?',' ',OKL,dok,3)
+        CALL ASKOK('Include another user supplied label?',' ',OKL,dok,
+     &    nbhelp)
         if(OKL) goto 291
       elseif(INO.EQ.(NITMS-1))then
 
@@ -3476,12 +3270,10 @@ C user to fill in data where necessary.
 C Check if anchor points defined.
           IAC=0
           if (NALOC.gt.0) then
-            H(1)='`one at a time` presents a list of surfaces for each'
-            H(2)='of the currently selected zones. '
-            H(3)='The anchor points method finds all surfaces related'
-            H(4)='to an anchor point. '
+            helptopic='options_for_surf_select'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB('Options for surface selection:','  ',
-     &        'one at a time','via anchor point list',IAC,4)
+     &        'one at a time','via anchor point list',IAC,nbhelp)
           else
             IAC=1
           endif

@@ -75,13 +75,21 @@ c               ptsdat(?,9): 2nd component number...etc.  }
 #include "plant.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/tsconp/iptsc,nptscp,ptsdat(24,20)
 
-      character outs*124,h*72
+      character outs*124
       logical ok,close0,close1,close2,close3,close31,close32,close33
       logical close34,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ptscin'  ! set for subroutine
+      helptopic='plant_ts_control'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
       mptspd=24
       mispts=20
@@ -94,7 +102,7 @@ c Initialise all array elements.
 
 c Get number of control periods.
     5 call easki(nptscp,' Number of plant time-step control periods?',
-     &  ' ',1,'F',mptspd,'F',1,'plt t-s ctl periods',IER,7)
+     &  ' ',1,'F',mptspd,'F',1,'plt t-s ctl periods',IER,nbhelp)
       if(ier.ne.0) then
          goto 5
       endif
@@ -105,7 +113,8 @@ c associated data.
          int1=int(ptsdat(i,1))
    15    write(outs,'(a,i3)') 
      &     'Enter plant time-step controller type for period ',i
-         call easki(int1,outs,' ',0,'F',3,'F',1,'ptsdat(i,1)',IER,0)
+         call easki(int1,outs,' ',0,'F',3,'F',1,'ptsdat(i,1)',
+     &     IER,nbhelp)
          if(ier.ne.0) then
            goto 15
          endif
@@ -113,7 +122,8 @@ c associated data.
          write(outs,'(a,i3)') 
      &     'Enter plant time-step start hour for period ',i
          int1=int(ptsdat(i,2))
-         call easki(int2,outs,' ',0,'W',24,'W',1,'ptsdat(i,2)',IER,0)
+         call easki(int2,outs,' ',0,'W',24,'W',1,'ptsdat(i,2)',
+     &     IER,nbhelp)
          if(ier.ne.0) then
             goto 15
          endif
@@ -144,7 +154,7 @@ c time constant.
            int3=int(ptsdat(i,3))
    20      call easki(int3,'Options: 1) specify a plant component, ',
      &       '2) component with smallest t-c, 3) largest t-c ',
-     &       0,'F',3,'F',1,'ptsdat(i,3)',IER,0)
+     &       0,'F',3,'F',1,'ptsdat(i,3)',IER,nbhelp)
            if(ier.ne.0) then
              goto 20
            endif
@@ -155,7 +165,7 @@ c If first option selected then get component number.
            if(close3) then
              int4=int(ptsdat(i,4))
    80        call easki(int4,' Component number? ',' ',
-     &          1,'F',npcomp,'F',1,'ptsdat(i,4)',IER,0)
+     &          1,'F',npcomp,'F',1,'ptsdat(i,4)',IER,nbhelp)
              if(ier.ne.0) then
                goto 80
              endif
@@ -173,7 +183,7 @@ c state variable(s) less than user specified value).
            call edisp(iuout,'  3) Second phase mass flow rate (kg/s).')
            call edisp(iuout,'  4) All.')
    30      call easki(int5,' Which option? ',' ',
-     &        1,'F',4,'F',1,'ptsdat(i,3)',IER,0)
+     &        1,'F',4,'F',1,'ptsdat(i,3)',IER,nbhelp)
            if(ier.ne.0) then
              goto 30
            endif
@@ -184,7 +194,7 @@ c Case for temperature or all.
            call eclose(ptsdat(i,3),4.00,0.0001,close34)
            if(close31.or.close34) then
   40         CALL EASKR(r1,' Temperature absolute difference? ',' ',
-     &         0.0,'F',999.,'F',1.0,'abs temp diff',IER,0)
+     &         0.0,'F',999.,'F',1.0,'abs temp diff',IER,nbhelp)
              if(ier.ne.0) then
                goto 40
              endif
@@ -196,7 +206,8 @@ c Case for 1st phase mass flow rate or all.
            call eclose(ptsdat(i,3),4.00,0.0001,close34)
            if(close32.or.close34) then
   50         CALL EASKR(r2,' 1st phase flow rate absolute difference? ',
-     &         ' ',0.0,'F',999.,'F',1.0,'1st phase flow diff',IER,0)
+     &         ' ',0.0,'F',999.,'F',1.0,'1st phase flow diff',
+     &         IER,nbhelp)
              if(ier.ne.0) then
                goto 50
              endif
@@ -212,7 +223,8 @@ c Case for 2nd phase mass flow rate or all.
            call eclose(ptsdat(i,3),4.00,0.0001,close34)
            if(close33.or.close34) then
   60         CALL EASKR(r3,' 2nd phase flow rate absolute difference? ',
-     &         ' ',0.0,'F',999.,'F',1.0,'1st phase flow diff',IER,0)
+     &         ' ',0.0,'F',999.,'F',1.0,'1st phase flow diff',
+     &         IER,nbhelp)
              if(ier.ne.0) then
                 goto 60
              endif
@@ -225,11 +237,8 @@ c Case for 2nd phase mass flow rate or all.
                
 c Now find which component(s) state variables to be tested.
           dok=.false.
-          h(1)='Timestep control can be based on test of conditions at'
-          h(2)='each plant component node. If you say no you will be '
-          h(3)='asked to specify which nodes. '
           CALL ASKOK('Do you wish to test state variable(s) of each',
-     &        ' component? ',OK,dok,3)
+     &        ' component? ',OK,dok,nbhelp)
           if(.NOT.ok)goto 74
 
 C Case for all components in network considered.
@@ -244,7 +253,7 @@ C Case for all components in network considered.
 c If not all components considered then get number of 
 c components and a list of component numbers.
    74     call easki(m,' Number of components to consider? ',' ',
-     &        1,'F',npcomp,'F',1,'ptsdat(i,5)',IER,0)
+     &        1,'F',npcomp,'F',1,'ptsdat(i,5)',IER,nbhelp)
           if(ier.ne.0) then
             goto 74
           endif
@@ -254,7 +263,7 @@ c Get list of component numbers.
    90     continue
           do 95 ii=1,m
             call easki(n,' Index of component? ',' ',
-     &        1,'F',npcomp,'F',1,'ptsdat(i,5+ii)',IER,0)
+     &        1,'F',npcomp,'F',1,'ptsdat(i,5+ii)',IER,nbhelp)
             if(ier.ne.0) then
               goto 90
             endif

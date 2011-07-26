@@ -1,0 +1,10 @@
+*HC_CTL for zone Test_11
+*Date,Sun Nov  2 19:15:02 2008
+   1 # number control intervals
+   7 # number of surfaces
+# (South East North West Ceiling Floor window)
+  0.00    24.00 # start and end time of interval
+   1 # fixed coef. calculation control type
+*Doc,User supplied hc values
+ 2.5000,2.5000,2.5000,2.5000,2.5000,2.5000,2.5000
+ 23.000,23.000,23.000,23.000,23.000,23.000,23.000

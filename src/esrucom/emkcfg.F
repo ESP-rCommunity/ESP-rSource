@@ -55,8 +55,10 @@ C ICLIM,LCLIM (for climate file)
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
-      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
+#include "UserSimulationToggles.h"
 #include "schedule.h"
+
+      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
       
       integer lnblnk  ! function definition
 
@@ -216,6 +218,11 @@ C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
       INTEGER :: ihvacflag
+
+C HRV Inputs
+      Integer iMech
+      Character *72 LMech
+      Common /mechvdef/ iMech, LMech
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -659,6 +666,12 @@ C AIM-2.
      &    LAIM2(1:lnblnk(LAIM2))
       endif
 
+C MVNT
+      IF (iMECH.EQ.1)then
+        WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2) '*mvnt   ',
+     &    LMECH(1:lnblnk(LMECH))
+      endif
+
 C Fuel cell.
       IF (iFClds.EQ.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*fcl   ',
@@ -743,6 +756,31 @@ C Write initial view info if other than default.
      &    VIEWMI(1),VIEWMI(2),VIEWMI(3),ANGI
       endif
 
+C User defined simulation toggles. 
+      UserGAM: if ( bUserGAM ) then 
+      
+        WRITE(IFCFG,'(A,A,f8.4)',IOSTAT=IOS,ERR=2)
+     &     '*sim-toggle ', 
+     &     'bld-soln-implicitness ',
+     &     fUserGAM
+      
+      endif UserGAM
+      
+      UserSolar: if ( bUserSolar ) then 
+      
+        if ( iUserSolar == 0 ) then
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &     '*sim-toggle ', 
+     &     'bld-solar-processing ',
+     &     'enabled '
+        else 
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &     '*sim-toggle ', 
+     &     'bld-solar-processing ',
+     &     'disabled '
+        endif 
+      endif UserSolar
+      
 C Write out calendar if defined
       IF(CALENAME(1:7).NE.'UNKNOWN')THEN
         write(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*calename ',
@@ -954,8 +992,6 @@ C the external IPV file (also notify the user they can remove it).
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             continue
           else
-	    call usrmsg('Info merged. Remove the separate IPV file',
-     &      lipvdatf,'W')
 	    lipvdatf=' '  ! ensure old file name is no longer referenced
           endif
         endif

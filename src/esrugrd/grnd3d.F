@@ -43,7 +43,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
@@ -53,11 +52,18 @@ C *********************************************************************
       LOGICAL MODIFY,MODBND,MODLEN,OK,DOK,GRND3D,SAVEOK,XST,chdb
       DIMENSION LDRU(5)
 
-      CHARACTER*72 LMTS,MSG,H,VALUES
+      CHARACTER*72 LMTS,MSG,VALUES
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
       CHARACTER ITEM(16)*28
       integer ier
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MENUGM'  ! set for subroutine
 
       MODIFY=.FALSE.
       SAVEOK=.FALSE.
@@ -88,18 +94,8 @@ C Display the menu.
       MITEM=16
 
 C Help text for the menu.
-      H(1)=' 3D ground models can be created via this menu.'
-      H(2)=' First, the ground configuration should be defined.'
-      H(3)=' This can be achieved by two methods. Firstly, menu'
-      H(4)=' driven by (options x,y,z,b, and m). Secondly, by '
-      H(5)=' loading a ground configuration file (option 5).'
-      H(6)=' After that, the 3D ground files can be created by'
-      H(7)=' selecting (option 2). To dis-activate the 3D ground'
-      H(8)=' molling select (option 3).'
-      H(9)=' The name of the 3D ground files are saved in the'
-      H(10)=' system configuration file. For that, each time the'
-      H(11)=' status or the files name is changed the '
-      H(12)=' configuration file should be updated.'
+      helptopic='grd_3d_ground_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -128,17 +124,17 @@ C Define X - gridding.
         WRITE(VALUES,'(6(1X,F10.3))')(DXG(J),J=IFRST,ILAST)
         WRITE(MSG,'(2A,I2,A,I2,A)')'Define the X - gridding ',
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
-        h(1)='Data related to X gridding. '
-        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
+        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',
+     &    IER,nbhelp)
         NDX = iCountWords(VALUES)
         IF(NDX.GT.6)THEN
           CALL USRMSG(' ',
-     &             ' only six intervals are allowed at a time.','W')
+     &      ' only six intervals are allowed at a time.','W')
           GOTO 10
         ENDIF
         NDXT=NDXT+NDX-1
         IF(NDXT.GT.MGXYZ)THEN
-          CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
+          CALL USRMSG(' ','maximum allowable divisions exceeded.','W')
           GOTO 10
         ENDIF
         K=0
@@ -168,12 +164,12 @@ C Define Y - gridding.
         WRITE(VALUES,'(6(1X,F10.3))')(DYG(J),J=IFRST,ILAST)
         WRITE(MSG,'(2A,I2,A,I2,A)')'Define the Y - gridding ',
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
-        h(1)='Data related to Y gridding. '
-        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
+        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',
+     &    IER,nbhelp)
         NDY = iCountWords(VALUES)
         IF(NDY.GT.6)THEN
           CALL USRMSG(' ',
-     &             ' only six intervals are allowed at a time.','W')
+     &      ' only six intervals are allowed at a time.','W')
           GOTO 10
         ENDIF
         NDYT=NDYT+NDY-1
@@ -208,17 +204,17 @@ C Define Z - gridding.
         WRITE(VALUES,'(6(1X,F10.3))')(DZG(J),J=IFRST,ILAST)
         WRITE(MSG,'(2A,I2,A,I2,A)')'Define the Z - gridding ',
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
-        h(1)='Data related to Z gridding. '
-        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
+        CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',
+     &    IER,nbhelp)
         NDZ = iCountWords(VALUES)
         IF(NDZ.GT.6)THEN
           CALL USRMSG(' ',
-     &             ' only six intervals are allowed at a time.','W')
+     &      ' only six intervals are allowed at a time.','W')
           GOTO 10
         ENDIF
         NDZT=NDZT+NDZ-1
         IF(NDZT.GT.MGXYZ)THEN
-          CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
+          CALL USRMSG(' ','maximum allowable divisions exceeded.','W')
           GOTO 10
         ENDIF
         K=0
@@ -251,18 +247,15 @@ C Create a material rectangle.
 
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
-        h(1)='If you want to keep the current material answer NO'
-        h(2)='otherwise you can find one by browsing the database.'
         CALL ASKOK('Browse the materials db for a new material',
-     &    '(NO exits the process)?',OK,dok,2)
+     &    '(NO exits the process)?',OK,dok,nbhelp)
         iwhich = 0
         IF(OK)then
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
-            H(1)='If air is correct then accept, otherwise'
-            H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &        ' ','accept','reselect material','abort',iwair,2)
+     &        ' ','accept','reselect material','abort',
+     &        iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
             elseif(iwair.eq.3)then
@@ -279,8 +272,8 @@ C reference. Use elistmat to select via materials array.
         WRITE(LMTS,'(4(1X,I2))')(LDRU(K),K=2,5)
         WRITE(MSG,'(2A)')'enter the material rectangle borders',
      &                      ' (left, down, right, and up)'
-        h(1)='4 numbers are required. '
-        CALL EASKS(LMTS,MSG,' ',32,' ',' rectangle limits ',IER,1)
+        CALL EASKS(LMTS,MSG,' ',32,' ',' rectangle limits ',
+     &    IER,nbhelp)
         NUM = iCountWords(LMTS)
         IF(NUM.NE.4)THEN
           CALL USRMSG(' ','four integers should be entered.','W')
@@ -355,18 +348,19 @@ C Support facilities.
       ELSEIF(INO.EQ.(MITEM-1))THEN
 
 C Help.
-        CALL PHELPD(' Multi-Gridding menu',12,'-',0,0,IER)
+        helptopic='grd_3d_ground_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD(' Multi-Gridding menu',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
         IF(SAVEOK)THEN
           dok=.true.
-          h(1)='Recent changes to the model might be lost if the '
-          h(2)='data is not written to the configuration file. '
-          h(3)='First check that no other ESP-r module is using '
-          h(4)='this file. '
+          helptopic='write_data_reminder'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' ',
-     &    'configuration should be updated. Ok to do this?',OK,dok,4)
+     &      'configuration should be updated. Ok to do this?',
+     &      OK,dok,nbhelp)
           IF(OK)CALL EMKCFG('-',IER)
         ENDIF
         RETURN
@@ -383,7 +377,6 @@ C *********************************************************************
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
@@ -392,9 +385,16 @@ C *********************************************************************
 
       DIMENSION LDRU(5),IVAL(MBTYP),IVALS(6)
 
-      CHARACTER H*72,VALUES*32,MSG*72
+      CHARACTER VALUES*32,MSG*72
       CHARACTER ITEM(14)*28,ITEMS(6)*18,VERT(35)*35,KEY*1
       integer MVERT,IVERT  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GNDBND'  ! set for subroutine
 
       IF(MODIFY.OR.IDRW1.NE.10)THEN
         IDRW1=10
@@ -446,36 +446,8 @@ C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
 
 C Help text for menu.
-      H(1)=' By this menu the boundary types are defined for the'
-      H(2)=' six surfaces of the ground 3D model. First, the'
-      H(3)=' required boundary types should be created. Then,'
-      H(4)=' they should be assigned to the required surfaces.'
-      H(5)=' The default boundry is adiabatic. Hence, there is '
-      H(6)=' no need to define these boundaries.'
-      H(7)=' Within any surface, the boundary is defined per'
-      H(8)=' increment. Therefore, different boundary types can'
-      H(9)=' be defined for a single surface.'
-      H(10)=' '
-      H(11)=' The available connection types are:'
-      H(12)=' 11  IZ  IN   with 3D node IN in zone IZ.'
-      H(13)=' 21  IZ  IS   convective and radiative boundary '
-      H(14)='              similar to exterior boundary for surface'
-      H(15)='              IS in zone IZ.'
-      H(16)=' 22  IZ  IS   convective only boundary similar to '
-      H(17)='              exterier boundary for surface IS in '
-      H(18)='              zone IZ.'
-      H(19)=' 31  IZ  IS   convective and radiative boundary '
-      H(20)='              similar to interior boundary for '
-      H(21)='              surface IS in zone IZ.'
-      H(22)=' 32  IZ  IS   convective only boundary similar to '
-      H(23)='              interier boundary for surface IS in '
-      H(24)='              zone IZ.'
-      H(25)='>100 IS  IN   connected to 1D node in zone number'
-      H(26)='              (type-100) surface IS and node IN.'
-      H(27)=' NB for connection type (11), if IZ=-1, then '
-      H(28)='    connection is with a node in the 3D ground model.'
-      H(29)=' NB for connection type (31), the zone number must'
-      H(30)='    be equal to the active zone.'
+      helptopic='boundary_type_defs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -487,8 +459,8 @@ C Edit item identified by KEYIND.
         WRITE(MSG,'(2A,I2,A)')'enter the associated data for ',
      &                   'boundary type number (',IFOC,').'
         VALUES=' '
-        h(1)='<<to be completed>> '
-        CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',IER,1)
+        CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',
+     &    IER,nbhelp)
         NUM = iCountWords(VALUES)
         IF(NUM.NE.3)THEN
           CALL USRMSG(' ','three integers should be entered.','W')
@@ -508,30 +480,11 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Add new boundary type.
         NMBR=NBOUND+1
-        H(1)=' The available connection types are:'
-        H(2)=' 11  IZ  IN   with 3D node IN in zone IZ.'
-        H(3)=' 21  IZ  IS   convective and radiative boundary '
-        H(4)='              similar to exterior boundary for surface'
-        H(5)='              IS in zone IZ.'
-        H(6)=' 22  IZ  IS   convective only boundary similar to '
-        H(7)='              exterier boundary for surface IS in '
-        H(8)='              zone IZ.'
-        H(9)=' 31  IZ  IS   convective and radiative boundary '
-        H(10)='              similar to interior boundary for '
-        H(11)='              surface IS in zone IZ.'
-        H(12)=' 32  IZ  IS   convective only boundary similar to '
-        H(13)='              interier boundary for surface IS in '
-        H(14)='              zone IZ.'
-        H(15)='>100 IS  IN   connected to 1D node in zone number'
-        H(16)='              (type-100) surface IS and node IN.'
-        H(17)=' NB for connection type (11), if IZ=-1, then '
-        H(18)='    connection is with a node in the 3D ground model.'
-        H(19)=' NB for connection type (31), the zone number must'
-        H(20)='    be equal to the active zone.'
         WRITE(MSG,'(2A,I2,A)')'  Enter the associated data for ',
-     &                   'boundary type number (',NMBR,').'
+     &                   'new boundary type number (',NMBR,').'
         VALUES=' '
-        CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',IER,20)
+        CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',
+     &    IER,nbhelp)
         NUM = iCountWords(VALUES)
         IF(NUM.NE.3)THEN
           CALL USRMSG(' ','three integers should be entered.','W')
@@ -551,7 +504,7 @@ C Delete existing boundary type.
    50   CONTINUE
         INPK=1
    60   CALL EPICKS(INPK,IVAL,' ',' ',28,
-     &              NBOUND,ITEM,'      DELETE ',IER,0)
+     &    NBOUND,ITEM,'      DELETE ',IER,nbhelp)
         IBND=IVAL(1)
         IF(IBND.GT.0.AND.IBND.LE.NBOUND)THEN
           NBOUND=NBOUND-1
@@ -627,19 +580,22 @@ C Define a boundary surface.
         ITEMS(5)='surface (5 6 7 8)'
         ITEMS(6)='surface (4 3 2 1)'
         INPK=1
+        helptopic='grnd_boundary_surface'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   140   WRITE(MSG,'(2A)')'select the surface within which ',
-     &                      'the boudary surface is.'
-        CALL EPICKS(INPK,IVALS,' ',MSG,18,6,ITEMS,'  Surfaces ',IER,0)
+     &                   'the boudary surface is.'
+        CALL EPICKS(INPK,IVALS,' ',MSG,18,6,ITEMS,'  Surfaces ',
+     &    IER,nbhelp)
         ISRF=IVALS(1)
         IF(ISRF.GT.0.AND.ISRF.LE.6)THEN
           IDRW1=12
           IDRW2=ISRF
           CALL GRAAPH(IDRW1,IDRW2)
           WRITE(MSG,'(2A)')'enter the boundary type and borders',
-     &                        ' (left, down, right, and up)'
+     &                     ' (left, down, right, and up)'
           VALUES=' '
-          h(1)='4 numbers are required. '
-          CALL EASKS(VALUES,MSG,' ',72,' ',' boundary borders ',IER,1)
+          CALL EASKS(VALUES,MSG,' ',72,' ',' boundary borders ',
+     &      IER,nbhelp)
           NUM = iCountWords(VALUES)
           IF(NUM.NE.5)THEN
             CALL USRMSG(' ','five integers should be entered.','W')
@@ -706,7 +662,9 @@ C Define a boundary surface.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help messages.
-        CALL PHELPD('connection section',30,'-',0,0,IER)
+        helptopic='boundary_type_defs'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C Return to multi-gridding menu.
@@ -724,7 +682,6 @@ C *********************************************************************
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND108/LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
@@ -734,9 +691,16 @@ C *********************************************************************
       DIMENSION IZZ(3),VZZ(5)
 
       CHARACTER    MSG*72,FLTYP*25
-      CHARACTER*72 H,LTMP
+      CHARACTER*72 LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GNDMSH'  ! set for subroutine
 
 C Initialize the connections,nodes, and control volumes counters.
       NNDS=0
@@ -744,9 +708,8 @@ C Initialize the connections,nodes, and control volumes counters.
       IR=0
 
 C Open the control volumes file.
-      H(1)='   Enter the name for the file in which the associated'
-      H(2)=' control volumes details to be saved. '
-      H(3)=' '
+      helptopic='control_volumes_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       FLTYP='control volumes'
       LTMP= LGDCVS
       CALL FLNAME(-1,LTMP,FLTYP,'.cvs',3,IER)
@@ -756,7 +719,6 @@ C Open the control volumes file.
       IF(IER.NE.0)RETURN
 
 C Open the connections file.
-      H(2)=' connections details to be saved. '
       FLTYP='connections'
       LTMP=LGDCNC
       CALL FLNAME(-1,LTMP,FLTYP,'.cnc',3,IER)
@@ -767,7 +729,6 @@ C Open the connections file.
 
 C Create a binary file for saving the nodes data (location and the 
 C numbers of the control volumes represented by each node).
-      H(2)=' nodes global coordintes to be saved. '
       FLTYP='nodes coordintes'
       LTMP=LGDNDC
       CALL FLNAME(-1,LTMP,FLTYP,'.ndc',3,IER)
@@ -778,7 +739,6 @@ C numbers of the control volumes represented by each node).
 
 C Create a binary file for saving the nodes data (location and the 
 C numbers of the control volumes represented by each node).
-      H(2)=' nodes initial temperature to be saved. '
       FLTYP='nodes temperature'
       LTMP=LGDTAQ
       CALL FLNAME(-1,LTMP,FLTYP,'.taq',3,IER)
@@ -1223,17 +1183,24 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
-      CHARACTER*72 FILGND,h*72
+      CHARACTER*72 FILGND
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAVEGM'  ! set for subroutine
 
       FILGND='ground.c3d'
-      h(1)='The ground configuration file << ... >> '
-      CALL EASKS(FILGND,' 3D ground configuration file name ?',' ',
-     &       72,' ',' 3D ground file ',IER,1)
+      helptopic='3d_ground_config_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKS(FILGND,'3D ground configuration file name ?',' ',
+     &  72,' ',' 3D ground file ',IER,nbhelp)
       IUNIT=IFIL+1
       CALL EFOPSEQ(IUNIT,FILGND,4,IER)
       IF(IER.LT.0)RETURN
@@ -1303,18 +1270,25 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
-      CHARACTER FILGND*72,STRG*124,H*72
+      CHARACTER FILGND*72,STRG*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='READGM'  ! set for subroutine
 
       FILGND='ground.c3d'
-      h(1)='The 3D ground configuration file << ... >> '
-      CALL EASKS(FILGND,' 3D ground configuration file name ?',' ',
-     &       72,' ',' 3D ground file ',IER,1)
+      helptopic='3d_ground_config_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKS(FILGND,'3D ground configuration file name ?',' ',
+     &  72,' ',' 3D ground file ',IER,nbhelp)
       IUNIT=IFIL+1
       CALL EFOPSEQ(IUNIT,FILGND,1,IER)
       IF(IER.LT.0)RETURN

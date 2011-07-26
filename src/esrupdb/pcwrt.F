@@ -63,9 +63,10 @@ C TRNSYS types data
       character*60 ltpcmp, tltpcm
       character text*20, buffer*120
 
+C Reset the display mode to act as a script.
         if(ichan.eq.(ifil+1)) mmod=-1
 
-C Output header
+C Output header. If not in graphic mode include some ------- lines.
         if(mmod.ne.8.and.mmod.ne.9) then
            call edisp(ichan,' ')
            write(buffer,1111)
