@@ -1569,22 +1569,23 @@ C between the two X and two Y and two Z. This uses G1 commons.
             if(inpick.eq.2)then
               ivcs=IVLST(1)
               ivcf=IVLST(2)
+              x1=x(ivcs)     ! get position of initial vertex.
+              y1=y(ivcs)
+              z1=z(ivcs)
+              x2=x(ivcf)     ! get position of initial vertex.
+              y2=y(ivcf)
+              z2=z(ivcf)
+              VALX=x2-x1
+              VALY=y2-y1
+              VALZ=z2-z1
+              write(msgv,'(a,3F8.4)') 'The transform is ',
+     &          VALX,VALY,VALZ
+              DOK=.true.
+              call askok(msgv,' Is this ok?',ok,dok,nbhelp)
+              if(.NOT.ok) goto 77
             else
               goto 77
             endif
-            x1=x(ivcs)     ! get position of initial vertex.
-            y1=y(ivcs)
-            z1=z(ivcs)
-            x2=x(ivcf)     ! get position of initial vertex.
-            y2=y(ivcf)
-            z2=z(ivcf)
-            VALX=x2-x1
-            VALY=y2-y1
-            VALZ=z2-z1
-            write(msgv,'(a,3F8.4)') 'The transform is ',VALX,VALY,VALZ
-            DOK=.true.
-            call askok(msgv,' Is this ok?',ok,dok,nbhelp)
-            if(.NOT.ok) goto 77
           elseif(INOR.eq.9)then
 
 C As the user for a start vertex in this zone and a final vertex in
@@ -1645,6 +1646,17 @@ C Load and scan G1 for vertes in other zone and allow user to select one.
               x2=x(ivcf)     ! get position of this vertex.
               y2=y(ivcf)
               z2=z(ivcf)
+
+C Re-establish the initial zone geometry.
+              call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
+              VALX=x2-x1
+              VALY=y2-y1
+              VALZ=z2-z1
+              write(msgv,'(a,3F8.4)') 'The transform is ',
+     &          VALX,VALY,VALZ
+              DOK=.true.
+              call askok(msgv,' Is this ok?',ok,dok,nbhelp)
+              if(.NOT.ok) goto 77
             else
 
 C User aborted so scan the intial zone prior to returning.
@@ -1653,17 +1665,7 @@ C User aborted so scan the intial zone prior to returning.
               MODIFY=.TRUE.
               goto 77
             endif
-
-C Re-establish the initial zone geometry.
-            call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
-            VALX=x2-x1
-            VALY=y2-y1
-            VALZ=z2-z1
-            write(msgv,'(a,3F8.4)') 'The transform is ',VALX,VALY,VALZ
-            DOK=.true.
-            call askok(msgv,' Is this ok?',ok,dok,nbhelp)
-            if(.NOT.ok) goto 77
-          endif
+         endif
 
 C If user has not canceled then perform the transform.
           DO 62 I=1,NTV
@@ -4753,6 +4755,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
+      dimension IVALS(MCOM)
       CHARACTER VERT*33,KEY*1,head*28,HOLD*36
       character outs*124,headv*48
       logical anotherone  ! to signal that another point will be requested
@@ -4762,7 +4765,9 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       integer iwhich1,lastv1  ! for 1st and 2nd user selections
       integer iwhich2,lastv2
       integer iwhich3
-      logical greyok
+      logical greyok,found,closex,closey,closez
+      real CX,CY,CZ  ! XYZ of selected verticies
+      dimension CX(10),CY(10),CZ(10)
 
 #ifdef OSI
       integer iix,iiy,iicol
@@ -5786,10 +5791,13 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         write(outs,'(A,I3,A)')' Up to ',MTV-NTV,
      &    ' vertices may be added or copied.'
         call edisp(itru,outs)
-        IRT=1
-        CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
-     &    'replicate','edit several','delete unused','cancel',
-     &    IRT,nbhelp)
+        idno=1
+        irt=1
+        call MENUATOL('Vertex operations:','Vertex operations:',
+     &    'a add vertex','b delete vertex','c copy vertex within zone',
+     &    'd replicate vertex','e edit several vertex',
+     &    'f delete unused vertices','g copy vertex from another zone',
+     &    'h cancel',' ',' ',' ',' ',irt,idno,nbhelp)
         if(IRT.eq.1)then
 
 C If user cancels jump back to menu setup, otherwise add the requested
@@ -5884,9 +5892,9 @@ C only up to MTV.
               goto 92
             elseif(ieri.eq.0)then
               if(IADD.ge.1)then
-                do 144 ij=1,IADD
+                do 1144 ij=1,IADD
                   CALL ADDVERT(icomp,IWHICH,'C',IER)
- 144            continue
+ 1144           continue
                 ILEN=NTV
                 IPACT=CREATE
                 CALL EKPAGE(IPACT)
@@ -5906,7 +5914,7 @@ C Select (possibly via mouse) and then edit.
      &      'Select vertex from list.',' ',nbhelp,ier)
           CALL EPMENRC
           if(inpick.ge.1)then
-            do 145 ij=1,inpick
+            do 1145 ij=1,inpick
               ifoc=IVLST(ij)
 
 C Show the point to be edited on the current wireframe.
@@ -5927,20 +5935,20 @@ C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               write(outs,'(a,i3,a)')
      &          ' Vertex (',ifoc,') X  Y  Z (in metres):'
- 146          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
+ 1146         CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
      &          IER,nbhelp)
               K=0
               CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
               CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
               CALL EGETWR(HOLD,K,Z(IFOC),-9.9,999.9,'W','Z cord',IER)
-              if(ier.ne.0)goto 146
+              if(ier.ne.0)goto 1146
               MODIFY=.TRUE.
               MODBND=.TRUE.
               MODGEO=.TRUE.
               MODLEN=.TRUE.
               iZBFLG(ICOMP)=0
               call warnmod(ICOMP,'str')
- 145        continue
+ 1145       continue
           endif
         elseif(IRT.eq.6)then
 
@@ -5954,6 +5962,128 @@ C addvert silently.
           IPACT=CREATE
           CALL EKPAGE(IPACT)
           IPACT= -1*jipm
+          CALL EKPAGE(IPACT)
+          MODGEO=.TRUE.
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          iZBFLG(ICOMP)=0
+        elseif(IRT.eq.7)then
+
+C Copy up to 10 verticies in another zone. Present a list of
+C zone names, only allow for one zone to be selected.
+          CALL EPMENSV
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',' Source zone:',
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
+          CALL EPMENRC
+          IF(INPIC.EQ.0) goto 92
+          IZ=IVALS(1)  ! assign source zone index
+          if(IZ.EQ.0)goto 92
+
+C Ask user which vertices and return how many in NVC and the
+C coordinates in CX CY CZ arrays.
+          CALL EPMENSV
+          call CPVERT(IZ,NVC,CX,CY,CZ,IER)
+          CALL EPMENRC
+          if(NVC.eq.0) goto 92
+
+C Replicate logic from ADDVERT below.
+          do 443 ix=1,NVC
+            if(NTV+1.le.MTV)then
+              found=.false.
+              do 144 ixx = 1,NTV
+                CALL ECLOSE(CX(ix),X(ixx),0.004,closex)
+                CALL ECLOSE(CY(ix),Y(ixx),0.004,closey)
+                CALL ECLOSE(CZ(ix),Z(ixx),0.004,closez)
+                if(closex.and.closey.and.closez)then
+                  found=.true.
+                  goto 145
+                endif
+  144         continue
+
+C If an existing vertex is close then skip to next, otherwise
+C add a new vertex to the end of the zone list and update vcoord.
+  145         if(found)then
+                continue
+              else
+                NTV=NTV+1
+                NZTV(icomp)=NTV
+                X(NTV)=CX(ix)
+                Y(NTV)=CY(ix)
+                Z(NTV)=CZ(ix)
+                VCOORD(ICOMP,ntv,1)=CX(ix)
+                VCOORD(ICOMP,ntv,2)=CY(ix)
+                VCOORD(ICOMP,ntv,3)=CZ(ix)
+
+C For a unique vertex also test to see if it is close (+-0.003m) to
+C one of the existing lines. Also check the last edge in the surface.
+                iwhich3=NTV
+                do 2246 ivj=1,NSUR
+                  ivjlimit=NVER(ivj)
+                  do 2247 ivjj=1,ivjlimit
+                    if(ivjj.eq.ivjlimit)then
+                      iwhich1=JVN(ivj,ivjj)
+                      iwhich2=JVN(ivj,1)
+                    else
+                      iwhich1=JVN(ivj,ivjj)
+                      iwhich2=JVN(ivj,ivjj+1)
+                    endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+                    call pointtoline(iwhich3,iwhich1,iwhich2,offset,
+     &                matchver)
+                    if(.NOT.matchver) goto 2247
+                    if(offset.lt.0.004)then
+                      write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+     &                  'New vertex ',iwhich3,' @',
+     &                  X(NTV),Y(NTV),Z(NTV),' is close (',offset,
+     &                  ') to edge ',IWHICH1,' &',IWHICH2,' of ',
+     &                  sname(icomp,ivj)
+                      call edisp(iuout,outs)
+
+C If current surface (ivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (ivjj) and then
+C inserting the new vertex index.
+                      if(NVER(ivj)+1.le.MV)then
+                        if(offset.le.0.004)then
+                          ok=.true.
+                        else
+                          dok=.true.
+                          helptopic='vertex_near_edge'
+                          call gethelptext(helpinsub,helptopic,nbhelp)
+                          call askok(
+     &                  'Insert this vertex into the adjacent surface?',
+     &                  '(see help)',ok,dok,nbhelp)
+                        endif
+                      else
+                        ok=.false.
+                      endif
+                      if(ok)then
+                        NVER(ivj)=NVER(ivj)+1
+                        IXV=NVER(ivj)+1
+ 1148                   continue
+                        IXV=IXV-1
+                        JVN(ivj,IXV)=JVN(ivj,IXV-1)
+                        IF(IXV.GT.ivjj+1)GOTO 1148
+                        JVN(ivj,ivjj+1)=iwhich3
+
+C Debug.
+C                         write(6,'(a,42i4)') 'now jvn is ',
+C     &                     (JVN(ivj,ii),ii=1,NVER(ivj))
+
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+                        goto 2246 
+                      endif
+                    endif
+ 2247             continue
+ 2246           continue  ! end of loop of surfs in zone
+              endif
+            endif
+  443     continue ! end of loop for copied verticies
+          ILEN=NTV
+          IPACT=CREATE
           CALL EKPAGE(IPACT)
           MODGEO=.TRUE.
           MODIFY=.TRUE.
@@ -6091,6 +6221,7 @@ C For help messages
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
 C number of menu lines.
+      V1=0.0; AZ=0.0; EL=0.0  ! initial values for editing
       newgeo=.false.  ! assume older format geometry.
       MHEAD=4
       MCTL=8
@@ -8882,4 +9013,136 @@ C the surface has changed and needs to be recognised.
    41 CONTINUE
 
       return
+      end
+
+C ************* CPVERT 
+C Present list of vertex for copy via a paging menu. Up to 10
+C verticies can be copied. No zone graphic information is
+C displayed at this time, based on global data.
+      SUBROUTINE CPVERT(ICOMP,NVC,CX,CY,CZ,IER)
+#include "epara.h"
+#include "building.h"
+#include "geometry.h"
+
+C Passed parameters
+      integer icomp  ! zone to look in
+      integer NVC    ! number of selected verticies
+      real CX,CY,CZ  ! XYZ of selected verticies
+      dimension CX(10),CY(10),CZ(10)
+      integer IER    ! IER=0 OK, IER=1 problem.
+
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION VERT(35)
+      CHARACTER VERT*33,KEY*1,head*28
+      character outs*124
+      integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CPVERT'  ! set for subroutine
+
+      NVC=0    ! assume nothing selected yet
+
+      do 42 iv=1,10  ! clear the return array
+        CX(iv)=0.0
+        CY(iv)=0.0
+        CZ(iv)=0.0
+  42  continue
+
+C Initialise zone vertex menu size variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+      MHEAD=1
+      MCTL=3
+      ILEN=NZTV(ICOMP)
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92 IER=0
+      ILEN=NZTV(ICOMP)
+      IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+    3 M=MHEAD
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(L,KEY,IER)
+          WRITE(VERT(M),14)KEY,L,VCOORD(ICOMP,L,1),VCOORD(ICOMP,L,2),
+     &      VCOORD(ICOMP,L,3)
+   14     FORMAT(A1,I4,3F9.3)
+        ENDIF
+   10 CONTINUE
+
+      VERT(1)    =' Index |X-coord|Y-coord|Z-coord'
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN  
+        VERT(M+1)='  ______________________________ '
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT   ('0 page: ',I2,' of ',I2,' --------')
+      ENDIF
+      VERT(M+2)  ='? help                           '
+      VERT(M+3)  ='- exit this menu                 '
+
+C Help text for this menu.
+      helptopic='surface_vertex_copy'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Now display the menu.
+      write(head,'(A,A12,A)')' Vertices in `',zname(ICOMP),'`'
+      CALL EMENU(head,VERT,MVERT,IVERT)
+      IF(IVERT.LE.MHEAD)THEN
+
+C Within the header so skip request.
+        IVERT=-1
+        goto 3
+      ELSEIF(IVERT.EQ.MVERT)THEN
+
+C Pass back the relevant items to CX CY CZ.
+        RETURN
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C List help text for the vertex menu.
+        helptopic='vert_copy_other'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('vertex copy',nbhelp,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+        ENDIF
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Select vertex identified by KEYIND.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        if(IFOC.ne.0.and.NVC.lt.10)then
+          NVC=NVC+1    ! increment selected
+          CX(NVC)=VCOORD(ICOMP,IFOC,1)
+          CY(NVC)=VCOORD(ICOMP,IFOC,2)
+          CZ(NVC)=VCOORD(ICOMP,IFOC,3)
+          write(outs,'(A,A12,A)')'From zone `',zname(ICOMP),'`'
+          call edisp(iuout,outs)
+          write(outs,'(a,i3,a,3F9.4)') 'Selected vert ',IFOC,' @ ',
+     &      CX(NVC),CY(NVC),CZ(NVC)
+          call edisp(iuout,outs)
+        endif
+      ELSE
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      ENDIF
+      IVERT=-2
+      goto 3
+
       end
