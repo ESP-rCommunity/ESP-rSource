@@ -507,13 +507,11 @@ char *msg;                /* window heading      */
   long flags;
   XEvent  event;
   XVisualInfo *vinfo, rvinfo;
-  XColor ecdef, sdef;
+  XColor ecdef;
   int argc;
   char **argv;
   XWMHints  xwmh;
-  int i,ic;               /* local string length  */
-  int width = 1;
-  Bool exp = 1;
+  int i;               /* local string length  */
   bgstr = whitestr = blackstr = NULL;
   mono = 0;
   curstype = XC_top_left_arrow;
@@ -876,8 +874,7 @@ void setcscale_() {
 
 /* ********* clear colour scale (50 or 25 steps) ******* */
 void clrcscale_() {
-  int ic,ih;
-  XColor ecdef;
+  int ic;
   for (ic=0; ic<ncscale; ic++) {
     if( cscale[ic] >= 1 ) XFreeColors(theDisp,theCmap,&cscale[ic],1,0L);
   }
@@ -924,8 +921,7 @@ void setgscale_() {
 
 /* ********* clear grey scale (27 or 12 steps) ******* */
 void clrgscale_() {
-  int ic,ih;
-  XColor ecdef;
+  int ic;
   for (ic=0; ic<ngscale; ic++) {
     if( gscale[ic] >= 1 ) XFreeColors(theDisp,theCmap,&gscale[ic],1,0L);
   }
@@ -1170,7 +1166,7 @@ int len;
  Pixmap exbit,logobit,underit; /* bitmap from logo_bits data, pixmap of logo, area under */
  long int iupx,iupy;
  box gmenubx;
- int ilen,in,x_hot,y_hot,result,persist;
+ int ilen,x_hot,y_hot,result,persist;
  unsigned int iwidth,iheight;
  char name2[80];
  FILE *bf;
@@ -1242,7 +1238,7 @@ int len;
  long int ilreqx,ilreqy,ilreqwidth,ilreqheight;
  long int iupx,iupy;
  box gmenubx;
- int ilen,in,x_hot,y_hot,result;
+ int ilen,x_hot,y_hot,result;
  unsigned int iwidth,iheight;
  char name2[80];
  FILE *bf;
@@ -1688,7 +1684,6 @@ void feedbox_(menu_char,d_lines,gw,gh)
   int width = 1;
   unsigned int wid,hight;
   Bool exp = 1;
-  XEvent  event;
 
   saved_font = current_font;
   menu_offset = *menu_char;    /* remember feedbox right character offset  */
@@ -1736,8 +1731,8 @@ void feedbox_(menu_char,d_lines,gw,gh)
 /* ****** scrollvh : draw scroll bars in the graphics windows ********** */
 void scrollvh()
 {
-  long int saved_font,iq;
-  int bottom, height, totsize, offset, scrollset;
+  long int iq;
+  int height, offset, scrollset;
   float pv,tv,cv,ph,th,ch;
 
 /* Draw scroll boxes */
@@ -1931,10 +1926,9 @@ void viewtext_(msg,linep,side,size,len)
 void findviewtext_(charposp,linep,size,irx,iry)
   long int *charposp, *linep, *size, *irx, *iry;     /* position indicators */
 {
-  int ix,iy,mid,t_len,fitpix;
+  int mid;
   long int fsize, charpos;
   long int saved_font;
-  box backing;	/* area under text to clear */
 
   fsize = *size;
   charpos = *charposp;
@@ -2608,17 +2602,14 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
  *         *b_bottom, *b_left pixel at lower left of box (supplied),
  *         act action to take (- is draw, ! is hilight and do  */
 
-  int lm1,ilen,len;	/* local string lengths  */
+  int lm1;	/* local string lengths  */
   int bottom, left;	/* pixel at lower left of box (supplied) */
   long int s_font, u_font;	/* font in current use, font to use within box,  */
   long int  last,new; 	/* fonts for updating */
   long int avail_wire;	/* current value of wire_avail to pass to fortran. */
   long int avail_cpw;	/* current value of copyright to pass to fortran. */
   long int iupx,iupy;	/* position of capture popup */
-  int choice, i;	/* initial popup index */
-  long int  impx,impy;	/* box position (if 0,0 use default) */
-  long int  ipflg,ishowmoreflg;	/* paging if ipflg=1, showmore box if ishowmoreflg=1 */
-  long int  uresp;		/* user response, normally 0 to end, 1 is showmore ok */
+  int choice;	/* initial popup index */
 
   bottom = *b_bottom; left = *b_left;
   s_font = *sav_font, u_font = *use_font;
@@ -4529,7 +4520,6 @@ void msgbox_(msg1,msg2,len1,len2)
 {
   int lm1, lm2;     /* local string lengths found by test  */
   long int saved_font;
-  Bool exp = 1;
 
 /*
  Loop down through the string passed and see if anything is non-blank
@@ -4568,15 +4558,11 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
 {
   XEvent event;
   XWindowAttributes wa;
-  KeySym     ks;
-  static char buf[80],*bp;
-  char k_char,keypressed;
   int	no_valid_event = TRUE;
   int abox_left, msg_bb ;	/* positions of small boxes */
   int x1,y1,lprompt,tprompt;         /* cursor position, prompt left side   */
-  int lm1,lm2,lm3,lm4;         /* local string lengths found by test      */
+  int lm1,lm2,lm3;         /* local string lengths found by test      */
   long int saved_font;
-  static int blen = 0;
   unsigned int start_height,start_width;
   int iaux;         /* unused return from aux_menu      */
 
@@ -4981,7 +4967,6 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
 /* ****** drscrollbar : draw scroll bar beside text feedback ********** */
 void drscrollbar()
 {
-  long int saved_font;
   int bottom, height, totsize;
 
 /* Draw scroll box */
@@ -5036,7 +5021,6 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
  long int xt,yt,xb,yb; /* centre for up/down symbols  */
  long int sym,sz;      /* symbol and symbol size      */
  int  bottom,left;	/* ll position of capture box */
- box	ax,bx;
  int label_ht,label_wid,mf_width;     /* box label height and width of menu characters */
 
   saved_font = current_font;
@@ -5149,11 +5133,10 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 */
 void disptext()
 {
-  int iy,lm1,i,t_len,len;
+  int iy,lm1,i,len;
   long int saved_font;
   int j,jstart; 	/* variables for text feedback redisplay */
   char msg2[125];
-  box backing;		/* area under text to clear */
 
   saved_font = current_font;   /* save existing font  */
   if (disp_fnt != saved_font) winfnt_(&disp_fnt);
@@ -5177,11 +5160,6 @@ void disptext()
       lm1 = (((disp.b_right - 15) - disp.b_left) / f_width)-1;
     }
     iy = disp.b_top + 1 + ((f_height+1) * (j + 1));
-/*     backing.b_bottom = iy + 2;  */
-/*     backing.b_top = backing.b_bottom - f_height - 2; */
-/*     backing.b_left = disp.b_left+1;  */
-/*     backing.b_right = disp.b_right-1; */
-/*     xbox(backing,fg,white,BMCLEAR);           Clear area under text. */
     XDrawString(theDisp,win,theGC,disp.b_left+5,iy,msg2,lm1);
     j = j + 1;
   }
@@ -5203,12 +5181,8 @@ void egdisp_(msg,line,len)
   int len;              	 /* length from f77   */
   long int *line;             	 /* position indicator */
 {
-  int iy,lm1,i,t_len;		 /* local string length */
-  long int saved_font;
-  int j,change; 	/* variables for text feedback redisplay */
+  int i;		 /* local string length */
   char msg2[125];
-  box backing;		/* area under text to clear */
-
 
   if( len <= 1 )return; /* don`t bother if no characters */
 
@@ -6214,7 +6188,7 @@ void earc_(x,y,rad,ang1,ang2,operation)
 void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
 	float* ymx,float* xsc,float* ysc,float* sca,float* xadd,float* yadd)
 {
-  float axgw, axgh, axxmn, axxmx, axymn, axymx, axxsc, axysc, axsca, axxadd, axyadd;
+  float axgw, axgh, axxmn, axxmx, axymn, axymx, axxsc, axysc, axxadd, axyadd;
 
 /* Cast to local variables */
    axgw=(float)*gw; axgh=(float)*gh;
@@ -6326,7 +6300,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
  long int *ndec, *mode;
 {
     /* Local variables */
-    float v, w, x, z, vr, vv, dvv;
+    float v, w, x, vr, vv, dvv;
     int ix,nd,mde;
     double dx, dz;
 
@@ -6435,9 +6409,9 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  int s_0,s_1, s_2, s_3, s_4, s_5;
  int ofl,ofb,oft,sid;
  char sstr[10], buf[2];
- int l, n, ix, vertadj, iy, il,ilen, nintvl;
+ int l, n, ix, vertadj, iy, ilen, nintvl;
  int iy1, ix1;
- int last_label_pixel, label_width, mid, msglen;
+ int last_label_pixel, label_width, mid;
  long int ny,wticc,mde,saved_font;
  float yticv,ddy,rintvl,resid;
  char msg2[80];
@@ -6553,7 +6527,6 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   } else {
       ix = dbx1.b_right - (2 * f_width);
   }
-/*  msglen = strlen(msg); */
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);
   if ((ofb - oft) > (f_height * ilen)){
@@ -6592,7 +6565,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  int ofl,ofb,ofr;
  char sstr[10];
  int l, n, ix, iy, ix1, iy1, nintvl, ilen;
- int last_label_right_pixel, label_width, mid, msglen;
+ int last_label_right_pixel, label_width, mid;
  long int nx,wticc,mde,saved_font;
  float xticv,ddx,rintvl,resid;
  char msg2[80];
@@ -6724,7 +6697,7 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  int ofl,ofb,ofr;
  char sstr[10];
  int l, n, ix, iy, ix1, iy1, nintvl, ilen,iind,iidiv,iisjday;
- int last_label_right_pixel, label_width, mid, msglen;
+ int last_label_right_pixel, label_width, mid;
  long int nx,wticc,mde,saved_font;
 /* xticv is actual timestep value, xxticv is for converted tic */
  float xticv,xxticv,ddx,rintvl,resid;
@@ -7251,22 +7224,19 @@ int		len_title;
 int aux_menu(event)  XEvent *event; {
 
   int x,y,k,x_old,y_old,win_x,win_y,idiff,butid;     /* current cursor postion and pressed button id */
-  int vert,no_valid_event,config_altered;
-  long int saved_font,last,impx,impy,ipflg,ishowmoreflg,uresp;
+  int vert,no_valid_event;
+  long int saved_font;
   char avail_cfg;	/* current char of config button to pass to fortran. */
   long int eyex,eyey;  /* centre for image symbols and symbol index and size */
   long int sym,sz;      /* symbol and symbol size      */
-  long int im,imo;
   int but_rlse = 0;
   int bottom,left;	/* ll of capture box */
-  Bool exp = 1;
   int bh;
   int scrlold,scrlast;		/* old position of scroll bar */
   box msehbx;
 
   int iline=0;
   long int stype=0;
-  int irfsh;
   int pixs=16;
   int choice;  /* graphic pop up menu returned choice */
 
@@ -7903,14 +7873,13 @@ point*/
 /* ********** refresh display *************** */
 void refreshenv_()
 {
-   long int ifsc,itfsc,imfsc,lttyc,fnt,ltfont;           /* parameters must be  */
+   long int ifsc,itfsc,imfsc,lttyc,ltfont;           /* parameters must be  */
    long int menu_char,d_lines,displ_l,dialogue_l;  /* long ints to match  */
    long int gw,gh,gdw,gdh,g3w,g3h;                 /* fortran conventions */
    long int cl,cr,ct,cb,vl,vr,vt,vb;
    long int saved_font,avail;
    char blank[2];
-   int i,j,lm1,iy,len,jstart;	/* variables for text feedback redisplay */
-   char msg2[125];
+   int i,j,len;	/* variables for text feedback redisplay */
 
 /* re-establish how many lines that can be drawn (in case of resize) */
    saved_font = current_font;				/* save existing font */
@@ -8143,7 +8112,6 @@ void updazi_(avail)
 {
   long int saved_font;
   int  bottom, left;
-  long int sym,sz;      /* symbol and symbol size      */
 
   if(azi_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
