@@ -990,7 +990,7 @@ case $platform in
         esac;;
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
-          i386)    fDefType="-DOSX -DOSI -DLIN -m32";;
+          i386)    fDefType="-DOSX -DOSI -DLIN -m64";;
         esac;;
    mingw)      fDefType="-DMINGW";;
 esac
