@@ -439,7 +439,6 @@ void viewtext_(msg,linep,side,size,len)
   gint ix,iy,mid,fitpix;
   int t_len;	/* to remember the truncated length of msg */
   long int fsize;
-  long int saved_font;
   gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
   gint width;	/* conservative width of msg */
   char buffer[248];
@@ -550,9 +549,6 @@ void viewtext_(msg,linep,side,size,len)
   } else {
       ix = b_left + 7;
   }
-/* debug fprintf(stderr,"phrase %s is %d %d %d pixels wide at %d %d\n",msg,
-                            fitpix,width,PANGO_PIXELS (logical_rect.width),ix,iy); */
-/*   winfnt_(&saved_font);                     restore font */
   gdk_draw_layout (gr_image, gc,ix,iy,layout);  /* draw it on the pixmap */
   g_object_unref (layout);  /* clear the layout */
   return;
@@ -571,7 +567,6 @@ void findviewtext_(charposp,linep,size,irx,iry)
   PangoFontMetrics *metrics;
   gint mid;
   long int fsize, charpos;
-  long int saved_font;
  
   gint b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
   gint width;	/* conservative width of msg */
@@ -2210,7 +2205,7 @@ void etlabel_(msg,x,y,ipos,size,len)
   gint ix,iy,mid,rig,p2,p0;
   int t_len;	/* for the truncated length of msg */
   long int fsize;
-  long int saved_font,lix,liy;
+  long int lix,liy;
   PangoLayout *layout;	/* pango layout for the text in the buffer */
 
   t_len = 0;
@@ -2256,7 +2251,6 @@ void etlabel_(msg,x,y,ipos,size,len)
   } else if (*ipos == 4) {
     gdk_draw_layout (gr_image, gc,mid,iy,layout);
   }
-/*   winfnt_(&saved_font); restore font */
   return;
 } /* etlabel */
 
@@ -2290,8 +2284,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
  char sstr[10], buf[2];
  gint l, n, ix, vertadj, iy, il,ilen, nintvl;
  gint iy1, ix1;
- gint last_label_pixel, label_width, mid, msglen;
- long int ny,wticc,mde,saved_font;
+ gint last_label_pixel, label_width, mid;
+ long int ny,wticc,mde;
  float yticv,ddy,rintvl,resid;
  char msg2[80];
 
@@ -2303,8 +2297,6 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
 
  ilen = 0;
  f_to_c_l(msg,&mlen,&ilen); strncpy(msg2,msg,(unsigned int)ilen); msg2[ilen] = '\0';
-/* saved_font = current_font;
- if (saved_font != butn_fnt) winfnt_(&butn_fnt); */
 
 /* If echo send parameters to wwc file */
  if ( wwc_ok == 1) {
@@ -2421,7 +2413,6 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
   } else {
       ix = b_right - (2 * f_width);
   }
-/*  msglen = strlen(msg); */
   mid = oft + ((ofb - oft)/2);
   iy = mid - (vertadj * ilen);
   if ((ofb - oft) > (f_height * ilen)){
@@ -2432,7 +2423,6 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
       iy = iy + f_height;
     }
   }
-/*  if (saved_font != butn_fnt) winfnt_(&saved_font); */
   g_object_unref (layout);	/* clear the layout */
   return;
 } /* vrtaxs_ */
@@ -2465,8 +2455,8 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  gint ofl,ofb,ofr;
  char sstr[10];
  gint l, n, ix, iy, ix1, iy1, nintvl, ilen;
- gint last_label_right_pixel, label_width, mid, msglen;
- long int nx,wticc,mde,saved_font;
+ gint last_label_right_pixel, label_width, mid;
+ long int nx,wticc,mde;
  float xticv,ddx,rintvl,resid;
  char msg2[80];
 
@@ -2478,8 +2468,6 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
 
  ilen = 0;
  f_to_c_l(msg,&mlen,&ilen); strncpy(msg2,msg,(unsigned int)ilen); msg2[ilen] = '\0';
-/* saved_font = current_font;
- if (saved_font != butn_fnt) winfnt_(&butn_fnt); */
 
  if ( wwc_ok == 1) {
    fprintf(wwc,"*horaxis\n");
@@ -2580,7 +2568,6 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
    pango_layout_set_text (layout, msg2, -1);	/* add text */
    gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
  }
-/* if (saved_font != butn_fnt) winfnt_(&saved_font); */
  g_object_unref (layout);	/* clear the layout */
  return;
 } /* horaxis_ */
@@ -2616,8 +2603,8 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  gint ofl,ofb,ofr;
  char sstr[10];
  gint l, n, ix, iy, ix1, iy1, nintvl, ilen, iind, iidiv, iisjday;
- gint last_label_right_pixel, label_width, mid, msglen;
- long int nx,wticc,mde,saved_font;
+ gint last_label_right_pixel, label_width, mid;
+ long int nx,wticc,mde;
  float xticv,xxticv,ddx,rintvl,resid;
  char msg2[80];
 
@@ -2629,8 +2616,6 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
 
  ilen = 0;
  f_to_c_l(msg,&mlen,&ilen); strncpy(msg2,msg,(unsigned int)ilen); msg2[ilen] = '\0';
-/* saved_font = current_font;
- if (saved_font != butn_fnt) winfnt_(&butn_fnt); */
 
  if ( wwc_ok == 1) {
    fprintf(wwc,"*horaxishdw\n");
@@ -2697,12 +2682,12 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
    if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
-       xticv = (int) *xmn;
+       xticv = *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
    } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
-       xticv = (int) (*xmn + ddx);
+       xticv = (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
@@ -2763,7 +2748,6 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
    pango_layout_set_text (layout, msg2, -1);	/* add text */
    gdk_draw_layout (gr_image, gc,ix,iy,layout);	/* draw it on the pixmap */
  }
-/* if (saved_font != butn_fnt) winfnt_(&saved_font); */
  g_object_unref (layout);	/* clear the layout */
  return;
 } /* horaxishdw_ */

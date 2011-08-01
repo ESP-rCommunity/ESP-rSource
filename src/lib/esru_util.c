@@ -192,7 +192,6 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 
 /* local working string arrays */
   char *locflist = flist;
-  char *locact = act;
   int locnflist = *nflist;
   static char file_list[100][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
@@ -433,9 +432,9 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
 /* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
 /* debug  fprintf(stderr,"path %s\n",path);  */
 /* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug */ fprintf(stderr,"browse %d\n",browse); 
-/* debug */ fprintf(stderr,"ibrowse %ld\n",*ibrowse); 
-/* debug */ fprintf(stderr,"iincompb %d\n",c1_.NCOMP);
-/* debug */ fprintf(stderr,"iincon %d\n",c1_.NCON);
+/* debug  fprintf(stderr,"browse %d\n",browse);  */
+/* debug  fprintf(stderr,"ibrowse %ld\n",*ibrowse); */
+/* debug  fprintf(stderr,"iincompb %d\n",c1_.NCOMP); */
+/* debug fprintf(stderr,"iincon %d\n",c1_.NCON); */
   return;
 }

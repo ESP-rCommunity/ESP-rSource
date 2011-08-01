@@ -1124,9 +1124,9 @@ void esru_wire_ctl ( void)
    /* create zones to display list  <<pick up zone names here>>*/
    nrows = 1 + (guint)(c1_.NCOMP/4);
    irow = 0;
-   fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
-   fprintf(stderr,"number of cnn %d\n",c1_.NCON);
-   fprintf(stderr,"number of rows %d\n",nrows);
+   // fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
+   // fprintf(stderr,"number of cnn %d\n",c1_.NCON);
+   // fprintf(stderr,"number of rows %d\n",nrows);
    frame = gtk_frame_new ("Zones to display");
    gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
    table = gtk_table_new (nrows, 4, TRUE);
@@ -1135,7 +1135,7 @@ void esru_wire_ctl ( void)
    izone = 0;
    while (izone < (gint)c1_.NCOMP) {
      for(icol = 0; icol < 4; icol++) {	/* fill columns in order */
-       fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
+       // fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
        zone_button[izone] = gtk_check_button_new_with_label (zonenames[izone]);
        gtk_table_attach_defaults (GTK_TABLE (table), zone_button[izone], icol, icol+1, irow, irow+1);
        izone++;
