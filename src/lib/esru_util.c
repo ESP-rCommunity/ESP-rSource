@@ -18,6 +18,7 @@ These routines are called from ESP-r fortran code. The routines are :-
 #include <dirent.h>
 #include <sys/time.h>
 #include <string.h>
+#include <fc_commons.h>
 /* external defines are found in wwxlegacy.h */
 #include "wwxlegacy.h"
 
@@ -389,7 +390,7 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
 
 /* curproject_() - pass in info on the current project from fortran */
 void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
+  iincomp,iincon,len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
   char *fcfgroot;	/* f77 project root name    */
   char *fpath;	/* f77 project path    */
   char *fupath;	/* f77 users path    */
@@ -397,6 +398,8 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   char *fdocpth;	/* f77 relative path to documents    */
   char *ftmppth;	/* f77 relative path to scratch folder    */
   long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
+  long int *iincomp;	/* current number of zones in model */
+  long int *iincon;	/* current number of connections in model */
   int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
 {
   int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
@@ -423,11 +426,16 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
       "                                                                         ");
   f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
   upath[l_fupath] = '\0';
+  c1_.NCOMP = *iincomp;
+  c1_.NCON = *iincon;
 /* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
 /* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
 /* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
 /* debug  fprintf(stderr,"path %s\n",path);  */
 /* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug  fprintf(stderr,"browse %d\n",browse);  */
+/* debug */ fprintf(stderr,"browse %d\n",browse); 
+/* debug */ fprintf(stderr,"ibrowse %ld\n",*ibrowse); 
+/* debug */ fprintf(stderr,"iincompb %d\n",c1_.NCOMP);
+/* debug */ fprintf(stderr,"iincon %d\n",c1_.NCON);
   return;
 }

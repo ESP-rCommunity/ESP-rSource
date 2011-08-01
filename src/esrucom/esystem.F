@@ -561,6 +561,12 @@ C Simulation parameters
       INTEGER :: irva,is,iset_start,k,kv,iwarn,j,iv,iva,iunit,iunit1,lc
       INTEGER :: itwpr,itrunc,iss,isva,istat,n,m,items,lastcc
       INTEGER :: lcfgl,lcfgr,louts,ncn,nd
+
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
       
       REAL :: gva
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
@@ -3105,14 +3111,16 @@ C Pass information about the current model to the C interface.
       limgpth=imgpth
       ldocpth=docpth
       ltmppth=tmppth
+      iincomp=ncomp
+      iincon=ncon
       if(browse)then
         ibrowse=1
         call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+     &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
         call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+     &    ibrowse,iincomp,iincon)
       endif
       RETURN
 
