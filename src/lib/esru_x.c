@@ -113,11 +113,6 @@ intialisation and graphics, using ww. The routines are :-
 static unsigned char gray25_bits[] = {
    0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22};
 
-#define gray50_width 8
-#define gray50_height 8
-static unsigned char gray50_bits[] = {
-   0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc};
-
 #define cboard50_width 8
 #define cboard50_height 8
 static unsigned char cboard50_bits[] = {
@@ -1255,7 +1250,7 @@ int len;
 /* Fill bitmap exbit from data file, make pixmap for under area and to hold transformed exbit data (logobit) */
 /* Use XCopyPlane to transform exbit to logobit (seems to be required) */
  result = XReadBitmapFile(theDisp,(Pixmap)win,name2,&iwidth,&iheight,&exbit,&x_hot,&y_hot);
- fprintf(stderr,"result of XReadBitmapFile %d %d %d %ld %ld\n",result,iwidth,iheight,iupx,iupy);
+ fprintf(stderr,"result of XReadBitmapFile %d %u %u %ld %ld\n",result,iwidth,iheight,iupx,iupy);
 
  XSetForeground(theDisp,theGC,black);
  XSetBackground(theDisp,theGC,white);
@@ -1264,17 +1259,17 @@ int len;
    sizes of the saved area pixmap and destination origin that need to be
    sorted out.... */
 /* if bitmap is smaller than region requested use bitmap size */
- if(iwidth < ilreqwidth) ilreqwidth = iwidth;
- if(iheight < ilreqheight) ilreqheight = iheight;
+ if(iwidth < (unsigned int)ilreqwidth) ilreqwidth = (long int)iwidth;
+ if(iheight < (unsigned int)ilreqheight) ilreqheight = (long int)iheight;
 
 /* fprintf(stderr,"get region is %ld %ld %ld %ld\n",ilreqx,ilreqy,ilreqwidth,ilreqheight); */
  if (result == BitmapFileInvalid) fprintf(stderr,"bitmap file %s invalid\n",name2);
  else if (result == BitmapOpenFailed) fprintf(stderr,"bitmap file %s cannot be opened\n",name2);
  else if (result == BitmapNoMemory) fprintf(stderr,"not enough bitmap memory\n");
  else if (result == BitmapSuccess) {
-   underit = XCreatePixmap(theDisp,win,ilreqwidth,ilreqheight,dispDEEP);
-   logobit = XCreatePixmap(theDisp,win,ilreqwidth,ilreqheight,dispDEEP);
-   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,ilreqx,ilreqy,ilreqwidth,ilreqheight,0,0,(unsigned long) 1);
+   underit = XCreatePixmap(theDisp,win,(unsigned int)ilreqwidth,(unsigned int)ilreqheight,dispDEEP);
+   logobit = XCreatePixmap(theDisp,win,(unsigned int)ilreqwidth,(unsigned int)ilreqheight,dispDEEP);
+   XCopyPlane(theDisp,(Pixmap)exbit,(Pixmap)logobit,theGC,ilreqx,ilreqy,(unsigned int)ilreqwidth,(unsigned int)ilreqheight,0,0,(unsigned long) 1);
    if ((iupy - (int) ilreqheight) <= 0) {
      gmenubx.b_top = 15; gmenubx.b_bottom= 15 + (int) ilreqheight;
    } else {
@@ -1285,7 +1280,7 @@ int len;
 /* Save area of gmenubx to underit then copy logbit to gmenubx area and flush display */
    box_to_pix((Pixmap)win,gmenubx,(Pixmap)underit,(int) ilreqwidth,(int) ilreqheight);
    XFlush(theDisp); /* force drawing  */
-   XCopyArea(theDisp,(Pixmap)logobit,(Pixmap)win,theGC,0,0,ilreqwidth,ilreqheight,gmenubx.b_left,gmenubx.b_top);
+   XCopyArea(theDisp,(Pixmap)logobit,(Pixmap)win,theGC,0,0,(unsigned int)ilreqwidth,(unsigned int)ilreqheight,gmenubx.b_left,gmenubx.b_top);
    XFlush(theDisp); /* force drawing  */
    XFreePixmap(theDisp, underit);
    XFreePixmap(theDisp, exbit);
@@ -1336,14 +1331,14 @@ int len;
   }
 /* Fill bitmap exbit from data file, and if the result is ok find the positions it would take. */
  result = XReadBitmapFile(theDisp,(Pixmap)win,name2,&iwidth,&iheight,&exbit,&x_hot,&y_hot);
- fprintf(stderr,"result of XReadBitmapFile %d %d %d %ld %ld\n",result,iwidth,iheight,iupx,iupy);
+ fprintf(stderr,"result of XReadBitmapFile %d %u %u %ld %ld\n",result,iwidth,iheight,iupx,iupy);
 
 /* there are several permutations of sizes of bitmap and copy origin and
    sizes of the saved area pixmap and destination origin that need to be
    sorted out.... */
 /* if bitmap is smaller than region requested use bitmap size */
- if(iwidth < ilreqwidth) ilreqwidth = iwidth;
- if(iheight < ilreqheight) ilreqheight = iheight;
+ if(iwidth < (unsigned int)ilreqwidth) ilreqwidth = (long int)iwidth;
+ if(iheight < (unsigned int)ilreqheight) ilreqheight = (long int)iheight;
 
  fprintf(stderr,"get region is %ld %ld %ld %ld\n",ilreqx,ilreqy,ilreqwidth,ilreqheight);
  if (result == BitmapFileInvalid) fprintf(stderr,"bitmap file %s invalid\n",name2);
@@ -1388,7 +1383,7 @@ long int *itime,*lix, *liy; /* persistance, position from lower left of the 3dvi
  gmenubx.b_top   = iupy - (logo_height); gmenubx.b_bottom= iupy;
  gmenubx.b_left  = iupx;  gmenubx.b_right = iupx + logo_width;
 /* Save area of gmenubx to underit then copy logbit to gmenubx area and flush display */
- box_to_pix((Pixmap)win,gmenubx,(Pixmap)underit,(unsigned int)logo_width,(unsigned int)logo_height);
+ box_to_pix((Pixmap)win,gmenubx,(Pixmap)underit,(int)logo_width,(int)logo_height);
  XFlush(theDisp);
  XCopyArea(theDisp,(Pixmap)logobit,(Pixmap)win,theGC,0,0,(unsigned int)logo_width,(unsigned int)logo_height,
    gmenubx.b_left,gmenubx.b_top);
@@ -1446,37 +1441,37 @@ int  len;        /* len is length passed from fortran */
 /* sets the current forground colour n depending on which active colour set being used */
  if(*act == 'g') {
     if (ic >= 0 && ic <= ngscale ) {
-      xcolid = gscale[ic];
+      xcolid = (long int)gscale[ic];
     } else {
-      xcolid = fg;
+      xcolid = (long int)fg;
     }
  } else if(*act == 'z') {
     if (ic >= 0 && ic <= izc ) {
-      xcolid = zscale[ic];
+      xcolid = (long int)zscale[ic];
     } else {
-      xcolid = fg;
+      xcolid = (long int)fg;
     }
  } else if(*act == 'c') {
     if (ic >= 0 && ic <= ncscale ) {
-      xcolid = cscale[ic];
+      xcolid = (long int)cscale[ic];
     } else {
-      xcolid = fg;
+      xcolid = (long int)fg;
     }
  } else if(*act == 'i') {
     if (ic >= 0 && ic <= ngr ) {	/* including black and white */
-      if (ic == 0) xcolid = gmenuhl;
-      if (ic == 1) xcolid = gmodbg;
-      if (ic == 2) xcolid = gpopfr;
-      if (ic == 3) xcolid = gfeedfr;
-      if (ic == 4) xcolid = ginvert;
-      if (ic == 5) xcolid = grey50;
-      if (ic == 6) xcolid = black;
-      if (ic == 7) xcolid = white;
+      if (ic == 0) xcolid = (long int)gmenuhl;
+      if (ic == 1) xcolid = (long int)gmodbg;
+      if (ic == 2) xcolid = (long int)gpopfr;
+      if (ic == 3) xcolid = (long int)gfeedfr;
+      if (ic == 4) xcolid = (long int)ginvert;
+      if (ic == 5) xcolid = (long int)grey50;
+      if (ic == 6) xcolid = (long int)black;
+      if (ic == 7) xcolid = (long int)white;
     } else {
-      xcolid = fg;
+      xcolid = (long int)fg;
     }
  } else if(*act == '-') {
-    xcolid = fg;
+    xcolid = (long int)fg;
  }
  colid = (unsigned long) xcolid;
 
@@ -1626,8 +1621,8 @@ void xbox(b,fgc,bgc,flags) box b; unsigned long fgc; unsigned long bgc; int flag
   unsigned int wid,hight;
   Bool exp = 1;
 
-  hight = b.b_bottom-b.b_top;
-  wid = b.b_right-b.b_left;
+  hight = (unsigned int)(b.b_bottom-b.b_top);
+  wid = (unsigned int)(b.b_right-b.b_left);
   if(flags & ~(BMEDGES|BMCLEAR|BMNOTALL|BMNOT|BMCLEARALL))
           fprintf(stderr,"unknown flag to xbox");
   if(WIDTH(b)<=0 || HEIGHT(b)<=0 ||
@@ -1637,7 +1632,7 @@ void xbox(b,fgc,bgc,flags) box b; unsigned long fgc; unsigned long bgc; int flag
   if(flags&(BMCLEARALL|BMNOTALL)){
 /* clear area, invert colours, fill, reset colours, draw outline */
     XClearArea(theDisp,win,b.b_left,b.b_top,(unsigned int)wid,(unsigned int)hight,exp);
-    XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+    XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
     XSetForeground(theDisp,theGC, bgc);
     XSetBackground(theDisp,theGC, bgc);
     XFillRectangle(theDisp,win,theGC,b.b_left,b.b_top,(unsigned int)wid,(unsigned int)hight);
@@ -1646,7 +1641,7 @@ void xbox(b,fgc,bgc,flags) box b; unsigned long fgc; unsigned long bgc; int flag
   }
   if(flags&(BMCLEAR|BMNOT)){
     XClearArea(theDisp,win,b.b_left+1,b.b_top+1,wid-1,hight-2,exp); /* clear inner box */
-    XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+    XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
     XSetForeground(theDisp,theGC, bgc);
     XSetBackground(theDisp,theGC, bgc);
     XFillRectangle(theDisp,win,theGC,b.b_left+1,b.b_top+1,wid-1,hight-1);
@@ -1654,7 +1649,7 @@ void xbox(b,fgc,bgc,flags) box b; unsigned long fgc; unsigned long bgc; int flag
     XSetBackground(theDisp,theGC, bgc);
   }
   if(flags&BMEDGES){
-    XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter); /* set line style */
+    XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter); /* set line style */
     XDrawRectangle(theDisp,win,theGC,b.b_left,b.b_top,wid,hight); /* draw bounding box */
   }
   XFlush(theDisp);
@@ -6943,9 +6938,7 @@ int		len_title;
 /* Local variables   */
   XEvent event;
   XWindowAttributes wa;
-  XConfigureEvent xce;
   Pixmap under;		        /* to save image under help box  */
-  Window mwin;
   KeySym     ks;
   static char buf[80];
   static int blen = 0;
@@ -6973,7 +6966,7 @@ int		len_title;
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width; config_altered = 0;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width; config_altered = 0;
 /* debug  fprintf(stderr,"evwmenu: sh sw sx sy %d %d \n",start_height,start_width); */
 
 /* Begin by changing to the current menu font. */
@@ -7062,10 +7055,10 @@ int		len_title;
 
         XGetWindowAttributes(theDisp,win,&wa);
 /* debug  fprintf(stderr,"evwmenu: xwa sh sw sx sy %d %d %d %d \n",wa.height,wa.width,wa.x,wa.y); */
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
           config_altered = 1;
           no_valid_event = FALSE;
           iaux = aux_menu((XEvent *) &event);
@@ -7074,7 +7067,7 @@ int		len_title;
         no_valid_event = FALSE;
         break;
       case ButtonPress:
-        x = event.xbutton.x;  y = event.xbutton.y;  butid = event.xbutton.button;
+        x = event.xbutton.x;  y = event.xbutton.y;  butid = (int)event.xbutton.button;
         if (xboxinside(menubx,x,y)){
 
 /* user has clicked within the bounds of a item, confirm by hilighting item */
@@ -7279,7 +7272,7 @@ int aux_menu(event)  XEvent *event; {
       refreshenv_();
       break;
     case ButtonPress:
-      x = event->xbutton.x;  y = event->xbutton.y;  butid = event->xbutton.button;
+      x = event->xbutton.x;  y = event->xbutton.y;  butid = (int)event->xbutton.button;
       if (dbx1_avail == 1 && xboxinside(dbx1,x,y)) {
 
 /* The following code is used only if network graphics is on. */
@@ -7317,7 +7310,7 @@ line button 1 = start button2 = intermediate point button3 = end */
                 XNextEvent(theDisp,event);   /* get next event */
                 switch(event->type) {
                   case ButtonPress:	/* check what button was pressed and act accordingly */
-                    butid = event->xbutton.button;
+                    butid = (int)event->xbutton.button;
                     if(butid==2){
                       iugx=event->xbutton.x;
                       iugy=event->xbutton.y;
@@ -7396,7 +7389,7 @@ the screen below linux uses GxorReversed or GXinvert with X11R6*/
           if(butid==3){
 /*Check if the button has been clicked inside a component icon or a connection intermediate
 point*/
-            x = event->xbutton.x;  y = event->xbutton.y; butid = event->xbutton.button;
+            x = event->xbutton.x;  y = event->xbutton.y; butid = (int)event->xbutton.button;
             iugx=x; iugy=y;
             x_old=iugx;y_old=iugy;
             is=0;
@@ -7446,7 +7439,7 @@ point*/
                     XDrawLine(theDisp,win,theGC,x-pixs,y+pixs,x-pixs,y-pixs);
                     x_old=x;
                     y_old=y;
-                    butid = event->xbutton.button;
+                    butid = (int)event->xbutton.button;
                     no_valid_event=TRUE;
                   break;
                   case ButtonRelease:
