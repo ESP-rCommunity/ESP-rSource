@@ -113,11 +113,6 @@ intialisation and graphics, using ww. The routines are :-
 static unsigned char gray25_bits[] = {
    0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22};
 
-#define cboard50_width 8
-#define cboard50_height 8
-static unsigned char cboard50_bits[] = {
-   0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
-
 #define logo_width 158
 #define logo_height 55
 static unsigned char logo_bits[] = {
@@ -246,7 +241,6 @@ Colormap theCmap; /* same as xv browCmap */
 static Cursor arrow_cursor, cross_cursor, zoom_cursor, wait_cursor, inviso;
 
 int cur_cursor = -1;
-Pixmap gray25Tile, gray50Tile;   /* used for 3d effect on 1-bit disp's */
 
 static int curstype;	/* xv cursor type */
 static int mono;	/* true if displaying grayscale */
@@ -270,10 +264,6 @@ char *getenv ();
 /* #define FONT2 "-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*" */
 /* #define FONT1 "-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*" */
 /* #define FONT2 "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*" */
-
-static Pixmap cboard50 = (Pixmap) NULL;   /* 50% gray checkerboard */
-static Pixmap gray25 = (Pixmap) NULL;   /* 25% gray */
-static Pixmap gray50 = (Pixmap) NULL;   /* 50% gray */
 
 static long int current_font;		/* standard font */
 static long int disp_fnt;     /*   font for text display box */
@@ -735,14 +725,6 @@ defaultVis = (XVisualIDFromVisual(theVisual) ==
       mono = 1;
   }
   if(mono == 1) fprintf(stderr,"using monochrome mode %d \n",mono);
-
-  gray50Tile = XCreatePixmapFromBitmapData(theDisp, rootW, (char *) cboard50_bits,
-		(unsigned int) cboard50_width, (unsigned int) cboard50_height, infofg, infobg, dispDEEP);
-  if (!gray50Tile) fprintf(stderr,"Unable to create gray50Tile bitmap\n");
-
-  gray25Tile = XCreatePixmapFromBitmapData(theDisp, rootW, (char *) gray25_bits,
-		(unsigned int) gray25_width, (unsigned int) gray25_height, infofg, infobg, dispDEEP);
-  if (!gray25Tile) fprintf(stderr,"Unable to create gray25Tile bitmap\n");
 
 /* set border width and gap between text and edge */
 bw = 2;
@@ -1701,14 +1683,14 @@ void feedbox_(menu_char,d_lines,gw,gh)
   }
   fbb.b_left  = 2;
   fbb.b_right = xrt_width - (mf_width * (*menu_char)) -8;
-  hight = fbb.b_bottom-fbb.b_top;
-  wid = fbb.b_right-fbb.b_left;
+  hight = (unsigned int)(fbb.b_bottom-fbb.b_top);
+  wid = (unsigned int)(fbb.b_right-fbb.b_left);
 
 /* Clear area under the rectangle, set colours (gfeedfr), fill rectangle, re-set colours
  * and draw the bounding box.
  */
   XClearArea(theDisp,win,fbb.b_left,fbb.b_top,(unsigned int)wid,(unsigned int)hight,exp);
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XSetForeground(theDisp,theGC, gfeedfr);
   XSetBackground(theDisp,theGC, gfeedfr);
   XFillRectangle(theDisp,win,theGC,fbb.b_left,fbb.b_top,(unsigned int)wid,(unsigned int)hight);
@@ -2050,7 +2032,7 @@ void drawswl(xa,ya,xb,yb)
   int xa,ya,xb,yb;
 {
   int width = 1;
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,xa,ya,xb,yb);
   return;
 }
@@ -2076,7 +2058,7 @@ void esymbol_(x,y,sym,size)
     fprintf(wwc,"*esymbol\n");
     fprintf(wwc,"%ld %ld %ld %ld\n",*x,*y,*sym,*size);
   }
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
 /*
       p[0].x=; p[0].y=; p[1].x=; p[1].y=;
       p[2].x=; p[2].y=; p[3].x=; p[3].y=;
@@ -2440,7 +2422,7 @@ int *ino;
   }
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width; config_altered = 0;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width; config_altered = 0;
 
   xb = *impx;  yb = *impy;
   lt1 = (int) strlen(titleptr);  /* width of title */
@@ -2519,10 +2501,10 @@ int *ino;
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug fprintf(stderr,"epopup detected configure event\n");  */
           config_altered = 1;
           refreshenv_();
@@ -3464,7 +3446,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width; config_altered = 0;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width; config_altered = 0;
 
   xb = *impx;  yb = *impy; pflg = *ipflg; showmoreflg = *ishowmoreflg;
   changed_font = 0;
@@ -3623,7 +3605,7 @@ void egphelp_(impx,impy,ipflg,ishowmoreflg,uresp)
         if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"egphelp detected configure event\n"); */
           config_altered = 1;
           refreshenv_();
@@ -3837,7 +3819,7 @@ void askdialog_(sstr,id,iq,f_len)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* ok box is 3rd box over and 7 char total to the right */
   okbox_left = msgbx.b_right - ((3 * 5) + (f_width * 7));
@@ -3883,10 +3865,10 @@ void askdialog_(sstr,id,iq,f_len)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"askdialog detected configure event\n"); */
           refreshenv_();
 	  /* Window resized so force update of the positions of the various boxes
@@ -4023,7 +4005,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* alt box is between ok and askbx  */
   altbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + asklm3)));
@@ -4073,10 +4055,10 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"askaltdialog detected configure event\n"); */
           refreshenv_();
 	  /* Window resized so force update of the positions of the various boxes
@@ -4199,7 +4181,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* ok box is 4th box over and 8+asklm3 char total to the right */
   okbox_left = msgbx.b_right - ((4 * 5) + (f_width * (8 + asklm3)));
@@ -4249,10 +4231,10 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {
 
 	/* Window resized so force update of the positions of the various boxes
            including the position of askbx.  
@@ -4374,7 +4356,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* alt box is between ok and askbx  */
   altbox_left = msgbx.b_right - ((5 * 5) + (f_width * (9 + asklm3 + asklm4)));
@@ -4427,10 +4409,10 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"askaltdialog detected configure event\n"); */
           refreshenv_();
           altbox_left = msgbx.b_right - ((5 * 5) + (f_width * (9 + asklm3)));
@@ -4563,7 +4545,7 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* Find ends of strings passed and terminate. */
    saved_font = current_font;
@@ -4610,10 +4592,10 @@ void continuebox_(msg1,msg2,opta,len1,len2,len3)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"continue box detected configure event\n"); */
           refreshenv_();
           xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
@@ -4715,7 +4697,7 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
 /* query box is right box and 2 char total to the right */
   qbox_left = msgbx.b_right - ((1 * 5) + (f_width * 2));
@@ -4807,10 +4789,10 @@ void abcdefbox_(msg1,msg2,opta,optb,optc,optd,opte,optf,optg,ok,len1,len2,len3,l
         break;
       case ConfigureNotify: /* user resized window so refresh window and dialogue */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"abcdefbox detected configure event\n"); */
           refreshenv_();
           xbox(msgbx,fg,white,BMCLEAR |BMEDGES);   /* draw dialogue box with edges  */
@@ -5271,7 +5253,7 @@ void trackview_(ichar,irx,iry)
   XEvent event;
   XWindowAttributes wa;
   KeySym     ks;
-  static char buf[80],*bp;
+  static char buf[80];
   int	no_valid_event;
   int	x,y;
   static int blen = 0;
@@ -5279,7 +5261,7 @@ void trackview_(ichar,irx,iry)
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
-  start_height = wa.height; start_width = wa.width;
+  start_height = (unsigned int)wa.height; start_width = (unsigned int)wa.width;
 
   XUndefineCursor(theDisp,win);  XDefineCursor(theDisp,win,cross_cursor);
   no_valid_event = TRUE;
@@ -5294,17 +5276,17 @@ void trackview_(ichar,irx,iry)
         break;
       case ConfigureNotify: /* user resized window, clear and then restore dialogue. */
         XGetWindowAttributes(theDisp,win,&wa);
-        if(start_height == wa.height && start_width == wa.width) {	/* no need to update window */
+        if(start_height == (unsigned int)wa.height && start_width == (unsigned int)wa.width) {	/* no need to update window */
           no_valid_event = TRUE;
         }
-        if(start_height != wa.height || start_width != wa.width) {	/* window resized so force update */
+        if(start_height != (unsigned int)wa.height || start_width != (unsigned int)wa.width) {	/* window resized so force update */
 /* debug  fprintf(stderr,"trackview detected configure event\n"); */
           refreshenv_();
         }
         break;
       case ButtonPress:
        *irx = x = event.xbutton.x;  *iry = y = event.xbutton.y;
-       *ichar = event.xbutton.button;	/* check about cast << >> */
+       *ichar = (long int)event.xbutton.button;
        if (xboxinside(viewbx,x,y)){
           no_valid_event = FALSE;
           drawpoint(x,y);
@@ -5572,7 +5554,7 @@ void drawdwl(xa,ya,xb,yb)
   int xa,ya,xb,yb;
 {
   int width = 2;
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,xa,ya,xb,yb);
   return;
 }
@@ -5596,7 +5578,7 @@ void edwline_(x1,y1,x2,y2)
 
   ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
   jx = (int) *x2;  jy = (int) *y2;
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);
   return;
 }
@@ -5617,7 +5599,7 @@ void eswline_(x1,y1,x2,y2)
   }
   ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
   jx = (int) *x2;  jy = (int) *y2;
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);	/* draw the line */
   return;
 }
@@ -5626,7 +5608,7 @@ void eswline_(x1,y1,x2,y2)
 void drawvwl(xa,ya,xb,yb,width)
   int xa,ya,xb,yb,width;
 {
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,xa,ya,xb,yb);
 }
 
@@ -5672,7 +5654,7 @@ void edash_(x1,y1,x2,y2,ipdis)
 /* find full length of the line. */
   crow = (double) ((ix1-ix2)*(ix1-ix2) + (iy1-iy2)*(iy1-iy2));
   ldis = (int) sqrt(crow);
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
 
 /* dots in line taking into account carry-over. << itrat not used >> */
   trat = (float) (ldis-dash_rem) / (float) ldash;
@@ -5779,7 +5761,7 @@ void echain_(x1,y1,x2,y2,ipdis)
 /* find length of the line. */
   crow = (double) ((ix1-ix2)*(ix1-ix2) + (iy1-iy2)*(iy1-iy2));
   ldis = (int) sqrt(crow);
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
 
 /* dots in line taking into account carry-over. */
   trat = (float) (ldis-dash_rem) / (float) ldash;
@@ -5867,7 +5849,7 @@ void echain_(x1,y1,x2,y2,ipdis)
 void drawddash(xa,ya,xb,yb,width)
   int xa,ya,xb,yb,width;
 {
-  XSetLineAttributes(theDisp,theGC,width,LineDoubleDash,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineDoubleDash,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,xa,ya,xb,yb);
 }
 
@@ -5875,7 +5857,7 @@ void drawddash(xa,ya,xb,yb,width)
 void drawoodash(xa,ya,xb,yb,width)
   int xa,ya,xb,yb,width;
 {
-  XSetLineAttributes(theDisp,theGC,width,LineOnOffDash,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineOnOffDash,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,xa,ya,xb,yb);
 }
 
@@ -5898,7 +5880,7 @@ void erectan_(x,y,dx,dy,dt)
   dx1 = *dx;   /* width (ie. x axis with no rotation) */
   dy1 = *dy;   /* height (ie. y axis with no rotation) */
   dt1 = *dt;   /* rotation in degrees */
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
 
 /* convert into pixels and move to origin*/
   u2pixel_(&xo,&yo,&lix,&liy);
@@ -5998,7 +5980,7 @@ void etriang_(x,y,dx,dy,dt)
   dx1 = *dx;   /* width (ie. x axis with no rotation) */
   dy1 = *dy;   /* height (ie. y axis with no rotation) */
   dt1 = *dt;   /* rotation in degrees */
-  XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
+  XSetLineAttributes(theDisp,theGC,(unsigned int)width,LineSolid,CapNotLast,JoinMiter);
 
 /* convert into pixels and move to origin*/
   u2pixel_(&xo,&yo,&lix,&liy);
@@ -6119,11 +6101,11 @@ void ecirc_(x,y,rad,operation)
   boxdim = rad1 + rad1;
 
   if (op == 0) {
-    XDrawArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,0, 360*64);
+    XDrawArc(theDisp,win,theGC,ul,ut,(unsigned int)boxdim,(unsigned int)boxdim,0, 360*64);
   } else if (op == 1) {
     XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, fg);
-    XFillArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,0, 360*64);
+    XFillArc(theDisp,win,theGC,ul,ut,(unsigned int)boxdim,(unsigned int)boxdim,0, 360*64);
     XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, bg);
   }
@@ -6157,11 +6139,11 @@ void earc_(x,y,rad,ang1,ang2,operation)
   boxdim = rad1 + rad1;
 
   if (op == 0) {
-    XDrawArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,an1*64, an2*64);
+    XDrawArc(theDisp,win,theGC,ul,ut,(unsigned int)boxdim,(unsigned int)boxdim,an1*64, an2*64);
   } else if (op == 1) {
     XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, fg);
-    XFillArc(theDisp,win,theGC,ul,ut,boxdim,boxdim,an1*64, an2*64);
+    XFillArc(theDisp,win,theGC,ul,ut,(unsigned int)boxdim,(unsigned int)boxdim,an1*64, an2*64);
     XSetForeground(theDisp,theGC, fg);
     XSetBackground(theDisp,theGC, bg);
   }
