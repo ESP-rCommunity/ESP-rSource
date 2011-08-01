@@ -761,7 +761,7 @@ xsh.x = START_ULX;
 xsh.y = START_ULY;
 
 /* create window */
-  win = XCreateSimpleWindow(theDisp,DefaultRootWindow(theDisp),xsh.x,xsh.y,xsh.width,xsh.height,bw,bd,gmodbg);
+  win = XCreateSimpleWindow(theDisp,DefaultRootWindow(theDisp),xsh.x,xsh.y,(unsigned int)xsh.width,(unsigned int)xsh.height,(unsigned int)bw,bd,gmodbg);
 
 /* standard properties for the window manager */
   argv = NULL; argc = 0;
@@ -1032,37 +1032,37 @@ long int *xcolid;	/* index of colour used by X */
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
-       *xcolid = gscale[ic];
+       *xcolid = (long int)gscale[ic];
      } else {
-       *xcolid = fg;
+       *xcolid = (long int)fg;
      }
   } else if(*act == 'z') {
      if (ic >= 0 && ic <= izc ) {
-       *xcolid = zscale[ic];
+       *xcolid = (long int)zscale[ic];
      } else {
-       *xcolid = fg;
+       *xcolid = (long int)fg;
      }
   } else if(*act == 'c') {
      if (ic >= 0 && ic <= ncscale ) {
-       *xcolid = cscale[ic];
+       *xcolid = (long int)cscale[ic];
      } else {
-       *xcolid = fg;
+       *xcolid = (long int)fg;
      }
   } else if(*act == 'i') {
      if (ic >= 0 && ic <= ngr ) {	/* including black and white */
-       if (ic == 0) *xcolid = gmenuhl;
-       if (ic == 1) *xcolid = gmodbg;
-       if (ic == 2) *xcolid = gpopfr;
-       if (ic == 3) *xcolid = gfeedfr;
-       if (ic == 4) *xcolid = ginvert;
-       if (ic == 5) *xcolid = grey50;
-       if (ic == 6) *xcolid = black;
-       if (ic == 7) *xcolid = white;
+       if (ic == 0) *xcolid = (long int)gmenuhl;
+       if (ic == 1) *xcolid = (long int)gmodbg;
+       if (ic == 2) *xcolid = (long int)gpopfr;
+       if (ic == 3) *xcolid = (long int)gfeedfr;
+       if (ic == 4) *xcolid = (long int)ginvert;
+       if (ic == 5) *xcolid = (long int)grey50;
+       if (ic == 6) *xcolid = (long int)black;
+       if (ic == 7) *xcolid = (long int)white;
      } else {
-       *xcolid = fg;
+       *xcolid = (long int)fg;
      }
   } else if(*act == '-') {
-     *xcolid = fg;
+     *xcolid = (long int)fg;
   }
   return;
 }
@@ -1126,7 +1126,7 @@ void box_to_pix(from,frombox,to,tw,th) Pixmap *from, *to; box frombox; int tw,th
   height = th;
   width = tw;
   if(fromw>=width && fromh>=height){
-    XCopyArea(theDisp,win,(Pixmap)to,theGC,fromx,fromy,width,height,0,0);
+    XCopyArea(theDisp,win,(Pixmap)to,theGC,fromx,fromy,(unsigned int)width,(unsigned int)height,0,0);
   } else {
     XSetTile(theDisp,theGC,(Pixmap)from);
     XSetFillStyle(theDisp,theGC,FillTiled);
@@ -1144,7 +1144,7 @@ void pix_to_box(from,fw,fh,tobox,to) Pixmap *from, *to; box tobox; int fw, fh; {
 
   th = HEIGHT(tobox); tw = WIDTH(tobox);
   if(fw>=tw && fh>=th){
-    XCopyArea(theDisp,(Pixmap)from,(Pixmap)to,theGC,0,0,fw,fh,tobox.b_left,tobox.b_top);
+    XCopyArea(theDisp,(Pixmap)from,(Pixmap)to,theGC,0,0,(unsigned int)fw,(unsigned int)fh,tobox.b_left,tobox.b_top);
   } else {
     XSetTile(theDisp,theGC,(Pixmap)from);
     XSetFillStyle(theDisp,theGC,FillTiled);
