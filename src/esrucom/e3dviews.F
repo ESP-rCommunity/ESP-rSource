@@ -873,6 +873,7 @@ C Process selected zones.
         IZ=IZ+1
         IF(IZ.GT.nzg)GOTO 200
         IVZ=nznog(IZ)
+        IF(IVZ.le.0) goto 100  ! unknown zone try next one
 
 C If bounds ok then update project bounds with saved zone values.
         if(iZBFLG(IVZ).eq.1)then

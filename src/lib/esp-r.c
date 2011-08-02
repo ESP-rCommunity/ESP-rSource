@@ -995,6 +995,7 @@ void esru_wire_ctl ( void)
 
    gint izone, itchar, ichar, result;
    guint nrows, irow, icol;
+   int curindex;
    int no_valid_event;
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
@@ -1124,9 +1125,13 @@ void esru_wire_ctl ( void)
    /* create zones to display list  <<pick up zone names here>>*/
    nrows = 1 + (guint)(c1_.NCOMP/4);
    irow = 0;
-   // fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
+   fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
    // fprintf(stderr,"number of cnn %d\n",c1_.NCON);
    // fprintf(stderr,"number of rows %d\n",nrows);
+   fprintf(stderr,"nzg is %d\n",gzonpik_.nzg);
+   fprintf(stderr,"nznog zero is %d\n",gzonpik_.nznog[0]);
+   fprintf(stderr,"nznog one is %d\n",gzonpik_.nznog[1]);
+   fprintf(stderr,"nznog two is %d\n",gzonpik_.nznog[2]);
    frame = gtk_frame_new ("Zones to display");
    gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
    table = gtk_table_new (nrows, 4, TRUE);
@@ -1146,8 +1151,10 @@ void esru_wire_ctl ( void)
       This means that the zone referenced in the fortran
       code is one more than in the c code (hence the -1 below).
    */
-   for (izone = 0; izone < gzonpik_.nzg; izone++) {
-     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[gzonpik_.nznog[izone]-1]), TRUE);
+   for (izone = 0; izone < (gint)gzonpik_.nzg; izone++) {
+     curindex = (int)gzonpik_.nznog[izone]-1;
+     fprintf(stderr,"Zone %d, index %d index %d\n",izone,izone+1, curindex);
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[curindex]), TRUE);
    }
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
@@ -1306,13 +1313,18 @@ void esru_wire_ctl ( void)
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
            ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
          /* Remember that C starts at zero, so add one to the zoneid to get the correct value
-            for the fortran code.
+            for the fortran code. Reset nzg, if button ticked et nznog array to the zone
+            index.
          */
          gzonpik_.nzg = 0;
-         for (izone = 0; izone < c1_.NCOMP; izone++) {
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
+         fprintf(stderr,"-nzg is now %d\n",gzonpik_.nzg);
+         fprintf(stderr,"-nznog zero is now %d\n",gzonpik_.nznog[0]);
+         fprintf(stderr,"-nznog one is now %d\n",gzonpik_.nznog[1]);
+         fprintf(stderr,"-nznog two is now %d\n",gzonpik_.nznog[2]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
            ray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
@@ -1387,7 +1399,7 @@ void esru_wire_ctl ( void)
             for the fortran code.
          */
          gzonpik_.nzg = 0;
-         for (izone = 0; izone < c1_.NCOMP; izone++) {
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
