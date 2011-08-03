@@ -2759,6 +2759,9 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
       integer ISDN,INODA ! max items and current menu item
+      integer mnulen,iwhich2,nv   ! multi column lines
+      logical odd   ! for display of vertex info
+      character message*48,t248*248
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2778,6 +2781,48 @@ C faces another zone, get the other surface connection index.
       else
         showother=.false.
       endif
+
+C Echo back to the user additional information about the surface.
+C start with the vertices associated with the surface.
+      write(message,'(2a)') ' Vertices (X Y Z) used by ',
+     &  SNAME(ICOMP,IS)
+      call edisp(iuout,message)
+      NV=NVER(IS)
+
+C See if an even or odd number of items in list.
+      im=MOD(NV,2)
+      odd=.false.
+      if(im.eq.1) odd=.true.
+      if(nv.lt.8)then
+        do 960 i=1,nv
+          iwhich=jvn(is,i)
+          write(outs,'(a,i3,3f11.5)') ' vertex ',iwhich,X(iwhich),
+     &      Y(iwhich),Z(iwhich)
+          call edisp(iuout,outs)
+  960   continue
+      else
+        MNULEN=(NV/2)
+        DO 193 K=1,MNULEN
+          iwhich=jvn(is,k)
+          iwhich2=jvn(is,k+mnulen)
+          WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') ' vertex ',iwhich,
+     &      X(iwhich),Y(iwhich),Z(iwhich),'   vertex ',iwhich2,
+     &      X(iwhich2),Y(iwhich2),Z(iwhich2)
+          call edisp(iuout,outs)
+  193   CONTINUE
+        IF(odd)THEN
+          WRITE(outs,'(a,i3,3f11.5)') ' vertex ',nv,X(nv),
+     &      Y(nv),Z(nv)
+          call edisp(iuout,outs)
+        ENDIF
+      endif
+
+C Now tell the user the edge list for the surface.
+      write(message,'(2a)') ' Vertices associated with ',
+     &  SNAME(ICOMP,IS)
+      call edisp(iuout,message)
+      WRITE(t248,'(32I4)')(JVN(is,j),J=1,nv)
+      call edisp248(iuout,t248,90)
 
 C Force redraw of zone on entry to highlight focus surface.
       MODIFY=.TRUE.
