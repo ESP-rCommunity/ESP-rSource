@@ -43,8 +43,8 @@ C     MF230C
 C     MF240C
 C     MF250C
 C     MF310C
-C     MF410C
-C     MF420C
+C     MF410C  General flow corrector (ie. valve or damper)
+C     MF420C  Flow corrector (ie. valve or damper) with polynomial flow resistance
 C     MF460C
 C     MF500C
 C     MFOUTPB Writes timestep results to binary file
