@@ -8929,6 +8929,12 @@ C      character cXlibrary*32         !
       integer ifueloriginal !to hold temporarily the fuel type index number
       INTEGER IMODE
 
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
+
 #include "build_info.h"
 
 C Initialise IMODE
@@ -13536,10 +13542,12 @@ C If not UNIX, first determine the path of the current model folder
         ldocpth=docpth
         ltmppth=tmppth
         ibrowse = 0
+        iincomp=ncomp
+        iincon=ncon
 
 C Determine the path of current model
         call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+     &    ibrowse,iincomp,iincon)
         fs = char(92)
         col = char(58)
         quote = char(34)
