@@ -883,6 +883,9 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
+
+C << possible place for ssmlcindex >>
+
                 if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
                 if(SSMLCN(icc)(1:12).ne.DESC(ISEL)(1:12))apply=.false.
               endif
@@ -2087,6 +2090,8 @@ C While looping check that constructions of partitions are matching.
           endif
           write(SN,'(a12)')SSNAME(icc)
           if(showother.and.icoth.ne.0)then
+
+C << possible place to use ssmlcindex >>
             do 17 ii=1,nmlc
               if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
                 call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM)
@@ -2921,6 +2926,9 @@ C Check the U value for each surface.
           UVH = 0.0
           UVU = 0.0
           UVD = 0.0
+
+C << possible place to use ssmlcindex >>
+
           do 511 ii=1,nmlc
             if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
 

@@ -388,6 +388,9 @@ C Report on any duplicate surface names.
           endif
 
 C Report on possible construction issues between zones.
+
+C << this might be a place to use ssmlcindex >>
+
           if(showother.and.icoth.ne.0)then
             do 17 ii=1,nmlc
               if(SSMLCN(ioc)(1:12).eq.DESC(ii)(1:12)) then
@@ -448,6 +451,8 @@ C used for a partition (and db does not have a linked MLC - inform the user.
 
 C Assign new MLC name to the icoth surface as well as SSOTF with the
 C optical properties returned from parsemlcdesc.
+
+C << this is a place to update ssmlcindex >>
                   SSMLCN(icoth)=TOSMLCN
                   write(SSOTF(icoth),'(a)') TOOPT
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
@@ -1011,6 +1016,9 @@ C Reset all line widths to normal and redraw (if last surface in list).
             elseif(IRT.eq.2.and.ISEL.GT.0)then
 
 C Associate mlc with each selected surface.
+
+C << this is a place to update ssmlcindex >>
+
               WRITE(SMLCN(ISS),'(A12)')DESC(ISEL)(1:12)
               WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
               ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
@@ -1034,6 +1042,9 @@ C attribute and see if the surface in the adjacent zone is made of
 C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
 C the name does not match or is UNKN get user to confirm change.
+
+C << this could be a place to use ssmlcindex  >>
+
               write(SN,'(a12)')SSNAME(ioc)
               if(showother.and.icoth.ne.0)then
                 do 7 ii=1,nmlc
@@ -1087,6 +1098,8 @@ C used for a partition (and db does not have a linked MLC - inform the user.
      &                  0,iuout,IER)
 
 C Assign new MLC name to the icoth surface.
+
+C << this is a place to update ssmlcindex >>
                       SSMLCN(icoth)=TOSMLCN
                       ssthick(icoth)=THKMLC(isel)  ! update the thermophysical thickness
                       call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
@@ -3217,6 +3230,8 @@ C that reporting mechanism.
 C << TODO - test if date of zone construction file is older than the
 C << geometry file and if so do not use CONINF.
 
+C << this is a place where ssmlcindex might be useful >>
+
           if(LTHRM(ICOMP)(1:7).eq.'UNKNOWN'.or.
      &       LTHRM(ICOMP)(1:2).eq.'  ')then
             do 5 ii=1,nmlc
@@ -3265,6 +3280,8 @@ C << properties and the optical name.
           IF(ISEL.GT.0)then
             ioc=IZSTOCN(ICOMP,is)
             WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+
+C << this is a place to update ssmlcindex >>
             SSMLCN(ioc)=SMLCN(is)
             ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
@@ -3288,6 +3305,9 @@ C attribute and see if the surface in the adjacent zone is made of
 C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
 C the name does not match or is UNKN get user to confirm change.
+
+C << this is a place where ssmlcindex might be useful >>
+
             if(showother.and.icoth.ne.0)then
               do 7 ii=1,nmlc
                 if(SSMLCN(ioc)(1:12).eq.DESC(ii)(1:12)) then
@@ -3363,6 +3383,9 @@ C zone.
 
 C Assign new MLC name to the icoth surface as well as SSOTF with the
 C optical properties returned from parsemlcdesc.
+
+C << this is a place to update ssmlcindex >>
+
                     SSMLCN(icoth)=TOSMLCN
                     write(SSOTF(icoth),'(a)') TOOPT
 
@@ -3810,6 +3833,9 @@ C other zone) and write out that zones geometry.
             endif
 
 C Assign new MLC name and connexion info to the icoth surface.
+
+C << this is a place to update ssmlcindex >>
+
             SSMLCN(icoth)=TOSMLCN
             SSOTHER(icoth,1)='ANOTHER'
             write(SSOTHER(icoth,2),'(i2.2)') IC2(icoth)
@@ -8212,6 +8238,7 @@ C the connections list, then remind user to double check topology.
         SSNAME(iccc)=SNAME(NCOMP,icc)
         SSOTF(iccc)=SOTF(icc)
         SSMLCN(iccc)=SMLCN(icc)
+        ssmlcindex(iccc)=ssmlcindex(icc)
         SSVFC(iccc)=SVFC(icc)
         SSOTHER(iccc,1)=SOTHER(icc,1)
         SSOTHER(iccc,2)=SOTHER(icc,2)

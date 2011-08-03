@@ -1651,6 +1651,7 @@ C Update the connection list for an initial surface.
               SSNAME(iccc)=SNAME(ICOMP,1)
               SSOTF(iccc)=SOTF(1)
               SSMLCN(iccc)=SMLCN(1)
+              ssmlcindex(iccc)=0  ! no matching MLC
               SSVFC(iccc)=SVFC(1)
               SSOTHER(iccc,1)=SOTHER(1,1)
               SSOTHER(iccc,2)=SOTHER(1,2)
@@ -2056,6 +2057,7 @@ C Update the connection list.
               SSNAME(iccc)=SNAME(icomp,icc)
               SSOTF(iccc)=SOTF(icc)
               SSMLCN(iccc)=SMLCN(icc)
+              ssmlcindex(iccc)=0  ! no matching MLC
               SSVFC(iccc)=SVFC(icc)
               SSOTHER(iccc,1)=SOTHER(icc,1)
               SSOTHER(iccc,2)=SOTHER(icc,2)

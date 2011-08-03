@@ -1281,7 +1281,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character ITEMS*32
       integer ivals
       dimension ITEMS(25),IVALS(MCOM)
-      dimension jict(MS),jic2(MS),jie2(MS)
+      dimension jict(MS),jic2(MS),jie2(MS),jmlcindex(MS)
       dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
@@ -1580,6 +1580,7 @@ C Recover connections associated with that zone.
               jie2(jixu)=IE2(IXU)
               jsotf(jixu)=SSOTF(IXU)
               jsmlcn(jixu)=SSMLCN(IXU)
+              jmlcindex(jixu)=ssmlcindex(IXU)
               jsvfc(jixu)=SSVFC(IXU)
               jsother(jixu,1)=SSOTHER(IXU,1)
               jsother(jixu,2)=SSOTHER(IXU,2)
@@ -1833,6 +1834,7 @@ C the new geometry file. Retain similar and adiabatic connections if found.
             IZSTOCN(ncomp,icc)=iccc
             SSOTF(ICCC)=jsotf(icc)
             SSMLCN(ICCC)=jsmlcn(icc)
+            ssmlcindex(ICCC)=jmlcindex(icc)
             SSVFC(ICCC)=jsvfc(icc)
             SSOTHER(ICCC,1)=jsother(icc,1)
             SSOTHER(ICCC,2)=jsother(icc,2)
@@ -3143,9 +3145,11 @@ C  ier = 0 if no problems found.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "model.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "prj3dv.h"
 #include "espriou.h"  
+#include "material.h"
 C espriou.h for parameter MFFOLD
       
       integer lnblnk  ! function definition
@@ -3161,6 +3165,7 @@ C espriou.h for parameter MFFOLD
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
       common/rcmd/LCMDFL
       common/user/browse
@@ -3702,6 +3707,27 @@ C Open core databases associated with the exemplar or new model.
             ier = 0
           endif
         endif
+
+C Scan for matching MLC for surfaces.
+        do 30 ICOMP=1,NCOMP
+          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+          write(6,*) icomp,NZSUR(icomp),nmlc
+          DO 9994 I=1,NZSUR(icomp)
+            icn1=izstocn(icomp,i)
+            ssmlcindex(icn1)=0  ! assume no matching MLC          
+            do 5 ii=1,nmlc
+              if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                ssmlcindex(icn1)=ii   ! remember MLC index     
+              endif
+  5         continue
+ 9994     continue
+ 30     continue
+
+C Debug the ssmlcindex array.
+        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
 C Scan control file (silently) if one exists.
         ICTLF=IFIL+1

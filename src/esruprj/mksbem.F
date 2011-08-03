@@ -4450,6 +4450,7 @@ C This routine assumes newer geometry files are being used.
 #include "sbem.h"
 #include "esprdbfile.h"
 #include "model.h"
+#include "material.h"
 
       integer lnblnk  ! function definition
 
@@ -4570,6 +4571,22 @@ C write out the zone.
           ier=3  ! signal geometry issue
           return
         endif
+
+C Find the index of the MLC which matches each surface.
+        write(6,*) icomp,NZSUR(icomp),nmlc
+        DO 9994 I=1,NZSUR(icomp)
+          icn1=izstocn(icomp,i)
+          ssmlcindex(icn1)=0  ! assume no matching MLC          
+          do 5 ii=1,nmlc
+            if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+              ssmlcindex(icn1)=ii   ! remember MLC index     
+            endif
+  5       continue
+ 9994   continue
+
+C Debug the ssmlcindex array.
+        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -4924,6 +4941,8 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
+
+C << need to find mlc index of opDoorWind_n for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -5006,6 +5025,8 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
+
+C << need to find mlc index of Vehicle_door for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -5087,6 +5108,8 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
+
+C << need to find mlc index of Not_DisplayG for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -5168,6 +5191,8 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
+
+C << need to find mlc index of window_Not_G for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -5239,6 +5264,8 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
+
+C << need to find mlc index of frame_notion for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -5277,6 +5304,9 @@ C Update the image.
  551  CONTINUE
 
 C Change constructions for different surfaces now based on use
+
+C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
+
       DO 600 ICOMP=1,NCOMP
         call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 601 I=1,NZSUR(icomp)

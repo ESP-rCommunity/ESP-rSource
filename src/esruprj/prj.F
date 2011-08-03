@@ -82,6 +82,7 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
@@ -739,7 +740,7 @@ C Provide site information, update wireframe control with
 C current number of zones if a model has been loaded.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         if(ier.eq.0)then
-          IF(MMOD.EQ.8)then
+          if(MMOD.EQ.8)then
             numberofzones=ncomp
             call updwire(numberofzones)  ! pass local integer
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -767,6 +768,27 @@ C Open core of databases if not already done so.
               ier = 0
             endif
           endif
+
+C Scan for matching MLC for surfaces.
+          do 30 ICOMP=1,NCOMP
+            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+            write(6,*) icomp,NZSUR(icomp),nmlc
+            DO 9994 I=1,NZSUR(icomp)
+              icn1=izstocn(icomp,i)
+              ssmlcindex(icn1)=0  ! assume no matching MLC          
+              do 5 ii=1,nmlc
+                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                endif
+  5           continue
+ 9994       continue
+ 30       continue
+
+C Debug the ssmlcindex array.
+          write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+     &      ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
 C Scan control file if one exists.
           ICTLF=IFIL+1

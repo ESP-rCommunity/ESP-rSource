@@ -774,6 +774,9 @@ C Surface properties.
       M=8
 
 C Find composite which matches.
+
+C << this is a place where ssmlcindex would be useful >>
+
       ICF=-1
       lstr=lnblnk(SSMLCN(icn1))
       DO 20 IC=1,NMLC
@@ -1201,6 +1204,9 @@ C Reset number of layers, if at end of loop it is still 0 then
 C the material was not found and must be asked for.
         NE(IS)=0
         DO 20 IC=1,NMLC
+
+C << this is a place where ssmlcindex can be used >>
+
           IF(DESC(IC)(1:12).EQ.SSMLCN(ioc))THEN
             MODCON=.TRUE.
             NE(IS)=LAYERS(IC)
@@ -1557,6 +1563,7 @@ C to 0.
           GOTO 10
         ENDIF
 
+C << this is a place where ssmlcindex might be used >>
  246    ICF=-1
         DO 20 IC=1,NMLC
           IF(DESC(IC)(1:12).EQ.SSMLCN(icn1))ICF=IC   ! find matching MLC
@@ -2088,6 +2095,9 @@ C each layer and keep track of time constant.
 
 c First determine maximum thermal diffusivity and associated
 c homogeneous layer.
+
+C << this is a place where ssmlcindex might be used >>
+
         WRITE(MLCN,'(A12)')DESC(ic)(1:12)
         lmlc=lnblnk(MLCN)
         found=.false.

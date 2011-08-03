@@ -2877,6 +2877,8 @@ C << geometry file before writing it out.
             WRITE(outs,94)
             call edisp(iuout,outs)
             modgeo=.false.
+
+C << this might be a place to use ssmlcindex >>
             do 91 i=1,nsur
               ioc=IZSTOCN(IZ,i)
               if(SSMLCN(ioc)(1:12).eq.DESC(IFOC)(1:12))then
@@ -3367,6 +3369,8 @@ C so that partitions are counted as half area).
       character mlcname*12
       logical found
       dimension areamlc(MCOM)
+
+C << this might be a place to use ssmlcindex >>
 
 C For each of the selected zones check each surface mlc attribute
 C for a match against mlcname.
