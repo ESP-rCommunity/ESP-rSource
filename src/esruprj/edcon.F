@@ -114,8 +114,6 @@ C CFCFILE is default for CFC file
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.cfc'
-        WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.cfc'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
@@ -125,8 +123,6 @@ C CFCFILE is default for CFC file
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
         IF(INOTI.EQ.3)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
-        WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
       endif
@@ -141,7 +137,7 @@ C Set existance of a zone construction file to false.
       if(itrc.gt.1) CALL USRMSG(' ',outs,'-')
 
 C Read in the related geometry file into common.
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+      call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       IF(IER.NE.0)THEN
         CALL USRMSG(' ',' Problem detected in geometry... ','W')
         RETURN
@@ -226,7 +222,7 @@ C Construction file name not yet specified.
           elseif(IWA.eq.3)then
             call tstamp('>','PRJ: abandoned rebuild zone construction')
             return
-        ENDIF
+          ENDIF
         ENDIF
       else
 
@@ -1856,37 +1852,61 @@ C For each control period get the appropriate replacement properties.
           N3=NBCTT(ICOMP,ICP,IT)
           IRT=1
           if(n3.eq.-99)then
-            call EASKATOG('Controlled on:','(currently time)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=1
+            call MENUATOL('Controlled on:(currently time)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.0)then
-            call EASKATOG('Controlled on:','(currently radiation)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=2
+            call MENUATOL('Controlled on:(currently radiation)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.1)then
-            call EASKATOG('Controlled on:','(currently ambient temp.)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=3
+            call MENUATOL('Controlled on:(currently ambient temp)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.2)then
-            call EASKATOG('Controlled on:','(currently zone temp.)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=4
+            call MENUATOL('Controlled on:(currently zone temp)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.3)then
-            call EASKATOG('Controlled on:','(currently daylight coef)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=5
+            call MENUATOL('Controlled on:(currently daylight coef)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.4)then
-            call EASKATOG('Controlled on:','(currently Lightswitch)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=6
+            call MENUATOL('Controlled on:(currently Lightswitch)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           elseif(n3.eq.5)then
-            call EASKATOG('Controlled on:','(currently PCM state)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=7
+            call MENUATOL('Controlled on:(currently state of PCM)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           else
-            call EASKATOG('Controlled on:','(currently undefined)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','PCMState','cancel',IRT,nbhelp)
+            irto=1
+            call MENUATOL('Controlled on:(currently undefined)',
+     &        'Controlled on:','a time','b incident radiation',
+     &        'c ambient temp.','d zone temp.','e lux level',
+     &        'f LtSwitch','g Phase Change state','h cancel',' ',
+     &        ' ',' ',' ',irt,irto,nbhelp)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99

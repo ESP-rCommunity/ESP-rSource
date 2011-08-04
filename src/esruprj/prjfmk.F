@@ -4516,7 +4516,7 @@ C If user cancels go back to initial question.
         XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
         h(2)='required. For example the area per person assuming that'
-        h(3)='for people the sensible is 95W and latent is 45W. '
+        h(3)='for people the sensible is 70W and latent is 55W. '
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
         if(IERI.eq.0)then
@@ -4528,8 +4528,8 @@ C that each person is 95W sensible and 45W latent.
             ICGTX=-1
             CMGSX=FLA  ! Set sensible to the m^2 per person entered
             CMGLX=0.   ! Why is CMGLX set to zero?
-            VS=(ZBASEA(ICOMP)/CMGSX)*95.  ! find sensible watts
-            VL=(ZBASEA(ICOMP)/CMGSX)*45.  ! find latent watts
+            VS=(ZBASEA(ICOMP)/CMGSX)*70.1  ! find sensible watts
+            VL=(ZBASEA(ICOMP)/CMGSX)*55.  ! find latent watts
             write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',VS,
      &        ' & latent Watts ',VL
             call edisp(iuout,outs)
@@ -5326,8 +5326,8 @@ C Scan each days gains and calculate maximum gain.
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
 C is the m^2 per person instead. Base graphed value on fractional 
 C persons per m^2.
-              CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*70.1
-              CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
+              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*70.1
+              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*55.
               else
                CGNS=0.0
                CGNL=0.0
@@ -5351,7 +5351,7 @@ C persons per m^2.
             if (ICGT(IDAY,J).eq.-1) then
               if (CMGS(IDAY,J).gt.0.0) then
                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*70.1
-               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*55.
               else
                CGNS=0.0
                CGNL=0.0
@@ -5375,7 +5375,7 @@ C persons per m^2.
             if (ICGT(IDAY,J).eq.-1) then
               if (CMGS(IDAY,J).gt.0.0) then
                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*70.1
-               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*55.
               else
                CGNS=0.0
                CGNL=0.0
