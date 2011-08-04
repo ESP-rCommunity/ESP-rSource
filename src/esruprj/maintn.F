@@ -38,7 +38,6 @@ C IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "model.h"
 #include "tdf2.h"
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFGH2/GTYPES(24),GMENUS(24)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
@@ -49,7 +48,13 @@ C IER=0 OK, IER=1 problem.
       CHARACTER OUTS*124,msgl2*48,TTAG*12
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
-      CHARACTER H*72
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ITINSRT'  ! set for subroutine
 
 C Now choose one of the generic types to create at the insertion point.
 C Copy over default information into instance commons.
@@ -103,13 +108,11 @@ C The additional columns will fit within the current scratch file.
 
 C Ask for the name of this new entry.
       TAG(IFOC)='Undefined'
-      H(1)='In order to find items in the TDF db a unique name'
-      H(2)='must be assigned to each entry. This name is a '
-      H(3)='string up to 12 characters long with no blanks.'
-      H(4)='The word UNKNOWN is not acceptable.'
+      helptopic='temporal_item_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   42  TTAG=TAG(IFOC)
       CALL EASKS(TTAG,' ','Name for entry? ',
-     &  12,'new_item','item id',IER,4)
+     &  12,'new_item','item id',IER,nbhelp)
       if(TTAG(1:2).ne.'  '.and.TTAG(1:4).ne.'UNKN')then
         TAG(IFOC)=TTAG
       else

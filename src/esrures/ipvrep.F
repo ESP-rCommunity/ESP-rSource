@@ -51,7 +51,7 @@ C Write IPV report based on description held in common.
       COMMON/C1/NCOMP,NCON
       COMMON/CLMDT1/CLMLOC
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/BL2/dmdfla(7)
+      COMMON/BLM2/dmdfla(MGTY)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Comfort parameters and hash table.
@@ -91,9 +91,10 @@ C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
       
-      dimension ITEM(13),edput(7,MTS),ddmax(7),ddmin(7),dtot(7),dave(7)
-      dimension XMAX(7),XMIN(7),XAVE(7),XTOT(7),DMAX(7),DMIN(7),XMSUM(7)
-      dimension XMINSUM(7)
+      dimension ITEM(13),edput(MGTY,MTS)
+      dimension ddmax(MGTY),ddmin(MGTY),dtot(MGTY),dave(MGTY)
+      dimension XMAX(MGTY),XMIN(MGTY),XAVE(MGTY),XTOT(MGTY)
+      dimension DMAX(MGTY),DMIN(MGTY),XMSUM(MGTY),XMINSUM(MGTY)
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,ITEM*18,lipvdatf*72
@@ -627,7 +628,7 @@ C If no zones in first set then skip to 2nd set.
         ISET=ISIM
 
 C Clear storage arrays.
-        do 78 im=1,7
+        do 78 im=1,MGTY
           XMAX(im)=0.0
           XMIN(im)=0.0
           XAVE(im)=0.0
@@ -1358,7 +1359,7 @@ C There is information to display for this day.
         call edisp(itru,outs)
 
 C Clear edput array.
-        do 11 I=1,7
+        do 11 I=1,MGTY
           do 12 j=1,24*NTS
             edput(i,j)=0.
    12     continue
@@ -1524,13 +1525,13 @@ C            write(6,*) 'pvfloor area is ',pvfla
           endif
 
 C Clear edput array.
-          do 15 I=1,7
+          do 15 I=1,MGTY
             do 16 j=1,24*NTS
               edput(i,j)=0.
    16       continue
    15     continue
           call DDMDS(IDAY)
-          DO 181 i=1,7
+          DO 181 i=1,MGTY
             ix=i+14
             do 182 j=ISTART,IEND,NOUT
               if(idmdinc(i).eq.1.and.dmdfla(i).gt.0.001)then
@@ -3141,7 +3142,7 @@ C Hourly aggregate energy demand per unit time.
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/BL2/dmdfla(7)
+      COMMON/BLM2/dmdfla(MGTY)
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
 
@@ -3160,7 +3161,7 @@ C IPV description via ipvdata.h.
 C << is this required? >>
       common/spm55/pvdayhr(2*MTS)
 
-      dimension edput(7,MTS)
+      dimension edput(MGTY,MTS)
       character tab*1,outs*124,xfile*144,tg*1,delim*1
       logical pvok
 
@@ -3251,7 +3252,7 @@ C data for energy demand sets and non-zone demands.
       ipvhr=0
       do 10 IDAY=IODS,IODF
         call chktime(iday,istart,iend)
-        do 11 I=1,7
+        do 11 I=1,MGTY
           do 12 j=1,24*NTS
             edput(i,j)=0.
    12     continue

@@ -165,8 +165,12 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      integer inpic,ivals   ! number of zones to include
+      dimension ivals(MCOM) ! list of zones
+      logical silent        ! if true do not interact with user
+      integer ier           ! non-zero if a problem
       
-      INTEGER :: itrc,itru,ier,i,ic,icc,istat
+      INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
       INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
@@ -1179,9 +1183,15 @@ C an offset from prj start position.
 
       ELSEIF(INO.EQ.26)THEN
 
-C Execute editor and report generation tools.
+C Execute editor and report generation tools. Start with assumption
+C that all zones in the model are to be included.
         call tstamp('>','PRJ: enter report controller')
-        call prjqa(ier)
+        silent= .false.
+        inpic=NCOMP
+        do 29 iz=1,inpic
+          ivals(iz)=iz
+  29    continue
+        call prjqa(inpic,ivals,silent,ier)
       ELSE
         GOTO 3
       ENDIF

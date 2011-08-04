@@ -56,7 +56,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -89,7 +88,7 @@ C << what about including common zndata in this manipulation? >>
 
       CHARACTER SNAME1*12,SMLCN1*32,SVFC1*4,SOTF1*32,SNAMED*12
       character SUSE11*8,SUSE12*8
-      CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
+      CHARACTER ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
 C      character guesstype*24  ! for context of surface addition
@@ -102,6 +101,13 @@ C      character guesstype*24  ! for context of surface addition
 #else
       integer*8 iix,iiy,ixd,iyd
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDSUR'  ! set for subroutine
 
       IER=0
       DDOK=.false.
@@ -472,16 +478,14 @@ C of the normal ordering of the vertices.
               write(outs,'(a,i3,2a)') 'The vertex ',ijj,
      &          ' is also referenced by surface ',ssname(icother)
               dok=.true.
-              h(1)='Vertex is used in an existing edge. It'
-              h(2)='probably should also be removed but you'
-              h(3)='are asked to confirm this action (so that'
-              h(4)='the edge topology is consistent). '
+              helptopic='remove_vert_as_well'
+              call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Be on the safe side and do not remove verticies for now, except in UK
 C NCM model generation where removal of surfaces and vertices is
 C expected to be done without user interaction
 c              call askok(outs,
-c     &          'remove it from there as well?',ok,dok,4)
+c     &          'remove it from there as well?',ok,dok,nbhelp)
               ok=.false.
               IF(INOTI.EQ.1)OK=.TRUE.
               if(ok)then
@@ -646,10 +650,12 @@ C if is a duplicate.
 
 C Copy to a slightly longer buffer for editing and ensure that
 C the final name uses the allowed character set.
+          helptopic='duplicate_surf_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(T14,'(2a)') SNAME1(1:12),'  '
           write(D14,'(2a)') SNAMED(1:12),'  '
           CALL EASKS(T14,'Revised surface name','(duplicate found)',
-     &    14,D14,'surface name',IER,2)
+     &    14,D14,'surface name',IER,nbhelp)
           if(T14(1:2).NE.'  ')then
             write(SNAME1,'(a)') T14(1:12)
           else
@@ -692,36 +698,25 @@ C Generate combined name for dialog.
         WRITE(ZSDES,'(a,a1,a)') SNAME1(1:lnblnk(SNAME1)),':',
      &    ZNAME(icomp)(1:lnzname(icomp))
 
-        H(1)='Actions: '
-        H(2)=' Shift surface along (+=outwards) surface normal.'
-        H(3)=' Transform vertices by X,Y,Z metres.'
-        H(4)=' Rotate surface about one of its vertices.'
-        H(5)=' Invert ordering (to swop front & back faces).'
-        H(6)=' Do several operations to the surface.'
-        H(7)=' Continue with no action.'
+        helptopic='copied_surf_actions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(.NOT.DDOK)then
           IRT=1
           CALL EASKATOG(' Actions to take on the new surface :',' ',
      &      'shift along normal','transform xyz','rotate','invert',
-     &      'combination','continue ?',' ',IRT,7)
+     &      'combination','continue ?',' ',IRT,nbhelp)
         endif
         if(IRT.eq.5)then
           if(.NOT.DDOK)then
 
 C Create string buffer for variables with space at the end.
-            H(1)='Distance along the normal (+=out) in metres.'
-            H(2)='Transform vertices by X,Y,Z metres.'
-            H(3)='Rotate surface about one of its vertices (index).'
-            H(4)='Rotation angle (degrees) '
-            H(5)=' '
-            H(6)='If you leave transform values and/or rotation as'
-            H(7)='zero then that transform will have no effect. '
             hold64='                                                  '
             write(hold64,'(f9.4,2x,3f9.3,i4,f9.3,a)') vdis,valx,valy,
      &        valz,irv,angr,'   '
  552        CALL EASKS(hold64,
      &'Distance along normal, X Y & Z offsets, vertex, rotation angle:',
-     &' ',64,' 0.0  0.0  0.0 0. 1  0.0  ','combined transforms',IER,7)
+     &  ' ',64,' 0.0  0.0  0.0 0. 1  0.0  ','combined transforms',IER,
+     &  nbhelp)
             if(ier.ne.0)goto 552
             K=0
             CALL EGETWR(HOLD64,K,Vdis,-9.0,9.0,'W','normal distance',
@@ -770,11 +765,11 @@ C User selected only one transform to make. Process it.
         if(IRT.eq.1)then
 
 C Shift along normal and copy transformed points back to X1,Y1,Z1 array.
-          H(1)='Distance along the normal (+=out) in metres.'
           if(.NOT.DDOK)then
             vdis=0.0
             CALL EASKR(vdis,' Distance along the normal (metres): ',
-     &        ' : ',-9.999,'F',9.999,'W',0.0,'d along normal',IER,1)
+     &        ' : ',-9.999,'F',9.999,'W',0.0,'d along normal',IER,
+     &        nbhelp)
           endif
           CALL TRANSUR(ITRC,iuout,NVER1,X1,Y1,Z1,vdis,XT,YT,ZT,ZSDES)
           do 151 nt1=1,NVER1
@@ -788,7 +783,7 @@ C Transform all surface vertices.
           if(.NOT.DDOK)then
             HOLDS= '  0.0   0.0   0.0    '
  152        CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
-     &        36,'  0.0   0.0   0.0   ','offsets',IER,9)
+     &        36,'  0.0   0.0   0.0   ','offsets',IER,nbhelp)
             K=0
             CALL EGETWR(HOLDS,K,VALX,-50.0,50.0,'W','X off',IER)
             CALL EGETWR(HOLDS,K,VALY,-50.0,50.0,'W','Y off',IER)
@@ -803,23 +798,15 @@ C Transform all surface vertices.
         elseif(IRT.eq.3)then
 
 C Rotate around a point in the surface.
-          H(1)='The rotation is applied around one vertex of'
-          H(2)='the surface. The index is to the 1st, 2nd, 3rd,'
-          H(3)='vertex in the surface. '
-          H(4)=' '
-          H(5)='The rotation is applied around at and positive'
-          H(6)='is anticlockwise. '
-          H(7)=' '
-          H(8)='A cancel leaves skips the rotation step. '
           if(.NOT.DDOK)then
             CALL EASKI(IRV,'Rotate about which vertex index: ',' ',
-     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,8)
+     &        1,'F',NVER1,'F',1,'rotation anchor',IERI,nbhelp)
             if(ieri.eq.-3)then
               goto 166
             endif
             ANGR=0.
             CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
-     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,8)
+     &       -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
           endif
           if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
@@ -914,13 +901,11 @@ C inserting the new vertex index.
                         ok=.true.
                       else
                         dok=.true.
-                        h(1)='Vertex is close to an existing edge. It'
-                        h(2)='probably should also be included in the'
-                        h(3)='list of the adjacent surface (so that'
-                        h(4)='the edge topology is consistent). '
+                        helptopic='vertex_close_edge'
+                        call gethelptext(helpinsub,helptopic,nbhelp)
                         call askok(
      &                  'Insert this vertex into the adjacent surface?',
-     &                  '(see help)',ok,dok,4)
+     &                  '(see help)',ok,dok,nbhelp)
                       endif
                     else
                       ok=.false.
@@ -950,10 +935,8 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 
 C Reverse the ordering.
         if(IRT.eq.4.or.IRT.eq.5.or.IRT.eq.6)then
-          H(1)='You can swop the front:back faces of a surface. This'
-          H(2)='is necessary for partitions copied from another '
-          H(3)='zone or where you are creating back-to-back surfaces'
-          H(4)='to represent internal mass. '
+          helptopic='copied_surf_actions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(outs,'(3a)') ' surface ',SNAME1(1:lnblnk(SNAME1)),
      &                       ' (yes for most partitions) ?'
           if(.NOT.DDOK)then
@@ -961,7 +944,7 @@ C Reverse the ordering.
               IOK=1
             else
               CALL EASKAB(' Reverse the edge ordering of',
-     &                  outs,'yes','no',IOK,4)
+     &                  outs,'yes','no',IOK,nbhelp)
             endif
           endif
           if(IOK.eq.1)then
@@ -1021,14 +1004,7 @@ C Rescan the other zone before returning.
           endif
           if(inpick.gt.1)then
             dok=.true.
-            h(1)='Often the transforms that are required for one'
-            h(2)='surface should also be applied to the other'
-            h(3)='surfaces that you copied.  '
-            h(4)=' '
-            h(5)='Double check the zone after you have finished'
-            h(6)='copying the surfaces to ensure they are located'
-            h(7)='correctly and face the correct direction. '
-            CALL ASKOK(outs,'(see help)',DDOK,dok,7)
+            CALL ASKOK(outs,'(see help)',DDOK,dok,nbhelp)
           endif
           goto 191   ! jump back and process next surface
         endif
@@ -1054,20 +1030,13 @@ C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
 C the individual vertex numbers from the list.
    41   HOLD='                                                     '
-        H(1)='The number of vertices must be less than 24. '
-        H(2)='A surface is composed of a list of vertices. Type'
-        H(3)='this list in order (anticlockwise viewed from the'
-        H(4)='outside).  Note: the last line of the polygon is'
-        H(5)='from the last vertex to the start vertex. '
-        h(6)=' '
-        h(7)='Or click mouse on existing vertices, ending with an '
-        h(8)='` e `. A match is assumed if within 5 pixels.'
-        h(9)='You will be given an oportunity to confirm the list. '
+        helptopic='create_new_surface'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(MMOD.ne.8)then
           HOLD='                                                  '
           CALL EASKS(HOLD,
      &     ' Give vertices (order anticlockwise viewed from outside)',
-     &     '  ',72,' ','associated vertices',IER,5)
+     &     '  ',72,' ','associated vertices',IER,nbhelp)
           NV = iCountWords(HOLD)
           K=0
           DO 94 J=1,NV
@@ -1085,7 +1054,7 @@ C present editing of vertices with the option for mouse.
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
               CALL EASKS248(t248,' Associated vertices (type indices)?',
-     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
               NV = iCountWords(t248)
               K=0
               DO 943 J=1,NV
@@ -1143,7 +1112,7 @@ C updated reflect this in the write(t248 statement).
               write(t248,'(3a)') hold64,hold64,hold64
               WRITE(t248,'(42I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
-     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
               NV = iCountWords(t248)
               K=0
               DO 945 J=1,NV
@@ -1161,7 +1130,7 @@ C            hold64='                                                  '
 C            write(t248,'(3a)') hold64,hold64,hold64
             t248='  1                                               '
             CALL EASKS248(t248,'Associated vertices (type indices)?',
-     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
+     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
             NV = iCountWords(t248)
             K=0
             DO 944 J=1,NV
@@ -1177,10 +1146,12 @@ C and then copy to 12 char string (SN) and then use st2name to
 C get rid of blanks and non-printable characters and then use
 C snamdup to ensure that it is a unique name (in this zone).
         CALL FILSUR(ICOMP,NSUR)
+        helptopic='new_surface_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         T14=' '
         write(T14,'(2a)') SNAME(ICOMP,NSUR),'  '
  52     CALL EASKS(T14,'Surface name','(unique word <=12char):',
-     &      14,'new_surf','surface name',IER,0)
+     &      14,'new_surf','surface name',IER,nbhelp)
         write(SN,'(a)') T14(1:12)
 
         call st2name(SN,SN2)
@@ -1231,7 +1202,6 @@ C   for new position, IER is -3 user aborted action.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -1239,7 +1209,7 @@ C   for new position, IER is -3 user aborted action.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      character constr*12,act*2,mode*1,OPT*12,h*72
+      character constr*12,act*2,mode*1,OPT*12
       character outs*124,SN*12
 
       DIMENSION  XXW(4),YYW(4),ZZW(4)  ! for the initial surface
@@ -1250,11 +1220,19 @@ C   for new position, IER is -3 user aborted action.
       DIMENSION  SBBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
+
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDMASS'  ! set for subroutine
 
 C Set first coord at origin (lower left).
       XXW(1) = VALOX
@@ -1387,11 +1365,10 @@ C Complete rec.
         CALL EDISP(iuout,OUTS)
 
 C Confirm opening.
-        h(1)='If you accept the rectangle it will be converted into '
-        h(2)='a surface within the zone. If you elect to revise it'
-        h(3)='you will be presented with several options. '
+        helptopic='addmass_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Options for this rectangle:',' ',
-     &     'accept position','revise position','abort',INVT,3)
+     &     'accept position','revise position','abort',INVT,nbhelp)
         if(INVT.eq.2)then
           ITVNO=0
           ITSNM=0
@@ -1562,15 +1539,21 @@ C Parameters passed.
       integer ier    ! zero is ok non-zero see note above
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
-      CHARACTER H*72,OUTSTR*124,HOLD*36,outs*124
+      CHARACTER OUTSTR*124,HOLD*36,outs*124
       integer iier  ! local variable for use in can't delete
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ADDVERT'  ! set for subroutine
 
       check = .false.
       iier = 0
@@ -1650,6 +1633,8 @@ C Increment NTV and present vertex coords (use previous
 C in case of repitition), then parse. Check to see if the
 C new vertex is unique (i.e. not within 1mm of an existing
 C vertex.
+        helptopic='vert_add_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IADD=NUM
         DO 18 I=1,IADD
           if(I.eq.1)then
@@ -1657,10 +1642,8 @@ C vertex.
           else
             WRITE(HOLD,'(3f11.5,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
           endif
-          H(1)='The vertex coordinates should be in metres. '
-          H(2)='It is not advisable for Z to be negative.'
           CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-     &     '  ',36,' 0. 0. 0. ','vertex coord',IER,2)
+     &     '  ',36,' 0. 0. 0. ','vertex coord',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,X1(I),-999.9,999.9,'W','Xcoord',IER)
           CALL EGETWR(HOLD,K,Y1(I),-999.9,999.9,'W','Ycoord',IER)
@@ -1732,13 +1715,11 @@ C inserting the new vertex index.
                         ok=.true.
                       else
                         dok=.true.
-                        h(1)='Vertex is close to an existing edge. It'
-                        h(2)='probably should also be included in the'
-                        h(3)='list of the adjacent surface (so that'
-                        h(4)='the edge topology is consistent). '
+                        helptopic='vertex_near_edge'
+                        call gethelptext(helpinsub,helptopic,nbhelp)
                         call askok(
      &                  'Insert this vertex into the adjacent surface?',
-     &                  '(see help)',ok,dok,4)
+     &                  '(see help)',ok,dok,nbhelp)
                       endif
                     else
                       ok=.false.
@@ -1771,15 +1752,14 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 
 C Copy vertex index and then increment NTV and present vertex coords 
 C then parse into new vertex.
+        helptopic='vert_copy_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call tstamp('>','PRJ: copy vertex')
         WRITE(HOLD,'(3f11.5,a)')X(NUM),Y(NUM),Z(NUM),'  '
-        H(1)='The vertex coordinates should be in metres. '
-        H(2)='Exact duplicate vertices should be avoided.'
-        H(3)='It is not advisable for Z to be negative.'
         write(outs,'(a,i3,a,i3,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-     &    36,' 0. 0. 0. ','vertex coord',IER,3)
+     &    36,' 0. 0. 0. ','vertex coord',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,X1(1),-999.9,999.9,'W','X coord',IER)
         CALL EGETWR(HOLD,K,Y1(1),-999.9,999.9,'W','Y coord',IER)
@@ -1850,13 +1830,11 @@ C inserting the new vertex index.
                       ok=.true.
                     else
                       dok=.true.
-                      h(1)='Vertex is close to an existing edge. It'
-                      h(2)='probably should also be included in the'
-                      h(3)='list of the adjacent surface (so that'
-                      h(4)='the edge topology is consistent). '
+                      helptopic='vertex_near_edge'
+                      call gethelptext(helpinsub,helptopic,nbhelp)
                       call askok(
      &                'Insert this vertex into the adjacent surface?',
-     &                '(see help)',ok,dok,4)
+     &                '(see help)',ok,dok,nbhelp)
                     endif
                   else
                     ok=.false.
@@ -2066,7 +2044,6 @@ C Parameters
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2091,7 +2068,7 @@ C door width and height.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
+      CHARACTER outs*124,ETEXT*82,hold*36,DESCRC*25,SN*12
       character t248*248
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
@@ -2103,6 +2080,13 @@ C door width and height.
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='INSREC'  ! set for subroutine
 
 C Depending on act.
       newgeo=.false.  ! assume older format geometry.
@@ -2173,33 +2157,11 @@ C edited to a thick line if currently in graphics mode.
       endif
 
 C Insert within surface or at bottom edge (as in a door).
-      H(1)='When adding a rectangular opening (e.g. a window or'
-      H(2)='door) to a surface you specify its position within'
-      H(3)='the parent surface. For a window, this is an X Y'
-      H(4)='distance from the lower left hand corner of the parent'
-      H(5)='surface (when looking at the outside face of the parent'
-      H(5)='surface) to the lower left hand corner of the opening.'
-      H(6)='The opening will be the specified width and height.'
-      H(7)=' '
-      H(8)='More complex shaped openings might begin as a rectangle'
-      H(9)='and then be modified via a combination of adding more'
-      H(10)='vertices and using the surface list & edges menu to'
-      H(11)='link them into the child and parent surfaces.'
-      H(12)=' '
-      H(13)='For a door the position is given as a single distance'
-      H(14)='from the left edge of the parent surface (when looking '
-      H(15)='at the outside face) and a width and height.'
-      H(16)=' '
-      H(17)='The percentage of facade supports the insertion of'
-      H(18)='an opening (window) into a surface as a percentage of'
-      H(19)='the facade area.'
-      H(20)='Openings will be inserted at the centre of the'
-      H(21)='surface.'
-      H(22)='NOTE: The function can only be applied for rectangular'
-      H(23)='and vertical surfaces.'
+      helptopic='add_rect_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' Insert rectangular surface:','(see help)',
      &  'within surface','at base','percentage of parent surface',
-     &  'continue',IRT,23)
+     &  'continue',IRT,nbhelp)
       if(IRT.eq.4)return
       if(IRT.eq.1)then
 
@@ -2269,22 +2231,13 @@ C Report parent surface length and height (bounding box).
         call edisp(itru,outs)
 
 C Warn if offsets or size are small.
-        H(1)='The X offset is the distance from the lower left '
-        H(2)='corner of the parent surface (looking at the'
-        H(3)='outside face) to the left side of the new surface.'
-        H(4)='The X offset should be at least 20mm. '
-        H(5)=' '
-        H(6)='The Z offset is the distance from the bottom  '
-        H(7)='edge of the parent surface (looking at the '
-        H(8)='outside face) to the bottom of the new surface.'
-        H(9)='The Z offset should be at least 20mm.'
-        H(10)=' '
-        H(11)='The opening width and height are in metres. The'
-        H(12)='opening dimensions should be at least 100mm. '
+        helptopic='add_rect_offsets'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
-     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,12)
+     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,
+     &    nbhelp)
         K=0
         CALL EGETWR(HOLD,K,XO1,0.025,99.0,'F','X offset',IER)
         CALL EGETWR(HOLD,K,ZO1,0.025,99.0,'F','Z offset',IER)
@@ -2310,18 +2263,12 @@ C Report parent surface length and height (bounding box).
         call edisp(itru,outs)
 
 C Warn if offsets or size are small.
-        H(1)='The X offset is the distance from the left edge'
-        H(2)='of the parent surface (looking at the outside '
-        H(3)='face) to the left side of the new surface. It should'
-        H(4)='be at least 25mm (the edge generation will not be '
-        H(5)='correct with a zero offset)! '
-        H(6)=' '
-        H(7)='The opening width and height are in metres. The'
-        H(8)='door dimensions should be at least 100mm.'
+        helptopic='small_offset_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(hold,'(3f8.3,a)') XO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Width, Height (m): (see help)',
-     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,8)
+     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,XO1,0.025,99.,'F','X offset',IER)
         CALL EGETWR(HOLD,K,XW,0.1,99.0,'F','width',IER)
@@ -2352,16 +2299,10 @@ C Determine parent surface length and height (bounding box).
 
 C Ask for percentage between 5 and 95%.
         hold=' '
-        H(1)='Define the surface area of the opening as a percentage'
-        H(2)='value of the parent surface (e.g. 40%).'
-        H(3)='The new surface will be located in the centre of the'
-        H(4)='parent surface. For best results choose a percentage'
-        H(5)='between 5 and 95.'
-        H(6)=' '
-        H(7)='The logic assumes that the parent surface is rectangular'
-        H(8)='and may result in strange shapes if it is not. '
+        helptopic='opening_percent_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(PERC,'Percentage of parent surface.',
-     &    ' ',5.,'F',95.,'F',15.0,'parent percentage',IER,8)
+     &    ' ',5.,'F',95.,'F',15.0,'parent percentage',IER,nbhelp)
 
 C Determine opening width, height, X offset and z offset.
 C NOTE: this logic assumes a rectangular parent surface
@@ -2438,10 +2379,9 @@ C Complete rec.
 C Confirm opening.
         call forceflush()  ! ensure opening is drawn
         dok=.true.
-        h(1)='If the location appears to be correct in the preview'
-        h(2)='you can accept it by saying yes. If you are in doubt'
-        h(3)='then say no for a chance to modify it. '
-        CALL ASKOK('Position OK?','(see help)',OK,dok,3)
+        helptopic='confirm_location'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('Position OK?','(see help)',OK,dok,nbhelp)
         IF(.NOT.OK)GOTO 30
       endif
 
@@ -2471,10 +2411,10 @@ C surface in the zone`. ICONO is the connection for the parent surface.
       else
         T14=' '
         SN=' '
-        h(1)='Well named surfaces (e.g. call a door a door) '
-        h(2)='can help you understand a model better! '
+        helptopic='surface_name_logic'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(T14,' ',' Inserted surface name (12 char max):',
-     &    14,'new_door','surface name',IER,2)
+     &    14,'new_door','surface name',IER,nbhelp)
         write(SN,'(a)') T14(1:12)
         call st2name(SN,SNAME(ICOMP,NSUR))
       endif
@@ -2558,35 +2498,13 @@ C If there already is a hole in the surface (via looking
 C at duplicated vertices) then ask preference on how to link
 C in the new surface.
         if(IHIT.gt.0)then
-          H(1)='The topology of the current surface indicates that '
-          H(2)='there is probably an existing `hole` in the surface'
-          H(3)='(typically used for glazing). '
-          H(4)=' '
-          H(5)='Polygons in esp-r are defined as a continuous line,'
-          H(6)='so the addition of a second `hole` requires that the'
-          H(7)='bounding surface be revised to flow around the new'
-          H(8)='surface.  '
-          H(9)=' '
-          H(10)='You will be asked which corner of the new surface'
-          H(11)='and the vertex in the bounding surface to link to.'
-          H(12)='If the first `hole` linked to the lower left corner'
-          H(13)='(as indicated by a diagonal line) the new surface '
-          H(14)='might link to the lower right corner of the '
-          H(15)='bounding surface.  This convention will hopefully '
-          H(16)='limit the chance of the edges crossing. '
-          H(17)=' '
-          H(18)='The bounding surface must be wrapped around new one'
-          H(19)='so you will be asked for additional information.'
-          H(20)=' '
-          H(21)='If you cancel when asked about connecting to a'
-          H(22)='vertex in the bounding surface, the first point'
-          H(23)='of the bounding surface will be assumed. Please'
-          H(24)='resolve this issue at a later point!'
-          CALL PHELPD('tmc insert warning',24,'-',0,0,IER)
+          helptopic='surface_topology'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('tmc insert warning',nbhelp,'-',0,0,IER)
 
           CALL EASKAB('There is already a `hole` in the surface - ',
      &      'corner of the new surface to connect to: ','lower left',
-     &      'lower right',ICH,24)
+     &      'lower right',ICH,nbhelp)
 
 C If parameter MV changes reflect this in the write(t248 statement.
           WRITE(t248,'(42i4)')(JVN(IS,J),J=1,NVER(IS))
@@ -2595,7 +2513,7 @@ C If parameter MV changes reflect this in the write(t248 statement.
  8795     CALL EASKI(IVH,
      &      ' Which vertex in the bounding surface to tie to:',
      &      ' ( usually at lower right corner of bounding surface) ? ',
-     &      1,'F',NTV,'F',1,'bound vert',IERI,24)
+     &      1,'F',NTV,'F',1,'bound vert',IERI,nbhelp)
           if(ieri.eq.-3)then
 
 C In response to a cancel set ipoint to the first vertex position
@@ -2911,12 +2829,11 @@ C inserting the new vertex index.
                     ok=.true.
                   else
                     dok=.true.
-                    h(1)='The vertex is close to another edge. To'
-                    h(2)='maintain the edge topology you probably want'
-                    h(3)='to update the edges of the adjacent surface.'
+                    helptopic='vertex_close_to_edge'
+                    call gethelptext(helpinsub,helptopic,nbhelp)
                     call askok(
      &                'Insert this vertex into the adjacent surface?',
-     &                '(see help)',ok,dok,3)
+     &                '(see help)',ok,dok,nbhelp)
                   endif
                 else
                   ok=.false.
@@ -2951,15 +2868,12 @@ C Now warn the user to carefully look at the new surface which has been
 C created as well as the additional info in the old surface.  The 
 C assumptions for where to add vertices may require the user to do
 C further modifications.
-      H(1)='The modifications to the geometry of the zone, surface'
-      H(2)='attributes and topology which have been made need to'
-      H(3)='be checked closely.  For example the original surface'
-      H(4)='topology must have a link between the outer boundaries'
-      H(5)='and the `hole` so that it is a proper polygon. '
+      helptopic='mods_need_checking'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         continue
       else
-        CALL PHELPD('surface details',5,'-',0,0,IER)
+        CALL PHELPD('surface details',nbhelp,'-',0,0,IER)
       endif
       MODIFY=.TRUE.
 
