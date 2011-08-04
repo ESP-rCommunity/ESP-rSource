@@ -49,6 +49,7 @@ C  CMP44C   2 node (ISV=20) WCH exponent model radiator
 C  CMP45C   1 node (ISV=20) Air source heat pump connection to WCH
 C  CMP50C   1 node (ISV=29) WCH thermostatic radiator valve
 C  CMP51C   1 node (ISV=29)     mechanical room thermostat
+c  CMP79C   1 node (ISV=20) WCH stochastic hot water draw
 C  CMP90C   2 node (ISV>19)     air & water temperature source
 C  CMP91C   2 node (ISV>19)     imaginary building-like plant load
 C                               acting on heat and mass balances
@@ -6390,6 +6391,502 @@ C Trace output
 
       RETURN
       END
+C --------------------------------- CMP79C -----------------------------------
+C CMP79C (DHWdraw) calculates an instantaneous hot water draw based on a 
+C probabilistic model. For each simulation time step the model calculates 
+C a hot water draw V in l/s. This flow is then passed into the model coefficient 
+C generator. The models is (loosely) based on the work of Jordan and Vajen in IEA SHC Annex26. 
+C
+C The draw calculation is based on the user supplying a nominal daily draw (litres).
+C The user also needs to define the typical % of the total draw consumed in up to
+C 6 concurent user-defined periods adding up to 24h.
+C 
+C The user can define up to 6 distinct draw types; these can be individual
+C loads such as a shower or grouped loads of simular types. These are characterised by 
+C 1) a flowrate when in use (l/min) 
+C 2) a nominal flow duration (min) 
+C 3) a flow duration standard dev. 
+C
+C For each draw types the user needs to define the typical % of the total daily 
+C draw attributable to the draw type along with information on any change in draw
+C use between weekdays and weekends (e.g. applies to use of baths)
+C
+C Data on holidays, seasonal variation of the total daily draw also need to be defined.
+C During holiday periods the total draw is set to zero.
+C
+C
+C Data input and main variable descriptions (up to 60 items): 
+C NomDraw               Total Average Nominal HW Draw (l per day)
+C SeasDrawFluc          Seasonal draw fluctuation (%)
+C SeasPhas              Seasonal phase shift (days)
+C
+C NoHolPer              # of Holiday Periods (up to 3)
+C For Each Holiday Period:
+C HolPerS(MHolPer)      Start DOY
+C HolPerE(MHolPer)      End DOY
+C
+C NoDrawPer             # of Concurrent Draw Periods in Day (up to 6)
+C For each draw period i
+C DrawPerS(MDrawPer)    Start of draw period (hours)
+C NomDrawFrac(MDrawPer) Nominal. % of total Nominal. draw taken in period i
+C 
+C
+C NDrawType             Number of distinct draw types (up to 6)
+C NomTypeFrac[i]        % of total Nominal draw attributable to type i
+C DrawV[i]              Draw i flow rate (l/min)
+C DrawVstd[i]           Draw i flow rate std dev (l/min)
+C NomDrawDur[i]         Draw i nominal flow duration (min)
+C DrawWdvar[i]          Draw i weekday probability modifier (-)
+C DrawWevar[i]          Draw i weekend probability modifier (-)
+
+C ----------------------------------------------------------------------
+      SUBROUTINE CMP79C(IPCOMP,COUT,ISTATS)
+
+      implicit none
+#include "plant.h"
+#include "building.h"
+
+
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/Pctime/TIMSEC
+      COMMON/PTIME/PTIMEP,PTIMEF
+
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+
+      common/pcnam/pcname(mpcom)       ! Plant component names
+      COMMON/ITERINDEX/ITERNU !plant iteration number
+
+C Ground temperature
+      common/C25/igttype,GTMP(12)
+
+C Commons for DWHStochastic calculation.
+      COMMON/DHWStoch1/DHWsubmin,CalCount,DHWCalcInc
+      COMMON/DHWStoch2/DHWdrawV,DHWDrawVp
+
+      Common/DHWStoch3R/NomDraw,SeasDrawFluc,DrawPerS(6),NomDrawFrac(6),
+     &NomTypeFrac(6),DrawV(6),DrawVstd(6),DrawWdvar(6),DrawWevar(6)
+      Common/DHWStoch3I/SeasPhas,NoHolPer,HolPerS(3),HolPerE(3),
+     &NoDrawPer,NDrawType,NomDrawDur(6)
+
+      Common/DHWStoch4/CurDrawDur(6),ElapseDrawDur(6),DHWDraw(6)
+
+      Common/DHWStochL/inDraw(6)
+
+      Common/DHWTrakType/DHWDrawTypeTot(6),DHWDrawTypeTotV(6),
+     &DHWDrawTypeTotVp(6)
+
+
+      DIMENSION NDMonth(12)
+      DATA NDMonth/31,28,31,30,31,30,31,31,30,31,30,31/
+
+
+      REAL COUT(MPCOE)
+      character outs*124
+      character*128  H3K_rep_NAME      ! H3Kreporting object name
+      character*128  root_name         ! root name of component node
+      character*128  hold_name         ! temporary variable for string manipulation
+      character*15 pcname
+      character*16 char_tmp
+      logical DHWsubmin,DHWCalc,Weekend,indraw,DisPos
+
+
+      integer iuout,iuin,itc,icnt,ITCF,ITRACE,IZNTRC,ITU,IHRP,IHRF,IDYP,
+     &IDYF,IDWP,IDWF,NSINC,ITS,NPCOMP,NCI,I,IHol,ITERNU,
+     &NPCDAT,IPOFS1,IPOFS2,ICONTP,ICONDX,NDMonth,igttype,ICON1
+
+      integer IPCOMP,IX1,NAPDAT
+
+      integer INOD1,IMonth,IM,IDoM,ID,ISTATS,iMinS,CalCount,iPer,inPer,
+     &NITMS
+
+      integer DHWCalcInc,iDHWinc
+
+      real DHWdrawV,DHWDrawVp,FracMin,TSperDHWCalc,DHWDrawTot,DrawV,
+     &DHWDraw,DrawPVal,DrawProb,DrawWevar,DrawWdvar,NomDrawFrac,
+     &NomDrawDur,Tincr,NomTypeFrac,ActV
+
+      integer IDHWType,HolPerS,HolPerE,NDrawType,NoDrawPer,NoHolPer,
+     &SeasPhas
+
+      REAL DHWDrawTypeTot,DHWDrawTypeTotV,DHWDrawTypeTotVp
+
+      real TIMSEC,PTIMEP,PTIMEF,CDATA,PCAOUT,QDATA,
+     &CONVAR,GTMP,TG2,TG1,CurrGTMP,PI,SeasDrawFluc,RHOFLD
+
+
+      real DOY,NomDrawDay,NomDraw,xHol,xWE,DrawPerS,PerDur,
+     &ElapseDrawDur,DrawVstd,CurDrawDur,DenS,Rand_No
+
+
+      PI=22./7.
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP79C'
+
+C Check control data for relevant balance type
+      IF(ISTATS.EQ.1.AND.CDATA(IPCOMP,1).LT.0.) THEN
+         CALL DAYCLK(IDYP,PTIMEF,IUOUT)
+         WRITE(outs,*) ' CMP79C: invalid control data for component ',
+     &                  IPCOMP,' : ',CDATA(IPCOMP,1)
+         call edisp(iuout,outs)
+         call edisp(iuout,' CMP79C: unresolvable error.')
+         call epwait
+         call epagend
+         STOP
+      END IF
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      ICON1=ICONDX(IPCOMP,1,1)
+      INOD1=NPCDAT(IPCOMP,9)
+
+C Generate coefficients for energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C Calculate the current ground temperatures by interpolating the monthly ground
+C temperatures.
+        CALL EDAYR(IDYP,ID,IM)
+        IMonth=IM
+        IDoM=ID
+
+C Get current month temperature
+        TG1=GTMP(IMonth)
+        IF(IMonth.EQ.12)THEN
+
+C Get next month's temperature (assume loop round to January).
+           TG2=GTMP(1)
+        ELSE
+
+C Get next month's temperature
+           TG2=GTMP(IMonth+1)
+        ENDIF
+
+C Get today's ground temp.
+        currGTMP=((float(IDoM)/float(NDMonth(IMonth)))*(TG2-TG1))+TG1
+
+
+C Establish matrix equation self- and cross-coupling coefficients
+
+C The return flow from this component (if needed) is mains cold water and so the
+C 'exit' temperature is set to the interpolated ground temperature. 
+         COUT(1)=1.
+         COUT(2)=0.
+C and then present-time coefficient (ie. right hand side)
+         COUT(3)=currGTMP
+
+
+C 1st phase mass (ie. water) balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+
+C Calculate the DHWdraw (l) at this simulation timestep.
+
+C Determine the calculation frequency if timestep < 1 min or the number of draw time increments
+C to be calculated if timestep > 1 min.
+        IF(TIMSEC.LT.60.)THEN
+          DHWSubmin=.true.
+          iMinS=NINT(60./TIMSEC)
+          FracMin=abs(TIMSEC*float(iMinS)-60.)
+          DHWCalcInc=1
+          TSperDHWCalc=iMinS
+          if(FracMin.gt.1E-2)then
+            WRITE(IUOUT,*)' WARNING:CMP79C [DHW] requires the plant'
+            WRITE(IUOUT,*)' time step (s) to be an integer multiple or' 
+            WRITE(IUOUT,*)' divisor of 60. Adjust the plant time   '
+            WRITE(IUOUT,*)' step accordingly to avoid errors!'
+          endif
+        ELSE
+          DHWSubmin=.false.
+          iMinS=NINT(TIMSEC/60.)
+          FracMin=abs(TIMSEC-(60.*float(iMinS)))
+          DHWCalcInc=iMinS
+          if(FracMin.gt.1E-2)then
+            WRITE(IUOUT,*)' WARNING:CMP79C [DHW] requires the plant'
+            WRITE(IUOUT,*)' time step (s) to be an integer multiple or' 
+            WRITE(IUOUT,*)' divisor of 60. Adjust the plant time      '
+            WRITE(IUOUT,*)' step accordingly to avoid errors!'
+          endif
+        ENDIF
+
+
+C Calculate the draw ONLY at the first calc increment if sim timestep < 1 min , 
+C and in the first iteration of a plant time step.
+        IF(ITERNU.EQ.1)THEN
+          DHWCalc=.true.
+          if(DHWsubmin.AND.CalCount.EQ.1)then
+            DHWCalc=.true.
+            CalCount=CalCount+1
+          elseif(DHWsubmin.AND.CalCount.GT.1)then
+            DHWCalc=.false.
+            CalCount=CalCount+1
+            if(CalCount.GT.TSperDHWCalc)then
+              CalCount=1
+            endif
+          endif
+        ELSE
+          DHWCalc=.FALSE.
+        ENDIF
+
+C Calculate the current DHWDraw over the current time step. If time step > 1 min then
+C the routine will loop N times and will calculate the equivalent average draw during the time
+C step. 
+        if(DHWcalc)then
+
+C Calculate general info required for calculation
+C Day of year [needed for average flow modifier]
+          DOY=float(iDYP)
+
+C Calculate nominal draw for today, accounting for seasonal variablity
+          NomDrawDay=NomDraw*
+     &(1.+(SeasDrawFluc/100.)*(cos(2*PI*(1/365.)
+     &*DOY-(SeasPhas*(2*PI/365.)))))
+
+          if(NomDrawDay.LT.0.0)then
+             NomDrawDay=0.0
+             WRITE(IUOUT,*)' WARNING:CMP79C [DHW] a nominal draw < 0.0'
+             WRITE(IUOUT,*)' has been calculated. Resetting to zero' 
+          endif
+
+
+C Check for weekend [flow modifier]
+          if(IDWP.GT.5)then
+            Weekend=.true.
+          else
+            Weekend=.false.
+          endif
+
+C Check for holiday [flow modifier] 
+          xHol=1.0
+          do 5 iHol=1,noHolPer
+            if(iDYP.GE.HolPerS(iHol).AND.iDYP.LT.HolPerE(iHol))then
+              xHol=0.0
+            endif
+   5      continue
+
+
+C Work out the current draw period
+          do 7 iPer=1,NoDrawPer-1
+            if(PTIMEP.GE.DrawPerS(iPer).AND.
+     &      PTIMEP.LT.DrawPerS(iPer+1))then
+              inPer=iPer
+              PerDur=(DrawPerS(inPer+1)-DrawPerS(inPer))*60.
+            endif
+  7       continue
+
+C Check if in final draw period
+          if(PTIMEP.GE.DrawPerS(NoDrawPer))then
+            inPer=NoDrawPer
+            PerDur=(24.0-DrawPerS(NoDrawPer))*60.
+          endif
+
+
+          DHWDrawTot=0.0
+          do 10 iDHWinc=1,DHWCalcInc !increment loop if simulation TS > 1 min
+            do 101 iDHWType=1,NDrawType !Types loop 
+
+C Check to see if the component is in the process of a multi-timestep draw
+              if(indraw(iDHWType))then
+                ElapseDrawDur(iDHWType)=ElapseDrawDur(iDHWType)+1.0
+                if(ElapseDrawDur(iDHWType).GT.CurDrawDur(iDHWType))then
+                  DHWDraw(iDHWType)=0.0
+                  indraw(iDHWType)=.false.
+                  ElapseDrawDur(iDHWType)=0.0
+                  CurDrawDur(iDHWType)=0.0
+                else
+                  indraw(iDHWType)=.true.
+                endif 
+              else
+C Not currently in a draw, check to see if a draw is made and calculate the draw characteristics
+C if required.
+                DHWDraw(iDHWType)=0.0
+
+                if(weekend)then
+                  xWE=DrawWevar(iDHWType)
+                else
+                  xWE=DrawWdvar(iDHWType)
+                endif
+
+C Calculate the draw probability (all times in minutes)
+                DrawProb=((NomDrawFrac(inPer)/100.)*
+     &          ((NomTypeFrac(iDHWType)/100.)*NomDrawDay*xHol*xWE))/
+     &          (DrawV(iDHWType)*PerDur*NomDrawDur(iDHWType))
+
+                 DrawPVal=Rand_No()
+
+                if(DrawPVal.LE.DrawProb)then
+
+C Set the draw to the nominal value.
+                  DHWDraw(iDHWType)=DrawV(iDHWType)
+                  Tincr=0.1
+
+C Calculate the actual draw flow rate based on a normal distribution about the mean
+C As flow cannot be zero force a lognormal distribution if the range goes below zero
+                  DisPos=.true.
+                  call StdDisVal(DrawV(iDHWType),
+     &DrawVstd(iDHWType),Tincr,ActV,DisPos)
+                  DHWDraw(iDHWType)=ActV
+
+c Calculate the time duration of the current draw and set the inDraw varaible if the duration > 1min.
+C This allows draw to persist over multiple time steps.
+                  ElapseDrawDur(iDHWType)=0.0
+                  CurDrawDur(iDHWType)=NomDrawDur(iDHWType)
+                  if(CurDrawDur(iDHWType).gt.1.0)then 
+                    ElapseDrawDur(iDHWType)=ElapseDrawDur(iDHWType)+1.0
+                    inDraw(iDHWType)=.true.
+                  else
+                    inDraw(iDHWType)=.false.
+                  endif    
+                else
+                  DHWDraw(iDHWType)=0.0
+                endif
+
+              endif
+
+C Add to the calculated total draw to the totals for tracking draw from each type.
+              DHWDrawTypeTot(iDHWType)=DHWDrawTypeTot(iDHWType)
+     &+DHWDraw(iDHWType)
+
+              DHWDrawTot=DHWDrawTot+DHWDraw(iDHWType)
+
+  101       continue
+  10      continue
+
+C Overwrite the previous time step DHW draw with the average (convert l/min -> l/s) of the calculated
+C draw over the plant simulation time step
+          DHWDrawV=DHWDrawTot/(60.*float(DHWCalcInc))
+          DHWDrawVp=DHWDrawV   
+          DHWDrawTot=0.0
+          DO 105 iDHWType=1,NDrawType
+            DHWDrawTypeTotV(iDHWType)=
+     &DHWDrawTypeTot(iDHWType)/(60.*float(DHWCalcInc))
+            DHWDrawTypeTotVp(iDHWType)=DHWDrawTypeTotV(iDHWType)
+            DHWDrawTypeTot(iDHWType)=0.0
+  105     Continue
+
+        else
+
+C Don't need to calculate draw as plant simulation TS is < 1 min, 
+C use previously calculated value instead.
+          DHWDrawV=DHWDrawVp
+
+          DO 107 iDHWType=1,NDrawType
+            DHWDrawTypeTotV(iDHWType)=DHWDrawTypeTotVp(iDHWType)
+  107     Continue
+
+        endif !end on DHW calc check
+
+
+
+C Fluid density 
+       DenS=RHOFLD(3,CONVAR(ICON1,1))
+
+       COUT(1)=1.
+       COUT(2)=0.
+       COUT(3)=DHWDrawV*(DenS/1000.)
+
+C Store individual type flows as addtitional output.
+        NAPDAT(IPCOMP)=6
+        DO 109 iDHWType=1,NDrawType
+          PCAOUT(IPCOMP,iDHWType)=
+     &DHWDrawTypeTotV(iDHWType)*(DenS/1000.)
+  109   CONTINUE
+
+C------------------------------------------------------
+C XML output
+C------------------------------------------------------
+
+C.....Get component name
+        hold_name = pcname(IPCOMP) 
+C.....Format string as: 'plant/NAME/misc_data'
+
+         WRITE(root_name,'(A,A,A)') 
+     &     'plant/',
+     &     hold_name(1:lnblnk(hold_name)),
+     &     '/misc_data'
+
+         WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/DHW_draw_stoch'
+
+         call add_to_xml_reporting(
+     &                   DHWDrawV*(DenS/1000.),
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(kg/s)',
+     &                   'Hot water draw rate' )
+
+          DO 111 iDHWType=1,NDrawType
+            write(char_tmp,'(A,I2)')'Draw for type:',iDHWType
+            call add_to_xml_reporting(
+     &                   DHWDrawTypeTotV(iDHWType)*(DenS/1000.),
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(kg/s)',
+     &                   char_tmp)
+  111     Continue
+
+c      write(87,*)'DHW: mass flow rate '
+c      write(87,*)'kg/s | rho ', DHWDrawV*(DenS/1000.), DenS
+
+C 2nd phase mass (ie. vapour) balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=0.
+      END IF
+
+
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 1 node (ISV=20) WCH Stochastic DHW draw'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' GTMP       = ',currGTMP,' (C)'
+            WRITE(ITU,*) ' DHWCalc    = ',DHWCalc,' (-)'
+            WRITE(ITU,*) ' DHWSubmin  = ',DHWSubmin,' (-)'
+            WRITE(ITU,*) ' DHWCalcInc = ',DHWCalcInc,' (-)'
+            WRITE(ITU,*) ' DOY        = ',DOY,' (-)'
+            WRITE(ITU,*) ' NomDraw    = ',NomDraw,' (l)'
+            WRITE(ITU,*) ' NomDrawDay = ',NomDrawDay,' (l)'
+            WRITE(ITU,*) ' DoW        = ',IDWP,' (-)'
+            WRITE(ITU,*) ' Weekend    = ',Weekend,' (-)'
+            WRITE(ITU,*) ' Holiday    = ',xHol,' (-)'
+            WRITE(ITU,*) ' # Periods  = ',NoDrawPer,'(-)'
+            WRITE(ITU,*) ' # Types    = ',NDrawType,'(-)'
+            WRITE(ITU,*) ' Period     = ',inPer,'(-)'
+            WRITE(ITU,*) ' DHWDraw    = ',inPer,'(l)'
+            WRITE(ITU,*) ' DHWDrawV   = ',DHWDrawV,'(l/s)'
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=3
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP79C'
+
+      RETURN
+      END
+
+
 
 C ******************** CMP90C ********************
 

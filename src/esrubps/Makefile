@@ -38,7 +38,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
-	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o temps.o trstyp.o \
+	  spmatl.o spmisc.o startup.o stofunc.o subsys.o tdfile.o tdrecbps.o temps.o trstyp.o \
 	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
 	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o\
@@ -408,6 +408,9 @@ spmisc.F:
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
+stofunc.F:
+	rm -f stofunc.F
+	ln -s $(PLTdir)/stofunc.F .
 subsys.F:
 	rm -f subsys.F
 	ln -s $(BLDdir)/subsys.F .
@@ -711,7 +714,7 @@ clean:
 	pcomp4.F pcomps1.F pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F \
 	plt_zone_gain_coupling.F pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
-	Annex42_fuel_cell.F spmatl.F \
+	Annex42_fuel_cell.F spmatl.F stofunc.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F temps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
