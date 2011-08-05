@@ -215,6 +215,7 @@ extern wirepk_();
 extern cpwpk_();
 extern chgazi_();
 extern chgelev_();
+extern chgeye_();
 extern proftxdump_();
 extern nwkslctc_();
 extern gconad_();

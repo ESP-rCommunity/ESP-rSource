@@ -198,6 +198,36 @@ C Passed paramter.
       return
       end
 
+C ********* chgeye
+C CHGEYE is called from C code in esru_x.c with current eye view point angle as 7 real numbers.
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN)
+#include "building.h"
+#include "prj3dv.h"
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN
+      
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      logical MODIFY,MODLEN,MODBND
+
+C Debug
+C      write(6,*) 'chgeye ',EVX,EVY,EVZ,VX,VY,VZ,EAN
+      eyem(1)=EVX
+      eyem(2)=EVY
+      eyem(3)=EVZ
+      VIEWM(1)=VX
+      VIEWM(2)=VY
+      VIEWM(3)=VZ
+      ANG=EAN
+      HANG=ANG/2.0
+      MODIFY=.TRUE.
+      MODLEN=.TRUE.
+      CALL INLNST(1)
+      CALL ADJVIEW(IER)
+
+      return
+      end
+
 C ******************** SVDSOPT ********************
 C SVDSOPT - save graphics display options into common block RAY2SV.
       subroutine SVDSOPT
