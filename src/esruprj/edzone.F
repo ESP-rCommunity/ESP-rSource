@@ -500,6 +500,8 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -731,6 +733,14 @@ C Update the connection based data structures.
           SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
           IZSTOCN(ncomp,icc)=iccc
+
+C Find the index of the MLC which matches this surface.
+          ssmlcindex(iccc)=0  ! assume no matching MLC          
+          do 5 ii=1,nmlc
+            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
+              ssmlcindex(iccc)=ii   ! remember MLC index     
+            endif
+  5       continue
   132   CONTINUE
         NCON=ICCC
 
@@ -1629,7 +1639,6 @@ C IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "CFC_common.h"
-      COMMON/OUTIN/IUOUT,IUIN
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       CHARACTER act*3
@@ -1720,17 +1729,18 @@ C contents of the model.
       
       integer lnblnk  ! function definition
 
+C Passed parameters
+      integer icomp   ! index of the current zone
+      character act*1 ! i is initialise r is report on leaving
+      logical silent  ! if true then use silent recalc
+
       COMMON/OUTIN/IUOUT,IUIN
       character h*72
       common/pophelp/h(60)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
-      common/C21/IFCFG,cfgroot,LCFGF
 
-      CHARACTER act*1
-      character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok,cfcold
-      logical silent  ! if true then use silent recalc
 
 C For help messages
       character helpinsub*24 ! subroutine name
