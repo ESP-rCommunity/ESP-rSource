@@ -1376,7 +1376,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
-      character NAM*72,NAM99*72,LAYD*124
+      character NAM*72,NAM99*72,LAYD*124  ! note NAM not actually used
       character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
@@ -1591,13 +1591,15 @@ C Ask for name of the new construction
           IPRMAT(NMLC,1)=1
           DTHK(NMLC,1)=0.10
 
-C Bring up editing menu for new item.
+C Bring up editing menu for new item. Ignore jump requests.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after new construction.')
         elseif(IW.EQ.2)then
 
 C Compact the list by moving all the items in common MLC up one.
@@ -1671,11 +1673,13 @@ C When editing the construction name use a slightly wider string buffer.
 
 C Bring up editing menu for new item.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy construction.')
         ELSEIF(IW.EQ.4)THEN
 
 C Invert an existing construction. Ask user to select original and if
@@ -1773,11 +1777,13 @@ C Finally copy temporary data into opposite layer.
 
 C Bring up detailed editing menu.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy invert construction.')
         ENDIF
       ELSEIF(INO.EQ.NITMS-6)THEN
 
@@ -1902,15 +1908,26 @@ C Call subroutine to calculate g-value and report
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
 
 C Edit block identified by KEYIND, remind user of details and then
-C bring up an editing facility.
+C bring up an editing facility. User may have indicated that they
+C would like to jump to a previous or subsequent construction.
+C << recode later to avoid goto statement >>
         CALL KEYIND(NITMS,INO,IFOC,IO)
-        CALL EDISP(iuout,' ')
+ 99     CALL EDISP(iuout,' ')
         call etmldb(2,iuout,IFOC,imerr)
         CALL EPMENSV
-        CALL EDWALL(ITRC,IFOC,moddb,IER)
+        CALL EDWALL(ITRC,IFOC,moddb,jump,IER)
         CALL EPMENRC
         ISEL=IFOC
         chgdb=moddb
+        if(jump.eq.0)then
+          continue
+        elseif(jump.eq.-1)then
+          ifoc=ifoc-1
+          goto 99
+        elseif(jump.eq.1)then
+          ifoc=ifoc+1
+          goto 99
+        endif
       else
         INO=-1
         GOTO 2
@@ -1940,7 +1957,7 @@ C Some of the items in the GAPS material category have a -99
 C index (no equivalent in legacy databases) and the current code
 C assumes that -99 entities may be gasses.
 
-      SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
+      SUBROUTINE EDWALL(ITRC,IFOC,moddb,jump,IER)
 #include "building.h"
 #include "model.h"
 
@@ -1955,6 +1972,7 @@ C Paramters
       integer ITRC  ! if > 1 then be verbose
       integer IFOC  ! index in the construction (array)
       logical moddb ! set to true of construction altered
+      integer jump  ! zero no jump, 1 jump to next, -1 jump to previous
       integer IER   ! zero is ok, one is a problem
 
       COMMON/FILEP/IFIL
@@ -1978,7 +1996,7 @@ C Material properties.
       logical closemat1,closemat2
 
 C Note: size of MLED supports a dozen layers in a construction.
-      DIMENSION MLED(27),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION MLED(29),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
@@ -2167,6 +2185,22 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       M=M+1
       MLED(M)='* adjust layer to reach U-value  '
       M=M+1
+
+C If possible to jump previous.
+      if(ifoc.eq.1)then
+        MLED(M)='<                              '
+      else
+        MLED(M)='< previous construction        '
+      endif
+      M=M+1
+
+C If possible to jump next.
+      if(ifoc.eq.NMLC)then
+        MLED(M)='>                              '
+      else
+        MLED(M)='> next construction            '
+      endif
+      M=M+1
       MLED(M)='? help                           '
       M=M+1
       MLED(M)='- exit this menu                 '
@@ -2188,7 +2222,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       CALL EMENU('Construction editing',MLED,NLED,ILED)
-      IF(ILED.EQ.NLED)THEN
+      IF(ILED.EQ.NLED.or.ILED.EQ.NLED-2.or.ILED.EQ.NLED-3)THEN
 
 C Check to see that mlc of a single air layer is not specified.
         if(LAYERS(IFOC).eq.1.and.IPR(IFOC,1).EQ.0)then
@@ -2289,6 +2323,15 @@ C Update DESC before returning.
           call edisp(iuout,
      &      'Please ensure that you save the database...')
         endif
+
+C Take into account whether the user as requested a jump.
+        if(ILED.EQ.NLED-2)then
+          jump=1
+        elseif(ILED.EQ.NLED-3)then
+          jump=-1
+        else
+          jump=0
+        endif
         RETURN
       ELSEIF(ILED.EQ.NLED-1)THEN
 
@@ -2296,7 +2339,7 @@ C List the help.
         helptopic='edit_wall_details'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('construction editing',nbhelp,'-',0,0,IER)
-      ELSEIF(ILED.EQ.NLED-2)THEN
+      ELSEIF(ILED.EQ.NLED-4)THEN
 
 C Adjust layer.
         CALL EASKABCD('Adjust options: ',' ','Alter (solid) thickness',
@@ -2317,13 +2360,17 @@ C Ask for which layer to adjust, make sure it is not a gap.
           CALL EPMENRC
         ENDIF
         IF(IW.EQ.1)THEN
+
+C If adjust thickness and a layer picked start thickness equal to
+C what exists up to 250mm.
           if(IX.eq.1.and.imlay(1).gt.2)then
             IWHICH=imlay(1)-2
             write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
      &        '... which is currently ',DTHK(IFOC,IWHICH)*1000.0,
      &        ' thick.'
             call edisp(iuout,outs)
-            t32='   1  250   0.1  '
+            write(t32,'(f7.1,a)') DTHK(IFOC,IWHICH)*1000.0,
+     &        '  250   0.1  '
             CALL EASKS(t32,
      &        'Thickness (minimum & maximum mm) & desired U value',
      &        ' ',32,' ','thickness and U',IER,nbhelp)
@@ -2439,7 +2486,8 @@ C No longer getting closer so step back one and report.
      &        '... which has current ',DRAIR(IFOC,IWHICH,1),
      &        ' air gap resistance.'
             call edisp(iuout,outs)
-            t32='   0.17  0.60   1.4  '
+            write(t32,'(f7.4,a)') DRAIR(IFOC,IWHICH,1),
+     &        '  0.60   1.4  '
             CALL EASKS(t32,
      &        'Air gap resistance (min & max) & desired U value',
      &        ' ',32,' ','resistance and U',IER,nbhelp)
@@ -2448,7 +2496,7 @@ C No longer getting closer so step back one and report.
             CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum r',IER)
             CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
 
-C Start at the VALX thickness and increment 1mm each time until
+C Start at the VALX resistance and increment by .002 each time until
 C close to VALZ.
             deltau=abs(currentu-valz)  ! remember difference
             write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
@@ -2561,7 +2609,7 @@ C No longer getting closer so step back one and report.
 
 C Process the request.
 
-      ELSEIF(ILED.EQ.NLED-3)THEN
+      ELSEIF(ILED.EQ.NLED-5)THEN
 
 C +- Layer.
         CALL EASKABCD(' Layer options: ',' ',' Delete',
