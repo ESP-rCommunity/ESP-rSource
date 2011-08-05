@@ -1600,6 +1600,7 @@ C between the two X and two Y and two Z. This uses G1 commons.
 C As the user for a start vertex in this zone and a final vertex in
 C another zone. This will require saving and loading geometry common
 C blocks (epkvert uses common G1).
+            x1=0.0; y1=0.0; z1=0.0
             inpick=1
             call EPKVERT(INPICK,IVLST,'Start Point',
      &        'Select starting vertex.',' ',nbhelp,ier)
@@ -3229,7 +3230,7 @@ C << geometry file and if so do not use CONINF.
 C Use ssmlcindex to get MLC index for surface.
           if(LTHRM(ICOMP)(1:7).eq.'UNKNOWN'.or.
      &       LTHRM(ICOMP)(1:2).eq.'  ')then
-            if(ssmlcindex(ico).ne.0)then
+            if(ssmlcindex(ioc).ne.0)then
               write(outs,'(2a)') SN(1:lnblnk(SN)),'?'
               dok=.false.
               call askok('View thermo-physical properties of ',
@@ -4243,10 +4244,7 @@ C Setup array of menu strings.
 
       endif
 
-C Common editing of variants.
-  42  continue
-
-C Edit door variants.
+C Common editing of variants - doors:
       if(iuopt.eq.1)then
         SUSE(IS,1)='DOOR'
         SSUSE(IC,1)='DOOR'
@@ -4822,6 +4820,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       integer iwhich1,lastv1  ! for 1st and 2nd user selections
       integer iwhich2,lastv2
       integer iwhich3
+      integer  iclkok  ! to allow jump to previous or next vertex
       logical greyok,found,closex,closey,closez
       real CX,CY,CZ  ! XYZ of selected verticies
       dimension CX(10),CY(10),CZ(10)
@@ -6160,8 +6159,9 @@ C If there are enough items allow paging control via EKPAGE.
 C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
 
-C Show the point to be edited on the current wireframe.
-        COG1(1)=X(IFOC)
+C Show the point to be edited on the current wireframe. 42 is
+C a jump back point if user requests a different vertex.
+  42    COG1(1)=X(IFOC)
         COG1(2)=Y(IFOC)
         COG1(3)=Z(IFOC)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
@@ -6177,8 +6177,19 @@ C Show the point to be edited on the current wireframe.
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         write(outs,'(a,i3,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
-  42    CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vertex coord',
-     &    IER,nbhelp)
+
+C Depending on position within array of vertices adapt the dialog to
+C allow for jump to previous or next.
+        if(ifoc.eq.1)then
+          call EASKS2CMD(HOLD,outs,' ',' ','next vertex',iclkok,36,
+     &      ' 0. 0. 0. ','vertex coord',IER,nbhelp)
+        elseif(ifoc.eq.NZTV(icomp))then
+          call EASKS2CMD(HOLD,outs,' ','prev vertex',' ',iclkok,36,
+     &      ' 0. 0. 0. ','vertex coord',IER,nbhelp)
+        else
+          call EASKS2CMD(HOLD,outs,' ','prev vertex','next vertex ',
+     &      iclkok,36,' 0. 0. 0. ','vertex coord',IER,nbhelp)
+        endif
         K=0
         CALL EGETWR(HOLD,K,X(IFOC),-999.9,999.9,'W','X cord',IER)
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
@@ -6190,6 +6201,40 @@ C Present vertex coords for editing then parse data from HOLD.
         MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
         call warnmod(ICOMP,'str')
+
+C Jump previous or next or return.  Change just edited vertex symbol
+C back to black.  If the user happened to edit a vertex and ask for
+C a jump then the display will not have a chance to re-draw fully
+C so at least draw the vertex in its new location.
+        if(iclkok.eq.1.and.ifoc.gt.1) then
+          COG1(1)=X(IFOC)
+          COG1(2)=Y(IFOC)
+          COG1(3)=Z(IFOC)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
+          call esymbol(iix,iiy,24,1)
+          call forceflush()
+          ifoc=ifoc-1
+          goto 42
+        elseif(iclkok.eq.2.and.ifoc.lt.NZTV(icomp)) then
+          COG1(1)=X(IFOC)
+          COG1(2)=Y(IFOC)
+          COG1(3)=Z(IFOC)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
+          call esymbol(iix,iiy,24,1)
+          call forceflush()
+          ifoc=ifoc+1
+          goto 42
+        else
+          continue
+        endif
       ELSE
 C Not one of the legal menu choices.
         IVERT=-1
