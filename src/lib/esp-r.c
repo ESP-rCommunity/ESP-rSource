@@ -765,7 +765,7 @@ void sml_menu_gph_cb (GtkWidget *widget, gpointer resize)
 /* **** Define small/medium/large option menu for use in graphics font resizing
  * New radio buttons and labels are added in the graphic feedback submenu to give
  * users more flexibility in choice of fonts the user can now choose any one of
-  * the fonts from Serif small, medium, large and largest and Courier small, medium,
+ * the fonts from Serif small, medium, large and largest and Courier small, medium,
  * large, largest
  */
 static GtkWidget *sml_menu_gph ( void)

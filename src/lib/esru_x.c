@@ -549,7 +549,7 @@ if((fst_3 = XLoadQueryFont(theDisp,font_3)) == NULL) {
   exit(1);
 }
 /* a few variable width fonts, if fail drop back to fixed width */
-strncpy(font_4,"-*-lucida-medium-r-*-*-10-*-*-*-*-*-*-*",39);
+strncpy(font_4,"-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",42);
 if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_4);
   strncpy(font_4,"6x12",4);
@@ -558,7 +558,7 @@ if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
     exit(1);
   }
 }
-strncpy(font_5,"-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*",39);
+strncpy(font_5,"-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*",42);
 if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_5);
   strncpy(font_5,"6x13",4);
