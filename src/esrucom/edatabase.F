@@ -238,7 +238,7 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DESC string into string tokens.
-        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
@@ -516,7 +516,11 @@ C ******* parsemlcdesc
 C Parse the DESC string from the MLC common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+C If isymindex is non-zero it is index of MLC for symmetric MLC.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -538,11 +542,21 @@ C Clear parameters to be returned and then copy from DES.
       ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
+C check the MLC index of MLCSYM so that can be returned.
       if(lnblnk(DES).gt.35)then
         WRITE(MLCSYM,'(A)') DES(35:46)
+
+C Look for index for MLCSYM in the current MLC database.
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
+            isymindex=ii   ! remember MLC index     
+          endif
+  5     continue
       else
         MLCSYM='  '
+        isymindex=0   ! signal not applicable     
       endif
       return
       end
@@ -807,7 +821,7 @@ C construction based on contents of common MLC.
       
 C Pick up general description of the composite.
       ier=0
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
@@ -1033,7 +1047,7 @@ C Material properties.
       real RTG  ! sum of surface coef at foundation
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C Check version of material database.
       call eclose(matver,1.1,0.01,closemat1)

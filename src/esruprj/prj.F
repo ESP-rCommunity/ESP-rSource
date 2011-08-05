@@ -774,7 +774,6 @@ C Scan for matching MLC for surfaces.
             call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
 
 C Find the index of the MLC which matches each surface.
-            write(6,*) icomp,NZSUR(icomp),nmlc
             DO 9994 I=1,NZSUR(icomp)
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
@@ -787,8 +786,8 @@ C Find the index of the MLC which matches each surface.
  30       continue
 
 C Debug the ssmlcindex array.
-          write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-     &      ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+C          write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &      ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
 C Scan control file if one exists.
           ICTLF=IFIL+1

@@ -1452,7 +1452,7 @@ C current menu line index. Build up text strings for the menu.
         IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
           WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
   22      FORMAT(A1,1X,A12,a,a)
         ENDIF
@@ -1655,7 +1655,7 @@ C Copy an existing construction to a new one at end of list.
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
 C When editing the construction name use a slightly wider string buffer.
-          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
@@ -1696,7 +1696,7 @@ C there is room in the database copy data to a new item.
           DESC(NMLC)=DESC(IWHICH)
 
 C Extract construction name and check that mlc name has no illegal characters.
-          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
 
 C If there is space attach an "_i" to the end of the name to save the
@@ -1724,7 +1724,7 @@ C Update DESC including the name of the original MLC.
    89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
 
 C Update the original to point to the inverted item.
-          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
 
 C Copy other data associated with the MLC.
@@ -1799,7 +1799,7 @@ C First check if mlc is transparent
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
-        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
         IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
      &     OPT(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
@@ -2034,7 +2034,7 @@ C is true then we can continue (the common blocks are filled).
 
 C Extract construction name, opaque/transp, optical and symmetry properties.
 C Check that mlc name has no illegal characters.
-      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,isymindex)
       call st2name(T12,MLCN)
       if(T12.ne.MLCN)then
         write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected mlc ',
@@ -2817,12 +2817,12 @@ C for the current item.
           WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
           do 795 k=1,NMLC
             if(DESC(k)(1:12).eq.MLCSYM(1:12))then
-              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM,isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(k),89)T12,OTF,OPT,T12OTH
             endif
   795     continue
-          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
         endif
         moddb = .true.
       ELSEIF(ILED.EQ.2)THEN
@@ -2878,7 +2878,6 @@ C << geometry file before writing it out.
             call edisp(iuout,outs)
             modgeo=.false.
 
-C << this might be a place to use ssmlcindex >>
             do 91 i=1,nsur
               ioc=IZSTOCN(IZ,i)
               if(SSMLCN(ioc)(1:12).eq.DESC(IFOC)(1:12))then
@@ -2959,12 +2958,14 @@ C Allow linking to inverted construction.
             if(LAYERS(IFOC).eq.LAYERS(iwhich))then
 
 C Update the linked construction to point back to the current item.
-              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(IWHICH),89)T12,OTF,OPT,T12OTH
 
 C Extract strings from focus DESC prior to updating its SYM tag.
-              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
               WRITE(MLCSYM,'(A)')DESC(IWHICH)(1:12)
               WRITE(DESC(IFOC),89)T12,OTF,OPT,T12OTH
@@ -3369,8 +3370,6 @@ C so that partitions are counted as half area).
       character mlcname*12
       logical found
       dimension areamlc(MCOM)
-
-C << this might be a place to use ssmlcindex >>
 
 C For each of the selected zones check each surface mlc attribute
 C for a match against mlcname.

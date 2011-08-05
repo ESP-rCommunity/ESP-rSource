@@ -244,6 +244,7 @@ C in the current model. A -1 means not applicable
       integer loutln     ! length of string returned
       integer itrunc     ! to signal truncation
       integer ipos       ! position indicator when calling arlist
+      integer isymindex  ! index of MLC matching each surface
       real ZD           ! depth for ground temp calc
       real grper        ! % length of ground perimeter in a zone
       real xtranper,xskyper,xwallper,xslproofper,xflatroofper,xgrper ! % of project floor area for each
@@ -883,9 +884,6 @@ C 'any horizontal','any orien.','cancel'.
               elseif(ins4.eq.2)then
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
-
-C << possible place for ssmlcindex >>
-
                 if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
                 if(SSMLCN(icc)(1:12).ne.DESC(ISEL)(1:12))apply=.false.
               endif
@@ -2089,31 +2087,26 @@ C While looping check that constructions of partitions are matching.
             showother=.false.
           endif
           write(SN,'(a12)')SSNAME(icc)
-          if(showother.and.icoth.ne.0)then
-
-C << possible place to use ssmlcindex >>
-            do 17 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
-                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM)
-                if(MLCSYM(1:9).EQ.'SYMMETRIC')then
-                  continue
-                elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+          if(showother.and.icoth.ne.0.and.ssmlcindex(icc).ne.0)then
+            ii=ssmlcindex(icc)
+            call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
+            if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+              continue
+            elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
-                  write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
-     &              ' has a nonsymmetric construction ',
-     &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
-                  call edisp(itu,outs)
-                  write(outs,'(5a)') 'It faces ',
-     &              SSNAME(icoth),' which is composed of ',
-     &              SSMLCN(icoth)(1:12),' (which may not match).'
-                  call edisp(itu,outs)
-                else
-                  continue
-                endif
-              endif
-  17        continue
+              write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &          ' has a nonsymmetric construction ',
+     &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
+              call edisp(itu,outs)
+              write(outs,'(5a)') 'It faces ',
+     &          SSNAME(icoth),' which is composed of ',
+     &          SSMLCN(icoth)(1:12),' (which may not match).'
+              call edisp(itu,outs)
+            else
+              continue
+            endif
           endif
  1243   continue
         if(.NOT.bndrysxc)then
@@ -3066,7 +3059,7 @@ C Establish if material data arrays have been filled. If not return.
       endif
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       
 C ESP-r defines layers from outside to inside. The code in
 C subroutine admit works from inside to outside.
