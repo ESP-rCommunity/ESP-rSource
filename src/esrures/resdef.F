@@ -1407,6 +1407,12 @@ C Check period information.
         call edisp(iuout,' finish day.  Please respecify.')
         IER=1
       endif
+      IF(NTS.LT.1)then
+        call edisp(iuout,' Timesteps per hour not defined.')
+        call edisp(iuout,' Please respecify.')
+        IER=1
+      endif
+      IF(IER.EQ.1)RETURN
 
 C Output time-step increment cannot be set so that output
 C interval is greater than 24 hours.

@@ -1098,6 +1098,8 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,' (where -act rotate is followed by the angle')
         call edisp(iuout,'  degrees +=anticlockwise and the X and Y')
         call edisp(iuout,'  coordinates to rotate around.)')
+        call edisp(iuout,'       [-act QA] ')
+        call edisp(iuout,' (where -act QA generates QA report & exits)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1856,9 +1858,9 @@ C Errors.
    2  call isunix(unixok)
       if(unixok)then
         if(IOS.eq.2)then
-         write(6,'(a)') 'parsfza: permission error getting parameters.'
+         write(6,'(a)') 'parsprj: permission error getting parameters.'
         else
-         write(6,'(a)') 'parsfza: error extracting parameters.'
+         write(6,'(a)') 'parsprj: error extracting parameters.'
         endif
       endif
       return

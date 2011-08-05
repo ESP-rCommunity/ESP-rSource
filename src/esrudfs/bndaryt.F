@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -30,15 +30,15 @@ C This subroutine has the following entry's:
 C  MODUT  - U direction boundary conditions - turbulent.
 C  MODVT  - V direction boundary conditions - turbulent.
 C  MODWT  - W direction boundary conditions - turbulent.
-C  MODPP  - pressure primed - SIMPLE 
+C  MODPP  - pressure primed - SIMPLE
 C  MODPP1 - pressure primed - SIMPLEC
 C  MODTE  - Turbulent energy boundary conditions.
 C  MODED  - Energy dissipation - turbulent.
 C
-C  Types of boundary conditions used {IVTYPE(IV,ICFD)=}: 
-C  VOLUME HEAT SOURCE = 20  
+C  Types of boundary conditions used {IVTYPE(IV,ICFD)=}:
+C  VOLUME HEAT SOURCE = 20
 C
-      SUBROUTINE BNDART 
+      SUBROUTINE BNDART
 #include "cfd.h"
 
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
@@ -106,7 +106,7 @@ C ********************* MODUT *********************
 C MODUT - U direction boundary conditions - turbulent.
       ENTRY MODUT
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALV)THEN
         J=2
         DO 1100 I=1,NI
@@ -693,7 +693,7 @@ C ********************* MODWT *********************
 C MODWT - W direction boundary conditions - turbulent.
       ENTRY MODWT
 
-C If flow is 1D or 2D make coefficients in other directions zero. 
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 1500 J=1,NJ
@@ -764,7 +764,7 @@ C To change/ test - sometimes produces non zero coefficients at walls!
             GOTO 821
           ENDIF
  820    CONTINUE
- 
+
 C Set up boundary conditions for West solid wall if log-law wall functions in use.
  821    IF(location.EQ.1 .and. IWSB(L,ICFD).ne.61)THEN
           I=ISBi(L,ICFD)
@@ -849,7 +849,7 @@ C Set up boundary conditions on West solid wall if Yuan wall functions in use.
             DO 3921 K=KSBii,KSBf(L,ICFD)
               Utau = YUANBC(I,J,K,DXW)
 
-C Since Utau forced to positive determine direction of shear stress 
+C Since Utau forced to positive determine direction of shear stress
 C based on direction of velocity component in vertical direction
 C (+ value means stress operates in axis direction).
               if( Wf(i,j,K).lt.0.)then
@@ -861,9 +861,9 @@ C (+ value means stress operates in axis direction).
 C Disconnect cell from boundary and set source term. Source term units are
 C force/velocity. Surface area of cell = SNS*SHLW. Protect the calculation
 C against the case of zero velocity.
-C              SP(I,J,K)=SP(I,J,K)+TAUWW(I,J,K)*AreaEWW(J,K) / 
+C              SP(I,J,K)=SP(I,J,K)+TAUWW(I,J,K)*AreaEWW(J,K) /
 C     &                  ( Wf(i,j,K) + small )
-              SP(I,J,K)=SP(I,J,K)+TAUWW(I,J,K)*AreaEWW(J,K) / 
+              SP(I,J,K)=SP(I,J,K)+TAUWW(I,J,K)*AreaEWW(J,K) /
      &                  anotzero(Wf(i,j,K))
               AW(I,J,K)=0.0
  3921       CONTINUE
@@ -887,7 +887,7 @@ C Set up boundary conditions for East solid wall if Yuan wall functions in use.
               else
                 TAUEW(I,J,K) = - DENf(i,j,k) * Utau**2
               endif
-              SP(I,J,K)=SP(I,J,K)+TAUEW(I,J,K)*AreaEWW(J,K) / 
+              SP(I,J,K)=SP(I,J,K)+TAUEW(I,J,K)*AreaEWW(J,K) /
      &                   anotzero(Wf(i,j,K))
               AE(I,J,K)=0.0
  3991       CONTINUE
@@ -911,7 +911,7 @@ C Set up boundary conditions on South solid wall if Yuan wall functions in use.
               else
                 TAUSW(I,J,K) = - DENf(i,j,k) * Utau**2
               endif
-              SP(I,J,K)=SP(I,J,K)+TAUSW(I,J,K)*AreaNSW(I,K) / 
+              SP(I,J,K)=SP(I,J,K)+TAUSW(I,J,K)*AreaNSW(I,K) /
      &                   anotzero(Wf(i,j,K))
               AS(I,J,K)=0.0
  3929       CONTINUE
@@ -935,7 +935,7 @@ C Set up boundary conditions on North solid wall if Yuan wall functions in use.
               else
                 TAUNW(I,J,K) = - DENf(i,j,k) * Utau**2
               endif
-              SP(I,J,K)=SP(I,J,K)+TAUNW(I,J,K)*AreaNSW(I,K) / 
+              SP(I,J,K)=SP(I,J,K)+TAUNW(I,J,K)*AreaNSW(I,K) /
      &                   anotzero(Wf(i,j,K))
               AN(I,J,K)=0.0
  3992       CONTINUE
@@ -1112,7 +1112,7 @@ C ********************* MODPP *********************
 C MODPP - Pressure correction for SIMPLE.
       ENTRY MODPP
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 1700 J=1,NJ
@@ -1148,7 +1148,7 @@ C ********************* MODPP1 *********************
 C MODPP1 - Pressure correction for SIMPLEC.
       ENTRY MODPP1
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 2000 J=1,NJ
@@ -1211,7 +1211,7 @@ C ********************* MODTE *********************
 C MODTE - Turbulent energy boundary conditions.
       ENTRY MODTE
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 2600 J=1,NJ
@@ -1378,7 +1378,7 @@ C Get velocity derivitaves.
             GENRES=GEN(I,J,K)-Tvis*((DUDY+DVDX)**2+
      1             (DUDZ+DWDX)**2+(DVDZ+DWDY)**2)
 
-            GEN(I,J,K)=GENRES+GENCOU  
+            GEN(I,J,K)=GENRES+GENCOU
             DITERM=CD*DENf(i,j,K)*(CMU**.75)*SQRTK*XPLUSE/DXE
             IF(XPLUSE.GT.11.63)DITERM=CD*DENf(i,j,K)*(CMU**.75)*SQRTK*
      &             ALOG(ELOG*XPLUSE)/(CAPPA*DXE)
@@ -1409,7 +1409,7 @@ C Get velocity derivitaves.
             GENRES=GEN(I,J,K)-Tvis*((DUDY+DVDX)**2+
      1             (DUDZ+DWDX)**2+(DVDZ+DWDY)**2)
 
-            GEN(I,J,K)=GENRES+GENCOU  
+            GEN(I,J,K)=GENRES+GENCOU
             DITERM=CD*DENf(i,j,K)*(CMU**.75)*SQRTK*YPLUSS/DYS
             IF(YPLUSS.GT.11.63)DITERM=CD*DENf(i,j,K)*(CMU**.75)*SQRTK*
      &             ALOG(ELOG*YPLUSS)/(CAPPA*DYS)
@@ -1594,7 +1594,7 @@ C ********************* MODED *********************
 C MODED - Energy dissipation - turbulent.
       ENTRY MODED
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 2900 J=1,NJ
@@ -1924,7 +1924,6 @@ C BNDARTT - Impose thermal boundary conditions for turbulent flow.
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
       COMMON/MFS/IMFACT,NOSTOP,MITMFS
-      COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit
       COMMON/closehow/yplus(ntcelx,ntcely,ntcelz)
 
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -1938,7 +1937,7 @@ C BNDARTT - Impose thermal boundary conditions for turbulent flow.
 
       CHARACTER*72 HSID
       LOGICAL INCALU,INCALV,INCALW,INCALT,INCALK,INCALD
-      LOGICAL IZEROT,IZanKE,IMITZ,Uqinit
+      LOGICAL IZEROT,IZanKE,IMITZ
       logical BHS
 
 
@@ -1951,7 +1950,7 @@ C Initialize variables.
       CDTERM=CMU**0.25
 
 
-C If flow is 1D or 2D set coefficients in other directions to zero.  
+C If flow is 1D or 2D set coefficients in other directions to zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 2300 J=1,NJ
@@ -2108,7 +2107,7 @@ C         Log-law wall functions then imposed to `back out' temperature of
 C         next-to-wall cells. Qsurf calculated same as in (4) but Tsurf now
 C         imposed through wall functions. k-e model.
 C   7     Qsurf=A*HC*(Tsurf-Tref) where BSim passes HC and Tsurf; Tref calculated
-C         by CFD by averaging previous iteration's temperature results. 
+C         by CFD by averaging previous iteration's temperature results.
 C         Log-law wall functions then imposed to `back out' temperature of
 C         next-to-wall cells. Qsurf calculated same as in (4) but Tsurf now
 C         imposed through wall functions. k-e model.
@@ -2861,66 +2860,7 @@ C Disconnect cell from boundary.
               AW(I,J,K)=0.0
 C Calculate surface area of cell.
               AREA=AreaEWP(J,K)
-
-C Iterate until Uq converged. Use 0.02 as first guess for Uq, as suggested
-C by Yuan (thesis p89).
-c              write(74,*) 'Starting iteration for cell',I,J,K
-              iter = 0
-              Uq = 0.02
-
-C Calculate thermal diffusivity using fixed properties and density of cell.
-              therdif = VISCOS / (PRANDL*DENf(i,j,k))
-
-C Get dimensionless distance from wall ($y sup *$) using current Uq.
- 8722         Uqold = Uq
-              ystar = DXW*Uqold/therdif
-
-C Get dimensionless temperature ($T sup *$) using Yuan's temperature
-C wall function. Three forms depending on placement of $y sup *$.
-              if(ystar .le. 1.)then
-                Tstar = ystar
-              elseif( (ystar .gt. 1.) .and. (ystar .le. 100.) )then
-                Tstar = 1. + 1.36*ALOG(ystar) - 0.135*(ALOG(ystar))**2.
-              else
-                Tstar = 4.4
-              endif
-
-C Calculate the heat flux temperature ($T sub q$). Force Tq to be positive to
-C avoid crashing calculation. Note that Tq is in Kelvin, not oC. This differs from
-C the iterative approach laid out in Yuan's thesis. His approach is more implicit
-C and contains an equation error on p89.
-              Tq = ABS( SSB(L,ICFD) - Tf(i,j,K) ) / Tstar
-
-C Calculate the heat flux from the wall.
-              qflux = Tq**(4./3.) * (GRAV*BETA(I,J,K)*therdif)**(1./3.)
-     &                * (DENf(i,j,k)*SH)
-
-C Calculate the updated velocity scale based on the heat flux ($U sub q$).
-              Uq = ( (GRAV*BETA(I,J,K)*therdif*qflux) / 
-     &               (DENf(i,j,k)*SH) )**0.25
-
-C Check for convergence. Tolerence based on recommendation on p89 of Yuan thesis.
-C Allow at most 20 iterations.
-              iter = iter + 1
-              if( ABS(Uq-Uqold)/Uq.gt.0.01 .and. iter.le.20 ) goto 8722
-
-C Converged. Since Tq forced to positive determine direction of surface convection
-C based on wall and fluid temperatures. QW is heat flow (W) from wall to air.
-              if( SSB(L,ICFD).gt.Tf(i,j,K) )then
-                QW = AREA*qflux
-              else
-                QW = -1.*AREA*qflux
-              endif
-              CONVF(ICFD,IS)=CONVF(ICFD,IS)-QW            
-
-C Add surface convection to source term. This should be revised so that
-C SU and SP are adjusted as with the other Dirichlet BCs (log-law and MIT).
-              SU(I,J,K)=SU(I,J,K)+QW/SH
-
-C Save velocity scale based on the heat flux. This will be used in evaluation
-C momentum wall functions.
-              Uqstor(i,j,k) = Uq
-
+              call CalcYuanWallFlux(I,J,K,AREA,DXW,IS,L)
  8721       CONTINUE
  872      CONTINUE
         ELSEIF(IWSB(L,ICFD).EQ.62)THEN
@@ -2933,33 +2873,7 @@ C East wall (see west wall for annotations).
             DO 8731 K=KSBi(L,ICFD),KSBf(L,ICFD)
               AE(I,J,K)=0.0
               AREA=AreaEWP(J,K)
-              iter = 0
-              Uq = 0.02
-              therdif = VISCOS / (PRANDL*DENf(i,j,k))
- 8732         Uqold = Uq
-              ystar = DXE*Uqold/therdif
-              if(ystar .le. 1.)then
-                Tstar = ystar
-              elseif( (ystar .gt. 1.) .and. (ystar .le. 100.) )then
-                Tstar = 1. + 1.36*ALOG(ystar) - 0.135*(ALOG(ystar))**2.
-              else
-                Tstar = 4.4
-              endif
-              Tq = ABS( SSB(L,ICFD) - Tf(i,j,K) ) / Tstar
-              qflux = Tq**(4./3.) * (GRAV*BETA(I,J,K)*therdif)**(1./3.)
-     &                * (DENf(i,j,k)*SH)
-              Uq = ( (GRAV*BETA(I,J,K)*therdif*qflux) / 
-     &               (DENf(i,j,k)*SH) )**0.25
-              iter = iter + 1
-              if( ABS(Uq-Uqold)/Uq.gt.0.01 .and. iter.le.20 ) goto 8732
-              if( SSB(L,ICFD).gt.Tf(i,j,K) )then
-                QE = AREA*qflux
-              else
-                QE = -1.*AREA*qflux
-              endif
-              CONVF(ICFD,IS)=CONVF(ICFD,IS)-QE            
-              SU(I,J,K)=SU(I,J,K)+QE/SH
-              Uqstor(i,j,k) = Uq
+              call CalcYuanWallFlux(I,J,K,AREA,DXE,IS,L)
  8731       CONTINUE
  873      CONTINUE
         ELSEIF(IWSB(L,ICFD).EQ.63)THEN
@@ -2972,33 +2886,7 @@ C South wall (see west wall for annotations).
             DO 8741 K=KSBi(L,ICFD),KSBf(L,ICFD)
               AS(I,J,K)=0.0
               AREA=AreaNSP(I,K)
-              iter = 0
-              Uq = 0.02
-              therdif = VISCOS / (PRANDL*DENf(i,j,k))
- 8742         Uqold = Uq
-              ystar = DYS*Uqold/therdif
-              if(ystar .le. 1.)then
-                Tstar = ystar
-              elseif( (ystar .gt. 1.) .and. (ystar .le. 100.) )then
-                Tstar = 1. + 1.36*ALOG(ystar) - 0.135*(ALOG(ystar))**2.
-              else
-                Tstar = 4.4
-              endif
-              Tq = ABS( SSB(L,ICFD) - Tf(i,j,K) ) / Tstar
-              qflux = Tq**(4./3.) * (GRAV*BETA(I,J,K)*therdif)**(1./3.)
-     &                * (DENf(i,j,k)*SH)
-              Uq = ( (GRAV*BETA(I,J,K)*therdif*qflux) / 
-     &               (DENf(i,j,k)*SH) )**0.25
-              iter = iter + 1
-              if( ABS(Uq-Uqold)/Uq.gt.0.01 .and. iter.le.20 ) goto 8742
-              if( SSB(L,ICFD).gt.Tf(i,j,K) )then
-                QS = AREA*qflux
-              else
-                QS = -1.*AREA*qflux
-              endif
-              CONVF(ICFD,IS)=CONVF(ICFD,IS)-QS            
-              SU(I,J,K)=SU(I,J,K)+QS/SH
-              Uqstor(i,j,k) = Uq
+              call CalcYuanWallFlux(I,J,K,AREA,DYS,IS,L)
  8741       CONTINUE
  874      CONTINUE
         ELSEIF(IWSB(L,ICFD).EQ.64)THEN
@@ -3011,33 +2899,7 @@ C North wall (see west wall for annotations).
             DO 8751 K=KSBi(L,ICFD),KSBf(L,ICFD)
               AN(I,J,K)=0.0
               AREA=AreaNSP(I,K)
-              iter = 0
-              Uq = 0.02
-              therdif = VISCOS / (PRANDL*DENf(i,j,k))
- 8752         Uqold = Uq
-              ystar = DYN*Uqold/therdif
-              if(ystar .le. 1.)then
-                Tstar = ystar
-              elseif( (ystar .gt. 1.) .and. (ystar .le. 100.) )then
-                Tstar = 1. + 1.36*ALOG(ystar) - 0.135*(ALOG(ystar))**2.
-              else
-                Tstar = 4.4
-              endif
-              Tq = ABS( SSB(L,ICFD) - Tf(i,j,K) ) / Tstar
-              qflux = Tq**(4./3.) * (GRAV*BETA(I,J,K)*therdif)**(1./3.)
-     &                * (DENf(i,j,k)*SH)
-              Uq = ( (GRAV*BETA(I,J,K)*therdif*qflux) / 
-     &               (DENf(i,j,k)*SH) )**0.25
-              iter = iter + 1
-              if( ABS(Uq-Uqold)/Uq.gt.0.01 .and. iter.le.20 ) goto 8752
-              if( SSB(L,ICFD).gt.Tf(i,j,K) )then
-                QN = AREA*qflux
-              else
-                QN = -1.*AREA*qflux
-              endif
-              CONVF(ICFD,IS)=CONVF(ICFD,IS)-QN            
-              SU(I,J,K)=SU(I,J,K)+QN/SH
-              Uqstor(i,j,k) = Uq
+              call CalcYuanWallFlux(I,J,K,AREA,DYN,IS,L)
  8751       CONTINUE
  875      CONTINUE
         ELSEIF(IWSB(L,ICFD).EQ.65)THEN
@@ -3236,21 +3098,21 @@ C       pause'540'
  5402     continue
  5401   continue
  540  continue
- 
+
 C Now examine each `heat flow' type heat sources.
-C VOLHeat(IV,ICFD) contains the total heat flux defined by the user 
-C <<do the same also for laminar conditions >> 
+C VOLHeat(IV,ICFD) contains the total heat flux defined by the user
+C <<do the same also for laminar conditions >>
 
         do 541 IV=1,NVOL(ICFD)
-          if (IVTYPE(IV,ICFD).eq.20) then 
+          if (IVTYPE(IV,ICFD).eq.20) then
             VOLTOT=(XU(IVCELLS(IV,ICFD,2)+1)-XU(IVCELLS(IV,ICFD,1)))*
      &             (YV(JVCELLS(IV,ICFD,2)+1)-YV(JVCELLS(IV,ICFD,1)))*
      &             (ZW(KVCELLS(IV,ICFD,2)+1)-ZW(KVCELLS(IV,ICFD,1)))
             do 5411 I=IVCELLS(IV,ICFD,1),IVCELLS(IV,ICFD,2)
               do 5412 J=JVCELLS(IV,ICFD,1),JVCELLS(IV,ICFD,2)
                 do 5413 K=KVCELLS(IV,ICFD,1),KVCELLS(IV,ICFD,2)
-                  VOLCEL=VolP(I,J,K) 
-                  SU(I,J,K)=SU(I,J,K)+VOLHeat(IV,ICFD)/VOLTOT*VOLCEL/SH 
+                  VOLCEL=VolP(I,J,K)
+                  SU(I,J,K)=SU(I,J,K)+VOLHeat(IV,ICFD)/VOLTOT*VOLCEL/SH
  5413           continue
  5412         continue
  5411       continue
@@ -3328,7 +3190,7 @@ C ********************* MODUMIT *********************
 C MODUMIT  - Apply U-momentum boundary conditions for MIT 0-eqn model.
       ENTRY MODUMIT
 
-C If flow is 1D or 2D make coefficients in other directions zero.  
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALV)THEN
         J=2
         DO 1100 I=1,NI
@@ -3827,7 +3689,7 @@ C ********************* MODWMIT *********************
 C MODWMIT  - Apply W-momentum boundary conditions for MIT 0-eqn model.
       ENTRY MODWMIT
 
-C If flow is 1D or 2D make coefficients in other directions zero. 
+C If flow is 1D or 2D make coefficients in other directions zero.
       IF(.NOT.INCALU)THEN
         I=2
         DO 1500 J=1,NJ
@@ -3960,3 +3822,122 @@ C North wall (see west for annotations).
 
       RETURN
       END
+      
+C ************* Wall functions *************
+C Yuan wall function calculation for vertical surfaces. Given cell id, face area,
+C distance, ESP-r surface number and CFD boundary number calculate surface 
+C convection and add to source term. Valid for k-e model.
+C Ref: Ian Beausoleil-Morrison PhD thesis section 5.3.1
+
+      subroutine CalcYuanWallFlux(I,J,K,Area,ydist,Isurf,Lwall)
+      implicit none
+#include "cfd.h"
+      
+      COMMON/FLUPRf/URFVIS,VISCOS,PRANDT,SH,
+     1            DENf(ntcelx,ntcely,ntcelz),VIS(ntcelx,ntcely,ntcelz),
+     2            BETA(ntcelx,ntcely,ntcelz)
+      COMMON/COEF/AP(ntcelx,ntcely,ntcelz),AE(ntcelx,ntcely,ntcelz),
+     1            AW(ntcelx,ntcely,ntcelz),AN(ntcelx,ntcely,ntcelz),
+     2            AS(ntcelx,ntcely,ntcelz),AH(ntcelx,ntcely,ntcelz),
+     3            AL(ntcelx,ntcely,ntcelz),SU(ntcelx,ntcely,ntcelz),
+     4            SP(ntcelx,ntcely,ntcelz)
+      COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit
+      COMMON/Sbdary/NSB(MNZ),ISBi(MNSBZ,MNZ),ISBf(MNSBZ,MNZ),
+     &              JSBi(MNSBZ,MNZ),JSBf(MNSBZ,MNZ),
+     &              KSBi(MNSBZ,MNZ),KSBf(MNSBZ,MNZ),
+     &              ISUFLC(MNSBZ,MNZ),IWSB(MNSBZ,MNZ),SSB(MNSBZ,MNZ),
+     &              SSBHC(MNSBZ,MNZ),
+     &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
+      COMMON/ICFNOD/ICFD,ICP
+      COMMON/CFDCON/CONVF(MNZ,MNSBZ)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      COMMON/CONST/GREAT,small,GRAV
+
+C Common variables
+      real AP,AE,AW,AN,AS,AH,AL,SU,SP             ! common/COEF
+      real URFVIS,VISCOS,PRANDT,SH,DENf,VIS,BETA  ! common/FLUPRf
+      real Uqstor                                 ! common/YUANcm
+      logical Uqinit                              ! common/YUANcm
+      integer ICFD,ICP                            ! common/ICFNOD
+      real CONVF                                  ! common/CFDCON
+      integer NSB,ISBi,ISBf,JSBi,JSBf,KSBi,KSBf   ! common/Sbdary
+      integer ISUFLC,IWSB,ITCtype,icTREF          ! common/Sbdary
+      real SSB,SSBHC                              ! common/Sbdary
+      real Tf,GAMH,RESORT,URFT,FSDTT,PRANDL,PFUN  ! common/TEMPf
+      integer NSWPT                               ! common/TEMPf
+      real GREAT,small,GRAV                       ! common/CONST
+      
+C Arguments to subroutine
+      integer I,J,K,Isurf,Lwall   ! Current focus cell; ESP-r surface number; CFD surface
+      real Area, ydist            ! Area of face incontact with solid boundary; distance to air point.
+      
+C Local variables
+      integer iter
+      real Uq, Uqold, therdif, ystar, Tstar, Qconv, qflux, Tq, err
+     
+C Iterate until Uq converged. Use 0.02 as first guess for Uq, as suggested
+C by Yuan (thesis p89).
+c      write(74,*) 'Starting iteration for cell',I,J,K
+      iter = 0
+      Uq = 0.02
+
+C Calculate thermal diffusivity using fixed properties and density of cell.
+      therdif = VISCOS / (PRANDL*DENf(i,j,k))
+
+C Get dimensionless distance from wall ($y sup *$) using current Uq.
+ 10   Uqold = Uq
+      ystar = ydist*Uqold/therdif
+
+C Get dimensionless temperature ($T sup *$) using Yuan's temperature
+C wall function. Three forms depending on placement of $y sup *$.
+      if(ystar .le. 1.)then
+        Tstar = ystar
+      elseif (ystar .gt. 100.) then
+        Tstar = 4.4
+      else
+        Tstar = 1. + 1.36*ALOG(ystar) - 0.135*(ALOG(ystar))**2
+      endif
+
+C Calculate the heat flux temperature ($T sub q$). Force Tq to be positive to
+C avoid crashing calculation. Note that Tq is in Kelvin, not oC. This differs from
+C the iterative approach laid out in Yuan's thesis. His approach is more implicit
+C and contains an equation error on p89.
+      Tq = ABS( SSB(Lwall,ICFD) - Tf(i,j,K) ) / Tstar
+
+C Calculate the heat flux from the wall.
+      qflux = Tq**(4./3.) * (GRAV*BETA(I,J,K)*therdif)**(1./3.) *
+     &                 (DENf(i,j,k)*SH)
+
+C Calculate the updated velocity scale based on the heat flux ($U sub q$).
+      Uq = ( (GRAV*BETA(I,J,K)*therdif*qflux)/(DENf(i,j,k)*SH) )**0.25
+
+C Check for convergence. Tolerence based on recommendation on p89 of Yuan thesis.
+C Allow at most 20 iterations.
+      iter = iter + 1
+      err=0.
+      if (Uq.ne.0.) then
+        err=ABS(Uq-Uqold)/Uq
+      endif
+      if( err.gt.0.01 .and. iter.le.20 ) goto 10
+
+C Converged. Since Tq forced to positive determine direction of surface convection
+C based on wall and fluid temperatures. QW is heat flow (W) from wall to air.
+      if( SSB(Lwall,ICFD).gt.Tf(i,j,K) )then
+        Qconv = AREA*qflux
+      else
+        Qconv = -1.*AREA*qflux
+      endif
+      CONVF(ICFD,Isurf)=CONVF(ICFD,Isurf)-Qconv
+
+C Add surface convection to source term. This should be revised so that
+C SU and SP are adjusted as with the other Dirichlet BCs (log-law and MIT).
+      SU(I,J,K)=SU(I,J,K)+Qconv/SH
+
+C Save velocity scale based on the heat flux. This will be used in evaluation
+C momentum wall functions.
+      Uqstor(i,j,k) = Uq
+
+      return
+      end
+           

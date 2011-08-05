@@ -962,8 +962,8 @@ if [ "$extendedDebugging" == "yes" ]; then
   case $compiler in
     sunF90) ExtendedDebugFlags="$ExtendedDebugFlags";;
     GNU) case $gnu_version in
-#            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check -ffpe-trap=zero,invalid,overflow,underflow"  ;;
-            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wconversion"  ;;
+            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check -ffpe-trap=zero,invalid,overflow,underflow"  ;;
+#            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wconversion"  ;;
           esac;;
     intel)  ExtendedDebugFlags="$ExtendedDebugFlags -debug all -C -fp-stack-check -traceback -inline-debug-info -fpe0 "  ;;
   esac

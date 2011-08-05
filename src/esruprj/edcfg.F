@@ -165,8 +165,12 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      integer inpic,ivals   ! number of zones to include
+      dimension ivals(MCOM) ! list of zones
+      logical silent        ! if true do not interact with user
+      integer ier           ! non-zero if a problem
       
-      INTEGER :: itrc,itru,ier,i,ic,icc,istat
+      INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
       INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
@@ -1179,9 +1183,15 @@ C an offset from prj start position.
 
       ELSEIF(INO.EQ.26)THEN
 
-C Execute editor and report generation tools.
+C Execute editor and report generation tools. Start with assumption
+C that all zones in the model are to be included.
         call tstamp('>','PRJ: enter report controller')
-        call prjqa(ier)
+        silent= .false.
+        inpic=NCOMP
+        do 29 iz=1,inpic
+          ivals(iz)=iz
+  29    continue
+        call prjqa(inpic,ivals,silent,ier)
       ELSE
         GOTO 3
       ENDIF
@@ -1878,10 +1888,10 @@ C ensure that we use the latest version.
             newgeo = .true.
           endif
           if(newgeo)then
-	    iuf=ifil+2
+            iuf=ifil+2
             call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
-	    iuf=ifil+2
+            iuf=ifil+2
             call emkgeo(iuf,LGEOM(NCOMP),NCOMP,3,IER)
           endif
           IF(IER.EQ.1)THEN
@@ -2901,7 +2911,8 @@ C CFD.
         call askzone(ic,izdef,' ','Zone CFD Selection',
      &         'd','Zone index for cfd.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+		
+        call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
 
         IUF=IFIL+1
         call cfdcomp(ic,iuf,ier)
@@ -3216,7 +3227,7 @@ C Also scan utility files if they exist.
         helptopic='new_model_cfg_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
 
-	LTMP=' '    ! reset return string
+        LTMP=' '    ! reset return string
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
      &    DFCFG,LTMP,'config file name',IER,nbhelp)
@@ -4109,7 +4120,7 @@ C For help messages
 
 C Find out the version number so we know what to do with obstructions later.
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
+          call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           DO 62 I=1,NTV
             X(I)=X(I)+VALX
             Y(I)=Y(I)+VALY
@@ -4298,7 +4309,7 @@ C For help messages
 
 C Find out version number so we know if upgrade required.
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
+          call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           CALL ESCROT(VAL,x1,y1)
           iZBFLG(IICOMP)=0
 
