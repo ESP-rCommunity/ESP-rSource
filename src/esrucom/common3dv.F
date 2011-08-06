@@ -240,11 +240,21 @@ C Debug
       VIEWM(3)=VZ
       ANG=EAN
       HANG=ANG/2.0
-      ITDSP=JITDSP; ITBND=JITBND;
+
+C To avoid implicit casts also check machine type.
+#ifdef OSI
+      ITDSP=JITDSP; ITBND=JITBND; ITPPSW=JITPPSW
       ITZNM=JITZNM; ITSNM=JITSNM; ITVNO=JITVNO
       ITORG=JITORG; ITSNR=JITSNR; ITOBS=JITOBS
       ITHLS=JITHLS; ITHLZ=JITHLZ; ITGRD=JITGRD
-      GRDIS=DIS; ITPPSW=JITPPSW
+#else
+      ITDSP=int(JITDSP); ITBND=int(JITBND); ITPPSW=int(JITPPSW)
+      ITZNM=int(JITZNM); ITSNM=int(JITSNM); ITVNO=int(JITVNO)
+      ITORG=int(JITORG); ITSNR=int(JITSNR); ITOBS=int(JITOBS)
+      ITHLS=int(JITHLS); ITHLZ=int(JITHLZ); ITGRD=int(JITGRD)
+#endif     
+
+      GRDIS=DIS
       write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
      &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
       write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
