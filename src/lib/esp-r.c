@@ -31,7 +31,7 @@
 #undef ESP_LIST_MAIN
 
 /* Global variable definitions start here */
-extern chgeye_();
+extern chgeye_();     /* in esrucom/common3dv.F */
 extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
@@ -1297,8 +1297,6 @@ void esru_wire_ctl ( void)
          image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
          image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
          image_.HANG = image_.ANG/2.;
-         // pass back to the fortran the real numbers that a user might have changed and invoke updated view (in the fortran)
-         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],&image_.VIEWM[2],&image_.ANG);
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
            ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
@@ -1368,6 +1366,10 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 3;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
            ray2_.ITPPSW = 4;}
+         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
+         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
+           &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
+           &ray2_.ITORG,&ray2_.GRDIS,&ray2_.ITBND,&ray2_.ITDSP,&ray2_.ITHLS,&ray2_.ITHLZ,&ray2_.ITPPSW);
 
          no_valid_event = FALSE;
          break;
@@ -1380,8 +1382,6 @@ void esru_wire_ctl ( void)
          image_.VIEWM[2] = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewPointValueZ));
          image_.ANG = gtk_adjustment_get_value(GTK_ADJUSTMENT (ViewAngleValue));
          image_.HANG = image_.ANG/2.;
-         // pass back to the fortran the real numbers that a user might have changed and invoke updated view (in the fortran)
-         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],&image_.VIEWM[2],&image_.ANG);
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplayZoneName)) == TRUE) {
            ray2_.ITZNM = 0;} else {ray2_.ITZNM = 1;}
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (DisplaySurfaceName)) == TRUE) {
@@ -1443,6 +1443,10 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 3;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
            ray2_.ITPPSW = 4;}
+         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
+         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
+           &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
+           &ray2_.ITORG,&ray2_.GRDIS,&ray2_.ITBND,&ray2_.ITDSP,&ray2_.ITHLS,&ray2_.ITHLZ,&ray2_.ITPPSW);
 
          esru_ask_wire();	/* re-instanciate the help associated with this interface */
          break;

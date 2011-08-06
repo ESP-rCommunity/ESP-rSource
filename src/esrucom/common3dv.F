@@ -199,19 +199,39 @@ C Passed paramter.
       end
 
 C ********* chgeye
-C CHGEYE is called from C code in esru_x.c with current eye view point angle as 7 real numbers.
-      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN)
+C CHGEYE is called from C code in esru_x.c with current contents of the ray2_ and
+C image_ c structures.  Integers are specially treated based on ifdef.
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
 #include "building.h"
 #include "prj3dv.h"
 
 C Passed paramters.
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
       
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
 
 C Debug
-C      write(6,*) 'chgeye ',EVX,EVY,EVZ,VX,VY,VZ,EAN
+      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
+     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,DIS,
+     &  JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      write(6,*) 'chgeye com before  ',eyem(1),eyem(2),eyem(3),
+     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
+      write(6,*) 'ray2 com ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
+     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       eyem(1)=EVX
       eyem(2)=EVY
       eyem(3)=EVZ
@@ -220,10 +240,32 @@ C      write(6,*) 'chgeye ',EVX,EVY,EVZ,VX,VY,VZ,EAN
       VIEWM(3)=VZ
       ANG=EAN
       HANG=ANG/2.0
+      ITDSP=JITDSP; ITBND=JITBND;
+      ITZNM=JITZNM; ITSNM=JITSNM; ITVNO=JITVNO
+      ITORG=JITORG; ITSNR=JITSNR; ITOBS=JITOBS
+      ITHLS=JITHLS; ITHLZ=JITHLZ; ITGRD=JITGRD
+      GRDIS=DIS; ITPPSW=JITPPSW
+      write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
+     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
+      write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
+     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       MODIFY=.TRUE.
       MODLEN=.TRUE.
-      CALL INLNST(1)
-      CALL ADJVIEW(IER)
+
+C Use same logic as in EVSET.
+      if(ITPPSW.eq.0)then
+        CALL INLNST(1)
+        CALL ADJVIEW(IER)
+        MODLEN=.FALSE.
+        MODBND=.FALSE.
+        MODIFY=.FALSE.
+      elseif(ITPPSW.eq.1)then
+        call PLELEV('P')
+      elseif(ITPPSW.eq.2)then
+        call PLELEV('S')
+      elseif(ITPPSW.eq.3)then
+        call PLELEV('E')
+      endif
 
       return
       end
