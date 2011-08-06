@@ -2047,8 +2047,6 @@ C Loop through referenced mlc and derives the longest timeconstant.
 #include "esprdbfile.h"
 #include "material.h"
 
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
@@ -2060,7 +2058,6 @@ c ITCNST  - number of start-up days
       integer matarrayindex ! the indes within matdatarray
 
       character outs*124
-      character MLCN*12
       logical found,closemat1,closemat2
 
 C Establish if material data arrays have been filled. If not return
@@ -2083,11 +2080,14 @@ C each layer and keep track of time constant.
       do 40 ic=1,nmlc
 
 c First determine maximum thermal diffusivity and associated
-c homogeneous layer. Locate the MLC database item.
-        WRITE(MLCN,'(A12)')DESC(ic)(1:12)
-        lmlc=lnblnk(MLCN)
+c homogeneous layer. Locate if the MLC database item is used.
         found=.false.
-        if(ssmlcindex(icn).ne.0) found=.true.
+        do 42 icn=1,ncon
+          if(ssmlcindex(icn).eq.ic) then
+            found=.true.
+            goto 43
+          endif
+  42    continue
   43    if(found)then
           RES=0.
           CAP=0.
