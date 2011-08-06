@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_toil_psg # tag version, format, zone name
-*date Fri Aug  5 05:35:49 2011  # latest file modification 
+*date Sat Aug  6 12:27:50 2011  # latest file modification 
 L1_toil_psg describes toilet and passage on level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,47.95000  #   1
@@ -50,7 +50,7 @@ L1_toil_psg describes toilet and passage on level one
 *surf,gl_facade,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,facc_l1,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptna_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,07  #   6 ||< ptna_str_l1:stair_2
-*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,14,24  #   7 ||< Wall-52:L1_support
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,14,24  #   7 ||< ptn_toil:L1_support
 *surf,ptna_opn_l1,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,21  #   8 ||< ptna_opn_l1:L1_open_off
 *surf,ptnb_opn_l1,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,22  #   9 ||< ptnb_opn_l1:L1_open_off
 *surf,top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,17,31  #  10 ||< ceil_tpsg:L2_uf_plen

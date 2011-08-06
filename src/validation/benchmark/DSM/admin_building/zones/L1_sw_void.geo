@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_sw_void # tag version, format, zone name
-*date Fri Aug  5 05:25:10 2011  # latest file modification 
+*date Sat Aug  6 12:29:02 2011  # latest file modification 
 L1_sw_void describes ground level void at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,47.95000  #   1
@@ -160,7 +160,7 @@ L1_sw_void describes ground level void at SW facade
 *surf,king_gla_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
 *surf,king_gla_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
 *surf,king_gla_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  30 ||< not yet defined
+*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,34,33  #  30 ||< base:L2_se_void
 *surf,base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  31 ||< ground profile  1
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  32 ||< external
 *surf,elev_rflr,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,34  #  33 ||< ptn_vd2:lifts

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_training # tag version, format, zone name
-*date Fri Aug  5 05:22:50 2011  # latest file modification 
+*date Sat Aug  6 12:26:59 2011  # latest file modification 
 L1_training describes delivery and training rooms on level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,13.75000,47.95000  #   1

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_open_off # tag version, format, zone name
-*date Fri Aug  5 05:33:05 2011  # latest file modification 
+*date Sat Aug  6 12:26:21 2011  # latest file modification 
 L1_open_off describes core open plan office behind curved wall
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,24.25000,15.75000,47.95000  #   1

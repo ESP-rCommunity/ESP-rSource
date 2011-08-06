@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Fri Aug  5 05:42:55 2011  # latest file modification 
+*date Sat Aug  6 12:53:44 2011  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -118,12 +118,12 @@ stair_1 describes stair number one
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_cora_l2,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_cora_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,23,16  #   1 ||< ptn_other:L2_cust_srv
 *surf,ptn_corb_l2,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_off_l2,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,ptna_toil_l2,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptnb_toil_l2,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,ptn_void_l2,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,ptn_off_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,27,21  #   3 ||< Wall-21:L2_coridor
+*surf,ptna_toil_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,02  #   4 ||< ptn_corb_l2:L2_toilet
+*surf,ptnb_toil_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,01  #   5 ||< ptn_cora_l2:L2_toilet
+*surf,ptn_void_l2,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,34,14  #   6 ||< ptn_stair:L2_se_void
 *surf,ptnb_toil_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,ptna_toil_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,ptnb_toil_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined

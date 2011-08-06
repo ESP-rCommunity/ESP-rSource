@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_kitchen # tag version, format, zone name
-*date Thu Jul 14 19:34:38 2011  # latest file modification 
+*date Sat Aug  6 12:40:17 2011  # latest file modification 
 L2_kitchen describes L2 kitchenette on service road facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,41.37145,35.70000,52.45000  #   1
@@ -30,14 +30,14 @@ L2_kitchen describes L2 kitchenette on service road facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,11  #   1 ||< Wall-11:L2_corid_a
-*surf,Wall-2,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,Wall-3,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,Wall-5,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,Wall-6,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,10  #   6 ||< ptn_stair:l2_cell_c
-*surf,Top-7,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Base-8,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,11  #   1 ||< Wall-11:L2_coridor
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,09  #   2 ||< Wall-11:L2_cor_cell
+*surf,Wall-3,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,Wall-5,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,10  #   6 ||< ptn_stair:L2_cell_srv
+*surf,Top-7,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,Base-8,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -46,4 +46,4 @@ L2_kitchen describes L2 kitchenette on service road facade
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,8,    17.25 0  # zone base list
+*base_list,1,8,    16.86 0  # zone base list

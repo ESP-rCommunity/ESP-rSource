@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_light_w2 # tag version, format, zone name
-*date Wed Jul 27 23:29:14 2011  # latest file modification 
+*date Sat Aug  6 12:40:37 2011  # latest file modification 
 L2_light_w2 describes light well two at level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,52.45000  #   1
@@ -39,19 +39,19 @@ L2_light_w2 describes light well two at level two
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,l3_lw2_fr,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,19  #   1 ||< front_shaft:L2_op_pln
-*surf,l3_lw2_ri,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,18  #   2 ||< right_shaft:L2_op_pln
-*surf,l3_lw2_bk,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,01  #   3 ||< Wall-1:L2_cel_a
-*surf,l3_lw2_lef,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,20  #   4 ||< left_shaft:L2_op_pln
-*surf,up_l3_lw2,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,23,06  #   5 ||< l3_lw2_base:L3_light_w2
-*surf,l3_lw2_base,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,left_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,43  #   7 ||< left_rail:L2_op_pln
-*surf,front_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,44  #   8 ||< front_rail:L2_op_pln
-*surf,right_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,45  #   9 ||< right_rail:L2_op_pln
-*surf,l3_flrv_r,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,l3_flrv_f,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,l3_flrv_l,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,l3_flrv_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,18  #   1 ||< front_shaft:L2_open_pln
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,17  #   2 ||< right_shaft:L2_open_pln
+*surf,l3_lw2_bk,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,01  #   3 ||< Wall-1:L2_core_cel
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,19  #   4 ||< left_shaft:L2_open_pln
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,42  #   7 ||< left_rail:L2_open_pln
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,43  #   8 ||< front_rail:L2_open_pln
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,44  #   9 ||< right_rail:L2_open_pln
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

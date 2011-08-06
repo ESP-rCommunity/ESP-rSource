@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_circular # tag version, format, zone name
-*date Fri Aug  5 05:19:56 2011  # latest file modification 
+*date Sat Aug  6 12:24:39 2011  # latest file modification 
 L1_circular describes a circular vent shaft at level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,47.95000  #   1

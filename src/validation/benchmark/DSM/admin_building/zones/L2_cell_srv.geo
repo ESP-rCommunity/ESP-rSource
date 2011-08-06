@@ -1,6 +1,6 @@
 *Geometry 1.1,GEN,L2_cell_srv # tag version, format, zone name
-*date Wed Jul 27 23:41:14 2011  # latest file modification 
-L2_cell_srv describes a series of cellular offices facing service
+*date Sat Aug  6 12:39:59 2011  # latest file modification 
+L2_cell_srv describes a series of cellular offices facing servic
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,52.45000  #   1
 *vertex,14.48713,35.70000,52.45000  #   2
@@ -187,66 +187,66 @@ L2_cell_srv describes a series of cellular offices facing service
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_cor_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,20  #   1 ||< Wall-20:L2_corid_a
-*surf,ptn_cor_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,19  #   2 ||< Wall-19:L2_corid_a
-*surf,ptn_cor_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,18  #   3 ||< Wall-18:L2_corid_a
-*surf,ptn_cor_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,17  #   4 ||< Wall-17:L2_corid_a
-*surf,ptn_cor_e,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,16  #   5 ||< Wall-16:L2_corid_a
-*surf,ptn_cor_f,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,15  #   6 ||< Wall-15:L2_corid_a
-*surf,ptn_cor_g,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,14  #   7 ||< Wall-14:L2_corid_a
-*surf,ptn_cor_h,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,13  #   8 ||< Wall-13:L2_corid_a
-*surf,ptn_cor_i,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,12  #   9 ||< Wall-12:L2_corid_a
-*surf,ptn_stair,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,12,06  #  10 ||< Wall-6:l2_kitch
-*surf,stone_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,stone_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,stone_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,glaz_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,stone_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,glaz_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,stone_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,stone_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,glaze_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  21 ||< external
-*surf,vent_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_h,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,stone_h,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,glaz_i,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  25 ||< external
-*surf,vent_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,glaz_k,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  27 ||< external
-*surf,stone_k,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,ptn_toil,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,03  #  29 ||< ptn_corc_l2:L2_toilet
-*surf,ceiling,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,floor_l2_cc,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,glaz_a_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  32 ||< external
-*surf,glaz_a_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  33 ||< external
-*surf,glaz_b_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  34 ||< external
-*surf,glaz_b_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  35 ||< external
-*surf,glaz_c_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  36 ||< external
-*surf,glaz_c_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  37 ||< external
-*surf,glaz_d_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  38 ||< external
-*surf,glaz_d_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  39 ||< external
-*surf,glaz_low,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  40 ||< external
-*surf,glaz,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  41 ||< external
-*surf,glaz_hi,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  42 ||< external
-*surf,glaz_k_low,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  43 ||< external
-*surf,glaz_k_hi,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  44 ||< external
-*surf,glaz_i_low,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  45 ||< external
-*surf,glaz_i_hi,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  46 ||< external
-*surf,glaz_h_low,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  47 ||< external
-*surf,glaz_h_hi,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  48 ||< external
-*surf,glaz_f_low,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  49 ||< external
-*surf,glaz_f_hi,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  50 ||< external
-*surf,int_ptn_a,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,52  #  51 ||< int_ptn_a_:l2_cell_c
-*surf,int_ptn_a_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,51  #  52 ||< int_ptn_a:l2_cell_c
-*surf,int_ptn_b,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,54  #  53 ||< int_ptn_b_:l2_cell_c
-*surf,int_ptn_b_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,53  #  54 ||< int_ptn_b:l2_cell_c
-*surf,int_ptn_c,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,56  #  55 ||< int_ptn_c_:l2_cell_c
-*surf,int_ptn_c_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,55  #  56 ||< int_ptn_c:l2_cell_c
-*surf,int_ptn_d,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,58  #  57 ||< int_ptn_d_:l2_cell_c
-*surf,int_ptn_d_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,57  #  58 ||< int_ptn_d:l2_cell_c
-*surf,int_ptn_e,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,60  #  59 ||< int_ptn_e_:l2_cell_c
-*surf,int_ptn_e_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,08,59  #  60 ||< int_ptn_e:l2_cell_c
+*surf,ptn_cor_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,20  #   1 ||< Wall-20:L2_coridor
+*surf,ptn_cor_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,19  #   2 ||< Wall-19:L2_coridor
+*surf,ptn_cor_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,18  #   3 ||< Wall-18:L2_coridor
+*surf,ptn_cor_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,17  #   4 ||< Wall-17:L2_coridor
+*surf,ptn_cor_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,16  #   5 ||< Wall-16:L2_coridor
+*surf,ptn_cor_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,15  #   6 ||< Wall-15:L2_coridor
+*surf,ptn_cor_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,14  #   7 ||< Wall-14:L2_coridor
+*surf,ptn_cor_h,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,13  #   8 ||< Wall-13:L2_coridor
+*surf,ptn_cor_i,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,12  #   9 ||< Wall-12:L2_coridor
+*surf,ptn_stair,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,06  #  10 ||< Wall-6:L2_kitchen
+*surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,stone_b,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,stone_d,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,stone_e,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,glaze_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,vent_b,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,stone_h,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,glaz_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,vent_a,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  26 ||< external
+*surf,glaz_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,stone_k,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,ptn_toil,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,03  #  29 ||< ptn_corc_l2:L2_toilet
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
+*surf,floor_l2_cc,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
+*surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_c_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,glaz_c_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  40 ||< external
+*surf,glaz,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  41 ||< external
+*surf,glaz_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  42 ||< external
+*surf,glaz_k_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  43 ||< external
+*surf,glaz_k_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  44 ||< external
+*surf,glaz_i_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  45 ||< external
+*surf,glaz_i_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  46 ||< external
+*surf,glaz_h_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  47 ||< external
+*surf,glaz_h_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  48 ||< external
+*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  49 ||< external
+*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  50 ||< external
+*surf,int_ptn_a,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,52  #  51 ||< int_ptn_a_:L2_cell_srv
+*surf,int_ptn_a_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,51  #  52 ||< int_ptn_a:L2_cell_srv
+*surf,int_ptn_b,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,54  #  53 ||< int_ptn_b_:L2_cell_srv
+*surf,int_ptn_b_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,53  #  54 ||< int_ptn_b:L2_cell_srv
+*surf,int_ptn_c,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,56  #  55 ||< int_ptn_c_:L2_cell_srv
+*surf,int_ptn_c_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,55  #  56 ||< int_ptn_c:L2_cell_srv
+*surf,int_ptn_d,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,58  #  57 ||< int_ptn_d_:L2_cell_srv
+*surf,int_ptn_d_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,57  #  58 ||< int_ptn_d:L2_cell_srv
+*surf,int_ptn_e,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,60  #  59 ||< int_ptn_e_:L2_cell_srv
+*surf,int_ptn_e_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,59  #  60 ||< int_ptn_e:L2_cell_srv
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

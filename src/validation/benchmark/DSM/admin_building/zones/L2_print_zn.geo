@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_print_zn # tag version, format, zone name
-*date Wed Jul 27 23:29:22 2011  # latest file modification 
+*date Sat Aug  6 12:37:19 2011  # latest file modification 
 L2_print_zn describes the print zone adj to open plan & interact
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.64430,28.50000,52.45000  #   1
@@ -30,14 +30,14 @@ L2_print_zn describes the print zone adj to open plan & interact
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,22  #   1 ||< ptn_cell_e:L2_op_pln
-*surf,Wall-2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,21  #   2 ||< ptn_cell_d:L2_op_pln
-*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,10  #   3 ||< Wall-13:L2_cel_a
-*surf,Wall-4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,02  #   4 ||< Wall-2:L2_corid_a
-*surf,Wall-5,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,06,01  #   5 ||< Wall-1:L2_corid_a
-*surf,Wall-6,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ceil_pz_a,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,floor_pz_a,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,21  #   1 ||< ptn_cell_e:L2_open_pln
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,20  #   2 ||< ptn_cell_d:L2_open_pln
+*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,10  #   3 ||< Wall-13:L2_core_cel
+*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,02  #   4 ||< Wall-2:L2_coridor
+*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,01  #   5 ||< Wall-1:L2_coridor
+*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,22  #   6 ||< ptn_cell_f:L2_open_pln
+*surf,ceil_pz_a,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,floor_pz_a,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

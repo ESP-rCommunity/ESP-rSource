@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_careers # tag version, format, zone name
-*date Fri Aug  5 05:20:48 2011  # latest file modification 
+*date Sat Aug  6 12:46:38 2011  # latest file modification 
 L1_careers describes the level one careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,29.25000,17.25000,47.95000  #   1
@@ -142,8 +142,8 @@ L1_careers describes the level one careers service area
 *surf,ptn_gla_j,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,10,04  #  17 ||< seg_c:L1_open_off
 *surf,upper,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,17,21  #  18 ||< upper:L2_uf_plen
 *surf,floor,FLOR,-,-,-,heated_slb,OPAQUE,GROUND,01,00  #  19 ||< ground profile  1
-*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,09,02  #  20 ||< ptn_open_b:L1_meeting
-*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,03  #  21 ||< door:L1_meeting
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,02  #  20 ||< ptn_open_b:L1_meeting
+*surf,door_mt,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,03  #  21 ||< door:L1_meeting
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,04  #  22 ||< ptn_open_c:L1_meeting
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,09,05  #  23 ||< ptn_frame:L1_meeting
 *surf,exit_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
@@ -162,7 +162,7 @@ L1_careers describes the level one careers service area
 *surf,fv_seg_o,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,25  #  37 ||< fv_seg_o:L2_uf_plen
 *surf,over_door,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,26  #  39 ||< struc_a:L2_uf_plen
-*surf,upper_fict,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  40 ||< not yet defined
+*surf,upper_fict,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,20,01  #  40 ||< lower_fict:L2_careers
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

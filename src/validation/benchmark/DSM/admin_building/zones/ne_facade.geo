@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Fri Aug  5 05:18:27 2011  # latest file modification 
+*date Sat Aug  6 12:23:16 2011  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -183,13 +183,13 @@ ne_facade describes the stone facade on NE with air void
 *surf,return_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,Top-24,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,Base-25,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,10  #  14 ||< pa_fac_l2:L2_meeting
+*surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,12  #  15 ||< pb_fac_l2:L2_meeting
 *surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
 *surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,pta_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
+*surf,pta_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,02  #  18 ||< pta_fac_l2:L2_toil_psg
+*surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,03  #  19 ||< ptb_fac_l2:L2_toil_psg
+*surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,05  #  20 ||< ptnc_fac_l2:L2_toil_psg
 *surf,ptn_stair,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,02,17  #  21 ||< ptn_stair:stair_2
 *surf,pta_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
 *surf,ptb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined

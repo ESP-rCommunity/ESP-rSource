@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_uf_plen # tag version, format, zone name
-*date Fri Aug  5 05:26:03 2011  # latest file modification 
+*date Sat Aug  6 12:29:55 2011  # latest file modification 
 L1_uf_plen describes air distribution plenum at ground level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,24.25000,15.75000,47.95000  #   1

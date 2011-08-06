@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_toilet # tag version, format, zone name
-*date Fri Aug  5 05:23:05 2011  # latest file modification 
+*date Sat Aug  6 12:27:19 2011  # latest file modification 
 L1_toilet describes toilets on level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,47.95000  #   1

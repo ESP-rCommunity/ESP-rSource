@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_core_cel # tag version, format, zone name
-*date Wed Jul 27 23:29:30 2011  # latest file modification 
+*date Sat Aug  6 12:37:39 2011  # latest file modification 
 L2_core_cel describes set of cellular offices adj to open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.24663,28.50000,52.45000  #   1
@@ -51,21 +51,21 @@ L2_core_cel describes set of cellular offices adj to open plan
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,47,03  #   1 ||< l3_lw2_bk:L2_lw2
-*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,03,17  #   2 ||< ptn_cell_c:L2_op_pln
-*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,03,16  #   3 ||< ptn_cell_b:L2_op_pln
-*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,03,15  #   4 ||< ptn_cell_a:L2_op_pln
-*surf,Wall-8,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,Wall-9,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,06,06  #   6 ||< Wall-6:L2_corid_a
-*surf,Wall-10,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,06,05  #   7 ||< Wall-5:L2_corid_a
-*surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,06,04  #   8 ||< Wall-4:L2_corid_a
-*surf,Wall-12,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,06,03  #   9 ||< Wall-3:L2_corid_a
-*surf,Wall-13,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,05,03  #  10 ||< Wall-3:L2_prz_a
-*surf,ceil_l2_cl_a,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,floor_l2_cl_,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,ptn_cel_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,10,07  #  13 ||< ptn_cel_b:l2_toil_psg
-*surf,ptnc_str_l2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,11,34  #  14 ||< ptnc_str_l2:stair_twr_n
-*surf,Wall-15,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,11,06  #  15 ||< Wall-15:stair_twr_n
+*surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,31,03  #   1 ||< l3_lw2_bk:L2_light_w2
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,16  #   2 ||< ptn_cell_c:L2_open_pln
+*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,15  #   3 ||< ptn_cell_b:L2_open_pln
+*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,14  #   4 ||< ptn_cell_a:L2_open_pln
+*surf,Wall-8,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,07  #   5 ||< Wall-7:L2_coridor
+*surf,Wall-9,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,06  #   6 ||< Wall-6:L2_coridor
+*surf,Wall-10,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,05  #   7 ||< Wall-5:L2_coridor
+*surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,04  #   8 ||< Wall-4:L2_coridor
+*surf,Wall-12,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,03  #   9 ||< Wall-3:L2_coridor
+*surf,Wall-13,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,25,03  #  10 ||< Wall-3:L2_print_zn
+*surf,ceil_l2_cl_a,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,floor_l2_cl_,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,33,07  #  13 ||< ptn_cel_b:L2_toil_psg
+*surf,ptnc_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,33  #  14 ||< ptnc_str_l2:stair_2
+*surf,Wall-15,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,06  #  15 ||< Wall-15:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

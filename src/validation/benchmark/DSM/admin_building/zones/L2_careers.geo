@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Thu Jul 14 22:59:12 2011  # latest file modification 
+*date Sat Aug  6 12:49:11 2011  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
@@ -36,7 +36,7 @@ L2_careers describes open space over the careers service area
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,12,2,1,12,11,10,9,8,7,6,5,4,3  #  1
-*edges,13,14,13,24,23,22,21,20,19,18,17,16,15,29  #  2
+*edges,11,22,21,20,19,18,17,16,15,29,30,31  #  2
 *edges,4,5,6,21,22  #  3
 *edges,4,6,7,20,21  #  4
 *edges,4,7,8,19,20  #  5
@@ -58,23 +58,23 @@ L2_careers describes open space over the careers service area
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,lower_fict,FLOR,-,-,-,UNKNOWN,OPAQUE,ANOTHER,56,40  #   1 ||< upper_fict:L1_careers
-*surf,upper_fict,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,fac_frame_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,stone_wall,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_frame_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,end_glazing,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,balcony,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,struc,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,fict_opening,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,seg_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,41,12  #  13 ||< seg_l:L2_circul
-*surf,seg_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,41,13  #  14 ||< seg_m:L2_circul
-*surf,seg_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,41,14  #  15 ||< seg_n:L2_circul
-*surf,seg_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,41,15  #  16 ||< seg_o:L2_circul
-*surf,L3_vc_low,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,22,10  #  17 ||< L3_vc_low:L3_void_c
+*surf,lower_fict,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,08,40  #   1 ||< upper_fict:L1_careers
+*surf,upper_slab,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,fac_frame_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_frame_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,end_glazing,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,balcony,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,46  #  10 ||< balcony:L2_open_pln
+*surf,struc,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,fict_opening,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,41  #  12 ||< ptn_void_c:L2_open_pln
+*surf,seg_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,12  #  13 ||< seg_l:L2_circular
+*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,13  #  14 ||< seg_m:L2_circular
+*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,14  #  15 ||< seg_n:L2_circular
+*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,15  #  16 ||< seg_o:L2_circular
+*surf,L3_vc_low,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  17 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

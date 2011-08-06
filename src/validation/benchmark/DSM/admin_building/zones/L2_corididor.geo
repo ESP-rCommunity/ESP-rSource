@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_coridor # tag version, format, zone name
-*date Wed Jul 27 23:29:21 2011  # latest file modification 
+*date Sat Aug  6 12:44:06 2011  # latest file modification 
 L2_coridor describes corridor between banks of cellular offices
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.64430,33.70000,52.45000  #   1
@@ -90,34 +90,34 @@ L2_coridor describes corridor between banks of cellular offices
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,05,05  #   1 ||< Wall-5:L2_prz_a
-*surf,Wall-2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,05,04  #   2 ||< Wall-4:L2_prz_a
-*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,09  #   3 ||< Wall-12:L2_cel_a
-*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,08  #   4 ||< Wall-11:L2_cel_a
-*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,07  #   5 ||< Wall-10:L2_cel_a
-*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,04,06  #   6 ||< Wall-9:L2_cel_a
-*surf,Wall-7,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,Wall-9,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,13,02  #   9 ||< ptn_corb:L2_cel319
-*surf,Wall-10,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,13,01  #  10 ||< ptn_cora:L2_cel319
-*surf,Wall-11,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,12,01  #  11 ||< Wall-1:l2_kitch
-*surf,Wall-12,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,09  #  12 ||< ptn_cor_i:l2_cell_c
-*surf,Wall-13,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,08  #  13 ||< ptn_cor_h:l2_cell_c
-*surf,Wall-14,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,07  #  14 ||< ptn_cor_g:l2_cell_c
-*surf,Wall-15,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,06  #  15 ||< ptn_cor_f:l2_cell_c
-*surf,Wall-16,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,05  #  16 ||< ptn_cor_e:l2_cell_c
-*surf,Wall-17,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,04  #  17 ||< ptn_cor_d:l2_cell_c
-*surf,Wall-18,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,03  #  18 ||< ptn_cor_c:l2_cell_c
-*surf,Wall-19,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,02  #  19 ||< ptn_cor_b:l2_cell_c
-*surf,Wall-20,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,08,01  #  20 ||< ptn_cor_a:l2_cell_c
-*surf,Wall-21,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,16,03  #  21 ||< ptn_off_l2:sw_stair
-*surf,Wall-22,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
-*surf,Wall-23,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
-*surf,Wall-24,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,07,06  #  24 ||< Wall-6:L2_cash
-*surf,Wall-25,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,07,05  #  25 ||< Wall-5:L2_cash
-*surf,Wall-26,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,ceil_l2_cor,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
-*surf,floor_l2cor,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
+*surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,25,05  #   1 ||< Wall-5:L2_print_zn
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,25,04  #   2 ||< Wall-4:L2_print_zn
+*surf,Wall-3,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,09  #   3 ||< Wall-12:L2_core_cel
+*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,08  #   4 ||< Wall-11:L2_core_cel
+*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,07  #   5 ||< Wall-10:L2_core_cel
+*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,06  #   6 ||< Wall-9:L2_core_cel
+*surf,Wall-7,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,05  #   7 ||< Wall-8:L2_core_cel
+*surf,Wall-8,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,Wall-9,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,02  #   9 ||< ptn_corb:L2_cor_cell
+*surf,Wall-10,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,01  #  10 ||< ptn_cora:L2_cor_cell
+*surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,01  #  11 ||< Wall-1:L2_kitchen
+*surf,Wall-12,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,09  #  12 ||< ptn_cor_i:L2_cell_srv
+*surf,Wall-13,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,08  #  13 ||< ptn_cor_h:L2_cell_srv
+*surf,Wall-14,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,07  #  14 ||< ptn_cor_g:L2_cell_srv
+*surf,Wall-15,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,06  #  15 ||< ptn_cor_f:L2_cell_srv
+*surf,Wall-16,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,05  #  16 ||< ptn_cor_e:L2_cell_srv
+*surf,Wall-17,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,04  #  17 ||< ptn_cor_d:L2_cell_srv
+*surf,Wall-18,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,03  #  18 ||< ptn_cor_c:L2_cell_srv
+*surf,Wall-19,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,02  #  19 ||< ptn_cor_b:L2_cell_srv
+*surf,Wall-20,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,01  #  20 ||< ptn_cor_a:L2_cell_srv
+*surf,Wall-21,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,03  #  21 ||< ptn_off_l2:stair_1
+*surf,Wall-22,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,Wall-23,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,07  #  23 ||< Wall-7:L2_cash
+*surf,Wall-24,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,06  #  24 ||< Wall-6:L2_cash
+*surf,Wall-25,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,05  #  25 ||< Wall-5:L2_cash
+*surf,Wall-26,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,23  #  26 ||< ptn_corid:L2_open_pln
+*surf,ceil_l2_cor,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,floor_l2cor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -126,4 +126,4 @@ L2_coridor describes corridor between banks of cellular offices
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,28,    81.83 0  # zone base list
+*base_list,1,28,    81.44 0  # zone base list

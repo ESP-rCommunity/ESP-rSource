@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_meeting # tag version, format, zone name
-*date Thu Jul 14 19:31:36 2011  # latest file modification 
+*date Sat Aug  6 12:51:45 2011  # latest file modification 
 L2_meeting describes corner meeting room wutg angled wall
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -51,21 +51,21 @@ L2_meeting describes corner meeting room wutg angled wall
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_open_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,12  #   1 ||< ptn_meet_a:L2_op_pln
-*surf,ptn_open_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,11  #   2 ||< ptn_meet_b:L2_op_pln
-*surf,door,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,10  #   3 ||< ptn_meet_c:L2_op_pln
-*surf,ptn_open_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,09  #   4 ||< ptn_frame:L2_op_pln
-*surf,frame_open,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,fac_frame,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,pa_fac_l2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,17  #  10 ||< pa_fac_l2:L2_ne_facad
-*surf,gl_fac_l2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,18  #  11 ||< gl_fac_l2:L2_ne_facad
-*surf,pb_fac_l2,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,19  #  12 ||< pb_fac_l2:L2_ne_facad
-*surf,ptn_toilet,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,10,01  #  13 ||< pt_meeting:l2_toil_psg
-*surf,ceiling,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,floor,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,22,11  #   1 ||< ptn_meet_a:L2_open_pln
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,10  #   2 ||< ptn_meet_b:L2_open_pln
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,09  #   3 ||< ptn_meet_c:L2_open_pln
+*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,08  #   4 ||< ptn_frame:L2_open_pln
+*surf,frame_open,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,14  #  10 ||< pa_fac_l2:ne_facade
+*surf,gl_fac_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,15  #  12 ||< pb_fac_l2:ne_facade
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,33,01  #  13 ||< pt_meeting:L2_toil_psg
+*surf,ceiling_mt,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,floor_mt,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_circular # tag version, format, zone name
-*date Thu Jul 14 19:51:08 2011  # latest file modification 
+*date Sat Aug  6 12:51:08 2011  # latest file modification 
 L2_circular describes circular meeting room on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,52.45000  #   1
@@ -66,25 +66,25 @@ L2_circular describes circular meeting room on level two
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,seg_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,13  #   1 ||< seg_a:l2_void_a
-*surf,seg_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,14  #   2 ||< seg_b:l2_void_a
-*surf,seg_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,15  #   3 ||< seg_c:l2_void_a
-*surf,seg_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,16  #   4 ||< seg_d:l2_void_a
-*surf,seg_e,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,17  #   5 ||< seg_e:l2_void_a
-*surf,seg_f,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,01,18  #   6 ||< seg_f:l2_void_a
-*surf,seg_g,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #   7 ||< not yet defined
-*surf,seg_h,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #   8 ||< not yet defined
-*surf,seg_i,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #   9 ||< not yet defined
-*surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #  10 ||< not yet defined
-*surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #  11 ||< not yet defined
-*surf,seg_l,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,58,13  #  12 ||< seg_a:L2_careers
-*surf,seg_m,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,58,14  #  13 ||< seg_b:L2_careers
-*surf,seg_n,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,58,15  #  14 ||< seg_c:L2_careers
-*surf,seg_o,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,58,16  #  15 ||< seg_d:L2_careers
-*surf,facade_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,frame,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,facade_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,42,20  #  19 ||< Base:L3_circul
+*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,18,13  #   1 ||< seg_a:L2_ent_void
+*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,14  #   2 ||< seg_b:L2_ent_void
+*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,15  #   3 ||< seg_c:L2_ent_void
+*surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,16  #   4 ||< seg_d:L2_ent_void
+*surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,17  #   5 ||< seg_e:L2_ent_void
+*surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,18,18  #   6 ||< seg_f:L2_ent_void
+*surf,seg_g,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,seg_h,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,seg_i,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,13  #  12 ||< seg_a:L2_careers
+*surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,14  #  13 ||< seg_b:L2_careers
+*surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,15  #  14 ||< seg_c:L2_careers
+*surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,20,16  #  15 ||< seg_d:L2_careers
+*surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,Base,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution

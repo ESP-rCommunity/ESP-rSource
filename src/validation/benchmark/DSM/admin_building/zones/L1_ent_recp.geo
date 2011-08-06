@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_ent_recp # tag version, format, zone name
-*date Fri Aug  5 05:19:30 2011  # latest file modification 
+*date Sat Aug  6 12:24:13 2011  # latest file modification 
 L1_ent_recp describes lower atria at reception at level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92700,7.60000,47.95000  #   1
@@ -161,7 +161,7 @@ L1_ent_recp describes lower atria at reception at level one
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,up_fict,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,up_fict,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,18,28  #   1 ||< lower:L2_ent_void
 *surf,floor_a,FLOR,-,-,-,heated_slb,OPAQUE,GROUND,01,00  #   2 ||< ground profile  1
 *surf,fr_edge_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,10  #   3 ||< fr_edge_a:L2_uf_plen
 *surf,fr_edge_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,11  #   4 ||< fr_edge_b:L2_uf_plen
