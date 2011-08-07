@@ -143,6 +143,7 @@ C Assume that no alterations have been made to geometry.
       zbzero=.FALSE.
       newgeo=.false.  ! assume older format geometry.
       TOSMLCN=' '
+      iissmlci=0
 
 C GFILE is the default file name for any geom file to be created,
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -295,6 +296,9 @@ C Check if SVFC and SSVFC needs to be updated.
 C Loop through each surface and detect base information. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
+
+C Debug
+C        write(6,*) 'ssmlcindex ',ioc,ssmlcindex(ioc)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
         if(SMLCN(I)(1:4).eq.'UNKN')attribok=.false.
         if(SVFC(I).eq.'FLOR')then
@@ -3566,7 +3570,8 @@ C Update information needed to display information on the other side
 C of this surface (i.e. if we went from unknown to a partition).
                 icoth=ICO
 
-C Also check the other side construction and see if it matches.
+C Also check the other side construction and see if it matches. If
+C current surface MLC index is known get isymindex for the other side
                 if(ssmlcindex(ic).gt.0) then
                   ii=ssmlcindex(ic)
                   call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
@@ -3574,7 +3579,7 @@ C Also check the other side construction and see if it matches.
                   if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                     if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                       TOSMLCN=MLCN
-                  elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                    elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN=MLCN
                     else
                       TOSMLCN=MLCN
@@ -3586,12 +3591,11 @@ C If the current construction is nonsymmetric then it should not be
 C used for a partition if db does not have a linked MLC - inform the user.
                     write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &                ' has a nonsymmetric construction ',
-     &                SMLCN(is)(1:lnblnk(SMLCN(is))),'.'
+     &                SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
                     call edisp(iuout,outs)
                     write(outs,'(5a)') 'It faces ',
-     &                SNAME(IC2(ic),IE2(ic)),' composed of ',
-     &                SSMLCN(icoth)(1:12),
-     &                ' which may not have matching layers.'
+     &                SSNAME(icoth),' composed of ',
+     &                SSMLCN(icoth)(1:12),' (which may not match).'
                     call edisp(iuout,outs)
                     call edisp(iuout,
      &  'Please check attributes and/or revise the Cconstructions db.')

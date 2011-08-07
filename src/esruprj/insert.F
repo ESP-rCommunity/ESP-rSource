@@ -2446,7 +2446,7 @@ C (otherwise there will be two surfaces point to the same other surface).
       SUSE(NSUR,1)='-'
       SUSE(NSUR,2)='-'
 
-C If in silent mode assign construction otherwise select.
+C If in silent mode assign construction otherwise select. 
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         WRITE(SMLCN(NSUR),'(A)') rsmlcn(1:12)
         WRITE(SOTF(NSUR),'(A)')  rsotf(1:lnblnk(rsotf))
@@ -2611,7 +2611,10 @@ C Update common blocks G6 & G7 (insert data into connections based list).
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
-        ssmlcindex(ICONT)=ssmlcindex(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICONT)=imlcindex
         SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
@@ -2747,7 +2750,10 @@ C Update common blocks G6 & G7 (insert data into connections based list).
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
-        ssmlcindex(ICONT)=ssmlcindex(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICONT)=imlcindex
         SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
@@ -3057,7 +3063,10 @@ C Update common blocks G6 & G7
         SSNAME(ICON)=SNAME(ICOMP,NSUR)
         SSOTF(ICON)=SOTF(NSUR)
         SSMLCN(ICON)=SMLCN(NSUR)
-        ssmlcindex(ICON)=ssmlcindex(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICON)= imlcindex
         SSTHICK(ICON)=SSTHICK(NSUR)
         SSVFC(ICON)=SVFC(NSUR)
         SSOTHER(ICON,1)=SOTHER(NSUR,1)

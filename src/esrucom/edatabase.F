@@ -22,6 +22,7 @@ C The file edatabase.f is a collection of support facilities for
 C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
+C  parsemlcdesc: Parse the DESC string from the MLC common block
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
@@ -558,6 +559,35 @@ C Look for index for MLCSYM in the current MLC database.
         MLCSYM='  '
         isymindex=0   ! signal not applicable     
       endif
+      return
+      end
+
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if first 12 char matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters
+      character*(*) DES
+      integer imlcindex
+
+C Local variable.
+      character MLCN*12
+      integer ii
+
+C Look for index for MLCN in the current MLC database.
+      imlcindex=0  ! assume no matching MLC          
+      WRITE(MLCN,'(A)')DES(1:12)
+      if(MLCN(1:4).eq.'UNKN') return
+      do 5 ii=1,nmlc
+        if(MLCN(1:12).eq.DESC(ii)(1:12)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+  5   continue
       return
       end
 
