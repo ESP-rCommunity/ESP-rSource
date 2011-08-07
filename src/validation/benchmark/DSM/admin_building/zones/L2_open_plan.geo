@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_open_pln # tag version, format, zone name
-*date Sat Aug  6 12:53:44 2011  # latest file modification 
+*date Sun Aug  7 11:43:46 2011  # latest file modification 
 L2_open_pln describes main open plan office area at level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,22.79942,12.87217,52.45000  #   1
@@ -77,27 +77,24 @@ L2_open_pln describes main open plan office area at level two
 *vertex,19.09451,22.56193,52.45000  #  73
 *vertex,19.09451,22.56193,55.59300  #  74
 *vertex,35.91460,13.46776,52.45000  #  75
-*vertex,35.91460,13.46776,55.59299  #  76
-*vertex,38.00000,28.50000,53.45000  #  77
-*vertex,38.00000,21.30000,53.45000  #  78
-*vertex,34.25000,21.30000,53.45000  #  79
-*vertex,34.25000,28.50000,53.45000  #  80
-*vertex,22.79942,12.87217,56.35000  #  81
-*vertex,27.69180,13.96464,56.35000  #  82
-*vertex,22.79942,12.87217,53.45000  #  83
-*vertex,27.69180,13.96464,53.45000  #  84
-*vertex,34.25000,13.06217,53.45000  #  85
-*vertex,51.60000,17.28956,53.45000  #  86
+*vertex,38.00000,28.50000,53.45000  #  76
+*vertex,38.00000,21.30000,53.45000  #  77
+*vertex,34.25000,21.30000,53.45000  #  78
+*vertex,34.25000,28.50000,53.45000  #  79
+*vertex,22.79942,12.87217,53.45000  #  80
+*vertex,27.69180,13.96464,53.45000  #  81
+*vertex,34.25000,13.06217,53.45000  #  82
+*vertex,51.60000,17.28956,53.45000  #  83
 # 
 # tag, number of vertices followed by list of associated vert
-*edges,4,83,84,33,32  #  1
-*edges,5,2,3,34,33,84  #  2
+*edges,4,80,81,33,32  #  1
+*edges,5,2,3,34,33,81  #  2
 *edges,4,3,4,35,34  #  3
 *edges,4,4,5,36,35  #  4
 *edges,4,5,6,37,36  #  5
 *edges,4,6,7,38,37  #  6
-*edges,5,7,8,85,39,38  #  7
-*edges,5,9,10,41,40,86  #  8
+*edges,5,7,8,82,39,38  #  7
+*edges,5,9,10,41,40,83  #  8
 *edges,4,10,11,42,41  #  9
 *edges,4,11,12,43,42  # 10
 *edges,4,12,13,44,43  # 11
@@ -105,11 +102,11 @@ L2_open_pln describes main open plan office area at level two
 *edges,4,14,15,46,45  # 13
 *edges,4,15,16,47,46  # 14
 *edges,4,16,17,48,47  # 15
-*edges,5,17,18,77,49,48  # 16
-*edges,4,78,50,49,77  # 17
-*edges,4,79,51,50,78  # 18
-*edges,4,80,52,51,79  # 19
-*edges,5,21,22,53,52,80  # 20
+*edges,5,17,18,76,49,48  # 16
+*edges,4,77,50,49,76  # 17
+*edges,4,78,51,50,77  # 18
+*edges,4,79,52,51,78  # 19
+*edges,5,21,22,53,52,79  # 20
 *edges,4,22,23,54,53  # 21
 *edges,4,23,24,55,54  # 22
 *edges,4,24,25,56,55  # 23
@@ -118,7 +115,7 @@ L2_open_pln describes main open plan office area at level two
 *edges,4,27,28,59,58  # 26
 *edges,4,28,29,60,59  # 27
 *edges,4,29,30,61,60  # 28
-*edges,5,31,1,83,32,62  # 29
+*edges,5,31,1,80,32,62  # 29
 *edges,26,32,33,34,35,36,37,38,39,51,52,53,54,55,56,57,58,59,60,61,74,72,70,68,66,64,62  # 30
 *edges,26,1,31,63,65,67,69,71,73,30,29,28,27,26,25,24,23,22,21,20,8,7,6,5,4,3,2  # 31
 *edges,4,63,31,62,64  # 32
@@ -129,13 +126,13 @@ L2_open_pln describes main open plan office area at level two
 *edges,4,73,71,72,74  # 37
 *edges,4,30,73,74,61  # 38
 *edges,14,20,19,18,17,16,15,14,13,12,11,10,9,75,8  # 39
-*edges,14,39,76,40,41,42,43,44,45,46,47,48,49,50,51  # 40
-*edges,5,85,86,40,76,39  # 41
-*edges,4,20,21,80,79  # 42
-*edges,4,19,20,79,78  # 43
-*edges,4,18,19,78,77  # 44
-*edges,4,1,2,84,83  # 45
-*edges,5,8,75,9,86,85  # 46
+*edges,13,39,40,41,42,43,44,45,46,47,48,49,50,51  # 40
+*edges,4,82,83,40,39  # 41
+*edges,4,20,21,79,78  # 42
+*edges,4,19,20,78,77  # 43
+*edges,4,18,19,77,76  # 44
+*edges,4,1,2,81,80  # 45
+*edges,5,8,75,9,83,82  # 46
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -144,11 +141,11 @@ L2_open_pln describes main open plan office area at level two
 #  boundary condition tag followed by two data items
 *surf,ptn_void_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,20  #   1 ||< ptn_open_a:L2_ent_void
 *surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,seg_b,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,seg_c,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,seg_e,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,21  #   3 ||< seg_al:L2_circular
+*surf,seg_b,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,22  #   4 ||< seg_bl:L2_circular
+*surf,seg_c,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,23  #   5 ||< seg_cl:L2_circular
+*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,24  #   6 ||< seg_dl:L2_circular
+*surf,seg_e,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,25  #   7 ||< seg_el:L2_circular
 *surf,ptn_frame,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,04  #   8 ||< ptn_open_c:L2_meeting
 *surf,ptn_meet_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,03  #   9 ||< door:L2_meeting
 *surf,ptn_meet_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,02  #  10 ||< ptn_open_b:L2_meeting
@@ -167,19 +164,19 @@ L2_open_pln describes main open plan office area at level two
 *surf,ptn_corid,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,26  #  23 ||< Wall-26:L2_coridor
 *surf,ptn_cell_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,04  #  24 ||< Wall-4:L2_cash
 *surf,ptn_cell_h,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,03  #  25 ||< Wall-3:L2_cash
-*surf,seg_10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,11  #  26 ||< seg_9:L2_cust_srv
-*surf,seg_9,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,10  #  27 ||< door:L2_cust_srv
-*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,09  #  28 ||< seg_8:L2_cust_srv
-*surf,seg_1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,01  #  29 ||< ptn_void_c:L2_cust_srv
+*surf,seg_10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,11  #  26 ||< seg_10:L2_cust_srv
+*surf,seg_9,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,10  #  27 ||< seg_9:L2_cust_srv
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,09  #  28 ||< door:L2_cust_srv
+*surf,seg_1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,01  #  29 ||< seg_1:L2_cust_srv
 *surf,ceiling_a,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
 *surf,floor_a,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,seg-2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,02  #  32 ||< seg_1:L2_cust_srv
-*surf,seg-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,03  #  33 ||< seg_2:L2_cust_srv
-*surf,seg-4,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,04  #  34 ||< seg_3:L2_cust_srv
-*surf,seg-5,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,05  #  35 ||< seg_4:L2_cust_srv
-*surf,seg-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,06  #  36 ||< seg_5:L2_cust_srv
-*surf,seg-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,07  #  37 ||< seg_6:L2_cust_srv
-*surf,seg-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,08  #  38 ||< seg_7:L2_cust_srv
+*surf,seg-2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,02  #  32 ||< seg_2:L2_cust_srv
+*surf,seg-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,03  #  33 ||< seg_3:L2_cust_srv
+*surf,seg-4,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,04  #  34 ||< seg_4:L2_cust_srv
+*surf,seg-5,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,05  #  35 ||< seg_5:L2_cust_srv
+*surf,seg-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,06  #  36 ||< seg_6:L2_cust_srv
+*surf,seg-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,07  #  37 ||< seg_7:L2_cust_srv
+*surf,seg-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,08  #  38 ||< seg_8:L2_cust_srv
 *surf,floor_b,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  39 ||< not yet defined
 *surf,ceiling_b,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
 *surf,ptn_void_c,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,20,12  #  41 ||< fict_opening:L2_careers

@@ -1,8 +1,8 @@
 *Geometry 1.1,GEN,L2_cor_cell # tag version, format, zone name
-*date Sat Aug  6 12:38:47 2011  # latest file modification 
+*date Sun Aug  7 14:59:42 2011  # latest file modification 
 L2_cor_cell describes cellular offices at corner of level two
 # tag, X co-ord, Y co-ord, Z co-ord
-*vertex,44.69636,35.70000,52.45000  #   1
+*vertex,44.69600,35.70000,52.45000  #   1
 *vertex,48.02128,35.70000,52.45000  #   2
 *vertex,51.00000,36.00000,52.45000  #   3
 *vertex,51.00000,40.70000,52.45000  #   4
@@ -10,8 +10,8 @@ L2_cor_cell describes cellular offices at corner of level two
 *vertex,47.99200,40.70000,52.45000  #   6
 *vertex,46.99200,40.70000,52.45000  #   7
 *vertex,45.99200,40.70000,52.45000  #   8
-*vertex,44.69600,40.69985,52.45000  #   9
-*vertex,44.69636,35.70000,55.59300  #  10
+*vertex,44.69600,40.70000,52.45000  #   9
+*vertex,44.69600,35.70000,55.59300  #  10
 *vertex,48.02128,35.70000,55.59300  #  11
 *vertex,51.00000,36.00000,55.59300  #  12
 *vertex,51.00000,40.70000,55.59300  #  13
@@ -19,7 +19,7 @@ L2_cor_cell describes cellular offices at corner of level two
 *vertex,47.99200,40.70000,55.59300  #  15
 *vertex,46.99200,40.70000,55.59300  #  16
 *vertex,45.99200,40.70000,55.59300  #  17
-*vertex,44.74386,40.70000,55.59300  #  18
+*vertex,44.69600,40.70000,55.59300  #  18
 *vertex,50.00000,36.00000,52.45000  #  19
 *vertex,50.00000,36.00000,55.59300  #  20
 *vertex,50.00000,35.70000,52.45000  #  21
@@ -69,7 +69,7 @@ L2_cor_cell describes cellular offices at corner of level two
 *surf,cel319_ceil,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,cel319_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,04  #  12 ||< struc_l2:stair_2
-*surf,filler,VERT,-,-,-,conc_250,OPAQUE,SIMILAR,00,00  #  13 ||< identical environment
+*surf,filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,05  #  13 ||< Wall-14:stair_2
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
 *surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external

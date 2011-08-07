@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_core_cel # tag version, format, zone name
-*date Sat Aug  6 12:37:39 2011  # latest file modification 
+*date Sun Aug  7 13:28:51 2011  # latest file modification 
 L2_core_cel describes set of cellular offices adj to open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.24663,28.50000,52.45000  #   1
@@ -62,7 +62,7 @@ L2_core_cel describes set of cellular offices adj to open plan
 *surf,Wall-12,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,03  #   9 ||< Wall-3:L2_coridor
 *surf,Wall-13,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,25,03  #  10 ||< Wall-3:L2_print_zn
 *surf,ceil_l2_cl_a,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,floor_l2_cl_,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,floor_l2_cl_,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,53  #  12 ||< floor_l2_cl_:L2_uf_plen
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,33,07  #  13 ||< ptn_cel_b:L2_toil_psg
 *surf,ptnc_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,33  #  14 ||< ptnc_str_l2:stair_2
 *surf,Wall-15,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,06  #  15 ||< Wall-15:stair_2

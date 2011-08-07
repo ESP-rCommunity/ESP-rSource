@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Sat Aug  6 12:45:12 2011  # latest file modification 
+*date Sun Aug  7 10:39:19 2011  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -88,9 +88,9 @@ lifts describes the elevator shaft
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,left,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,front,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,right,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,left,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,23,20  #   1 ||< elev_left:L2_cust_srv
+*surf,front,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,23,19  #   2 ||< elev_front:L2_cust_srv
+*surf,right,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,23,18  #   3 ||< elev_right:L2_cust_srv
 *surf,back,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,34,12  #   4 ||< ptn_elev:L2_se_void
 *surf,left_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,21  #   5 ||< left_1:L1_training
 *surf,front_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,22  #   6 ||< front_1:L1_training

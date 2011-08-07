@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_se_void # tag version, format, zone name
-*date Sat Aug  6 12:53:44 2011  # latest file modification 
+*date Sun Aug  7 10:40:34 2011  # latest file modification 
 L2_se_void describes void at south-west facade with stair
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,52.45000  #   1
@@ -112,15 +112,15 @@ L2_se_void describes void at south-west facade with stair
 *surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
 *surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,part_gl_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,23,27  #   5 ||< ptn_sw_f:L2_cust_srv
-*surf,ptn_door_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,26  #   6 ||< ptn_sw_e:L2_cust_srv
-*surf,ptn_gl_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,25  #   7 ||< ptn_sw_d:L2_cust_srv
-*surf,ptn_gl_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,24  #   8 ||< ptn_sw_c:L2_cust_srv
-*surf,ptn_rd302,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,23  #   9 ||< ptn_sw_b:L2_cust_srv
-*surf,ptn_rd301,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,22  #  10 ||< ptn_sw_a:L2_cust_srv
-*surf,ptn_door_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,part_gl_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,23,27  #   5 ||< ptn_frame:L2_cust_srv
+*surf,ptn_door_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,26  #   6 ||< ptn_sw_f:L2_cust_srv
+*surf,ptn_gl_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,25  #   7 ||< ptn_sw_e:L2_cust_srv
+*surf,ptn_gl_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,24  #   8 ||< ptn_sw_d:L2_cust_srv
+*surf,ptn_rd302,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,23  #   9 ||< ptn_sw_c:L2_cust_srv
+*surf,ptn_rd301,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,22  #  10 ||< ptn_sw_b:L2_cust_srv
+*surf,ptn_door_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,21  #  11 ||< ptn_sw_a:L2_cust_srv
 *surf,ptn_elev,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,04  #  12 ||< back:lifts
-*surf,ptn_door_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,ptn_door_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,17  #  13 ||< door_sw_a:L2_cust_srv
 *surf,ptn_stair,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,06  #  14 ||< ptn_void_l2:stair_1
 *surf,ptn_toilet,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,32,08  #  15 ||< ptn_vd_l2:L2_toilet
 *surf,serv_gla_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external

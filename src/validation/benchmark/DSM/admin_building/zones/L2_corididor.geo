@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_coridor # tag version, format, zone name
-*date Sat Aug  6 12:44:06 2011  # latest file modification 
+*date Sun Aug  7 13:29:45 2011  # latest file modification 
 L2_coridor describes corridor between banks of cellular offices
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.64430,33.70000,52.45000  #   1
@@ -97,7 +97,7 @@ L2_coridor describes corridor between banks of cellular offices
 *surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,07  #   5 ||< Wall-10:L2_core_cel
 *surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,06  #   6 ||< Wall-9:L2_core_cel
 *surf,Wall-7,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,05  #   7 ||< Wall-8:L2_core_cel
-*surf,Wall-8,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,Wall-9,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,02  #   9 ||< ptn_corb:L2_cor_cell
 *surf,Wall-10,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,01  #  10 ||< ptn_cora:L2_cor_cell
 *surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,01  #  11 ||< Wall-1:L2_kitchen

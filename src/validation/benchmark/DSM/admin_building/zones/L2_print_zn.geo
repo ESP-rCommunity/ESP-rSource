@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_print_zn # tag version, format, zone name
-*date Sat Aug  6 12:37:19 2011  # latest file modification 
+*date Sun Aug  7 13:27:30 2011  # latest file modification 
 L2_print_zn describes the print zone adj to open plan & interact
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.64430,28.50000,52.45000  #   1
@@ -37,7 +37,7 @@ L2_print_zn describes the print zone adj to open plan & interact
 *surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,01  #   5 ||< Wall-1:L2_coridor
 *surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,22  #   6 ||< ptn_cell_f:L2_open_pln
 *surf,ceil_pz_a,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,floor_pz_a,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,floor_pz_a,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,52  #   8 ||< floor_pz_a:L2_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

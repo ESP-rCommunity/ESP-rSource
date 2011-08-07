@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Sat Aug  6 12:44:54 2011  # latest file modification 
+*date Sun Aug  7 15:00:19 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -91,13 +91,15 @@ stair_2 describes stair tower with glazed side stair_2
 *vertex,50.00000,36.00000,51.69300  #  87
 *vertex,50.00000,33.67664,51.69300  #  88
 *vertex,51.00000,36.00000,51.69300  #  89
+*vertex,50.00000,35.70000,52.45000  #  90
+*vertex,50.00000,35.70000,55.59300  #  91
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,2,3,11,10  #  1
 *edges,4,3,4,12,11  #  2
 *edges,4,4,5,13,12  #  3
 *edges,4,5,6,14,13  #  4
-*edges,4,6,7,15,14  #  5
+*edges,4,6,90,91,14  #  5
 *edges,4,7,8,16,15  #  6
 *edges,4,18,17,20,19  #  7
 *edges,6,54,21,18,19,22,61  #  8
@@ -139,14 +141,15 @@ stair_2 describes stair tower with glazed side stair_2
 *edges,4,83,59,60,84  # 44
 *edges,4,71,80,81,72  # 45
 *edges,4,73,82,83,86  # 46
-*edges,5,14,15,16,79,85  # 47
+*edges,6,14,91,15,16,79,85  # 47
 *edges,4,86,83,84,78  # 48
 *edges,4,72,81,82,73  # 49
 *edges,4,85,79,80,71  # 50
 *edges,10,17,18,21,54,50,49,48,47,46,51  # 51
 *edges,10,41,42,76,64,67,70,78,84,60,44  # 52
-*edges,6,87,88,77,8,7,6  # 53
+*edges,7,87,88,77,8,7,90,6  # 53
 *edges,4,48,49,87,89  # 54
+*edges,4,90,7,15,91  # 55
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -157,7 +160,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,glaz_b_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
 *surf,glaz_c_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,28,12  #   4 ||< struc_l2:L2_cor_cell
-*surf,Wall-14,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,Wall-14,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,28,13  #   5 ||< filler:L2_cor_cell
 *surf,Wall-15,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,26,15  #   6 ||< Wall-15:L2_core_cel
 *surf,ptna_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,13,06  #   7 ||< ptna_str_l1:L1_toil_psg
 *surf,ptnb_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,13,12  #   8 ||< ptnb_str_l1:L1_toil_psg
@@ -207,6 +210,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  52 ||< external
 *surf,l2_flr_vdst,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,05  #  53 ||< l2_flr_vdst:L2_uf_plen
 *surf,ptn_str_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,26  #  54 ||< ptn_str_b:L1_support
+*surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  55 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

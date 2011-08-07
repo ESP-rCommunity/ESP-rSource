@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_uf_plen # tag version, format, zone name
-*date Sat Aug  6 13:09:55 2011  # latest file modification 
+*date Sun Aug  7 16:06:44 2011  # latest file modification 
 L2_uf_plen describes raised floor for level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,51.69300  #   1
@@ -194,17 +194,64 @@ L2_uf_plen describes raised floor for level two
 *vertex,50.00000,33.67664,52.45000  # 190
 *vertex,51.00000,30.50000,52.45000  # 191
 *vertex,13.70000,30.50000,52.45000  # 192
+*vertex,44.69600,35.70000,52.45000  # 193
+*vertex,44.69600,40.70000,52.45000  # 194
+*vertex,45.99200,40.70000,52.45000  # 195
+*vertex,46.99200,40.70000,52.45000  # 196
+*vertex,47.99200,40.70000,52.45000  # 197
+*vertex,49.99200,40.70000,52.45000  # 198
+*vertex,50.00000,35.70000,52.45000  # 199
+*vertex,48.02128,35.70000,52.45000  # 200
+*vertex,14.48713,35.70000,52.45000  # 201
+*vertex,17.38456,35.70000,52.45000  # 202
+*vertex,20.70947,35.70000,52.45000  # 203
+*vertex,24.03439,35.70000,52.45000  # 204
+*vertex,27.69180,35.70000,52.45000  # 205
+*vertex,31.01671,35.70000,52.45000  # 206
+*vertex,34.34163,35.70000,52.45000  # 207
+*vertex,38.04653,35.70000,52.45000  # 208
+*vertex,41.37145,35.70000,52.45000  # 209
+*vertex,50.00000,33.70000,52.45000  # 210
+*vertex,12.84900,40.70000,52.45000  # 211
+*vertex,13.84900,40.70000,52.45000  # 212
+*vertex,14.84900,40.70000,52.45000  # 213
+*vertex,16.84900,40.70000,52.45000  # 214
+*vertex,19.84900,40.70000,52.45000  # 215
+*vertex,20.84900,40.70000,52.45000  # 216
+*vertex,21.84900,40.70000,52.45000  # 217
+*vertex,23.84900,40.70000,52.45000  # 218
+*vertex,26.12181,40.70000,52.45000  # 219
+*vertex,27.12181,40.70000,52.45000  # 220
+*vertex,28.19200,40.70000,52.45000  # 221
+*vertex,30.19200,40.70000,52.45000  # 222
+*vertex,32.89200,40.70000,52.45000  # 223
+*vertex,33.89200,40.70000,52.45000  # 224
+*vertex,34.89200,40.70000,52.45000  # 225
+*vertex,36.89200,40.70000,52.45000  # 226
+*vertex,39.59200,40.70000,52.45000  # 227
+*vertex,40.59200,40.70000,52.45000  # 228
+*vertex,41.32395,40.70000,52.45000  # 229
+*vertex,42.17893,40.70000,52.45000  # 230
+*vertex,44.22137,40.70000,52.45000  # 231
+*vertex,44.74386,40.70000,52.45000  # 232
+*vertex,3.56241,40.70000,52.45000  # 233
+*vertex,7.83730,40.70000,52.45000  # 234
+*vertex,53.10365,30.50000,52.45000  # 235
+*vertex,56.04857,30.50000,52.45000  # 236
+*vertex,58.30000,30.10000,52.45000  # 237
+*vertex,58.30000,29.50000,52.45000  # 238
+*vertex,58.30000,28.59427,52.45000  # 239
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,7,2,114,1,6,5,4,3  #  1
 *edges,6,8,7,12,11,10,9  #  2
 *edges,5,1,9,10,6,114  #  3
-*edges,6,14,13,17,191,16,15  #  4
-*edges,6,19,18,20,190,17,13  #  5
+*edges,8,14,13,17,191,235,236,16,15  #  4
+*edges,8,19,18,20,199,210,190,17,13  #  5
 *edges,5,22,21,24,23,171  #  6
 *edges,5,26,25,172,28,27  #  7
 *edges,6,25,22,171,23,172,28  #  8
-*edges,8,29,100,15,16,132,133,134,30  #  9
+*edges,11,29,100,15,16,237,238,239,132,133,134,30  #  9
 *edges,4,32,31,34,33  # 10
 *edges,5,31,35,37,36,34  # 11
 *edges,4,35,38,39,37  # 12
@@ -232,8 +279,8 @@ L2_uf_plen describes raised floor for level two
 *edges,4,7,26,27,12  # 34
 *edges,4,21,108,115,24  # 35
 *edges,4,111,3,4,116  # 36
-*edges,4,113,109,118,119  # 37
-*edges,4,109,110,117,118  # 38
+*edges,31,113,109,118,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,194,232,195,196,197,198,119  # 37
+*edges,6,109,110,117,233,234,118  # 38
 *edges,4,110,111,116,117  # 39
 *edges,4,112,113,119,120  # 40
 *edges,8,40,123,124,94,95,129,130,43  # 41
@@ -248,7 +295,14 @@ L2_uf_plen describes raised floor for level two
 *edges,31,166,33,34,140,141,142,143,144,145,146,147,148,149,150,151,177,176,175,192,179,174,173,27,172,171,24,115,170,169,168,167  # 50
 *edges,9,179,192,178,177,151,152,182,181,180  # 51
 *edges,6,183,155,156,157,185,184  # 52
-*edges,13,185,157,160,161,162,163,191,17,190,189,188,187,186  # 53
+*edges,14,185,157,160,161,162,163,191,17,190,210,189,188,187,186  # 53
+*edges,12,194,232,193,200,199,20,120,119,198,197,196,195  # 54
+*edges,26,182,183,184,185,186,187,188,189,210,199,200,193,209,208,207,206,205,204,203,202,201,6,10,192,180,181  # 55
+*edges,30,118,6,201,202,203,204,205,206,207,208,209,229,228,227,226,225,224,223,222,221,220,219,218,217,216,215,214,213,212,211  # 56
+*edges,6,229,209,193,232,231,230  # 57
+*edges,8,116,4,5,6,118,234,233,117  # 58
+*edges,11,164,131,132,239,238,237,16,236,235,191,163  # 59
+*edges,4,158,159,160,157  # 60
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -300,14 +354,21 @@ L2_uf_plen describes raised floor for level two
 *surf,meet_fac_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  43 ||< external
 *surf,Wmeet_fac_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 *surf,Top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,07,19  #  45 ||< Top:L1_circular
-*surf,Base,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  46 ||< external
+*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,20  #  46 ||< Base:L2_circular
 *surf,floor_mt,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  47 ||< external
 *surf,floor_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  48 ||< external
 *surf,floor_b,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  49 ||< external
-*surf,floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  50 ||< external
-*surf,floor_cash,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  51 ||< external
-*surf,floor_pz_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  52 ||< external
-*surf,floor_l2_cl_,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  53 ||< external
+*surf,floor,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,23,29  #  50 ||< floor_cus:L2_cust_srv
+*surf,floor_cash,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,24,10  #  51 ||< floor_cash:L2_cash
+*surf,floor_pz_a,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,25,08  #  52 ||< floor_pz_a:L2_print_zn
+*surf,floor_l2_cl_,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,26,12  #  53 ||< floor_l2_cl_:L2_core_cel
+*surf,cel319_floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  54 ||< external
+*surf,floor_l2cor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  55 ||< external
+*surf,floor_l2_cc,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  56 ||< external
+*surf,Base-8,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  57 ||< external
+*surf,floor_toi,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  58 ||< external
+*surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,-,-  #  59 ||< external
+*surf,lt_well2,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  60 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

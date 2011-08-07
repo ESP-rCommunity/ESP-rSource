@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cust_srv # tag version, format, zone name
-*date Sat Aug  6 13:03:30 2011  # latest file modification 
+*date Sun Aug  7 10:43:09 2011  # latest file modification 
 L2_cust_srv describes entrance to L2 customer services
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.71705,11.58971,52.45000  #   1
@@ -17,12 +17,12 @@ L2_cust_srv describes entrance to L2 customer services
 *vertex,19.33201,28.50000,52.45000  #  13
 *vertex,17.33706,28.50000,52.45000  #  14
 *vertex,13.72715,28.50000,52.45000  #  15
-*vertex,13.82215,30.54172,52.45000  #  16
-*vertex,8.35979,30.58922,52.45000  #  17
-*vertex,-0.00000,30.58922,52.45000  #  18
+*vertex,13.82215,30.50000,52.45000  #  16
+*vertex,8.35979,30.50000,52.45000  #  17
+*vertex,-0.00000,30.50000,52.45000  #  18
 *vertex,-0.00000,28.50000,52.45000  #  19
-*vertex,3.51491,28.50000,52.45000  #  20
-*vertex,3.51491,24.00000,52.45000  #  21
+*vertex,3.50000,28.50000,52.45000  #  20
+*vertex,3.50000,24.00000,52.45000  #  21
 *vertex,-0.00000,24.00000,52.45000  #  22
 *vertex,0.00000,21.13696,52.45000  #  23
 *vertex,-0.00000,18.66702,52.45000  #  24
@@ -46,12 +46,12 @@ L2_cust_srv describes entrance to L2 customer services
 *vertex,19.33201,28.50000,55.59300  #  42
 *vertex,17.33706,28.50000,55.59300  #  43
 *vertex,13.72715,28.50000,55.59300  #  44
-*vertex,13.82215,30.54172,55.59300  #  45
-*vertex,8.35979,30.58922,55.59300  #  46
-*vertex,-0.00000,30.58922,55.59300  #  47
+*vertex,13.82215,30.50000,55.59300  #  45
+*vertex,8.35979,30.50000,55.59300  #  46
+*vertex,-0.00000,30.50000,55.59300  #  47
 *vertex,-0.00000,28.50000,55.59300  #  48
-*vertex,3.51491,28.50000,55.59300  #  49
-*vertex,3.51491,24.00000,55.59300  #  50
+*vertex,3.50000,28.50000,55.59300  #  49
+*vertex,3.50000,24.00000,55.59300  #  50
 *vertex,-0.00000,24.00000,55.59300  #  51
 *vertex,0.00000,21.13696,55.59300  #  52
 *vertex,-0.00000,18.66702,55.59300  #  53
@@ -117,22 +117,22 @@ L2_cust_srv describes entrance to L2 customer services
 *surf,seg_10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,26  #  11 ||< seg_10:L2_open_pln
 *surf,ptn_cash,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,02  #  12 ||< Wall-2:L2_cash
 *surf,ptn_cash_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,01  #  13 ||< Wall-1:L2_cash
-*surf,ptn_cash_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ptn_other,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptn_cash_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,08  #  14 ||< Wall-8:L2_cash
+*surf,ptn_other,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,01,02  #  15 ||< ptn_corb_l2:stair_1
 *surf,ptn_stair,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,01  #  16 ||< ptn_cora_l2:stair_1
-*surf,door_sw_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,elev_right,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,elev_front,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,elev_left,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,ptn_sw_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  21 ||< not yet defined
+*surf,door_sw_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,13  #  17 ||< ptn_door_c:L2_se_void
+*surf,elev_right,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,03  #  18 ||< right:lifts
+*surf,elev_front,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,02  #  19 ||< front:lifts
+*surf,elev_left,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,01  #  20 ||< left:lifts
+*surf,ptn_sw_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,11  #  21 ||< ptn_door_b:L2_se_void
 *surf,ptn_sw_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,10  #  22 ||< ptn_rd301:L2_se_void
 *surf,ptn_sw_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,09  #  23 ||< ptn_rd302:L2_se_void
 *surf,ptn_sw_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,08  #  24 ||< ptn_gl_c:L2_se_void
 *surf,ptn_sw_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,07  #  25 ||< ptn_gl_b:L2_se_void
 *surf,ptn_sw_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,06  #  26 ||< ptn_door_a:L2_se_void
 *surf,ptn_frame,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,34,05  #  27 ||< part_gl_a:L2_se_void
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
-*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
+*surf,ceiling_cus,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
+*surf,floor_cus,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,50  #  29 ||< floor:L2_uf_plen
 *surf,ptn_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,21  #  30 ||< ptn_open_b:L2_ent_void
 *surf,ptn_open_d,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,22  #  31 ||< ptn_open_d:L2_ent_void
 *surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,33  #  32 ||< balc_b:L2_ent_void
@@ -145,4 +145,4 @@ L2_cust_srv describes entrance to L2 customer services
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,31,   434.62 0  # zone base list
+*base_list,1,31,   433.59 0  # zone base list
