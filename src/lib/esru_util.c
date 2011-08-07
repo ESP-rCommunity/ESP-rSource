@@ -209,8 +209,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   locnflist = 0;
   for ( i = 0; i < 99; i++ ) {
     nwflist[i] = (long int) 0;
-    strcpy(file_list[i],
-      "                                                                         ");
+    strncpy(file_list[i],"                                                                         ",73);
   }
 /* Work with copy of folder name. */
   f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
@@ -325,8 +324,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
     }
 /* get recovered folder or file names back into the original fortran array */
     ipos = 0;
-    strcpy(locflist,
-  "                                                                         ");
+    strncpy(locflist,"                                                                         ",73);
   for(num = 0; num < locnflist; num++) {	/* for each recovered string...  */
     strncpy(&locflist[ipos],file_list[num],(unsigned int)lenflist);	/* copy to local array */
     ipos=ipos+lenflist;
@@ -405,28 +403,26 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
 
   l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
   browse = (int) *ibrowse;
-  strcpy(cfgroot,"                       ");
+  strncpy(cfgroot,"                        ",24);
   f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
   cfgroot[l_root] = '\0';
-  strcpy(imgpth, "                       ");
+  strncpy(imgpth, "                        ",24);
   f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
   imgpth[l_fimgpth] = '\0';
-  strcpy(docpth, "                       ");
+  strncpy(docpth, "                        ",24);
   f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
   docpth[l_fdocpth] = '\0';
-  strcpy(tmppth, "                       ");
+  strncpy(tmppth, "                        ",24);
   f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
   tmppth[l_ftmppth] = '\0';
-  strcpy(path,
-      "                                                                         ");
+  strncpy(path, "                                                                         ",72);
   f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
   path[l_fpath] = '\0';
-  strcpy(upath,
-      "                                                                         ");
+  strncpy(upath,"                                                                         ",72);
   f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
   upath[l_fupath] = '\0';
-  c1_.NCOMP = *iincomp;
-  c1_.NCON = *iincon;
+  c1_.NCOMP = *iincomp;  // pass curent number of zones and connections to c1_ structure
+  c1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
 /* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
 /* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
 /* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
@@ -438,3 +434,5 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
 /* debug fprintf(stderr,"iincon %d\n",c1_.NCON); */
   return;
 }
+
+// good place for other functions to pass information from fortran to c (like image_ and ray2_)
