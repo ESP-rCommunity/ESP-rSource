@@ -1908,7 +1908,7 @@ C format for each type of obstruction.
           if(iobs(icomp).eq.2)then
             if(nbobs(icomp).gt.0)then
               call edisp(iuout,'Details of obstruction blocks:')
-              write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
+              write(outs,'(a,i3,a,i3,a)')'Shading based on grids of ',
      &          NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
               call edisp(iuout,outs)
               write(outs,'(2a)')
@@ -5593,6 +5593,12 @@ C Find close vertices.
                 endif
   103         continue
   102       continue
+            call edisp(iuout,
+     &      'Use the substitute vertex option in the vertex menu')
+            call edisp(iuout,
+     &      'to search for instances and replace to get rid of close')
+            call edisp(iuout,
+     &      'vertex issues e.g. change all vert 76 with vert 44.')
           elseif(INVT.eq.2)then
             inpick=1
             CALL EPMENSV
@@ -5616,6 +5622,12 @@ C Find close vertices.
                 endif
   101         continue
             endif
+            call edisp(iuout,
+     &      'Use the substitute vertex option in the vertex menu')
+            call edisp(iuout,
+     &      'to search for instances and replace to get rid of close')
+            call edisp(iuout,
+     &      'vertex issues e.g. change all vert 76 with vert 44.')
           else
             continue
           endif
@@ -5857,7 +5869,8 @@ C Alter vertex list by deleting/ copy / replicate / editing.
      &    'a add vertex','b delete vertex','c copy vertex within zone',
      &    'd replicate vertex','e edit several vertex',
      &    'f delete unused vertices','g copy vertex from another zone',
-     &    'h cancel',' ',' ',' ',' ',irt,idno,nbhelp)
+     &    'h substitute vertices','i cancel ',' ',' ',' ',irt,idno,
+     &    nbhelp)
         if(IRT.eq.1)then
 
 C If user cancels jump back to menu setup, otherwise add the requested
@@ -6094,7 +6107,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &                matchver)
                     if(.NOT.matchver) goto 2247
                     if(offset.lt.0.004)then
-                      write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                      write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &                  'New vertex ',iwhich3,' @',
      &                  X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                  ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -6149,6 +6162,41 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
           MODIFY=.TRUE.
           MODBND=.TRUE.
           iZBFLG(ICOMP)=0
+        elseif(IRT.eq.8)then
+
+C Scan all of the surfaces in this zone and look for vertex
+C iwhich1 and replace the reference iwhich2.
+          iwhich1=0
+          iwhich2=0
+          CALL EASKI(iwhich1,' ',
+     &      'In zone surface search for vertex index?',
+     &      1,'F',NZTV(icomp),'F',1,'find vertex index',IERI,nbhelp)
+          CALL EASKI(iwhich2,' ',
+     &      'And replace occurrances with vertex index? (zero cancel)',
+     &      1,'F',NZTV(icomp),'F',1,'replace vertex index',IERI,nbhelp)
+          if(iwhich1.ne.0.and.iwhich2.ne.0)then
+            write(outs,'(a,i3,a,i3)') 'Scanning for vertex ',iwhich1,
+     &        ' and replacing with ',iwhich2
+            call edisp(iuout,outs)
+            do 3246 ivj=1,NSUR
+              ivjlimit=NVER(ivj)
+              do 3247 ivjj=1,ivjlimit
+                if(JVN(ivj,ivjj).eq.iwhich1)then
+                  write(outs,'(3a,i3,a)') 'In ',sname(icomp,ivj),
+     &              ' found vertex ',ivjj,' in edge list matches.'
+                  dok=.true.
+                  call askok(outs,'Ok to substitute?',ok,dok,nbhelp)
+                  if(ok)then
+                    JVN(ivj,ivjj)=iwhich2
+                    MODGEO=.TRUE.
+                    MODIFY=.TRUE.
+                    MODBND=.TRUE.
+                    iZBFLG(ICOMP)=0
+                  endif
+                endif
+ 3247         continue
+ 3246       continue
+          endif
         endif
         call usrmsg(' ',' ','-')
       ELSEIF(IVERT.EQ.(MVERT-5))THEN

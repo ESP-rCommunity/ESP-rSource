@@ -886,7 +886,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &               'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
@@ -1585,7 +1585,7 @@ C it is then it should not be delted so set iier
           IF(IHIT.GT.0)THEN
             if(ACTION.eq.'D'.or.ACTION.eq.'d')then
               WRITE(OUTSTR,9993)IWHICH,X(IWHICH),Y(IWHICH),Z(IWHICH)
- 9993         FORMAT(' Vertex ',I2,' located at ',3F10.3)
+ 9993         FORMAT(' Vertex ',I3,' located at ',3F10.3)
               CALL EDISP(iuout,OUTSTR)
               CALL EDISP(iuout,' is associated with surfaces: ')
               WRITE(OUTSTR,9983)(ISASSO(IH),IH=1,IHIT)
@@ -1701,7 +1701,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &               'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -1816,7 +1816,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &            matchver)
                 if(.NOT.matchver) goto 347
                 if(offset.lt.0.004)then
-                  write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                  write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &             'Copied vertex ',iwhich3,' @',
      &              X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &              ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -2823,7 +2823,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &          matchver)
               if(.NOT.matchver) goto 247
               if(offset.lt.0.004)then
-                write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &            'Door vertex ',iwhich3,' @',
      &            X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &            ') to edge ',IWHICH1,' &',IWHICH2,' of ',
