@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cash # tag version, format, zone name
-*date Sun Aug  7 13:26:35 2011  # latest file modification 
+*date Sun Aug  7 18:18:28 2011  # latest file modification 
 L2_cash describes cash office and cahier desk on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,28.50000,52.45000  #   1
@@ -10,7 +10,7 @@ L2_cash describes cash office and cahier desk on level two
 *vertex,17.43206,33.70000,52.45000  #   6
 *vertex,13.70000,33.70000,52.45000  #   7
 *vertex,13.70000,30.50000,52.45000  #   8
-*vertex,13.72715,28.50000,55.59300  #   9
+*vertex,13.70000,28.50000,55.59300  #   9
 *vertex,17.33706,28.50000,55.59300  #  10
 *vertex,19.33201,28.50000,55.59300  #  11
 *vertex,22.79942,28.50000,55.59300  #  12
