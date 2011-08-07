@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_ent_void # tag version, format, zone name
-*date Sat Aug  6 12:59:26 2011  # latest file modification 
+*date Sun Aug  7 21:42:39 2011  # latest file modification 
 L2_ent_void describes void over the entrance reception
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,-0.04750,52.45000  #   1
@@ -64,6 +64,8 @@ L2_ent_void describes void over the entrance reception
 *vertex,0.00000,7.36231,53.45000  #  60
 *vertex,28.11209,7.39623,52.45000  #  61
 *vertex,28.11209,7.39623,56.35000  #  62
+*vertex,12.96750,10.49750,56.35000  #  63
+*vertex,12.96750,8.74000,56.35000  #  64
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,1,2,28,27  #  1
@@ -92,15 +94,16 @@ L2_ent_void describes void over the entrance reception
 *edges,4,24,25,51,50  # 24
 *edges,4,25,26,52,51  # 25
 *edges,4,26,1,27,52  # 26
-*edges,27,27,28,29,30,31,32,33,34,35,36,37,38,62,39,40,41,42,43,44,45,46,47,48,49,50,51,52  # 27
+*edges,13,27,28,29,30,31,32,33,64,63,49,50,51,52  # 27
 *edges,27,1,26,25,24,23,22,21,20,19,18,17,16,15,14,13,61,12,11,10,9,8,7,6,5,4,3,2  # 28
 *edges,4,53,54,47,46  # 29
 *edges,4,54,55,48,47  # 30
-*edges,4,55,56,49,48  # 31
+*edges,5,55,56,49,63,48  # 31
 *edges,4,20,21,58,57  # 32
 *edges,4,21,22,59,58  # 33
 *edges,4,22,23,60,59  # 34
 *edges,4,61,13,39,62  # 35
+*edges,19,48,63,64,33,34,35,36,37,38,62,39,40,41,42,43,44,45,46,47  # 36
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -137,11 +140,12 @@ L2_ent_void describes void over the entrance reception
 *surf,lower,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,06,01  #  28 ||< up_fict:L1_ent_recp
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
 *surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
+*surf,struc_c,SLOP,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,45  #  32 ||< balc_a:L2_open_pln
 *surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,32  #  33 ||< balc_b:L2_cust_srv
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,33  #  34 ||< balc_c:L2_cust_srv
 *surf,frame_fac,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  35 ||< external
+*surf,upper_bb,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  36 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
