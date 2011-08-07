@@ -2073,14 +2073,19 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           return
         endif
       endif
-      d2l=(vdis1-(vdis+vdis1-vdis2)*
-     &    (vdis+vdis1-vdis2)/vdis/4.0)
-      if(abs(d2l).lt.0.003)then
-        offset=d2l
+      if(vdis.ne.0.0)then
+        d2l=(vdis1-(vdis+vdis1-vdis2)*
+     &      (vdis+vdis1-vdis2)/vdis/4.0)
+        if(abs(d2l).lt.0.003)then
+          offset=d2l
+        else
+          offset=SQRT(d2l)
+        endif
+        match=.true.
       else
-        offset=SQRT(d2l)
+        offset=0.0   ! vdis was zero so assume a match
+        match=.true.
       endif
-      match=.true.
       return
       end
 
