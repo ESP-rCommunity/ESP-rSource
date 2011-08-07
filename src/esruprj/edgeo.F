@@ -5593,11 +5593,11 @@ C Find close vertices.
                 endif
   103         continue
   102       continue
-            call edisp(iuout,
+            call edisp(itru,
      &      'Use the substitute vertex option in the vertex menu')
-            call edisp(iuout,
+            call edisp(itru,
      &      'to search for instances and replace to get rid of close')
-            call edisp(iuout,
+            call edisp(itru,
      &      'vertex issues e.g. change all vert 76 with vert 44.')
           elseif(INVT.eq.2)then
             inpick=1
@@ -5622,11 +5622,11 @@ C Find close vertices.
                 endif
   101         continue
             endif
-            call edisp(iuout,
+            call edisp(itru,
      &      'Use the substitute vertex option in the vertex menu')
-            call edisp(iuout,
+            call edisp(itru,
      &      'to search for instances and replace to get rid of close')
-            call edisp(iuout,
+            call edisp(itru,
      &      'vertex issues e.g. change all vert 76 with vert 44.')
           else
             continue
@@ -6112,7 +6112,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &                  X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                  ') to edge ',IWHICH1,' &',IWHICH2,' of ',
      &                  sname(icomp,ivj)
-                      call edisp(iuout,outs)
+                      call edisp(itru,outs)
 
 C If current surface (ivj) can take another vertex expand the
 C list. Logic works by looping down (from one more than the current
@@ -6177,7 +6177,7 @@ C iwhich1 and replace the reference iwhich2.
           if(iwhich1.ne.0.and.iwhich2.ne.0)then
             write(outs,'(a,i3,a,i3)') 'Scanning for vertex ',iwhich1,
      &        ' and replacing with ',iwhich2
-            call edisp(iuout,outs)
+            call edisp(itru,outs)
             do 3246 ivj=1,NSUR
               ivjlimit=NVER(ivj)
               do 3247 ivjj=1,ivjlimit
