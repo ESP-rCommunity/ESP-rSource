@@ -23,6 +23,8 @@ C cmmon3dv.F contains the following Fortran subroutines:
 C  ADJVIEW: Adjusts the viewing transforms & boundaries if necessary.
 C  CHGAZI:  Called from C code with an increment or decrement of azimuth.
 C  CHGELEV: Called from C code with an increment or decrement of elevation.
+C  CHGEYE:  Called from C code with current contents of the ray2_ and
+C           image_ c structures.
 C  DRAWOBS: Checks for obstructions, loads, converts and draws them.
 C  DRWSEN:  Loads, converts and draws MRT sensors (rec bodies).
 C  EGRNDR:  Draws ground topology.
@@ -225,13 +227,13 @@ C Depending on computer type set integer size of passed parameters.
       logical MODIFY,MODLEN,MODBND
 
 C Debug
-      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
-     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,DIS,
-     &  JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
-      write(6,*) 'chgeye com before  ',eyem(1),eyem(2),eyem(3),
-     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
-      write(6,*) 'ray2 com ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
-     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+C      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
+C     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,DIS,
+C     &  JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+C      write(6,*) 'chgeye com before  ',eyem(1),eyem(2),eyem(3),
+C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
+C      write(6,*) 'ray2 com ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
+C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       eyem(1)=EVX
       eyem(2)=EVY
       eyem(3)=EVZ
@@ -255,10 +257,13 @@ C To avoid implicit casts also check machine type.
 #endif     
 
       GRDIS=DIS
-      write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
-     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
-      write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
-     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+C Debug
+C      write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
+C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
+C      write(6,*) 'ray2 aft ',ITDSP,ITBND,ITEPT,ITZNM,ITSNM,
+C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
       MODIFY=.TRUE.
       MODLEN=.TRUE.
 
@@ -275,6 +280,188 @@ C Use same logic as in EVSET.
         call PLELEV('S')
       elseif(ITPPSW.eq.3)then
         call PLELEV('E')
+      endif
+
+      return
+      end
+
+C ********* chgsun
+C CHGSUN is called from C code in esru_x.ca and esp-r.c requesting solar view. 
+C If isunhour zero then do initial setup of date and time and ask user what
+C else they want to do (previous next animation close). If isunhour one
+C step to next hour. If isunhour two then present an animation. 
+      subroutine chgsun(isunhour)
+#include "building.h"
+#include "prj3dv.h"
+
+C Passed paramter.
+      integer isunhour
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PREC8/SLAT,SLON
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      logical MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+
+C Local variables
+      character outs*124,ETEXT*60,DESCRH*5,DESCRD*5
+      integer NTS,IMO,IDO,IJDAY,IT,IER
+      logical doanim
+      real STIME,X1,Y1,Z1
+      DIMENSION MTHNAM(12)
+      CHARACTER MTHNAM*3
+
+#ifdef OSI
+      integer ivt2,ivt3,ivt4  ! for use with viewtext
+#else
+      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+#endif
+
+C Remember some values.
+      save STIME,NTS,IMO,IDO  ! remember for next call
+
+      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &            'Sep','Oct','Nov','Dec'/
+
+C Draw the zones and any obstructions based on sun
+C position. Confirm the lat, long, request day and time,
+C compute positon and update the view.
+      doanim=.false.
+      write(outs,'(A,F6.2,A,F6.2)')
+     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
+      call edisp(iuout,' ')
+      call edisp(iuout,outs)
+      if(isunhour.eq.0)then
+
+C Ask for initial date and time and present view.
+        call edisp(iuout,' ')
+        call edisp(iuout,' Date and time for the view... ')
+        NTS=1
+        IMO=6
+        IDO=1
+        STIME=1.
+  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
+  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
+
+C Ask user what they want to do next.
+          CALL EASKABCD(' View choices: ',' ','previous hour',
+     &      'next hour ','animation','cancel',IW,0)
+          if(IW.eq.1)then
+            STIME=STIME-((60.0/FLOAT(NTS))/60.0)
+            goto 68
+          elseif(IW.eq.2)then
+            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+            goto 68
+          elseif(IW.eq.3)then
+            doanim=.true.
+          elseif(IW.eq.4)then
+            ITSNM=0
+            return
+          endif
+        else
+          CALL EASKAB(' View point below horizon:',' ',
+     &        'specify another time','exit',IW,0)
+          if(IW.eq.1)goto 67
+          ITSNM=0
+          return
+        endif
+      endif
+
+      if(isunhour.eq.1)then
+
+C User asked for next hour, increment and display unless below horizon.
+  69    STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+        CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
+          call pauses(1)   ! pause before returning
+          ITSNM=0
+          return
+        else
+          if(STIME.LT.11.0) goto 69  ! try next hour
+          ITSNM=0
+          return
+        endif
+      elseif(isunhour.eq.2)then
+
+C User asked for animation.
+        doanim=.true.
+      endif
+
+      if(doanim)then
+        if(STIME.lt.3.0) STIME = 3.0  ! if not set
+ 70     CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
+        NTS=4  ! do animation at 15 minute steps
+        IF(SALT.GT.0.0)THEN
+          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
+          EYEM(1)=X1
+          EYEM(2)=Y1
+          EYEM(3)=Z1
+          ITSNM=1
+          MODIFY=.TRUE.
+          MODLEN=.TRUE.
+          CALL ADJVIEW(IER)
+
+C Generate a heading for the view.
+          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
+          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
+     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
+     &      '  azim:',SAZI,' elev:',SALT
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
+          STIME=STIME+((60.0/FLOAT(NTS))/60.0)
+          call forceflush()
+          call pauses(1)
+          goto 70
+        else
+          if(STIME.LT.11.0)then
+            goto 70  ! try next hour
+          else
+            ITSNM=0
+            return
+          endif
+        endif
       endif
 
       return

@@ -4118,8 +4118,11 @@ C pophelp where IL is the number of lines of help under consideration.
 
 C ********* WIRETOG
 C WIRETOG sets wireframe toggles and is called from C code in esp-r.c
-C with its current idea as to
-C the number of zones which have currently been selected for display.
+C with its current idea as to the number of zones which have currently
+C been selected for display.
+
+C Note: wiretog is currently not called - might depreciate it and
+C evtogset.
       subroutine wiretog(inpk)
 #include "building.h"
 
@@ -4583,54 +4586,10 @@ C drive viewer.
       ELSEIF(IWHICH.EQ.7)THEN
 
 C Draw the zones and any obstructions based on sun
-C position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-        write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
-        call edisp(iuout,' ')
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        call edisp(iuout,' Date and time for the view... ')
-        NTS=1
-        IMO=6
-        IDO=1
-        STIME=1.
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
+C position. Use chgsun subroutine in cfommon3dv.F
+        call edisp(iuout,'Setup initial date and time for solar view.')
+        call chgsun(0)
 
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          CALL EASKAB(' ',' Next viewpoint:',
-     &        'next hour','exit',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          else
-            ITSNM=0
-            goto 92
-          endif
-        else
-          CALL EASKAB(' View point below horizon:',' ',
-     &        'specify another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-        endif
       ELSEIF(IWHICH.EQ.8)THEN
         return
       ENDIF
@@ -4641,6 +4600,7 @@ C Generate a heading for the view.
 C ************* EVTOGSET
 C EVTOGSET provides setup environment for wire frame toggles w/in prj.
 C IER=0 OK, IER=1 problem.
+C NOTE: NOTHING USES THIS - IT MIGHT BE DEPRECIATED
       SUBROUTINE EVTOGSET(ITRC,act,IER)
 #include "building.h"
 #include "esprdbfile.h"

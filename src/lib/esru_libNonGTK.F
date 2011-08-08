@@ -3617,9 +3617,6 @@ C then it represents the zone which is currently being edited.
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      integer ifs,itfs,imfs
-      COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/PREC8/SLAT,SLON
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
 C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
@@ -3646,25 +3643,19 @@ C ITPPSW current view - perspective/plan/south/west
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
       DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
       CHARACTER ITEMS*32,H*72,LFIL*72,outs*124
-      CHARACTER FALT*37,MTHNAM*3,ETEXT*60
-      CHARACTER DESCRH*5,DESCRD*5,path*72
+      CHARACTER FALT*37
+      CHARACTER path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
       CHARACTER head*19
 
-      dimension mthnam(12),iavdec(12)
-      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
-      data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &            'Sep','Oct','Nov','Dec'/
       integer IW  ! for radio buttons
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
-      integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
       integer iappr,iappt,iappb ! for use with findrtb
       integer iapprp,iapptp,iappbp ! for local offsets
 #else
-      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
       integer*8 ICPMOD          ! passed from tchild
       integer*8 iappr,iappt,iappb ! for use with findrtb
       integer*8 iapprp,iapptp,iappbp ! for local offsets
@@ -4109,49 +4100,10 @@ C          call usrmsg(' ','Starting perspective viewer.','-')
 
 C Draw the zones and any obstructions based on sun position
 C at user specified time (offer 11 am on day of average solar
-C declination in June).
-        NTS=1
-        IMO=6
-        IDO=iavdec(IMO)
-        STIME=11.
+C declination in June). Use chgsun subroutine in cfommon3dv.F
+        call edisp(iuout,'Setup initial date and time for solar view.')
+        call chgsun(0)
 
-C Use the ASKTIM in esru_lib.F (as opposed to ASKRTIM in esrures/utils.F).
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @ ',DESCRH,
-     &      ' Solar azimuth',SAZI,', elevation',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          CALL EASKAB(' ','New view point:',
-     &        'next hour','exit',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          else
-            ITSNM=0
-            goto 92
-          endif
-        else
-          CALL EASKAB('View point below horizon!','Options:',
-     &        'another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-        endif
       ELSEIF(IVERT.EQ.22)THEN
 
 C Produce help text for the  menu.

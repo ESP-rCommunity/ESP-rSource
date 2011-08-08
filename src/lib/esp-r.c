@@ -32,6 +32,7 @@
 
 /* Global variable definitions start here */
 extern chgeye_();     /* in esrucom/common3dv.F */
+extern chgsun_();     /* in esrucom/common3dv.F */
 extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
@@ -935,7 +936,16 @@ void esru_elev_down ( void)
   chgelev_(&elevchange);  /* Deal with user selection of azimuth decrement  */
 }
 
-/* esru_wire_pick() - send message to fortran to rotate wireframe down. */
+/* esru_chg_sun() - send message to fortran to setup solar view. */
+void esru_chg_sun ( void)
+{
+  long int isunhour;	/* current value to pass to fortran. */
+  isunhour = 0;	/* initial up */
+  chgsun_(&isunhour);  /* Deal with user selection of solar view  */
+}
+
+/* esru_wire_pick() - send message to fortran. */
+/* THIS IS NOT CURRENTLY CALLED */
 void esru_wire_pick ( void)
 {
   long int avail_wire;	/* current value of wire_avail to pass to fortran. */
@@ -943,7 +953,8 @@ void esru_wire_pick ( void)
   wirepk_(&avail_wire);  /* Deal with user selection of wireframe control  */
 }
 
-/* esru_wire_tog() - send message to fortran to rotate wireframe down. */
+/* esru_wire_tog() - send message to fortran. */
+/* THIS IS NOT CURRENTLY CALLED */
 void esru_wire_tog ( void)
 {
   long int avail_wire;	/* current value of wire_avail to pass to fortran. */
@@ -1559,6 +1570,11 @@ GtkWidget *create_static_menus( void )
    gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
                              G_CALLBACK (esru_elev_down), NULL);
+
+   menu_items = gtk_menu_item_new_with_label ("view from sun");
+   gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+   g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+                             G_CALLBACK (esru_chg_sun), NULL);
 
 /* disable wireframe controls and wireframe toggles
  *  menu_items = gtk_menu_item_new_with_label ("wireframe controls");

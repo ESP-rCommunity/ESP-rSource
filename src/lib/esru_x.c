@@ -213,9 +213,10 @@ static unsigned char logo_bits[] = {
 extern gnwkquery_();
 extern wirepk_();
 extern cpwpk_();
-extern chgazi_();
-extern chgelev_();
-extern chgeye_();
+extern chgazi_();     /* in esrucom/common3dv.F */
+extern chgelev_();    /* in esrucom/common3dv.F */
+extern chgeye_();     /* in esrucom/common3dv.F */
+extern chgsun_();     /* in esrucom/common3dv.F */
 extern proftxdump_();
 extern nwkslctc_();
 extern gconad_();
