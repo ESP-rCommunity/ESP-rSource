@@ -4828,6 +4828,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       logical greyok,found,closex,closey,closez
       real CX,CY,CZ  ! XYZ of selected verticies
       dimension CX(10),CY(10),CZ(10)
+      integer im,k,mnulen   ! multi column lines
+      logical odd   ! for display of vertex info
 
 #ifdef OSI
       integer iix,iiy,iicol
@@ -4859,6 +4861,36 @@ C Initial values for vertex at angle facility.
       iwhich2=0
       lastv1=0
       lastv2=0
+
+C Write vertices with minimal white space comma separated.
+C See if an even or odd number of items in list. Do this
+C on first entry to the vertex editing facility.
+      im=MOD(NZTV(icomp),2)
+      odd=.false.
+      if(im.eq.1) odd=.true.
+      call edisp(itru,' Vertices ( index X Y Z) in the zone...')
+      if(NZTV(icomp).lt.20)then
+        DO 960 I = 1,NZTV(icomp)
+          WRITE(outs,'(a,i3,3F12.5,a,i3)')'*vertex ',I,
+     &      X(I),Y(I),Z(I)
+          call edisp(itru,outs)
+960     CONTINUE
+      else
+        MNULEN=(NZTV(icomp)/2)
+        DO 193 K=1,MNULEN
+          WRITE(outs,'(a,i3,3f11.5,a,i3,3f11.5)') 'vertex ',k,
+     &      X(k),Y(k),Z(k),'   vertex ',K+MNULEN,
+     &      X(K+MNULEN),Y(K+MNULEN),Z(K+MNULEN)
+          call edisp(itru,outs)
+  193   CONTINUE
+
+C Put odd vertex in right column.
+        if(odd)then
+          WRITE(outs,'(46x,a,i3,3f11.5)') 'vertex ',NZTV(icomp),
+     &      X(NZTV(icomp)),Y(NZTV(icomp)),Z(NZTV(icomp))
+         call edisp(itru,outs)
+        endif 
+      endif
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
