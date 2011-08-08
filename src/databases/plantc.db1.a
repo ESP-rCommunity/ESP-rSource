@@ -6613,7 +6613,7 @@ open(1) shut(0) outside period                                        0.0000
 index for the sensed property                                         0.0000
 signal set point                                                      0.0000
 ---------------------------------------------------------------------
-  PLANT COMPONENT                                           No :     101
+  PLANT COMPONENT                                           No :    101
 
  Component Description
     Generic type     : AC fan
@@ -6639,12 +6639,12 @@ signal set point                                                      0.0000
  BDATA variables:
     1 Rated total absorbed power (W)
       Value =    200.00        Range (Min Max):     200.00        200.00
-    2 Rated mass flow rate (m^3/s)
+    2 Rated mass flow rate (kg/s)
       Value =   0.10000        Range (Min Max):    0.10000       0.10000
     3 Overall efficiency (-)
       Value =   0.70000        Range (Min Max):    0.70000       0.70000
  CDATA variables:
-    1  Mass flow rate (m^3/s)
+    1  Mass flow rate (kg/s)
 
  Number of additional output parameters:     3
  Additional output variables:
@@ -6664,7 +6664,7 @@ fit coefficient a2 (Pa/(m^3/s)^2)                                    0.50000
 fit coefficient a3 (Pa/(m^3/s)^3)                                         0.
 
 ---------------------------------------------------------------------
-  PLANT COMPONENT                                           No :     102
+  PLANT COMPONENT                                           No :    102
  
  Component Description
     Generic type     : WCH Air Source Heat Pump
@@ -6939,3 +6939,138 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    105
+ 
+ Component Description
+    Generic type     : WCH Stochastic DHW draw component
+    Description      : Stochastic hot water draw connecting to WCH system; 1 node model
+    Insertion date   : 15 Mar 09 14:56
+    Type: Single component                    Component code :    790
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :  47    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Nominal daily hot water draw (l)
+      Value =    130.00        Range (Min Max):     100.00        500.00
+    2 Seasonal variation of hot water draw (%)
+      Value =    10.000        Range (Min Max):     0.0000        100.00
+    3 Phase shift of seasonal variation (W/K)
+      Value =    28.000        Range (Min Max):     0.0000        180.00
+    4 Number of holiday periods
+      Value =    3.0000        Range (Min Max):     1.0000        3.0000
+    5 Holiday period [1] start DOY
+      Value =    1.0000        Range (Min Max):     1.0000        365.00
+    6 Holiday period [1] end DOY
+      Value =    3.0000        Range (Min Max):     1.0000        365.00
+    7 Holiday period [2] start DOY
+      Value =    181.00        Range (Min Max):     1.0000        365.00
+    8 Holiday period [2] end DOY
+      Value =    193.00        Range (Min Max):     1.0000        365.00
+    9 Holiday period [3] start DOY
+      Value =    357.00        Range (Min Max):     1.0000        365.00
+   10 Holiday period [3] end DOY
+      Value =    365.00        Range (Min Max):     1.0000        365.00
+   11 Number of concurrent draw periods (start@0.0)
+      Value =    5.0000        Range (Min Max):     1.0000        6.0000
+   12 Draw period start time
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+   13 Fraction of daily draw taken in period (%)
+      Value =    5.0000        Range (Min Max):     0.0000        100.00
+   14 Draw period start time
+      Value =    6.0000        Range (Min Max):     0.0000        0.0000
+   15 Fraction of daily draw taken in period (%)
+      Value =    50.000        Range (Min Max):     0.0000        100.00
+   16 Draw period start time
+      Value =    9.0000        Range (Min Max):     0.0000        0.0000
+   17 Fraction of daily draw taken in period (%)
+      Value =    10.000        Range (Min Max):     0.0000        100.00
+   18 Draw period start time
+      Value =    17.000        Range (Min Max):     0.0000        0.0000
+   19 Fraction of daily draw taken in period (%)
+      Value =    30.000        Range (Min Max):     0.0000        100.00
+   20 Draw period start time
+      Value =    23.000        Range (Min Max):     0.0000        0.0000
+   21 Fraction of daily draw taken in period (%)
+      Value =    5.0000        Range (Min Max):     0.0000        100.00
+   22 Number of distinct draw types (-)
+      Value =    4.0000        Range (Min Max):     1.0000        6.0000
+   23 Fraction of daily draw for this type (%)
+      Value =    14.000        Range (Min Max):     0.0000        100.00
+   24 Draw volume flow rate (l/min)
+      Value =    1.0000        Range (Min Max):     1.0000        1000.0
+   25 Flow rate standard deviation (l/min)
+      Value =    2.0000        Range (Min Max):     1.0000        60.000
+   26 Nominal duration (min)
+      Value =    1.0000        Range (Min Max):     0.0000        60.000
+   27 Draw weekday probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   28 Draw weekend probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   29 Fraction of daily draw for this type (%)
+      Value =    36.000        Range (Min Max):     0.0000        100.00
+   30 Draw volume flow rate (l/min)
+      Value =    6.0000        Range (Min Max):     1.0000        1000.0
+   31 Flow rate standard deviation (l/min)
+      Value =    2.0000        Range (Min Max):     1.0000        60.000
+   32 Nominal duration (min)
+      Value =    1.0000        Range (Min Max):     0.0000        60.000
+   33 Draw weekday probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   34 Draw weekend probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   35 Fraction of daily draw for this type (%)
+      Value =    10.000        Range (Min Max):     0.0000        100.00
+   36 Draw volume flow rate (l/min)
+      Value =    12.000        Range (Min Max):     1.0000        1000.0
+   37 Flow rate standard deviation (l/min)
+      Value =    0.2000        Range (Min Max):     1.0000        60.000
+   38 Nominal duration (min)
+      Value =    10.000        Range (Min Max):     0.0000        60.000
+   39 Draw weekday probability modifier (-)
+      Value =    0.7000        Range (Min Max):     0.0000        1.0000
+   40 Draw weekend probability modifier (-)
+      Value =    1.4000        Range (Min Max):     0.0000        1.0000
+   41 Fraction of daily draw for this type (%)
+      Value =    40.000        Range (Min Max):     0.0000        100.00
+   42 Draw volume flow rate (l/min)
+      Value =    8.0000        Range (Min Max):     1.0000        1000.0
+   43 Flow rate standard deviation (l/min)
+      Value =    0.4000        Range (Min Max):     1.0000        60.000
+   44 Nominal duration (min)
+      Value =    5.0000        Range (Min Max):     0.0000        60.000
+   45 Draw weekday probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   46 Draw weekend probability modifier (-)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   47 Random number generator seed (-)
+      Value =    1234.0        Range (Min Max):     1.0000        999999.
+ 
+ Number of additional output parameters:     6
+ Additional output variables:
+    1 Flow rate type 1 (kg/s)        Type :    2
+    2 Flow rate type 2 (kg/s)        Type :    2
+    3 Flow rate type 3 (kg/s)        Type :    2
+    4 Flow rate type 4 (kg/s)        Type :    2
+    5 Flow rate type 5 (kg/s)        Type :    2
+    6 Flow rate type 6 (kg/s)        Type :    2
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000

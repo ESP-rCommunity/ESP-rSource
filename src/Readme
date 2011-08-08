@@ -416,16 +416,10 @@ facilities improved. To guarantee the reliability of ESP-r
 results, a quality assurance procedure is performed prior
 to each release.
 
-The quality assurance procedure is designed to assure
-that no differences in ESP-r functionality or simulation
-results are introduced between releases. If modifications
-to ESP-r have caused differences in simulation results,
-the release testing assures that the differences are 
-attributable to the changes introduced by the developer, 
-and not the result of an unintended bug.
+A comprehensive discussion of ESP-r prelease testing and 
+results for version 11.11 is available online:
 
-The quality assurance procedure contains two principle
-components:
+http://espr.trac.cvsdude.com/esp-r/wiki/PreReleaseTesting11.11
 
   a) Regression testing, which compares the predictions
      from two successive versions of ESP-r and determines

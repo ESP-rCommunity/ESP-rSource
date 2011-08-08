@@ -1326,6 +1326,9 @@ C 1 node (ISV=20) flat plate collector segment.
 C 1 node (ISV=20) waterstorage tank layer.
          ELSE IF(ITYPE.EQ.72) THEN
             CALL CMP72C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) Stochastic DHW Draw.
+         ELSE IF(ITYPE.EQ.79) THEN
+            CALL CMP79C(IPCOMP,OUT,ISTATS)
 C 2 node (ISV>19)     air & water temperature source
          ELSE IF(ITYPE.EQ.90) THEN
             CALL CMP90C(IPCOMP,OUT,ISTATS)
