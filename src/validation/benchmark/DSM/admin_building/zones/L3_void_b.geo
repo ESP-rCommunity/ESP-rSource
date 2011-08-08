@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Thu Jul 14 19:41:58 2011  # latest file modification 
+*date Mon Aug  8 19:32:26 2011  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -47,20 +47,20 @@ L3_void_b describes void above the careers services area
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,Wall-2,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,Wall-3,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,stone,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_gla,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,Wall-5,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,Wall-7,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #   8 ||< external
-*surf,Wall-9,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,Wall-10,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,Top-11,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,Base-12,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,struc_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,struc_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,Top-11,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_cir # tag version, format, zone name
-*date Thu Jul 14 19:42:21 2011  # latest file modification 
+*date Mon Aug  8 19:27:06 2011  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -46,20 +46,20 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,seg_ac,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,42,12  #   1 ||< seg_l:L3_circul
-*surf,seg_bc,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,42,13  #   2 ||< seg_m:L3_circul
-*surf,seg_cc,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,42,14  #   3 ||< seg_n:L3_circul
-*surf,seg_dc,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,42,15  #   4 ||< seg_o:L3_circul
-*surf,fac_glaz,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_stone,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fict_open,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,fict_open_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,l3_vc_upper,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,40,10  #   9 ||< Base-10:L4_void_c
-*surf,L3_vc_low,FLOR,-,-,-,UNKNOWN,OPAQUE,ANOTHER,58,17  #  10 ||< L3_vc_low:L2_careers
-*surf,balcony_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,struc_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,balcony_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,struc_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,seg_ac,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,42,12  #   1 ||< not yet defined
+*surf,seg_bc,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,42,13  #   2 ||< not yet defined
+*surf,seg_cc,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,42,14  #   3 ||< not yet defined
+*surf,seg_dc,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,42,15  #   4 ||< not yet defined
+*surf,fac_glaz,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_stone,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,l3_vc_upper,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,40,10  #   9 ||< not yet defined
+*surf,L3_vc_low,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,58,17  #  10 ||< not yet defined
+*surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

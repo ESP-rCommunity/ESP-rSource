@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_meeting # tag version, format, zone name
-*date Thu Jul 14 19:41:21 2011  # latest file modification 
+*date Mon Aug  8 19:43:33 2011  # latest file modification 
 L3_meeting describes corner meeting room in L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,56.35000  #   1
@@ -54,22 +54,22 @@ L3_meeting describes corner meeting room in L3
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_frame,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_glaz_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,pa_fac_l3,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,20  #   6 ||< pa_fac_l3:L2_ne_facad
-*surf,gl_fac_l3,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,21  #   7 ||< gl_fac_l3:L2_ne_facad
-*surf,pb_fac_l3,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,14,22  #   8 ||< pb_fac_l3:L2_ne_facad
-*surf,ptn_toilet,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,32,01  #   9 ||< pt_meeting:L3_toil_psg
-*surf,ptn_open_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,ptn_open_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,door,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,ptn_open_c,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,ptn_frame,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ceiling,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,floor,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
+*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,14,20  #   6 ||< not yet defined
+*surf,gl_fac_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,14,22  #   8 ||< not yet defined
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,32,01  #   9 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
