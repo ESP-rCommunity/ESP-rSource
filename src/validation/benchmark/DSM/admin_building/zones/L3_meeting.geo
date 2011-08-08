@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_meeting # tag version, format, zone name
-*date Mon Aug  8 19:43:33 2011  # latest file modification 
+*date Tue Aug  9 07:07:03 2011  # latest file modification 
 L3_meeting describes corner meeting room in L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,56.35000  #   1
@@ -59,10 +59,10 @@ L3_meeting describes corner meeting room in L3
 *surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,14,20  #   6 ||< not yet defined
+*surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,16  #   6 ||< pa_fac_l3:ne_facade
 *surf,gl_fac_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,14,22  #   8 ||< not yet defined
-*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,32,01  #   9 ||< not yet defined
+*surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,17  #   8 ||< pb_fac_l3:ne_facade
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined

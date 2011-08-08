@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_circular # tag version, format, zone name
-*date Mon Aug  8 19:23:12 2011  # latest file modification 
+*date Tue Aug  9 07:05:30 2011  # latest file modification 
 L3_circular describes circular meeting room at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,56.35000  #   1
@@ -77,15 +77,15 @@ L3_circular describes circular meeting room at level three
 *surf,seg_i,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,seg_l,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,22,01  #  12 ||< not yet defined
-*surf,seg_m,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,22,02  #  13 ||< not yet defined
-*surf,seg_n,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,22,03  #  14 ||< not yet defined
-*surf,seg_o,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,22,04  #  15 ||< not yet defined
-*surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,seg_l,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,37,01  #  12 ||< seg_ac:L3_void_cir
+*surf,seg_m,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,37,02  #  13 ||< seg_bc:L3_void_cir
+*surf,seg_n,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,37,03  #  14 ||< seg_cc:L3_void_cir
+*surf,seg_o,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,37,04  #  15 ||< seg_dc:L3_void_cir
+*surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,00,00  #  16 ||< not yet defined
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,43,20  #  19 ||< not yet defined
-*surf,Base,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,41,19  #  20 ||< not yet defined
+*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,Base,FLOR,-,-,-,UNKNOWN,OPAQUE,ANOTHER,19,19  #  20 ||< Top:L2_circular
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
