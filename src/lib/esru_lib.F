@@ -7225,7 +7225,7 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
 C ********* WIREPK
 C WIREPK is called from C code in esru_x.c with current
 C number of zones which have been selected for display.
-C Compilation of X11 or GTK version assumes this will be available in
+C Compilation of X11 assumes this will be available in
 C each modules code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
 #include "building.h"

@@ -944,23 +944,6 @@ void esru_chg_sun ( void)
   chgsun_(&isunhour);  /* Deal with user selection of solar view  */
 }
 
-/* esru_wire_pick() - send message to fortran. */
-/* THIS IS NOT CURRENTLY CALLED */
-void esru_wire_pick ( void)
-{
-  long int avail_wire;	/* current value of wire_avail to pass to fortran. */
-  avail_wire = wire_avail;
-  wirepk_(&avail_wire);  /* Deal with user selection of wireframe control  */
-}
-
-/* esru_wire_tog() - send message to fortran. */
-/* THIS IS NOT CURRENTLY CALLED */
-void esru_wire_tog ( void)
-{
-  long int avail_wire;	/* current value of wire_avail to pass to fortran. */
-  avail_wire = wire_avail;
-  wiretog_(&avail_wire);  /* Deal with user selection of wireframe control  */
-}
 
 /* putzonename(name) - add name to zonenames char array */
 void putzonename_ (char* name, long int* id,  int length)
@@ -1575,18 +1558,6 @@ GtkWidget *create_static_menus( void )
    gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
                              G_CALLBACK (esru_chg_sun), NULL);
-
-/* disable wireframe controls and wireframe toggles
- *  menu_items = gtk_menu_item_new_with_label ("wireframe controls");
- *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
- *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
- *                            G_CALLBACK (esru_wire_pick), NULL);
- *
- *  menu_items = gtk_menu_item_new_with_label ("wireframe toggles");
- *  gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
- *  g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
- *                            G_CALLBACK (esru_wire_tog), NULL);
- */
 
 /* proforma for all wireframe controls and toggles */
    menu_items = gtk_menu_item_new_with_label ("wireframe control");
