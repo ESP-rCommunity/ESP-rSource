@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_circular # tag version, format, zone name
-*date Sun Aug  7 11:50:00 2011  # latest file modification 
+*date Tue Aug  9 17:32:14 2011  # latest file modification 
 L2_circular describes circular meeting room on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,52.45000  #   1
@@ -96,7 +96,7 @@ L2_circular describes circular meeting room on level two
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  19 ||< Base:L3_circular
 *surf,Base,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,46  #  20 ||< Base:L2_uf_plen
 *surf,seg_al,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,03  #  21 ||< seg_a:L2_open_pln
 *surf,seg_bl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,04  #  22 ||< seg_b:L2_open_pln

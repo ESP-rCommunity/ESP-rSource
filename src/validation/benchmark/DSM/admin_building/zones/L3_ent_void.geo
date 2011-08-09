@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ent_void # tag version, format, zone name
-*date Tue Aug  9 07:05:01 2011  # latest file modification 
+*date Tue Aug  9 17:31:04 2011  # latest file modification 
 L3_ent_void describes third level atrium over the entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,56.35000  #   1
@@ -117,35 +117,29 @@ L3_ent_void describes third level atrium over the entrance
 *edges,6,51,52,53,54,79,74  # 24
 *edges,4,52,55,56,53  # 25
 *edges,4,55,49,50,56  # 26
-*edges,4,23,57,59,58  # 27
-*edges,4,57,60,61,59  # 28
-*edges,4,60,62,63,61  # 29
-*edges,4,62,64,65,63  # 30
-*edges,4,64,66,67,65  # 31
-*edges,4,66,2,68,67  # 32
-*edges,4,58,59,69,24  # 33
-*edges,4,59,61,70,69  # 34
-*edges,4,61,63,71,70  # 35
-*edges,4,63,65,72,71  # 36
-*edges,4,65,67,73,72  # 37
-*edges,4,67,68,12,73  # 38
-*edges,21,24,69,70,71,72,73,12,13,14,15,16,17,18,19,38,40,42,44,46,48,25  # 39
-*edges,14,38,19,20,21,54,53,56,50,28,27,30,32,34,36  # 40
-*edges,14,9,37,35,33,31,29,26,1,49,55,52,51,11,10  # 41
-*edges,21,2,66,64,62,60,57,23,22,47,45,43,41,39,37,9,8,7,6,5,4,3  # 42
-*edges,4,11,51,74,75  # 43
-*edges,4,75,74,79,78  # 44
-*edges,4,78,79,54,21  # 45
-*edges,4,80,78,21,20  # 46
-*edges,4,81,80,20,19  # 47
-*edges,4,82,81,19,18  # 48
-*edges,4,83,82,18,17  # 49
-*edges,4,84,83,17,16  # 50
-*edges,4,85,84,16,15  # 51
-*edges,4,86,85,15,14  # 52
-*edges,4,87,86,14,13  # 53
-*edges,4,68,87,13,12  # 54
-*edges,4,7,8,76,77  # 55
+*edges,6,23,57,59,69,24,58  # 27
+*edges,6,57,60,61,70,69,59  # 28
+*edges,6,60,62,63,71,70,61  # 29
+*edges,6,62,64,65,72,71,63  # 30
+*edges,6,64,66,67,73,72,65  # 31
+*edges,6,66,2,68,12,73,67  # 32
+*edges,21,24,69,70,71,72,73,12,13,14,15,16,17,18,19,38,40,42,44,46,48,25  # 33
+*edges,14,38,19,20,21,54,53,56,50,28,27,30,32,34,36  # 34
+*edges,14,9,37,35,33,31,29,26,1,49,55,52,51,11,10  # 35
+*edges,21,2,66,64,62,60,57,23,22,47,45,43,41,39,37,9,8,7,6,5,4,3  # 36
+*edges,4,11,51,74,75  # 37
+*edges,4,75,74,79,78  # 38
+*edges,4,78,79,54,21  # 39
+*edges,4,80,78,21,20  # 40
+*edges,4,81,80,20,19  # 41
+*edges,4,82,81,19,18  # 42
+*edges,4,83,82,18,17  # 43
+*edges,4,84,83,17,16  # 44
+*edges,4,85,84,16,15  # 45
+*edges,4,86,85,15,14  # 46
+*edges,4,87,86,14,13  # 47
+*edges,4,68,87,13,12  # 48
+*edges,4,7,8,76,77  # 49
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -178,35 +172,29 @@ L3_ent_void describes third level atrium over the entrance
 *surf,side_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
 *surf,side_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 *surf,entrance,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
-*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  28 ||< not yet defined
-*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  29 ||< not yet defined
-*surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
-*surf,fv_seg_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  33 ||< not yet defined
-*surf,fv_seg_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  34 ||< not yet defined
-*surf,fv_seg_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  35 ||< not yet defined
-*surf,fv_seg_d,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
-*surf,fv_seg_e,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  37 ||< not yet defined
-*surf,fv_seg_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  38 ||< not yet defined
-*surf,upper_b,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  39 ||< not yet defined
-*surf,upper_a,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  40 ||< not yet defined
-*surf,lower_a,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,27  #  41 ||< upper:L2_ent_void
-*surf,lower_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,36  #  42 ||< upper_bb:L2_ent_void
-*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,fict_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  44 ||< not yet defined
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
-*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
-*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  49 ||< not yet defined
-*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  50 ||< not yet defined
-*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
-*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
-*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
-*surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
-*surf,balc_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  55 ||< not yet defined
+*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,01  #  27 ||< seg_a:L3_circular
+*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,02  #  28 ||< seg_b:L3_circular
+*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,03  #  29 ||< seg_c:L3_circular
+*surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,04  #  30 ||< seg_d:L3_circular
+*surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,05  #  31 ||< seg_e:L3_circular
+*surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,06  #  32 ||< seg_f:L3_circular
+*surf,upper_b,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  33 ||< not yet defined
+*surf,upper_a,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  34 ||< not yet defined
+*surf,lower_a,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,27  #  35 ||< upper:L2_ent_void
+*surf,lower_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,36  #  36 ||< upper_bb:L2_ent_void
+*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  37 ||< not yet defined
+*surf,fict_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  38 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  39 ||< not yet defined
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
+*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
+*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
+*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
+*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
+*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
+*surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
+*surf,balc_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  49 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

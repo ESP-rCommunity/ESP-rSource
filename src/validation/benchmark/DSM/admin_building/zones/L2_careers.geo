@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Sat Aug  6 12:49:11 2011  # latest file modification 
+*date Tue Aug  9 17:36:05 2011  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
@@ -74,7 +74,7 @@ L2_careers describes open space over the careers service area
 *surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,13  #  14 ||< seg_m:L2_circular
 *surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,14  #  15 ||< seg_n:L2_circular
 *surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,15  #  16 ||< seg_o:L2_circular
-*surf,L3_vc_low,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  17 ||< not yet defined
+*surf,L3_vc_low,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,37,10  #  17 ||< L3_vc_low:L3_void_cir
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

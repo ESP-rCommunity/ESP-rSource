@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Sat Aug  6 12:23:16 2011  # latest file modification 
+*date Tue Aug  9 17:34:26 2011  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -185,8 +185,8 @@ ne_facade describes the stone facade on NE with air void
 *surf,Base-25,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,10  #  14 ||< pa_fac_l2:L2_meeting
 *surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,12  #  15 ||< pb_fac_l2:L2_meeting
-*surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
+*surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,39,06  #  16 ||< pa_fac_l3:L3_meeting
+*surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,39,08  #  17 ||< pb_fac_l3:L3_meeting
 *surf,pta_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,02  #  18 ||< pta_fac_l2:L2_toil_psg
 *surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,03  #  19 ||< ptb_fac_l2:L2_toil_psg
 *surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,05  #  20 ||< ptnc_fac_l2:L2_toil_psg
