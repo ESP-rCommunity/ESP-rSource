@@ -66,7 +66,7 @@ C << what about including common zndata in this manipulation? >>
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,closex,closey,closez
+      LOGICAL MODIFY,MODLEN,MODBND,closex,closey
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
@@ -617,11 +617,17 @@ C the selections via array ispk.
           endif
         endif
 
+C Consider what needs to be remembered to allow a connection association
+C between the source surface and what that surface beomces after it is
+C copied. Both zones will need to be updated at a point when the connection
+C list is stable.
+
 C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
           call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
         endif
         npick=1
+
   191   continue   ! jump back point for processing subsequent surfaces.
         is=ispk(npick)
         if(same)then
@@ -829,18 +835,26 @@ C Rotate around a point in the surface.
         endif
 
 C After transforms, append new surface vertices to zone list if
-C they are unique, otherwise link the new surface to an existing vetex.
+C they are unique, check with user if close, otherwise link the
+C new surface to an existing vetex.
   166   continue
         do 143 ix = 1,NVER1
           if(NTV+1.le.MTV)then
             found=.false.
             do 144 ixx = 1,NTV
-              CALL ECLOSE(X1(ix),X(ixx),0.004,closex)
-              CALL ECLOSE(Y1(ix),Y(ixx),0.004,closey)
-              CALL ECLOSE(Z1(ix),Z(ixx),0.004,closez)
-              if(closex.and.closey.and.closez)then
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.004,closex)
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.010,closey)
+              if(closex)then
                 found=.true.
                 match=ixx
+                goto 145
+              endif
+              if(closey)then
+                dok=.true.
+                call askok('New point 5-10mm from an existing vertex.',
+     &            'Skip it?',found,dok,nbhelp)
                 goto 145
               endif
   144       continue
@@ -866,7 +880,7 @@ C add a new vertex to the end of the zone list.
               YMX=AMAX1(YMX,Y(NTV))
               ZMX=AMAX1(ZMX,Z(NTV))
 
-C For a unique vertex also test to see if it is close (+-0.002m) to
+C For a unique vertex also test to see if it is close (+-0.004m) to
 C one of the existing lines. nsur-1 because the new surface does
 C not need to be checked. Also check the last edge in the surface.
               iwhich3=NTV
@@ -1544,7 +1558,7 @@ C Parameters passed.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
+      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
@@ -1634,7 +1648,7 @@ C Finally decrement NTV.
 
 C Increment NTV and present vertex coords (use previous
 C in case of repitition), then parse. Check to see if the
-C new vertex is unique (i.e. not within 1mm of an existing
+C new vertex is unique (i.e. not within 4mm of an existing
 C vertex.
         helptopic='vert_add_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1653,17 +1667,24 @@ C vertex.
           CALL EGETWR(HOLD,K,Z1(I),-9.9,999.9,'W','Zcoord',IER)
   18    CONTINUE
 
-C Append new vertices to zone list if they are unique,
-C otherwise continue.
+C Append new vertices to zone list if they are unique (within 4mm
+C or if 10mm check with user, otherwise continue.
         do 143 ix = 1,IADD
           if(NTV+1.le.MTV)then
             found=.false.
             do 144 ixx = 1,NTV
-              CALL ECLOSE(X1(ix),X(ixx),0.004,closex)
-              CALL ECLOSE(Y1(ix),Y(ixx),0.004,closey)
-              CALL ECLOSE(Z1(ix),Z(ixx),0.004,closez)
-              if(closex.and.closey.and.closez)then
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.004,closex)
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.010,closey)
+              if(closex)then
                 found=.true.
+                goto 145
+              endif
+              if(closey)then
+                dok=.true.
+                call askok('New point 5-10mm from an existing vertex.',
+     &            'Skip it?',found,dok,nbhelp)
                 goto 145
               endif
   144       continue
@@ -1770,15 +1791,23 @@ C then parse into new vertex.
 
 C Append new vertice to zone list if it is unique (current assumption
 C is that for most models, less than 4mm difference would be considered
-C a repeat of an existing vertex, otherwise continue.
+C a repeat of an existing vertex, if 5-10mm then check with the
+C user otherwise continue.
         if(NTV+1.le.MTV)then
           found=.false.
           do 244 ixx = 1,NTV
-            CALL ECLOSE(X1(1),X(ixx),0.004,closex)
-            CALL ECLOSE(Y1(1),Y(ixx),0.004,closey)
-            CALL ECLOSE(Z1(1),Z(ixx),0.004,closez)
-            if(closex.and.closey.and.closez)then
+            call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
+     &        0.004,closex)
+            call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
+     &        0.010,closey)
+            if(closex)then
               found=.true.
+              goto 245
+            endif
+            if(closey)then
+              dok=.true.
+              call askok('Copied point 5-10mm from existing vertex.',
+     &          'Skip it?',found,dok,nbhelp)
               goto 245
             endif
   244     continue

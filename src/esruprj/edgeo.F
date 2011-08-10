@@ -5610,6 +5610,7 @@ C Find close vertices.
           CALL EASKABC(' ','Options:','find close vertices',
      &          'find closest to a vertex','cancel',INVT,nbhelp)
           if(INVT.eq.1)then
+            call edisp(itru,'Scanning for vertices within 50mm...')
             do 102 iwhich1=1,NTV
               write(headv,'(a,i3,a,3f10.4)') ' Vert',iwhich1,
      &          ' @ XYZ:',X(IWHICH1),Y(IWHICH1),Z(IWHICH1)
@@ -5617,7 +5618,7 @@ C Find close vertices.
                 if(iwhich1.ne.iwhich2)then
                   tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
-                  if(tdis.lt.0.05)then
+                  if(tdis.le.0.05)then
                   write(outs,'(2a,i3,a,f9.4,a)') headv(1:lnblnk(headv)),
      &              ' is close to vert ',IWHICH2,' (',tdis,'m).'
                   call edisp(itru,outs)
@@ -5625,6 +5626,23 @@ C Find close vertices.
                 endif
   103         continue
   102       continue
+            call edisp(itru,'Scanning for vertices within 100mm...')
+            do 104 iwhich1=1,NTV
+              write(headv,'(a,i3,a,3f10.4)') ' Vert',iwhich1,
+     &          ' @ XYZ:',X(IWHICH1),Y(IWHICH1),Z(IWHICH1)
+              do 105 iwhich2=1,NTV
+                if(iwhich1.ne.iwhich2)then
+                  tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
+     &                  X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
+                  if(tdis.gt.0.05.and.tdis.le.0.1)then
+                  write(outs,'(2a,i3,a,f9.4,a)') headv(1:lnblnk(headv)),
+     &              ' is close to vert ',IWHICH2,' (',tdis,'m).'
+                  call edisp(itru,outs)
+                  endif
+                endif
+  105         continue
+  104       continue
+
             call edisp(itru,
      &      'Use the substitute vertex option in the vertex menu')
             call edisp(itru,
