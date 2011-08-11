@@ -2831,11 +2831,12 @@ C See if an even or odd number of items in list.
         ENDIF
       endif
 
-C Now tell the user the edge list for the surface.
+C Now tell the user the edge list for the surface. This write
+C statement should be kept up to date with MV changes.
       write(message,'(2a)') ' Vertices associated with ',
      &  SNAME(ICOMP,IS)
       call edisp(iuout,message)
-      WRITE(t248,'(32I4)')(JVN(is,j),J=1,nv)
+      WRITE(t248,'(42I4)')(JVN(is,j),J=1,nv)
       call edisp248(iuout,t248,90)
 
 C Force redraw of zone on entry to highlight focus surface.
@@ -3423,6 +3424,10 @@ C when it is re-freshed.
       ELSEIF(INODA.EQ.9)THEN
 
 C Specify the environment of the 'other' face of the surface.
+
+C << is it possible to consolidate this with the code in edonecon.F
+C << which is little used? 
+
         call edisp(iuout,' ')
         call edisp(iuout,'The current model topology is...')
         CALL CONXINFO(1,0,CXSTR)
@@ -3509,7 +3514,7 @@ C Determine the match in the system topology and update it.
           showother=.false.
         ELSEIF(IVAL(1).EQ.4)THEN
 
-C Ask for specific name.
+C Ask for specific zone to find a matching partition in.
           CALL EASKGEOF('If other zone known select it, else exit.',
      &      CFGOK,IZ,'-',IER)
           if(IZ.GT.0)then
@@ -3627,6 +3632,7 @@ C User did not select surface so continue without changing.
 C User did not select zone so continue without changing.
             continue
           endif
+
         ELSEIF(IVAL(1).EQ.5)THEN
 
 C List out standard profiles, assuming that if June is 0.0, then the
@@ -5407,7 +5413,7 @@ C inserting the new vertex index.
                       JVN(jivj,jivjj+1)=jwhich3
 
 C Debug...
-C                      write(6,'(a,32i4)') 'now jvn is ',
+C                      write(6,'(a,42i4)') 'now jvn is ',
 C     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
  
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -5592,7 +5598,7 @@ C inserting the new vertex index.
                       JVN(jivj,ivjj+1)=iwhich3
 
 C Debug...
-C                     write(6,'(a,30i3)') 'now jvn is ',
+C                     write(6,'(a,42i4)') 'now jvn is ',
 C     &                (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -5851,7 +5857,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug...
-C                     write(6,'(a,32i4)') 'now jvn is ',
+C                     write(6,'(a,42i4)') 'now jvn is ',
 C     &                 (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -7480,10 +7486,11 @@ C See if an even or odd number of items in list.
         endif
 
 C Set up a long string buffer for editing vertex list for the
-C surface. Include surface name in the dialog. 
+C surface. Include surface name in the dialog. This write statement
+C should be kept up to date with MV changes. 
         hold64='                                                      '
         write(t248,'(4a)') hold64,hold64,hold64,'                     '
-        WRITE(t248,'(32I4)')(JVN(IFOC,j),J=1,nv)
+        WRITE(t248,'(42I4)')(JVN(IFOC,j),J=1,nv)
         write(message,'(2a)') 'Vertices associated with ',
      &    SNAME(ICOMP,IFOC)
         CALL EASKS248(t248,message,

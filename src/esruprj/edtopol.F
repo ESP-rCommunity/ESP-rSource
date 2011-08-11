@@ -451,6 +451,10 @@ C Flip logic for back-to-back within zone.
       ELSEIF(INO.EQ.15)THEN
 
 C Edit single connection.
+
+C << Has anyone used this recently? How about adapting this as a common bit of
+C << code called from the many places where connections are established
+C << in the model?
         call edaconn(ier)
         MODIFY=.TRUE.
       ELSEIF(INO.EQ.16)THEN
