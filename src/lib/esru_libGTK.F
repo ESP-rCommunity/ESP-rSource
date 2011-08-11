@@ -4201,6 +4201,7 @@ C list management for this.
      &                'this will be added in a later version.','P')
 C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
 C          ITHLZ=ISEL
+C          MODIFY=.TRUE.
         endif
 
         CALL INLNST(1)
@@ -4222,59 +4223,8 @@ C User toggled to an east view.
         call PLELEV('E')
       elseif(ITPPSW.eq.4)then
 
-C Perspective view from the sun.
-C Draw the zones and any obstructions based on sun
-C position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-        write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
-        call edisp(iuout,' ')
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        call edisp(iuout,' Date and time for the view... ')
-        NTS=1
-        IMO=6
-        IDO=1
-        STIME=1.
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          CALL EASKAB(' ',' Next viewpoint:',
-     &        'next hour','exit',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          else
-            ITSNM=0
-          endif
-        else
-          CALL EASKAB(' View point below horizon:',' ',
-     &        'specify another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-        endif
-
-        MODLEN=.FALSE.
-        MODBND=.FALSE.
-        MODIFY=.FALSE.
+C Perspective view from the sun is handled by other code.
+        call edisp(iuout,'Use the pull-down menu for views from sun.')
       endif
 
       return

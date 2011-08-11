@@ -33,6 +33,8 @@
 /* Global variable definitions start here */
 extern chgeye_();     /* in esrucom/common3dv.F */
 extern chgsun_();     /* in esrucom/common3dv.F */
+extern chgzonpik_();  /* in esrucom/common3dv.F */
+extern chgzonpikarray_();
 extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
@@ -130,13 +132,29 @@ void calculate_font_metrics(void){
       pfd = pango_font_description_from_string("Serif,Medium 14");
 #endif
     else if(disp_fnt ==4)
+#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 8");
+#else
+      pfd = pango_font_description_from_string("Serif,Medium 8");
+#endif
     else if(disp_fnt == 5)
+#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 10");
+#else
+      pfd = pango_font_description_from_string("Serif,Medium 10");
+#endif
     else if(disp_fnt == 6)
+#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 12");
+#else
+      pfd = pango_font_description_from_string("Serif,Medium 12");
+#endif
     else if(disp_fnt == 7)
+#ifdef SUN
       pfd = pango_font_description_from_string("Courier,Medium 14");
+#else
+      pfd = pango_font_description_from_string("Serif,Medium 14");
+#endif
 
     context = gtk_widget_get_pango_context (text);
     metrics = pango_context_get_metrics (context, pfd,
@@ -982,7 +1000,7 @@ void esru_wire_ctl ( void)
    GtkWidget *DisplaySurfaceNormals, *DisplaySiteGrid, *DisplaySiteOrigin;
    GtkWidget *GridSpacingOtimum;
    GtkObject *GridSpacingDistance;
-   GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev, *ViewFromSun;
+   GtkWidget *ViewPerspective, *ViewPlan, *ViewEastElev, *ViewNorthElev;
    GtkWidget *zone_button[MCOM];
    GtkWidget *IncludeAll, *IncludeSurfaces, *IncludeExternal, *IncludePartition;
    GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
@@ -1010,16 +1028,16 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
    label = gtk_label_new ("Eye point (x,y,z):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   EyePointValueX = gtk_adjustment_new ((gdouble) image_.EYEM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueX), 1., 0);
+   EyePointValueX = gtk_adjustment_new ((gdouble) image_.EYEM[0], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueX), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   EyePointValueY = gtk_adjustment_new ((gdouble) image_.EYEM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueY), 1., 0);
+   EyePointValueY = gtk_adjustment_new ((gdouble) image_.EYEM[1], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueY), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   EyePointValueZ = gtk_adjustment_new ((gdouble) image_.EYEM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueZ), 1., 0);
+   EyePointValueZ = gtk_adjustment_new ((gdouble) image_.EYEM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (EyePointValueZ), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1028,16 +1046,16 @@ void esru_wire_ctl ( void)
    hbox = gtk_hbox_new (FALSE, 1);
    label = gtk_label_new ("View point (x,y,z):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   ViewPointValueX = gtk_adjustment_new ((gdouble) image_.VIEWM[0], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueX), 1., 0);
+   ViewPointValueX = gtk_adjustment_new ((gdouble) image_.VIEWM[0], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueX), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   ViewPointValueY = gtk_adjustment_new ((gdouble) image_.VIEWM[1], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueY), 1., 0);
+   ViewPointValueY = gtk_adjustment_new ((gdouble) image_.VIEWM[1], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueY), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
-   ViewPointValueZ = gtk_adjustment_new ((gdouble) image_.VIEWM[2], -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueZ), 1., 0);
+   ViewPointValueZ = gtk_adjustment_new ((gdouble) image_.VIEWM[2], -G_MAXFLOAT, G_MAXFLOAT, 0.5, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewPointValueZ), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1053,8 +1071,8 @@ void esru_wire_ctl ( void)
    }
    label = gtk_label_new ("angle (deg):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   ViewAngleValue = gtk_adjustment_new ((gdouble) image_.ANG, 0.001, 90., 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewAngleValue), 1., 0);
+   ViewAngleValue = gtk_adjustment_new ((gdouble) image_.ANG, 0.001, 90., 0.2, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (ViewAngleValue), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), FALSE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (vbox),hbox);
@@ -1111,8 +1129,8 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (hbox),GridSpacingOtimum);
    label = gtk_label_new (" distance (m):");
    gtk_container_add (GTK_CONTAINER (hbox),label);
-   GridSpacingDistance = gtk_adjustment_new ((gdouble) ray2_.GRDIS, -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
-   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (GridSpacingDistance), 1., 0);
+   GridSpacingDistance = gtk_adjustment_new ((gdouble) ray2_.GRDIS, -G_MAXFLOAT, G_MAXFLOAT, 0.25, 5., 0.);
+   spinner = gtk_spin_button_new (GTK_ADJUSTMENT (GridSpacingDistance), 1., 1);
    gtk_spin_button_set_wrap (GTK_SPIN_BUTTON (spinner), TRUE);
    gtk_container_add (GTK_CONTAINER (hbox),spinner);
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
@@ -1189,11 +1207,6 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (hbox),ViewNorthElev);
    if (ray2_.ITPPSW == 2) {
      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewNorthElev), TRUE);
-   }
-   ViewFromSun = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (ViewPerspective), "View from sun");
-   gtk_container_add (GTK_CONTAINER (hbox),ViewFromSun);
-   if (ray2_.ITPPSW == 4) {
-     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ViewFromSun), TRUE);
    }
    gtk_table_attach_defaults (GTK_TABLE (table), hbox, 1, 2, 0, 1);
    label = gtk_label_new ("Include:");
@@ -1358,8 +1371,15 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 2;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
            ray2_.ITPPSW = 3;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
-           ray2_.ITPPSW = 4;}
+
+         // the nznog needs to be passed back one element at a time to fill nznog fortran array
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
+           // fprintf(stderr,"-nznog passing %d %d\n",izone,gzonpik_.nznog[izone]);
+           chgzonpikarray_(&izone,&gzonpik_.nznog[izone]);
+         }
+         // pass back the current info on how many zones to view
+         chgzonpik_(&gzonpik_.izgfoc,&gzonpik_.nzg);
+
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
            &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
@@ -1400,6 +1420,9 @@ void esru_wire_ctl ( void)
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
+         // fprintf(stderr,"-nzg is now %d\n",gzonpik_.nzg);
+         // fprintf(stderr,"-nznog zero is now %d\n",gzonpik_.nznog[0]);
+         // fprintf(stderr,"-nznog one is now %d\n",gzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
            ray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
@@ -1435,8 +1458,15 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 2;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewEastElev)) == TRUE) {
            ray2_.ITPPSW = 3;}
-         if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
-           ray2_.ITPPSW = 4;}
+
+         // the nznog needs to be passed back one element at a time to fill nznog fortran array
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
+           // fprintf(stderr,"-nznog passing %d %d\n",izone,gzonpik_.nznog[izone]);
+           chgzonpikarray_(&izone,&gzonpik_.nznog[izone]);
+         }
+         // pass back the current info on how many zones to view
+         chgzonpik_(&gzonpik_.izgfoc,&gzonpik_.nzg);
+
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
            &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
@@ -1819,7 +1849,7 @@ char *gintstr[] = {
                pango_font_metrics_get_descent (metrics));
     f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
     pango_font_metrics_unref (metrics);
-    /* fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);  debug */
+    // fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);
 
 /* Create upper frame, just below the menu bar and within vpaneunder */
     frame_u = gtk_frame_new (NULL);
@@ -1854,7 +1884,7 @@ char *gintstr[] = {
    if the application is re-sized */
     emenu = gtk_frame_new (NULL);
     menu_pix_wd = (gint) *imenuchw * f_width;
-    /* fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);  debug */
+    // fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);
 
 /* The reserved area for the graphic feedback is different for each application.
  * The following sizes are based on the standard iappw values defined in each
@@ -1934,7 +1964,7 @@ char *gintstr[] = {
 
     gtk_paned_pack2 (GTK_PANED (hpaned), emenu, FALSE, TRUE);
     gtk_widget_show (emenu);
-    /* fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);  debug */
+    // fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);
 
 /* so the emenu is a frame which we could try
    using the esp_list_in_frame function with */
@@ -1970,7 +2000,7 @@ char *gintstr[] = {
     textf = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type (GTK_FRAME (textf), GTK_SHADOW_OUT);
     textf_pix_ht = (gint) *ilimtty * f_height +2;
-    /* fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);  debug */
+    // fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);
     gtk_widget_set_size_request (textf, -1, textf_pix_ht);
     gtk_paned_pack2 (GTK_PANED (vpaned), textf, FALSE, TRUE);
     textv = create_text ();

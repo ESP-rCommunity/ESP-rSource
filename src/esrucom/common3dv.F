@@ -269,6 +269,20 @@ C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
 C Use same logic as in EVSET.
       if(ITPPSW.eq.0)then
+
+C If perspective view do the normal wireframe calls.
+        if(ITHLS.eq.1)then
+
+C If ITHLS set to 1 then ask about which construction.
+C But this is disabled because epkmlc tries to use the current
+C main menu structure which causes a GTK fault. Need an alternative
+C list management for this.
+          call usrmsg('Hilight by construction is not yet working',
+     &                'this will be added in a later version.','P')
+C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
+C          ITHLZ=ISEL
+C          MODIFY=.TRUE.
+        endif
         CALL INLNST(1)
         CALL ADJVIEW(IER)
         MODLEN=.FALSE.
@@ -464,6 +478,63 @@ C Generate a heading for the view.
         endif
       endif
 
+      return
+      end
+
+C ********* chgzonpik
+C chgzonpik is called from C code in esp-r.c with parameters representing the
+C current state of izgfoc and nzg in the gzonpik_ c structure. Sparate
+C calls are made to chgzonpikarray is used to fill the nznog array
+      subroutine chgzonpik(jizgfoc,jnzg)
+#include "building.h"
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+
+C To avoid implicit casts also check machine type.
+#ifdef OSI
+        izgfoc=jizgfoc
+        nzg=jnzg
+#else
+        izgfoc=int(jizgfoc)
+        nzg=int(jnzg)
+#endif     
+
+C Debug.
+C      write(6,*) 'common gzonpik ',izgfoc,nzg,nznog(1),nznog(2),
+C     &    nznog(3),nznog(4),nznog(5)
+      return
+      end
+
+C ********* chgzonpikarray
+C chgzonpikarray is called from C code in esp-r.c with parameters representing
+C one element of nznog array (index and value) in the gzonpik_ c structure.
+C This is tedious, but does ensure that array elements are properly passed
+C from C to Fortran.
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#include "building.h"
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+
+C To avoid implicit casts also check machine type. Increment the
+C index jnznog to account for fortran array indexing starts from
+C one and C starts from zero.
+#ifdef OSI
+      nznog(jnznog+1)=jnznogv
+#else
+      nznog(int(jnznog)+1)=int(jnznogv)
+#endif     
       return
       end
 
