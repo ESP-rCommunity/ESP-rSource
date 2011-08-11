@@ -970,11 +970,11 @@ void putzonename_ (char* name, long int* id,  int length)
    int zoneid = (int) *id;
 
    name_local = g_strndup(name, (gsize) length);
-   //fprintf(stderr,"number of zone %d\n", zoneid);
-   //fprintf(stderr,"name of zone %s\n",name_local);
+   // fprintf(stderr,"number of zone %d\n", zoneid);
+   // fprintf(stderr,"name of zone %s\n",name_local);
    /* copy local string to char array*/
    strcpy(zonenames[zoneid-1],name_local);
-   //fprintf(stderr,"zone name%s\n",zonenames[zoneid-1]);
+   // fprintf(stderr,"zone name%s\n",zonenames[zoneid-1]);
 }
 
 /* esru_wire_ctl() - wireframe control.
@@ -1012,6 +1012,8 @@ void esru_wire_ctl ( void)
    int no_valid_event;
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
+   long int remembernzg;        /* remember how many zones have boxes ticked backup to gzonpik_  */
+                                /* in 64 bit gzonepik_ structure being messed around from fortran */
 
    esru_ask_wire();	/* instanciate the help associated with this interface */
 
@@ -1329,7 +1331,8 @@ void esru_wire_ctl ( void)
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
-         // fprintf(stderr,"-nzg is now %d\n",gzonpik_.nzg);
+	 remembernzg = gzonpik_.nzg;  // remember this because changes on fortran side will tend to corrupt gzonpik_
+         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
          // fprintf(stderr,"-nznog zero is now %d\n",gzonpik_.nznog[0]);
          // fprintf(stderr,"-nznog one is now %d\n",gzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
@@ -1378,7 +1381,7 @@ void esru_wire_ctl ( void)
            chgzonpikarray_(&izone,&gzonpik_.nznog[izone]);
          }
          // pass back the current info on how many zones to view
-         chgzonpik_(&gzonpik_.izgfoc,&gzonpik_.nzg);
+         chgzonpik_(&gzonpik_.izgfoc,&remembernzg);
 
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
@@ -1420,7 +1423,8 @@ void esru_wire_ctl ( void)
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
-         // fprintf(stderr,"-nzg is now %d\n",gzonpik_.nzg);
+	 remembernzg = gzonpik_.nzg;  // remember this because later updates will tend to corrupt gzonpik_
+         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
          // fprintf(stderr,"-nznog zero is now %d\n",gzonpik_.nznog[0]);
          // fprintf(stderr,"-nznog one is now %d\n",gzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
@@ -1465,7 +1469,7 @@ void esru_wire_ctl ( void)
            chgzonpikarray_(&izone,&gzonpik_.nznog[izone]);
          }
          // pass back the current info on how many zones to view
-         chgzonpik_(&gzonpik_.izgfoc,&gzonpik_.nzg);
+         chgzonpik_(&gzonpik_.izgfoc,&remembernzg);
 
          // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
          chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
