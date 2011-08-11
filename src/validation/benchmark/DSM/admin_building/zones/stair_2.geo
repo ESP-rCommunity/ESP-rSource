@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Sun Aug  7 15:00:19 2011  # latest file modification 
+*date Thu Aug 11 20:31:32 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -93,6 +93,8 @@ stair_2 describes stair tower with glazed side stair_2
 *vertex,51.00000,36.00000,51.69300  #  89
 *vertex,50.00000,35.70000,52.45000  #  90
 *vertex,50.00000,35.70000,55.59300  #  91
+*vertex,50.00000,35.70000,56.35000  #  92
+*vertex,50.00000,35.70000,59.49300  #  93
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,2,3,11,10  #  1
@@ -139,17 +141,18 @@ stair_2 describes stair tower with glazed side stair_2
 *edges,4,79,55,56,80  # 42
 *edges,4,81,57,58,82  # 43
 *edges,4,83,59,60,84  # 44
-*edges,4,71,80,81,72  # 45
+*edges,5,71,93,80,81,72  # 45
 *edges,4,73,82,83,86  # 46
-*edges,6,14,91,15,16,79,85  # 47
+*edges,7,14,91,15,16,79,92,85  # 47
 *edges,4,86,83,84,78  # 48
 *edges,4,72,81,82,73  # 49
-*edges,4,85,79,80,71  # 50
+*edges,4,92,79,80,93  # 50
 *edges,10,17,18,21,54,50,49,48,47,46,51  # 51
 *edges,10,41,42,76,64,67,70,78,84,60,44  # 52
 *edges,7,87,88,77,8,7,90,6  # 53
 *edges,4,48,49,87,89  # 54
 *edges,4,90,7,15,91  # 55
+*edges,4,85,92,93,71  # 56
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -211,6 +214,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,l2_flr_vdst,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,05  #  53 ||< l2_flr_vdst:L2_uf_plen
 *surf,ptn_str_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,26  #  54 ||< ptn_str_b:L1_support
 *surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  55 ||< external
+*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,-,-  #  56 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
