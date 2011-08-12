@@ -479,5 +479,22 @@ void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
   image_.ANG = *EAN;
 }
 
+/* pushgzonpik_() pass info on gzonpik common to C code from fortran. */
+void pushgzonpik_(jizgfoc,jnzg)
+  long int *jizgfoc;  // current index of focus zone
+  long int *jnzg;     // number of selected zones
+{
+  gzonpik_.izgfoc = *jizgfoc;
+  gzonpik_.nzg = *jnzg;
+}
 
+/* pushnznog_() pass one item of nznog array to C code from fortran. */
+void pushnznog_(jnznog,jnznogv)
+  long int *jnznog;  // index of the item (fortran counting)
+  long int *jnznogv; // value of the item
+{
+  int item;
+  item = (int)*jnznog-1;  // decrement index for c use
+  gzonpik_.nznog[item]= *jnznogv;
+}
 

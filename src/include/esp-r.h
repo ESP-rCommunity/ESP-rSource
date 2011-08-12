@@ -134,6 +134,8 @@ void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdo
 void    curviews_(float* EVX,float* EVY,float* EVZ,float* VX,float* VY,float* VZ,float* EAN,long int* JITZNM,long int* JITSNM,
         long int* JITVNO,long int* JITOBS,long int* JITSNR,long int* JITGRD,long int* JITORG,float* DIS,long int* JITBND,
         long int* JITDSP,long int* JITHLS,long int* JITHLZ,long int* JITPPSW);
+void    pushgzonpik_(long int* jizgfoc,long int* jnzg);
+void    pushnznog_(long int* jnznog,long int* jnznogv);
 void	curmodule_(char* fcmodule,int len_fcmodule);
 void	capexgf_(char* cmd,int len_cmd);
 void	capextf_(char* cmd,int len_cmd);

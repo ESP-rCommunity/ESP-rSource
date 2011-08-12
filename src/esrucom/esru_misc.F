@@ -88,8 +88,8 @@ C derived.h are derived areas and U values for zones and the model
 
 C << G7 and G8 need to be cleared >>
 
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -3247,8 +3247,8 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
