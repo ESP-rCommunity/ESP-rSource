@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_open_pln # tag version, format, zone name
-*date Sun Aug  7 11:43:46 2011  # latest file modification 
+*date Fri Aug 12 18:25:28 2011  # latest file modification 
 L2_open_pln describes main open plan office area at level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,22.79942,12.87217,52.45000  #   1
@@ -141,11 +141,11 @@ L2_open_pln describes main open plan office area at level two
 #  boundary condition tag followed by two data items
 *surf,ptn_void_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,20  #   1 ||< ptn_open_a:L2_ent_void
 *surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,21  #   3 ||< seg_al:L2_circular
-*surf,seg_b,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,22  #   4 ||< seg_bl:L2_circular
-*surf,seg_c,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,23  #   5 ||< seg_cl:L2_circular
-*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,24  #   6 ||< seg_dl:L2_circular
-*surf,seg_e,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,25  #   7 ||< seg_el:L2_circular
+*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,18  #   3 ||< Base:L2_circular
+*surf,seg_b,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,19  #   4 ||< seg_al:L2_circular
+*surf,seg_c,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,20  #   5 ||< seg_bl:L2_circular
+*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,21  #   6 ||< seg_cl:L2_circular
+*surf,seg_e,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,22  #   7 ||< seg_dl:L2_circular
 *surf,ptn_frame,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,04  #   8 ||< ptn_open_c:L2_meeting
 *surf,ptn_meet_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,03  #   9 ||< door:L2_meeting
 *surf,ptn_meet_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,21,02  #  10 ||< ptn_open_b:L2_meeting

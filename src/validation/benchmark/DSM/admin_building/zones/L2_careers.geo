@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Tue Aug  9 17:36:05 2011  # latest file modification 
+*date Fri Aug 12 18:25:28 2011  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
@@ -70,10 +70,10 @@ L2_careers describes open space over the careers service area
 *surf,balcony,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,46  #  10 ||< balcony:L2_open_pln
 *surf,struc,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,fict_opening,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,41  #  12 ||< ptn_void_c:L2_open_pln
-*surf,seg_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,12  #  13 ||< seg_l:L2_circular
-*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,13  #  14 ||< seg_m:L2_circular
-*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,14  #  15 ||< seg_n:L2_circular
-*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,15  #  16 ||< seg_o:L2_circular
+*surf,seg_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,09  #  13 ||< seg_k:L2_circular
+*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,10  #  14 ||< seg_l:L2_circular
+*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,11  #  15 ||< seg_m:L2_circular
+*surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,12  #  16 ||< seg_n:L2_circular
 *surf,L3_vc_low,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,37,10  #  17 ||< L3_vc_low:L3_void_cir
 # 
 *insol,3,0,0,0  # default insolation distribution

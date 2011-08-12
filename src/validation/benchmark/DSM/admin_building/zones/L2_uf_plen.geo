@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_uf_plen # tag version, format, zone name
-*date Sun Aug  7 18:03:37 2011  # latest file modification 
+*date Fri Aug 12 18:25:28 2011  # latest file modification 
 L2_uf_plen describes raised floor for level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,51.69300  #   1
@@ -336,7 +336,7 @@ L2_uf_plen describes raised floor for level two
 *surf,meet_fac_b,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  43 ||< external
 *surf,Wmeet_fac_c,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 *surf,Top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,07,19  #  45 ||< Top:L1_circular
-*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,20  #  46 ||< Base:L2_circular
+*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,17  #  46 ||< Top:L2_circular
 *surf,floor_mt,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,21,15  #  47 ||< floor_mt:L2_meeting
 *surf,floor_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  48 ||< external
 *surf,floor_b,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  49 ||< external
