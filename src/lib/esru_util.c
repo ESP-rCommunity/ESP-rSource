@@ -421,8 +421,8 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   strncpy(upath,"                                                                         ",72);
   f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
   upath[l_fupath] = '\0';
-  c1_.NCOMP = *iincomp;  // pass curent number of zones and connections to c1_ structure
-  c1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
+  cc1_.NCOMP = *iincomp;  // pass curent number of zones and connections to cc1_ structure
+  cc1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
 /* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
 /* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
 /* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
@@ -430,12 +430,12 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
 /* debug  fprintf(stderr,"upath %s\n",upath);  */
 /* debug  fprintf(stderr,"browse %d\n",browse);  */
 /* debug  fprintf(stderr,"ibrowse %ld\n",*ibrowse); */
-/* debug  fprintf(stderr,"iincompb %d\n",c1_.NCOMP); */
-/* debug fprintf(stderr,"iincon %d\n",c1_.NCON); */
+   fprintf(stderr,"iincompb %d\n",cc1_.NCOMP);
+   fprintf(stderr,"iincon %d\n",cc1_.NCON);
   return;
 }
 
-// good place for other functions to pass information from fortran to c (like image_ and ray2_)
+// good place for other functions to pass information from fortran to c (like cimage_ and cray2_)
 
 /* curviews_() - pass in info on the current views from fortran */
 void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
@@ -457,26 +457,26 @@ void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
   long int *JITHLZ;  // 2nd hilight attribute
   long int *JITPPSW; // current view - perspective/plan/south/west
 {
-  ray2_.ITDSP = *JITDSP;
-  ray2_.ITBND = *JITBND;
-  ray2_.ITZNM = *JITZNM;
-  ray2_.ITSNM = *JITSNM;
-  ray2_.ITVNO = *JITVNO;
-  ray2_.ITORG = *JITORG;
-  ray2_.ITSNR = *JITSNR;
-  ray2_.ITOBS = *JITOBS;
-  ray2_.ITHLS = *JITHLS;
-  ray2_.ITHLZ = *JITHLZ;
-  ray2_.ITGRD = *JITGRD;
-  ray2_.GRDIS = *DIS;
-  ray2_.ITPPSW = *JITPPSW;
-  image_.EYEM[0] = *EVX;
-  image_.EYEM[1] = *EVY;
-  image_.EYEM[2] = *EVZ;
-  image_.VIEWM[0] = *VX;
-  image_.VIEWM[1] = *VY;
-  image_.VIEWM[2] = *VZ;
-  image_.ANG = *EAN;
+  cray2_.ITDSP = *JITDSP;
+  cray2_.ITBND = *JITBND;
+  cray2_.ITZNM = *JITZNM;
+  cray2_.ITSNM = *JITSNM;
+  cray2_.ITVNO = *JITVNO;
+  cray2_.ITORG = *JITORG;
+  cray2_.ITSNR = *JITSNR;
+  cray2_.ITOBS = *JITOBS;
+  cray2_.ITHLS = *JITHLS;
+  cray2_.ITHLZ = *JITHLZ;
+  cray2_.ITGRD = *JITGRD;
+  cray2_.GRDIS = *DIS;
+  cray2_.ITPPSW = *JITPPSW;
+  cimage_.EYEM[0] = *EVX;
+  cimage_.EYEM[1] = *EVY;
+  cimage_.EYEM[2] = *EVZ;
+  cimage_.VIEWM[0] = *VX;
+  cimage_.VIEWM[1] = *VY;
+  cimage_.VIEWM[2] = *VZ;
+  cimage_.ANG = *EAN;
 }
 
 /* pushgzonpik_() pass info on gzonpik common to C code from fortran. */
@@ -484,8 +484,8 @@ void pushgzonpik_(jizgfoc,jnzg)
   long int *jizgfoc;  // current index of focus zone
   long int *jnzg;     // number of selected zones
 {
-  gzonpik_.izgfoc = *jizgfoc;
-  gzonpik_.nzg = *jnzg;
+  cgzonpik_.izgfoc = *jizgfoc;
+  cgzonpik_.nzg = *jnzg;
 }
 
 /* pushnznog_() pass one item of nznog array to C code from fortran. */
@@ -495,6 +495,6 @@ void pushnznog_(jnznog,jnznogv)
 {
   int item;
   item = (int)*jnznog-1;  // decrement index for c use
-  gzonpik_.nznog[item]= *jnznogv;
+  cgzonpik_.nznog[item]= *jnznogv;
 }
 
