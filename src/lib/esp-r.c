@@ -1494,12 +1494,14 @@ void esru_wire_ctl ( void)
 }
 
 /* ******  Notify level for wireframe button ********** */
+// Typically passed the current number of zones but the logic only
+// checks whether it is non-zero. Zero is initial state.
 void updwire_(avail)
   long int *avail;
 {
-  wire_avail = (int) *avail;         /* tell the world it is available */
+  wire_avail = (int) *avail;
   return;
-} /* openwire_ */
+} /* updwire_ */
 
 
 /* **** create_static_menus() - create static menus associated with the

@@ -534,8 +534,14 @@ C      return
 C      end
 
 C      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
-C     &  ftmppth,ibrowse)
+C     &  ftmppth,ibrowse,iincomp,iincon)
 C      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
+C      return
+C      end
+
+C     subroutine curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,
+C     & JITVNO,JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,
+C     & JITHLZ,JITPPSW)
 C      return
 C      end
 

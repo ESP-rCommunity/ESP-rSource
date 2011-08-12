@@ -8047,6 +8047,8 @@ void opensetup_()
 } /* opensetup */
 
 /* ******  Notify level for wireframe button ********** */
+// Typically passed the current number of zones. The logic only tests
+// for non-zero state.  Zero would be initial state.
 void updwire_(avail)
   long int *avail;
 {

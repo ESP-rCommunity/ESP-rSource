@@ -436,3 +436,48 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
 }
 
 // good place for other functions to pass information from fortran to c (like image_ and ray2_)
+
+/* curviews_() - pass in info on the current views from fortran */
+void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
+     JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW)
+  float *EVX,*EVY,*EVZ;  // eye point X Y Z
+  float *VX,*VY,*VZ;     // viewed point X Y Z
+  float *EAN,*DIS;       // angle of view and distance
+  long int *JITZNM;  //zone name toggle: display = 0, hidden = 1
+  long int *JITSNM;  // surface name toggle: display = 0, hidden = 1
+  long int *JITVNO;  // vertex toggle: display = 0, hidden = 1
+  long int *JITOBS;  // obstruction toggle: 
+  long int *JITSNR;  // surf normal toggle: display = 0, hidden = 1
+  long int *JITGRD;  // grid toggle: display = 0, hidden = 1
+  long int *JITORG;  // origin toggle: display = 0, hidden = 1
+  long int *JITBND;  // bounds toggle: static = 0, optimum = 1, zone focus = 2
+  long int *JITDSP;  // labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
+                     // similar = 4, surfs + obs+ ground = 5, ground only = 6
+  long int *JITHLS;  // highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+  long int *JITHLZ;  // 2nd hilight attribute
+  long int *JITPPSW; // current view - perspective/plan/south/west
+{
+  ray2_.ITDSP = *JITDSP;
+  ray2_.ITBND = *JITBND;
+  ray2_.ITZNM = *JITZNM;
+  ray2_.ITSNM = *JITSNM;
+  ray2_.ITVNO = *JITVNO;
+  ray2_.ITORG = *JITORG;
+  ray2_.ITSNR = *JITSNR;
+  ray2_.ITOBS = *JITOBS;
+  ray2_.ITHLS = *JITHLS;
+  ray2_.ITHLZ = *JITHLZ;
+  ray2_.ITGRD = *JITGRD;
+  ray2_.GRDIS = *DIS;
+  ray2_.ITPPSW = *JITPPSW;
+  image_.EYEM[0] = *EVX;
+  image_.EYEM[1] = *EVY;
+  image_.EYEM[2] = *EVZ;
+  image_.VIEWM[0] = *VX;
+  image_.VIEWM[1] = *VY;
+  image_.VIEWM[2] = *VZ;
+  image_.ANG = *EAN;
+}
+
+
+

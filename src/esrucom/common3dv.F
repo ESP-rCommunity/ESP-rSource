@@ -59,8 +59,10 @@ C Passed parameters.
       character ETEXT*82
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
 #endif
 
       SMALL=0.01
@@ -77,6 +79,19 @@ C If only drawing a ground topology set updwire manually.
         numberofzones=nzg
         call updwire(numberofzones)  ! pass local integer
       endif
+
+C Also tell wireframe control about the current views. 
+C << need to test about whether cast is needed >>
+      EVX=EYEM(1); EVY=EYEM(2); EVZ=EYEM(3)
+      VX=VIEWM(1); VY=VIEWM(2); VZ=VIEWM(3)
+      EAN=ANG; DIS=GRDIS
+      JITZNM=ITZNM; JITSNM=ITSNM; JITVNO=ITVNO
+      JITOBS=ITOBS; JITSNR=ITSNR; JITGRD=ITGRD
+      JITORG=ITORG; JITBND=ITBND; JITDSP=ITDSP
+      JITHLS=ITHLS; JITHLZ=ITHLZ; JITPPSW=ITPPSW
+      call curviews(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &  JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &  JITPPSW)
 
 C If altered then do a bound check on the current zone and update display.
       IF(MODIFY)THEN
