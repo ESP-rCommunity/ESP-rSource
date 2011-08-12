@@ -217,6 +217,8 @@ extern chgazi_();     /* in esrucom/common3dv.F */
 extern chgelev_();    /* in esrucom/common3dv.F */
 extern chgeye_();     /* in esrucom/common3dv.F */
 extern chgsun_();     /* in esrucom/common3dv.F */
+extern chgzonpik_();  /* in esrucom/common3dv.F */
+extern chgzonpikarray_();
 extern proftxdump_();
 extern nwkslctc_();
 extern gconad_();

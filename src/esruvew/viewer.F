@@ -234,6 +234,24 @@ C Depending on computer type set integer size of passed parameters.
       return
       end
 
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
 C ******* LN2AZ  (same as in esru_misc.F)
 C Recover azimuth & elevation from unit vector.
       SUBROUTINE LN2AZ(x1,y1,z1,x2,y2,z2,azim,elev)

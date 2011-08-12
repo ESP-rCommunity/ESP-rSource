@@ -43,7 +43,11 @@ C Passed parameter.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
 
       SMALL=0.01
 

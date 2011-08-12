@@ -175,8 +175,8 @@ C Uncertainty.
       INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
-      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems,szlow
-      REAL :: szcog,szhigh
+      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
+      REAL :: szlow,szcog,szhigh
 C Function definition      
       INTEGER :: igraphiclib
 
@@ -3196,11 +3196,12 @@ C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*72
 
       integer igraphiclib  ! external definition
-      integer numberofzones ! to pass to updwire rather than ncomp
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones ! to pass to updwire rather than ncomp
 #endif
 
 C For help messages

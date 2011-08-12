@@ -72,7 +72,11 @@ C Logical flags for file openings.
       character act*16,actf*72,action*16,msgl2*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
       integer IRE  ! for radio button
       integer MITEM,INO ! max items and current menu item
 

@@ -183,7 +183,6 @@ C Returned parameters from silentread.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
-      integer numberofzones ! to pass to updwire rather than ncomp
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
@@ -197,8 +196,10 @@ C For help messages
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
 #endif
 
 C Initialize variables and recover command line arguments.

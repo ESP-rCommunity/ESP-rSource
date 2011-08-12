@@ -177,14 +177,16 @@ C Name of current application.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
-      integer numberofzones ! to pass to updwire rather than ncomp
       integer ier
       integer nitems,inos ! max items and current menu item
+      integer ISFSUM  ! number of surfaces found
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
 #endif
 
 C For help messages
@@ -208,6 +210,7 @@ C Initialize global common data.
       limit =24
       nsigfig=3
       matver=0.0   ! Initial assumption of binary materials database.
+      ISFSUM=0
 
 C iunit  - zone transitional shading file
 C ifilsi - zone shading & insolation db
@@ -544,10 +547,9 @@ C Open core of databases if not already done so.
             if(ier.eq.0)then
                cfgok=.true.
                numberofzones=ncomp
-               call zdata (itrc,ier,numberofzones,isfsum)
+               call zdata (itrc,ier,int(numberofzones),isfsum)
                if(mmod.EQ.8)then
-                 numberofzones=ncomp   ! use local integer for updwire.
-                 call updwire(numberofzones)
+                 call updwire(numberofzones)   ! use local integer for updwire.
                endif
 
 C If inzone = 'All' display an image of the model. If inzone is
