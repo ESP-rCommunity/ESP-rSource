@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_cell_srv # tag version, format, zone name
-*date Thu Aug 11 07:27:55 2011  # latest file modification 
+*date Sat Aug 13 14:59:50 2011  # latest file modification 
 L3_cell_srv describes row of cellular offices at service rd faca
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,56.35000  #   1
@@ -168,16 +168,16 @@ L3_cell_srv describes row of cellular offices at service rd faca
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_open_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,34  #   1 ||< ptn_open_a:L3_open_lft
+*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,35  #   2 ||< ptn_open_b:L3_open_lft
+*surf,ptn_open_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,11  #   3 ||< ptn_open_cc:L3_open_rig
+*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,12  #   4 ||< ptn_open_d:L3_open_rig
+*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,13  #   5 ||< ptn_open_e:L3_open_rig
+*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,14  #   6 ||< ptn_open_f:L3_open_rig
+*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,15  #   7 ||< ptn_open_g:L3_open_rig
 *surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,56  #   9 ||< ptn_stair_cb:stair_2
+*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  10 ||< external
 *surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
@@ -192,9 +192,9 @@ L3_cell_srv describes row of cellular offices at service rd faca
 *surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,25,02  #  25 ||< not yet defined
+*surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,02  #  25 ||< ptn_cel:L3_print_zn
 *surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,29  #  27 ||< Base-30:L3_ufloor
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
@@ -210,18 +210,18 @@ L3_cell_srv describes row of cellular offices at service rd faca
 *surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
 *surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
-*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,44  #  43 ||< not yet defined
-*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,43  #  44 ||< not yet defined
-*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,46  #  45 ||< not yet defined
-*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,45  #  46 ||< not yet defined
-*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,48  #  47 ||< not yet defined
-*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,47  #  48 ||< not yet defined
-*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,50  #  49 ||< not yet defined
-*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,49  #  50 ||< not yet defined
-*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,52  #  51 ||< not yet defined
-*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,51  #  52 ||< not yet defined
-*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,54  #  53 ||< not yet defined
-*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,26,53  #  54 ||< not yet defined
+*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,44  #  43 ||< int_ptna_:L3_cell_srv
+*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,43  #  44 ||< int_ptna:L3_cell_srv
+*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,46  #  45 ||< int_ptnb_:L3_cell_srv
+*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,45  #  46 ||< int_ptnb:L3_cell_srv
+*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,48  #  47 ||< int_ptnc_:L3_cell_srv
+*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,47  #  48 ||< int_ptnc:L3_cell_srv
+*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,50  #  49 ||< int_ptnd_:L3_cell_srv
+*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,49  #  50 ||< int_ptnd:L3_cell_srv
+*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,52  #  51 ||< int_ptne_:L3_cell_srv
+*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,51  #  52 ||< int_ptne:L3_cell_srv
+*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,54  #  53 ||< int_ptnf_:L3_cell_srv
+*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,53  #  54 ||< int_ptnf:L3_cell_srv
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

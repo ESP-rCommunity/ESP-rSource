@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_kitchen # tag version, format, zone name
-*date Sat Aug  6 12:40:17 2011  # latest file modification 
+*date Sat Aug 13 14:53:20 2011  # latest file modification 
 L2_kitchen describes L2 kitchenette on service road facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,41.37145,35.70000,52.45000  #   1
@@ -36,8 +36,8 @@ L2_kitchen describes L2 kitchenette on service road facade
 *surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,Wall-5,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,10  #   6 ||< ptn_stair:L2_cell_srv
-*surf,Top-7,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Base-8,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,Top-7,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,25  #   7 ||< Top-7:L3_ufloor
+*surf,Base-8,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,57  #   8 ||< Base-8:L2_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

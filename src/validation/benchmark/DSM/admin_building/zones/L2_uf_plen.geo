@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_uf_plen # tag version, format, zone name
-*date Fri Aug 12 18:25:28 2011  # latest file modification 
+*date Sat Aug 13 14:44:01 2011  # latest file modification 
 L2_uf_plen describes raised floor for level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,51.69300  #   1
@@ -336,22 +336,22 @@ L2_uf_plen describes raised floor for level two
 *surf,meet_fac_b,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  43 ||< external
 *surf,Wmeet_fac_c,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 *surf,Top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,07,19  #  45 ||< Top:L1_circular
-*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,17  #  46 ||< Top:L2_circular
+*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,17  #  46 ||< Base:L2_circular
 *surf,floor_mt,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,21,15  #  47 ||< floor_mt:L2_meeting
-*surf,floor_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  48 ||< external
-*surf,floor_b,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  49 ||< external
+*surf,floor_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,22,31  #  48 ||< floor_a:L2_open_pln
+*surf,floor_b,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,22,39  #  49 ||< floor_b:L2_open_pln
 *surf,floor,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,23,29  #  50 ||< floor_cus:L2_cust_srv
 *surf,floor_cash,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,24,10  #  51 ||< floor_cash:L2_cash
 *surf,floor_pz_a,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,25,08  #  52 ||< floor_pz_a:L2_print_zn
 *surf,floor_l2_cl_,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,26,12  #  53 ||< floor_l2_cl_:L2_core_cel
-*surf,cel319_floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  54 ||< external
-*surf,floor_l2cor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  55 ||< external
-*surf,floor_l2_cc,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  56 ||< external
-*surf,Base-8,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  57 ||< external
-*surf,floor_toi,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  58 ||< external
-*surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  59 ||< external
-*surf,lt_well2,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  60 ||< external
-*surf,Wall-61,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  61 ||< external
+*surf,cel319_floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,28,11  #  54 ||< cel319_floor:L2_cor_cell
+*surf,floor_l2cor,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,27,28  #  55 ||< floor_l2cor:L2_coridor
+*surf,floor_l2_cc,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,29,31  #  56 ||< floor_l2_cc:L2_cell_srv
+*surf,Base-8,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,30,08  #  57 ||< Base-8:L2_kitchen
+*surf,floor_toi,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,32,10  #  58 ||< floor_toi:L2_toilet
+*surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,33,11  #  59 ||< floor:L2_toil_psg
+*surf,lt_well2,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  60 ||< not yet defined
+*surf,Wall-61,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,02,40  #  61 ||< struc_l1:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

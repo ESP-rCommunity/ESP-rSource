@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_toil_psg # tag version, format, zone name
-*date Sat Aug  6 12:44:23 2011  # latest file modification 
+*date Sat Aug 13 14:54:46 2011  # latest file modification 
 L2_toil_psg describes L2 toilet and passage to stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -53,8 +53,8 @@ L2_toil_psg describes L2 toilet and passage to stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,26,13  #   7 ||< ptn_cel_b:L2_core_cel
 *surf,ptna_opn_l2,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,22,13  #   8 ||< ptn_toil_b:L2_open_pln
 *surf,ptnb_opn_l2,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,22,12  #   9 ||< ptn_toil_a:L2_open_pln
-*surf,top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,27  #  10 ||< top:L3_ufloor
+*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,59  #  11 ||< floor_tpsg:L2_uf_plen
 *surf,ptnb_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,10  #  12 ||< ptnb_str_l2:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution

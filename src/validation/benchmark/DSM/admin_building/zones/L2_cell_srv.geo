@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cell_srv # tag version, format, zone name
-*date Sat Aug  6 12:39:59 2011  # latest file modification 
+*date Sat Aug 13 14:53:07 2011  # latest file modification 
 L2_cell_srv describes a series of cellular offices facing servic
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,52.45000  #   1
@@ -216,8 +216,8 @@ L2_cell_srv describes a series of cellular offices facing servic
 *surf,glaz_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
 *surf,stone_k,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,ptn_toil,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,03  #  29 ||< ptn_corc_l2:L2_toilet
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,floor_l2_cc,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,24  #  30 ||< ceiling:L3_ufloor
+*surf,floor_l2_cc,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,56  #  31 ||< floor_l2_cc:L2_uf_plen
 *surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 *surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
 *surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
@@ -226,17 +226,17 @@ L2_cell_srv describes a series of cellular offices facing servic
 *surf,glaz_c_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
 *surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
-*surf,glaz_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  40 ||< external
-*surf,glaz,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  41 ||< external
-*surf,glaz_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  42 ||< external
-*surf,glaz_k_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  43 ||< external
-*surf,glaz_k_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  44 ||< external
-*surf,glaz_i_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  45 ||< external
-*surf,glaz_i_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  46 ||< external
-*surf,glaz_h_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  47 ||< external
-*surf,glaz_h_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  48 ||< external
-*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  49 ||< external
-*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  50 ||< external
+*surf,glaz_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glaz,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,glaz_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,glaz_k_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  43 ||< external
+*surf,glaz_k_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  44 ||< external
+*surf,glaz_i_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  45 ||< external
+*surf,glaz_i_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  46 ||< external
+*surf,glaz_h_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  47 ||< external
+*surf,glaz_h_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  48 ||< external
+*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  49 ||< external
+*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  50 ||< external
 *surf,int_ptn_a,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,52  #  51 ||< int_ptn_a_:L2_cell_srv
 *surf,int_ptn_a_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,51  #  52 ||< int_ptn_a:L2_cell_srv
 *surf,int_ptn_b,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,54  #  53 ||< int_ptn_b_:L2_cell_srv

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cor_cell # tag version, format, zone name
-*date Sun Aug  7 14:59:42 2011  # latest file modification 
+*date Sat Aug 13 14:52:11 2011  # latest file modification 
 L2_cor_cell describes cellular offices at corner of level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,44.69600,35.70000,52.45000  #   1
@@ -66,8 +66,8 @@ L2_cor_cell describes cellular offices at corner of level two
 *surf,glaz_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,02  #   9 ||< Wall-2:L2_kitchen
-*surf,cel319_ceil,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,cel319_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,cel319_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,50  #  10 ||< cel319_ceil:L3_ufloor
+*surf,cel319_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,54  #  11 ||< cel319_floor:L2_uf_plen
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,04  #  12 ||< struc_l2:stair_2
 *surf,filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,05  #  13 ||< Wall-14:stair_2
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_ent_void # tag version, format, zone name
-*date Tue Aug  9 17:27:04 2011  # latest file modification 
+*date Sat Aug 13 14:45:06 2011  # latest file modification 
 L2_ent_void describes void over the entrance reception
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,-0.04750,52.45000  #   1
@@ -146,19 +146,19 @@ L2_ent_void describes void over the entrance reception
 *surf,side_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
 *surf,side_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 *surf,side_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,35,35  #  27 ||< upper_a:L3_ent_void
+*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,35,35  #  27 ||< lower_a:L3_ent_void
 *surf,lower,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,06,01  #  28 ||< up_fict:L1_ent_recp
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,12  #  29 ||< struc_a:L3_ufloor
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,13  #  30 ||< struc_b:L3_ufloor
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,14  #  31 ||< struc_c:L3_ufloor
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,45  #  32 ||< balc_a:L2_open_pln
 *surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,32  #  33 ||< balc_b:L2_cust_srv
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,33  #  34 ||< balc_c:L2_cust_srv
 *surf,frame_fac,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  35 ||< external
-*surf,upper_bb,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,35,36  #  36 ||< lower_a:L3_ent_void
-*surf,over_h_a,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  37 ||< external
-*surf,over_h_b,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  38 ||< external
-*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  39 ||< external
+*surf,upper_bb,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,35,36  #  36 ||< lower_b:L3_ent_void
+*surf,over_h_a,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,53  #  37 ||< l2_bal_ovhb:L3_open_lft
+*surf,over_h_b,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,52  #  38 ||< l2_bal_ovha:L3_open_lft
+*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,50,41  #  39 ||< struc_d:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

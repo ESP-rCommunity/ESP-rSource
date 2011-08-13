@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Sun Aug  7 10:34:44 2011  # latest file modification 
+*date Sat Aug 13 14:30:19 2011  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -124,14 +124,14 @@ stair_1 describes stair number one
 *surf,ptna_toil_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,02  #   4 ||< ptn_corb_l2:L2_toilet
 *surf,ptnb_toil_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,01  #   5 ||< ptn_cora_l2:L2_toilet
 *surf,ptn_void_l2,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,34,14  #   6 ||< ptn_stair:L2_se_void
-*surf,ptnb_toil_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptna_toil_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ptnb_toil_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,46,01  #   7 ||< ptn_cora_l3:L3_toilet
+*surf,ptna_toil_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,46,02  #   8 ||< ptn_corb_l3:L3_toilet
 *surf,ptnb_toil_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,ptna_toil_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,ptn_cora_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,12,01  #  11 ||< ptn_cora_l1:L1_toilet
 *surf,ptn_corb_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,12,02  #  12 ||< ptn_corb_l1:L1_toilet
 *surf,l4_flrva,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,01  #  14 ||< l3_flrva:L3_ufloor
 *surf,l2_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,01  #  15 ||< l2_flrva:L2_uf_plen
 *surf,floor_1,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,0  #  16 ||< ground profile  1
 *surf,ceil_l4,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  17 ||< external
@@ -139,25 +139,25 @@ stair_1 describes stair number one
 *surf,fac_a_l5,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  19 ||< external
 *surf,fac_b_l5,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,l2_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,02  #  21 ||< l2_flrvb:L2_uf_plen
-*surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,02  #  22 ||< l3_flrvb:L3_ufloor
 *surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
 *surf,l5_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
 *surf,ptn_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,34  #  25 ||< stair_rflr:L1_sw_void
-*surf,ptn_flrv_l3,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,ptn_flrv_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,23  #  26 ||< ptn_flrv_l3:L3_sw_void
 *surf,pnt_flrv_l4,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
 *surf,ptn_flrv_l5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
 *surf,ptn_voide_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,14  #  29 ||< ptn_stairb:L1_training
-*surf,ptn_void_l3,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
+*surf,ptn_void_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,14  #  30 ||< ptn_l3_sta:L3_sw_void
 *surf,ptn_void_l4,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
 *surf,ptn_void_l5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
 *surf,ptn_cora_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,28  #  33 ||< ptn_cora_one:L1_training
 *surf,ptn_corb_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,13  #  34 ||< ptn_staira:L1_training
 *surf,ptn_corc_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,20  #  35 ||< ptn_stairsw:L1_support
 *surf,l2_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,03  #  36 ||< l2_flrvc:L2_uf_plen
-*surf,l3_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  37 ||< not yet defined
-*surf,ptn_cora_3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  38 ||< not yet defined
-*surf,ptn_corb_3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  39 ||< not yet defined
-*surf,ptn_corc_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
+*surf,l3_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,03  #  37 ||< l3_flrvc:L3_ufloor
+*surf,ptn_cora_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,01  #  38 ||< ptn_cora_3:L3_open_lft
+*surf,ptn_corb_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,02  #  39 ||< ptn_corb_3:L3_open_lft
+*surf,ptn_corc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,03  #  40 ||< ptn_corc_l3:L3_open_lft
 *surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
 *surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
 *surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined

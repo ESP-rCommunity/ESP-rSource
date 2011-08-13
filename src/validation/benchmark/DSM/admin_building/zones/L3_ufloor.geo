@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ufloor # tag version, format, zone name
-*date Fri Aug 12 19:38:27 2011  # latest file modification 
+*date Sat Aug 13 15:06:51 2011  # latest file modification 
 L3_ufloor describes floor void under L3 occupied spaces
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,55.59300  #   1
@@ -306,67 +306,67 @@ L3_ufloor describes floor void under L3 occupied spaces
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   1 ||< external
-*surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   2 ||< external
-*surf,l3_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   3 ||< external
-*surf,l3_flr_vd,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   4 ||< external
-*surf,l3_flr_vda,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   5 ||< external
-*surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   6 ||< external
-*surf,rflrb_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   7 ||< external
-*surf,rflrc_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< external
-*surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   9 ||< external
-*surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< external
-*surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< external
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< external
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< external
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< external
-*surf,struc,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  15 ||< external
-*surf,ceiling_mt,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  16 ||< external
-*surf,ceiling_a,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  17 ||< external
-*surf,ceiling_b,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  18 ||< external
-*surf,ceiling_cus,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< external
-*surf,ceil_cash,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  20 ||< external
-*surf,ceil_pz_a,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  21 ||< external
-*surf,ceil_l2_cl_a,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  22 ||< external
-*surf,ceil_l2_cor,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  23 ||< external
-*surf,ceiling,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< external
-*surf,Top-7,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< external
-*surf,ceiling_toi,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< external
-*surf,top,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< external
-*surf,floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  28 ||< external
-*surf,Base-30,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  29 ||< external
-*surf,floor_pz,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  30 ||< external
-*surf,Base-14,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< external
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  32 ||< external
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  33 ||< external
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  34 ||< external
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  35 ||< external
-*surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  36 ||< external
-*surf,floor_toil,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  37 ||< external
-*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  38 ||< external
-*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  39 ||< external
-*surf,ptn_toil_3,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< external
-*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  41 ||< external
-*surf,floor_left,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  42 ||< external
-*surf,floor_right,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  43 ||< external
-*surf,floor_open_r,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  44 ||< external
-*surf,l3_flrv_rr,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  45 ||< external
-*surf,l3_flrv_ff,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  46 ||< external
-*surf,l3_flrv_ll,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  47 ||< external
-*surf,l3_flrv_bb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  48 ||< external
-*surf,ptn_untoil,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  49 ||< external
-*surf,cel319_ceil,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  50 ||< external
-*surf,srv_fac_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  51 ||< external
-*surf,srv_fac,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  52 ||< external
-*surf,ne_facade,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  53 ||< external
-*surf,to_stair_l3f,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  54 ||< external
-*surf,street_faca,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  55 ||< external
-*surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  56 ||< external
-*surf,seg_kk,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,-,-  #  57 ||< external
-*surf,fill_small,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  58 ||< external
-*surf,tiny-59,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  59 ||< external
-*surf,tiny-60,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  60 ||< external
-*surf,tiny-61,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  61 ||< external
+*surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,14  #   1 ||< l3_flrva:stair_1
+*surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,22  #   2 ||< l3_flrvb:stair_1
+*surf,l3_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,37  #   3 ||< l3_flrvc:stair_1
+*surf,l3_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,23  #   4 ||< l3_flr_vd:stair_2
+*surf,l3_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,47  #   5 ||< l3_flr_vda:stair_2
+*surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,22  #   6 ||< rflra_l3:lifts
+*surf,rflrb_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,26  #   7 ||< rflrb_l3:lifts
+*surf,rflrc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,30  #   8 ||< rflrc_l3:lifts
+*surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,40  #   9 ||< l3_fv_ma:ne_facade
+*surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,41  #  10 ||< l3_fv_ta:ne_facade
+*surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,51  #  11 ||< l3_fv_tb:ne_facade
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,18,29  #  12 ||< struc_a:L2_ent_void
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,18,30  #  13 ||< struc_b:L2_ent_void
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,18,31  #  14 ||< struc_c:L2_ent_void
+*surf,struc,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,20,11  #  15 ||< struc:L2_careers
+*surf,ceiling_mt,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,21,14  #  16 ||< ceiling_mt:L2_meeting
+*surf,ceiling_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,22,30  #  17 ||< ceiling_a:L2_open_pln
+*surf,ceiling_b,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,22,40  #  18 ||< ceiling_b:L2_open_pln
+*surf,ceiling_cus,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,ceil_cash,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,24,09  #  20 ||< ceil_cash:L2_cash
+*surf,ceil_pz_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,25,07  #  21 ||< ceil_pz_a:L2_print_zn
+*surf,ceil_l2_cl_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,26,11  #  22 ||< ceil_l2_cl_a:L2_core_cel
+*surf,ceil_l2_cor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,27,27  #  23 ||< ceil_l2_cor:L2_coridor
+*surf,ceiling,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,29,30  #  24 ||< ceiling:L2_cell_srv
+*surf,Top-7,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,30,07  #  25 ||< Top-7:L2_kitchen
+*surf,ceiling_toi,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,32,09  #  26 ||< ceiling_toi:L2_toilet
+*surf,top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,33,10  #  27 ||< top:L2_toil_psg
+*surf,floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,39,16  #  28 ||< floor:L3_meeting
+*surf,Base-30,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,40,27  #  29 ||< Base-30:L3_cell_srv
+*surf,floor_pz,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,41,08  #  30 ||< floor_pz:L3_print_zn
+*surf,Base-14,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,42,14  #  31 ||< Base-14:L3_social
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,43,10  #  32 ||< l3_flrv_r:L3_lw1
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,43,11  #  33 ||< l3_flrv_f:L3_lw1
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,43,12  #  34 ||< l3_flrv_l:L3_lw1
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,43,13  #  35 ||< l3_flrv_b:L3_lw1
+*surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,45,11  #  36 ||< floor:L3_toil_psg
+*surf,floor_toil,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,46,10  #  37 ||< floor:L3_toilet
+*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,24  #  38 ||< ptn_flrvd_a:L3_sw_void
+*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,25  #  39 ||< ptn_flrvd_b:L3_sw_void
+*surf,ptn_toil_3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,26  #  40 ||< ptn_toil_3:L3_sw_void
+*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,18,39  #  41 ||< struc_d:L2_ent_void
+*surf,floor_left,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,48,54  #  42 ||< floor_left:L3_open_lft
+*surf,floor_right,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
+*surf,floor_open_r,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,49,28  #  44 ||< floor_open_r:L3_open_rig
+*surf,l3_flrv_rr,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,10  #  45 ||< l3_flrv_r:L3_light_w2
+*surf,l3_flrv_ff,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,11  #  46 ||< l3_flrv_f:L3_light_w2
+*surf,l3_flrv_ll,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,12  #  47 ||< l3_flrv_l:L3_light_w2
+*surf,l3_flrv_bb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,13  #  48 ||< l3_flrv_b:L3_light_w2
+*surf,ptn_untoil,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  49 ||< external
+*surf,cel319_ceil,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,28,10  #  50 ||< cel319_ceil:L2_cor_cell
+*surf,srv_fac_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  51 ||< external
+*surf,srv_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  52 ||< external
+*surf,ne_facade,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  53 ||< external
+*surf,to_stair_l3f,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
+*surf,street_faca,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  55 ||< external
+*surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,07  #  56 ||< seg_g:L2_circular
+*surf,seg_kk,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,19,08  #  57 ||< seg_k:L2_circular
+*surf,fill_small,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  58 ||< not yet defined
+*surf,tiny-59,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  59 ||< external
+*surf,tiny-60,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  60 ||< external
+*surf,tiny-61,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  61 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

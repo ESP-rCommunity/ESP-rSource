@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_rig # tag version, format, zone name
-*date Thu Aug 11 21:26:02 2011  # latest file modification 
+*date Sat Aug 13 15:05:11 2011  # latest file modification 
 L3_open_rig describes right portion of open plan on L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,50.00000,30.50000,56.35000  #   1
@@ -92,35 +92,35 @@ L3_open_rig describes right portion of open plan on L3
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   1 ||< external
-*surf,ptnd_str_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   2 ||< external
-*surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< external
-*surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< external
-*surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< external
-*surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   6 ||< external
-*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< external
-*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< external
-*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< external
-*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< external
-*surf,ptn_open_cc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< external
-*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  12 ||< external
-*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  13 ||< external
-*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  14 ||< external
-*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< external
-*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  16 ||< external
-*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  17 ||< external
-*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  18 ||< external
-*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  19 ||< external
-*surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  20 ||< external
-*surf,ptna_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #  21 ||< external
-*surf,ptnb_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #  22 ||< external
-*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #  23 ||< external
-*surf,fict_lr_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  24 ||< external
-*surf,fict_lr_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  25 ||< external
-*surf,facade_st,VERT,-,-,-,stone_m_ell,OPAQUE,UNKNOWN,0,0  #  26 ||< external
-*surf,up_open_rig,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< external
-*surf,floor_open_r,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  28 ||< external
-*surf,ovhang,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< external
+*surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,42  #   1 ||< ptnc_str_l3:stair_2
+*surf,ptnd_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,50  #   2 ||< ptnd_str_l3:stair_2
+*surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,11  #   3 ||< balcony_a:L3_void_cir
+*surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,07  #   4 ||< fict_open:L3_void_cir
+*surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,10  #   5 ||< int_glazb:L3_void_b
+*surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,09  #   6 ||< int_glaz:L3_void_b
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,39,10  #   7 ||< ptn_open_a:L3_meeting
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,39,11  #   8 ||< ptn_open_b:L3_meeting
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,39,12  #   9 ||< door:L3_meeting
+*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,39,13  #  10 ||< ptn_open_c:L3_meeting
+*surf,ptn_open_cc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,03  #  11 ||< ptn_open_c:L3_cell_srv
+*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,04  #  12 ||< ptn_open_d:L3_cell_srv
+*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,05  #  13 ||< ptn_open_e:L3_cell_srv
+*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,06  #  14 ||< ptn_open_f:L3_cell_srv
+*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,07  #  15 ||< ptn_open_g:L3_cell_srv
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,44,08  #  16 ||< front_rail:L3_light_w2
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,44,09  #  17 ||< right_rail:L3_light_w2
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,44,01  #  18 ||< l3_lw2_fr:L3_light_w2
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,44,02  #  19 ||< l3_lw2_ri:L3_light_w2
+*surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,44,03  #  20 ||< l3_lw2_bk:L3_light_w2
+*surf,ptna_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,45,08  #  21 ||< ptna_opn_l3:L3_toil_psg
+*surf,ptnb_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,45,09  #  22 ||< ptnb_opn_l3:L3_toil_psg
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,45,07  #  23 ||< ptn_cel_b:L3_toil_psg
+*surf,fict_lr_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,48  #  24 ||< fict_lr_a:L3_open_lft
+*surf,fict_lr_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,49  #  25 ||< fict_lr_b:L3_open_lft
+*surf,facade_st,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,00,00  #  26 ||< external
+*surf,up_open_rig,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,floor_open_r,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,44  #  28 ||< floor_open_r:L3_ufloor
+*surf,ovhang,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

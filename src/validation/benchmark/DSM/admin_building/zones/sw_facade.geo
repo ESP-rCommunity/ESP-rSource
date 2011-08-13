@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,sw_facade # tag version, format, zone name
-*date Sat Aug  6 12:21:59 2011  # latest file modification 
+*date Sat Aug 13 14:34:17 2011  # latest file modification 
 sw_facade describes the stone facade on the south west
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-8.20400,4.08490,55.59300  #   1
@@ -116,12 +116,12 @@ sw_facade describes the stone facade on the south west
 #  boundary condition tag followed by two data items
 *surf,stone_end,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,stone_reveal,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,l3_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,l3_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,27  #   3 ||< l3_facade_a:L3_sw_void
 *surf,l4_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,l3_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,l3_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,l3_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,stone_rev_b,VERT,-,-,-,stone_eldon,OPAQUE,UNKNOWN,00,00  #   8 ||< not yet defined
+*surf,l3_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,28  #   5 ||< l3_facade_b:L3_sw_void
+*surf,l3_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,29  #   6 ||< l3_facade_c:L3_sw_void
+*surf,l3_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,30  #   7 ||< l3_facade_d:L3_sw_void
+*surf,stone_rev_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,00,00  #   8 ||< external
 *surf,stone_end_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   9 ||< external
 *surf,stone_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stone_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
@@ -131,7 +131,7 @@ sw_facade describes the stone facade on the south west
 *surf,Base-20,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,l5_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
 *surf,l4_facc,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,l4_facb,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,00,00  #  18 ||< not yet defined
+*surf,l4_facb,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
 *surf,l4_faca,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,l5_faca,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
 *surf,l5_facb,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,0,0  #  21 ||< not yet defined

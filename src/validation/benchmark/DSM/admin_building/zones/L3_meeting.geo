@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_meeting # tag version, format, zone name
-*date Tue Aug  9 17:34:50 2011  # latest file modification 
+*date Sat Aug 13 14:58:36 2011  # latest file modification 
 L3_meeting describes corner meeting room in L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,56.35000  #   1
@@ -62,14 +62,14 @@ L3_meeting describes corner meeting room in L3
 *surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,16  #   6 ||< pa_fac_l3:ne_facade
 *surf,gl_fac_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,pb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,17  #   8 ||< pb_fac_l3:ne_facade
-*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,45,01  #   9 ||< pt_meeting:L3_toil_psg
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,07  #  10 ||< ptn_open_a:L3_open_rig
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,08  #  11 ||< ptn_open_b:L3_open_rig
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,09  #  12 ||< door:L3_open_rig
+*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,10  #  13 ||< ptn_open_c:L3_open_rig
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
+*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,28  #  16 ||< floor:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

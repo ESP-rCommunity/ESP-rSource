@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Sun Aug  7 10:39:19 2011  # latest file modification 
+*date Sat Aug 13 14:33:18 2011  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -96,10 +96,10 @@ lifts describes the elevator shaft
 *surf,front_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,22  #   6 ||< front_1:L1_training
 *surf,right_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,23  #   7 ||< right_1:L1_training
 *surf,back_1,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,15,12  #   8 ||< ptn_elev:L1_sw_void
-*surf,left_3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,front_3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,right_3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,back_3,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,left_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,04  #   9 ||< left_3:L3_open_lft
+*surf,front_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,05  #  10 ||< front_3:L3_open_lft
+*surf,right_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,06  #  11 ||< right_3:L3_open_lft
+*surf,back_3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,12  #  12 ||< ptn_l3el:L3_sw_void
 *surf,left_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
 *surf,front_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,right_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
@@ -109,20 +109,20 @@ lifts describes the elevator shaft
 *surf,right_5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,back_5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
 *surf,rflra_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,06  #  21 ||< rflra_l2:L2_uf_plen
-*surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,06  #  22 ||< rflra_l3:L3_ufloor
 *surf,rflra_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
 *surf,rflra_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
 *surf,rflrb_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,08  #  25 ||< rflrb_l2:L2_uf_plen
-*surf,rflrb_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,rflrb_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,07  #  26 ||< rflrb_l3:L3_ufloor
 *surf,rflrb_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
 *surf,rflrb_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
 *surf,rflrc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,07  #  29 ||< rflrc_l2:L2_uf_plen
-*surf,rflrc_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
+*surf,rflrc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,08  #  30 ||< rflrc_l3:L3_ufloor
 *surf,rflrc_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
 *surf,rflrc_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
 *surf,base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  33 ||< ground profile  1
 *surf,ptn_vd2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,33  #  34 ||< elev_rflr:L1_sw_void
-*surf,ptn_vd3,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  35 ||< not yet defined
+*surf,ptn_vd3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,22  #  35 ||< ptn_vd3:L3_sw_void
 *surf,ptn_vd4,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
 *surf,ptn_vd5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  37 ||< not yet defined
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  38 ||< external

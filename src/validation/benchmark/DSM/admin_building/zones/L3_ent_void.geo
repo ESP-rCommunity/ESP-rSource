@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ent_void # tag version, format, zone name
-*date Tue Aug  9 17:31:04 2011  # latest file modification 
+*date Sat Aug 13 14:56:17 2011  # latest file modification 
 L3_ent_void describes third level atrium over the entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,56.35000  #   1
@@ -146,15 +146,15 @@ L3_ent_void describes third level atrium over the entrance
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-3,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,Wall-4,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,Wall-5,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,Wall-6,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,fict_e,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,Wall-9,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Wall-10,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,Wall-11,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,Wall-3,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,48,07  #   1 ||< Wall-3:L3_open_lft
+*surf,Wall-4,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,08  #   2 ||< Wall-4:L3_open_lft
+*surf,Wall-5,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,09  #   3 ||< Wall-5:L3_open_lft
+*surf,Wall-6,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,10  #   4 ||< Wall-6:L3_open_lft
+*surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,11  #   5 ||< Wall-7:L3_open_lft
+*surf,fict_e,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,12  #   6 ||< fict_e:L3_open_lft
+*surf,Wall-9,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,13  #   7 ||< Wall-9:L3_open_lft
+*surf,Wall-10,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,14  #   8 ||< Wall-10:L3_open_lft
+*surf,Wall-11,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,15  #   9 ||< Wall-11:L3_open_lft
 *surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
@@ -182,8 +182,8 @@ L3_ent_void describes third level atrium over the entrance
 *surf,upper_a,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  34 ||< not yet defined
 *surf,lower_a,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,27  #  35 ||< upper:L2_ent_void
 *surf,lower_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,36  #  36 ||< upper_bb:L2_ent_void
-*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  37 ||< not yet defined
-*surf,fict_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  38 ||< not yet defined
+*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,16  #  37 ||< balc_a:L3_open_lft
+*surf,fict_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,17  #  38 ||< fict_a:L3_open_lft
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  39 ||< not yet defined
 *surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
 *surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
@@ -194,7 +194,7 @@ L3_ent_void describes third level atrium over the entrance
 *surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
 *surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
 *surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
-*surf,balc_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  49 ||< not yet defined
+*surf,balc_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,18  #  49 ||< balc_e:L3_open_lft
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

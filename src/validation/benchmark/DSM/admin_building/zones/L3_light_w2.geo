@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_light_w2 # tag version, format, zone name
-*date Thu Aug 11 07:39:22 2011  # latest file modification 
+*date Sat Aug 13 15:01:29 2011  # latest file modification 
 L3_light_w2 describes void under light well 2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,56.35000  #   1
@@ -39,19 +39,19 @@ L3_light_w2 describes void under light well 2
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,48,06  #   5 ||< not yet defined
-*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,47,05  #   6 ||< not yet defined
-*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,18  #   1 ||< l3_lw2_fr:L3_open_rig
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,19  #   2 ||< l3_lw2_ri:L3_open_rig
+*surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,20  #   3 ||< l3_lw2_bk:L3_open_rig
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,46  #   4 ||< l3_lw2_left:L3_open_lft
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,31,05  #   6 ||< up_l3_lw2:L2_light_w2
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,47  #   7 ||< lw2left_rail:L3_open_lft
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,16  #   8 ||< front_rail:L3_open_rig
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,17  #   9 ||< right_rail:L3_open_rig
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,45  #  10 ||< l3_flrv_rr:L3_ufloor
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,46  #  11 ||< l3_flrv_ff:L3_ufloor
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,47  #  12 ||< l3_flrv_ll:L3_ufloor
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,48  #  13 ||< l3_flrv_bb:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

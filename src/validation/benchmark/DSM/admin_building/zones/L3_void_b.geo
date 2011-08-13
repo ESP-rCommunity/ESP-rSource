@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Tue Aug  9 07:06:24 2011  # latest file modification 
+*date Sat Aug 13 14:58:09 2011  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -54,9 +54,9 @@ L3_void_b describes void above the careers services area
 *surf,Wall-5,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,Wall-7,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #   8 ||< not yet defined
-*surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,06  #   9 ||< int_glaz:L3_open_rig
+*surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,05  #  10 ||< int_glazb:L3_open_rig
 *surf,Top-11,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  12 ||< not yet defined
 *surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined

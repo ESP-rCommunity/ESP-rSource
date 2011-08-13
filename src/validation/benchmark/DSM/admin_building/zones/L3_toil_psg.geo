@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toil_psg # tag version, format, zone name
-*date Thu Aug 11 07:43:12 2011  # latest file modification 
+*date Sat Aug 13 15:01:47 2011  # latest file modification 
 L3_toil_psg describes toilet and passage at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,56.35000  #   1
@@ -44,18 +44,18 @@ L3_toil_psg describes toilet and passage at level three
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,-,-  #   1 ||< not yet defined
-*surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #   2 ||< not yet defined
-*surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #   3 ||< not yet defined
-*surf,gl_facade_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,-,-  #   4 ||< not yet defined
-*surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #   5 ||< not yet defined
-*surf,ptna_str_l3,VERT,-,-,-,door,OPAQUE,UNKNOWN,-,-  #   6 ||< not yet defined
-*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptna_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptnb_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,39,09  #   1 ||< ptn_toilet:L3_meeting
+*surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,28  #   2 ||< pta_fac_l3:ne_facade
+*surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,29  #   3 ||< ptb_fac_l3:ne_facade
+*surf,gl_facade_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #   4 ||< external
+*surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,30  #   5 ||< ptnc_fac_l3:ne_facade
+*surf,ptna_str_l3,VERT,-,-,-,door,OPAQUE,ANOTHER,02,11  #   6 ||< ptna_str_l3:stair_2
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,49,23  #   7 ||< ptn_cel_b:L3_open_rig
+*surf,ptna_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,49,21  #   8 ||< ptna_opn_l3:L3_open_rig
+*surf,ptnb_opn_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,49,22  #   9 ||< ptnb_opn_l3:L3_open_rig
 *surf,top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,ptnb_str_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,-,-  #  12 ||< not yet defined
+*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,36  #  11 ||< floor_tpsg:L3_ufloor
+*surf,ptnb_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,12  #  12 ||< ptnb_str_l3:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

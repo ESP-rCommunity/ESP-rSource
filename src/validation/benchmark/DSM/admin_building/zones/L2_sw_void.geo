@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_se_void # tag version, format, zone name
-*date Sun Aug  7 10:40:34 2011  # latest file modification 
+*date Sat Aug 13 14:55:22 2011  # latest file modification 
 L2_se_void describes void at south-west facade with stair
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,52.45000  #   1
@@ -139,7 +139,7 @@ L2_se_void describes void at south-west facade with stair
 *surf,king_gla_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,king_gla_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
 *surf,king_gla_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  32 ||< not yet defined
+*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,47,21  #  32 ||< lower:L3_sw_void
 *surf,base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,15,30  #  33 ||< upper:L1_sw_void
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  34 ||< external
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_light_w2 # tag version, format, zone name
-*date Sat Aug  6 12:40:37 2011  # latest file modification 
+*date Sat Aug 13 14:54:16 2011  # latest file modification 
 L2_light_w2 describes light well two at level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,52.45000  #   1
@@ -43,7 +43,7 @@ L2_light_w2 describes light well two at level two
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,17  #   2 ||< right_shaft:L2_open_pln
 *surf,l3_lw2_bk,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,26,01  #   3 ||< Wall-1:L2_core_cel
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,19  #   4 ||< left_shaft:L2_open_pln
-*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,44,06  #   5 ||< l3_lw2_base:L3_light_w2
 *surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   6 ||< not yet defined
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,42  #   7 ||< left_rail:L2_open_pln
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,43  #   8 ||< front_rail:L2_open_pln

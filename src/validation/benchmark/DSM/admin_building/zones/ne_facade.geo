@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Tue Aug  9 17:34:26 2011  # latest file modification 
+*date Sat Aug 13 14:35:37 2011  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -197,9 +197,9 @@ ne_facade describes the stone facade on NE with air void
 *surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
 *surf,ptnc_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
 *surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
-*surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
-*surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
-*surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
+*surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,02  #  28 ||< pta_fac_l3:L3_toil_psg
+*surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,03  #  29 ||< ptb_fac_l3:L3_toil_psg
+*surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,05  #  30 ||< ptnc_fac_l3:L3_toil_psg
 *surf,pa_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
 *surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
 *surf,pa_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  33 ||< not yet defined
@@ -209,8 +209,8 @@ ne_facade describes the stone facade on NE with air void
 *surf,sill_a,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  37 ||< external
 *surf,head_a,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  38 ||< external
 *surf,lv_fv_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,09  #  39 ||< lv_fv_a:L2_uf_plen
-*surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
-*surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
+*surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,09  #  40 ||< l3_fv_ma:L3_ufloor
+*surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,10  #  41 ||< l3_fv_ta:L3_ufloor
 *surf,l4_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
 *surf,l5_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
 *surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
@@ -220,7 +220,7 @@ ne_facade describes the stone facade on NE with air void
 *surf,jamb_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
 *surf,jamb_d,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,head_b,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  50 ||< external
-*surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
+*surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,11  #  51 ||< l3_fv_tb:L3_ufloor
 *surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
 *surf,l5_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_social # tag version, format, zone name
-*date Thu Aug 11 07:33:44 2011  # latest file modification 
+*date Sat Aug 13 15:00:38 2011  # latest file modification 
 L3_social describes the social room on L3 adj to service rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,56.35000  #   1
@@ -75,9 +75,9 @@ L3_social describes the social room on L3 adj to service rd
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_print,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,37  #   1 ||< ptn_corid_a:L3_open_lft
+*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,38  #   2 ||< ptn_corid_b:L3_open_lft
+*surf,ptn_print,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,06  #   3 ||< ptn_social:L3_print_zn
 *surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,vent_b,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
@@ -86,9 +86,9 @@ L3_social describes the social room on L3 adj to service rd
 *surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,vent_a,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
-*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,35,03  #  12 ||< not yet defined
-*surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,46,03  #  12 ||< ptn_corc_l3:L3_toilet
+*surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,EXTERIOR,00,00  #  13 ||< external
+*surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,31  #  14 ||< Base-14:L3_ufloor
 *surf,stone_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external

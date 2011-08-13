@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_meeting # tag version, format, zone name
-*date Sun Aug  7 18:03:09 2011  # latest file modification 
+*date Sat Aug 13 14:47:08 2011  # latest file modification 
 L2_meeting describes corner meeting room wutg angled wall
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -64,7 +64,7 @@ L2_meeting describes corner meeting room wutg angled wall
 *surf,gl_fac_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,15  #  12 ||< pb_fac_l2:ne_facade
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,33,01  #  13 ||< pt_meeting:L2_toil_psg
-*surf,ceiling_mt,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,ceiling_mt,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,16  #  14 ||< ceiling_mt:L3_ufloor
 *surf,floor_mt,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,47  #  15 ||< floor_mt:L2_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
