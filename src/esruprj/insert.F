@@ -61,6 +61,7 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -72,6 +73,7 @@ C << what about including common zndata in this manipulation? >>
       logical same,clkok,found,DOK,DDOK,nameok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
       logical hasanotherchild ! true is surface is parent
+      logical greyok  ! for drawing red dot
       integer isurloop,iverloop,ichildloop ! for use in loops
       integer icdn, icc ! for connection numbers
       integer lnmyp,lnssn  ! lengths of strings
@@ -98,9 +100,9 @@ C      character guesstype*24  ! for context of surface addition
       integer icmpall  ! to signal request to compare all names
 
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,ixd,iyd,iicol
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,ixd,iyd,iicol
 #endif
 
 C For help messages
@@ -109,6 +111,10 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='ADDSUR'  ! set for subroutine
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
       IER=0
       DDOK=.false.
@@ -1111,6 +1117,14 @@ C User has specified clicking from mouse so just do that.
                   found=.true.
                   ijvn=ijvn+1
                   jjvn(ijvn)=i
+
+C Highight the matching vertex.
+                  iicol=0
+                  if(greyok)call winscl('z',iicol)
+                  call esymbol(iix,iiy,24,1)
+                  iicol=0
+                  if(greyok)call winscl('-',iicol)
+                  call forceflush()
                   goto 46
                 endif
   45          continue
@@ -1924,17 +1938,26 @@ C << could this be done with G6 and with ??
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
       CHARACTER outs*124
       logical bounded,hilight
+      logical greyok
+
 #ifdef OSI
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy,iicol    ! passed to etplot
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy,iicol    ! passed to etplot
 #endif
+
+      greyok=.false.      ! see if colour available
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
 C Take a line pair and then look and see if it is referenced in
 C reverse order just once. itv1 & itv2 are the vertices, its1 is the
@@ -2000,6 +2023,7 @@ C ivimb=1 then we have an unmatched edge.
             endif
             iub=iub+1
           endif
+
           if(hilight)then
 C Transform ends of edge.
             ILT= -305
@@ -2008,6 +2032,18 @@ C Transform ends of edge.
             COG1(3)=Z(itv1(ip))
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            if(MMOD.lt.8)then
+              continue
+            else
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBL(iix,iiy,itv1(ip),ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             iupdown=0
             isym=0
             call etplot(COG3(1),COG3(2),iupdown,isym)
@@ -2018,6 +2054,18 @@ C Transform ends of edge.
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             iupdown=ILT
             call etplot(COG3(1),COG3(2),iupdown,isym)
+            if(MMOD.lt.8)then
+              continue
+            else
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBL(iix,iiy,itv2(ip),ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             hilight=.false.
           endif
         endif

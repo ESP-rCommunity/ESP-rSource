@@ -2725,6 +2725,7 @@ C << possible to alter the inside/outside hc from this interface? >>
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
+#include "prj3dv.h"
 #include "esprdbfile.h"
 #include "material.h"
       
@@ -2738,11 +2739,13 @@ C Pased parameters
       integer ianother ! set if user wants to jump to next/previous
       integer ier     ! for error state
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -2758,6 +2761,7 @@ C Pased parameters
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
+      DIMENSION COG1(3),COG2(3),COG3(3)
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
@@ -2774,7 +2778,7 @@ C Strings for surface attributes to pass to insrec.
       real XO1,ZO1  ! to prevent name clash in geometry.h
       integer ISDN,INODA ! max items and current menu item
       integer mnulen,iwhich2,nv   ! multi column lines
-      logical odd   ! for display of vertex info
+      logical greyok,odd   ! for display of vertex info
       character message*48,t248*248
 
 C For help messages
@@ -2782,7 +2786,17 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
+#ifdef OSI
+      integer iix,iiy,iicol
+#else
+      integer*8 iix,iiy,iicol
+#endif
+
       helpinsub='EDSURA'  ! set for subroutine
+      greyok=.false.      ! see if colour available
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
 C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index. 
@@ -2993,6 +3007,27 @@ C Note IC is the connection at the other side of surface icom:is.
       nznog(1)=ICOMP
       izgfoc=ICOMP
       CALL ADJVIEW(IER)
+
+C If in graphic mode draw the points on top of standard drawing.
+      if(MMOD.lt.8)then
+        continue
+      else
+        NV=NVER(IS)
+        do 961 i=1,nv
+          iwhich=jvn(is,i)
+          COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          iicol=0
+          if(greyok)call winscl('z',iicol)
+          call esymbol(iix,iiy,24,1)
+          call VERTLBL(iix,iiy,iwhich,ier)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
+          call forceflush()
+  961   continue
+      endif
 
 C Help text for the menu.
       helptopic='surface_attrib_menu'
@@ -4815,6 +4850,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
@@ -5036,18 +5072,20 @@ C Use ratio calculation.
           call edisp(itru,outs)
 
 C Show the new point on the current wireframe.
-          COG1(1)=x3
-          COG1(2)=y3
-          COG1(3)=z3
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          iicol=0
-          if(greyok)call winscl('z',iicol)
-          call esymbol(iix,iiy,24,1)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
+          if(MMOD.lt.8)then
+            continue
+          else
+            COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
 
 C Checking if it should be added into the list of vertices or
 C inserted in another surface is done in code near line 5580.
@@ -5132,18 +5170,20 @@ C Present distance, azimuth and elevation then parse data from HOLD.
           z3=z3+Z(IWHICH)
 
 C Show the new point on the current wireframe.
-          COG1(1)=x3
-          COG1(2)=y3
-          COG1(3)=z3
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          iicol=0  ! make another pass to use iicol in winscl
-          if(greyok)call winscl('z',iicol)
-          call esymbol(iix,iiy,24,1)
-          iicol=0
-          if(greyok)call winscl('-',iicol)
-          call forceflush()
+          if(MMOD.lt.8)then
+            continue
+          else
+            COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            iicol=0  ! make another pass to use iicol in winscl
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
 
 C Checking if it should be added into the list of vertices or
 C inserted in another surface is done in code near line 5580.
@@ -5211,18 +5251,20 @@ C << add option for picking surface in another zone >>
             call edisp(itru,' ')
 
 C Show the new point on the current wireframe.
-            COG1(1)=x3
-            COG1(2)=y3
-            COG1(3)=z3
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
+            if(MMOD.lt.8)then
+              continue
+            else
+              COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
 
 C Checking if it should be added into the list of vertices or
 C inserted in another surface is done in code near line 5580.
@@ -5293,18 +5335,20 @@ C Does this point duplicate any other existing point in the zone?
   138           continue
 
 C Show the new point on the current wireframe.
-                COG1(1)=x3
-                COG1(2)=y3
-                COG1(3)=z3
-                CALL VECTRN(COG1,TEMAT,COG2,IER)
-                CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iix,iiy)
-                iicol=0
-                if(greyok)call winscl('z',iicol)
-                call esymbol(iix,iiy,24,1)
-                iicol=0
-                if(greyok)call winscl('-',iicol)
-                call forceflush()
+                if(MMOD.lt.8)then
+                  continue
+                else
+                  COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+                  CALL VECTRN(COG1,TEMAT,COG2,IER)
+                  CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                  call u2pixel(COG3(1),COG3(2),iix,iiy)
+                  iicol=0
+                  if(greyok)call winscl('z',iicol)
+                  call esymbol(iix,iiy,24,1)
+                  iicol=0
+                  if(greyok)call winscl('-',iicol)
+                  call forceflush()
+                endif
 
 C Ask if it should be added.
                 if(NTV.lt.MTV)then
@@ -5353,18 +5397,20 @@ C the edges.
 C See if this vertext should be included in any existing surface edges.
 C Use loop incrementors jivj and jivjj within 446 loop. Remember to
 C skip over the surface being used to define the plane.
-              COG1(1)=x(jwhich3)
-              COG1(2)=y(jwhich3)
-              COG1(3)=z(jwhich3)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              iicol=0
-              if(greyok)call winscl('z',iicol)
-              call esymbol(iix,iiy,24,1)
-              iicol=0
-              if(greyok)call winscl('-',iicol)
-              call forceflush()
+              if(MMOD.lt.8)then
+                continue
+              else
+                COG1(1)=x(jwhich3);COG1(2)=y(jwhich3);COG1(3)=z(jwhich3)
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                iicol=0
+                if(greyok)call winscl('z',iicol)
+                call esymbol(iix,iiy,24,1)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
+                call forceflush()
+              endif
               do 446 jivj=1,NSUR
                 if(jivj.eq.is) goto 446  ! skip past surface is
                 icc=izstocn(icomp,jivj)
@@ -5532,18 +5578,20 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             z3 = ((r2 * Z(IWHICH1)) + (r1 * Z(IWHICH2)))/tdis
             write(outs,'(a,3f10.4)')' Aligned vertex @ X,Y,Z:',x3,y3,z3
             call edisp(itru,outs)
-            COG1(1)=x3
-            COG1(2)=y3
-            COG1(3)=z3
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
+            if(MMOD.lt.8)then
+              continue
+            else
+              COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             dok=.true.
             call askok('Is this aligned vertex ok?',' ',ok,dok,nbhelp)
             if(ok)then
@@ -5724,18 +5772,20 @@ C Use ratio calculation.
             call edisp(itru,outs)
 
 C Show the new point on the current wireframe.
-            COG1(1)=x3
-            COG1(2)=y3
-            COG1(3)=z3
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            iicol=0
-            if(greyok)call winscl('z',iicol)
-            call esymbol(iix,iiy,24,1)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
+            if(MMOD.lt.8)then
+              continue
+            else
+              COG1(1)=x3; COG1(2)=y3; COG1(3)=z3
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             dok=.true.
             call askok('Apply this move?',' ',OK,dok,nbhelp)
             if(OK)then
@@ -6047,18 +6097,20 @@ C Select (possibly via mouse) and then edit.
               ifoc=IVLST(ij)
 
 C Show the point to be edited on the current wireframe.
-              COG1(1)=X(IFOC)
-              COG1(2)=Y(IFOC)
-              COG1(3)=Z(IFOC)
-              CALL VECTRN(COG1,TEMAT,COG2,IER)
-              CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              iicol=0
-              if(greyok)call winscl('z',iicol)
-              call esymbol(iix,iiy,24,1)
-              iicol=0
-              if(greyok)call winscl('-',iicol)
-              call forceflush()
+              if(MMOD.lt.8)then
+                continue
+              else
+                COG1(1)=X(IFOC); COG1(2)=Y(IFOC); COG1(3)=Z(IFOC)
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                iicol=0
+                if(greyok)call winscl('z',iicol)
+                call esymbol(iix,iiy,24,1)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
+                call forceflush()
+              endif
 
 C Present vertex coords for editing then parse data from HOLD.
               WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
@@ -6269,18 +6321,20 @@ C Edit vertex identified by KEYIND.
 
 C Show the point to be edited on the current wireframe. 42 is
 C a jump back point if user requests a different vertex.
-  42    COG1(1)=X(IFOC)
-        COG1(2)=Y(IFOC)
-        COG1(3)=Z(IFOC)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
-        iicol=0
-        if(greyok)call winscl('z',iicol)
-        call esymbol(iix,iiy,24,1)
-        iicol=0
-        if(greyok)call winscl('-',iicol)
-        call forceflush()
+  42    if(MMOD.lt.8)then
+          continue
+        else
+          COG1(1)=X(IFOC); COG1(2)=Y(IFOC); COG1(3)=Z(IFOC)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          iicol=0
+          if(greyok)call winscl('z',iicol)
+          call esymbol(iix,iiy,24,1)
+          iicol=0
+          if(greyok)call winscl('-',iicol)
+          call forceflush()
+        endif
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
@@ -6315,9 +6369,7 @@ C back to black.  If the user happened to edit a vertex and ask for
 C a jump then the display will not have a chance to re-draw fully
 C so at least draw the vertex in its new location.
         if(iclkok.eq.1.and.ifoc.gt.1) then
-          COG1(1)=X(IFOC)
-          COG1(2)=Y(IFOC)
-          COG1(3)=Z(IFOC)
+          COG1(1)=X(IFOC); COG1(2)=Y(IFOC); COG1(3)=Z(IFOC)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           call u2pixel(COG3(1),COG3(2),iix,iiy)
@@ -6328,9 +6380,7 @@ C so at least draw the vertex in its new location.
           ifoc=ifoc-1
           goto 42
         elseif(iclkok.eq.2.and.ifoc.lt.NZTV(icomp)) then
-          COG1(1)=X(IFOC)
-          COG1(2)=Y(IFOC)
-          COG1(3)=Z(IFOC)
+          COG1(1)=X(IFOC); COG1(2)=Y(IFOC); COG1(3)=Z(IFOC)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           call u2pixel(COG3(1),COG3(2),iix,iiy)
@@ -6369,11 +6419,13 @@ C Make use of VERINFO to display the current vertex surface connections.
       integer lnblnk  ! function definition
       integer iCountWords
 
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -6413,12 +6465,12 @@ C Strings for surface attributes to pass to insrec.
       integer icmpall  ! to signal request to compare all names
       integer ibopt    ! to specify which mass origin option
       integer mnulen,iwhich2   ! multi column lines
-      logical odd   ! for display of vertex info
+      logical greyok,odd   ! for display of vertex info
       
 #ifdef OSI
-      integer iix,iiy
+      integer iix,iiy,iicol
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,iicol
 #endif
 
 C For help messages
@@ -6427,6 +6479,12 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='EDVLIST'  ! set for subroutine
+
+C Check if we have colour.
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -6811,13 +6869,19 @@ C Update the image.
 C Show these points as small circles...
         call edisp(iuout,' proposed points are shown as dots....')
         DO 154 J = 1,N
-          COG1(1)=XX(J)
-          COG1(2)=YY(J)
-          COG1(3)=ZZ(J)
-          CALL VECTRN(COG1,TEMAT,COG2,IER)
-          CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,3,1)
+          if(MMOD.lt.8)then
+            continue
+          else
+            COG1(1)=XX(J); COG1(2)=YY(J); COG1(3)=ZZ(J)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+          endif
   154   CONTINUE
         call forceflush()
 
@@ -7449,6 +7513,26 @@ C a thick line.
         call gethelptext(helpinsub,helptopic,nbhelp)
         NV=NVER(IFOC)
 
+C If in graphic mode draw the points.
+        if(MMOD.lt.8)then
+          continue
+        else
+          do 961 i=1,nv
+            iwhich=jvn(ifoc,i)
+            COG1(1)=X(iwhich); COG1(2)=Y(iwhich); COG1(3)=Z(iwhich)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            iicol=0
+            if(greyok)call winscl('z',iicol)
+            call esymbol(iix,iiy,24,1)
+            call VERTLBL(iix,iiy,iwhich,ier)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+  961     continue
+        endif
+
 C List out the vertices associated with this surface. To save
 C space, use double column as in the emenu code in
 C esru_libNonGTK.F and also for use in the model contents report.
@@ -7565,22 +7649,27 @@ C Parameters passed.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       DIMENSION  item(36)
       real COG1,COG2,COG3  ! position to check against
       DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
       CHARACTER item*33,outs*124,KEY*1
-      logical found
+      logical greyok,found
       integer MVERT,IVERT ! max items and current menu item
 
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,ixd,iyd,iicol
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,ixd,iyd,iicol
 #endif
 
 C Initialise vertex list menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
 C Also clear tagged items list (IVLST).
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
       IER=0
       MHEAD=1
       MCTL=4
@@ -7671,9 +7760,7 @@ C hit and then loop through each of the vertices for something close.
           if(ii.eq.69.or.ii.eq.101)goto 47
           found=.false.
           do 45 i=1,NTV
-            COG1(1)=X(I)
-            COG1(2)=Y(I)
-            COG1(3)=Z(I)
+            COG1(1)=X(I); COG1(2)=Y(I); COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             call u2pixel(COG3(1),COG3(2),iix,iiy)
@@ -7691,7 +7778,13 @@ C hit and then loop through each of the vertices for something close.
               INPICK=INPICK+1
               ijvn=ijvn+1
               IVLST(ijvn)=i
-              CALL ecirc(iix,iiy,3,0)
+
+C Highight the matching vertex.
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
               call forceflush()
               goto 46
             endif

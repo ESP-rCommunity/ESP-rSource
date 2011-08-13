@@ -563,10 +563,8 @@ C To avoid implicit casts also check machine type. Increment the
 C index jnznog to account for fortran array indexing starts from
 C one and C starts from zero.
 #ifdef OSI
-C      write(6,*) jnznog,jnznogv
       nznog(jnznog+1)=jnznogv
 #else
-C      write(6,*) int(jnznog),int(jnznogv)
       nznog(int(jnznog)+1)=int(jnznogv)
 #endif     
       return
