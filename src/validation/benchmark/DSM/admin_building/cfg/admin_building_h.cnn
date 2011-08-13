@@ -1,6 +1,6 @@
 *connections for admin_building
-*Date Sat Aug 13 15:07:05 2011
-   1422   # number of connections
+*Date Sat Aug 13 16:49:41 2011
+   1674   # number of connections
    1   1   3  23  16  #    1 ptn_cora_l2 in stair_1 >|< ptn_stair in L2_cust_srv
    1   2   3  23  15  #    2 ptn_corb_l2 in stair_1 >|< ptn_other in L2_cust_srv
    1   3   3  27  21  #    3 ptn_off_l2 in stair_1 >|< Wall-21 in L2_coridor
@@ -1423,3 +1423,255 @@
   50  59   0   0   0  # 1420 tiny-59 in L3_ufloor is External
   50  60   0   0   0  # 1421 tiny-60 in L3_ufloor is External
   50  61   0   0   0  # 1422 tiny-61 in L3_ufloor is External
+  51   1   0   0   0  # 1423 Wall-1 in L4_sw_void is External
+  51   2   0   0   0  # 1424 Wall-2 in L4_sw_void is External
+  51   3   0   0   0  # 1425 Wall-3 in L4_sw_void is External
+  51   4   0   0   0  # 1426 Wall-4 in L4_sw_void is External
+  51   5  -1   0   0  # 1427 Wall-5 in L4_sw_void not yet defined
+  51   6  -1   0   0  # 1428 Wall-6 in L4_sw_void not yet defined
+  51   7  -1   0   0  # 1429 Wall-7 in L4_sw_void not yet defined
+  51   8  -1   0   0  # 1430 Wall-8 in L4_sw_void not yet defined
+  51   9  -1   0   0  # 1431 Wall-9 in L4_sw_void not yet defined
+  51  10  -1   0   0  # 1432 Wall-10 in L4_sw_void not yet defined
+  51  11  -1   0   0  # 1433 Wall-11 in L4_sw_void not yet defined
+  51  12  -1   0   0  # 1434 Wall-12 in L4_sw_void not yet defined
+  51  13  -1   0   0  # 1435 Wall-13 in L4_sw_void not yet defined
+  51  14  -1   0   0  # 1436 Wall-14 in L4_sw_void not yet defined
+  51  15  -1   0   0  # 1437 Wall-15 in L4_sw_void not yet defined
+  51  16   0   0   0  # 1438 Wall-16 in L4_sw_void is External
+  51  17   0   0   0  # 1439 Wall-17 in L4_sw_void is External
+  51  18   0   0   0  # 1440 Wall-18 in L4_sw_void is External
+  51  19   0   0   0  # 1441 Wall-19 in L4_sw_void is External
+  51  20  -1   0   0  # 1442 Top-26 in L4_sw_void not yet defined
+  51  21  -1   0   0  # 1443 Base-27 in L4_sw_void not yet defined
+  51  22  -1   0   0  # 1444 ptn_vd3 in L4_sw_void not yet defined
+  51  23  -1   0   0  # 1445 ptn_flrv_l4 in L4_sw_void not yet defined
+  51  24  -1   0   0  # 1446 ptn_flrvd_a in L4_sw_void not yet defined
+  51  25  -1   0   0  # 1447 ptn_flrvd_b in L4_sw_void not yet defined
+  51  26  -1   0   0  # 1448 ptn_toil_l4 in L4_sw_void not yet defined
+  51  27  -1   0   0  # 1449 l4_facade_a in L4_sw_void not yet defined
+  51  28  -1   0   0  # 1450 l4_facade_b in L4_sw_void not yet defined
+  51  29  -1   0   0  # 1451 l4_facade_c in L4_sw_void not yet defined
+  51  30  -1   0   0  # 1452 l4_facade_d in L4_sw_void not yet defined
+  51  31   0   0   0  # 1453 fac_glaz_a in L4_sw_void is External
+  51  32   0   0   0  # 1454 fac_glaz_b in L4_sw_void is External
+  52   1  -1   0   0  # 1455 seg_a in L4_circular not yet defined
+  52   2  -1   0   0  # 1456 seg_b in L4_circular not yet defined
+  52   3  -1   0   0  # 1457 seg_c in L4_circular not yet defined
+  52   4  -1   0   0  # 1458 seg_d in L4_circular not yet defined
+  52   5  -1   0   0  # 1459 seg_e in L4_circular not yet defined
+  52   6  -1   0   0  # 1460 seg_f in L4_circular not yet defined
+  52   7  -1   0   0  # 1461 seg_g in L4_circular not yet defined
+  52   8  -1   0   0  # 1462 seg_h in L4_circular not yet defined
+  52   9  -1   0   0  # 1463 seg_i in L4_circular not yet defined
+  52  10  -1   0   0  # 1464 seg_j in L4_circular not yet defined
+  52  11  -1   0   0  # 1465 seg_k in L4_circular not yet defined
+  52  12  -1   0   0  # 1466 seg_l in L4_circular not yet defined
+  52  13  -1   0   0  # 1467 seg_m in L4_circular not yet defined
+  52  14  -1   0   0  # 1468 seg_n in L4_circular not yet defined
+  52  15  -1   0   0  # 1469 seg_o in L4_circular not yet defined
+  52  16   0   0   0  # 1470 facade_a in L4_circular is External
+  52  17   0   0   0  # 1471 frame in L4_circular is External
+  52  18   0   0   0  # 1472 facade_b in L4_circular is External
+  52  19  -1   0   0  # 1473 Top in L4_circular not yet defined
+  52  20  -1   0   0  # 1474 Base in L4_circular not yet defined
+  53   1  -1   0   0  # 1475 Wall-1 in L4_void_cir not yet defined
+  53   2  -1   0   0  # 1476 Wall-2 in L4_void_cir not yet defined
+  53   3  -1   0   0  # 1477 Wall-3 in L4_void_cir not yet defined
+  53   4  -1   0   0  # 1478 Wall-4 in L4_void_cir not yet defined
+  53   5   0   0   0  # 1479 Wall-5 in L4_void_cir is External
+  53   6   0   0   0  # 1480 Wall-6 in L4_void_cir is External
+  53   7  -1   0   0  # 1481 Wall-7 in L4_void_cir not yet defined
+  53   8  -1   0   0  # 1482 Wall-8 in L4_void_cir not yet defined
+  53   9  -1   0   0  # 1483 Top-9 in L4_void_cir not yet defined
+  53  10  -1   0   0  # 1484 Base-10 in L4_void_cir not yet defined
+  54   1   0   0   0  # 1485 fac_frame in L4_meeting is External
+  54   2   0   0   0  # 1486 fac_glaz_a in L4_meeting is External
+  54   3   0   0   0  # 1487 fac_glaz_b in L4_meeting is External
+  54   4   0   0   0  # 1488 fac_glaz_c in L4_meeting is External
+  54   5   0   0   0  # 1489 fac_glaz_d in L4_meeting is External
+  54   6  -1   0   0  # 1490 pa_fac_l4 in L4_meeting not yet defined
+  54   7  -1   0   0  # 1491 gl_fac_l4 in L4_meeting not yet defined
+  54   8  -1   0   0  # 1492 pb_fac_l4 in L4_meeting not yet defined
+  54   9  -1   0   0  # 1493 ptn_toilet in L4_meeting not yet defined
+  54  10  -1   0   0  # 1494 ptn_open_a in L4_meeting not yet defined
+  54  11  -1   0   0  # 1495 ptn_open_b in L4_meeting not yet defined
+  54  12  -1   0   0  # 1496 door in L4_meeting not yet defined
+  54  13  -1   0   0  # 1497 ptn_open_c in L4_meeting not yet defined
+  54  14  -1   0   0  # 1498 ptn_frame in L4_meeting not yet defined
+  54  15  -1   0   0  # 1499 ceiling in L4_meeting not yet defined
+  54  16  -1   0   0  # 1500 floor in L4_meeting not yet defined
+  55   1  -1   0   0  # 1501 ptn_open_a in L4_cell_srv not yet defined
+  55   2  -1   0   0  # 1502 ptn_open_b in L4_cell_srv not yet defined
+  55   3  -1   0   0  # 1503 ptn_open_c in L4_cell_srv not yet defined
+  55   4  -1   0   0  # 1504 ptn_open_d in L4_cell_srv not yet defined
+  55   5  -1   0   0  # 1505 ptn_open_e in L4_cell_srv not yet defined
+  55   6  -1   0   0  # 1506 ptn_open_f in L4_cell_srv not yet defined
+  55   7  -1   0   0  # 1507 ptn_open_g in L4_cell_srv not yet defined
+  55   8  -1   0   0  # 1508 ptn_filler in L4_cell_srv not yet defined
+  55   9  -1   0   0  # 1509 ptn_stair_cb in L4_cell_srv not yet defined
+  55  10  -1   0   0  # 1510 stone_h in L4_cell_srv not yet defined
+  55  11   0   0   0  # 1511 stone_g in L4_cell_srv is External
+  55  12   0   0   0  # 1512 glaz_g in L4_cell_srv is External
+  55  13   0   0   0  # 1513 vent_g in L4_cell_srv is External
+  55  14   0   0   0  # 1514 glaz_f in L4_cell_srv is External
+  55  15   0   0   0  # 1515 glaz_e in L4_cell_srv is External
+  55  16   0   0   0  # 1516 vent_f in L4_cell_srv is External
+  55  17   0   0   0  # 1517 glaz_d in L4_cell_srv is External
+  55  18   0   0   0  # 1518 stone_c in L4_cell_srv is External
+  55  19   0   0   0  # 1519 glaz_c in L4_cell_srv is External
+  55  20   0   0   0  # 1520 vent_e in L4_cell_srv is External
+  55  21   0   0   0  # 1521 glaz_b in L4_cell_srv is External
+  55  22   0   0   0  # 1522 stone_a in L4_cell_srv is External
+  55  23   0   0   0  # 1523 glaz_a in L4_cell_srv is External
+  55  24   0   0   0  # 1524 vent_d in L4_cell_srv is External
+  55  25   0   0   0  # 1525 ptn_pz in L4_cell_srv is External
+  55  26  -1   0   0  # 1526 Top-29 in L4_cell_srv not yet defined
+  55  27  -1   0   0  # 1527 Base-30 in L4_cell_srv not yet defined
+  55  28   0   0   0  # 1528 stone_f in L4_cell_srv is External
+  55  29   0   0   0  # 1529 glaz_g_low in L4_cell_srv is External
+  55  30   0   0   0  # 1530 glaz_g_hi in L4_cell_srv is External
+  55  31   0   0   0  # 1531 glaz_f_low in L4_cell_srv is External
+  55  32   0   0   0  # 1532 glaz_f_hi in L4_cell_srv is External
+  55  33   0   0   0  # 1533 glaz_e_low in L4_cell_srv is External
+  55  34   0   0   0  # 1534 glaz_e_hi in L4_cell_srv is External
+  55  35   0   0   0  # 1535 glaz_d_low in L4_cell_srv is External
+  55  36   0   0   0  # 1536 glaz_d_hi in L4_cell_srv is External
+  55  37   0   0   0  # 1537 glaz_c_low in L4_cell_srv is External
+  55  38   0   0   0  # 1538 glaz_c_hi in L4_cell_srv is External
+  55  39   0   0   0  # 1539 glaz_b_low in L4_cell_srv is External
+  55  40   0   0   0  # 1540 glaz_b_hi in L4_cell_srv is External
+  55  41   0   0   0  # 1541 glaz_a_low in L4_cell_srv is External
+  55  42   0   0   0  # 1542 glaz_a_hi in L4_cell_srv is External
+  55  43  -1   0   0  # 1543 int_ptna in L4_cell_srv not yet defined
+  55  44  -1   0   0  # 1544 int_ptna_ in L4_cell_srv not yet defined
+  55  45  -1   0   0  # 1545 int_ptnb in L4_cell_srv not yet defined
+  55  46  -1   0   0  # 1546 int_ptnb_ in L4_cell_srv not yet defined
+  55  47  -1   0   0  # 1547 int_ptnc in L4_cell_srv not yet defined
+  55  48  -1   0   0  # 1548 int_ptnc_ in L4_cell_srv not yet defined
+  55  49  -1   0   0  # 1549 int_ptnd in L4_cell_srv not yet defined
+  55  50  -1   0   0  # 1550 int_ptnd_ in L4_cell_srv not yet defined
+  55  51  -1   0   0  # 1551 int_ptne in L4_cell_srv not yet defined
+  55  52  -1   0   0  # 1552 int_ptne_ in L4_cell_srv not yet defined
+  55  53  -1   0   0  # 1553 int_ptnf in L4_cell_srv not yet defined
+  55  54  -1   0   0  # 1554 int_ptnf_ in L4_cell_srv not yet defined
+  56   1  -1   0   0  # 1555 Wall-1 in L4_sw_meet not yet defined
+  56   2  -1   0   0  # 1556 Wall-2 in L4_sw_meet not yet defined
+  56   3  -1   0   0  # 1557 Wall-3 in L4_sw_meet not yet defined
+  56   4  -1   0   0  # 1558 Wall-4 in L4_sw_meet not yet defined
+  56   5  -1   0   0  # 1559 Wall-5 in L4_sw_meet not yet defined
+  56   6  -1   0   0  # 1560 Wall-6 in L4_sw_meet not yet defined
+  56   7  -1   0   0  # 1561 Wall-8 in L4_sw_meet not yet defined
+  56   8  -1   0   0  # 1562 Wall-9 in L4_sw_meet not yet defined
+  56   9  -1   0   0  # 1563 Wall-10 in L4_sw_meet not yet defined
+  56  10  -1   0   0  # 1564 Wall-11 in L4_sw_meet not yet defined
+  56  11  -1   0   0  # 1565 Wall-12 in L4_sw_meet not yet defined
+  56  12  -1   0   0  # 1566 Wall-13 in L4_sw_meet not yet defined
+  56  13  -1   0   0  # 1567 Wall-14 in L4_sw_meet not yet defined
+  56  14  -1   0   0  # 1568 Top-15 in L4_sw_meet not yet defined
+  56  15  -1   0   0  # 1569 Base-16 in L4_sw_meet not yet defined
+  56  16   0   0   0  # 1570 ptn_cora_l4 in L4_sw_meet is External
+  56  17   0   0   0  # 1571 ptn_corb_l4 in L4_sw_meet is External
+  57   1  -1   0   0  # 1572 balc_a in L4_open_s not yet defined
+  57   2  -1   0   0  # 1573 wall_a in L4_open_s not yet defined
+  57   3  -1   0   0  # 1574 wall_b in L4_open_s not yet defined
+  57   4  -1   0   0  # 1575 wall_c in L4_open_s not yet defined
+  57   5  -1   0   0  # 1576 balc_b in L4_open_s not yet defined
+  57   6  -1   0   0  # 1577 wall_f in L4_open_s not yet defined
+  57   7  -1   0   0  # 1578 wall_g in L4_open_s not yet defined
+  57   8  -1   0   0  # 1579 wall_h in L4_open_s not yet defined
+  57   9  -1   0   0  # 1580 balc_c in L4_open_s not yet defined
+  57  10  -1   0   0  # 1581 fic_to_ra in L4_open_s not yet defined
+  57  11  -1   0   0  # 1582 fic_to_rb in L4_open_s not yet defined
+  57  12  -1   0   0  # 1583 ptn_other in L4_open_s not yet defined
+  57  13  -1   0   0  # 1584 ptn_stair in L4_open_s not yet defined
+  57  14  -1   0   0  # 1585 ptn_corid in L4_open_s not yet defined
+  57  15  -1   0   0  # 1586 ptn_cor_b in L4_open_s not yet defined
+  57  16  -1   0   0  # 1587 ptn_cor_c in L4_open_s not yet defined
+  57  17  -1   0   0  # 1588 ptn_meet_a in L4_open_s not yet defined
+  57  18  -1   0   0  # 1589 ptn_meet_b in L4_open_s not yet defined
+  57  19  -1   0   0  # 1590 ceiling_l4op in L4_open_s not yet defined
+  57  20  -1   0   0  # 1591 floor_l4op in L4_open_s not yet defined
+  57  21   0   0   0  # 1592 open_a in L4_open_s is External
+  57  22   0   0   0  # 1593 open_b in L4_open_s is External
+  57  23   0   0   0  # 1594 open_c in L4_open_s is External
+  58   1  -1   0   0  # 1595 ptn_vc_a in L4_open_plr not yet defined
+  58   2  -1   0   0  # 1596 ptn_vc_b in L4_open_plr not yet defined
+  58   3   0   0   0  # 1597 stone_wall in L4_open_plr is External
+  58   4  -1   0   0  # 1598 ptn_vb_a in L4_open_plr not yet defined
+  58   5  -1   0   0  # 1599 ptn_vb_b in L4_open_plr not yet defined
+  58   6  -1   0   0  # 1600 open_fict in L4_open_plr not yet defined
+  58   7  -1   0   0  # 1601 open_fict2 in L4_open_plr not yet defined
+  58   8  -1   0   0  # 1602 ceiling in L4_open_plr not yet defined
+  58   9  -1   0   0  # 1603 floor in L4_open_plr not yet defined
+  58  10  -1   0   0  # 1604 seg_h in L4_open_plr not yet defined
+  58  11  -1   0   0  # 1605 seg_i in L4_open_plr not yet defined
+  58  12  -1   0   0  # 1606 seg_j in L4_open_plr not yet defined
+  58  13  -1   0   0  # 1607 seg_k in L4_open_plr not yet defined
+  58  14  -1   0   0  # 1608 seg_g in L4_open_plr not yet defined
+  58  15  -1   0   0  # 1609 filler in L4_open_plr not yet defined
+  58  16  -1   0   0  # 1610 ptnb_opn_l4 in L4_open_plr not yet defined
+  58  17  -1   0   0  # 1611 ptna_opn_l4 in L4_open_plr not yet defined
+  58  18  -1   0   0  # 1612 ptn_cel_b in L4_open_plr not yet defined
+  58  19  -1   0   0  # 1613 ptnc_str_l4 in L4_open_plr not yet defined
+  58  20  -1   0   0  # 1614 ptnd_str_l4 in L4_open_plr not yet defined
+  58  21  -1   0   0  # 1615 ptn_open_a in L4_open_plr not yet defined
+  58  22  -1   0   0  # 1616 ptn_open_b in L4_open_plr not yet defined
+  58  23  -1   0   0  # 1617 door in L4_open_plr not yet defined
+  58  24  -1   0   0  # 1618 ptn_open_c in L4_open_plr not yet defined
+  58  25  -1   0   0  # 1619 left_rail in L4_open_plr not yet defined
+  58  26  -1   0   0  # 1620 front_rail in L4_open_plr not yet defined
+  58  27  -1   0   0  # 1621 right_rail in L4_open_plr not yet defined
+  58  28  -1   0   0  # 1622 l4_lw2_fr in L4_open_plr not yet defined
+  58  29  -1   0   0  # 1623 l4_lw2_ri in L4_open_plr not yet defined
+  58  30  -1   0   0  # 1624 l4_lw2_bk in L4_open_plr not yet defined
+  58  31  -1   0   0  # 1625 l3_lw2_lef in L4_open_plr not yet defined
+  58  32  -1   0   0  # 1626 cellular in L4_open_plr not yet defined
+  59   1  -1   0   0  # 1627 l3_lw2_fr in L4_light_w1 not yet defined
+  59   2  -1   0   0  # 1628 l3_lw2_ri in L4_light_w1 not yet defined
+  59   3  -1   0   0  # 1629 l3_lw2_bk in L4_light_w1 not yet defined
+  59   4  -1   0   0  # 1630 l3_lw2_lef in L4_light_w1 not yet defined
+  59   5  -1   0   0  # 1631 up_l3_lw2 in L4_light_w1 not yet defined
+  59   6  -1   0   0  # 1632 l3_lw2_base in L4_light_w1 not yet defined
+  59   7  -1   0   0  # 1633 left_rail in L4_light_w1 not yet defined
+  59   8  -1   0   0  # 1634 front_rail in L4_light_w1 not yet defined
+  59   9  -1   0   0  # 1635 right_rail in L4_light_w1 not yet defined
+  59  10  -1   0   0  # 1636 l3_flrv_r in L4_light_w1 not yet defined
+  59  11  -1   0   0  # 1637 l3_flrv_f in L4_light_w1 not yet defined
+  59  12  -1   0   0  # 1638 l3_flrv_l in L4_light_w1 not yet defined
+  59  13  -1   0   0  # 1639 l3_flrv_b in L4_light_w1 not yet defined
+  60   1  -1   0   0  # 1640 l3_lw2_fr in L4_light_w2 not yet defined
+  60   2  -1   0   0  # 1641 l3_lw2_ri in L4_light_w2 not yet defined
+  60   3  -1   0   0  # 1642 l3_lw2_bk in L4_light_w2 not yet defined
+  60   4  -1   0   0  # 1643 l3_lw2_lef in L4_light_w2 not yet defined
+  60   5  -1   0   0  # 1644 up_l3_lw2 in L4_light_w2 not yet defined
+  60   6  -1   0   0  # 1645 l3_lw2_base in L4_light_w2 not yet defined
+  60   7  -1   0   0  # 1646 left_rail in L4_light_w2 not yet defined
+  60   8  -1   0   0  # 1647 front_rail in L4_light_w2 not yet defined
+  60   9  -1   0   0  # 1648 right_rail in L4_light_w2 not yet defined
+  60  10  -1   0   0  # 1649 l3_flrv_r in L4_light_w2 not yet defined
+  60  11  -1   0   0  # 1650 l3_flrv_f in L4_light_w2 not yet defined
+  60  12  -1   0   0  # 1651 l3_flrv_l in L4_light_w2 not yet defined
+  60  13  -1   0   0  # 1652 l3_flrv_b in L4_light_w2 not yet defined
+  61   1  -1   0   0  # 1653 ptn_cora_l3 in L4_toilet not yet defined
+  61   2  -1   0   0  # 1654 ptn_corb_l3 in L4_toilet not yet defined
+  61   3  -1   0   0  # 1655 ptn_corc_l3 in L4_toilet not yet defined
+  61   4   0   0   0  # 1656 fac_a_l3 in L4_toilet is External
+  61   5   0   0   0  # 1657 fac_b_l3 in L4_toilet is External
+  61   6   0   0   0  # 1658 fac_c_l3 in L4_toilet is External
+  61   7   0   0   0  # 1659 fac_d_l3 in L4_toilet is External
+  61   8  -1   0   0  # 1660 ptn_vd_l3 in L4_toilet not yet defined
+  61   9  -1   0   0  # 1661 ceiling in L4_toilet not yet defined
+  61  10  -1   0   0  # 1662 floor in L4_toilet not yet defined
+  62   1  -1   0   0  # 1663 pt_meeting in L4_toil_psg not yet defined
+  62   2  -1   0   0  # 1664 pta_fac_l4 in L4_toil_psg not yet defined
+  62   3   0   0   0  # 1665 gl_facade_l4 in L4_toil_psg is External
+  62   4  -1   0   0  # 1666 ptnc_fac_l4 in L4_toil_psg not yet defined
+  62   5  -1   0   0  # 1667 ptna_str_l4 in L4_toil_psg not yet defined
+  62   6  -1   0   0  # 1668 ptn_cel_b in L4_toil_psg not yet defined
+  62   7  -1   0   0  # 1669 ptna_opn_l4 in L4_toil_psg not yet defined
+  62   8  -1   0   0  # 1670 ptnb_opn_l4 in L4_toil_psg not yet defined
+  62   9  -1   0   0  # 1671 top in L4_toil_psg not yet defined
+  62  10  -1   0   0  # 1672 floor in L4_toil_psg not yet defined
+  62  11  -1   0   0  # 1673 ptnb_fac_l4 in L4_toil_psg not yet defined
+  62  12  -1   0   0  # 1674 ptnb_str_l4 in L4_toil_psg not yet defined

@@ -1,6 +1,6 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Thu Jul 14 20:02:52 2011  # latest file modification 
-L4_cell_srv describes row of cellular offices srv facade 4th level
+*date Sat Aug 13 16:01:21 2011  # latest file modification 
+L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
 *vertex,31.01671,35.70000,60.25000  #   2
@@ -168,60 +168,60 @@ L4_cell_srv describes row of cellular offices srv facade 4th level
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_open_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_open_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_open_c,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,ptn_open_d,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_open_e,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,ptn_open_f,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ptn_open_g,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptn_filler,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptn_stair_cb,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,stone_h,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,00,00  #  10 ||< not yet defined
-*surf,stone_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,glaz_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,vent_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glaz_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,vent_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,stone_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,vent_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  21 ||< external
-*surf,stone_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,vent_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,ptn_pz,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  25 ||< external
-*surf,Top-29,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,Base-30,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
-*surf,stone_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,glaz_g_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  29 ||< external
-*surf,glaz_g_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  30 ||< external
-*surf,glaz_f_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  31 ||< external
-*surf,glaz_f_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  32 ||< external
-*surf,glaz_e_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  33 ||< external
-*surf,glaz_e_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  34 ||< external
-*surf,glaz_d_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  35 ||< external
-*surf,glaz_d_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  36 ||< external
-*surf,glaz_c_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  37 ||< external
-*surf,glaz_c_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  38 ||< external
-*surf,glaz_b_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  39 ||< external
-*surf,glaz_b_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  40 ||< external
-*surf,glaz_a_low,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  41 ||< external
-*surf,glaz_a_hi,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  42 ||< external
-*surf,int_ptna,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,44  #  43 ||< int_ptna_:L4_cell_b
-*surf,int_ptna_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,43  #  44 ||< int_ptna:L4_cell_b
-*surf,int_ptnb,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,46  #  45 ||< int_ptnb_:L4_cell_b
-*surf,int_ptnb_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,45  #  46 ||< int_ptnb:L4_cell_b
-*surf,int_ptnc,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,48  #  47 ||< int_ptnc_:L4_cell_b
-*surf,int_ptnc_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,47  #  48 ||< int_ptnc:L4_cell_b
-*surf,int_ptnd,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,50  #  49 ||< int_ptnd_:L4_cell_b
-*surf,int_ptnd_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,49  #  50 ||< int_ptnd:L4_cell_b
-*surf,int_ptne,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,52  #  51 ||< int_ptne_:L4_cell_b
-*surf,int_ptne_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,51  #  52 ||< int_ptne:L4_cell_b
-*surf,int_ptnf,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,54  #  53 ||< int_ptnf_:L4_cell_b
-*surf,int_ptnf_,VERT,-,PARTN,-,door,OPAQUE,ANOTHER,60,53  #  54 ||< int_ptnf:L4_cell_b
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_open_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
+*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,glaz_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,vent_f,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,vent_e,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,EXTERIOR,0,0  #  25 ||< external
+*surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,glaz_e_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glaz_e_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,glaz_c_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_c_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,44  #  43 ||< not yet defined
+*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,43  #  44 ||< not yet defined
+*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,46  #  45 ||< not yet defined
+*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,45  #  46 ||< not yet defined
+*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,48  #  47 ||< not yet defined
+*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,47  #  48 ||< not yet defined
+*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,50  #  49 ||< not yet defined
+*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,49  #  50 ||< not yet defined
+*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,52  #  51 ||< not yet defined
+*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,51  #  52 ||< not yet defined
+*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,54  #  53 ||< not yet defined
+*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,53  #  54 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

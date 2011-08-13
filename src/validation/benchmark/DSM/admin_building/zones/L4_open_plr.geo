@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Thu Jul 14 20:21:34 2011  # latest file modification 
+*date Sat Aug 13 16:33:44 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -102,38 +102,38 @@ L4_open_plr describes right half of level four open plan area
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_vc_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_vc_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,stone_wall,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,ptn_vb_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_vb_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,open_fict,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,open_fict2,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ceiling,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,floor,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,seg_h,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,seg_i,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,seg_g,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,filler,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,ptnb_opn_l4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,33,08  #  16 ||< ptnb_opn_l4:L4_toil_psgs
-*surf,ptna_opn_l4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,33,07  #  17 ||< ptna_opn_l4:L4_toil_psgs
-*surf,ptn_cel_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,33,06  #  18 ||< ptn_cel_b:L4_toil_psgs
-*surf,ptnc_str_l4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,11,44  #  19 ||< ptnc_str_l4:stair_twr_n
-*surf,ptnd_str_l4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,11,50  #  20 ||< ptnd_str_l4:stair_twr_n
-*surf,ptn_open_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,29,10  #  21 ||< ptn_open_a:L4_meeting
-*surf,ptn_open_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,29,11  #  22 ||< ptn_open_b:L4_meeting
-*surf,door,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,29,12  #  23 ||< door:L4_meeting
-*surf,ptn_open_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,29,13  #  24 ||< ptn_open_c:L4_meeting
-*surf,left_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,07  #  25 ||< left_rail:L4_lw2
-*surf,front_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,08  #  26 ||< front_rail:L4_lw2
-*surf,right_rail,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,09  #  27 ||< right_rail:L4_lw2
-*surf,l4_lw2_fr,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,01  #  28 ||< l3_lw2_fr:L4_lw2
-*surf,l4_lw2_ri,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,02  #  29 ||< l3_lw2_ri:L4_lw2
-*surf,l4_lw2_bk,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,03  #  30 ||< l3_lw2_bk:L4_lw2
-*surf,l3_lw2_lef,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,04  #  31 ||< l3_lw2_lef:L4_lw2
-*surf,cellular,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
+*surf,ptn_vc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_vc_b,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
+*surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,open_fict,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,open_fict2,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptnb_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,33,08  #  16 ||< not yet defined
+*surf,ptna_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,33,07  #  17 ||< not yet defined
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,33,06  #  18 ||< not yet defined
+*surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,11,44  #  19 ||< not yet defined
+*surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,11,50  #  20 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,29,10  #  21 ||< not yet defined
+*surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,29,11  #  22 ||< not yet defined
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,29,12  #  23 ||< not yet defined
+*surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,29,13  #  24 ||< not yet defined
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,48,07  #  25 ||< not yet defined
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,48,08  #  26 ||< not yet defined
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,48,09  #  27 ||< not yet defined
+*surf,l4_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,48,01  #  28 ||< not yet defined
+*surf,l4_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,48,02  #  29 ||< not yet defined
+*surf,l4_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,48,03  #  30 ||< not yet defined
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,48,04  #  31 ||< not yet defined
+*surf,cellular,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

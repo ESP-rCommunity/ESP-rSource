@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_void # tag version, format, zone name
-*date Thu Jul 14 19:49:39 2011  # latest file modification 
+*date Sat Aug 13 15:45:04 2011  # latest file modification 
 L4_sw_void describes void at level four at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,59.49300  #   1
@@ -112,38 +112,38 @@ L4_sw_void describes void at level four at SW facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,Wall-2,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,Wall-3,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,Wall-5,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,Wall-6,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,Wall-7,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Wall-8,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,Wall-9,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,Wall-10,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,Wall-11,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,Wall-12,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,15,16  #  12 ||< back_4:elev_l2
-*surf,Wall-13,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,Wall-14,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,16,31  #  14 ||< ptn_void_l4:sw_stair
-*surf,Wall-15,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,08  #  15 ||< ptn_vd_l3:L4_toil
-*surf,Wall-16,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,Wall-17,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,Wall-18,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,Wall-19,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,Top-26,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,39,21  #  20 ||< Base-27:L5_sw_void
-*surf,Base-27,FLOR,-,-,-,UNKNOWN,OPAQUE,ANOTHER,19,20  #  21 ||< Top-26:l3_sw_void
-*surf,ptn_vd3,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,15,36  #  22 ||< ptn_vd4:elev_l2
-*surf,ptn_flrv_l4,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,16,27  #  23 ||< pnt_flrv_l4:sw_stair
-*surf,ptn_flrvd_a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,ptn_flrvd_b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,ptn_toil_l4,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,l4_facade_a,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,27,04  #  27 ||< l4_facade_a:L3_sw_fac
-*surf,l4_facade_b,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,27,17  #  28 ||< l4_facc:L3_sw_fac
-*surf,l4_facade_c,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,27,18  #  29 ||< l4_facb:L3_sw_fac
-*surf,l4_facade_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,27,19  #  30 ||< l4_faca:L3_sw_fac
-*surf,fac_glaz_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  32 ||< external
+*surf,Wall-1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,Wall-2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,Wall-3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,Wall-5,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,Wall-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,Wall-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,Wall-9,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,Wall-10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,Wall-11,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,Wall-12,VERT,-,-,-,vd_stn_stair,OPAQUE,UNKNOWN,15,16  #  12 ||< not yet defined
+*surf,Wall-13,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,Wall-14,VERT,-,-,-,vd_stn_stair,OPAQUE,UNKNOWN,16,31  #  14 ||< not yet defined
+*surf,Wall-15,VERT,-,-,-,vd_stn_stair,OPAQUE,UNKNOWN,36,08  #  15 ||< not yet defined
+*surf,Wall-16,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,Wall-17,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,Wall-18,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,Wall-19,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,Top-26,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,39,21  #  20 ||< not yet defined
+*surf,Base-27,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,19,20  #  21 ||< not yet defined
+*surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,15,36  #  22 ||< not yet defined
+*surf,ptn_flrv_l4,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,16,27  #  23 ||< not yet defined
+*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
+*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
+*surf,ptn_toil_l4,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,l4_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,27,04  #  27 ||< not yet defined
+*surf,l4_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,27,17  #  28 ||< not yet defined
+*surf,l4_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,27,18  #  29 ||< not yet defined
+*surf,l4_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,UNKNOWN,27,19  #  30 ||< not yet defined
+*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
