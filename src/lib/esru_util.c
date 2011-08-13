@@ -423,15 +423,15 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   upath[l_fupath] = '\0';
   cc1_.NCOMP = *iincomp;  // pass curent number of zones and connections to cc1_ structure
   cc1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
-/* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
-/* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
-/* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
-/* debug  fprintf(stderr,"path %s\n",path);  */
-/* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug  fprintf(stderr,"browse %d\n",browse);  */
-/* debug  fprintf(stderr,"ibrowse %ld\n",*ibrowse); */
-   fprintf(stderr,"iincompb %d\n",cc1_.NCOMP);
-   fprintf(stderr,"iincon %d\n",cc1_.NCON);
+  // fprintf(stderr,"cfgroot %s\n",cfgroot);
+  // fprintf(stderr,"imgpth %s\n",imgpth);
+  // fprintf(stderr,"docpth %s\n",docpth); 
+  // fprintf(stderr,"path %s\n",path);
+  // fprintf(stderr,"upath %s\n",upath);
+  // fprintf(stderr,"browse %d\n",browse);
+  // fprintf(stderr,"ibrowse %ld\n",*ibrowse);
+  // fprintf(stderr,"iincompb %d\n",cc1_.NCOMP);
+  // fprintf(stderr,"iincon %d\n",cc1_.NCON);
   return;
 }
 
