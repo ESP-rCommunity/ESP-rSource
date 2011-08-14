@@ -122,6 +122,7 @@ C prec17 common is described in geometry.h.
       integer NITMS,INO,INOR ! max items and current menu item
       integer INPICK  ! to use with epkvert
       integer iissmlci  ! index for other side mlc
+      integer icob    ! for passing to clickon facility
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1330,7 +1331,8 @@ C editing facility.
             call edisp(iuout,
      &        'Toggle to obstruction mode after you have set origin')
             call edisp(iuout,'and scale. ')
-            call clickonbitmap(0,ier)
+            icob=icomp   ! pass which zone obstr to focus on
+            call clickonbitmap(icob,ier)
             call edisp(iuout,'You may further edit the obstructions...')
             CALL EDOBS(ITRC,iuout,ICOMP,IER)
           elseif(iglib.eq.2)then

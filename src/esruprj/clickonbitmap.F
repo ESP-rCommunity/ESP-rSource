@@ -175,9 +175,8 @@ C plan case(NW), initial base Z (z1) initial top (z2).
 C nbobs() is the number of obstruction blocks. NBL is number of
 C historical points for prior blocks (NBL = nbobs*3 because each
 C block is defined with an origin point, a point at end of
-C the front face and a point at back right corner). 
+C the front face and a point at back right corner).
       NBFREL=0
-      nbobs(icomp)=0
 
 C Pixel (upper left and lower right corners) of where the bitmap was draw.
       ixbul=0
@@ -256,9 +255,9 @@ C of historical points.
   9   continue
 
 C Warn user if icomp is zero, this implies that the clickonbitmap
-C has been called from ground topology menu. If we have a zone then
-C fill ZN and ZD so we know we can proceed with entering points. 
-C Otherwise clear ZN and ZD.
+C has been called from ground topology menu or obstructions. If 
+C we have a zone then fill ZN and ZD so we know we can proceed 
+C with entering points.  Otherwise clear ZN and ZD.
       if(icomp.eq.0)then
         call usrmsg('Currently no focus zone so assuming focus on',
      &              'ground topology or shading obstructions.','W')
@@ -457,6 +456,12 @@ C Save any ground topology.
           else
             goto 142
           endif
+        elseif(inpmode.eq.7)then
+
+C Last task working on obstructions so the calling subroutine
+C should not have to worry about saving a geometry file.
+          ier= -2
+          return
         elseif(inpmode.eq.8)then
           return
         else
@@ -528,7 +533,37 @@ C entry to point clicking.
           endif
         elseif(inpmode.eq.7)then
 
-C Clear current obstructions and setup for another zones obs.
+C Clear current obstructions and setup for another zones obs. Ask
+C the user which zone and if there is not a name for obs file define
+C one.  This assumes that there are no existing obs in the file.
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',
+     &      ' Associate which zone with these obstruction(s)? ',
+     &      12,NCOMP,zname,' zone list',IER,nbhelp)
+          IC=IVALS(1)   ! Work with IC as the index since obs data
+          icomp = IC    ! might need this set as well
+          ZN='obstructions'
+          if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+            WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
+          else
+            WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &        zname(IC)(1:lnzname(IC)),'.obs'
+          endif
+          if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
+            LTMP=OFILE
+          else
+            LTMP=ZOBS(IC)
+          endif
+          helptopic='clickon_obstructions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKS(LTMP,' Zone obstructions file? ',
+     &      ' ',72,OFILE,'obstructions file',IER,nbhelp)
+          IF(LTMP.NE.' ')ZOBS(IC)=LTMP
+
+C Ask for initial block name.
+          S12='blk_'
+          CALL EASKS(S12,' ','Initail name for obstructions?',
+     &      12,'obstruction','Block name',IER,nbhelp)
           INVERT=0
           NBFREL=0
           nbobs(icomp)=0
@@ -1203,6 +1238,58 @@ C and ground topology do require intial information.
             endif
             inpmode = inpt
           elseif(inpt.eq.7)then
+
+C In toggling to obstrutions the focus zone might not have been defined yet.
+            if(icomp.eq.0)then
+              INPIC=1
+              CALL EPICKS(INPIC,IVALS,' ',
+     &          ' Associate which zone with these obstruction(s)? ',
+     &          12,NCOMP,zname,' zone list',IER,nbhelp)
+              IC=IVALS(1)   ! Work with IC as the index since obs data
+              icomp = IC    ! might need this set as well
+              ZN='obstructions'
+              if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
+              else
+                WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &            zname(IC)(1:lnzname(IC)),'.obs'
+              endif
+              if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
+                LTMP=OFILE
+              else
+                LTMP=ZOBS(IC)
+              endif
+              helptopic='clickon_obstructions'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL EASKS(LTMP,' Zone obstructions file? ',
+     &          ' ',72,OFILE,'obstructions file',IER,nbhelp)
+              IF(LTMP.NE.' ')ZOBS(IC)=LTMP
+            else
+              IC=icomp
+              ZN='obstructions'
+              if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
+              else
+                WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &            zname(IC)(1:lnzname(IC)),'.obs'
+              endif
+              if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
+                LTMP=OFILE
+              else
+                LTMP=ZOBS(IC)
+              endif
+              helptopic='clickon_obstructions'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL EASKS(LTMP,' Zone obstructions file? ',
+     &          ' ',72,OFILE,'obstructions file',IER,nbhelp)
+              IF(LTMP.NE.' ')ZOBS(IC)=LTMP
+            endif
+
+C Ask for initial block name.
+            S12='blk_'
+            CALL EASKS(S12,' ','Initail name for obstructions?',
+     &        12,'obstruction','Block name',IER,nbhelp)
+
             NW=0
             INVERT=0
             NBFREL=0
@@ -1276,15 +1363,48 @@ C Top of obstruction..
       elseif(INO.EQ.12+m+n)then
 
 C First check to see if there is a non-blank ZN.
-        if(ZN(1:2).eq.'  ')then
-          dok=.false.
-          helptopic='click_option_mistake'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          call askok(
-     &      'No zone name found. Are you sure you want to proceed?',
-     &      '(you might not have picked `add another` first)',
-     &      ok,dok,nbhelp)
-          if(.NOT.ok) goto 142
+        if(inpmode.eq.7)then
+          if(icomp.eq.0)then
+            INPIC=1
+            CALL EPICKS(INPIC,IVALS,' ',
+     &        ' Associate which zone with these obstruction(s)? ',
+     &        12,NCOMP,zname,' zone list',IER,nbhelp)
+            IC=IVALS(1)   ! Work with IC as the index since obs data
+            icomp = IC    ! might need this set as well ??
+            ZN='obstructions'
+            if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+              WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
+            else
+              WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &          zname(IC)(1:lnzname(IC)),'.obs'
+            endif
+            if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
+              LTMP=OFILE
+            else
+              LTMP=ZOBS(IC)
+            endif
+            helptopic='clickon_obstructions'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL EASKS(LTMP,' Zone obstructions file? ',
+     &        ' ',72,OFILE,'obstructions file',IER,nbhelp)
+            IF(LTMP.NE.' ')ZOBS(IC)=LTMP
+
+C Ask for name.
+            S12='blk_'
+            CALL EASKS(S12,' ','Initail name for obstructions?',
+     &        12,'obstruction','Block name',IER,nbhelp)
+          endif
+        else
+          if(ZN(1:2).eq.'  ')then
+            dok=.false.
+            helptopic='click_option_mistake'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call askok(
+     &        'No zone name found. Are you sure you want to proceed?',
+     &        '(you might not have picked `add another` first)',
+     &        ok,dok,nbhelp)
+            if(.NOT.ok) goto 142
+          endif
         endif
 
 C Start identifying vertices for the input modes which gather
@@ -2233,7 +2353,7 @@ C Reset the temporary string variables used to name and describe zone.
 
 C Input mode for obstructions. Each obstruction is formed by a
 C point at origin, a 2nd point at end of front edge and a point
-C at the back corner from the front edge.
+C at the back corner from the front edge. No provision for rotation.
           helptopic='clickon_obstructions'
           call gethelptext(helpinsub,helptopic,nbhelp)
           call edisp(iuout,
@@ -2559,7 +2679,7 @@ C          write(6,*) ixx3,ixx2,ixx1,ioffx,ixx1+ioffx
 C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
           write(outs,'(a,i3,a,f8.3,a,f8.3,a,f7.3,a,f7.3,a,f7.3)') 
-     &      'Block ',nbobs(icomp),' @ X',tpx1,' Y',tpy1,' width ',
+     &      'Block ',nbobs(ic),' @ X',tpx1,' Y',tpy1,' width ',
      &      twid,'m and depth ',tdepth,'m @ aimuth ',RO
           call edisp(iuout,outs)
           call forceflush()
@@ -2567,7 +2687,7 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
           call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
           CALL ASKOK(' ',
-     &      'Is the block position ok (so we can continue)? ',
+     &      'Is the block position ok (so we can continue)?',
      &      OK,dok,nbhelp)
           if(.NOT.ok)then
             INVERT=INVERT-3
@@ -2580,20 +2700,15 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
             goto 346
           endif
-          nbobs(icomp)=nbobs(icomp)+1
+          nbobs(ic)=nbobs(ic)+1
+          nbo=nbobs(ic)   ! local counter
           NBFREL=NBFREL+3
 
-C Need to get the associated zone before we can save the names
-C and constructions.
-          INPIC=1
-          CALL EPICKS(INPIC,IVALS,' ',
-     &      ' Associate which zone with these obstruction(s)? ',
-     &      12,NCOMP,zname,' zone list',IER,nbhelp)
-          IC=IVALS(1)
+C Make sure IC is non-zero.
+C          if(IC.eq.0) IC=icomp
 
-C Ask for name.
-          nbo=nbobs(icomp)
-          S12='blk_'
+C Ask for name based on the initial name given by the user.
+C          S12='blk_'
           CALL EASKS(S12,' ',' Name of obstruction? ',
      &      12,'obstruction','Block name',IER,nbhelp)
           IF(S12(1:2).NE.'  ')then
@@ -2636,7 +2751,7 @@ C Ask for name.
 C Save current batch of obstructions, first ask which zone it is related to.
 
 C << update to work with version 1.1 geometry files. >>
-          if(IC.gt.0.and.nbobs(icomp).gt.0)then
+          if(IC.gt.0.and.nbobs(ic).gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
             else
@@ -2650,7 +2765,7 @@ C << update to work with version 1.1 geometry files. >>
             endif
             helptopic='clickon_obstructions'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL EASKS(LTMP,' Zone obstructions file? ',
+            CALL EASKS(LTMP,' Confirm zone obstructions file? ',
      &        ' ',72,OFILE,'obstructions file',IER,nbhelp)
             IF(LTMP.NE.' ')ZOBS(IC)=LTMP
             IOBS(ic)=1
@@ -2660,6 +2775,7 @@ C << update to work with version 1.1 geometry files. >>
 
 C Reset justentered so the `create more` option is shown.
             justentered=.false.
+
           endif
         elseif(inpmode.eq.8)then
           goto 142
