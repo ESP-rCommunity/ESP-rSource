@@ -94,8 +94,7 @@ C end indices for each zone.
       character cfgroot*24
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       character longtfile*144,fname*96
-      character odir*72,subpath*72
-      integer lnod,nfile  ! length
+      integer nfile  ! nb of files in image folder
       character sfile*72,snpfile*72
       logical xbmorigin,xbmnorth,xbmscale,xbmgrid,xbmload,xbmsnap
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother
@@ -467,12 +466,14 @@ C should not have to worry about saving a geometry file.
         else
           return
         endif
+
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
         helptopic='clickon_bitmap_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('bitmap opening',nbhelp,'-',0,0,IER)
+
       elseif(INO.EQ.MITEM-2)then
 
 C Write data to file depending on the input mode.
@@ -493,6 +494,7 @@ C Save any ground topology.
 
           continue
         endif
+
       elseif(INO.EQ.MITEM-3)then
 
 C Offer to start another object.
@@ -536,6 +538,8 @@ C entry to point clicking.
 C Clear current obstructions and setup for another zones obs. Ask
 C the user which zone and if there is not a name for obs file define
 C one.  This assumes that there are no existing obs in the file.
+          CALL EMKCFG('-',IER)  ! update cfg file first
+
           INPIC=1
           CALL EPICKS(INPIC,IVALS,' ',
      &      ' Associate which zone with these obstruction(s)? ',
@@ -620,6 +624,7 @@ C << Unix vs NT needs to be updated >>
         call edisp(iuout,'BEGIN ENTERING POINTS NOW...')
         INO=12+m+n
         goto 29
+
       elseif(INO.EQ.MITEM-4)then
 
 C List the current vertices and corners.
@@ -684,6 +689,7 @@ C List the current vertices and corners.
             call edisp(iuout,outs)
   123     continue
         endif
+
       elseif(INO.EQ.1)then
 
 C Load an X11 bitmap file (user required to convert to the format).
@@ -865,6 +871,7 @@ C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
         call edisp(iuout,' e) toggle on grid-snap (optional)')
         call edisp(iuout,' f) set the input mode')
         goto 142
+
       elseif(INO.EQ.2.and.m.eq.1)then
 
 C Support bitmap panning - left, right, up, down.
@@ -896,6 +903,7 @@ C Refresh current bitmap and overlayed information.
      &      ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
           goto 199
         endif
+
       elseif((INO.EQ.2.and.m.eq.0.and.n.eq.1).or.
      &       (INO.EQ.3.and.m.eq.1.and.n.eq.1))then
 
@@ -907,6 +915,7 @@ C Refresh current bitmap and overlayed information.
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
      &    iytn2,ixo,iyo,ipxx,ipyy,ipzz,ipxw,ipyw,nipwhis,ipxwhis,
      &    ipywhis,iphisznst,iphisznfn,completed,other)
+
       elseif(INO.EQ.2+m+n)then
 
 C Origin within the bitmap.
@@ -935,6 +944,7 @@ C Origin within the bitmap.
           xbmorigin=.true.
         endif
         goto 142
+
       elseif(INO.EQ.3+m+n)then
 
 C North.
@@ -966,6 +976,7 @@ C North.
           xbmnorth=.true.
         endif
         goto 142
+
       elseif(INO.EQ.4+m+n)then
 
 C Scaling of a known line. Ask for two points and distance.
@@ -1054,6 +1065,7 @@ C where viewlim(3) and viewlim(4) are the lower and upper boundaries.
           call winscl('z',iicol)
         endif
         goto 142
+
       elseif(INO.EQ.5+m+n)then
 
 C Gridding options. Check if user wants a grid.
@@ -1145,6 +1157,7 @@ C Snap-to options. Check if user wants snap-to grid.
         else
           xbmsnap = .true.
         endif
+
       elseif(INO.EQ.8+m+n)then
 
 C Toggle the input mode. Ask user if they want to do this.
@@ -1185,7 +1198,25 @@ C to create a zone the user will have nominated an initial zone name
 C and description and so the user is not prompted for this. Obstructions
 C and ground topology do require intial information.
         if(inpt.ne.inpmode)then
-          justentered=.true.
+          if(ilno.eq.1.or.ilno.eq.2.or.ilno.eq.3)then
+
+C User was working on zone data. Switching to another mode we
+C need to start new stuff via the add another facility in the
+C main menu.
+            CALL EMKCFG('-',IER)  ! update cfg file first
+            justentered=.false.
+
+          elseif(ilno.eq.7)then
+
+C The last thing the user was working on was solar obstructios.
+C Switching to a different mode we need to ensure that new zone
+C stuff goes through the add-another facility in the main menu.
+            CALL EMKCFG('-',IER)  ! update cfg file first
+            justentered=.false.
+
+          else
+            justentered=.true.  ! no need to show add-another
+          endif
           if(nipwhis.gt.0)then
             dok=.false.
             CALL ASKOK(
@@ -1238,71 +1269,18 @@ C and ground topology do require intial information.
             endif
             inpmode = inpt
           elseif(inpt.eq.7)then
-
-C In toggling to obstrutions the focus zone might not have been defined yet.
-            if(icomp.eq.0)then
-              INPIC=1
-              CALL EPICKS(INPIC,IVALS,' ',
-     &          ' Associate which zone with these obstruction(s)? ',
-     &          12,NCOMP,zname,' zone list',IER,nbhelp)
-              IC=IVALS(1)   ! Work with IC as the index since obs data
-              icomp = IC    ! might need this set as well
-              ZN='obstructions'
-              if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
-              else
-                WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &            zname(IC)(1:lnzname(IC)),'.obs'
-              endif
-              if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
-                LTMP=OFILE
-              else
-                LTMP=ZOBS(IC)
-              endif
-              helptopic='clickon_obstructions'
-              call gethelptext(helpinsub,helptopic,nbhelp)
-              CALL EASKS(LTMP,' Zone obstructions file? ',
-     &          ' ',72,OFILE,'obstructions file',IER,nbhelp)
-              IF(LTMP.NE.' ')ZOBS(IC)=LTMP
-            else
-              IC=icomp
-              ZN='obstructions'
-              if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
-              else
-                WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &            zname(IC)(1:lnzname(IC)),'.obs'
-              endif
-              if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
-                LTMP=OFILE
-              else
-                LTMP=ZOBS(IC)
-              endif
-              helptopic='clickon_obstructions'
-              call gethelptext(helpinsub,helptopic,nbhelp)
-              CALL EASKS(LTMP,' Zone obstructions file? ',
-     &          ' ',72,OFILE,'obstructions file',IER,nbhelp)
-              IF(LTMP.NE.' ')ZOBS(IC)=LTMP
-            endif
-
-C Ask for initial block name.
-            S12='blk_'
-            CALL EASKS(S12,' ','Initail name for obstructions?',
-     &        12,'obstruction','Block name',IER,nbhelp)
-
             NW=0
             INVERT=0
             NBFREL=0
-            nbobs(icomp)=0
-            NOX(icomp)=MOX
-            NOZ(icomp)=MOZ
             inpmode = inpt
           elseif(inpt.eq.8)then
             continue
           endif
         endif
         goto 142
+
       elseif(INO.EQ.9+m+n)then
+
         if(inpmode.eq.1)then
 
 C Z coordinate to be associated with all points.
@@ -1340,6 +1318,7 @@ C Base of obstruction..
      &      IER,nbhelp)
         endif
         goto 142
+
       elseif(INO.EQ.10+m+n)then
         if(inpmode.eq.3)then
 
@@ -1358,6 +1337,7 @@ C Top of obstruction..
           continue
         endif
         goto 142
+
       elseif(INO.EQ.11+m+n)then
         goto 142
       elseif(INO.EQ.12+m+n)then
@@ -2337,8 +2317,8 @@ C point of the zone.
             justentered=.false.
 
 C Refresh current bitmap to recognise zone just saved.
-        completed=.true.
-        inpm=inpmode
+            completed=.true.
+            inpm=inpmode
         call refrshcur(fname,ixoffset,iyoffset,iwidth,ihight,inpm,
      &    ixbul,iybul,ixblr,iyblr,xbmnorth,xbmorigin,xbmgrid,
      &    xbmscale,iwmg,factor,viewlim,invert,nw,ixtn1,ixtn2,iytn1,
@@ -2349,6 +2329,7 @@ C Refresh current bitmap to recognise zone just saved.
 C Reset the temporary string variables used to name and describe zone.
           ZN=' '
           zd=' '
+
         elseif(inpmode.eq.7)then
 
 C Input mode for obstructions. Each obstruction is formed by a
@@ -2748,26 +2729,10 @@ C          S12='blk_'
 
   347     continue
 
-C Save current batch of obstructions, first ask which zone it is related to.
+C Save current batch of obstructions.
 
 C << update to work with version 1.1 geometry files. >>
           if(IC.gt.0.and.nbobs(ic).gt.0)then
-            if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
-            else
-              WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &          zname(IC)(1:lnzname(IC)),'.obs'
-            endif
-            if(ZOBS(IC)(1:2).eq.'  '.or.ZOBS(IC)(1:4).eq.'UNKN')then
-              LTMP=OFILE
-            else
-              LTMP=ZOBS(IC)
-            endif
-            helptopic='clickon_obstructions'
-            call gethelptext(helpinsub,helptopic,nbhelp)
-            CALL EASKS(LTMP,' Confirm zone obstructions file? ',
-     &        ' ',72,OFILE,'obstructions file',IER,nbhelp)
-            IF(LTMP.NE.' ')ZOBS(IC)=LTMP
             IOBS(ic)=1
             IUF=IFIL+1
             CALL MKGOMST(IUF,ZOBS(IC),IC,IER)
@@ -2775,6 +2740,11 @@ C << update to work with version 1.1 geometry files. >>
 
 C Reset justentered so the `create more` option is shown.
             justentered=.false.
+
+C Reset the temporary string variables used to name and describe zone.
+            ZN=' '
+            zd=' '
+            goto 142
 
           endif
         elseif(inpmode.eq.8)then
