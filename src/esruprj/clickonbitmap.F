@@ -39,6 +39,8 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "espriou.h"
+C espriou.h provides currentfile and MFFOLD.
       
       integer lnblnk  ! function definition
 
@@ -92,7 +94,9 @@ C end indices for each zone.
       character cfgroot*24
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       character longtfile*144,fname*96
-
+      character odir*72,subpath*72
+      integer lnod,nfile  ! length
+      character sfile*72,snpfile*72
       logical xbmorigin,xbmnorth,xbmscale,xbmgrid,xbmload,xbmsnap
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother
       logical clx0,cly0,clx1,cly1,clxm1,clym1
@@ -655,8 +659,8 @@ C Load an X11 bitmap file (user required to convert to the format).
      &    'a small blank bitmap','b small with ticks for gridding',
      &    'c medium blank bitmap','d medium with ticks for gridding',
      &    'e large blank bitmap','f large with ticks for gridding',
-     &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,
-     &    idno,nbhelp)
+     &    'g user defined bitmap','h bitmap in images folder',' ',
+     &    ' ',' ',' ',inptb,idno,nbhelp)
 
 C Locate the xbm files via the installed path.
         call isunix(unixok)
@@ -685,8 +689,39 @@ C Locate the xbm files via the installed path.
      &      fs,'60x60.xbm'
         elseif(inptb.eq.7)then
           write(fname,'(2a)') '.',fs
-        else
-          goto 142
+        elseif(inptb.eq.8)then
+
+C Use code similar to that in edzone.F subroutine newzone and in
+C folders.F pfolders to get files in ../images folder and recover
+C the name of the xbm file.
+          sfile=' '
+          snpfile=' '
+          call edisp(iuout,' ')
+          call browsefilelist('?','img','fil',sfile,snpfile,nfile,iier)
+          if(nfile.gt.0)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('b','img','fil',sfile,snpfile,nfile,
+     &        iier)
+            if(snpfile(1:2).ne.'  ')then
+              write(fname,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
+     &          snpfile(1:lnblnk(snpfile))
+
+C Debug.
+              write(6,*) fname
+
+            else
+
+C User did not select a file. Take them back to the question.
+              call usrmsg('You did not select any existing file.',
+     &          'Please select or cancel.','W')
+              goto 142 ! ask for choice again
+            endif
+          else
+            call usrmsg('You did not select any existing file.',
+     &       'Please select or cancel.','W')
+            goto 142 ! ask for choice again
+          endif
         endif
 	longtfile=' '    ! reset return string
         CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
