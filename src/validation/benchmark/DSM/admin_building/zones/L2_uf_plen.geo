@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_uf_plen # tag version, format, zone name
-*date Sat Aug 13 14:44:01 2011  # latest file modification 
+*date Mon Aug 15 16:01:18 2011  # latest file modification 
 L2_uf_plen describes raised floor for level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,51.69300  #   1
@@ -350,7 +350,7 @@ L2_uf_plen describes raised floor for level two
 *surf,Base-8,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,30,08  #  57 ||< Base-8:L2_kitchen
 *surf,floor_toi,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,32,10  #  58 ||< floor_toi:L2_toilet
 *surf,floor_tpsg,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,33,11  #  59 ||< floor:L2_toil_psg
-*surf,lt_well2,CEIL,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  60 ||< not yet defined
+*surf,lt_well2,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,31,06  #  60 ||< l3_lw2_base:L2_light_w2
 *surf,Wall-61,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,02,40  #  61 ||< struc_l1:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution

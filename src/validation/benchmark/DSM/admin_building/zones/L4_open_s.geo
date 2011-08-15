@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Sat Aug 13 16:26:34 2011  # latest file modification 
+*date Mon Aug 15 15:55:40 2011  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -44,6 +44,20 @@ L4_open_s describes left half of level four open plan area
 *vertex,17.84216,11.75429,61.25000  #  40
 *vertex,23.32125,12.97186,61.25000  #  41
 *vertex,27.50000,14.00000,61.25000  #  42
+*vertex,17.45000,21.30000,61.25000  #  43
+*vertex,17.45000,21.30000,63.39300  #  44
+*vertex,13.70000,21.30000,63.39300  #  45
+*vertex,13.70000,21.30000,61.25000  #  46
+*vertex,17.45000,28.50000,61.25000  #  47
+*vertex,17.45000,28.50000,63.39300  #  48
+*vertex,17.45000,28.50000,60.25000  #  49
+*vertex,13.70000,28.50000,60.25000  #  50
+*vertex,13.70000,28.50000,61.25000  #  51
+*vertex,13.70000,28.50000,63.39300  #  52
+*vertex,13.70000,21.30000,60.25000  #  53
+*vertex,17.45000,21.30000,60.25000  #  54
+*vertex,17.45000,35.75000,63.39300  #  55
+*vertex,17.45000,35.75000,60.25000  #  56
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,1,2,38,37  #  1
@@ -57,18 +71,25 @@ L4_open_s describes left half of level four open plan area
 *edges,4,9,10,42,41  #  9
 *edges,5,10,11,29,28,42  # 10
 *edges,4,11,12,30,29  # 11
-*edges,4,12,13,31,30  # 12
+*edges,6,12,56,13,31,55,30  # 12
 *edges,4,13,14,32,31  # 13
 *edges,4,14,15,33,32  # 14
 *edges,4,15,16,34,33  # 15
 *edges,4,16,17,35,34  # 16
 *edges,4,17,18,36,35  # 17
 *edges,5,18,1,37,19,36  # 18
-*edges,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36  # 19
-*edges,18,1,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2  # 20
+*edges,25,19,20,21,22,23,24,25,26,27,28,29,30,55,48,44,45,52,48,55,31,32,33,34,35,36  # 19
+*edges,25,1,18,17,16,15,14,13,56,49,50,53,54,49,56,12,11,10,9,8,7,6,5,4,3,2  # 20
 *edges,4,37,38,20,19  # 21
 *edges,4,39,40,24,23  # 22
 *edges,4,41,42,28,27  # 23
+*edges,4,44,43,46,45  # 24
+*edges,4,48,47,43,44  # 25
+*edges,6,50,49,47,48,52,51  # 26
+*edges,4,45,46,51,52  # 27
+*edges,4,53,50,51,46  # 28
+*edges,4,54,53,46,43  # 29
+*edges,4,49,54,43,47  # 30
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -98,6 +119,13 @@ L4_open_s describes left half of level four open plan area
 *surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  21 ||< external
 *surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  22 ||< external
 *surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  23 ||< external
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  24 ||< external
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  25 ||< external
+*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  26 ||< external
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  27 ||< external
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  28 ||< external
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  29 ||< external
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,-,-  #  30 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -106,4 +134,4 @@ L4_open_s describes left half of level four open plan area
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,20,   495.27 0  # zone base list
+*base_list,1,20,   468.27 0  # zone base list

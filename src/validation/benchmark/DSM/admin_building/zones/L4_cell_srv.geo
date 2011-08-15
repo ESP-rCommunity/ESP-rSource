@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Sat Aug 13 16:01:21 2011  # latest file modification 
+*date Mon Aug 15 16:12:58 2011  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -210,18 +210,18 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
 *surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
-*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,44  #  43 ||< not yet defined
-*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,43  #  44 ||< not yet defined
-*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,46  #  45 ||< not yet defined
-*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,45  #  46 ||< not yet defined
-*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,48  #  47 ||< not yet defined
-*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,47  #  48 ||< not yet defined
-*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,50  #  49 ||< not yet defined
-*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,49  #  50 ||< not yet defined
-*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,52  #  51 ||< not yet defined
-*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,51  #  52 ||< not yet defined
-*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,54  #  53 ||< not yet defined
-*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,60,53  #  54 ||< not yet defined
+*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
+*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
+*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
+*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
+*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
+*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
+*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  49 ||< not yet defined
+*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  50 ||< not yet defined
+*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
+*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
+*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
+*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
