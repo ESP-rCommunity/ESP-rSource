@@ -1,83 +1,89 @@
-# geometry of L5_lobby defined in: ../zones/L5_lobby.geo
-GEN  L5_lobby  L5_lobby describes elevator lobby at level five  # type, name, descr
-      32      18   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-     10.00000    17.75000    64.15000  # vert   1
-     13.70000    17.75000    64.15000  # vert   2
-     13.70000    21.30000    64.15000  # vert   3
-     13.70000    28.50000    64.15000  # vert   4
-     17.45000    28.50000    64.15000  # vert   5
-     17.45000    30.50000    64.15000  # vert   6
-     13.25000    30.50000    64.15000  # vert   7
-     10.25000    30.50000    64.15000  # vert   8
-      0.00000    30.50000    64.15000  # vert   9
-      0.00000    28.50000    64.15000  # vert  10
-      3.50000    28.50000    64.15000  # vert  11
-      3.50000    24.00000    64.15000  # vert  12
-      4.05000    24.00000    64.15000  # vert  13
-      4.05000    21.25000    64.15000  # vert  14
-      6.50000    21.25000    64.15000  # vert  15
-     10.00000    21.25000    64.15000  # vert  16
-     10.00000    17.75000    67.37500  # vert  17
-     13.70000    17.75000    67.37500  # vert  18
-     13.70000    21.30000    67.37500  # vert  19
-     13.70000    28.50000    67.37500  # vert  20
-     17.45000    28.50000    67.37500  # vert  21
-     17.45000    30.50000    67.37500  # vert  22
-     13.25000    30.50000    67.37500  # vert  23
-     10.25000    30.50000    67.37500  # vert  24
-      0.00000    30.50000    67.37500  # vert  25
-      0.00000    28.50000    67.37500  # vert  26
-      3.50000    28.50000    67.37500  # vert  27
-      3.50000    24.00000    67.37500  # vert  28
-      4.05000    24.00000    67.37500  # vert  29
-      4.05000    21.25000    67.37500  # vert  30
-      6.50000    21.25000    67.37500  # vert  31
-     10.00000    21.25000    67.37500  # vert  32
-# no of vertices followed by list of associated vert
-   4,  1,  2, 18, 17,
-   4,  2,  3, 19, 18,
-   4,  3,  4, 20, 19,
-   4,  4,  5, 21, 20,
-   4,  5,  6, 22, 21,
-   4,  6,  7, 23, 22,
-   4,  7,  8, 24, 23,
-   4,  8,  9, 25, 24,
-   4,  9, 10, 26, 25,
-   4, 10, 11, 27, 26,
-   4, 11, 12, 28, 27,
-   4, 12, 13, 29, 28,
-   4, 13, 14, 30, 29,
-   4, 14, 15, 31, 30,
-   4, 15, 16, 32, 31,
-   4, 16,  1, 17, 32,
-  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-  16,  1, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,
-# unused index
- 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, Wall-1        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  2, Wall-2        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  3, Wall-3        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  4, Wall-4        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  5, Wall-5        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  6, Wall-6        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  7, Wall-7        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  8, Wall-8        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  9, Wall-9        OPAQ  VERT  UNKNOWN      UNKNOWN        
- 10, Wall-10       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 11, Wall-11       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 12, Wall-12       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 13, Wall-13       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 14, Wall-14       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 15, Wall-15       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 16, Wall-16       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 17, Top-17        OPAQ  CEIL  UNKNOWN      UNKNOWN        
- 18, Base-18       OPAQ  FLOR  UNKNOWN      UNKNOWN        
-# base
- 18  0  0  0  0  0   120.29 0
+*Geometry 1.1,GEN,L5_lobby # tag version, format, zone name
+*date Mon Aug 15 17:07:42 2011  # latest file modification 
+L5_lobby describes elevator lobby at level five
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,10.00000,17.75000,64.15000  #   1
+*vertex,13.70000,17.75000,64.15000  #   2
+*vertex,13.70000,21.30000,64.15000  #   3
+*vertex,13.70000,28.50000,64.15000  #   4
+*vertex,17.45000,28.50000,64.15000  #   5
+*vertex,17.45000,30.50000,64.15000  #   6
+*vertex,13.25000,30.50000,64.15000  #   7
+*vertex,10.25000,30.50000,64.15000  #   8
+*vertex,0.00000,30.50000,64.15000  #   9
+*vertex,0.00000,28.50000,64.15000  #  10
+*vertex,3.50000,28.50000,64.15000  #  11
+*vertex,3.50000,24.00000,64.15000  #  12
+*vertex,4.05000,24.00000,64.15000  #  13
+*vertex,4.05000,21.25000,64.15000  #  14
+*vertex,6.50000,21.25000,64.15000  #  15
+*vertex,10.00000,21.25000,64.15000  #  16
+*vertex,10.00000,17.75000,67.37500  #  17
+*vertex,13.70000,17.75000,67.37500  #  18
+*vertex,13.70000,21.30000,67.37500  #  19
+*vertex,13.70000,28.50000,67.37500  #  20
+*vertex,17.45000,28.50000,67.37500  #  21
+*vertex,17.45000,30.50000,67.37500  #  22
+*vertex,13.25000,30.50000,67.37500  #  23
+*vertex,10.25000,30.50000,67.37500  #  24
+*vertex,0.00000,30.50000,67.37500  #  25
+*vertex,0.00000,28.50000,67.37500  #  26
+*vertex,3.50000,28.50000,67.37500  #  27
+*vertex,3.50000,24.00000,67.37500  #  28
+*vertex,4.05000,24.00000,67.37500  #  29
+*vertex,4.05000,21.25000,67.37500  #  30
+*vertex,6.50000,21.25000,67.37500  #  31
+*vertex,10.00000,21.25000,67.37500  #  32
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,18,17  #  1
+*edges,4,2,3,19,18  #  2
+*edges,4,3,4,20,19  #  3
+*edges,4,4,5,21,20  #  4
+*edges,4,5,6,22,21  #  5
+*edges,4,6,7,23,22  #  6
+*edges,4,7,8,24,23  #  7
+*edges,4,8,9,25,24  #  8
+*edges,4,9,10,26,25  #  9
+*edges,4,10,11,27,26  # 10
+*edges,4,11,12,28,27  # 11
+*edges,4,12,13,29,28  # 12
+*edges,4,13,14,30,29  # 13
+*edges,4,14,15,31,30  # 14
+*edges,4,15,16,32,31  # 15
+*edges,4,16,1,17,32  # 16
+*edges,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32  # 17
+*edges,16,1,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2  # 18
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,ptn_conf,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,door_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,ptn_lw1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   4 ||< not yet defined
+*surf,door2_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,ptn_k2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,ptn_toil,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ptn_stair,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,gptn_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,ptn_el_r,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,ptn_el_fr,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,ptn_k1_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,ptn_k1_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,ptn_k1b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,ptn_k1a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptn_k1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
+*surf,floor-lob,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,18,   120.29 0  # zone base list
