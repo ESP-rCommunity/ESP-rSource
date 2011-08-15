@@ -39,8 +39,6 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-#include "espriou.h"
-C espriou.h provides currentfile and MFFOLD.
       
       integer lnblnk  ! function definition
 
@@ -178,37 +176,23 @@ C the front face and a point at back right corner).
       NBFREL=0
 
 C Pixel (upper left and lower right corners) of where the bitmap was draw.
-      ixbul=0
-      iybul=0
-      ixblr=0
-      iyblr=0
+      ixbul=0; iybul=0; ixblr=0; iyblr=0
 
 C Defined width and height of bitmap and trimmed width and height.
-      ibmwidth=0
-      ibmhight=0
-      iwidth=0
-      ihight=0
+      ibmwidth=0; ibmhight=0; iwidth=0; ihight=0
 
 C User requested pixel offsets (when panning).
-      ixoffset=0
-      iyoffset=0
+      ixoffset=0; iyoffset=0
 
 C Two points defining north and angle from north.
-      ixtn1=0
-      iytn1=0
-      ixtn2=0
-      iytn2=0
-      ang=0.0
+      ixtn1=0; iytn1=0; ixtn2=0; iytn2=0; ang=0.0
 
 C Scaling factor (pixels/m), bituwidth is the user units in the width
 C of the bitmap, bituheight is the user units in the height of the
 C bitmap. Uxoffset is the user coord at the left of the bitmap,
 C uyoffset is the user coord at the bottom of the bitmap.
-      factor=0.0
-      bituwidth=0.0
-      bituheight=0.0
-      uxoffset=0.0
-      uyoffset=0.0
+      factor=0.0; bituwidth=0.0; bituheight=0.0
+      uxoffset=0.0; uyoffset=0.0
 
 C viewlim(1) and viewlim(2) are the user unit left and right boundaries and
 C viewlim(3) and viewlim(4) are the lower and upper boundaries.
@@ -227,18 +211,12 @@ C Gridding flag indicating the density of the grid.
 C Vertices and pixels (clear list of pixels for vertices and corners).
       INVERT=0
       do 7 i=1,MGTV
-        px(i)=0.0
-        py(i)=0.0
-        pz(i)=0.0
-        ipxx(i)=0
-        ipyy(i)=0
-        ipzz(i)=0
+        px(i)=0.0; py(i)=0.0; pz(i)=0.0
+        ipxx(i)=0; ipyy(i)=0; ipzz(i)=0
   7   continue
       do 8 i=1,MTV
-        pxw(i)=0.0
-        pyw(i)=0.0
-        ipxw(i)=0
-        ipyw(i)=0
+        pxw(i)=0.0; pyw(i)=0.0
+        ipxw(i)=0; ipyw(i)=0
   8   continue
 
 C Clear history of pixel points. nipwhis is the cummulative number
@@ -1088,43 +1066,29 @@ C Gridding options. Check if user wants a grid.
      &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',
      &      IWMG,nbhelp)
           if(iwmg.eq.1)then
-            GRSPC(1)=0.0
-            GRSPC(2)=0.0
-            GRSPC(3)=0.0
+            GRSPC(1)=0.0; GRSPC(2)=0.0; GRSPC(3)=0.0
             xbmgrid=.false.
           elseif(iwmg.eq.2)then
-            GRSPC(1)=2.0
-            GRSPC(2)=2.0
-            GRSPC(3)=2.0
+            GRSPC(1)=2.0; GRSPC(2)=2.0; GRSPC(3)=2.0
             xbmgrid=.true.
           elseif(iwmg.eq.3)then
-            GRSPC(1)=1.0
-            GRSPC(2)=1.0
-            GRSPC(3)=1.0
+            GRSPC(1)=1.0; GRSPC(2)=1.0; GRSPC(3)=1.0
             xbmgrid=.true.
           elseif(iwmg.eq.4)then
-            GRSPC(1)=0.5
-            GRSPC(2)=0.5
-            GRSPC(3)=0.5
+            GRSPC(1)=0.5; GRSPC(2)=0.5; GRSPC(3)=0.5
             xbmgrid=.true.
           elseif(iwmg.eq.5)then
-            GRSPC(1)=0.25
-            GRSPC(2)=0.25
-            GRSPC(3)=0.25
+            GRSPC(1)=0.25; GRSPC(2)=0.25; GRSPC(3)=0.25
             xbmgrid=.true.
           elseif(iwmg.eq.6)then
-            GRSPC(1)=0.1
-            GRSPC(2)=0.1
-            GRSPC(3)=0.1
+            GRSPC(1)=0.1; GRSPC(2)=0.1; GRSPC(3)=0.1
             xbmgrid=.true.
           elseif(iwmg.eq.7)then
             ZDI=0.1
             CALL EASKR(ZDI,' ',
      &       'Distance between grid points (0.1 - 1.0m)?',
      &        0.100,'W',1.0,'W',1.0,'grid point distance',IER,nbhelp)
-            GRSPC(1)=ZDI
-            GRSPC(2)=ZDI
-            GRSPC(3)=ZDI
+            GRSPC(1)=ZDI; GRSPC(2)=ZDI; GRSPC(3)=ZDI
             other=ZDI
             xbmgrid=.true.
           endif
@@ -1226,21 +1190,15 @@ C stuff goes through the add-another facility in the main menu.
               if(OK)nipwhis=0
           endif
           if(inpt.eq.1)then
-            INVERT=0
-            inpmode = inpt
+            INVERT=0; inpmode = inpt
           elseif(inpt.eq.2)then
-            INVERT=0
-            inpmode = inpt
+            INVERT=0; inpmode = inpt
           elseif(inpt.eq.3)then
-            INVERT=0
-            NW=0
-            inpmode = inpt
+            INVERT=0; NW=0; inpmode = inpt
           elseif(inpt.eq.4)then
-            INVERT=0
-            inpmode = inpt
+            INVERT=0; inpmode = inpt
           elseif(inpt.eq.5)then
-            INVERT=0
-            inpmode = inpt
+            INVERT=0; inpmode = inpt
           elseif(inpt.eq.6)then
             NW=0
             INVERT=0
@@ -1563,28 +1521,22 @@ C Increment number of vertices, add to ipxx and ipyy arrays, change colour
 C to green draw the symbol and index of vertex and do Z editing if requested.
           INVERT=INVERT+1
           if(inpmode.eq.1.or.inpmode.eq.2.or.inpmode.eq.6)then
-            ipxx(INVERT)=ixx
-            ipyy(INVERT)=iyy
-            px(INVERT)=tpx
-            py(INVERT)=tpy
+            ipxx(INVERT)=ixx; ipyy(INVERT)=iyy
+            px(INVERT)=tpx;   py(INVERT)=tpy
             iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipyy(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.4)then
-            ipxx(INVERT)=ixx
-            ipzz(INVERT)=izz
-            px(INVERT)=tpx
-            pz(INVERT)=tpy
+            ipxx(INVERT)=ixx; ipzz(INVERT)=izz
+            px(INVERT)=tpx;   pz(INVERT)=tpy
             iicol=3
             call winscl('z',iicol)
             iid1=ipxx(INVERT); iid2=ipzz(INVERT);
             call esymbol(iid1,iid2,24,1)
           elseif(inpmode.eq.5)then
-            ipyy(INVERT)=iyy
-            ipzz(INVERT)=izz
-            py(INVERT)=tpx
-            pz(INVERT)=tpy
+            ipyy(INVERT)=iyy; ipzz(INVERT)=izz
+            py(INVERT)=tpx;   pz(INVERT)=tpy
             iicol=3
             call winscl('z',iicol)
             iid1=ipyy(INVERT); iid2=ipzz(INVERT);
@@ -1747,9 +1699,7 @@ C Create single ground surface.
               NGTV=INVERT
               NGT=1
               NGVER(1)=3
-              JGVN(1,1)=1
-              JGVN(1,2)=2
-              JGVN(1,3)=3
+              JGVN(1,1)=1; JGVN(1,2)=2; JGVN(1,3)=3
               GSNAME(1)='first'
               GMLCN(1)='UNKN'
             else
@@ -1760,9 +1710,7 @@ C zone geometry file can be created.
               NSUR=1
               NZSUR(ICOMP)=NSUR
               NVER(1)=3
-              JVN(1,1)=1
-              JVN(1,2)=2
-              JVN(1,3)=3
+              JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3
               NZTV(icomp)=NTV
               SNAME(ICOMP,1)='first'
               SOTF(1)='OPAQ'
@@ -1818,9 +1766,7 @@ C Set type type and version based on current value of igupgrade.
                 gversion(icomp)=1.0
               endif
               NDP(ICOMP)=3
-              IDPN(ICOMP,1)=0
-              IDPN(ICOMP,2)=0
-              IDPN(ICOMP,3)=0
+              IDPN(ICOMP,1)=0; IDPN(ICOMP,2)=0; IDPN(ICOMP,3)=0
 
 C Update the G7 common blocks and then assign ZBASEA.
               call zgupdate(2,ICOMP,ier)
@@ -2071,10 +2017,8 @@ C slect another pixel.
 
 C Corner added draw it and index and a line from the previous to current.
           NW=NW+1
-          ipxw(NW)=ixx
-          ipyw(NW)=iyy
-          pxw(NW)=tpxw
-          pyw(NW)=tpyw
+          ipxw(NW)=ixx; ipyw(NW)=iyy
+          pxw(NW)=tpxw; pyw(NW)=tpyw
 
           iicol=3
           call winscl('z',iicol)
@@ -2087,10 +2031,8 @@ C Corner added draw it and index and a line from the previous to current.
           if(NW.gt.1)then
             iicol=3
             call winscl('z',iicol)
-            iid1=ipxw(NW-1)
-            iid2=ipyw(NW-1)
-            iid3=ipxw(NW)
-            iid4=ipyw(NW)
+            iid1=ipxw(NW-1); iid2=ipyw(NW-1)
+            iid3=ipxw(NW); iid4=ipyw(NW)
             call edwline(iid1,iid2,iid3,iid4)
           endif
           if(NW.eq.1)then
@@ -2115,10 +2057,8 @@ C corner to first corner and return forground colour to black.
  247      continue
           iicol=3
           call winscl('z',iicol)
-          iid1=ipxw(NW)
-          iid2=ipyw(NW)
-          iid3=ipxw(1)
-          iid4=ipyw(1)
+          iid1=ipxw(NW); iid2=ipyw(NW)
+          iid3=ipxw(1); iid4=ipyw(1)
           call edwline(iid1,iid2,iid3,iid4)
           iicol=0
           call winscl('-',iicol)
@@ -2224,9 +2164,7 @@ C Set type type and version based on current value of igupgrade.
               gversion(icomp)=1.0
             endif
             NDP(ICOMP)=3
-            IDPN(ICOMP,1)=0
-            IDPN(ICOMP,2)=0
-            IDPN(ICOMP,3)=0
+            IDPN(ICOMP,1)=0; IDPN(ICOMP,2)=0; IDPN(ICOMP,3)=0
 
             NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
             NZTV(ICOMP)=NTV
@@ -2510,10 +2448,8 @@ C If snap-to is true then find nearest user unit and cast back to pixels.
 
 C Remember the block origin.
           INVERT=INVERT+1
-          ipxx(INVERT)=ixx1
-          ipyy(INVERT)=iyy1
-          px(INVERT)=tpx1
-          py(INVERT)=tpy1
+          ipxx(INVERT)=ixx1; ipyy(INVERT)=iyy1
+          px(INVERT)=tpx1;   py(INVERT)=tpy1
           iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
@@ -2524,10 +2460,8 @@ C Remember the block origin.
 
 C Remember the point at the end of the front edge.
           INVERT=INVERT+1
-          ipxx(INVERT)=ixx2
-          ipyy(INVERT)=iyy2
-          px(INVERT)=tpx2
-          py(INVERT)=tpy2
+          ipxx(INVERT)=ixx2; ipyy(INVERT)=iyy2
+          px(INVERT)=tpx2;   py(INVERT)=tpy2
           iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
@@ -2574,10 +2508,8 @@ C Check if tollerably close to an axis.
           endif
 
           INVERT=INVERT+1
-          ipxx(INVERT)=ixx3
-          ipyy(INVERT)=iyy3
-          px(INVERT)=tpx3
-          py(INVERT)=tpy3
+          ipxx(INVERT)=ixx3; ipyy(INVERT)=iyy3
+          px(INVERT)=tpx3;   py(INVERT)=tpy3
           iicol=3
           call winscl('z',iicol)
           iid1=ipxx(INVERT); iid2=ipyy(INVERT);
@@ -2617,18 +2549,14 @@ C between point 2 & 3 draw the two extra lines that complete the box.
               iid2=ixx1-ioffx
               call eswline(iid2,iiyy1,iixx3,iiyy3)
             elseif(iyy3.lt.iyy2)then
-              iid1=ixx1-ioffx
-              iid2=iyy1-ioffy
+              iid1=ixx1-ioffx; iid2=iyy1-ioffy
               call eswline(iixx1,iiyy1,iid1,iid2)
-              iid1=ixx1-ioffx
-              iid2=iyy1-ioffy
+              iid1=ixx1-ioffx; iid2=iyy1-ioffy
               call eswline(iid1,iid2,iixx3,iiyy3)
             elseif(iyy3.gt.iyy2)then
-              iid1=ixx1-ioffx
-              iid2=iyy1+ioffy
+              iid1=ixx1-ioffx; iid2=iyy1+ioffy
               call eswline(iixx1,iiyy1,iid1,iid2)
-              iid1=ixx1-ioffx
-              iid2=iyy1+ioffy
+              iid1=ixx1-ioffx; iid2=iyy1+ioffy
               call eswline(iid1,iid2,iixx3,iiyy3)
             endif
           elseif(ixx3.gt.ixx2)then
@@ -2639,18 +2567,14 @@ C between point 2 & 3 draw the two extra lines that complete the box.
               iid1=ixx1+ioffx
               call eswline(iid1,iiyy1,iixx3,iiyy3)
             elseif(iyy3.lt.iyy2)then
-              iid1=ixx1+ioffx
-              iid2=iyy1-ioffy
+              iid1=ixx1+ioffx; iid2=iyy1-ioffy
               call eswline(iixx1,iiyy1,iid1,iid2)
-              iid1=ixx1+ioffx
-              iid2=iyy1-ioffy
+              iid1=ixx1+ioffx; iid2=iyy1-ioffy
               call eswline(iid1,iid2,iixx3,iiyy3)
             elseif(iyy3.gt.iyy2)then
-              iid1=ixx1+ioffx
-              iid2=iyy1+ioffy
+              iid1=ixx1+ioffx; iid2=iyy1+ioffy
               call eswline(iixx1,iiyy1,iid1,iid2)
-              iid1=ixx1+ioffx
-              iid2=iyy1+ioffy
+              iid1=ixx1+ioffx; iid2=iyy1+ioffy
               call eswline(iid1,iid2,iixx3,iiyy3)
             endif
           endif
@@ -2710,12 +2634,8 @@ C          S12='blk_'
             WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
           endif
-          XOB(IC,nbo)=tpx1
-          YOB(IC,nbo)=tpy1
-          ZOB(IC,nbo)=Z1
-          DXOB(IC,nbo)=twid
-          DYOB(IC,nbo)=tdepth
-          DZOB(IC,nbo)=Z2
+          XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1
+          DXOB(IC,nbo)=twid; DYOB(IC,nbo)=tdepth; DZOB(IC,nbo)=Z2
           BANGOB(IC,nbo,1)=RO
           BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
@@ -2841,9 +2761,7 @@ C put label at 1m invervals and draw solid grey line.
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline.
-              iix=ix
-              iily=ily
-              iiuy=iuy
+              iix=ix; iily=ily; iiuy=iuy
               call edline(iix,iily,iix,iiuy,2)
               if(i.gt.-10.and.i.lt.99)then
                 write(temp6,'(i2)') i
@@ -2861,9 +2779,7 @@ C Do every 2m.
                   iicol=nifgrey-4
                   call winscl('i',iicol)
                 endif
-                iix=ix
-                iily=ily
-                iiuy=iuy
+                iix=ix; iily=ily; iiuy=iuy
                 call edline(iix,iily,iix,iiuy,2)
                 if(i.gt.-10.and.i.lt.99)then
                   write(temp6,'(i2)') i
@@ -2883,9 +2799,7 @@ C Check if we are at a metre mark and if so write label.
                   iicol=nifgrey-3
                   call winscl('i',iicol)
                 endif
-                iix=ix
-                iily=ily
-                iiuy=iuy
+                iix=ix; iily=ily; iiuy=iuy
                 call edline(iix,iily,iix,iiuy,3)
                 if(i.gt.-10.and.i.lt.99)then
                   write(temp6,'(i2)') i
@@ -2902,9 +2816,7 @@ C Check if we are at a metre mark and if so write label.
                   iicol=nifgrey-3
                   call winscl('i',iicol)
                 endif
-                iix=ix
-                iily=ily
-                iiuy=iuy
+                iix=ix; iily=ily; iiuy=iuy
                 call edline(iix,iily,iix,iiuy,3)
                 if(ix.gt.ixaxr)ixaxr=ix
                 if(xp.lt.float(i+1)) goto 444  ! can any more be drawn within this metre?
@@ -2919,9 +2831,7 @@ C Check if we are at a metre mark and if so write label.
                 iicol=nifgrey-3
                 call winscl('i',iicol)
               endif
-              iix=ix
-              iily=ily
-              iiuy=iuy
+              iix=ix; iily=ily; iiuy=iuy
               call edline(iix,iily,iix,iiuy,3)
               if(ix.gt.ixaxr)ixaxr=ix
             endif
@@ -2934,9 +2844,7 @@ C Check if we are at a metre mark and if so write label.
                   iicol=nifgrey-4
                   call winscl('i',iicol)
                 endif
-                iix=ix
-                iily=ily
-                iiuy=iuy
+                iix=ix; iily=ily; iiuy=iuy
                 if(ij.eq.1)call edline(iix,iily,iix,iiuy,3)
                 if(ij.eq.2)call edline(iix,iily,iix,iiuy,2)
                 if(ij.eq.3)call edline(iix,iily,iix,iiuy,3)
@@ -2952,9 +2860,7 @@ C Check if we are at a metre mark and if so write label.
                   iicol=nifgrey-4
                   call winscl('i',iicol)
                 endif
-                iix=ix
-                iily=ily
-                iiuy=iuy
+                iix=ix; iily=ily; iiuy=iuy
                 if(ij.eq.5)then
                   call edline(iix,iily,iix,iiuy,2)
                 else
@@ -2968,20 +2874,17 @@ C Check if we are at a metre mark and if so write label.
 
 C Now loop through vertical axis.
         do 343 i=int(viewlim(3)),int(viewlim(4))
-          ilx=ixaxl
-          irx=ixaxr
+          ilx=ixaxl; irx=ixaxr
           if(iwmg.eq.7)then
 
 C If user defined interval only set on the first pass.
             if(i.eq.int(viewlim(3)))then
-              yp=float(i)
-              ypl=float(i)
+              yp=float(i); ypl=float(i)
             else
               ypl=float(i)
             endif
           else
-            yp=float(i)
-            ypl=float(i)
+            yp=float(i); ypl=float(i)
           endif
           iy=iyo-int(yp*factor)
 
@@ -2994,9 +2897,7 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
                 iicol=nifgrey-4
                 call winscl('i',iicol)
               endif
-              iilx=ilx
-              iiy=iy
-              iirx=irx
+              iilx=ilx; iiy=iy; iirx=irx
               call edline(iilx,iiy,iirx,iiy,2)
               write(temp6,'(i3)') i
               call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
@@ -3012,9 +2913,7 @@ C              write(6,*) 'i mod ',i,mod(i,2)
                   iicol=nifgrey-4
                   call winscl('i',iicol)
                 endif
-                iilx=ilx
-                iiy=iy
-                iirx=irx
+                iilx=ilx; iiy=iy; iirx=irx
                 call edline(iilx,iiy,iirx,iiy,2)
                 write(temp6,'(i3)') i
                 call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
@@ -3026,9 +2925,7 @@ C              write(6,*) 'i mod ',i,mod(i,2)
                   iicol=nifgrey-3
                   call winscl('i',iicol)
                 endif
-                iilx=ilx
-                iiy=iy
-                iirx=irx
+                iilx=ilx; iiy=iy; iirx=irx
                 call edline(iilx,iiy,iirx,iiy,3)
                 write(temp6,'(i3)') i
                 call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
@@ -3040,9 +2937,7 @@ C              write(6,*) 'i mod ',i,mod(i,2)
                   iicol=nifgrey-3
                   call winscl('i',iicol)
                 endif
-                iilx=ilx
-                iiy=iy
-                iirx=irx
+                iilx=ilx; iiy=iy; iirx=irx
                 call edline(iilx,iiy,iirx,iiy,3)
                 if(yp.lt.float(i+1)) goto 445  ! can any more be drawn within this metre?
               endif
@@ -3056,9 +2951,7 @@ C              write(6,*) 'i mod ',i,mod(i,2)
               call winscl('i',iicol)
             endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
-              iilx=ilx
-              iiy=iy
-              iirx=irx
+              iilx=ilx; iiy=iy; iirx=irx
               call edline(iilx,iiy,iirx,iiy,3)
             endif
           elseif(iwmg.eq.5)then
@@ -3071,9 +2964,7 @@ C Logic for 0.25m.
               call winscl('i',iicol)
             endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
-              iilx=ilx
-              iiy=iy
-              iirx=irx
+              iilx=ilx; iiy=iy; iirx=irx
               call edline(iilx,iiy,iirx,iiy,3)
             endif
             yp=yp+0.25
@@ -3083,9 +2974,7 @@ C Logic for 0.25m.
               call winscl('i',iicol)
             endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
-              iilx=ilx
-              iiy=iy
-              iirx=irx
+              iilx=ilx; iiy=iy; iirx=irx
               call edline(iilx,iiy,iirx,iiy,2)
             endif
             yp=yp+0.25
@@ -3095,9 +2984,7 @@ C Logic for 0.25m.
               call winscl('i',iicol)
             endif
             if(iy.gt.iybul.and.iy.lt.iyblr)then
-              iilx=ilx
-              iiy=iy
-              iirx=irx
+              iilx=ilx; iiy=iy; iirx=irx
               call edline(iilx,iiy,iirx,iiy,3)
             endif
           elseif(iwmg.eq.6)then
@@ -3111,9 +2998,7 @@ C Logic for 0.1m.
                   iicol=nifgrey-4
                   call winscl('i',iicol)
                 endif
-                iilx=ilx
-                iiy=iy
-                iirx=irx
+                iilx=ilx; iiy=iy; iirx=irx
                 if(ij.eq.5)then
                   call edline(iilx,iiy,iirx,iiy,2)
                 else
@@ -3374,10 +3259,8 @@ C the zone draw back to the starting point.
                 endif
   42          continue
               if(within)then
-                iid1=ipxwhis(j-1)
-                iid2=ipywhis(j-1)
-                iid3=ipxwhis(j)
-                iid4=ipywhis(j)
+                iid1=ipxwhis(j-1); iid2=ipywhis(j-1)
+                iid3=ipxwhis(j); iid4=ipywhis(j)
                 call edwline(iid1,iid2,iid3,iid4)
               endif
             endif
@@ -3403,10 +3286,8 @@ C << code needs to be updated to allow for clipping >>
             if(j.gt.1)then
               iicol=3
               call winscl('z',iicol)
-              iid1=ipxw(j-1)
-              iid2=ipyw(j-1)
-              iid3=ipxw(j)
-              iid4=ipyw(j)
+              iid1=ipxw(j-1); iid2=ipyw(j-1)
+              iid3=ipxw(j); iid4=ipyw(j)
               call edwline(iid1,iid2,iid3,iid4)
             endif
           endif
@@ -3421,10 +3302,8 @@ C within the extents of the displayed bitmap.
      &       ((ipyw(NW).ge.iybul).and.(ipyw(NW).le.iyblr)))then
             iicol=3
             call winscl('z',iicol)
-            iid1=ipxw(NW)
-            iid2=ipyw(NW)
-            iid3=ipxw(1)
-            iid4=ipyw(1)
+            iid1=ipxw(NW); iid2=ipyw(NW)
+            iid3=ipxw(1); iid4=ipyw(1)
             call edwline(iid1,iid2,iid3,iid4)
           endif
         endif
