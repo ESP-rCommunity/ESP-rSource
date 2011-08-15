@@ -1,6 +1,6 @@
 *connections for admin_building
-*Date Mon Aug 15 17:24:21 2011
-   1842   # number of connections
+*Date Mon Aug 15 20:14:01 2011
+   2009   # number of connections
    1   1   3  23  16  #    1 ptn_cora_l2 in stair_1 >|< ptn_stair in L2_cust_srv
    1   2   3  23  15  #    2 ptn_corb_l2 in stair_1 >|< ptn_other in L2_cust_srv
    1   3   3  27  21  #    3 ptn_off_l2 in stair_1 >|< Wall-21 in L2_coridor
@@ -1843,3 +1843,170 @@
   70  31  -1   0   0  # 1840 fac_glh in L5_srv_cell not yet defined
   70  32  -1   0   0  # 1841 fac_gli in L5_srv_cell not yet defined
   70  33  -1   0   0  # 1842 fac_glj in L5_srv_cell not yet defined
+  71   1  -1   0   0  # 1843 ptn_cell in L5_pz_meet not yet defined
+  71   2  -1   0   0  # 1844 ptn_op_a in L5_pz_meet not yet defined
+  71   3  -1   0   0  # 1845 ptn_op_b in L5_pz_meet not yet defined
+  71   4  -1   0   0  # 1846 ptn_op_c in L5_pz_meet not yet defined
+  71   5  -1   0   0  # 1847 ptn_op_d in L5_pz_meet not yet defined
+  71   6  -1   0   0  # 1848 prn_toil in L5_pz_meet not yet defined
+  71   7  -1   0   0  # 1849 ptn_psg in L5_pz_meet not yet defined
+  71   8  -1   0   0  # 1850 ptn_staira in L5_pz_meet not yet defined
+  71   9  -1   0   0  # 1851 ptn_stairb in L5_pz_meet not yet defined
+  71  10  -1   0   0  # 1852 fac_fr_a in L5_pz_meet not yet defined
+  71  11  -1   0   0  # 1853 fac_fr_b in L5_pz_meet not yet defined
+  71  12  -1   0   0  # 1854 roof in L5_pz_meet not yet defined
+  71  13  -1   0   0  # 1855 floor_pz_m in L5_pz_meet not yet defined
+  71  14  -1   0   0  # 1856 fac_gl_a in L5_pz_meet not yet defined
+  71  15  -1   0   0  # 1857 fac_gl_b in L5_pz_meet not yet defined
+  72   1   0   0   0  # 1858 fac_frame in L5_meeting is External
+  72   2   0   0   0  # 1859 fac_glaz_a in L5_meeting is External
+  72   3   0   0   0  # 1860 fac_glaz_b in L5_meeting is External
+  72   4   0   0   0  # 1861 fac_glaz_c in L5_meeting is External
+  72   5   0   0   0  # 1862 fac_glaz_d in L5_meeting is External
+  72   6  -1   0   0  # 1863 pa_fac_l4 in L5_meeting not yet defined
+  72   7  -1   0   0  # 1864 gl_fac_l4 in L5_meeting not yet defined
+  72   8  -1   0   0  # 1865 pb_fac_l4 in L5_meeting not yet defined
+  72   9  -1   0   0  # 1866 ptn_toilet in L5_meeting not yet defined
+  72  10  -1   0   0  # 1867 ptn_open_a in L5_meeting not yet defined
+  72  11  -1   0   0  # 1868 ptn_open_b in L5_meeting not yet defined
+  72  12  -1   0   0  # 1869 door in L5_meeting not yet defined
+  72  13  -1   0   0  # 1870 ptn_open_c in L5_meeting not yet defined
+  72  14  -1   0   0  # 1871 ptn_frame in L5_meeting not yet defined
+  72  15  -1   0   0  # 1872 ceiling in L5_meeting not yet defined
+  72  16  -1   0   0  # 1873 floor in L5_meeting not yet defined
+  73   1  -1   0   0  # 1874 ptn_loba in L5_toilet not yet defined
+  73   2  -1   0   0  # 1875 ptn_lobb in L5_toilet not yet defined
+  73   3  -1   0   0  # 1876 ptn_k2 in L5_toilet not yet defined
+  73   4  -1   0   0  # 1877 fac_fr_a in L5_toilet not yet defined
+  73   5  -1   0   0  # 1878 facade_b in L5_toilet not yet defined
+  73   6  -1   0   0  # 1879 facade_c in L5_toilet not yet defined
+  73   7  -1   0   0  # 1880 facade_d in L5_toilet not yet defined
+  73   8  -1   0   0  # 1881 ptn_stair in L5_toilet not yet defined
+  73   9  -1   0   0  # 1882 roof in L5_toilet not yet defined
+  73  10  -1   0   0  # 1883 floor_toil in L5_toilet not yet defined
+  73  11  -1   0   0  # 1884 fac_gl_a in L5_toilet not yet defined
+  74   1  -1   0   0  # 1885 pt_meeting in L5_toil_psg not yet defined
+  74   2  -1   0   0  # 1886 pta_fac_l5 in L5_toil_psg not yet defined
+  74   3  -1   0   0  # 1887 ptb_fac_l5 in L5_toil_psg not yet defined
+  74   4  -1   0   0  # 1888 gl_facade_l5 in L5_toil_psg not yet defined
+  74   5  -1   0   0  # 1889 ptnc_fac_l5 in L5_toil_psg not yet defined
+  74   6  -1   0   0  # 1890 ptna_str_l5 in L5_toil_psg not yet defined
+  74   7  -1   0   0  # 1891 ptn_cel_b in L5_toil_psg not yet defined
+  74   8  -1   0   0  # 1892 ptna_opn_l5 in L5_toil_psg not yet defined
+  74   9  -1   0   0  # 1893 ptnb_opn_l5 in L5_toil_psg not yet defined
+  74  10  -1   0   0  # 1894 top in L5_toil_psg not yet defined
+  74  11  -1   0   0  # 1895 floor in L5_toil_psg not yet defined
+  74  12  -1   0   0  # 1896 ptnbb_str_l5 in L5_toil_psg not yet defined
+  75   1  -1   0   0  # 1897 l3_lw2_fr in L5_light_w1 not yet defined
+  75   2  -1   0   0  # 1898 l3_lw2_ri in L5_light_w1 not yet defined
+  75   3  -1   0   0  # 1899 l3_lw2_bk in L5_light_w1 not yet defined
+  75   4  -1   0   0  # 1900 l3_lw2_lef in L5_light_w1 not yet defined
+  75   5   0   0   0  # 1901 up_l3_lw2 in L5_light_w1 is External
+  75   6  -1   0   0  # 1902 l3_lw2_base in L5_light_w1 not yet defined
+  75   7  -1   0   0  # 1903 left_rail in L5_light_w1 not yet defined
+  75   8  -1   0   0  # 1904 front_rail in L5_light_w1 not yet defined
+  75   9  -1   0   0  # 1905 right_rail in L5_light_w1 not yet defined
+  75  10  -1   0   0  # 1906 l3_flrv_r in L5_light_w1 not yet defined
+  75  11  -1   0   0  # 1907 l3_flrv_f in L5_light_w1 not yet defined
+  75  12  -1   0   0  # 1908 l3_flrv_l in L5_light_w1 not yet defined
+  75  13  -1   0   0  # 1909 l3_flrv_b in L5_light_w1 not yet defined
+  75  14   0   0   0  # 1910 parap_f in L5_light_w1 is External
+  75  15   0   0   0  # 1911 glaz_fr in L5_light_w1 is External
+  75  16   0   0   0  # 1912 parap_ri in L5_light_w1 is External
+  75  17   0   0   0  # 1913 frame_ri in L5_light_w1 is External
+  75  18   0   0   0  # 1914 parap_bk in L5_light_w1 is External
+  75  19   0   0   0  # 1915 glaz_bk in L5_light_w1 is External
+  75  20   0   0   0  # 1916 parap_left in L5_light_w1 is External
+  75  21   0   0   0  # 1917 frame_left in L5_light_w1 is External
+  75  22   0   0   0  # 1918 up_glz in L5_light_w1 is External
+  75  23   0   0   0  # 1919 glaz_left in L5_light_w1 is External
+  75  24   0   0   0  # 1920 glaz_right in L5_light_w1 is External
+  76   1  -1   0   0  # 1921 l3_lw2_fr in L5_light_w2 not yet defined
+  76   2  -1   0   0  # 1922 l3_lw2_ri in L5_light_w2 not yet defined
+  76   3  -1   0   0  # 1923 l3_lw2_bk in L5_light_w2 not yet defined
+  76   4  -1   0   0  # 1924 l3_lw2_lef in L5_light_w2 not yet defined
+  76   5   0   0   0  # 1925 up_l3_lw2 in L5_light_w2 is External
+  76   6  -1   0   0  # 1926 l3_lw2_base in L5_light_w2 not yet defined
+  76   7  -1   0   0  # 1927 left_rail in L5_light_w2 not yet defined
+  76   8  -1   0   0  # 1928 front_rail in L5_light_w2 not yet defined
+  76   9  -1   0   0  # 1929 right_rail in L5_light_w2 not yet defined
+  76  10  -1   0   0  # 1930 l3_flrv_r in L5_light_w2 not yet defined
+  76  11  -1   0   0  # 1931 l3_flrv_f in L5_light_w2 not yet defined
+  76  12  -1   0   0  # 1932 l3_flrv_l in L5_light_w2 not yet defined
+  76  13  -1   0   0  # 1933 l3_flrv_b in L5_light_w2 not yet defined
+  76  14  -1   0   0  # 1934 parap_f in L5_light_w2 not yet defined
+  76  15  -1   0   0  # 1935 glaz_fr in L5_light_w2 not yet defined
+  76  16   0   0   0  # 1936 parap_ri in L5_light_w2 is External
+  76  17   0   0   0  # 1937 frame_ri in L5_light_w2 is External
+  76  18   0   0   0  # 1938 parap_bk in L5_light_w2 is External
+  76  19   0   0   0  # 1939 glaz_bk in L5_light_w2 is External
+  76  20   0   0   0  # 1940 parap_left in L5_light_w2 is External
+  76  21   0   0   0  # 1941 frame_left in L5_light_w2 is External
+  76  22   0   0   0  # 1942 up_glaz in L5_light_w2 is External
+  76  23   0   0   0  # 1943 glaz_ri in L5_light_w2 is External
+  76  24   0   0   0  # 1944 glaz_left in L5_light_w2 is External
+  77   1   0   0   0  # 1945 fac_gla in L5_sw_void is External
+  77   2   0   0   0  # 1946 fac_glb in L5_sw_void is External
+  77   3   0   0   0  # 1947 fac_glc in L5_sw_void is External
+  77   4   0   0   0  # 1948 fac_gld in L5_sw_void is External
+  77   5  -1   0   0  # 1949 ptn_fr in L5_sw_void not yet defined
+  77   6  -1   0   0  # 1950 gptn_b in L5_sw_void not yet defined
+  77   7  -1   0   0  # 1951 gptn_c in L5_sw_void not yet defined
+  77   8  -1   0   0  # 1952 gptn_d in L5_sw_void not yet defined
+  77   9  -1   0   0  # 1953 gptn_e in L5_sw_void not yet defined
+  77  10  -1   0   0  # 1954 gptn_f in L5_sw_void not yet defined
+  77  11  -1   0   0  # 1955 gptn_g in L5_sw_void not yet defined
+  77  12  -1   0   0  # 1956 ptn_elev in L5_sw_void not yet defined
+  77  13  -1   0   0  # 1957 ptn_lob_dr in L5_sw_void not yet defined
+  77  14  -1   0   0  # 1958 ptn_stair in L5_sw_void not yet defined
+  77  15   0   0   0  # 1959 bit_facade in L5_sw_void is External
+  77  16   0   0   0  # 1960 bk_fac_a in L5_sw_void is External
+  77  17   0   0   0  # 1961 bk_fac_b in L5_sw_void is External
+  77  18   0   0   0  # 1962 back_fac_c in L5_sw_void is External
+  77  19   0   0   0  # 1963 bk_fac_d in L5_sw_void is External
+  77  20   0   0   0  # 1964 roof in L5_sw_void is External
+  77  21  -1   0   0  # 1965 fict_base in L5_sw_void not yet defined
+  77  22  -1   0   0  # 1966 ptn_vd3 in L5_sw_void not yet defined
+  77  23  -1   0   0  # 1967 ptn_flrv_l5 in L5_sw_void not yet defined
+  77  24  -1   0   0  # 1968 ptn_flrvd_a in L5_sw_void not yet defined
+  77  25  -1   0   0  # 1969 ptn_flrvd_b in L5_sw_void not yet defined
+  77  26  -1   0   0  # 1970 low_bit_fac in L5_sw_void not yet defined
+  77  27  -1   0   0  # 1971 l5_faade_a in L5_sw_void not yet defined
+  77  28  -1   0   0  # 1972 l5_facade_b in L5_sw_void not yet defined
+  77  29  -1   0   0  # 1973 l5_facad_c in L5_sw_void not yet defined
+  77  30  -1   0   0  # 1974 l5_facade_d in L5_sw_void not yet defined
+  77  31   0   0   0  # 1975 fac_glaz_a in L5_sw_void is External
+  77  32   0   0   0  # 1976 fac_glaz_b in L5_sw_void is External
+  78   1  -1   0   0  # 1977 low_wall_a in L5_atroofltl not yet defined
+  78   2  -1   0   0  # 1978 low_wall_b in L5_atroofltl not yet defined
+  78   3  -1   0   0  # 1979 low_wall_c in L5_atroofltl not yet defined
+  78   4  -1   0   0  # 1980 low_wall_d in L5_atroofltl not yet defined
+  78   5  -1   0   0  # 1981 low_wall_e in L5_atroofltl not yet defined
+  78   6  -1   0   0  # 1982 low_wall_f in L5_atroofltl not yet defined
+  78   7  -1   0   0  # 1983 right in L5_atroofltl not yet defined
+  78   8  -1   0   0  # 1984 back_wall_a in L5_atroofltl not yet defined
+  78   9  -1   0   0  # 1985 back_wall_b in L5_atroofltl not yet defined
+  78  10  -1   0   0  # 1986 back_wall_d in L5_atroofltl not yet defined
+  78  11  -1   0   0  # 1987 back_wall_e in L5_atroofltl not yet defined
+  78  12  -1   0   0  # 1988 back_wall_f in L5_atroofltl not yet defined
+  78  13  -1   0   0  # 1989 back_wall_g in L5_atroofltl not yet defined
+  78  14  -1   0   0  # 1990 left in L5_atroofltl not yet defined
+  78  15  -1   0   0  # 1991 fict_base in L5_atroofltl not yet defined
+  78  16  -1   0   0  # 1992 roof_a in L5_atroofltl not yet defined
+  78  17  -1   0   0  # 1993 roof_b in L5_atroofltl not yet defined
+  78  18  -1   0   0  # 1994 roof_c in L5_atroofltl not yet defined
+  78  19  -1   0   0  # 1995 roof_e in L5_atroofltl not yet defined
+  78  20  -1   0   0  # 1996 roof_f in L5_atroofltl not yet defined
+  78  21  -1   0   0  # 1997 roof_g in L5_atroofltl not yet defined
+  78  22  -1   0   0  # 1998 roof_h in L5_atroofltl not yet defined
+  78  23  -1   0   0  # 1999 roof_i in L5_atroofltl not yet defined
+  78  24  -1   0   0  # 2000 roof_j in L5_atroofltl not yet defined
+  78  25  -1   0   0  # 2001 roof_l in L5_atroofltl not yet defined
+  78  26  -1   0   0  # 2002 roof_m in L5_atroofltl not yet defined
+  78  27  -1   0   0  # 2003 roof_n in L5_atroofltl not yet defined
+  79   1  -1   0   0  # 2004 Wall-1 in column not yet defined
+  79   2  -1   0   0  # 2005 Wall-2 in column not yet defined
+  79   3  -1   0   0  # 2006 Wall-3 in column not yet defined
+  79   4  -1   0   0  # 2007 Wall-4 in column not yet defined
+  79   5  -1   0   0  # 2008 Top-5 in column not yet defined
+  79   6  -1   0   0  # 2009 Base-6 in column not yet defined

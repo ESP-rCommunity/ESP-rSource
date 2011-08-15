@@ -1,63 +1,81 @@
-# geometry of L5_pz_meet defined in: ../zones/L5_pz_meet.geo
-GEN  L5_pz_meet  L5_pz_meet is the L5 print zone plus meeting room adj stair2  # type, name, descr
-      22      13   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-     46.25000    36.00000    64.15000  # vert   1
-     46.25000    32.75000    64.15000  # vert   2
-     46.25000    30.50000    64.15000  # vert   3
-     46.25000    28.50000    64.15000  # vert   4
-     46.25000    22.50000    64.15000  # vert   5
-     51.00000    22.50000    64.15000  # vert   6
-     51.00000    28.50000    64.15000  # vert   7
-     51.00000    30.50000    64.15000  # vert   8
-     50.00000    30.50000    64.15000  # vert   9
-     50.00000    36.00000    64.15000  # vert  10
-     48.75000    36.00000    64.15000  # vert  11
-     46.25000    36.00000    67.37500  # vert  12
-     46.25000    32.75000    67.37500  # vert  13
-     46.25000    30.50000    67.37500  # vert  14
-     46.25000    28.50000    67.37500  # vert  15
-     46.25000    22.50000    67.37500  # vert  16
-     51.00000    22.50000    67.37500  # vert  17
-     51.00000    28.50000    67.37500  # vert  18
-     51.00000    30.50000    67.37500  # vert  19
-     50.00000    30.50000    67.37500  # vert  20
-     50.00000    36.00000    67.37500  # vert  21
-     48.75000    36.00000    67.37500  # vert  22
-# no of vertices followed by list of associated vert
-   4,  1,  2, 13, 12,
-   4,  2,  3, 14, 13,
-   4,  3,  4, 15, 14,
-   4,  4,  5, 16, 15,
-   4,  5,  6, 17, 16,
-   4,  6,  7, 18, 17,
-   4,  7,  8, 19, 18,
-   4,  8,  9, 20, 19,
-   4,  9, 10, 21, 20,
-   4, 10, 11, 22, 21,
-   4, 11,  1, 12, 22,
-  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-  11,  1, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,
-# unused index
- 0,0,0,0,0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, Wall-1        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  2, Wall-2        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  3, Wall-3        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  4, Wall-4        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  5, Wall-5        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  6, Wall-6        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  7, Wall-7        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  8, Wall-8        OPAQ  VERT  UNKNOWN      UNKNOWN        
-  9, Wall-9        OPAQ  VERT  UNKNOWN      UNKNOWN        
- 10, Wall-10       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 11, Wall-11       OPAQ  VERT  UNKNOWN      UNKNOWN        
- 12, Top-12        OPAQ  CEIL  UNKNOWN      UNKNOWN        
- 13, Base-13       OPAQ  FLOR  UNKNOWN      UNKNOWN        
-# base
- 13  0  0  0  0  0    58.63 0
+*Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
+*date Mon Aug 15 19:10:37 2011  # latest file modification 
+L5_pz_meet is the L5 print zone plus meeting room adj stair2
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,46.25000,36.00000,64.15000  #   1
+*vertex,46.25000,32.75000,64.15000  #   2
+*vertex,46.25000,30.50000,64.15000  #   3
+*vertex,46.25000,28.50000,64.15000  #   4
+*vertex,46.25000,22.50000,64.15000  #   5
+*vertex,51.00000,22.50000,64.15000  #   6
+*vertex,51.00000,28.50000,64.15000  #   7
+*vertex,51.00000,30.50000,64.15000  #   8
+*vertex,50.00000,30.50000,64.15000  #   9
+*vertex,50.00000,36.00000,64.15000  #  10
+*vertex,48.75000,36.00000,64.15000  #  11
+*vertex,46.25000,36.00000,67.37500  #  12
+*vertex,46.25000,32.75000,67.37500  #  13
+*vertex,46.25000,30.50000,67.37500  #  14
+*vertex,46.25000,28.50000,67.37500  #  15
+*vertex,46.25000,22.50000,67.37500  #  16
+*vertex,51.00000,22.50000,67.37500  #  17
+*vertex,51.00000,28.50000,67.37500  #  18
+*vertex,51.00000,30.50000,67.37500  #  19
+*vertex,50.00000,30.50000,67.37500  #  20
+*vertex,50.00000,36.00000,67.37500  #  21
+*vertex,48.75000,36.00000,67.37500  #  22
+*vertex,49.93402,36.00000,64.32024  #  23
+*vertex,48.81598,36.00000,64.32024  #  24
+*vertex,48.81598,36.00000,67.20477  #  25
+*vertex,49.93402,36.00000,67.20477  #  26
+*vertex,48.61803,36.00000,64.32024  #  27
+*vertex,46.38197,36.00000,64.32024  #  28
+*vertex,46.38197,36.00000,67.20477  #  29
+*vertex,48.61803,36.00000,67.20477  #  30
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,4,1,2,13,12  #  1
+*edges,4,2,3,14,13  #  2
+*edges,4,3,4,15,14  #  3
+*edges,4,4,5,16,15  #  4
+*edges,4,5,6,17,16  #  5
+*edges,4,6,7,18,17  #  6
+*edges,4,7,8,19,18  #  7
+*edges,4,8,9,20,19  #  8
+*edges,4,9,10,21,20  #  9
+*edges,10,10,11,22,21,10,23,26,25,24,23  # 10
+*edges,10,11,1,12,22,11,27,30,29,28,27  # 11
+*edges,11,12,13,14,15,16,17,18,19,20,21,22  # 12
+*edges,11,1,11,10,9,8,7,6,5,4,3,2  # 13
+*edges,4,23,24,25,26  # 14
+*edges,4,27,28,29,30  # 15
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,ptn_cell,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_op_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_op_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,ptn_op_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
+*surf,ptn_op_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,prn_toil,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,ptn_psg,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ptn_staira,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ptn_stairb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,floor_pz_m,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #  15 ||< not yet defined
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,none  # no temporal shading requested
+# 
+*insol_calc,none  # no insolation requested
+# 
+*base_list,1,13,    58.63 0  # zone base list
