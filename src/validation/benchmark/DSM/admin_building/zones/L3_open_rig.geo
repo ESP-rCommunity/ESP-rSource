@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_rig # tag version, format, zone name
-*date Sat Aug 13 15:05:11 2011  # latest file modification 
+*date Wed Aug 17 06:31:06 2011  # latest file modification 
 L3_open_rig describes right portion of open plan on L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,50.00000,30.50000,56.35000  #   1
@@ -117,10 +117,10 @@ L3_open_rig describes right portion of open plan on L3
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,45,07  #  23 ||< ptn_cel_b:L3_toil_psg
 *surf,fict_lr_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,48  #  24 ||< fict_lr_a:L3_open_lft
 *surf,fict_lr_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,49  #  25 ||< fict_lr_b:L3_open_lft
-*surf,facade_st,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,00,00  #  26 ||< external
+*surf,facade_st,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,up_open_rig,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
 *surf,floor_open_r,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,44  #  28 ||< floor_open_r:L3_ufloor
-*surf,ovhang,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
+*surf,ovhang,FLOR,-,-,-,slab_275,OPAQUE,IDENT_CEN,00,00  #  29 ||< Identical CEN 13791
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

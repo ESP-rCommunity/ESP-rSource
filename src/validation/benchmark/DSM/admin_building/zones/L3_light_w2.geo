@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_light_w2 # tag version, format, zone name
-*date Sat Aug 13 15:01:29 2011  # latest file modification 
+*date Wed Aug 17 06:28:59 2011  # latest file modification 
 L3_light_w2 describes void under light well 2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,56.35000  #   1
@@ -43,7 +43,7 @@ L3_light_w2 describes void under light well 2
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,19  #   2 ||< l3_lw2_ri:L3_open_rig
 *surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,20  #   3 ||< l3_lw2_bk:L3_open_rig
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,46  #   4 ||< l3_lw2_left:L3_open_lft
-*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,60,06  #   5 ||< l3_lw2_base:L4_light_w2
 *surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,31,05  #   6 ||< up_l3_lw2:L2_light_w2
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,47  #   7 ||< lw2left_rail:L3_open_lft
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,16  #   8 ||< front_rail:L3_open_rig

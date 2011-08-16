@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Sat Aug 13 14:35:37 2011  # latest file modification 
+*date Wed Aug 17 06:14:03 2011  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -191,19 +191,19 @@ ne_facade describes the stone facade on NE with air void
 *surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,03  #  19 ||< ptb_fac_l2:L2_toil_psg
 *surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,33,05  #  20 ||< ptnc_fac_l2:L2_toil_psg
 *surf,ptn_stair,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,02,17  #  21 ||< ptn_stair:stair_2
-*surf,pta_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
-*surf,ptb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
-*surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,ptnc_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,pta_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,74,02  #  22 ||< pta_fac_l5:L5_toil_psg
+*surf,ptb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,74,03  #  23 ||< ptb_fac_l5:L5_toil_psg
+*surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,62,02  #  24 ||< pta_fac_l4:L4_toil_psg
+*surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,62,11  #  25 ||< ptnb_fac_l4:L4_toil_psg
+*surf,ptnc_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,74,05  #  26 ||< ptnc_fac_l5:L5_toil_psg
+*surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,62,04  #  27 ||< ptnc_fac_l4:L4_toil_psg
 *surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,02  #  28 ||< pta_fac_l3:L3_toil_psg
 *surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,03  #  29 ||< ptb_fac_l3:L3_toil_psg
 *surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,45,05  #  30 ||< ptnc_fac_l3:L3_toil_psg
-*surf,pa_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
-*surf,pa_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  33 ||< not yet defined
-*surf,pb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,0,0  #  34 ||< not yet defined
+*surf,pa_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,54,06  #  31 ||< pa_fac_l4:L4_meeting
+*surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,54,08  #  32 ||< pb_fac_l4:L4_meeting
+*surf,pa_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,72,06  #  33 ||< pa_fac_l4:L5_meeting
+*surf,pb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,72,08  #  34 ||< pb_fac_l4:L5_meeting
 *surf,jamb_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  35 ||< external
 *surf,jamb_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  36 ||< external
 *surf,sill_a,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  37 ||< external

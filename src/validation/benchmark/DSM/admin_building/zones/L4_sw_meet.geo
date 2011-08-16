@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_meet # tag version, format, zone name
-*date Sat Aug 13 16:10:54 2011  # latest file modification 
+*date Wed Aug 17 06:36:27 2011  # latest file modification 
 L4_sw_meet describes meeting rds 406 407 on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.25000,60.25000  #   1
@@ -58,12 +58,12 @@ L4_sw_meet describes meeting rds 406 407 on level four
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,18  #   2 ||< ptn_meet_b:L4_open_s
+*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,17  #   3 ||< ptn_meet_a:L4_open_s
+*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,16  #   4 ||< ptn_cor_c:L4_open_s
+*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,15  #   5 ||< ptn_cor_b:L4_open_s
+*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,14  #   6 ||< ptn_corid:L4_open_s
+*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,51,13  #   7 ||< Wall-13:L4_sw_void
 *surf,Wall-9,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,Wall-10,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,Wall-11,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
@@ -72,8 +72,8 @@ L4_sw_meet describes meeting rds 406 407 on level four
 *surf,Wall-14,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
 *surf,Top-15,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,Base-16,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  16 ||< external
-*surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,-,-  #  17 ||< external
+*surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,42  #  16 ||< ptn_cora_l4:stair_1
+*surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,43  #  17 ||< ptn_corb_l4:stair_1
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

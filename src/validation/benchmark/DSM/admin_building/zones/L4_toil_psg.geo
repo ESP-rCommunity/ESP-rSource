@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toil_psg # tag version, format, zone name
-*date Sat Aug 13 16:48:26 2011  # latest file modification 
+*date Wed Aug 17 06:39:09 2011  # latest file modification 
 L4_toil_psg describes toilet and passage on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,60.25000  #   1
@@ -44,18 +44,18 @@ L4_toil_psg describes toilet and passage on level four
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,-,-  #   1 ||< not yet defined
-*surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #   2 ||< not yet defined
+*surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,54,09  #   1 ||< ptn_toilet:L4_meeting
+*surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,24  #   2 ||< pta_fac_l4:ne_facade
 *surf,gl_facade_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #   4 ||< not yet defined
-*surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,UNKNOWN,-,-  #   5 ||< not yet defined
-*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,-,-  #   6 ||< not yet defined
-*surf,ptna_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,-,-  #   7 ||< not yet defined
-*surf,ptnb_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,-,-  #   8 ||< not yet defined
+*surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,27  #   4 ||< ptnc_fac_l4:ne_facade
+*surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,ANOTHER,02,13  #   5 ||< ptna_str_l4:stair_2
+*surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,18  #   6 ||< ptn_cel_b:L4_open_plr
+*surf,ptna_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,17  #   7 ||< ptna_opn_l4:L4_open_plr
+*surf,ptnb_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,16  #   8 ||< ptnb_opn_l4:L4_open_plr
 *surf,top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,UNKNOWN,-,-  #  11 ||< not yet defined
-*surf,ptnb_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,-,-  #  12 ||< not yet defined
+*surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,25  #  11 ||< ptnb_fac_l4:ne_facade
+*surf,ptnb_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,14  #  12 ||< ptnb_str_l4:stair_2
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

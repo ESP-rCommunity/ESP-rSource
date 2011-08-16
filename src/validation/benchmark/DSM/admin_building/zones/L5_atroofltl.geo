@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Mon Aug 15 19:52:26 2011  # latest file modification 
+*date Wed Aug 17 06:47:37 2011  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -65,33 +65,33 @@ L5_atroofltl describes the main roof light over atria
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,low_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,low_wall_b,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,low_wall_c,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,low_wall_d,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,low_wall_e,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,low_wall_f,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,right,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,back_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,back_wall_b,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,back_wall_d,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,back_wall_e,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,back_wall_f,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,back_wall_g,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,left,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,low_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   1 ||< external
+*surf,low_wall_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   2 ||< external
+*surf,low_wall_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   3 ||< external
+*surf,low_wall_d,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   4 ||< external
+*surf,low_wall_e,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   5 ||< external
+*surf,low_wall_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   6 ||< external
+*surf,right,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   7 ||< external
+*surf,back_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   8 ||< external
+*surf,back_wall_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   9 ||< external
+*surf,back_wall_d,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  10 ||< external
+*surf,back_wall_e,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  11 ||< external
+*surf,back_wall_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  12 ||< external
+*surf,back_wall_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  13 ||< external
+*surf,left,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  14 ||< external
 *surf,fict_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,roof_a,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,roof_b,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,roof_c,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,roof_e,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,roof_f,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,roof_g,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  21 ||< not yet defined
-*surf,roof_h,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  22 ||< not yet defined
-*surf,roof_i,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  23 ||< not yet defined
-*surf,roof_j,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,roof_l,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,roof_m,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  26 ||< not yet defined
-*surf,roof_n,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,roof_a,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,00,00  #  16 ||< not yet defined
+*surf,roof_b,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  17 ||< external
+*surf,roof_c,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  18 ||< external
+*surf,roof_e,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  19 ||< external
+*surf,roof_f,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  20 ||< external
+*surf,roof_g,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  21 ||< external
+*surf,roof_h,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  22 ||< external
+*surf,roof_i,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  23 ||< external
+*surf,roof_j,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  24 ||< external
+*surf,roof_l,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  25 ||< external
+*surf,roof_m,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  26 ||< external
+*surf,roof_n,SLOP,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,00,00  #  27 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

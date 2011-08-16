@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Mon Aug 15 16:12:58 2011  # latest file modification 
+*date Wed Aug 17 07:11:18 2011  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -177,7 +177,7 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
@@ -192,7 +192,7 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,EXTERIOR,0,0  #  25 ||< external
+*surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,02  #  25 ||< ptn_cel:L4_printz
 *surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
 *surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
@@ -210,18 +210,18 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
 *surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
-*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
-*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
-*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
-*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
-*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  49 ||< not yet defined
-*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  50 ||< not yet defined
-*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
-*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
-*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
-*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
+*surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,44  #  43 ||< int_ptna_:L4_cell_srv
+*surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,43  #  44 ||< int_ptna:L4_cell_srv
+*surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,46  #  45 ||< int_ptnb_:L4_cell_srv
+*surf,int_ptnb_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,45  #  46 ||< int_ptnb:L4_cell_srv
+*surf,int_ptnc,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,48  #  47 ||< int_ptnc_:L4_cell_srv
+*surf,int_ptnc_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,47  #  48 ||< int_ptnc:L4_cell_srv
+*surf,int_ptnd,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,50  #  49 ||< int_ptnd_:L4_cell_srv
+*surf,int_ptnd_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,49  #  50 ||< int_ptnd:L4_cell_srv
+*surf,int_ptne,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,52  #  51 ||< int_ptne_:L4_cell_srv
+*surf,int_ptne_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,51  #  52 ||< int_ptne:L4_cell_srv
+*surf,int_ptnf,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,54  #  53 ||< int_ptnf_:L4_cell_srv
+*surf,int_ptnf_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,53  #  54 ||< int_ptnf:L4_cell_srv
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

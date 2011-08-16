@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_sw_void # tag version, format, zone name
-*date Sat Aug 13 15:02:46 2011  # latest file modification 
+*date Wed Aug 17 06:29:54 2011  # latest file modification 
 L3_sw_void describes void over stair at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,55.59300  #   1
@@ -131,7 +131,7 @@ L3_sw_void describes void over stair at SW facade
 *surf,bk_fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
 *surf,bk_fac_glc,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,bk_fac_gld,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  20 ||< not yet defined
+*surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,51,21  #  20 ||< Base-27:L4_sw_void
 *surf,lower,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,34,32  #  21 ||< upper:L2_se_void
 *surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,35  #  22 ||< ptn_vd3:lifts
 *surf,ptn_flrv_l3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,26  #  23 ||< ptn_flrv_l3:stair_1

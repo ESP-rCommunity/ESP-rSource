@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w1 # tag version, format, zone name
-*date Mon Aug 15 19:33:59 2011  # latest file modification 
+*date Wed Aug 17 06:44:58 2011  # latest file modification 
 L5_light_w1 describes light well one at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,64.15000  #   1
@@ -72,10 +72,10 @@ L5_light_w1 describes light well one at level 5
 #  boundary condition tag followed by two data items
 *surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   1 ||< not yet defined
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,04  #   3 ||< ptn_lw1:L5_lobby
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< not yet defined
 *surf,up_l3_lw2,SLOP,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,51,05  #   6 ||< not yet defined
+*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,59,05  #   6 ||< up_l3_lw2:L4_light_w1
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
@@ -91,9 +91,9 @@ L5_light_w1 describes light well one at level 5
 *surf,glaz_bk,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,parap_left,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,frame_left,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
-*surf,up_glz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_left,VERT,frame_left,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  23 ||< external
-*surf,glaz_right,VERT,frame_ri,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  24 ||< external
+*surf,up_glz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_left,VERT,frame_left,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,glaz_right,VERT,frame_ri,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

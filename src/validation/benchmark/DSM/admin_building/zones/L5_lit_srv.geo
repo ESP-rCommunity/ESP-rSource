@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lit_srv # tag version, format, zone name
-*date Mon Aug 15 17:12:38 2011  # latest file modification 
+*date Wed Aug 17 06:42:09 2011  # latest file modification 
 L5_lit_srv describes kitchen at the service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.00000,30.50000,64.15000  #   1
@@ -41,15 +41,15 @@ L5_lit_srv describes kitchen at the service facade
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,ptn_lobby,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_mixed,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,ptn_toilet,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,17  #   2 ||< ptn_kita:L5_open_lft
+*surf,ptn_mixed,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,21  #   3 ||< ptn_kit2:L5_srv_cell
+*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   4 ||< external
+*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   5 ||< external
+*surf,ptn_toilet,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,03  #   6 ||< ptn_k2:L5_toilet
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,00,00  #   7 ||< external
 *surf,floor_srv,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #  10 ||< not yet defined
+*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #   9 ||< external
+*surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  10 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

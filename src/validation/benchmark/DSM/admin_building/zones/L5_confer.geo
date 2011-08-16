@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_confer # tag version, format, zone name
-*date Mon Aug 15 16:57:58 2011  # latest file modification 
+*date Wed Aug 17 06:40:52 2011  # latest file modification 
 L5_confer describes conference room on level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.50000,64.15000  #   1
@@ -93,31 +93,31 @@ L5_confer describes conference room on level five
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_gl_a,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,fac_frb,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,fac_frc,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,fac_frd,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,fac_fre,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,fac_frf,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptn_lobby,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptn_kita,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,ptn_kitb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,ptn_kitc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,fac_gl_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   1 ||< external
+*surf,fac_frb,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   2 ||< external
+*surf,fac_frc,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   3 ||< external
+*surf,fac_frd,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   4 ||< external
+*surf,fac_fre,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   5 ||< external
+*surf,fac_frf,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   6 ||< external
+*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,25  #   7 ||< ptn_conf:L5_open_lft
+*surf,ptn_lobby,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,01  #   8 ||< ptn_conf:L5_lobby
+*surf,ptn_kita,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,66,01  #   9 ||< pnt_cnf:L5_kitch2
+*surf,ptn_kitb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,66,12  #  10 ||< ptn_kitb:L5_kitch2
+*surf,ptn_kitc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,66,13  #  11 ||< ptn_kitc:L5_kitch2
 *surf,ptn_opn_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined
 *surf,ptn_opn_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
 *surf,ptn_opn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,06  #  15 ||< gptn_b:L5_sw_void
 *surf,ptn_opn_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,00,00  #  17 ||< external
 *surf,floor_conf,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,glaz_a,VERT,fac_gl_a,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,fac_glb,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  21 ||< not yet defined
-*surf,fac_glc,VERT,fac_frc,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  22 ||< not yet defined
-*surf,fac_gld,VERT,fac_frd,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  23 ||< not yet defined
-*surf,fac_gle,VERT,fac_fre,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,fac_glf,VERT,fac_frf,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  25 ||< not yet defined
+*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #  19 ||< external
+*surf,glaz_a,VERT,fac_gl_a,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  20 ||< external
+*surf,fac_glb,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  21 ||< external
+*surf,fac_glc,VERT,fac_frc,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  22 ||< external
+*surf,fac_gld,VERT,fac_frd,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  23 ||< external
+*surf,fac_gle,VERT,fac_fre,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  24 ||< external
+*surf,fac_glf,VERT,fac_frf,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  25 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

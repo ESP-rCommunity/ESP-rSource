@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_light_w1 # tag version, format, zone name
-*date Sat Aug 13 16:35:14 2011  # latest file modification 
+*date Wed Aug 17 06:38:20 2011  # latest file modification 
 L4_light_w1 describes light well one at level 4
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,60.25000  #   1
@@ -39,15 +39,15 @@ L4_light_w1 describes light well one at level 4
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,50,06  #   5 ||< not yet defined
-*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,52,05  #   6 ||< not yet defined
-*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,24  #   1 ||< l3_lw2_fr:L4_open_s
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,25  #   2 ||< l3_lw2_ri:L4_open_s
+*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,26  #   3 ||< l3_lw2_bk:L4_open_s
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,27  #   4 ||< l3_lw2_lef:L4_open_s
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,75,06  #   5 ||< l3_lw2_base:L5_light_w1
+*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,43,05  #   6 ||< up_l3_lw2:L3_lw1
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,28  #   7 ||< left_rail:L4_open_s
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,29  #   8 ||< front_rail:L4_open_s
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,30  #   9 ||< right_rail:L4_open_s
 *surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined

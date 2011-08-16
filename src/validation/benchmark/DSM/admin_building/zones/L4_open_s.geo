@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Mon Aug 15 15:55:40 2011  # latest file modification 
+*date Wed Aug 17 06:37:15 2011  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -105,27 +105,27 @@ L4_open_s describes left half of level four open plan area
 *surf,wall_g,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,wall_h,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,fic_to_ra,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,fic_to_rb,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,fic_to_ra,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,58,07  #  10 ||< open_fict2:L4_open_plr
+*surf,fic_to_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,58,06  #  11 ||< open_fict:L4_open_plr
 *surf,ptn_other,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,ptn_stair,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,ptn_corid,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ptn_cor_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,ptn_cor_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,ptn_meet_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,ptn_meet_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  18 ||< not yet defined
+*surf,ptn_stair,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,01,44  #  13 ||< ptn_corc_l4:stair_1
+*surf,ptn_corid,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,06  #  14 ||< Wall-6:L4_sw_meet
+*surf,ptn_cor_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,05  #  15 ||< Wall-5:L4_sw_meet
+*surf,ptn_cor_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,04  #  16 ||< Wall-4:L4_sw_meet
+*surf,ptn_meet_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,03  #  17 ||< Wall-3:L4_sw_meet
+*surf,ptn_meet_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,02  #  18 ||< Wall-2:L4_sw_meet
 *surf,ceiling_l4op,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,floor_l4op,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  21 ||< external
-*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  22 ||< external
-*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  23 ||< external
-*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  24 ||< external
-*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  25 ||< external
-*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  26 ||< external
-*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  27 ||< external
-*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  28 ||< external
-*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  29 ||< external
-*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,-,-  #  30 ||< external
+*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  21 ||< not yet defined
+*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  23 ||< not yet defined
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,59,01  #  24 ||< l3_lw2_fr:L4_light_w1
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,59,02  #  25 ||< l3_lw2_ri:L4_light_w1
+*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,03  #  26 ||< l3_lw2_bk:L4_light_w1
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,59,04  #  27 ||< l3_lw2_lef:L4_light_w1
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,07  #  28 ||< left_rail:L4_light_w1
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,08  #  29 ||< front_rail:L4_light_w1
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,09  #  30 ||< right_rail:L4_light_w1
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

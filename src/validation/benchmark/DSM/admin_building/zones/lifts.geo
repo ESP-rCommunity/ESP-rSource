@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Sat Aug 13 14:33:18 2011  # latest file modification 
+*date Wed Aug 17 06:11:22 2011  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -103,11 +103,11 @@ lifts describes the elevator shaft
 *surf,left_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
 *surf,front_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,right_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,back_4,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,left_5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
-*surf,front_5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,right_5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,back_5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
+*surf,back_4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,12  #  16 ||< Wall-12:L4_sw_void
+*surf,left_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,66,07  #  17 ||< ptn_elev:L5_kitch2
+*surf,front_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,11  #  18 ||< ptn_el_fr:L5_lobby
+*surf,right_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,10  #  19 ||< ptn_el_r:L5_lobby
+*surf,back_5,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,77,12  #  20 ||< ptn_elev:L5_sw_void
 *surf,rflra_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,06  #  21 ||< rflra_l2:L2_uf_plen
 *surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,06  #  22 ||< rflra_l3:L3_ufloor
 *surf,rflra_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
@@ -123,8 +123,8 @@ lifts describes the elevator shaft
 *surf,base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  33 ||< ground profile  1
 *surf,ptn_vd2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,33  #  34 ||< elev_rflr:L1_sw_void
 *surf,ptn_vd3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,22  #  35 ||< ptn_vd3:L3_sw_void
-*surf,ptn_vd4,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
-*surf,ptn_vd5,VERT,-,-,-,stn_stair,OPAQUE,UNKNOWN,0,0  #  37 ||< not yet defined
+*surf,ptn_vd4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,22  #  36 ||< ptn_vd3:L4_sw_void
+*surf,ptn_vd5,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,77,22  #  37 ||< ptn_vd3:L5_sw_void
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  38 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

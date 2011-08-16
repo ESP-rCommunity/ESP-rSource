@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_void_cir # tag version, format, zone name
-*date Sat Aug 13 15:51:40 2011  # latest file modification 
+*date Wed Aug 17 06:34:06 2011  # latest file modification 
 L4_void_cir describes void adjacent to circular level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,60.25000  #   1
@@ -36,16 +36,16 @@ L4_void_cir describes void adjacent to circular level four
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,43,12  #   1 ||< not yet defined
-*surf,Wall-2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,43,13  #   2 ||< not yet defined
-*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,43,14  #   3 ||< not yet defined
-*surf,Wall-4,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,43,15  #   4 ||< not yet defined
+*surf,Wall-1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,12  #   1 ||< seg_l:L4_circular
+*surf,Wall-2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,13  #   2 ||< seg_m:L4_circular
+*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,14  #   3 ||< seg_n:L4_circular
+*surf,Wall-4,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,15  #   4 ||< seg_o:L4_circular
 *surf,Wall-5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,Top-9,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,Base-10,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,22,09  #  10 ||< not yet defined
+*surf,Base-10,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,37,09  #  10 ||< l3_vc_upper:L3_void_cir
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

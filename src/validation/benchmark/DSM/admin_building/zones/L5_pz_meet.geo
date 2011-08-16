@@ -1,13 +1,13 @@
 *Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
-*date Mon Aug 15 19:10:37 2011  # latest file modification 
+*date Wed Aug 17 06:43:31 2011  # latest file modification 
 L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,46.25000,36.00000,64.15000  #   1
 *vertex,46.25000,32.75000,64.15000  #   2
 *vertex,46.25000,30.50000,64.15000  #   3
 *vertex,46.25000,28.50000,64.15000  #   4
-*vertex,46.25000,22.50000,64.15000  #   5
-*vertex,51.00000,22.50000,64.15000  #   6
+*vertex,46.25000,23.17941,64.15000  #   5
+*vertex,51.00000,23.17941,64.15000  #   6
 *vertex,51.00000,28.50000,64.15000  #   7
 *vertex,51.00000,30.50000,64.15000  #   8
 *vertex,50.00000,30.50000,64.15000  #   9
@@ -17,8 +17,8 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 *vertex,46.25000,32.75000,67.37500  #  13
 *vertex,46.25000,30.50000,67.37500  #  14
 *vertex,46.25000,28.50000,67.37500  #  15
-*vertex,46.25000,22.50000,67.37500  #  16
-*vertex,51.00000,22.50000,67.37500  #  17
+*vertex,46.25000,23.17941,67.37500  #  16
+*vertex,51.00000,23.17941,67.37500  #  17
 *vertex,51.00000,28.50000,67.37500  #  18
 *vertex,51.00000,30.50000,67.37500  #  19
 *vertex,50.00000,30.50000,67.37500  #  20
@@ -55,21 +55,21 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_cell,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_op_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_op_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,ptn_op_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_op_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,prn_toil,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ptn_psg,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptn_staira,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptn_stairb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,ptn_cell,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,10  #   1 ||< ptn_pz:L5_srv_cell
+*surf,ptn_op_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,08  #   2 ||< ptn_op_a:L5_open_rt
+*surf,ptn_op_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,09  #   3 ||< ptn_op_b:L5_open_rt
+*surf,ptn_op_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,10  #   4 ||< ptn_op_c:L5_open_rt
+*surf,ptn_op_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,11  #   5 ||< ptn_op_d:L5_open_rt
+*surf,prn_toil,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,08  #   6 ||< ptna_opn_l5:L5_toil_psg
+*surf,ptn_psg,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,07  #   7 ||< ptn_cel_b:L5_toil_psg
+*surf,ptn_staira,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,44  #   8 ||< ptnc_str_l5:stair_2
+*surf,ptn_stairb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,48  #   9 ||< ptnd_str_l5:stair_2
+*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #  10 ||< external
+*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #  11 ||< external
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,00,00  #  12 ||< external
 *surf,floor_pz_m,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,TRAN,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  14 ||< external
+*surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  15 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

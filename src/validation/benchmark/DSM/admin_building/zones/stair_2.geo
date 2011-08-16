@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Sat Aug 13 14:32:21 2011  # latest file modification 
+*date Wed Aug 17 06:10:27 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -171,10 +171,10 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ptnb_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,33,12  #  10 ||< ptnb_str_l2:L2_toil_psg
 *surf,ptna_str_l3,VERT,-,-,-,door,OPAQUE,ANOTHER,45,06  #  11 ||< ptna_str_l3:L3_toil_psg
 *surf,ptnb_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,45,12  #  12 ||< ptnb_str_l3:L3_toil_psg
-*surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,ptnb_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ptna_str_l5,VERT,-,-,-,door,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,ptnb_str_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  16 ||< not yet defined
+*surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,ANOTHER,62,05  #  13 ||< ptna_str_l4:L4_toil_psg
+*surf,ptnb_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,62,12  #  14 ||< ptnb_str_l4:L4_toil_psg
+*surf,ptna_str_l5,VERT,-,-,-,door,OPAQUE,ANOTHER,74,06  #  15 ||< ptna_str_l5:L5_toil_psg
+*surf,ptnb_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,74,12  #  16 ||< ptnbb_str_l5:L5_toil_psg
 *surf,ptn_stair,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,21  #  17 ||< ptn_stair:ne_facade
 *surf,glaz_b_l1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,glaz_c_l1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
@@ -194,19 +194,19 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ptnc_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,26,14  #  33 ||< ptnc_str_l2:L2_core_cel
 *surf,struc_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  34 ||< not yet defined
 *surf,glaz_c_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,fill_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,00,00  #  36 ||< not yet defined
+*surf,fill_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
 *surf,glaz_a_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
 *surf,glaz_b_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,glaz_c_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
 *surf,struc_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,61  #  40 ||< Wall-61:L2_uf_plen
 *surf,struc_l5,VERT,-,-,-,stone_cast,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
 *surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,49,01  #  42 ||< ptnc_str_l3:L3_open_rig
-*surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,ptnc_str_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
+*surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,58,19  #  43 ||< ptnc_str_l4:L4_open_plr
+*surf,ptnc_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,08  #  44 ||< ptn_staira:L5_pz_meet
 *surf,l4_flr_vda,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
 *surf,l5_flr_vda,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
 *surf,l3_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,05  #  47 ||< l3_flr_vda:L3_ufloor
-*surf,ptnd_str_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
+*surf,ptnd_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,09  #  48 ||< ptn_stairb:L5_pz_meet
 *surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  49 ||< not yet defined
 *surf,ptnd_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,49,02  #  50 ||< ptnd_str_l3:L3_open_rig
 *surf,Base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  51 ||< ground profile  1

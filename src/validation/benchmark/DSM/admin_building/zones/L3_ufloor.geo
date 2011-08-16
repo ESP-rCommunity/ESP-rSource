@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ufloor # tag version, format, zone name
-*date Sat Aug 13 15:06:51 2011  # latest file modification 
+*date Wed Aug 17 07:11:51 2011  # latest file modification 
 L3_ufloor describes floor void under L3 occupied spaces
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,55.59300  #   1
@@ -334,7 +334,7 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,ceiling_toi,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,32,09  #  26 ||< ceiling_toi:L2_toilet
 *surf,top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,33,10  #  27 ||< top:L2_toil_psg
 *surf,floor,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,39,16  #  28 ||< floor:L3_meeting
-*surf,Base-30,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,40,27  #  29 ||< Base-30:L3_cell_srv
+*surf,Base-30,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,40,27  #  29 ||< Base-30:L3_cell_srv
 *surf,floor_pz,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,41,08  #  30 ||< floor_pz:L3_print_zn
 *surf,Base-14,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,42,14  #  31 ||< Base-14:L3_social
 *surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,43,10  #  32 ||< l3_flrv_r:L3_lw1
@@ -354,19 +354,19 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,l3_flrv_ff,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,11  #  46 ||< l3_flrv_f:L3_light_w2
 *surf,l3_flrv_ll,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,12  #  47 ||< l3_flrv_l:L3_light_w2
 *surf,l3_flrv_bb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,13  #  48 ||< l3_flrv_b:L3_light_w2
-*surf,ptn_untoil,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  49 ||< external
+*surf,ptn_untoil,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,cel319_ceil,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,28,10  #  50 ||< cel319_ceil:L2_cor_cell
-*surf,srv_fac_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  51 ||< external
-*surf,srv_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  52 ||< external
-*surf,ne_facade,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  53 ||< external
-*surf,to_stair_l3f,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
-*surf,street_faca,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  55 ||< external
+*surf,srv_fac_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  51 ||< external
+*surf,srv_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,ne_facade,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  53 ||< external
+*surf,to_stair_l3f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  54 ||< external
+*surf,street_faca,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  55 ||< external
 *surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,07  #  56 ||< seg_g:L2_circular
 *surf,seg_kk,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,19,08  #  57 ||< seg_k:L2_circular
 *surf,fill_small,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  58 ||< not yet defined
-*surf,tiny-59,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  59 ||< external
-*surf,tiny-60,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  60 ||< external
-*surf,tiny-61,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  61 ||< external
+*surf,tiny-59,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  59 ||< external
+*surf,tiny-60,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  60 ||< external
+*surf,tiny-61,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  61 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

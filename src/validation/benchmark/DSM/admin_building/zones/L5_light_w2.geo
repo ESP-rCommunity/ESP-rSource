@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w2 # tag version, format, zone name
-*date Mon Aug 15 19:40:38 2011  # latest file modification 
+*date Wed Aug 17 06:45:30 2011  # latest file modification 
 L5_light_w2 describes light well two at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,64.15000  #   1
@@ -70,30 +70,30 @@ L5_light_w2 describes light well two at level 5
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
+*surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,17  #   1 ||< l3_lw2_fr:L5_open_rt
+*surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,18  #   2 ||< l3_lw2_ri:L5_open_rt
+*surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,19  #   3 ||< l3_lw2_bk:L5_open_rt
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< not yet defined
 *surf,up_l3_lw2,SLOP,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,48,05  #   6 ||< not yet defined
+*surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,60,05  #   6 ||< up_l3_lw2:L4_light_w2
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,20  #   8 ||< front_rail:L5_open_rt
+*surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,21  #   9 ||< right_rail:L5_open_rt
 *surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
 *surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  14 ||< external
+*surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  15 ||< external
 *surf,parap_ri,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,frame_ri,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,parap_bk,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
 *surf,glaz_bk,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,parap_left,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,frame_left,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
-*surf,up_glaz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_ri,VERT,frame_ri,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  23 ||< external
-*surf,glaz_left,VERT,frame_left,C-WINDOW,CLOSED,db_lpasol,TRAN,EXTERIOR,0,0  #  24 ||< external
+*surf,up_glaz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_ri,VERT,frame_ri,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,glaz_left,VERT,frame_left,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

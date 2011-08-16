@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_lw1 # tag version, format, zone name
-*date Sat Aug 13 15:01:10 2011  # latest file modification 
+*date Wed Aug 17 06:28:50 2011  # latest file modification 
 L3_lw1 describes light well one at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,56.35000  #   1
@@ -43,7 +43,7 @@ L3_lw1 describes light well one at level three
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,40  #   2 ||< l3_lw2_ri:L3_open_lft
 *surf,l3_lw2_bk,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,41  #   3 ||< l3_lw2_bk:L3_open_lft
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,42  #   4 ||< l3_lw2_lef:L3_open_lft
-*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,up_l3_lw2,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,59,06  #   5 ||< l3_lw2_base:L4_light_w1
 *surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   6 ||< not yet defined
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,43  #   7 ||< left_rail:L3_open_lft
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,44  #   8 ||< front_rail:L3_open_lft

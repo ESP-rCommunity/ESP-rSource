@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_cir # tag version, format, zone name
-*date Sat Aug 13 14:57:23 2011  # latest file modification 
+*date Wed Aug 17 06:25:51 2011  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -54,7 +54,7 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,fac_stone,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,04  #   7 ||< fict_open:L3_open_rig
 *surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,32  #   8 ||< fict_open_b:L3_open_lft
-*surf,l3_vc_upper,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,l3_vc_upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,53,10  #   9 ||< Base-10:L4_void_cir
 *surf,L3_vc_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,17  #  10 ||< L3_vc_low:L2_careers
 *surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,03  #  11 ||< balcony_a:L3_open_rig
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined

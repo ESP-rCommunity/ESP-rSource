@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_admin # tag version, format, zone name
-*date Mon Aug 15 16:08:06 2011  # latest file modification 
+*date Wed Aug 17 06:39:39 2011  # latest file modification 
 L4_admin describes mix of office types at srv facade level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,60.25000  #   1
@@ -75,9 +75,9 @@ L4_admin describes mix of office types at srv facade level four
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< external
-*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< external
-*surf,ptn_print,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< external
+*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_print,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,06  #   3 ||< ptn_social:L4_printz
 *surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,vent_b,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
@@ -86,9 +86,9 @@ L4_admin describes mix of office types at srv facade level four
 *surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,vent_a,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
-*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,UNKNOWN,0,0  #  12 ||< external
+*surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,61,03  #  12 ||< ptn_corc_l3:L4_toilet
 *surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  14 ||< external
+*surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,stone_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
