@@ -162,7 +162,7 @@ C failed searches brought to users attention.
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,
 C DACC is the line degree tolerance for setting of corners.
-      CACC=0.010
+      CACC=0.025
       IACC=0
       DACC=5.0
       DCNN=' '
@@ -383,8 +383,9 @@ C Flip logic for partitions.
           M3SKP=.false.
         else
           dok=.false.
-          call askok('Are you sure you want to skip marked partitions?',
-     &               '(see help)',OK,dok,nbhelp)
+          call askok(
+     &      'Are you sure you want to skip confirmation of existing',
+     &      'marked partitions (see help)?',OK,dok,nbhelp)
           if(OK)M3SKP=.true.
         endif
       ELSEIF(INO.EQ.8)THEN

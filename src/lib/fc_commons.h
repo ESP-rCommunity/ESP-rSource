@@ -6,7 +6,7 @@
 
    MCOM must equal the value set in building.h <<can this be done automatically??>>
 */
-#define MCOM 72
+#define MCOM 82
 
 /*
   ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
