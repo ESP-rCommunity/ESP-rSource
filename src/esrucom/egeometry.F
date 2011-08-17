@@ -5187,7 +5187,7 @@ C Surfaces with associated vertices.
       call edisp(ITRU,'        |Vertices|')
       DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
-        if(NV.le.27)then
+        if(NV.le.26)then
           WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
         else
