@@ -608,8 +608,10 @@ C information. This is shorter than the string returned by CONXINFO.
           WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),' : ',
      &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),' : ',ZST2(1:lzn2)
         else
-          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),':',
-     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),':',ZST2(1:lzn2)
+
+C Not enought space so write only the 1st 7 char of each.
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:7),':',
+     &          ZST1(1:7),' >|< ',SST2(1:7),':',ZST2(1:7)
         endif
       ELSEIF(ICT(ICON).EQ.4)THEN
         IF(IC2(ICON).GT.0)THEN
