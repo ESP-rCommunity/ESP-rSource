@@ -402,10 +402,12 @@ C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
 
-C If vertex are to be labeled do it in the smallest font, then
-C move cursor to vertex and remember position.
+C If vertex are to be labeled do it in the smallest font, also place
+C a 2pixel square dot at the vertex so if it is embedded in a line
+C it can be seen. Then move cursor to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
@@ -474,6 +476,7 @@ C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP1)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy
