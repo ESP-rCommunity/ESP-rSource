@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_rt # tag version, format, zone name
-*date Wed Aug 17 06:48:06 2011  # latest file modification 
+*date Wed Aug 17 22:36:19 2011  # latest file modification 
 L5_open_rt describes right portion of level five open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.00000,64.15000  #   1
@@ -98,7 +98,7 @@ L5_open_rt describes right portion of level five open plan
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,fic_open_r,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,10  #   1 ||< fic_open_r:L5_open_lft
-*surf,fic_open_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,12  #   2 ||< fic_open_rb:L5_open_lft
+*surf,fic_open_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,11  #   2 ||< ptn_lw2:L5_open_lft
 *surf,ptn_opn_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,05  #   3 ||< ptn_opn_c:L5_srv_cell
 *surf,gptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,70,06  #   4 ||< gptn_opn_d:L5_srv_cell
 *surf,ptn_opn_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,07  #   5 ||< ptn_opn_d:L5_srv_cell
@@ -119,13 +119,13 @@ L5_open_rt describes right portion of level five open plan
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,08  #  20 ||< front_rail:L5_light_w2
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,09  #  21 ||< right_rail:L5_light_w2
 *surf,ptnb_opn_l5,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,09  #  22 ||< ptnb_opn_l5:L5_toil_psg
-*surf,fac_fr_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  23 ||< external
-*surf,fac_fr_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  24 ||< external
-*surf,fac_fr_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  25 ||< external
-*surf,fac_fr_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  26 ||< external
-*surf,fac_fr_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  27 ||< external
-*surf,fac_fr_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  28 ||< external
-*surf,fac_fr_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  29 ||< external
+*surf,fac_fr_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_fr_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,fac_fr_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  25 ||< external
+*surf,fac_fr_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  26 ||< external
+*surf,fac_fr_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_fr_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_fr_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  29 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

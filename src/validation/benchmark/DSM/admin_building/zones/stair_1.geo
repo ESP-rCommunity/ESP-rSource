@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Wed Aug 17 06:08:31 2011  # latest file modification 
+*date Wed Aug 17 22:24:54 2011  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -145,11 +145,11 @@ stair_1 describes stair number one
 *surf,ptn_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,34  #  25 ||< stair_rflr:L1_sw_void
 *surf,ptn_flrv_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,23  #  26 ||< ptn_flrv_l3:L3_sw_void
 *surf,pnt_flrv_l4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,23  #  27 ||< ptn_flrv_l4:L4_sw_void
-*surf,ptn_flrv_l5,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,77,23  #  28 ||< ptn_flrv_l5:L5_sw_void
+*surf,ptn_flrv_l5,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,77,23  #  28 ||< ptn_flrv_l5:L5_sw_void
 *surf,ptn_voide_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,14  #  29 ||< ptn_stairb:L1_training
 *surf,ptn_void_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,14  #  30 ||< ptn_l3_sta:L3_sw_void
 *surf,ptn_void_l4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,14  #  31 ||< Wall-14:L4_sw_void
-*surf,ptn_void_l5,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,77,14  #  32 ||< ptn_stair:L5_sw_void
+*surf,ptn_void_l5,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,77,14  #  32 ||< ptn_stair:L5_sw_void
 *surf,ptn_cora_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,28  #  33 ||< ptn_cora_one:L1_training
 *surf,ptn_corb_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,11,13  #  34 ||< ptn_staira:L1_training
 *surf,ptn_corc_one,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,20  #  35 ||< ptn_stairsw:L1_support
@@ -163,9 +163,9 @@ stair_1 describes stair number one
 *surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,17  #  43 ||< ptn_corb_l4:L4_sw_meet
 *surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,57,13  #  44 ||< ptn_stair:L4_open_s
 *surf,l5_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
-*surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
-*surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,73,10  #  48 ||< ptn_corc_l5:L5_toilet
+*surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,15  #  46 ||< floor-lob:L5_lobby
+*surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,16  #  47 ||< ptn_cora_l5:L5_lobby
+*surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,73,10  #  48 ||< shift_fac:L5_toilet
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

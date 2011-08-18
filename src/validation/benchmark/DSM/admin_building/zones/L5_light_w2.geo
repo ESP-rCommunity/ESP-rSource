@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w2 # tag version, format, zone name
-*date Wed Aug 17 06:45:30 2011  # latest file modification 
+*date Wed Aug 17 23:09:49 2011  # latest file modification 
 L5_light_w2 describes light well two at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,64.15000  #   1
@@ -73,18 +73,18 @@ L5_light_w2 describes light well two at level 5
 *surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,17  #   1 ||< l3_lw2_fr:L5_open_rt
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,18  #   2 ||< l3_lw2_ri:L5_open_rt
 *surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,19  #   3 ||< l3_lw2_bk:L5_open_rt
-*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #   4 ||< not yet defined
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,35  #   4 ||< l3_lw2_lef:L5_open_lft
 *surf,up_l3_lw2,SLOP,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,60,05  #   6 ||< up_l3_lw2:L4_light_w2
-*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,36  #   7 ||< left_rail:L5_open_lft
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,20  #   8 ||< front_rail:L5_open_rt
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,21  #   9 ||< right_rail:L5_open_rt
 *surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
 *surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
 *surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  14 ||< external
-*surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #  15 ||< external
+*surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,parap_ri,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,frame_ri,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,parap_bk,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external

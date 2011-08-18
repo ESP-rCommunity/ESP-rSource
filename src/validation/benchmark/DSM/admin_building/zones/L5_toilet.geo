@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_toilet # tag version, format, zone name
-*date Wed Aug 17 06:44:11 2011  # latest file modification 
+*date Wed Aug 17 22:25:59 2011  # latest file modification 
 L5_toilet describes toilet adjacent to stair one on level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.25000,30.50000,64.15000  #   1
@@ -41,17 +41,17 @@ L5_toilet describes toilet adjacent to stair one on level 5
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_loba,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_lobb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_loba,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,17  #   1 ||< ptn_loba:L5_lobby
+*surf,ptn_lobb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,18  #   2 ||< ptn_lobb:L5_lobby
 *surf,ptn_k2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,68,06  #   3 ||< ptn_toilet:L5_lit_srv
-*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,00,00  #   4 ||< external
-*surf,facade_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   5 ||< external
-*surf,facade_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #   6 ||< external
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,00,00  #   7 ||< external
+*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,facade_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,facade_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,floor_toil,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,00,00  #   9 ||< external
+*surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,48  #  10 ||< ptn_corc_l5:stair_1
-*surf,shift_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,00,00  #  11 ||< external
+*surf,shift_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

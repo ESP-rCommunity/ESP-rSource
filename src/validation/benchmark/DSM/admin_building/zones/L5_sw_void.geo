@@ -1,17 +1,17 @@
 *Geometry 1.1,GEN,L5_sw_void # tag version, format, zone name
-*date Wed Aug 17 06:46:07 2011  # latest file modification 
+*date Wed Aug 17 22:24:54 2011  # latest file modification 
 L5_sw_void describes void at level five SW
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,63.39300  #   1
 *vertex,-4.08490,6.36484,63.39300  #   2
 *vertex,-2.08995,6.83983,63.39300  #   3
 *vertex,0.00000,7.36231,64.15000  #   4
-*vertex,0.00000,8.59728,64.15000  #   5
-*vertex,0.00000,11.06722,64.15000  #   6
-*vertex,0.00000,13.63215,64.15000  #   7
-*vertex,0.00000,16.10209,64.15000  #   8
-*vertex,0.00000,18.66702,64.15000  #   9
-*vertex,0.00000,21.13696,64.15000  #  10
+*vertex,0.00000,8.50000,64.15000  #   5
+*vertex,0.00000,11.00000,64.15000  #   6
+*vertex,0.00000,13.50000,64.15000  #   7
+*vertex,0.00000,16.00000,64.15000  #   8
+*vertex,0.00000,17.75000,64.15000  #   9
+*vertex,0.00000,21.25000,64.15000  #  10
 *vertex,0.00000,24.00000,64.15000  #  11
 *vertex,0.00000,28.50000,64.15000  #  12
 *vertex,0.00000,30.50000,64.15000  #  13
@@ -28,12 +28,12 @@ L5_sw_void describes void at level five SW
 *vertex,-4.08490,6.36484,67.37500  #  24
 *vertex,-2.08995,6.83983,67.37500  #  25
 *vertex,0.00000,7.36231,67.37500  #  26
-*vertex,0.00000,8.59728,67.37500  #  27
-*vertex,0.00000,11.06722,67.37500  #  28
-*vertex,0.00000,13.63215,67.37500  #  29
-*vertex,0.00000,16.10209,67.37500  #  30
-*vertex,0.00000,18.66702,67.37500  #  31
-*vertex,0.00000,21.13696,67.37500  #  32
+*vertex,0.00000,8.50000,67.37500  #  27
+*vertex,0.00000,11.00000,67.37500  #  28
+*vertex,0.00000,13.50000,67.37500  #  29
+*vertex,0.00000,16.00000,67.37500  #  30
+*vertex,0.00000,17.75000,67.37500  #  31
+*vertex,0.00000,21.25000,67.37500  #  32
 *vertex,0.00000,24.00000,67.37500  #  33
 *vertex,0.00000,28.50000,67.37500  #  34
 *vertex,0.00000,30.50000,67.37500  #  35
@@ -116,15 +116,15 @@ L5_sw_void describes void at level five SW
 *surf,fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
 *surf,fac_glc,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_gld,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,ptn_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,ptn_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,65,16  #   5 ||< ptn_opn_fr:L5_confer
 *surf,gptn_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,15  #   6 ||< ptn_opn_d:L5_confer
-*surf,gptn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,gptn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,gptn_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,gptn_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,gptn_g,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,ptn_elev,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,20  #  12 ||< back_5:lifts
-*surf,ptn_lob_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,09  #  13 ||< gptn_open:L5_lobby
+*surf,gptn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,14  #   7 ||< ptn_opn_c:L5_confer
+*surf,gptn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,13  #   8 ||< ptn_opn_b:L5_confer
+*surf,gptn_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,12  #   9 ||< ptn_opn_a:L5_confer
+*surf,gptn_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,66,09  #  10 ||< ptn_open_b:L5_kitch2
+*surf,gptn_g,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,66,08  #  11 ||< ptn_open_a:L5_kitch2
+*surf,ptn_elev,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,03,20  #  12 ||< back_5:lifts
+*surf,ptn_lob_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,05  #  13 ||< ptn_toil:L5_lobby
 *surf,ptn_stair,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,01,32  #  14 ||< ptn_void_l5:stair_1
 *surf,bit_facade,VERT,-,-,-,stone_stone,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,bk_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
@@ -137,7 +137,7 @@ L5_sw_void describes void at level five SW
 *surf,ptn_flrv_l5,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,28  #  23 ||< ptn_flrv_l5:stair_1
 *surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
 *surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,low_bit_fac,VERT,-,-,-,stone_stone,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,low_bit_fac,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,l5_faade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,16  #  27 ||< l5_facade_a:sw_facade
 *surf,l5_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,22  #  28 ||< l5_facc:sw_facade
 *surf,l5_facad_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,21  #  29 ||< l5_facb:sw_facade
