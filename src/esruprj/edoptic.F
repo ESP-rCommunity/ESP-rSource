@@ -1733,7 +1733,7 @@ C   Limited to 0 or 1 at present.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
       DIMENSION VERT(35)
-      character VERT*54,CXITM*43,key*1,lfil*72
+      character VERT*58,CXITM*48,key*1,lfil*72
       character bidirfile*72,DFILE*72,bidirname*12
       logical MODIFY,MODLEN,MODBND !,ok,dok
 C      character outs*124
@@ -1791,10 +1791,10 @@ C current menu line index. Build up text strings for the menu.
           call CONXMENU(L,CXITM)
           VERT(M)=' '
           if(NSTMCFL(L).ne.0)then
-            WRITE(VERT(M),'(A1,1x,A42,a,i1)')KEY,CXITM(1:42),'|',
+            WRITE(VERT(M),'(A1,1x,A,a,i1)')KEY,CXITM(1:47),'|',
      &        NSTMCFL(L)
           else
-            WRITE(VERT(M),'(A1,1x,A42,a)')KEY,CXITM(1:42),'| -'
+            WRITE(VERT(M),'(A1,1x,A,a)')KEY,CXITM(1:47),'| -'
           endif
         ENDIF
    10 CONTINUE

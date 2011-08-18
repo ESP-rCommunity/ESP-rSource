@@ -88,13 +88,13 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
-      character CXITM*43
+      character CXITM*48
       CHARACTER LCFGF*72
       character cfgroot*24
       character DCNN*72
       character bl*2
       DIMENSION VERT(35)
-      character VERT*46,KEY*1
+      character VERT*50,KEY*1
       integer MITEM,INO ! max items and current menu item
       integer MVERT,IVERT ! max items and current menu item
 
@@ -481,13 +481,13 @@ C current menu line index. Build up text strings for the menu.
             CALL EMKEY(L,KEY,IER)
             call CONXMENU(L,CXITM)
             VERT(M)=' '
-            WRITE(VERT(M),'(A1,1x,A43)')KEY,CXITM
+            WRITE(VERT(M),'(A1,1x,A)')KEY,CXITM(1:47)
           ENDIF
    10   CONTINUE
 
 C Set menu header text.
-        VERT(1)=    ' conn|reference|conn|      connection     | '
-        VERT(2)=    ' no. |zone|surf|type| zone/data|surf/data | '
+        VERT(1)=    ' conn|reference   |conn|      connection       |'
+        VERT(2)=    ' no. |zone|surface|type| zone/data|surf/data   |'
 
 C Number of actual items displayed.
         MVERT=M+MCTL
@@ -2124,8 +2124,8 @@ C lstanchr = links for each anchor
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION VERT(35),flag(mcon),iconnpk(60)
-      CHARACTER VERT*54,KEY*1,outs*124
-      character CXITM*43,flag*9
+      CHARACTER VERT*59,KEY*1,outs*124
+      character CXITM*48,flag*9
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       logical found,ok,dok,foundone,okd,MODIFY,MODLEN,MODBND
       integer MVERT,IVERT ! max items and current menu item
@@ -2179,9 +2179,10 @@ C anchor set(s) is/are associated with a connection.
       write(VERT(3),'(a)') '  index  label    type       nb. links'
       write(VERT(4),'(a,i2,5a,i2,a)') '1 ',ifoc,' ',ALOCLBL(ifoc),' ',
      &  ALOCTYP(ifoc),' (',IALOC(ifoc),' links)'
-      VERT(5)='  ___________________________________________   '
-      VERT(6)=' conn|  connection      |    connection     |123456789'
-      VERT(7)=' no. | inside face      | other side data   |anchor'
+      VERT(5)='  ______________________________________________   '
+      VERT(6)=
+     &     ' conn|  connection        |    connection       |123456789'
+      VERT(7)=' no. | inside face        | other side data     |anchor'
       do 5 i=1,NALOC
         if(IALOC(i).gt.0)then
           do 4 j = 1,IALOC(i)
@@ -2208,7 +2209,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A42,1a,a)')KEY,CXITM(1:42),'|',flag(L)
+          WRITE(VERT(M),'(A1,1x,A,1a,a)')KEY,CXITM(1:46),'|',flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2220,7 +2221,7 @@ C If a long list include page facility text.
         VERT(M+1)='  ________________________________________ '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
-   15   FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
+   15   FORMAT   ('0 page ------- Part: ',I3,' of ',I3,' -----')
       ENDIF
       VERT(M+2)  ='* modify list                         '
       VERT(M+3)  ='? help                                '
@@ -2637,7 +2638,7 @@ C Select one or more connections from a list.
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER VERT*54,KEY*1,CXITM*43,flag*1,SEL*50
+      CHARACTER VERT*54,KEY*1,CXITM*48,flag*1,SEL*50
       logical found
       integer MVERT,IVERT ! max items and current menu item
     
@@ -2695,8 +2696,8 @@ C items have been selected. Generate text for title.
     3 lne=LNBLNK(ERMSG)
       IF(lne.GT.50)WRITE(SEL,'(1X,A)')ERMSG(1:50)
       IF(lne.LE.50)WRITE(SEL,'(1X,A)')ERMSG(1:lne)
-      VERT(1)=  ' no. | inside face     | other side data   |anchor'
-      VERT(2)=  ' conn|  connection     |    connection     |select'
+      VERT(1)=  ' no. | inside face     | other side data      |anchor'
+      VERT(2)=  ' conn|  connection     |    connection        |select'
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
@@ -2707,7 +2708,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A43,1x,a1)')KEY,CXITM,flag(L)
+          WRITE(VERT(M),'(A1,1x,A,1x,a1)')KEY,CXITM(1:48),flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2829,7 +2830,7 @@ C IDST tool commands.
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24
-      character CXITM*43,outs*124,LTMP*72
+      character CXITM*48,outs*124,LTMP*72
       character clmdb*144
       character doit*248,tmode*8,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
@@ -3219,7 +3220,7 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
-      character AL8*12,AL9*12,CXITM*43
+      character AL8*12,AL9*12,CXITM*48
       integer ltype,ins2,ins3   ! for radio buttons
 
 C For help messages

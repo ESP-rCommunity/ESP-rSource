@@ -494,33 +494,51 @@ C information. This is shorter than the string returned by CONXINFO.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12
+      CHARACTER CXITM*48,SST1*12,ZST1*12,SST2*12,ZST2*12
 
-      integer ICM  ! connection for current surface.
+      integer ICM   ! connection for current surface.
+      integer lsn1  ! lenght of 9 or less
+      integer lsn12 ! length of 12 or less
+      integer lzn1  ! length of 9 or less
+      integer lzn12 ! length of 12 or less
+      integer lsn2  ! length of 9 or less
+      integer lsn22  ! length of 12 or less
+      integer lzn2  ! length of 9 or less
+      integer lzn22  ! length of 12 or less
 
       CXITM=' '
       SST1=SSNAME(ICON)
-      lsn1=MIN0(lnblnk(SST1),8)
+      lsn1=MIN0(lnblnk(SST1),9)
+      lsn12=lnblnk(SST1)
       ZST1=zname(IC1(ICON))
-      lzn1=MIN0(lnblnk(ZST1),8)
-      IF(ICT(ICON).EQ.0)THEN
-        if((lsn1+lzn1+21).lt.43)then
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &      ZST1(1:lzn1),' >|< External'
+      lzn1=MIN0(lnblnk(ZST1),9)
+      lzn12=lnblnk(ZST1)
+      IF(ICT(ICON).EQ.-1)THEN
+        if((lsn12+lzn12+21).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< UNKNOWN'
         else
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &      ZST1(1:lzn1),' >|< External'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< UNKNOWN'
+        endif
+      ELSEIF(ICT(ICON).EQ.0)THEN
+        if((lsn12+lzn12+21).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< External'
+        else
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< External'
         endif
       ELSEIF(ICT(ICON).EQ.1)THEN
-        if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &      ZST1(1:lzn1),' >|< Identical'
+        if((lsn12+lzn12+22).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< Identical'
         else
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &      ZST1(1:lzn1),' >|< Identical'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< Identical'
         endif
       ELSEIF(ICT(ICON).EQ.2)THEN
-        if((lsn1+lzn1+28).lt.43)then
+        if((lsn1+lzn1+28).lt.48)then
           WRITE(CXITM,'(I4,1x,4a,I3,a)') ICON,SST1(1:lsn1),' in ',
      &      ZST1(1:lzn1),' >|< Constant @',IC2(ICON),'dC'
         else
@@ -528,34 +546,45 @@ C information. This is shorter than the string returned by CONXINFO.
      &      ZST1(1:lzn1),' >|< Constant @',IC2(ICON),'dC'
         endif
       ELSEIF(ICT(ICON).EQ.3)THEN
+
+C For partitions, try full length for zones and surface and then cut
+C back to short items in 3 stages, otherwise drop back to max 9 char.
         ICM=IZSTOCN(IC2(ICON),IE2(ICON))
         SST2=SSNAME(ICM)
-        lsn2=MIN0(lnblnk(SST2),8)
+        lsn2=MIN0(lnblnk(SST2),9)
+        lsn22=lnblnk(SST2)
         ZST2=zname(IC2(ICON))
-        lzn2=MIN0(lnblnk(ZST2),8)
-        if((lsn1+lzn1+lsn2+lzn2+17).lt.43)then
-          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(:lsn1),' in ',
-     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),' in ',ZST2(1:lzn2)
-        elseif((lsn1+lzn1+lsn2+lzn2+15).lt.43)then
-          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),' : ',
-     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),' : ',ZST2(1:lzn2)
+        lzn2=MIN0(lnblnk(ZST2),9)
+        lzn22=lnblnk(ZST2)
+        if((lsn12+lzn12+lsn22+lzn22+11).lt.48)then
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn12),':',
+     &        ZST1(1:lzn12),' >|< ',SST2(1:lsn22),':',ZST2(1:lzn22)
+        elseif((lsn12+lzn12+lsn22+lzn2+11).lt.48)then
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn12),':',
+     &        ZST1(1:lzn12),' >|< ',SST2(1:lsn22),':',ZST2(1:lzn2)
+        elseif((lsn12+lzn12+lsn2+lzn2+11).lt.48)then
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn12),':',
+     &          ZST1(1:lzn12),' >|< ',SST2(1:lsn2),':',ZST2(1:lzn2)
+        elseif((lsn1+lzn1+lsn2+lzn2+11).lt.48)then
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),':',
+     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),':',ZST2(1:lzn2)
         else
 
-C Not enought space so write only the 1st 7 char of each.
-          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:7),':',
-     &          ZST1(1:7),' >|< ',SST2(1:7),':',ZST2(1:7)
+C Not enought space so write only the 1st 9 char of each.
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:9),':',
+     &          ZST1(1:9),' >|< ',SST2(1:9),':',ZST2(1:8)
         endif
       ELSEIF(ICT(ICON).EQ.4)THEN
         IF(IC2(ICON).GT.0)THEN
-          if((lsn1+lzn1+19).lt.43)then
-            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &        ZST1(1:lzn1),' >|< ground'
+          if((lsn12+lzn12+19).lt.48)then
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &        ZST1(1:lzn12),' >|< ground'
           else
-            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &        ZST1(1:lzn1),' >|< ground'
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &        ZST1(1:lzn12),' >|< ground'
           endif
         ELSE
-          if((lsn1+lzn1+26).lt.43)then
+          if((lsn1+lzn1+26).lt.48)then
             WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
      &        ZST1(1:lzn1),' >|< user def grnd'
           else
@@ -564,28 +593,28 @@ C Not enought space so write only the 1st 7 char of each.
           endif
         ENDIF
       ELSEIF(ICT(ICON).EQ.5)THEN
-        if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &      ZST1(1:lzn1),' >|< adiabatic'
+        if((lsn12+lzn12+22).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< adiabatic'
         else
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &      ZST1(1:lzn1),' >|< adiabatic'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< adiabatic'
         endif
       ELSEIF(ICT(ICON).EQ.6)THEN
-        if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &      ZST1(1:lzn1),' >|< BASESIMP'
+        if((lsn12+lzn12+22).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< BASESIMP'
         else
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &      ZST1(1:lzn1),' >|< BASESIMP'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< BASESIMP'
         endif
       ELSEIF(ICT(ICON).EQ.7)THEN
-        if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
-     &      ZST1(1:lzn1),' >|< IDENT_CEN'
+        if((lsn12+lzn12+22).lt.48)then
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),' in ',
+     &      ZST1(1:lzn12),' >|< IDENT_CEN'
         else
-          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
-     &      ZST1(1:lzn1),' >|< IDENT_CEN'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn12),':',
+     &      ZST1(1:lzn12),' >|< IDENT_CEN'
         endif
       ENDIF
 
