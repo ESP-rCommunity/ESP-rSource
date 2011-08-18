@@ -37,6 +37,7 @@ C ************* EDCONN
 C Edit/clear/check connection attributes in common blocks via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
+#include "epara.h"
 #include "building.h"
 #include "model.h"
 
@@ -87,11 +88,15 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
+      character CXITM*43
       CHARACTER LCFGF*72
       character cfgroot*24
       character DCNN*72
       character bl*2
+      DIMENSION VERT(35)
+      character VERT*46,KEY*1
       integer MITEM,INO ! max items and current menu item
+      integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -451,13 +456,109 @@ C Flip logic for back-to-back within zone.
 
       ELSEIF(INO.EQ.15)THEN
 
-C Edit single connection.
+C Edit single connection. Setup a long list made up of short
+C connection descriptions and allow the user to select. This
+C then calls ?? to do the work.
+
+C Initialise connection menu size variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+        MHEAD=2
+        MCTL=3
+        ILEN=NCON
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92   IER=0
+        IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+   33   M=MHEAD
+        DO 10 L=1,ILEN
+          IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+            M=M+1
+            CALL EMKEY(L,KEY,IER)
+            call CONXMENU(L,CXITM)
+            VERT(M)=' '
+            WRITE(VERT(M),'(A1,1x,A43)')KEY,CXITM
+          ENDIF
+   10   CONTINUE
+
+C Set menu header text.
+        VERT(1)=    ' conn|reference|conn|      connection     | '
+        VERT(2)=    ' no. |zone|surf|type| zone/data|surf/data | '
+
+C Number of actual items displayed.
+        MVERT=M+MCTL
+
+C If a long list include page facility text.      
+        IF(IPFLG.EQ.0)THEN
+          VERT(M+1)='  ___________________________________ '
+        ELSE
+          WRITE(VERT(M+1),15)IPM,MPM 
+   15     FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
+        ENDIF
+        VERT(M+2)  ='? help                                '
+        VERT(M+3)  ='- exit this menu                      '
+
+C Help text for this menu.
+        helptopic='boundary_choice_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Now display the menu.
+        CALL EMENU('Zone Boundary Conditions',VERT,MVERT,IVERT)
+        IF(IVERT.LE.MHEAD)THEN
+
+C Within the header so skip request.
+          IVERT=-1
+          goto 33
+        ELSEIF(IVERT.EQ.MVERT)THEN
+
+          goto 3  ! go to main menu
+
+        ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C List help text for the menu.
+          helptopic='boundary_choice_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
+        ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+        ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Edit item identified by KEYIND after reporting on current values.
+          call tstamp('>','PRJ: enter topology edit')
+          CALL KEYIND(MVERT,IVERT,IFOC,IO)
+
+          CALL EDISP(iuout,' ')
+          CALL EDISP(iuout,' Current connection description...')
+          CALL CONXINF(1,0,CXSTR)
+          write(outs,'(1X,A)') CXSTR
+          CALL EDISP(iuout,outs)
+          CALL CONXINF(1,IFOC,CXSTR)
+          write(outs,'(1X,A)') CXSTR
+
+C Call edaconn to get the editing done.
+          call edaconn(IFOC,ier)
+          MODIFY=.TRUE.
+
+        ELSE
+
+C Not one of the legal menu choices.
+          goto 92
+        ENDIF
+        IVERT=-2
+        goto 33
 
 C << Has anyone used this recently? How about adapting this as a common bit of
 C << code called from the many places where connections are established
 C << in the model?
-        call edaconn(ier)
-        MODIFY=.TRUE.
       ELSEIF(INO.EQ.16)THEN
 
 C Clear contiguity.
