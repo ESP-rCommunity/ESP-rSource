@@ -2762,7 +2762,7 @@ C Pased parameters
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
+      DIMENSION SALT(13),IVAL(MCOM)  ! ,bl(144)
       DIMENSION COG1(3),COG2(3),COG3(3)
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
@@ -3461,10 +3461,6 @@ C when it is re-freshed.
       ELSEIF(INODA.EQ.9)THEN
 
 C Specify the environment of the 'other' face of the surface.
-
-C << is it possible to consolidate this with the code in edonecon.F
-C << which is little used? 
-
         call edisp(iuout,' ')
         call edisp(iuout,'The current model topology is...')
         CALL CONXINFO(1,0,CXSTR)
@@ -3478,48 +3474,44 @@ C << which is little used?
         SALT(1)='exterior                         '
         SALT(2)='similar to current               '
         SALT(3)='prescribed static                '
-        SALT(4)='surface in other zone            '
-        SALT(5)='ground (monthly profile)'
+        SALT(4)='surface in this zone             '
+        SALT(5)='surface in other zone            '
+        SALT(6)='ground (monthly profile)'
         if(NGRDP.gt.0)then
-          SALT(6)='ground (user defined profile)  '
+          SALT(7)='ground (user defined profile)  '
         else
-          SALT(6)='ground (no user defined profile)'
+          SALT(7)='ground (no user defined profile)'
         endif
-        SALT(7)='ground (3D conduction model)    '
-        SALT(8)='adiabatic                       '
-        SALT(9)='BASESIMP foundation configuration'
-        SALT(10)='CEN 13791 partition            '
-        SALT(11)='unknown at this time           '
+        SALT(8)='ground (3D conduction model)    '
+        SALT(9)='adiabatic                       '
+        SALT(10)='BASESIMP foundation configuration'
+        SALT(11)='CEN 13791 partition            '
+        SALT(12)='unknown at this time           '
+        SALT(13)='no change at this time         '
 
         helptopic='surface_boundary_opt'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IX=1
         CALL EPICKS(IX,IVAL,' ','Other Side Boundary Condition',
-     &    33,11,SALT,'surface boundary ',IER,nbhelp)
+     &    33,13,SALT,'surface boundary ',IER,nbhelp)
 
-        IF(IX.EQ.0)GOTO 13
+        IF(IX.EQ.0) goto 13
+        IF(IVAL(1).EQ.13) goto 13
 
 C Determine the match in the system topology and update it. 
         CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
         IC1(IC)=ICOMP
         IE1(IC)=IS
         IF(IVAL(1).EQ.1)THEN
-          SOTHER(IS,1)='EXTERIOR'
-          SOTHER(IS,2)='0'
-          SOTHER(IS,3)='0'
-          SSOTHER(IC,1)='EXTERIOR'
-          SSOTHER(IC,2)='0'
+          SOTHER(IS,1)='EXTERIOR'; SOTHER(IS,2)='0'; SOTHER(IS,3)='0'
+          SSOTHER(IC,1)='EXTERIOR'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
-          ICT(IC)=0
-          IC2(IC)=0
-          IE2(IC)=0
+          ICT(IC)=0; IC2(IC)=0; IE2(IC)=0
           showother=.false.
         ELSEIF(IVAL(1).EQ.2)THEN
-          SOTHER(IS,1)='SIMILAR'
-          SSOTHER(IC,1)='SIMILAR'
+          SOTHER(IS,1)='SIMILAR'; SSOTHER(IC,1)='SIMILAR'
           ICT(IC)=1
-          VALT=0.0
-          VALW=0.0
+          VALT=0.0; VALW=0.0
           CALL EASKR(VALT,' ','Temperature offset?',
      &           -99.,'F',700.,'F',0.0,'offset temp',IER,nbhelp)
           CALL EASKR(VALW,' ','Radiation offset?',
@@ -3532,11 +3524,9 @@ C Determine the match in the system topology and update it.
           IE2(IC)=INT(VALW)
           showother=.false.
         ELSEIF(IVAL(1).EQ.3)THEN
-          SOTHER(IS,1)='CONSTANT'
-          SSOTHER(IC,1)='CONSTANT'
+          SOTHER(IS,1)='CONSTANT'; SSOTHER(IC,1)='CONSTANT'
           ICT(IC)=2
-          VALT=0.0
-          VALW=0.0
+          VALT=0.0; VALW=0.0
           CALL EASKR(VALT,' ','Constant temperature?',
      &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,nbhelp)
           CALL EASKR(VALW,' ','Constant radiation?',
@@ -3550,6 +3540,99 @@ C Determine the match in the system topology and update it.
           write(SSOTHER(IC,3),'(i2.2)')INT(VALW)
           showother=.false.
         ELSEIF(IVAL(1).EQ.4)THEN
+
+C Link to a surface in this zone (this is allowed as an alternative
+C to adiabetic connections) and is what is used when setting up
+C internal mass bodies.
+          IZ=ICOMP 
+
+C General image option flags.
+          ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+          ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
+          GRDIS=0.0; ITPPSW=0
+
+          ISO=1
+          CALL EPMENSV
+          CALL EASKSUR(IZ,ISO,'A','Select another surface in',
+     &      'this zone.',IER)
+          CALL EPMENRC
+          if(ISO.GT.0)then
+
+C Write ANOTHER followed by the indices of zone and surface.
+            SSOTHER(ic,1)='ANOTHER'
+            write(SSOTHER(ic,2),'(i2.2)') iz
+            write(SSOTHER(ic,3),'(i2.2)') iso
+            ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
+
+C Sort out the other face attributes.
+            ico = izstocn(iz,iso)
+            IC1(ICO)=IZ
+            IE1(ICO)=ISO
+            ICT(ICO)=3
+            IC2(ICO)=IC1(IC)
+            IE2(ICO)=IE1(IC)
+
+            SSOTHER(ico,1)='ANOTHER'
+            write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
+            write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
+
+C Also check the other side construction and see if it matches. If
+C current surface MLC index is known get isymindex for the other side
+            if(ssmlcindex(ic).gt.0) then
+              ii=ssmlcindex(ic)
+              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &          isymindex)
+              if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+                if(SSMLCN(ico)(1:12).eq.MLCN(1:12))then
+                  TOSMLCN=MLCN
+                elseif(SSMLCN(ico)(1:4).eq.'UNKN')then
+                  TOSMLCN=MLCN
+                else
+                  TOSMLCN=MLCN
+                endif
+                iissmlci=ii
+              elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+
+C If the current construction is nonsymmetric then it should not be
+C used for a partition if db does not have a linked MLC - inform the user.
+                write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &            ' has a nonsymmetric construction ',
+     &            SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
+                call edisp(iuout,outs)
+                write(outs,'(5a)') 'It faces ',
+     &            SSNAME(ico),' composed of ',
+     &            SSMLCN(ico)(1:12),' (which may not match).'
+                call edisp(iuout,outs)
+                call edisp(iuout,
+     &  'Please check attributes and/or revise the Cconstructions db.')
+                iissmlci=isymindex  ! use returned value 
+              else
+                if(SSMLCN(ico)(1:4).eq.'UNKN')then
+                  TOSMLCN=MLCSYM
+                elseif(SSMLCN(ico)(1:12).eq.MLCSYM(1:12))then
+                  TOSMLCN=MLCSYM
+                else
+                  TOSMLCN=MLCSYM
+                endif
+                iissmlci=isymindex  ! use returned value
+              endif
+            endif
+
+C Update the attributes of the other surface in the zone so it will
+C be saved along with the changes in the initial surface.
+            SSMLCN(ico)=TOSMLCN
+            if(iissmlci.ne.0) ssmlcindex(ico)=iissmlci  ! update if known
+            SSOTHER(ico,1)='ANOTHER'
+            write(SSOTHER(ico,2),'(i2.2)') IC2(ico)
+            write(SSOTHER(ico,3),'(i2.2)') IE2(ico)
+            showother=.true.  ! when re-display include info on matched
+
+          else
+
+C User did not select surface so continue without changing.
+            continue
+          endif
+        ELSEIF(IVAL(1).EQ.5)THEN
 
 C Ask for specific zone to find a matching partition in.
           CALL EASKGEOF('If other zone known select it, else exit.',
@@ -3586,9 +3669,7 @@ C Write ANOTHER followed by the indices of zone and surface.
               SSOTHER(ic,1)='ANOTHER'
               write(SSOTHER(ic,2),'(i2.2)') iz
               write(SSOTHER(ic,3),'(i2.2)') iso
-              ICT(IC)=3
-              IC2(IC)=IZ
-              IE2(IC)=ISO
+              ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
 
 C If applicable find other surface, return its connection number and
 C point it to the current surface.
@@ -3598,11 +3679,8 @@ C point it to the current surface.
      &          updoth,dok,nbhelp)
               if(updoth)then
                 CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,ICO,DESCRC)
-                IC1(ICO)=IZ
-                IE1(ICO)=ISO
-                ICT(ICO)=3
-                IC2(ICO)=IC1(IC)
-                IE2(ICO)=IE1(IC)
+                IC1(ICO)=IZ; IE1(ICO)=ISO; ICT(ICO)=3
+                IC2(ICO)=IC1(IC); IE2(ICO)=IE1(IC)
 
                 SSOTHER(ico,1)='ANOTHER'
                 write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
@@ -3670,7 +3748,7 @@ C User did not select zone so continue without changing.
             continue
           endif
 
-        ELSEIF(IVAL(1).EQ.5)THEN
+        ELSEIF(IVAL(1).EQ.6)THEN
 
 C List out standard profiles, assuming that if June is 0.0, then the
 C profile has not been defined.
@@ -3712,7 +3790,7 @@ C the action make no changes and jump back to 13 (the menu creation code).
             CALL USRMSG(' ','Unacceptable ground profile.','W')
             GOTO 777
           ENDIF
-        ELSEIF(IVAL(1).EQ.6)THEN
+        ELSEIF(IVAL(1).EQ.7)THEN
 
 C List out user defined profiles, assuming that if June is 0.0, then the
 C profile has not been defined.
@@ -3756,30 +3834,21 @@ C the action make no changes and jump back to 13 (the menu creation code).
      &        'No user defined ground profiles have been found.',
      &        'Go to `Model Context` menu to define.','W')
           endif
-        ELSEIF(IVAL(1).EQ.7)THEN
+        ELSEIF(IVAL(1).EQ.8)THEN
 
 C Link to a 3D conduction model.
-          SOTHER(IS,1)='GROUND'
-          SOTHER(IS,2)='-3'
-          SOTHER(IS,3)='0'
-          SSOTHER(IC,1)='GROUND'
-          SSOTHER(IC,2)='-3'
-          SSOTHER(IC,3)='0'
-          ICT(IC)=4
-          IC2(IC)=-3
-          IE2(IC)=0
+          SOTHER(IS,1)='GROUND'; SOTHER(IS,2)='-3'; SOTHER(IS,3)='0'
+          SSOTHER(IC,1)='GROUND'; SSOTHER(IC,2)='-3'; SSOTHER(IC,3)='0'
+          ICT(IC)=4; IC2(IC)=-3; IE2(IC)=0
           call edisp(iuout,'Link set to 3D ground conduction model.')
-        ELSEIF(IVAL(1).EQ.8)THEN
-          SOTHER(IS,1)='ADIABATIC'
-          SOTHER(IS,2)='0'
-          SOTHER(IS,3)='0'
-          SSOTHER(IC,1)='ADIABATIC'
-          SSOTHER(IC,2)='0'
-          SSOTHER(IC,3)='0'
-          ICT(IC)=5
-          IE2(IC)=0
-          IC2(IC)=0
         ELSEIF(IVAL(1).EQ.9)THEN
+
+C Set at adiabatic.
+          SOTHER(IS,1)='ADIABATIC'; SOTHER(IS,2)='0'; SOTHER(IS,3)='0'
+          SSOTHER(IC,1)='ADIABATIC'; SSOTHER(IC,2)='0'
+          SSOTHER(IC,3)='0'
+          ICT(IC)=5; IE2(IC)=0; IC2(IC)=0
+        ELSEIF(IVAL(1).EQ.10)THEN
 
 C Get BASESIMP configuration via call to bsimtype.
           IBS=IC2(IC)
@@ -3807,12 +3876,9 @@ C action do not instanciate the data.
             goto 13
           endif
 
-        ELSEIF(IVAL(1).EQ.10)THEN
-          SOTHER(IS,1)='IDENT_CEN'
-          SOTHER(IS,2)='0'
-          SOTHER(IS,3)='0'
-          SSOTHER(IC,1)='IDENT_CEN'
-          SSOTHER(IC,2)='0'
+        ELSEIF(IVAL(1).EQ.11)THEN
+          SOTHER(IS,1)='IDENT_CEN'; SOTHER(IS,2)='0'; SOTHER(IS,3)='0'
+          SSOTHER(IC,1)='IDENT_CEN'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
           ICT(IC)=7
           VALT=0.0
@@ -3821,18 +3887,13 @@ C action do not instanciate the data.
           IE2(IC)=INT(VALW)
           showother=.false.
 
-        ELSEIF(IVAL(1).EQ.11)THEN
+        ELSEIF(IVAL(1).EQ.12)THEN
 
 C Reset to zeros set ICT to -1 to signal UNKNOWN
-          SOTHER(IS,1)='UNKNOWN'
-          SOTHER(IS,2)='0'
-          SOTHER(IS,3)='0'
-          SSOTHER(IC,1)='UNKNOWN'
-          SSOTHER(IC,2)='0'
+          SOTHER(IS,1)='UNKNOWN'; SOTHER(IS,2)='0'; SOTHER(IS,3)='0'
+          SSOTHER(IC,1)='UNKNOWN'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
-          ICT(IC)=-1
-          IE2(IC)=0
-          IC2(IC)=0
+          ICT(IC)=-1; IE2(IC)=0; IC2(IC)=0
         ELSE
           goto 148
         ENDIF
@@ -3893,6 +3954,7 @@ C Read current zone back in and then update the configuration file.
           endif
           CALL EMKCFG('-',IER)
         endif
+
       ELSEIF(INODA.EQ.10)THEN
 
 C Version 1.1 geometry holds information on child pararent

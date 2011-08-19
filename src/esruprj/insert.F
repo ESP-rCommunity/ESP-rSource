@@ -650,10 +650,11 @@ C Read the other zone and put selected surface data into temp storage.
   142   continue
 
 C Generate a new surface name and default, then check to see if
-C if is a duplicate. 
+C if is a duplicate. By definition, if we are copying a surface
+C from the same zone we must adapt the name.
   141   if(same)then
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
-          write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
+          write(SNAME1,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
         else
           write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
           write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
@@ -3133,7 +3134,7 @@ C Update common blocks G6 & G7
 
         IC1(ICON)=ICOMP
         IE1(ICON)=NSUR
-        ICT(ICON)=0  ! initial assumption of exterior
+        ICT(ICON)= -1  ! initial assumption of unknown
         IC2(ICON)=0
         IE2(ICON)=0
         IZSTOCN(icomp,nsur)=icon
