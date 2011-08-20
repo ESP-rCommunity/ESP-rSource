@@ -2763,7 +2763,8 @@ C Pased parameters
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION SALT(13),IVAL(MCOM)  ! ,bl(144)
-      DIMENSION COG1(3),COG2(3),COG3(3)
+      DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
+      integer iocog  ! loop counter for detecting close surfaces
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
@@ -2781,6 +2782,7 @@ C Strings for surface attributes to pass to insrec.
       integer ISDN,INODA ! max items and current menu item
       integer mnulen,iwhich2,nv   ! multi column lines
       logical greyok,odd   ! for display of vertex info
+      logical closecog     ! to check for nearby surfaces
       character message*48,t248*248
 
 C For help messages
@@ -3643,6 +3645,27 @@ C General image option flags.
             ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
             ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
             GRDIS=0.0; ITPPSW=0
+
+C Remember the COG of the current surface and then compare it with
+C the cog of the surfaces in the other zone. Report if within 1m.
+            cog(1)=ssurcog(ic,1)
+            cog(2)=ssurcog(ic,2)
+            cog(3)=ssurcog(ic,3)
+            do 77 ij=1,nzsur(iz)
+              closecog=.false.
+              iocog=IZSTOCN(iz,ij)
+              cogo(1)=ssurcog(iocog,1)
+              cogo(2)=ssurcog(iocog,2)
+              cogo(3)=ssurcog(iocog,3)
+              call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
+     &          cogo(3),1.0,closecog)
+              if(closecog)then
+                write(outs,'(6a)') 'Surface ',ssname(iocog),' in ',
+     &            zname(iz)(1:lnzname(iz)),' might be a match for ',
+     &            ssname(ic)
+                call edisp(iuout,outs)
+              endif
+  77        continue
 
 C Reset all surface lines to standard width except for current,
 C and display both zones.
@@ -5493,7 +5516,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 447
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',jwhich3,' @',X(jwhich3),Y(jwhich3),
      &                Z(jwhich3),' is close (',offset,') to edge ',
      &                jWHICH1,' &',jWHICH2,' of surface ',
@@ -5574,7 +5597,7 @@ C Distance between point and a line (based on current G1 common block).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
           call edisp(itru,outs)
@@ -5614,7 +5637,7 @@ C block data).
 C Report length of line. Use method of Ward/Radiance in fvect.c
           call pointtoline(iwhich3,iwhich1,iwhich2,offset,match)
           if(.NOT.match) goto 3
-          write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3)')
+          write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3)')
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
            call edisp(itru,outs)
@@ -5622,7 +5645,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
 C If the distance is greater than 1mm get the distance between the
 C start of the line (iwhich1) and the test point (iwhich3) and do this
 C for the end point on the line (iwhich2) and the test point.
-          if(offset.gt.0.002)then
+          if(offset.gt.0.001)then
             tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2))
             vdislsp=crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH3),
@@ -5640,7 +5663,7 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             x3 = ((r2 * X(IWHICH1)) + (r1 * X(IWHICH2)))/tdis
             y3 = ((r2 * Y(IWHICH1)) + (r1 * Y(IWHICH2)))/tdis
             z3 = ((r2 * Z(IWHICH1)) + (r1 * Z(IWHICH2)))/tdis
-            write(outs,'(a,3f10.4)')' Aligned vertex @ X,Y,Z:',x3,y3,z3
+            write(outs,'(a,3f10.5)')' Aligned vertex @ X,Y,Z:',x3,y3,z3
             call edisp(itru,outs)
             if(MMOD.lt.8)then
               continue
@@ -5681,7 +5704,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 347
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
@@ -5942,7 +5965,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
      &                'New vertex ',iwhich3,' @',X(NTV),Y(NTV),
      &                Z(NTV),' is close (',offset,') to edge ',
      &                IWHICH1,' &',IWHICH2,' of surface ',
@@ -6279,7 +6302,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &                matchver)
                     if(.NOT.matchver) goto 2247
                     if(offset.lt.0.004)then
-                      write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                      write(outs,'(a,i3,a,3f9.4,a,f6.4,a,i3,a,i3,2a)')
      &                  'New vertex ',iwhich3,' @',
      &                  X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                  ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -6805,7 +6828,6 @@ C coordiantes to next vertex (e.g. ignore one). Then compute equation
 C and use checkwarp until there is one of the variants
 C which results in no deviation.
             foundit=.false.
-            ishort=NVER(is)-1
             do 59 loop=1,NVER(is)
               DO 60 KK=1,NVER(is)
                 if(loop.eq.kk)then
