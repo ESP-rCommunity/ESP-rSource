@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_circular # tag version, format, zone name
-*date Wed Aug 17 06:33:48 2011  # latest file modification 
+*date Sat Aug 20 14:43:12 2011  # latest file modification 
 L4_circular describes circular meeting room at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,60.25000  #   1
@@ -66,21 +66,21 @@ L4_circular describes circular meeting room at level four
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   6 ||< not yet defined
+*surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,77,21  #   1 ||< seg_a:L5_atroofltl
+*surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,22  #   2 ||< seg_b:L5_atroofltl
+*surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,23  #   3 ||< seg_c:L5_atroofltl
+*surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,24  #   4 ||< seg_d:L5_atroofltl
+*surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,25  #   5 ||< seg_e:L5_atroofltl
+*surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,26  #   6 ||< seg_f:L5_atroofltl
 *surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
 *surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
 *surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,53,01  #  12 ||< Wall-1:L4_void_cir
-*surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,53,02  #  13 ||< Wall-2:L4_void_cir
-*surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,53,03  #  14 ||< Wall-3:L4_void_cir
-*surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,53,04  #  15 ||< Wall-4:L4_void_cir
+*surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined
+*surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external

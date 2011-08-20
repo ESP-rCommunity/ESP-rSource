@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ufloor # tag version, format, zone name
-*date Wed Aug 17 07:11:51 2011  # latest file modification 
+*date Sat Aug 20 08:38:02 2011  # latest file modification 
 L3_ufloor describes floor void under L3 occupied spaces
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,55.59300  #   1
@@ -349,7 +349,7 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,18,39  #  41 ||< struc_d:L2_ent_void
 *surf,floor_left,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,48,54  #  42 ||< floor_left:L3_open_lft
 *surf,floor_right,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,floor_open_r,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,49,28  #  44 ||< floor_open_r:L3_open_rig
+*surf,floor_open_r,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,49,28  #  44 ||< floor_open_r:L3_open_rig
 *surf,l3_flrv_rr,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,10  #  45 ||< l3_flrv_r:L3_light_w2
 *surf,l3_flrv_ff,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,11  #  46 ||< l3_flrv_f:L3_light_w2
 *surf,l3_flrv_ll,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,12  #  47 ||< l3_flrv_l:L3_light_w2

@@ -1,13 +1,13 @@
 *Geometry 1.1,GEN,L1_careers # tag version, format, zone name
-*date Sat Aug  6 12:46:38 2011  # latest file modification 
+*date Sat Aug 20 10:35:43 2011  # latest file modification 
 L1_careers describes the level one careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,29.25000,17.25000,47.95000  #   1
-*vertex,34.25000,8.75000,47.95000  #   2
-*vertex,36.43250,9.21500,47.95000  #   3
-*vertex,46.17000,11.54250,47.95000  #   4
-*vertex,48.49750,12.16000,47.95000  #   5
-*vertex,51.06250,12.77750,47.95000  #   6
+*vertex,34.25559,8.88063,47.95000  #   2
+*vertex,36.24158,9.35726,47.95000  #   3
+*vertex,45.97883,11.73220,47.95000  #   4
+*vertex,48.44877,12.30219,47.95000  #   5
+*vertex,51.21083,12.90755,47.95000  #   6
 *vertex,51.60000,13.00000,47.95000  #   7
 *vertex,51.60000,21.00000,47.95000  #   8
 *vertex,48.25000,21.00000,47.95000  #   9
@@ -21,11 +21,11 @@ L1_careers describes the level one careers service area
 *vertex,33.20250,16.81500,47.95000  #  17
 *vertex,31.20750,17.33750,47.95000  #  18
 *vertex,29.25000,17.25000,51.69300  #  19
-*vertex,34.25000,8.75000,52.45000  #  20
-*vertex,36.43250,9.21500,52.45000  #  21
-*vertex,46.17000,11.54250,52.45000  #  22
-*vertex,48.49750,12.16000,52.45000  #  23
-*vertex,51.06250,12.77750,52.45000  #  24
+*vertex,34.25559,8.88063,52.45000  #  20
+*vertex,36.24158,9.35726,52.45000  #  21
+*vertex,45.97883,11.73220,52.45000  #  22
+*vertex,48.44877,12.30219,52.45000  #  23
+*vertex,51.21083,12.90755,52.45000  #  24
 *vertex,51.60000,13.00000,51.69300  #  25
 *vertex,51.60000,21.00000,51.69300  #  26
 *vertex,48.25000,21.00000,51.69300  #  27
@@ -46,8 +46,8 @@ L1_careers describes the level one careers service area
 *vertex,51.60000,18.19204,51.69300  #  42
 *vertex,51.60000,17.28956,47.95000  #  43
 *vertex,51.60000,17.28956,51.69300  #  44
-*vertex,51.60000,17.00457,47.95000  #  45
-*vertex,51.60000,17.00457,51.69300  #  46
+*vertex,51.60000,17.00000,47.95000  #  45
+*vertex,51.60000,17.00000,51.69300  #  46
 *vertex,51.60000,13.10275,48.04604  #  47
 *vertex,51.60000,16.90182,48.04604  #  48
 *vertex,51.60000,16.90182,51.59696  #  49
@@ -171,4 +171,4 @@ L1_careers describes the level one careers service area
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,21,   137.86 0  # zone base list
+*base_list,1,21,   134.62 0  # zone base list

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_meeting # tag version, format, zone name
-*date Sat Aug  6 12:25:55 2011  # latest file modification 
+*date Sat Aug 20 10:33:51 2011  # latest file modification 
 L1_meeting describes corner meeting adj career services
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,47.95000  #   1
@@ -7,7 +7,7 @@ L1_meeting describes corner meeting adj career services
 *vertex,51.60000,19.23701,47.95000  #   3
 *vertex,51.60000,18.19204,47.95000  #   4
 *vertex,51.60000,17.28956,47.95000  #   5
-*vertex,51.60000,17.00457,47.95000  #   6
+*vertex,51.60000,17.00000,47.95000  #   6
 *vertex,52.01118,17.14706,47.95000  #   7
 *vertex,54.10112,17.66955,47.95000  #   8
 *vertex,56.57106,18.23954,47.95000  #   9
@@ -20,7 +20,7 @@ L1_meeting describes corner meeting adj career services
 *vertex,51.60000,19.23701,51.69300  #  16
 *vertex,51.60000,18.19204,51.69300  #  17
 *vertex,51.60000,17.28956,51.69300  #  18
-*vertex,51.60000,17.00457,51.69300  #  19
+*vertex,51.60000,17.00000,51.69300  #  19
 *vertex,52.01118,17.14706,51.69300  #  20
 *vertex,54.10112,17.66955,51.69300  #  21
 *vertex,56.57106,18.23954,51.69300  #  22
@@ -53,7 +53,7 @@ L1_meeting describes corner meeting adj career services
 #  boundary condition tag followed by two data items
 *surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,23  #   1 ||< ptn_meet:L1_open_off
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,08,20  #   2 ||< ptn_open_b:L1_careers
-*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,08,21  #   3 ||< door:L1_careers
+*surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,08,21  #   3 ||< door_mt:L1_careers
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,08,22  #   4 ||< ptn_open_c:L1_careers
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,08,23  #   5 ||< ptn_frame:L1_careers
 *surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ent_void # tag version, format, zone name
-*date Sat Aug 13 14:56:17 2011  # latest file modification 
+*date Sat Aug 20 14:44:58 2011  # latest file modification 
 L3_ent_void describes third level atrium over the entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,56.35000  #   1
@@ -178,8 +178,8 @@ L3_ent_void describes third level atrium over the entrance
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,04  #  30 ||< seg_d:L3_circular
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,05  #  31 ||< seg_e:L3_circular
 *surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,06  #  32 ||< seg_f:L3_circular
-*surf,upper_b,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  33 ||< not yet defined
-*surf,upper_a,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  34 ||< not yet defined
+*surf,upper_b,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,77,20  #  33 ||< upper_b:L5_atroofltl
+*surf,upper_a,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,77,19  #  34 ||< upper_a:L5_atroofltl
 *surf,lower_a,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,27  #  35 ||< upper:L2_ent_void
 *surf,lower_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,36  #  36 ||< upper_bb:L2_ent_void
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,16  #  37 ||< balc_a:L3_open_lft

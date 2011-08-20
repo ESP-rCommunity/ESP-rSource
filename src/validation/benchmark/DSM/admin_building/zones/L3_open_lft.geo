@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_lft # tag version, format, zone name
-*date Sat Aug 13 15:04:29 2011  # latest file modification 
+*date Sat Aug 20 07:05:17 2011  # latest file modification 
 L3_open_lft describes left portion of level three open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,56.35000  #   1
@@ -193,7 +193,7 @@ L3_open_lft describes left portion of level three open plan
 *surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,10  #  30 ||< seg_j:L3_circular
 *surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,11  #  31 ||< seg_k:L3_circular
 *surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,08  #  32 ||< fict_open_b:L3_void_cir
-*surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,13  #  33 ||< balcony_b:L3_void_cir
+*surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,12  #  33 ||< struc_a:L3_void_cir
 *surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,01  #  34 ||< ptn_open_a:L3_cell_srv
 *surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,02  #  35 ||< ptn_open_b:L3_cell_srv
 *surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,01  #  36 ||< ptn_pr_op:L3_print_zn

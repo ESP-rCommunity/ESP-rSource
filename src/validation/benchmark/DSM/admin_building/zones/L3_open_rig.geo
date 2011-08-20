@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_rig # tag version, format, zone name
-*date Wed Aug 17 06:31:06 2011  # latest file modification 
+*date Sat Aug 20 10:18:06 2011  # latest file modification 
 L3_open_rig describes right portion of open plan on L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,50.00000,30.50000,56.35000  #   1
@@ -94,8 +94,8 @@ L3_open_rig describes right portion of open plan on L3
 #  boundary condition tag followed by two data items
 *surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,42  #   1 ||< ptnc_str_l3:stair_2
 *surf,ptnd_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,50  #   2 ||< ptnd_str_l3:stair_2
-*surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,11  #   3 ||< balcony_a:L3_void_cir
-*surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,07  #   4 ||< fict_open:L3_void_cir
+*surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,10  #   3 ||< balcony_a:L3_L4_cir_vd
+*surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,07  #   4 ||< fict_open:L3_L4_cir_vd
 *surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,10  #   5 ||< int_glazb:L3_void_b
 *surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,09  #   6 ||< int_glaz:L3_void_b
 *surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,39,10  #   7 ||< ptn_open_a:L3_meeting

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Wed Aug 17 06:37:15 2011  # latest file modification 
+*date Sat Aug 20 16:21:46 2011  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -96,8 +96,8 @@ L4_open_s describes left half of level four open plan area
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,wall_a,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,07  #   1 ||< balc_a:L5_atroofltl
+*surf,wall_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,77,08  #   2 ||< wall_a:L5_atroofltl
 *surf,wall_b,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
 *surf,wall_c,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
 *surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< not yet defined
@@ -113,7 +113,7 @@ L4_open_s describes left half of level four open plan area
 *surf,ptn_cor_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,05  #  15 ||< Wall-5:L4_sw_meet
 *surf,ptn_cor_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,04  #  16 ||< Wall-4:L4_sw_meet
 *surf,ptn_meet_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,03  #  17 ||< Wall-3:L4_sw_meet
-*surf,ptn_meet_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,02  #  18 ||< Wall-2:L4_sw_meet
+*surf,ptn_meet_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,02  #  18 ||< Wall-2:L4_sw_meet
 *surf,ceiling_l4op,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,floor_l4op,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
 *surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  21 ||< not yet defined

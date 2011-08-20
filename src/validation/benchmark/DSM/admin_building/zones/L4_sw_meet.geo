@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_meet # tag version, format, zone name
-*date Wed Aug 17 06:36:27 2011  # latest file modification 
+*date Sat Aug 20 14:35:58 2011  # latest file modification 
 L4_sw_meet describes meeting rds 406 407 on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.25000,60.25000  #   1
