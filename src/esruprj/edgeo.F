@@ -2745,6 +2745,8 @@ C Pased parameters
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -2762,7 +2764,7 @@ C Pased parameters
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      DIMENSION SALT(13),IVAL(MCOM)  ! ,bl(144)
+      DIMENSION SALT(14),IVAL(MCOM)  ! ,bl(144)
       DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
       integer iocog  ! loop counter for detecting close surfaces
       CHARACTER*33 ISD(25)
@@ -3489,16 +3491,17 @@ C Specify the environment of the 'other' face of the surface.
         SALT(10)='BASESIMP foundation configuration'
         SALT(11)='CEN 13791 partition            '
         SALT(12)='unknown at this time           '
-        SALT(13)='no change at this time         '
+        SALT(13)='scan for nearby surfaces       '
+        SALT(14)='no change at this time         '
 
         helptopic='surface_boundary_opt'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IX=1
         CALL EPICKS(IX,IVAL,' ','Other Side Boundary Condition',
-     &    33,13,SALT,'surface boundary ',IER,nbhelp)
+     &    33,14,SALT,'surface boundary ',IER,nbhelp)
 
         IF(IX.EQ.0) goto 13
-        IF(IVAL(1).EQ.13) goto 13
+        IF(IVAL(1).EQ.14) goto 13
 
 C Determine the match in the system topology and update it. 
         CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
@@ -3917,6 +3920,31 @@ C Reset to zeros set ICT to -1 to signal UNKNOWN
           SSOTHER(IC,1)='UNKNOWN'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
           ICT(IC)=-1; IE2(IC)=0; IC2(IC)=0
+
+        ELSEIF(IVAL(1).EQ.13)THEN
+
+C Scan for neighbor surfaces in all zones.
+          cog(1)=ssurcog(ic,1)
+          cog(2)=ssurcog(ic,2)
+          cog(3)=ssurcog(ic,3)
+          do 78 ij=1,ncon
+            closecog=.false.
+            if(ic1(ij).ne.icomp)then
+              cogo(1)=ssurcog(ij,1)
+              cogo(2)=ssurcog(ij,2)
+              cogo(3)=ssurcog(ij,3)
+              call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
+     &          cogo(3),1.0,closecog)
+              if(closecog)then
+                write(outs,'(6a)') 'Surface ',ssname(ij),' in ',
+     &            zname(ic1(ij))(1:lnzname(ic1(ij))),
+     &            ' might be a match for ',ssname(ic)
+                call edisp(iuout,outs)
+              endif
+            endif
+  78      continue
+          goto 13   ! go back to the main menu
+
         ELSE
           goto 148
         ENDIF
