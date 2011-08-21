@@ -5998,11 +5998,11 @@ C inserting the new vertex index.
                       IXV=IXV-1
                       JVN(ivj,IXV)=JVN(ivj,IXV-1)
                       IF(IXV.GT.ivjj+1)GOTO 248
-                      JVN(jivj,ivjj+1)=iwhich3
+                      JVN(ivj,ivjj+1)=iwhich3
 
 C Debug...
-C                     write(6,'(a,42i4)') 'now jvn is ',
-C     &                (JVN(ivj,ii),ii=1,NVER(ivj))
+                     write(6,'(a,42i4)') 'now jvn is ',
+     &                (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 346 
