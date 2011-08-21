@@ -35,8 +35,9 @@ C LINTHBRDG: defines linear thermal bridges for zone psi and lengths.
 
 C ************* EDZONE
 C Control editing of zone attributes and allow this to be saved to a
-C geometry file, ITRU unit number for user output, IER=0 OK. 
-      SUBROUTINE EDZONE(ITRC,ICOMP,IER)
+C geometry file. ianother is returned as +1 if jump to next zone,
+C -1 if jump to prior zone, otherwise zero.
+      SUBROUTINE EDZONE(ITRC,ICOMP,ianother,IER)
 #include "net_flow.h"
 #include "building.h"
 #include "model.h"
@@ -53,6 +54,12 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
+
+C Passed parameters
+      integer itrc   ! reporting level
+      integer icomp  ! zone index
+      integer ianother  ! jump indicator
+      integer ier    ! returned error state zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -184,6 +191,7 @@ C been created. Check to see if it has.
       ELSEIF(ICOMP.GT.MCOM)THEN
         CALL USRMSG('There is not sufficient space for another',
      &    'zone within this model! ','W')
+        ianother=0   ! signal no jump to previous or next.
         RETURN
       ENDIF
 
@@ -550,7 +558,6 @@ C Read current zone back in and then update the configuration file.
       endif
 
 C Interface to BASESIMP definitions for this zone.
-C << to be done >>
       ITEMS(ITEMC+14)='k define/edit BASESIMP         '
       ITEMS(ITEMC+15)='  _____________________________'
       ITEMS(ITEMC+16)='* list zone & surface details  '
@@ -562,8 +569,18 @@ C << to be done >>
       ELSEIF(ITRC.EQ.2)THEN
         ITEMS(ITEMC+18)='t reporting >> detailed'
       ENDIF
-      ITEMS(ITEMC+19)='? help                         '
-      ITEMS(ITEMC+20)='- exit this menu               '
+      if(icomp.gt.1.and.icomp.lt.NCOMP)then
+        ITEMS(ITEMC+19)='< jump to previous zone      '
+        ITEMS(ITEMC+20)='> jump to next zone          '
+      elseif(icomp.eq.1)then
+        ITEMS(ITEMC+19)='                             '
+        ITEMS(ITEMC+20)='> jump to next zone          '        
+      elseif(icomp.eq.NCOMP)then
+        ITEMS(ITEMC+19)='< jump to previous zone      '
+        ITEMS(ITEMC+20)='                             '
+      endif
+      ITEMS(ITEMC+21)='? help                         '
+      ITEMS(ITEMC+22)='- exit this menu               '
 
       WRITE(HEAD,'(A,I2,A)')'Zone ',ICOMP,' Geometry'
 
@@ -595,9 +612,10 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for zone geometry.
-      NITMS=ITEMC+20
+      NITMS=ITEMC+22
       CALL EMENU(HEAD,ITEMS,NITMS,INO)
-      IF(INO.EQ.ITEMC+20)THEN
+
+      IF(INO.EQ.ITEMC+22)THEN
         if(browse)return
         if(MODGEO)then
           DOK=.false.
@@ -642,7 +660,9 @@ C << graphic network flow file to reflect changes in zone volume.
 C Report on model contiguity changes.
         silent= .false.
         call sumrchg(ICOMP,'r',silent)
+        ianother=0   ! signal no jump to previous or next.
         RETURN
+
       ELSEIF(INO.EQ.1)THEN
 
 C Zone name, make sure it has no illegal characters.
@@ -665,6 +685,7 @@ C Zone name, make sure it has no illegal characters.
           MODIFY=.TRUE.
           MODGEO=.TRUE.
         endif
+
       ELSEIF(INO.EQ.2)THEN
 
 C Zone description
@@ -680,6 +701,7 @@ C Zone description
         call tstamp('>','PRJ: edited zone description')
         MODIFY=.TRUE.
         MODGEO=.TRUE.
+
       ELSEIF(INO.EQ.ITEMC+2)THEN
 
 C Associate surfaces with base area, especially if there are more
@@ -757,6 +779,7 @@ C the user selected.
           MODGEO=.TRUE.
           goto 3
         endif
+
       ELSEIF(INO.EQ.ITEMC+6)THEN
 
 C Vertex editing. After returning from editing if there have
@@ -803,12 +826,14 @@ C << graphic network flow file to reflect changes in zone volume.
           endif
         endif
         MODIFY=.TRUE.   ! set so zone is re-drawn
+
       ELSEIF(INO.EQ.ITEMC+7)THEN
 
 C Vertex-surface association editing.
         call tstamp('>','PRJ: enter zone-surface topology')
         CALL EDVLIST(ITRC,iuout,ICOMP,IER)
         MODGEO=.TRUE.
+
       ELSEIF(INO.EQ.ITEMC+8)THEN
 
 C Surface attributes.  Display a selection of surfaces available in the
@@ -1514,6 +1539,7 @@ C Rotate any obstructions associated with this zone.
      &                 'associated with this zone? ',ok,dok,nbhelp)
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
+              itru=iuout
               CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.
@@ -2155,6 +2181,7 @@ C Check if user wishes to see construction details as well.
             endif
           endif
         endif
+
       ELSEIF(INO.EQ.ITEMC+17)THEN
 
 C Ask for name of file to put updated information into.
@@ -2186,12 +2213,114 @@ C Ask for name of file to put updated information into.
         LGEOM(ICOMP)=LTMP
         CALL EMKCFG('-',IER)
         MODGEO=.FALSE.
+
       ELSEIF(INO.EQ.ITEMC+18)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
+
       ELSEIF(INO.EQ.ITEMC+19)THEN
+
+C Jump to previous zone after processing any remaining tasks.
+        ianother=-1
+        if(browse)return
+        if(MODGEO)then
+          DOK=.false.
+          CALL ASKOK('Save changes to zone composition and surface',
+     &         'attributes? (legacy and new format)',OK,DOK,nbhelp)
+          LTMP=LGEOM(ICOMP)
+
+C Test for saving current or new format geometry file.
+          IF(OK)then
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
+            endif
+          endif
+
+C If there is an associated flow node then update its volume and update
+C the flow network.
+          if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
+            SUPNOD(ICAAS(ICOMP),2)=VOL(ICOMP)
+            if(IPRODB.eq.IFIL+6)then
+              IUM=IPRODB
+            else
+              IUM=IFIL+6
+            endif
+            CALL EFOPSEQ(IUM,LAPROB,3,IER)
+            if(IER.eq.0)then
+
+C << Note need a check so network flow file data is not written
+C << to a graphic network flow file. Also need a way to update
+C << graphic network flow file to reflect changes in zone volume.
+              CALL MFWRIT(IUM)
+              CALL ERPFREE(IUM,ISTAT)
+            endif
+          endif
+        endif
+
+C Report on model contiguity changes.
+        silent= .false.
+        call sumrchg(ICOMP,'r',silent)
+        return
+
+      ELSEIF(INO.EQ.ITEMC+20)THEN
+
+C Jump to next zone after processing any remaining tasks.
+        ianother=1
+        if(browse)return
+        if(MODGEO)then
+          DOK=.false.
+          CALL ASKOK('Save changes to zone composition and surface',
+     &         'attributes? (legacy and new format)',OK,DOK,nbhelp)
+          LTMP=LGEOM(ICOMP)
+
+C Test for saving current or new format geometry file.
+          IF(OK)then
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
+            endif
+          endif
+
+C If there is an associated flow node then update its volume and update
+C the flow network.
+          if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
+            SUPNOD(ICAAS(ICOMP),2)=VOL(ICOMP)
+            if(IPRODB.eq.IFIL+6)then
+              IUM=IPRODB
+            else
+              IUM=IFIL+6
+            endif
+            CALL EFOPSEQ(IUM,LAPROB,3,IER)
+            if(IER.eq.0)then
+
+C << Note need a check so network flow file data is not written
+C << to a graphic network flow file. Also need a way to update
+C << graphic network flow file to reflect changes in zone volume.
+              CALL MFWRIT(IUM)
+              CALL ERPFREE(IUM,ISTAT)
+            endif
+          endif
+        endif
+
+C Report on model contiguity changes.
+        silent= .false.
+        call sumrchg(ICOMP,'r',silent)
+        return
+
+      ELSEIF(INO.EQ.ITEMC+21)THEN
 
 C Produce help text for the menu.
         helptopic='geometry_main_menu'

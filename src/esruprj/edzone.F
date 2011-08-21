@@ -527,6 +527,7 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer ianother   ! flag for jumping to a different zone
 
       helpinsub='NEWZONE'  ! set for subroutine
 
@@ -550,9 +551,14 @@ C Input dimensions.
 
 C Provide scratch description and the default assumptions for
 C other zone files. If the cfg file is version 4 or newer then
-C set to create version 1.1 zone geometry files.
+C set to create version 1.1 zone geometry files. Do not bother
+C to react to user request for jump to prior or next zone.
         CALL SCRZONE(IC,IER)
-        CALL EDZONE(ITRC,IC,IER)
+        CALL EDZONE(ITRC,IC,ianother,IER)
+        if(ianother.ne.0)then
+          call usrmsg('Ignoring request to jump to different zone',
+     &      '  ','-')
+        endif
         iZBFLG(IC)=0
         return
 

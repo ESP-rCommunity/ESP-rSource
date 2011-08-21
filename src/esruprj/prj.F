@@ -193,6 +193,7 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer ianother   ! jump to previous or next zone flag
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -869,7 +870,8 @@ C Pass information to C library code if running in graphic mode.
             call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
             IF(IER.NE.0)goto 3
 
-            CALL EDZONE(ITRC,index,IER)
+C Change focus to zone but do not act on any ianother jump command.
+            CALL EDZONE(ITRC,index,ianother,IER)
             MODIFY=.TRUE.
           endif
         endif
