@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_L4_cir_vd # tag version, format, zone name
-*date Sat Aug 20 09:43:09 2011  # latest file modification 
+*date Sun Aug 21 15:55:10 2011  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -82,9 +82,9 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,32  #   8 ||< fict_open_b:L3_open_lft
 *surf,L3_vc_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,17  #   9 ||< L3_vc_low:L2_careers
 *surf,balcony_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,03  #  10 ||< balcony_a:L3_open_rig
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,13  #  11 ||< struc_av:L4_flrvoid
 *surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,33  #  12 ||< balcony_b:L3_open_lft
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,14  #  13 ||< struc_bv:L4_flrvoid
 *surf,seg_acu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,seg_bcu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  15 ||< not yet defined
 *surf,seg_ccu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  16 ||< not yet defined
@@ -96,8 +96,8 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,Top-9,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
 *surf,fac_fr_l,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
 *surf,fac_fr_u,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,33  #  25 ||< balcony_au:L4_open_plr
+*surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,34  #  26 ||< balcony_bu:L4_open_plr
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

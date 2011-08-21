@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_void # tag version, format, zone name
-*date Wed Aug 17 06:33:18 2011  # latest file modification 
+*date Sun Aug 21 11:13:02 2011  # latest file modification 
 L4_sw_void describes void at level four at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,59.49300  #   1
@@ -133,8 +133,8 @@ L4_sw_void describes void at level four at SW facade
 *surf,Wall-19,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,Top-26,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,77,21  #  20 ||< fict_base:L5_sw_void
 *surf,Base-27,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,47,20  #  21 ||< upper:L3_sw_void
-*surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,36  #  22 ||< ptn_vd4:lifts
-*surf,ptn_flrv_l4,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,27  #  23 ||< pnt_flrv_l4:stair_1
+*surf,ptn_vd3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,36  #  22 ||< ptn_vd4:lifts
+*surf,ptn_flrv_l4,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,27  #  23 ||< pnt_flrv_l4:stair_1
 *surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
 *surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
 *surf,ptn_toil_l4,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined

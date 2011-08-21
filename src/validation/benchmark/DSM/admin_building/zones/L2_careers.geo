@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Sat Aug 20 12:55:29 2011  # latest file modification 
+*date Sun Aug 21 11:37:34 2011  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
@@ -66,7 +66,7 @@ L2_careers describes open space over the careers service area
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,lower_fict,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,08,40  #   1 ||< upper_fict:L1_careers
-*surf,upper_slab,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,upper_slab,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,49,29  #   2 ||< ovhang:L3_open_rig
 *surf,fac_frame_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   5 ||< external
@@ -82,8 +82,8 @@ L2_careers describes open space over the careers service area
 *surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,11  #  15 ||< seg_n:L2_circular
 *surf,seg_d,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,12  #  16 ||< seg_o:L2_circular
 *surf,L3_vc_low,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,37,09  #  17 ||< L3_vc_low:L3_L4_cir_vd
-*surf,fict_low,CEIL,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,fict_low,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,38,11  #  18 ||< fict_low:L3_void_b
+*surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,21,05  #  19 ||< frame_open:L2_meeting
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

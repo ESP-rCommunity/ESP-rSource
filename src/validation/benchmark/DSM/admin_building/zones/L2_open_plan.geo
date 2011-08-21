@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_open_pln # tag version, format, zone name
-*date Sat Aug 13 14:48:17 2011  # latest file modification 
+*date Sun Aug 21 11:15:10 2011  # latest file modification 
 L2_open_pln describes main open plan office area at level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,22.79942,12.87217,52.45000  #   1
@@ -140,7 +140,7 @@ L2_open_pln describes main open plan office area at level two
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,ptn_void_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,20  #   1 ||< ptn_open_a:L2_ent_void
-*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,18,19  #   2 ||< filler:L2_ent_void
 *surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,18  #   3 ||< seg_al:L2_circular
 *surf,seg_b,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,19  #   4 ||< seg_bl:L2_circular
 *surf,seg_c,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,20  #   5 ||< seg_cl:L2_circular
@@ -169,7 +169,7 @@ L2_open_pln describes main open plan office area at level two
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,09  #  28 ||< door:L2_cust_srv
 *surf,seg_1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,01  #  29 ||< seg_1:L2_cust_srv
 *surf,ceiling_a,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,17  #  30 ||< ceiling_a:L3_ufloor
-*surf,floor_a,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,48  #  31 ||< floor_a:L2_uf_plen
+*surf,floor_a,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,48  #  31 ||< floor_a:L2_uf_plen
 *surf,seg-2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,02  #  32 ||< seg_2:L2_cust_srv
 *surf,seg-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,03  #  33 ||< seg_3:L2_cust_srv
 *surf,seg-4,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,04  #  34 ||< seg_4:L2_cust_srv
@@ -177,7 +177,7 @@ L2_open_pln describes main open plan office area at level two
 *surf,seg-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,06  #  36 ||< seg_6:L2_cust_srv
 *surf,seg-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,07  #  37 ||< seg_7:L2_cust_srv
 *surf,seg-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,08  #  38 ||< seg_8:L2_cust_srv
-*surf,floor_b,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,49  #  39 ||< floor_b:L2_uf_plen
+*surf,floor_b,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,49  #  39 ||< floor_b:L2_uf_plen
 *surf,ceiling_b,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,18  #  40 ||< ceiling_b:L3_ufloor
 *surf,ptn_void_c,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,20,12  #  41 ||< fict_opening:L2_careers
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,31,07  #  42 ||< left_rail:L2_light_w2

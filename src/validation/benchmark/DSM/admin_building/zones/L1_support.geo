@@ -125,3 +125,14 @@ L1_support is the level one plant rooms and delivery and securit
 *insol_calc,none  # no insolation requested
 # 
 *base_list,1,22,   445.80 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,13.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,door  # block  16
+*obs,20.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,door  # block  17
+*obs,26.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,door  # block  18
+*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,door  # block  19
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,door  # block  20
+*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,door  # block  21
+*end_block

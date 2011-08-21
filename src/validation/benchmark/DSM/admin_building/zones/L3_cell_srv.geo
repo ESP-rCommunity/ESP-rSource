@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_cell_srv # tag version, format, zone name
-*date Sat Aug 13 14:59:50 2011  # latest file modification 
+*date Sun Aug 21 11:12:41 2011  # latest file modification 
 L3_cell_srv describes row of cellular offices at service rd faca
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,56.35000  #   1
@@ -175,9 +175,9 @@ L3_cell_srv describes row of cellular offices at service rd faca
 *surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,13  #   5 ||< ptn_open_e:L3_open_rig
 *surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,14  #   6 ||< ptn_open_f:L3_open_rig
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,49,15  #   7 ||< ptn_open_g:L3_open_rig
-*surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,34  #   8 ||< struc_l3:stair_2
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,56  #   9 ||< ptn_stair_cb:stair_2
-*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,00,00  #  10 ||< external
+*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external

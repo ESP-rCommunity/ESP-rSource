@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cell_srv # tag version, format, zone name
-*date Sat Aug 13 14:53:07 2011  # latest file modification 
+*date Sun Aug 21 11:14:22 2011  # latest file modification 
 L2_cell_srv describes a series of cellular offices facing servic
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,52.45000  #   1
@@ -217,7 +217,7 @@ L2_cell_srv describes a series of cellular offices facing servic
 *surf,stone_k,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,ptn_toil,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,03  #  29 ||< ptn_corc_l2:L2_toilet
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,24  #  30 ||< ceiling:L3_ufloor
-*surf,floor_l2_cc,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,56  #  31 ||< floor_l2_cc:L2_uf_plen
+*surf,floor_l2_cc,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,56  #  31 ||< floor_l2_cc:L2_uf_plen
 *surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 *surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
 *surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Wed Aug 17 06:10:27 2011  # latest file modification 
+*date Sun Aug 21 11:12:59 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -95,6 +95,9 @@ stair_2 describes stair tower with glazed side stair_2
 *vertex,50.00000,35.70000,55.59300  #  91
 *vertex,50.00000,35.70000,56.35000  #  92
 *vertex,50.00000,35.70000,59.49300  #  93
+*vertex,51.00000,36.00000,56.35000  #  94
+*vertex,51.00000,36.00000,60.25000  #  95
+*vertex,51.00000,36.00000,64.15000  #  96
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,2,3,11,10  #  1
@@ -125,19 +128,19 @@ stair_2 describes stair tower with glazed side stair_2
 *edges,5,49,50,77,88,87  # 26
 *edges,4,10,11,62,74  # 27
 *edges,4,11,12,65,62  # 28
-*edges,4,12,13,68,65  # 29
+*edges,5,12,13,94,68,65  # 29
 *edges,4,74,62,63,75  # 30
 *edges,4,62,65,66,63  # 31
 *edges,4,50,54,61,77  # 32
 *edges,4,8,52,53,16  # 33
-*edges,5,13,14,85,71,68  # 34
-*edges,4,65,68,69,66  # 35
-*edges,5,68,71,72,73,69  # 36
+*edges,6,94,85,71,68,94,95  # 34
+*edges,5,65,68,95,69,66  # 35
+*edges,4,95,72,73,69  # 36
 *edges,4,75,63,64,76  # 37
 *edges,4,63,66,67,64  # 38
-*edges,4,66,69,70,67  # 39
+*edges,5,66,69,96,70,67  # 39
 *edges,4,87,6,5,89  # 40
-*edges,5,69,73,86,78,70  # 41
+*edges,4,96,86,78,70  # 41
 *edges,4,79,55,56,80  # 42
 *edges,4,81,57,58,82  # 43
 *edges,4,83,59,60,84  # 44
@@ -153,6 +156,9 @@ stair_2 describes stair tower with glazed side stair_2
 *edges,4,48,49,87,89  # 54
 *edges,4,90,7,15,91  # 55
 *edges,4,85,92,93,71  # 56
+*edges,4,13,14,85,94  # 57
+*edges,4,68,71,72,95  # 58
+*edges,4,69,73,86,96  # 59
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -192,14 +198,14 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,glaz_b_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
 *surf,ptnc_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,25  #  32 ||< ptn_str_a:L1_support
 *surf,ptnc_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,26,14  #  33 ||< ptnc_str_l2:L2_core_cel
-*surf,struc_l3,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  34 ||< not yet defined
+*surf,struc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,40,08  #  34 ||< ptn_filler:L3_cell_srv
 *surf,glaz_c_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
 *surf,fill_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
 *surf,glaz_a_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
 *surf,glaz_b_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,glaz_c_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
 *surf,struc_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,61  #  40 ||< Wall-61:L2_uf_plen
-*surf,struc_l5,VERT,-,-,-,stone_cast,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
+*surf,struc_l5,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  41 ||< external
 *surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,49,01  #  42 ||< ptnc_str_l3:L3_open_rig
 *surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,58,19  #  43 ||< ptnc_str_l4:L4_open_plr
 *surf,ptnc_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,08  #  44 ||< ptn_staira:L5_pz_meet
@@ -215,6 +221,9 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ptn_str_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,26  #  54 ||< ptn_str_b:L1_support
 *surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,27,08  #  55 ||< stair_end:L2_coridor
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,40,09  #  56 ||< ptn_stair_cb:L3_cell_srv
+*surf,l3_flr_vdc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,54  #  57 ||< to_stair_l3f:L3_ufloor
+*surf,l4_flrvdc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  58 ||< not yet defined
+*surf,l5_flr_vdc,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  59 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

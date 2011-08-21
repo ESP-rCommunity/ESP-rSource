@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ent_void # tag version, format, zone name
-*date Sat Aug 20 14:44:58 2011  # latest file modification 
+*date Sun Aug 21 15:37:37 2011  # latest file modification 
 L3_ent_void describes third level atrium over the entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,56.35000  #   1
@@ -184,16 +184,16 @@ L3_ent_void describes third level atrium over the entrance
 *surf,lower_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,18,36  #  36 ||< upper_bb:L2_ent_void
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,16  #  37 ||< balc_a:L3_open_lft
 *surf,fict_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,17  #  38 ||< fict_a:L3_open_lft
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  39 ||< not yet defined
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  40 ||< not yet defined
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
-*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
-*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
-*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
-*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  47 ||< not yet defined
-*surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  48 ||< not yet defined
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,01  #  39 ||< struc_a:L4_flrvoid
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,02  #  40 ||< struc_b:L4_flrvoid
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,03  #  41 ||< struc_c:L4_flrvoid
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,04  #  42 ||< struc_d:L4_flrvoid
+*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,05  #  43 ||< struc_e:L4_flrvoid
+*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,06  #  44 ||< struc_f:L4_flrvoid
+*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,07  #  45 ||< struc_g:L4_flrvoid
+*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,08  #  46 ||< struc_h:L4_flrvoid
+*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,09  #  47 ||< struc_i:L4_flrvoid
+*surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,12  #  48 ||< fill_up:L4_flrvoid
 *surf,balc_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,18  #  49 ||< balc_e:L3_open_lft
 # 
 *insol,3,0,0,0  # default insolation distribution

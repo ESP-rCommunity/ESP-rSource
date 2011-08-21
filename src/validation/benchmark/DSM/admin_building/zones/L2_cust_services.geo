@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cust_srv # tag version, format, zone name
-*date Sun Aug  7 10:43:09 2011  # latest file modification 
+*date Sun Aug 21 11:58:42 2011  # latest file modification 
 L2_cust_srv describes entrance to L2 customer services
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.71705,11.58971,52.45000  #   1
@@ -16,8 +16,8 @@ L2_cust_srv describes entrance to L2 customer services
 *vertex,18.90452,27.26431,52.45000  #  12
 *vertex,19.33201,28.50000,52.45000  #  13
 *vertex,17.33706,28.50000,52.45000  #  14
-*vertex,13.72715,28.50000,52.45000  #  15
-*vertex,13.82215,30.50000,52.45000  #  16
+*vertex,13.70000,28.50000,52.45000  #  15
+*vertex,13.70000,30.50000,52.45000  #  16
 *vertex,8.35979,30.50000,52.45000  #  17
 *vertex,-0.00000,30.50000,52.45000  #  18
 *vertex,-0.00000,28.50000,52.45000  #  19
@@ -45,8 +45,8 @@ L2_cust_srv describes entrance to L2 customer services
 *vertex,18.90452,27.26431,55.59300  #  41
 *vertex,19.33201,28.50000,55.59300  #  42
 *vertex,17.33706,28.50000,55.59300  #  43
-*vertex,13.72715,28.50000,55.59300  #  44
-*vertex,13.82215,30.50000,55.59300  #  45
+*vertex,13.70000,28.50000,55.59300  #  44
+*vertex,13.70000,30.50000,55.59300  #  45
 *vertex,8.35979,30.50000,55.59300  #  46
 *vertex,-0.00000,30.50000,55.59300  #  47
 *vertex,-0.00000,28.50000,55.59300  #  48
@@ -63,6 +63,11 @@ L2_cust_srv describes entrance to L2 customer services
 *vertex,17.71705,11.58971,53.45000  #  59
 *vertex,0.00000,7.36231,53.45000  #  60
 *vertex,0.00000,7.36231,52.45000  #  61
+*vertex,13.70000,21.30000,55.59300  #  62
+*vertex,17.45000,28.50000,55.59300  #  63
+*vertex,17.45000,21.30000,55.59300  #  64
+*vertex,12.00000,30.50000,52.45000  #  65
+*vertex,12.00000,30.50000,55.59300  #  66
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,5,2,3,32,31,58  #  1
@@ -76,10 +81,10 @@ L2_cust_srv describes entrance to L2 customer services
 *edges,4,10,11,40,39  #  9
 *edges,4,11,12,41,40  # 10
 *edges,4,12,13,42,41  # 11
-*edges,4,13,14,43,42  # 12
+*edges,5,13,14,43,63,42  # 12
 *edges,4,14,15,44,43  # 13
 *edges,4,15,16,45,44  # 14
-*edges,4,16,17,46,45  # 15
+*edges,4,65,17,46,66  # 15
 *edges,4,17,18,47,46  # 16
 *edges,4,18,19,48,47  # 17
 *edges,4,19,20,49,48  # 18
@@ -92,12 +97,14 @@ L2_cust_srv describes entrance to L2 customer services
 *edges,4,26,27,56,55  # 25
 *edges,4,27,28,57,56  # 26
 *edges,5,28,61,60,29,57  # 27
-*edges,29,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57  # 28
-*edges,29,61,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1  # 29
+*edges,32,29,30,31,32,33,34,35,36,37,38,39,40,41,42,63,64,62,44,45,66,46,47,48,49,50,51,52,53,54,55,56,57  # 28
+*edges,30,61,28,27,26,25,24,23,22,21,20,19,18,17,65,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1  # 29
 *edges,4,59,58,31,30  # 30
 *edges,4,60,59,30,29  # 31
 *edges,4,1,2,58,59  # 32
 *edges,4,61,1,59,60  # 33
+*edges,5,62,64,63,43,44  # 34
+*edges,4,16,65,66,45  # 35
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -131,12 +138,14 @@ L2_cust_srv describes entrance to L2 customer services
 *surf,ptn_sw_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,07  #  25 ||< ptn_gl_b:L2_se_void
 *surf,ptn_sw_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,34,06  #  26 ||< ptn_door_a:L2_se_void
 *surf,ptn_frame,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,34,05  #  27 ||< part_gl_a:L2_se_void
-*surf,ceiling_cus,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
+*surf,ceiling_cus,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,19  #  28 ||< ceiling_cus:L3_ufloor
 *surf,floor_cus,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,50  #  29 ||< floor:L2_uf_plen
 *surf,ptn_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,21  #  30 ||< ptn_open_b:L2_ent_void
 *surf,ptn_open_d,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,18,22  #  31 ||< ptn_open_d:L2_ent_void
 *surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,33  #  32 ||< balc_b:L2_ent_void
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,34  #  33 ||< balc_c:L2_ent_void
+*surf,l3_lw2_base,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,43,06  #  34 ||< l3_lw2_base:L3_lw1
+*surf,Wall-22,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,22  #  35 ||< Wall-22:L2_coridor
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -145,4 +154,4 @@ L2_cust_srv describes entrance to L2 customer services
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,31,   433.59 0  # zone base list
+*base_list,1,31,   433.44 0  # zone base list

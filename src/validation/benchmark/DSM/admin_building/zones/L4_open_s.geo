@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Sat Aug 20 16:21:46 2011  # latest file modification 
+*date Sun Aug 21 10:58:37 2011  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -108,7 +108,7 @@ L4_open_s describes left half of level four open plan area
 *surf,fic_to_ra,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,58,07  #  10 ||< open_fict2:L4_open_plr
 *surf,fic_to_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,58,06  #  11 ||< open_fict:L4_open_plr
 *surf,ptn_other,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,ptn_stair,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,01,44  #  13 ||< ptn_corc_l4:stair_1
+*surf,ptn_stair,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,44  #  13 ||< ptn_corc_l4:stair_1
 *surf,ptn_corid,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,06  #  14 ||< Wall-6:L4_sw_meet
 *surf,ptn_cor_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,05  #  15 ||< Wall-5:L4_sw_meet
 *surf,ptn_cor_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,04  #  16 ||< Wall-4:L4_sw_meet

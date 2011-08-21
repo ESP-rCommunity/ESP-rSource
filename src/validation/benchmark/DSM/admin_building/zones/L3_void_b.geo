@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Sat Aug 20 10:31:40 2011  # latest file modification 
+*date Sun Aug 21 11:35:30 2011  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -77,7 +77,7 @@ L3_void_b describes void above the careers services area
 *surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,06  #   9 ||< int_glaz:L3_open_rig
 *surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,05  #  10 ||< int_glazb:L3_open_rig
-*surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,18  #  11 ||< fict_low:L2_careers
 *surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
 *surf,side_gl_au,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  14 ||< not yet defined

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_toilet # tag version, format, zone name
-*date Sat Aug 13 14:54:30 2011  # latest file modification 
+*date Sun Aug 21 11:14:22 2011  # latest file modification 
 L2_toilet describes toilets adjacent to stair one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,52.45000  #   1
@@ -45,7 +45,7 @@ L2_toilet describes toilets adjacent to stair one
 *surf,fac_d_l2,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l2,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,34,15  #   8 ||< ptn_toilet:L2_se_void
 *surf,ceiling_toi,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,26  #   9 ||< ceiling_toi:L3_ufloor
-*surf,floor_toi,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,58  #  10 ||< floor_toi:L2_uf_plen
+*surf,floor_toi,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,58  #  10 ||< floor_toi:L2_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_kitch2 # tag version, format, zone name
-*date Wed Aug 17 22:24:54 2011  # latest file modification 
+*date Sun Aug 21 11:13:02 2011  # latest file modification 
 L5_kitch2 describes kitchen adjacent to conference level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.75000,17.75000,64.15000  #   1
@@ -46,12 +46,12 @@ L5_kitch2 describes kitchen adjacent to conference level five
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,pnt_cnf,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,65,09  #   1 ||< ptn_kita:L5_confer
-*surf,ptn_lby_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,12  #   2 ||< ptn_k1a:L5_lobby
-*surf,ptn_lby_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,11  #   3 ||< ptn_k1b:L5_lobby
-*surf,ptn_lby_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,10  #   4 ||< ptn_k1_c:L5_lobby
-*surf,ptn_lby_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,09  #   5 ||< ptn_k1_d:L5_lobby
-*surf,ptn_lby_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,08  #   6 ||< ptn_el_fr:L5_lobby
-*surf,ptn_elev,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,03,17  #   7 ||< left_5:lifts
+*surf,ptn_lby_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,12  #   2 ||< ptn_k1:L5_lobby
+*surf,ptn_lby_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,11  #   3 ||< ptn_k1a:L5_lobby
+*surf,ptn_lby_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,10  #   4 ||< ptn_k1b:L5_lobby
+*surf,ptn_lby_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,09  #   5 ||< ptn_k1_c:L5_lobby
+*surf,ptn_lby_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,08  #   6 ||< ptn_k1_d:L5_lobby
+*surf,ptn_elev,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,17  #   7 ||< left_5:lifts
 *surf,ptn_open_a,VERT,-,-,-,glaz_ptn,OPAQUE,ANOTHER,77,11  #   8 ||< gptn_g:L5_sw_void
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,OPAQUE,ANOTHER,77,10  #   9 ||< gptn_f:L5_sw_void
 *surf,roof,CEIL,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  10 ||< external

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_coridor # tag version, format, zone name
-*date Sat Aug 13 14:51:44 2011  # latest file modification 
+*date Sun Aug 21 11:57:53 2011  # latest file modification 
 L2_coridor describes corridor between banks of cellular offices
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.64430,33.70000,52.45000  #   1
@@ -111,13 +111,13 @@ L2_coridor describes corridor between banks of cellular offices
 *surf,Wall-19,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,02  #  19 ||< ptn_cor_b:L2_cell_srv
 *surf,Wall-20,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,01  #  20 ||< ptn_cor_a:L2_cell_srv
 *surf,Wall-21,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,03  #  21 ||< ptn_off_l2:stair_1
-*surf,Wall-22,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,Wall-22,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,23,35  #  22 ||< Wall-22:L2_cust_srv
 *surf,Wall-23,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,07  #  23 ||< Wall-7:L2_cash
 *surf,Wall-24,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,06  #  24 ||< Wall-6:L2_cash
 *surf,Wall-25,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,24,05  #  25 ||< Wall-5:L2_cash
 *surf,Wall-26,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,22,23  #  26 ||< ptn_corid:L2_open_pln
 *surf,ceil_l2_cor,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,23  #  27 ||< ceil_l2_cor:L3_ufloor
-*surf,floor_l2cor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,55  #  28 ||< floor_l2cor:L2_uf_plen
+*surf,floor_l2cor,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,55  #  28 ||< floor_l2cor:L2_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

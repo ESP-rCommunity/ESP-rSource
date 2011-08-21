@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_ent_void # tag version, format, zone name
-*date Sat Aug 13 14:45:06 2011  # latest file modification 
+*date Sun Aug 21 11:34:47 2011  # latest file modification 
 L2_ent_void describes void over the entrance reception
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,-0.04750,52.45000  #   1
@@ -73,6 +73,8 @@ L2_ent_void describes void over the entrance reception
 *vertex,7.69500,7.45750,56.35000  #  69
 *vertex,7.69500,9.16750,56.35000  #  70
 *vertex,7.69500,9.16750,55.59300  #  71
+*vertex,7.69500,9.16750,53.45000  #  72
+*vertex,7.69500,9.16750,52.45000  #  73
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,1,2,28,27  #  1
@@ -96,24 +98,26 @@ L2_ent_void describes void over the entrance reception
 *edges,6,19,20,57,53,46,45  # 19
 *edges,4,57,58,54,53  # 20
 *edges,4,58,59,55,54  # 21
-*edges,5,59,60,56,71,55  # 22
+*edges,4,59,72,71,55  # 22
 *edges,6,23,24,50,49,56,60  # 23
 *edges,4,24,25,51,50  # 24
 *edges,4,25,26,52,51  # 25
 *edges,4,26,1,27,52  # 26
 *edges,14,27,28,29,30,31,32,33,64,69,70,49,50,51,52  # 27
-*edges,27,1,26,25,24,23,22,21,20,19,18,17,16,15,14,13,61,12,11,10,9,8,7,6,5,4,3,2  # 28
+*edges,28,1,26,25,24,23,73,22,21,20,19,18,17,16,15,14,13,61,12,11,10,9,8,7,6,5,4,3,2  # 28
 *edges,5,53,54,47,65,46  # 29
 *edges,5,54,55,48,68,47  # 30
 *edges,5,55,71,70,63,48  # 31
 *edges,4,20,21,58,57  # 32
 *edges,4,21,22,59,58  # 33
-*edges,4,22,23,60,59  # 34
+*edges,4,22,73,72,59  # 34
 *edges,4,61,13,39,62  # 35
 *edges,22,48,63,64,33,34,35,36,37,38,62,39,40,41,42,43,44,45,46,65,66,67,68  # 36
 *edges,4,70,69,64,63  # 37
 *edges,5,68,67,66,65,47  # 38
 *edges,4,71,56,49,70  # 39
+*edges,4,73,23,60,72  # 40
+*edges,4,72,60,56,71  # 41
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -138,7 +142,7 @@ L2_ent_void describes void over the entrance reception
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,04  #  16 ||< seg_d:L2_circular
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,19,05  #  17 ||< seg_e:L2_circular
 *surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,19,06  #  18 ||< seg_f:L2_circular
-*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,02  #  19 ||< filler:L2_open_pln
 *surf,ptn_open_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,01  #  20 ||< ptn_void_a:L2_open_pln
 *surf,ptn_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,23,30  #  21 ||< ptn_open_b:L2_cust_srv
 *surf,ptn_open_d,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,23,31  #  22 ||< ptn_open_d:L2_cust_srv
@@ -156,9 +160,11 @@ L2_ent_void describes void over the entrance reception
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,33  #  34 ||< balc_c:L2_cust_srv
 *surf,frame_fac,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  35 ||< external
 *surf,upper_bb,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,35,36  #  36 ||< lower_b:L3_ent_void
-*surf,over_h_a,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,53  #  37 ||< l2_bal_ovhb:L3_open_lft
-*surf,over_h_b,CEIL,-,-,-,UNKNOWN,OPAQUE,ANOTHER,48,52  #  38 ||< l2_bal_ovha:L3_open_lft
-*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,50,41  #  39 ||< struc_d:L3_ufloor
+*surf,over_h_a,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,48,53  #  37 ||< l2_bal_ovhb:L3_open_lft
+*surf,over_h_b,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,48,52  #  38 ||< l2_bal_ovha:L3_open_lft
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,41  #  39 ||< struc_d:L3_ufloor
+*surf,balc_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  40 ||< not yet defined
+*surf,ptn_open_e,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  41 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -167,4 +173,4 @@ L2_ent_void describes void over the entrance reception
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,29,   197.06 0  # zone base list
+*base_list,1,29,   196.79 0  # zone base list

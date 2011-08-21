@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_sw_void # tag version, format, zone name
-*date Wed Aug 17 06:29:54 2011  # latest file modification 
+*date Sun Aug 21 11:13:02 2011  # latest file modification 
 L3_sw_void describes void over stair at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,55.59300  #   1
@@ -123,9 +123,9 @@ L3_sw_void describes void over stair at SW facade
 *surf,ptn_l3e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,23  #   9 ||< ptn_l3e:L3_open_lft
 *surf,ptn_l3f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,24  #  10 ||< ptn_l3f:L3_open_lft
 *surf,ptn_l3g,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,25  #  11 ||< ptn_l3g:L3_open_lft
-*surf,ptn_l3el,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,03,12  #  12 ||< back_3:lifts
+*surf,ptn_l3el,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,12  #  12 ||< back_3:lifts
 *surf,ptn_l3_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,26  #  13 ||< ptn_l3_dr:L3_open_lft
-*surf,ptn_l3_sta,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,01,30  #  14 ||< ptn_void_l3:stair_1
+*surf,ptn_l3_sta,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,30  #  14 ||< ptn_void_l3:stair_1
 *surf,ptn_l3_toil,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,46,08  #  15 ||< ptn_vd_l3:L3_toilet
 *surf,bk_fac_gla,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,bk_fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
@@ -133,8 +133,8 @@ L3_sw_void describes void over stair at SW facade
 *surf,bk_fac_gld,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,51,21  #  20 ||< Base-27:L4_sw_void
 *surf,lower,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,34,32  #  21 ||< upper:L2_se_void
-*surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,35  #  22 ||< ptn_vd3:lifts
-*surf,ptn_flrv_l3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,26  #  23 ||< ptn_flrv_l3:stair_1
+*surf,ptn_vd3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,35  #  22 ||< ptn_vd3:lifts
+*surf,ptn_flrv_l3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,26  #  23 ||< ptn_flrv_l3:stair_1
 *surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,38  #  24 ||< ptn_flrvd_a:L3_ufloor
 *surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,39  #  25 ||< ptn_flrvd_b:L3_ufloor
 *surf,ptn_toil_3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,40  #  26 ||< ptn_toil_3:L3_ufloor

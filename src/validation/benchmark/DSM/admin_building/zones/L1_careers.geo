@@ -172,3 +172,11 @@ L1_careers describes the level one careers service area
 *insol_calc,none  # no insolation requested
 # 
 *base_list,1,21,   134.62 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,50.500,13.500,47.950,0.400,0.400,15.440,0.000,1.00,col_at_g,door  # block  53
+*obs,44.500,15.750,47.950,0.250,0.250,15.440,0.000,1.00,col_y,door  # block  51
+*obs,38.000,14.250,47.950,0.250,0.250,15.440,0.000,1.00,col_z,door  # block  52
+*end_block

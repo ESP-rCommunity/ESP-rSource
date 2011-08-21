@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ufloor # tag version, format, zone name
-*date Sat Aug 20 08:38:02 2011  # latest file modification 
+*date Sun Aug 21 11:49:27 2011  # latest file modification 
 L3_ufloor describes floor void under L3 occupied spaces
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,55.59300  #   1
@@ -324,7 +324,7 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,ceiling_mt,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,21,14  #  16 ||< ceiling_mt:L2_meeting
 *surf,ceiling_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,22,30  #  17 ||< ceiling_a:L2_open_pln
 *surf,ceiling_b,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,22,40  #  18 ||< ceiling_b:L2_open_pln
-*surf,ceiling_cus,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
+*surf,ceiling_cus,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,23,28  #  19 ||< ceiling_cus:L2_cust_srv
 *surf,ceil_cash,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,24,09  #  20 ||< ceil_cash:L2_cash
 *surf,ceil_pz_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,25,07  #  21 ||< ceil_pz_a:L2_print_zn
 *surf,ceil_l2_cl_a,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,26,11  #  22 ||< ceil_l2_cl_a:L2_core_cel
@@ -346,7 +346,7 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,24  #  38 ||< ptn_flrvd_a:L3_sw_void
 *surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,25  #  39 ||< ptn_flrvd_b:L3_sw_void
 *surf,ptn_toil_3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,47,26  #  40 ||< ptn_toil_3:L3_sw_void
-*surf,struc_d,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,18,39  #  41 ||< struc_d:L2_ent_void
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,18,39  #  41 ||< struc_d:L2_ent_void
 *surf,floor_left,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,48,54  #  42 ||< floor_left:L3_open_lft
 *surf,floor_right,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
 *surf,floor_open_r,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,49,28  #  44 ||< floor_open_r:L3_open_rig
@@ -359,7 +359,7 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,srv_fac_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  51 ||< external
 *surf,srv_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  52 ||< external
 *surf,ne_facade,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  53 ||< external
-*surf,to_stair_l3f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  54 ||< external
+*surf,to_stair_l3f,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,57  #  54 ||< l3_flr_vdc:stair_2
 *surf,street_faca,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  55 ||< external
 *surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,07  #  56 ||< seg_g:L2_circular
 *surf,seg_kk,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,19,08  #  57 ||< seg_k:L2_circular

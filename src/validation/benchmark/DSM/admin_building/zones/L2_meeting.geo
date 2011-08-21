@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_meeting # tag version, format, zone name
-*date Sat Aug 13 14:47:08 2011  # latest file modification 
+*date Sun Aug 21 11:37:46 2011  # latest file modification 
 L2_meeting describes corner meeting room wutg angled wall
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -55,7 +55,7 @@ L2_meeting describes corner meeting room wutg angled wall
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,10  #   2 ||< ptn_meet_b:L2_open_pln
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,09  #   3 ||< ptn_meet_c:L2_open_pln
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,08  #   4 ||< ptn_frame:L2_open_pln
-*surf,frame_open,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,frame_open,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,20,19  #   5 ||< side_fr:L2_careers
 *surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external

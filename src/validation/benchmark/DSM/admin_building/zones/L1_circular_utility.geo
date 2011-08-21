@@ -95,3 +95,11 @@ L1_circular describes a circular vent shaft at level one
 *insol_calc,none  # no insolation requested
 # 
 *base_list,0,42.00,0  # zone base
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,28.800,7.200,47.950,0.100,0.200,15.440,13.000,1.00,sol_vm,door  # block  13
+*obs,31.200,7.800,47.950,0.100,0.200,15.440,13.000,1.00,sol_vn,door  # block  14
+*obs,33.800,8.400,47.950,0.100,0.200,15.440,13.000,1.00,sol_vo,door  # block  15
+*end_block
