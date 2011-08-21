@@ -2914,7 +2914,8 @@ C Strings for surface attributes to pass to insrec.
       integer ISDN,INODA ! max items and current menu item
       integer mnulen,iwhich2,nv   ! multi column lines
       logical greyok,odd   ! for display of vertex info
-      logical closecog     ! to check for nearby surfaces
+      logical closecog,closea     ! to check for nearby surfaces
+      integer lnsa,lnsb    ! lengths for surface names
       character message*48,t248*248
 
 C For help messages
@@ -3786,7 +3787,8 @@ C General image option flags.
             GRDIS=0.0; ITPPSW=0
 
 C Remember the COG of the current surface and then compare it with
-C the cog of the surfaces in the other zone. Report if within 1m.
+C the cog of the surfaces in the other zone as well as their areas.
+C Report if within 1m and 0.5m2 area difference.
             cog(1)=ssurcog(ic,1)
             cog(2)=ssurcog(ic,2)
             cog(3)=ssurcog(ic,3)
@@ -3799,10 +3801,16 @@ C the cog of the surfaces in the other zone. Report if within 1m.
               call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
      &          cogo(3),1.0,closecog)
               if(closecog)then
-                write(outs,'(6a)') 'Surface ',ssname(iocog),' in ',
-     &            zname(iz)(1:lnzname(iz)),' might be a match for ',
-     &            ssname(ic)
-                call edisp(iuout,outs)
+                CALL ECLOSE(SSNA(iocog),ssna(ic),0.5,closea)
+                if(closea)then
+                  lnsa=lnblnk(ssname(iocog)); lnsb=lnblnk(ssname(ic))
+                  write(outs,'(5a,f6.2,3a,f6.2)') 'Surface ',
+     &              ssname(iocog)(1:lnsa),' in ',
+     &              zname(iz)(1:lnzname(iz)),
+     &              ' with area ',SSNA(iocog),' might match ',
+     &              ssname(ic)(1:lnsb),' with area ',ssna(ic)
+                  call edisp(iuout,outs)
+                endif
               endif
   77        continue
 
@@ -4066,7 +4074,8 @@ C Reset to zeros set ICT to -1 to signal UNKNOWN
 
         ELSEIF(IVAL(1).EQ.13)THEN
 
-C Scan for neighbor surfaces in all zones.
+C Scan for neighbor surfaces in all zones. Report if within 1m 
+C and 0.5m2 area difference.
           updoth=.false.
           cog(1)=ssurcog(ic,1)
           cog(2)=ssurcog(ic,2)
@@ -4081,12 +4090,18 @@ C Scan for neighbor surfaces in all zones.
               call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
      &          cogo(3),1.0,closecog)
               if(closecog)then
-                write(outs,'(6a)') 'Surface ',ssname(ij),' in ',
-     &            zname(ic1(ij))(1:lnzname(ic1(ij))),
-     &            ' might be a match for ',ssname(ic)
-                call edisp(iuout,outs)
-                ifound=ifound+1   ! increment number neighbors found
-                if(ifound.le.3) ifoundc(ifound)=ij        ! remember which one
+                CALL ECLOSE(SSNA(ij),ssna(ic),0.5,closea)
+                if(closea)then
+                  lnsa=lnblnk(ssname(ij)); lnsb=lnblnk(ssname(ic))
+                  write(outs,'(5a,f6.2,3a,f6.2)')'Surface ',
+     &              ssname(ij)(1:lnsa),' in ',
+     &              zname(ic1(ij))(1:lnzname(ic1(ij))),
+     &              ' with area ',SSNA(ij),' might match ',
+     &              ssname(ic)(1:lnsb),' with area ',ssna(ic)
+                  call edisp(iuout,outs)
+                  ifound=ifound+1   ! increment number neighbors found
+                  if(ifound.le.3) ifoundc(ifound)=ij        ! remember which one
+                endif
               endif
             endif
   78      continue
