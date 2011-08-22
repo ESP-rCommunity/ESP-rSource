@@ -1,20 +1,20 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Sun Aug 21 16:03:21 2011  # latest file modification 
+*date Mon Aug 22 20:38:41 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
 *vertex,34.25000,13.06200,60.25000  #   2
 *vertex,35.91460,13.46780,60.25000  #   3
-*vertex,45.47176,11.61380,60.25000  #   4
-*vertex,44.39468,15.54750,60.25000  #   5
+*vertex,45.64634,11.68470,60.25000  #   4
+*vertex,44.69636,15.62710,60.25000  #   5
 *vertex,51.60000,17.25000,60.25000  #   6
 *vertex,27.48911,35.70000,60.25000  #   7
 *vertex,27.48911,21.21391,60.25000  #   8
 *vertex,27.48911,13.95529,63.39300  #   9
 *vertex,34.25000,13.06200,63.39300  #  10
 *vertex,35.91460,13.46780,63.39300  #  11
-*vertex,45.47176,11.61380,63.39300  #  12
-*vertex,44.39468,15.54750,63.39300  #  13
+*vertex,45.64634,11.68470,63.39300  #  12
+*vertex,44.69636,15.62710,63.39300  #  13
 *vertex,51.60000,17.25000,63.39300  #  14
 *vertex,27.48911,35.70000,63.39300  #  15
 *vertex,27.48911,21.21391,63.39300  #  16
@@ -65,17 +65,32 @@ L4_open_plr describes right half of level four open plan area
 *vertex,36.76406,9.49976,61.25000  #  61
 *vertex,34.25000,13.06200,61.25000  #  62
 *vertex,36.76406,9.49976,63.39300  #  63
+*vertex,45.64634,11.68470,61.25000  #  64
+*vertex,44.69636,15.62710,61.25000  #  65
+*vertex,51.60000,17.25000,61.25000  #  66
+*vertex,27.69180,35.70000,60.25000  #  67
+*vertex,31.01671,35.70000,60.25000  #  68
+*vertex,31.01671,35.70000,63.39300  #  69
+*vertex,27.69180,35.70000,63.39300  #  70
+*vertex,38.04653,35.70000,60.25000  #  71
+*vertex,38.04653,35.70000,63.39300  #  72
+*vertex,41.37145,35.70000,60.25000  #  73
+*vertex,41.37145,35.70000,63.39300  #  74
+*vertex,44.69636,35.70000,60.25000  #  75
+*vertex,44.69636,35.70000,63.39300  #  76
+*vertex,48.02128,35.70000,60.25000  #  77
+*vertex,48.02128,35.70000,63.39300  #  78
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,62,60,11,10  #  1
 *edges,4,60,61,63,11  #  2
-*edges,5,59,4,12,63,61  #  3
-*edges,4,4,5,13,12  #  4
-*edges,4,5,6,14,13  #  5
+*edges,6,59,4,64,12,63,61  #  3
+*edges,4,64,65,13,12  #  4
+*edges,4,65,66,14,13  #  5
 *edges,4,7,8,16,15  #  6
 *edges,4,8,1,9,16  #  7
-*edges,30,9,26,19,20,22,24,10,11,63,12,13,14,44,42,40,29,30,32,34,36,38,57,56,55,53,54,56,57,15,16  #  8
-*edges,30,1,8,7,58,45,46,49,51,45,58,37,35,33,31,27,28,39,41,43,6,5,4,59,3,2,23,21,17,18,25  #  9
+*edges,36,9,26,19,20,22,24,10,11,63,12,13,14,44,42,40,29,30,32,34,36,38,78,76,74,72,57,56,55,53,54,56,57,69,70,15,16  #  8
+*edges,36,1,8,7,67,68,58,45,46,49,51,45,58,71,73,75,77,37,35,33,31,27,28,39,41,43,6,5,4,59,3,2,23,21,17,18,25  #  9
 *edges,4,18,17,20,19  # 10
 *edges,4,17,21,22,20  # 11
 *edges,4,21,23,24,22  # 12
@@ -90,7 +105,7 @@ L4_open_plr describes right half of level four open plan area
 *edges,4,39,28,29,40  # 21
 *edges,4,41,39,40,42  # 22
 *edges,4,43,41,42,44  # 23
-*edges,4,6,43,44,14  # 24
+*edges,5,6,43,44,14,66  # 24
 *edges,4,46,45,48,47  # 25
 *edges,4,49,46,47,50  # 26
 *edges,4,51,49,50,52  # 27
@@ -98,9 +113,18 @@ L4_open_plr describes right half of level four open plan area
 *edges,4,55,52,50,53  # 29
 *edges,6,45,51,52,55,56,48  # 30
 *edges,4,54,47,48,56  # 31
-*edges,6,37,58,7,15,57,38  # 32
-*edges,4,3,59,61,60  # 33
-*edges,4,2,3,60,62  # 34
+*edges,4,3,59,61,60  # 32
+*edges,4,2,3,60,62  # 33
+*edges,4,5,6,66,65  # 34
+*edges,4,4,5,65,64  # 35
+*edges,4,68,67,70,69  # 36
+*edges,4,58,68,69,57  # 37
+*edges,4,71,58,57,72  # 38
+*edges,4,73,71,72,74  # 39
+*edges,4,75,73,74,76  # 40
+*edges,4,77,75,76,78  # 41
+*edges,4,37,77,78,38  # 42
+*edges,4,67,7,15,70  # 43
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -121,12 +145,12 @@ L4_open_plr describes right half of level four open plan area
 *surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,23  #  12 ||< seg_jl:L4_circular
 *surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,24  #  13 ||< seg_kl:L4_circular
 *surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,25  #  14 ||< seg_gl:L4_circular
-*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,77,56  #  15 ||< filler:L5_atroofltl
 *surf,ptnb_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,62,08  #  16 ||< ptnb_opn_l4:L4_toil_psg
 *surf,ptna_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,62,07  #  17 ||< ptna_opn_l4:L4_toil_psg
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,62,06  #  18 ||< ptn_cel_b:L4_toil_psg
 *surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,43  #  19 ||< ptnc_str_l4:stair_2
-*surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
+*surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,60  #  20 ||< ptnd_str_l4b:stair_2
 *surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,54,10  #  21 ||< ptn_open_a:L4_meeting
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,54,11  #  22 ||< ptn_open_b:L4_meeting
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,54,12  #  23 ||< door:L4_meeting
@@ -138,9 +162,18 @@ L4_open_plr describes right half of level four open plan area
 *surf,l4_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,60,02  #  29 ||< l3_lw2_ri:L4_light_w2
 *surf,l4_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,60,03  #  30 ||< l3_lw2_bk:L4_light_w2
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,60,04  #  31 ||< l3_lw2_lef:L4_light_w2
-*surf,cellular,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
-*surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,25  #  33 ||< balcony_au:L3_L4_cir_vd
-*surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,26  #  34 ||< balcony_bu:L3_L4_cir_vd
+*surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,25  #  32 ||< balcony_au:L3_L4_cir_vd
+*surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,26  #  33 ||< balcony_bu:L3_L4_cir_vd
+*surf,balc_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  34 ||< not yet defined
+*surf,balc_vb_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  35 ||< not yet defined
+*surf,ptn_open_ac,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,01  #  36 ||< ptn_open_a:L4_cell_srv
+*surf,ptn_open_bc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,02  #  37 ||< ptn_open_b:L4_cell_srv
+*surf,ptn_open_cc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,03  #  38 ||< ptn_open_c:L4_cell_srv
+*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,04  #  39 ||< ptn_open_d:L4_cell_srv
+*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,05  #  40 ||< ptn_open_e:L4_cell_srv
+*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,06  #  41 ||< ptn_open_f:L4_cell_srv
+*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,07  #  42 ||< ptn_open_g:L4_cell_srv
+*surf,cell_fill,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -149,4 +182,4 @@ L4_open_plr describes right half of level four open plan area
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,10,   501.93 0  # zone base list
+*base_list,1,10,   502.79 0  # zone base list

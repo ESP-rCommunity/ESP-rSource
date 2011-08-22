@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_lft # tag version, format, zone name
-*date Sat Aug 20 07:05:17 2011  # latest file modification 
+*date Mon Aug 22 21:04:26 2011  # latest file modification 
 L3_open_lft describes left portion of level three open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,56.35000  #   1
@@ -187,13 +187,13 @@ L3_open_lft describes left portion of level three open plan
 *surf,ptn_l3f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,47,10  #  24 ||< ptn_l3f:L3_sw_void
 *surf,ptn_l3g,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,47,11  #  25 ||< ptn_l3g:L3_sw_void
 *surf,ptn_l3_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,47,13  #  26 ||< ptn_l3_dr:L3_sw_void
-*surf,seg_g,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,07  #  27 ||< seg_g:L3_circular
-*surf,seg_h,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,08  #  28 ||< seg_h:L3_circular
-*surf,seg_i,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,09  #  29 ||< seg_i:L3_circular
-*surf,seg_j,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,10  #  30 ||< seg_j:L3_circular
-*surf,seg_k,VERT,-,-,-,UNKNOWN,OPAQUE,ANOTHER,36,11  #  31 ||< seg_k:L3_circular
-*surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,08  #  32 ||< fict_open_b:L3_void_cir
-*surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,12  #  33 ||< struc_a:L3_void_cir
+*surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,07  #  27 ||< seg_g:L3_circular
+*surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,08  #  28 ||< seg_h:L3_circular
+*surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,09  #  29 ||< seg_i:L3_circular
+*surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,10  #  30 ||< seg_j:L3_circular
+*surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,11  #  31 ||< seg_k:L3_circular
+*surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,37,08  #  32 ||< fict_open_b:L3_L4_cir_vd
+*surf,balcony_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,12  #  33 ||< balcony_b:L3_L4_cir_vd
 *surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,01  #  34 ||< ptn_open_a:L3_cell_srv
 *surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,02  #  35 ||< ptn_open_b:L3_cell_srv
 *surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,01  #  36 ||< ptn_pr_op:L3_print_zn
@@ -210,12 +210,12 @@ L3_open_lft describes left portion of level three open plan
 *surf,lw2left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,44,07  #  47 ||< left_rail:L3_light_w2
 *surf,fict_lr_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,24  #  48 ||< fict_lr_a:L3_open_rig
 *surf,fict_lr_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,25  #  49 ||< fict_lr_b:L3_open_rig
-*surf,up_left,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  50 ||< not yet defined
-*surf,up_right,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
+*surf,up_left,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,19  #  50 ||< up_left:L4_flrvoid
+*surf,up_right,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,20  #  51 ||< up_right:L4_flrvoid
 *surf,l2_bal_ovha,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,18,38  #  52 ||< over_h_b:L2_ent_void
 *surf,l2_bal_ovhb,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,18,37  #  53 ||< over_h_a:L2_ent_void
 *surf,floor_left,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,42  #  54 ||< floor_left:L3_ufloor
-*surf,floor_right,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  55 ||< not yet defined
+*surf,floor_right,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,50,43  #  55 ||< floor_right:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

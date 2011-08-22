@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_circular # tag version, format, zone name
-*date Sun Aug 21 16:03:44 2011  # latest file modification 
+*date Mon Aug 22 20:34:05 2011  # latest file modification 
 L4_circular describes circular meeting room at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,60.25000  #   1
@@ -66,12 +66,13 @@ L4_circular describes circular meeting room at level four
 *edges,4,33,35,36,34  # 17
 *edges,4,35,31,32,36  # 18
 *edges,18,4,34,36,32,30,28,26,24,22,20,18,16,14,12,10,8,6,3  # 19
-*edges,18,1,2,5,7,9,11,13,15,17,19,21,23,25,27,29,31,35,33  # 20
+*edges,6,13,15,17,19,21,23  # 20
 *edges,4,17,15,38,37  # 21
 *edges,4,19,17,37,39  # 22
 *edges,4,21,19,39,40  # 23
 *edges,5,23,21,40,42,41  # 24
 *edges,4,15,13,43,38  # 25
+*edges,14,33,1,2,5,7,9,11,13,23,25,27,29,31,35  # 26
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -89,20 +90,21 @@ L4_circular describes circular meeting room at level four
 *surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
 *surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
 *surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,14  #  12 ||< seg_acu:L3_L4_cir_vd
+*surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,15  #  13 ||< seg_bcu:L3_L4_cir_vd
+*surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,16  #  14 ||< seg_ccu:L3_L4_cir_vd
+*surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,37,17  #  15 ||< seg_dcu:L3_L4_cir_vd
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
+*surf,Top,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  20 ||< Base:L3_circular
 *surf,seg_hl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,10  #  21 ||< seg_h:L4_open_plr
 *surf,seg_il,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,11  #  22 ||< seg_i:L4_open_plr
 *surf,seg_jl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,12  #  23 ||< seg_j:L4_open_plr
 *surf,seg_kl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,13  #  24 ||< seg_k:L4_open_plr
 *surf,seg_gl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,14  #  25 ||< seg_g:L4_open_plr
+*surf,main_floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,19  #  26 ||< Top:L3_circular
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

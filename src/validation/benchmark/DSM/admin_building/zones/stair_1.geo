@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Wed Aug 17 22:24:54 2011  # latest file modification 
+*date Mon Aug 22 21:39:29 2011  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -159,13 +159,13 @@ stair_1 describes stair number one
 *surf,ptn_corb_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,02  #  39 ||< ptn_corb_3:L3_open_lft
 *surf,ptn_corc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,03  #  40 ||< ptn_corc_l3:L3_open_lft
 *surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
-*surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,16  #  42 ||< ptn_cora_l4:L4_sw_meet
-*surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,17  #  43 ||< ptn_corb_l4:L4_sw_meet
-*surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,57,13  #  44 ||< ptn_stair:L4_open_s
+*surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,13  #  42 ||< ptn_cora_l4:L4_sw_meet
+*surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,14  #  43 ||< ptn_corb_l4:L4_sw_meet
+*surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,12  #  44 ||< ptn_other:L4_open_s
 *surf,l5_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,15  #  46 ||< floor-lob:L5_lobby
-*surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,16  #  47 ||< ptn_cora_l5:L5_lobby
-*surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,73,10  #  48 ||< shift_fac:L5_toilet
+*surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,15  #  46 ||< ptn_cora_l5:L5_lobby
+*surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,16  #  47 ||< ptn_corb_l5:L5_lobby
+*surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,73,10  #  48 ||< ptn_corc_l5:L5_toilet
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

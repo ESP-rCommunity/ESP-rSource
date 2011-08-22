@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_circular # tag version, format, zone name
-*date Sun Aug 21 15:37:23 2011  # latest file modification 
+*date Mon Aug 22 20:33:40 2011  # latest file modification 
 L3_circular describes circular meeting room at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,56.35000  #   1
@@ -88,8 +88,8 @@ L3_circular describes circular meeting room at level three
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,16  #  20 ||< Top:L2_circular
+*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,52,26  #  19 ||< main_floor:L4_circular
+*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,52,20  #  20 ||< Base:L4_circular
 *surf,seg_kup,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,10  #  21 ||< seg_kup:L4_flrvoid
 *surf,seg_gup,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,11  #  22 ||< seg_gup:L4_flrvoid
 # 

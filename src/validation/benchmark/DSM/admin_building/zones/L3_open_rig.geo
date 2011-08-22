@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_open_rig # tag version, format, zone name
-*date Sun Aug 21 11:36:41 2011  # latest file modification 
+*date Mon Aug 22 20:59:43 2011  # latest file modification 
 L3_open_rig describes right portion of open plan on L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,50.00000,30.50000,56.35000  #   1
@@ -118,7 +118,7 @@ L3_open_rig describes right portion of open plan on L3
 *surf,fict_lr_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,48  #  24 ||< fict_lr_a:L3_open_lft
 *surf,fict_lr_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,49  #  25 ||< fict_lr_b:L3_open_lft
 *surf,facade_st,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,up_open_rig,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,up_open_rig,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,21  #  27 ||< up_open_rig:L4_flrvoid
 *surf,floor_open_r,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,44  #  28 ||< floor_open_r:L3_ufloor
 *surf,ovhang,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,20,02  #  29 ||< upper_slab:L2_careers
 # 

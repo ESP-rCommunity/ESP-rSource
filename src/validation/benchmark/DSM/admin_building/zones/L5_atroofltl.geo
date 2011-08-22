@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Sat Aug 20 16:22:00 2011  # latest file modification 
+*date Mon Aug 22 21:38:17 2011  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -167,13 +167,13 @@ L5_atroofltl describes the main roof light over atria
 *surf,roof_c,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,01  #   7 ||< balc_a:L4_open_s
 *surf,wall_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,02  #   8 ||< wall_a:L4_open_s
-*surf,wall_b,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   9 ||< external
-*surf,wall_c,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  10 ||< external
-*surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< external
-*surf,wall_f,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  12 ||< external
-*surf,wall_g,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  13 ||< external
-*surf,wall_h,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  14 ||< external
-*surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  15 ||< external
+*surf,wall_b,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,03  #   9 ||< wall_b:L4_open_s
+*surf,wall_c,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,04  #  10 ||< wall_c:L4_open_s
+*surf,balc_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,05  #  11 ||< balc_b:L4_open_s
+*surf,wall_f,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,06  #  12 ||< wall_f:L4_open_s
+*surf,wall_g,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,07  #  13 ||< wall_g:L4_open_s
+*surf,wall_h,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,08  #  14 ||< wall_h:L4_open_s
+*surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,09  #  15 ||< balc_c:L4_open_s
 *surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  16 ||< external
 *surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  17 ||< external
 *surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  18 ||< external
@@ -200,7 +200,7 @@ L5_atroofltl describes the main roof light over atria
 *surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  39 ||< external
 *surf,side_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  40 ||< external
 *surf,side_fac_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  41 ||< external
-*surf,to_meeting,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
+*surf,to_meeting,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,01  #  42 ||< Wall-1:L4_sw_meet
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  43 ||< adiabatic
 *surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  44 ||< adiabatic
 *surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  45 ||< adiabatic
@@ -214,7 +214,7 @@ L5_atroofltl describes the main roof light over atria
 *surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  53 ||< adiabatic
 *surf,roof_d,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  54 ||< external
 *surf,roof_e,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  55 ||< external
-*surf,filler,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  56 ||< not yet defined
+*surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,15  #  56 ||< filler:L4_open_plr
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

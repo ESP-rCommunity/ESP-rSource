@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Sun Aug 21 11:35:30 2011  # latest file modification 
+*date Mon Aug 22 20:58:03 2011  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -74,16 +74,16 @@ L3_void_b describes void above the careers services area
 *surf,side_gl_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,side_gl_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
 *surf,side_gl_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,39,14  #   8 ||< ptn_frame:L3_meeting
 *surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,06  #   9 ||< int_glaz:L3_open_rig
 *surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,05  #  10 ||< int_glazb:L3_open_rig
 *surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,18  #  11 ||< fict_low:L2_careers
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,15  #  12 ||< struc_bvb:L4_flrvoid
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,16  #  13 ||< struc_avb:L4_flrvoid
 *surf,side_gl_au,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  14 ||< not yet defined
 *surf,side_gl_bu,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  15 ||< not yet defined
 *surf,side_gl_cu,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  16 ||< not yet defined
-*surf,side_fru,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  17 ||< not yet defined
+*surf,side_fru,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,53,14  #  17 ||< ptn_frame:L4_meeting
 *surf,stone_u,VERT,-,-,-,stone_m_ell,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
 *surf,fac_gla_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  19 ||< not yet defined
 *surf,fac_glb_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  20 ||< not yet defined

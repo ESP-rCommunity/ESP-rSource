@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_meeting # tag version, format, zone name
-*date Sat Aug 13 14:58:36 2011  # latest file modification 
+*date Mon Aug 22 20:43:15 2011  # latest file modification 
 L3_meeting describes corner meeting room in L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,56.35000  #   1
@@ -67,8 +67,8 @@ L3_meeting describes corner meeting room in L3
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,08  #  11 ||< ptn_open_b:L3_open_rig
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,09  #  12 ||< door:L3_open_rig
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,10  #  13 ||< ptn_open_c:L3_open_rig
-*surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,38,08  #  14 ||< side_fr:L3_void_b
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,17  #  15 ||< ceiling:L4_flrvoid
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,28  #  16 ||< floor:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution

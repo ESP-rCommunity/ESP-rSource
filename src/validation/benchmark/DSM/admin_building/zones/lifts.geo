@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Wed Aug 17 22:24:54 2011  # latest file modification 
+*date Mon Aug 22 21:28:39 2011  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -100,13 +100,13 @@ lifts describes the elevator shaft
 *surf,front_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,05  #  10 ||< front_3:L3_open_lft
 *surf,right_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,06  #  11 ||< right_3:L3_open_lft
 *surf,back_3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,12  #  12 ||< ptn_l3el:L3_sw_void
-*surf,left_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
-*surf,front_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,right_4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,left_4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,10  #  13 ||< Wall-11:L4_sw_meet
+*surf,front_4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,09  #  14 ||< Wall-10:L4_sw_meet
+*surf,right_4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,08  #  15 ||< Wall-9:L4_sw_meet
 *surf,back_4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,12  #  16 ||< Wall-12:L4_sw_void
 *surf,left_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,66,07  #  17 ||< ptn_elev:L5_kitch2
-*surf,front_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,07  #  18 ||< ptn_el_r:L5_lobby
-*surf,right_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,06  #  19 ||< gptn_open:L5_lobby
+*surf,front_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,07  #  18 ||< ptn_el_fr:L5_lobby
+*surf,right_5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,06  #  19 ||< ptn_el_r:L5_lobby
 *surf,back_5,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,77,12  #  20 ||< ptn_elev:L5_sw_void
 *surf,rflra_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,06  #  21 ||< rflra_l2:L2_uf_plen
 *surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,06  #  22 ||< rflra_l3:L3_ufloor

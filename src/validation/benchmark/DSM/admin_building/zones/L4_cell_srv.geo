@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Wed Aug 17 07:11:18 2011  # latest file modification 
+*date Mon Aug 22 20:40:52 2011  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -168,15 +168,15 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,ptn_open_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,36  #   1 ||< ptn_open_ac:L4_open_plr
+*surf,ptn_open_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,37  #   2 ||< ptn_open_bc:L4_open_plr
+*surf,ptn_open_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,38  #   3 ||< ptn_open_cc:L4_open_plr
+*surf,ptn_open_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,39  #   4 ||< ptn_open_d:L4_open_plr
+*surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,40  #   5 ||< ptn_open_e:L4_open_plr
+*surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,41  #   6 ||< ptn_open_f:L4_open_plr
+*surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,42  #   7 ||< ptn_open_g:L4_open_plr
+*surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,36  #   8 ||< fill_l4:stair_2
+*surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,49  #   9 ||< ptnd_str_l4:stair_2
 *surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
@@ -193,7 +193,7 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,02  #  25 ||< ptn_cel:L4_printz
-*surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,Top-29,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external

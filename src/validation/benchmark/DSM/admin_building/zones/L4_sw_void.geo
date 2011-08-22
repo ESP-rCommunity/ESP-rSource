@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_void # tag version, format, zone name
-*date Sun Aug 21 11:13:02 2011  # latest file modification 
+*date Mon Aug 22 21:36:44 2011  # latest file modification 
 L4_sw_void describes void at level four at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,59.49300  #   1
@@ -116,13 +116,13 @@ L4_sw_void describes void at level four at SW facade
 *surf,Wall-2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
 *surf,Wall-3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,Wall-5,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,Wall-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,Wall-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,Wall-9,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,Wall-10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,Wall-11,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,Wall-5,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,55,15  #   5 ||< ptn_fr:L4_sw_meet
+*surf,Wall-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,16  #   6 ||< gl_ptn_b:L4_sw_meet
+*surf,Wall-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,17  #   7 ||< Wall-7:L4_sw_meet
+*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,18  #   8 ||< gl_ptn_d:L4_sw_meet
+*surf,Wall-9,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,19  #   9 ||< gl_ptn_f:L4_sw_meet
+*surf,Wall-10,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,20  #  10 ||< gl_ptn_g:L4_sw_meet
+*surf,Wall-11,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,21  #  11 ||< gl_ptn_h:L4_sw_meet
 *surf,Wall-12,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,16  #  12 ||< back_4:lifts
 *surf,Wall-13,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,07  #  13 ||< Wall-8:L4_sw_meet
 *surf,Wall-14,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,31  #  14 ||< ptn_void_l4:stair_1
@@ -135,9 +135,9 @@ L4_sw_void describes void at level four at SW facade
 *surf,Base-27,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,47,20  #  21 ||< upper:L3_sw_void
 *surf,ptn_vd3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,36  #  22 ||< ptn_vd4:lifts
 *surf,ptn_flrv_l4,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,27  #  23 ||< pnt_flrv_l4:stair_1
-*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
-*surf,ptn_toil_l4,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,22  #  24 ||< ptn_flrvd_a:L4_flrvoid
+*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,23  #  25 ||< ptn_flrvd_b:L4_flrvoid
+*surf,ptn_toil_l4,VERT,-,-,-,slab_275,OPAQUE,SIMILAR,00,00  #  26 ||< identical environment
 *surf,l4_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,04  #  27 ||< l4_facade_a:sw_facade
 *surf,l4_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,17  #  28 ||< l4_facc:sw_facade
 *surf,l4_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,18  #  29 ||< l4_facb:sw_facade
