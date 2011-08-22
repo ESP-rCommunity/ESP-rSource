@@ -2203,7 +2203,7 @@ C from the 1m offset.The tollerance is currently set to 3mm.
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
         call eclose(ZZZ,1.0,0.003,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 1mm
+	  ivoff=ivoff+1   ! increment number of vertices off by more than 3mm
 	  diff=1.0-ZZZ
           if(abs(diff).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i

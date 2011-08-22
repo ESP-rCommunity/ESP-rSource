@@ -3954,12 +3954,14 @@ C Derive the equation of the polygon.
         N = NVER(i)
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
 
-C See if any points are out of the plane.
+C See if any points are out of the plane. Note a point that is
+C only a few mm off of the line can result in a warp which is
+C reported as a larger number.
         iwhich=0
         ofby=0.0
 	lln=lnblnk(ssname(icc)) 
 	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0)then
+	if(ivoff.gt.0.and.ofby.gt.0.01)then
 	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
      &      zname(icomp)(1:lnzname(icomp)),
      &      ' is probably warped. Please check via surface transforms.'
