@@ -66,6 +66,7 @@ C LPRFDB,IPRODB (for event profile database)
       LOGICAL MODIFY,MODLEN,MODBND,modcfg,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
+      logical anothercopy  ! logical true if user has copied a block
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
       integer IW  ! for radio button
@@ -85,6 +86,7 @@ C Check if Unix-based or DOS based.
       modcfg=.false.
       havesaved=.false.
       ITOBS = 0
+      anothercopy=.false.  ! nothing copied yet
 
 C Obstructions for whole model are in common blocks there should
 C be no need to re-scan this information because it is only called
@@ -409,7 +411,14 @@ C Rotation choices.
           CALL EPICKS(INPIC,IVALB,' ','Transform which obstructions:',
      &        30,nbobs(icomp),PICK,' block list',IER,nbhelp)
           CALL EPMENRC
-          HOLDS= ' 0.  0.  0. '
+
+C Ask for transform distance for obstruction and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+          if(anothercopy)then
+            write(holds,'(3f10.4)') VALX,VALY,VALZ
+          else
+            holds = ' 0.00  0.00  0.00 '
+          endif
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
      &      36,' 0. 0. 0. ','offsets',IER,nbhelp)
           K=0
@@ -430,6 +439,7 @@ C Rotation choices.
   87      continue
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
+          if(.NOT.anothercopy) anothercopy=.true.  ! something transformed
         else
           GOTO 92
         endif
@@ -550,7 +560,7 @@ C If user asked for next or prior obstruction reset nbo and call again.
             goto 77
           endif
           CALL EPMENRC  ! recover state of calling menue
-          GOTO 91
+          GOTO 92       ! re-display the menu
         elseif(IW.EQ.3)THEN
 
 C Copy obstruction.
@@ -577,8 +587,13 @@ C Copy obstruction.
               goto 244
             endif
 
-C Ask for transform distance for obstruction and then apply.
-            holds = ' 0.00  0.00  0.00 '
+C Ask for transform distance for obstruction and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+            if(anothercopy)then
+              write(holds,'(3f10.4)') VALX,VALY,VALZ
+            else
+              holds = ' 0.00  0.00  0.00 '
+            endif
  243        CALL EASKS(HOLDS,'Transform obstruction (X Y Z metres):',
      &        ' ',36,' 0.0 0.0 0.0','transforms XYZ',IER,nbhelp)
             K=0
@@ -607,6 +622,8 @@ C Ask for transform distance for obstruction and then apply.
   245       continue
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
+            if(.NOT.anothercopy) anothercopy=.true.  ! something copied
+
             if(newgeo)then
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else

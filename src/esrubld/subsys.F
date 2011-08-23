@@ -216,10 +216,12 @@ C MS sensitive, print first 22 surfaces.
         call edisp(itu,outs)
  9992 CONTINUE
       DO 9000 I=1,NC
-      DO 9010 J=1,NC
-      QX(I,J)=HRF(I,J)*SNA(ICOMP,J)*(TFS(ICOMP,I)-TFS(ICOMP,J))
- 9010 CONTINUE
+        DO 9010 J=1,NC
+          QX(I,J)=HRF(I,J)*SNA(ICOMP,J)*(TFS(ICOMP,I)-TFS(ICOMP,J))
+ 9010   CONTINUE
  9000 CONTINUE
+
+C Write out flux for first 22 surfaces in the zone.
       call edisp(itu,' Radiative flux')
       call edisp(itu,' ')
       nss=min0(22,nc)
@@ -643,7 +645,7 @@ C Clear sky temperature as in bld #5.4 (after Swinbank).
         TSKY=TCSKY
       ENDIF
       IF(TSKY.LT.200.0.OR.TSKY.GT.325.0)then
-       write(outs,'(a,F8.2,a)')'MZELWE: a dubious sky temperature(',
+       write(outs,'(a,F7.1,a)')'MZELWE: a dubious sky temperature(',
      &   TSKY,' (degK)) has been calculated.'
         call edisp(iuout,outs)
         call edisp(iuout,
@@ -933,7 +935,7 @@ C Don't use correlation if artificial emissivity used (>1)
           write(outs,'(A)')
      &    ' This is considered high and a correlation will be used.'
           call edisp(iuout,outs)
-          write(outs,'(A,F7.1,A,F6.1,A,F6.1)')
+          write(outs,'(A,F7.1,A,F7.1,A,F7.1)')
      &    ' <sky = ',QELWFK(I),' <buildings = ',QELWFB(I),
      &    ' <ground = ',QELWFG(I)
           call edisp(iuout,outs)
