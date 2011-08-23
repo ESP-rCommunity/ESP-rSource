@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_circular # tag version, format, zone name
-*date Mon Aug 22 20:33:40 2011  # latest file modification 
+*date Wed Aug 24 06:00:17 2011  # latest file modification 
 L3_circular describes circular meeting room at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,56.35000  #   1
@@ -61,9 +61,10 @@ L3_circular describes circular meeting room at level three
 *edges,4,29,31,32,30  # 17
 *edges,4,31,27,28,32  # 18
 *edges,14,4,30,32,28,26,24,22,20,14,12,10,8,6,3  # 19
-*edges,18,1,2,5,7,9,11,13,15,16,17,18,19,21,23,25,27,31,29  # 20
+*edges,14,1,2,5,7,9,11,13,19,21,23,25,27,31,29  # 20
 *edges,4,38,33,14,20  # 21
 *edges,6,34,33,38,37,36,35  # 22
+*edges,6,18,19,13,15,16,17  # 23
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -88,10 +89,11 @@ L3_circular describes circular meeting room at level three
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,52,26  #  19 ||< main_floor:L4_circular
-*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,52,20  #  20 ||< Base:L4_circular
+*surf,L3_cir_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,52,26  #  19 ||< L4_circ_flor:L4_circular
+*surf,L3_cir_flor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,16  #  20 ||< ceil_l2_cir:L2_circular
 *surf,seg_kup,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,10  #  21 ||< seg_kup:L4_flrvoid
-*surf,seg_gup,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,11  #  22 ||< seg_gup:L4_flrvoid
+*surf,segm_top_l3,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,78,11  #  22 ||< seg_gup:L4_flrvoid
+*surf,L3_seg_flor,FLOR,-,-,-,slab_275,OPAQUE,SIMILAR,00,00  #  23 ||< identical environment
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

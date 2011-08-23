@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_circular # tag version, format, zone name
-*date Mon Aug 22 20:34:05 2011  # latest file modification 
+*date Wed Aug 24 06:02:42 2011  # latest file modification 
 L4_circular describes circular meeting room at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,60.25000  #   1
@@ -97,14 +97,14 @@ L4_circular describes circular meeting room at level four
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Top,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,Base,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  20 ||< Base:L3_circular
+*surf,L4_cir_roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,L3_segm_flr,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,51  #  20 ||< crescnt:L4_flrvoid
 *surf,seg_hl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,10  #  21 ||< seg_h:L4_open_plr
 *surf,seg_il,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,11  #  22 ||< seg_i:L4_open_plr
 *surf,seg_jl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,12  #  23 ||< seg_j:L4_open_plr
 *surf,seg_kl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,13  #  24 ||< seg_k:L4_open_plr
 *surf,seg_gl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,14  #  25 ||< seg_g:L4_open_plr
-*surf,main_floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,19  #  26 ||< Top:L3_circular
+*surf,L4_circ_flor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,19  #  26 ||< L3_cir_ceil:L3_circular
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

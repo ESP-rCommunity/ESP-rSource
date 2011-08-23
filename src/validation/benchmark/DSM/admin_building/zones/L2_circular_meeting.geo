@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_circular # tag version, format, zone name
-*date Sat Aug 13 14:45:32 2011  # latest file modification 
+*date Wed Aug 24 05:54:13 2011  # latest file modification 
 L2_circular describes circular meeting room on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,52.45000  #   1
@@ -77,7 +77,7 @@ L2_circular describes circular meeting room on level two
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,16  #   4 ||< seg_d:L2_ent_void
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,18,17  #   5 ||< seg_e:L2_ent_void
 *surf,seg_f,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,18,18  #   6 ||< seg_f:L2_ent_void
-*surf,seg_g,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,56  #   7 ||< seg_g:L3_ufloor
+*surf,segment_tL2,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,56  #   7 ||< seg_g:L3_ufloor
 *surf,seg_k,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,57  #   8 ||< seg_kk:L3_ufloor
 *surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,13  #   9 ||< seg_a:L2_careers
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,14  #  10 ||< seg_b:L2_careers
@@ -86,8 +86,8 @@ L2_circular describes circular meeting room on level two
 *surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
 *surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,Top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  16 ||< Base:L3_circular
-*surf,Base,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,46  #  17 ||< Base:L2_uf_plen
+*surf,ceil_l2_cir,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  16 ||< L3_cir_flor:L3_circular
+*surf,L2_cir_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,46  #  17 ||< Base:L2_uf_plen
 *surf,seg_al,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,03  #  18 ||< seg_a:L2_open_pln
 *surf,seg_bl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,04  #  19 ||< seg_b:L2_open_pln
 *surf,seg_cl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,05  #  20 ||< seg_c:L2_open_pln
@@ -106,7 +106,7 @@ L2_circular describes circular meeting room on level two
 # block entities:
 #  *obs = obstructions
 *block_start, 20 20 # geometric blocks
-*obs,28.800,7.200,47.950,0.100,0.200,15.440,13.000,1.00,sol_vm,door  # block  13
-*obs,31.200,7.800,47.950,0.100,0.200,15.440,13.000,1.00,sol_vn,door  # block  14
-*obs,33.800,8.400,47.950,0.100,0.200,15.440,13.000,1.00,sol_vo,door  # block  15
+*obs,28.800,7.200,47.950,0.100,0.200,15.440,13.000,1.00,sol_vm,door  # block   1
+*obs,31.200,7.800,47.950,0.100,0.200,15.440,13.000,1.00,sol_vn,door  # block   2
+*obs,33.800,8.400,47.950,0.100,0.200,15.440,13.000,1.00,sol_vo,door  # block   3
 *end_block

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_flrvoid # tag version, format, zone name
-*date Mon Aug 22 21:33:31 2011  # latest file modification 
+*date Tue Aug 23 21:11:17 2011  # latest file modification 
 column describes a dummy zone for columns
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.69500,9.16750,59.49300  #   1
@@ -130,21 +130,19 @@ column describes a dummy zone for columns
 *vertex,51.00000,28.49928,60.25000  # 126
 *vertex,51.00000,23.17941,60.25000  # 127
 *vertex,51.60000,17.25000,60.25000  # 128
-*vertex,35.30969,13.34650,60.25000  # 129
-*vertex,33.71748,12.97186,60.25000  # 130
-*vertex,32.96416,14.01214,60.25000  # 131
-*vertex,31.53920,14.62963,60.25000  # 132
-*vertex,30.39923,14.67713,60.25000  # 133
-*vertex,29.16426,14.39213,60.25000  # 134
-*vertex,53.10365,30.50000,60.25000  # 135
-*vertex,56.04857,30.50000,60.25000  # 136
-*vertex,58.30000,30.50000,60.25000  # 137
-*vertex,58.30000,30.10000,60.25000  # 138
-*vertex,58.30000,29.50000,60.25000  # 139
-*vertex,58.30000,28.59427,60.25000  # 140
-*vertex,24.03439,35.70000,60.25000  # 141
-*vertex,3.50000,24.00000,60.25000  # 142
-*vertex,3.50000,28.50000,60.25000  # 143
+*vertex,32.96416,14.01214,60.25000  # 129
+*vertex,31.53920,14.62963,60.25000  # 130
+*vertex,30.39923,14.67713,60.25000  # 131
+*vertex,29.16426,14.39213,60.25000  # 132
+*vertex,53.10365,30.50000,60.25000  # 133
+*vertex,56.04857,30.50000,60.25000  # 134
+*vertex,58.30000,30.50000,60.25000  # 135
+*vertex,58.30000,30.10000,60.25000  # 136
+*vertex,58.30000,29.50000,60.25000  # 137
+*vertex,58.30000,28.59427,60.25000  # 138
+*vertex,24.03439,35.70000,60.25000  # 139
+*vertex,3.50000,24.00000,60.25000  # 140
+*vertex,3.50000,28.50000,60.25000  # 141
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,5,2,1,4,109,3  #  1
@@ -171,9 +169,9 @@ column describes a dummy zone for columns
 *edges,4,80,2,3,86  # 22
 *edges,4,76,77,88,87  # 23
 *edges,14,128,89,101,100,99,98,97,96,95,94,93,92,91,90  # 24
-*edges,14,3,109,108,107,106,105,104,103,87,88,143,143,142,86  # 25
-*edges,26,108,109,4,6,8,10,12,14,16,18,118,117,116,141,111,112,115,114,113,112,111,110,104,105,106,107  # 26
-*edges,30,117,118,27,134,133,132,131,21,30,31,35,33,128,90,91,92,93,127,126,125,124,102,119,120,123,122,121,120,119,116  # 27
+*edges,14,3,109,108,107,106,105,104,103,87,88,141,141,140,86  # 25
+*edges,26,108,109,4,6,8,10,12,14,16,18,118,117,116,139,111,112,115,114,113,112,111,110,104,105,106,107  # 26
+*edges,30,117,118,27,132,131,130,129,21,30,31,35,33,128,90,91,92,93,127,126,125,124,102,119,120,123,122,121,120,119,116  # 27
 *edges,4,73,70,115,112  # 28
 *edges,4,70,71,114,115  # 29
 *edges,4,71,72,113,114  # 30
@@ -182,22 +180,22 @@ column describes a dummy zone for columns
 *edges,4,85,81,121,122  # 33
 *edges,4,81,82,120,121  # 34
 *edges,4,82,84,123,120  # 35
-*edges,11,127,93,94,140,139,138,137,136,135,125,126  # 36
+*edges,11,127,93,94,138,137,136,135,134,133,125,126  # 36
 *edges,6,75,76,87,103,104,74  # 37
 *edges,4,59,74,104,110  # 38
-*edges,10,67,83,124,125,135,136,137,64,65,66  # 39
+*edges,10,67,83,124,125,133,134,135,64,65,66  # 39
 *edges,4,83,57,102,124  # 40
 *edges,4,41,42,96,97  # 41
-*edges,8,61,62,139,140,94,95,43,44  # 42
-*edges,4,63,64,137,138  # 43
-*edges,4,79,80,86,142  # 44
-*edges,5,78,79,142,143,143  # 45
-*edges,5,77,78,143,143,88  # 46
-*edges,4,62,63,138,139  # 47
+*edges,8,61,62,137,138,94,95,43,44  # 42
+*edges,4,63,64,135,136  # 43
+*edges,4,79,80,86,140  # 44
+*edges,5,78,79,140,141,141  # 45
+*edges,5,77,78,141,141,88  # 46
+*edges,4,62,63,136,137  # 47
 *edges,4,42,43,95,96  # 48
 *edges,4,28,34,35,31  # 49
-*edges,17,60,59,110,111,141,116,119,102,57,56,55,54,53,52,51,50,58  # 50
-*edges,6,27,21,131,132,133,134  # 51
+*edges,17,60,59,110,111,139,116,119,102,57,56,55,54,53,52,51,50,58  # 50
+*edges,6,27,21,129,130,131,132  # 51
 *edges,4,49,36,89,128  # 52
 *edges,4,36,37,101,89  # 53
 *edges,10,40,41,97,98,99,100,101,37,38,39  # 54
@@ -218,7 +216,7 @@ column describes a dummy zone for columns
 *surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,35,46  #   8 ||< struc_h:L3_ent_void
 *surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,35,47  #   9 ||< struc_i:L3_ent_void
 *surf,seg_kup,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,36,21  #  10 ||< seg_kup:L3_circular
-*surf,seg_gup,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,22  #  11 ||< seg_gup:L3_circular
+*surf,seg_gup,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,36,22  #  11 ||< segm_top_l3:L3_circular
 *surf,fill_up,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,35,48  #  12 ||< fill_up:L3_ent_void
 *surf,struc_av,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,37,11  #  13 ||< struc_a:L3_L4_cir_vd
 *surf,struc_bv,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,37,13  #  14 ||< struc_b:L3_L4_cir_vd
@@ -258,7 +256,7 @@ column describes a dummy zone for columns
 *surf,ex_small-58,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
 *surf,street_st_a,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,SIMILAR,00,00  #  50 ||< identical environment
-*surf,crescnt,CEIL,floor_l4opr,-,-,top_pln,OPAQUE,UNKNOWN,0,0  #  51 ||< not yet defined
+*surf,crescnt,CEIL,floor_l4opr,-,-,top_pln,OPAQUE,ANOTHER,52,20  #  51 ||< L3_segm_flr:L4_circular
 *surf,tiny-ex-a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
 *surf,tiny_ex-b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
 *surf,str_of_fac,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
