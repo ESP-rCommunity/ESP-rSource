@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toilet # tag version, format, zone name
-*date Mon Aug 22 21:35:36 2011  # latest file modification 
+*date Thu Aug 25 07:05:56 2011  # latest file modification 
 L4_toilet describes toilets on level four srv rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,60.25000  #   1
@@ -45,7 +45,7 @@ L4_toilet describes toilets on level four srv rd
 *surf,fac_d_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,15  #   8 ||< Wall-15:L4_sw_void
 *surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,46,09  #  10 ||< ceiling:L3_toilet
+*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,80,01  #  10 ||< floor_l4toi:L4_srv_void
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

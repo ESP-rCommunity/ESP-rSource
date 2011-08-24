@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Mon Aug 22 20:38:54 2011  # latest file modification 
+*date Thu Aug 25 07:08:12 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -225,7 +225,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,27,08  #  55 ||< stair_end:L2_coridor
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,40,09  #  56 ||< ptn_stair_cb:L3_cell_srv
 *surf,l3_flr_vdc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,54  #  57 ||< to_stair_l3f:L3_ufloor
-*surf,l4_flrvdc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  58 ||< not yet defined
+*surf,l4_flrvdc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,80,12  #  58 ||< fill_b:L4_srv_void
 *surf,l5_flr_vdc,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  59 ||< external
 *surf,ptnd_str_l4b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,57,20  #  60 ||< ptnd_str_l4:L4_open_plr
 # 
