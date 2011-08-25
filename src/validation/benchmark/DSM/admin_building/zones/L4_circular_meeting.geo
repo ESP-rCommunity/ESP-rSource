@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_circular # tag version, format, zone name
-*date Wed Aug 24 06:02:42 2011  # latest file modification 
+*date Fri Aug 26 06:10:11 2011  # latest file modification 
 L4_circular describes circular meeting room at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,60.25000  #   1
@@ -85,11 +85,11 @@ L4_circular describes circular meeting room at level four
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,24  #   4 ||< seg_d:L5_atroofltl
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,25  #   5 ||< seg_e:L5_atroofltl
 *surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,26  #   6 ||< seg_f:L5_atroofltl
-*surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
-*surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,seg_g,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,81,01  #   7 ||< seg_g:L5_uf_plen
+*surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,81,02  #   8 ||< seg_h:L5_uf_plen
+*surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,81,03  #   9 ||< seg_i:L5_uf_plen
+*surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,81,04  #  10 ||< seg_j:L5_uf_plen
+*surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,81,05  #  11 ||< seg_k:L5_uf_plen
 *surf,seg_l,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,14  #  12 ||< seg_acu:L3_L4_cir_vd
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,15  #  13 ||< seg_bcu:L3_L4_cir_vd
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,16  #  14 ||< seg_ccu:L3_L4_cir_vd

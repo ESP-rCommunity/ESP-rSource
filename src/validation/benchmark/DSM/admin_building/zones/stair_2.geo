@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Thu Aug 25 07:08:12 2011  # latest file modification 
+*date Fri Aug 26 06:46:05 2011  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -192,7 +192,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,l2_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,04  #  22 ||< l2_flr_vd:L2_uf_plen
 *surf,l3_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,04  #  23 ||< l3_flr_vd:L3_ufloor
 *surf,l4_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,39  #  24 ||< l4_flr_vd:L4_flrvoid
-*surf,l5_flr_vd,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
+*surf,l5_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,32  #  25 ||< l5_flrvc:L5_uf_plen
 *surf,Wall-51,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,23  #  26 ||< Wall-51:L1_support
 *surf,glaz_a_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
 *surf,glaz_b_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
@@ -213,7 +213,7 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,58,19  #  43 ||< ptnc_str_l4:L4_open_plr
 *surf,ptnc_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,08  #  44 ||< ptn_staira:L5_pz_meet
 *surf,l4_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,40  #  45 ||< l4_flr_vda:L4_flrvoid
-*surf,l5_flr_vda,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
+*surf,l5_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,33  #  46 ||< l5_flr_vd:L5_uf_plen
 *surf,l3_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,05  #  47 ||< l3_flr_vda:L3_ufloor
 *surf,ptnd_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,09  #  48 ||< ptn_stairb:L5_pz_meet
 *surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,54,09  #  49 ||< ptn_stair_cb:L4_cell_srv

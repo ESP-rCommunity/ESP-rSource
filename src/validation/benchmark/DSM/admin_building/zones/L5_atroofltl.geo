@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Thu Aug 25 21:07:15 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -201,17 +201,17 @@ L5_atroofltl describes the main roof light over atria
 *surf,side_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
 *surf,side_fac_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,to_meeting,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,01  #  42 ||< Wall-1:L4_sw_meet
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  43 ||< adiabatic
-*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  44 ||< adiabatic
-*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  45 ||< adiabatic
-*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  46 ||< adiabatic
-*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  47 ||< adiabatic
-*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  48 ||< adiabatic
-*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  49 ||< adiabatic
-*surf,struc_j,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  50 ||< adiabatic
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,38  #  43 ||< l5_fv_tb:L5_uf_plen
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,39  #  44 ||< struc_a:L5_uf_plen
+*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,40  #  45 ||< struc_d:L5_uf_plen
+*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,41  #  46 ||< struc_e:L5_uf_plen
+*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,42  #  47 ||< struc_f:L5_uf_plen
+*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,43  #  48 ||< struc_g:L5_uf_plen
+*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,44  #  49 ||< struc_h:L5_uf_plen
+*surf,struc_j,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,45  #  50 ||< struc_i:L5_uf_plen
 *surf,roof_b,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  51 ||< external
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  52 ||< adiabatic
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  53 ||< adiabatic
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,46  #  52 ||< struc_j:L5_uf_plen
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,47  #  53 ||< struc_b:L5_uf_plen
 *surf,roof_d,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  54 ||< external
 *surf,roof_e,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  55 ||< external
 *surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,15  #  56 ||< filler:L4_open_plr

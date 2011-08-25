@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w1 # tag version, format, zone name
-*date Wed Aug 17 23:09:00 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_light_w1 describes light well one at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,64.15000  #   1
@@ -79,10 +79,10 @@ L5_light_w1 describes light well one at level 5
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,20  #   7 ||< left_rail:L5_lobby
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,33  #   8 ||< front_rail:L5_open_lft
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,34  #   9 ||< right_rail:L5_open_lft
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,20  #  10 ||< floor_toil:L5_uf_plen
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,21  #  11 ||< l3_flrv_r:L5_uf_plen
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,22  #  12 ||< l3_flrv_f:L5_uf_plen
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,23  #  13 ||< l3_flrv_l:L5_uf_plen
 *surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,parap_ri,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external

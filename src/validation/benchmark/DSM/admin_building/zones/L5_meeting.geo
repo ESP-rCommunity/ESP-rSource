@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_meeting # tag version, format, zone name
-*date Mon Aug 22 20:34:48 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_meeting describes corner meeting room on top level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,64.15000  #   1
@@ -69,7 +69,7 @@ L5_meeting describes corner meeting room on top level
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,15  #  13 ||< ptn_open_c:L5_open_rt
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,80,16  #  14 ||< ptn_frame:L5_open_rt
 *surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,53,15  #  16 ||< ceiling:L4_meeting
+*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,81,18  #  16 ||< xflor_pz_m:L5_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

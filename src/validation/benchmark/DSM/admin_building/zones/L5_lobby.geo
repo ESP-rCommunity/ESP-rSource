@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lobby # tag version, format, zone name
-*date Thu Aug 25 21:36:22 2011  # latest file modification 
+*date Fri Aug 26 06:12:25 2011  # latest file modification 
 L5_lobby describes elevator lobby at level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.00000,17.75000,64.15000  #   1
@@ -82,7 +82,7 @@ L5_lobby describes elevator lobby at level five
 *surf,ptn_k1a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,66,03  #  11 ||< ptn_lby_b:L5_kitch2
 *surf,ptn_k1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,66,02  #  12 ||< ptn_lby_a:L5_kitch2
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,floor-lob,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  14 ||< not yet defined
+*surf,floor-lob,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,13  #  14 ||< floor-lob:L5_uf_plen
 *surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,46  #  15 ||< ptn_cora_l5:stair_1
 *surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,47  #  16 ||< ptn_corb_l5:stair_1
 *surf,ptn_loba,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,01  #  17 ||< ptn_loba:L5_toilet

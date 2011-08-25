@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_L4_cir_vd # tag version, format, zone name
-*date Thu Aug 25 21:25:15 2011  # latest file modification 
+*date Fri Aug 26 06:48:27 2011  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -103,7 +103,7 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,fac_fr_u,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,32  #  25 ||< balcony_au:L4_open_plr
 *surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,33  #  26 ||< balcony_bu:L4_open_plr
-*surf,parapet_a,VERT,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,parapet_a,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,81,49  #  27 ||< parapet_a:L5_uf_plen
 *surf,parapet_b,VERT,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

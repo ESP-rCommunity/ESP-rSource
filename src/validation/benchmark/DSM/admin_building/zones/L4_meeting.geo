@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_meeting # tag version, format, zone name
-*date Mon Aug 22 20:37:05 2011  # latest file modification 
+*date Fri Aug 26 06:10:42 2011  # latest file modification 
 L4_meeting describes corner meeting room in L4
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,60.25000  #   1
@@ -68,7 +68,7 @@ L4_meeting describes corner meeting room in L4
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,58,23  #  12 ||< door:L4_open_plr
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,58,24  #  13 ||< ptn_open_c:L4_open_plr
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,38,17  #  14 ||< side_fru:L3_void_b
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,71,16  #  15 ||< floor:L5_meeting
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,06  #  15 ||< ceiling_l4mt:L5_uf_plen
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,24  #  16 ||< floor:L4_flrvoid
 # 
 *insol,3,0,0,0  # default insolation distribution

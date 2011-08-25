@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_toilet # tag version, format, zone name
-*date Wed Aug 17 22:25:59 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_toilet describes toilet adjacent to stair one on level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.25000,30.50000,64.15000  #   1
@@ -48,7 +48,7 @@ L5_toilet describes toilet adjacent to stair one on level 5
 *surf,facade_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,facade_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,floor_toil,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,floor_toil,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,19  #   8 ||< floor:L5_uf_plen
 *surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,48  #  10 ||< ptn_corc_l5:stair_1
 *surf,shift_fac,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  11 ||< external

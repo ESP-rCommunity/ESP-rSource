@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lit_srv # tag version, format, zone name
-*date Wed Aug 17 23:10:42 2011  # latest file modification 
+*date Fri Aug 26 06:12:34 2011  # latest file modification 
 L5_lit_srv describes kitchen at the service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.00000,30.50000,64.15000  #   1
@@ -50,7 +50,7 @@ L5_lit_srv describes kitchen at the service facade
 *surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptn_toilet,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,03  #   6 ||< ptn_k2:L5_toilet
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,floor_srv,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,floor_srv,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,14  #   8 ||< floor_srv:L5_uf_plen
 *surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
 *surf,short,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,21  #  11 ||< short:L5_lobby

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_sw_void # tag version, format, zone name
-*date Wed Aug 17 22:24:54 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_sw_void describes void at level five SW
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,63.39300  #   1
@@ -124,7 +124,7 @@ L5_sw_void describes void at level five SW
 *surf,gptn_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,66,09  #  10 ||< ptn_open_b:L5_kitch2
 *surf,gptn_g,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,66,08  #  11 ||< ptn_open_a:L5_kitch2
 *surf,ptn_elev,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,03,20  #  12 ||< back_5:lifts
-*surf,ptn_lob_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,05  #  13 ||< ptn_toil:L5_lobby
+*surf,ptn_lob_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,05  #  13 ||< gptn_open:L5_lobby
 *surf,ptn_stair,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,01,32  #  14 ||< ptn_void_l5:stair_1
 *surf,bit_facade,VERT,-,-,-,stone_stone,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,bk_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
@@ -135,8 +135,8 @@ L5_sw_void describes void at level five SW
 *surf,fict_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,51,20  #  21 ||< Top-26:L4_sw_void
 *surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,37  #  22 ||< ptn_vd5:lifts
 *surf,ptn_flrv_l5,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,28  #  23 ||< ptn_flrv_l5:stair_1
-*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
-*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  25 ||< not yet defined
+*surf,ptn_flrvd_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,28  #  24 ||< l3_flrv_b2:L5_uf_plen
+*surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,29  #  25 ||< ptn_flrvd_a:L5_uf_plen
 *surf,low_bit_fac,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,l5_faade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,16  #  27 ||< l5_facade_a:sw_facade
 *surf,l5_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,22  #  28 ||< l5_facc:sw_facade

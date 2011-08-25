@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toil_psg # tag version, format, zone name
-*date Thu Aug 25 20:53:24 2011  # latest file modification 
+*date Fri Aug 26 06:11:48 2011  # latest file modification 
 L4_toil_psg describes toilet and passage on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,60.25000  #   1
@@ -52,7 +52,7 @@ L4_toil_psg describes toilet and passage on level four
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,18  #   6 ||< ptn_cel_b:L4_open_plr
 *surf,ptna_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,17  #   7 ||< ptna_opn_l4:L4_open_plr
 *surf,ptnb_opn_l4,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,16  #   8 ||< ptnb_opn_l4:L4_open_plr
-*surf,top,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,10  #   9 ||< top_l4_toilc:L5_uf_plen
 *surf,floor,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,78,36  #  10 ||< flool4tp:L4_flrvoid
 *surf,ptnb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,25  #  11 ||< ptnb_fac_l4:ne_facade
 *surf,ptnb_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,14  #  12 ||< ptnb_str_l4:stair_2

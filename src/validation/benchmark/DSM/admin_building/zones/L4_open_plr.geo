@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Thu Aug 25 21:42:26 2011  # latest file modification 
+*date Fri Aug 26 06:11:21 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -138,7 +138,7 @@ L4_open_plr describes right half of level four open plan area
 *surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,24  #   5 ||< ptn_vb_b:L3_void_b
 *surf,open_fict,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,11  #   6 ||< fic_to_rb:L4_open_s
 *surf,open_fict2,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,10  #   7 ||< fic_to_ra:L4_open_s
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,09  #   8 ||< ceiling_l4or:L5_uf_plen
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,27  #   9 ||< floor_l4opr:L4_flrvoid
 *surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,21  #  10 ||< seg_hl:L4_circular
 *surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,22  #  11 ||< seg_il:L4_circular

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_meet # tag version, format, zone name
-*date Thu Aug 25 21:32:31 2011  # latest file modification 
+*date Fri Aug 26 06:10:59 2011  # latest file modification 
 L4_sw_meet describes meeting rds 406 407 on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.36231,60.25000  #   1
@@ -79,7 +79,7 @@ L4_sw_meet describes meeting rds 406 407 on level four
 *surf,Wall-9,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,15  #   8 ||< right_4:lifts
 *surf,Wall-10,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,14  #   9 ||< front_4:lifts
 *surf,Wall-11,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,13  #  10 ||< left_4:lifts
-*surf,Tl4_sw_mtcei,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
+*surf,Tl4_sw_mtcei,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,07  #  11 ||< Tl4_sw_mtcei:L5_uf_plen
 *surf,Base-16,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,25  #  12 ||< Base-16:L4_flrvoid
 *surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,42  #  13 ||< ptn_cora_l4:stair_1
 *surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,43  #  14 ||< ptn_corb_l4:stair_1

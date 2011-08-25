@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_srv_cell # tag version, format, zone name
-*date Wed Aug 17 22:36:19 2011  # latest file modification 
+*date Fri Aug 26 06:12:57 2011  # latest file modification 
 L5_srv_cell describes cellular offices at service facade five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,21.25000,32.75000,64.15000  #   1
@@ -125,10 +125,10 @@ L5_srv_cell describes cellular offices at service facade five
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,15  #   1 ||< ptn_cellc:L5_open_lft
-*surf,ptn_opn_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,14  #   2 ||< ptn-cellb:L5_open_lft
-*surf,gptn_opn_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,13  #   3 ||< ptn-cella:L5_open_lft
-*surf,gptn_opn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,12  #   4 ||< fic_open_rb:L5_open_lft
+*surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,15  #   1 ||< ptn_celld:L5_open_lft
+*surf,ptn_opn_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,14  #   2 ||< ptn_cellc:L5_open_lft
+*surf,gptn_opn_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,13  #   3 ||< ptn-cellb:L5_open_lft
+*surf,gptn_opn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,12  #   4 ||< ptn-cella:L5_open_lft
 *surf,ptn_opn_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,03  #   5 ||< ptn_opn_c:L5_open_rt
 *surf,gptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,04  #   6 ||< gptn_opn_d:L5_open_rt
 *surf,ptn_opn_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,05  #   7 ||< ptn_opn_d:L5_open_rt
@@ -147,7 +147,7 @@ L5_srv_cell describes cellular offices at service facade five
 *surf,fac_frj,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,ptn_kit2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,68,03  #  21 ||< ptn_mixed:L5_lit_srv
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,floor_cel,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
+*surf,floor_cel,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,16  #  23 ||< floor_cel:L5_uf_plen
 *surf,fac_gla,VERT,fac_fra,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
 *surf,fac_glb,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 *surf,fac_glc,VERT,fac_frc,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external

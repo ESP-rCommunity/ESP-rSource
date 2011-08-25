@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_rt # tag version, format, zone name
-*date Thu Aug 25 20:50:48 2011  # latest file modification 
+*date Fri Aug 26 06:46:06 2011  # latest file modification 
 L5_open_rt describes right portion of level five open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.00000,64.15000  #   1
@@ -129,7 +129,7 @@ L5_open_rt describes right portion of level five open plan
 *surf,fac_fr_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
 *surf,fac_fr_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,L5_oprt_ceil,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  30 ||< external
-*surf,L5_op_rt_flr,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
+*surf,L5_op_rt_flr,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,48  #  31 ||< struc_c:L5_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

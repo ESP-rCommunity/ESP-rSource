@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_lft # tag version, format, zone name
-*date Wed Aug 17 23:11:27 2011  # latest file modification 
+*date Fri Aug 26 06:12:46 2011  # latest file modification 
 L5_open_lft describes the left half of opens space level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,10.50000,64.15000  #   1
@@ -149,7 +149,7 @@ L5_open_lft describes the left half of opens space level five
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,04  #  18 ||< door2_open:L5_lobby
 *surf,door_2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,02  #  19 ||< door_open:L5_lobby
 *surf,roof_open_lf,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,floor_opn_lf,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  21 ||< not yet defined
+*surf,floor_opn_lf,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,15  #  21 ||< floor_opn_lf:L5_uf_plen
 *surf,ptn_conf,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,65,07  #  22 ||< ptn_open:L5_confer
 *surf,fac_glb,VERT,fac_fra,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,fac_glc,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
