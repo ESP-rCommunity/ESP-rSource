@@ -2896,7 +2896,7 @@ C Pased parameters
       DIMENSION SALT(14),IVAL(MCOM)  ! ,bl(144)
       DIMENSION cog(3),cogo(3),COG1(3),COG2(3),COG3(3)
       integer iocog  ! loop counter for detecting close surfaces
-      integer ifound,ifoundc(3) ! how many close surfaces and which one
+      integer ifound,ifoundc ! how many close surfaces and which one
       CHARACTER*33 ISD(25)
       CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,SN*12,SN2*12,T14*14
@@ -2922,7 +2922,9 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-      integer iissmlci   ! other side construction index
+
+      integer iissmlci,IIC3   ! other side construction index, surface index
+      real vdist         ! distance between cog of two surfaces
 
 #ifdef OSI
       integer iix,iiy,iicol
@@ -3951,6 +3953,7 @@ C the action make no changes and jump back to 13 (the menu creation code).
               write(SSOTHER(IC,2),'(i2.2)')iic2
               SSOTHER(IC,3)='0'
               ICT(IC)=4
+              showother=.false.
             elseif(ieri.eq.-3)then
               goto 13
             else
@@ -4013,6 +4016,7 @@ C Link to a 3D conduction model.
           SSOTHER(IC,1)='GROUND'; SSOTHER(IC,2)='-3'; SSOTHER(IC,3)='0'
           ICT(IC)=4; IC2(IC)=-3; IE2(IC)=0
           call edisp(iuout,'Link set to 3D ground conduction model.')
+          showother=.false.
           updoth=.false.
         ELSEIF(IVAL(1).EQ.9)THEN
 
@@ -4021,6 +4025,7 @@ C Set at adiabatic.
           SSOTHER(IC,1)='ADIABATIC'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
           ICT(IC)=5; IE2(IC)=0; IC2(IC)=0
+          showother=.false.
           updoth=.false.
         ELSEIF(IVAL(1).EQ.10)THEN
 
@@ -4045,6 +4050,7 @@ C action do not instanciate the data.
             write(SSOTHER(IC,2),'(i2.2)')Ifrac
             write(SSOTHER(IC,3),'(i2.2)')IBS
             ICT(IC)=6
+            showother=.false.
           elseif(ieri.eq.-3)then
             INODA=-4
             goto 13
@@ -4071,6 +4077,7 @@ C Reset to zeros set ICT to -1 to signal UNKNOWN
           SSOTHER(IC,1)='UNKNOWN'; SSOTHER(IC,2)='0'
           SSOTHER(IC,3)='0'
           ICT(IC)=-1; IE2(IC)=0; IC2(IC)=0
+          showother=.false.
 
         ELSEIF(IVAL(1).EQ.13)THEN
 
@@ -4080,7 +4087,12 @@ C and 0.5m2 area difference.
           cog(1)=ssurcog(ic,1)
           cog(2)=ssurcog(ic,2)
           cog(3)=ssurcog(ic,3)
-          ifound=0; ifoundc(1)=0; ifoundc(2)=0; ifoundc(3)=0 
+          ifound=0; ifoundc=0
+          lnsb=lnblnk(ssname(ic))
+          write(outs,'(3a,f9.3,a,f7.2,a,f7.2,a)') 'For surface ',
+     &      ssname(ic)(1:lnsb),' (area=',ssna(ic),' azimuth=',sspazi(ic),
+     &      ' elevation=',sspelv(ic),'):'
+          call edisp(iuout,outs)
           do 78 ij=1,ncon
             closecog=.false.
             if(ic1(ij).ne.icomp)then
@@ -4089,107 +4101,123 @@ C and 0.5m2 area difference.
               cogo(3)=ssurcog(ij,3)
               call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
      &          cogo(3),1.0,closecog)
+              vdist= crowxyz(cog(1),cog(2),cog(3),cogo(1),cogo(2),
+     &          cogo(3))
               if(closecog)then
                 CALL ECLOSE(SSNA(ij),ssna(ic),0.5,closea)
                 if(closea)then
-                  lnsa=lnblnk(ssname(ij)); lnsb=lnblnk(ssname(ic))
-                  write(outs,'(5a,f6.2,3a,f6.2)')'Surface ',
+                  lnsa=lnblnk(ssname(ij))
+                  write(outs,'(4a,i4,a,f6.2,a,f6.2,a,f6.2,a,f4.2,a)')
      &              ssname(ij)(1:lnsa),' in ',
      &              zname(ic1(ij))(1:lnzname(ic1(ij))),
-     &              ' with area ',SSNA(ij),' might match ',
-     &              ssname(ic)(1:lnsb),' with area ',ssna(ic)
+     &              ' conn index ',ij,
+     &              ' area=',SSNA(ij),' azim=',sspazi(ij),
+     &              ' elev=',sspelv(ij),' @ dist ',vdist,
+     &              ' match?'
                   call edisp(iuout,outs)
                   ifound=ifound+1   ! increment number neighbors found
-                  if(ifound.le.3) ifoundc(ifound)=ij        ! remember which one
+                  if(ifound.eq.1) ifoundc=ij        ! remember first one
                 endif
               endif
             endif
   78      continue
-          if(ifound.eq.1)then
-            write(outs,'(3a)') 'Make connection with ',
-     &        ssname(ifoundc(1)),'?'
-            CALL EASKABC(outs,'  ','yes',
-     &        'yes and update other side','cancel',INVT,nbhelp)
-            if(INVT.eq.1)then
-              iz=ic1(ifoundc(1)); iso=ie1(ifoundc(1)) ! decode other zone and surf
-              SSOTHER(ic,1)='ANOTHER'
-              write(SSOTHER(ic,2),'(i2.2)') iz
-              write(SSOTHER(ic,3),'(i2.2)') iso
-              ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
-              updoth=.false.
-            elseif(INVT.eq.2)then
-              iz=ic1(ifoundc(1)); iso=ie1(ifoundc(1)) ! decode other zone and surf
-              ico=ifoundc(1)
-              SSOTHER(ic,1)='ANOTHER'
-              write(SSOTHER(ic,2),'(i2.2)') iz
-              write(SSOTHER(ic,3),'(i2.2)') iso
-              ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
-              IC1(ICO)=IZ; IE1(ICO)=ISO; ICT(ICO)=3
-              IC2(ICO)=IC1(IC); IE2(ICO)=IE1(IC)
+          if(ifound.ge.1)then    ! at least one possible match was found
+            if(ifound.eq.1)then
+              IIC3=ifoundc    ! if only one set index
+            else
+              IIC3=0
+              CALL EASKI(IIC3,' ',
+     &          'Connection number of matching surface (zero=skip)?',
+     &          0,'F',ncon,'F',1,'connection index',IERI,nbhelp)
+            endif
+            if(IIC3.gt.0)then
+              write(outs,'(3a)') 'Make thermophysical connection with ',
+     &        ssname(IIC3),'?'
+              CALL EASKABC(outs,'  ','yes',
+     &          'yes and update other side','cancel',INVT,nbhelp)
+              if(INVT.eq.1)then
+                iz=ic1(iic3); iso=ie1(iic3) ! decode other zone and surf
+                SSOTHER(ic,1)='ANOTHER'
+                write(SSOTHER(ic,2),'(i2.2)') iz
+                write(SSOTHER(ic,3),'(i2.2)') iso
+                ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
+                updoth=.false.
+              elseif(INVT.eq.2)then
+                iz=ic1(iic3); iso=ie1(iic3) ! decode other zone and surf
+                ico=iic3
+                SSOTHER(ic,1)='ANOTHER'
+                write(SSOTHER(ic,2),'(i2.2)') iz
+                write(SSOTHER(ic,3),'(i2.2)') iso
+                ICT(IC)=3; IC2(IC)=IZ; IE2(IC)=ISO
+                IC1(ICO)=IZ; IE1(ICO)=ISO; ICT(ICO)=3
+                IC2(ICO)=IC1(IC); IE2(ICO)=IE1(IC)
 
-              SSOTHER(ico,1)='ANOTHER'
-              write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
-              write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
+                SSOTHER(ico,1)='ANOTHER'
+                write(SSOTHER(ICO,2),'(i2.2)') IC2(ICO)
+                write(SSOTHER(ICO,3),'(i2.2)') IE2(ICO)
 
 C Update information needed to display information on the other side
 C of this surface (i.e. if we went from unknown to a partition).
-              icoth=ICO
+                icoth=ICO
 
 C Also check the other side construction and see if it matches. If
 C current surface MLC index is known get isymindex for the other side
-              if(ssmlcindex(ic).gt.0) then
-                ii=ssmlcindex(ic)
-                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &            isymindex)
-                if(MLCSYM(1:9).EQ.'SYMMETRIC')then
-                  if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
-                    TOSMLCN=MLCN
-                  elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
-                    TOSMLCN=MLCN
-                  else
-                    TOSMLCN=MLCN
-                  endif
-                  iissmlci=ii
-                elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+                if(ssmlcindex(ic).gt.0) then
+                  ii=ssmlcindex(ic)
+                  call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &              isymindex)
+                  if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+                    if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
+                      TOSMLCN=MLCN
+                    elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                      TOSMLCN=MLCN
+                    else
+                      TOSMLCN=MLCN
+                    endif
+                    iissmlci=ii
+                  elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition if db does not have a linked MLC - inform the user.
-                  write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
-     &              ' has a nonsymmetric construction ',
-     &              SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
-                  call edisp(iuout,outs)
-                  write(outs,'(5a)') 'It faces ',
-     &              SSNAME(icoth),' composed of ',
-     &              SSMLCN(icoth)(1:12),' (which may not match).'
-                  call edisp(iuout,outs)
-                  call edisp(iuout,
+                    write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &                ' has a nonsymmetric construction ',
+     &                SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
+                    call edisp(iuout,outs)
+                    write(outs,'(5a)') 'It faces ',
+     &                SSNAME(icoth),' composed of ',
+     &                SSMLCN(icoth)(1:12),' (which may not match).'
+                    call edisp(iuout,outs)
+                    call edisp(iuout,
      &  'Please check attributes and/or revise the Cconstructions db.')
-                  iissmlci=isymindex  ! use returned value 
-                else
-                  if(SSMLCN(icoth)(1:4).eq.'UNKN')then
-                    TOSMLCN=MLCSYM
-                  elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
-                    TOSMLCN=MLCSYM
+                    iissmlci=isymindex  ! use returned value 
                   else
-                    TOSMLCN=MLCSYM
+                    if(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                      TOSMLCN=MLCSYM
+                    elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
+                      TOSMLCN=MLCSYM
+                    else
+                      TOSMLCN=MLCSYM
+                    endif
+                    iissmlci=isymindex  ! use returned value
                   endif
-                  iissmlci=isymindex  ! use returned value
+                else
+                  TOSMLCN='UNKNOWN'
+                  iissmlci=0
                 endif
-              else
-                TOSMLCN='UNKNOWN'
-                iissmlci=0
-              endif
 
 C At this point the other zone surface attributes are known.
-              icoth=ICO  ! remember the connection for the other surface
-              showother=.true.
-              updoth=.true.
+                icoth=ICO  ! remember the connection for the other surface
+                showother=.true.
+                updoth=.true.
 
-            elseif(INVT.eq.3)then
-              goto 13    ! user canceled so jump back
+              elseif(INVT.eq.3)then
+                goto 13    ! user canceled so jump back
+              endif
+            else
+              goto 13  ! user declined
             endif
           else
-            goto 13   ! nothing or many were found go back to the main menu
+            goto 13   ! nothing was found go back to the main menu
           endif
 
         ENDIF
