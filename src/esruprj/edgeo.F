@@ -4090,8 +4090,8 @@ C and 0.5m2 area difference.
           ifound=0; ifoundc=0
           lnsb=lnblnk(ssname(ic))
           write(outs,'(3a,f9.3,a,f7.2,a,f7.2,a)') 'For surface ',
-     &      ssname(ic)(1:lnsb),' (area=',ssna(ic),' azimuth=',sspazi(ic),
-     &      ' elevation=',sspelv(ic),'):'
+     &      ssname(ic)(1:lnsb),' (area=',ssna(ic),' azimuth=',
+     &      sspazi(ic),' elevation=',sspelv(ic),'):'
           call edisp(iuout,outs)
           do 78 ij=1,ncon
             closecog=.false.
