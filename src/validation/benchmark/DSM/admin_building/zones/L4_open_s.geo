@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Mon Aug 22 21:49:36 2011  # latest file modification 
+*date Thu Aug 25 21:34:47 2011  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -124,10 +124,10 @@ L4_open_s describes left half of level four open plan area
 *surf,ptn_meet_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,03  #  16 ||< Wall-3:L4_sw_meet
 *surf,ptn_meet_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,02  #  17 ||< Wall-2:L4_sw_meet
 *surf,ceiling_l4op,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,floor_l4op,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  21 ||< not yet defined
-*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,floor_l4op,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,78,26  #  19 ||< floor_l4op:L4_flrvoid
+*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,77,16  #  20 ||< open_a:L5_atroofltl
+*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,77,17  #  21 ||< open_b:L5_atroofltl
+*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,77,18  #  22 ||< open_c:L5_atroofltl
 *surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,59,01  #  23 ||< l3_lw2_fr:L4_light_w1
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,59,02  #  24 ||< l3_lw2_ri:L4_light_w1
 *surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,03  #  25 ||< l3_lw2_bk:L4_light_w1
@@ -135,9 +135,9 @@ L4_open_s describes left half of level four open plan area
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,07  #  27 ||< left_rail:L4_light_w1
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,08  #  28 ||< front_rail:L4_light_w1
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,59,09  #  29 ||< right_rail:L4_light_w1
-*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,-,-  #  32 ||< not yet defined
+*surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,62,01  #  30 ||< ptn_corid_a:L4_admin
+*surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,62,02  #  31 ||< ptn_corid_b:L4_admin
+*surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,63,01  #  32 ||< ptn_pr_op:L4_printz
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

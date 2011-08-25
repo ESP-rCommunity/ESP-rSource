@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Mon Aug 22 21:39:29 2011  # latest file modification 
+*date Thu Aug 25 20:53:52 2011  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -130,7 +130,7 @@ stair_1 describes stair number one
 *surf,ptna_toil_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,61,02  #  10 ||< ptn_corb_l3:L4_toilet
 *surf,ptn_cora_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,12,01  #  11 ||< ptn_cora_l1:L1_toilet
 *surf,ptn_corb_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,12,02  #  12 ||< ptn_corb_l1:L1_toilet
-*surf,l4_flrva,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,l4_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,80,15  #  13 ||< to_stair_1:L4_srv_void
 *surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,01  #  14 ||< l3_flrva:L3_ufloor
 *surf,l2_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,01  #  15 ||< l2_flrva:L2_uf_plen
 *surf,floor_1,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,0  #  16 ||< ground profile  1
@@ -140,7 +140,7 @@ stair_1 describes stair number one
 *surf,fac_b_l5,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,l2_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,02  #  21 ||< l2_flrvb:L2_uf_plen
 *surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,02  #  22 ||< l3_flrvb:L3_ufloor
-*surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  23 ||< not yet defined
+*surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,37  #  23 ||< l4_flrvb:L4_flrvoid
 *surf,l5_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
 *surf,ptn_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,34  #  25 ||< stair_rflr:L1_sw_void
 *surf,ptn_flrv_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,23  #  26 ||< ptn_flrv_l3:L3_sw_void
@@ -158,10 +158,10 @@ stair_1 describes stair number one
 *surf,ptn_cora_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,01  #  38 ||< ptn_cora_3:L3_open_lft
 *surf,ptn_corb_3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,02  #  39 ||< ptn_corb_3:L3_open_lft
 *surf,ptn_corc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,48,03  #  40 ||< ptn_corc_l3:L3_open_lft
-*surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
+*surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,38  #  41 ||< l4_flrvc:L4_flrvoid
 *surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,13  #  42 ||< ptn_cora_l4:L4_sw_meet
 *surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,14  #  43 ||< ptn_corb_l4:L4_sw_meet
-*surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,12  #  44 ||< ptn_other:L4_open_s
+*surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,12  #  44 ||< ptn_stair:L4_open_s
 *surf,l5_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
 *surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,15  #  46 ||< ptn_cora_l5:L5_lobby
 *surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,16  #  47 ||< ptn_corb_l5:L5_lobby

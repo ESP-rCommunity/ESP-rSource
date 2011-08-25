@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Wed Aug 17 06:14:03 2011  # latest file modification 
+*date Thu Aug 25 20:54:34 2011  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -211,9 +211,9 @@ ne_facade describes the stone facade on NE with air void
 *surf,lv_fv_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,09  #  39 ||< lv_fv_a:L2_uf_plen
 *surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,09  #  40 ||< l3_fv_ma:L3_ufloor
 *surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,10  #  41 ||< l3_fv_ta:L3_ufloor
-*surf,l4_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
+*surf,l4_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,41  #  42 ||< l4_fv_ma:L4_flrvoid
 *surf,l5_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
+*surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,42  #  44 ||< l4_fv_ta:L4_flrvoid
 *surf,l5_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
 *surf,inner_parap,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  46 ||< external
 *surf,sill_b,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  47 ||< external
@@ -221,7 +221,7 @@ ne_facade describes the stone facade on NE with air void
 *surf,jamb_d,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,head_b,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  50 ||< external
 *surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,11  #  51 ||< l3_fv_tb:L3_ufloor
-*surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
+*surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,43  #  52 ||< l4_fv_tb:L4_flrvoid
 *surf,l5_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution

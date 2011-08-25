@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Mon Aug 22 20:58:03 2011  # latest file modification 
+*date Thu Aug 25 21:48:05 2011  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -22,45 +22,50 @@ L3_void_b describes void above the careers services area
 *vertex,51.63119,17.00457,60.25000  #  18
 *vertex,51.58369,17.28956,59.49300  #  19
 *vertex,44.69636,15.62710,59.49300  #  20
-*vertex,51.60000,17.28956,60.25000  #  21
-*vertex,44.69636,15.62710,60.25000  #  22
-*vertex,45.64634,11.68470,60.25000  #  23
-*vertex,51.60000,17.28956,63.39300  #  24
-*vertex,51.63119,17.00457,63.39300  #  25
-*vertex,51.58369,16.29209,63.39300  #  26
-*vertex,51.58369,13.77465,63.39300  #  27
-*vertex,51.60000,13.00000,63.39300  #  28
-*vertex,51.21083,12.90755,63.39300  #  29
-*vertex,48.44877,12.30219,63.39300  #  30
-*vertex,45.97883,11.73220,63.39300  #  31
-*vertex,45.64634,11.68470,63.39300  #  32
-*vertex,44.69636,15.62710,63.39300  #  33
+*vertex,44.69636,15.62710,60.25000  #  21
+*vertex,45.64634,11.68470,60.25000  #  22
+*vertex,51.63119,17.00457,63.39300  #  23
+*vertex,51.58369,16.29209,63.39300  #  24
+*vertex,51.58369,13.77465,63.39300  #  25
+*vertex,51.60000,13.00000,63.39300  #  26
+*vertex,51.21083,12.90755,63.39300  #  27
+*vertex,48.44877,12.30219,63.39300  #  28
+*vertex,45.97883,11.73220,63.39300  #  29
+*vertex,45.64634,11.68470,63.39300  #  30
+*vertex,44.69636,15.62710,63.39300  #  31
+*vertex,45.64634,11.68470,61.25000  #  32
+*vertex,44.69636,15.62710,61.25000  #  33
+*vertex,51.60000,17.25000,61.25000  #  34
+*vertex,51.60000,17.25000,63.39300  #  35
+*vertex,51.60000,17.25000,60.25000  #  36
 # 
 # tag, number of vertices followed by list of associated vert
-*edges,5,1,2,12,23,11  #  1
+*edges,5,1,2,12,22,11  #  1
 *edges,4,2,3,13,12  #  2
 *edges,4,3,4,14,13  #  3
 *edges,4,4,5,15,14  #  4
 *edges,4,5,6,16,15  #  5
 *edges,4,6,7,17,16  #  6
 *edges,4,7,8,18,17  #  7
-*edges,5,8,9,19,21,18  #  8
+*edges,5,8,9,19,36,18  #  8
 *edges,4,9,10,20,19  #  9
 *edges,4,10,1,11,20  # 10
 *edges,10,1,10,9,8,7,6,5,4,3,2  # 11
-*edges,4,19,20,22,21  # 12
-*edges,4,20,11,23,22  # 13
-*edges,4,15,16,27,28  # 14
-*edges,4,16,17,26,27  # 15
-*edges,4,17,18,25,26  # 16
-*edges,4,18,21,24,25  # 17
-*edges,4,23,12,31,32  # 18
-*edges,4,12,13,30,31  # 19
-*edges,4,13,14,29,30  # 20
-*edges,4,14,15,28,29  # 21
-*edges,4,22,23,32,33  # 22
-*edges,4,21,22,33,24  # 23
-*edges,10,29,28,27,26,25,24,33,32,31,30  # 24
+*edges,4,19,20,21,36  # 12
+*edges,4,20,11,22,21  # 13
+*edges,4,15,16,25,26  # 14
+*edges,4,16,17,24,25  # 15
+*edges,4,17,18,23,24  # 16
+*edges,5,18,36,34,35,23  # 17
+*edges,5,22,12,29,30,32  # 18
+*edges,4,12,13,28,29  # 19
+*edges,4,13,14,27,28  # 20
+*edges,4,14,15,26,27  # 21
+*edges,10,27,26,25,24,23,35,31,30,29,28  # 22
+*edges,4,33,32,30,31  # 23
+*edges,4,34,33,31,35  # 24
+*edges,4,36,21,33,34  # 25
+*edges,4,21,22,32,33  # 26
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -78,19 +83,21 @@ L3_void_b describes void above the careers services area
 *surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,06  #   9 ||< int_glaz:L3_open_rig
 *surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,05  #  10 ||< int_glazb:L3_open_rig
 *surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,18  #  11 ||< fict_low:L2_careers
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,15  #  12 ||< struc_bvb:L4_flrvoid
+*surf,struc_b,SLOP,-,-,-,slab_275,OPAQUE,ANOTHER,78,15  #  12 ||< struc_bvb:L4_flrvoid
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,16  #  13 ||< struc_avb:L4_flrvoid
-*surf,side_gl_au,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  14 ||< not yet defined
-*surf,side_gl_bu,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  15 ||< not yet defined
-*surf,side_gl_cu,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  16 ||< not yet defined
+*surf,side_gl_au,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,side_gl_bu,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,side_gl_cu,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,side_fru,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,53,14  #  17 ||< ptn_frame:L4_meeting
-*surf,stone_u,VERT,-,-,-,stone_m_ell,OPAQUE,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,fac_gla_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,fac_glb_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,fac_fra_u,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  21 ||< not yet defined
-*surf,int_glbu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  22 ||< not yet defined
-*surf,int_glzu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  23 ||< not yet defined
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  24 ||< not yet defined
+*surf,stone_u,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,fac_gla_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,fac_glb_u,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,fac_fra_u,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
+*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
+*surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,57,04  #  23 ||< ptn_vb_a:L4_open_plr
+*surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,05  #  24 ||< ptn_vb_b:L4_open_plr
+*surf,balc_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,34  #  25 ||< balc_vb_b:L4_open_plr
+*surf,balc_vb_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,35  #  26 ||< balc_vb_a:L4_open_plr
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

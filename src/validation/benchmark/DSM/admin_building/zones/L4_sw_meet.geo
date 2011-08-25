@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_meet # tag version, format, zone name
-*date Mon Aug 22 21:39:29 2011  # latest file modification 
+*date Thu Aug 25 21:32:31 2011  # latest file modification 
 L4_sw_meet describes meeting rds 406 407 on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.36231,60.25000  #   1
@@ -70,11 +70,11 @@ L4_sw_meet describes meeting rds 406 407 on level four
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,77,42  #   1 ||< to_meeting:L5_atroofltl
-*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,17  #   2 ||< ptn_meet_a:L4_open_s
-*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,16  #   3 ||< ptn_cor_c:L4_open_s
-*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,15  #   4 ||< ptn_cor_b:L4_open_s
-*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,14  #   5 ||< ptn_corid:L4_open_s
-*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,13  #   6 ||< ptn_stair:L4_open_s
+*surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,17  #   2 ||< ptn_meet_b:L4_open_s
+*surf,Wall-3,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,16  #   3 ||< ptn_meet_a:L4_open_s
+*surf,Wall-4,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,15  #   4 ||< ptn_cor_c:L4_open_s
+*surf,Wall-5,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,14  #   5 ||< ptn_cor_b:L4_open_s
+*surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,13  #   6 ||< ptn_corid:L4_open_s
 *surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,51,13  #   7 ||< Wall-13:L4_sw_void
 *surf,Wall-9,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,15  #   8 ||< right_4:lifts
 *surf,Wall-10,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,14  #   9 ||< front_4:lifts

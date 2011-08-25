@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_social # tag version, format, zone name
-*date Wed Aug 17 06:28:31 2011  # latest file modification 
+*date Thu Aug 25 20:45:16 2011  # latest file modification 
 L3_social describes the social room on L3 adj to service rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,56.35000  #   1
@@ -87,7 +87,7 @@ L3_social describes the social room on L3 adj to service rd
 *surf,vent_a,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,46,03  #  12 ||< ptn_corc_l3:L3_toilet
-*surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,00,00  #  13 ||< not yet defined
+*surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,08  #  13 ||< Top-13:L4_srv_void
 *surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,31  #  14 ||< Base-14:L3_ufloor
 *surf,stone_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external

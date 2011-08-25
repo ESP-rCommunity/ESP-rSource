@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lobby # tag version, format, zone name
-*date Wed Aug 17 22:36:19 2011  # latest file modification 
+*date Thu Aug 25 21:36:22 2011  # latest file modification 
 L5_lobby describes elevator lobby at level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.00000,17.75000,64.15000  #   1
@@ -9,64 +9,60 @@ L5_lobby describes elevator lobby at level five
 *vertex,17.45000,28.50000,64.15000  #   5
 *vertex,17.45000,30.50000,64.15000  #   6
 *vertex,13.25000,30.50000,64.15000  #   7
-*vertex,10.25000,30.50000,64.15000  #   8
-*vertex,0.00000,30.50000,64.15000  #   9
-*vertex,0.00000,28.50000,64.15000  #  10
-*vertex,3.50000,28.50000,64.15000  #  11
-*vertex,3.50000,24.00000,64.15000  #  12
-*vertex,4.05000,24.00000,64.15000  #  13
-*vertex,4.05000,21.25000,64.15000  #  14
-*vertex,6.50000,21.25000,64.15000  #  15
-*vertex,10.00000,21.25000,64.15000  #  16
-*vertex,10.00000,17.75000,67.37500  #  17
-*vertex,13.70000,17.75000,67.37500  #  18
-*vertex,13.70000,21.30000,67.37500  #  19
-*vertex,13.70000,28.50000,67.37500  #  20
-*vertex,17.45000,28.50000,67.37500  #  21
-*vertex,17.45000,30.50000,67.37500  #  22
-*vertex,13.25000,30.50000,67.37500  #  23
-*vertex,10.25000,30.50000,67.37500  #  24
-*vertex,0.00000,30.50000,67.37500  #  25
-*vertex,0.00000,28.50000,67.37500  #  26
-*vertex,3.50000,28.50000,67.37500  #  27
-*vertex,3.50000,24.00000,67.37500  #  28
-*vertex,4.05000,24.00000,67.37500  #  29
-*vertex,4.05000,21.25000,67.37500  #  30
-*vertex,6.50000,21.25000,67.37500  #  31
-*vertex,10.00000,21.25000,67.37500  #  32
-*vertex,8.35979,30.50000,64.15000  #  33
-*vertex,8.35979,30.50000,67.37500  #  34
-*vertex,12.00000,30.50000,64.15000  #  35
-*vertex,12.00000,30.50000,67.37500  #  36
-*vertex,17.00000,30.50000,64.15000  #  37
-*vertex,21.25000,30.50000,64.15000  #  38
-*vertex,21.25000,30.50000,67.37500  #  39
-*vertex,17.00000,30.50000,67.37500  #  40
-*vertex,13.70000,21.30000,65.15000  #  41
-*vertex,13.70000,28.50000,65.15000  #  42
+*vertex,0.00000,30.50000,64.15000  #   8
+*vertex,0.00000,28.50000,64.15000  #   9
+*vertex,3.50000,28.50000,64.15000  #  10
+*vertex,3.50000,24.00000,64.15000  #  11
+*vertex,4.05000,24.00000,64.15000  #  12
+*vertex,4.05000,21.25000,64.15000  #  13
+*vertex,6.50000,21.25000,64.15000  #  14
+*vertex,10.00000,21.25000,64.15000  #  15
+*vertex,10.00000,17.75000,67.37500  #  16
+*vertex,13.70000,17.75000,67.37500  #  17
+*vertex,13.70000,21.30000,67.37500  #  18
+*vertex,13.70000,28.50000,67.37500  #  19
+*vertex,17.45000,28.50000,67.37500  #  20
+*vertex,17.45000,30.50000,67.37500  #  21
+*vertex,13.25000,30.50000,67.37500  #  22
+*vertex,0.00000,30.50000,67.37500  #  23
+*vertex,0.00000,28.50000,67.37500  #  24
+*vertex,3.50000,28.50000,67.37500  #  25
+*vertex,3.50000,24.00000,67.37500  #  26
+*vertex,4.05000,24.00000,67.37500  #  27
+*vertex,4.05000,21.25000,67.37500  #  28
+*vertex,6.50000,21.25000,67.37500  #  29
+*vertex,10.00000,21.25000,67.37500  #  30
+*vertex,8.35979,30.50000,64.15000  #  31
+*vertex,8.35979,30.50000,67.37500  #  32
+*vertex,12.00000,30.50000,64.15000  #  33
+*vertex,12.00000,30.50000,67.37500  #  34
+*vertex,17.00000,30.50000,64.15000  #  35
+*vertex,17.00000,30.50000,67.37500  #  36
+*vertex,13.70000,21.30000,65.15000  #  37
+*vertex,13.70000,28.50000,65.15000  #  38
 # 
 # tag, number of vertices followed by list of associated vert
-*edges,4,1,2,18,17  #  1
-*edges,5,2,3,41,19,18  #  2
-*edges,5,4,5,21,20,42  #  3
-*edges,4,5,6,22,21  #  4
-*edges,4,9,10,26,25  #  5
-*edges,4,10,11,27,26  #  6
-*edges,4,11,12,28,27  #  7
-*edges,4,12,13,29,28  #  8
-*edges,4,13,14,30,29  #  9
-*edges,4,14,15,31,30  # 10
-*edges,4,15,16,32,31  # 11
-*edges,4,16,1,17,32  # 12
-*edges,18,17,18,19,20,21,22,40,23,36,34,25,26,27,28,29,30,31,32  # 13
-*edges,18,1,16,15,14,13,12,11,10,9,33,35,7,37,6,5,4,3,2  # 14
-*edges,4,33,9,25,34  # 15
-*edges,4,35,33,34,36  # 16
-*edges,4,7,35,36,23  # 17
-*edges,4,37,7,23,40  # 18
-*edges,4,19,41,42,20  # 19
-*edges,4,3,4,42,41  # 20
-*edges,4,6,37,40,22  # 21
+*edges,4,1,2,17,16  #  1
+*edges,5,2,3,37,18,17  #  2
+*edges,5,4,5,20,19,38  #  3
+*edges,4,5,6,21,20  #  4
+*edges,4,8,9,24,23  #  5
+*edges,4,9,10,25,24  #  6
+*edges,4,10,11,26,25  #  7
+*edges,4,11,12,27,26  #  8
+*edges,4,12,13,28,27  #  9
+*edges,4,13,14,29,28  # 10
+*edges,4,14,15,30,29  # 11
+*edges,4,15,1,16,30  # 12
+*edges,18,16,17,18,19,20,21,36,22,34,32,23,24,25,26,27,28,29,30  # 13
+*edges,18,1,15,14,13,12,11,10,9,8,31,33,7,35,6,5,4,3,2  # 14
+*edges,4,31,8,23,32  # 15
+*edges,4,33,31,32,34  # 16
+*edges,4,7,33,34,22  # 17
+*edges,4,35,7,22,36  # 18
+*edges,4,18,37,38,19  # 19
+*edges,4,3,4,38,37  # 20
+*edges,4,6,35,36,21  # 21
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -74,9 +70,9 @@ L5_lobby describes elevator lobby at level five
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,ptn_conf,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,65,08  #   1 ||< ptn_lobby:L5_confer
-*surf,door_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,19  #   2 ||< door:L5_open_lft
-*surf,ptn_lw1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,75,03  #   3 ||< l3_lw2_base:L5_light_w1
-*surf,door2_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,18  #   4 ||< ptn_kitb:L5_open_lft
+*surf,door_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,19  #   2 ||< door_2:L5_open_lft
+*surf,ptn_lw1,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,75,03  #   3 ||< l3_lw2_bk:L5_light_w1
+*surf,door2_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,18  #   4 ||< door:L5_open_lft
 *surf,gptn_open,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,13  #   5 ||< ptn_lob_dr:L5_sw_void
 *surf,ptn_el_r,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,19  #   6 ||< right_5:lifts
 *surf,ptn_el_fr,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,18  #   7 ||< front_5:lifts
@@ -91,8 +87,8 @@ L5_lobby describes elevator lobby at level five
 *surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,47  #  16 ||< ptn_corb_l5:stair_1
 *surf,ptn_loba,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,01  #  17 ||< ptn_loba:L5_toilet
 *surf,ptn_lobb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,02  #  18 ||< ptn_lobb:L5_toilet
-*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,75,04  #  19 ||< left_rail:L5_light_w1
-*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,75,07  #  20 ||< l3_flrv_r:L5_light_w1
+*surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,75,04  #  19 ||< l3_lw2_lef:L5_light_w1
+*surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,75,07  #  20 ||< left_rail:L5_light_w1
 *surf,short,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,68,11  #  21 ||< short:L5_lit_srv
 # 
 *insol,3,0,0,0  # default insolation distribution

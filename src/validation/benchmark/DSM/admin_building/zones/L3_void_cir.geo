@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_L4_cir_vd # tag version, format, zone name
-*date Mon Aug 22 20:20:26 2011  # latest file modification 
+*date Thu Aug 25 21:25:15 2011  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -38,6 +38,9 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *vertex,36.76406,9.49976,61.25000  #  34
 *vertex,35.91460,13.46780,61.25000  #  35
 *vertex,34.25000,13.06200,61.25000  #  36
+*vertex,36.76406,9.49976,63.39300  #  37
+*vertex,35.91460,13.46780,63.39300  #  38
+*vertex,34.25000,13.06200,63.39300  #  39
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,6,1,2,10,9,20,17  #  1
@@ -53,19 +56,21 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *edges,4,21,22,16,15  # 11
 *edges,4,8,1,17,18  # 12
 *edges,4,22,20,9,16  # 13
-*edges,5,9,10,23,24,36  # 14
+*edges,6,9,10,23,24,39,36  # 14
 *edges,4,10,11,25,23  # 15
 *edges,4,11,12,26,25  # 16
 *edges,4,12,13,27,26  # 17
 *edges,4,32,14,28,33  # 18
-*edges,5,14,15,34,29,28  # 19
-*edges,4,34,35,30,29  # 20
-*edges,4,35,36,24,30  # 21
+*edges,6,14,15,34,37,29,28  # 19
+*edges,4,34,35,38,37  # 20
+*edges,4,35,36,39,38  # 21
 *edges,9,24,23,25,26,27,33,28,29,30  # 22
 *edges,4,5,31,32,13  # 23
 *edges,4,13,32,33,27  # 24
 *edges,4,15,16,35,34  # 25
 *edges,4,16,9,36,35  # 26
+*edges,4,37,38,30,29  # 27
+*edges,4,38,39,24,30  # 28
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -89,15 +94,17 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,seg_bcu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,13  #  15 ||< seg_m:L4_circular
 *surf,seg_ccu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,14  #  16 ||< seg_n:L4_circular
 *surf,seg_dcu,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,15  #  17 ||< seg_o:L4_circular
-*surf,fac_glu,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  18 ||< not yet defined
-*surf,fac_stoneu,VERT,-,-,-,stone_m_ell,OPAQUE,UNKNOWN,0,0  #  19 ||< not yet defined
-*surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #  20 ||< not yet defined
-*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  21 ||< not yet defined
-*surf,Top-9,CEIL,-,-,-,roof_0.2,OPAQUE,UNKNOWN,0,0  #  22 ||< not yet defined
+*surf,fac_glu,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,fac_stoneu,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,57,02  #  20 ||< ptn_vc_b:L4_open_plr
+*surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,01  #  21 ||< ptn_vc_a:L4_open_plr
+*surf,Top-9,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
 *surf,fac_fr_l,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
 *surf,fac_fr_u,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,32  #  25 ||< balcony_au:L4_open_plr
 *surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,33  #  26 ||< balcony_bu:L4_open_plr
+*surf,parapet_a,VERT,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,parapet_b,VERT,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

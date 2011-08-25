@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Mon Aug 22 20:38:41 2011  # latest file modification 
+*date Thu Aug 25 21:42:26 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -131,11 +131,11 @@ L4_open_plr describes right half of level four open plan area
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_vc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   1 ||< not yet defined
-*surf,ptn_vc_b,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
+*surf,ptn_vc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,21  #   1 ||< Wall-8:L3_L4_cir_vd
+*surf,ptn_vc_b,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,37,20  #   2 ||< Wall-7:L3_L4_cir_vd
 *surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #   5 ||< not yet defined
+*surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,38,23  #   4 ||< ptn_vb_a:L3_void_b
+*surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,24  #   5 ||< ptn_vb_b:L3_void_b
 *surf,open_fict,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,11  #   6 ||< fic_to_rb:L4_open_s
 *surf,open_fict2,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,10  #   7 ||< fic_to_ra:L4_open_s
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
@@ -164,8 +164,8 @@ L4_open_plr describes right half of level four open plan area
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,60,04  #  31 ||< l3_lw2_lef:L4_light_w2
 *surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,25  #  32 ||< balcony_au:L3_L4_cir_vd
 *surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,26  #  33 ||< balcony_bu:L3_L4_cir_vd
-*surf,balc_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  34 ||< not yet defined
-*surf,balc_vb_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  35 ||< not yet defined
+*surf,balc_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,25  #  34 ||< balc_vb_b:L3_void_b
+*surf,balc_vb_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,26  #  35 ||< balc_vb_a:L3_void_b
 *surf,ptn_open_ac,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,01  #  36 ||< ptn_open_a:L4_cell_srv
 *surf,ptn_open_bc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,02  #  37 ||< ptn_open_b:L4_cell_srv
 *surf,ptn_open_cc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,03  #  38 ||< ptn_open_c:L4_cell_srv

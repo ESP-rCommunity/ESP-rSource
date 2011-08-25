@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_flrvoid # tag version, format, zone name
-*date Tue Aug 23 21:11:17 2011  # latest file modification 
+*date Thu Aug 25 21:02:59 2011  # latest file modification 
 column describes a dummy zone for columns
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.69500,9.16750,59.49300  #   1
@@ -164,7 +164,7 @@ column describes a dummy zone for columns
 *edges,14,37,36,49,48,47,46,45,44,43,42,41,40,39,38  # 17
 *edges,11,44,45,69,68,67,66,65,64,63,62,61  # 18
 *edges,19,1,2,80,79,78,77,76,75,74,59,60,73,72,71,70,11,9,7,5  # 19
-*edges,19,11,70,73,60,58,50,51,52,82,81,29,20,23,24,25,22,26,19,17  # 20
+*edges,21,11,70,73,60,58,50,51,52,82,81,29,20,23,24,25,22,26,19,17,15,13  # 20
 *edges,23,49,32,34,28,29,81,85,84,82,52,53,54,55,56,57,83,67,68,69,45,46,47,48  # 21
 *edges,4,80,2,3,86  # 22
 *edges,4,76,77,88,87  # 23
@@ -199,7 +199,6 @@ column describes a dummy zone for columns
 *edges,4,49,36,89,128  # 52
 *edges,4,36,37,101,89  # 53
 *edges,10,40,41,97,98,99,100,101,37,38,39  # 54
-*edges,4,15,13,11,17  # 55
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -231,36 +230,35 @@ column describes a dummy zone for columns
 *surf,ptn_flrvd_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,51,25  #  23 ||< ptn_flrvd_b:L4_sw_void
 *surf,floor,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,53,16  #  24 ||< floor:L4_meeting
 *surf,Base-16,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,55,12  #  25 ||< Base-16:L4_sw_meet
-*surf,floor_l4op,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,floor_l4op,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,56,19  #  26 ||< floor_l4op:L4_open_s
 *surf,floor_l4opr,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,57,09  #  27 ||< floor:L4_open_plr
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  29 ||< not yet defined
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  30 ||< not yet defined
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
-*surf,l3_flrv_r2,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  32 ||< not yet defined
-*surf,l3_flrv_f2,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  33 ||< not yet defined
-*surf,l3_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  34 ||< not yet defined
-*surf,l3_flrv_b2,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  35 ||< not yet defined
-*surf,flool4tp,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  36 ||< not yet defined
-*surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  37 ||< not yet defined
-*surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  38 ||< not yet defined
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,58,10  #  28 ||< l3_flrv_r:L4_light_w1
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,58,11  #  29 ||< l3_flrv_f:L4_light_w1
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,58,12  #  30 ||< l3_flrv_l:L4_light_w1
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,58,13  #  31 ||< l3_flrv_b:L4_light_w1
+*surf,l3_flrv_r2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,59,10  #  32 ||< l3_flrv_r:L4_light_w2
+*surf,l3_flrv_f2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,59,11  #  33 ||< l3_flrv_f:L4_light_w2
+*surf,l3_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,59,12  #  34 ||< l3_flrv_l:L4_light_w2
+*surf,l3_flrv_b2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,59,13  #  35 ||< l3_flrv_b:L4_light_w2
+*surf,flool4tp,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,61,10  #  36 ||< floor:L4_toil_psg
+*surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,23  #  37 ||< l4_flrvb:stair_1
+*surf,l4_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,41  #  38 ||< l4_flrvc:stair_1
 *surf,l4_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,24  #  39 ||< l4_flr_vd:stair_2
 *surf,l4_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,45  #  40 ||< l4_flr_vda:stair_2
-*surf,l4_fv_ma,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  41 ||< not yet defined
-*surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  42 ||< not yet defined
-*surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
-*surf,rflra_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  44 ||< not yet defined
-*surf,rflrb_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  45 ||< not yet defined
-*surf,rflrc_l4,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  46 ||< not yet defined
+*surf,l4_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,42  #  41 ||< l4_fv_ma:ne_facade
+*surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,44  #  42 ||< l4_fv_ta:ne_facade
+*surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,05,52  #  43 ||< l4_fv_tb:ne_facade
+*surf,rflra_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,23  #  44 ||< rflra_l4:lifts
+*surf,rflrb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,27  #  45 ||< rflrb_l4:lifts
+*surf,rflrc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,31  #  46 ||< rflrc_l4:lifts
 *surf,ex-small-57,VERT,-,-,-,conc_250,OPAQUE,ADIABATIC,0,0  #  47 ||< adiabatic
 *surf,ex_small-58,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
 *surf,street_st_a,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  49 ||< external
-*surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,SIMILAR,00,00  #  50 ||< identical environment
+*surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,80,05  #  50 ||< srv_facade:L4_srv_void
 *surf,crescnt,CEIL,floor_l4opr,-,-,top_pln,OPAQUE,ANOTHER,52,20  #  51 ||< L3_segm_flr:L4_circular
-*surf,tiny-ex-a,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  52 ||< not yet defined
-*surf,tiny_ex-b,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  53 ||< not yet defined
-*surf,str_of_fac,VERT,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  54 ||< not yet defined
-*surf,over_h_b,FLOR,-,-,-,UNKNOWN,OPAQUE,UNKNOWN,0,0  #  55 ||< not yet defined
+*surf,tiny-ex-a,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,tiny_ex-b,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  53 ||< external
+*surf,str_of_fac,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  54 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

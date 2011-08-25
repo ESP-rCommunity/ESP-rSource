@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Mon Aug 22 20:40:52 2011  # latest file modification 
+*date Thu Aug 25 20:43:16 2011  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -194,7 +194,7 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,02  #  25 ||< ptn_cel:L4_printz
 *surf,Top-29,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  27 ||< not yet defined
+*surf,Base-30,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,80,04  #  27 ||< Base-30:L4_srv_void
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external

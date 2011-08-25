@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_srv_void # tag version, format, zone name
-*date Thu Aug 25 07:08:35 2011  # latest file modification 
+*date Thu Aug 25 20:45:40 2011  # latest file modification 
 L4_srv_void describes floor void at service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,60.25000  #   1
@@ -52,20 +52,20 @@ L4_srv_void describes floor void at service facade
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,floor_l4toi,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,60,10  #   1 ||< floor:L4_toilet
-*surf,Base-14,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   2 ||< not yet defined
-*surf,floor_pz,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   3 ||< not yet defined
-*surf,Base-30,CEIL,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   4 ||< not yet defined
-*surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   5 ||< not yet defined
-*surf,Top-29,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   6 ||< not yet defined
-*surf,ceiling_pz,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   7 ||< not yet defined
-*surf,Top-13,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
-*surf,ceiling,FLOR,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #   9 ||< not yet defined
+*surf,Base-14,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,62,14  #   2 ||< Base-14:L4_admin
+*surf,floor_pz,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,63,08  #   3 ||< floor_pz:L4_printz
+*surf,Base-30,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,54,27  #   4 ||< Base-30:L4_cell_srv
+*surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,50  #   5 ||< srv_facade:L4_flrvoid
+*surf,Top-29,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,40,26  #   6 ||< Top-29:L3_cell_srv
+*surf,ceiling_pz,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,41,07  #   7 ||< ceiling_pz:L3_print_zn
+*surf,Top-13,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,42,13  #   8 ||< Top-13:L3_social
+*surf,ceiling,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,46,09  #   9 ||< ceiling:L3_toilet
 *surf,right_end,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,fill_a,VERT,-,-,-,conc_250,OPAQUE,SIMILAR,00,00  #  11 ||< identical environment
 *surf,fill_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,58  #  12 ||< l4_flrvdc:stair_2
 *surf,left_facade,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,srv_edge,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,to_stair_1,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  15 ||< not yet defined
+*surf,to_stair_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,13  #  15 ||< l4_flrva:stair_1
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

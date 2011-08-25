@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_rt # tag version, format, zone name
-*date Wed Aug 17 22:36:19 2011  # latest file modification 
+*date Thu Aug 25 20:50:48 2011  # latest file modification 
 L5_open_rt describes right portion of level five open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.00000,64.15000  #   1
@@ -91,6 +91,8 @@ L5_open_rt describes right portion of level five open plan
 *edges,4,49,48,57,56  # 27
 *edges,4,48,47,58,57  # 28
 *edges,4,47,35,36,58  # 29
+*edges,27,58,36,34,32,30,27,28,46,24,22,20,18,16,14,12,10,7,8,41,38,3,4,53,54,55,56,57  # 30
+*edges,27,52,1,2,44,42,5,6,9,11,13,15,17,19,21,23,45,25,26,29,31,33,35,47,48,49,50,51  # 31
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -98,7 +100,7 @@ L5_open_rt describes right portion of level five open plan
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,fic_open_r,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,10  #   1 ||< fic_open_r:L5_open_lft
-*surf,fic_open_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,11  #   2 ||< ptn_lw2:L5_open_lft
+*surf,fic_open_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,11  #   2 ||< fic_open_rb:L5_open_lft
 *surf,ptn_opn_c,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,05  #   3 ||< ptn_opn_c:L5_srv_cell
 *surf,gptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,70,06  #   4 ||< gptn_opn_d:L5_srv_cell
 *surf,ptn_opn_d,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,07  #   5 ||< ptn_opn_d:L5_srv_cell
@@ -119,13 +121,15 @@ L5_open_rt describes right portion of level five open plan
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,08  #  20 ||< front_rail:L5_light_w2
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,09  #  21 ||< right_rail:L5_light_w2
 *surf,ptnb_opn_l5,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,09  #  22 ||< ptnb_opn_l5:L5_toil_psg
-*surf,fac_fr_a,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,fac_fr_b,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,fac_fr_c,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  25 ||< external
-*surf,fac_fr_d,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,fac_fr_e,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  27 ||< external
-*surf,fac_fr_f,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,fac_fr_g,VERT,-,-,-,UNKNOWN,OPAQUE,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_fr_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_fr_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,fac_fr_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,fac_fr_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
+*surf,fac_fr_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_fr_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_fr_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,L5_oprt_ceil,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  30 ||< external
+*surf,L5_op_rt_flr,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #  31 ||< not yet defined
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -134,4 +138,4 @@ L5_open_rt describes right portion of level five open plan
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,0,0.00,0  # zone base
+*base_list,0,230.78,0  # zone base

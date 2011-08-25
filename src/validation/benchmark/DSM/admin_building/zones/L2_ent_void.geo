@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_ent_void # tag version, format, zone name
-*date Sun Aug 21 11:34:47 2011  # latest file modification 
+*date Thu Aug 25 21:30:04 2011  # latest file modification 
 L2_ent_void describes void over the entrance reception
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,-0.04750,52.45000  #   1
@@ -163,8 +163,8 @@ L2_ent_void describes void over the entrance reception
 *surf,over_h_a,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,48,53  #  37 ||< l2_bal_ovhb:L3_open_lft
 *surf,over_h_b,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,48,52  #  38 ||< l2_bal_ovha:L3_open_lft
 *surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,41  #  39 ||< struc_d:L3_ufloor
-*surf,balc_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,UNKNOWN,0,0  #  40 ||< not yet defined
-*surf,ptn_open_e,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  41 ||< not yet defined
+*surf,balc_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,23,36  #  40 ||< balc_d:L2_cust_srv
+*surf,ptn_open_e,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,23,37  #  41 ||< ptn_open_e:L2_cust_srv
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

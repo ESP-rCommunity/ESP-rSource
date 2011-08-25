@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_light_w2 # tag version, format, zone name
-*date Wed Aug 17 06:38:32 2011  # latest file modification 
+*date Thu Aug 25 20:52:43 2011  # latest file modification 
 L4_light_w2 describes light well two at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,60.25000  #   1
@@ -48,10 +48,10 @@ L4_light_w2 describes light well two at level four
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,58,25  #   7 ||< left_rail:L4_open_plr
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,58,26  #   8 ||< front_rail:L4_open_plr
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,58,27  #   9 ||< right_rail:L4_open_plr
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  10 ||< not yet defined
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  11 ||< not yet defined
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  12 ||< not yet defined
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,32  #  10 ||< l3_flrv_r2:L4_flrvoid
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,33  #  11 ||< l3_flrv_f2:L4_flrvoid
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,34  #  12 ||< l3_flrv_l2:L4_flrvoid
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,35  #  13 ||< l3_flrv_b2:L4_flrvoid
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

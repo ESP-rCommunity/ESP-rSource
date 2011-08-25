@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_printz # tag version, format, zone name
-*date Wed Aug 17 06:40:21 2011  # latest file modification 
+*date Thu Aug 25 21:34:57 2011  # latest file modification 
 L4_printz describes printing room on level four as srv facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,24.03439,35.70000,60.25000  #   1
@@ -36,14 +36,14 @@ L4_printz describes printing room on level four as srv facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #   1 ||< not yet defined
+*surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,56,32  #   1 ||< ptn_pr_op:L4_open_s
 *surf,ptn_cel,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,25  #   2 ||< ptn_pz:L4_cell_srv
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptn_social,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,63,03  #   6 ||< ptn_print:L4_admin
-*surf,ceiling_pz,CEIL,-,-,-,slab_275,OPAQUE,EXTERIOR,00,00  #   7 ||< external
-*surf,floor_pz,FLOR,-,-,-,flr_ov_pln,OPAQUE,UNKNOWN,0,0  #   8 ||< not yet defined
+*surf,ceiling_pz,CEIL,-,-,-,slab_275,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,floor_pz,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,80,03  #   8 ||< floor_pz:L4_srv_void
 *surf,upper_gla_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,low_gla_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
 # 

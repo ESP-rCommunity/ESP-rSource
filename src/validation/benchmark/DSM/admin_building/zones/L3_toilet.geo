@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toilet # tag version, format, zone name
-*date Mon Aug 22 21:35:49 2011  # latest file modification 
+*date Thu Aug 25 20:32:15 2011  # latest file modification 
 L3_toilet describes toilet on level three at srv road
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,56.35000  #   1
@@ -44,7 +44,7 @@ L3_toilet describes toilet on level three at srv road
 *surf,fac_c_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,fac_d_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l3,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,47,15  #   8 ||< ptn_l3_toil:L3_sw_void
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,60,10  #   9 ||< floor:L4_toilet
+*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,09  #   9 ||< ceiling:L4_srv_void
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,37  #  10 ||< floor_toil:L3_ufloor
 # 
 *insol,3,0,0,0  # default insolation distribution

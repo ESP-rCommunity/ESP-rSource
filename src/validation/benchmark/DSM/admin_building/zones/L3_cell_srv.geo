@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_cell_srv # tag version, format, zone name
-*date Sun Aug 21 11:12:41 2011  # latest file modification 
+*date Thu Aug 25 20:44:40 2011  # latest file modification 
 L3_cell_srv describes row of cellular offices at service rd faca
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,56.35000  #   1
@@ -193,7 +193,7 @@ L3_cell_srv describes row of cellular offices at service rd faca
 *surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,02  #  25 ||< ptn_cel:L3_print_zn
-*surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,UNKNOWN,0,0  #  26 ||< not yet defined
+*surf,Top-29,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,06  #  26 ||< Top-29:L4_srv_void
 *surf,Base-30,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,29  #  27 ||< Base-30:L3_ufloor
 *surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external

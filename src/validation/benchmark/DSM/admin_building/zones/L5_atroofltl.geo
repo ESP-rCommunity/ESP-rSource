@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Mon Aug 22 21:38:17 2011  # latest file modification 
+*date Thu Aug 25 21:07:15 2011  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -174,9 +174,9 @@ L5_atroofltl describes the main roof light over atria
 *surf,wall_g,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,07  #  13 ||< wall_g:L4_open_s
 *surf,wall_h,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,08  #  14 ||< wall_h:L4_open_s
 *surf,balc_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,09  #  15 ||< balc_c:L4_open_s
-*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  16 ||< external
-*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  17 ||< external
-*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,UNKNOWN,0,0  #  18 ||< external
+*surf,open_a,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,56,20  #  16 ||< open_a:L4_open_s
+*surf,open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,56,21  #  17 ||< open_b:L4_open_s
+*surf,open_c,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,56,22  #  18 ||< open_c:L4_open_s
 *surf,upper_a,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,35,34  #  19 ||< upper_a:L3_ent_void
 *surf,upper_b,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,35,33  #  20 ||< upper_b:L3_ent_void
 *surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,01  #  21 ||< seg_a:L4_circular
@@ -185,21 +185,21 @@ L5_atroofltl describes the main roof light over atria
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,04  #  24 ||< seg_d:L4_circular
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,05  #  25 ||< seg_e:L4_circular
 *surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,06  #  26 ||< seg_f:L4_circular
-*surf,fac_gl_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  27 ||< external
-*surf,fac_gl_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  28 ||< external
-*surf,fac_gl_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  29 ||< external
-*surf,fac_gl_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  30 ||< external
-*surf,fac_gl_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  31 ||< external
-*surf,fac_gl_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  32 ||< external
-*surf,fac_gl_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  33 ||< external
-*surf,fac_gl_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  34 ||< external
-*surf,fac_gl_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  35 ||< external
-*surf,fac_gl_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  36 ||< external
-*surf,fac_gl_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  37 ||< external
-*surf,fac_gl_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  38 ||< external
-*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,UNKNOWN,0,0  #  39 ||< external
-*surf,side_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  40 ||< external
-*surf,side_fac_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,UNKNOWN,0,0  #  41 ||< external
+*surf,fac_gl_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_gl_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_gl_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_gl_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,fac_gl_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_gl_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_gl_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,fac_gl_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,fac_gl_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,fac_gl_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,fac_gl_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,fac_gl_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  39 ||< external
+*surf,side_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,side_fac_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,to_meeting,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,01  #  42 ||< Wall-1:L4_sw_meet
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  43 ||< adiabatic
 *surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  44 ||< adiabatic
