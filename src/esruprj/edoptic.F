@@ -205,7 +205,7 @@ C Produce help text for both types of import.
      &    'Add','Delete','Copy','Ignore',' ',IOW,nbhelp)
         if(IOW.eq.1)then
 
-C Import (from Window 5.1, 5.2, v6.? ).
+C Import (from Window 5.1, 5.2, v6.x ).
           call OPT2TMP(ier)
           iwin4=IPRODB
           call IMPOPT(iwin4,IER)
@@ -218,6 +218,8 @@ C Import (from Window 5.1, 5.2, v6.? ).
             cpsopt=GTYPE
             cpgdescr=GDESCR
             goto 99
+          elseif(ier.eq.-2)then
+            continue   !user canceled
           else
             call usrmsg('Optics database can hold no more data sets.',
      &      'Please revise the database.','W')
@@ -1020,9 +1022,10 @@ C CLROPT clears common block GOPTED and sets it up for a new set.
       end
 
 C ************* IMPOPT
-C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
+C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.x
       SUBROUTINE IMPOPT(iwin4,IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -1032,10 +1035,12 @@ C IMPOPT reads in an optical report from Window 5.1 or 5.2 or 6.2
 
 C wlname is LBL Window name for layer, wlthk is mm thickness.
       dimension wlname(ME),wlthk(ME)
-      character lwin4*72,DFILE*72,outstr*124,word*20,wdum*20
-      character outs*124,wlname*12
-      logical LOK,close
+      character DFILE*72,outstr*124,word*20,wdum*20
+      character outs*124,wlname*12,fs*1
+      logical LOK,close,unixok
       integer iwversion    ! the version of the import file
+      character sfile*72,snpfile*72
+      character longtfile*144,fname*96
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1044,16 +1049,72 @@ C For help messages
 
       helpinsub='IMPOPT'  ! set for subroutine
 
-C Free unit and check if import file exists.
-      helptopic='optical_import_win6'
+C Locate the xbm files via the installed path.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Free unit specify file and check if import file exists.
+  142 helptopic='optical_import_win6'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      DFILE='wdata.tab'
-      CALL EASKS(lwin4,' Optical import file name? ',
-     &  ' ',72,DFILE,'optical properties import file',IER,nbhelp)
+      CALL EASKABC('LBNL Window file options:',' ','Edit file name',
+     &    'select in model dbs folder','Cancel',IOW,nbhelp)
+      if(IOW.eq.1)then
+        write(fname,'(2a)') '.',fs
+      elseif(IOW.eq.2)then
+
+C Use code similar to that in edzone.F subroutine newzone and in
+C folders.F pfolders to get files in ../dbs folder and recover
+C the name of the Window report file.
+        sfile=' '
+        snpfile=' '
+        call edisp(iuout,' ')
+        call browsefilelist('?','dbs','fil',sfile,snpfile,nfile,iier)
+        if(nfile.gt.0)then
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('b','dbs','fil',sfile,snpfile,nfile,
+     &        iier)
+          if(snpfile(1:2).ne.'  ')then
+            write(fname,'(3a)')dbspth(1:lnblnk(dbspth)),fs,
+     &        snpfile(1:lnblnk(snpfile))
+
+C Debug.
+            write(6,*) fname
+
+          else
+
+C User did not select a file. Take them back to the question.
+            call usrmsg('You did not select any existing file.',
+     &        'Please select or cancel.','W')
+            goto 142 ! ask for choice again
+          endif
+        else
+          call usrmsg('You did not select any existing file.',
+     &      'Please select or cancel.','W')
+          goto 142 ! ask for choice again
+        endif
+      elseif(IOW.eq.3)then
+        ier=-2
+        return
+      endif
+      longtfile=' '    ! reset return string
+      CALL EASKXORGTKF(fname,'Window 4/5/6 report file name?',' ',
+     &    'xxx.txt',longtfile,'LBNL win456 file',IER,nbhelp)
+      write(fname,'(a)') longtfile(1:lnblnk(longtfile))
+     
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        goto 142  ! redisplay menu.
+      endif
+
       IER=0
-      CALL EFOPSEQ(iwin4,lwin4,1,IER)
+      CALL EFOPSEQ(iwin4,fname,1,IER)
       IF(IER.NE.0)RETURN
-      call edisp(iuout,lwin4)
+      call edisp(iuout,fname)
 
 C Set initial values. Assume that there are air gaps between
 C the Window 4/5/6 "layers".
