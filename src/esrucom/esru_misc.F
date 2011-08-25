@@ -3307,9 +3307,13 @@ C current menu line index. Build up text strings for the menu.
           else
 
 C << consider writing out different info depending on what SSOTHER is >>
-            WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
-     &        SSOTHER(icc,1)(1:12)
-   13       FORMAT(A1,1X,A,1X,A,1X,A12)
+            if(icc.gt.0)then
+              WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
+     &          SSOTHER(icc,1)(1:12)
+   13         FORMAT(A1,1X,A,1X,A,1X,A12)
+            else
+              WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+            endif
           endif
         ENDIF
    10 CONTINUE

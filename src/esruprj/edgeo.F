@@ -4100,7 +4100,7 @@ C and 0.5m2 area difference.
               cogo(2)=ssurcog(ij,2)
               cogo(3)=ssurcog(ij,3)
               call eclose3(cog(1),cog(2),cog(3),cogo(1),cogo(2),
-     &          cogo(3),1.0,closecog)
+     &          cogo(3),1.5,closecog)
               vdist= crowxyz(cog(1),cog(2),cog(3),cogo(1),cogo(2),
      &          cogo(3))
               if(closecog)then

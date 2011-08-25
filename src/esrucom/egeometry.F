@@ -1769,17 +1769,19 @@ C the constructions database.
 C When scanning geometry warn users if the optical description in the
 C geometry file is different from that of the optical property associated
 C with the construction (TRAN is an ok mis-match).
-                lnow=lnblnk(word)   ! length for token in file
-                lno=lnblnk(OPT)     ! length for mlc optics
-                if(WORD(1:lnow).ne.OPT(1:lno))then
-                  if(WORD(1:4).eq.'TRAN')then
-                    continue
-                  else
-		    write(outs,*) 'Optics ',WORD(1:lnow),
+                if(ICF.gt.0)then
+                  lnow=lnblnk(word)   ! length for token in file
+                  lno=lnblnk(OPT)     ! length for mlc optics
+                  if(WORD(1:lnow).ne.OPT(1:lno))then
+                    if(WORD(1:4).eq.'TRAN')then
+                      continue
+                    else
+		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                DESC(ICF)(1:12),' ',OPT(1:lno)
-                    call edisp(iuout,outs)
-                    optcorrected=.true.
+     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+                      call edisp(iuout,outs)
+                      optcorrected=.true.
+                    endif
                   endif
                 endif
 
