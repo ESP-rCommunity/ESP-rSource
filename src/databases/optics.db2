@@ -358,3 +358,39 @@ Glaz_typical  :Typical UK glazing optical properts
   1.520 0.148 0.161 0.175 0.193 0.194
   1.000 0.001 0.001 0.001 0.001 0.001
   1.520 0.111 0.118 0.118 0.105 0.074
+# 12 char id |  description       | thick | blind
+trip_glz_18   :basic tripple glazing air no coatng
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.703  0.143  0.373  1.740
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.486 0.453 0.387 0.241 0.089 0.617 0.589 0.521 0.357 0.169
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.171 0.186 0.200 0.217 0.208
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.118 0.125 0.127 0.116 0.084
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.082 0.083 0.078 0.058 0.029
+# 12 char id |  description       | thick | blind
+trip_gl_kai   :tripple glazing Pilk K glass air
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.614  0.157  0.463  1.080
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.382 0.361 0.313 0.193 0.077 0.529 0.510 0.456 0.310 0.151
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.260 0.264 0.264 0.255 0.195
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.103 0.111 0.115 0.107 0.083
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.098 0.095 0.086 0.061 0.028
+# 12 char id |  description       | thick | blind
+tr_Kgl_arg    :Tripple glazing Pilk Kglass argon
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.614  0.157  0.463  0.890
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.382 0.361 0.313 0.193 0.077 0.530 0.510 0.456 0.310 0.150
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.260 0.264 0.264 0.255 0.195
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.103 0.111 0.115 0.107 0.083
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.098 0.095 0.086 0.061 0.028

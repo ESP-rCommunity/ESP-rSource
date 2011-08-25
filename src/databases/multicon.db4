@@ -134,6 +134,30 @@
 # mat ref thickness (m) mat descr & air gap R
   245    0.0040  fict : fictitious material (almost not there) with matching single laye
 # layers  description   optics name   symmetry tag
+    5    tripglz_1.8   TRAN  trip_glz_18   SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.170 0.170 0.170
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.170 0.170 0.170
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
+    5    tripglz_1.08  TRAN  trip_gl_kai   NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.367 0.367 0.367
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.371 0.371 0.371
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
+    5    tripglz_089   TRAN  tr_Kgl_arg    NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.428 0.428 0.428
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.508 0.508 0.508
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
     3    insul_frame   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
    46    0.0040  grey cotd alum : Grey coated aluminium
