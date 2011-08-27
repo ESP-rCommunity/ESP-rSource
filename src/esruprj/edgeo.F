@@ -5240,6 +5240,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
       dimension IVALS(MCOM)
+      DIMENSION ISASSO(MS)
       CHARACTER VERT*33,KEY*1,head*28,HOLD*36
       character outs*124,headv*48
       logical anotherone  ! to signal that another point will be requested
@@ -5274,18 +5275,11 @@ C Initial values for vertex at angle facility.
       if(nifgrey.gt.4)then
         greyok=.true.
       endif
-      V1=1.0
-      AZ=0.0
-      EL=0.0
-      x3=0.0
-      y3=0.0
-      z3=0.0
+      V1=1.0; AZ=0.0; EL=0.0
+      x3=0.0; y3=0.0; z3=0.0
       anotherone=.false.
-      iwhich=0
-      iwhich1=0
-      iwhich2=0
-      lastv1=0
-      lastv2=0
+      iwhich=0; iwhich1=0; iwhich2=0
+      lastv1=0; lastv2=0
 
 C Write vertices with minimal white space comma separated.
 C See if an even or odd number of items in list. Do this
@@ -5321,13 +5315,13 @@ C Initialise zone vertex menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       MHEAD=1
       MCTL=6
-      ILEN=NTV
+      ILEN=NZTV(icomp)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
    92 IER=0
-      ILEN=NTV
+      ILEN=NZTV(icomp)
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -5662,7 +5656,7 @@ C Intersection LINES and a plane. As for insersection surface.
           CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
      &       ' ',IER)
           N = NVER(IS)
-          nbstart=ntv  ! how many vertices did we have to start with
+          nbstart=NZTV(icomp)  ! how many vertices did we have to start with
           CALL EPMENRC
 
 C Setup definition of the plane to intersect.
@@ -5741,9 +5735,7 @@ C Ask if it should be added.
                   if(INVT.eq.1)then
                     NTV=NTV+1
                     NZTV(icomp)=NTV
-                    x(ntv)=x3
-                    y(ntv)=y3
-                    z(ntv)=z3
+                    x(ntv)=x3; y(ntv)=y3; z(ntv)=z3
                     VCOORD(ICOMP,ntv,1)=x3
                     VCOORD(ICOMP,ntv,2)=y3
                     VCOORD(ICOMP,ntv,3)=z3
@@ -5858,9 +5850,7 @@ C And re-draw the zone to clean up the circles.
           ILEN=NTV
           IPACT=CREATE
           CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
-          MODIFY=.TRUE.
-          MODBND=.TRUE.
+          MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
           iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
@@ -5897,8 +5887,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &     'Vertex ',iwhich3,' @',X(iwhich3),Y(iwhich3),
      &     Z(iwhich3),' is ',offset,'(m) to edge ',IWHICH1,' &',IWHICH2
           call edisp(itru,outs)
-          MODIFY=.TRUE.
-          MODBND=.TRUE.
+          MODIFY=.TRUE.; MODBND=.TRUE.
           iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
@@ -5978,9 +5967,7 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             dok=.true.
             call askok('Is this aligned vertex ok?',' ',ok,dok,nbhelp)
             if(ok)then
-              X(IWHICH3)=x3
-              Y(IWHICH3)=y3
-              Z(IWHICH3)=z3
+              X(IWHICH3)=x3; Y(IWHICH3)=y3; Z(IWHICH3)=z3
               MODGEO=.TRUE.
               iwhich3=NTV
               do 346 ivj=1,NSUR
@@ -6172,13 +6159,9 @@ C Show the new point on the current wireframe.
             dok=.true.
             call askok('Apply this move?',' ',OK,dok,nbhelp)
             if(OK)then
-              x(IWHICH1)=x3
-              y(IWHICH1)=y3
-              z(IWHICH1)=z3 ! place to update vcoord?
+              x(IWHICH1)=x3; y(IWHICH1)=y3; z(IWHICH1)=z3 ! place to update vcoord?
             endif
-            MODGEO=.TRUE.
-            MODIFY=.TRUE.
-            MODBND=.TRUE.
+            MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
             iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
@@ -6203,9 +6186,7 @@ C applied to the 'a' 'c' and 'f' options.
             if(INVT.eq.1)then
               NTV=NTV+1
               NZTV(icomp)=NTV
-              x(ntv)=x3
-              y(ntv)=y3
-              z(ntv)=z3
+              x(ntv)=x3; y(ntv)=y3; z(ntv)=z3
               VCOORD(ICOMP,ntv,1)=x3
               VCOORD(ICOMP,ntv,2)=y3
               VCOORD(ICOMP,ntv,3)=z3
@@ -6230,9 +6211,7 @@ C applied to the 'a' 'c' and 'f' options.
             ILEN=NTV
             IPACT=CREATE
             CALL EKPAGE(IPACT)
-            MODGEO=.TRUE.
-            MODIFY=.TRUE.
-            MODBND=.TRUE.
+            MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
             iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
@@ -6403,10 +6382,7 @@ C order so that compating of list works correctly.
             CALL EKPAGE(IPACT)
             IPACT= -1*jipm
             CALL EKPAGE(IPACT)
-            MODGEO=.TRUE.
-            MODIFY=.TRUE.
-            MODBND=.TRUE.
-            MODLEN=.TRUE.
+            MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.; MODLEN=.TRUE.
             iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.3)then
@@ -6431,9 +6407,7 @@ C << detected. This needs debugging... >>
             ILEN=NTV
             IPACT=CREATE
             CALL EKPAGE(IPACT)
-            MODGEO=.TRUE.
-            MODIFY=.TRUE.
-            MODBND=.TRUE.
+            MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
             iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.4)then
@@ -6460,9 +6434,7 @@ C only up to MTV.
                 ILEN=NTV
                 IPACT=CREATE
                 CALL EKPAGE(IPACT)
-                MODGEO=.TRUE.
-                MODIFY=.TRUE.
-                MODBND=.TRUE.
+                MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
                 iZBFLG(ICOMP)=0
               endif
             endif
@@ -6506,10 +6478,7 @@ C Present vertex coords for editing then parse data from HOLD.
               CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
               CALL EGETWR(HOLD,K,Z(IFOC),-9.9,999.9,'W','Z cord',IER)
               if(ier.ne.0)goto 1146
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
-              MODGEO=.TRUE.
-              MODLEN=.TRUE.
+              MODIFY=.TRUE.; MODBND=.TRUE.; MODGEO=.TRUE.; MODLEN=.TRUE.
               iZBFLG(ICOMP)=0
               call warnmod(ICOMP,'str')
  1145       continue
@@ -6527,9 +6496,7 @@ C addvert silently.
           CALL EKPAGE(IPACT)
           IPACT= -1*jipm
           CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
-          MODIFY=.TRUE.
-          MODBND=.TRUE.
+          MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
           iZBFLG(ICOMP)=0
         elseif(IRT.eq.7)then
 
@@ -6572,9 +6539,7 @@ C add a new vertex to the end of the zone list and update vcoord.
               else
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                X(NTV)=CX(ix)
-                Y(NTV)=CY(ix)
-                Z(NTV)=CZ(ix)
+                X(NTV)=CX(ix); Y(NTV)=CY(ix); Z(NTV)=CZ(ix)
                 VCOORD(ICOMP,ntv,1)=CX(ix)
                 VCOORD(ICOMP,ntv,2)=CY(ix)
                 VCOORD(ICOMP,ntv,3)=CZ(ix)
@@ -6649,9 +6614,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
           ILEN=NTV
           IPACT=CREATE
           CALL EKPAGE(IPACT)
-          MODGEO=.TRUE.
-          MODIFY=.TRUE.
-          MODBND=.TRUE.
+          MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
           iZBFLG(ICOMP)=0
         elseif(IRT.eq.8)then
 
@@ -6669,19 +6632,17 @@ C iwhich1 and replace the reference iwhich2.
             write(outs,'(a,i3,a,i3)') 'Scanning for vertex ',iwhich1,
      &        ' and replacing with ',iwhich2
             call edisp(itru,outs)
-            do 3246 ivj=1,NSUR
-              ivjlimit=NVER(ivj)
+            do 3246 ivj=1,NSUR          ! for each surface
+              ivjlimit=NVER(ivj)        ! and every vertex in edge list
               do 3247 ivjj=1,ivjlimit
-                if(JVN(ivj,ivjj).eq.iwhich1)then
+                if(JVN(ivj,ivjj).eq.iwhich1)then  ! check for match
                   write(outs,'(3a,i3,a)') 'In ',sname(icomp,ivj),
-     &              ' found vertex ',ivjj,' in edge list matches.'
+     &              ' found vertex ',iwhich1,' in its edge list.'
                   dok=.true.
                   call askok(outs,'Ok to substitute?',ok,dok,nbhelp)
                   if(ok)then
                     JVN(ivj,ivjj)=iwhich2
-                    MODGEO=.TRUE.
-                    MODIFY=.TRUE.
-                    MODBND=.TRUE.
+                    MODGEO=.TRUE.; MODIFY=.TRUE.; MODBND=.TRUE.
                     iZBFLG(ICOMP)=0
                   endif
                 endif
@@ -6719,6 +6680,47 @@ C a jump back point if user requests a different vertex.
           call forceflush()
         endif
 
+C Remind user what other surfaces reference this vertex.
+        IHIT=0
+        DO 8792 ISL=1,NZSUR(ICOMP)
+          DO 8794 IVL=1,NVER(ISL)
+            IF(IFOC.EQ.JVN(ISL,IVL))THEN
+              IHIT=IHIT+1
+              ISASSO(IHIT)=ISL
+            ENDIF
+ 8794     CONTINUE
+ 8792   CONTINUE
+        if(IHIT.lt.6)then
+
+C If there are less than 6 surfaces write our their names.
+          call edisp(itru,' ')
+          call edisp(itru,'Surfaces which reference this vertex:')
+          WRITE(outs,9994)(SNAME(icomp,ISASSO(IH)),IH=1,IHIT)
+ 9994     FORMAT('  ',6(A,' '))
+          call edisp(itru,outs)
+        else
+          call edisp(itru,' ')
+          call edisp(itru,'Surfaces which reference this vertex:')
+          WRITE(outs,9993) (ISASSO(IH),IH=1,IHIT)
+ 9993     FORMAT(10(I2,', '))
+          call edisp(itru,outs)
+        endif
+
+C Remind user if there are close vertices.
+        do 106 iwhich2=1,NTV
+          if(ifoc.ne.iwhich2)then
+            tdis= crowxyz(X(ifoc),Y(ifoc),Z(ifoc),
+     &            X(IWHICH2),Y(IWHICH2),Z(IWHICH2))
+            if(tdis.lt.0.1)then
+              write(outs,'(a,i3,a,f9.4,a,3F10.4)') 
+     &          'And it is close to v ',
+     &          IWHICH2,' (',tdis,'m) @ XYZ:',X(IWHICH2),
+     &          Y(IWHICH2),Z(IWHICH2)
+              call edisp(itru,outs)
+            endif
+          endif
+  106   continue
+
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         write(outs,'(a,i3,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
@@ -6740,10 +6742,7 @@ C allow for jump to previous or next.
         CALL EGETWR(HOLD,K,Y(IFOC),-999.9,999.9,'W','Y cord',IER)
         CALL EGETWR(HOLD,K,Z(IFOC),-9.9,999.9,'W','Z cord',IER)
         if(ier.ne.0)goto 42
-        MODIFY=.TRUE.
-        MODBND=.TRUE.
-        MODGEO=.TRUE.
-        MODLEN=.TRUE.
+        MODIFY=.TRUE.; MODBND=.TRUE.; MODGEO=.TRUE.; MODLEN=.TRUE.
         iZBFLG(ICOMP)=0
         call warnmod(ICOMP,'str')
 
