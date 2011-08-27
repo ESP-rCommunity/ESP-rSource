@@ -1,6 +1,6 @@
 *connections for admin_building
-*Date Fri Aug 26 06:49:42 2011
-   2241   # number of connections
+*Date Sat Aug 27 15:00:43 2011
+   2254   # number of connections
    1   1   3  23  16  #    1 ptn_cora_l2 in stair_1 >|< ptn_stair in L2_cust_srv
    1   2   3  23  15  #    2 ptn_corb_l2 in stair_1 >|< ptn_other in L2_cust_srv
    1   3   3  27  21  #    3 ptn_off_l2 in stair_1 >|< Wall-21 in L2_coridor
@@ -136,7 +136,7 @@
    3  25   3  17   8  #  133 rflrb_l2 in lifts >|< rflrb_l2 in L2_uf_plen
    3  26   3  50   7  #  134 rflrb_l3 in lifts >|< rflrb_l3 in L3_ufloor
    3  27   3  78  45  #  135 rflrb_l4 in lifts >|< rflrb_l4 in L4_flrvoid
-   3  28  -1   0   0  #  136 rflrb_l5 in lifts not yet defined
+   3  28   3  81  51  #  136 rflrb_l5 in lifts >|< rflrb_l5 in L5_uf_plen
    3  29   3  17   7  #  137 rflrc_l2 in lifts >|< rflrc_l2 in L2_uf_plen
    3  30   3  50   8  #  138 rflrc_l3 in lifts >|< rflrc_l3 in L3_ufloor
    3  31   3  78  46  #  139 rflrc_l4 in lifts >|< rflrc_l4 in L4_flrvoid
@@ -221,7 +221,7 @@
    5  40   3  50   9  #  218 l3_fv_ma in ne_facade >|< l3_fv_ma in L3_ufloor
    5  41   3  50  10  #  219 l3_fv_ta in ne_facade >|< l3_fv_ta in L3_ufloor
    5  42   3  78  41  #  220 l4_fv_ma in ne_facade >|< l4_fv_ma in L4_flrvoid
-   5  43  -1   0   0  #  221 l5_fv_ma in ne_facade not yet defined
+   5  43   3  81  57  #  221 l5_fv_ma in ne_facade >|< to_ne_fac_b in L5_uf_plen
    5  44   3  78  42  #  222 l4_fv_ta in ne_facade >|< l4_fv_ta in L4_flrvoid
    5  45   3  81  36  #  223 l5_fv_ta in ne_facade >|< l5_fv_ta in L5_uf_plen
    5  46   0   0   0  #  224 inner_parap in ne_facade is External
@@ -1102,7 +1102,7 @@
   37  24   0   0   0  # 1099 fac_fr_u in L3_L4_cir_vd is External
   37  25   3  57  32  # 1100 balcony_au in L3_L4_cir_vd >|< balcony_au in L4_open_plr
   37  26   3  57  33  # 1101 balcony_bu in L3_L4_cir_vd >|< balcony_bu in L4_open_plr
-  37  27   3  81  49  # 1102 parapet_a in L3_L4_cir_vd >|< parapet_a in L5_uf_plen
+  37  27  -1   0   0  # 1102 parapet_a in L3_L4_cir_vd not yet defined
   37  28   0   0   0  # 1103 parapet_b in L3_L4_cir_vd is External
   38   1   0   0   0  # 1104 stone in L3_void_b is External
   38   2   0   0   0  # 1105 fac_gla in L3_void_b is External
@@ -1646,7 +1646,7 @@
   57   5   3  38  24  # 1643 ptn_vb_b in L4_open_plr >|< ptn_vb_b in L3_void_b
   57   6   3  56  11  # 1644 open_fict in L4_open_plr >|< fic_to_rb in L4_open_s
   57   7   3  56  10  # 1645 open_fict2 in L4_open_plr >|< fic_to_ra in L4_open_s
-  57   8   3  81   9  # 1646 ceiling in L4_open_plr >|< ceiling_l4or in L5_uf_plen
+  57   8   3  81   9  # 1646 ceil_l4_opr in L4_open_plr >|< ceiling_l4or in L5_uf_plen
   57   9   3  78  27  # 1647 floor in L4_open_plr >|< floor_l4opr in L4_flrvoid
   57  10   3  52  21  # 1648 seg_h in L4_open_plr >|< seg_hl in L4_circular
   57  11   3  52  22  # 1649 seg_i in L4_open_plr >|< seg_il in L4_circular
@@ -1682,563 +1682,576 @@
   57  41   3  54   6  # 1679 ptn_open_f in L4_open_plr >|< ptn_open_f in L4_cell_srv
   57  42   3  54   7  # 1680 ptn_open_g in L4_open_plr >|< ptn_open_g in L4_cell_srv
   57  43  -1   0   0  # 1681 cell_fill in L4_open_plr not yet defined
-  58   1   3  56  23  # 1682 l3_lw2_fr in L4_light_w1 >|< l3_lw2_fr in L4_open_s
-  58   2   3  56  24  # 1683 l3_lw2_ri in L4_light_w1 >|< l3_lw2_ri in L4_open_s
-  58   3   3  56  25  # 1684 l3_lw2_bk in L4_light_w1 >|< l3_lw2_bk in L4_open_s
-  58   4   3  56  26  # 1685 l3_lw2_lef in L4_light_w1 >|< l3_lw2_lef in L4_open_s
-  58   5   3  74   6  # 1686 up_l3_lw2 in L4_light_w1 >|< l3_lw2_base in L5_light_w1
-  58   6   3  43   5  # 1687 l3_lw2_base in L4_light_w1 >|< up_l3_lw2 in L3_lw1
-  58   7   3  56  27  # 1688 left_rail in L4_light_w1 >|< left_rail in L4_open_s
-  58   8   3  56  28  # 1689 front_rail in L4_light_w1 >|< front_rail in L4_open_s
-  58   9   3  56  29  # 1690 right_rail in L4_light_w1 >|< right_rail in L4_open_s
-  58  10   3  78  28  # 1691 l3_flrv_r in L4_light_w1 >|< l3_flrv_r in L4_flrvoid
-  58  11   3  78  29  # 1692 l3_flrv_f in L4_light_w1 >|< l3_flrv_f in L4_flrvoid
-  58  12   3  78  30  # 1693 l3_flrv_l in L4_light_w1 >|< l3_flrv_l in L4_flrvoid
-  58  13   3  78  31  # 1694 l3_flrv_b in L4_light_w1 >|< l3_flrv_b in L4_flrvoid
-  59   1   3  57  28  # 1695 l3_lw2_fr in L4_light_w2 >|< l4_lw2_fr in L4_open_plr
-  59   2   3  57  29  # 1696 l3_lw2_ri in L4_light_w2 >|< l4_lw2_ri in L4_open_plr
-  59   3   3  57  30  # 1697 l3_lw2_bk in L4_light_w2 >|< l4_lw2_bk in L4_open_plr
-  59   4   3  57  31  # 1698 l3_lw2_lef in L4_light_w2 >|< l3_lw2_lef in L4_open_plr
-  59   5   3  75   6  # 1699 up_l3_lw2 in L4_light_w2 >|< l3_lw2_base in L5_light_w2
-  59   6   3  44   5  # 1700 l3_lw2_base in L4_light_w2 >|< up_l3_lw2 in L3_light_w2
-  59   7   3  57  25  # 1701 left_rail in L4_light_w2 >|< left_rail in L4_open_plr
-  59   8   3  57  26  # 1702 front_rail in L4_light_w2 >|< front_rail in L4_open_plr
-  59   9   3  57  27  # 1703 right_rail in L4_light_w2 >|< right_rail in L4_open_plr
-  59  10   3  78  32  # 1704 l3_flrv_r in L4_light_w2 >|< l3_flrv_r2 in L4_flrvoid
-  59  11   3  78  33  # 1705 l3_flrv_f in L4_light_w2 >|< l3_flrv_f2 in L4_flrvoid
-  59  12   3  78  34  # 1706 l3_flrv_l in L4_light_w2 >|< l3_flrv_l2 in L4_flrvoid
-  59  13   3  78  35  # 1707 l3_flrv_b in L4_light_w2 >|< l3_flrv_b2 in L4_flrvoid
-  60   1   3   1   9  # 1708 ptn_cora_l3 in L4_toilet >|< ptnb_toil_l4 in stair_1
-  60   2   3   1  10  # 1709 ptn_corb_l3 in L4_toilet >|< ptna_toil_l4 in stair_1
-  60   3   3  62  12  # 1710 ptn_corc_l3 in L4_toilet >|< ptn_toilet in L4_admin
-  60   4   0   0   0  # 1711 fac_a_l3 in L4_toilet is External
-  60   5   0   0   0  # 1712 fac_b_l3 in L4_toilet is External
-  60   6   0   0   0  # 1713 fac_c_l3 in L4_toilet is External
-  60   7   0   0   0  # 1714 fac_d_l3 in L4_toilet is External
-  60   8   3  51  15  # 1715 ptn_vd_l3 in L4_toilet >|< Wall-15 in L4_sw_void
-  60   9   0   0   0  # 1716 ceiling in L4_toilet is External
-  60  10   3  80   1  # 1717 floor in L4_toilet >|< floor_l4toi in L4_srv_void
-  61   1   3  53   9  # 1718 pt_meeting in L4_toil_psg >|< ptn_toilet in L4_meeting
-  61   2   3   5  24  # 1719 pta_fac_l4 in L4_toil_psg >|< pta_fac_l4 in ne_facade
-  61   3   0   0   0  # 1720 gl_facade_l4 in L4_toil_psg is External
-  61   4   3   5  27  # 1721 ptnc_fac_l4 in L4_toil_psg >|< ptnc_fac_l4 in ne_facade
-  61   5   3   2  13  # 1722 ptna_str_l4 in L4_toil_psg >|< ptna_str_l4 in stair_2
-  61   6   3  57  18  # 1723 ptn_cel_b in L4_toil_psg >|< ptn_cel_b in L4_open_plr
-  61   7   3  57  17  # 1724 ptna_opn_l4 in L4_toil_psg >|< ptna_opn_l4 in L4_open_plr
-  61   8   3  57  16  # 1725 ptnb_opn_l4 in L4_toil_psg >|< ptnb_opn_l4 in L4_open_plr
-  61   9   3  81  10  # 1726 top in L4_toil_psg >|< top_l4_toilc in L5_uf_plen
-  61  10   3  78  36  # 1727 floor in L4_toil_psg >|< flool4tp in L4_flrvoid
-  61  11   3   5  25  # 1728 ptnb_fac_l4 in L4_toil_psg >|< ptnb_fac_l4 in ne_facade
-  61  12   3   2  14  # 1729 ptnb_str_l4 in L4_toil_psg >|< ptnb_str_l4 in stair_2
-  62   1   3  56  30  # 1730 ptn_corid_a in L4_admin >|< ptn_corid_a in L4_open_s
-  62   2   3  56  31  # 1731 ptn_corid_b in L4_admin >|< ptn_corid_b in L4_open_s
-  62   3   3  63   6  # 1732 ptn_print in L4_admin >|< ptn_social in L4_printz
-  62   4   0   0   0  # 1733 stone_c in L4_admin is External
-  62   5   0   0   0  # 1734 glaz_d in L4_admin is External
-  62   6   0   0   0  # 1735 vent_b in L4_admin is External
-  62   7   0   0   0  # 1736 glaz_c in L4_admin is External
-  62   8   0   0   0  # 1737 stone_b in L4_admin is External
-  62   9   0   0   0  # 1738 glaz_b in L4_admin is External
-  62  10   0   0   0  # 1739 vent_a in L4_admin is External
-  62  11   0   0   0  # 1740 glaz_a in L4_admin is External
-  62  12   3  60   3  # 1741 ptn_toilet in L4_admin >|< ptn_corc_l3 in L4_toilet
-  62  13   0   0   0  # 1742 Top-13 in L4_admin is External
-  62  14   3  80   2  # 1743 Base-14 in L4_admin >|< Base-14 in L4_srv_void
-  62  15   0   0   0  # 1744 stone_a in L4_admin is External
-  62  16   0   0   0  # 1745 glaz_d_low in L4_admin is External
-  62  17   0   0   0  # 1746 glaz_d_hi in L4_admin is External
-  62  18   0   0   0  # 1747 glaz_c_low in L4_admin is External
-  62  19   0   0   0  # 1748 glaz_c_hi in L4_admin is External
-  62  20   0   0   0  # 1749 glaz_b_low in L4_admin is External
-  62  21   0   0   0  # 1750 glaz_b_hi in L4_admin is External
-  62  22   0   0   0  # 1751 glaz_a_low in L4_admin is External
-  62  23   0   0   0  # 1752 glaz_a_hi in L4_admin is External
-  63   1   3  56  32  # 1753 ptn_pr_op in L4_printz >|< ptn_pr_op in L4_open_s
-  63   2   3  54  25  # 1754 ptn_cel in L4_printz >|< ptn_pz in L4_cell_srv
-  63   3   0   0   0  # 1755 vent_d in L4_printz is External
-  63   4   0   0   0  # 1756 glaz_a in L4_printz is External
-  63   5   0   0   0  # 1757 stone_a in L4_printz is External
-  63   6   3  62   3  # 1758 ptn_social in L4_printz >|< ptn_print in L4_admin
-  63   7   0   0   0  # 1759 ceiling_pz in L4_printz is External
-  63   8   3  80   3  # 1760 floor_pz in L4_printz >|< floor_pz in L4_srv_void
-  63   9   0   0   0  # 1761 upper_gla_a in L4_printz is External
-  63  10   0   0   0  # 1762 low_gla_a in L4_printz is External
-  64   1   0   0   0  # 1763 fac_gl_a in L5_confer is External
-  64   2   0   0   0  # 1764 fac_frb in L5_confer is External
-  64   3   0   0   0  # 1765 fac_frc in L5_confer is External
-  64   4   0   0   0  # 1766 fac_frd in L5_confer is External
-  64   5   0   0   0  # 1767 fac_fre in L5_confer is External
-  64   6   0   0   0  # 1768 fac_frf in L5_confer is External
-  64   7   3  68  22  # 1769 ptn_open in L5_confer >|< ptn_conf in L5_open_lft
-  64   8   3  66   1  # 1770 ptn_lobby in L5_confer >|< ptn_conf in L5_lobby
-  64   9   3  65   1  # 1771 ptn_kita in L5_confer >|< pnt_cnf in L5_kitch2
-  64  10   3  65  12  # 1772 ptn_kitb in L5_confer >|< ptn_kitb in L5_kitch2
-  64  11   3  65  13  # 1773 ptn_kitc in L5_confer >|< ptn_kitc in L5_kitch2
-  64  12   3  76   9  # 1774 ptn_opn_a in L5_confer >|< gptn_e in L5_sw_void
-  64  13   3  76   8  # 1775 ptn_opn_b in L5_confer >|< gptn_d in L5_sw_void
-  64  14   3  76   7  # 1776 ptn_opn_c in L5_confer >|< gptn_c in L5_sw_void
-  64  15   3  76   6  # 1777 ptn_opn_d in L5_confer >|< gptn_b in L5_sw_void
-  64  16   3  76   5  # 1778 ptn_opn_fr in L5_confer >|< ptn_fr in L5_sw_void
-  64  17   0   0   0  # 1779 roof in L5_confer is External
-  64  18   3  81  11  # 1780 floor_conf in L5_confer >|< floor_conf in L5_uf_plen
-  64  19   0   0   0  # 1781 fac_fr in L5_confer is External
-  64  20   0   0   0  # 1782 glaz_a in L5_confer is External
-  64  21   0   0   0  # 1783 fac_glb in L5_confer is External
-  64  22   0   0   0  # 1784 fac_glc in L5_confer is External
-  64  23   0   0   0  # 1785 fac_gld in L5_confer is External
-  64  24   0   0   0  # 1786 fac_gle in L5_confer is External
-  64  25   0   0   0  # 1787 fac_glf in L5_confer is External
-  65   1   3  64   9  # 1788 pnt_cnf in L5_kitch2 >|< ptn_kita in L5_confer
-  65   2   3  66  12  # 1789 ptn_lby_a in L5_kitch2 >|< ptn_k1 in L5_lobby
-  65   3   3  66  11  # 1790 ptn_lby_b in L5_kitch2 >|< ptn_k1a in L5_lobby
-  65   4   3  66  10  # 1791 ptn_lby_c in L5_kitch2 >|< ptn_k1b in L5_lobby
-  65   5   3  66   9  # 1792 ptn_lby_d in L5_kitch2 >|< ptn_k1_c in L5_lobby
-  65   6   3  66   8  # 1793 ptn_lby_e in L5_kitch2 >|< ptn_k1_d in L5_lobby
-  65   7   3   3  17  # 1794 ptn_elev in L5_kitch2 >|< left_5 in lifts
-  65   8   3  76  11  # 1795 ptn_open_a in L5_kitch2 >|< gptn_g in L5_sw_void
-  65   9   3  76  10  # 1796 ptn_open_b in L5_kitch2 >|< gptn_f in L5_sw_void
-  65  10   0   0   0  # 1797 roof in L5_kitch2 is External
-  65  11   3  81  12  # 1798 floor_kitch2 in L5_kitch2 >|< floor_kitch2 in L5_uf_plen
-  65  12   3  64  10  # 1799 ptn_kitb in L5_kitch2 >|< ptn_kitb in L5_confer
-  65  13   3  64  11  # 1800 ptn_kitc in L5_kitch2 >|< ptn_kitc in L5_confer
-  66   1   3  64   8  # 1801 ptn_conf in L5_lobby >|< ptn_lobby in L5_confer
-  66   2   3  68  19  # 1802 door_open in L5_lobby >|< door_2 in L5_open_lft
-  66   3   3  74   3  # 1803 ptn_lw1 in L5_lobby >|< l3_lw2_bk in L5_light_w1
-  66   4   3  68  18  # 1804 door2_open in L5_lobby >|< door in L5_open_lft
-  66   5   3  76  13  # 1805 gptn_open in L5_lobby >|< ptn_lob_dr in L5_sw_void
-  66   6   3   3  19  # 1806 ptn_el_r in L5_lobby >|< right_5 in lifts
-  66   7   3   3  18  # 1807 ptn_el_fr in L5_lobby >|< front_5 in lifts
-  66   8   3  65   6  # 1808 ptn_k1_d in L5_lobby >|< ptn_lby_e in L5_kitch2
-  66   9   3  65   5  # 1809 ptn_k1_c in L5_lobby >|< ptn_lby_d in L5_kitch2
-  66  10   3  65   4  # 1810 ptn_k1b in L5_lobby >|< ptn_lby_c in L5_kitch2
-  66  11   3  65   3  # 1811 ptn_k1a in L5_lobby >|< ptn_lby_b in L5_kitch2
-  66  12   3  65   2  # 1812 ptn_k1 in L5_lobby >|< ptn_lby_a in L5_kitch2
-  66  13   0   0   0  # 1813 roof in L5_lobby is External
-  66  14   3  81  13  # 1814 floor-lob in L5_lobby >|< floor-lob in L5_uf_plen
-  66  15   3   1  46  # 1815 ptn_cora_l5 in L5_lobby >|< ptn_cora_l5 in stair_1
-  66  16   3   1  47  # 1816 ptn_corb_l5 in L5_lobby >|< ptn_corb_l5 in stair_1
-  66  17   3  72   1  # 1817 ptn_loba in L5_lobby >|< ptn_loba in L5_toilet
-  66  18   3  72   2  # 1818 ptn_lobb in L5_lobby >|< ptn_lobb in L5_toilet
-  66  19   3  74   4  # 1819 l3_lw2_lef in L5_lobby >|< l3_lw2_lef in L5_light_w1
-  66  20   3  74   7  # 1820 left_rail in L5_lobby >|< left_rail in L5_light_w1
-  66  21   3  67  11  # 1821 short in L5_lobby >|< short in L5_lit_srv
-  67   1   3  68  17  # 1822 ptn_lobby in L5_lit_srv >|< ptn_kitb in L5_open_lft
-  67   2   3  68  16  # 1823 ptn_open in L5_lit_srv >|< ptn_kita in L5_open_lft
-  67   3   3  69  21  # 1824 ptn_mixed in L5_lit_srv >|< ptn_kit2 in L5_srv_cell
-  67   4   0   0   0  # 1825 fac_fr_a in L5_lit_srv is External
-  67   5   0   0   0  # 1826 fac_fr_b in L5_lit_srv is External
-  67   6   3  72   3  # 1827 ptn_toilet in L5_lit_srv >|< ptn_k2 in L5_toilet
-  67   7   0   0   0  # 1828 roof in L5_lit_srv is External
-  67   8   3  81  14  # 1829 floor_srv in L5_lit_srv >|< floor_srv in L5_uf_plen
-  67   9   0   0   0  # 1830 fac_gl_a in L5_lit_srv is External
-  67  10   0   0   0  # 1831 fac_gl_b in L5_lit_srv is External
-  67  11   3  66  21  # 1832 short in L5_lit_srv >|< short in L5_lobby
-  68   1   0   0   0  # 1833 fac_frame in L5_open_lft is External
-  68   2   0   0   0  # 1834 fac_fra in L5_open_lft is External
-  68   3   0   0   0  # 1835 fac_frb in L5_open_lft is External
-  68   4   0   0   0  # 1836 fac_frc in L5_open_lft is External
-  68   5   0   0   0  # 1837 fac_frd in L5_open_lft is External
-  68   6   0   0   0  # 1838 fac_frf in L5_open_lft is External
-  68   7   0   0   0  # 1839 fac_frg in L5_open_lft is External
-  68   8   0   0   0  # 1840 fac_frh in L5_open_lft is External
-  68   9   0   0   0  # 1841 fac_fri in L5_open_lft is External
-  68  10   3  79   1  # 1842 fic_open_r in L5_open_lft >|< fic_open_r in L5_open_rt
-  68  11   3  79   2  # 1843 fic_open_rb in L5_open_lft >|< fic_open_rb in L5_open_rt
-  68  12   3  69   4  # 1844 ptn-cella in L5_open_lft >|< gptn_opn_c in L5_srv_cell
-  68  13   3  69   3  # 1845 ptn-cellb in L5_open_lft >|< gptn_opn_b in L5_srv_cell
-  68  14   3  69   2  # 1846 ptn_cellc in L5_open_lft >|< ptn_opn_b in L5_srv_cell
-  68  15   3  69   1  # 1847 ptn_celld in L5_open_lft >|< ptn_open in L5_srv_cell
-  68  16   3  67   2  # 1848 ptn_kita in L5_open_lft >|< ptn_open in L5_lit_srv
-  68  17   3  67   1  # 1849 ptn_kitb in L5_open_lft >|< ptn_lobby in L5_lit_srv
-  68  18   3  66   4  # 1850 door in L5_open_lft >|< door2_open in L5_lobby
-  68  19   3  66   2  # 1851 door_2 in L5_open_lft >|< door_open in L5_lobby
-  68  20   0   0   0  # 1852 roof_open_lf in L5_open_lft is External
-  68  21   3  81  15  # 1853 floor_opn_lf in L5_open_lft >|< floor_opn_lf in L5_uf_plen
-  68  22   3  64   7  # 1854 ptn_conf in L5_open_lft >|< ptn_open in L5_confer
-  68  23   0   0   0  # 1855 fac_glb in L5_open_lft is External
-  68  24   0   0   0  # 1856 fac_glc in L5_open_lft is External
-  68  25   0   0   0  # 1857 fac_gld in L5_open_lft is External
-  68  26   0   0   0  # 1858 fac_gle in L5_open_lft is External
-  68  27   0   0   0  # 1859 fac_glf in L5_open_lft is External
-  68  28   0   0   0  # 1860 fac_glg in L5_open_lft is External
-  68  29   0   0   0  # 1861 fac_glh in L5_open_lft is External
-  68  30   0   0   0  # 1862 fac_gli in L5_open_lft is External
-  68  31   3  74   1  # 1863 l3_lw2_fr in L5_open_lft >|< l3_lw2_fr in L5_light_w1
-  68  32   3  74   2  # 1864 l3_lw2_ri in L5_open_lft >|< l3_lw2_ri in L5_light_w1
-  68  33   3  74   8  # 1865 front_rail in L5_open_lft >|< front_rail in L5_light_w1
-  68  34   3  74   9  # 1866 right_rail in L5_open_lft >|< right_rail in L5_light_w1
-  68  35   3  75   4  # 1867 l3_lw2_lef in L5_open_lft >|< l3_lw2_lef in L5_light_w2
-  68  36   3  75   7  # 1868 left_rail in L5_open_lft >|< left_rail in L5_light_w2
-  69   1   3  68  15  # 1869 ptn_open in L5_srv_cell >|< ptn_celld in L5_open_lft
-  69   2   3  68  14  # 1870 ptn_opn_b in L5_srv_cell >|< ptn_cellc in L5_open_lft
-  69   3   3  68  13  # 1871 gptn_opn_b in L5_srv_cell >|< ptn-cellb in L5_open_lft
-  69   4   3  68  12  # 1872 gptn_opn_c in L5_srv_cell >|< ptn-cella in L5_open_lft
-  69   5   3  79   3  # 1873 ptn_opn_c in L5_srv_cell >|< ptn_opn_c in L5_open_rt
-  69   6   3  79   4  # 1874 gptn_opn_d in L5_srv_cell >|< gptn_opn_d in L5_open_rt
-  69   7   3  79   5  # 1875 ptn_opn_d in L5_srv_cell >|< ptn_opn_d in L5_open_rt
-  69   8   3  79   6  # 1876 ptn_opn_e in L5_srv_cell >|< ptn_opn_e in L5_open_rt
-  69   9   3  79   7  # 1877 gptn_opn_e in L5_srv_cell >|< gptn_opn_e in L5_open_rt
-  69  10   3  70   1  # 1878 ptn_pz in L5_srv_cell >|< ptn_cell in L5_pz_meet
-  69  11   0   0   0  # 1879 fac_fra in L5_srv_cell is External
-  69  12   0   0   0  # 1880 fac_frb in L5_srv_cell is External
-  69  13   0   0   0  # 1881 fac_frc in L5_srv_cell is External
-  69  14   0   0   0  # 1882 fac_frd in L5_srv_cell is External
-  69  15   0   0   0  # 1883 fac_fre in L5_srv_cell is External
-  69  16   0   0   0  # 1884 fac_frf in L5_srv_cell is External
-  69  17   0   0   0  # 1885 fac_frg in L5_srv_cell is External
-  69  18   0   0   0  # 1886 fac_frh in L5_srv_cell is External
-  69  19   0   0   0  # 1887 fac_fri in L5_srv_cell is External
-  69  20   0   0   0  # 1888 fac_frj in L5_srv_cell is External
-  69  21   3  67   3  # 1889 ptn_kit2 in L5_srv_cell >|< ptn_mixed in L5_lit_srv
-  69  22   0   0   0  # 1890 roof in L5_srv_cell is External
-  69  23   3  81  16  # 1891 floor_cel in L5_srv_cell >|< floor_cel in L5_uf_plen
-  69  24   0   0   0  # 1892 fac_gla in L5_srv_cell is External
-  69  25   0   0   0  # 1893 fac_glb in L5_srv_cell is External
-  69  26   0   0   0  # 1894 fac_glc in L5_srv_cell is External
-  69  27   0   0   0  # 1895 fac_gld in L5_srv_cell is External
-  69  28   0   0   0  # 1896 fac_gle in L5_srv_cell is External
-  69  29   0   0   0  # 1897 fac_glf in L5_srv_cell is External
-  69  30   0   0   0  # 1898 fac_glg in L5_srv_cell is External
-  69  31   0   0   0  # 1899 fac_glh in L5_srv_cell is External
-  69  32   0   0   0  # 1900 fac_gli in L5_srv_cell is External
-  69  33   0   0   0  # 1901 fac_glj in L5_srv_cell is External
-  70   1   3  69  10  # 1902 ptn_cell in L5_pz_meet >|< ptn_pz in L5_srv_cell
-  70   2   3  79   8  # 1903 ptn_op_a in L5_pz_meet >|< ptn_op_a in L5_open_rt
-  70   3   3  79   9  # 1904 ptn_op_b in L5_pz_meet >|< ptn_op_b in L5_open_rt
-  70   4   3  79  10  # 1905 ptn_op_c in L5_pz_meet >|< ptn_op_c in L5_open_rt
-  70   5   3  79  11  # 1906 ptn_op_d in L5_pz_meet >|< ptn_op_d in L5_open_rt
-  70   6   3  73   8  # 1907 prn_toil in L5_pz_meet >|< ptna_opn_l5 in L5_toil_psg
-  70   7   3  73   7  # 1908 ptn_psg in L5_pz_meet >|< ptn_cel_b in L5_toil_psg
-  70   8   3   2  44  # 1909 ptn_staira in L5_pz_meet >|< ptnc_str_l5 in stair_2
-  70   9   3   2  48  # 1910 ptn_stairb in L5_pz_meet >|< ptnd_str_l5 in stair_2
-  70  10   0   0   0  # 1911 fac_fr_a in L5_pz_meet is External
-  70  11   0   0   0  # 1912 fac_fr_b in L5_pz_meet is External
-  70  12   0   0   0  # 1913 roof in L5_pz_meet is External
-  70  13  -1   0   0  # 1914 floor_pz_m in L5_pz_meet not yet defined
-  70  14   0   0   0  # 1915 fac_gl_a in L5_pz_meet is External
-  70  15   0   0   0  # 1916 fac_gl_b in L5_pz_meet is External
-  71   1   0   0   0  # 1917 fac_frame in L5_meeting is External
-  71   2   0   0   0  # 1918 fac_glaz_a in L5_meeting is External
-  71   3   0   0   0  # 1919 fac_glaz_b in L5_meeting is External
-  71   4   0   0   0  # 1920 fac_glaz_c in L5_meeting is External
-  71   5   0   0   0  # 1921 fac_glaz_d in L5_meeting is External
-  71   6   3   5  33  # 1922 pa_fac_l4 in L5_meeting >|< pa_fac_l5 in ne_facade
-  71   7   0   0   0  # 1923 gl_fac_l4 in L5_meeting is External
-  71   8   3   5  34  # 1924 pb_fac_l4 in L5_meeting >|< pb_fac_l5 in ne_facade
-  71   9   3  73   1  # 1925 ptn_toilet in L5_meeting >|< pt_meeting in L5_toil_psg
-  71  10   3  79  12  # 1926 ptn_open_a in L5_meeting >|< ptn_open_a in L5_open_rt
-  71  11   3  79  13  # 1927 ptn_open_b in L5_meeting >|< ptn_open_b in L5_open_rt
-  71  12   3  79  14  # 1928 door in L5_meeting >|< door in L5_open_rt
-  71  13   3  79  15  # 1929 ptn_open_c in L5_meeting >|< ptn_open_c in L5_open_rt
-  71  14   3  79  16  # 1930 ptn_frame in L5_meeting >|< ptn_frame in L5_open_rt
-  71  15   0   0   0  # 1931 ceiling in L5_meeting is External
-  71  16   3  81  18  # 1932 floor in L5_meeting >|< floor in L5_uf_plen
-  72   1   3  66  17  # 1933 ptn_loba in L5_toilet >|< ptn_loba in L5_lobby
-  72   2   3  66  18  # 1934 ptn_lobb in L5_toilet >|< ptn_lobb in L5_lobby
-  72   3   3  67   6  # 1935 ptn_k2 in L5_toilet >|< ptn_toilet in L5_lit_srv
-  72   4   0   0   0  # 1936 fac_fr_a in L5_toilet is External
-  72   5   0   0   0  # 1937 facade_b in L5_toilet is External
-  72   6   0   0   0  # 1938 facade_c in L5_toilet is External
-  72   7   0   0   0  # 1939 roof in L5_toilet is External
-  72   8   3  81  19  # 1940 floor_toil in L5_toilet >|< floor_toil in L5_uf_plen
-  72   9   0   0   0  # 1941 fac_gl_a in L5_toilet is External
-  72  10   3   1  48  # 1942 ptn_corc_l5 in L5_toilet >|< ptn_corc_l5 in stair_1
-  72  11   0   0   0  # 1943 shift_fac in L5_toilet is External
-  73   1   3  71   9  # 1944 pt_meeting in L5_toil_psg >|< ptn_toilet in L5_meeting
-  73   2   3   5  22  # 1945 pta_fac_l5 in L5_toil_psg >|< pta_fac_l5 in ne_facade
-  73   3   3   5  23  # 1946 ptb_fac_l5 in L5_toil_psg >|< ptb_fac_l5 in ne_facade
-  73   4   0   0   0  # 1947 gl_facade_l5 in L5_toil_psg is External
-  73   5   3   5  26  # 1948 ptnc_fac_l5 in L5_toil_psg >|< ptnc_fac_l5 in ne_facade
-  73   6   3   2  15  # 1949 ptna_str_l5 in L5_toil_psg >|< ptna_str_l5 in stair_2
-  73   7   3  70   7  # 1950 ptn_cel_b in L5_toil_psg >|< ptn_psg in L5_pz_meet
-  73   8   3  70   6  # 1951 ptna_opn_l5 in L5_toil_psg >|< prn_toil in L5_pz_meet
-  73   9   3  79  22  # 1952 ptnb_opn_l5 in L5_toil_psg >|< ptnb_opn_l5 in L5_open_rt
-  73  10   0   0   0  # 1953 top in L5_toil_psg is External
-  73  11  -1   0   0  # 1954 floor in L5_toil_psg not yet defined
-  73  12   3   2  16  # 1955 ptnbb_str_l5 in L5_toil_psg >|< ptnb_str_l5 in stair_2
-  74   1   3  68  31  # 1956 l3_lw2_fr in L5_light_w1 >|< l3_lw2_fr in L5_open_lft
-  74   2   3  68  32  # 1957 l3_lw2_ri in L5_light_w1 >|< l3_lw2_ri in L5_open_lft
-  74   3   3  66   3  # 1958 l3_lw2_bk in L5_light_w1 >|< ptn_lw1 in L5_lobby
-  74   4   3  66  19  # 1959 l3_lw2_lef in L5_light_w1 >|< l3_lw2_lef in L5_lobby
-  74   5   0   0   0  # 1960 up_l3_lw2 in L5_light_w1 is External
-  74   6   3  58   5  # 1961 l3_lw2_base in L5_light_w1 >|< up_l3_lw2 in L4_light_w1
-  74   7   3  66  20  # 1962 left_rail in L5_light_w1 >|< left_rail in L5_lobby
-  74   8   3  68  33  # 1963 front_rail in L5_light_w1 >|< front_rail in L5_open_lft
-  74   9   3  68  34  # 1964 right_rail in L5_light_w1 >|< right_rail in L5_open_lft
-  74  10   3  81  20  # 1965 l3_flrv_r in L5_light_w1 >|< l3_flrv_r in L5_uf_plen
-  74  11   3  81  21  # 1966 l3_flrv_f in L5_light_w1 >|< l3_flrv_f in L5_uf_plen
-  74  12   3  81  22  # 1967 l3_flrv_l in L5_light_w1 >|< l3_flrv_l in L5_uf_plen
-  74  13   3  81  23  # 1968 l3_flrv_b in L5_light_w1 >|< l3_flrv_b in L5_uf_plen
-  74  14   0   0   0  # 1969 parap_f in L5_light_w1 is External
-  74  15   0   0   0  # 1970 glaz_fr in L5_light_w1 is External
-  74  16   0   0   0  # 1971 parap_ri in L5_light_w1 is External
-  74  17   0   0   0  # 1972 frame_ri in L5_light_w1 is External
-  74  18   0   0   0  # 1973 parap_bk in L5_light_w1 is External
-  74  19   0   0   0  # 1974 glaz_bk in L5_light_w1 is External
-  74  20   0   0   0  # 1975 parap_left in L5_light_w1 is External
-  74  21   0   0   0  # 1976 frame_left in L5_light_w1 is External
-  74  22   0   0   0  # 1977 up_glz in L5_light_w1 is External
-  74  23   0   0   0  # 1978 glaz_left in L5_light_w1 is External
-  74  24   0   0   0  # 1979 glaz_right in L5_light_w1 is External
-  75   1   3  79  17  # 1980 l3_lw2_fr in L5_light_w2 >|< l3_lw2_fr in L5_open_rt
-  75   2   3  79  18  # 1981 l3_lw2_ri in L5_light_w2 >|< l3_lw2_ri in L5_open_rt
-  75   3   3  79  19  # 1982 l3_lw2_bk in L5_light_w2 >|< l3_lw2_bk in L5_open_rt
-  75   4   3  68  35  # 1983 l3_lw2_lef in L5_light_w2 >|< l3_lw2_lef in L5_open_lft
-  75   5   0   0   0  # 1984 up_l3_lw2 in L5_light_w2 is External
-  75   6   3  59   5  # 1985 l3_lw2_base in L5_light_w2 >|< up_l3_lw2 in L4_light_w2
-  75   7   3  68  36  # 1986 left_rail in L5_light_w2 >|< left_rail in L5_open_lft
-  75   8   3  79  20  # 1987 front_rail in L5_light_w2 >|< front_rail in L5_open_rt
-  75   9   3  79  21  # 1988 right_rail in L5_light_w2 >|< right_rail in L5_open_rt
-  75  10   3  81  24  # 1989 l3_flrv_r in L5_light_w2 >|< l3_flrv_r2 in L5_uf_plen
-  75  11   3  81  25  # 1990 l3_flrv_f in L5_light_w2 >|< l3_flrv_f2 in L5_uf_plen
-  75  12   3  81  26  # 1991 l3_flrv_l in L5_light_w2 >|< l3_flrv_l2 in L5_uf_plen
-  75  13   3  81  27  # 1992 l3_flrv_b in L5_light_w2 >|< l3_flrv_b2 in L5_uf_plen
-  75  14   0   0   0  # 1993 parap_f in L5_light_w2 is External
-  75  15   0   0   0  # 1994 glaz_fr in L5_light_w2 is External
-  75  16   0   0   0  # 1995 parap_ri in L5_light_w2 is External
-  75  17   0   0   0  # 1996 frame_ri in L5_light_w2 is External
-  75  18   0   0   0  # 1997 parap_bk in L5_light_w2 is External
-  75  19   0   0   0  # 1998 glaz_bk in L5_light_w2 is External
-  75  20   0   0   0  # 1999 parap_left in L5_light_w2 is External
-  75  21   0   0   0  # 2000 frame_left in L5_light_w2 is External
-  75  22   0   0   0  # 2001 up_glaz in L5_light_w2 is External
-  75  23   0   0   0  # 2002 glaz_ri in L5_light_w2 is External
-  75  24   0   0   0  # 2003 glaz_left in L5_light_w2 is External
-  76   1   0   0   0  # 2004 fac_gla in L5_sw_void is External
-  76   2   0   0   0  # 2005 fac_glb in L5_sw_void is External
-  76   3   0   0   0  # 2006 fac_glc in L5_sw_void is External
-  76   4   0   0   0  # 2007 fac_gld in L5_sw_void is External
-  76   5   3  64  16  # 2008 ptn_fr in L5_sw_void >|< ptn_opn_fr in L5_confer
-  76   6   3  64  15  # 2009 gptn_b in L5_sw_void >|< ptn_opn_d in L5_confer
-  76   7   3  64  14  # 2010 gptn_c in L5_sw_void >|< ptn_opn_c in L5_confer
-  76   8   3  64  13  # 2011 gptn_d in L5_sw_void >|< ptn_opn_b in L5_confer
-  76   9   3  64  12  # 2012 gptn_e in L5_sw_void >|< ptn_opn_a in L5_confer
-  76  10   3  65   9  # 2013 gptn_f in L5_sw_void >|< ptn_open_b in L5_kitch2
-  76  11   3  65   8  # 2014 gptn_g in L5_sw_void >|< ptn_open_a in L5_kitch2
-  76  12   3   3  20  # 2015 ptn_elev in L5_sw_void >|< back_5 in lifts
-  76  13   3  66   5  # 2016 ptn_lob_dr in L5_sw_void >|< gptn_open in L5_lobby
-  76  14   3   1  32  # 2017 ptn_stair in L5_sw_void >|< ptn_void_l5 in stair_1
-  76  15   0   0   0  # 2018 bit_facade in L5_sw_void is External
-  76  16   0   0   0  # 2019 bk_fac_a in L5_sw_void is External
-  76  17   0   0   0  # 2020 bk_fac_b in L5_sw_void is External
-  76  18   0   0   0  # 2021 back_fac_c in L5_sw_void is External
-  76  19   0   0   0  # 2022 bk_fac_d in L5_sw_void is External
-  76  20   0   0   0  # 2023 roof in L5_sw_void is External
-  76  21   3  51  20  # 2024 fict_base in L5_sw_void >|< Top-26 in L4_sw_void
-  76  22   3   3  37  # 2025 ptn_vd3 in L5_sw_void >|< ptn_vd5 in lifts
-  76  23   3   1  28  # 2026 ptn_flrv_l5 in L5_sw_void >|< ptn_flrv_l5 in stair_1
-  76  24   3  81  28  # 2027 ptn_flrvd_a in L5_sw_void >|< ptn_flrvd_a in L5_uf_plen
-  76  25   3  81  29  # 2028 ptn_flrvd_b in L5_sw_void >|< ptn_flrvd_b in L5_uf_plen
-  76  26   0   0   0  # 2029 low_bit_fac in L5_sw_void is External
-  76  27   3   4  16  # 2030 l5_faade_a in L5_sw_void >|< l5_facade_a in sw_facade
-  76  28   3   4  22  # 2031 l5_facade_b in L5_sw_void >|< l5_facc in sw_facade
-  76  29   3   4  21  # 2032 l5_facad_c in L5_sw_void >|< l5_facb in sw_facade
-  76  30   3   4  20  # 2033 l5_facade_d in L5_sw_void >|< l5_faca in sw_facade
-  76  31   0   0   0  # 2034 fac_glaz_a in L5_sw_void is External
-  76  32   0   0   0  # 2035 fac_glaz_b in L5_sw_void is External
-  77   1   0   0   0  # 2036 low_wall_a in L5_atroofltl is External
-  77   2   0   0   0  # 2037 right in L5_atroofltl is External
-  77   3   0   0   0  # 2038 back_wall_a in L5_atroofltl is External
-  77   4   0   0   0  # 2039 left in L5_atroofltl is External
-  77   5   0   0   0  # 2040 roof_a in L5_atroofltl is External
-  77   6   0   0   0  # 2041 roof_c in L5_atroofltl is External
-  77   7   3  56   1  # 2042 balc_a in L5_atroofltl >|< balc_a in L4_open_s
-  77   8   3  56   2  # 2043 wall_a in L5_atroofltl >|< wall_a in L4_open_s
-  77   9   3  56   3  # 2044 wall_b in L5_atroofltl >|< wall_b in L4_open_s
-  77  10   3  56   4  # 2045 wall_c in L5_atroofltl >|< wall_c in L4_open_s
-  77  11   3  56   5  # 2046 balc_b in L5_atroofltl >|< balc_b in L4_open_s
-  77  12   3  56   6  # 2047 wall_f in L5_atroofltl >|< wall_f in L4_open_s
-  77  13   3  56   7  # 2048 wall_g in L5_atroofltl >|< wall_g in L4_open_s
-  77  14   3  56   8  # 2049 wall_h in L5_atroofltl >|< wall_h in L4_open_s
-  77  15   3  56   9  # 2050 balc_c in L5_atroofltl >|< balc_c in L4_open_s
-  77  16   3  56  20  # 2051 open_a in L5_atroofltl >|< open_a in L4_open_s
-  77  17   3  56  21  # 2052 open_b in L5_atroofltl >|< open_b in L4_open_s
-  77  18   3  56  22  # 2053 open_c in L5_atroofltl >|< open_c in L4_open_s
-  77  19   3  35  34  # 2054 upper_a in L5_atroofltl >|< upper_a in L3_ent_void
-  77  20   3  35  33  # 2055 upper_b in L5_atroofltl >|< upper_b in L3_ent_void
-  77  21   3  52   1  # 2056 seg_a in L5_atroofltl >|< seg_a in L4_circular
-  77  22   3  52   2  # 2057 seg_b in L5_atroofltl >|< seg_b in L4_circular
-  77  23   3  52   3  # 2058 seg_c in L5_atroofltl >|< seg_c in L4_circular
-  77  24   3  52   4  # 2059 seg_d in L5_atroofltl >|< seg_d in L4_circular
-  77  25   3  52   5  # 2060 seg_e in L5_atroofltl >|< seg_e in L4_circular
-  77  26   3  52   6  # 2061 seg_f in L5_atroofltl >|< seg_f in L4_circular
-  77  27   0   0   0  # 2062 fac_gl_a in L5_atroofltl is External
-  77  28   0   0   0  # 2063 fac_gl_b in L5_atroofltl is External
-  77  29   0   0   0  # 2064 fac_gl_c in L5_atroofltl is External
-  77  30   0   0   0  # 2065 fac_gl_d in L5_atroofltl is External
-  77  31   0   0   0  # 2066 fac_gl_e in L5_atroofltl is External
-  77  32   0   0   0  # 2067 fac_gl_f in L5_atroofltl is External
-  77  33   0   0   0  # 2068 fac_gl_g in L5_atroofltl is External
-  77  34   0   0   0  # 2069 fac_gl_h in L5_atroofltl is External
-  77  35   0   0   0  # 2070 fac_gl_i in L5_atroofltl is External
-  77  36   0   0   0  # 2071 fac_gl_j in L5_atroofltl is External
-  77  37   0   0   0  # 2072 fac_gl_k in L5_atroofltl is External
-  77  38   0   0   0  # 2073 fac_gl_l in L5_atroofltl is External
-  77  39   0   0   0  # 2074 fac_fr in L5_atroofltl is External
-  77  40   0   0   0  # 2075 side_fac_a in L5_atroofltl is External
-  77  41   0   0   0  # 2076 side_fac_b in L5_atroofltl is External
-  77  42   3  55   1  # 2077 to_meeting in L5_atroofltl >|< Wall-1 in L4_sw_meet
-  77  43   3  81  38  # 2078 struc_a in L5_atroofltl >|< struc_a in L5_uf_plen
-  77  44   3  81  39  # 2079 struc_d in L5_atroofltl >|< struc_d in L5_uf_plen
-  77  45   3  81  40  # 2080 struc_e in L5_atroofltl >|< struc_e in L5_uf_plen
-  77  46   3  81  41  # 2081 struc_f in L5_atroofltl >|< struc_f in L5_uf_plen
-  77  47   3  81  42  # 2082 struc_g in L5_atroofltl >|< struc_g in L5_uf_plen
-  77  48   3  81  43  # 2083 struc_h in L5_atroofltl >|< struc_h in L5_uf_plen
-  77  49   3  81  44  # 2084 struc_i in L5_atroofltl >|< struc_i in L5_uf_plen
-  77  50   3  81  45  # 2085 struc_j in L5_atroofltl >|< struc_j in L5_uf_plen
-  77  51   0   0   0  # 2086 roof_b in L5_atroofltl is External
-  77  52   3  81  46  # 2087 struc_b in L5_atroofltl >|< struc_b in L5_uf_plen
-  77  53   3  81  47  # 2088 struc_c in L5_atroofltl >|< struc_c in L5_uf_plen
-  77  54   0   0   0  # 2089 roof_d in L5_atroofltl is External
-  77  55   0   0   0  # 2090 roof_e in L5_atroofltl is External
-  77  56   3  57  15  # 2091 filler in L5_atroofltl >|< filler in L4_open_plr
-  78   1   3  35  39  # 2092 struc_a in L4_flrvoid >|< struc_a in L3_ent_void
-  78   2   3  35  40  # 2093 struc_b in L4_flrvoid >|< struc_b in L3_ent_void
-  78   3   3  35  41  # 2094 struc_c in L4_flrvoid >|< struc_c in L3_ent_void
-  78   4   3  35  42  # 2095 struc_d in L4_flrvoid >|< struc_d in L3_ent_void
-  78   5   3  35  43  # 2096 struc_e in L4_flrvoid >|< struc_e in L3_ent_void
-  78   6   3  35  44  # 2097 struc_f in L4_flrvoid >|< struc_f in L3_ent_void
-  78   7   3  35  45  # 2098 struc_g in L4_flrvoid >|< struc_g in L3_ent_void
-  78   8   3  35  46  # 2099 struc_h in L4_flrvoid >|< struc_h in L3_ent_void
-  78   9   3  35  47  # 2100 struc_i in L4_flrvoid >|< struc_i in L3_ent_void
-  78  10   3  36  21  # 2101 seg_kup in L4_flrvoid >|< seg_kup in L3_circular
-  78  11   3  36  22  # 2102 seg_gup in L4_flrvoid >|< segm_top_l3 in L3_circular
-  78  12   3  35  48  # 2103 fill_up in L4_flrvoid >|< fill_up in L3_ent_void
-  78  13   3  37  11  # 2104 struc_av in L4_flrvoid >|< struc_a in L3_L4_cir_vd
-  78  14   3  37  13  # 2105 struc_bv in L4_flrvoid >|< struc_b in L3_L4_cir_vd
-  78  15   3  38  12  # 2106 struc_bvb in L4_flrvoid >|< struc_b in L3_void_b
-  78  16   3  38  13  # 2107 struc_avb in L4_flrvoid >|< struc_a in L3_void_b
-  78  17   3  39  15  # 2108 ceiling in L4_flrvoid >|< ceiling in L3_meeting
-  78  18   3  45  10  # 2109 top in L4_flrvoid >|< top in L3_toil_psg
-  78  19   3  48  50  # 2110 up_left in L4_flrvoid >|< up_left in L3_open_lft
-  78  20   3  48  51  # 2111 up_right in L4_flrvoid >|< up_right in L3_open_lft
-  78  21   3  49  27  # 2112 up_open_rig in L4_flrvoid >|< up_open_rig in L3_open_rig
-  78  22   3  51  24  # 2113 ptn_flrvd_a in L4_flrvoid >|< ptn_flrvd_a in L4_sw_void
-  78  23   3  51  25  # 2114 ptn_flrvd_b in L4_flrvoid >|< ptn_flrvd_b in L4_sw_void
-  78  24   3  53  16  # 2115 floor in L4_flrvoid >|< floor in L4_meeting
-  78  25   3  55  12  # 2116 Base-16 in L4_flrvoid >|< Base-16 in L4_sw_meet
-  78  26   3  56  19  # 2117 floor_l4op in L4_flrvoid >|< floor_l4op in L4_open_s
-  78  27   3  57   9  # 2118 floor_l4opr in L4_flrvoid >|< floor in L4_open_plr
-  78  28   3  58  10  # 2119 l3_flrv_r in L4_flrvoid >|< l3_flrv_r in L4_light_w1
-  78  29   3  58  11  # 2120 l3_flrv_f in L4_flrvoid >|< l3_flrv_f in L4_light_w1
-  78  30   3  58  12  # 2121 l3_flrv_l in L4_flrvoid >|< l3_flrv_l in L4_light_w1
-  78  31   3  58  13  # 2122 l3_flrv_b in L4_flrvoid >|< l3_flrv_b in L4_light_w1
-  78  32   3  59  10  # 2123 l3_flrv_r2 in L4_flrvoid >|< l3_flrv_r in L4_light_w2
-  78  33   3  59  11  # 2124 l3_flrv_f2 in L4_flrvoid >|< l3_flrv_f in L4_light_w2
-  78  34   3  59  12  # 2125 l3_flrv_l2 in L4_flrvoid >|< l3_flrv_l in L4_light_w2
-  78  35   3  59  13  # 2126 l3_flrv_b2 in L4_flrvoid >|< l3_flrv_b in L4_light_w2
-  78  36   3  61  10  # 2127 flool4tp in L4_flrvoid >|< floor in L4_toil_psg
-  78  37   3   1  23  # 2128 l4_flrvb in L4_flrvoid >|< l4_flrvb in stair_1
-  78  38   3   1  41  # 2129 l4_flrvc in L4_flrvoid >|< l4_flrvc in stair_1
-  78  39   3   2  24  # 2130 l4_flr_vd in L4_flrvoid >|< l4_flr_vd in stair_2
-  78  40   3   2  45  # 2131 l4_flr_vda in L4_flrvoid >|< l4_flr_vda in stair_2
-  78  41   3   5  42  # 2132 l4_fv_ma in L4_flrvoid >|< l4_fv_ma in ne_facade
-  78  42   3   5  44  # 2133 l4_fv_ta in L4_flrvoid >|< l4_fv_ta in ne_facade
-  78  43   3   5  52  # 2134 l4_fv_tb in L4_flrvoid >|< l4_fv_tb in ne_facade
-  78  44   3   3  23  # 2135 rflra_l4 in L4_flrvoid >|< rflra_l4 in lifts
-  78  45   3   3  27  # 2136 rflrb_l4 in L4_flrvoid >|< rflrb_l4 in lifts
-  78  46   3   3  31  # 2137 rflrc_l4 in L4_flrvoid >|< rflrc_l4 in lifts
-  78  47   5   0   0  # 2138 ex-small-57 in L4_flrvoid is adiabatic
-  78  48   0   0   0  # 2139 ex_small-58 in L4_flrvoid is External
-  78  49   0   0   0  # 2140 street_st_a in L4_flrvoid is External
-  78  50   3  80   5  # 2141 srv_facade in L4_flrvoid >|< srv_facade in L4_srv_void
-  78  51   3  52  20  # 2142 crescnt in L4_flrvoid >|< L3_segm_flr in L4_circular
-  78  52   0   0   0  # 2143 tiny-ex-a in L4_flrvoid is External
-  78  53   0   0   0  # 2144 tiny_ex-b in L4_flrvoid is External
-  78  54   0   0   0  # 2145 str_of_fac in L4_flrvoid is External
-  79   1   3  68  10  # 2146 fic_open_r in L5_open_rt >|< fic_open_r in L5_open_lft
-  79   2   3  68  11  # 2147 fic_open_rb in L5_open_rt >|< fic_open_rb in L5_open_lft
-  79   3   3  69   5  # 2148 ptn_opn_c in L5_open_rt >|< ptn_opn_c in L5_srv_cell
-  79   4   3  69   6  # 2149 gptn_opn_d in L5_open_rt >|< gptn_opn_d in L5_srv_cell
-  79   5   3  69   7  # 2150 ptn_opn_d in L5_open_rt >|< ptn_opn_d in L5_srv_cell
-  79   6   3  69   8  # 2151 ptn_opn_e in L5_open_rt >|< ptn_opn_e in L5_srv_cell
-  79   7   3  69   9  # 2152 gptn_opn_e in L5_open_rt >|< gptn_opn_e in L5_srv_cell
-  79   8   3  70   2  # 2153 ptn_op_a in L5_open_rt >|< ptn_op_a in L5_pz_meet
-  79   9   3  70   3  # 2154 ptn_op_b in L5_open_rt >|< ptn_op_b in L5_pz_meet
-  79  10   3  70   4  # 2155 ptn_op_c in L5_open_rt >|< ptn_op_c in L5_pz_meet
-  79  11   3  70   5  # 2156 ptn_op_d in L5_open_rt >|< ptn_op_d in L5_pz_meet
-  79  12   3  71  10  # 2157 ptn_open_a in L5_open_rt >|< ptn_open_a in L5_meeting
-  79  13   3  71  11  # 2158 ptn_open_b in L5_open_rt >|< ptn_open_b in L5_meeting
-  79  14   3  71  12  # 2159 door in L5_open_rt >|< door in L5_meeting
-  79  15   3  71  13  # 2160 ptn_open_c in L5_open_rt >|< ptn_open_c in L5_meeting
-  79  16   3  71  14  # 2161 ptn_frame in L5_open_rt >|< ptn_frame in L5_meeting
-  79  17   3  75   1  # 2162 l3_lw2_fr in L5_open_rt >|< l3_lw2_fr in L5_light_w2
-  79  18   3  75   2  # 2163 l3_lw2_ri in L5_open_rt >|< l3_lw2_ri in L5_light_w2
-  79  19   3  75   3  # 2164 l3_lw2_bk in L5_open_rt >|< l3_lw2_bk in L5_light_w2
-  79  20   3  75   8  # 2165 front_rail in L5_open_rt >|< front_rail in L5_light_w2
-  79  21   3  75   9  # 2166 right_rail in L5_open_rt >|< right_rail in L5_light_w2
-  79  22   3  73   9  # 2167 ptnb_opn_l5 in L5_open_rt >|< ptnb_opn_l5 in L5_toil_psg
-  79  23   0   0   0  # 2168 fac_fr_a in L5_open_rt is External
-  79  24   0   0   0  # 2169 fac_fr_b in L5_open_rt is External
-  79  25   0   0   0  # 2170 fac_fr_c in L5_open_rt is External
-  79  26   0   0   0  # 2171 fac_fr_d in L5_open_rt is External
-  79  27   0   0   0  # 2172 fac_fr_e in L5_open_rt is External
-  79  28   0   0   0  # 2173 fac_fr_f in L5_open_rt is External
-  79  29   0   0   0  # 2174 fac_fr_g in L5_open_rt is External
-  79  30   0   0   0  # 2175 L5_oprt_ceil in L5_open_rt is External
-  79  31   3  81  48  # 2176 L5_op_rt_flr in L5_open_rt >|< L5_op_rt_flr in L5_uf_plen
-  80   1   3  60  10  # 2177 floor_l4toi in L4_srv_void >|< floor in L4_toilet
-  80   2   3  62  14  # 2178 Base-14 in L4_srv_void >|< Base-14 in L4_admin
-  80   3   3  63   8  # 2179 floor_pz in L4_srv_void >|< floor_pz in L4_printz
-  80   4   3  54  27  # 2180 Base-30 in L4_srv_void >|< Base-30 in L4_cell_srv
-  80   5   3  78  50  # 2181 srv_facade in L4_srv_void >|< srv_facade in L4_flrvoid
-  80   6   3  40  26  # 2182 Top-29 in L4_srv_void >|< Top-29 in L3_cell_srv
-  80   7   3  41   7  # 2183 ceiling_pz in L4_srv_void >|< ceiling_pz in L3_print_zn
-  80   8   3  42  13  # 2184 Top-13 in L4_srv_void >|< Top-13 in L3_social
-  80   9   3  46   9  # 2185 ceiling in L4_srv_void >|< ceiling in L3_toilet
-  80  10   0   0   0  # 2186 right_end in L4_srv_void is External
-  80  11   1   0   0  # 2187 fill_a in L4_srv_void >|< Identical environment
-  80  12   3   2  58  # 2188 fill_b in L4_srv_void >|< l4_flrvdc in stair_2
-  80  13   0   0   0  # 2189 left_facade in L4_srv_void is External
-  80  14   0   0   0  # 2190 srv_edge in L4_srv_void is External
-  80  15   3   1  13  # 2191 to_stair_1 in L4_srv_void >|< l4_flrva in stair_1
-  81   1   3  52   7  # 2192 seg_g in L5_uf_plen >|< seg_g in L4_circular
-  81   2   3  52   8  # 2193 seg_h in L5_uf_plen >|< seg_h in L4_circular
-  81   3   3  52   9  # 2194 seg_i in L5_uf_plen >|< seg_i in L4_circular
-  81   4   3  52  10  # 2195 seg_j in L5_uf_plen >|< seg_j in L4_circular
-  81   5   3  52  11  # 2196 seg_k in L5_uf_plen >|< seg_k in L4_circular
-  81   6   3  53  15  # 2197 ceiling_l4mt in L5_uf_plen >|< ceiling in L4_meeting
-  81   7   3  55  11  # 2198 Tl4_sw_mtcei in L5_uf_plen >|< Tl4_sw_mtcei in L4_sw_meet
-  81   8   3  56  18  # 2199 ceiling_l4op in L5_uf_plen >|< ceiling_l4op in L4_open_s
-  81   9   3  57   8  # 2200 ceiling_l4or in L5_uf_plen >|< ceiling in L4_open_plr
-  81  10   3  61   9  # 2201 top_l4_toilc in L5_uf_plen >|< top in L4_toil_psg
-  81  11   3  64  18  # 2202 floor_conf in L5_uf_plen >|< floor_conf in L5_confer
-  81  12   3  65  11  # 2203 floor_kitch2 in L5_uf_plen >|< floor_kitch2 in L5_kitch2
-  81  13   3  66  14  # 2204 floor-lob in L5_uf_plen >|< floor-lob in L5_lobby
-  81  14   3  67   8  # 2205 floor_srv in L5_uf_plen >|< floor_srv in L5_lit_srv
-  81  15   3  68  21  # 2206 floor_opn_lf in L5_uf_plen >|< floor_opn_lf in L5_open_lft
-  81  16   3  69  23  # 2207 floor_cel in L5_uf_plen >|< floor_cel in L5_srv_cell
-  81  17   3  70  13  # 2208 floor_pz_m in L5_uf_plen >|< floor_pz_m in L5_pz_meet
-  81  18   3  71  16  # 2209 floor in L5_uf_plen >|< floor in L5_meeting
-  81  19   3  72   8  # 2210 floor_toil in L5_uf_plen >|< floor_toil in L5_toilet
-  81  20   3  74  10  # 2211 l3_flrv_r in L5_uf_plen >|< l3_flrv_r in L5_light_w1
-  81  21   3  74  11  # 2212 l3_flrv_f in L5_uf_plen >|< l3_flrv_f in L5_light_w1
-  81  22   3  74  12  # 2213 l3_flrv_l in L5_uf_plen >|< l3_flrv_l in L5_light_w1
-  81  23   3  74  13  # 2214 l3_flrv_b in L5_uf_plen >|< l3_flrv_b in L5_light_w1
-  81  24   3  75  10  # 2215 l3_flrv_r2 in L5_uf_plen >|< l3_flrv_r in L5_light_w2
-  81  25   3  75  11  # 2216 l3_flrv_f2 in L5_uf_plen >|< l3_flrv_f in L5_light_w2
-  81  26   3  75  12  # 2217 l3_flrv_l2 in L5_uf_plen >|< l3_flrv_l in L5_light_w2
-  81  27   3  75  13  # 2218 l3_flrv_b2 in L5_uf_plen >|< l3_flrv_b in L5_light_w2
-  81  28   3  76  24  # 2219 ptn_flrvd_a in L5_uf_plen >|< ptn_flrvd_a in L5_sw_void
-  81  29   3  76  25  # 2220 ptn_flrvd_b in L5_uf_plen >|< ptn_flrvd_b in L5_sw_void
-  81  30   3   1  24  # 2221 l5_flrvb in L5_uf_plen >|< l5_flrvb in stair_1
-  81  31   3   1  45  # 2222 l5_flrvc in L5_uf_plen >|< l5_flrvc in stair_1
-  81  32   3   2  25  # 2223 l5_flr_vd in L5_uf_plen >|< l5_flr_vd in stair_2
-  81  33   3   2  46  # 2224 l5_flr_vda in L5_uf_plen >|< l5_flr_vda in stair_2
-  81  34   3   3  24  # 2225 rflra_l5 in L5_uf_plen >|< rflra_l5 in lifts
-  81  35   3   3  32  # 2226 rflrc_l5 in L5_uf_plen >|< rflrc_l5 in lifts
-  81  36   3   5  45  # 2227 l5_fv_ta in L5_uf_plen >|< l5_fv_ta in ne_facade
-  81  37   3   5  53  # 2228 l5_fv_tb in L5_uf_plen >|< l5_fv_tb in ne_facade
-  81  38   3  77  43  # 2229 struc_a in L5_uf_plen >|< struc_a in L5_atroofltl
-  81  39   3  77  44  # 2230 struc_d in L5_uf_plen >|< struc_d in L5_atroofltl
-  81  40   3  77  45  # 2231 struc_e in L5_uf_plen >|< struc_e in L5_atroofltl
-  81  41   3  77  46  # 2232 struc_f in L5_uf_plen >|< struc_f in L5_atroofltl
-  81  42   3  77  47  # 2233 struc_g in L5_uf_plen >|< struc_g in L5_atroofltl
-  81  43   3  77  48  # 2234 struc_h in L5_uf_plen >|< struc_h in L5_atroofltl
-  81  44   3  77  49  # 2235 struc_i in L5_uf_plen >|< struc_i in L5_atroofltl
-  81  45   3  77  50  # 2236 struc_j in L5_uf_plen >|< struc_j in L5_atroofltl
-  81  46   3  77  52  # 2237 struc_b in L5_uf_plen >|< struc_b in L5_atroofltl
-  81  47   3  77  53  # 2238 struc_c in L5_uf_plen >|< struc_c in L5_atroofltl
-  81  48   3  79  31  # 2239 L5_op_rt_flr in L5_uf_plen >|< L5_op_rt_flr in L5_open_rt
-  81  49   3  37  27  # 2240 parapet_a in L5_uf_plen >|< parapet_a in L3_L4_cir_vd
-  81  50  -1   0   0  # 2241 parapet_b in L5_uf_plen not yet defined
+  57  44   0   0   0  # 1682 to_roof_l4 in L4_open_plr is External
+  58   1   3  56  23  # 1683 l3_lw2_fr in L4_light_w1 >|< l3_lw2_fr in L4_open_s
+  58   2   3  56  24  # 1684 l3_lw2_ri in L4_light_w1 >|< l3_lw2_ri in L4_open_s
+  58   3   3  56  25  # 1685 l3_lw2_bk in L4_light_w1 >|< l3_lw2_bk in L4_open_s
+  58   4   3  56  26  # 1686 l3_lw2_lef in L4_light_w1 >|< l3_lw2_lef in L4_open_s
+  58   5   3  74   6  # 1687 up_l3_lw2 in L4_light_w1 >|< l3_lw2_base in L5_light_w1
+  58   6   3  43   5  # 1688 l3_lw2_base in L4_light_w1 >|< up_l3_lw2 in L3_lw1
+  58   7   3  56  27  # 1689 left_rail in L4_light_w1 >|< left_rail in L4_open_s
+  58   8   3  56  28  # 1690 front_rail in L4_light_w1 >|< front_rail in L4_open_s
+  58   9   3  56  29  # 1691 right_rail in L4_light_w1 >|< right_rail in L4_open_s
+  58  10   3  78  28  # 1692 l3_flrv_r in L4_light_w1 >|< l3_flrv_r in L4_flrvoid
+  58  11   3  78  29  # 1693 l3_flrv_f in L4_light_w1 >|< l3_flrv_f in L4_flrvoid
+  58  12   3  78  30  # 1694 l3_flrv_l in L4_light_w1 >|< l3_flrv_l in L4_flrvoid
+  58  13   3  78  31  # 1695 l3_flrv_b in L4_light_w1 >|< l3_flrv_b in L4_flrvoid
+  59   1   3  57  28  # 1696 l3_lw2_fr in L4_light_w2 >|< l4_lw2_fr in L4_open_plr
+  59   2   3  57  29  # 1697 l3_lw2_ri in L4_light_w2 >|< l4_lw2_ri in L4_open_plr
+  59   3   3  57  30  # 1698 l3_lw2_bk in L4_light_w2 >|< l4_lw2_bk in L4_open_plr
+  59   4   3  57  31  # 1699 l3_lw2_lef in L4_light_w2 >|< l3_lw2_lef in L4_open_plr
+  59   5   3  75   6  # 1700 up_l3_lw2 in L4_light_w2 >|< l3_lw2_base in L5_light_w2
+  59   6   3  44   5  # 1701 l3_lw2_base in L4_light_w2 >|< up_l3_lw2 in L3_light_w2
+  59   7   3  57  25  # 1702 left_rail in L4_light_w2 >|< left_rail in L4_open_plr
+  59   8   3  57  26  # 1703 front_rail in L4_light_w2 >|< front_rail in L4_open_plr
+  59   9   3  57  27  # 1704 right_rail in L4_light_w2 >|< right_rail in L4_open_plr
+  59  10   3  78  32  # 1705 l3_flrv_r in L4_light_w2 >|< l3_flrv_r2 in L4_flrvoid
+  59  11   3  78  33  # 1706 l3_flrv_f in L4_light_w2 >|< l3_flrv_f2 in L4_flrvoid
+  59  12   3  78  34  # 1707 l3_flrv_l in L4_light_w2 >|< l3_flrv_l2 in L4_flrvoid
+  59  13   3  78  35  # 1708 l3_flrv_b in L4_light_w2 >|< l3_flrv_b2 in L4_flrvoid
+  60   1   3   1   9  # 1709 ptn_cora_l3 in L4_toilet >|< ptnb_toil_l4 in stair_1
+  60   2   3   1  10  # 1710 ptn_corb_l3 in L4_toilet >|< ptna_toil_l4 in stair_1
+  60   3   3  62  12  # 1711 ptn_corc_l3 in L4_toilet >|< ptn_toilet in L4_admin
+  60   4   0   0   0  # 1712 fac_a_l3 in L4_toilet is External
+  60   5   0   0   0  # 1713 fac_b_l3 in L4_toilet is External
+  60   6   0   0   0  # 1714 fac_c_l3 in L4_toilet is External
+  60   7   0   0   0  # 1715 fac_d_l3 in L4_toilet is External
+  60   8   3  51  15  # 1716 ptn_vd_l3 in L4_toilet >|< Wall-15 in L4_sw_void
+  60   9   0   0   0  # 1717 ceiling in L4_toilet is External
+  60  10   3  80   1  # 1718 floor in L4_toilet >|< floor_l4toi in L4_srv_void
+  61   1   3  53   9  # 1719 pt_meeting in L4_toil_psg >|< ptn_toilet in L4_meeting
+  61   2   3   5  24  # 1720 pta_fac_l4 in L4_toil_psg >|< pta_fac_l4 in ne_facade
+  61   3   0   0   0  # 1721 gl_facade_l4 in L4_toil_psg is External
+  61   4   3   5  27  # 1722 ptnc_fac_l4 in L4_toil_psg >|< ptnc_fac_l4 in ne_facade
+  61   5   3   2  13  # 1723 ptna_str_l4 in L4_toil_psg >|< ptna_str_l4 in stair_2
+  61   6   3  57  18  # 1724 ptn_cel_b in L4_toil_psg >|< ptn_cel_b in L4_open_plr
+  61   7   3  57  17  # 1725 ptna_opn_l4 in L4_toil_psg >|< ptna_opn_l4 in L4_open_plr
+  61   8   3  57  16  # 1726 ptnb_opn_l4 in L4_toil_psg >|< ptnb_opn_l4 in L4_open_plr
+  61   9   3  81  10  # 1727 ceil_l4_tp in L4_toil_psg >|< top_l4_toilc in L5_uf_plen
+  61  10   3  78  36  # 1728 floor in L4_toil_psg >|< flool4tp in L4_flrvoid
+  61  11   3   5  25  # 1729 ptnb_fac_l4 in L4_toil_psg >|< ptnb_fac_l4 in ne_facade
+  61  12   3   2  14  # 1730 ptnb_str_l4 in L4_toil_psg >|< ptnb_str_l4 in stair_2
+  62   1   3  56  30  # 1731 ptn_corid_a in L4_admin >|< ptn_corid_a in L4_open_s
+  62   2   3  56  31  # 1732 ptn_corid_b in L4_admin >|< ptn_corid_b in L4_open_s
+  62   3   3  63   6  # 1733 ptn_print in L4_admin >|< ptn_social in L4_printz
+  62   4   0   0   0  # 1734 stone_c in L4_admin is External
+  62   5   0   0   0  # 1735 glaz_d in L4_admin is External
+  62   6   0   0   0  # 1736 vent_b in L4_admin is External
+  62   7   0   0   0  # 1737 glaz_c in L4_admin is External
+  62   8   0   0   0  # 1738 stone_b in L4_admin is External
+  62   9   0   0   0  # 1739 glaz_b in L4_admin is External
+  62  10   0   0   0  # 1740 vent_a in L4_admin is External
+  62  11   0   0   0  # 1741 glaz_a in L4_admin is External
+  62  12   3  60   3  # 1742 ptn_toilet in L4_admin >|< ptn_corc_l3 in L4_toilet
+  62  13   0   0   0  # 1743 Top-13 in L4_admin is External
+  62  14   3  80   2  # 1744 Base-14 in L4_admin >|< Base-14 in L4_srv_void
+  62  15   0   0   0  # 1745 stone_a in L4_admin is External
+  62  16   0   0   0  # 1746 glaz_d_low in L4_admin is External
+  62  17   0   0   0  # 1747 glaz_d_hi in L4_admin is External
+  62  18   0   0   0  # 1748 glaz_c_low in L4_admin is External
+  62  19   0   0   0  # 1749 glaz_c_hi in L4_admin is External
+  62  20   0   0   0  # 1750 glaz_b_low in L4_admin is External
+  62  21   0   0   0  # 1751 glaz_b_hi in L4_admin is External
+  62  22   0   0   0  # 1752 glaz_a_low in L4_admin is External
+  62  23   0   0   0  # 1753 glaz_a_hi in L4_admin is External
+  63   1   3  56  32  # 1754 ptn_pr_op in L4_printz >|< ptn_pr_op in L4_open_s
+  63   2   3  54  25  # 1755 ptn_cel in L4_printz >|< ptn_pz in L4_cell_srv
+  63   3   0   0   0  # 1756 vent_d in L4_printz is External
+  63   4   0   0   0  # 1757 glaz_a in L4_printz is External
+  63   5   0   0   0  # 1758 stone_a in L4_printz is External
+  63   6   3  62   3  # 1759 ptn_social in L4_printz >|< ptn_print in L4_admin
+  63   7   0   0   0  # 1760 ceiling_pz in L4_printz is External
+  63   8   3  80   3  # 1761 floor_pz in L4_printz >|< floor_pz in L4_srv_void
+  63   9   0   0   0  # 1762 upper_gla_a in L4_printz is External
+  63  10   0   0   0  # 1763 low_gla_a in L4_printz is External
+  64   1   0   0   0  # 1764 fac_gl_a in L5_confer is External
+  64   2   0   0   0  # 1765 fac_frb in L5_confer is External
+  64   3   0   0   0  # 1766 fac_frc in L5_confer is External
+  64   4   0   0   0  # 1767 fac_frd in L5_confer is External
+  64   5   0   0   0  # 1768 fac_fre in L5_confer is External
+  64   6   0   0   0  # 1769 fac_frf in L5_confer is External
+  64   7   3  68  22  # 1770 ptn_open in L5_confer >|< ptn_conf in L5_open_lft
+  64   8   3  66   1  # 1771 ptn_lobby in L5_confer >|< ptn_conf in L5_lobby
+  64   9   3  65   1  # 1772 ptn_kita in L5_confer >|< pnt_cnf in L5_kitch2
+  64  10   3  65  12  # 1773 ptn_kitb in L5_confer >|< ptn_kitb in L5_kitch2
+  64  11   3  65  13  # 1774 ptn_kitc in L5_confer >|< ptn_kitc in L5_kitch2
+  64  12   3  76   9  # 1775 ptn_opn_a in L5_confer >|< gptn_e in L5_sw_void
+  64  13   3  76   8  # 1776 ptn_opn_b in L5_confer >|< gptn_d in L5_sw_void
+  64  14   3  76   7  # 1777 ptn_opn_c in L5_confer >|< gptn_c in L5_sw_void
+  64  15   3  76   6  # 1778 ptn_opn_d in L5_confer >|< gptn_b in L5_sw_void
+  64  16   3  76   5  # 1779 ptn_opn_fr in L5_confer >|< ptn_fr in L5_sw_void
+  64  17   0   0   0  # 1780 roof in L5_confer is External
+  64  18   3  81  11  # 1781 floor_conf in L5_confer >|< floor_conf in L5_uf_plen
+  64  19   0   0   0  # 1782 fac_fr in L5_confer is External
+  64  20   0   0   0  # 1783 glaz_a in L5_confer is External
+  64  21   0   0   0  # 1784 fac_glb in L5_confer is External
+  64  22   0   0   0  # 1785 fac_glc in L5_confer is External
+  64  23   0   0   0  # 1786 fac_gld in L5_confer is External
+  64  24   0   0   0  # 1787 fac_gle in L5_confer is External
+  64  25   0   0   0  # 1788 fac_glf in L5_confer is External
+  65   1   3  64   9  # 1789 pnt_cnf in L5_kitch2 >|< ptn_kita in L5_confer
+  65   2   3  66  12  # 1790 ptn_lby_a in L5_kitch2 >|< ptn_k1 in L5_lobby
+  65   3   3  66  11  # 1791 ptn_lby_b in L5_kitch2 >|< ptn_k1a in L5_lobby
+  65   4   3  66  10  # 1792 ptn_lby_c in L5_kitch2 >|< ptn_k1b in L5_lobby
+  65   5   3  66   9  # 1793 ptn_lby_d in L5_kitch2 >|< ptn_k1_c in L5_lobby
+  65   6   3  66   8  # 1794 ptn_lby_e in L5_kitch2 >|< ptn_k1_d in L5_lobby
+  65   7   3   3  17  # 1795 ptn_elev in L5_kitch2 >|< left_5 in lifts
+  65   8   3  76  11  # 1796 ptn_open_a in L5_kitch2 >|< gptn_g in L5_sw_void
+  65   9   3  76  10  # 1797 ptn_open_b in L5_kitch2 >|< gptn_f in L5_sw_void
+  65  10   0   0   0  # 1798 roof in L5_kitch2 is External
+  65  11   3  81  12  # 1799 floor_kitch2 in L5_kitch2 >|< floor_kitch2 in L5_uf_plen
+  65  12   3  64  10  # 1800 ptn_kitb in L5_kitch2 >|< ptn_kitb in L5_confer
+  65  13   3  64  11  # 1801 ptn_kitc in L5_kitch2 >|< ptn_kitc in L5_confer
+  66   1   3  64   8  # 1802 ptn_conf in L5_lobby >|< ptn_lobby in L5_confer
+  66   2   3  68  19  # 1803 door_open in L5_lobby >|< door_2 in L5_open_lft
+  66   3   3  74   3  # 1804 ptn_lw1 in L5_lobby >|< l3_lw2_bk in L5_light_w1
+  66   4   3  68  18  # 1805 door2_open in L5_lobby >|< door in L5_open_lft
+  66   5   3  76  13  # 1806 gptn_open in L5_lobby >|< ptn_lob_dr in L5_sw_void
+  66   6   3   3  19  # 1807 ptn_el_r in L5_lobby >|< right_5 in lifts
+  66   7   3   3  18  # 1808 ptn_el_fr in L5_lobby >|< front_5 in lifts
+  66   8   3  65   6  # 1809 ptn_k1_d in L5_lobby >|< ptn_lby_e in L5_kitch2
+  66   9   3  65   5  # 1810 ptn_k1_c in L5_lobby >|< ptn_lby_d in L5_kitch2
+  66  10   3  65   4  # 1811 ptn_k1b in L5_lobby >|< ptn_lby_c in L5_kitch2
+  66  11   3  65   3  # 1812 ptn_k1a in L5_lobby >|< ptn_lby_b in L5_kitch2
+  66  12   3  65   2  # 1813 ptn_k1 in L5_lobby >|< ptn_lby_a in L5_kitch2
+  66  13   0   0   0  # 1814 roof in L5_lobby is External
+  66  14   3  81  13  # 1815 floor-lob in L5_lobby >|< floor-lob in L5_uf_plen
+  66  15   3   1  46  # 1816 ptn_cora_l5 in L5_lobby >|< ptn_cora_l5 in stair_1
+  66  16   3   1  47  # 1817 ptn_corb_l5 in L5_lobby >|< ptn_corb_l5 in stair_1
+  66  17   3  72   1  # 1818 ptn_loba in L5_lobby >|< ptn_loba in L5_toilet
+  66  18   3  72   2  # 1819 ptn_lobb in L5_lobby >|< ptn_lobb in L5_toilet
+  66  19   3  74   4  # 1820 l3_lw2_lef in L5_lobby >|< l3_lw2_lef in L5_light_w1
+  66  20   3  74   7  # 1821 left_rail in L5_lobby >|< left_rail in L5_light_w1
+  66  21   3  67  11  # 1822 short in L5_lobby >|< short in L5_lit_srv
+  67   1   3  68  17  # 1823 ptn_lobby in L5_lit_srv >|< ptn_kitb in L5_open_lft
+  67   2   3  68  16  # 1824 ptn_open in L5_lit_srv >|< ptn_kita in L5_open_lft
+  67   3   3  69  21  # 1825 ptn_mixed in L5_lit_srv >|< ptn_kit2 in L5_srv_cell
+  67   4   0   0   0  # 1826 fac_fr_a in L5_lit_srv is External
+  67   5   0   0   0  # 1827 fac_fr_b in L5_lit_srv is External
+  67   6   3  72   3  # 1828 ptn_toilet in L5_lit_srv >|< ptn_k2 in L5_toilet
+  67   7   0   0   0  # 1829 roof in L5_lit_srv is External
+  67   8   3  81  14  # 1830 floor_srv in L5_lit_srv >|< floor_srv in L5_uf_plen
+  67   9   0   0   0  # 1831 fac_gl_a in L5_lit_srv is External
+  67  10   0   0   0  # 1832 fac_gl_b in L5_lit_srv is External
+  67  11   3  66  21  # 1833 short in L5_lit_srv >|< short in L5_lobby
+  68   1   0   0   0  # 1834 fac_frame in L5_open_lft is External
+  68   2   0   0   0  # 1835 fac_fra in L5_open_lft is External
+  68   3   0   0   0  # 1836 fac_frb in L5_open_lft is External
+  68   4   0   0   0  # 1837 fac_frc in L5_open_lft is External
+  68   5   0   0   0  # 1838 fac_frd in L5_open_lft is External
+  68   6   0   0   0  # 1839 fac_frf in L5_open_lft is External
+  68   7   0   0   0  # 1840 fac_frg in L5_open_lft is External
+  68   8   0   0   0  # 1841 fac_frh in L5_open_lft is External
+  68   9   0   0   0  # 1842 fac_fri in L5_open_lft is External
+  68  10   3  79   1  # 1843 fic_open_r in L5_open_lft >|< fic_open_r in L5_open_rt
+  68  11   3  79   2  # 1844 fic_open_rb in L5_open_lft >|< fic_open_rb in L5_open_rt
+  68  12   3  69   4  # 1845 ptn-cella in L5_open_lft >|< gptn_opn_c in L5_srv_cell
+  68  13   3  69   3  # 1846 ptn-cellb in L5_open_lft >|< gptn_opn_b in L5_srv_cell
+  68  14   3  69   2  # 1847 ptn_cellc in L5_open_lft >|< ptn_opn_b in L5_srv_cell
+  68  15   3  69   1  # 1848 ptn_celld in L5_open_lft >|< ptn_open in L5_srv_cell
+  68  16   3  67   2  # 1849 ptn_kita in L5_open_lft >|< ptn_open in L5_lit_srv
+  68  17   3  67   1  # 1850 ptn_kitb in L5_open_lft >|< ptn_lobby in L5_lit_srv
+  68  18   3  66   4  # 1851 door in L5_open_lft >|< door2_open in L5_lobby
+  68  19   3  66   2  # 1852 door_2 in L5_open_lft >|< door_open in L5_lobby
+  68  20   0   0   0  # 1853 roof_open_lf in L5_open_lft is External
+  68  21   3  81  15  # 1854 floor_opn_lf in L5_open_lft >|< floor_opn_lf in L5_uf_plen
+  68  22   3  64   7  # 1855 ptn_conf in L5_open_lft >|< ptn_open in L5_confer
+  68  23   0   0   0  # 1856 fac_glb in L5_open_lft is External
+  68  24   0   0   0  # 1857 fac_glc in L5_open_lft is External
+  68  25   0   0   0  # 1858 fac_gld in L5_open_lft is External
+  68  26   0   0   0  # 1859 fac_gle in L5_open_lft is External
+  68  27   0   0   0  # 1860 fac_glf in L5_open_lft is External
+  68  28   0   0   0  # 1861 fac_glg in L5_open_lft is External
+  68  29   0   0   0  # 1862 fac_glh in L5_open_lft is External
+  68  30   0   0   0  # 1863 fac_gli in L5_open_lft is External
+  68  31   3  74   1  # 1864 l3_lw2_fr in L5_open_lft >|< l3_lw2_fr in L5_light_w1
+  68  32   3  74   2  # 1865 l3_lw2_ri in L5_open_lft >|< l3_lw2_ri in L5_light_w1
+  68  33   3  74   8  # 1866 front_rail in L5_open_lft >|< front_rail in L5_light_w1
+  68  34   3  74   9  # 1867 right_rail in L5_open_lft >|< right_rail in L5_light_w1
+  68  35   3  75   4  # 1868 l3_lw2_lef in L5_open_lft >|< l3_lw2_lef in L5_light_w2
+  68  36   3  75   7  # 1869 left_rail in L5_open_lft >|< left_rail in L5_light_w2
+  69   1   3  68  15  # 1870 ptn_open in L5_srv_cell >|< ptn_celld in L5_open_lft
+  69   2   3  68  14  # 1871 ptn_opn_b in L5_srv_cell >|< ptn_cellc in L5_open_lft
+  69   3   3  68  13  # 1872 gptn_opn_b in L5_srv_cell >|< ptn-cellb in L5_open_lft
+  69   4   3  68  12  # 1873 gptn_opn_c in L5_srv_cell >|< ptn-cella in L5_open_lft
+  69   5   3  79   3  # 1874 ptn_opn_c in L5_srv_cell >|< ptn_opn_c in L5_open_rt
+  69   6   3  79   4  # 1875 gptn_opn_d in L5_srv_cell >|< gptn_opn_d in L5_open_rt
+  69   7   3  79   5  # 1876 ptn_opn_d in L5_srv_cell >|< ptn_opn_d in L5_open_rt
+  69   8   3  79   6  # 1877 ptn_opn_e in L5_srv_cell >|< ptn_opn_e in L5_open_rt
+  69   9   3  79   7  # 1878 gptn_opn_e in L5_srv_cell >|< gptn_opn_e in L5_open_rt
+  69  10   3  70   1  # 1879 ptn_pz in L5_srv_cell >|< ptn_cell in L5_pz_meet
+  69  11   0   0   0  # 1880 fac_fra in L5_srv_cell is External
+  69  12   0   0   0  # 1881 fac_frb in L5_srv_cell is External
+  69  13   0   0   0  # 1882 fac_frc in L5_srv_cell is External
+  69  14   0   0   0  # 1883 fac_frd in L5_srv_cell is External
+  69  15   0   0   0  # 1884 fac_fre in L5_srv_cell is External
+  69  16   0   0   0  # 1885 fac_frf in L5_srv_cell is External
+  69  17   0   0   0  # 1886 fac_frg in L5_srv_cell is External
+  69  18   0   0   0  # 1887 fac_frh in L5_srv_cell is External
+  69  19   0   0   0  # 1888 fac_fri in L5_srv_cell is External
+  69  20   0   0   0  # 1889 fac_frj in L5_srv_cell is External
+  69  21   3  67   3  # 1890 ptn_kit2 in L5_srv_cell >|< ptn_mixed in L5_lit_srv
+  69  22   0   0   0  # 1891 roof in L5_srv_cell is External
+  69  23   3  81  16  # 1892 floor_cel in L5_srv_cell >|< floor_cel in L5_uf_plen
+  69  24   0   0   0  # 1893 fac_gla in L5_srv_cell is External
+  69  25   0   0   0  # 1894 fac_glb in L5_srv_cell is External
+  69  26   0   0   0  # 1895 fac_glc in L5_srv_cell is External
+  69  27   0   0   0  # 1896 fac_gld in L5_srv_cell is External
+  69  28   0   0   0  # 1897 fac_gle in L5_srv_cell is External
+  69  29   0   0   0  # 1898 fac_glf in L5_srv_cell is External
+  69  30   0   0   0  # 1899 fac_glg in L5_srv_cell is External
+  69  31   0   0   0  # 1900 fac_glh in L5_srv_cell is External
+  69  32   0   0   0  # 1901 fac_gli in L5_srv_cell is External
+  69  33   0   0   0  # 1902 fac_glj in L5_srv_cell is External
+  70   1   3  69  10  # 1903 ptn_cell in L5_pz_meet >|< ptn_pz in L5_srv_cell
+  70   2   3  79   8  # 1904 ptn_op_a in L5_pz_meet >|< ptn_op_a in L5_open_rt
+  70   3   3  79   9  # 1905 ptn_op_b in L5_pz_meet >|< ptn_op_b in L5_open_rt
+  70   4   3  79  10  # 1906 ptn_op_c in L5_pz_meet >|< ptn_op_c in L5_open_rt
+  70   5   3  79  11  # 1907 ptn_op_d in L5_pz_meet >|< ptn_op_d in L5_open_rt
+  70   6   3  73   8  # 1908 prn_toil in L5_pz_meet >|< ptna_opn_l5 in L5_toil_psg
+  70   7   3  73   7  # 1909 ptn_psg in L5_pz_meet >|< ptn_cel_b in L5_toil_psg
+  70   8   3   2  44  # 1910 ptn_staira in L5_pz_meet >|< ptnc_str_l5 in stair_2
+  70   9   3   2  48  # 1911 ptn_stairb in L5_pz_meet >|< ptnd_str_l5 in stair_2
+  70  10   0   0   0  # 1912 fac_fr_a in L5_pz_meet is External
+  70  11   0   0   0  # 1913 fac_fr_b in L5_pz_meet is External
+  70  12   0   0   0  # 1914 roof in L5_pz_meet is External
+  70  13   3  81  17  # 1915 floor_pz_m in L5_pz_meet >|< floor_pz_m in L5_uf_plen
+  70  14   0   0   0  # 1916 fac_gl_a in L5_pz_meet is External
+  70  15   0   0   0  # 1917 fac_gl_b in L5_pz_meet is External
+  71   1   0   0   0  # 1918 fac_frame in L5_meeting is External
+  71   2   0   0   0  # 1919 fac_glaz_a in L5_meeting is External
+  71   3   0   0   0  # 1920 fac_glaz_b in L5_meeting is External
+  71   4   0   0   0  # 1921 fac_glaz_c in L5_meeting is External
+  71   5   0   0   0  # 1922 fac_glaz_d in L5_meeting is External
+  71   6   3   5  33  # 1923 pa_fac_l4 in L5_meeting >|< pa_fac_l5 in ne_facade
+  71   7   0   0   0  # 1924 gl_fac_l4 in L5_meeting is External
+  71   8   3   5  34  # 1925 pb_fac_l4 in L5_meeting >|< pb_fac_l5 in ne_facade
+  71   9   3  73   1  # 1926 ptn_toilet in L5_meeting >|< pt_meeting in L5_toil_psg
+  71  10   3  79  12  # 1927 ptn_open_a in L5_meeting >|< ptn_open_a in L5_open_rt
+  71  11   3  79  13  # 1928 ptn_open_b in L5_meeting >|< ptn_open_b in L5_open_rt
+  71  12   3  79  14  # 1929 door in L5_meeting >|< door in L5_open_rt
+  71  13   3  79  15  # 1930 ptn_open_c in L5_meeting >|< ptn_open_c in L5_open_rt
+  71  14   3  79  16  # 1931 ptn_frame in L5_meeting >|< ptn_frame in L5_open_rt
+  71  15   0   0   0  # 1932 ceiling in L5_meeting is External
+  71  16   3  81  18  # 1933 floor in L5_meeting >|< floor in L5_uf_plen
+  72   1   3  66  17  # 1934 ptn_loba in L5_toilet >|< ptn_loba in L5_lobby
+  72   2   3  66  18  # 1935 ptn_lobb in L5_toilet >|< ptn_lobb in L5_lobby
+  72   3   3  67   6  # 1936 ptn_k2 in L5_toilet >|< ptn_toilet in L5_lit_srv
+  72   4   0   0   0  # 1937 fac_fr_a in L5_toilet is External
+  72   5   0   0   0  # 1938 facade_b in L5_toilet is External
+  72   6   0   0   0  # 1939 facade_c in L5_toilet is External
+  72   7   0   0   0  # 1940 roof in L5_toilet is External
+  72   8   3  81  19  # 1941 floor_toil in L5_toilet >|< floor_toil in L5_uf_plen
+  72   9   0   0   0  # 1942 fac_gl_a in L5_toilet is External
+  72  10   3   1  48  # 1943 ptn_corc_l5 in L5_toilet >|< ptn_corc_l5 in stair_1
+  72  11   0   0   0  # 1944 shift_fac in L5_toilet is External
+  73   1   3  71   9  # 1945 pt_meeting in L5_toil_psg >|< ptn_toilet in L5_meeting
+  73   2   3   5  22  # 1946 pta_fac_l5 in L5_toil_psg >|< pta_fac_l5 in ne_facade
+  73   3   3   5  23  # 1947 ptb_fac_l5 in L5_toil_psg >|< ptb_fac_l5 in ne_facade
+  73   4   0   0   0  # 1948 gl_facade_l5 in L5_toil_psg is External
+  73   5   3   5  26  # 1949 ptnc_fac_l5 in L5_toil_psg >|< ptnc_fac_l5 in ne_facade
+  73   6   3   2  15  # 1950 ptna_str_l5 in L5_toil_psg >|< ptna_str_l5 in stair_2
+  73   7   3  70   7  # 1951 ptn_cel_b in L5_toil_psg >|< ptn_psg in L5_pz_meet
+  73   8   3  70   6  # 1952 ptna_opn_l5 in L5_toil_psg >|< prn_toil in L5_pz_meet
+  73   9   3  79  22  # 1953 ptnb_opn_l5 in L5_toil_psg >|< ptnb_opn_l5 in L5_open_rt
+  73  10   0   0   0  # 1954 top in L5_toil_psg is External
+  73  11   3  81  55  # 1955 floor in L5_toil_psg >|< floor_l5_tp in L5_uf_plen
+  73  12   3   2  16  # 1956 ptnbb_str_l5 in L5_toil_psg >|< ptnb_str_l5 in stair_2
+  74   1   3  68  31  # 1957 l3_lw2_fr in L5_light_w1 >|< l3_lw2_fr in L5_open_lft
+  74   2   3  68  32  # 1958 l3_lw2_ri in L5_light_w1 >|< l3_lw2_ri in L5_open_lft
+  74   3   3  66   3  # 1959 l3_lw2_bk in L5_light_w1 >|< ptn_lw1 in L5_lobby
+  74   4   3  66  19  # 1960 l3_lw2_lef in L5_light_w1 >|< l3_lw2_lef in L5_lobby
+  74   5   0   0   0  # 1961 up_l3_lw2 in L5_light_w1 is External
+  74   6   3  58   5  # 1962 l3_lw2_base in L5_light_w1 >|< up_l3_lw2 in L4_light_w1
+  74   7   3  66  20  # 1963 left_rail in L5_light_w1 >|< left_rail in L5_lobby
+  74   8   3  68  33  # 1964 front_rail in L5_light_w1 >|< front_rail in L5_open_lft
+  74   9   3  68  34  # 1965 right_rail in L5_light_w1 >|< right_rail in L5_open_lft
+  74  10   3  81  20  # 1966 l3_flrv_r in L5_light_w1 >|< l3_flrv_r in L5_uf_plen
+  74  11   3  81  21  # 1967 l3_flrv_f in L5_light_w1 >|< l3_flrv_f in L5_uf_plen
+  74  12   3  81  22  # 1968 l3_flrv_l in L5_light_w1 >|< l3_flrv_l in L5_uf_plen
+  74  13   3  81  23  # 1969 l3_flrv_b in L5_light_w1 >|< l3_flrv_b in L5_uf_plen
+  74  14   0   0   0  # 1970 parap_f in L5_light_w1 is External
+  74  15   0   0   0  # 1971 glaz_fr in L5_light_w1 is External
+  74  16   0   0   0  # 1972 parap_ri in L5_light_w1 is External
+  74  17   0   0   0  # 1973 frame_ri in L5_light_w1 is External
+  74  18   0   0   0  # 1974 parap_bk in L5_light_w1 is External
+  74  19   0   0   0  # 1975 glaz_bk in L5_light_w1 is External
+  74  20   0   0   0  # 1976 parap_left in L5_light_w1 is External
+  74  21   0   0   0  # 1977 frame_left in L5_light_w1 is External
+  74  22   0   0   0  # 1978 up_glz in L5_light_w1 is External
+  74  23   0   0   0  # 1979 glaz_left in L5_light_w1 is External
+  74  24   0   0   0  # 1980 glaz_right in L5_light_w1 is External
+  75   1   3  79  17  # 1981 l3_lw2_fr in L5_light_w2 >|< l3_lw2_fr in L5_open_rt
+  75   2   3  79  18  # 1982 l3_lw2_ri in L5_light_w2 >|< l3_lw2_ri in L5_open_rt
+  75   3   3  79  19  # 1983 l3_lw2_bk in L5_light_w2 >|< l3_lw2_bk in L5_open_rt
+  75   4   3  68  35  # 1984 l3_lw2_lef in L5_light_w2 >|< l3_lw2_lef in L5_open_lft
+  75   5   0   0   0  # 1985 up_l3_lw2 in L5_light_w2 is External
+  75   6   3  59   5  # 1986 l3_lw2_base in L5_light_w2 >|< up_l3_lw2 in L4_light_w2
+  75   7   3  68  36  # 1987 left_rail in L5_light_w2 >|< left_rail in L5_open_lft
+  75   8   3  79  20  # 1988 front_rail in L5_light_w2 >|< front_rail in L5_open_rt
+  75   9   3  79  21  # 1989 right_rail in L5_light_w2 >|< right_rail in L5_open_rt
+  75  10   3  81  24  # 1990 l3_flrv_r in L5_light_w2 >|< l3_flrv_r2 in L5_uf_plen
+  75  11   3  81  25  # 1991 l3_flrv_f in L5_light_w2 >|< l3_flrv_f2 in L5_uf_plen
+  75  12   3  81  26  # 1992 l3_flrv_l in L5_light_w2 >|< l3_flrv_l2 in L5_uf_plen
+  75  13   3  81  27  # 1993 l3_flrv_b in L5_light_w2 >|< l3_flrv_b2 in L5_uf_plen
+  75  14   0   0   0  # 1994 parap_f in L5_light_w2 is External
+  75  15   0   0   0  # 1995 glaz_fr in L5_light_w2 is External
+  75  16   0   0   0  # 1996 parap_ri in L5_light_w2 is External
+  75  17   0   0   0  # 1997 frame_ri in L5_light_w2 is External
+  75  18   0   0   0  # 1998 parap_bk in L5_light_w2 is External
+  75  19   0   0   0  # 1999 glaz_bk in L5_light_w2 is External
+  75  20   0   0   0  # 2000 parap_left in L5_light_w2 is External
+  75  21   0   0   0  # 2001 frame_left in L5_light_w2 is External
+  75  22   0   0   0  # 2002 up_glaz in L5_light_w2 is External
+  75  23   0   0   0  # 2003 glaz_ri in L5_light_w2 is External
+  75  24   0   0   0  # 2004 glaz_left in L5_light_w2 is External
+  76   1   0   0   0  # 2005 fac_gla in L5_sw_void is External
+  76   2   0   0   0  # 2006 fac_glb in L5_sw_void is External
+  76   3   0   0   0  # 2007 fac_glc in L5_sw_void is External
+  76   4   0   0   0  # 2008 fac_gld in L5_sw_void is External
+  76   5   3  64  16  # 2009 ptn_fr in L5_sw_void >|< ptn_opn_fr in L5_confer
+  76   6   3  64  15  # 2010 gptn_b in L5_sw_void >|< ptn_opn_d in L5_confer
+  76   7   3  64  14  # 2011 gptn_c in L5_sw_void >|< ptn_opn_c in L5_confer
+  76   8   3  64  13  # 2012 gptn_d in L5_sw_void >|< ptn_opn_b in L5_confer
+  76   9   3  64  12  # 2013 gptn_e in L5_sw_void >|< ptn_opn_a in L5_confer
+  76  10   3  65   9  # 2014 gptn_f in L5_sw_void >|< ptn_open_b in L5_kitch2
+  76  11   3  65   8  # 2015 gptn_g in L5_sw_void >|< ptn_open_a in L5_kitch2
+  76  12   3   3  20  # 2016 ptn_elev in L5_sw_void >|< back_5 in lifts
+  76  13   3  66   5  # 2017 ptn_lob_dr in L5_sw_void >|< gptn_open in L5_lobby
+  76  14   3   1  32  # 2018 ptn_stair in L5_sw_void >|< ptn_void_l5 in stair_1
+  76  15   0   0   0  # 2019 bit_facade in L5_sw_void is External
+  76  16   0   0   0  # 2020 bk_fac_a in L5_sw_void is External
+  76  17   0   0   0  # 2021 bk_fac_b in L5_sw_void is External
+  76  18   0   0   0  # 2022 back_fac_c in L5_sw_void is External
+  76  19   0   0   0  # 2023 bk_fac_d in L5_sw_void is External
+  76  20   0   0   0  # 2024 roof in L5_sw_void is External
+  76  21   3  51  20  # 2025 fict_base in L5_sw_void >|< Top-26 in L4_sw_void
+  76  22   3   3  37  # 2026 ptn_vd3 in L5_sw_void >|< ptn_vd5 in lifts
+  76  23   3   1  28  # 2027 ptn_flrv_l5 in L5_sw_void >|< ptn_flrv_l5 in stair_1
+  76  24   3  81  28  # 2028 ptn_flrvd_a in L5_sw_void >|< ptn_flrvd_a in L5_uf_plen
+  76  25   3  81  29  # 2029 ptn_flrvd_b in L5_sw_void >|< ptn_flrvd_b in L5_uf_plen
+  76  26   0   0   0  # 2030 low_bit_fac in L5_sw_void is External
+  76  27   3   4  16  # 2031 l5_faade_a in L5_sw_void >|< l5_facade_a in sw_facade
+  76  28   3   4  22  # 2032 l5_facade_b in L5_sw_void >|< l5_facc in sw_facade
+  76  29   3   4  21  # 2033 l5_facad_c in L5_sw_void >|< l5_facb in sw_facade
+  76  30   3   4  20  # 2034 l5_facade_d in L5_sw_void >|< l5_faca in sw_facade
+  76  31   0   0   0  # 2035 fac_glaz_a in L5_sw_void is External
+  76  32   0   0   0  # 2036 fac_glaz_b in L5_sw_void is External
+  77   1   0   0   0  # 2037 low_wall_a in L5_atroofltl is External
+  77   2   0   0   0  # 2038 right in L5_atroofltl is External
+  77   3   0   0   0  # 2039 back_wall_a in L5_atroofltl is External
+  77   4   0   0   0  # 2040 left in L5_atroofltl is External
+  77   5   0   0   0  # 2041 roof_a in L5_atroofltl is External
+  77   6   0   0   0  # 2042 roof_c in L5_atroofltl is External
+  77   7   3  56   1  # 2043 balc_a in L5_atroofltl >|< balc_a in L4_open_s
+  77   8   3  56   2  # 2044 wall_a in L5_atroofltl >|< wall_a in L4_open_s
+  77   9   3  56   3  # 2045 wall_b in L5_atroofltl >|< wall_b in L4_open_s
+  77  10   3  56   4  # 2046 wall_c in L5_atroofltl >|< wall_c in L4_open_s
+  77  11   3  56   5  # 2047 balc_b in L5_atroofltl >|< balc_b in L4_open_s
+  77  12   3  56   6  # 2048 wall_f in L5_atroofltl >|< wall_f in L4_open_s
+  77  13   3  56   7  # 2049 wall_g in L5_atroofltl >|< wall_g in L4_open_s
+  77  14   3  56   8  # 2050 wall_h in L5_atroofltl >|< wall_h in L4_open_s
+  77  15   3  56   9  # 2051 balc_c in L5_atroofltl >|< balc_c in L4_open_s
+  77  16   3  56  20  # 2052 open_a in L5_atroofltl >|< open_a in L4_open_s
+  77  17   3  56  21  # 2053 open_b in L5_atroofltl >|< open_b in L4_open_s
+  77  18   3  56  22  # 2054 open_c in L5_atroofltl >|< open_c in L4_open_s
+  77  19   3  35  34  # 2055 upper_a in L5_atroofltl >|< upper_a in L3_ent_void
+  77  20   3  35  33  # 2056 upper_b in L5_atroofltl >|< upper_b in L3_ent_void
+  77  21   3  52   1  # 2057 seg_a in L5_atroofltl >|< seg_a in L4_circular
+  77  22   3  52   2  # 2058 seg_b in L5_atroofltl >|< seg_b in L4_circular
+  77  23   3  52   3  # 2059 seg_c in L5_atroofltl >|< seg_c in L4_circular
+  77  24   3  52   4  # 2060 seg_d in L5_atroofltl >|< seg_d in L4_circular
+  77  25   3  52   5  # 2061 seg_e in L5_atroofltl >|< seg_e in L4_circular
+  77  26   3  52   6  # 2062 seg_f in L5_atroofltl >|< seg_f in L4_circular
+  77  27   0   0   0  # 2063 fac_gl_a in L5_atroofltl is External
+  77  28   0   0   0  # 2064 fac_gl_b in L5_atroofltl is External
+  77  29   0   0   0  # 2065 fac_gl_c in L5_atroofltl is External
+  77  30   0   0   0  # 2066 fac_gl_d in L5_atroofltl is External
+  77  31   0   0   0  # 2067 fac_gl_e in L5_atroofltl is External
+  77  32   0   0   0  # 2068 fac_gl_f in L5_atroofltl is External
+  77  33   0   0   0  # 2069 fac_gl_g in L5_atroofltl is External
+  77  34   0   0   0  # 2070 fac_gl_h in L5_atroofltl is External
+  77  35   0   0   0  # 2071 fac_gl_i in L5_atroofltl is External
+  77  36   0   0   0  # 2072 fac_gl_j in L5_atroofltl is External
+  77  37   0   0   0  # 2073 fac_gl_k in L5_atroofltl is External
+  77  38   0   0   0  # 2074 fac_gl_l in L5_atroofltl is External
+  77  39   0   0   0  # 2075 fac_fr in L5_atroofltl is External
+  77  40   0   0   0  # 2076 side_fac_a in L5_atroofltl is External
+  77  41   0   0   0  # 2077 side_fac_b in L5_atroofltl is External
+  77  42   3  55   1  # 2078 to_meeting in L5_atroofltl >|< Wall-1 in L4_sw_meet
+  77  43   3  81  38  # 2079 struc_a in L5_atroofltl >|< struc_a in L5_uf_plen
+  77  44   3  81  39  # 2080 struc_d in L5_atroofltl >|< struc_d in L5_uf_plen
+  77  45   3  81  40  # 2081 struc_e in L5_atroofltl >|< struc_e in L5_uf_plen
+  77  46   3  81  41  # 2082 struc_f in L5_atroofltl >|< struc_f in L5_uf_plen
+  77  47   3  81  42  # 2083 struc_g in L5_atroofltl >|< struc_g in L5_uf_plen
+  77  48   3  81  43  # 2084 struc_h in L5_atroofltl >|< struc_h in L5_uf_plen
+  77  49   3  81  44  # 2085 struc_i in L5_atroofltl >|< struc_i in L5_uf_plen
+  77  50   3  81  45  # 2086 struc_j in L5_atroofltl >|< struc_j in L5_uf_plen
+  77  51   0   0   0  # 2087 roof_b in L5_atroofltl is External
+  77  52   3  81  46  # 2088 struc_b in L5_atroofltl >|< struc_b in L5_uf_plen
+  77  53   3  81  47  # 2089 struc_c in L5_atroofltl >|< struc_c in L5_uf_plen
+  77  54   0   0   0  # 2090 roof_d in L5_atroofltl is External
+  77  55   0   0   0  # 2091 roof_e in L5_atroofltl is External
+  77  56   3  57  15  # 2092 filler in L5_atroofltl >|< filler in L4_open_plr
+  78   1   3  35  39  # 2093 struc_a in L4_flrvoid >|< struc_a in L3_ent_void
+  78   2   3  35  40  # 2094 struc_b in L4_flrvoid >|< struc_b in L3_ent_void
+  78   3   3  35  41  # 2095 struc_c in L4_flrvoid >|< struc_c in L3_ent_void
+  78   4   3  35  42  # 2096 struc_d in L4_flrvoid >|< struc_d in L3_ent_void
+  78   5   3  35  43  # 2097 struc_e in L4_flrvoid >|< struc_e in L3_ent_void
+  78   6   3  35  44  # 2098 struc_f in L4_flrvoid >|< struc_f in L3_ent_void
+  78   7   3  35  45  # 2099 struc_g in L4_flrvoid >|< struc_g in L3_ent_void
+  78   8   3  35  46  # 2100 struc_h in L4_flrvoid >|< struc_h in L3_ent_void
+  78   9   3  35  47  # 2101 struc_i in L4_flrvoid >|< struc_i in L3_ent_void
+  78  10   3  36  21  # 2102 seg_kup in L4_flrvoid >|< seg_kup in L3_circular
+  78  11   3  36  22  # 2103 seg_gup in L4_flrvoid >|< segm_top_l3 in L3_circular
+  78  12   3  35  48  # 2104 fill_up in L4_flrvoid >|< fill_up in L3_ent_void
+  78  13   3  37  11  # 2105 struc_av in L4_flrvoid >|< struc_a in L3_L4_cir_vd
+  78  14   3  37  13  # 2106 struc_bv in L4_flrvoid >|< struc_b in L3_L4_cir_vd
+  78  15   3  38  12  # 2107 struc_bvb in L4_flrvoid >|< struc_b in L3_void_b
+  78  16   3  38  13  # 2108 struc_avb in L4_flrvoid >|< struc_a in L3_void_b
+  78  17   3  39  15  # 2109 ceiling in L4_flrvoid >|< ceiling in L3_meeting
+  78  18   3  45  10  # 2110 top in L4_flrvoid >|< top in L3_toil_psg
+  78  19   3  48  50  # 2111 up_left in L4_flrvoid >|< up_left in L3_open_lft
+  78  20   3  48  51  # 2112 up_right in L4_flrvoid >|< up_right in L3_open_lft
+  78  21   3  49  27  # 2113 up_open_rig in L4_flrvoid >|< up_open_rig in L3_open_rig
+  78  22   3  51  24  # 2114 ptn_flrvd_a in L4_flrvoid >|< ptn_flrvd_a in L4_sw_void
+  78  23   3  51  25  # 2115 ptn_flrvd_b in L4_flrvoid >|< ptn_flrvd_b in L4_sw_void
+  78  24   3  53  16  # 2116 floor in L4_flrvoid >|< floor in L4_meeting
+  78  25   3  55  12  # 2117 Base-16 in L4_flrvoid >|< Base-16 in L4_sw_meet
+  78  26   3  56  19  # 2118 floor_l4op in L4_flrvoid >|< floor_l4op in L4_open_s
+  78  27   3  57   9  # 2119 floor_l4opr in L4_flrvoid >|< floor in L4_open_plr
+  78  28   3  58  10  # 2120 l3_flrv_r in L4_flrvoid >|< l3_flrv_r in L4_light_w1
+  78  29   3  58  11  # 2121 l3_flrv_f in L4_flrvoid >|< l3_flrv_f in L4_light_w1
+  78  30   3  58  12  # 2122 l3_flrv_l in L4_flrvoid >|< l3_flrv_l in L4_light_w1
+  78  31   3  58  13  # 2123 l3_flrv_b in L4_flrvoid >|< l3_flrv_b in L4_light_w1
+  78  32   3  59  10  # 2124 l3_flrv_r2 in L4_flrvoid >|< l3_flrv_r in L4_light_w2
+  78  33   3  59  11  # 2125 l3_flrv_f2 in L4_flrvoid >|< l3_flrv_f in L4_light_w2
+  78  34   3  59  12  # 2126 l3_flrv_l2 in L4_flrvoid >|< l3_flrv_l in L4_light_w2
+  78  35   3  59  13  # 2127 l3_flrv_b2 in L4_flrvoid >|< l3_flrv_b in L4_light_w2
+  78  36   3  61  10  # 2128 flool4tp in L4_flrvoid >|< floor in L4_toil_psg
+  78  37   3   1  23  # 2129 l4_flrvb in L4_flrvoid >|< l4_flrvb in stair_1
+  78  38   3   1  41  # 2130 l4_flrvc in L4_flrvoid >|< l4_flrvc in stair_1
+  78  39   3   2  24  # 2131 l4_flr_vd in L4_flrvoid >|< l4_flr_vd in stair_2
+  78  40   3   2  45  # 2132 l4_flr_vda in L4_flrvoid >|< l4_flr_vda in stair_2
+  78  41   3   5  42  # 2133 l4_fv_ma in L4_flrvoid >|< l4_fv_ma in ne_facade
+  78  42   3   5  44  # 2134 l4_fv_ta in L4_flrvoid >|< l4_fv_ta in ne_facade
+  78  43   3   5  52  # 2135 l4_fv_tb in L4_flrvoid >|< l4_fv_tb in ne_facade
+  78  44   3   3  23  # 2136 rflra_l4 in L4_flrvoid >|< rflra_l4 in lifts
+  78  45   3   3  27  # 2137 rflrb_l4 in L4_flrvoid >|< rflrb_l4 in lifts
+  78  46   3   3  31  # 2138 rflrc_l4 in L4_flrvoid >|< rflrc_l4 in lifts
+  78  47   5   0   0  # 2139 ex-small-57 in L4_flrvoid is adiabatic
+  78  48   0   0   0  # 2140 ex_small-58 in L4_flrvoid is External
+  78  49   0   0   0  # 2141 street_st_a in L4_flrvoid is External
+  78  50   3  80   5  # 2142 srv_facade in L4_flrvoid >|< srv_facade in L4_srv_void
+  78  51   3  52  20  # 2143 crescnt in L4_flrvoid >|< L3_segm_flr in L4_circular
+  78  52   0   0   0  # 2144 tiny-ex-a in L4_flrvoid is External
+  78  53   0   0   0  # 2145 tiny_ex-b in L4_flrvoid is External
+  78  54   0   0   0  # 2146 str_of_fac in L4_flrvoid is External
+  79   1   3  68  10  # 2147 fic_open_r in L5_open_rt >|< fic_open_r in L5_open_lft
+  79   2   3  68  11  # 2148 fic_open_rb in L5_open_rt >|< fic_open_rb in L5_open_lft
+  79   3   3  69   5  # 2149 ptn_opn_c in L5_open_rt >|< ptn_opn_c in L5_srv_cell
+  79   4   3  69   6  # 2150 gptn_opn_d in L5_open_rt >|< gptn_opn_d in L5_srv_cell
+  79   5   3  69   7  # 2151 ptn_opn_d in L5_open_rt >|< ptn_opn_d in L5_srv_cell
+  79   6   3  69   8  # 2152 ptn_opn_e in L5_open_rt >|< ptn_opn_e in L5_srv_cell
+  79   7   3  69   9  # 2153 gptn_opn_e in L5_open_rt >|< gptn_opn_e in L5_srv_cell
+  79   8   3  70   2  # 2154 ptn_op_a in L5_open_rt >|< ptn_op_a in L5_pz_meet
+  79   9   3  70   3  # 2155 ptn_op_b in L5_open_rt >|< ptn_op_b in L5_pz_meet
+  79  10   3  70   4  # 2156 ptn_op_c in L5_open_rt >|< ptn_op_c in L5_pz_meet
+  79  11   3  70   5  # 2157 ptn_op_d in L5_open_rt >|< ptn_op_d in L5_pz_meet
+  79  12   3  71  10  # 2158 ptn_open_a in L5_open_rt >|< ptn_open_a in L5_meeting
+  79  13   3  71  11  # 2159 ptn_open_b in L5_open_rt >|< ptn_open_b in L5_meeting
+  79  14   3  71  12  # 2160 door in L5_open_rt >|< door in L5_meeting
+  79  15   3  71  13  # 2161 ptn_open_c in L5_open_rt >|< ptn_open_c in L5_meeting
+  79  16   3  71  14  # 2162 ptn_frame in L5_open_rt >|< ptn_frame in L5_meeting
+  79  17   3  75   1  # 2163 l3_lw2_fr in L5_open_rt >|< l3_lw2_fr in L5_light_w2
+  79  18   3  75   2  # 2164 l3_lw2_ri in L5_open_rt >|< l3_lw2_ri in L5_light_w2
+  79  19   3  75   3  # 2165 l3_lw2_bk in L5_open_rt >|< l3_lw2_bk in L5_light_w2
+  79  20   3  75   8  # 2166 front_rail in L5_open_rt >|< front_rail in L5_light_w2
+  79  21   3  75   9  # 2167 right_rail in L5_open_rt >|< right_rail in L5_light_w2
+  79  22   3  73   9  # 2168 ptnb_opn_l5 in L5_open_rt >|< ptnb_opn_l5 in L5_toil_psg
+  79  23   0   0   0  # 2169 fac_fr_a in L5_open_rt is External
+  79  24   0   0   0  # 2170 fac_fr_b in L5_open_rt is External
+  79  25   0   0   0  # 2171 fac_fr_c in L5_open_rt is External
+  79  26   0   0   0  # 2172 fac_fr_d in L5_open_rt is External
+  79  27   0   0   0  # 2173 fac_fr_e in L5_open_rt is External
+  79  28   0   0   0  # 2174 fac_fr_f in L5_open_rt is External
+  79  29   0   0   0  # 2175 fac_fr_g in L5_open_rt is External
+  79  30   0   0   0  # 2176 L5_oprt_ceil in L5_open_rt is External
+  79  31   3  81  48  # 2177 L5_op_rt_flr in L5_open_rt >|< L5_op_rt_flr in L5_uf_plen
+  80   1   3  60  10  # 2178 floor_l4toi in L4_srv_void >|< floor in L4_toilet
+  80   2   3  62  14  # 2179 Base-14 in L4_srv_void >|< Base-14 in L4_admin
+  80   3   3  63   8  # 2180 floor_pz in L4_srv_void >|< floor_pz in L4_printz
+  80   4   3  54  27  # 2181 Base-30 in L4_srv_void >|< Base-30 in L4_cell_srv
+  80   5   3  78  50  # 2182 srv_facade in L4_srv_void >|< srv_facade in L4_flrvoid
+  80   6   3  40  26  # 2183 Top-29 in L4_srv_void >|< Top-29 in L3_cell_srv
+  80   7   3  41   7  # 2184 ceiling_pz in L4_srv_void >|< ceiling_pz in L3_print_zn
+  80   8   3  42  13  # 2185 Top-13 in L4_srv_void >|< Top-13 in L3_social
+  80   9   3  46   9  # 2186 ceiling in L4_srv_void >|< ceiling in L3_toilet
+  80  10   0   0   0  # 2187 right_end in L4_srv_void is External
+  80  11   1   0   0  # 2188 fill_a in L4_srv_void >|< Identical environment
+  80  12   3   2  58  # 2189 fill_b in L4_srv_void >|< l4_flrvdc in stair_2
+  80  13   0   0   0  # 2190 left_facade in L4_srv_void is External
+  80  14   0   0   0  # 2191 srv_edge in L4_srv_void is External
+  80  15   3   1  13  # 2192 to_stair_1 in L4_srv_void >|< l4_flrva in stair_1
+  81   1   3  52   7  # 2193 seg_g in L5_uf_plen >|< seg_g in L4_circular
+  81   2   3  52   8  # 2194 seg_h in L5_uf_plen >|< seg_h in L4_circular
+  81   3   3  52   9  # 2195 seg_i in L5_uf_plen >|< seg_i in L4_circular
+  81   4   3  52  10  # 2196 seg_j in L5_uf_plen >|< seg_j in L4_circular
+  81   5   3  52  11  # 2197 seg_k in L5_uf_plen >|< seg_k in L4_circular
+  81   6   3  53  15  # 2198 ceiling_l4mt in L5_uf_plen >|< ceiling in L4_meeting
+  81   7   3  55  11  # 2199 Tl4_sw_mtcei in L5_uf_plen >|< Tl4_sw_mtcei in L4_sw_meet
+  81   8   3  56  18  # 2200 ceiling_l4op in L5_uf_plen >|< ceiling_l4op in L4_open_s
+  81   9   3  57   8  # 2201 ceiling_l4or in L5_uf_plen >|< ceil_l4_opr in L4_open_plr
+  81  10   3  61   9  # 2202 top_l4_toilc in L5_uf_plen >|< ceil_l4_tp in L4_toil_psg
+  81  11   3  64  18  # 2203 floor_conf in L5_uf_plen >|< floor_conf in L5_confer
+  81  12   3  65  11  # 2204 floor_kitch2 in L5_uf_plen >|< floor_kitch2 in L5_kitch2
+  81  13   3  66  14  # 2205 floor-lob in L5_uf_plen >|< floor-lob in L5_lobby
+  81  14   3  67   8  # 2206 floor_srv in L5_uf_plen >|< floor_srv in L5_lit_srv
+  81  15   3  68  21  # 2207 floor_opn_lf in L5_uf_plen >|< floor_opn_lf in L5_open_lft
+  81  16   3  69  23  # 2208 floor_cel in L5_uf_plen >|< floor_cel in L5_srv_cell
+  81  17   3  70  13  # 2209 floor_pz_m in L5_uf_plen >|< floor_pz_m in L5_pz_meet
+  81  18   3  71  16  # 2210 floor in L5_uf_plen >|< floor in L5_meeting
+  81  19   3  72   8  # 2211 floor_toil in L5_uf_plen >|< floor_toil in L5_toilet
+  81  20   3  74  10  # 2212 l3_flrv_r in L5_uf_plen >|< l3_flrv_r in L5_light_w1
+  81  21   3  74  11  # 2213 l3_flrv_f in L5_uf_plen >|< l3_flrv_f in L5_light_w1
+  81  22   3  74  12  # 2214 l3_flrv_l in L5_uf_plen >|< l3_flrv_l in L5_light_w1
+  81  23   3  74  13  # 2215 l3_flrv_b in L5_uf_plen >|< l3_flrv_b in L5_light_w1
+  81  24   3  75  10  # 2216 l3_flrv_r2 in L5_uf_plen >|< l3_flrv_r in L5_light_w2
+  81  25   3  75  11  # 2217 l3_flrv_f2 in L5_uf_plen >|< l3_flrv_f in L5_light_w2
+  81  26   3  75  12  # 2218 l3_flrv_l2 in L5_uf_plen >|< l3_flrv_l in L5_light_w2
+  81  27   3  75  13  # 2219 l3_flrv_b2 in L5_uf_plen >|< l3_flrv_b in L5_light_w2
+  81  28   3  76  24  # 2220 ptn_flrvd_a in L5_uf_plen >|< ptn_flrvd_a in L5_sw_void
+  81  29   3  76  25  # 2221 ptn_flrvd_b in L5_uf_plen >|< ptn_flrvd_b in L5_sw_void
+  81  30   3   1  24  # 2222 l5_flrvb in L5_uf_plen >|< l5_flrvb in stair_1
+  81  31   3   1  45  # 2223 l5_flrvc in L5_uf_plen >|< l5_flrvc in stair_1
+  81  32   3   2  25  # 2224 l5_flr_vd in L5_uf_plen >|< l5_flr_vd in stair_2
+  81  33   3   2  46  # 2225 l5_flr_vda in L5_uf_plen >|< l5_flr_vda in stair_2
+  81  34   3   3  24  # 2226 rflra_l5 in L5_uf_plen >|< rflra_l5 in lifts
+  81  35   3   3  32  # 2227 rflrc_l5 in L5_uf_plen >|< rflrc_l5 in lifts
+  81  36   3   5  45  # 2228 l5_fv_ta in L5_uf_plen >|< l5_fv_ta in ne_facade
+  81  37   3   5  53  # 2229 l5_fv_tb in L5_uf_plen >|< l5_fv_tb in ne_facade
+  81  38   3  77  43  # 2230 struc_a in L5_uf_plen >|< struc_a in L5_atroofltl
+  81  39   3  77  44  # 2231 struc_d in L5_uf_plen >|< struc_d in L5_atroofltl
+  81  40   3  77  45  # 2232 struc_e in L5_uf_plen >|< struc_e in L5_atroofltl
+  81  41   3  77  46  # 2233 struc_f in L5_uf_plen >|< struc_f in L5_atroofltl
+  81  42   3  77  47  # 2234 struc_g in L5_uf_plen >|< struc_g in L5_atroofltl
+  81  43   3  77  48  # 2235 struc_h in L5_uf_plen >|< struc_h in L5_atroofltl
+  81  44   3  77  49  # 2236 struc_i in L5_uf_plen >|< struc_i in L5_atroofltl
+  81  45   3  77  50  # 2237 struc_j in L5_uf_plen >|< struc_j in L5_atroofltl
+  81  46   3  77  52  # 2238 struc_b in L5_uf_plen >|< struc_b in L5_atroofltl
+  81  47   3  77  53  # 2239 struc_c in L5_uf_plen >|< struc_c in L5_atroofltl
+  81  48   3  79  31  # 2240 L5_op_rt_flr in L5_uf_plen >|< L5_op_rt_flr in L5_open_rt
+  81  49   0   0   0  # 2241 srv_fac-a in L5_uf_plen is External
+  81  50   0   0   0  # 2242 srv_fac_b in L5_uf_plen is External
+  81  51   3   3  28  # 2243 rflrb_l5 in L5_uf_plen >|< rflrb_l5 in lifts
+  81  52   0   0   0  # 2244 proj_a in L5_uf_plen is External
+  81  53   0   0   0  # 2245 proj_b in L5_uf_plen is External
+  81  54   1   0   0  # 2246 wee_fill_cr in L5_uf_plen >|< Identical environment
+  81  55   3  73  11  # 2247 floor_l5_tp in L5_uf_plen >|< floor in L5_toil_psg
+  81  56   0   0   0  # 2248 ext_ne_fac_a in L5_uf_plen is External
+  81  57   3   5  43  # 2249 to_ne_fac_b in L5_uf_plen >|< l5_fv_ma in ne_facade
+  81  58   0   0   0  # 2250 ext_ne_fac_b in L5_uf_plen is External
+  81  59   0   0   0  # 2251 str_fac_d in L5_uf_plen is External
+  81  60   0   0   0  # 2252 str_fac_e in L5_uf_plen is External
+  81  61   0   0   0  # 2253 str_fac_f in L5_uf_plen is External
+  81  62   0   0   0  # 2254 str_fac_g in L5_uf_plen is External

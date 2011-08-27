@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
-*date Fri Aug 26 06:46:05 2011  # latest file modification 
+*date Sat Aug 27 09:24:29 2011  # latest file modification 
 L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,46.25000,36.00000,64.15000  #   1
@@ -67,7 +67,7 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 *surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,floor_pz_m,FLOR,-,-,-,top_pln,OPAQUE,UNKNOWN,0,0  #  13 ||< not yet defined
+*surf,floor_pz_m,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,17  #  13 ||< floor_pz_m:L5_uf_plen
 *surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
 *surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 # 
@@ -78,4 +78,4 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,13,    58.63 0  # zone base list
+*base_list,1,13,    55.40 0  # zone base list

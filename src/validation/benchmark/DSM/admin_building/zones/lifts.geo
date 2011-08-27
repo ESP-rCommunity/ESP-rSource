@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Fri Aug 26 06:46:05 2011  # latest file modification 
+*date Sat Aug 27 11:14:09 2011  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -111,15 +111,15 @@ lifts describes the elevator shaft
 *surf,rflra_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,06  #  21 ||< rflra_l2:L2_uf_plen
 *surf,rflra_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,06  #  22 ||< rflra_l3:L3_ufloor
 *surf,rflra_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,44  #  23 ||< rflra_l4:L4_flrvoid
-*surf,rflra_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,34  #  24 ||< l5_flr_vda:L5_uf_plen
+*surf,rflra_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,34  #  24 ||< rflra_l5:L5_uf_plen
 *surf,rflrb_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,08  #  25 ||< rflrb_l2:L2_uf_plen
 *surf,rflrb_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,07  #  26 ||< rflrb_l3:L3_ufloor
 *surf,rflrb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,45  #  27 ||< rflrb_l4:L4_flrvoid
-*surf,rflrb_l5,VERT,-,-,-,conc_250,OPAQUE,UNKNOWN,0,0  #  28 ||< not yet defined
+*surf,rflrb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,51  #  28 ||< rflrb_l5:L5_uf_plen
 *surf,rflrc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,07  #  29 ||< rflrc_l2:L2_uf_plen
 *surf,rflrc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,08  #  30 ||< rflrc_l3:L3_ufloor
 *surf,rflrc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,46  #  31 ||< rflrc_l4:L4_flrvoid
-*surf,rflrc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,35  #  32 ||< rflra_l5:L5_uf_plen
+*surf,rflrc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,35  #  32 ||< rflrc_l5:L5_uf_plen
 *surf,base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  33 ||< ground profile  1
 *surf,ptn_vd2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,33  #  34 ||< elev_rflr:L1_sw_void
 *surf,ptn_vd3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,22  #  35 ||< ptn_vd3:L3_sw_void

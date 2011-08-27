@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Fri Aug 26 06:11:21 2011  # latest file modification 
+*date Sat Aug 27 09:29:51 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -89,7 +89,7 @@ L4_open_plr describes right half of level four open plan area
 *edges,4,65,66,14,13  #  5
 *edges,4,7,8,16,15  #  6
 *edges,4,8,1,9,16  #  7
-*edges,36,9,26,19,20,22,24,10,11,63,12,13,14,44,42,40,29,30,32,34,36,38,78,76,74,72,57,56,55,53,54,56,57,69,70,15,16  #  8
+*edges,34,9,26,19,20,22,24,10,11,13,14,44,42,40,29,30,32,34,36,38,78,76,74,72,57,56,55,53,54,56,57,69,70,15,16  #  8
 *edges,36,1,8,7,67,68,58,45,46,49,51,45,58,71,73,75,77,37,35,33,31,27,28,39,41,43,6,5,4,59,3,2,23,21,17,18,25  #  9
 *edges,4,18,17,20,19  # 10
 *edges,4,17,21,22,20  # 11
@@ -125,6 +125,7 @@ L4_open_plr describes right half of level four open plan area
 *edges,4,77,75,76,78  # 41
 *edges,4,37,77,78,38  # 42
 *edges,4,67,7,15,70  # 43
+*edges,4,63,12,13,11  # 44
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
@@ -138,7 +139,7 @@ L4_open_plr describes right half of level four open plan area
 *surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,24  #   5 ||< ptn_vb_b:L3_void_b
 *surf,open_fict,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,11  #   6 ||< fic_to_rb:L4_open_s
 *surf,open_fict2,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,10  #   7 ||< fic_to_ra:L4_open_s
-*surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,09  #   8 ||< ceiling_l4or:L5_uf_plen
+*surf,ceil_l4_opr,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,81,09  #   8 ||< ceiling_l4or:L5_uf_plen
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,27  #   9 ||< floor_l4opr:L4_flrvoid
 *surf,seg_h,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,21  #  10 ||< seg_hl:L4_circular
 *surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,22  #  11 ||< seg_il:L4_circular
@@ -174,6 +175,7 @@ L4_open_plr describes right half of level four open plan area
 *surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,06  #  41 ||< ptn_open_f:L4_cell_srv
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,07  #  42 ||< ptn_open_g:L4_cell_srv
 *surf,cell_fill,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
+*surf,to_roof_l4,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
