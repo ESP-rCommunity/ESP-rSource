@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Administrative building and service centre
-defined in admin_building.cfg generated on Fri Aug 26 06:49:34 2011. Notes
+defined in admin_building.cfg generated on Tue Aug 30 06:32:12 2011. Notes
 associated with the model are in admin_building.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
@@ -44,9 +44,9 @@ ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
  1 stair_1      1212.1  48   793.0     0.0    62.4  stair_1 describes stair number one
  2 stair_2       886.8  60   485.6   141.8    45.7  stair_2 describes stair tower with glazed side stair_2
- 3 lifts         304.7  38   341.0     0.0    15.8 part-attributed
+ 3 lifts         304.7  38   341.0     0.0    15.8  lifts describes the elevator shaft
  4 sw_facade     266.6  32   858.7     0.0    26.1  sw_facade describes the stone facade on the south west
- 5 ne_facade     243.1  53   724.4     0.0    16.5 part-attributed
+ 5 ne_facade     243.1  53   724.4     0.0    16.5  ne_facade describes the stone facade on NE with air void
  6 L1_ent_recp  1556.1  55   835.7   406.5   376.7  L1_ent_recp describes lower atria at reception at level one
  7 L1_circular   157.2  20   153.6    18.5    42.0  L1_circular describes a circular vent shaft at level one
  8 L1_careers    544.0  40   302.5   224.8   134.6  L1_careers describes the level one careers service area
@@ -78,7 +78,7 @@ ID Zone         Volume|          Surface
 34 L2_se_void    703.3  34    38.8   643.8   223.8  L2_se_void describes void at south-west facade with stair
 35 L3_ent_void   683.0  49   114.8   547.8   184.9  L3_ent_void describes third level atrium over the entrance
 36 L3_circular   159.8  23   143.6    31.7    42.0  L3_circular describes circular meeting room at level three
-37 L3_L4_cir_vd   63.6  28    42.7    76.6     8.2  L3_void_cir describes a void adjacent to circular meeting at L3
+37 L3_L4_cir_vd   63.6  28    42.7    76.6     8.2 part-attributed
 38 L3_void_b     191.0  26    51.2   154.5    27.2  L3_void_b describes void above the careers services area
 39 L3_meeting    111.0  16   114.6    32.1    35.3  L3_meeting describes corner meeting room in L3
 40 L3_cell_srv   365.3  54   541.5    34.6   118.0  L3_cell_srv describes row of cellular offices at service rd faca
@@ -98,7 +98,7 @@ ID Zone         Volume|          Surface
 54 L4_cell_srv   365.3  54   541.5    34.6   118.0  L4_cell_srv describes row of cellular offices srv facade 4th lev
 55 L4_sw_meet    423.0  21   431.3    76.7   134.6  L4_sw_meet describes meeting rds 406 407 on level four
 56 L4_open_s    1476.5  32  1126.6   198.3   467.5  L4_open_s describes left half of level four open plan area
-57 L4_open_plr  1567.8  43  1191.3   182.9   502.8 part-attributed
+57 L4_open_plr  1567.8  44  1191.3   182.9   502.8 part-attributed
 58 L4_light_w1   105.3  13    16.6   122.8    27.0  L4_light_w1 describes light well one at level 4
 59 L4_light_w2   105.3  13    16.6   122.8    27.0  L4_light_w2 describes light well two at level four
 60 L4_toilet     188.6  10   226.9     0.0    60.0  L4_toilet describes toilets on level four srv rd
@@ -111,10 +111,10 @@ ID Zone         Volume|          Surface
 67 L5_lit_srv     75.4  11    98.7    11.0    23.4  L5_lit_srv describes kitchen at the service facade
 68 L5_open_lft  1167.8  36   808.5   183.9   362.1  L5_open_lft describes the left half of opens space level five
 69 L5_srv_cell   262.0  33   248.0    96.7    81.3  L5_srv_cell describes cellular offices at service facade five
-70 L5_pz_meet    178.7  15   214.5     9.7    58.6 part-attributed
+70 L5_pz_meet    178.7  15   214.5     9.7    55.4  L5_pz_meet is the L5 print zone plus meeting room adj stair2
 71 L5_meeting    113.9  16   115.8    32.9    35.3  L5_meeting describes corner meeting room on top level
 72 L5_toilet      88.7  11   120.8     1.9    27.5 part-attributed
-73 L5_toil_psg   173.4  12   200.2     1.9    53.8 part-attributed
+73 L5_toil_psg   173.4  12   200.2     1.9    53.8  L5_toil_psg describes is the toilet and passage on top level
 74 L5_light_w1   167.6  24    42.4   148.5    27.0  L5_light_w1 describes light well one at level 5
 75 L5_light_w2   167.6  24    42.4   148.5    27.0  L5_light_w2 describes light well two at level 5
 76 L5_sw_void    891.0  32   388.5   356.8   223.8  L5_sw_void describes void at level five SW
@@ -122,8 +122,8 @@ ID Zone         Volume|          Surface
 78 L4_flrvoid    904.4  54  2563.2     0.0  1194.3  column describes a dummy zone for columns
 79 L5_open_rt    744.3  31   543.7   171.6   230.8  L5_open_rt describes right portion of level five open plan
 80 L4_srv_void   192.8  15   594.2     0.0   254.7  L4_srv_void describes floor void at service facade
-81 L5_uf_plen   1372.2  50  2411.4     0.0  1190.1  L5_uf_plen describes structure for level five
-   all         40289. 2241  39282.   8862.  15713.
+81 L5_uf_plen    872.9  62  2474.4     0.0  1152.7  L5_uf_plen describes structure for level five
+   all         39789. 2254  39345.   8862.  15673.
  
  
  Zone stair_1 ( 1) is composed of 48 surfaces and 60 vertices.
@@ -480,6 +480,9 @@ vertex  49   50.00000   36.00000   47.95000   vertex  98   50.00000   35.70000  
  It encloses a volume of 305.m^3 of space, with a total surface
  area of 341.m^2 & approx floor area of 15.8m^2
  lifts describes the elevator shaft
+ There is 15.750m2 of exposed surface area.
+ Flat roof is 100.00 % of floor area & avg U of 0.205 & UA of 3.2218
+ Ground contact is 100.00 % of floor area & avg U of 0.886 & perimeter 0.00
  
  A summary of the surfaces in lifts( 3) follows:
  
@@ -512,7 +515,7 @@ vertex  49   50.00000   36.00000   47.95000   vertex  98   50.00000   35.70000  
  25  3.41     90.   0. rflrb_l2     OPAQUE   VERT -     conc_250     ||< rflrb_l2:L2_uf_plen
  26  3.41     90.   0. rflrb_l3     OPAQUE   VERT -     conc_250     ||< rflrb_l3:L3_ufloor
  27  3.41     90.   0. rflrb_l4     OPAQUE   VERT -     conc_250     ||< rflrb_l4:L4_flrvoid
- 28  3.41     90.   0. rflrb_l5     OPAQUE   VERT -     conc_250     ||< not yet defined
+ 28  3.41     90.   0. rflrb_l5     OPAQUE   VERT -     conc_250     ||< rflrb_l5:L5_uf_plen
  29  2.65      0.   0. rflrc_l2     OPAQUE   VERT -     conc_250     ||< rflrc_l2:L2_uf_plen
  30  2.65      0.   0. rflrc_l3     OPAQUE   VERT -     conc_250     ||< rflrc_l3:L3_ufloor
  31  2.65      0.   0. rflrc_l4     OPAQUE   VERT -     conc_250     ||< rflrc_l4:L4_flrvoid
@@ -723,6 +726,9 @@ vertex  36   -8.20400   14.15464   68.23000   vertex  72   -7.50400   36.28000  
  It encloses a volume of 243.m^3 of space, with a total surface
  area of 724.m^2 & approx floor area of 16.5m^2
  ne_facade describes the stone facade on NE with air void
+ There is 470.50m2 of exposed surface area, 437.44m2 of which is vertical.
+ Outside walls are 2746.3 % of floor area & avg U of 0.309 & UA of 140.13
+ Flat roof is 99.980 % of floor area & avg U of 0.312 & UA of 5.1514
  
  A summary of the surfaces in ne_facade( 5) follows:
  
@@ -770,7 +776,7 @@ vertex  36   -8.20400   14.15464   68.23000   vertex  72   -7.50400   36.28000  
  40  0.933   270.   0. l3_fv_ma     OPAQUE   VERT -     slab_275     ||< l3_fv_ma:L3_ufloor
  41  6.81    270.   0. l3_fv_ta     OPAQUE   VERT -     slab_275     ||< l3_fv_ta:L3_ufloor
  42  0.933   270.   0. l4_fv_ma     OPAQUE   VERT -     slab_275     ||< l4_fv_ma:L4_flrvoid
- 43  0.933   270.   0. l5_fv_ma     OPAQUE   VERT -     slab_275     ||< not yet defined
+ 43  0.933   270.   0. l5_fv_ma     OPAQUE   VERT -     masny_at_st  ||< to_ne_fac_b:L5_uf_plen
  44  6.81    270.   0. l4_fv_ta     OPAQUE   VERT -     slab_275     ||< l4_fv_ta:L4_flrvoid
  45  6.81    270.   0. l5_fv_ta     OPAQUE   VERT -     slab_275     ||< l5_fv_ta:L5_uf_plen
  46  14.8    270.   0. inner_parap  OPAQUE   VERT -     stone_eldon  ||< external
@@ -1082,34 +1088,34 @@ vertex  48    7.12482    1.85245   47.95000   vertex  96   29.16426   14.39213  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    -0.2    -0.6    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_va door
-  2     2.2     0.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vb door
-  3     4.6     0.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vc door
-  4     7.0     1.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vd door
-  5     9.6     2.0    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_ve door
-  6    12.0     2.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vf door
-  7    14.4     3.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vg door
-  8    16.8     4.0    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vh door
-  9    19.2     4.6    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vi door
- 10    21.6     5.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vj door
- 11    24.0     5.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vk door
- 12    26.4     6.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vl door
- 13    28.8     7.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vm door
- 14    31.2     7.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vn door
- 15    33.8     8.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vo door
- 16     0.8     1.0    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_a door
- 17     4.3     2.0    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_b door
- 18     9.0     3.3    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_c door
- 19    14.0     4.5    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_d door
- 20    18.8     5.8    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_e door
- 21     0.5     7.8    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_a door
- 22     7.0     9.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_b door
- 23    13.8    11.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_c door
- 24    17.3    11.8    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_d door
- 25    17.3    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_e door
- 26    13.8    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_f door
- 27     7.0    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_g door
- 28     0.5    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_h door
+  1    -0.2    -0.6    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_va mull_90
+  2     2.2     0.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vb mull_90
+  3     4.6     0.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vc mull_90
+  4     7.0     1.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vd mull_90
+  5     9.6     2.0    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_ve mull_90
+  6    12.0     2.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vf mull_90
+  7    14.4     3.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vg mull_90
+  8    16.8     4.0    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vh mull_90
+  9    19.2     4.6    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vi mull_90
+ 10    21.6     5.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vj mull_90
+ 11    24.0     5.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vk mull_90
+ 12    26.4     6.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vl mull_90
+ 13    28.8     7.2    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vm mull_90
+ 14    31.2     7.8    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vn mull_90
+ 15    33.8     8.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vo mull_90
+ 16     0.8     1.0    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_a conc_250
+ 17     4.3     2.0    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_b conc_250
+ 18     9.0     3.3    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_c conc_250
+ 19    14.0     4.5    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_d conc_250
+ 20    18.8     5.8    48.0     0.4     0.4    15.4     0.0     0.0 1.00 col_at_e conc_250
+ 21     0.5     7.8    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_a conc_250
+ 22     7.0     9.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_b conc_250
+ 23    13.8    11.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_c conc_250
+ 24    17.3    11.8    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_d conc_250
+ 25    17.3    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_e conc_250
+ 26    13.8    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_f conc_250
+ 27     7.0    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_g conc_250
+ 28     0.5    14.0    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_h conc_250
  29    -0.5    -0.9    50.9    30.5     0.4     0.1    14.7     0.0 1.00 hor_a mull_90
  30    -0.5    -0.9    51.1    30.5     0.4     0.1    14.7     0.0 1.00 hor_b mull_90
  31    -0.5    -0.9    51.4    30.5     0.4     0.1    14.7     0.0 1.00 hor_c mull_90
@@ -1668,16 +1674,16 @@ vertex  21   26.50000   15.75000   51.69300   vertex  42   51.60000   23.17941  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    24.0    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_o door
-  2    27.5    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_p door
-  3    24.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_q door
-  4    27.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_r door
-  5    34.3    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_s door
-  6    38.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_t door
-  7    34.3    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_u door
-  8    38.0    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_v door
-  9    44.5    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_w door
- 10    44.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_x door
+  1    24.0    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_o conc_250
+  2    27.5    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_p conc_250
+  3    24.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_q conc_250
+  4    27.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_r conc_250
+  5    34.3    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_s conc_250
+  6    38.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_t conc_250
+  7    34.3    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_u conc_250
+  8    38.0    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_v conc_250
+  9    44.5    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_w conc_250
+ 10    44.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_x conc_250
  
  
  
@@ -1789,12 +1795,12 @@ vertex  27   15.25000   21.25000   51.69300   vertex  54    8.35979   30.50000  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1     0.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_i door
-  2     7.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_j door
-  3    13.8    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_k door
-  4    17.3    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_l door
-  5    13.8    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_m door
-  6    17.3    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_n door
+  1     0.5    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_i conc_250
+  2     7.0    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_j conc_250
+  3    13.8    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_k conc_250
+  4    17.3    21.3    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_l conc_250
+  5    13.8    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_m conc_250
+  6    17.3    28.5    48.0     0.3     0.3    15.4     0.0     0.0 1.00 col_n conc_250
  
  
  
@@ -2029,12 +2035,12 @@ vertex  26   51.00000   28.50000   51.69300   vertex  52   51.00000   36.00000  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    13.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_a door
-  2    20.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_b door
-  3    26.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_c door
-  4    33.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_d door
-  5    40.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_e door
-  6    47.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_f door
+  1    13.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_a mull_90
+  2    20.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_b mull_90
+  3    26.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_c mull_90
+  4    33.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_d mull_90
+  5    40.8    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_e mull_90
+  6    47.3    40.8    51.7     1.0     1.0    13.4     0.0     0.0 1.00 vnt_f mull_90
  
  
  
@@ -2856,9 +2862,27 @@ vertex  19   34.25000   13.06217   52.45000   vertex  38   34.25000   13.06217  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm door
-  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn door
-  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo door
+  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm mull_90
+  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn mull_90
+  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo mull_90
+  4    29.0     6.9    52.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_e mull_90
+  5    29.0     6.9    52.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_f mull_90
+  6    29.0     6.9    52.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_g mull_90
+  7    29.0     6.9    52.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_h mull_90
+  8    29.0     6.9    53.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_i mull_90
+  9    29.0     6.9    53.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_j mull_90
+ 10    29.0     6.9    53.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_k mull_90
+ 11    29.0     6.9    53.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_l mull_90
+ 12    29.0     6.9    54.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_m mull_90
+ 13    29.0     6.9    54.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_n mull_90
+ 14    29.0     6.9    54.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_o mull_90
+ 15    29.0     6.9    55.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_p mull_90
+ 16    29.0     6.9    55.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_q mull_90
+ 17    29.0     6.9    55.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_r mull_90
+ 18    29.0     6.9    55.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_s mull_90
+ 19    29.0     6.9    56.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_t mull_90
+ 20    29.0     6.9    56.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_u mull_90
+ 21    29.0     6.9    56.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_v mull_90
  
  
  
@@ -4492,9 +4516,29 @@ vertex  19   34.25000   13.06217   56.35000   vertex  38   34.25000   13.06217  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm door
-  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn door
-  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo door
+  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm mull_90
+  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn mull_90
+  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo mull_90
+  4    29.0     6.9    55.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_s mull_90
+  5    29.0     6.9    56.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_t mull_90
+  6    29.0     6.9    56.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_u mull_90
+  7    29.0     6.9    56.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_v mull_90
+  8    29.0     6.9    57.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_w mull_90
+  9    29.0     6.9    57.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_x mull_90
+ 10    29.0     6.9    57.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_y mull_90
+ 11    29.0     6.9    57.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_z mull_90
+ 12    29.0     6.9    58.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_za mull_90
+ 13    29.0     6.9    58.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_zb mull_90
+ 14    29.0     6.9    58.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zc mull_90
+ 15    29.0     6.9    59.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_zd mull_90
+ 16    29.0     6.9    59.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_ze mull_90
+ 17    29.0     6.9    59.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zf mull_90
+ 18    29.0     6.9    59.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_zg mull_90
+ 19    29.0     6.9    60.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_zh mull_90
+ 20    29.0     6.9    60.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_zi mull_90
+ 21    29.0     6.9    60.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zj mull_90
+ 22    29.0     6.9    60.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_zk mull_90
+ 23    29.0     6.9    61.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_zl mull_90
  
  
  
@@ -4506,10 +4550,6 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  It encloses a volume of 63.6m^3 of space, with a total surface
  area of 119.m^2 & approx floor area of 8.16m^2
  L3_void_cir describes a void adjacent to circular meeting at L3
- There is 32.727m2 of exposed surface area, 24.571m2 of which is vertical.
- Outside walls are 105.89 % of floor area & avg U of 1.153 & UA of 9.9593
- Flat roof is 99.940 % of floor area & avg U of 0.205 & UA of 1.6682
- Glazing is 195.23 % of floor & 64.833 % facade with avg U of 1.402 & UA of 22.330
  
  A summary of the surfaces in L3_L4_cir_vd(37) follows:
  
@@ -4541,7 +4581,7 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  24  1.56    167.   0. fac_fr_u     OPAQUE   VERT -     mull_90      ||< external
  25  4.06     78.   0. balcony_au   SCF8477_ VERT -     glaz_ptn     ||< balcony_au:L4_open_plr
  26  1.71    346.   0. balcony_bu   SCF8477_ VERT -     glaz_ptn     ||< balcony_bu:L4_open_plr
- 27  3.07     78.   0. parapet_a    OPAQUE   VERT -     stone_cast_i ||< parapet_a:L5_uf_plen
+ 27  3.07     78.   0. parapet_a    OPAQUE   VERT -     stone_cast_i ||< not yet defined
  28  1.30    346.   0. parapet_b    OPAQUE   VERT -     roof_0.2     ||< external
  
  Vertices ( index X Y Z) in the zone...
@@ -4599,6 +4639,40 @@ vertex  19   36.76406    9.49976   57.35000   vertex  38   35.91460   13.46780  
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    33.8     8.4    48.0     0.1     0.2    16.7    13.0     0.0 1.00 sol_vo mull_90
+  2    29.0     6.9    56.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_t mull_90
+  3    29.0     6.9    56.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_u mull_90
+  4    29.0     6.9    56.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_v mull_90
+  5    29.0     6.9    57.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_w mull_90
+  6    29.0     6.9    57.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_x mull_90
+  7    29.0     6.9    57.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_y mull_90
+  8    29.0     6.9    57.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_z mull_90
+  9    29.0     6.9    58.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_za mull_90
+ 10    29.0     6.9    58.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_zb mull_90
+ 11    29.0     6.9    58.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zc mull_90
+ 12    29.0     6.9    59.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_zd mull_90
+ 13    29.0     6.9    59.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_ze mull_90
+ 14    29.0     6.9    59.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zf mull_90
+ 15    29.0     6.9    59.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_zg mull_90
+ 16    29.0     6.9    60.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_zh mull_90
+ 17    29.0     6.9    60.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_zi mull_90
+ 18    29.0     6.9    60.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zj mull_90
+ 19    29.0     6.9    60.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_zk mull_90
+ 20    29.0     6.9    61.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_zl mull_90
+ 21    29.0     6.9    61.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zm mull_90
+ 22    29.0     6.9    61.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_zn mull_90
+ 23    29.0     6.9    62.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_zo mull_90
+ 24    29.0     6.9    62.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_zp mull_90
+ 25    29.0     6.9    62.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_zq mull_90
+ 26    29.0     6.9    62.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_zr mull_90
+ 27    29.0     6.9    63.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_zs mull_90
+ 28    29.0     6.9    63.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zt mull_90
+ 29    29.0     6.9    63.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zu mull_90
+ 30    29.0     6.9    64.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_zv mull_90
+ 31    29.0     6.9    64.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_zw mull_90
+ 32    29.0     6.9    64.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_zx mull_90
  
  
  
@@ -6293,9 +6367,26 @@ vertex  21   32.96416   14.01214   60.25000   vertex  42   34.25000   13.06200  
  
  
 Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm door
-  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn door
-  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo door
+  1    28.8     7.2    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vm mull_90
+  2    31.2     7.8    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vn mull_90
+  3    33.8     8.4    48.0     0.1     0.2    15.4    13.0     0.0 1.00 sol_vo mull_90
+  4    29.0     6.9    60.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_zh mull_90
+  5    29.0     6.9    60.4     7.3     0.4     0.1    14.7     0.0 1.00 hor_zi mull_90
+  6    29.0     6.9    60.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zj mull_90
+  7    29.0     6.9    60.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_zk mull_90
+  8    29.0     6.9    61.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_zl mull_90
+  9    29.0     6.9    61.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zm mull_90
+ 10    29.0     6.9    61.8     7.3     0.4     0.1    14.7     0.0 1.00 hor_zn mull_90
+ 11    29.0     6.9    62.1     7.3     0.4     0.1    14.7     0.0 1.00 hor_zo mull_90
+ 12    29.0     6.9    62.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_zp mull_90
+ 13    29.0     6.9    62.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_zq mull_90
+ 14    29.0     6.9    62.9     7.3     0.4     0.1    14.7     0.0 1.00 hor_zr mull_90
+ 15    29.0     6.9    63.2     7.3     0.4     0.1    14.7     0.0 1.00 hor_zs mull_90
+ 16    29.0     6.9    63.5     7.3     0.4     0.1    14.7     0.0 1.00 hor_zt mull_90
+ 17    29.0     6.9    63.7     7.3     0.4     0.1    14.7     0.0 1.00 hor_zu mull_90
+ 18    29.0     6.9    64.0     7.3     0.4     0.1    14.7     0.0 1.00 hor_zv mull_90
+ 19    29.0     6.9    64.3     7.3     0.4     0.1    14.7     0.0 1.00 hor_zw mull_90
+ 20    29.0     6.9    64.6     7.3     0.4     0.1    14.7     0.0 1.00 hor_zx mull_90
  
  
  
@@ -6764,7 +6855,7 @@ vertex  32   11.98844   30.48622   63.39300   vertex  64   27.69180   35.70000  
  
  ____________________________________________________________
  
- Zone L4_open_plr (57) is composed of 43 surfaces and 78 vertices.
+ Zone L4_open_plr (57) is composed of 44 surfaces and 78 vertices.
  It encloses a volume of 1570.m^3 of space, with a total surface
  area of 1370.m^2 & approx floor area of 503.m^2
  L4_open_plr describes right half of level four open plan area
@@ -6780,7 +6871,7 @@ vertex  32   11.98844   30.48622   63.39300   vertex  64   27.69180   35.70000  
   5  15.2    167.   0. ptn_vb_b     SCF8477_ VERT -     glaz_ptn     ||< ptn_vb_b:L3_void_b
   6  45.5    270.   0. open_fict    SC_ficti VERT -     fictitious   ||< fic_to_rb:L4_open_s
   7  22.8    270.   0. open_fict2   SC_ficti VERT -     fictitious   ||< fic_to_ra:L4_open_s
-  8  499.      0.  90. ceiling      OPAQUE   CEIL -     slab_275     ||< ceiling_l4or:L5_uf_plen
+  8  462.      0.  90. ceil_l4_opr  OPAQUE   CEIL -     slab_275     ||< ceiling_l4or:L5_uf_plen
   9  499.    207. -90. floor        OPAQUE   FLOR -     flr_ov_pln   ||< floor_l4opr:L4_flrvoid
  10  3.98    167.   0. seg_h        OPAQUE   VERT -     gyp_ins_gyp  ||< seg_hl:L4_circular
  11  3.59    182.   0. seg_i        OPAQUE   VERT -     gyp_ins_gyp  ||< seg_il:L4_circular
@@ -6816,6 +6907,7 @@ vertex  32   11.98844   30.48622   63.39300   vertex  64   27.69180   35.70000  
  41  10.5      0.   0. ptn_open_f   OPAQUE   VERT -     gyp_aco_gyp  ||< ptn_open_f:L4_cell_srv
  42  6.22      0.   0. ptn_open_g   OPAQUE   VERT -     gyp_aco_gyp  ||< ptn_open_g:L4_cell_srv
  43  0.637     0.   0. cell_fill    OPAQUE   VERT -     gyp_aco_gyp  ||< not yet defined
+ 44  36.9      0.  90. to_roof_l4   OPAQUE   CEIL -     roof_0.2     ||< external
  
  Vertices ( index X Y Z) in the zone...
 vertex   1   27.48911   13.95529   60.25000   vertex  40   51.60000   20.42448   63.39300
@@ -6866,8 +6958,8 @@ vertex  39   51.60000   20.42448   60.25000   vertex  78   48.02128   35.70000  
 *edges,4,7,8,16,15   open_fict
 *edges,4,8,1,9,16   open_fict2
 *
-edges,36,9,26,19,20,22,24,10,11,63,12,13,14,44,42,40,29,30,32,34,36,38,78,76,74,72,57,56,55,53,54,56,57,69,70,15,16
-ceiling
+edges,34,9,26,19,20,22,24,10,11,13,14,44,42,40,29,30,32,34,36,38,78,76,74,72,57,56,55,53,54,56,57,69,70,15,16
+ceil_l4_opr
 *
 edges,36,1,8,7,67,68,58,45,46,49,51,45,58,71,73,75,77,37,35,33,31,27,28,39,41,43,6,5,4,59,3,2,23,21,17,18,25
 floor
@@ -6905,6 +6997,7 @@ floor
 *edges,4,77,75,76,78   ptn_open_f
 *edges,4,37,77,78,38   ptn_open_g
 *edges,4,67,7,15,70   cell_fill
+*edges,4,63,12,13,11   to_roof_l4
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -7123,7 +7216,7 @@ floor
   6  6.29    270.   0. ptn_cel_b    OPAQUE   VERT -     gyp_blk_ptn  ||< ptn_cel_b:L4_open_plr
   7  16.7    270.   0. ptna_opn_l4  OPAQUE   VERT -     gyp_blk_ptn  ||< ptna_opn_l4:L4_open_plr
   8  1.89    180.   0. ptnb_opn_l4  OPAQUE   VERT -     gyp_blk_ptn  ||< ptnb_opn_l4:L4_open_plr
-  9  53.8    180.  90. top          OPAQUE   CEIL -     slab_275     ||< top_l4_toilc:L5_uf_plen
+  9  53.8    180.  90. ceil_l4_tp   OPAQUE   CEIL -     slab_275     ||< top_l4_toilc:L5_uf_plen
  10  53.8      0. -90. floor        OPAQUE   FLOR -     top_pln      ||< flool4tp:L4_flrvoid
  11  2.85     90.   0. ptnb_fac_l4  OPAQUE   VERT -     masny_at_st  ||< ptnb_fac_l4:ne_facade
  12  15.9      0.   0. ptnb_str_l4  OPAQUE   VERT -     conc_250     ||< ptnb_str_l4:stair_2
@@ -7149,7 +7242,7 @@ vertex  11   51.60000   23.17941   63.39300   vertex  22   51.00000   30.50000  
 *edges,4,21,9,19,22   ptn_cel_b
 *edges,4,9,10,20,19   ptna_opn_l4
 *edges,4,10,1,11,20   ptnb_opn_l4
-*edges,11,11,12,13,14,15,16,17,18,22,19,20   top
+*edges,11,11,12,13,14,15,16,17,18,22,19,20   ceil_l4_tp
 *edges,11,1,10,9,21,8,7,6,5,4,3,2   floor
 *edges,4,3,4,14,13   ptnb_fac_l4
 *edges,6,8,21,22,18,17,7   ptnb_str_l4
@@ -7903,8 +7996,12 @@ vertex  41   23.50000   36.00000   67.37500   vertex  82   23.38123   36.00000  
  
  Zone L5_pz_meet (70) is composed of 15 surfaces and 30 vertices.
  It encloses a volume of 179.m^3 of space, with a total surface
- area of 224.m^2 & approx floor area of 58.6m^2
+ area of 224.m^2 & approx floor area of 55.4m^2
  L5_pz_meet is the L5 print zone plus meeting room adj stair2
+ There is 67.492m2 of exposed surface area, 12.094m2 of which is vertical.
+ Outside walls are 4.3663 % of floor area & avg U of 2.702 & UA of 6.5370
+ Flat roof is 99.996 % of floor area & avg U of 0.205 & UA of 11.332
+ Glazing is 17.464 % of floor & 79.998 % facade with avg U of 1.402 & UA of 13.561
  
  A summary of the surfaces in L5_pz_meet(70) follows:
  
@@ -7922,7 +8019,7 @@ vertex  41   23.50000   36.00000   67.37500   vertex  82   23.38123   36.00000  
  10  0.806     0.   0. fac_fr_a     OPAQUE   VERT -     mull_90      ||< external
  11  1.61      0.   0. fac_fr_b     OPAQUE   VERT -     mull_90      ||< external
  12  55.4      0.  90. roof         OPAQUE   CEIL -     roof_0.2     ||< external
- 13  55.4      0. -90. floor_pz_m   OPAQUE   FLOR -     top_pln      ||< not yet defined
+ 13  55.4      0. -90. floor_pz_m   OPAQUE   FLOR -     top_pln      ||< floor_pz_m:L5_uf_plen
  14  3.22      0.   0. fac_gl_a     DSF4554_ VERT C-WIN db_lpasol    ||< external
  15  6.45      0.   0. fac_gl_b     DSF4554_ VERT C-WIN db_lpasol    ||< external
  
@@ -8098,6 +8195,9 @@ vertex  10   16.25000   36.00000   67.37500   vertex  20   12.00000   30.50000  
  It encloses a volume of 173.m^3 of space, with a total surface
  area of 202.m^2 & approx floor area of 53.8m^2
  L5_toil_psg describes is the toilet and passage on top level
+ There is 55.694m2 of exposed surface area, 1.9351m2 of which is vertical.
+ Flat roof is 99.997 % of floor area & avg U of 0.205 & UA of 10.997
+ Glazing is 3.5994 % of floor & 100.00 % facade with avg U of 1.402 & UA of 2.7123
  
  A summary of the surfaces in L5_toil_psg(73) follows:
  
@@ -8113,7 +8213,7 @@ vertex  10   16.25000   36.00000   67.37500   vertex  20   12.00000   30.50000  
   8  17.2    270.   0. ptna_opn_l5  OPAQUE   VERT -     gyp_blk_ptn  ||< prn_toil:L5_pz_meet
   9  1.94    180.   0. ptnb_opn_l5  OPAQUE   VERT -     gyp_blk_ptn  ||< ptnb_opn_l5:L5_open_rt
  10  53.8    180.  90. top          OPAQUE   CEIL -     roof_0.2     ||< external
- 11  53.8    180. -90. floor        OPAQUE   FLOR -     flr_ov_pln   ||< not yet defined
+ 11  53.8    180. -90. floor        OPAQUE   FLOR -     slab_275     ||< floor_l5_tp:L5_uf_plen
  12  16.3      0.   0. ptnbb_str_l5 OPAQUE   VERT -     conc_250     ||< ptnb_str_l5:stair_2
  
  Vertices ( index X Y Z) in the zone...
@@ -9041,10 +9141,14 @@ vertex  13   12.00000   35.70000   59.49300   vertex  26    0.00000   36.28000  
  
  ____________________________________________________________
  
- Zone L5_uf_plen (81) is composed of 50 surfaces and 230 vertices.
- It encloses a volume of 1370.m^3 of space, with a total surface
- area of 2410.m^2 & approx floor area of 1190.m^2
+ Zone L5_uf_plen (81) is composed of 62 surfaces and 180 vertices.
+ It encloses a volume of 873.m^3 of space, with a total surface
+ area of 2470.m^2 & approx floor area of 1150.m^2
  L5_uf_plen describes structure for level five
+ There is 67.081m2 of exposed surface area, 35.117m2 of which is vertical.
+ Outside walls are 3.0465 % of floor area & avg U of 0.306 & UA of 10.749
+ Sloped roof is 1.1755 % of floor area & avg U of 0.309 & UA of 4.1859
+ Flat roof is 1.5975 % of floor area & avg U of 0.205 & UA of 3.7668
  
  A summary of the surfaces in L5_uf_plen(81) follows:
  
@@ -9057,18 +9161,18 @@ vertex  13   12.00000   35.70000   59.49300   vertex  26    0.00000   36.28000  
   5  1.21    216.   0. seg_k        OPAQUE   VERT -     gyp_ins_gyp  ||< seg_k:L4_circular
   6  35.3      0. -90. ceiling_l4mt OPAQUE   FLOR -     slab_275     ||< ceiling:L4_meeting
   7  135.      0. -90. Tl4_sw_mtcei OPAQUE   FLOR -     slab_275     ||< Tl4_sw_mtcei:L4_sw_meet
-  8  468.    346. -90. ceiling_l4op OPAQUE   FLOR -     slab_275     ||< ceiling_l4op:L4_open_s
-  9  499.    180. -90. ceiling_l4or OPAQUE   FLOR -     slab_275     ||< ceiling:L4_open_plr
- 10  53.8      0. -90. top_l4_toilc OPAQUE   FLOR -     slab_275     ||< top:L4_toil_psg
- 11  120.      0.  90. floor_conf   OPAQUE   CEIL -     flr_ov_pln   ||< floor_conf:L5_confer
+  8  468.     14. -90. ceiling_l4op OPAQUE   FLOR -     slab_275     ||< ceiling_l4op:L4_open_s
+  9  462.    180. -90. ceiling_l4or OPAQUE   FLOR -     slab_275     ||< ceil_l4_opr:L4_open_plr
+ 10  53.8      0. -90. top_l4_toilc OPAQUE   FLOR -     slab_275     ||< ceil_l4_tp:L4_toil_psg
+ 11  121.    326.  90. floor_conf   OPAQUE   CEIL -     flr_ov_pln   ||< floor_conf:L5_confer
  12  46.1      0.  90. floor_kitch2 OPAQUE   CEIL -     flr_ov_pln   ||< floor_kitch2:L5_kitch2
  13  120.      0.  90. floor-lob    OPAQUE   CEIL -     flr_ov_pln   ||< floor-lob:L5_lobby
- 14  23.4      0.  90. floor_srv    OPAQUE   CEIL -     flr_ov_pln   ||< floor_srv:L5_lit_srv
- 15  362.      0.  90. floor_opn_lf OPAQUE   CEIL -     flr_ov_pln   ||< floor_opn_lf:L5_open_lft
- 16  81.3      0.  90. floor_cel    OPAQUE   CEIL -     flr_ov_pln   ||< floor_cel:L5_srv_cell
- 17  55.4      0.  90. floor_pz_m   OPAQUE   CEIL -     flr_ov_pln   ||< floor_pz_m:L5_pz_meet
+ 14  21.1      0.  90. floor_srv    OPAQUE   CEIL -     flr_ov_pln   ||< floor_srv:L5_lit_srv
+ 15  354.    153.  90. floor_opn_lf OPAQUE   CEIL -     flr_ov_pln   ||< floor_opn_lf:L5_open_lft
+ 16  73.8      0.  90. floor_cel    OPAQUE   CEIL -     flr_ov_pln   ||< floor_cel:L5_srv_cell
+ 17  54.3      0.  90. floor_pz_m   OPAQUE   CEIL -     flr_ov_pln   ||< floor_pz_m:L5_pz_meet
  18  35.3    180.  90. floor        OPAQUE   CEIL -     slab_275     ||< floor:L5_meeting
- 19  27.5      0.  90. floor_toil   OPAQUE   CEIL -     flr_ov_pln   ||< floor_toil:L5_toilet
+ 19  27.0      0.  90. floor_toil   OPAQUE   CEIL -     flr_ov_pln   ||< floor_toil:L5_toilet
  20  5.45    270.   0. l3_flrv_r    OPAQUE   VERT -     slab_275     ||< l3_flrv_r:L5_light_w1
  21  2.84      0.   0. l3_flrv_f    OPAQUE   VERT -     slab_275     ||< l3_flrv_f:L5_light_w1
  22  5.45     90.   0. l3_flrv_l    OPAQUE   VERT -     slab_275     ||< l3_flrv_l:L5_light_w1
@@ -9082,7 +9186,7 @@ vertex  13   12.00000   35.70000   59.49300   vertex  26    0.00000   36.28000  
  30  9.08      0.   0. l5_flrvb     OPAQUE   VERT -     conc_250     ||< l5_flrvb:stair_1
  31  3.94    270.   0. l5_flrvc     OPAQUE   VERT -     conc_250     ||< l5_flrvc:stair_1
  32  6.28      0.   0. l5_flr_vd    OPAQUE   VERT -     conc_250     ||< l5_flr_vd:stair_2
- 33  4.16     90.   0. l5_flr_vda   OPAQUE   VERT -     conc_250     ||< l5_flr_vda:stair_2
+ 33  3.94     90.   0. l5_flr_vda   OPAQUE   VERT -     conc_250     ||< l5_flr_vda:stair_2
  34  2.65      0.   0. rflra_l5     OPAQUE   VERT -     conc_250     ||< rflra_l5:lifts
  35  2.65    180.   0. rflrc_l5     OPAQUE   VERT -     conc_250     ||< rflrc_l5:lifts
  36  6.81     90.   0. l5_fv_ta     OPAQUE   VERT -     slab_275     ||< l5_fv_ta:ne_facade
@@ -9094,193 +9198,185 @@ vertex  13   12.00000   35.70000   59.49300   vertex  26    0.00000   36.28000  
  42  4.13    166.   0. struc_g      OPAQUE   VERT -     slab_275     ||< struc_g:L5_atroofltl
  43  1.21    270.   0. struc_h      OPAQUE   VERT -     slab_275     ||< struc_h:L5_atroofltl
  44  2.46    165.   0. struc_i      OPAQUE   VERT -     slab_275     ||< struc_i:L5_atroofltl
- 45  3.49    167.   0. struc_j      OPAQUE   VERT -     slab_275     ||< struc_j:L5_atroofltl
+ 45  3.47    169.   0. struc_j      OPAQUE   VERT -     slab_275     ||< struc_j:L5_atroofltl
  46  1.35     93.   0. struc_b      OPAQUE   VERT -     slab_275     ||< struc_b:L5_atroofltl
  47  4.15    167.   0. struc_c      OPAQUE   VERT -     slab_275     ||< struc_c:L5_atroofltl
- 48  231.     14.  90. L5_op_rt_flr OPAQUE   CEIL -     flr_ov_pln   ||< L5_op_rt_flr:L5_open_rt
- 49  3.07    258.   0. parapet_a    OPAQUE   VERT -     stone_cast   ||< parapet_a:L3_L4_cir_vd
- 50  1.30    166.   0. parapet_b    OPAQUE   VERT -     stone_cast   ||< not yet defined
+ 48  229.      0.  90. L5_op_rt_flr OPAQUE   CEIL -     flr_ov_pln   ||< L5_op_rt_flr:L5_open_rt
+ 49  12.3      0.   0. srv_fac-a    OPAQUE   VERT -     stone_masnry ||< external
+ 50  16.5      0.   0. srv_fac_b    OPAQUE   VERT -     stone_masnry ||< external
+ 51  3.41    270.   0. rflrb_l5     OPAQUE   VERT -     conc_250     ||< rflrb_l5:lifts
+ 52  9.60      0.  90. proj_a       OPAQUE   CEIL -     roof_0.2     ||< external
+ 53  8.82      0.  90. proj_b       OPAQUE   CEIL -     roof_0.2     ||< external
+ 54  0.515   213.   0. wee_fill_cr  OPAQUE   VERT -     slab_275     ||< identical environment
+ 55  53.8      0.  90. floor_l5_tp  OPAQUE   CEIL -     slab_275     ||< floor:L5_toil_psg
+ 56  0.454    90.   0. ext_ne_fac_a OPAQUE   VERT -     stone_masnry ||< external
+ 57  0.933    90.   0. to_ne_fac_b  OPAQUE   VERT -     masny_at_st  ||< l5_fv_ma:ne_facade
+ 58  0.454    90.   0. ext_ne_fac_b OPAQUE   VERT -     stone_masnry ||< external
+ 59  4.49    167.   0. str_fac_d    OPAQUE   VERT -     stone_masnry ||< external
+ 60  0.739   163.   0. str_fac_e    OPAQUE   VERT -     stone_masnry ||< external
+ 61  0.216   270.   0. str_fac_f    OPAQUE   VERT -     stone_masnry ||< external
+ 62  13.6    166.  -4. str_fac_g    OPAQUE   SLOP -     stone_masnry ||< external
  
  Vertices ( index X Y Z) in the zone...
-vertex   1   29.16426   14.39213   63.39300   vertex 116    1.50000    7.75000   64.15000
-vertex   2   28.07178   13.63215   63.39300   vertex 117    0.49320    7.58220   64.15000
-vertex   3   28.07178   13.63215   64.15000   vertex 118    0.00000   21.25000   64.15000
-vertex   4   29.16426   14.39213   64.15000   vertex 119    0.00000   24.00000   64.15000
-vertex   5   30.39923   14.67713   63.39300   vertex 120    3.50000   24.00000   64.15000
-vertex   6   30.39923   14.67713   64.15000   vertex 121    4.05000   24.00000   64.15000
-vertex   7   31.53920   14.62963   63.39300   vertex 122    4.05000   21.25000   64.15000
-vertex   8   31.53920   14.62963   64.15000   vertex 123    6.50000   21.25000   64.15000
-vertex   9   32.96416   14.01214   63.39300   vertex 124   10.00000   21.25000   64.15000
-vertex  10   32.96416   14.01214   64.15000   vertex 125    3.50000   28.50000   64.15000
-vertex  11   34.25000   13.06200   63.39300   vertex 126    0.00000   28.50000   64.15000
-vertex  12   34.25000   13.06217   64.15000   vertex 127    0.00000   30.50000   64.15000
-vertex  13   51.60000   17.00457   63.39300   vertex 128    8.35979   30.50000   64.15000
-vertex  14   52.01118   17.14706   63.39300   vertex 129   12.00000   30.50000   64.15000
-vertex  15   52.53366   17.28956   63.39300   vertex 130   13.25000   30.50000   64.15000
-vertex  16   54.10112   17.66955   63.39300   vertex 131   17.00000   30.50000   64.15000
-vertex  17   56.57106   18.23954   63.39300   vertex 132   17.45000   30.50000   64.15000
-vertex  18   58.30000   18.66702   63.39300   vertex 133   17.45000   28.50000   64.15000
-vertex  19   58.30000   19.90000   63.39300   vertex 134   13.70000   28.50000   64.15000
-vertex  20   58.30000   20.50000   63.39300   vertex 135   13.70000   21.30000   64.15000
-vertex  21   58.30000   23.08441   63.39300   vertex 136   17.00000   36.00000   64.15000
-vertex  22   51.60000   23.17941   63.39300   vertex 137   18.75000   36.00000   64.15000
-vertex  23   51.60000   20.42448   63.39300   vertex 138   21.25000   36.00000   64.15000
-vertex  24   51.60000   19.23701   63.39300   vertex 139   21.25000   32.75000   64.15000
-vertex  25   51.60000   18.19204   63.39300   vertex 140   21.25000   30.50000   64.15000
-vertex  26   51.60000   17.28956   63.39300   vertex 141   17.45000   21.30000   64.15000
-vertex  27    0.00000    7.36231   63.39300   vertex 142   26.25000   32.75000   64.15000
-vertex  28    4.50000    8.25000   63.39300   vertex 143   28.75000   32.75000   64.15000
-vertex  29    4.50000   14.00000   63.39300   vertex 144   31.25000   32.75000   64.15000
-vertex  30    4.50000   21.00000   63.39300   vertex 145   33.75000   32.75000   64.15000
-vertex  31    4.75000   24.00000   63.39300   vertex 146   34.25000   28.50000   64.15000
-vertex  32   12.00000   24.25000   63.39300   vertex 147   34.25000   21.30000   64.15000
-vertex  33   12.00000   30.50000   63.39300   vertex 148   34.25000   13.00000   64.15000
-vertex  34    8.35979   30.50000   63.39300   vertex 149   32.75000   12.75000   64.15000
-vertex  35    0.00000   30.50000   63.39300   vertex 150   30.00000   13.25000   64.15000
-vertex  36    0.00000   28.50000   63.39300   vertex 151   27.25000   13.75000   64.15000
-vertex  37    3.50000   28.50000   63.39300   vertex 152   24.75000   13.25000   64.15000
-vertex  38    3.50000   24.00000   63.39300   vertex 153   22.25000   12.75000   64.15000
-vertex  39    0.00000   24.00000   63.39300   vertex 154   20.00000   12.25000   64.15000
-vertex  40    0.00000   21.13696   63.39300   vertex 155   17.50000   11.50000   64.15000
-vertex  41    0.00000   18.66702   63.39300   vertex 156   15.00000   11.00000   64.15000
-vertex  42    0.00000   16.10209   63.39300   vertex 157   23.50000   36.00000   64.15000
-vertex  43    0.00000   13.63215   63.39300   vertex 158   26.25000   36.00000   64.15000
-vertex  44    0.00000   11.06722   63.39300   vertex 159   28.75000   36.00000   64.15000
-vertex  45    0.00000    8.59728   63.39300   vertex 160   31.25000   36.00000   64.15000
-vertex  46    4.49566    8.24205   63.39300   vertex 161   33.75000   36.00000   64.15000
-vertex  47    7.63326    9.08499   63.39300   vertex 162   36.25000   36.00000   64.15000
-vertex  48    7.63326    7.49277   63.39300   vertex 163   38.75000   36.00000   64.15000
-vertex  49   12.92503    8.80401   63.39300   vertex 164   41.25000   36.00000   64.15000
-vertex  50   13.06552   10.53671   63.39300   vertex 165   43.75000   36.00000   64.15000
-vertex  51   17.84216   11.75429   63.39300   vertex 166   46.25000   36.00000   64.15000
-vertex  52   17.88899    9.97475   63.39300   vertex 167   46.25000   32.75000   64.15000
-vertex  53   23.22759   11.19233   63.39300   vertex 168   43.75000   32.75000   64.15000
-vertex  54   23.32125   12.97186   63.39300   vertex 169   41.25000   32.75000   64.15000
-vertex  55   27.50000   14.00000   63.39300   vertex 170   38.75000   32.75000   64.15000
-vertex  56   27.50000   21.25000   63.39300   vertex 171   36.25000   32.75000   64.15000
-vertex  57   27.50000   35.70000   63.39300   vertex 172   48.75000   36.00000   64.15000
-vertex  58   24.03439   35.70000   63.39300   vertex 173   50.00000   36.00000   64.15000
-vertex  59   17.45000   35.70000   63.39300   vertex 174   50.00000   30.50000   64.15000
-vertex  60   17.45000   28.50000   63.39300   vertex 175   51.00000   30.50000   64.15000
-vertex  61   17.45000   21.30000   63.39300   vertex 176   51.00000   28.50000   64.15000
-vertex  62   13.70000   21.30000   63.39300   vertex 177   51.00000   23.17941   64.15000
-vertex  63   13.70000   28.50000   63.39300   vertex 178   46.25000   23.17941   64.15000
-vertex  64   17.38456   35.70000   63.39300   vertex 179   46.25000   28.50000   64.15000
-vertex  65   12.00000   35.70000   63.39300   vertex 180   46.25000   30.50000   64.15000
-vertex  66   11.98844   30.48622   63.39300   vertex 181   51.60000   17.00457   64.15000
-vertex  67   11.98844   24.21102   63.39300   vertex 182   51.60000   17.28956   64.15000
-vertex  68    4.72981   23.97687   63.39300   vertex 183   51.60000   18.19204   64.15000
-vertex  69    4.49566   20.97976   63.39300   vertex 184   51.60000   19.23701   64.15000
-vertex  70    4.49566   13.95529   63.39300   vertex 185   51.60000   20.42448   64.15000
-vertex  71   27.48911   13.95529   63.39300   vertex 186   51.60000   23.17941   64.15000
-vertex  72   35.91460   13.46780   63.39300   vertex 187   58.30000   23.08441   64.15000
-vertex  73   36.76406    9.49976   63.39300   vertex 188   58.30000   20.50000   64.15000
-vertex  74   45.64634   11.68470   63.39300   vertex 189   58.30000   19.90000   64.15000
-vertex  75   44.69636   15.62710   63.39300   vertex 190   58.30000   18.66702   64.15000
-vertex  76   51.60000   17.25000   63.39300   vertex 191   56.57106   18.23954   64.15000
-vertex  77   51.00000   23.17941   63.39300   vertex 192   54.10112   17.66955   64.15000
-vertex  78   51.00000   28.49928   63.39300   vertex 193   52.53366   17.28956   64.15000
-vertex  79   51.00000   30.50000   63.39300   vertex 194   52.01118   17.14706   64.15000
-vertex  80   50.00000   30.50000   63.39300   vertex 195   12.00000   35.70000   64.15000
-vertex  81   50.00000   35.70000   63.39300   vertex 196   12.00000   36.00000   64.15000
-vertex  82   48.02128   35.70000   63.39300   vertex 197   13.75000   36.00000   64.15000
-vertex  83   44.69636   35.70000   63.39300   vertex 198   16.25000   36.00000   64.15000
-vertex  84   41.37145   35.70000   63.39300   vertex 199   38.00000   28.50000   64.15000
-vertex  85   38.04653   35.70000   63.39300   vertex 200   38.00000   21.30000   64.15000
-vertex  86   34.25000   35.70000   63.39300   vertex 201    0.00000    7.36231   64.15000
-vertex  87   34.25000   28.50000   63.39300   vertex 202   58.30000   30.50000   64.15000
-vertex  88   38.00000   28.50000   63.39300   vertex 203   56.04857   30.50000   64.15000
-vertex  89   38.00000   21.30000   63.39300   vertex 204   53.10365   30.50000   64.15000
-vertex  90   34.25000   21.30000   63.39300   vertex 205   50.00000   36.00000   63.39300
-vertex  91   31.01671   35.70000   63.39300   vertex 206   58.30000   28.59427   64.15000
-vertex  92   27.69180   35.70000   63.39300   vertex 207   58.30000   29.50000   64.15000
-vertex  93   27.48911   35.70000   63.39300   vertex 208   58.30000   30.10000   64.15000
-vertex  94   27.48911   21.21391   63.39300   vertex 209   23.32125   12.97186   64.15000
-vertex  95   58.30000   28.59427   63.39300   vertex 210   27.50000   14.00000   64.15000
-vertex  96   58.30000   29.50000   63.39300   vertex 211   17.84216   11.75429   64.15000
-vertex  97   58.30000   30.10000   63.39300   vertex 212   17.88899    9.97475   64.15000
-vertex  98   58.30000   30.50000   63.39300   vertex 213   13.06552   10.53671   64.15000
-vertex  99   56.04857   30.50000   63.39300   vertex 214   12.92503    8.80401   64.15000
-vertex 100   53.10365   30.50000   63.39300   vertex 215    7.63326    7.49277   64.15000
-vertex 101    0.00000    7.50000   64.15000   vertex 216    7.63326    9.08499   64.15000
-vertex 102    0.00000    8.50000   64.15000   vertex 217    4.49566    8.25000   63.39300
-vertex 103    0.00000   11.00000   64.15000   vertex 218    4.49566    8.25000   64.15000
-vertex 104    0.00000   13.50000   64.15000   vertex 219    4.49566    8.25000   63.39300
-vertex 105    0.00000   16.00000   64.15000   vertex 220    0.00000    7.25000   63.39300
-vertex 106    0.00000   17.75000   64.15000   vertex 221    0.00000    7.25000   64.15000
-vertex 107    3.75000   17.75000   64.15000   vertex 222   23.22759   11.19233   64.15000
-vertex 108    6.75000   17.75000   64.15000   vertex 223   36.39364   13.49478   64.15000
-vertex 109   10.00000   17.75000   64.15000   vertex 224   49.06061   16.41845   64.15000
-vertex 110   13.70000   17.75000   64.15000   vertex 225   46.52722   15.83372   64.15000
-vertex 111   13.70000   10.50000   64.15000   vertex 226   43.99382   15.24898   64.15000
-vertex 112   10.75000   10.00000   64.15000   vertex 227   41.46043   14.66425   64.15000
-vertex 113    8.25000    9.25000   64.15000   vertex 228   38.92704   14.07951   64.15000
-vertex 114    6.75000    9.00000   64.15000   vertex 229   35.91460   13.46780   64.15000
-vertex 115    4.00000    8.25000   64.15000   vertex 230   36.76406    9.49976   64.15000
+vertex   1   29.16426   14.39213   63.39300   vertex  91   13.65250   10.68633   64.15001
+vertex   2   28.07178   13.63215   63.39300   vertex  92    0.00000   21.25000   64.15000
+vertex   3   28.07178   13.63215   64.15000   vertex  93    0.00000   24.00000   64.15000
+vertex   4   29.16426   14.39213   64.15000   vertex  94    3.50000   24.00000   64.15000
+vertex   5   30.39923   14.67713   63.39300   vertex  95    4.05000   24.00000   64.15000
+vertex   6   30.39923   14.67713   64.15000   vertex  96    4.05000   21.25000   64.15000
+vertex   7   31.53920   14.62963   63.39300   vertex  97    6.50000   21.25000   64.15000
+vertex   8   31.53920   14.62963   64.15000   vertex  98   10.00000   21.25000   64.15000
+vertex   9   32.96416   14.01214   63.39300   vertex  99    3.50000   28.50000   64.15000
+vertex  10   32.96416   14.01214   64.15000   vertex 100    0.00000   28.50000   64.15000
+vertex  11   34.25000   13.06200   63.39300   vertex 101    0.00000   30.50000   64.15000
+vertex  12   34.25000   13.06217   64.15000   vertex 102    8.35979   30.50000   64.15000
+vertex  13   51.60000   17.00457   63.39300   vertex 103   12.00000   30.50000   64.15000
+vertex  14   52.01118   17.14706   63.39300   vertex 104   13.25000   30.50000   64.15000
+vertex  15   52.53366   17.28956   63.39300   vertex 105   17.00000   30.50000   64.15000
+vertex  16   54.10112   17.66955   63.39300   vertex 106   17.45000   30.50000   64.15000
+vertex  17   56.57106   18.23954   63.39300   vertex 107   17.45000   28.50000   64.15000
+vertex  18   58.30000   18.66702   63.39300   vertex 108   13.70000   28.50000   64.15000
+vertex  19   58.30000   19.90000   63.39300   vertex 109   13.70000   21.30000   64.15000
+vertex  20   58.30000   20.50000   63.39300   vertex 110   17.38450   35.70000   64.15000
+vertex  21   58.30000   23.08441   63.39300   vertex 111   18.75000   35.70000   64.15000
+vertex  22   51.60000   23.17941   63.39300   vertex 112   21.25000   35.70000   64.15000
+vertex  23   51.60000   20.42448   63.39300   vertex 113   21.25000   32.75000   64.15000
+vertex  24   51.60000   19.23701   63.39300   vertex 114   21.25000   30.50000   64.15000
+vertex  25   51.60000   18.19204   63.39300   vertex 115   17.45000   21.30000   64.15000
+vertex  26   51.60000   17.28956   63.39300   vertex 116   26.25000   32.75000   64.15000
+vertex  27    0.00000    7.36231   63.39300   vertex 117   28.75000   32.75000   64.15000
+vertex  28    4.50000    8.25000   63.39300   vertex 118   31.25000   32.75000   64.15000
+vertex  29    4.50000   14.00000   63.39300   vertex 119   33.75000   32.75000   64.15000
+vertex  30    4.50000   21.00000   63.39300   vertex 120   34.25000   28.50000   64.15000
+vertex  31    4.75000   24.00000   63.39300   vertex 121   34.25000   21.30000   64.15000
+vertex  32   12.00000   24.25000   63.39300   vertex 122   23.50000   35.70000   64.15000
+vertex  33   12.00000   30.50000   63.39300   vertex 123   26.25000   35.70000   64.15000
+vertex  34    8.35979   30.50000   63.39300   vertex 124   28.75000   35.70000   64.15000
+vertex  35    0.00000   30.50000   63.39300   vertex 125   31.25000   35.70000   64.15000
+vertex  36    0.00000   28.50000   63.39300   vertex 126   33.75000   35.70000   64.15000
+vertex  37    3.50000   28.50000   63.39300   vertex 127   36.25000   35.70000   64.15000
+vertex  38    3.50000   24.00000   63.39300   vertex 128   38.75000   35.70000   64.15000
+vertex  39    0.00000   24.00000   63.39300   vertex 129   41.25000   35.70000   64.15000
+vertex  40    7.63326    9.08499   63.39300   vertex 130   43.75000   35.70000   64.15000
+vertex  41    7.63326    7.49277   63.39300   vertex 131   46.25000   35.70000   64.15000
+vertex  42   12.92503    8.80401   63.39300   vertex 132   46.25000   32.75000   64.15000
+vertex  43   13.06552   10.53671   63.39300   vertex 133   43.75000   32.75000   64.15000
+vertex  44   17.84216   11.75429   63.39300   vertex 134   41.25000   32.75000   64.15000
+vertex  45   17.88899    9.97475   63.39300   vertex 135   38.75000   32.75000   64.15000
+vertex  46   23.22759   11.19233   63.39300   vertex 136   36.25000   32.75000   64.15000
+vertex  47   23.32125   12.97186   63.39300   vertex 137   48.75000   35.70000   64.15000
+vertex  48   27.50000   14.00000   63.39300   vertex 138   50.00000   35.70000   64.15000
+vertex  49   27.50000   21.25000   63.39300   vertex 139   50.00000   30.50000   64.15000
+vertex  50   27.50000   35.70000   63.39300   vertex 140   51.00000   30.50000   64.15000
+vertex  51   24.03439   35.70000   63.39300   vertex 141   51.00000   28.50000   64.15000
+vertex  52   17.45000   35.70000   63.39300   vertex 142   51.00000   23.17941   64.15000
+vertex  53   17.45000   28.50000   63.39300   vertex 143   46.25000   23.17941   64.15000
+vertex  54   17.45000   21.30000   63.39300   vertex 144   46.25000   28.50000   64.15000
+vertex  55   13.70000   21.30000   63.39300   vertex 145   46.25000   30.50000   64.15000
+vertex  56   13.70000   28.50000   63.39300   vertex 146   51.60000   17.00457   64.15000
+vertex  57   12.00000   35.70000   63.39300   vertex 147   51.60000   17.28956   64.15000
+vertex  58   35.91460   13.46780   63.39300   vertex 148   51.60000   18.19204   64.15000
+vertex  59   44.69636   15.62710   63.39300   vertex 149   51.60000   19.23701   64.15000
+vertex  60   51.00000   23.17941   63.39300   vertex 150   51.60000   20.42448   64.15000
+vertex  61   51.00000   28.49928   63.39300   vertex 151   51.60000   23.17941   64.15000
+vertex  62   51.00000   30.50000   63.39300   vertex 152   58.30000   23.08441   64.15000
+vertex  63   50.00000   30.50000   63.39300   vertex 153   58.30000   20.50000   64.15000
+vertex  64   50.00000   35.70000   63.39300   vertex 154   58.30000   19.90000   64.15000
+vertex  65   48.02128   35.70000   63.39300   vertex 155   58.30000   18.66702   64.15000
+vertex  66   44.69636   35.70000   63.39300   vertex 156   56.57106   18.23954   64.15000
+vertex  67   41.37145   35.70000   63.39300   vertex 157   54.10112   17.66955   64.15000
+vertex  68   38.04653   35.70000   63.39300   vertex 158   52.53366   17.28956   64.15000
+vertex  69   33.75000   35.70000   63.39300   vertex 159   52.01118   17.14706   64.15000
+vertex  70   34.25000   28.50000   63.39300   vertex 160   12.00000   35.70000   64.15000
+vertex  71   38.00000   28.50000   63.39300   vertex 161   38.00000   28.50000   64.15000
+vertex  72   38.00000   21.30000   63.39300   vertex 162   38.00000   21.30000   64.15000
+vertex  73   34.25000   21.30000   63.39300   vertex 163    0.00000    7.36231   64.15000
+vertex  74   31.01671   35.70000   63.39300   vertex 164   58.30000   30.50000   64.15000
+vertex  75   27.69180   35.70000   63.39300   vertex 165   56.04857   30.50000   64.15000
+vertex  76   58.30000   28.59427   63.39300   vertex 166   53.10365   30.50000   64.15000
+vertex  77   58.30000   29.50000   63.39300   vertex 167   58.30000   28.59427   64.15000
+vertex  78   58.30000   30.10000   63.39300   vertex 168   58.30000   29.50000   64.15000
+vertex  79   58.30000   30.50000   63.39300   vertex 169   58.30000   30.10000   64.15000
+vertex  80   56.04857   30.50000   63.39300   vertex 170   23.32125   12.97186   64.15000
+vertex  81   53.10365   30.50000   63.39300   vertex 171   27.50000   14.00000   64.15000
+vertex  82    0.00000    8.50000   64.15000   vertex 172   17.84216   11.75429   64.15000
+vertex  83    0.00000   11.00000   64.15000   vertex 173   17.88899    9.97475   64.15000
+vertex  84    0.00000   13.50000   64.15000   vertex 174   13.06552   10.53671   64.15000
+vertex  85    0.00000   16.00000   64.15000   vertex 175   12.92503    8.80401   64.15000
+vertex  86    0.00000   17.75000   64.15000   vertex 176    7.63326    7.49277   64.15000
+vertex  87    3.75000   17.75000   64.15000   vertex 177    7.63326    9.08499   64.15000
+vertex  88    6.75000   17.75000   64.15000   vertex 178    4.49566    8.25000   64.15000
+vertex  89   10.00000   17.75000   64.15000   vertex 179   23.22759   11.19233   64.15000
+vertex  90   13.70000   17.75000   64.15000   vertex 180   36.39364   13.49478   64.15000
  Number of vertices followed by list of associated vert
 *edges,4,2,1,4,3   seg_g
 *edges,4,1,5,6,4   seg_h
 *edges,4,5,7,8,6   seg_i
 *edges,4,7,9,10,8   seg_j
 *edges,4,9,11,12,10   seg_k
-*edges,15,14,13,76,26,25,24,23,22,21,20,19,18,17,16,15   ceiling_l4mt
-*edges,28,28,219,220,217,46,27,45,44,43,42,41,40,39,38,37,36,35,34,66,33,32,67,31,68,30,69,29,70
-  Tl4_sw_mtcei
+*edges,14,14,13,26,25,24,23,22,21,20,19,18,17,16,15   ceiling_l4mt
+*edges,13,28,27,39,38,37,36,35,34,33,32,31,30,29   Tl4_sw_mtcei
+*edges,26,40,28,29,30,31,32,33,57,52,53,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41
+  ceiling_l4op
 *
-edges,33,47,219,220,217,46,70,69,68,67,66,65,64,59,60,63,62,61,60,59,58,93,57,56,94,55,71,54,53,52,51,50,49,48
-ceiling_l4op
-*
-edges,36,2,71,94,93,92,91,86,87,90,89,88,87,86,85,84,83,82,81,80,79,78,77,22,23,24,25,76,75,74,73,72,11,9,7,5,1
+edges,34,2,48,49,50,75,74,69,70,73,72,71,70,69,68,67,66,65,64,63,62,61,60,22,23,24,25,26,59,58,11,9,7,5,1
 ceiling_l4or
-*edges,11,21,22,77,78,79,100,99,98,97,96,95   top_l4_toilc
-*edges,17,102,101,117,116,115,114,113,112,111,110,109,108,107,106,105,104,103   floor_conf
-*edges,11,107,108,109,124,123,122,121,120,119,118,106   floor_kitch2
-*edges,18,124,109,110,135,134,133,132,131,130,129,128,127,126,125,120,121,122,123   floor-lob
-*edges,7,136,131,132,140,139,138,137   floor_srv
-*
-edges,24,110,111,156,155,154,153,209,152,151,150,149,148,147,146,145,144,143,142,139,140,132,133,141,135
-floor_opn_lf
-*edges,21,138,139,142,143,144,145,171,170,169,168,167,166,165,164,163,162,161,160,159,158,157
+*edges,11,21,22,60,61,62,81,80,79,78,77,76   top_l4_toilc
+*edges,14,82,163,178,177,174,91,90,89,88,87,86,85,84,83   floor_conf
+*edges,11,87,88,89,98,97,96,95,94,93,92,86   floor_kitch2
+*edges,18,98,89,90,109,108,107,106,105,104,103,102,101,100,99,94,95,96,97   floor-lob
+*edges,7,110,105,106,114,113,112,111   floor_srv
+*edges,23,90,91,172,170,171,3,4,6,8,10,12,121,120,119,118,117,116,113,114,106,107,115,109
+  floor_opn_lf
+*edges,21,112,113,116,117,118,119,136,135,134,133,132,131,130,129,128,127,126,125,124,123,122
   floor_cel
-*edges,11,172,166,167,180,179,178,177,176,175,174,173   floor_pz_m
-*edges,14,182,181,194,193,192,191,190,189,188,187,186,185,184,183   floor
-*edges,8,196,195,129,130,131,136,198,197   floor_toil
-*edges,4,60,61,141,133   l3_flrv_r
-*edges,4,61,62,135,141   l3_flrv_f
-*edges,4,62,63,134,135   l3_flrv_l
-*edges,4,63,60,133,134   l3_flrv_b
-*edges,4,88,89,200,199   l3_flrv_r2
-*edges,4,89,90,147,200   l3_flrv_f2
-*edges,4,90,87,146,147   l3_flrv_l2
-*edges,4,87,88,199,146   l3_flrv_b2
-*edges,16,45,27,201,102,103,104,105,106,118,119,39,40,41,42,43,44   ptn_flrvd_a
-*edges,4,35,36,126,127   ptn_flrvd_b
-*edges,6,34,35,127,128,129,33   l5_flrvb
-*edges,4,65,33,129,195   l5_flrvc
-*edges,10,79,80,174,175,204,203,202,98,99,100   l5_flr_vd
-*edges,5,81,205,173,174,80   l5_flr_vda
-*edges,4,38,39,119,120   rflra_l5
-*edges,4,36,37,125,126   rflrc_l5
-*edges,8,95,96,207,206,187,188,20,21   l5_fv_ta
-*edges,4,97,98,202,208   l5_fv_tb
-*edges,4,54,55,210,209   struc_a
-*edges,4,51,52,212,211   struc_d
-*edges,4,50,51,211,213   struc_e
-*edges,4,49,50,213,214   struc_f
-*edges,4,48,49,214,215   struc_g
-*edges,4,47,48,215,216   struc_h
-*edges,6,217,220,219,47,216,218   struc_i
-*edges,4,220,219,218,221   struc_j
-*edges,4,53,54,209,222   struc_b
-*edges,4,52,53,222,212   struc_c
-*
-edges,27,148,223,228,227,226,225,224,181,182,183,184,185,186,177,178,179,180,167,168,169,170,171,145,146,199,200,147
-L5_op_rt_flr
-*edges,4,72,73,230,229   parapet_a
-*edges,4,11,72,229,12   parapet_b
- There are 156 edges which are not bounded (zone might be incomplete)
- There are   2 surface with reversed edges (one might be reversed)
- Please check your zone geometry.
+*edges,11,137,131,132,145,144,143,142,141,140,139,138   floor_pz_m
+*edges,14,147,146,159,158,157,156,155,154,153,152,151,150,149,148   floor
+*edges,5,160,103,104,105,110   floor_toil
+*edges,4,53,54,115,107   l3_flrv_r
+*edges,4,54,55,109,115   l3_flrv_f
+*edges,4,55,56,108,109   l3_flrv_l
+*edges,4,56,53,107,108   l3_flrv_b
+*edges,4,71,72,162,161   l3_flrv_r2
+*edges,4,72,73,121,162   l3_flrv_f2
+*edges,4,73,70,120,121   l3_flrv_l2
+*edges,4,70,71,161,120   l3_flrv_b2
+*edges,10,39,27,163,82,83,84,85,86,92,93   ptn_flrvd_a
+*edges,4,35,36,100,101   ptn_flrvd_b
+*edges,6,34,35,101,102,103,33   l5_flrvb
+*edges,4,57,33,103,160   l5_flrvc
+*edges,10,62,63,139,140,166,165,164,79,80,81   l5_flr_vd
+*edges,4,64,138,139,63   l5_flr_vda
+*edges,4,38,39,93,94   rflra_l5
+*edges,4,36,37,99,100   rflrc_l5
+*edges,8,76,77,168,167,152,153,20,21   l5_fv_ta
+*edges,4,78,79,164,169   l5_fv_tb
+*edges,4,47,48,171,170   struc_a
+*edges,4,44,45,173,172   struc_d
+*edges,5,43,44,172,91,174   struc_e
+*edges,4,42,43,174,175   struc_f
+*edges,4,41,42,175,176   struc_g
+*edges,4,40,41,176,177   struc_h
+*edges,4,28,40,177,178   struc_i
+*edges,4,27,28,178,163   struc_j
+*edges,4,46,47,170,179   struc_b
+*edges,4,45,46,179,173   struc_c
+*edges,21,12,180,147,148,149,150,151,142,143,144,145,132,133,134,135,136,119,120,161,162,121
+  L5_op_rt_flr
+*edges,14,68,69,126,127,128,129,130,131,137,138,64,65,66,67   srv_fac-a
+*edges,16,52,57,160,110,111,112,122,123,124,125,126,69,74,75,50,51   srv_fac_b
+*edges,4,37,38,94,99   rflrb_l5
+*edges,4,173,179,170,172   proj_a
+*edges,4,176,175,174,177   proj_b
+*edges,4,48,2,3,171   wee_fill_cr
+*edges,11,142,151,152,167,168,169,164,165,166,140,141   floor_l5_tp
+*edges,4,19,20,153,154   ext_ne_fac_a
+*edges,4,18,19,154,155   to_ne_fac_b
+*edges,4,77,78,169,168   ext_ne_fac_b
+*edges,8,17,18,155,156,157,158,15,16   str_fac_d
+*edges,6,13,14,15,158,159,146   str_fac_e
+*edges,4,26,13,146,147   str_fac_f
+*edges,7,11,58,59,26,147,180,12   str_fac_g
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -9342,7 +9438,7 @@ some zones are not fully attributed.
     3   91   28.0     0.170  1000.  1300. 0.90 0.70    55.  0.16 HighDensityParticleBd : HDF based on info in
  Int    42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.392  2.577  2.183 (partition)  1.968
- Total area of top_pln is   5914.58
+ Total area of top_pln is   5942.28
  
  Details of opaque construction: flr_ov_pln and overall thickness  0.037
  
@@ -9353,7 +9449,7 @@ some zones are not fully attributed.
     3   42    2.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 grey loop pile : Grey loop pile synthetic ca
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.392  2.577  2.183 (partition)  1.968
- Total area of flr_ov_pln is   5972.44
+ Total area of flr_ov_pln is   5924.84
  
  Details of opaque construction: slab_275 and overall thickness  0.275
  
@@ -9361,7 +9457,7 @@ some zones are not fully attributed.
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   34  275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.729  2.972  2.460 (partition)  2.191
- Total area of slab_275 is  12398.83
+ Total area of slab_275 is  12432.13
  
  Details of opaque construction: spandrel_x and overall thickness  0.167
  
@@ -9395,7 +9491,7 @@ some zones are not fully attributed.
     2  220  180.0     0.040    38.  1450. 0.90 0.30   350.  4.50 XPS CO2 foamed : XPS extruded polystyrene fo
  Int    34  275.0     1.400  2100.   653. 0.90 0.21    19.  0.20 white ptd concrete : White painted heavy mix
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.203  0.205  0.202 (partition)  0.200
- Total area of roof_0.2 is   1882.28
+ Total area of roof_0.2 is   1937.58
  
  Details of opaque construction: gyp_aco_gyp and overall thickness  0.108
  
@@ -9449,7 +9545,7 @@ some zones are not fully attributed.
     4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.311  0.314  0.308 (partition)  0.303
- Total area of stone_cast is     58.33
+ Total area of stone_cast is     54.60
  
  Details of opaque construction: stone_vent and overall thickness  0.514
  
@@ -9485,7 +9581,7 @@ some zones are not fully attributed.
     4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int    35  120.0     0.510  1400.  1000. 0.90 0.25    10.  0.24 block white ptd : block white painted inner
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.306  0.309  0.302 (partition)  0.298
- Total area of stone_masnry is    621.43
+ Total area of stone_masnry is    670.10
  
  Details of opaque construction: conc_250 and overall thickness  0.250
  
@@ -9493,7 +9589,7 @@ some zones are not fully attributed.
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.869  3.139  2.574 (partition)  2.280
- Total area of conc_250 is   2134.36
+ Total area of conc_250 is   2139.24
  
  Details of opaque construction: masny_at_st and overall thickness  0.150
  
@@ -9501,7 +9597,7 @@ some zones are not fully attributed.
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   35  150.0     0.510  1400.  1000. 0.90 0.25    10.  0.29 block white ptd : block white painted inner
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.155  2.304  1.984 (partition)  1.805
- Total area of masny_at_st is    441.60
+ Total area of masny_at_st is    443.47
  
  Details of opaque construction: stone_eldon and overall thickness  0.224
  
@@ -9543,7 +9639,7 @@ some zones are not fully attributed.
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int    81   40.0     1.830  2200.   712. 0.90 0.60    29.  0.02 sandstone : Sandstone
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.311  0.314  0.308 (partition)  0.303
- Total area of stone_cast_i is     40.17
+ Total area of stone_cast_i is     38.64
  
  Details of opaque construction: stone_stone and overall thickness  0.410
  
