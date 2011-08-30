@@ -1,5 +1,5 @@
 *connections for admin_building
-*Date Tue Aug 30 07:02:20 2011
+*Date Tue Aug 30 21:16:08 2011
    2254   # number of connections
    1   1   3  23  16  #    1 ptn_cora_l2 in stair_1 >|< ptn_stair in L2_cust_srv
    1   2   3  23  15  #    2 ptn_corb_l2 in stair_1 >|< ptn_other in L2_cust_srv
@@ -1102,7 +1102,7 @@
   37  24   0   0   0  # 1099 fac_fr_u in L3_L4_cir_vd is External
   37  25   3  57  32  # 1100 balcony_au in L3_L4_cir_vd >|< balcony_au in L4_open_plr
   37  26   3  57  33  # 1101 balcony_bu in L3_L4_cir_vd >|< balcony_bu in L4_open_plr
-  37  27  -1   0   0  # 1102 parapet_a in L3_L4_cir_vd not yet defined
+  37  27   0   0   0  # 1102 parapet_a in L3_L4_cir_vd is External
   37  28   0   0   0  # 1103 parapet_b in L3_L4_cir_vd is External
   38   1   0   0   0  # 1104 stone in L3_void_b is External
   38   2   0   0   0  # 1105 fac_gla in L3_void_b is External
@@ -1681,7 +1681,7 @@
   57  40   3  54   5  # 1678 ptn_open_e in L4_open_plr >|< ptn_open_e in L4_cell_srv
   57  41   3  54   6  # 1679 ptn_open_f in L4_open_plr >|< ptn_open_f in L4_cell_srv
   57  42   3  54   7  # 1680 ptn_open_g in L4_open_plr >|< ptn_open_g in L4_cell_srv
-  57  43  -1   0   0  # 1681 cell_fill in L4_open_plr not yet defined
+  57  43   1   0   0  # 1681 cell_fill in L4_open_plr >|< Identical environment
   57  44   0   0   0  # 1682 to_roof_l4 in L4_open_plr is External
   58   1   3  56  23  # 1683 l3_lw2_fr in L4_light_w1 >|< l3_lw2_fr in L4_open_s
   58   2   3  56  24  # 1684 l3_lw2_ri in L4_light_w1 >|< l3_lw2_ri in L4_open_s

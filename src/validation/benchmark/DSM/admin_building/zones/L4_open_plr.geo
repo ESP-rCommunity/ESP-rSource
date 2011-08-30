@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Sat Aug 27 09:29:51 2011  # latest file modification 
+*date Tue Aug 30 21:15:13 2011  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -174,7 +174,7 @@ L4_open_plr describes right half of level four open plan area
 *surf,ptn_open_e,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,05  #  40 ||< ptn_open_e:L4_cell_srv
 *surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,06  #  41 ||< ptn_open_f:L4_cell_srv
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,07  #  42 ||< ptn_open_g:L4_cell_srv
-*surf,cell_fill,VERT,-,-,-,gyp_aco_gyp,OPAQUE,UNKNOWN,0,0  #  43 ||< not yet defined
+*surf,cell_fill,VERT,-,-,-,gyp_aco_gyp,OPAQUE,SIMILAR,00,00  #  43 ||< identical environment
 *surf,to_roof_l4,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
