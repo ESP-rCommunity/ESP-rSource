@@ -1,7 +1,7 @@
 # transparent properties of L5_kitch2 defined in ../zones/L5_kitch2.tmc
   13   # surfaces
 # tmc index for each surface
-0,0,0,0,0,0,0,0,0,0,0,1,0
+0,0,0,0,0,0,0,1,1,0,0,1,0
    1  SCF8477_10nb # layers in tmc type 1
 # Transmission @ 5 angles & visible tr.
    0.699   0.672   0.629   0.503   0.294   0.840

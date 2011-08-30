@@ -1,0 +1,30 @@
+# Radiance RIF file: admin_building_Extern.rif
+#e2r_gen_view   0 -1
+#e2r_glaz_type   1
+view= from_left -vtv -vp   -94.031  -99.029  119.479 -vd   0.6655  0.6655 -0.3381 -vu 0 0 1 -vh   20.8 -vv   20.8 -vs 0 -vl
+view= from_lef2 -vtv -vp   -94.031  -99.029  119.479 -vd   0.4165  0.8932 -0.1695 -vu 0 0 1 -vh   20.8 -vv   20.8 -vs 0 -vl
+view= front -vtv -vp   -94.031  -99.029  119.479 -vd  -0.3977  0.8529 -0.3381 -vu 0 0 1 -vh   24.0 -vv   24.0 -vs 0 -vl 0
+view= from_lef3 -vtv -vp -110.192 -145.365 111.236 -vd 0.738022 0.957977 -0.316414 -vu 0 0 1 -vh 23 -vv 15 -vo 0 -va 0 -vs 0
+view= front2 -vtv -vp 28.1531 -183.701 110.086 -vd -0.039195 1.20527 -0.329093 -vu 0 0 1 -vh 23 -vv 15 -vo 0 -va 0 -vs 0 -vl
+view= right -vtv -vp 123.784 -155.408 109.328 -vd -0.593208 1.05164 -0.323533 -vu 0 0 1 -vh 23 -vv 15 -vo 0 -va 0 -vs 0 -vl
+view= right2 -vtv -vp 213.011 -42.4002 108.371 -vd -1.14144 0.385104 -0.333657 -vu 0 0 1 -vh 23 -vv 15 -vo 0 -va 0 -vs 0 -vl
+view= service_a -vtv -vp 190.98 120.516 109.102 -vd -1.04002 -0.602336 -0.343603 -vu 0 0 1 -vh 23 -vv 15 -vo 0 -va 0 -vs 0 -
+view= new -vtv -vp  -110.000 -145.000  111.000 -vd   0.6154  0.7516 -0.2372 -vu 0 0 1 -vh   24.0 -vv   24.0 -vs 0 -vl 0
+scene= admin_building_Extern.sky
+scene= admin_building_Extern-glz.rad
+scene= admin_building_Extern.mat
+scene= admin_building_Extern-out.rad
+scene= admin_building_Extern-in.rad
+UP= Z
+QUALITY= Medium
+DETAIL= Medium
+VARIABILITY= High  
+RESOLUTION=   700
+INDIRECT=  2
+PENUMBRAS= True 
+REPORT=    1
+render= -av 14.5 14.5 14.5
+ZONE= Exterior   -94.03  144.93  -99.03  139.93   47.47  119.48
+OPTFILE= admin_building_Extern.opt
+OCTREE= admin_building_Extern.oct
+PICTURE= admin_building_Extern
