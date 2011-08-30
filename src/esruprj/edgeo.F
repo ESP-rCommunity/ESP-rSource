@@ -9037,7 +9037,8 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
  
       SUBROUTINE LINTHBRDG(ICOMP,act,THPER)
 #include "building.h"
-C #include "geometry.h"
+#include "geometry.h"
+#include "prj3dv.h"
 #include "esprdbfile.h"
 C #include "material.h"
 #include "sbem.h"
@@ -9045,6 +9046,15 @@ C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
  
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      LOGICAL MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY6/LINSTY(MCON)
 
 C bridgelen was calculated in subroutine suredgeadj
       real bridgelen ! Length of potential thermal bridges in each zone.
@@ -9092,6 +9102,7 @@ C   losspercent and is assumed to apply to all zones in the model.
 
       real THPER
 
+      DIMENSION COG1(3),COG2(3),COG3(3)
       integer lnb
       real psiv,lenv  ! local variables for psi and length.
       integer ISDN,INODA ! max items and current menu item
@@ -9101,11 +9112,18 @@ C   losspercent and is assumed to apply to all zones in the model.
       dimension lenpsi(16)
       real zerolen,zeropsi  ! for bridge types that have yet to be used.
       logical foundit
+      logical greyok
 
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+
+#ifdef OSI
+      integer iix,iiy,iix2,iiy2,iicol
+#else
+      integer*8 iix,iiy,iix2,iiy2,iicol
+#endif
 
       helpinsub='LINTHBRDG'  ! set for subroutine
 
@@ -9116,6 +9134,12 @@ C For help messages
       zerolen=0.0
       zeropsi=0.0
       lookfor=0
+      INVT=0
+
+      greyok=.false.      ! see if colour available
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
 C Do call to FINDUA for this zone in order to get derived areas.
       IVALS(1)=icomp
@@ -9125,35 +9149,143 @@ C Do call to FINDUA for this zone in order to get derived areas.
 C Report on estimated lengths of thermal bridges from suredgeadj
       if(act(1:1).eq.'-')then
         call edisp(iuout,'Based on surface form & boundary condition:')
-        write(outs,'(a,f7.2)')'bridge length roof-wall:',
-     &    bridgelen(icomp,1)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length roof-wall:',
+     &      bridgelen(icomp,1)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length roof-wall:',
+     &      bridgelen(icomp,1),' (midnight blue)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length wall-ground:',
-     &    bridgelen(icomp,2)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length wall-ground:',
+     &      bridgelen(icomp,2)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length wall-ground:',
+     &      bridgelen(icomp,2),' (lt brown)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
-     &    bridgelen(icomp,3)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length wall-wall convex:',
+     &      bridgelen(icomp,3)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length wall-wall convex:',
+     &      bridgelen(icomp,3),' (forest green)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
-     &    bridgelen(icomp,4)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length wall-wall concave:',
+     &      bridgelen(icomp,4)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length wall-wall concave:',
+     &      bridgelen(icomp,4),' (khaki)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length ext floor down facing:',
-     &   bridgelen(icomp,5)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length ext floor down facing:',
+     &      bridgelen(icomp,5)
+        else
+          write(outs,'(a,f7.2,a)')
+     &      'bridge length ext floor down facing:',
+     &      bridgelen(icomp,5),' (turquoise)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length door & window lintels ',
-     &    bridgelen(icomp,6)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length door & window lintels ',
+     &      bridgelen(icomp,6)
+        else
+          write(outs,'(a,f7.2,a)')
+     &      'bridge length door & window lintels ',
+     &      bridgelen(icomp,6),' (magenta)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length door & window sills ',
-     &    bridgelen(icomp,7)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length door & window sills ',
+     &      bridgelen(icomp,7)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length door & window sills ',
+     &      bridgelen(icomp,7),' (firebrick)'
+        endif
         call edisp(iuout,outs)
-        write(outs,'(a,f7.2)')'bridge length door & window jambs ',
-     &    bridgelen(icomp,8)
+        if(MMOD.lt.8)then
+          write(outs,'(a,f7.2)')'bridge length door & window jambs ',
+     &      bridgelen(icomp,8)
+        else
+          write(outs,'(a,f7.2,a)')'bridge length door & window jambs ',
+     &      bridgelen(icomp,8),' (cyan)'
+        endif
         call edisp(iuout,outs)
         call edisp(iuout,
      &    'Use these suggested lengths. You can also add more types.')
       endif
 
+C If in graphic mode draw the edges with thermal bridge attributes
+C in a different colour for each type (to match colours listed above).
+      if(MMOD.lt.8)then
+        continue
+      else
+        CALL INLNST(1)
+        itsnm=0
+        nzg=1
+        nznog(1)=ICOMP
+        izgfoc=ICOMP
+        CALL ADJVIEW(IER)
+        do 778 I=1,NZSUR(icomp)
+          ioc=IZSTOCN(icomp,i)
+          limit=NVER(i)-1
+          do 779, iyy = 1,limit
+            if(ibridgeshr(ioc,iyy).ne.0)then
+              izva=JVN(i,iyy)
+              izvb=JVN(i,iyy+1)
+              COG1(1)=VCOORD(icomp,izva,1)
+              COG1(2)=VCOORD(icomp,izva,2)
+              COG1(3)=VCOORD(icomp,izva,3)
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              COG1(1)=VCOORD(icomp,izvb,1)
+              COG1(2)=VCOORD(icomp,izvb,2)
+              COG1(3)=VCOORD(icomp,izvb,3)
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+              iicol=ibridgeshr(ioc,iyy)
+              if(greyok)call winscl('z',iicol)
+              call edwline(iix,iiy,iix2,iiy2)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
+  779     continue
+
+C Complete the polygon by going back to the origin.
+          if(ibridgeshr(ioc,NVER(i)).ne.0)then
+            izva=JVN(i,NVER(i))
+            izvb=JVN(i,1)
+            COG1(1)=VCOORD(icomp,izva,1)
+            COG1(2)=VCOORD(icomp,izva,2)
+            COG1(3)=VCOORD(icomp,izva,3)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            COG1(1)=VCOORD(icomp,izvb,1)
+            COG1(2)=VCOORD(icomp,izvb,2)
+            COG1(3)=VCOORD(icomp,izvb,3)
+            CALL VECTRN(COG1,TEMAT,COG2,IER)
+            CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+            iicol=ibridgeshr(ioc,NVER(i))
+            if(greyok)call winscl('z',iicol)
+            call edwline(iix,iiy,iix2,iiy2)
+            iicol=0
+            if(greyok)call winscl('-',iicol)
+            call forceflush()
+          endif
+  778   continue
+      endif
+
 C Setup phrases for the menu and for editing length and psi values.
+C The exact spelling of phraselen and phrasepsi is important.
       phrasemenu(1) ='a roof-wall                    :'
       phraselen(1)  ='roof-wall '
       phrasepsi(1)  ='roof-wall '
