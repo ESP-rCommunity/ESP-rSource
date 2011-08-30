@@ -5730,6 +5730,7 @@ C Show the new point on the current wireframe.
 C Ask if it should be added.
                 if(NTV.lt.MTV)then
                   write(outs,'(a,i3,a)') 'Make vertex ',NTV+1,' a:'
+                  invt=0
                   CALL EASKABC(' ',outs,'new vertex',
      &              'new vertex after editing','cancel',INVT,nbhelp)
                   if(INVT.eq.1)then
@@ -9028,7 +9029,8 @@ C Found unexpected item.
 C ******************** LINTHBRDG *************************************** 
 C LINTHBRDG defines linear thermal bridges for zone psi and lengths.
 C The extra fabric heat loss is calculated at the end
-C Additional information is given in the BRE IP 1/06 document
+C Additional information is given in the BRE IP 1/06 document by T I Ward
+C in tables 3 and 4.
 C This subroutine may be called from the geometry definition menu using
 C act='-' or when defining the notional model using act='s'. The latter
 C is a silent call and assumes a thermal bridging of 10% (0.1)
@@ -9269,7 +9271,7 @@ C not involve the user, jump straight to the 10%.
             endif
           endif
 
-C Fill in the initial values.
+C Fill in the initial values for metal clad constructions.
           if(INVT.eq.1)then
             if(bridgelen(icomp,1).gt.0.1)then
               nbrdg(icomp)=nbrdg(icomp)+1
@@ -9315,6 +9317,8 @@ C Fill in the initial values.
               lngth(ICOMP,nbrdg(icomp))=bridgelen(icomp,8)
             endif
           elseif(INVT.eq.2)then
+
+C Values for constructions without metal cladding.
             if(bridgelen(icomp,1).gt.0.1)then
               nbrdg(icomp)=nbrdg(icomp)+1
               ibrdg(ICOMP,nbrdg(icomp))=1

@@ -1693,6 +1693,9 @@ C or if 10mm check with user, otherwise continue.
               call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
      &          0.010,closey)
               if(closex)then
+                call usrmsg(
+     &            'Co-ordinates were identical to an existing vertex',
+     &            'so ignored.','P')
                 found=.true.
                 goto 145
               endif

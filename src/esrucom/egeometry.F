@@ -2027,6 +2027,9 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
+
+C Phrases for thermal bridges are checked and ibrdg index assigned
+C based on exact match of characters in phrase.
           nbrdg(icomp)=nbrdg(icomp)+1
           CALL EGETP(LOUTSTR,K,phrase,'W','bridge tag',IER)
           if(phrase(1:10).eq.'roof-wall ')then
@@ -4386,7 +4389,7 @@ C other must face the ground
                   endif
 
 C Debug.
-                  if(itrc.gt.1)then
+C                  if(itrc.gt.1)then
 C                    write(outs,'(a,i3,a,2i3,2f6.1,2a,3f7.3)')
 C     &                'type for conns ',icc,' & ',icco,
 C     &                ibridgeshr(icc,i),SSPAZI(icc),SSPAZI(icco),
@@ -4398,7 +4401,7 @@ C     &                bridgelen(izone,4),bridgelen(izone,5),
 C     &                bridgelen(izone,6),bridgelen(izone,7),
 C     &                bridgelen(izone,8)
 C                    call edisp(iuout,outs)
-                  endif
+C                  endif
 
 C Test if azimuth are within two degrees. For the special case of the
 C difference between the two being ~360deg call it closeazi

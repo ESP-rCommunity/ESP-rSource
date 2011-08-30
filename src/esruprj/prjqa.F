@@ -224,10 +224,11 @@ C Remember if each zone is fully attributed.
 
 C For thermal bridge reporting
       character TBRIDGE*58
-      dimension phrasemenu(16)
-      character phrasemenu*34
+      dimension phrasemenu(16),phraselen(16)
+      character phrasemenu*34,phraselen*42
       character fs*1
-      logical havebrdge
+      logical havebrdge,haveedgebrdge
+      integer howmanytbedges(16)
       
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -271,7 +272,8 @@ C in the current model. A -1 means not applicable
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
-      INTEGER :: iw,lsna
+      INTEGER :: iw
+      INTEGER :: lsna,lk,lnk,lnkn  ! counters for string lengths
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
       REAL :: UVD,UVI,UVU,vtranper
@@ -285,7 +287,8 @@ C Check if Unix-based or DOS based.
       endif
 
       changedit=.false.
-      newgeo=.false.  ! assume older format geometry.
+      newgeo=.false.     ! assume older format geometry.
+      havebrdge=.false.  ! assume no thermal bridges
       IUF=IFIL+2
       siteinfo=2
       databaseinfo=2  ! assume verbose mode for database reporting
@@ -1824,21 +1827,37 @@ C Note: surinfo not dependant on recent geometry scan.
 
 C Setup phrases for the menu and for editing length and psi values.
               phrasemenu(1) ='a roof-wall                    :'
+              phraselen(1)  ='roof-wall ' 
               phrasemenu(2) ='b wall-ground floor            :'
+              phraselen(2)  ='wall-ground floor '
               phrasemenu(3) ='c wall-wall (convex corner)    :'
+              phraselen(3)  ='wall-wall (convex corner) '
               phrasemenu(4) ='d wall-wall (concave corner)   :'
+              phraselen(4)  ='wall-wall (concave corner) '
               phrasemenu(5) ='e wall-floor (not ground floor):'
+              phraselen(5)  ='wall-floor (not ground floor) '
               phrasemenu(6) ='f lintel above window or door  :'
+              phraselen(6)  ='lintel above window or door '
               phrasemenu(7) ='g Sill below window            :'
+              phraselen(7)  ='Sill below window '
               phrasemenu(8) ='h jamb at window or door       :'
+              phraselen(8)  ='jamb at window or door '
               phrasemenu(9) ='i roof-wall                    :'
+              phraselen(9)  ='roof-wall-mc'
               phrasemenu(10)='j wall-ground floor            :'
+              phraselen(10) ='wall-ground floor-mc'
               phrasemenu(11)='k wall-wall (corner)-          :'
+              phraselen(11) ='wall-wall (corner)-mc'
               phrasemenu(12)='l wall-floor (not ground floor):'
+              phraselen(12) ='wall-floor (not ground floor)-mc'
               phrasemenu(13)='m lintel above window or door  :'
+              phraselen(13) ='lintel above window or door-mc'
               phrasemenu(14)='n Sill below window            :'
+              phraselen(14) ='Sill below window-mc'
               phrasemenu(15)='o jamb at window or door       :'
+              phraselen(15) ='jamb at window or door-mc'
               phrasemenu(16)='p user-defined                 :'
+              phraselen(16) ='user-defined '
               call edisp(itu,'Thermal bridges have been defined.')
               if(nbrdg(izz).gt.0)then   
                 call edisp(itu,
@@ -1921,7 +1940,45 @@ C Put odd vertex in right column.
             write(outs248,'(3a)') 
      &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna)
             call edisp248(itu,outs248,100)
-970       CONTINUE
+ 970      CONTINUE
+
+C If thermal bridges are associated with a surface then report this.
+C Loop each surface in zone, and for each surface each edged and if
+C ibridgeshr(connection,edge) is non-zero add to howmanytbedges array.
+          if(nbrdg(izz).gt.0)then
+            do 971 I = 1,NZSUR(izz)
+              icc=izstocn(izz,i)        ! find connection
+              lsna=lnblnk(SSNAME(icc))  ! get length of surf name
+              do 973,j=1,16
+                howmanytbedges(j)=0
+  973         continue
+              haveedgebrdge=.false.
+              do 972 j=1,NVER(I)
+                if(ibridgeshr(icc,j).ne.0)then
+                  howmanytbedges(ibridgeshr(icc,j))=
+     &              howmanytbedges(ibridgeshr(icc,j))+1
+                  haveedgebrdge=.true.
+                endif
+ 972          continue
+
+C If at least one thermal bridge for surface report it. Keep writing
+C into outs248 for each non-zero bridges.
+              if(haveedgebrdge)then
+                write(outs248,'(2a)') SSNAME(icc)(1:lsna),' bridges: '
+                lk=lnblnk(outs248)+2
+                do 974 k=1,16
+                  if(howmanytbedges(k).gt.0)then
+                    lnk=lnblnk(phraselen(k))
+                    lnkn=lk+lnk+1
+                    write(outs248(lk:lnkn),'(2a)') 
+     &                phraselen(k)(1:lnk),','
+                    lk=lnkn+1
+                  endif
+ 974            continue
+                call edisp248(itu,outs248,100)
+              endif
+ 971        continue
+          endif
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.
