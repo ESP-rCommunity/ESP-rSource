@@ -416,7 +416,7 @@ C Use supplementary temporary unit number for IAPROB
 C Building and plant description now complete.
 C Unless error occured, initiate computation/setting-up of:
         if(ier.ne.0)then
-          if(dll)then
+          if(dll .or. autook)then
             if(ier.eq.2)then
               return
             else

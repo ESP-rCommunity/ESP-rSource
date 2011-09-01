@@ -103,5 +103,9 @@ C      123456789 123456789 123456789 123456789 123456789 1234567890
       LVALCM(24)=
      &'Multi configuration component                               '
 
+      IVALCM(25)=111
+      LVALCM(25)=
+     &'Specific uncontrolled air flow opening     m = rho.f(A,dP)  '
+     
       RETURN
       END

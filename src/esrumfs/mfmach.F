@@ -235,6 +235,10 @@ C and partial derivative dFlow/d(dPressure)
             CALL MF050C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.110) THEN
             CALL MF110C(ICNN,DP,DFDDP)
+          ELSEIF (ITCN.EQ.111) THEN 
+            ! Call extended version of MF110C that imposes windows 
+            ! always open
+            CALL MF110C_2mode(ICNN,DELP,DERIV,.false.)            
           ELSE IF(ITCN.EQ.120) THEN
             CALL MF120C(ICNN,DP,DFDDP)
           ELSE IF(ITCN.EQ.130) THEN
@@ -260,7 +264,7 @@ C and partial derivative dFlow/d(dPressure)
           ELSE IF(ITCN.EQ.460) THEN
             CALL MF460C(ICNN,DP,DFDDP)
           ELSE
-            call edisp(IMFTU,' MFSOLV: unresolvable error !')
+            call edisp(IMFTU,' MFSOLV: unknown flow component !')
             call epwait
             call epagend
             STOP 
@@ -1205,7 +1209,27 @@ C     AREA = SUPCMP(ICMP,2) - opening area (m^2)
 C In the case of range based control FLOW is multiplied by the
 C control ratio returned in ctlpos.
 
+C Legacy interface for MF110: Always controlled
       SUBROUTINE MF110C(ICNN,DELP,DERIV)
+      implicit none
+      integer ICNN
+      real DELP, DERIV
+      
+      logical bCtl
+      
+C Set control flag to true      
+      bCtl = .true. 
+      
+C 
+      call MF110C_2mode(ICNN,DELP,DERIV,bCtl)
+      
+      return 
+      end subroutine MF110C
+
+C This routine is an extention of MF110C: It accepts a logical flag
+C indicating if control is imposed (or alternatively, assumes openings
+C are always open). 
+      SUBROUTINE MF110C_2mode(ICNN,DELP,DERIV,bCtl)
 
 #include "net_flow.h"
 
@@ -1218,6 +1242,9 @@ C control ratio returned in ctlpos.
      &              RESID(MNOD),SAFLW(MNOD)
       COMMON/mfctl/ctlpos(MCNN)
 
+      real ControlPos
+      logical bCtl
+      
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       DOUBLE PRECISION DELP,DERIV
 
@@ -1228,13 +1255,20 @@ C control ratio returned in ctlpos.
       ICMP=ITPCON(ICNN)
 
       AREA=SUPCMP(ICMP,2) 
-
+      
+C Set control position based on bctl flag       
+      if ( bCtl ) then 
+        ControlPos = ctlpos(icnn)
+      else 
+        ControlPos = 1.0
+      endif 
+      
 C If DELP > 0 , flow is +ve; ie +ve side to -ve side.
       IF(DELP.GE.0) THEN
-        FLW1(ICNN)=0.65*AREA*DSQRT(2.*RHON(IDPS)*DELP)*ctlpos(icnn)
+        FLW1(ICNN)=0.65*AREA*DSQRT(2.*RHON(IDPS)*DELP)*ControlPos
       ELSE
         FLW1(ICNN)=-0.65*AREA*DSQRT(2.*RHON(IDNE)*DABS(DELP))*
-     &              ctlpos(icnn)
+     &              ControlPos
       END IF
 
       FLW2(ICNN)=0.
