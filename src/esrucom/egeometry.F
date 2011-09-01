@@ -2573,6 +2573,11 @@ C to write out.
         lsna=lnblnk(SSNAME(icc))
         lsot=lnblnk(SSOTF(icc))
         loth=lnblnk(OTHSTR)
+
+C Traps for possible blank strings if data structure corrupted.
+        if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+        if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+        if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
         WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
      &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
      &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),

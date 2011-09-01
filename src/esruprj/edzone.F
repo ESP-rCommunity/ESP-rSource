@@ -332,7 +332,7 @@ C User will begin with a minimal GEN body.
         JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQ'
+        SOTF(1)='OPAQUE'
         SMLCN(1)='UNKN'
         SVFC(1)='FLOR'
         SOTHER(1,1)='UNKNOWN'

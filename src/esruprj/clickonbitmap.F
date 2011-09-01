@@ -1713,7 +1713,7 @@ C zone geometry file can be created.
               JVN(1,1)=1; JVN(1,2)=2; JVN(1,3)=3
               NZTV(icomp)=NTV
               SNAME(ICOMP,1)='first'
-              SOTF(1)='OPAQ'
+              SOTF(1)='OPAQUE'
               SMLCN(1)='UNKN'
               SVFC(1)='FLOR'
               SOTHER(1,1)='UNKNOWN'

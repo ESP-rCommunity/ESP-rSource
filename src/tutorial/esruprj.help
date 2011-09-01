@@ -3132,7 +3132,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '(you will still need to see 4-5 lines of text feedback). A high'
 'resolution monitor is helpful!'
 '  '
-'The bitmap size might be ~1000-1500 pixels wide to allow for accurate'
+'The bitmap size might be ~1000-3000 pixels wide to allow for accurate'
 'positioning of the mouse. ESP-r might fault if you try to use an'
 'overly large image file.  Sorry but this facility is only available'
 'in the X11 version of the inteface. GTK is pending.'
@@ -3171,7 +3171,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 '  Adding walls via a floor plan extrusion. Remember to select the'
 '  [corners] anti-clockwise. You will be asked for the Z value of'
-'  the base and the top surfaces.'
+'  the base and the top surfaces (not floor/ceiling distance).'
 '  '
 '  South elevation fills X & Z coords @ one Y coord value.'
 '  East elevation  fills Y & Z coords @ one X coord value.'
@@ -3187,8 +3187,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'may be relocated to the nearest point. '
 '  '
 'If you switch input modes and were working on floor plans then the'
-'history of prior points is lost. ESP-r sometimes gets confused if'
-'you switch input modes during a session.'
+'history of prior points may be lost. ESP-r sometimes gets confused'
+'if you switch input modes during a session.'
 *enditem
         call MENUATOL(msg,' Coordinate input options',
         CALL ASKOK(
@@ -3238,7 +3238,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '    1.0 opaque (for future shading facility). '
 '
 'And you will be asked to pick a zone to associate the obstructions'
-'with.'
+'with. If you want to make obstructions for a different zone then'
+'end the points clicking to save work and then ask for another'
+'set of obstructions to be created.'
 *enditem
           CALL ASKOK(' ','Block position ok? ',OK,dok,1)
           CALL EPICKS(INPIC,IVALS,' ',
