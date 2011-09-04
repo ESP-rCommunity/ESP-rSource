@@ -624,7 +624,7 @@ C the selections via array ispk.
         endif
 
 C Consider what needs to be remembered to allow a connection association
-C between the source surface and what that surface beomces after it is
+C between the source surface and what that surface beomes after it is
 C copied. Both zones will need to be updated at a point when the connection
 C list is stable.
 
@@ -2660,6 +2660,7 @@ C No other hole so link to first vertex of surface.
           NVER(IS)=NVER(IS)+6
           NTV=NTV+4
           NZTV(icomp)=NTV
+
           JVN(IS,NNV+1)=JVN(IS,1)
           JVN(IS,NNV+2)=NTV-3
           JVN(IS,NNV+3)=NTV
@@ -2708,31 +2709,12 @@ C Discover matching MLC index.
 C Now update the G7 common block to reflect additional surface.
         call zgupdate(1,icomp,ier)
 
-C Update the image if not in one of the silent modes.
+C Signal to update the image if not in one of the silent modes.
         if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.
      &     act(1:2).eq.'sp')then
           continue
         else
           MODIFY=.TRUE.
-          CALL INLNST(1)
-          CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
-          LINSTY(IC)=2
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &      iicfgz,iicfgn,iicfgc,iicfgdfn)
-          if(MMOD.EQ.8)then
-            call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Model: ',
-     &        modeltitle(1:lnblnk(modeltitle))
-            iside=1
-            isize=1
-            ifont=1
-            call viewtext(etext,iside,isize,ifont)
-          endif
         endif
         call edisp(iuout,' ')
       elseif(IRT.eq.2)then
@@ -2853,25 +2835,6 @@ C Update the image if in non-silent mode
           continue
         else
           MODIFY=.TRUE.
-          CALL INLNST(1)
-          CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
-          LINSTY(IC)=2
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &      iicfgz,iicfgn,iicfgc,iicfgdfn)
-          if(MMOD.EQ.8)then
-            call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Model: ',
-     &        modeltitle(1:lnblnk(modeltitle))
-            iside=1
-            isize=1
-            ifont=1
-            call viewtext(etext,iside,isize,ifont)
-          endif
         endif
         call edisp(iuout,' ')
 
