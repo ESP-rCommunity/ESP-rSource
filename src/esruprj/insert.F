@@ -2108,7 +2108,7 @@ C << written at the end of the process. This has yet to be done.
       SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO1,ZO1,XW,ZH,
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
-#include "model.h"
+C  #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
 #include "esprdbfile.h"
@@ -2152,16 +2152,14 @@ C door width and height.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      CHARACTER outs*124,ETEXT*82,hold*36,DESCRC*25,SN*12
+      CHARACTER outs*124,hold*36,DESCRC*25,SN*12
       character t248*248
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
 
 #ifdef OSI
-      integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
 #else
-      integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
 #endif
 
