@@ -68,7 +68,7 @@ C Simulator parameters.
 C Selection menu for graphs and/or tables.
       dimension item(8)
       character item*24
-      character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
+      character outs*124,outsn*124,outsd*124,xfile*144,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
       character TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
@@ -83,6 +83,7 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='MODGRF'  ! set for subroutine
+      XDIFF=0.0           ! set initial value
 
 C If output to file alter the edisp unit number.
       itru = icout

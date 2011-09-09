@@ -2,20 +2,23 @@ Adapting your Cygwin environment:
 
 The ESP-r installer does not change the system 'PATH' environment variable. You will need to set an environment variable PATH so that the folder /usr/esru/esp-r/bin is known. 
 
-Method one - after the Installer ran there will be a file named bash_profile placed in /usr/esru as well as a file named link_to. In in the Cygwin command window the commands (adapt with your own home folder name) would be:
+Method one - In the Cygwin command window (note alternative ./link_to commands):
 
-cd /home/your_user_name
-mkdir bin
-cd /usr/esru
-cp bash_profile /home/your_user_name/.bash_profile
-cp link_to /home/your_user_name/bin
-cd /home/your_user_name/bin
-HOME=/home/your_user_name
-export HOME
-./link_to /usr/esru/esp-r/bin
+  cd
+  mkdir bin
+  cp /usr/esru/bash_profile .bash_profile
+  cp /usr/esru/link_to bin
+  HOME=/home/your_user_name
+  export HOME
+  cd bin
+  ./link_to /usr/esru/esp-r/bin_X11
 
-NOTE the DOT added to the bash_profile in the above command set. Nextlogout of cygwin and then log back in and issue the following command
-echo $PATH
+or
+  ./link_to /usr/esru/esp-r/bin_GTK
+
+NOTE the DOT added to the bash_profile in the above command set. Next logout of cygwin and then log back in and issue the following command
+
+  echo $PATH
 
 what is printed out should include /home/your_home_folder_name/bin
 
@@ -23,7 +26,7 @@ check if one of the ESP-r executables is found by giving the command:
 which prj
 
 it should report /home/your_home_folder_name/bin/prj
-or it should report /usr/esru/esp-r/bin/prj
+
 
 Method two
 (In the Cygwin command window) Go back to your home folder and see if there is a .cshrc or a .profile file.
@@ -33,21 +36,36 @@ Method two
 
 Some users of ESP-r prefer to use the "C" shell. The entry in the .cshrc file in your home folder might look something like:
 
-set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-/usr/esru/esp-r/bin )
+  set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
+    /usr/esru/esp-r/bin_X11 )
+
+or
+  set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
+    /usr/esru/esp-r/bin_GTK )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
 
-export PATH=/usr/local/bin:/usr/esru/bin:/usr/esru/esp-r/bin:/home/fred/bin:$PATH
+export PATH=/usr/local/bin:/usr/esru/esp-r/bin_X11:/home/fred/bin:$PATH
 
 Once you have updated either the .cshrc file or the .profile file then you will need to log out and then back in again.  To see if the environment variables are correct give the following command:
 
   which prj
 
-If the answer back is '/usr/esru/esp-r/bin/prj' then the environment variable is set.
+If there is an answer then the environment is ok.
 
 IF YOU NEED TO EDIT a text file in cygwin you have the option of using an editor within the Cygwin environment or you can use something like NotePad++ in Windows. DO NOT USE WORD to edit a text file in Cygwin.
+
+
+Dependencies:
+
+If ESP-r executables do not run it may be because dll (library) files are missing or are not the correct version. Here is a list of what you need for the X11 version of the simulator:
+CygX11-6.dll, Cygwin1.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
+Here is a list of what is required for the GTK version of the simulator:
+Cygwin1.dll, Cyggdk-X11-2.0.dll, Cyggdk_Pixbuf-2.0-0.dll, Cygglib-2.0-0.dll, Cyggobject-2.0-0.dll, Cyggtk-X11-2.0-0.dll, Cygpango-1.0-0.dll, Cygxml2-2.dll, Cygxslt-1.dll, Cyggcc-S-1.dll, Cyggfortran-3.dll, Cygstdc++6.dll
+
+To find about dependencies the tool dependency walker 2.2 sort of works (it expects dll to be in the same folder as the executable and does not know about Cygwin paths). You can find it at http://www.dependencywalker.com
 
 
 Starting ESP-r modules within Cygwin

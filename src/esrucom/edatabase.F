@@ -212,9 +212,17 @@ C the number of layers & construction name.
         RETURN
       ENDIF
 
+C Loop to get all of the declaired constructions. Note if there
+C are fewer items then an EOF error state might give a clue. EOF
+C is 2 and set ier=3.
       DO 10 I = 1,NMLC
-        CALL STRIPC(IFMUL,OUTSTR,0,ND,1,'mlc descr',IER)
-        IF(IER.NE.0)RETURN
+        CALL STRIPC(IFMUL,OUTSTR,0,ND,1,'mlc descr',IIER)
+        IF(IIER.NE.0)then
+          write(outs,*) 'EOF premature in constructions ',nmlc,iier
+          call edisp(iuout,outs)
+          ier=3    ! set error state for premature EOF.
+          RETURN
+        ENDIF
 
 C Set MLC thickness to zero.
         THKMLC(I) =0.0
@@ -707,13 +715,17 @@ C the matname and if that fails against matdoc
 
 C Find a matching matname.
         do 44 imt=1,matdbitems
-          if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
+C check first the lenght of strings, if the stringsa re not equal the
+C material is different
+          if(lnblnk(matname(imt)).eq.lnam) then        
+             if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
 
 C Debug.
 C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
 C     &        matname(imt)(1:lnblnk(matname(imt)))
-            matarrayindex=imt
-            return
+               matarrayindex=imt
+               return
+             endif
           endif
   44    continue
 

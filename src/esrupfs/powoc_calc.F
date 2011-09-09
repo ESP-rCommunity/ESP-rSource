@@ -7,10 +7,10 @@ C   POWOC_nonHVACld        Determines the non-HVAC electrical load for the curre
 C                          time-step based upon data read from an ASCII file.
 C   POWC_CETC_HVAC_ld      Determines the HVAC loads on the electrical network from
 C                          HVAC equipment modeled ideally within HOT3000
-C   POWOC_OUTSIDE_ld       Determines the electric load on the network from the outside 
+C   POWOC_OUTSIDE_ld       Determines the electric load on the network from the outside
 C                          such as when the electrical network supplies a clustor
 C                          of houses. The load is read from an ASCII file.
-C   POWOC_TRANSFORMER_loss Determines the transformer losses at a wind farm and 
+C   POWOC_TRANSFORMER_loss Determines the transformer losses at a wind farm and
 C                          applies them as a load on the electrical network.
 C   POWOC_TxDx_loss        Determines the power load on the electrical network due
 C                          to transmission and distribution system losses.
@@ -20,13 +20,13 @@ C                          converts DC power to AC power to meet the buiding
 C                          electrical loads.
 C   POWOC_Wind_Supp_Elec   Determines the electrical power supply from a wind
 C                          farm for the current time step based upon data read
-C                          from an ASCII file.  
+C                          from an ASCII file.
 C   POWOC_PCU              Determines the power load to the node sending current to
 C                          the PCU and the power source to the node receiving current
 C                          from the PCU.
 C   POWOC_nonHVACld_BCD    Determines the electrical load demanded by non-HVAC electrical
 C                          loads using the boundary condition definition facility,
-C                        
+C
 C *******************************************************************************
 
 
@@ -105,7 +105,7 @@ C-----HVAC electric loads associated with CETC HVAC models
       ELSEIF (ITYPE.eq.11) THEN
          CALL POWOC_CETC_HVAC_ld(IPWC)
 
-C-----Total electric loads (HVAC + non HVAC loads) from the outside 
+C-----Total electric loads (HVAC + non HVAC loads) from the outside
 C-----These loads impose an electric load on the network but they do not
 C-----contribute any internal gains to the space. These are to be used
 C-----when there is a cluster of houses served by the electrical network
@@ -138,7 +138,7 @@ C-----Non-HVAC electric loads
          call POWOC_nonHVACld_BCD(IPWC)
 
 C-----Wind-generated electrical supply using profile data.
-      
+
       ELSEIF (ITYPE==19) THEN
          CALL POWOC_Wind_Prof_Supp_Elec(IPWC)
 
@@ -148,6 +148,10 @@ C-----Power conditioning unit
 
 C-----Vanadium Redox Battery (VRB)
       elseif ( itype .eq. 21 ) then
+         CALL POWOC_CETC_Battery(IPWC)
+
+C-----Lithium Ion Battery (Li-on)
+      elseif ( itype .eq. 22 ) then
          CALL POWOC_CETC_Battery(IPWC)
 
 C-----Add support for other power-only components here.
@@ -164,7 +168,7 @@ C-----This power-only component type is not currently supported.
 C---------------------------------------------------------------------------------
       RETURN
       END
- 
+
 
 
 C *********************************************************************************************
@@ -185,8 +189,8 @@ C from an ASCII input file (.fcl file).
 C
 C This routine is now largely a legacy interface for the original POWOC_nonHVACld
 C comonent. Most of the functionality has been moved to the fGet_nonHVACld function,
-C which can be used by other procedures. 
- 
+C which can be used by other procedures.
+
 C INPUTS:
 C    IPWC           The index of the power-only component under consideration
 C                   (e.g. for a network with 2 power-only components, IPWC will
@@ -202,7 +206,7 @@ C                   [from common/ENETPOWC]
 
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_nonHVACld(IPWC)
-      implicit none 
+      implicit none
 #include "building.h"
 #include "power.h"
 
@@ -229,7 +233,6 @@ C-------------------------------------------------------------------------------
      &VPOWC(MPOWCOM)
 
 
-
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
@@ -249,14 +252,14 @@ C-------------------------------------------------------------------------------
 
       integer fScale_Factor
       character*72 cFile_Name
-      real fGet_nonHVACld           ! Function reference 
-      
-C.....Get .fcl filename and scaling factor 
+      real fGet_nonHVACld           ! Function reference
+
+C.....Get .fcl filename and scaling factor
       write (cFile_Name, '(A)') POWCDATS(IPWC,1)
       fScale_Factor = POWCDAT(IPWC,1)
 
 C.....Recover loads
-      
+
 
       PPOWOC(IPWC) = -1.* fGet_nonHVACld ( cFile_Name ) * fScale_Factor
       QPOWOC(IPWC) = 0.
@@ -280,9 +283,9 @@ C file (.fcl file).
 C
 C The procedures within this function were originally contained wihin the
 C POWOC_nonHVACld routine, but have been relocated here for greater flexibility.
- 
+
 C INPUTS:
-C    cFile_Name     Name of .fcl file 
+C    cFile_Name     Name of .fcl file
 
 C    idyp           The day number of the present day. [from common/SIMTIM]
 C    btimep         The present time in the building thermal domain. [from common/btime]
@@ -295,11 +298,11 @@ C    fGet_nonHVACld  Occupant-driven electric loads
 
 C --------------------------------------------------------------------------------
       real function fGet_nonHVACld(cFileName)
-      implicit none 
+      implicit none
 #include "building.h"
 #include "power.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Local variables
@@ -315,7 +318,7 @@ C Trace & reporting data
       integer itcf,itrace,izntrc,itu
 
 C Common holding simulation type (building, building+plant, or plant-only simulation)
-      integer indcfg 
+      integer indcfg
       common/c6/indcfg
 
 C---------------------------------------------------------------------------------
@@ -353,7 +356,7 @@ C-------------------------------------------------------------------------------
       LOGICAL   XST,dll
       CHARACTER OUTS*124
       LOGICAL   FCL_converted
-      
+
       REAL fFuture_Time                    ! time on future time row.
 
 
@@ -424,21 +427,21 @@ C-------------------------------------------------------------------------------
       CALL FC_eloads_establish(idyp,btimep,fFuture_Time,q_nonHVAC_elec,
      &                             q_HVAC_elec)
 
-      fGet_nonHVACld = q_nonHVAC_elec 
+      fGet_nonHVACld = q_nonHVAC_elec
 
       RETURN
       END
 
-      
+
 
 C *********************************************************************************************
 C ********************************* POWOC_CETC_HVAC_ld ****************************************
-C     Created by: Alex Ferguson 
+C     Created by: Alex Ferguson
 C     Initial Creation Date: March 9, 2004.
 C
-C     This subttoutine determines the HVAC-driven electrical loads associated with 
+C     This subttoutine determines the HVAC-driven electrical loads associated with
 C     CETC's idealized plant component models, and imposes these loads on the electrical
-C     network.  It specifically ignores hvac models that are implemented in ESP-r's 
+C     network.  It specifically ignores hvac models that are implemented in ESP-r's
 C     explicit plant network, since these components can be coupled directly to the
 C     electrical network (including the TAC and CETC electrical hot water tank models,
 C     in which this capability is not implemented as of yet).
@@ -456,7 +459,7 @@ C     - FCctl_AC_compressor    -> AC Air compressor electrical draw
 C     - FCctl_AC_circfan       -> AC Circulating fan electrical draw
 C     - FCctl_furnace_draft    -> Furnace draft fan electrical draw
 C     - FCctl_furnace_circfan  -> Furnace circulating fan electrical draw
-C     - q_par_elec             -> SOFC Fuel cell parasitic electrical draw 
+C     - q_par_elec             -> SOFC Fuel cell parasitic electrical draw
 C     - FCctl_boiler_draft     -> Boiler draft fan electrical draw
 C     - FCctl_boiler_circfan   -> Boiler circulating fan electrical draw
 C     - FCctl_baseboard_fan    -> Baseboard circulating fan electrical draw
@@ -471,19 +474,19 @@ C     - QPOWOC(i)      The reactive power demand of the non-HVAC electrical load
 C                      [from common/ENETPOWC]
 C
 C
-C     Notes: 
+C     Notes:
 C     1. This routine makes use of the F90 module 'FC_ctl_h3khvacloads',  which
 C        stores the power demands of miscellaneous HVAC models. If, or when, CETC
-C        decides to migrate back to F77 code, this module will have to be replaced 
+C        decides to migrate back to F77 code, this module will have to be replaced
 C        with a set of commonblocks.
 C
 C     2. Not all of the variables contained within the FC_ctl_h3khvacloads module
 C        will be in use during a given simulation.
 C
-C     3. The fuel cell parasitic electric load data ('q_par_elec') is appended to 
-C        the total idealized electric loads since the CETC fuel cell model does 
-C        not deduct this amount from the net electrical generation calculated for 
-C        the fuel cell and imposed on the electrical network.   
+C     3. The fuel cell parasitic electric load data ('q_par_elec') is appended to
+C        the total idealized electric loads since the CETC fuel cell model does
+C        not deduct this amount from the net electrical generation calculated for
+C        the fuel cell and imposed on the electrical network.
 C
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_CETC_HVAC_ld(IPWC)
@@ -550,14 +553,14 @@ C-------------------------------------------------------------------------------
       PPOWOC(IPWC) = -1 * q_HVAC_elec   ! <- note: loads are (-)ive...
       QPOWOC(IPWC) = 0.
 
-C-----Debugging output. Can optionally be commented out.      
+C-----Debugging output. Can optionally be commented out.
       Debug_me = .FALSE.
       IF ( Debug_me ) THEN
          write (*,*) '-Subroutine: POWOC_CETC_HVAC_ld start'
          write (*,*) ' Calculating Idealized, hvac-driven loads'
          write (*,*) ' '
          write (*,*) '  HRV fan(s)              ', FCctl_HRV_draw
-         write (*,*) ' +AC compressor           ', FCctl_AC_compressor      
+         write (*,*) ' +AC compressor           ', FCctl_AC_compressor
          write (*,*) ' +AC circulation fan      ', FCctl_AC_circfan
          write (*,*) ' +Furnace draft fan       ', FCctl_furnace_draft
          write (*,*) ' +Furnace circulation fan ', FCctl_furnace_circfan
@@ -583,18 +586,18 @@ C Created by: Kamel Haddad, based largely on subroutine POWOC_nonHVACld by Ian B
 C Initial Creation Date: March 11th 2004
 
 C This subroutine determines the electrical load from the outside such as when there is a cluster
-C of houses served by the same electrical network situated in a specific building. It is 
-C employed to impose ( HVAC + non HVAC) electrical loads upon the electric power flow 
-C modelling domain from these outside sources. These loads are accounted for in the 
-C electrical domain, but they do not contribute any internal heat gains to the building 
-C because they occur outside of the building. 
-C In the first development of fuel-cell cogeneration models, the non-HVAC electrical demand was 
-C determined within the plant solution domain. This subroutine was added to allow this load to 
+C of houses served by the same electrical network situated in a specific building. It is
+C employed to impose ( HVAC + non HVAC) electrical loads upon the electric power flow
+C modelling domain from these outside sources. These loads are accounted for in the
+C electrical domain, but they do not contribute any internal heat gains to the building
+C because they occur outside of the building.
+C In the first development of fuel-cell cogeneration models, the non-HVAC electrical demand was
+C determined within the plant solution domain. This subroutine was added to allow this load to
 C be applied within the electric power flow solution domain. This subroutine is called each time-step
-C (perhaps multiple times per time-step as the solver may iterate between the plant and electrical 
-C domains within a time-step) to establish the non-HVAC load that is stored in a binary file.  
+C (perhaps multiple times per time-step as the solver may iterate between the plant and electrical
+C domains within a time-step) to establish the non-HVAC load that is stored in a binary file.
 C This binary file is generated by subroutine FC_eloads_convert from an ASCII input file (.fcl file).
- 
+
 C INPUTS:
 C    IPWC           The index of the power-only component under consideration
 C                   (e.g. for a network with 2 power-only components, IPWC will
@@ -655,6 +658,13 @@ C Common for passing error messages to calling routine (only used when running
 C in dll mode).
 C---------------------------------------------------------------------------------
       common/dllerr/dllsubr, dllmesg
+      
+C---------------------------------------------------------------------------------
+C Common created by Neil Saldanha for customized controller with SE and lithium
+C ion battery (see his thesis for more info) 
+C---------------------------------------------------------------------------------
+      common/Res_elec_ctl/house_load      
+
 
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
@@ -662,7 +672,7 @@ C-------------------------------------------------------------------------------
       INTEGER      NPOWCOM, POWCOMNO, POWCOMID, POWCOMPHTYP, POWCONEN,
      &             NPOWCDAT, NPOWCDATS
       REAL         POWCDAT
-      REAL         PPOWOC, QPOWOC
+      REAL         PPOWOC, QPOWOC, house_load
       COMPLEX      VPOWC
       INTEGER      IHRP, IHRF, IDYP, IDYF, IDWP, IDWF, NSINC, ITS
       REAL         btimep, btimef, ptimep, ptimef
@@ -720,14 +730,17 @@ C Power only components
 
       PPOWOC(IPWC) = -1. * q_nonHVAC_elec * POWCDAT(IPWC,1)
       QPOWOC(IPWC) = 0.
+      
+      house_load = PPOWOC(IPWC) ! Store dwelling house load for custom controller (see common block declaration above)
+
 
       RETURN
       END
 
-          
+
 C *********************************************************************************************
 C ********************************* POWOC_TRANSFORMER_loss ************************************
-C     Created by: Maria Mottillo 
+C     Created by: Maria Mottillo
 C     Initial Creation Date: August 9, 2004.
 C
 C     This subroutine determines the power load on the electrical network due
@@ -773,7 +786,7 @@ C hydrogen-based system model. Only QElecT (power from wind farm entering
 C transformer) is used in this subroutine.
 C---------------------------------------------------------------------------------
        COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -781,7 +794,7 @@ C-------------------------------------------------------------------------------
 
       REAL      fWindSpeedProfile(100),fWindPowerProfile(100)
       INTEGER   iDataPoints
-     
+
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
@@ -825,7 +838,7 @@ C calculate power delivered to the transmission grid, QFarmG
 
 C *********************************************************************************************
 C ********************************* POWOC_TxDx_loss ************************************
-C     Created by: Maria Mottillo 
+C     Created by: Maria Mottillo
 C     Initial Creation Date: August 9, 2004.
 C
 C     This subroutine determines the power load on the electrical network due
@@ -874,7 +887,7 @@ C hydrogen-based system model. Only QFarmG (power delivered to transmission
 C grid) is used in this subroutine.
 C---------------------------------------------------------------------------------
        COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -926,7 +939,7 @@ C      QElBldg = QFarmG * TxDx_Eff
 
 C *********************************************************************************************
 C ********************************* POWOC_Bldg_PCU *******************************************
-C     Created by: Maria Mottillo 
+C     Created by: Maria Mottillo
 C     Initial Creation Date: August 11, 2004.
 C
 C     This subroutine determines the power load on the electrical network
@@ -978,7 +991,7 @@ C-------------------------------------------------------------------------------
       real pfp(mpcom)           ! not used
       integer ipfp(mpcom)       ! not used
       real pwrp(mpcom)          ! real power consumption of plant component
-      real bvoltp(mpcom)        ! not used 
+      real bvoltp(mpcom)        ! not used
       integer iphp(mpcom)       ! not used
 
 
@@ -995,7 +1008,7 @@ C-------------------------------------------------------------------------------
 C Declarations for variables passed in calling statement.
 C---------------------------------------------------------------------------------
       INTEGER IPWC
-     
+
 
 C---------------------------------------------------------------------------------
 C Declarations for local variables.
@@ -1019,7 +1032,7 @@ C Determine DC electrical power output of plant component to which
 C the PCU is connected.
       QElecGen = pwrp(iElecGen_ID)
 
-C Determine losses from PCU 
+C Determine losses from PCU
       PCU_Loss = QElecGen * (1.0 - PCU_Eff)
 
 
@@ -1048,7 +1061,7 @@ C from an ASCII input file (.wnd file).
 
 C This subroutine has been adapted from the subroutine POWOC_nonHVACld created by
 C Ian Beausoleil-Morrison.
- 
+
 C INPUTS:
 C    IPWC           The index of the power-only component under consideration
 C                   (e.g. for a network with 2 power-only components, IPWC will
@@ -1112,7 +1125,7 @@ C Common holding power entering/leaving components developed for wind-generated
 C hydrogen-based system model.
 C---------------------------------------------------------------------------------
        COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -1153,7 +1166,7 @@ C Declarations for local variables.
 C---------------------------------------------------------------------------------
       LOGICAL   XST,dll
       CHARACTER OUTS*124
- 
+
 
 C-------------------------------------------------------------------------------------------
 C If this subroutine is being called for the first time then process the user-specified
@@ -1204,7 +1217,7 @@ C  POWCDAT(IPWC,1) holds the scalar multiplier (additional data item).
 
 C *********************************************************************************************
 C ********************************* POWOC_PCU *************************************************
-C     Created by: Maria Mottillo 
+C     Created by: Maria Mottillo
 C     Initial Creation Date: March 7, 2005.
 C
 C     This subroutine treats a power conditioning unit as a power-only component. The subroutine
@@ -1233,7 +1246,7 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 #include "CETC_definitions.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C----------------------------------------------------------------------------------------------------
@@ -1281,11 +1294,11 @@ C-------------------------------------------------------------------------------
       real    qenodt         !- reactive transmitted power at node
 
 
-      common/pcu/pcunode(mpowcom,3)    
+      common/pcu/pcunode(mpowcom,3)
       integer pcunode         !- array holds the nodes to which the pcu is connected
                              !- pcunode(i,1) is the node id of the sending node
                              !- pcunode(i,2) is the node id of the receiving node
-                             !- i is the power-only component index 
+                             !- i is the power-only component index
 
       COMMON/ENODSLV/ENODVLT(MENOD)
       complex enodvlt        !- the electrical network solved voltages (SI)
@@ -1307,7 +1320,7 @@ C Node and component names
       character HYCOMNAM*12       !-string holding hybrid component name
       character HYCOMTYPSTR*12    !-string containing the hybrid component type
       character POWCOMNAM*12      !-string holding the power-only component name
-      character POWCDATS*72       !-string data item for a power-only component 
+      character POWCDATS*72       !-string data item for a power-only component
       character CONECOMNAM*12     !-string containing connecting component name
 
 
@@ -1323,7 +1336,7 @@ C......Variants using simple efficiency calculation:
 C..... 3 = connected to power source (input power known)
 C..... 4 = connected to power load (output power known)
 
-      integer iOpMode        
+      integer iOpMode
 
       integer iConnPwrSource, iConnPwrLoad, iConnPwrSourceSimple,
      &iConnPwrLoadSimple
@@ -1339,7 +1352,7 @@ C.....Idling constant (-)
 C.....The idling constant is the ratio of the power loss when
 C.....there is no voltage across the PCU and the nominal power
       real    fIdleConst
-                             
+
 C.....Setpoint voltage (V)
       real    fUsetp
 
@@ -1347,51 +1360,51 @@ C.....Voltage input (V)
       real    fUin
 
 C.....Voltage output (V)
-      real    fUout          
+      real    fUout
 
 C.....Internal resistance constant (V^2)
-C.....The internal resistance constant is the product of the 
+C.....The internal resistance constant is the product of the
 C.....internal resistance (ohms) and the nominal power (W)
-      real    fIntResConst 
-                             
+      real    fIntResConst
+
 C.....Power loss from the power conditioning unit (W)
       real    fPwrLoss
 
 C.....Power input to the power conditioning unit (W)
-      real    fPwrInput     
+      real    fPwrInput
 
 C.....Power output from the power conditioning unit (W)
-      real    fPwrOutput    
+      real    fPwrOutput
 
 C.....Efficiency of power conditioning unit (-)
-      real    fPCUEff        
+      real    fPCUEff
 
 C.....Specified efficiency for simple calculation (-)
       real    fSpecPCUEfficiency
 
 C.....Auxiliary power required to operate power conditioning unit (W)
 C.....This input is not used in the current version of the model
-      real    fPwrAux       
+      real    fPwrAux
 
 C.....Variables used for solution of power output from PCU
 C.....when power input to PCU is known (i.e. PCU is connected to
 C.....power source, iOpMode = 1)
-      real    fVarA, fVarB, fVarC, fXSolve     
+      real    fVarA, fVarB, fVarC, fXSolve
 
 C.....Variable used to compare two real numbers
-      logical bPower_Zero    
+      logical bPower_Zero
 
 C.....Index of the next power-only component defined in network
       integer next_comp
 
 C.....Counter
-      integer i            
+      integer i
 
 C.....Boolean to flag error
-      logical ok  
+      logical ok
 
 C.....Database index number for PCU power-only-component
-      integer PCU_id         
+      integer PCU_id
       parameter( PCU_id = 20 )
 
 C.....Strings used for XML output reporting
@@ -1404,7 +1417,7 @@ C-------------------------------------------------------------------------------
 
 C.....Power-only component index
       integer IPWC
-           
+
 C----------------------------------------------------------------------------------------------------
 
 
@@ -1424,7 +1437,7 @@ C is connected.
           write(ITU,*) 'PCUs must be last power-only components '
           write(ITU,*) 'to be defined.'
           stop 'powoc_calc.F: Fatal error!'
-      endif       
+      endif
 
 
 C Inputs from electric network file
@@ -1432,14 +1445,14 @@ C Inputs from electric network file
 C There are 6 data items for the PCU power-only component; See full definitions in the subroutine header.
 
 
-C.....Operating mode of PCU 
-      iOpMode = POWCDAT(IPWC,1)          
+C.....Operating mode of PCU
+      iOpMode = POWCDAT(IPWC,1)
 
 C.....Nominal power of PCU (W)
       fNomPower = POWCDAT(IPWC,2)
 
 C.....PCU Idling constant (-)
-      fIdleConst = POWCDAT(IPWC,3)        
+      fIdleConst = POWCDAT(IPWC,3)
 
       if (iOpMode == iConnPwrSource .or.
      &    iOpMode == iConnPwrLoad         ) then
@@ -1462,7 +1475,7 @@ C.....Inputs for simple variant using consant efficiency
 C.......Nominal efficiency
         fSpecPCUEfficiency = POWCDAT(IPWC,4)
 
-      endif 
+      endif
 
 C.....Obtain voltages from connected nodes (take real part)
 
@@ -1480,12 +1493,12 @@ C.....Power conditioning unit connected to power load (power output is known):
 
 C get net power at receiving  node
           fPwrOutput = ABS(penodl(pcunode(IPWC,2)) +
-     &                 penodg(pcunode(IPWC,2)))      
+     &                 penodg(pcunode(IPWC,2)))
 
           call eclose( fPwrOutput, 0.,0.001,bPower_Zero )
-                                                                 
+
 C no power output
-          if ( bPower_Zero ) then 
+          if ( bPower_Zero ) then
 
              fPwrInput = fIdleConst * fNomPower
 
@@ -1513,10 +1526,10 @@ C Power conditioning unit connected to power source (power input is known):
       elseif ( iOpMode .eq. iConnPwrSource .or.
      &         iOpMode .eq. iConnPwrSourceSimple ) then
 
-C get net power at sending node  
+C get net power at sending node
           fPwrInput =  penodl(pcunode(IPWC,1)) +
-     &                 penodg(pcunode(IPWC,1))                
-                                                        
+     &                 penodg(pcunode(IPWC,1))
+
 
           if ( fPwrInput .lt. 0. ) then
              fPwrInput = 0.
@@ -1526,14 +1539,14 @@ C get net power at sending node
           call eclose( fPwrInput, 0.,0.001,bPower_Zero )
 
 
-          if ( bPower_Zero ) then         
+          if ( bPower_Zero ) then
 
 C no power input, calculate idling losses
              fPwrOutput = -1. * fIdleConst * fNomPower      ! losses are a load, -ve
 
           elseif ( iOpMode .eq. iConnPwrSource ) then
 
-C Calculate power output based on relationship given by (Ulleberg,1998). 
+C Calculate power output based on relationship given by (Ulleberg,1998).
 C The 2nd order equation is solved by finding the roots of the quadratic equation
 C and only keeping the positive solution.
 
@@ -1552,7 +1565,7 @@ C  x  = fPwrOutput/fNomPower
      &                  ( 2. * fVarA )
 
 
-             fPwrOutput = fXSolve * fNomPower 
+             fPwrOutput = fXSolve * fNomPower
 
              if ( fPwrOutput .gt. fPwrInput ) then    ! Ensures that PCU efficiency is not > 100%
                                                       ! and that power losses are not negative!
@@ -1574,7 +1587,7 @@ C........error message goes here
 
 
 
-C Calculate power loss 
+C Calculate power loss
 
           fPwrLoss = fPwrInput - fPwrOutput
 
@@ -1595,13 +1608,13 @@ C Place load/generated power on appropriate node:
 
 C power load on sending node (only real power taken into account)
 C loads are negative
-          penodl(pcunode(IPWC,1)) =  penodl(pcunode(IPWC,1)) -       
-     &                               fPwrInput                      
+          penodl(pcunode(IPWC,1)) =  penodl(pcunode(IPWC,1)) -
+     &                               fPwrInput
 
 
 C power source on receiving node (only real power taken into account)
           penodg(pcunode(IPWC,2)) =  penodg(pcunode(IPWC,2)) +
-     &                               fPwrOutput     
+     &                               fPwrOutput
 
 
 C Save variables that may be required by control sensors.
@@ -1692,7 +1705,7 @@ C.....Only report efficiency if unit is on
           END
 
 
-C------------------------------------------------------------------------------ 
+C------------------------------------------------------------------------------
 
 
 
@@ -1711,9 +1724,9 @@ C     and can thus impose multiple loads on the network,
 C   - it can determine the amount of hydrogen used by hydrogen appliances, and
 C     deduct an equivlent amount of electricity from the occupant-driven
 C     electric load profiles.
- 
+
 C INPUTS:
-C    iComponent      Index of comonent in the electrical network. 
+C    iComponent      Index of comonent in the electrical network.
 
 C OUTPUTS:
 C    PPOWOC(i)      The real power demand of the non-HVAC electrical loads (W).
@@ -1724,7 +1737,7 @@ C                   [from common/ENETPOWC]
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_nonHVACld_BCD(iComponent)
       implicit none
-#include "plant.h"      
+#include "plant.h"
 #include "power.h"
 #include "Hydrogen_demand_controller.h"
 
@@ -1763,7 +1776,7 @@ C-------------------------------------------------------------------------------
      &vpowc(mpowcom)
 
 C---------------------------------------------------------------------------------
-C Common holding # of plant components 
+C Common holding # of plant components
 C---------------------------------------------------------------------------------
       common/c9/npcomp,nci,cdata
       integer npcomp,nci(mpcom)
@@ -1779,7 +1792,7 @@ C-------------------------------------------------------------------------------
 
       character*12 enodnam, hycomtypstr, hycomnam, powcomnam,conecomnam
       character*72 powcdats
-      
+
 C---------------------------------------------------------------------------------
 C Local variables
 C---------------------------------------------------------------------------------
@@ -1788,7 +1801,7 @@ C-------------------------------------------------------------------------------
       real fE_Load                        ! Electric loads (W)
       real fE_Load_profile                ! Electric load from original profile (W)
       character*248 cName_buffer          ! Buffer for passing BCD name
-      character*72  cFCL_name             ! Buffer for passing .fcl name 
+      character*72  cFCL_name             ! Buffer for passing .fcl name
       character*124 cContext              ! Contextual buffer
       character*124 cMsg
       integer iInterp_Method              ! Flag indicating which method
@@ -1797,7 +1810,7 @@ C-------------------------------------------------------------------------------
       integer iElec_Load_source           ! Flag indicating if load should be
                                           !   obtained from .fcl file or
                                           !   boundary condition facility
-                                          
+
       real fScale_factor                ! Load scaling factor
       integer iH2_load_strategy           ! Flag indicating if H2 loads should
                                           !   be ignored (0) or deducted (1)
@@ -1806,7 +1819,7 @@ C-------------------------------------------------------------------------------
       real fH2_app_load_TOTAL             ! Total hydrogen appliance load (W)
 
       logical bClose                      ! flag for numerical comparisons
-                                                
+
 
 
 
@@ -1819,7 +1832,7 @@ C.....Named constants
       integer iSRC_FClds                  ! Obtain loads from FCL file
       integer iSRC_BCD                    ! Obtain loads from boundary conditions
       parameter ( iSRC_FClds = 1,
-     &            iSRC_BCD   = 2 ) 
+     &            iSRC_BCD   = 2 )
 
       logical bWarned
       save bWarned
@@ -1828,20 +1841,20 @@ C.....Named constants
       CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
       integer ilength                      ! non-blank length of string
 
-C.....External functions.     
+C.....External functions.
       integer lnblnk
-     
+
 C---------------------------------------------------------------------------------
 C     References
 C---------------------------------------------------------------------------------
       real fConvert_current_TS_to_DAY     ! Function returning current day #
       real fGet_BC_data_by_name           ! Function returning BC value
       real fGet_nonHVACld                 ! Function returing loads from .fcl file
-      
+
 C.....Get initial data
       fScale_factor     = powcdat(iComponent,1)
       iInterp_Method    = int ( powcdat(iComponent,2) )
-      iH2_load_strategy = int ( powcdat(iComponent,3) )                                                                                             
+      iH2_load_strategy = int ( powcdat(iComponent,3) )
       iElec_Load_source = int ( powcdat(iComponent,4) )
 
 
@@ -1853,7 +1866,7 @@ C.....Write contextual buffer
       if ( iElec_Load_source .eq. iSRC_FClds ) then
 C---------------------------------------------------------------------------------
 C        Use .fcl file as load source
-C---------------------------------------------------------------------------------         
+C---------------------------------------------------------------------------------
 C........Save component name as string
          write (cFCL_name, '(A)') powcdats(iComponent,1)
          fE_Load = fGet_nonHVACld ( cFCL_name )
@@ -1864,18 +1877,18 @@ C        Use boundary condition as load source
 C---------------------------------------------------------------------------------
 C........Save component name as string
          write (cName_buffer, '(A)') powcdats(iComponent,1)
-              
+
 C........Get day
          fDay = fConvert_current_TS_to_DAY()
 
-       
+
 C........Get electric loads
          fE_Load =  fGet_BC_data_by_name ( cName_buffer,
      &                                     fDay,
      &                                     iInterp_Method,
      &                                     cContext )
 
-      endif 
+      endif
 
 C....... Multiply electric load by scale factor
 
@@ -1885,14 +1898,14 @@ C....... Multiply electric load by scale factor
 C Initialise
          fH2_app_load_TOTAL = 0.0
 
-         
+
 C........Get appliance loads
          if ( iH2_load_strategy .eq. iDeduct_App_loads ) then
             do iCount=1, npcomp
                fH2_app_load_TOTAL = fH2_app_load_TOTAL +
      &                              fH2_plt_app_load (iCount)
             enddo
-         endif 
+         endif
 
          fE_Load_profile = fE_Load                    ! Save value for XML reporting
 
@@ -1901,8 +1914,8 @@ C........Get appliance loads
 
          if ( iH2_load_strategy .eq. iDeduct_App_loads ) then
 C........Is load less than zero?
-            call eClose(fE_Load, 0.0, 0.01, bClose) 
-            
+            call eClose(fE_Load, 0.0, 0.01, bClose)
+
             if ( fE_load .lt. 0.0 .and. .not. bClose ) then
                fE_load = 0.0
                if ( .not. bWarned ) then
@@ -1914,11 +1927,11 @@ C................Issue warning to user.
 
                  bWarned = .true.
 
-               endif 
-            endif 
+               endif
+            endif
          endif
-         
-                     
+
+
       PPOWOC(iComponent) = -1.0 * fE_Load
       QPOWOC(iComponent) = 0.
 
@@ -1926,8 +1939,8 @@ C................Issue warning to user.
 C-------------------------------------------------------
 C XML output
 C-------------------------------------------------------
-           
-      
+
+
 C.... Get component name
       hold_name = powcomnam(iComponent)
 C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
@@ -1952,7 +1965,7 @@ C     &     '/elec_load'
      &                       '(W)',
      &                       'Original E-load' )
 
-      
+
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:ilength),
      &     '/elec_H2_loads'
@@ -1964,7 +1977,7 @@ C     &     '/elec_load'
      &                       '(W)',
      &                       'Total H2 loads' )
 
-     
+
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:ilength),
      &     '/elec_load_adjusted'
@@ -1974,9 +1987,9 @@ C     &     '/elec_load'
      &                       H3K_rep_name,
      &                       'units',
      &                       '(W)',
-     &                       'Adjusted E-load' ) 
-      
-      
+     &                       'Adjusted E-load' )
+
+
       RETURN
       END
 

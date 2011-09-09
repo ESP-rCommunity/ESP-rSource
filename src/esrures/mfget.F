@@ -160,6 +160,7 @@ C air flow reporting.
       character zn*12
 
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
+      DIMENSION ICtmPK(MCONTM)
 
       integer YAXSET, ADDLIN
       integer lcname  ! length of contaminate string
@@ -1024,8 +1025,7 @@ C Ask for relevent nodes. If CTLST is true then ask for containments.
             PROMPT2=' '
             helptopic='mass_flow_cntm_select'
             call gethelptext(helpinsub,helptopic,nbhelp)
-            NH=0
-            CALL ASKMFCTM(NCPK,ICPK,PROMPT1,PROMPT2,nbhelp)
+            CALL ASKMFCTM(NCPK,ICtmPK,PROMPT1,PROMPT2,nbhelp)
           ELSE
             call edisp(iuout,' No contaminants defined')
             NMFGET=NMFGET-1
@@ -1076,9 +1076,9 @@ C appropriate labels.
               IF(I.EQ.1)THEN
                 IMFGETNO(NMFGET,2)=INPK(I)
                 DO 12 J=1,NCPK
-                  LNNAMEC=LNBLNK(CONTMNAM(ICPK(J)))
+                  LNNAMEC=LNBLNK(CONTMNAM(ICtmPK(J)))
                   IF(J.EQ.1)THEN
-                    IMFGETNO(NMFGET,3)=ICPK(J)
+                    IMFGETNO(NMFGET,3)=ICtmPK(J)
                   ELSE
                     if((NMFGET+1).GT.MFRS)then
                       call usrmsg('Number of items exceeded.',' ','P')
@@ -1087,7 +1087,7 @@ C appropriate labels.
                     NMFGET=NMFGET+1
                     IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
                     IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
-                    IMFGETNO(NMFGET,3)=ICPK(J)
+                    IMFGETNO(NMFGET,3)=ICtmPK(J)
                     IMFGETNO(NMFGET,4)=IMFGETNO(NMFGET-1,4)
                     IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                     IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
@@ -1097,10 +1097,10 @@ C appropriate labels.
 C GMFLABEL is 20 char so truncate the text.
                   lcname=MIN0(LNNAMEC,7)
                   WRITE(GMFLABEL(NMFGET),'(4a)')
-     &              CONTMNAM(ICPK(J))(1:lcname),'@',
+     &              CONTMNAM(ICtmPK(J))(1:lcname),'@',
      &              NDNAM(INPK(I))(1:8),SUFFIX(1:4)
                   WRITE(GLMFLABEL(NMFGET),'(4a)')
-     &              CONTMNAM(ICPK(J))(1:LNNAMEC),' at ',
+     &              CONTMNAM(ICtmPK(J))(1:LNNAMEC),' at ',
      &              NDNAM(INPK(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
  12             CONTINUE
               ELSE
@@ -1111,7 +1111,7 @@ C GMFLABEL is 20 char so truncate the text.
                 NMFGET=NMFGET+1
                 IMFGETNO(NMFGET,2)=INPK(I)
                 DO 13 J=1,NCPK
-                  LNNAMEC=LNBLNK(CONTMNAM(ICPK(J)))
+                  LNNAMEC=LNBLNK(CONTMNAM(ICtmPK(J)))
                   IF(J.GT.1)THEN
                     if((NMFGET+1).GT.MFRS)then
                       call usrmsg('Number of items exceeded.',' ','P')
@@ -1121,16 +1121,19 @@ C GMFLABEL is 20 char so truncate the text.
                     IMFGETNO(NMFGET,2)=IMFGETNO(NMFGET-1,2)
                   ENDIF
                   IMFGETNO(NMFGET,1)=IMFGETNO(NMFGET-1,1)
-                  IMFGETNO(NMFGET,3)=ICPK(J)
+                  IMFGETNO(NMFGET,3)=ICtmPK(J)
                   IMFGETNO(NMFGET,4)=IMFGETNO(NMFGET-1,4)
                   IMFGETNO(NMFGET,5)=IMFGETNO(NMFGET-1,5)
                   IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                   IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
+
+C GMFLABEL is 20 char so truncate the text.
+                  lcname=MIN0(LNNAMEC,7)
                   WRITE(GMFLABEL(NMFGET),'(4a)')
-     &              CONTMNAM(ICPK(J))(1:LNNAMEC),' at ',
-     &              NDNAM(INPK(I))(1:lnname),SUFFIX
+     &              CONTMNAM(ICtmPK(J))(1:lcname),'@',
+     &              NDNAM(INPK(I))(1:8),SUFFIX(1:4)
                   WRITE(GLMFLABEL(NMFGET),'(4a)')
-     &              CONTMNAM(ICPK(J))(1:LNNAMEC),' at ',
+     &              CONTMNAM(ICtmPK(J))(1:LNNAMEC),' at ',
      &              NDNAM(INPK(I))(1:lnname),SUFFIX
  13             CONTINUE
               ENDIF
@@ -1192,7 +1195,6 @@ C Note: return INPKT and NNPKT for total entering.
             if(idh.eq.5)then
               NNPKT=NNOD
               PROMPT1='Select second node'
-              NH=0
               call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,nbhelp)
             endif
             INODE=0
@@ -2084,13 +2086,14 @@ C Depending on flow direction calc density for sending node temperature.
       IFLD=NDFLD(NODPS(ICON))
       TPOS=FRDAT(2,NODPS(ICON))
       TNEG=FRDAT(2,NODNE(ICON))
-      FLOW1=FRDAT(2+ICON+NCONTM,2)
+      IROW=2+ICON+NCONTM
+      FLOW1=FRDAT(IROW,2)
       if (FLOW1.gt.0.0) then
         VFLOW1=FLOW1/DENSIT(IFLD,TPOS)
       else
         VFLOW1=FLOW1/DENSIT(IFLD,TNEG)
       endif
-      FLOW2=FRDAT(2+ICON,3)
+      FLOW2=FRDAT(IROW,3)
       if (FLOW2.gt.0.0) then
         VFLOW2=FLOW2/DENSIT(IFLD,TPOS)
       else

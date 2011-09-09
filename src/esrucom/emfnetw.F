@@ -339,7 +339,6 @@ C Check component data, beginning with possible duplication.
 C Check if this is a valid component type.
       IC=0
    33 IC=IC+1
-      print*,IC, 'ITPCMP:',ITPCMP(ICMP), IVALCM(IC)
       IF(ITPCMP(ICMP).EQ.IVALCM(IC)) GOTO 34
       IF(IC.LE.MCMV) GOTO 33
       call edisp(iuout,' Invalid component type!')
@@ -622,7 +621,7 @@ C Type 50 laminar pipe volume flow rate component.
      &    call MFERR(ICMP,' Negative length not allowed.',IER)
         if(SUPCMP(ICMP,3).LT.0.001)
      &    call MFERR(ICMP,' Radius must be > 0.001 m',IER)
-      ELSE IF(ITPCMP(ICMP).EQ.110 .or. ITPCMP(ICMP).EQ.111 ) THEN
+      ELSE IF(ITPCMP(ICMP).EQ.110) THEN
 
 C Type 110 specific air flow opening.
         if(NSDC.EQ.3.OR.NSDC.EQ.9)CALL CNTERR(ICMP,2)

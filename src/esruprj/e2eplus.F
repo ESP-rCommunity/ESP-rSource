@@ -45,7 +45,6 @@ C ICLIM,LCLIM (for climate file)
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -107,7 +106,7 @@ C Simulation parameter presets.
       logical closemat1,closemat2
 
       character GDESCR*36
-      CHARACTER NAM*72,outs*124,h*72
+      CHARACTER NAM*72,outs*124
       character CLMLOC*30,LCFGF*72
       character cfgroot*24
       character ctldoc*248,LCTLF*72
@@ -168,6 +167,11 @@ C surface can be resolved into a quad).
       logical treatasmass    ! if true treat surface as internal mass
       logical processasfen   ! if true treat surface as fenistration
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 C Viewfactor to ground.
       dimension PROPG(8)
       DATA PROPG/0.36,0.41,0.45,0.33,0.33,0.5,0.0,0.0/
@@ -180,6 +184,7 @@ C Viewfactor to ground.
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
 C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1. 
+      helpinsub='e2eplus'  ! set for subroutine
       ITA1 = IFIL+6
 
 C Set character variable com to be a single comma and sim to be a
@@ -475,14 +480,11 @@ C the configuration file data for lat and long.
 
 C Ask user where the current time meridian is.
       IIC2=0
-      h(1)='EnergyPlus needs to know the offset in hours from GTM.'
-      h(2)='West is negative, East is positive. '
-      h(3)=' '
-      h(4)='The cancel option will skip the creation of the '
-      h(5)='EnergyPlus descriptive file time zone section.'
+      helptopic='eplus_needs_to_know'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IIC2T=IIC2
       CALL EASKI(IIC2T,' Time zone (hours +- GTM) ',
-     &  ' ',-11,'F',11,'F',1,'time zone difference',IERI,5)
+     &  ' ',-11,'F',11,'F',1,'time zone difference',IERI,nbhelp)
       if(ieri.eq.-3)then
         WRITE(ioout,'(3a)',iostat=ios,err=2) '  0',com,
      &    '   !- TimeZone {hr} [not yet supplied]'
@@ -492,11 +494,10 @@ C Ask user where the current time meridian is.
      &    '   !- TimeZone {hr} [supplied by user]'
       endif
 
-      h(1)='EnergyPlus needs to know the site elevation in metres'
-      h(2)='above sea level. '
       SLM=10.0
       CALL EASKR(SLM,' Site elevation above sea level (m) ',
-     &  ' ',-100.0,'F',10000.0,'F',10.0,'site elevation',IER,2)
+     &  ' ',-100.0,'F',10000.0,'F',10.0,'site elevation',
+     &  IER,nbhelp)
       WRITE(ioout,'(a,f7.1,2a)',iostat=ios,err=2) indent,SLM,sim,
      &  '   !- Elevation {m} [supplied by user]'
 
@@ -1439,10 +1440,6 @@ C Write the AllOtherDays line as well.
 C Write out matching activity level schedule for people, but first
 C ask the user how many people are equivaent to the peak. If there
 C are no occupants then don't bother.
-        H(1)='EnergyPlus needs to know how many people are represented'
-        H(2)='by the peak occupant gain in this room. The numbers '
-        H(3)='presented are the sensible and latent gains and the '
-        H(4)='tototal of the sensible and latent. '
         totcgnsl=loadcasp(mz,1,1)+loadcasp(mz,1,2)
 
         if(totcgnsl.lt.1.0)then
@@ -1466,7 +1463,7 @@ C << and with the value for oneperson.
 
         vpeople=totcgnsl/140.0
         CALL EASKR(vpeople,' Number of people in room (see report): ',
-     &    ' ',0.0,'F',99.999,'W',1.0,'people in room',IER,4)
+     &    ' ',0.0,'F',99.999,'W',1.0,'people in room',IER,nbhelp)
         oneperson = totcgnsl/vpeople
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Schedule:Compact',com
@@ -1808,13 +1805,11 @@ C If ESP-r thinks there is no parent confirm with user.
      &          ' is transparent without parent surface.'
               call edisp(iuout,outs)
               dok=.false.
-              h(1)='Is its parent surface in the current'
-              h(2)='zone. If not say no. '
               izz=ic1(icc)
               write(outs,'(5a)') 'Does ',ssname(icc),
      &          ' have a parent surface in ',zname(izz),'?'
               call askok(outs,
-     &          ' (saying no skips this subsurface)',ok,dok,2)
+     &          ' (saying no skips this subsurface)',ok,dok,nbhelp)
               if(ok)then
                 write(outs,'(5a)') 'Specify parent surface for ',
      &            ssname(icc),' in ',zname(izz),'.'

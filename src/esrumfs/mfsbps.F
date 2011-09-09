@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow, Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -19,68 +19,54 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C *************** MFSBPS
-C This file contains the following modules which are mfs's general
-C counterparts to be used by bps, bld and plt: MFLWSU MFLWCA
+C This file contains the following subroutines, which provide the
+C interface to mfs when encapsulated in bps (or bld or plt):
+C   MFLWSU
+C   MFLWCA
 
-C In addition to this there are the more specific mfs counterparts:
-C  MFLW2B (in mfsbld.f) to be used by bps and bld
-C  MFLW2P (in mfsplt.f) to be used by bps and plt
-C  MFCNTL (in mfsplt.f) to be used by bps and plt
+C Note the other interface-related subroutines:
+C  MFLW2B (in mfsbld.f) used by bps and bld
+C  MFLW2P (in mfsplt.f) used by bps and plt
+C  MFCNTL (in mfsplt.f) used by bps and plt
 
-C ESRUmfs solves a network representing one-dimensional fluid mass
-C flow in building and/or plant configurations.
-C This involves the calculation of fluid flow through branches and nodes
-C in a network which represents a building and/or plant configuration.
-C The nodes and branches describe boundary pressure points, internal
-C node characteristics and flow restrictions.
-C ESRUmfs uses an iterative mass balance approach in which nodal
-C pressures (of unknown-pressure nodes) are adjusted until the mass
-C residual of each internal node satifies some criterion.
+C The mfs algorithm solves for the flow of an incompressible fluid
+C within a network established to represent a multi-zone building
+C or plant systems in whole or part). This entailes the calculation
+C of the mass flows through branches (flow restrictions) that are
+C subject to a time varying pressure difference. Note that 'building'
+C zones may be filled by a fluid other than air so that ESP-r's
+C building-side modelling features may be employed to represent
+C supply-side systems.
 
-C All ESRUmfs COMMON block variables are described in emfnetw.F
-C ESRUbps COMMON block variables associated with fluid mass flow are:
-C     IAIRN  - building air flow simulation index (1 = text, 2= graphic)
-C     ICAAS  - fluid (= air) flow network node associated with each
-C              building zone. NB fluid flow network and building zones
-C              need not be matched
-C     IFLWN  - plant fluid flow simulation index (1 = on)
-C     ICFFS  - fluid flow network node associated with each plant
-C              component. NB fluid flow network and plant energy
-C              network need not be matched
-C     LAPROB - fluid flow problem description file
-C     NCOMP  - total number of building zones
-C     NCON   - total number of building intra-zone connections
-C     IER1   - input error index which ensures that ESRUbps menu picks
-C              which are dependent on input data cannot be selected
-C              if any error was detected during the input sequence
-C     CVI?   - hourly ventilation conductance for infiltration air
-C              for weekdays, Saturdays and Sundays respectively
-C     CVV?   - hourly ventilation conductance for ventilation air
-C              for weekdays, Saturdays and Sundays respectively
-C     ICCZ?  - hourly convection coupling index for weekdays,
-C              Saturdays and Sundays resp.: ICC?=0 ventilation air
-C              at constant temperature (=TIA?) ICC?=N ventilation air
-C              at zone N temperature
-C     TIA?   - hourly temperature of incoming air during weekdays,
-C              Saturdays and Sundays resp. and corresponding to ICC?=0
-C              NB In case there is a leakage network, TIA? holds the
-C                 normalised (to the external temperature) ventilation
-C                 conductance
-C     ZMBI   - zone air flow array; 1= infiltration mass flow rate;
-C              2= product of zone coupling mass flow rate and moisture
-C              content; 3= product of mechanical system mass flow rate
-C              and moisture content; 4= total mass flow rate lost from
-C              the zone (no moisture included)
+C The mfs-realted variables are described in emfnetw.F while the
+C principal bps variables associated with fluid flow are as follows.
+C     IAIRN  - building-side fluid flow index (0 = absent; 1 = present).
+C     ICAAS  - maps zones to corresponding flow network nodes.
+C     IFLWN  - plant-side fluid flow index (0 = absent; 1 = present)
+C     ICFFS  - maps plant connections to corresponding flow network nodes.
+C     LAPROB - flow network description file.
+C     NCOMP  - total number of building zones.
+C     NCON   - total number of inter-zone connections.
+C     CVI?   - conductance for zone infiltration.
+C     CVV?   - conductance for zone ventilation.
+C     ICCZ?  - Ventilation source (0 = specified temperature (=TIA?);
+C              n = zone 'n' temperature).
+C     ZMBI   - zone air flow array:
+C                 position 1 = infiltration mass flow rate;
+C                          2 = product of zone-coupled mass flow rate
+C                              and moisture content;
+C                          3 = product of mechanical mass flow rate and
+C                              moisture content;
+C                          4 = mass flow rate lost from the zone
 
 C *** MFLWSU ***********************************************************
-C This is the fluid mass flow network set up routine which:
-C Opens and reads fluid flow related data files: wind pressure
-C       coefficients file and flow network problem description file
-C Checks fluid flow network problem description
-C Assigns flow results file
-C Sets iteration, Pstack model, matrix solver and trace default values
-C Initialises flow, derivative and pressure history variables
-C Sets known constant pressure nodes pressures and reset other nodes
+C Flow network set up routine:
+C    - open and read flow network description files
+C    - get pressure coefficients from database
+C    - assign flow results file
+C    - set iteration control parameters
+C    - initialise flows, derivatives and pressure history
+C     -set known pressure nodes.
 
       SUBROUTINE MFLWSU
 
@@ -89,16 +75,16 @@ C Sets known constant pressure nodes pressures and reset other nodes
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
-C LAPRES,IAPRES (for window pressure databases)
+C LAPRES,IAPRES (for wind pressure databases)
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
 
       integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+C      COMMON/C1/NCOMP,NCON
+C      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+C     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
@@ -136,7 +122,7 @@ C If for some reason IAPRES is still zero set it to IFIL+4
       IUNIT=IFIL+4
 
 C Open WIND PRESSURE COEFFICIENTS file, read coefficient
-C sets and close. Adjust file name depending on location.
+C sets and close file. Adjust file name depending on location.
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
         CALL EFOPSEQ(IAPRES,lapres,1,IER)
       elseif(ipathapres.eq.2)then
@@ -144,12 +130,9 @@ C sets and close. Adjust file name depending on location.
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    lapres(1:lnblnk(lapres))
 
-C Debug.
-C        write(6,*) 'working pressure coef ',lworking
-
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
-C      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
+
       IF(ier.ne.0) GOTO 2
       READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
       DO 100 J=1,NPRE
@@ -164,65 +147,28 @@ C Open fluid flow PROBLEM file and do a simple validity check.
          READ(IUNIT,*,IOSTAT=ISTAT,ERR=7,END=8) NNOD,NCMP,NCNN
          IF(NNOD.LT.2.OR.NNOD.GT.MNOD) GOTO 9
          IF(NCMP.LT.1.OR.NCMP.GT.MCMP) GOTO 11
-         IF(NCNN.LT.2.OR.NCNN.GT.MCON) GOTO 11
+         IF(NCNN.LT.2.OR.NCNN.GT.MCON) GOTO 12
 
-C Now read contents, do further checks and then close
-C the problem file.
+C Read flow network description file, perform data checks and close
+C the file.
          CALL MFLOAD(IUNIT,IER)
          IF(IER.NE.0) GOTO 1
          CALL ERPFREE(IUNIT,ISTAT)
       endif
 
-C Check building zone/fluid flow node (must be air node)
-C connectivities.  In the case of a building zone with
-C no corresponding mass flow node do not check the fluid 
-C type (this is an array index 0).
-      IF(IAIRN.eq.0) GOTO 120
-      DO 110 ICOMP=1,NCOMP
-      IF(ICAAS(ICOMP).LT.0.OR.ICAAS(ICOMP).GT.NNOD) THEN
-        WRITE(outs,'(A,I3,A,I3)') ' Building zone ',ICOMP,
-     &         ' mapped to invalid mass flow node ',ICAAS(ICOMP)
-        call edisp(iuout,outs)
-        GOTO 14
-      ELSE IF(ICAAS(ICOMP).NE.0) THEN
-        IF(NDFLD(ICAAS(ICOMP)).NE.1) THEN
-          WRITE(outs,'(A,I3,A,I3)') ' Building zone ',ICOMP,
-     &          ' references non-air mass flow node ',ICAAS(ICOMP)
-          call edisp(iuout,outs)
-          GOTO 14
-        END IF
-      END IF
-  110 CONTINUE
-
-C Check plant component inter-connection/fluid flow
-C connections mapping.
-  120 IF(IFLWN.EQ.0) GOTO 130
-      DO 122 IPCON=1,NPCON
-      IF(ICFFS(IPCON).LT.0.OR.ICFFS(IPCON).GT.NCNN) THEN
-         WRITE(IUOUT,'(A,I3,A,I3)') ' Plant connection ',IPCON,
-     &        ' mapped to invalid mass flow connection ',ICFFS(IPCON)
-         call edisp(iuout,outs)
-         GOTO 14
-      END IF
-
-C Check on fluid type equality will be performed by MZPMXT.
-  122 CONTINUE
-
-C Assign results file.
-  130 CONTINUE
+C Assign results file channel.
       IMFRES=IUNIT
 
-C Fill valid fluid flow component type arrays.
+C Establish available flow component models.
       CALL MFCDAT
 
-C Sets iteration, Pstack model, matrix solver and trace
-C default values.  Note that iteration parameter initial
-C values should be set equal to corresponding plant
-C iteration parameters MAXITP, PERREL, and PERMFL.
+C Set iteration control variables (N.B. plant-related variables MAXITP,
+C PERREL and PERMFL should be set equal to MAXITF, FERREL and FERMFL
+C respectively.
       MAXITF=100
-      FERREL=.01
-      FERMFL=.0005
-      PMAX=50.
+      FERREL=0.01
+      FERMFL=0.0005
+      PMAX=50.0
       STEFFR=-0.5
       IPSMOD=1
       MSLVTP=2
@@ -235,7 +181,7 @@ C Initialise flow, derivative and pressure history variables.
         HFL(ICNN)=DBLE(SMALL)
   140 CONTINUE
 
-C Set known constant pressure nodes pressures and reset other nodes
+C Assign pressure to fixed pressure nodes and initialise other nodes.
       DO 150 INOD=1,NNOD
         IF(NDTYP(INOD).EQ.1.OR.NDTYP(INOD).EQ.2) THEN
           PRES(INOD)=SUPNOD(INOD,1)
@@ -244,58 +190,64 @@ C Set known constant pressure nodes pressures and reset other nodes
         END IF
   150 CONTINUE
 
-  200 RETURN
+      RETURN
 
 C Error messages.
-    1 call edisp(iuout,' Error checking the mass flow network.')
-      GOTO 51
-    2 call edisp(iuout,' Wind pressure file cannot be assigned.')
+    1 write(outs,'(A)')
+     & ' MFLWSU: error in mass flow network.'
       GOTO 50
-    3 call edisp(iuout,' Wind pressure file read error.')
+    2 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file problem.'
       GOTO 50
-    4 call edisp(iuout,' End of wind pressure file detected.')
+    3 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file read error.'
       GOTO 50
-    6 call edisp(iuout,' Fluid flow file cannot be assigned.')
-      GOTO 51
-    7 call edisp(iuout,' Fluid flow file check error.')
-      GOTO 51
-    8 call edisp(iuout,' End of fluid flow file found.')
-      GOTO 51
-    9 call edisp(iuout,' Number of spaces out of range.')
-      GOTO 51
-   11 call edisp(iuout,' Number of connections out of range. ')
-      GOTO 51
-   14 call edisp(iuout,' Energy zones to fluid nodes mismatched. ')
-      GOTO 99
+    4 write(outs,'(A)')
+     & ' MFLWSU: pressure coefficients file premature end.'
+      GOTO 50
+    6 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file problem.'
+      GOTO 50
+    7 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file read error.'
+      GOTO 50
+    8 write(outs,'(A)')
+     & ' MFLWSU: Fluid flow results file premature end.'
+      GOTO 50
+    9 write(outs,'(A)')
+     & ' MFLWSU: Number of network nodes out of range.'
+      GOTO 50
+   11 write(outs,'(A)')
+     & ' MFLWSU: Number of network components out of range.'
+      GOTO 50
+   12 write(outs,'(A)')
+     & ' MFLWSU: Number of network connections out of range.'
 
-   50 call edisp(iuout,' Fluid flow network pressure coef file error.')
-      GOTO 99
-   51 call edisp(iuout,' Fluid flow network file error. ')
-      GOTO 99
-
-   99 IER1=1
+   50 call edisp(iuout,outs)
+      write(outs,'(A)')' Terminating simulation!'
+      call edisp(iuout,outs)
+      IER1=1
       CALL ERPFREE(IUNIT,ISTAT)
-      CALL EPWAIT
-      GOTO 200
 
+      stop
       END
 
 C *** MFLWCA ***********************************************************
 C Controls the fluid flows calculation for each simulation time step:
-C Set time and climate variables
-C Set temperatures for nodes corresponding to building energy zones
-C Set temperatures for nodes corresponding to plant energy components
-C Set boundary nodes temperature (type 2 & 3) and wind pressure (type 3)
-C Calculate node fluid densities
-C Calculate connections stack pressure
-C Solve the fluid flow network mass balances
-C Transfer fluid flow simulation results to flow results file
-C Establish building side air flows
-C Establish plant side fluid flows
+C    - set time and climate variables;
+C    - set temperatures for nodes corresponding to building energy zones;
+C    - set temperatures for nodes corresponding to plant energy components;
+C    - set boundary nodes temperature (type 2 & 3) and wind pressure (type 3);
+C    - calculate node fluid densities;
+C    - calculate connections stack pressure;
+C    - solve the flow network mass balance;
+C    - transfer fluid flow simulation results to results file;
+C    - establish building side flows;
+C    - establish plant side flows.
 C
 C ISCALL - indicates whether MFLWCA is called from the building
-C           side (ISCALL = 1) or from the plant side (ISCALL = 2)
-C STIME  - is used to transfer the simulation time to mfs
+C          side (= 1) or plant side (= 2).
+C STIME  - used to transfer the simulation time to mfs.
 
       SUBROUTINE MFLWCA(ISCALL,STIME)
 
@@ -315,19 +267,20 @@ C STIME  - is used to transfer the simulation time to mfs
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
-C Time and weather data.
+C Present (P) and future (F) time-row time and other time-related data.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+C Weather data.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
 
-C Most recent 'future' time-row zone air
-C temperatures saved in MZLS3.
+C Most recent zone air temperatures as saved in MZLS3.
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 
-C Fluid flow network data.
+C Flow network data.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/FFC/IMFRES
@@ -352,7 +305,7 @@ C Time-step controller data.
       common/ts/itsflg,ntscpd,itssch(msch,5),itsmus
       common/outflg/itsplt
 
-C--CFD
+C CFD-related data.
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -363,27 +316,72 @@ C--CFD
      &             FIXT(MCFND,MNZ),FIXC(MCFND,MNZ),
      &             FIXK(MCFND,MNZ),FIXE(MCFND,MNZ),
      &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
-C Activation of connections
+
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
 
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
-      LOGICAL MFSAVE,dotrace
+      LOGICAL MFSAVE,dotrace,znotair
       CHARACTER LAPROB*72,LCFD*72
       character outs*124
       logical bInStartup
 
-C If trace required set dotrace=.true.
+C Is trace required?
       dotrace=.true.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)dotrace=.false.
       IF(ITRACE(7).EQ.0.OR.NSINC.GT.ITCF)dotrace=.false.
       if(dotrace)then
-        write(outs,'(A,I5)')' Subroutine MFLWCA Trace output ',ICNT
+        write(outs,'(A,I5)')' MFLWCA: Trace output ',ICNT
         call edisp(itu,outs)
         ICNT=ICNT+1
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
-C Set time and climate variables.
-      IRY=IYEAR
+C Check that zones are legally mapped to network flow nodes.
+      if(IAIRN.eq.0) goto 1
+      do ICOMP=1,NCOMP
+        if(ICAAS(ICOMP).lt.0.or.ICAAS(ICOMP).GT.NNOD) then
+          write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
+     &           ' is mapped to invalid mass flow node.',ICAAS(ICOMP)
+          call edisp(iuout,outs)
+          goto 99
+        else if(ICAAS(ICOMP).ne.0) then
+          if(znotair(ICOMP)) then		! zone is not air filled
+            if(NDFLD(ICAAS(ICOMP)).ne.2) then
+              write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
+     &            ' incorrectly references an air flow node.',
+     &            ICAAS(ICOMP)
+              call edisp(iuout,outs)
+              goto 99
+            end if
+          else					! zone is air filled
+            if(NDFLD(ICAAS(ICOMP)).ne.1) then
+              write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
+     &          ' incorrectly references a non-air flow node.',
+     &          ICAAS(ICOMP)
+              call edisp(iuout,outs)
+              goto 99
+            end if
+          end if
+        end if
+      end do
+
+C Check that plant network connections are legally mapped to
+C network flow nodes.
+    1 if(IFLWN.EQ.0) GOTO 2
+
+      do IPCON=1,NPCON
+        if(ICFFS(IPCON).LT.0.OR.ICFFS(IPCON).GT.NCNN) then
+           write(outs,'(A,I3,A,I3)') ' Plant network connection ',
+     &          IPCON,' references an invalid mass flow connection',
+     &          ICFFS(IPCON)
+           call edisp(iuout,outs)
+           goto 99
+        end if
+      end do
+
+C Set time and weather variables.
+    2 IRY=IYEAR
       IF(IHRP.EQ.24.AND.ITS.EQ.NTSTEP) THEN
         IYD=IDYF
         CALL EDAYR(IDYF,IRD,IRM)
@@ -405,11 +403,8 @@ C Set temperatures for nodes corresponding to building energy zones.
  10     CONTINUE
       END IF
 
-C Set temperatures for nodes corresponding to a plant component.
-C Note that plant - mass flow network matching is based on
-C connections.  We assume that the flow will be in the positive
-C direction if the previous flow was in the +ve direction and
-C vice versa.
+C Set temperatures for nodes corresponding to a plant component (noting
+C that network nodes are matched to plant network connections).
       IF(IFLWN.NE.0) THEN
         DO 20 IPCON=1,NPCON
           ICNN=ICFFS(IPCON)
@@ -421,20 +416,20 @@ C vice versa.
    20   CONTINUE
       END IF
 
-C Set boundary nodes temperature (type 2 & 3), 'temperature coupled'
-C nodes and wind pressure (type 3).
+C Set boundary node temperature (for node types 2 & 3) and
+C pressure (type 3).
       DO 30 INOD=1,NNOD
         IF((NDTYP(INOD).EQ.2.AND.NINT(SUPNOD(INOD,2)).EQ.1).OR.
      &      NDTYP(INOD).EQ.3) TNOD(INOD)=DRYB
         IF(ITND(INOD).GT.0) TNOD(INOD)=TNOD(ITND(INOD))
         IF(NDTYP(INOD).EQ.3) THEN
 
-C Set wind direction index 1-16 corresponding to intervals
-C with mid-points at 0, 22.5, ... , 337.5 deg, relative to
+C Set wind direction index, 1-16, corresponding to intervals
+C with mid-points at 0, 22.5, ... 337.5 deg relative to
 C surface azimuth (i.e. wind normal to surface = index 1).
           IWDR=NINT((WDIR-SUPNOD(INOD,2))/22.5)+1
 
-C If roaming activated then rotate the model
+C If roaming activated then rotate the model.
           IF(IROAM.EQ.1)THEN
             ANGLE=SUPNOD(INOD,2)+REAL(LTROR)
             IF(ANGLE.GE.360.)ANGLE=ANGLE-360.
@@ -444,7 +439,7 @@ C If roaming activated then rotate the model
           IF(IWDR.GT.16) IWDR=IWDR-16
 
 C Calculate wind pressure and include stack 
-C pressure (based on PRES(at height 0) = 0.0).
+C pressure (based on pressure at height 0 = 0.0).
           CD=FPRE(IWDR,INT(SUPNOD(INOD,1)))
           RO=DENSIT(1,DRYB)
           PRES(INOD)=CD*.5*RO*WSPD*WSPD-9.81*RO*HNOD(INOD)
@@ -474,23 +469,25 @@ C flow direction.
      &                ((RHON(IDPS)+RHON(IDNE))*(HNOD(IDPS)-HNOD(IDNE))
      &               +(HGTNE(ICNN)+HGTPS(ICNN))*(RHON(IDNE)-RHON(IDPS)))
         ELSE
-          STOP ' MFLWCA: unresolvable error !'
+          write(outs,'(A)') ' MFLWCA: unresolvable error!'
+          call edisp(iuout,outs)
+          goto 99
         END IF
    50 CONTINUE
 
       CALL MFSOLV
 
-C Transfer mass flow simulation results to flow results file,
+C Transfer mass flow simulation results to results file,
 C unless we are still in the simulation start-up period.
-C Note that in case of building AND plant, the
+C Note that for a building AND plant simulation, the
 C results are only transferred when MFLWCA is called from the
-C plant side (ie. 'inside' a plant time step) to prevent
+C plant side (i.e. 'inside' a plant time step) to prevent
 C non-monotonity of the mass flow results time-series.
 C Note that 'itsmus' ensures that result transfer occurs
-C at user specified time-step.
+C at the user specified time-step.
       MFSAVE=.false.
 
-C Check in simulation period (i.e. not in start up).
+C Check if within simulation period (i.e. not in start up).
       if (bInStartup())then
         continue
 
@@ -539,7 +536,7 @@ C      write(6,*) 'flow:',IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,
 C     &    BTIMEP,BTIMEF,ISSNY,ISDS,ISDF,MFSAVE,FLWTIM,IAIRN,
 C     &    IFLWN,ISCALL,itsmus,itsplt
 
-C Save results
+C Save results.
       if (MFSAVE) then
 
 C MFOUTP - should only write here for trace (equivalent to the
@@ -548,14 +545,18 @@ C ASCII version of flow results file).
         call MFOUTPB(IMFRES)
       endif
 
-C Establish building side air flows (ie. ventilation conductances)
-C if MFLWCA is called from the building side.
+C Establish building side ventilation conductances if MFLWCA
+C called from the building side.
       IF(IAIRN.ge.1.AND.ISCALL.EQ.1) CALL MFLW2B
 
-C Establish plant side fluid flows
-C if MFLWCA is called from the plant side.
+C Establish plant side flows if MFLWCA is called from the
+C plant side.
       IF(IFLWN.EQ.1.AND.ISCALL.EQ.2) CALL MFLW2P
 
       RETURN
+
+   99 write(outs,'(A)')' MFLWCA: simulation terminating!'
+      call edisp(iuout,outs)
+      stop
       END
 

@@ -21,9 +21,10 @@
 #define DEBUG 0
 
 // Named constants
-#define SUMMARY 0
-#define LOG     1
-#define STEP    2
+#define SUMMARY     0
+#define LOG         1
+#define STEP        2
+#define DUMPALLDATA 3
 
 // Flag to enable timstep data storage in xml output. Note: XML'd time-step data
 // is presently suppressed, since time-step data is dumped to ascii csv format
@@ -92,6 +93,7 @@ TVariableData::TVariableData()
   bSummarySearchStatus = false;
   bLogSearchStatus = false;
   bStepSearchStatus = false;
+  bDumpAllDataSearchStatus = false;
   bNotSet = true; 
 
   UpdateHourly();
@@ -296,8 +298,10 @@ bool TVariableData::QuerySearchStatus(int& i){
     return bSummarySearchStatus;
   }else if ( i == LOG ){
     return bLogSearchStatus;
-  }else{
+  }else if ( i == STEP ){
     return bStepSearchStatus;
+  }else{
+    return bDumpAllDataSearchStatus;
   }
 }
 
@@ -320,6 +324,9 @@ void TVariableData::UpdateSearchStatus(int& i, bool bStatus){
   if ( i == STEP ){
     bStepSearchStatus = bStatus;
   }
+  if (i == DUMPALLDATA){
+    bDumpAllDataSearchStatus = bStatus;
+  }
 
   return;
 }
@@ -340,8 +347,11 @@ bool TVariableData::QuerySearchResult(int& i){
   else if ( i == LOG ){
     return bLogSearchResult;
   }
-  else{
+  else if ( i == STEP ){
     return bStepSearchResult;
+  }
+  else{
+    return bDumpAllDataSearchResult;
   }
 }
 
@@ -363,6 +373,9 @@ void TVariableData::UpdateSearchResult(int& i, bool bResult){
   }
   if ( i == STEP ){
     bStepSearchResult = bResult;
+  }
+  if ( i == DUMPALLDATA ){
+    bDumpAllDataSearchResult = bResult;
   }
 
   return;

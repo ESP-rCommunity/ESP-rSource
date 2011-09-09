@@ -333,7 +333,6 @@ C Tolerance for iteration of hydrogen flow matrix
 
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
       COMMON/CLMFLG/ICLMFL
-      COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       COMMON/PWRFLG/IPWRSIM
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
@@ -347,7 +346,11 @@ C Tolerance for iteration of hydrogen flow matrix
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      LOGICAL WATERZ,VTSOL,SAVE4,SAVE4OK,dok
+      LOGICAL VTSOL,SAVE4,SAVE4OK,dok
+
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      LOGICAL znotair
 
       CHARACTER*72 vsnam
       CHARACTER*29 ITEM(18)
@@ -416,7 +419,7 @@ C Hydrogen flow iteration tolerance
 
 C Initialise all zones to air-filled
       do 114 iwz=1,mcom
-        WATERZ(iwz)=.false.
+        znotair(iwz)=.false.
  114  continue
 
 C Initialise reading in of vertical solar data.
@@ -700,11 +703,20 @@ C Common for electrical file
 
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
-      COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       common/filep/ifil
       COMMON/Vld30/Tinitial
       REAL :: Tinitial
+
+C Fluid properties to use if a zone is not air filled:
+C  zfldK - conductivity;
+C  zfldD - density;
+C  zfldC - specific heat capacity;
+C  zflsA - total shortwave absorptivity;
+C  zSWA - shortwave absorption (W).
+      COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
+     &              zSWAp(mcom),zSWAf(mcom)
+      LOGICAL znotair
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -740,7 +752,7 @@ c This common block is used to define the sky temperature calculation method
       character HCALT*42
 
       logical MSTROK,MSTRZN
-      logical WATERZ,VTSOL
+      logical VTSOL
       integer NITMS,INO  ! max items and current menu item
 
 C For help messages
@@ -851,7 +863,7 @@ C Make up strings for the current set of toggles.
       ITEMG(23)=    's Convection methods (inside)           '
       ITEMG(24)=    't Convection methods (external)         '
       ITEMG(25)=    '  ________________________________      '
-      ITEMG(26)=    'u Water-filled zones                    '
+      ITEMG(26)=    'u Non air filled zones                  '
       ITEMG(27)=    '  ________________________________      '
       ITEMG(28)=    'v Vertical solar radiation              '
       ITEMG(29)=    '  ________________________________      '
@@ -1161,22 +1173,28 @@ C          continue
 C        endif
       elseif(INO.eq.26)then
 
-C Select air (default) or water filled zones.
+C Select air (default) or non air filled zones.
         helptopic='list_water_filled_zones'
         call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVAL,' ',
-     &    ' Which zones to make water filled: ',
+     &    ' ZSelect zones that are not air filled:',
      &    12,NCOMP,zname,' zone list',IER,nbhelp)
         if(inpic.eq.0)goto 92
-        call tstamp('>','SIM: edit water filled zones')
+        call tstamp('>','SIM: edit non air filled zones')
         do 142 ixx=1,inpic
           if(ival(ixx).ne.0)then
-            WATERZ(IVAL(ixx))=.true.
+            znotair(IVAL(ixx))=.true.
           endif
  142    continue
-        CALL EASKR(WATCAP,' ',' Capacity : ',
-     &    1.0,'F',5000.0,'F',4190.0,'fluid capacity',IER,nbhelp)
+        CALL EASKR(zfldK,' ','Conductivity: ',
+     &     0.01,'F',500.0,'F',0.6,'Conductivity',IER,nbhelp)
+        CALL EASKR(zfldD,' ','Density: ',
+     &     0.5,'F',1500.0,'F',998.2,'Density',IER,nbhelp)
+        CALL EASKR(zfldC,' ','Capacity: ',
+     &     100.0,'F',6000.0,'F',4190.0,'Capacity',IER,nbhelp)
+        CALL EASKR(zfldA,' ','Absorptivity: ',
+     &     0.0,'F',1.0,'F',0.0,'Total absorptivity',IER,nbhelp)
 
       elseif(INO.eq.28)then
 
@@ -1189,7 +1207,7 @@ C << consider a different approach
         do 143 iiii=1,mzs
           inpic=1
           call epicks(inpic,IVAL,' ',
-     &      ' Which zone for vertical radiation: ',
+     &      ' Which zone for vertical radiation:',
      &      12,ncomp,zname,' zone list',IER,nbhelp)
           if(inpic.eq.0)goto 144
           ipkzon(iiii)=IVAL(1)
@@ -1202,8 +1220,8 @@ C << consider a different approach
         endif
         ivsolfil=ifil+31
         call erpfree(ivsolfil,istat)
-        call easks(vsnam,'Name of Vertical Solar file ?',
-     &' ',72,' ','vertical solar file',IER,nbhelp)
+        call easks(vsnam,' Name of vertical solar file?',
+     &    ' ',72,' ','vertical solar file',IER,nbhelp)
         if(IER.NE.0) then
           write(outs,'(a,a)') 'Could not find file ',vsnam
           call edisp(iuout,outs)      
@@ -1569,7 +1587,7 @@ C Define startup period.
          helptopic='startup_period_dialog'
          call gethelptext(helpinsub,helptopic,nbhelp)
          CALL EASKI(ITCNST,' Start-up period duration:',
-     &     ' Number of days ? ',
+     &     ' Number of days?',
      &     0,'F',364,'F',1,'startup period',IER,nbhelp)
       endif
 
@@ -1580,7 +1598,7 @@ C Define computational time-step.
         helptopic='timestep_freq_dialog'
         call gethelptext(helpinsub,helptopic,nbhelp)
         mtsphr=60
-        call easki(ntstep,' ',' Zone side: time-steps/hour ?',
+        call easki(ntstep,' ',' Zone side: time-steps/hour?',
      &    1,'F',mtsphr,'F',1,'time-steps/hour?',ier,nbhelp)
       endif
 

@@ -9,7 +9,7 @@
 ' '
 'To create an ASCII version of the current (binary)'
 'plant component database: '
-'  Choose `a To file`, supply a file name then '
+'  Choose [a To file], supply a file name then '
 '  select the unordered listing option.'
 'The ACII file will hold plant component entries'
 'when a sorted list option is selected from the menu.'

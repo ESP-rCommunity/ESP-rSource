@@ -103,10 +103,10 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10
-      CHARACTER OUTSTR*124,DSTR*124,outs*124
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,outs*124
       character prompt*144
       LOGICAL OK,DOK,unixok
-      integer ivalold
+      integer ivalold   ! to remember passed value in case of cancel
 
       IER=0
 
@@ -116,6 +116,8 @@ C If IVAL is outwith range for failure then set to default.
 
 C Clear string buffers
    20 WORD=' '
+      ask='           '
+      WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
       ivalold=ival
@@ -137,7 +139,6 @@ C If in graphic mode use graphic faciltiies to edit the number.
         CALL PHELPW(newnbhelp,IHW,IER)
         call dupphelp(newnbhelp)
 
-        IVALUE=IVAL
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -152,12 +153,12 @@ C If in graphic mode use graphic faciltiies to edit the number.
         endif
 
 C Debug.
-C        write(6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
-
-        CALL askint(PROMPT,IVALUE,IFLG)
+C        write(6,*) '< ask prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< ask string ',ask(1:lnblnk(ask))
+        CALL askdialog(PROMPT,ask,IFLG)  ! pass it the int as a string
 
 C Debug.
-C        write(6,*) 'EASKI',IVALUE,IVAL,IFLG
+C        write(6,*) 'ask VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -172,7 +173,15 @@ C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
           IVAL=IDEFLT
           RETURN
-        ELSEIF(IFLG.eq.-1)THEN
+        ELSE
+
+C A valid number or interaction.
+          call c2fstr(ask,WORD)
+
+C Debug.
+C          write(6,*) 'ask WORD: ',WORD
+        ENDIF
+        IF(WORD.EQ.' ')THEN
 
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing integer value.
@@ -180,10 +189,6 @@ C wishes to use prior/existing integer value.
           WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
           CALL USRMSG(' ',OUTSTR,'-')
           RETURN
-        ELSE
-
-C A valid number or interaction, so update RVALT for later use.
-          IVALT=IVALUE
         ENDIF
       ELSE
 
@@ -220,15 +225,15 @@ C wishes to use prior/existing integer value.
           endif
           RETURN
         ENDIF
+      ENDIF
 
-C Decode the string into an integer.
-        read(WORD,*,ERR=999)IVALT
-        CALL INTSTR(IVALT,STR1,IW1,IFLAG)
-        IF(IFLAG.NE.0)THEN
-          CALL USRMSG(' ',' Did not understand, try again.','-')
-          IFLAG=0
-          GOTO 20
-        ENDIF
+C Decode the string (WORD) into an integer.
+      read(WORD,*,ERR=999)IVALT
+      CALL INTSTR(IVALT,STR1,IW1,IFLAG)
+      IF(IFLAG.NE.0)THEN
+        CALL USRMSG(' ',' Did not understand, try again.','-')
+        IFLAG=0
+        GOTO 20
       ENDIF
 
 C Check IVALT against minimum and respond based on MINACT.

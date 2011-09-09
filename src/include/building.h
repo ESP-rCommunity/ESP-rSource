@@ -2,9 +2,6 @@ C ESP-r building-related definition file setting maximum
 C parameter values.
 C 72 zone 62 surface version 12.08 updated
 
-C Version: 52 zones, 62 surfaces/zone
-C          (modify via MCOM and MS respectively).
-
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
       integer MTS,MGT,MCT,MTRACE,MGRDP,MLCOM,MDF,MDCFP,MDCFS,MDCFV
@@ -21,7 +18,7 @@ C Type declarations.
 
 C Geometry.
       PARAMETER (MCOM=72)	!- Zones.
-      PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to MS).
+      PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
       PARAMETER (MCON=2200)	!- Edges/zone.
       PARAMETER (MTV=200)	!- Vertices/zone.
       PARAMETER (MV=42)		!- Vertices/surface.
@@ -36,15 +33,15 @@ C Construction.
       PARAMETER (ME=20)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MMLC=120)	!- Multilayered constructions in model.
+      PARAMETER (MMLC=200)	!- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
 C Glazing.
       PARAMETER (MGT=MS)	!- Insolated glazings in zone
-      PARAMETER (MTMC=7)	!- Glazing systems/zone, 
-      PARAMETER (MGAL=2)	!- Optical sets per optics db item. 
+      PARAMETER (MTMC=7)	!- Glazing systems/zone,
+      PARAMETER (MGAL=2)	!- Optical sets per optics db item.
       PARAMETER (MANG=9)	!- Angles at which optical data is held.
-      PARAMETER (MGOPT=90)	!- Set size in optics database.
+      PARAMETER (MGOPT=150)	!- Set size in optics database.
 
 C Shading/insolation.
       PARAMETER (MB=180)	!- Site obstruction blocks.

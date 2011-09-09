@@ -92,151 +92,152 @@ C support MNECH.
 C ******************** COEFBAS ********************
 C COEFBAS      BASESIMP coefficients for basic configurations.
 
-C BCIN_1 conc Wl&Fl; intrn ins full-height; *any constr
-C BCIN_2 conc Wl&Fl; intrn ins to 0.2 above floor; *any constr
-C BCIN_3 conc Wl&Fl; intrn ins to 0.6 below grade; *brick veneer
-C BCIN_4 conc Wl&Fl; intrn ins to 0.6 below grade; *non-brick veneer
-C BCEN_1 conc Wl&Fl; extrn ins full-height; *brick veneer
-C BCEN_2 conc Wl&Fl; extrn ins full-height; *non-brick veneer
-C BCEN_3 conc Wl&Fl; extrn ins below grade; *brick veneer
-C BCEN_4 conc Wl&Fl; extrn ins below grade; *non-brick veneer
-C BCNN_1 conc Wl&Fl; no ins; *brick veneer
-C BCNN_2 conc Wl&Fl; no ins; *non-brick veneer
-C BCCN_1 conc Wl&Fl; extrn below grade with overlap; *brick on wall
-C BCCN_2 conc Wl&Fl; extrn below grade with overlap; *non-brick
-C BWNN_1 wood Wl&Fl; no ins; *any constr
-C BWIN_1 wood Wl&Fl; intrn ins full-height; *any constr
-C BWIN_2 wood Wl&Fl; intrn ins to 0.2 above floor; *any constr
-C BWIN_3 wood Wl&Fl; intrn ins to 0.6 below grade; *any constr
-C BWEN_1 wood Wl&Fl; extrn ins full-height; *any constr
-C BWEN_2 wood Wl&Fl; extrn ins below grade; *any constr
-C BCIB_1 conc Wl&Fl; intrn ins full; ins sub-surface; *any constr
-C BCIB_2 conc Wl&Fl; intrn ins full; 0.6m perm floor ins; *any constr
-C BCIB_3 conc Wl&Fl; intrn ins full; 1.0m perm floor ins; *any constr
-C BCIB_4 conc Wl&Fl; intrn ins full; full floor ins; *any constr
-C BCIB_5 conc Wl&Fl; intrn ins full; 0.6m perm floor ins; TB; *any
-C BCIB_6 conc Wl&Fl; intrn ins full; 1.0m perm floor ins; TB; *any
-C BCEB_1 conc Wl&Fl; extrn ins full; full floor ins; *any constr
-C BCEB_2 conc Wl&Fl; extrn ins full; 0.6m perm floor ins; *any constr
-C BCEB_3 conc Wl&Fl; extrn ins full; 1.0m perm floor ins; *any constr
-C SCN_1 conc/soil FL; no ins; *non-brick veneer
-C SCN_2 conc/soil FL; no ins; *brick on slab
-C SCN_3 conc/soil FL; no ins; TB; *non-brick veneer
-C SCN_4 conc/soil FL; no ins; TB; *brick veneer 
-C SCN_7 conc/soil FL; no ins; vert skirt; *non-brick veneer
-C SCN_8 conc/soil FL; no ins; vert skirt; TB; *brick veneer 
-C SCB_1 conc/soil FL; 0.6m perm slab ins; *non-brick veneer
-C SCB_2 conc/soil FL; 0.6m perm slab ins; *brick on slab
-C SCB_3 conc/soil FL; 0.6m perm slab & footing ins; *non-brick veneer
-C SCB_4 conc/soil FL; 0.6m perm slab & footing ins; *brick on slab
-C SCB_5 conc/soil FL; no slab or footing ins; TB; *non-brick veneer
-C SCB_6 conc/soil FL; no slab or footing ins; TB; *brick on slab
-C SCB_9 conc/soil FL; 0.6m perm slab ins; TB; vert skirt; *non-brick
-C SCB_10 conc/soil FL; 0.6m perm slab; TB; vert skirt;  *brick on slb
-C SCB_11 conc/soil FL; 0.6m perm slab; horiz skirt; *non-brick veneer
-C SCB_12 conc/soil FL; 0.6m perm slab; horiz skirt; *brick on slab
-C SCB_13 conc/soil FL; 1.0m perm slab; horiz skirt; *brick on slab
-C SCB_14 conc/soil FL; 1.0m perm slab; *brick on slab
-C SCB_17 conc/soil FL; 1.0m perm slab; TB; *non-brick veneer
-C SCB_18 conc/soil FL; 1.0m perm slab; TB; *brick on slab
-C SCB_21 conc/soil FL; 1.0m perm slab; TB; vert skirt; *non-brick
-C SCB_22 conc/soil FL; 1.0m perm slab; TB; vert skirt; *brick on slb
-C SCB_23 conc/soil FL; 1.0m perm slab; TB; horiz skirt; *non-brick
-C SCB_24 conc/soil FL; 1.0m perm slab; TB; horiz skirt; *brick on slb
-C SCB_25 conc/soil FL; full slab ins; *non-brick veneer
-C SCB_26 conc/soil FL; full slab ins; *brick on slab
-C SCB_29 conc/soil FL; full slab ins; TB; *non-brick veneer
-C SCB_30 conc/soil FL; full slab ins; TB; *brick on slab
-C SCB_33 conc/soil FL; full slab ins; TB; vert skirt; *non-brick
-C SCB_34 conc/soil FL; full slab ins; TB; vert skirt; *brick on slab
-C SCB_35 conc/soil FL; full slab ins; horiz skirt; *non-brick veneer
-C SCB_36 conc/soil FL; full slab ins; horiz skirt; *brick on slab
-C SCA_17 conc/soil FL; full top slab; *non-brick veneer
-C SCA_18 conc/soil FL; full top slab; *brick on slab
-C SCA_19 conc/soil FL; full top slab; TB; *non-brick veneer
-C SCA_20 conc/soil FL; full top slab; TB; *brick on slab
-C SCA_21 conc/soil FL; full top slab; TB; vert skirt; *non-brick venr
-C SCA_22 conc/soil FL; full top slab; TB; vert skirt; *brick on slab
-C SCA_23 conc/soil FL; full top slab; TB; horiz skirt; *non-brick
-C SCA_24 conc/soil FL; full top slab; TB; horiz skirt; brick on slab
-C BCCN_3 conc Wl&Fl; no slab ins; TB; full ins both sides; *any
-C BCCN_4 conc Wl&Fl; full slab; TB; full ins both sides; *any constr
-C BCEA_1 conc Wl&Fl; full top slab; extrn ins full; *brick veneer
-C BCEA_4 conc Wl&Fl; full top slab; extrn ins full; *non-brick veneer
-C BCIA_1 conc Wl&Fl; full top slab; intern ins full; *brick veneer
-C BCIA_4 conc Wl&Fl; full top slab; intern ins full; *non-brick
-C BCEA_7 conc Wl&Fl; full top slab; extrn ins blw_grd; *brick on slb
-C BCEA_8 conc Wl&Fl; full top slab; extrn blw_grd; *non-brick veneer
-C BCEB_8 conc Wl&Fl; full slab ins; extrn ins blw_grd; *brick veneer
-C BCEB_9 conc Wl&Fl; full slab ins; TB; extrn 0.6 blw_grd; *non-brick
-C BWEN_3 wood Wl&Fl; extrn to 0.6 blw_grd; *any constr
-C BBIB_3 wood Wl conc Fl; full slab; TB; intrn full; *any constr
-C BBIB_4 wood Wl conc Fl; full slab; TB; intrn 0.6 blw_grd; *brick
-C SCB_31 conc/soil FL; full slab & footings; TB; *non-brick veneer
-C SCB_32 conc/soil FL; full slab & footings; TB; *brick on slab
-C SCB_37 conc/soil FL; 0.35m perm slab & footings; TB; *non-brick
-C SCB_38 conc/soil FL; 0.35m perm slab & footings; TB; *brick on slb
-C SCB_39 conc/soil FL; 0.75m perm slab & footings; TB; *non-brick
-C SCB_40 conc/soil FL; 0.75m perm slab & footings; TB; *brick on slb
-C BBEB_1 wood Wl conc Fl; full slab; extrn 0.6 blw_grd; *brick on w
-C BBEN_1 wood Wl conc Fl; no slab; extrn full; *brick on wall
-C BBEN_2 wood Wl conc Fl; no slab; extrn 0.6 blw_grd; *brick on wal
-C BBIA_2 wood Wl conc Fl; top slab; intrn ins full; *any constr
-C BBIN_2 wood Wl conc Fl; intrn to 0.6 blw_grd; *non-brick veneer
-C BCCB_8 conc Wl&Fl; 0.6m perm slab; intrn&extrn ins full; *any con
-C BCCA_7 conc Wl&Fl; top slab; intrn full; ext 0.6 blw_grd; *any con
-C BCCA_8 conc Wl&Fl; top slab; intrn above 0.2; extrn full; *any con
-C BCCN_4 conc Wl&Fl; intrn full; extrn 0.6 blw_grd; *any constr
-C BCCN_5 conc Wl&Fl; intrn top to 0.2; extrn ins full; *any constr
-C BCEA_5 conc Wl&Fl; top slab; extrn 0.6 blw_grd; *brick veneer
-C BCEA_6 conc Wl&Fl; top slab; extrn 0.6 blw_grd; *non-brick veneer
-C BCEB_4 conc Wl&Fl; full slab ins; extrn full; *non-brick veneer
-C BCEB_5 conc Wl&Fl; 0.6m perm slab; extrn full; *non-brick veneer
-C BCEB_6 conc Wl&Fl; 1.0m perm slab; extrn full; *non-brick veneer
-C BWIA_1 wood Wl&Fl; 0.6m perm top floor; intrn full; *any constr
-C BWIA_2 wood Wl&Fl; top floor ins; intrn full; *any constr
-C SCA_1 conc/soil FL; 0.6m perm top slab ins; *non-brick veneer
-C SCA_2 conc/soil FL; 0.6m perm top slab ins; *brick on slab
-C SCA_9 conc/soil FL; 1.0m perm top slab ins; *non-brick veneer
-C SCA_10 conc/soil FL; 1.0m perm top slab ins; *brick on slab
-C BBIN_1 wood Wl conc Fl; intrn ins full; *non-brick veneer
-C BCEN_5 conc Wl&Fl; extrn ins to 0.6 blw_grd; *brick on wall
-C BCEN_6 conc Wl&Fl; extrn ins to 0.6 blw_grd; *non-brick veneer
-C BBIA_1 wood Wl conc Fl; top slab; intrn full; *any constr
-C BBIB_1 wood Wl conc Fl; 0.6m perm slab; intrn full; *any constr
-C BBIB_2 wood Wl conc Fl; full slab; intrn full; *any constr
-C BCCB_9 conc Wl&Fl; full slab; intrn full; extrn 0.6 blw_grd; *any
-C BCCB_10 conc Wl&Fl; 0.6m perm; intrn full; extrn 0.6 blw_grd; *any
-C BCCA_1 conc Wl&Fl; full top; int overlap; extrn blw_grd; *brick
-C BCCA_4 conc Wl&Fl; full top; int overlap; extrn blw_grd; *non-brick
-C BCIB_7 conc Wl&Fl; full slab; TB; intrn 0.6 blw_grd; *brick on wall
-C BCIB_8 conc Wl&Fl; full slab; TB; intrn 0.6 blw_grd; *non-brick
-C BBEB_2 wood W conc F; full slab; TB; extrn 0.6 blw_grd; *brick on w
-C BCIA_3 conc Wl&Fl; 1.0m perm top; intrn full; *brick on wall
-C BCIA_5 conc Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *brick on wall
-C BCIA_6 conc Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *non-brick
-C BCIB_9 conc Wl&Fl; 0.6m perm; TB; intrn 0.6 blw_grd; *brick on wall
-C BCIB_10 conc Wl&Fl; 0.6m perm; TB; intrn 0.6 blw_grd; *non-brick
-C BCEB_10 conc Wl&Fl; 0.6m perm; TB; extrn 0.6 blw_grd; *brick on w
-C BCEB_11 conc Wl&Fl; 0.6m perm; TB; extrn 0.6 blw_grd; *non-brick
-C BCEA_3 conc Wl&Fl; 1.0m perm top; extrn full; *brick on wall
-C BCEA_9 conc Wl&Fl; 1.0m perm top; extrn full; *non-brick
-C BCEA_10 conc Wl&Fl; 0.6m perm top; extrn 0.6 blw_grd; *brick on w
-C BCEA_11 conc Wl&Fl; 0.6m perm top; extrn 0.6 blw_grd; *non-brick
-C BWIB_1 wood Wl&Fl; 1.0m perm floor; intrn full; *brick on wall
-C BWIB_2 wood Wl&Fl; full floor; intrn full; *brick on wall
-C BWIB_4 wood Wl&Fl; 0.6m perm floor; intrn full; *brick on wall
-C BWIA_3 wood Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *brick on wall
-C BWEB_1 wood Wl&Fl; 1.0m perm floor; extrn full; *brick on wall
-C BWEB_2 wood Wl&Fl; full floor; extrn full; *brick on wall
-C BWEB_3 wood Wl&Fl; 0.6m perm floor; extrn 0.6 blw_grd; *brick on w
-C BWEB_4 wood Wl&Fl; 0.6m perm floor; extrn full; * brick on wall
-C BBIB_5 wood Wl conc Fl; 1.0m perm; intrn ins full; *brick on wall
-C BBIB_6 wood Wl conc Fl; 1.0m perm; intrn 0.6 blw_grd; *brick on w
-C BBEB_3 wood Wl conc Fl; 1.0m perm; extrn full;* brick on wall
-C BBEB_4 wood Wl conc Fl; 0.6m perm; extrn full; *brick on wall
-C BBEB_5 wood Wl conc Fl; 0.6m perm; extrn 0.6 blw_grd; *brick on w
-C BBEA_2 wood Wl conc Fl; full top slab; extrn full; *brick on wall
+C      #1   BCIN_1 conc Wl&Fl; intrn ins full-height; *any constr
+C      #2   BCIN_2 conc Wl&Fl; intrn ins to 0.2 above floor; *any constr
+C      #3   BCIN_3 conc Wl&Fl; intrn ins to 0.6 below grade; *brick veneer
+C      #4   BCIN_4 conc Wl&Fl; intrn ins to 0.6 below grade; *non-brick veneer
+C      #5   BCEN_1 conc Wl&Fl; extrn ins full-height; *brick veneer
+C      #6   BCEN_2 conc Wl&Fl; extrn ins full-height; *non-brick veneer
+C      #7   BCEN_3 conc Wl&Fl; extrn ins below grade; *brick veneer
+C      #8   BCEN_4 conc Wl&Fl; extrn ins below grade; *non-brick veneer
+C      #9   BCNN_1 conc Wl&Fl; no ins; *brick veneer
+C      #10  BCNN_2 conc Wl&Fl; no ins; *non-brick veneer
+C      #11  BCCN_1 conc Wl&Fl; extrn below grade with overlap; *brick on wall
+C      #12  BCCN_2 conc Wl&Fl; extrn below grade with overlap; *non-brick
+C      #13  BWNN_1 wood Wl&Fl; no ins; *any constr
+C      #14  BWIN_1 wood Wl&Fl; intrn ins full-height; *any constr
+C      #15  BWIN_2 wood Wl&Fl; intrn ins to 0.2 above floor; *any constr
+C      #16  BWIN_3 wood Wl&Fl; intrn ins to 0.6 below grade; *any constr
+C      #17  BWEN_1 wood Wl&Fl; extrn ins full-height; *any constr
+C      #18  BWEN_2 wood Wl&Fl; extrn ins below grade; *any constr
+C      #19  BCIB_1 conc Wl&Fl; intrn ins full; ins sub-surface; *any constr
+C      #20  BCIB_2 conc Wl&Fl; intrn ins full; 0.6m perm floor ins; *any constr
+C      #21  BCIB_3 conc Wl&Fl; intrn ins full; 1.0m perm floor ins; *any constr
+C      #22  BCIB_4 conc Wl&Fl; intrn ins full; full floor ins; *any constr
+C      #23  BCIB_5 conc Wl&Fl; intrn ins full; 0.6m perm floor ins; TB; *any
+C      #24  BCIB_6 conc Wl&Fl; intrn ins full; 1.0m perm floor ins; TB; *any
+C      #25  BCEB_1 conc Wl&Fl; extrn ins full; full floor ins; *any constr
+C      #26  BCEB_2 conc Wl&Fl; extrn ins full; 0.6m perm floor ins; *any constr
+C      #27  BCEB_3 conc Wl&Fl; extrn ins full; 1.0m perm floor ins; *any constr
+C      #28  SCN_1 conc/soil FL; no ins; *non-brick veneer
+C      #29  SCN_2 conc/soil FL; no ins; *brick on slab
+C      #30  SCN_3 conc/soil FL; no ins; TB; *non-brick veneer
+C      #31  SCN_4 conc/soil FL; no ins; TB; *brick veneer 
+C      #32  SCN_7 conc/soil FL; no ins; vert skirt; *non-brick veneer
+C      #33  SCN_8 conc/soil FL; no ins; vert skirt; TB; *brick veneer 
+C      #34  SCB_1 conc/soil FL; 0.6m perm slab ins; *non-brick veneer
+C      #35  SCB_2 conc/soil FL; 0.6m perm slab ins; *brick on slab
+C      #36  SCB_3 conc/soil FL; 0.6m perm slab & footing ins; *non-brick veneer
+C      #37  SCB_4 conc/soil FL; 0.6m perm slab & footing ins; *brick on slab
+C      #38  SCB_5 conc/soil FL; no slab or footing ins; TB; *non-brick veneer
+C      #39  SCB_6 conc/soil FL; no slab or footing ins; TB; *brick on slab
+C      #40  SCB_9 conc/soil FL; 0.6m perm slab ins; TB; vert skirt; *non-brick
+C      #41  SCB_10 conc/soil FL; 0.6m perm slab; TB; vert skirt;  *brick on slb
+C      #42  SCB_11 conc/soil FL; 0.6m perm slab; horiz skirt; *non-brick veneer
+C      #43  SCB_12 conc/soil FL; 0.6m perm slab; horiz skirt; *brick on slab
+C      #44  SCB_13 conc/soil FL; 1.0m perm slab; horiz skirt; *brick on slab
+C      #45  SCB_14 conc/soil FL; 1.0m perm slab; *brick on slab
+C      #46  SCB_17 conc/soil FL; 1.0m perm slab; TB; *non-brick veneer
+C      #47  SCB_18 conc/soil FL; 1.0m perm slab; TB; *brick on slab
+C      #48  SCB_21 conc/soil FL; 1.0m perm slab; TB; vert skirt; *non-brick
+C      #49  SCB_22 conc/soil FL; 1.0m perm slab; TB; vert skirt; *brick on slb
+C      #50  SCB_23 conc/soil FL; 1.0m perm slab; TB; horiz skirt; *non-brick
+C      #51  SCB_24 conc/soil FL; 1.0m perm slab; TB; horiz skirt; *brick on slb
+C      #52  SCB_25 conc/soil FL; full slab ins; *non-brick veneer
+C      #53  SCB_26 conc/soil FL; full slab ins; *brick on slab
+C      #54  SCB_29 conc/soil FL; full slab ins; TB; *non-brick veneer
+C      #55  SCB_30 conc/soil FL; full slab ins; TB; *brick on slab
+C      #56  SCB_33 conc/soil FL; full slab ins; TB; vert skirt; *non-brick
+C      #57  SCB_34 conc/soil FL; full slab ins; TB; vert skirt; *brick on slab
+C      #58  SCB_35 conc/soil FL; full slab ins; horiz skirt; *non-brick veneer
+C      #59  SCB_36 conc/soil FL; full slab ins; horiz skirt; *brick on slab
+C      #60  SCA_17 conc/soil FL; full top slab; *non-brick veneer
+C      #61  SCA_18 conc/soil FL; full top slab; *brick on slab
+C      #62  SCA_19 conc/soil FL; full top slab; TB; *non-brick veneer
+C      #63  SCA_20 conc/soil FL; full top slab; TB; *brick on slab
+C      #64  SCA_21 conc/soil FL; full top slab; TB; vert skirt; *non-brick venr
+C      #65  SCA_22 conc/soil FL; full top slab; TB; vert skirt; *brick on slab
+C      #66  SCA_23 conc/soil FL; full top slab; TB; horiz skirt; *non-brick
+C      #67  SCA_24 conc/soil FL; full top slab; TB; horiz skirt; brick on slab
+C      #68  BCCN_3 conc Wl&Fl; no slab ins; TB; full ins both sides; *any
+C      #69  BCCN_4 conc Wl&Fl; full slab; TB; full ins both sides; *any constr
+C      #70  BCEA_1 conc Wl&Fl; full top slab; extrn ins full; *brick veneer
+C      #71  BCEA_4 conc Wl&Fl; full top slab; extrn ins full; *non-brick veneer
+C      #72  BCIA_1 conc Wl&Fl; full top slab; intern ins full; *brick veneer
+C      #73  BCIA_4 conc Wl&Fl; full top slab; intern ins full; *non-brick
+C      #74  BCEA_7 conc Wl&Fl; full top slab; extrn ins blw_grd; *brick on slb
+C      #75  BCEA_8 conc Wl&Fl; full top slab; extrn blw_grd; *non-brick veneer
+C      #76  BCEB_8 conc Wl&Fl; full slab ins; extrn ins blw_grd; *brick veneer
+C      #77  BCEB_9 conc Wl&Fl; full slab ins; TB; extrn 0.6 blw_grd; *non-brick
+C      #78  BWEN_3 wood Wl&Fl; extrn to 0.6 blw_grd; *any constr
+C      #79  BBIB_3 wood Wl conc Fl; full slab; TB; intrn full; *any constr
+C      #80  BBIB_4 wood Wl conc Fl; full slab; TB; intrn 0.6 blw_grd; *brick
+C      #81  SCB_31 conc/soil FL; full slab & footings; TB; *non-brick veneer
+C      #82  SCB_32 conc/soil FL; full slab & footings; TB; *brick on slab
+C      #83  SCB_37 conc/soil FL; 0.35m perm slab & footings; TB; *non-brick
+C      #84  SCB_38 conc/soil FL; 0.35m perm slab & footings; TB; *brick on slb
+C      #85  SCB_39 conc/soil FL; 0.75m perm slab & footings; TB; *non-brick
+C      #86  SCB_40 conc/soil FL; 0.75m perm slab & footings; TB; *brick on slb
+C      #87  BBEB_1 wood Wl conc Fl; full slab; extrn 0.6 blw_grd; *brick on w
+C      #88  BBEN_1 wood Wl conc Fl; no slab; extrn full; *brick on wall
+C      #89  BBEN_2 wood Wl conc Fl; no slab; extrn 0.6 blw_grd; *brick on wal
+C      #90  BBIA_2 wood Wl conc Fl; top slab; intrn ins full; *any constr
+C      #91  BBIN_2 wood Wl conc Fl; intrn to 0.6 blw_grd; *non-brick veneer
+C      #92  BCCB_8 conc Wl&Fl; 0.6m perm slab; intrn&extrn ins full; *any con
+C      #93  BCCA_7 conc Wl&Fl; top slab; intrn full; ext 0.6 blw_grd; *any con
+C      #94  BCCA_8 conc Wl&Fl; top slab; intrn above 0.2; extrn full; *any con
+C      #95  BCCN_4 conc Wl&Fl; intrn full; extrn 0.6 blw_grd; *any constr
+C      #96  BCCN_5 conc Wl&Fl; intrn top to 0.2; extrn ins full; *any constr
+C      #97  BCEA_5 conc Wl&Fl; top slab; extrn 0.6 blw_grd; *brick veneer
+C      #98  BCEA_6 conc Wl&Fl; top slab; extrn 0.6 blw_grd; *non-brick veneer
+C      #99  BCEB_4 conc Wl&Fl; full slab ins; extrn full; *non-brick veneer
+C      #100 BCEB_5 conc Wl&Fl; 0.6m perm slab; extrn full; *non-brick veneer
+C      #101 BCEB_6 conc Wl&Fl; 1.0m perm slab; extrn full; *non-brick veneer
+C      #102 BWIA_1 wood Wl&Fl; 0.6m perm top floor; intrn full; *any constr
+C      #103 BWIA_2 wood Wl&Fl; top floor ins; intrn full; *any constr
+C      #104 SCA_1 conc/soil FL; 0.6m perm top slab ins; *non-brick veneer
+C      #105 SCA_2 conc/soil FL; 0.6m perm top slab ins; *brick on slab
+C      #106 SCA_9 conc/soil FL; 1.0m perm top slab ins; *non-brick veneer
+C      #107 SCA_10 conc/soil FL; 1.0m perm top slab ins; *brick on slab
+C      #108 BBIN_1 wood Wl conc Fl; intrn ins full; *non-brick veneer
+C      #109 BCEN_5 conc Wl&Fl; extrn ins to 0.6 blw_grd; *brick on wall
+C      #110 BCEN_6 conc Wl&Fl; extrn ins to 0.6 blw_grd; *non-brick veneer
+C      #111 BBIA_1 wood Wl conc Fl; top slab; intrn full; *any constr
+C      #112 BBIB_1 wood Wl conc Fl; 0.6m perm slab; intrn full; *any constr
+C      #113 BBIB_2 wood Wl conc Fl; full slab; intrn full; *any constr
+C      #114 BCCB_9 conc Wl&Fl; full slab; intrn full; extrn 0.6 blw_grd; *any
+C      #115 BCCB_10 conc Wl&Fl; 0.6m perm; intrn full; extrn 0.6 blw_grd; *any
+C      #116 BCCA_1 conc Wl&Fl; full top; int overlap; extrn blw_grd; *brick
+C      #117 BCCA_4 conc Wl&Fl; full top; int overlap; extrn blw_grd; *non-brick
+C      #118 BCIB_7 conc Wl&Fl; full slab; TB; intrn 0.6 blw_grd; *brick on wall
+C      #119 BCIB_8 conc Wl&Fl; full slab; TB; intrn 0.6 blw_grd; *non-brick
+C      #120 BBEB_2 wood W conc F; full slab; TB; extrn 0.6 blw_grd; *brick on w
+C      #121 BCIA_3 conc Wl&Fl; 1.0m perm top; intrn full; *brick on wall
+C      #122 BCIA_5 conc Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *brick on wall
+C      #123 BCIA_6 conc Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *non-brick
+C      #124 BCIB_9 conc Wl&Fl; 0.6m perm; TB; intrn 0.6 blw_grd; *brick on wall
+C      #125 BCIB_10 conc Wl&Fl; 0.6m perm; TB; intrn 0.6 blw_grd; *non-brick
+C      #126 BCEB_10 conc Wl&Fl; 0.6m perm; TB; extrn 0.6 blw_grd; *brick on w
+C      #127 BCEB_11 conc Wl&Fl; 0.6m perm; TB; extrn 0.6 blw_grd; *non-brick
+C      #128 BCEA_3 conc Wl&Fl; 1.0m perm top; extrn full; *brick on wall
+C      #129 BCEA_9 conc Wl&Fl; 1.0m perm top; extrn full; *non-brick
+C      #130 BCEA_10 conc Wl&Fl; 0.6m perm top; extrn 0.6 blw_grd; *brick on w
+C      #131 BCEA_11 conc Wl&Fl; 0.6m perm top; extrn 0.6 blw_grd; *non-brick
+C      #132 BWIB_1 wood Wl&Fl; 1.0m perm floor; intrn full; *brick on wall
+C      #133 BWIB_2 wood Wl&Fl; full floor; intrn full; *brick on wall
+C      #134 BWIB_4 wood Wl&Fl; 0.6m perm floor; intrn full; *brick on wall
+C      #135 BWIA_3 wood Wl&Fl; 0.6m perm top; intrn 0.6 blw_grd; *brick on wall
+C      #136 BWEB_1 wood Wl&Fl; 1.0m perm floor; extrn full; *brick on wall
+C      #137 BWEB_2 wood Wl&Fl; full floor; extrn full; *brick on wall
+C      #138 BWEB_3 wood Wl&Fl; 0.6m perm floor; extrn 0.6 blw_grd; *brick on w
+C      #139 BWEB_4 wood Wl&Fl; 0.6m perm floor; extrn full; * brick on wall
+C      #140 BBIB_5 wood Wl conc Fl; 1.0m perm; intrn ins full; *brick on wall
+C      #141 BBIB_6 wood Wl conc Fl; 1.0m perm; intrn 0.6 blw_grd; *brick on w
+C      #142 BBEB_3 wood Wl conc Fl; 1.0m perm; extrn full;* brick on wall
+C      #143 BBEB_4 wood Wl conc Fl; 0.6m perm; extrn full; *brick on wall
+C      #144 BBEB_5 wood Wl conc Fl; 0.6m perm; extrn 0.6 blw_grd; *brick on w
+C      #145 BBEA_2 wood Wl conc Fl; full top slab; extrn full; *brick on wall
+C      
 
       SUBROUTINE COEFBAS(iconfig)
 

@@ -1188,7 +1188,7 @@ int len;
 /* Fill bitmap exbit from data file, make pixmap for under area and to hold transformed exbit data (logobit) */
 /* Use XCopyPlane to transform exbit to logobit (seems to be required) */
  result = XReadBitmapFile(theDisp,(Pixmap)win,name2,&iwidth,&iheight,&exbit,&x_hot,&y_hot);
- fprintf(stderr,"result of XReadBitmapFile %d %d %d %ld %ld %d\n",result,iwidth,iheight,iupx,iupy,persist);
+/* fprintf(stderr,"result of XReadBitmapFile %d %d %d %ld %ld %d\n",result,iwidth,iheight,iupx,iupy,persist); */
  if (result == BitmapFileInvalid) fprintf(stderr,"bitmap file %s invalid\n",name2);
  else if (result == BitmapOpenFailed) fprintf(stderr,"bitmap file %s cannot be opened\n",name2);
  else if (result == BitmapNoMemory) fprintf(stderr,"not enough bitmap memory\n");
@@ -1272,7 +1272,7 @@ int len;
  if(iwidth < ilreqwidth) ilreqwidth = iwidth;
  if(iheight < ilreqheight) ilreqheight = iheight;
 
- fprintf(stderr,"get region is %ld %ld %ld %ld\n",ilreqx,ilreqy,ilreqwidth,ilreqheight);
+/* fprintf(stderr,"get region is %ld %ld %ld %ld\n",ilreqx,ilreqy,ilreqwidth,ilreqheight); */
  if (result == BitmapFileInvalid) fprintf(stderr,"bitmap file %s invalid\n",name2);
  else if (result == BitmapOpenFailed) fprintf(stderr,"bitmap file %s cannot be opened\n",name2);
  else if (result == BitmapNoMemory) fprintf(stderr,"not enough bitmap memory\n");

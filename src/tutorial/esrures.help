@@ -7,7 +7,7 @@
 *enditem
           call askok(' ','Use existing comfort parameters?',ok,dok,3)
 *item MOCMFT res_review_comfort_par
-'Clothing is specified in `clo` units between 0. & 3. '
+'Clothing is specified in [clo] units between 0. & 3. '
 'The following items can be added together to make up '
 'a clo value (ISO7730). '
 ' Shirts: light short sleve 0.14, heavy short sleve 0.25'
@@ -88,7 +88,7 @@
 *enditem
     8   CALL EASKS(TSTR,' ',' Day and month numbers ? ',
 *item MOCMFT res_clo_review
-'Clothing is specified in `clo` units between 0. & 3. '
+'Clothing is specified in [clo] units between 0. & 3. '
 'The following items can be added together to make up '
 'a clo value (ISO7730). '
 ' Shirts: light short sleve 0.14, heavy short sleve 0.25'
@@ -143,7 +143,7 @@
 *enditem
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
 *item MOCMFT res_comfort_local_vwf
-'A `vwf analysis` assess comfort at a specific position'
+'A [vwf analysis] assess comfort at a specific position'
 'within a zone and makes use of viewfactors from a pre-'
 'defined body to the surfaces in the zone. '
 *enditem
@@ -351,7 +351,7 @@
 'Performance View is integrated to once per hour if'
 'the simulation was undertaken at a higher frequency.'
 ' '
-'Some `agents` which display IPV data are unable to'
+'Some [agents] which display IPV data are unable to'
 'work with high frequency data.'
 '  '
 'You have the option of settig the report to average'
@@ -628,8 +628,8 @@ C        CALL EASKABC('Data display options:',outs,
           CALL EASKATOG('View direction:',' ','South','East',
 *item MCFDM res_cfd_view_resolution
 'Higher resolution requires greater processing time'
-'and disk space. `Low` quality images are often'
-'sufficient, although `medium` and `high` quality'
+'and disk space. [Low] quality images are often'
+'sufficient, although [medium] and [high] quality'
 'may be desirable for inclusion in publications.'
 *enditem
  t         call EASKABC(' ','Image resolution?','Low','Medium','High',
@@ -653,8 +653,8 @@ C        CALL EASKABC('Data display options:',outs,
 '  '
 'Image resolution:'
 'Higher resolution requires greater processing time'
-'and disk space. `Low` quality images are often'
-'sufficient, although `medium` and `high` quality'
+'and disk space. [Low] quality images are often'
+'sufficient, although [medium] and [high] quality'
 'may be desirable for inclusion in publications.'
 *enditem
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',
@@ -711,22 +711,22 @@ C        CALL EASKABC('Data display options:',outs,
 'type of data is given a different line type and/or '
 'symbol and each zone is given a different colour. '
 ' '
-'The selection of `Performance metrics` produces reports'
+'The selection of [Performance metrics] produces reports'
 'of the statistics of one type of data over the period'
 'of the assessment or a user defined period. '
 '  '
-'The selection of `Summary statistics` produces reports'
+'The selection of [Summary statistics] produces reports'
 'of the statistics of one type of data over the period'
 'of the assessment or a user defined period. '
 '  '
 'A sensitivity report is based on data extracted from a'
 'sequence of assessments. '
 '  '
-'A `Hrs above query point` report provides additonal'
+'A [Hrs above query point] report provides additonal'
 'statistical information about the number of occurrances'
 'that the performance data exceeds a particular value.'
 '  '
-'A `Hrs below query point` report provides additonal'
+'A [Hrs below query point] report provides additonal'
 'statistical information about the number of occurrances'
 'that the performance data is less than a value.'
 '  '
@@ -772,7 +772,7 @@ C        CALL EASKABC('Data display options:',outs,
 *enditem
 *item GOMENU select_surface_bal
 'A surface energy balance reports the flux gains & losses'
-'at the inside and `other-side` face of the surface for:'
+'at the inside and [other-side] face of the surface for:'
 'Conduction (just below the surface), convection, long-'
 'wave radiation to other surfaces and at the outside face'
 'longwave radiation to other buildings/ground/sky.'
@@ -855,7 +855,7 @@ C        CALL EASKABC('Data display options:',outs,
 '   the zone.'
 ' '
 'Note: there are more options for viewing casual gains'
-'under the `Casual gains` menu option. What is shown'
+'under the [Casual gains] menu option. What is shown'
 'here is actually the sensible convective + radiant.'
 *enditem
         call MENUATOL('Select a zone flux metric','Zone flux options:',
@@ -1282,7 +1282,7 @@ C        CALL EASKABC('Data display options:',outs,
 *subroutine SYNOPF
 *item res res_dialog_for_cfg_file
 'In order to read the plant results'
-'you must supply the prj `plant only`'
+'you must supply the prj [plant only]'
 'model configuration file name. Note  '
 'that res CANNOT read the PLANT configuration '
 'file unless it has first read the model '
@@ -1408,7 +1408,7 @@ C        CALL EASKABC('Data display options:',outs,
         CALL PHELPD('Output styles',2,'-',0,0,IER)
 *subroutine SETUP
 *item SETUP res_preferences_menu
-'The preference menu allows the format of the `res` '
+'The preference menu allows the format of the [res] '
 'environment to be modified. '
 '  '
 'You can toggle the format of time reporting between the'
@@ -1591,7 +1591,7 @@ C        CALL EASKABC('Data display options:',outs,
 'air temperature then the report will include losses.'
 ' '
 'A surface energy balance reports flux gains & losses'
-'at the inside and `other-side` face of the surface:'
+'at the inside and [other-side] face of the surface:'
 ' '
 ' conduction (just below the surface),'
 ' convection at the face,'

@@ -26,7 +26,7 @@ C   mupdate: checks current model to see if it should be updated.
 C ************ prjqa
 C Prjqa writes out a QA report (to screen or file) for
 C the current model.
-      subroutine prjqa(ier)
+      subroutine prjqa(inpic,ivals,silent,ier)
 C AIM-2.
 C IAIM2 set to 1 if AIM-2 infiltration model active.
 C LAIM2 (72 char) file holding AIM-2 infiltration model data.
@@ -60,6 +60,12 @@ C derived.h are derived areas and U values for zones and the model
 #include "derived.h"
       
       integer lnblnk  ! function definition
+
+C Parameters passed into subroutine:
+      integer inpic,ivals   ! number of zones to include
+      dimension ivals(MCOM) ! list of zones
+      logical silent        ! if true do not interact with user
+      integer ier           ! non-zero if a problem
 
       common/FILEP/IFIL
       INTEGER :: ifil
@@ -186,7 +192,7 @@ C bridgelen was calculated in subroutine suredgeadj
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
       logical allattribok,changedit,ok,dok,concat,unixok,showother
-      dimension IVALS(MCOM),areamlc(MCOM)
+      dimension areamlc(MCOM)
       real areamlc
       dimension items(25)
 
@@ -214,11 +220,13 @@ C Remember if each zone is fully attributed.
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+      character lworking*144
 
 C For thermal bridge reporting
       character TBRIDGE*58
       dimension phrasemenu(16)
       character phrasemenu*34
+      character fs*1
       logical havebrdge
       
 C Topic variables: value of zero = none, one = compact, two = verbose
@@ -227,6 +235,7 @@ C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
       integer destination
+      integer lndbp
 
       integer iercl  ! error state returned for scanning climate list.
       integer llbm,llbn  ! string lengths for obstructions
@@ -253,10 +262,10 @@ C in the current model. A -1 means not applicable
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
       
-      INTEGER :: ier,i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
-      INTEGER :: ins4,inss1,inpic,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: ins4,inss1,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
-      INTEGER :: itb,istat,isc,is,ic,ins1,isel,ivals,iz,izo,izc,izz
+      INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
@@ -264,6 +273,11 @@ C in the current model. A -1 means not applicable
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       changedit=.false.
       newgeo=.false.  ! assume older format geometry.
@@ -299,13 +313,54 @@ C Check if Unix-based or DOS based.
         zoneextrainfo=-1
       endif
 
+C Assume no extra file names required and no MLC selected for filter.
+      fileinfo=0
+      isel = 0
+
+C If silent mode then set file name and jump to report generation.
+      if(silent)then
+        destination=1
+        itu = ixunit
+        write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
+        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+        if(ier.eq.-3)then
+          destination = 0
+          itu = iuout
+          ier=-3
+          return
+        endif
+C Prior to silent reporting rescan the construction database (sometimes
+C database gets its name corrupted requiring a re-scan).
+        CALL ERPFREE(IFMUL,ISTAT)
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lworking=lfmul  ! use as is
+        elseif(ipathmul.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+        call FINDFIL(lworking,XST)
+        if(XST)then
+          CALL ERMLDB(0,IUOUT,IER)
+        else
+
+C Could not find Constructions db at this time, report to user.
+          write(outs248,'(3a)') 'Constructions db ',
+     &       LFMUL(1:lnblnk(LFMUL)),' not found!'
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
+        endif
+
+C Generate the report based on current options.
+        goto 55
+      else
+
 C Assume file names not included and destination to screen (zero)
 C and itu set so QA report is written to screen.
-      fileinfo=0
-      destination=0
-      itu = iuout
-      inpic = 0
-      isel = 0
+        destination=0
+        itu = iuout
+
+      endif
 
 C Setup the selection menu.
     3 INO=-4
@@ -1266,15 +1321,23 @@ C the climate file and attempt to print out IPV contents.
                 if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
+
+C Set Default season definitions.
+                  CALL EDAY(1,1,is1wins)
+                  CALL EDAY(28,2,is1winf)
+                  CALL EDAY(1,11,is2wins)
+                  CALL EDAY(31,12,is2winf)
+                  CALL EDAY(1,3,is1sprs)
+                  CALL EDAY(30,4,is1sprf)
+                  CALL EDAY(1,9,is2sprs)
+                  CALL EDAY(31,10,is2sprf)
+                  CALL EDAY(1,5,is1sums)
+                  CALL EDAY(31,8,is1sumf)
                   call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                  call edisp(itu,'IPV details might be incorrect.')
-                  if(ieripv.eq.0)then
-                    call listipvdat(itu,'a',ier)
-                  else
-                    call edisp(itu,
-     &              'The IPV description was incomplete or missing.')
-                  endif
+     &              'The climate used was not in the climatelist and')
+                  call edisp(itu,
+     &              'no local seasons set - default seasons assumed.')
+                  call listipvdat(itu,'a',ier)
                 endif
               endif
             endif
@@ -1618,7 +1681,7 @@ C duplicates are found.
  111    continue
 
 C Write out UA information if extra information requested.
-        if(zoneextrainfo.gt.0)then
+        if(zoneextrainfo.gt.1)then
 
 C Debug...
 C          write(itu,*) 'in zone ',izz,' area wall = ',areawall(IZZ)
@@ -1634,8 +1697,8 @@ C          write(itu,*) 'uavwall = ',uavwall(IZZ)
 C          write(itu,*) 'uavslproof = ',uavslproof(IZZ)
 C          write(itu,*) 'uavfltroof = ',uavfltroof(IZZ)
 C          write(itu,*) 'uavgsky = ',uavgsky(IZZ)
-          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
-     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
+C          uavtotal(IZZ) = uavgtran(IZZ) + uavwall(IZZ) + 
+C     &         uavslproof(IZZ) + uavfltroof(IZZ) + uavgsky(IZZ)
 C          write(itu,*) 'UA total = ',uavtotal(IZZ)
 C          write(itu,*) 'TB heat loss = ',totheatloss(IZZ)
 
@@ -2225,6 +2288,11 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
         call edisp(iuout,
      &    'The new QA file can be edited via the `edit file` option.')
         call edisp(iuout,' ')
+      endif
+
+C If in silent model return without user intervention.
+      if(silent)then
+        return
       endif
       goto 3
 

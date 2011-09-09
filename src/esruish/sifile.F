@@ -219,6 +219,7 @@ C once per day-month.
       common/outin/iuout,iuin
       common/filep/ifil
       common/data1/ical,idifc,init
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/data2/pso(ms,24),psof(ms,24)
 
@@ -343,6 +344,7 @@ C once per day-month.
 
       common/outin/iuout,iuin
       common/data1/ical,idifc,init
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/filep/ifil
       common/tmc/itmc(ms),nwins

@@ -3252,7 +3252,7 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
+      CHARACTER H*72,VERT*28,VERTS*40,KEY*1,MOD*1,title*29
       LOGICAL SELECT
       integer loopstart,loopend,i,icc   ! for looping
       logical usesbasesimp
@@ -3264,17 +3264,22 @@ C show attributes in list.
         RETURN
       ENDIF
 
-      write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
-
 C Initialise surface menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       SELECT=.FALSE.
       if(MOD.eq.'-')then
-        MHEAD=0
+        write(title,'(2a)')' Surfaces in ',
+     &    zname(IZONE)(1:lnzname(IZONE))
+        MHEAD=1
+        VERT(1)= '  Name         Composition'
       elseif(MOD.eq.'M')then
+        write(title,'(2a)')'  Surfaces in ',
+     &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
         VERTS(1)='  Name         Composition  Facing'
       elseif(MOD.eq.'A')then
+        write(title,'(2a)')'  Surfaces in ',
+     &    zname(IZONE)(1:lnzname(IZONE))
         MHEAD=1
         VERTS(1)='  Name         Composition  Facing'
       endif
@@ -3296,8 +3301,8 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           icc=IZSTOCN(izone,L)
           if(MOD.eq.'-')then
-            WRITE(VERT(M),14)KEY,SSNAME(icc)
-   14       FORMAT(A1,1X,A)
+            WRITE(VERT(M),14)KEY,SSNAME(icc),SSMLCN(icc)(1:12)
+   14       FORMAT(A1,1X,A,1X,A)
           else
 
 C << consider writing out different info depending on what SSOTHER is >>
@@ -3316,8 +3321,7 @@ C If a long list include page facility text.
         VERT(M+1) ='  ________________  '
         VERTS(M+1)='  _________________________  '
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM
-   15   FORMAT ('0 page part: ',I1,' of ',I1)
+        WRITE(VERT(M+1),16)IPM,MPM
         WRITE(VERTS(M+1),16)IPM,MPM
    16   FORMAT ('0 page --- part: ',I1,' of ',I1)
       ENDIF
@@ -3341,7 +3345,7 @@ C Instanciate help message for this menu.
 C Display the menu.
       call usrmsg(PROMPT1,PROMPT2,'-')
       if(MOD.eq.'-')then
-        CALL EMENU('  Surfaces',VERT,MVERT,IVERT)
+        CALL EMENU(title,VERT,MVERT,IVERT)
       else
         CALL EMENU(title,VERTS,MVERT,IVERT)
       endif
@@ -3358,11 +3362,11 @@ C Checks the surfaces in the current zone to see if any of the surface
 C attributes are 'BASESIMP'.  If there are any then present the
 C BASESIMP editing facility (once).
         usesbasesimp=.false.   ! assume no basesimp attributed surfaces
-        loopstart=0
+        loopstart=1
         loopend=NZSUR(IZONE)
         DO i=loopstart,loopend
           icc=IZSTOCN(izone,i)
-          IF(SSOTHER(icc,1).EQ.'BASESIMP')THEN
+          IF(SSOTHER(icc,1)(1:8).EQ.'BASESIMP')THEN
             usesbasesimp=.true.
           END IF
         END DO

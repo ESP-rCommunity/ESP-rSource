@@ -1,5 +1,5 @@
 # composite construction db defined in ../databases/burdie.mdb-alt
-# based on materials db /usr/esru/esp-r/databases/constr.db1.a
+# based on materials db constr.db1.a
    24     # no of composites 
 # layers  description   optics name   symmetry tag
     3    glazing       TRAN  DC_8074_04nb  SYMMETRIC     
@@ -21,8 +21,9 @@
    32    0.0500  Heavy mix concrete : Heavy mix concrete
   124    0.0500  Cement screed : Cement screed
 # layers  description   optics name   symmetry tag
-    2    intern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+    3    intern_wall   OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
+  103    0.0120  Perlite plasterboard : Perlite plasterboard
     2    0.1500  Breeze block : Breeze block
   103    0.0120  Perlite plasterboard : Perlite plasterboard
 # layers  description   optics name   symmetry tag

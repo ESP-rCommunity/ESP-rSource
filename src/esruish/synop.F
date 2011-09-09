@@ -41,6 +41,7 @@ C a zone transitional shading file.
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
       common/c24/izstocn(mcom,ms)
@@ -225,6 +226,7 @@ C surface shading for each hour based on common block data.
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
@@ -358,6 +360,7 @@ C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,24),psof(ms,24)

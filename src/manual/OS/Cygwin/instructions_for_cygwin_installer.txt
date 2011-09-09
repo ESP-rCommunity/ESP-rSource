@@ -1,13 +1,18 @@
 
         Steps to create or use the ESP-r self extractor on Cygwin
-                            December 2010
+                            April 2011
 
-There are two patterns used to create an installer for ESP-r for use
+There are three patterns used to create an installer for ESP-r for use
 on Cygwin emulators within Windows computers.  One is via a single-file 
-self extractor and the second is to use compressed archive files.  
-Both of these will be covered in this document.
+self extractor which runs within Cygwin (based on the makeself script
+which is used for the Linux self extractor), the second is to use the
+INNOSetup environment which runs as a native Windows installer (similar
+to that used for the Native Windows version of ESP-r) and lastly via
+compressed archive files.
+  
+These will be covered in this document.
 
-If you want to use the self-extractor or compressed archive file
+If you just want to use the self-extractors or compressed archive file
 please skip down to the relevant section.
 
 Before you Install ESP-r make sure your locale on your Windows
@@ -18,8 +23,8 @@ to corrupt models and crash if the locale is not reset.
 
 Building a self-extractor
 
-The self-extractor for ESP-r is based on a package called 
-makeself-2.1.5. Makeself is a script which can be downloaded from
+The self-extractor for ESP-r that runs within Cygwin is based on a package 
+called makeself-2.1.5. Makeself is a script which can be downloaded from
 <http://megastep.org/makeself>  and it allows a pre-compiled version of 
 ESP-r to be extracted on a users computer with minimal interaction.
 
@@ -150,14 +155,73 @@ the GTK version of ESP-r then there are rather a lot of libraries that are
 required.
 
 
+Building a Native windows Installer
+
+The Native windows installer is based on Inno Setup and uses an *.iss
+file (found in the src/manual/OS/Cygwin folder). The compile process
+for ESP-r is essentially the same as above except that:
+
+a) the folder structure of the ESP-r distribution includes a bin_X11
+   and bin_GTK folder
+
+b) after compiling the X11 version of ESP-r the executables in the bin
+folder are copied to bin_X11
+
+Folder struction for Inno Setup. Following the pattern of the Native 
+Windows installer you should create a folder structure:
+
+  c:\Installer_cygwin_esp
+  c:\Installer_cygwin_esp\Installer
+       iss file goes here
+  c:\Installer_cygwin_esp\Source
+  c:\Installer_cygwin_esp\Srouce\esru
+
+Using Windows file manager copy C:cygwin\usr\esru\esp-r into
+the c:\Installer_cygwin_esp\Srouce\esru folder
+
+Change into the c:\Installer_cygwin_esp\Source and double click on the
+iss file to start Inno Setup. Adapt the name of the output file name
+and the version number to reflect the SVN revision and branch name.
+
+Compile the installer with Inno Setup and test the resulting executable
+on a different machine.
+
+
+Building a compressed archive
+
+This is similar to creating the run file. The X11 version of ESP-r
+is compiled into /usr/esru (as normal). Next create a folder for
+the X11 executables and copy them into bin_X11:
+ cd /usr/esru/esp-r
+ mkdir bin_X11
+ cd bin
+ cp * ../bin_X11
+
+Clean up the source and compile the GTK version as normal. Then
+create a folder for the GTK executables
+  cd /usr/esru/esp-r
+  mkdir bin_GTK
+  cd bin
+  cp * ../bin_GTK
+
+Next create a tar file to hold it all plus some very useful files
+like the link_to script, the GPL.txt and the README files.
+
+  cd /usr/esru
+  tar cf esp-r_X11_GTK_11.10_cygwin.tar esp-r link_to bash_profile *.txt
+  gzip -9 esp-r_X11_GTK_11.10_cygwin.tar
+
+
+
 Using/testing the self-extractor
 
-If you have just created an installer you should test this on a separate
-machine to confirm that it works.  If you have downloaded the 
-self-extractor `run` file it can be used via either the text-only
-initial Cygwin terminal or within an X11 graphics terminal typically
-started via the startxwin.sh command.
+If you have just created an installer (either the Cygwin run file or
+the Native Windows installer) you should test it on a separate
+machine to confirm that it works.  
 
+If you have downloaded the self-extractor `run` file it can be used 
+via either the text-only initial Cygwin terminal or within an X11 
+graphics terminal typically started via the startxwin.sh command.
 
 Typically the `run` file you downloaded should be placed in /tmp within
 the cygwin environment and run from that folder via a command (adapt to reflect the 
@@ -196,34 +260,79 @@ During the install process LOOK FOR DIRECTIONS for
 adapting your PATH environment variable (if required).
 Once you have checked that ESP-r modules run you can
 remove the installer.
-Adapting your environment
 
-You will need to set an environment variable PATH so that
-the folder /usr/esru/esp-r/bin is known. Go back to your
-home folder and see if there is a .cshrc or a .profile file.
+If you are using the Native Windows Installer it provides instructions
+for setting up Cygwin as well as instructions for steps to take
+prior to running the installer and post-install instructions for
+adapting the Cygwin environment so that the desired version of
+ESP-r can be found and used. The Native Windows Installer includes
+both the X11 and GTK versions of ESP-r. The instructions and provided
+scripts allow you to use either of these versions.
+
+Adapting your Cygwin environment:
+
+The ESP-r installer does not change the system 'PATH' environment 
+variable. You will need to set an environment variable PATH so that 
+the folder /usr/esru/esp-r/bin is known. 
+
+Method one - In the Cygwin command window (note alternative ./link_to commands):
+
+  cd
+  mkdir bin
+  cp /usr/esru/bash_profile .bash_profile
+  cp /usr/esru/link_to bin
+  HOME=/home/your_user_name
+  export HOME
+  cd bin
+  ./link_to /usr/esru/esp-r/bin_X11
+
+or
+  ./link_to /usr/esru/esp-r/bin_GTK
+
+NOTE the DOT added to the bash_profile in the above command set. Next 
+logout of cygwin and then log back in and issue the following command
+
+  echo $PATH
+
+what is printed out should include /home/your_home_folder_name/bin
+
+check if one of the ESP-r executables is found by giving the command:
+which prj
+
+it should report /home/your_home_folder_name/bin/prj
+
+
+Method two
+(In the Cygwin command window) Go back to your home folder and see 
+if there is a .cshrc or a .profile file.
 
   cd
   ls -al
 
-Some users of ESP-r prefer to use the "C" shell. The entry 
-in the .cshrc file in your home folder might look something like:
+Some users of ESP-r prefer to use the "C" shell. The entry in the .cshrc 
+file in your home folder might look something like:
 
-set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-/usr/esru/esp-r/bin )
+  set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
+    /usr/esru/esp-r/bin_X11 )
+
+or
+  set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
+    /usr/esru/esp-r/bin_GTK )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
 
-export PATH=/usr/local/bin:/usr/esru/bin:/usr/esru/esp-r/bin:/home/fred/bin:$PATH
+export PATH=/usr/local/bin:/usr/esru/esp-r/bin_X11:/home/fred/bin:$PATH
 
-Once you have updated either the .cshrc file or the .profile file then you
-will need to log out and then back in again.  To see if the environment
+Once you have updated either the .cshrc file or the .profile file then 
+you will need to log out and then back in again.  To see if the environment 
 variables are correct give the following command:
 
   which prj
 
-If the answer back is '/usr/esru/esp-r/bin/prj' then the environment variable
-is set.  Most users will want to run ESP-r in graphics mode so you need to
+If there is an answer then the environment is ok.
+
+Most users will want to run ESP-r in graphics mode so you need to
 give the command to start esp-r from within and X11 command window rather
 than the initial cygwin terminal (which only handles text based applications).
 
@@ -318,5 +427,7 @@ then we need to alter this via the following commands:
   chgrp -R staff esp-r
 
 You will need to set an environment variable PATH as explained above.
+But the pre-compiled archive files will have the ESP-r executables in
+a bin folder rather than bin_X11 and bin_GTK.
 
 Once ESP-r is working you can remove the_file_name.tar

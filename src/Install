@@ -307,7 +307,7 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. The latest ESP-r release (11.9) no longer compiles with GCC3 / g77"
+  echo " 1. The latest ESP-r release (11.11) no longer compiles with GCC3 / g77"
   echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
   echo "    instead. The current reference version is GCC 4.3.2"
   echo " "
@@ -1885,6 +1885,8 @@ if [ "$install_training" = "yes" ]; then
      
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     cd ${SRCdir}/training/Temporal_Clm
+     $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
      cd ${SRCdir}
      echo " Done."
      echo -n "   - Updating climate databases in validation models..."

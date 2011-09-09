@@ -99,12 +99,12 @@
 *enditem
                call easkf(ltmp,'Model Configuration file?',' ',
 *item ish view_from_sun_or_plan
-'The site plan shows zones (marked `Target`) and'
-'obstructions (marked `Bn` where n is the block'
+'The site plan shows zones (marked [Target]) and'
+'obstructions (marked [Bn] where n is the block'
 'number). '
 '  '
 'The view from the sun places the viewer at a distance'
-'of 1 km from `Target`.  What you can see the sun can see'
+'of 1 km from [Target].  What you can see the sun can see'
 'and what you cannot see is in shadow!'
 '  '
 'You will be asked if you want to shift time to the next'

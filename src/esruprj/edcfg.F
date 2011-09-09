@@ -62,7 +62,6 @@ C Function definition
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
       INTEGER :: iappw,iappx,iappy
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -150,7 +149,7 @@ C Uncertainty.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,H*72,ITEMS*34,ETEXT*82
+      character LCFGF*72,ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character tmode*8,doit*248
@@ -166,8 +165,12 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      integer inpic,ivals   ! number of zones to include
+      dimension ivals(MCOM) ! list of zones
+      logical silent        ! if true do not interact with user
+      integer ier           ! non-zero if a problem
       
-      INTEGER :: itrc,itru,ier,i,ic,icc,istat
+      INTEGER :: itrc,itru,i,ic,icc,istat
       INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
       INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
@@ -195,6 +198,13 @@ C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       integer hvind, indhvac, hvidind
       PARAMETER (nhvac_items = 5)
       dimension HVAC_ITEMS(nhvac_items)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edcfg'  ! set for subroutine
       
 C Menu flag
 C To avoid the further use of goto loops, plan to use a do while loop with
@@ -315,25 +325,8 @@ C Check flags for air flow type
       nitems=30
 
 C Help text for this menu.
-      H(1)='A model, as defined within the system configuration file,'
-      H(2)='comprises several entities such as simulation domain'
-      H(3)='definition, site location, geometry, construction, usage'
-      H(4)='and control. The system configuration file references'
-      H(5)='other files where the actual defining data is held.'
-      H(6)=' '
-      H(7)='The structure of this menu reflects the entities of a'
-      H(8)='system configuration file. The options may be used to'
-      H(9)='define a model to be simulated.  For example, it is'
-      H(10)='possible to initially define a single building zone and'
-      H(11)='then add further zones, plant and control later. It is'
-      H(12)='also possible to increase the resolution of a model by,'
-      H(13)='adding in a CFD domain to represent zone air movement'
-      H(14)='or plant component working fluid flow.'
-      H(15)=' '
-      H(16)='The `actions` section includes comissioning assessments'
-      H(17)='of the model, recovering performance indidators, as'
-      H(18)='well as generating QA reports on the composition of'
-      H(19)='the model. '
+      helptopic='model_comprises_br_sim'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
@@ -395,7 +388,9 @@ C Exit back to calling menu and clear dialogue box.
       ELSEIF(INO.EQ.nitems-1)THEN
 
 C Help text for the menu.
-        CALL PHELPD('configuration images',19,'-',0,0,IER)
+        helptopic='model_comprises_br_sim'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('configuration images',nbhelp,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitems-2)THEN
 
@@ -409,12 +404,10 @@ C Save current common block information to file.
 C If configuration file format is version 3 then check to see if there
 C are any utility files. If found then ask if the user wants to save
 C in older format.
-        H(1)='The current model description will be written to'
-        H(2)='this file.'
         DFILE=' '
         ltmp=LCFGF
    89   CALL EASKS(ltmp,' ','Update system configuration file?',
-     &             72,DFILE,'update configuration file',IER,2)
+     &    72,DFILE,'update configuration file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           LCFGF=ltmp
         else
@@ -425,13 +418,11 @@ C in older format.
 
 C Also check about connections file.
           if(ncon.gt.1)then
-  289       H(1)='The surface topology of the model is held'
-            H(2)='in the surface connections file.'
-            write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
+  289       write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
             if(LCNN(1:1).eq.' ')LCNN=DCNN
             ltmp=LCNN
             CALL EASKS(ltmp,' ','Surface connections file name?',
-     &        72,DCNN,'surface connx file name',IER,2)
+     &        72,DCNN,'surface connx file name',IER,nbhelp)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
               LCNN=ltmp
             else
@@ -446,10 +437,10 @@ C Also check about connections file.
         CALL EMKCFG('-',IER)
         IF(IER.EQ.1)THEN
           DOK=.true.
-          h(1)='Check to see that the disk is not full and that you'
-          h(2)='have permission to write to the folder.'
+          helptopic='disk_might_be_full'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('Problem creating new file!',
-     &      'Try again?',OK,DOK,2)
+     &      'Try again?',OK,DOK,nbhelp)
           IF(OK)GOTO 89
         ENDIF
         goto 3
@@ -458,15 +449,6 @@ C Also check about connections file.
       ELSEIF(INO.EQ.2)THEN
 
 C Domains associated with the model.
-        h(1)='The domains included in a model are automatically'
-        h(2)='updated in the system configuration file as you add'
-        h(3)='new information. While you can change the defined domain'
-        h(4)='at any time, BE WARNED - if you change from a building'
-        h(5)='only domain to a plant only domain, all zone data will'
-        h(6)='be lost from your model.'
-        h(7)=' '
-        h(8)='The `registration level` domain holds only site'
-        h(9)='information and images (i.e. no building/plant details).'
         if(indcfg.eq.0)outs='Currently registration only'
         if(indcfg.eq.1)outs='Currently building only'
         if(indcfg.eq.2)outs='Currently plant only'
@@ -478,20 +460,14 @@ C Domains associated with the model.
      &    'b building (+ optional networks & CFD)',
      &    'c plant only',
      &    'd building & plant (+ all options)',
-     &    ' ',' ',' ',' ',' ',' ',' ',' ',isindcfg,idindcfg,9)
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',isindcfg,idindcfg,nbhelp)
         if(isindcfg.eq.0)then
           continue
         elseif(isindcfg-1.ne.indcfg)then
           dok=.false.
-          h(1)='Normally the domains included in a model are updated'
-          h(2)='automatically as new information is added. Changing'
-          h(3)='the domain can have a significant impact: for example,'
-          h(4)='if the domain is `building and plant` and you change'
-          h(5)='it to `plant only`, all references to the building'
-          h(6)='zones will be removed. The zone files will still exist'
-          h(7)='but would need to be reattached to the model.'
           call askok('Are you sure you want to change the domains',
-     &      'in the model? (you might lose information)',ok,dok,7)
+     &      'in the model? (you might lose information)',
+     &      ok,dok,nbhelp)
           if(ok)then
             indcfg=isindcfg-1
             call usrmsg('Updating model domains...',' ','-')
@@ -539,7 +515,10 @@ C ------------------------------------------------------------------------------
           GOTO 3
         else
       
-C Options for the plant network menu
+C Options for the plant network menu. Generate help text for the
+C menu and dialogs.
+          helptopic='submenu_plant_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           hvind=-1
           do while (hvind.ne.nhvac_items)
           
@@ -556,14 +535,7 @@ C Options for the plant network menu
           HVAC_ITEMS(3)  =' ___________________  '
           HVAC_ITEMS(4)  ='? help                '
           HVAC_ITEMS(5)  ='- exit this menu      '
-          
-C Help text for the plant network menu
-          H(1)='Idealized model creates an .hvac file with    '
-          H(2)='descriptions of main and backup systems.      '
-          H(3)='Explicit creates a plant network file which   '
-          H(4)='defines plant components and their connection '
-          H(5)='topology.                                     '
-          
+                    
           CALL EMENU('Plant Model',HVAC_ITEMS,nhvac_items,hvind)
           
           if(hvind.eq.nhvac_items)then
@@ -571,8 +543,8 @@ C If user does not wish to continue, exit back to calling menu and clear dialogu
             CALL USRMSG(' ',' ','-')
             GOTO 3
           elseif(hvind.eq.nhvac_items-1)then
-            CALL PHELPD('Idealized or Explicit Plant Model?'
-     &                    ,5,'-',0,0,IER)
+            CALL PHELPD('Idealized or Explicit Plant Model?',
+     &                   nbhelp,'-',0,0,IER)
           elseif(hvind.le.0)then
 C If no selection is made, or user clicks of screen, do nothing and redraw menu.
           elseif(hvind.eq.1)then 
@@ -583,14 +555,9 @@ C If explicit plant model is desired, continue to define an explicit plant netwo
             
             if(LPNF(1:4).eq.'UNKN'.or.LPNF(1:2).eq.'  ')then
               dok=.false.
-              h(1)='A plant network file holds the definition of a     '
-              h(2)='system, the purpose of which is usually to supply  '
-              h(3)='the building with heat, coolth and/or power. Unless'
-              h(4)='you have access to a suitable components database, '
-              h(5)='DO NOT use this facility.                          '
               CALL ASKOK(
      &        'Currently there is no plant network associated with',
-     &        'the model. Create/select one?',OK,DOK,5)
+     &        'the model. Create/select one?',OK,DOK,nbhelp)
               IF(.NOT.ok)GOTO 3
 
               if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
@@ -601,34 +568,23 @@ C If explicit plant model is desired, continue to define an explicit plant netwo
               endif
               clkok=.false.
               ltmp=LPNF
-              H(1)='The plant network file defines plant components'
-              H(2)='and their connection topology.'
               CALL EASKS(ltmp,' ','Plant network definition file?',72,
-     &                   DPNF,'plant network file',IER,2)
+     &                   DPNF,'plant network file',IER,nbhelp)
               goto 46
             endif
 
-            H(1)='The plant network file defines plant components and'
-            H(2)='topology. If you supply an existing file it will be'
-            H(3)='used, otherwise a new file will be created.'
-            H(4)=' '
-            H(5)='The dereference option removes the name of the plant'
-            H(6)='network file from the system configuration file but'
-            H(7)='does not delete it. The plant domain can later be'
-            H(8)='re-established by rintrosucting the configuration'
-            H(9)='file reference.'
             ltmp=LPNF
             iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
  301        if(iglib.eq.2)then
               CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
-     &                       'dereference',clkok,72,DPNF,
-     &                        'plant network file',iser,9)
+     &          'dereference',clkok,72,DPNF,
+     &          'plant network file',iser,nbhelp)
               if(clkok)iclkok=2   ! notice dereference button
               if(iser.eq.-3) goto 3  ! notice GTK cancel button
             else
               CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
      &          'cancel','dereference',iclkok,72,DPNF,
-     &          'plant network file',iser,9)
+     &          'plant network file',iser,nbhelp)
               if(iclkok.eq.1) goto 3    ! notice X11 cancel option
             endif
 
@@ -667,17 +623,13 @@ C plant network or edit the existing network.
             call FINDFIL(LPNF,XST)
             if(.not.xst) then
               dok=.false.
-              h(1)='File not found, select `OK` if you want this file'
-              h(2)='to hold the definition of a new plant network.'
               CALL ASKOK('This is a new plant network file.',
-     &          'Proceed with network description?',OK,dok,2)
+     &          'Proceed with network description?',OK,dok,nbhelp)
               ipedit=0
             else
               dok=.true.
-              h(1)='Found an existing file, select `OK` if you want to'
-              h(2)='use or modify it.'
               CALL ASKOK('Found existing plant network file.',
-     &          'Use or modify it?',OK,dok,2)
+     &          'Use or modify it?',OK,dok,nbhelp)
               ipedit=1
             endif
             if(OK)then
@@ -717,35 +669,12 @@ C If an error has been encountered then reset the configuration type.
       ELSEIF(INO.EQ.9)THEN
 
 C Flow description.
-        H(1)='Air flow can be modelled using an empirical air'
-        H(2)='infiltration model, sheduling flow by prescribing'
-        H(3)='flowrates and imposing controls or by defining a'
-        H(4)='detailed air flow network.'
-        H(5)=''
-        H(6)='The Alberta Air Infiltration Model (AIM-2) is used '
-        H(7)='to describe the empirical air infilration model.'
-        H(8)=''
-        H(9)='It is possible to schedule air flowing from the'
-        H(10)='outside (infiltration) and from specified zones or'
-        H(11)='plant components (ventilation). This is sometimes'
-        H(12)='appropriate at an early design stage and for flow'
-        H(13)='problems of limited complexity.'
-        H(14)=' '
-        H(15)='The flow network approach employs flow components'
-        H(16)='(doors, cracks, ducts, fans etc.) to explicitly'
-        H(17)='represent the distributed flow paths. This approach'
-        H(18)='requires significantly more defining information.'
-        H(19)='(A related facility, described elsewhere, allows'
-        H(20)='a CFD domain to be linked to this flow network so'
-        H(21)='that intra-zone flows can be evaluated under the'
-        H(22)='influence of the above flow network.)'
-        H(23)=' '
-        H(24)='Flow networks may be defined by selecting components'
-        H(25)='from a menu or by graphical manipulation.'
+        helptopic='submenu_flow_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKATOG('Define air flow via:',' ',
      &    'empirical air infiltration model','schedule',
      &     'flow network (menu)','flow network (graphic)',
-     &    'cancel',' ',' ',IW,25)
+     &    'cancel',' ',' ',IW,nbhelp)
 
 C Use AIM2 interface     
         airflowtype: IF(IW.EQ.1)THEN
@@ -863,10 +792,8 @@ C lowest and highest point and cog of surface.
           write(42,'(a)',iostat=ios,err=13) '*End_Surfaces'
           CALL ERPFREE(42,ios)
           DFILE='network_flow.gnf'
-          h(1)='This is the network graphics file generated by the'
-          h(2)='`net` tool.'
           CALL EASKS(LFIL,' ','Network graphics file?',72,
-     &      DFILE,'network file open',IER,2)
+     &      DFILE,'network file open',IER,nbhelp)
 
 C Check if this file exists. If it does not fill a few of the
 C graphic network commons and write out a minimal file for
@@ -946,12 +873,8 @@ C Link nodes and zones.
             if(ICAAS(IZ).gt.0)then
               write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &          'is currently linked to:',NDNAM(ICAAS(IZ))
-              h(1)='You may have nodes that are not linked to a zone'
-              h(2)='but where network nodes and zones are linked, the'
-              h(3)='temperature of the former will be matched to the'
-              h(4)='latter. '
               CALL EASKABC(outs,' ','ok',
-     &          'select another','free link',iacc,4)
+     &          'select another','free link',iacc,nbhelp)
               if(iacc.eq.1)then
                 goto 33
               elseif(iacc.eq.2)then
@@ -964,7 +887,7 @@ C Link nodes and zones.
             else
               write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
      &          'has no mass flow node.'
-              CALL EASKAB(outs,' ','ok','select a node',iacc,3)
+              CALL EASKAB(outs,' ','ok','select a node',iacc,nbhelp)
               if(iacc.eq.1)then
                 ICAAS(IZ)=0
               elseif(iacc.eq.2)then
@@ -978,12 +901,8 @@ C Link nodes and zones.
 C Save the configuration file so that connections and graphic mass flow
 C network are know.
             dok=.true.
-            h(1)='You have been working on an independant description'
-            h(2)='of a flow network. To use it in a simulation you '
-            h(3)='need to associate it with zones in the current' 
-            h(4)='model.'
             CALL ASKOK('Save graphic flow network links to zones',
-     &        'in the configuration file?',OK,dok,4)
+     &        'in the configuration file?',OK,dok,nbhelp)
             IF(OK)then
               IAIRN=2
               LAPROB=NWKFLNAM
@@ -1057,11 +976,10 @@ C Complex fenestration control description.
       ELSEIF(INO.EQ.20)THEN
 
 C Call uncertainty definition controller.
-        H(1)='This option is password protected because it is'
-        H(2)='under development and so must be used with care.'
-        H(4)='The password is available from ESRU on request.'
+        helptopic='password_is_needed'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easki(IPASS,' ','Password?',
-     &                            0,'-',0,'-',0,'password',IER,4)
+     &    0,'-',0,'-',0,'password',IER,nbhelp)
         if (IPASS.eq.101) then
           call tstamp('>','PRJ: enter uncertainty control')
           call UNCERTA(LUALF)
@@ -1070,11 +988,10 @@ C Call uncertainty definition controller.
 
 C Select visualisation option.
         IF(CFGOK)THEN
-          H(1)='In addition to the in-built perspective view you can'
-          H(2)='request a hidden line view of the model or send'
-          H(3)='it to be rendered by Radiance.'
+          helptopic='model_visual_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' ','Visualisation options:','hidden line',
-     &      'colour rendered','cancel',IW,3)
+     &      'colour rendered','cancel',IW,nbhelp)
           if(IW.eq.1)then
             call visualz('V',ier)
           elseif(IW.eq.2)then
@@ -1266,9 +1183,15 @@ C an offset from prj start position.
 
       ELSEIF(INO.EQ.26)THEN
 
-C Execute editor and report generation tools.
+C Execute editor and report generation tools. Start with assumption
+C that all zones in the model are to be included.
         call tstamp('>','PRJ: enter report controller')
-        call prjqa(ier)
+        silent= .false.
+        inpic=NCOMP
+        do 29 iz=1,inpic
+          ivals(iz)=iz
+  29    continue
+        call prjqa(inpic,ivals,silent,ier)
       ELSE
         GOTO 3
       ENDIF
@@ -1299,7 +1222,6 @@ C output, IER=0 indicates no error.
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1365,7 +1287,7 @@ C Flag noting whether casual gain periods are currently sorted.
 
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LCFGF*72,H*72,SFIL*72
+      character LCFGF*72,SFIL*72
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12
@@ -1392,6 +1314,13 @@ C Flag noting whether casual gain periods are currently sorted.
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ICPMOD     ! passed from tchild
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDZCOMP'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -1467,38 +1396,8 @@ C (Re)Set all surfaces to standard line width.
       endif
 
 C Help text for this menu.
-      H(1)='This menu provides facilities to create, browse'
-      H(2)='and edit zone-level data such as geometry and'
-      H(3)='construction, schedules and miscellaneous technical'
-      H(4)='data relating to CFD, casual gain control etc.'
-      H(5)=' '
-      H(6)='The `Zones` section (geometry, construction, operations)'
-      H(7)='are the essential attributes of zones which must be'
-      H(8)='completed prior to simulation.'
-      H(9)=' '
-      H(10)='The `Topology` section allows you to automate the'
-      H(11)='specification of what-is-on-the-other-side of surfaces'
-      H(12)='in the model (which can also be done on a surface by'
-      H(13)='surface basis within the geometry facility). Anchors'
-      H(14)='can be thought of as named lists of surfaces e.g.'
-      H(15)='a list called `finistration` might point to all windows'
-      H(16)='in a facade to allow you to change them all to a new'
-      H(17)='type of glazing.'
-      H(18)=' '
-      H(19)='The `Options` section allows you to add additional'
-      H(20)='descriptions and or detail to your model as and when'
-      H(21)='such concepts become important to your performance'
-      H(22)='assessments. If you do not specify these additional'
-      H(23)='model attributes default assumptions are made.'
-      H(24)=' '
-      H(25)='The `Special components` section also allows you to'
-      H(26)='add detail to your model to support specialists'
-      H(27)='tasks (e.g. assigning electrical characteristics to'
-      H(28)='PV cells embedded within surfaces).'
-      H(29)=' '
-      H(30)='The `Global tasks` option allows you to transform and'
-      H(31)='rotate the model on the site and do search & replace '
-      H(32)='actions on surface attributes. '
+      helptopic='zone_composition_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Zones Composition',ITEMS,nitems,INO)
       IF(INO.EQ.nitems)THEN
@@ -1512,20 +1411,16 @@ C Exit back to calling menu and clear dialogue box.
 
 C Global actions such as transforms, rotations, attributions. Use
 C different list of options for X11 and GTK.
-        h(1)='Transforms and rotations may be applied to one or more'
-        h(2)='zones in the model. Global attribution allows all'
-        h(3)='surfaces matching some criteria (e.g. vertical and'
-        h(4)='opaque) to be assigned a particular attribute.'
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         IRT=1
         if(iglib.eq.2)then
           call EASKATOG(' Global action?',' ',
      &      'transform','rotate','attribute','search & replace',
-     &      ' ',' ',' ',IRT,4)
+     &      ' ',' ',' ',IRT,nbhelp)
         else
           call EASKATOG(' Global action?',' ',
      &      'transform','rotate','attribute','search & replace',
-     &      'cancel',' ',' ',IRT,4)
+     &      'cancel',' ',' ',IRT,nbhelp)
         endif
         if(IRT.eq.-3)then
           goto 3
@@ -1534,17 +1429,16 @@ C different list of options for X11 and GTK.
         elseif(IRT.eq.1)then
 
 C Ask for transform distance then which zones and then apply.
-          H(1)='A transform shifts each zone & its solar obstructions'
-          H(2)='by a given amount along each axis.'
           hold = ' 0.0  0.0  0.0'
   43      if(iglib.eq.2)then
             CALL EASKS(HOLD,'X, Y and Z transform (m)?',' ',
-     &        32,' 0.0  0.0   0.0 ','transforms XYZ',ISER,2)
+     &        32,' 0.0  0.0   0.0 ','transforms XYZ',ISER,nbhelp)
             if(iser.eq.-3) goto 3
           else
             clkok=.false.
             CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ',
-     &        'cancel',clkok,32,' 0.0 0.0 0.0 ','transforms XYZ',IER,2)
+     &        'cancel',clkok,32,' 0.0 0.0 0.0 ','transforms XYZ',
+     &        IER,nbhelp)
             if(clkok) goto 3
           endif
           K=0
@@ -1552,10 +1446,9 @@ C Ask for transform distance then which zones and then apply.
           CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
           CALL EGETWR(HOLD,K,VALZ,-99.,99.,'W','Z tr',IER)
           if(ier.ne.0)goto 43
-          H(1)=' Pick one, several or all zones for inclusion.'
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
-     &                12,NCOMP,zname,'zone list',IER,1)
+     &                12,NCOMP,zname,'zone list',IER,nbhelp)
           IF(INPIC.EQ.0)GOTO 3
 
 C Perform the global transform interactively.
@@ -1568,34 +1461,29 @@ C Perform the global transform interactively.
         elseif(IRT.eq.2)then
 
 C Rotation degree and choices.
-          H(1)='The rotation is applied to all selected zones about'
-          H(2)='a common point or the site origin. Positive is  '
-          H(3)='anticlockwise.'
           VAL=0.
           CALL EASKR(VAL,' ','Rotation (degrees, +ve anticlockwise)?',
-     &                 -359.0,'W',359.0,'W',0.0,'rotation',IER,3)
+     &      -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
           if(VAL.LT.-.01.OR.VAL.GT..01)then
             CALL EASKABC(' ','Rotation choice?',
-     &        'site origin','user specified X & Y','cancel ?',IRTP,3)
+     &        'site origin','user specified X & Y','cancel ?',
+     &        IRTP,nbhelp)
             if(IRTP.eq.1)then
               x1=0.
               y1=0.
             elseif(IRTP.EQ.2)THEN
-              H(1)='The point is relative to the site'
-              H(2)='Tcoordinate system.'
               x1=0.
               CALL EASKR(x1,' ','X point (m)?',
-     &          0.0,'-',0.0,'-',0.0,'x point',IER,2)
+     &          0.0,'-',0.0,'-',0.0,'x point',IER,nbhelp)
               y1=0.
               CALL EASKR(y1,' ','Y point (m)?',
-     &          0.0,'-',0.0,'-',0.0,'y point',IER,1)
+     &          0.0,'-',0.0,'-',0.0,'y point',IER,nbhelp)
             elseif(IRTP.EQ.3)THEN
               goto 3
             endif
-            H(1)='Pick one, several or all zones to rotate.'
             INPIC=NCOMP
             CALL EPICKS(INPIC,IVALS,' ','Zones to rotate?',
-     &        12,NCOMP,zname,' zone list',IER,1)
+     &        12,NCOMP,zname,' zone list',IER,nbhelp)
             IF(INPIC.EQ.0)GOTO 3
             call tstamp('>','PRJ: zone rotation')
 
@@ -1711,27 +1599,21 @@ C incrementing the ncomp.
 C Debug.
 C          write(6,*) 'lctlf is ',LCTLF
 
+          helptopic='zone_copy_and_ctl'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
             continue
           else
             dok=.true.
-            h(1)='When you copy a zone, the control file needs to be'
-            h(2)='updated to reflect the additional zone. Separately'
-            h(3)='(in the control interface) you must indicate which'
-            h(4)='control loop to use with the copied zone. The'
-            h(5)='initial assumption is that it free-floats. '
             CALL ASKOK(
      &        'Control are zone based and should be updated to',
-     &        'reflect the copied zone. Ok to do this?',OKC,dok,5)
+     &        'reflect the copied zone. Ok to do this?',
+     &        OKC,dok,nbhelp)
           endif
           if(OKC)then
-            H(1)='The (optional) system control file holds the '
-            H(2)='definition of all building/plant controls. '
-            H(3)='A free-flot control has been associated with the'
-            H(4)='copied zone.'
             lctmp=LCTLF
             CALL EASKS(lctmp,' Control file ? ',
-     &        ' ',72,'std.ctl','Control file',IER,4)
+     &        ' ',72,'std.ctl','Control file',IER,nbhelp)
             if(lctmp(1:2).ne.'  '.and.lctmp(1:4).ne.'UNKN')then
               lctlf=lctmp
               ICTLF=IFIL+2
@@ -1755,11 +1637,10 @@ C zone index so that the zone related commons are filled.
           call georead(IFIL+1,LTMP,ncomp,1,iuout,IER)
           IF(IER.NE.0)THEN
             dok=.true.
-            h(1)='While scanning the file a problem was noted. If you'
-            h(2)='think this might be because the wrong file name was'
-            h(3)='given you can try it again. '
+            helptopic='problem_scanning_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('Problem reading geometry file.','Try again?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             if(OK)then
               goto 248
             else
@@ -1767,12 +1648,12 @@ C zone index so that the zone related commons are filled.
             endif
           ENDIF
 
-          H(1)='The name of the zone is used both for descriptive'
-          H(2)='and bookkeeping purposes.  Each name should be'
-          H(3)='unique and should not contain blanks. '
+          helptopic='zone_name_description'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  42       ZN=' '
           CALL EASKS(ZN,' What do you want to call this copied zone ',
-     &      ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
+     &      ' ( <12 char, no blanks) ?',12,'new_zone','zone name',
+     &      IER,nbhelp)
           IF(ZN.eq.' '.or.ier.ne.0)goto 42
           call st2name(ZN,zname(NCOMP))
           lnzname(NCOMP)=lnblnk(zname(NCOMP))
@@ -1784,13 +1665,11 @@ C zone index so that the zone related commons are filled.
           endif
           LGEOM(NCOMP)=DFILE
 
-          H(1)='The zone description allows information about'
-          H(2)='zone form and composition to be recorded.'
           write(zd,'(2a)') 
      &      zname(NCOMP)(1:lnzname(NCOMP)),' describes a '
   40      CALL EASKS(zd,'What does it represent?',
      &      ' (<64 char)',64,'no description entered','zone descr',
-     &      IER,2)
+     &      IER,nbhelp)
           IF(zd.eq.' '.or.ier.ne.0)goto 40
           zdesc(NCOMP)=zd
           lnzdesc(NCOMP)=lnblnk(zd)  ! update the length of this string.
@@ -1801,16 +1680,10 @@ C file and then recover the zone commons.
           if(IOBS(ic).eq.1)then
             dok=.true.
             OKOB=.true.
-            h(1)='The original zone had associated solar obstructions'
-            h(2)='and you have two options '
-            h(3)=' a) copy the obstructions so that modifications'
-            h(4)='    relevant to the copied zones obstructions can'
-            h(5)='    be made.'
-            h(6)=' b) do not copy the obstructions. Optionally you'
-            h(7)='    can reference the original obstructions (via'
-            h(8)='    the project files menu).'
+            helptopic='options_for_copy_obs'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' ','Also copy obstructions of source zone?',
-     &        OKOB,dok,8)
+     &        OKOB,dok,nbhelp)
             if(OKOB)then
               CALL ESCZONE(NCOMP)
               call FINDFIL(ZOBS(IC),XST)
@@ -1835,24 +1708,15 @@ C file and then recover the zone commons.
           endif
 
 C Zone rotations and transforms.
-          if(OKOB)then
-            H(1)='When copying a zone and obstructions the copy is'
-            H(2)='usually shifted away from the position of the '
-            H(3)='source. You can skip such transforms.'
-          else
-            H(1)='When copying a zone the copy is usually shifted'
-            H(2)='away from the position of the source.  You can '
-            H(3)='skip such transforms. '
-          endif
-          H(4)='Transform shifts the zone by a given amount in'
-          H(5)='each axis.'
+          helptopic='zone_copy_and_ctl'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           hold = ' 0.0  0.0  0.0'
           clkok=.false.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
  243      if(iglib.eq.2)then
             CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ',
      &        'skip transform',clkok,32,' 0. 0. 0.','transforms XYZ',
-     &        iser,5)
+     &        iser,nbhelp)
             if(clkok)iclkok=2   ! notice skip transform button
             if(iser.eq.-3)then  ! notice GTK cancel button
               LGEOM(NCOMP)=' '
@@ -1862,7 +1726,7 @@ C Zone rotations and transforms.
           else
             CALL EASKS2CMD(HOLD,'Transform (X Y Z metres):',' ',
      &        'cancel copy','skip transform',iclkok,32,' 0. 0. 0.',
-     &        'transforms XYZ',iser,5)
+     &        'transforms XYZ',iser,nbhelp)
             if(iclkok.eq.1)then    ! notice X11 cancel option
               LGEOM(NCOMP)=' '
               NCOMP=NCOMP-1
@@ -1890,27 +1754,19 @@ C Act on the skip transform request.
 
 C Record rotation information in rotateit array.
           dok=.false.
-          h(1)='If you want to rotate the zone from its initial'
-          h(2)='position now is a good time to do this if the '
-          h(3)='point of rotation is the first vertex of the zone.'
-          CALL ASKOK(' ',' Rotate the copied zone',OKZR,dok,3)
+          CALL ASKOK(' ',' Rotate the copied zone',OKZR,dok,nbhelp)
           if(OKZR)then
-            H(1)='The rotation is applied around vertex 1,'
-            H(2)='positive is anticlockwise.'
             VAL=0.
-            CALL EASKR(VAL,' ',' Rotation (deg., +ve anticlockwise)?',
-     &        -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
+            CALL EASKR(VAL,' ',
+     &        'Rotation (deg., +ve anticlockwise)?',
+     &        -359.0,'W',359.0,'W',0.0,'rotation',IER,nbhelp)
             if(VAL.LT.-.01.OR.VAL.GT..01)then
 
 C Rotation choices. Clear pending rotateit, update prior rotateit.
              rotateit(ncomp,1)=VAL
-             H(1)='The default rotation is about vertex 1 of the'
-             H(2)='zone with a positive angle denoting anticlockwise.'
-             H(3)='You may change this to rotate the zone about the'
-             H(4)='site origin or a specified point.'
               CALL EASKABCD(' ','Rotation choices:',
      &         'vertex 1 of zone','site origin',
-     &         'specified X & Y','skip rotation',IRT,4)
+     &         'specified X & Y','skip rotation',IRT,nbhelp)
               call usrmsg(' ',' ','-')
               if(IRT.eq.1)then
                 x1=X(1)
@@ -1937,13 +1793,12 @@ C Rotation choices. Clear pending rotateit, update prior rotateit.
                 rotateit(ncomp,2)=0.0
                 rotateit(ncomp,3)=0.0
               elseif(IRT.EQ.3)THEN
-                H(1)='Point is in the site coordinate system.'
                 x1=0.
                 CALL EASKR(x1,' ',' X point (metres) ? ',
-     &            0.0,'-',0.0,'-',0.0,'x point',IER,1)
+     &            0.0,'-',0.0,'-',0.0,'x point',IER,nbhelp)
                 y1=0.
                 CALL EASKR(y1,' ',' Y point (metres) ? ',
-     &            0.0,'-',0.0,'-',0.0,'y point',IER,1)
+     &            0.0,'-',0.0,'-',0.0,'y point',IER,nbhelp)
                 rotateit(ncomp,2)=x1
                 rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
@@ -2041,11 +1896,10 @@ C ensure that we use the latest version.
           endif
           IF(IER.EQ.1)THEN
             dok=.true.
-            h(1)='When writing the geometry file a problem was found.'
-            h(2)='Check that you have permission to update the file '
-            h(3)='and that there is sufficient disk space. '
+            helptopic='problem_writing_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' ','Problem creating geometry...try again?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             IF(OK)GOTO 42
           ENDIF
 
@@ -2113,23 +1967,17 @@ C in the copied zone).
 
 C Ask if user wants to copy or point to other zone files.
 C Construction and zone TMC file.
+          helptopic='copy_constr_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call FINDFIL(LTHRM(IC),XST)
           irop=1
           if(XST)then
-            h(1)='You can have the new zone constructions based'
-            h(2)='on the source zone (by copying the file)'
-            h(3)='or by pointing to the file (exercise care)'
-            h(4)='or browse available files or continue without'
-            h(5)='defining constructions at this time.'
             CALL EASKATOG(' ','Source zone has a constructions file:',
      &        'copy source file','use source file',
-     &        'browse','cancel',' ',' ',' ',irop,5)
+     &        'browse','cancel',' ',' ',' ',irop,nbhelp)
           else
-            h(1)='You can have the new zone constructions by'
-            h(2)='browing available files or continue without'
-            h(3)='defining constructions at this time.'
             CALL EASKATOG(' ','Source zone has no constructions file:',
-     &        '-','-','browse','cancel',' ',' ',' ',irop,3)
+     &        '-','-','browse','cancel',' ',' ',' ',irop,nbhelp)
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
 
@@ -2153,10 +2001,8 @@ C Also update lodlabel commons before writing out.
             if(ITW(IC).eq.1)then
               CALL ERTWIN(ITRC,IUOUT,IUF,LTWIN(IC),IC,IER)
             endif
-   90       H(1)='A zone construction file contains thermophysical'
-            H(2)='data for the zone surfaces.'
-            CALL EASKS(CFILE,' New construction file name:',
-     &        ' ',72,'new.con','construction file',IER,2)
+   90       CALL EASKS(CFILE,' New construction file name:',
+     &        ' ',72,'new.con','construction file',IER,nbhelp)
             IF(CFILE.NE.'  ')THEN
               QUIET=.false.
               write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
@@ -2167,10 +2013,8 @@ C Update itmcfl for the new zone.
                 do 61 ISS=1,NZSUR(NCOMP)
                   ITMCFL(NCOMP,ISS)=ITMCFL(IC,ISS)
    61           continue
-                H(1)='A zone tmc file contains optical data for the'
-                H(2)='data zone surfaces.'
                 CALL EASKS(DFILE,' ','New zone tmc file name:',
-     &                         72,'new.tmc','tmc file',IER,2)
+     &            72,'new.tmc','tmc file',IER,nbhelp)
                 if(DFILE(1:2).NE.'  ')then
                   write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
                   ITW(NCOMP)=1
@@ -2241,25 +2085,20 @@ C                  write(6,*) DFILE
 
 C Operations file. If source has a file offer options to copy or
 C point to it, otherwise offer option to browse for an existing file.
+          helptopic='copy_operation_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call FINDFIL(LPROJ(IC),XST)
           irop=1
           if(XST)then
-            h(1)='You can have the new zone operations based initially'
-            h(2)='on the source zones operations (by copying the file)'
-            h(3)='or use the same operations (by pointing to the file)'
-            h(4)='or browse available files or continue without '
-            h(5)='defining operations at this time. '
             CALL EASKATOG(
      &        'Source zone has an operations file.',
      &        'Options:','copy file','point to file',
-     &        'browse file','cancel',' ',' ',' ',irop,5)
+     &        'browse file','cancel',' ',' ',' ',irop,nbhelp)
           else
-            h(1)='You can have the new zone operations by'
-            h(2)='browing available files or continue without'
-            h(3)='defining operations at this time.'
             CALL EASKATOG(
      &        'Source zone has no operations file.',
-     &        'Options:','-','-','browse','cancel',' ',' ',' ',irop,3)
+     &        'Options:','-','-','browse','cancel',' ',' ',' ',
+     &        irop,nbhelp)
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -2274,10 +2113,8 @@ C Read in source operations and write out to file for new zone.
 C Also update lodlabel commons before writing out.
             CALL ERPFREE(IUF,ISTAT)
             CALL EROPER(0,iuout,IUF,IC,IER)
-   91       H(1)='A zone operation file contains schedules of air'
-            H(2)='flow and casual gains.'
-            CALL EASKS(DFILE,' New zone operations file name:',
-     &         ' ',72,'new.opr','operations file',IER,2)
+   91       CALL EASKS(DFILE,' New zone operations file name:',
+     &         ' ',72,'new.opr','operations file',IER,nbhelp)
             IF(DFILE.NE.' ')THEN
               LPROJ(NCOMP)=DFILE
               ip3ver(ncomp)=ip3ver(ic)     ! set copied to same version
@@ -2332,16 +2169,13 @@ C                write(6,*) DFILE
 
 C See if the source zone has a viewfactor file.
           if(IVF(ic).eq.1)then
-            h(1)='The new zone view factors file can be based on the'
-            h(2)='source zone (by copying the file) or you can'
-            h(3)='point to the source zone file (use care because'
-            h(4)='the two zones may change shape) or browse available '
-            h(5)='files or continue. '
+            helptopic='copy_vwf_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             irop=1
             CALL EASKATOG(
      &        'Source zone has a view factor file.',
      &        'Options:','copy file','point to file',
-     &        'browse file','cancel',' ',' ',' ',irop,5)
+     &        'browse file','cancel',' ',' ',' ',irop,nbhelp)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.vwf'
@@ -2352,10 +2186,8 @@ C See if the source zone has a viewfactor file.
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
               CALL ERMRT(0,itru,IUF,LVIEW(IC),IC,IER)
-   92         H(1)='A zone view factor file contains calculations of'
-              H(2)='how much each surface can see other surfaces.'
-              CALL EASKS(DFILE,' ','New view factor file name?',
-     &             72,'new.vwf','viewfactor file',IER,2)
+   92         CALL EASKS(DFILE,' ','New view factor file name?',
+     &             72,'new.vwf','viewfactor file',IER,nbhelp)
               IF(DFILE.NE.' ')THEN
                 LVIEW(NCOMP)=DFILE
                 IVF(NCOMP)=1
@@ -2399,15 +2231,13 @@ C                  write(6,*) DFILE
 
 C See if the source zone has a casual gain control file.
           if(ICGC(ic).eq.1)then
-            h(1)='The new zone casual gain control can be based on'
-            h(2)='the source zone (by copying the file) or you'
-            h(3)='can point to the source zone file or browse'
-            h(4)='available files.'
+            helptopic='copy_cgc_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             irop=1
             CALL EASKATOG(
      &        'Source zone has a CG ctl file.',
      &        'Options:','copy file','point to file',
-     &        'browse file','cancel',' ',' ',' ',irop,4)
+     &        'browse file','cancel',' ',' ',' ',irop,nbhelp)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.cgc'
@@ -2418,10 +2248,8 @@ C See if the source zone has a casual gain control file.
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
               call ercgcf(0,iuout,LCGCIN(IC),IC,ier)
-   93         H(1)='A zone casual gain control file contains logic'
-              H(2)='for light switching in a zone.'
-              CALL EASKS(DFILE,' ','Zone CG file name?',
-     &           72,'new.vwf','casual gain control file',IER,2)
+   93         CALL EASKS(DFILE,' ','Zone CG file name?',
+     &           72,'new.vwf','casual gain control file',IER,nbhelp)
               IF(DFILE.NE.' ')THEN
                 LCGCIN(NCOMP)=DFILE
                 ICGC(NCOMP)=1
@@ -2463,14 +2291,12 @@ C                  write(6,*) DFILE
 
 C See if the source zone has a convection regime file.
           if(IHC(ic).eq.1)then
-            h(1)='The new zone convection regime can be based on'
-            h(2)='the source zone (by copying the file) or you'
-            h(3)='can point to the source zone file or browse  '
-            h(4)='available files or continue.'
+            helptopic='copy_hc_options'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             irop=1
             CALL EASKATOG('Source zone has a CC file.',
      &        'Options:','copy file','point file',
-     &        'browse file','cancel',' ',' ',' ',irop,4)
+     &        'browse file','cancel',' ',' ',' ',irop,nbhelp)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.htc'
@@ -2481,11 +2307,8 @@ C See if the source zone has a convection regime file.
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
               call ehtcff(LHCCO(IC),IUF,ITRU,IER)
-   94         H(1)='A zone convection coefficients file contains data'
-              H(2)='used to impose surface convection regimes within'
-              H(3)='a zone.'
-              CALL EASKS(DFILE,' ','Zone CC file name?',
-     &            72,'new.vwf','convection regime file',IER,3)
+   94         CALL EASKS(DFILE,' ','Zone CC file name?',
+     &          72,'new.vwf','convection regime file',IER,nbhelp)
               IF(DFILE.NE.' ')THEN
                 LHCCO(NCOMP)=DFILE
                 IHC(NCOMP)=1
@@ -2546,11 +2369,10 @@ C Scan the geometry file and freshen derived geometric common blocks.
           call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
           if(IER.NE.0)then
             dok=.true.
-            h(1)='A problem was found while reading the geometry and'
-            h(2)='you have the option to try again. Do this if you '
-            h(3)='think you migh have the wrong file. '
+            helptopic='problem_scanning_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('Problem reading geometry file!',
-     &            'Try again?',OK,dok,3)
+     &            'Try again?',OK,dok,nbhelp)
             IF(OK)GOTO 248
           else
             call zgupdate(0,ic,ier)
@@ -2615,13 +2437,10 @@ C Re-write all zones without prompting the user for input - unless an
 C error occurs.
           QUIET=.FALSE.
           dok=.false.
-          h(1)='If you suspect that your zone constructions file has'
-          h(2)='been corrupted or is out of date then this command'
-          h(3)='will refresh it. This requires that the model has'
-          h(4)='existing zone construction files because the process'
-          h(5)='of refreshing requires the file names.'
+          helptopic='update_all_constructions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(' ','Update zone constructions files?',
-     &           QUIET,dok,5)
+     &           QUIET,dok,nbhelp)
           if(.NOT.QUIET)goto 3
           call tstamp('>','PRJ: auto update zone construction')
           DO 2491, IZ=1,NCOMP
@@ -2666,15 +2485,12 @@ C << one idea would be to take an infiltration pattern from one zone
 C << and apply it to one or more other zones.
 C << one idea would be to take a casual gain pattern from one zone
 C << and apply it to another zone.
-          h(1)='You can upgrade older unsorted zone operations files'
-          h(2)='if they exist in the current model.'
-          h(3)=' '
-          h(4)='You can also check current operations files to see'
-          h(5)='if the casual gains periods are sorted.'
+          helptopic='update_all_operations'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(
      &      'Zone operations options for multiple zones:',' ',
      &      'update all old files','check period order',
-     &      'cancel',IW,5)
+     &      'cancel',IW,nbhelp)
           if(IW.eq.1.or.IW.eq.2)then
             inpic=NCOMP
             if(inpic.gt.0)then
@@ -2771,41 +2587,11 @@ C << the zone geometry file to be updated if the version 1.1
 C << geometry files are used. This is not yet done.
 
 C Global tasks.
-          h(1)='You can establish detailed shading and/orinsolation'
-          h(2)='patterns in nominated zones as follows.'
-          h(3)=' '
-          h(4)='  Recalculate shading in all zones where a shading'
-          h(5)='  file exists.'
-          h(6)=' '
-          h(7)='  Nominate zones for which you want to include an'
-          h(8)='  insolation analysis (i.e. track the distribution of'
-          h(9)='  the directly transmitted solar component).'
-          h(10)=' '
-          h(11)='  Nominate zones for which you want to create solar'
-          h(12)='  obstructions so that shading and insolation can'
-          h(13)='  be calculated.'
-          h(14)=' '
-          h(15)='  Nominate zones for which you want to dereference'
-          h(16)='  the shading/insolation file.'
-          H(17)=' '
-          H(18)='If you review the result of a shading analysis'
-          H(19)='and find unexpected patterns, this may be because'
-          H(20)='of incorrectly ordered surface edges.'
-          H(21)=' '
-          H(22)='  a) Check that a surface that appears to face a'
-          H(23)='     particular directyion in the wireframe view'
-          H(24)='     actually does!'
-          H(25)=' '
-          H(26)='  b) Check the ordering of the edges of all'
-          H(27)='     problematic surfaces by adhering to the'
-          H(28)='     following advice.'
-          H(29)=' '
-          H(30)='It is suggested that the first surface edge be'
-          H(31)='close to horizontal if possible.'
-
+          helptopic='global_shading_tasks'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD(' ','Options for multiple zones:',
      &      'recalculate shading','dereference shading files',
-     &      'add insolation','cancel',IW,31)
+     &      'add insolation','cancel',IW,nbhelp)
           if(IW.eq.1)then
             call eddshd
           elseif(IW.eq.2)then
@@ -2883,11 +2669,8 @@ C If browsing, do not save files but allow ish to be started.
      &        zname(IC)(1:lnzname(IC)),'.shd'
           endif
           DSFIL = 'new.shd'
-          H(1)='The zone shading/insulation database holds time'
-          H(2)='varying external surface shading and internal surface'
-          H(3)='insolation.'
           CALL EASKS(SFIL,' ','Zone shading/insulation file?',
-     &         72,DSFIL,'shd/ins db',IER,3)
+     &         72,DSFIL,'shd/ins db',IER,nbhelp)
           if(SFIL(1:2).ne.'  ')then
             LSHAD(IC)=SFIL
             ISI(IC)=1
@@ -2904,11 +2687,8 @@ C Confirm existing shading file name and offer option to dereference.
           endif
           SFIL = LSHAD(IC)
           clkok=.false.
-          H(1)='The zone shading/insulation database holds time'
-          H(2)='varying external surface shading and internal surface'
-          H(3)='insolation. You may dereference an existing file.'
           CALL EASKSCMD(SFIL,' ','Zone shading/insulation file?',
-     &        'dereference',clkok,72,DSFIL,'shd/ins db',IER,3)
+     &        'dereference',clkok,72,DSFIL,'shd/ins db',IER,nbhelp)
           if(clkok)then
 
 C Reset common blocks, save configuration and see if another zone is requested.
@@ -2932,11 +2712,8 @@ C Reset common blocks, save configuration and see if another zone is requested.
         endif
 
  255    dok=.true.
-        h(1)='If you reached this point you probably have all you'
-        h(2)='need to carry out the shading/insolation analysis.'
-        h(3)='If in doubt, double check. '
         CALL ASKOK(' ',
-     &    ' Proceed with shading/ insolation analysis?',OK,dok,3)
+     &    ' Proceed with shading/ insolation analysis?',OK,dok,nbhelp)
         IF(OK)then
 
 C Get logical name of terminal type, expand model name
@@ -2995,16 +2772,11 @@ C the file.
         if(IC.eq.99)then
 
 C Global tasks.
-          h(1)='Inter-surface view factors may be determined as simple'
-          h(2)='area weightings or exactly using ray tracing. Area '
-          h(3)='weighting is the default treament.'
-          h(4)=' '
-          h(5)='You can nominate the zones to which you want to apply'
-          h(6)='either calculation type or, alternatively, you may'
-          h(7)='dereference an exiting zone view factor file.analysis'
+          helptopic='area_weighted_or_calc'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD(' ','View factor options:',
      &        'area weighted','ray traced',
-     &        'dereference file','cancel',IW,7)
+     &        'dereference file','cancel',IW,nbhelp)
           IUO=IFIL+1
           if(iw.eq.1.or.iw.eq.2)then
             inpic=0
@@ -3063,6 +2835,8 @@ C Loop back and see if another zone is requested.
       elseif(INO.EQ.14)THEN
 
 C Casual gain control.
+        helptopic='zone_cgc_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(browse)then
           call edisp(itru,'You are currently in browse mode. You can')
           call edisp(itru,'look at the zone casual gain controls')
@@ -3083,10 +2857,8 @@ C If browsing do not bother to confirm file name, present menu.
             call EDCASCTL(ITRC,IC,IER)
             goto 252
           endif
-          H(1)='This menu allows the dereferencing or editing of a'
-          H(2)='zone casual gain control file.'
           CALL EASKABC(' ','Casual gain control options:','edit',
-     &      'dereference','cancel',irpt,2)
+     &      'dereference','cancel',irpt,nbhelp)
           if(irpt.eq.1)then
             IUF=IFIL+1
             call EDCASCTL(ITRC,IC,IER)
@@ -3107,12 +2879,8 @@ C     &        ' Dereferencing casual gain control file...done.',' ','-')
      &        'In browse mode so nothing to do.','P')
             goto 252
           endif
-          H(1)='This menu allows a zone casual control file to be'
-          H(2)='created/editted. The data within this file controls'
-          H(3)='zone casual gains based on the internal or external'
-          H(4)='illuminance. Different control algorithms are offered.'
           CALL EASKABC(' ','Casual gain ctl options:',
-     &      'create','dereference','cancel',irpt,4)
+     &      'create','dereference','cancel',irpt,nbhelp)
           if(irpt.eq.1)then
             IUF=IFIL+1
             call EDCASCTL(ITRC,IC,IER)
@@ -3134,11 +2902,9 @@ C Loop back and see if another zone is requested.
       elseif(INO.EQ.15)THEN
 
 C CFD.
-        H(1)='This facility allows you to compose a file defining'
-        H(2)='the zone parameters required for a CFD simulation.'
-        H(3)='You may reference and dereference the CFD domain'
-        H(4)='within the current model at any time.'
-        CALL PHELPD('CFD domain + parameters',4,'-',0,0,IER)
+        helptopic='zone_cfd_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('CFD domain + parameters',nbhelp,'-',0,0,IER)
 
         IC=-1
         izdef=0
@@ -3158,13 +2924,7 @@ C If browsing do not offer inclusion option.
           write(outs,'(3a)') 'Include ',LCFD(ic)(1:lnblnk(LCFD(ic))),
      &      ' in the model? '
           dok=.true.
-          h(1)='If the CFD domain is complete you will probably want'
-          h(2)='to associate it with the model. If you do not do this'
-          h(3)='now, you can do it later (but you will need to supply'
-          h(4)='the name of the file to complete the association). '
-          h(5)=' '
-          h(6)='If you want to ignore the CFD domain just say no. '
-          CALL ASKOK(outs,'(see help)',OK,dok,6)
+          CALL ASKOK(outs,'(see help)',OK,dok,nbhelp)
           IF(OK)then
             call usrmsg(' Including CFD domain...',' ','-')
             CALL EMKCFG('-',IER)
@@ -3186,6 +2946,8 @@ C Adaptive gridding module.
      &    '-',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         write(ZN,'(A)') zname(IC)
+        helptopic='zone_adaptive_grid_opt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         IUF=IFIL+1
 
@@ -3206,8 +2968,6 @@ C Offer creation of moisture transport data file or dereference.
      &      zname(IC)(1:lnzname(IC)),'.mst'
         endif
         DSFIL = SFIL
-        H(1)='The moisture file holds moisture transport data'
-        H(2)='for nodes.'
         write(outs,'(3a)')'Moisture transport file for ',
      &    zname(IC)(1:lnzname(IC)),'?'
         clkok=.false.
@@ -3215,11 +2975,11 @@ C Offer creation of moisture transport data file or dereference.
 
 C << What does ignore mean here? >>
           CALL EASKSCMD(SFIL,outs,' ','ignore',clkok,72,DSFIL,
-     &      'moisture file',IER,2)
+     &      'moisture file',IER,nbhelp)
           if(clkok) goto 3
         else
           CALL EASKSCMD(SFIL,outs,' ','dereference',clkok,72,DSFIL,
-     &      'moisture file',IER,2)
+     &      'moisture file',IER,nbhelp)
           if(clkok)then
             MSTRZN(IC)=.false.
             LMOIST(IC)=' '
@@ -3242,19 +3002,16 @@ C << What does ignore mean here? >>
      &      ' ','-')
         endif
 
-        H(1)='There are four adaptive gridding files which must be'
-        H(2)='specified for each zone to which such gridding is to'
-        H(3)='be applied. Check documentation for more information.'
         if(.NOT.ZONE3D(IC))then
           CALL EASKAB(' Addaptive gridding options:',
-     &      ' ','define file names','continue',IW,3)
+     &      ' ','define file names','continue',IW,nbhelp)
           if(iw.eq.2)then
             IC=-1
             GOTO 3
           endif
         else
           CALL EASKABC(' Addaptive gridding options:',
-     &      ' ','browse/edit','dereference ','continue',IW,3)
+     &      ' ','browse/edit','dereference ','continue',IW,nbhelp)
           if(iw.eq.2)then
             L3DCVS(IC)='UNKNOWN'
             L3DCNC(IC)='UNKNOWN'
@@ -3282,10 +3039,8 @@ C Confirm file names.
      &      zname(IC)(1:lnzname(IC)),'.cvs'
         endif
         SFIL = L3DCVS(IC)
-        H(1)='The 3D control volumes file defines...'
-        H(2)='<< more text to be added here >>'
         CALL EASKS(SFIL,' 3D control volumes file',
-     &    ' ',72,DSFIL,'control volumes file',IER,3)
+     &    ' ',72,DSFIL,'control volumes file',IER,nbhelp)
         if(SFIL(1:2).ne.'  ') L3DCVS(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -3295,10 +3050,9 @@ C Confirm file names.
      &      zname(IC)(1:lnzname(IC)),'.cnc'
         endif
         SFIL = L3DCNC(IC)
-        H(1)='The 3D control volumes connections file defines...'
-        H(2)='<< more text to be added here >>'
         CALL EASKS(SFIL,' 3D control volumes connections file',
-     &    ' ',72,DSFIL,'control volumes connections file',IER,3)
+     &    ' ',72,DSFIL,'control volumes connections file',
+     &    IER,nbhelp)
         if(SFIL(1:2).ne.'  ') L3DCNC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -3308,10 +3062,8 @@ C Confirm file names.
      &      zname(IC)(1:lnzname(IC)),'.ndc'
         endif
         SFIL = L3DNDC(IC)
-        H(1)='The 3D nodes coordinates file defines...'
-        H(2)='<< more text to be added here >>'
         CALL EASKS(SFIL,' 3D nodes coordinates file',
-     &    ' ',72,DSFIL,'3D nodes coordinates file',IER,3)
+     &    ' ',72,DSFIL,'3D nodes coordinates file',IER,nbhelp)
         if(SFIL(1:2).ne.'  ') L3DNDC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -3321,10 +3073,8 @@ C Confirm file names.
      &      zname(IC)(1:lnzname(IC)),'.3dt'
         endif
         SFIL = L3DTAQ(IC)
-        H(1)='The 3D nodes temperatures file defines...'
-        H(2)='<< more text to be added here >>'
         CALL EASKS(SFIL,' 3D nodes temperatures file',
-     &    ' ',72,DSFIL,'3D nodes temperatures file',IER,3)
+     &    ' ',72,DSFIL,'3D nodes temperatures file',IER,nbhelp)
         if(SFIL(1:2).ne.'  ') L3DTAQ(IC)=SFIL
         ZONE3D(IC)=.true.
         call usrmsg('Including addaptive gridding...',' ','-')
@@ -3332,9 +3082,8 @@ C Confirm file names.
         call usrmsg('Including addaptive gridding...done.',' ','-')
 
   257   dok=.false.
-        h(1)='To proceed with adaptive gridding you first have to...'
-        h(2)='<< instructions to be added >> '
-        CALL ASKOK(' ',' Proceed with adaptive gridding?',OK,dok,2)
+        CALL ASKOK(' ',' Proceed with adaptive gridding?',
+     &    OK,dok,nbhelp)
         IF(OK)then
           doit=' '
           CALL TCHILD(ICPMOD)
@@ -3402,7 +3151,6 @@ C espriou.h for parameter MFFOLD
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       common/cctlnm/ctldoc,lctlf
@@ -3433,7 +3181,7 @@ C Defaults.
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
+      character MODE*4,LCFGF*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
@@ -3449,6 +3197,13 @@ C Passed parameters for pregist.
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='NEWPRB'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3468,27 +3223,13 @@ C Also scan utility files if they exist.
       IAPROB=IPRODB
   289 if(confirm)then 
         IER=0
-        H(1)='The system configuration file holds the definition'
-        H(2)='of the building/plant to be simulated, including'
-        H(3)='references to the various files comprising a model.'
-        H(4)='If the name given matches an existing file then that'
-        H(5)='model is loaded by the Project Manager and becomes'
-        H(6)='available for browsing and editing (if you are the'
-        H(7)='owner. If the file does not exist then a new one is'
-        H(8)='created and loaded with a set ofdefaults that can'
-        H(9)='subsequently be modified. The default model is'
-        H(10)=' '
-        write(H(11),'(1x,60a)') DFCFG(1:60)
-        H(12)=' '
-        H(13)='Note that before this model can be edited, it must'
-        H(14)='be copied to your user area to give you write'
-        H(15)='permission. Other example models are available'
-        H(16)='via the `exemplars` option.'
+        helptopic='new_model_cfg_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         LTMP=' '    ! reset return string
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
-     &    DFCFG,LTMP,'config file name',IER,16)
+     &    DFCFG,LTMP,'config file name',IER,nbhelp)
 
 C Cancel request, return and ensure that the calling
 C routine deals with the -3 ier passed back.
@@ -3703,9 +3444,6 @@ C Re-establish action and file separator prior to call to getfilelist.
 
 C Try to use information gathered from file scan.
           if(nlistf.gt.0)then
-            h(1)='The following files match the search criteria.'
-            h(2)='Select one to use or, if none selected, it will'
-            h(3)='revert to prior value. '
             ix=1
             do 76 ij=1,nlistf
               listfc70(ij)=' '
@@ -3715,7 +3453,7 @@ C Try to use information gathered from file scan.
   76        continue
             if(maxw.gt.70) maxw=70  ! ensure list fits
             CALL EPICKS(IX,ivlist,outs,' ',
-     &        maxw,nlistf,listfc70,'Available files',IER,3)
+     &        maxw,nlistf,listfc70,'Available files',IER,nbhelp)
             if(ix.eq.1)then
               write(t144,'(3a)',IOSTAT=ios,ERR=17)
      &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
@@ -3906,15 +3644,11 @@ C copy # of plant component nodes from bps to prj commons
         call CopyPltNodeCounts()
         IF(IER.NE.0)THEN
           dok=.true.
-          h(1)='There was an unspecified problem, review any warnings'
-          h(2)='to see if the problem is one you can fix. Also check'
-          h(3)='that the file was of the correct type.'
-          h(4)=' '
-          h(5)='If you say `no` then it may be possible to work with'
-          h(6)='the model, but it may be incomplete or inconsistent'
-          h(7)='and should be treated as at risk.'
+          helptopic='unspecified_prob_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('While reading the model configuration file',
-     &               'a problem was detected! Try again?',OK,dok,7)
+     &               'a problem was detected! Try again?',
+     &               OK,dok,nbhelp)
           if(OK)then
             confirm=.true.
             goto 289
@@ -3977,16 +3711,10 @@ C Scan control file (silently) if one exists.
           CALL EZCTLR(ICTLF,0,IUOUT,IER)
           if(IER.NE.0)then
             dok=.true.
-            h(1)='There was a problem while scanning the control'
-            h(2)='file. Review any messages to see if you can correct'
-            h(3)='the problem. Also check to see that the file is'
-            h(4)='of the correct type. '
-            h(5)=' '
-            h(6)='If you say `no`, the model description may be'
-            h(7)='incomplete so be careful. Consider dereferencing'
-            h(8)='the control file and recreating it from scratch.'
+            helptopic='control_problem_found'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('While reading the control file a',
-     &        'problem was detected! Try again?',OK,dok,8)
+     &        'problem was detected! Try again?',OK,dok,nbhelp)
             if(OK)then
               confirm=.true.
               goto 289
@@ -4004,10 +3732,10 @@ C Set flag so that bounds are checked.
    77   CONTINUE
         IF(IER.NE.0)THEN
           dok=.true.
-          h(1)='There is an unspecified error with this model. Please'
-          h(2)='review earlier error messages.'
+          helptopic='unspecified_prob_found'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK('There was an error reported as the',
-     &      'model was read! Try again?',OK,dok,2)
+     &      'model was read! Try again?',OK,dok,nbhelp)
           if(OK)then
             confirm=.true.
             goto 289
@@ -4026,7 +3754,7 @@ C Scan the model topology and report on any problems encountered.
      &         ' ','W')
           else
             call usrmsg(
-     &      'Model opology (surface connections) is inconsistent.',
+     &      'Model topology (surface connections) is inconsistent.',
      &      'Clear current topology and use topology tool to resolve.',
      &      'W')
           endif
@@ -4036,18 +3764,12 @@ C Scan the model topology and report on any problems encountered.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSE
-        h(1)='If the name supplied is not found you can: '
-        h(2)='  a) edit the name,'
-        h(3)='  b) create a new configuration file using that name,'
-        h(4)='  c) delay the decision by selecting `cancel`.'
-        h(5)=' '
-        h(6)='If you are running the GTK version of Project Manager,'
-        h(7)='and the name of the model appears correct (including'
-        h(8)='the correct directory path), then select the respecify'
-        h(9)='option and use the file browser to locate the model.'
+        helptopic='cfg_not_found'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         WRITE(OUTSTR,'(A,2X,A)')' Could not find',LCFGF
         CALL EASKABC(OUTSTR,' Options: (see help)',
-     &    'respecify','new configuration file','cancel',IW,9)
+     &    'respecify','new configuration file','cancel',
+     &    IW,nbhelp)
         if(IW.eq.1)then
           confirm=.true.
           goto 289
@@ -4150,14 +3872,13 @@ C << it would be clearer if all model I/O happened there >>
 
 C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
-      common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
       character dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
-      character doit*124,tmode*8,H*72,act*1
+      character doit*124,tmode*8,act*1
       character fs*1
       character longtfile*124
       character brw*8   ! to signal model is being browsed
@@ -4167,6 +3888,13 @@ C      common/OUTIN/IUOUT,IUIN
       integer*8 ICPMOD     ! passed from tchild
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='visualz'  ! set for subroutine
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -4175,17 +3903,16 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
+      helptopic='visualization_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(act.eq.'V')then
 
 C Construct a 'VIEWER' format file.  First get file name.
         dvfil='std.vew'
         write(LFIL,'(a,a4)')LCFGF(1:lnblnk(LCFGF)),'.vew'
         doit = ' '
-        H(1)='The hidden line perspective program requires an input'
-        H(2)='file, which may be automatically created from the'
-        H(3)='current model.'
         CALL EASKS(LFIL,' ','File name for image data?',
-     &             72,dvfil,'perspective input file',IER,3)
+     &    72,dvfil,'perspective input file',IER,nbhelp)
         call addpath(LCFGF,longtfile,concat)
         write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
@@ -4194,10 +3921,7 @@ C Construct a 'VIEWER' format file.  First get file name.
         call runit(doit,'-')
 
         dok=.true.
-        h(1)='If the export of vector information was accomplished'
-        h(2)='without error you should be able to start up the module'
-        h(3)='that displays hidden line views.'
-        CALL ASKOK(' ',' Display hidden line views?',OK,dok,3)
+        CALL ASKOK(' ',' Display hidden line views?',OK,dok,nbhelp)
         IF(OK)then
 
 C Get logical name of child process terminal type and create a
@@ -4240,13 +3964,6 @@ C files is ./ then update this to ../rad and create a folder.
             write(lradcf,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
           else
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
-              H(1)='Creating a folder for Radiance model: `../rad`.'
-              H(2)='The current model includes a Radiance model in the'
-              H(3)='`cfg` folder. If you want to use this old model,'
-              H(4)='you should move the files to `../rad` and update'
-              H(5)='the `scenes` and `rif` files. The current scenes'
-              H(6)='file is:'
-              write(H(7),'(a)') lradcf(1:lnblnk(lradcf))
               CALL PHELPD('visu-rad-warning',7,'-',0,0,IER)
             endif
           endif
@@ -4257,13 +3974,10 @@ C files is ./ then update this to ../rad and create a folder.
             call usrmsg('Creating folder for radiance model:',doit,'P')
             call runit(doit,'-')
           endif
- 319      H(1)='A Radiance scene file specifies the composition of the'
-          H(2)='model for Radiance as well as the purpose of various'
-          H(3)='scenes (general viewing, daylight appraisal etc.).'
-          ltmp=lradcf
+ 319      ltmp=lradcf
           dradcf='scene.rcf'
           CALL EASKS(ltmp,' Radiance scene file for this model?',
-     &     '  ',72,dradcf,'Radiance scene file name',IER,3)
+     &     '  ',72,dradcf,'Radiance scene file name',IER,nbhelp)
           if(ltmp.eq.' ')goto 319 
 
 C rcf name OK, therefore save cfg file and start e2r.
@@ -4291,9 +4005,9 @@ C an offset from prj start position.
         endif
         call usrmsg('starting Radiance desktop via',doit,'-')
         call runit(doit,tmode)
-        H(1)=' CLICK here when you have finished with the'
-        H(2)=' colour rendering module.'
-        CALL PHELPD('e2r finished menu',2,'-',0,0,IER)
+        helptopic='click_when_done'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('e2r finished menu',nbhelp,'-',0,0,IER)
 
 C Check if radiance scene file exists. If not or zero length or not correct 
 C file type then dereference it from the cfg file. The alternative location
@@ -4365,7 +4079,6 @@ C      of obstruction data.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
@@ -4376,13 +4089,22 @@ C      of obstruction data.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
-      character ZN*12,h*72
+      character ZN*12
       character outs*124
       logical DOK,OK
       integer iuf   ! file type 
       integer iicomp  ! index of current zone
       integer itrc,ij,i,iz  ! types for local variables
       integer ibe   ! loop for faces of obstruction
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='globaltransform'  ! set for subroutine
+      helptopic='global_transform_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
        
       IUF=IFIL+2
       DO 83 IZ=1,izlistnb
@@ -4431,9 +4153,8 @@ C Transform any MRT sensors associated with this zone.
               else
                 write(outs,'(2a)') zn(1:lnblnk(zn)),' as well?'
                 dok=.true.
-                h(1)='You have rotated the zone and probably also'
-                h(2)='want to rotate the sensors to match.'
-                call askok('Transform MRT sensors of',outs,OK,dok,2)
+                call askok('Transform MRT sensors of',outs,
+     &            OK,dok,nbhelp)
               endif
               if (OK) then
                 do 73 ij=1,NCUB
@@ -4457,9 +4178,7 @@ C transform origin.
               write(outs,'(4a)') 'Transforms obstructions of ',
      &          zn(1:lnblnk(zn)),' in ',
      &          ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
-              h(1)='You rotated the zone(s) and so will probably'
-              h(2)='also want to rotate associated obstructions.'
-              call askok(outs,' ?',OK,dok,2)
+              call askok(outs,' ?',OK,dok,nbhelp)
             endif
             if(OK)then
               CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
@@ -4486,9 +4205,7 @@ C apply the transform and write the file back out.
                 dok=.true.
                 write(outs,'(2a)') 'Transforms obstructions of ',
      &            zn(1:lnblnk(zn))
-                h(1)='You rotated the zone(s) and so will probably'
-                h(2)='also want to rotate associated obstructions.'
-                call askok(outs,' ?',OK,dok,2)
+                call askok(outs,' ?',OK,dok,nbhelp)
               endif
               if(OK)then
                 do 64 ij=1,nbobs(iicomp)
@@ -4551,7 +4268,6 @@ C user can un-do this action.
       common/FILEP/IFIL
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
@@ -4562,13 +4278,23 @@ C user can un-do this action.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
-      character ZN*12,h*72
+      character ZN*12
       character outs*124
       logical DOK,OK
       integer itrc,iuf,iicomp,ij,iz
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
        
+      helpinsub='globalrotate'  ! set for subroutine
+      helptopic='global_rotate_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       IUF=IFIL+2
       DO 84 IZ=1,izlistnb
         IF(izlist(IZ).GT.0)THEN
@@ -4616,11 +4342,8 @@ C Rotate any MRT sensors associated with this zone.
                 ok= .true.
               else
                 dok=.true.
-                h(1)='You already rotated the zone, you will most'
-                h(2)='likely want to rotate MRT sensors for the '
-                h(3)='zone as well. '
                 write(outs,'(a,a)') zn(1:lnblnk(zn)), ' ?'
-                call askok('Rotate MRT sensors of',outs,OK,DOK,3)
+                call askok('Rotate MRT sensors of',outs,OK,DOK,nbhelp)
               endif
               if (OK) then
                 PI = 4.0 * ATAN(1.0)
@@ -4648,13 +4371,10 @@ C Rotate any obstructions associated with this zone.
               ok= .true.
             else
               dok=.true.
-              h(1)='You rotated the zone and so will probably'
-              h(2)='want to rotate the solar obstructions which'
-              h(3)='are associated with it as well. '
               write(outs,'(4a)') 'Rotate obstructions of ',
      &          zn(1:lnblnk(zn)),' in ',
      &          ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
-              call askok(outs,' ?',OK,dok,3)
+              call askok(outs,' ?',OK,dok,nbhelp)
             endif
             if(OK)then
               CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
@@ -4696,12 +4416,9 @@ C apply the transform and write the file back out.
                 dok=.true.
                 write(outs,'(2a)') 'Transforms obstructions of ',
      &          zn(1:lnblnk(zn))
-                h(1)='You rotated the zone and so will probably'
-                h(2)='want to rotate the solar obstructions which'
-                h(3)='are associated with it as well. '
                 write(outs,'(2a)') 'Rotate obstructions of ',
      &            zn(1:lnblnk(zn))
-                call askok(outs,' ?',OK,dok,3)
+                call askok(outs,' ?',OK,dok,nbhelp)
               endif
               if(OK)then
                 PI = 4.0 * ATAN(1.0)

@@ -512,10 +512,10 @@ C        MNGET=1
       elseif (MENUTYPE.eq.4) then
 
 C Assume we are starting with feedback to text area of interface.
+C Set initial width to 22 columns. If writing to file MNGET is
+C reset later in the code to 42 columns.
         MTITLE='Performance metrics'
         MNGET=22  ! number of columns 11 char wide for 248 char buffer
-C        MNGET=36  ! number of columns 11 char wide for 400 char buffer
-C        MNGET=13
       elseif (MENUTYPE.eq.5) then
         MTITLE='Summary statistics'
         MNGET=1
@@ -657,8 +657,9 @@ C Setup menu items.
       if(ixopen.eq.1)then
         ITEM(23)='> Display to >> file '
         if (MENUTYPE.eq.4) then
-          MNGET=36  ! number of columns 11 char wide for 400 char buffer
-          call usrmsg('Resetting max columns to 36',' ','-')
+          MNGET=42  ! number of columns 11 char wide for 800 char buffer
+                    ! is ~70 but must also acommodate heading text
+          call usrmsg('Resetting max columns to 42',' ','-')
         endif
       elseif(ixopen.eq.0)then
         ITEM(23)='> Display to >> screen'
