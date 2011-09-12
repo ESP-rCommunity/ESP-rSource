@@ -1,6 +1,6 @@
 *CLIMATE
-# ascii climate file from deu_berlin_iwec binary db,
-# defined in: deu_berlin_iwec.a
+# ascii climate file from DEU_Berlin binary db,
+# defined in: DEU_Berlin.a
 # col 1: Diffuse solar on the horizontal (W/m**2)
 # col 2: External dry bulb temperature   (Tenths DEG.C)
 # col 3: Direct normal solar intensity   (W/m**2)
@@ -8,7 +8,7 @@
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
 Berlin Germany IWEC 103840      # site name
- 2001,52.47,-1.60,0   # year latitude long diff rad flag
+ 2001,52.47,-1.60,0   # year, latitude, long diff, direct normal rad flag
  1,365    # period (julian days)
 * day  1 month  1
  0,66,0,98,250,80

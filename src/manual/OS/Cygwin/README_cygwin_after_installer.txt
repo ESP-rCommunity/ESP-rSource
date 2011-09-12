@@ -7,7 +7,7 @@ Method one - In the Cygwin command window (note alternative ./link_to commands):
   cd
   mkdir bin
   cp /usr/esru/bash_profile .bash_profile
-  cp /usr/esru/link_to bin
+  cp /usr/esru/bin/link_to bin
   HOME=/home/your_user_name
   export HOME
   cd bin
@@ -15,6 +15,9 @@ Method one - In the Cygwin command window (note alternative ./link_to commands):
 
 or
   ./link_to /usr/esru/esp-r/bin_GTK
+
+If the link_to script fails to run it may be because it uses the csh command
+interpretor. There is an alternative link_to_bash in /usr/esru/bin.
 
 NOTE the DOT added to the bash_profile in the above command set. Next logout of cygwin and then log back in and issue the following command
 
@@ -55,7 +58,6 @@ Once you have updated either the .cshrc file or the .profile file then you will 
 If there is an answer then the environment is ok.
 
 IF YOU NEED TO EDIT a text file in cygwin you have the option of using an editor within the Cygwin environment or you can use something like NotePad++ in Windows. DO NOT USE WORD to edit a text file in Cygwin.
-
 
 Dependencies:
 

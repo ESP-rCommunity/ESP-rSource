@@ -5948,7 +5948,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
        CALL EASKS(T72,
 *subroutine EDWALL
 *item EDWALL edit_wall_details
-'A construction is composed of between one and eight layers'
+'A construction is composed of between one and ten layers'
 '(three of which may be air gaps). Each layer has a thickness'
 'and is composed of one material. The thermophysical properties'
 'of each layer are based on data in the current materials database.'
@@ -5965,8 +5965,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Note: layer 1 is considered the [outside].'
 '  '
 'When editing you are given the option to select a material from'
-'the materials database. If you want to keep the existing'
-'material just say no to browsing the materials database.'
+'the materials database. To keep the existing material say no to'
+'browsing the materials database.'
 'There is a special case for an air gap - historically the'
 'material zero indicated air. Currently there is a category'
 'named GAPS in the materials database and the first entry'
@@ -5974,25 +5974,22 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'for other gasses you should edit the air gap resistance). In'
 'the future the other entries in the GAPS category can be used.'
 '  '
-'A set of default assumptions on the R value of an air gap'
-'will be requested so the the construction can be used in'
-'different orientations (horizontal, vertical sloped).'
+'A set of default assumptions on the R value of an air gap will be'
+'requested so the the construction can be used in different'
+'orientations (horizontal, vertical sloped).'
 '  '
 'The thickness of the layer is nominally between 1mm and 300mm.'
 'It is stored in the file as m. You can also alter the name'
 'of the construction (try for clarity an uniqueness).'
 '  '
-'If you alter a construction you will be asked (later)'
-'if you want to update the zone construction files.'
+'If you alter a construction you will be asked (later) if you want'
+'to update the zone construction files.'
 '  '
-'The terms SYMMETRIC and NONSYMMETRIC have the following'
-'meaning: SYMMETRIC constructions can be referenced from'
-'either zone associated with a partition; a NONSYMMETRIC'
-'construction must have an [inverted] version in the'
-'database in the case of surfaces which are partitions.'
-'  '
-'If the current construction is linked to a reversed version'
-'of itself. Allow the software to keep these in sync!'
+'The terms SYMMETRIC and NONSYMMETRIC have the following meaning:'
+'SYMMETRIC constructions can be referenced from either zone'
+'associated with a partition; a NONSYMMETRIC construction should'
+'have an [inverted] version in the database. If a construction is'
+'linked to a reversed version the software to keep these in sync!'
 '  '
 'In ESP-r air gaps in constructions are represented as a fixed'
 'resistance to heat flow (depending on the orientation of the'
@@ -6000,9 +5997,11 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'account for the resistance across the cavity (including the'
 'impact of low emissivity at the adjacent solid layers).'
 ' '
-'Air gaps are assumed not to have air movement. If the cavity'
-'is ventilated you might have to represent it as a thermal'
-'zone and include it in an air flow network.'
+'Air gaps are assumed not to have air movement. If the cavity is'
+'ventilated make it a zone and include it in an air flow network.'
+'  '
+'There is an option to try different layer thicknesses or air gap'
+'resistances in order to reach a desired U value.'
 *enditem
        CALL ASKOK(outs,'Update the linked construction as well?',
        CALL PHELPD('construction editing',36,'-',0,0,IER)
@@ -10212,7 +10211,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL EASKS(TTAIDE,' ',' Item description ',
 *subroutine STRTIM
 *subroutine EDIMPT
-*item EDIMPT temporal_import_parameters
+*item EDIMPT temporal_import_param
 'This display allows the user to specify parameters which controls'
 'the importation of data into this temporal file.'
 ' '
@@ -10271,7 +10270,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         CALL PHELPD('timestep import warning',8,'-',0,0,IER)
         CALL EASKI(IV,' ','Associated column in import file:',
 *subroutine EDSTATICIMPT
-*item EDSTATICIMPT temporal_import_parameters
+*item EDSTATICIMPT temporal_import_param
 'This display allows the user to specify parameters which control'
 'the importation of data into this temporal file.  '
 '  '

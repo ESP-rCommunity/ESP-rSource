@@ -1,6 +1,6 @@
 
         Steps to create or use the ESP-r self extractor on Cygwin
-                            April 2011
+                            July 2011
 
 There are three patterns used to create an installer for ESP-r for use
 on Cygwin emulators within Windows computers.  One is via a single-file 
@@ -10,7 +10,8 @@ INNOSetup environment which runs as a native Windows installer (similar
 to that used for the Native Windows version of ESP-r) and lastly via
 compressed archive files.
   
-These will be covered in this document.
+These will be covered in this document.  We suggest you read the
+full instructions prior to attempting any of the suggested tasks.
 
 If you just want to use the self-extractors or compressed archive file
 please skip down to the relevant section.
@@ -56,6 +57,22 @@ to it.  If it does not exist issue the command
 
   mkdir /usr/esru
 
+If you want to enable both the X11 and GTK versions of ESP-r
+on a machine then you should also create folders /usr/esru/esp-r/binX11
+and /usr/esru/esp-r/binGTK.  After compiling the X11 version copy
+the executable files from /usr/esru/esp-r/bin to /usr/esru/esp-r/binX11
+and after compiling the GTK version copy the executable files from
+/usr/esru/esp-r/bin to /usr/esru/esp-r/binGTK. Look for the link_to
+and link_to_bash scripts. These should be placed in a bin folder
+in your home folder (create this folder if it does not already exist).
+After both versions of ESP-r have been compiled you can run the
+link_to script with the full path to the version of the executables
+that you want to use.
+
+The instructions below for creating the tar files to place in
+precompiled_for_cygwin would need to be adapted if both binX11
+and binGTK have been populated.
+
 After you have built the ESP-r distribution in /usr/esru, there may be 
 hidden folders related to the version control system called
 subversion which is used by the ESP-r development community. There
@@ -73,9 +90,9 @@ Then create a tar file of the esp-r folders (the example below
 includes a version in the name of the tar file which you may
 wish to change to reflect the current version number).
 
-  tar cf esp-r_X11_11.10_cygwin.tar esp-r
-  gzip -9 esp-r_X11_11.10_cygwin.tar
-  mv esp-r_X11_11.10_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_X11_11.11_cygwin.tar esp-r
+  gzip -9 esp-r_X11_11.11_cygwin.tar
+  mv esp-r_X11_11.11_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
@@ -95,9 +112,9 @@ Again remove the subversion files from the /usr/esru folders.
 Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_cygwin folder (as above). 
 
-  tar cf esp-r_GTK_11.10_cygwin.tar esp-r
-  gzip -9 esp-r_GTK_11.10_cygwin.tar
-  mv esp-r_GTK_11.10_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_GTK_11.11_cygwin.tar esp-r
+  gzip -9 esp-r_GTK_11.11_cygwin.tar
+  mv esp-r_GTK_11.11_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 Remember to remove any older *.tar.gz files from the precompiled_for_cygwin
 folder so that are not included in the installer run file.
@@ -120,7 +137,7 @@ files are helper applications that setup is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.10_cygwin_precomp.run "ESP-r V11.10 distribution" ./setup
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.11_cygwin_precomp.run "ESP-r V11.11 distribution" ./setup
 
 The tokens in the above command are as follows:
 
@@ -161,11 +178,12 @@ The Native windows installer is based on Inno Setup and uses an *.iss
 file (found in the src/manual/OS/Cygwin folder). The compile process
 for ESP-r is essentially the same as above except that:
 
-a) the folder structure of the ESP-r distribution includes a bin_X11
-   and bin_GTK folder
+a) the folder structure of the ESP-r distribution includes a binX11
+   and binGTK folder
 
 b) after compiling the X11 version of ESP-r the executables in the bin
-folder are copied to bin_X11
+folder are copied to binX11. After compiling the GTK version of ESP-r
+the executables in the bin folder are copied to binGTK
 
 Folder struction for Inno Setup. Following the pattern of the Native 
 Windows installer you should create a folder structure:
@@ -191,25 +209,25 @@ Building a compressed archive
 
 This is similar to creating the run file. The X11 version of ESP-r
 is compiled into /usr/esru (as normal). Next create a folder for
-the X11 executables and copy them into bin_X11:
+the X11 executables and copy them into binX11:
  cd /usr/esru/esp-r
- mkdir bin_X11
+ mkdir binX11
  cd bin
- cp * ../bin_X11
+ cp * ../binX11
 
 Clean up the source and compile the GTK version as normal. Then
 create a folder for the GTK executables
   cd /usr/esru/esp-r
-  mkdir bin_GTK
+  mkdir binGTK
   cd bin
-  cp * ../bin_GTK
+  cp * ../binGTK
 
 Next create a tar file to hold it all plus some very useful files
 like the link_to script, the GPL.txt and the README files.
 
   cd /usr/esru
-  tar cf esp-r_X11_GTK_11.10_cygwin.tar esp-r link_to bash_profile *.txt
-  gzip -9 esp-r_X11_GTK_11.10_cygwin.tar
+  tar cf esp-r_X11_GTK_11.11_cygwin.tar esp-r link_to bash_profile *.txt
+  gzip -9 esp-r_X11_GTK_11.11_cygwin.tar
 
 
 
@@ -227,13 +245,13 @@ Typically the `run` file you downloaded should be placed in /tmp within
 the cygwin environment and run from that folder via a command (adapt to reflect the 
 actual name of the `run` file).  For example:
 
-  ./esp-r_v11.10_cygwin_precomp.run
+  ./esp-r_v11.11_cygwin_precomp.run
 
 If nothing happens it may be that the download process has removed the
 execute permissions from the run file.  You can re-enable these via
 the command:
 
-  chmod a+x ./esp-r_v11.10_cygwin_precomp.run
+  chmod a+x ./esp-r_v11.11_cygwin_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
@@ -284,10 +302,10 @@ Method one - In the Cygwin command window (note alternative ./link_to commands):
   HOME=/home/your_user_name
   export HOME
   cd bin
-  ./link_to /usr/esru/esp-r/bin_X11
+  ./link_to /usr/esru/esp-r/binX11
 
 or
-  ./link_to /usr/esru/esp-r/bin_GTK
+  ./link_to /usr/esru/esp-r/binGTK
 
 NOTE the DOT added to the bash_profile in the above command set. Next 
 logout of cygwin and then log back in and issue the following command
@@ -313,16 +331,16 @@ Some users of ESP-r prefer to use the "C" shell. The entry in the .cshrc
 file in your home folder might look something like:
 
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/bin_X11 )
+    /usr/esru/esp-r/binX11 )
 
 or
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/bin_GTK )
+    /usr/esru/esp-r/binGTK )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
 
-export PATH=/usr/local/bin:/usr/esru/esp-r/bin_X11:/home/fred/bin:$PATH
+export PATH=/usr/local/bin:/usr/esru/esp-r/binX11:/home/fred/bin:$PATH
 
 Once you have updated either the .cshrc file or the .profile file then 
 you will need to log out and then back in again.  To see if the environment 
@@ -428,6 +446,6 @@ then we need to alter this via the following commands:
 
 You will need to set an environment variable PATH as explained above.
 But the pre-compiled archive files will have the ESP-r executables in
-a bin folder rather than bin_X11 and bin_GTK.
+a bin folder rather than binX11 and binGTK.
 
 Once ESP-r is working you can remove the_file_name.tar

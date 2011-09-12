@@ -1978,15 +1978,19 @@ C Material properties.
       logical closemat1,closemat2
 
 C Note: size of MLED supports a dozen layers in a construction.
-      DIMENSION MLED(26),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION MLED(27),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
       character PNAM*72
-      character ZN*12,SN*12
+      character ZN*12,SN*12,t32*32
       integer NLED,ILED  ! max items and current menu item
+      integer icontinue  ! to control while loop
+      real startm, finishm, currentm
+      real currentu, deltau, curdeltau ! values for adjust
+      real valx, valy, valz  ! for reading range and desired U value
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2153,14 +2157,15 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       UVALUEU=1.0/RTU
       RTD=RT+0.04+0.17
       UVALUED=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVALUEI=1.0/RTI
       write(MLED(M),'(A,3F6.3)') ' ISO 6946 U h/u/d',
      &    UVALUEH,UVALUEU,UVALUED
+      currentu=UVALUEH  ! remember the initial U value
       M=M+1
       MLED(M)='  ____________________________   '
       M=M+1
       MLED(M)='! add or delete a layer          '
+      M=M+1
+      MLED(M)='* adjust layer to reach U-value  '
       M=M+1
       MLED(M)='? help                           '
       M=M+1
@@ -2169,7 +2174,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       ILED=-4
 
 C Also compose a list of layers for additions/deletions.
-      MMLAY(1)=' Layer|Prim|Thick| Description   '
+      MMLAY(1)=' Layer|Matl|Thick| Description   '
       MMLAY(2)='      |db  |(mm) | of material   '
       DO 11, IL=1,LAYERS(IFOC)
         WRITE(MMLAY(IL+2),299)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
@@ -2292,6 +2297,271 @@ C List the help.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('construction editing',nbhelp,'-',0,0,IER)
       ELSEIF(ILED.EQ.NLED-2)THEN
+
+C Adjust layer.
+        CALL EASKABCD('Adjust options: ',' ','Alter (solid) thickness',
+     &    'Alter air gap R','Find alt material','Continue',IW,nbhelp)
+        IF(IW.EQ.1.or.IW.eq.2)THEN
+
+C Report the current U value.
+          write(outs,'(A,3F6.3)') ' ISO 6946 U h/u/d',
+     &      UVALUEH,UVALUEU,UVALUED
+          call edisp(iuout,outs)
+
+C Ask for which layer to adjust, make sure it is not a gap.
+          call edisp(iuout,' Select layer to adjust.')
+          IX=1
+          CALL EPMENSV
+          CALL EPICKS(IX,imlay,' ',' Layer to adjust: ',
+     &      38,LAYERS(IFOC)+2,MMLAY,'Layer to adjust',IER,nbhelp)
+          CALL EPMENRC
+        ENDIF
+        IF(IW.EQ.1)THEN
+          if(IX.eq.1.and.imlay(1).gt.2)then
+            IWHICH=imlay(1)-2
+            write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
+     &        '... which is currently ',DTHK(IFOC,IWHICH)*1000.0,
+     &        ' thick.'
+            call edisp(iuout,outs)
+            t32='   1  250   0.1  '
+            CALL EASKS(t32,
+     &        'Thickness (minimum & maximum mm) & desired U value',
+     &        ' ',32,' ','thickness and U',IER,nbhelp)
+            K=0
+            CALL EGETWR(t32,K,VALX,0.1,250.,'W','minimum mm',IER)
+            CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum mm',IER)
+            CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
+
+C Start at the VALX thickness and increment 1mm each time until
+C close to VALZ.
+            deltau=abs(currentu-valz)  ! remember difference
+            write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
+            call edisp(iuout,outs)
+            icontinue=1
+            startm=VALX/1000.0
+            currentm=startm
+            finishm=VALY/1000.0
+            do while (icontinue.ne.0)
+              currentm=currentm+0.001  ! 1mm increment
+              if(currentm.gt.finishm)then
+                icontinue=0  ! signal no to loop again
+              endif
+              RT=0.
+              DO 123, IL=1,LAYERS(IFOC)
+                matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+                if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reset dbcon.
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                  endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+                  if(matarrayindex.eq.0)then
+                    continue
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                    if(closemat2)then
+                      DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                      RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                    endif
+                  endif
+                else
+                  continue
+                endif
+
+C Calculate standard U value.
+                IF(IPR(IFOC,IL).EQ.0)THEN
+                  RT=RT+DRAIR(IFOC,IL,1)
+                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+                  continue  ! use RT calc above
+                ELSE
+
+C If this is the layer we are adjusting then substitute the current
+C layer thickness into the equation.
+                  if(IL.eq.IWHICH)then
+                    RT=RT+currentm/DBCON
+                  else
+                    RT=RT+DTHK(IFOC,IL)/DBCON
+                  endif
+                ENDIF
+  123         CONTINUE
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+              RTH=RT+0.04+0.13
+              UVALUEH=1.0/RTH
+              RTU=RT+0.04+0.10
+              UVALUEU=1.0/RTU
+              RTD=RT+0.04+0.17
+              UVALUED=1.0/RTD
+              curdeltau=abs(UVALUEH-valz)  ! remember new difference
+
+C Is UVALUEH closer to what we want. If it is not then stop looking.
+C Report as we get close to desired U value.
+              if(curdeltau.lt.deltau)then
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                write(outs,'(f6.3,a,f6.3,a,f6.1)') UVALUEH,
+     &            ' is getting closer to desired U',valz,
+     &            ' with a layer thickness of ',currentm*1000.0
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                deltau=curdeltau  ! update deltau
+                if(currentm.gt.finishm)then
+                  icontinue=0   ! exceeded the maximum thickness
+                  write(outs,'(2a,f6.3,a,f6.1)') PNAM(IWHICH)(1:18),
+     &              ' range limit reached at U',UVALUEH,
+     &              ' and thickness ',currentm*1000.0
+                  call edisp(iuout,outs)
+                endif
+              else
+
+C No longer getting closer so step back one and report.
+                icontinue=0
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                call edisp(iuout,outs)
+                currentm=currentm-0.001
+                write(outs,'(2a,f6.3,a,f6.1)') PNAM(IWHICH)(1:18),
+     &            ' is close to desired U',valz,
+     &            ' with a thickness of ',currentm*1000.0
+                call edisp(iuout,outs)
+              endif
+            end do
+          endif
+        ELSEIF(IW.EQ.2)THEN
+          if(IX.eq.1.and.imlay(1).gt.2)then
+            IWHICH=imlay(1)-2
+            write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
+     &        '... which has current ',DRAIR(IFOC,IWHICH,1),
+     &        ' air gap resistance.'
+            call edisp(iuout,outs)
+            t32='   0.17  0.60   1.4  '
+            CALL EASKS(t32,
+     &        'Air gap resistance (min & max) & desired U value',
+     &        ' ',32,' ','resistance and U',IER,nbhelp)
+            K=0
+            CALL EGETWR(t32,K,VALX,0.1,250.,'W','minimum r',IER)
+            CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum r',IER)
+            CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
+
+C Start at the VALX thickness and increment 1mm each time until
+C close to VALZ.
+            deltau=abs(currentu-valz)  ! remember difference
+            write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
+            call edisp(iuout,outs)
+            icontinue=1
+            startm=VALX
+            currentm=startm
+            finishm=VALY
+            do while (icontinue.ne.0)
+              currentm=currentm+0.002  ! resistance increment
+              if(currentm.gt.finishm)then
+                icontinue=0  ! signal no to loop again
+              endif
+              RT=0.
+              DO 124, IL=1,LAYERS(IFOC)
+                matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+                if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reset dbcon.
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                  endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+                  if(matarrayindex.eq.0)then
+                    continue
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                    if(closemat2)then
+
+C If this is the layer we are adjusting then substitute the current
+C gap R into the equation.
+                      if(IL.eq.IWHICH)then
+                        RT=RT+currentm  ! while we are sure
+                      else
+                        DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                        RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                      endif
+                    endif
+                  endif
+                else
+                  continue
+                endif
+
+C Calculate standard U value.
+                IF(IPR(IFOC,IL).EQ.0)THEN
+                  if(IL.eq.IWHICH)then
+                    RT=RT+currentm  ! use the current R
+                  else
+                    RT=RT+DRAIR(IFOC,IL,1)
+                  endif
+                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+                  continue  ! use RT calc above
+                ELSE
+                  RT=RT+DTHK(IFOC,IL)/DBCON
+                ENDIF
+  124         CONTINUE
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+              RTH=RT+0.04+0.13
+              UVALUEH=1.0/RTH
+              RTU=RT+0.04+0.10
+              UVALUEU=1.0/RTU
+              RTD=RT+0.04+0.17
+              UVALUED=1.0/RTD
+              curdeltau=abs(UVALUEH-valz)  ! remember new difference
+
+C Is UVALUEH closer to what we want. If it is not then stop looking.
+C Report as we get close to desired U value.
+              if(curdeltau.lt.deltau)then
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                write(outs,'(f6.3,a,f6.3,a,f7.4)') UVALUEH,
+     &            ' is getting closer to desired U',valz,
+     &            ' with a gap R of ',currentm
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                deltau=curdeltau  ! update deltau
+                if(currentm.gt.finishm)then
+                  icontinue=0   ! exceeded the maximum R
+                  write(outs,'(2a,f6.3,a,f7.4)') PNAM(IWHICH)(1:18),
+     &              ' range limit reached at U',UVALUEH,
+     &              ' and gap R of ',currentm
+                  call edisp(iuout,outs)
+                endif
+              else
+
+C No longer getting closer so step back one and report.
+                icontinue=0
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                call edisp(iuout,outs)
+                currentm=currentm-0.002   ! decrement R
+                write(outs,'(2a,f6.3,a,f7.4)') PNAM(IWHICH)(1:18),
+     &            ' is close to desired U',valz,
+     &            ' with a gap R of ',currentm
+                call edisp(iuout,outs)
+              endif
+            end do
+          endif
+        ELSEIF(IW.EQ.3)THEN
+          call edisp(iuout,'this option not yet working')
+          goto 2  ! jump back to the menue.
+        ELSEIF(IW.EQ.4)THEN
+          goto 2  ! jump back to the menue.
+        ENDIF
+
+C Process the request.
+
+      ELSEIF(ILED.EQ.NLED-3)THEN
 
 C +- Layer.
         CALL EASKABCD(' Layer options: ',' ',' Delete',

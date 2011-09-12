@@ -1,6 +1,6 @@
 *CLIMATE
-# ascii climate file from boulder_colorado.iwec binary db,
-# defined in: boulder_colorado.iwec.a
+# ascii climate file from USA_CO_Boulder_TMY2 binary db,
+# defined in: USA_CO_Boulder_TMY2.a
 # col 1: Diffuse solar on the horizontal (W/m**2)
 # col 2: External dry bulb temperature   (Tenths DEG.C)
 # col 3: Direct normal solar intensity   (W/m**2)
@@ -8,7 +8,7 @@
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
 BOULDER CO USA                  # site name
- 2001,40.02,-0.25,0   # year latitude long diff rad flag
+ 1970,40.02,-0.25,0   # year, latitude, long diff, direct normal rad flag
  1,365    # period (julian days)
 * day  1 month  1
  0,-70,0,15,230,88

@@ -6144,7 +6144,9 @@ void ecirarc_(x,y,ths,thf,r,num,di)
 	3=to be added...
  passed the x,y centre and the radius, this is converted into position
  of the upper left corner of the bounding box (ul & ut) and the
- bounding box width and height is rad1 * 2.
+ bounding box width and height is rad1 * 2. Note that setting zone
+ or greyscale colours essentially has no impact because the black
+ circle fill will always be black.
 */
 void ecirc_(x,y,rad,operation)
   long int *x, *y, *rad, *operation;

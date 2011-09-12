@@ -1,6 +1,6 @@
 *CLIMATE
-# ascii climate file from deu_munich_iwec binary db,
-# defined in: deu_munich_iwec.a
+# ascii climate file from DEU_Munich binary db,
+# defined in: DEU_Munich.a
 # col 1: Diffuse solar on the horizontal (W/m**2)
 # col 2: External dry bulb temperature   (Tenths DEG.C)
 # col 3: Direct normal solar intensity   (W/m**2)
@@ -8,7 +8,7 @@
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
 MUNICH - DEU IWEC 108660        # site name
- 2001,48.13,-3.30,0   # year latitude long diff rad flag
+ 2001,48.13,-3.30,0   # year, latitude, long diff, direct normal rad flag
  1,365    # period (julian days)
 * day  1 month  1
  0,-72,0,57,80,90
