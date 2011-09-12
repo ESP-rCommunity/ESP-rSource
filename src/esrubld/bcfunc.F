@@ -1079,32 +1079,103 @@ C Temperature too high: extract fixed cooling.
       END
 
 C ******************** BCL01
-C A basic controller.
+C BCL01 is a legacy interface to BCL01_extended, which also offers 
+C a symplistic 'free-cool' algorithm. To enable legacy behavior, it 
+C invokes BCL01_extended with the free-cooling flag set to .false.
+C
       SUBROUTINE BCL01(IER)
+      implicit none 
+      
+C.....Error flag
+      integer IER
+      
+C.....Flag for invoking free-cooling capabilities 
+      logical bFreeCool
+      bFreeCool = .false. 
+      
+C.....Interface to extended BCL01       
+      call BCL01_extended(IER,bFreeCool)
+      
+      return 
+      end 
 
+
+C ******************** BCL01_extended
+C Basic controller with symplistic free-cooling capabilities.      
+C
+      SUBROUTINE BCL01_extended(IER,bFreeCool)
+      implicit none 
+      
+          
 #include "building.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 #include "control.h"
 
+      integer IER ! Error flag
+      
+      logical bFreeCool ! logical flag indicating if free-cooling 
+                        ! capabilities are to be invoked.
+
       COMMON/TC/ITC,ICNT
+      integer ITC, ICNT 
+      
+      
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      integer ITCF, ITRACE, IZNTRC, ITU ! I/O parameters for trace
+      
+      
+      
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP, IHRF   ! Present and future hour of day
+      integer IDYP, IDYF   ! present and future day of year
+      integer IDWP, IDWF   ! Present and future day of week
+      integer NSINC        ! Simulation timestep
+      integer ITS          ! ?
+      
+      
       COMMON/BTIME/BTIMEP,BTIMEF
+      real BTimeP, BTimeF    ! Building present and future time of day
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer iuout, iuin
+      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      integer iCF, iDTyp, iPer
+      real BB1, BB2, BB3 
+      integer iIComp
+      real TNP
+      real QFut, TFut
+      
+      
+      
       COMMON/PREC1/SNA(MCOM,MS)
+      real sna  ! Surface area (m2)
 
 C Common for relative humidity control (ideal) and dew point relative humidity
 C control.
       COMMON/IDRHCTL1/RHSPTU(MCOM),RHSPTL(MCOM),RHHC(MCOM),
      &RHDC(MCOM),IRHCT(MCOM)
+      
+      real RHSPTU, RHSPTL
+      real RHHC
+      real RHDC
+      integer IRHCT
+      
       COMMON/ATPRES/PATMOS
+      real PATMOS ! Ambient pressure 
+      
       COMMON/FVALG/GFA(MCOM)
+      real GFA    ! Zone humidity ratio 
+      
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      real TFA    ! Zone future temperature (oC)
+      real QFA    ! Zone furure plant injection/extraction (W)
+      
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-
+      real QHB, QCB, Qmst
+      
+      
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
 C to evaluate passive solar design performance. Also used 
@@ -1122,6 +1193,40 @@ C Heating and cooling setpoint (oC)
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,CLOSERH
 
+      
+C Local variables for control algorithm
+      real CSP ! Cooling set point (oC) 
+      real HSP ! Heating set point (oC) 
+      
+      integer iPlt ! Unknown flag
+
+      real TCont ! Control temperature (oC)
+      real TCtl, TiTm
+      
+C Plant heat transfer: 
+      real Q
+      real QCM
+      real QCN
+      real QHM
+      real QHN
+      real QMN, QMX ! min & max heat transfer (W)
+      
+      real QQ       !?
+
+C Humidity Calculations: 
+      integer iRHCTT
+      real RHC, RHI, RHT
+      
+      
+      
+C counter 
+      integer iSur, iter
+
+C External functions 
+      real PCRH2
+      real DEWPT
+
+      
 C Check to see if running in dll mode.
       call isadll(dll)
 
