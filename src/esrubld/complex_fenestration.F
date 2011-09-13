@@ -1302,6 +1302,31 @@ C If shade is retracted set solar transmittance to 1 and skip to next layer
           VisRFdd(icomp,isurf,icfctp,i)=0.0
           VisRBdd(icomp,isurf,icfctp,i)=0.0
 
+          ! also set the sky and ground diffuse properties 
+          ! if the sky/ground calc has been requested.  
+          if (i_ground_sky_diff_calc.eq.1) then 
+            SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+            SolRFskydd(icomp,isurf,icfctp,i)=0.0
+            SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+            SolRFgrddd(icomp,isurf,icfctp,i)=0.0
+
+            SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+            SolRBskydd(icomp,isurf,icfctp,i)=0.0 
+            SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+            SolRBgrddd(icomp,isurf,icfctp,i)=0.0
+
+            ! visual
+            VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+            VisRFskydd(icomp,isurf,icfctp,i)=0.0
+            VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+            VisRFgrddd(icomp,isurf,icfctp,i)=0.0
+
+            VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+            VisRBskydd(icomp,isurf,icfctp,i)=0.0
+            VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+            VisRBgrddd(icomp,isurf,icfctp,i)=0.0
+          end if 
+
         else ! continue as usual
 
 C         Set beam-beam reflectances to zero
@@ -1605,6 +1630,31 @@ C       Set gas gap properties to 0 except for bb and dd transmission, set to 1.
         VisTBdd(icomp,isurf,icfctp,i)=0.99999999
         VisRFdd(icomp,isurf,icfctp,i)=0.0
         VisRBdd(icomp,isurf,icfctp,i)=0.0
+
+        ! also set the sky and ground diffuse properties 
+        ! if the sky/ground calc has been requested.  
+        if (i_ground_sky_diff_calc.eq.1) then 
+          SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+          SolRFskydd(icomp,isurf,icfctp,i)=0.0
+          SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+          SolRFgrddd(icomp,isurf,icfctp,i)=0.0
+
+          SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+          SolRBskydd(icomp,isurf,icfctp,i)=0.0 
+          SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+          SolRBgrddd(icomp,isurf,icfctp,i)=0.0
+
+          ! visual
+          VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+          VisRFskydd(icomp,isurf,icfctp,i)=0.0
+          VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+          VisRFgrddd(icomp,isurf,icfctp,i)=0.0
+
+          VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+          VisRBskydd(icomp,isurf,icfctp,i)=0.0
+          VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+          VisRBgrddd(icomp,isurf,icfctp,i)=0.0
+        end if 
 
        else
 
