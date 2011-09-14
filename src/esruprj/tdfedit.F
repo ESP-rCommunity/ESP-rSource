@@ -33,7 +33,6 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "model.h"
 #include "epara.h"
 #include "tdf2.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -712,8 +711,6 @@ C If foc='init' do initial setup.
       subroutine glbset(foc)
 #include "building.h"
 #include "tdf2.h"
-#include "espriou.h"
-
 
       COMMON/TRC/ITRC
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME

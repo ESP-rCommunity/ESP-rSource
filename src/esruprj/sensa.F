@@ -33,7 +33,6 @@ C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
 #include "building.h"
 #include "uncertainty.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -187,13 +186,9 @@ C ITYP: 1=changes, 2=locations, 3=actions
 #include "building.h"
 #include "epara.h"
 #include "uncertainty.h"
-#include "espriou.h"
 
 C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       parameter (muadel=50)
-
-
-      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -405,18 +400,10 @@ C DEFUAL create a set of default uncertainties
 
       subroutine DEFUAL
 #include "uncertainty.h"
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
-
-C For help messages
-      character helpinsub*24 ! subroutine name
-      character helptopic*24 ! string (unique) for topic
-      integer nbhelp     ! number of help lines found
-
-      helpinsub='DEFUAL'  ! set for subroutine
 
       IERR=0
       IER=0
@@ -456,7 +443,6 @@ C ICDEF  If equal to zero then add a new definition, else edit.
 
       subroutine CNGDEF(ICDEF,IERR)
 #include "uncertainty.h"
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -464,7 +450,7 @@ C ICDEF  If equal to zero then add a new definition, else edit.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER H*72, ITEM(17)*40, outs*124
+      CHARACTER ITEM(17)*40, outs*124
       integer NITMS,INO ! max items and current menu item
 
 C For help messages
@@ -624,7 +610,6 @@ C   specification and 2 if there was a cancel issued during editing.
 #include "building.h"
 #include "geometry.h"
 #include "uncertainty.h"
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -839,7 +824,6 @@ C ITEM   If equal to zero then add a new definition, else edit.
       subroutine LINKDEF(ITEM,IERR)
 #include "building.h"
 #include "uncertainty.h"
-#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 

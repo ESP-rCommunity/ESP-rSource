@@ -16654,7 +16654,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       CALL EASKS(HOLD,
 *subroutine PRJFMK
-*item PRJFMK
+*item PRJFMK operations_need_to_ask
 'The zone operations file was not found or has not'
 'yet been created. The file contains schedules of air'
 'flow and casual gains. Air flows may have thermostatic'
@@ -16666,11 +16666,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'project [zones] folder in case you want to share.'
 'the same definition as used by another zone.'
 *enditem
-          CALL EASKSCMD(LTMP,' ','Zone operations file options:',
-*item PRJFMK
-*enditem
-          CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
-*item PRJFMK
+        CALL EASKSCMD(LTMP,' ','Zone operations file options:',
+        CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
+*item PRJFMK 'operations_need_confirm
 'Operations details have already been defined for this'
 'zone so if you want to use and/or modify the current'
 'definition accept the presented file.'
@@ -16688,73 +16686,53 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'any change to its contents will affect more than one'
 *enditem
           CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
-*item PRJFMK
-*enditem
           CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
-*item PRJFMK
-*enditem
-            CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-*enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+*item PRJFMK operations_creation
 'Options: '
-' define from scratch - you are asked to define all'
-'   casual gain periods for each day type as well as'
-'   schedules of infiltration and ventilation.'
+' define from scratch - you are asked to define all casual'
+'   gain periods for each day type as well as schedules of'
+'   infiltration and ventilation.'
 ' '
-' import air flow schedules - you select a zone with an'
-'   air flow schedule pattern and it is copied into this'
-'   zone, optionally with adjustments if the zone'
-'   volumes are different. You can then define the'
-'   casual gains.'
+' import air flow schedules - you select a zone with an air'
+'   flow schedule pattern and it is copied into this zone,'
+'   optionally with adjustments if the zone volumes are'
+'   different. You can then define the casual gains.'
 ' '
-' import casual gains - you select a zone with casual'
-'   gain patterns and they are copied into this zone,'
-'   optionally with adjustments if the zone base areas'
-'   differ.'
+' import casual gains - you select a zone with casual gain'
+'   patterns and they are copied into this zone, optionally'
+'   with adjustments if the zone base areas differ.'
 ' '
-' import air flows and casual gains - both of the above'
-'   and you will be given the option to import air'
-'   flow schedules casual gains from different zones'
-'   (You may wish to note which zones you used and'
-'   include this in the documentation of the zone'
-'   operations file.)'
+' import air flows and casual gains - both of the above and'
+'   you will be given the option to import air flow schecules'
+'   and casual gains from different zones (You may wish to'
+'   take a note of which zones you used and include this in'
+'   the documentation of the zone operations file.)'
 ' '
-' import < pattern - has the same functionality as above'
-'   except that the list of operations files are taken'
-'   from a folder within the standard ESP-r distribution'
-'   located on your computer. Files placed in this'
-'   folder serve as a resource for often-used patterns'
-'   of casual gains and scheduled air flows.'
+' import < pattern - has the same functionality as above except'
+'   that the list of operations files are taken from a folder'
+'   within the standard ESP-r distribution located on your'
+'   computer. Files placed in this folder serve as a resource for'
+'   often-used patterns of casual gains and scheduled air flows.'
 ' '
-' nothing happens in the zone - does just this. It fills'
-'   the file with zero occupants, lights, small power'
-'   and no infiltration or ventilation for all day types.'
+' nothing happens in the zone - does just this. It fills the'
+'   file with zero occupants, lights and small power for the'
+'   whole of each day as well as no infiltration or ventilation'
+'   for all day types.'
 ' '
-'After initiating one of the above actions you can edit'
-'the data as required. '
-'A zone operation file contains schedules of air flow'
-'and casual gains.  Air flows may have thermostatic'
-'or wind speed control. '
+'After initiating one of the above actions you can edit the data'
+'as required. '
+'  '
+'A zone operation file contains schedules of air flow and casual'
+'gains.  Air flows may have thermostatic or wind speed control.'
 *enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-*enditem
-          CALL PHELPD('operation choices',36,'-',0,0,IER)
-*item PRJFMK
-*enditem
-            call askzone(isource,izdef,
-*item PRJFMK
-*enditem
+          call askzone(isource,izdef,
           CALL EASKABC(' ','Options:','all flow schedules & ctl',
-*item PRJFMK
-*enditem
           CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item PRJFMK
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
-*item PRJFMK
+          CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+*item PRJFMK operations_synopsys
 'New operations for this zone. Please check your notes'
 'and provide initial casual gain period start times'
 'for each day type (Weekday, Saturday, Sunday etc.) and'
@@ -16780,13 +16758,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'at least one period and define a casual gain).'
 *enditem
           CALL PHELPD('operation setup',23,'-',0,0,IER)
-*item PRJFMK
-*enditem
-            call askzone(isource,izdef,'Casual gains from which zone?',
-*item PRJFMK
-*enditem
+          call askzone(isource,izdef,'Casual gains from which zone?',
           CALL EASKABC(' ','Casual gain import:','preserve Watts',
-*item PRJFMK
+*item PRJFMK check_automatic
 'An automated process has been used to manage the imported'
 'schedules. It is recommended that you confirm that the'
 'resulting file is correct. '
@@ -16796,16 +16770,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'to confirm that performance is as expected.'
 *enditem
           CALL PHELPD('operation import confirm',7,'-',0,0,IER)
-*item PRJFMK
+*item PRJFMK operations_summary
 'A summary of the data held within a zone operations file'
 'follows.'
 ' '
-' 1) Operations description - up to 248 characters'
-'    summarising what is happening in the zone.'
+' 1) Operations description - up to 248 characters summarising'
+'    what is happening in the zone for casual gains and another'
+'    describing scheduled air flows (infiltration and ventilation).'
 '  '
-' 2) Weekday, Saturday, Sunday (& other day types if '
-'    defined) air flow data:  start and finish hours '
-'    for each period infiltration and ventilation rates '
+' 2) Weekday, Saturday, Sunday (& other day types if defined)'
+'    air flow data:  start and finish hours and for each period '
+'    infiltration and ventilation rates where the'
 '    (ACH) coupling index: '
 '         > 0 is coupled zone number'
 '         = 0 source at specified temperature'
@@ -16815,8 +16790,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       upper and lower limits'
 '       upper and lower air flow rates'
 ' '
-'The relationship between control and schedules is'
-'as follows.                          '
+'The relationship between control and schedules is as follows:'
 ' '
 '      |       ________               '
 ' ac/h |       |      |___            '
@@ -16830,216 +16804,139 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       low   default   high  extreme '
 '         <-  temperature ranges  ->  '
 ' '
-' 4) Weekday, Saturday and Sunday (& other day types if '
-'    defined) casual gains data: start and finish hours '
-'    for each period casual gain type:'
+' 4) Weekday, Saturday and Sunday (& other day types if defined)'
+'    casual gains data: start and finish hours and for each '
+'    period casual gain type:'
 '         1: usually occupants'
 '         2: usually lighting'
 '         3: usually equipment'
 '       sensible and latent load magnitudes'
 '       radiant and convective portions'
 ' '
-'Where electrical data are associated with a particular'
-'zone load (to enable electrical simulation), the'
-'required data items are: power factor,load type'
-'(inductive or capacative), real power consumption,'
-'operational voltage and the generator phase to which'
-'the load is connected.'
-'You are asked this question because periods'
-'might have been altered and require re-sorting. '
+'Where electrical data are associated with a particular zone'
+'load (to enable electrical simulation), the required data'
+'items are: power factor,load type (inductive or capacative),'
+'real power consumption, operational voltage and the generator'
+'phase to which the load is connected.'
+' '
+'When exiting you are asked about sorting casual gains because'
+'periods might have been altered and require re-sorting. '
 *enditem
-            CALL ASKOK(
-*item PRJFMK
-'You are asked this question because changes were'
-'detected in the zone operations schedules and '
-'you might loose this information if you exit without'
-'saving the changes.'
-*enditem
+          CALL ASKOK(
           CALL ASKOK('Before exiting do you wish to',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone operations notes:',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow can'
-'be included in the model. Use this facility to'
-'clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone scheduled air notes:',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone operations notes:',
-*item PRJFMK
-'A zone operations file contains schedules of air flow'
-'and casual gains.  Air flows may have thermostatic'
-'or wind speed control. If electrical details are  '
-'included then casual gains and electrical loads are'
-'combined into a single zone load.'
-*enditem
-        CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-'You were presented with this message because a'
-'problem was detected while trying to update the'
-'zone operations file. Check that you have sufficient'
-'disk space and/or permission to update the model'
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+*item PRJFMK operations_save_error
+'You were presented with this message because a problem'
+'was detected while trying to update the zone operations'
+'file. Check that you have sufficient disk space and/'
+'or permission to update the model'
 *enditem
             CALL ASKOK('Problem encountered saving data!',
-*item PRJFMK
-*enditem
-        CALL PHELPD('operation help',48,'-',0,0,IER)
 *subroutine EDAFCTL
-*item EDAFCTL
-'This facility supports basic scheduled control of air'
-'infiltration and ventilation based on temperatures or'
+*item EDAFCTL zone_flow_menu_summary
+'This interface supports range based control of scheduled'
+'air infiltration and ventilation based on temperature and'
 'wind velocity.'
-*enditem
-      CALL ASKOK(' ','Is air flow thermostatically controlled?',
-*item EDAFCTL
-'Control of air flow can be based on one of the'
+' '
+'If you do not select control then the nominal infiltration'
+'and ventilation rates in the schedules will be used.'
+'  '
+'Thermostatic control of air flow can be based on one of the'
 'following parameters: '
 ' '
-'* air temperature within the current zone;'
-'* air temperature within another modelled zone;'
-'* external air temperature;'
-'* external wind velocity.'
-' '
-'Note that thermostatic or wind velocity control'
-'applies to all days within a simulation.'
-*enditem
-      CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-*item EDAFCTL
-'Air flow control can be restricted to infiltration'
-'(outside), to ventilation (from another zone or at'
-'specified temperature) or to both.'
-*enditem
-   12 CALL EPICKS(IX,IVALS,' ','Air flow control scope:',
-*item EDAFCTL
+'  air temperature within the current zone;'
+'  air temperature within another modelled zone;'
+'  external air temperature;'
+'  '
 'For temperature control the limit is in degC.'
 'For wind speed control the limit is in m/s.'
 ' '
-'Lower limit: point below which an alternative flow'
-'  rate takes effect (e.g. closing windows when the'
-'  lower limit is rached).'
+'Infiltration is defined in terms of air changes per hour and'
+'ventilation is in air changes (based on the volume of the'
+'receiving zone) or a constant temperature source.'
 ' '
-'Middle limit: point above which the 1st stage of an'
-'  alternative flow regime takes effect).'
+'The scope of flow control can be restricted to infiltration'
+'(outside), to ventilation (from another zon at a specific'
+'temperature) or to both.'
 ' '
-'High limit: point above which a 2nd stage flow'
-'  regime takes effect. (Set high, e.g. 100degC,'
-'  to prevent use.)'
+'Infiltration control is range based similar to that used in' 
+'mass flow network control. '
+' '
+'Lower limit: point below which an alternative flow rate takes'
+'  effect (e.g. closing windows when the lower limit is reached).'
+' '
+'Middle limit: point above which the 1st stage of an alternative'
+'  flow regime takes effect).'
+' '
+'High limit: point above which a 2nd stage flow regime takes'
+'  effect. (Set high, e.g. 100degC, to prevent use.)'
+' '
+'The relationship between control and schedules is as follows:'
+' '
+'      |       ________               '
+' ac/h |       |      |___            '
+'      |    ___|         |____        '
+'      |   |   scheduled rate |       '
+'      |___|____:_____________|_______'
+'               : <- time ->          '
+'      |        :                     '
+' ac/h |flow |  V     | flow | flow | '
+'      |__x__|________|___y__|__z___| '
+'       low   default   high  extreme '
+'         <-  temperature ranges  ->  '
+'         <-  wind-speed ranges   ->  '
+'  '
+'Note that thermostatic control applies to day types within'
+'a simulation.'
 *enditem
+      CALL ASKOK(' ','Is air flow thermostatically controlled?',
+      CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
+   12 CALL EPICKS(IX,IVALS,' ','Air flow control scope:',
       CALL EASKS(HOLD,' ',
-*item EDAFCTL
-'Infiltration is defined in terms of air changes per'
-'hour. This value is used below the lower set point.'
-*enditem
       CALL EASKR(VAL,' ','Lower range infiltration rate?',
-*item EDAFCTL
-'Ventilation is defined in air changes per hour. The'
-'source can be another modelled zone or a constant'
-'temperature source. In both cases the volumer flow'
-'rate is relative to the current zone volume.'
-*enditem
-        CALL EASKABC(' ','Ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVL(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','Lower range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ',
-*item EDAFCTL
-'Infiltration is defined in air changes per hour. This'
-'value is used if the temperature is above the mid-leve'
-'set point but below the high level set point.'
-*enditem
-        CALL EASKR(V,' ','1st stage infiltration rate?',
-*item EDAFCTL
-'Mid level ventilation is imposed when the sensed'
-'condition is between the middle and high set points.'
-'Ventilation (zone coupled air flow) is defined as'
-'air changes per hour. The source can be another'
-'zone or at a specified constant temperature. In both'
-'cases the volume flow rate is relative to the volume'
-'of the current zone.'
-*enditem
-        CALL EASKABC(' ','First stage ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVU(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','Mid-range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ','Mid range ventilation source temperature?',
-*item EDAFCTL
-'Infiltration is defined in air changes per hour and is'
-'used when conditions exceed the high set point. If not'
-'needed make the set point high, e.g. 100degC.'
-*enditem
-        CALL EASKR(V,' ','High stage infiltration rate?',
-*item EDAFCTL
-'High level ventilation is imposed when the sensed'
-'condition exceeds the high set point. Ventilation'
-'(zone coupled air flow) is defined as air changes per'
-'hour. The source can be another zone or at a specified'
-'constant temperature. In both cases the volume flow '
-'rate is relative to the volume of the current zone.'
-*enditem
-        CALL EASKABC(' ','High stage ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVH(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','High-range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ',
+      CALL EASKABC(' ','Ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
+      CALL EASKR(VAL,' ','Lower range ventilation rate?',
+      CALL EASKR(V,' ',
+      CALL EASKR(V,' ','1st stage infiltration rate?',
+      CALL EASKABC(' ','First stage ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt'
+      CALL EASKR(VAL,' ','Mid-range ventilation rate?',
+      CALL EASKR(V,' ','Mid range ventilation source temperature?',
+      CALL EASKR(V,' ','High stage infiltration rate?',
+      CALL EASKABC(' ','High stage ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
+      CALL EASKR(VAL,' ','High-range ventilation rate?',
+      CALL EASKR(V,' ',
 *subroutine EDAIR2
-*item EDAIR2
-'Air flows are defined via one or more sequential'
-'periods, the magnitude at a given time being the'
-'flow specified a period that includes that time.'
+*item EDAIR2 air_flow_period_setup
+'Air flows are defined via one or more sequential periods, the'
+'magnitude at a given time being the flow specified a period that'
+'includes that time.'
 ' '
-'In cases where ventilation will occur with more'
-'than one modelled zone then a fluid flow network'
-'or temporal definition file should be employed.'
+'In cases where ventilation will occur with more than one modelled'
+'zone then a fluid flow network or temporal definition file should'
+'be employed.'
 ' '
-'Note that large changes in flow rates between'
-'periods can result in unacceptable interpolation'
+'Note that large changes in flow rates between periods can result'
+'in unacceptable interpolation.'
 ' '
 'The add/delete/copy/import option are as follows.'
-' add - adds a period to one or all day types. BE SURE'
-'   to read the extended help messages in this dialog'
-'   to understand how to use the add function to insert'
-'   a period into a profile.'
+' add - adds a period to one or all day types. BE SURE to read the'
+'   extended help messages in this dialog to understand how to use'
+'   the add function to insert a period into a profile.'
 ' '
-' delete - deletes one or more periods (within a list'
-'   of all periods in all days).'
+' delete - deletes one or more periods (within a list of all periods'
+'   in all days).'
 ' '
-' copy - copies Weekdays to Saturdays or Weekdays -> '
-'   Sundays or Saturdays -> Sundays'
+' copy - copies Weekdays to Saturdays or Weekdays -> Sundays or'
+'   Saturdays -> Sundays'
 ' '
-' import - copies infiltration, ventilation and control'
-'   (or a subset of these data) from another zone.'
+' import - copies infiltration, ventilation and control (or a'
+'   subset of these data) from another zone.'
 ' '
 'When importing you can specify whether to:'
 ' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
@@ -17049,21 +16946,20 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL PHELPD('flows menu',33,'-',0,0,IER)
-*item EDAIR2
+*item EDAIR2 air_flow_period_copy
 'The options: '
 'The add/delete/copy/import option are as follows.'
-' add - adds a period to one or all day types. IF'
-'   there is already a defined period which overlaps'
-'   this period then the volumes of air flow will be '
-'   summed.  For example: if there is a period from'
-'   8h00-24h00 with 1ach infiltration and you want to '
-'   add a period 20h00-24h00 with 0.5 the time from '
-'   20h00-24h00 will become 1.5 ach.'
+' add - adds a period to one or all day types. IF there is'
+'   already a defined period which overlaps this period'
+'   then the volumes of air flow will be summed. '
+'   For example: if there is a period from 8h00-24h00 with'
+'   1 ach infiltration and you want to add a period 20h00-'
+'   24h00 with 0.5 the time from  20h00-24h00 will become 1.5 ach.'
 ' '
-'   If you want to adjust the profile so the inserted'
-'   period has a different value then initailly'
-'   give 0.0 for the flows. After the periods have'
-'   been revised then edit the newly created period.'
+'   If you want to adjust the profile so the inserted period'
+'   has a different value then initailly give 0.0 for the'
+'   flows. After the periods have been revised then edit the'
+'   newly created period.'
 '  '
 '   The alternative approach is to edit the start and'
 '   end time of the existing period so that a gap is'
@@ -17087,26 +16983,13 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL EASKATOG(' ','Options (see help):',
-*item EDAIR2
-*enditem
-          CALL EASKAB(' ','Add period to ','one day type',
-*item EDAIR2
-*enditem
-            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
-*item EDAIR2
-*enditem
-            call askzone(isource,izdef,
-*item EDAIR2
-*enditem
-          CALL EASKABC(' ','Import:','all flow schedules & ctl',
-*item EDAIR2
-*enditem
-          CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item EDAIR2
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+        CALL EASKAB(' ','Add period to ','one day type',
+        CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+        CALL EASKABC(' ','Import:','all flow schedules & ctl',
+        CALL EASKABC(' ','Infiltration import:','preserve ac/h',
+        CALL EASKABC(' ','Ventilation import:','preserve ac/h',
 *subroutine EDAIR3
-*item EDAIR3
+*item EDAIR3 air_flow_period_setup
 'Air flows are defined via one or more sequential'
 'periods, the magnitude at a given time being the'
 'flow specified a period that includes that time.'
@@ -17141,7 +17024,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL PHELPD('flows menu',33,'-',0,0,IER)
-*item EDAIR3
+*item EDAIR3 air_flow_period_copy
 'The options: '
 'The add/delete/copy/import option are as follows.'
 ' add - adds a period to one or all day types. IF'
@@ -17179,24 +17062,11 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL EASKATOG(' ','Options (see help):',
-*item EDAIR3
-*enditem
-          CALL EASKAB(' ','Add period to ','one day type',
-*item EDAIR3
-*enditem
-            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
-*item EDAIR3
-*enditem
-            call askzone(isource,izdef,
-*item EDAIR3
-*enditem
-          CALL EASKABC(' ','Import:','all flow schedules & ctl',
-*item EDAIR3
-*enditem
-          CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item EDAIR3
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+        CALL EASKAB(' ','Add period to ','one day type',
+        CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+        CALL EASKABC(' ','Import:','all flow schedules & ctl',
+        CALL EASKABC(' ','Infiltration import:','preserve ac/h',
+        CALL EASKABC(' ','Ventilation import:','preserve ac/h',
 *subroutine EDAIRFL
 *item EDAIRFL
 'Period during which air flow applies.'
@@ -17728,125 +17598,92 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',IER,2)
 *subroutine prjqa
-*item prjqa
+*item prjqa setup_qa_report
 'Normally reports are generated from a standard pattern'
 'and edited to fit the current project. The [notes] file'
-'is created during project registration and should be '
-'updated as the project evloves.'
+'is created during project registration and many groups'
+'like to update this file as the project evloves. If you ask'
+'to look at or edit the file make sure you spell the file'
+'name correctly (name is not held in the model cfg file).'
 ' '
 'The graphing tool can be invoked after exporting'
 'performance data from the assessment tool.'
 ' '
-'If you wish to view bitmapped images oor capture '
-'images from the screen use option [h]. '
+'If you wish to view bitmapped images oor capture images'
+'from the screen use option [h]. '
 ' '
-'The preview tool has a default assumption that the '
-'report uses the troff typesetting convention. '
+'The preview tool has a default assumption that the report'
+'uses the troff typesetting convention. '
 ' '
-'This menu also defines the contents of a QA report for'
-'the current model. '
+'This menu also defines the contents of a QA report for the'
+'current model. A number of topics can be selected for '
+'inclusion in the report and each topic can be reported in'
+'a compact or verbose format.'
 ' '
-'A number of topics can be selected for inclusion in the'
-'report and each topic can be reported in a compact or'
-'verbose format.'
+'Topics which are not included in the current model will show'
+'up as not applicable. You can include none or some or all'
+'zones in the report as well as alter the level of detail'
+'included in the report.'
 ' '
-'Topics which are not included in the current model will'
-'show up as not applicable.'
-' '
-'One use of this report is to track the progress of a'
-'model (comparing reports generated as the model evolves).'
+'One use of this report is to track the progress of a model'
+'(comparing reports generated as the model evolves).'
 ' '
 'Another use of this report is to confirm that different'
-'different versions of a model have been correctly'
-'defined. '
+'versions of a model have been correctly defined. '
 ' '
-'The primary use of this report is as an aide to check'
-'models and provide a text based synopsis of the model'
-'composition. '
+'The primary use of this report is as an aide to check models'
+'and provide a text based synopsis of the model composition. '
 ' '
 'Once you generate a QA report file you can select the'
 '[edit QA report] option and an editor will be launched.'
 *enditem
         CALL PHELPD('QA overview',37,'-',0,0,IER)
-*item prjqa
-'The project log file contains descriptive text about'
-'the project.  Keep it up to date via a text editor.'
-*enditem
-          CALL EASKS(ltmp,
-*item prjqa
-'When attempting to preview the log file a problem'
-'was reported so check the spelling and location or'
-'type of file before trying again. '
-*enditem
-              CALL ASKOK(' Problem detected while trying to preview',
-*item prjqa
-'No file by that name or in that location was found.'
-'Check the spelling and location of the file name'
-'before trying again. '
-*enditem
-            CALL ASKOK(' Problem detected while trying to open',
-*item prjqa
-'If you have a editor associated with ESP-r you can'
-'use it to edit this file.  '
-*enditem
-          CALL ASKOK(' ',' Edit this file?',OK,dok,2)
-*item prjqa
-' Pick one, several or all zones to include.'
-*enditem
-          CALL EPICKS(INPIC,IVALS,' ',' Which zones to summarise:',
-*item prjqa
+        CALL EASKS(ltmp,
+        CALL ASKOK(' Problem detected while trying to preview',
+        CALL ASKOK(' Problem detected while trying to open',
+        CALL ASKOK(' ',' Edit this file?',OK,dok,2)
+        CALL EPICKS(INPIC,IVALS,' ',' Which zones to summarise:',
+*item prjqa qa_filters
 'Often it is convenient to review which surfaces in a '
 'project have particular attributes.'
 ' '
-'The following dialogue will allow you to define a '
-'subset of surfaces via filters for position,  '
-'orientation, opacity, etc. '
+'The following questions will allow you to define a subset'
+'of surfaces via filters for position,  orientation, opacity, etc.'
+'  '
+'Filter options:'
+'  surfaces which are fully attributed or partly attributed'
+' '
+'  surfaces which are opature or transparent'
+' '
+'  surfaces which face the outside or are internal partitions'
+' '
+'  surfaces which have a particular orientation'
+' '
+'After the report is generated it can be edited using the current'
+'standard text editor (as defined in the default file).'
 *enditem
         CALL PHELPD('global search by attribute',6,'-',0,0,IER)
-*item prjqa
-'You may filter for already attributed surfaces or'
-'surfaces marked UNKNOWN. '
-*enditem
         CALL EASKABCD(' Filter for surface composition:',' ',
-*item prjqa
-'You may filter for opaque surfaces, transparent surfaces'
-'or both. '
-*enditem
         CALL EASKABCD(' First filter--surface opacity:',' ',
-*item prjqa
-'You may filter for surfaces which face the outside,'
-'partitions (internal) etc. '
-*enditem
         call EASKATOG(' Second filter--surface contiguity:',' ',
-*item prjqa
-'You may filter for surfaces which have a particular'
-'orientation. '
-*enditem
         call EASKATOG(' Third filter--surface orientation:',' ',
-*item prjqa
-'The QA report file can be edited using the current'
-'defined text editor (as defined in the default file).'
-*enditem
-          CALL EASKF(LFIL,'ASCII file name?',
-*item prjqa
-*enditem
-          CALL EASKF(llitem,'ASCII file name?',
-*item prjqa
-*enditem
-          CALL EASKF(LFIL,'ASCII file name?',
+        CALL EASKF(LFIL,'ASCII file name?',
+        CALL EASKF(llitem,'ASCII file name?',
+        CALL EASKF(LFIL,'ASCII file name?',
 *subroutine mupdate
-*item mupdate
+*item mupdate model_upgrade_older
 'Older models should be updated to take advantage of'
-'extended geometric data structures and file formats'
+'extended geometric data structures and file formats.'
 ' '
 'An update will also reduce the number of model '
 'files which have to be managed. '
 *enditem
         call askok('The current model uses an out-of-date format for',
-*item mupdate
+*item mupdate 'model_upgrade_v3
 'Older models should be updated to take advantage of'
 'extended documentation and quality assurance facilities'
 'as well as enhanced databases.'
+'  '
 'An update will also reduce the number of descriptive '
 'files which have to be managed. '
 ' '
@@ -17855,7 +17692,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' '
 *enditem
         call askok('The current model uses an out-of-date format for',
-*item mupdate
+*item mupdate shading_upgrade
 'Older shading files should be recalculated to reflect'
 'changes in the allowable number of surfaces in each'
 'zone. Each affected zone will be done in turn.'
@@ -17865,109 +17702,95 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKABC(' Update of shading options:',' ',
 *subroutine SDDEF001
-*item SDDEF001
-'Pick the required material. '
+*item SDDEF001 uncert_material
+'To further specify the extent of the uncertainty, please'
+'pick the required material from the list provided. '
+'  '
+'You will then be asked to pick the required thermophysical'
+'property for this sensitivity study. You will also be asked'
+'to specify the bounds of the property to search within.'
 '   '
-'Exit will return to the main menu '
-'without saving any data. '
+'Exit will return to the main menu without saving any data.'
 *enditem
       CALL EPICKS(IEPIC,IVALE,' ',' Which material : ',
-*item SDDEF001
-'Pick the required property. '
-'   '
-'Exit will return to the main menu '
-'without saving any data. '
-*enditem
       CALL EPICKS(IPPIC,IVALP,' ',' Which property : ',
-*item SDDEF001
-*enditem
       call EASKAB('Define parameter bounds:','  ',
 *subroutine SDDEF002
-*item SDDEF002
+*item SDDEF002 uncert_MLC
+'Currently you can adjust one material peroperty - the thickness of'
+'a specific layer of a MLC. First select which material you want to'
+'alter.'
 *enditem
       call EASKAB('Which composite construction parameter? ','  ',
-*item SDDEF002
-'Pick the required material. '
-'   '
-'Exit will return to the main menu '
-'without saving any data. '
-*enditem
-        CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
+      CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
 *subroutine SDDEF003
-*item SDDEF003
-'Pick the required parameter. '
+*item SDDEF003 uncert_climate
+'Pick the required climate parameter from the list. '
 '   '
-'Exit will return to the main menu '
-'without saving any data. '
+'Exit will return to the main menu without saving any data.'
 *enditem
       CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
 *subroutine SDDEF004
-*item SDDEF004
+*item SDDEF004 uncert_operations
+'You can nominate casual gains or scheduled air flows as uncertain.'
+' '
+'If casual gains then you will be asked which casual gain. and'
+'then whether it is the radiant or convective portion of the gain.'
+'or the total magnitude of the gain.'
+'  '
+'If schedules air flows selected then you are asked if it is'
+'infiltration or which zone is a ventilation source or if it'
+'is the source temperature of the ventilation which is uncertain.'
 *enditem
       call EASKAB('  ','Which scheduled parameter? ',
-*item SDDEF004
-*enditem
-        call EASKABC('  ','Which casual gain? ',
-*item SDDEF004
-*enditem
-        call EASKATOG('Which property? ',' ','Sensible','Latent',
-*item SDDEF004
-*enditem
-        call EASKATOG('Which property? ',' ','Infiltration',
+      call EASKABC('  ','Which casual gain? ',
+      call EASKATOG('Which property? ',' ','Sensible','Latent',
+      call EASKATOG('Which property? ',' ','Infiltration',
 *subroutine SDDEF005
 *item SDDEF005
 *enditem
       call EASKAB('Only Halcrow time invarient enabled ! ','  ',
 *subroutine SDDEF101
-*item SDDEF101
+*item SDDEF101 uncert_air_volume
+'You can identify that the volume of air in the zone is uncertain.'
+'This is the only geometric variant currently implemented.'
 *enditem
       call EASKAB('Only zone air volume enabled ! ','  ',
 *subroutine SDDBOUND
-*item SDDBOUND
+*item SDDBOUND uncert_bounds_3
 'The upper and lower values that the parameter can '
 'take are defined via one of three processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
+'   A value greater than zero is expected.'
+'  '
 '2) Absolute change: the upper and lower values will be'
 '   the base case value +/- the absolute change.'
+'   A value greater than zerio is expected.'
+'  '
 '3) Explicitly: the upper and lower values will be '
-'   defined explicitly.'
+'   defined explicitly. Two values are expected and the'
+'   upper must be greater than the lower.'
 *enditem
         call EASKABC(' Define parameter bounds',' via:',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(PERC,' ',' Percentage change value? ',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(ABS,' ',' Absolute change value? ',
-*item SDDBOUND
-' The upper and lower values are required. '
-' There is no checking of these values, except that '
-' the upper value is greater than the lower. '
-*enditem
-22        call EASKR(EXPU,' ',' Explicit definition of upper value? ',
-*item SDDBOUND
-*enditem
-          call EASKR(EXPL,' ',' Explicit definition of lower value? ',
-*item SDDBOUND
+        call EASKR(PERC,' ',' Percentage change value? ',
+        call EASKR(ABS,' ',' Absolute change value? ',
+22      call EASKR(EXPU,' ',' Explicit definition of upper value? ',
+        call EASKR(EXPL,' ',' Explicit definition of lower value? ',
+*item SDDBOUND uncert_bounds_2
 'The upper and lower values that the parameter can '
-'take are defined via one of three processes:'
+'take are defined via one of two processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
+'   A value greater than zero is expected.'
+'  '
 '2) Absolute change: the upper and lower values will be'
 '   the base case value +/- the absolute change.'
+'   A value greater than zero is expected.'
 *enditem
         call EASKAB(' Define parameter bounds',' via:',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(PERC,' ',' Percentage change value? ',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(ABS,' ',' Absolute change value? ',
+        call EASKR(PERC,' ',' Percentage change value? ',
+        call EASKR(ABS,' ',' Absolute change value? ',
 *subroutine SDDFLT001
 *item SDDFLT001
 'The classifications shown in the display include up to'
