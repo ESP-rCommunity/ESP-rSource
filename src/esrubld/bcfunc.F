@@ -1212,6 +1212,11 @@ C Plant heat transfer:
       real QMN, QMX ! min & max heat transfer (W)
       
       real QQ       !?
+      
+      logical bQBySurf   ! Flag indicating Q is per unit surface area 
+      
+      real fQTotal       ! Total zone/plant interaction (W)
+      
 
 C Humidity Calculations: 
       integer iRHCTT
@@ -1282,7 +1287,7 @@ C the zone law needs to be updated. The variable cooling/heating capacity
 C is set at the approprite HVAC equipment simulation routine.
 
 C Set maximum heating capacity:
-      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+      if(cont_fun_heat_cap(IICOMP).gt.0. ) then
         QHM=cont_fun_heat_cap(IICOMP)
       else
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
@@ -1292,7 +1297,7 @@ C Set minimum heating capacity
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
 C Set maximum cooling capacity:
-      if(cont_fun_cool_cap(IICOMP).gt.0 ) then
+      if(cont_fun_cool_cap(IICOMP).gt.0. ) then
          QCM = - cont_fun_cool_cap(IICOMP)
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
@@ -1304,7 +1309,7 @@ C Set minimum cooling capacity
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
-C Save heating/cooling setpoints
+C Save heating/cooling setpointsd 
       fHeatSetpoint(iicomp) = HSP
       fCoolSetpoint(iicomp) = CSP
 
@@ -1435,8 +1440,7 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
       ENDIF
 
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
-      
-c      WRITE(*,*)'Controlling zone to...',HSP,CSP,TCTL,TNP    
+  
 C Since sensed temperature is not within range, attempt to control
 C THIS zone's temperature.
       TCTL=TNP
@@ -1445,7 +1449,7 @@ C Inserted for the EU Fog Project: if heating or cooling set point is set to
 C -1000., the controller will use the dew point temperature as the set point.
 C This is an alternative to humidification in that the zone RH is  maintained
 C at (approx.) 100% RH.
-      IF(int(CSP).EQ.-1000.OR.int(HSP).EQ.-1000)THEN
+      IF(int(CSP).EQ.-1000 .OR. int(HSP).EQ.-1000)THEN
         
 C Set point is the dew point temperature of the zone. 
         PATMOS=1013.25
@@ -1455,6 +1459,87 @@ C Set point is the dew point temperature of the zone.
         IF(CSP.LT.0.0)CSP=0.0
       ENDIF
 
+C Check zone temperature and determine of heating or cooling functions 
+C 
+
+      HeatOrCool: if ( TCTL > CSP ) THEN 
+      
+        IPLT=2
+        QMX=QCN    ! Note that cooling is negative!
+        QMN=QCM
+        TCONT=CSP
+      
+      else 
+        
+        IPLT=1
+        QMX=QHM      
+        QMN=QHN
+        TCont=HSP
+            
+      endif HeatOrCool
+      
+      
+           
+C Determine required plant capacity 
+
+      Q=(BB3-BB1*TCont)/BB2
+           
+C Is heat flux determined according to surface area?
+
+      
+      if ( IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0) then 
+        bQBySurf = .true. 
+        ISUR=IBAN(ICF,2)
+      
+      else 
+      
+        bQBySurf = .false.   
+        
+      endif 
+      
+      
+C If necessary, multiply heat flux by surface area to convert 
+C from W/m^2 to W 
+
+      if ( bQBySurf ) then 
+      
+        fQTotal = Q * SNA(IICOMP,ISUR) 
+        
+      else 
+      
+        fQTotal = Q 
+        
+      endif 
+      
+      
+C Do we have enough capacity?      
+      if ( fQTotal > QMX ) fQTotal = QMX
+      if ( fQTotal < QMN ) fQTotal = QMN
+      
+C Possibly convert back to W/m^2 if needed       
+
+      if ( bQBySurf ) then 
+      
+        Q = fQTotal / SNA(IICOMP,ISUR)
+        
+      else 
+      
+        Q = fQTotal
+        
+      endif 
+      
+      
+C Recompute resultant temperature.       
+      TFUT=(BB3-BB2*Q)/BB1
+      
+      
+C Save future time-row plant injection. 
+      QFUT=Q      
+      
+      
+C Step around old code.      
+      sidestep: if ( 1 .eq. 2 ) then 
+      
 C Is temp. too high ?
       IF(TCTL.GT.CSP)GOTO 1
       IPLT=1
@@ -1505,6 +1590,11 @@ C Is this available ?
 
     2 TFUT=(BB3-BB2*Q)/BB1
       QFUT=Q
+
+      
+      endif sidestep
+      
+      
 c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -1919,10 +2009,10 @@ c of the throttling ranges.
       QCMN=-BMISCD(ICF,IDTYP,IPER,8)
       CSP=BMISCD(ICF,IDTYP,IPER,9)
       CTR=BMISCD(ICF,IDTYP,IPER,10)   
-      IF(IMO.EQ.2)TI=INT(BMISCD(ICF,IDTYP,IPER,11))
-      IF(IMO.EQ.3)TD=INT(BMISCD(ICF,IDTYP,IPER,11))
-      IF(IMO.EQ.4)TI=INT(BMISCD(ICF,IDTYP,IPER,11))
-      IF(IMO.EQ.4)TD=INT(BMISCD(ICF,IDTYP,IPER,12))
+      IF(IMO.EQ.2)TI=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
+      IF(IMO.EQ.3)TD=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
+      IF(IMO.EQ.4)TI=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
+      IF(IMO.EQ.4)TD=real(INT(BMISCD(ICF,IDTYP,IPER,12)))
   
 C Fatal error tests:      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).LT.1.OR.
@@ -1955,7 +2045,7 @@ c CTL = lower cooling temperature limit
       CTL=CSP-(CTR/2.0)
 
 C Set time-step increment required for integral and derivative action,
-      TDELTA=3600/NTSTEP
+      TDELTA=3600./real(NTSTEP)
 
 C << consider in the future to revise code to only restart the
 C << integral action when the new setpont is attained.
@@ -3115,7 +3205,7 @@ c CSPOFF = cooling OFF set point temp. (deg.C)
 C If the zone associated with this control function is served by an HVAC system
 C simulated ideally, then use HVAC system capacity to update controller
 C heating/cooling capacity for time step. 
-      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+      if(cont_fun_heat_cap(IICOMP).gt.0. ) then
         QHM=cont_fun_heat_cap(IICOMP)
       else
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
@@ -3372,7 +3462,7 @@ C Determine the weighted sensed temperature;
 20    CONTINUE
 
 C Determine the mean sensed temperature value;
-      TEMPAV=TEMPTO/(NSEN(ICF))
+      TEMPAV=TEMPTO/real(NSEN(ICF))
 
 C Apply scaling factor (SCALEF) and offset (OFFSET) for zonal
 C pro rata temperature control.
@@ -3439,7 +3529,7 @@ C Is this capacity available ?
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0
+      QMN=0.
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
 
@@ -3596,7 +3686,7 @@ C Determine the weighted sensed temperature;
 20    CONTINUE
 
 C Determine the mean of the sensed temperature values;
-      TEMPAV=TEMPTO/(NSEN(ICF))
+      TEMPAV=TEMPTO/(real(NSEN(ICF)))
 
       IF(ISM.EQ.1)THEN
          TMSEN=TEMPHI
@@ -3643,7 +3733,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QHMX=Q
-      QHMN=0
+      QHMN=0.
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QHMX,QHMN,TFUT,QFUT)
@@ -3748,22 +3838,22 @@ C this case simultaneous heating and cooling may result.
              
 C Establish the total cycle period time in terms of time-steps:
 C for heating;
-      NTSCYH=NINT((CYTH*NTSTEP)/3600)
+      NTSCYH=NINT((CYTH*real(NTSTEP))/3600.)
 C for cooling;
-      NTSCYC=NINT((CYTC*NTSTEP)/3600)
+      NTSCYC=NINT((CYTC*real(NTSTEP))/3600.)
   
 C Establish the minimum ON and OFF cycle times in terms of time-steps:
 C for heating;
-      MTSHON=NINT((HONMIN*NTSTEP)/3600)
-      MTSHOF=NINT((HOFMIN*NTSTEP)/3600)
+      MTSHON=NINT((HONMIN*real(NTSTEP))/3600.)
+      MTSHOF=NINT((HOFMIN*real(NTSTEP))/3600.)
 C for cooling;
-      MTSCON=NINT((CONMIN*NTSTEP)/3600)
-      MTSCOF=NINT((COFMIN*NTSTEP)/3600)
+      MTSCON=NINT((CONMIN*real(NTSTEP))/3600.)
+      MTSCOF=NINT((COFMIN*real(NTSTEP))/3600.)
       
 C Proportionality ratio for heating,
-      RATIOH=(NTSCYH-(MTSHON+MTSHOF))/(HSPOFF-HSPON)
+      RATIOH=real(NTSCYH-(MTSHON+MTSHOF))/(HSPOFF-HSPON)
 C Proportionality ratio for cooling,
-      RATIOC=(NTSCYC-(MTSCON+MTSCOF))/(CSPON-CSPOFF)
+      RATIOC=real(NTSCYC-(MTSCON+MTSCOF))/(CSPON-CSPOFF)
 
 C Determine the control point temperature,
       CALL CFVAR(TCTL,IER)
@@ -3776,7 +3866,7 @@ C Heating cycle:
       IF(ICOUNH.EQ.0.OR.ICOUNH.EQ.NTSCYH)THEN
 C End of heating cycle period;
 C Re-establish no. of ON time-steps for next cycle period, 
-        NTSHON=NINT((NTSCYH-MTSHOF)+RATIOH*(TCTL-HSPON))
+        NTSHON=NINT(real(NTSCYH-MTSHOF)+RATIOH*(TCTL-HSPON))
         IF(NTSHON.LT.MTSHON)NTSHON=MTSHON
         IF(NTSHON.GT.(NTSCYH-MTSHOF))NTSHON=(NTSCYH-MTSHOF)        
         IF(TCTL.GE.HSPOFF)NTSHON=0
@@ -3797,7 +3887,7 @@ C Cooling cycle:
       IF(ICOUNC.EQ.0.OR.ICOUNC.EQ.NTSCYC)THEN
 C End of cooling cycle period;
 C Re-establish no. of ON time-steps for next cycle period,
-        NTSCON=NINT((NTSCYC-MTSCOF)-(RATIOC*(CSPON-TCTL)))
+        NTSCON=NINT(real(NTSCYC-MTSCOF)-(RATIOC*(CSPON-TCTL)))
         IF(NTSCON.LT.MTSCON)NTSCON=MTSCON 
         IF(NTSCON.GT.(NTSCYC-MTSCOF))NTSCON=NTSCYC-MTSCOF
         IF(TCTL.LE.CSPOFF)NTSCON=0 
@@ -3825,7 +3915,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0
+      QMN=0.
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -4033,7 +4123,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0
+      QMN=0.
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -4128,8 +4218,8 @@ C A2      =  EXT TEMP. "       "   "     "        "     "
       endif
 
 C FATAL ERROR TESTS,
-      if(int(bmiscd(icf,idtyp,iper,1)).lt.6.or.int(bmiscd(icf,idtyp,iper
-     &,1)).gt.9.)goto 99
+      if( int(bmiscd(icf,idtyp,iper,1)).lt.6 .or. 
+     &    int(bmiscd(icf,idtyp,iper,1)).gt.9 )goto 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -4257,7 +4347,7 @@ C CONTINUE WITH SIMULATION IF < MINIMUM TEMPERATURE DIFFERENCE
       endif
 
 C CONTINUE WITH SIMULATION IF `TIMOPT' < 0.0
-      if(irwind.eq.-1.and.stfut.lt.0.and.stpres.le.0)then
+      if(irwind.eq.-1 .and. stfut.lt.0.0 .and. stpres.le.0.0 )then
         irwind=0
         timopt=stpres
       endif
@@ -4782,7 +4872,7 @@ C MOM defuzzification method selected by user.
             ENDIF
 65       CONTINUE
 
-         IF(PEAKS.GT.0)THEN
+         IF(PEAKS.GT.0.)THEN
             FZCTL=TOTAL/PEAKS
          ELSE
             FZCTL=0.
@@ -4810,7 +4900,7 @@ C Alpha Cut = 1: 'Full triangle' COA.
                ELSE
                   A=FZM(IFP,3,J,5)-FZM(IFP,3,J,1)
                   B=FZM(IFP,3,J,3)
-                  COA(J)=FZM(IFP,3,J,1)+((A+B)/3)
+                  COA(J)=FZM(IFP,3,J,1)+((A+B)/3.)
                ENDIF
 
 C Alpha Cut < 1: 'Trapezoidal' COA.
@@ -4862,7 +4952,7 @@ C Now find overall centroid == Fuzzy Logic Controller Output.
 80        CONTINUE
 
           IF(NONZRO.GT.0)THEN
-             FZCTL=COATOT/NONZRO
+             FZCTL=COATOT/real(NONZRO)
           ELSE
               FZCTL=0.
           ENDIF
@@ -4964,7 +5054,7 @@ C Set output flux.
       Q=SENVAL
 
       QMX=Q
-      QMN=0
+      QMN=0.
       IPLT=1
       TCONT=SENVAL
 
@@ -5307,7 +5397,7 @@ C I mode = 0 then uses esp-r data if 1 then user specified.
         alpha = hcif(icomp,isur)
 C Wet opaque surface calculation for vapour released into the space
         wi=gfa(icomp)
-        CP= SPHTC2(TD,wi)*1000
+        CP= SPHTC2(TD,wi)*1000.
         hundred=100.0
         w=HUMRT1(Tbas,hundred,PATMOS,0)
         Ev= alpha * Abas * (w - wi)/cp
@@ -5332,7 +5422,7 @@ C Emissivity of the surface should have been set to zero for the model
 C Calculate the vapour into the space (kg/s).
 C Use zone moisture content (xi), x at saturation to evaluate Ev.  
         wi=gfa(icomp)
-        CP= SPHTC2(TD,wi)*1000
+        CP= SPHTC2(TD,wi)*1000.
         hundred=100.0
         w=HUMRT1(Tbas,hundred,PATMOS,0)
         Ev= alpha * Abas * (w - wi)/cp
@@ -6547,7 +6637,7 @@ C Trace output
       QFUT=0.
       TFUT=TNP
 
-      WGPI=3.14159	! pi
+      WGPI=3.14159  ! pi
 
 C Set the temperature of the fluid at inlet of the inner pipe to the
 C temperature of the fluid at the outlet of the fluid-filled glazing
@@ -6565,9 +6655,9 @@ C Heat exchange area.! Li delete the laster letter C
 C Mass flow rate in inner pipe (heat exchanger closed circuit).
       WGFMINNER=CVF(IICOMP)/zfldC
 
-      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
-     &          (WGDIINERPIPE+0.0024)**2)/4)
-      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
+      WGVFOUT=WGFMOUTER/1000./(WGPI*(WGDIOUTERPIPE**2.-
+     &          (WGDIINERPIPE+0.0024)**2.)/4.)
+      WGVFIN=WGFMINNER/1000./(WGPI*WGDIINERPIPE**2./4.)
 
       WGCMAX=WGFMOUTER*WGACF
       WGCMIN=WGFMINNER*WGACF
@@ -6581,7 +6671,7 @@ C Mass flow rate in inner pipe (heat exchanger closed circuit).
  	        
 C IF WGT20 > WGT10, set the heat transfer to zero. 
       IF (WGT10.LT.WGT20.OR.WGFMINNER.LT.0.0001) THEN
-         WGHEXCHANGE=0
+         WGHEXCHANGE=0.
          WGT22=WGT20
          WGT11=WGT10 
          GOTO 109
@@ -6598,26 +6688,26 @@ C WGT10 AND WGT20.
       WGAK=55.001
       WGBK1=0.277
       WGBK2=-0.002
-      WGBK3=3.652/1000000
+      WGBK3=3.652/1000000.
 
-      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
-      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2.+WGBK3*WGT2**3.)/100.
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2.+WGBK3*WGT1**3.)/100.
        
       WGAV=1.759
       WGBV1=-0.047
       WGBV2=0.001
-      WGBV3=-2.59/1000000
+      WGBV3=-2.59/1000000.
     	    
-      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
-      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
 
       WGAP=13.39
       WGBP1=-1.0*0.406
       WGBP2=0.005
-      WGBP3=-2.367/100000
+      WGBP3=-2.367/100000.
 
-      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
-      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2.+WGBP3*WGT2**3.
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2.+WGBP3*WGT1**3.
 
       WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
       WGREI=WGVFIN*WGDIINERPIPE/WGVISI
@@ -6625,9 +6715,9 @@ C WGT10 AND WGT20.
 C Calculate the heat transfer coefficient.
       IF (WGREO.LT.2300.0) THEN
          WGANUO=7.37
-      ELSE IF (WGREO.LT.10000) THEN
-         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
-     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREO.LT.10000.) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125.)*WGPRTO**(1.0/3.0)*
+     &   (1.+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
       END IF
@@ -6638,25 +6728,25 @@ C Calculate the heat transfer coefficient.
          IF (WGAJUDGE.GT.10.0) THEN
          WGANUI=1.86*(WGAJUDGE**0.333)
          ELSE
-         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
+         WGANUI=3.66+0.0668*WGAJUDGE/(1.+0.04*WGAJUDGE**(2.0/3.0))
          END IF
-      ELSE IF (WGREI.LT.10000) THEN
-         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
-     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREI.LT.10000.) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125.)*WGPRTI**(1.0/3.0)*
+     &          (1.+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
       END IF
       WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
 
-      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
+      WGEXCHANGERK=1./(1./WGAHWOHE+1./WGAHWIHE)
 
       IF (WGCMIN.GT.0.1) THEN
       WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
       IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
-         WGEWGPI=WGANTU/(1+WGANTU)
+         WGEWGPI=WGANTU/(1.+WGANTU)
       ELSE 
-         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
-     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
+         WGEWGPI=(1.-EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))/
+     &   (1.-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))
       END IF
       WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
       GOTO 107
@@ -6671,27 +6761,27 @@ C using updated guesstimate of outlet water temperature.
       WGT1=WGT10/2.0+WGT11/2.0
       WGT2=WGT20/2.0+WGT22/2.0
 
-      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
-      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2.+WGBK3*WGT2**3.)/100.
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2.+WGBK3*WGT1**3.)/100.
     	    
-      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
-      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
 
-      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
-      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2.+WGBP3*WGT2**3.
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2.+WGBP3*WGT1**3.
 
-      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
-     &          (WGDIINERPIPE+0.0024)**2)/4)
-      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
+      WGVFOUT=WGFMOUTER/1000./(WGPI*(WGDIOUTERPIPE**2.-
+     &          (WGDIINERPIPE+0.0024)**2.)/4.)
+      WGVFIN=WGFMINNER/1000./(WGPI*WGDIINERPIPE**2./4.)
       WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
       WGREI=WGVFIN*WGDIINERPIPE/WGVISI
 
 C Calculate the heat transfer coefficient.
       IF (WGREO.LT.2300.0) THEN
          WGANUO=7.37
-      ELSE IF (WGREO.LT.10000) THEN
-         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
-     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREO.LT.10000.) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125.)*WGPRTO**(1.0/3.0)*
+     &   (1.+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
       END IF
@@ -6702,25 +6792,25 @@ C Calculate the heat transfer coefficient.
          IF (WGAJUDGE.GT.10.0) THEN
          WGANUI=1.86*(WGAJUDGE**0.333)
          ELSE
-         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
+         WGANUI=3.66+0.0668*WGAJUDGE/(1.+0.04*WGAJUDGE**(2.0/3.0))
          END IF
-      ELSE IF (WGREI.LT.10000) THEN
-         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
-     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREI.LT.10000.) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125.)*WGPRTI**(1.0/3.0)*
+     &          (1.+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
       END IF
       WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
 
-      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
+      WGEXCHANGERK=1./(1./WGAHWOHE+1./WGAHWIHE)
 
       IF (WGCMIN.GT.0.1) THEN
       WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
       IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
-         WGEWGPI=WGANTU/(1+WGANTU)
+         WGEWGPI=WGANTU/(1.+WGANTU)
       ELSE 
-         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
-     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
+         WGEWGPI=(1.-EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))/
+     &   (1.-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))
       END IF
       WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
       GOTO 108
@@ -6912,8 +7002,8 @@ C Check that 2nd data item = zero (This allows time based control).
         if(itpmod(ICMP))then 
           if(close)then
             usealt=.false.
-          elseif(tfa(ICMP).lt.ibsn(jcf,2).and.
-     &         tfa(ICMP).gt.ibsn(jcf,3))then
+          elseif(tfa(ICMP).lt.real(ibsn(jcf,2)).and.
+     &         tfa(ICMP).gt.real(ibsn(jcf,3)))then
             usealt=.false.
           else
             usealt=.true.
@@ -6921,8 +7011,8 @@ C Check that 2nd data item = zero (This allows time based control).
         else
           if(close)then
             usealt=.false.
-          elseif(tfa(ICMP).lt.ibsn(jcf,2).and.
-     &         tfa(ICMP).gt.ibsn(jcf,3))then
+          elseif(tfa(ICMP).lt.real(ibsn(jcf,2)).and.
+     &         tfa(ICMP).gt.real(ibsn(jcf,3)))then
             usealt=.false.
           else
             usealt=.true.
