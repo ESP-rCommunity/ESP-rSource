@@ -802,7 +802,7 @@ C << must be revised for multiple day types and periods. >>
 
 #include "building.h"
 #include "geometry.h"
-      common/pophelp/h(60)
+
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
@@ -813,7 +813,7 @@ C << must be revised for multiple day types and periods. >>
 
       DIMENSION IVALS(3), ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
-      CHARACTER ALTS*31,H*72
+      CHARACTER ALTS*31
       integer iwhich,iwhich2  ! for user choices
       
 C For help messages
@@ -1838,7 +1838,6 @@ C     =2 infil, =0 ventilation attributes.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -1847,11 +1846,18 @@ C     =2 infil, =0 ventilation attributes.
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character OUTS*124,HOLD*16,h*72
+      character OUTS*124,HOLD*16
 
 C Working variables
       real ACIX,ACVX,TAX,XTA,XACH
       integer IACSX,IACFX,IPTX
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDAIRFL'  ! set for subroutine
 
 C << This subroutine will need further code changes to implement
 C << user cancel actions.
@@ -1873,12 +1879,15 @@ C If new period then set defaults otherwise get data from common.
         TAX=TA(IDT,IPER)
       endif
 
+C Help for the dialogs.
+      helptopic='operations_air_details'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Ask for start and finish times.
       if(itype.eq.-1.or.itype.eq.1)then
  10     write (OUTS,'(A)') 'Start and finish hours for period?'
         write (HOLD,'(2i5,a)') IACSX,IACFX,'  '
-        h(1)='Period during which air flow applies.'
-        CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
+        CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IVS,0,24,'F','period start',IER)
         CALL EGETWI(HOLD,K,IVF,IVS+1,24,'F','period end',IER)
@@ -1890,19 +1899,16 @@ C Ask for start and finish times.
 C Ask for infiltration and ventilation flow rates.
 C Can be specified as:ac/h or m^3/s.
       if(itype.eq.-1.or.itype.eq.2.or.itype.eq.0)then
-        h(1)='An air flow rate can be specified in air change per '
-        h(4)='hour or m^3/s.'
         IGU=1
         CALL EASKAB(' ','Air flow specified in:','AC/h',
-     &     'm^3/s',IGU,2)
+     &     'm^3/s',IGU,nbhelp)
         if (IGU.eq.1) then
 
           if(itype.eq.-1.or.itype.eq.2)then
 C Flow as ac/h.
  20         XACH=ACIX
-            h(1)='Supply the infiltration rate in ac/h.'
-            call EASKR(XACH,' ','Infiltration rate?',
-     &        0.0,'W',10.0,'W',0.5,'infil rate ach',IERI,1)
+            call EASKR(XACH,' ','Infiltration rate ac/h ?',
+     &        0.0,'W',10.0,'W',0.5,'infil rate ach',IERI,nbhelp)
             if(IERI.eq.0)then
               ACIX=XACH
             elseif(ieri.eq.-3)then
@@ -1914,10 +1920,8 @@ C Flow as ac/h.
         
           if(itype.eq.-1.or.itype.eq.0)then
  22         XACH=ACVX
-            h(1)='Supply the ventilation rate in ac/h relative'
-            h(2)='to the volume of the receiving zone.'
-            call EASKR(XACH,' ','Ventilation rate?',
-     &        0.0,'W',10.0,'W',0.0,'vent rate ach',IERI,2)
+            call EASKR(XACH,' ','Ventilation ac/h rate?',
+     &        0.0,'W',10.0,'W',0.0,'vent rate ach',IERI,nbhelp)
             if(IERI.eq.0)then
               ACVX=XACH
             elseif(ieri.eq.-3)then
@@ -1931,9 +1935,8 @@ C Flow as ac/h.
 C Flow as m^3/s.
  30       if(itype.eq.-1.or.itype.eq.2)then
             XACH=ACIX*VOL(ICOMP)/3600.
-            h(1)='Supply the infiltration rate in m^3/s.'
-            call EASKR(XACH,' ','Infiltration rate?',
-     &        0.0,'W',10.0,'W',0.0,'inf rate m3s',IERI,1)
+            call EASKR(XACH,' ','Infiltration rate m^3/s ?',
+     &        0.0,'W',10.0,'W',0.0,'inf rate m3s',IERI,nbhelp)
             if(IERI.eq.0)then
               ACIX=XACH*3600.0/VOL(ICOMP)
             elseif(ieri.eq.-3)then
@@ -1945,10 +1948,8 @@ C Flow as m^3/s.
 
           if(itype.eq.-1.or.itype.eq.0)then
             XACH= ACVX*VOL(ICOMP)/3600.
-            h(1)='Supply the ventilation rate in m^3/s relative.'
-            h(2)='to the volume of the receiving zone.'
-            call EASKR(XACH,' ','Ventilation rate?',
-     &        0.0,'W',10.0,'W',0.0,'vent rate m3s',IERI,2)
+            call EASKR(XACH,' ','Ventilation rate m^3/s ?',
+     &        0.0,'W',10.0,'W',0.0,'vent rate m3s',IERI,nbhelp)
             if(IERI.eq.0)then
               ACVX=XACH*3600.0/VOL(ICOMP)
             elseif(ieri.eq.-3)then
@@ -1968,7 +1969,7 @@ C checks are carried out.
 C Ask for source zone/ temperature.
           CALL EASKABC(' ','Ventilation air temperature:',
      &      'other modelled zone','constant',
-     &      'ambient',IGU,0)
+     &      'ambient',IGU,nbhelp)
           if (IGU.eq.1) then
 
 C Present zone list.
@@ -1998,9 +1999,8 @@ C Present zone list.
 
 C Ask for source temperature.
  40         XTA=  TAX
-            h(1)='Supply the ventilation air temperature in degC.'
-            call EASKR(XTA,' ','Supply temperature?',
-     &        0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
+            call EASKR(XTA,' ','Supply temperature (degC) ?',
+     &        0.0,'F',50.0,'W',0.5,'vent src temp',IERI,nbhelp)
             if(IERI.eq.0)then
               IPTX=0
               TAX=XTA
@@ -2109,8 +2109,6 @@ C  ICD - copy (=2) delete (=1) flag
 #include "building.h"
 #include "geometry.h"
 
-      common/pophelp/h(60)
-
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2121,10 +2119,17 @@ C  ICD - copy (=2) delete (=1) flag
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      character VERT(3*MA)*35,OUTS*124,OUT*4
       INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilistlen,ilm
 
       dimension IVERT(3*MA),ITEMP(3*MA)
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CDAIRFL'  ! set for subroutine
 
       ilistlen=0
 
@@ -2158,12 +2163,14 @@ C Build up text strings for the menu.
  10     continue
  400  CONTINUE
 
+      helptopic='operations_copy_flow'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C To delete period(s) redisplay the menu and allow user to indicate
 C which one, then collapse the period list.
       if (ICD.eq.1) then
-        H(1)='One or more of the periods may be deleted.'
         call EPICKS(ilistlen,IVERT,' ','Air flow period(s) to delete:',
-     &         35,M,VERT,'Air flow period to delete',IER,1)
+     &         35,M,VERT,'Air flow period to delete',IER,nbhelp)
 
 C Delete items in IVERT array. Sort IVERT first.
         if (ilistlen.gt.0) then
@@ -2203,16 +2210,14 @@ C Delete items in IVERT array. Sort IVERT first.
       else
 
 C Copy periods.
-        h(1)='All the casual gains associated with a specified day type'
-        h(2)='can be copied to another day type.'
         IX=1
         CALL EDISP(IUOUT,'choose daytype to copy periods from')
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
-     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+     &  12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
         IDTY=KSTR(1)
         CALL EDISP(IUOUT,'choose daytype to copy periods to')
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
-     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+     &  12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
         IDT=KSTR(1)
      	do 210 IX=1,NAC(IDTY)
      	  if (NAC(IDT).lt.MA) then
@@ -2273,7 +2278,6 @@ C << initial intent to guide later revisions?
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -2306,7 +2310,6 @@ C Scratch copy of air flow pattern from an operations file.
                            !questions about the operation files data
 
       character*(*) sfile
-      character h*72
       CHARACTER oprdescc*248,ctlstrc*24
       character ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
@@ -2314,6 +2317,13 @@ C Scratch copy of air flow pattern from an operations file.
       LOGICAL XST,unixok
       INTEGER IDTY
       character actflatfile*1
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='COPYAIRFL'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2322,6 +2332,9 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+      helptopic='copy_air_via_import'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Clear the operations data structures related to air prior
 C to reading in source.
@@ -2440,10 +2453,8 @@ C IF asked to copy all then
           LPROJ(idest)=ltmp
         else
           call edisp(iuout,'Destination operation file not found.')
-          h(1)='This is the suggested name for the file that will'
-          h(2)='hold the imported air flow schedules data. '
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-     &      ' ',72,GFILE,'new operations file',IER,2)
+     &      ' ',72,GFILE,'new operations file',IER,nbhelp)
           LPROJ(idest)=ltmp
         endif
 
@@ -2458,10 +2469,8 @@ C Copy the local array data into the common blocks overwriting
 C the data implied by 'afact'. Also act on the iflow vflow directives.
         if(isource.eq.0)then
           VAL=10.0
-          h(1)='Because this is a pattern file there is no associated'
-          h(2)='zone and to do a ratio we need an assumed volume. '
           CALL EASKR(VAL,' ','Assumed volume of source?',
-     &        0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
+     &        0.10,'F',9999.0,'W',0.0,'assumed volume',IER,nbhelp)
           ratioif=VAL/VOL(idest)
         else
           ratioif=VOL(isource)/VOL(idest)
@@ -3040,7 +3049,6 @@ C ITRC is the trace level, IER=0 is OK.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
 
@@ -3075,7 +3083,7 @@ C << this common should be re-sized 7 -> MGTY >>
       integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
-      character typstr*8,H*72
+      character typstr*8
       character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3087,22 +3095,23 @@ C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
       integer kstr,ILLEN,IQ,IX,I,IDU,IDT,IOPT,IDTYP
       dimension kstr(MDTY),ILLEN(MDTY)
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDCAS'  ! set for subroutine
 
 C If not browsing, take the information from loadcnt
 C and decide if the periods need to be updated.
       if(.NOT.browse)then
         if(ip3ver(ICOMP).eq.0)then
           dok=.true.
-          h(1)='You were presented with this message because the'
-          h(2)='file is in an older format which might have overlaps'
-          h(3)='in the casual gain periods. The current definition'
-          h(4)='of casual gain periods does not support overlapping'
-          h(5)='periods and stores the periods by time and day type.'
-          h(6)=' '
-          h(7)='It is recommended that you say YES and then check that'
-          h(8)='the updated periods are correct.'
+          helptopic='operations_warn_overlap'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call askok(' ','Sort and remove overlaps from casual gains?',
-     &                 OK,DOK,8)
+     &                 OK,DOK,nbhelp)
         else
           ok=.false.
         endif
@@ -3234,24 +3243,8 @@ C If a long list include page facility text.
       VERT(M+8)  ='- exit this menu              '
 
 C Help text for this menu.
-      H(1)='Casual gains are defined via one or more periods, the'
-      H(2)='magnitude at a given time being the summation of the '
-      H(3)='gains in all periods which include that time.  In '
-      H(4)='this way complex patterns may be described. '
-      H(5)=' '
-      H(6)='You may use an `additive` or `sequential` approach or'
-      H(7)='a combination as you choose.  The total gain is '
-      H(8)='displayed in the graphic feedback window.'
-      H(9)='  '
-      H(10)='If electrical definitions are included the menu will'
-      H(11)='show the power consumption of the load and the power'
-      H(12)='factor. The graphs will continue to show the casual'
-      H(13)='gains to the zone.'
-      H(14)='  '
-      h(15)='Import casul gains - you select a zone with casual'
-      h(16)='gains patterns and they are copied into this zone,'
-      h(17)='optionally with adjustments if the zone base areas'
-      h(18)='differ.'
+      helptopic='operations_casual_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       title = ' '
@@ -3267,7 +3260,7 @@ C Import profile.
         IX=1
         CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
      &  12,NBDAYTYPE,CALENTAG,
-     &  'Import a profile for which day type?',IER,18)
+     &  'Import a profile for which day type?',IER,nbhelp)
         IW=KSTR(1)
         IN=NCAS(IW)
         CALL SCASL(IN,IW,IER,ICOMP)
@@ -3275,16 +3268,10 @@ C Import profile.
       elseif (IVERT.eq.2) then
 
 C Include/ exclude electrical definitions.
-        H(1)='If you choose to incorporate electrical data into '
-        H(2)='the operations file you will be asked to specify ' 
-        H(3)='additional data items for each casual gain. With '
-        H(4)='the extra data items casual gains are now zone '
-        H(5)='loads - zone loads contain both thermal and '
-        H(6)='electrical information. Type definitions remain '
-        H(7)='the same as for casual gains. '
         if(IELF(ICOMP).EQ.0.or.IELF(ICOMP).EQ.2) then
          call easkabc('Do you wish to include definition of electrical', 
-     &   'data in the operations description?','Yes','No','Cancel',IW,7)
+     &     'data in the operations description?','Yes','No','Cancel',
+     &     IW,nbhelp)
           if(IW.eq.1) then
 
 C Set flag and default values.
@@ -3342,15 +3329,10 @@ C If different period, update the menu length.
         ILEN=NCAS(IDTYP)
         goto 44
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
-        h(1)='You can apply a scaling factor to all entries of a '
-        h(2)='particular casual gain type (useful for parametric '
-        h(3)='studies on profiles which have been imported).'
-        H(4)='If you are not scaling gains choose all gains and then'
-        H(5)='choose a factor of 1.0'
         ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     'All gain types','Cancel',' ',' ',ICGTS,5)
+     &     'All gain types','Cancel',' ',' ',ICGTS,nbhelp)
         if (ICGTS.ne.5) then
           if (ICGTS.ne.4) then
             write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
@@ -3359,13 +3341,13 @@ C If different period, update the menu length.
             write (outs,'(a)') 'Scale all gains for day type: '
           endif
           call EASKABC('Import profile for one or all day types',
-     &          ' ','One day type','All day types','Cancel',IOPT,1)
+     &      ' ','One day type','All day types','Cancel',IOPT,nbhelp)
           IF(IOPT.EQ.1)THEN
             IW=0
             IX=1
             CALL EPICKS(IX,KSTR,' ',
      &      'Import a profile for which day type?',12,NBDAYTYPE,
-     &      CALENTAG,'Import a profile for which day type?',IER,1)
+     &      CALENTAG,'Import a profile for which day type?',IER,nbhelp)
             IW=KSTR(1)
             write (outs,'(2a)') outs(1:lnblnk(outs)),CALENTAG(IW)
           ELSEIF(IOPT.EQ.2)THEN
@@ -3375,7 +3357,7 @@ C If different period, update the menu length.
             GOTO 5
           ENDIF
           CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
-     &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,3)
+     &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,nbhelp)
           DO 760 IDTY=1,NBDAYTYPE
             do 33 i=1,NCAS(IDTY)
               IF(IDTY.EQ.IW.OR.IW.EQ.0)THEN
@@ -3393,35 +3375,11 @@ C If different period, update the menu length.
       elseif (IVERT.eq.(MVERT-5)) then
 
 C Add delete copy period or import full set of casual gains.
-        H(1) ='The options: '
-        H(2) =' add - adds a period to one or all day types'
-        H(3) =' '
-        H(4) =' delete - deletes one or more periods (within a list'
-        H(5) ='   of all periods in all days).'
-        H(6) =' '
-        H(7) =' copy - copies periods from one day type to another  '
-        H(8) ='   Currently it adds the copied periods to the '
-        H(9) ='   destination in addition to existing periods already'
-        H(10)='   present in the destination day type '
-        H(11)=' '
-        H(12)=' import - imports casual gain patterns for all gains'
-        H(13)='   and day types from another zone (overwrites).'
-        H(14)=' '
-        H(15)=' import pattern - imports casual gain patterns for all'
-        H(16)='   gains and day types from file outwith the model '
-        H(17)='   (overwrites)'
-        H(18)=' '
-        H(19)='When importing you can specify whether to:'
-        H(20)=' a) preserve the absolute W being imported e.g. 123W'
-        H(21)='    in the source zone is also 123W in destination'
-        H(22)=' b) preserves W/m^2 implied by the source zone and'
-        H(23)='    destination zone base areas e.g. 123W in source'
-        H(24)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
-        H(25)='    zone.'
         IW=1
         CALL EASKATOG('Casual gain period options:','(see help)',
      &    'add period','delete period','copy period',
-     &    'import from other zone','import pattern ','cancel',' ',IW,25)
+     &    'import from other zone','import pattern ','cancel',' ',
+     &    IW,nbhelp)
         if (IW.EQ.1) then 
 
 C Add new casual gain period.
@@ -3429,12 +3387,12 @@ C Add new casual gain period.
 C << revise to support more casual gain types >>
           CALL EASKABCD('New casual gain of which type?',' ',
      &        lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &        'Cancel',ICGTS,3)
+     &        'Cancel',ICGTS,nbhelp)
           if (ICGTS.ne.4) then
             IQ=0
             if(.NOT.browse)call checkcascount(icomp)
             call EASKABC('Add period for one or all day types',
-     &          ' ','One day type','All day types','Cancel',IOPT,1)
+     &        ' ','One day type','All day types','Cancel',IOPT,nbhelp)
             IF(IOPT.EQ.1)THEN
               write (outs,'(3a)') 'New ',lodlabel(icomp,ICGTS),
      &                          ' gain for day type: '
@@ -3569,7 +3527,7 @@ C Nothing selected treat this as a return state.
 
 C User should only get to this point if there is a source file to use.
           CALL EASKABC('Casual import:',' ','preserve absolute W',
-     &       'convert abs W for base area','continue',ivntv,21)
+     &       'convert abs W for base area','continue',ivntv,nbhelp)
           if(ivntv.eq.1) iwatt='W-W    '
           if(ivntv.eq.2) iwatt='W-m2-W '
           if(ivntv.eq.3) goto 5
@@ -3579,29 +3537,18 @@ C User should only get to this point if there is a source file to use.
           call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,'-',ier)
 
 C Remind users to check their data.
-      h(1)='An automated process has been used to manage the imported'
-      h(2)='schedules. It usually does it as intended and, as with all'
-      h(3)='automated processes it is recommended that you confirm '
-      h(4)='that the resulting file is correct. '
-      h(5)=' '
-      h(6)='One approach is to generate a new QA report and check this'
-      h(7)='against the previous model and then run a short assessment'
-      h(8)='to confirm that the predictions are as expected. '
-          CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+          CALL PHELPD('operation import confirm',nbhelp,'-',0,0,IER)
         elseif(iw.eq.-3)then
           goto 44  ! re-display the menu
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
 C Provide a bit of editing space (8 char) for the  char string.
+        helptopic='operations_casual_labels'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
-        h(1)='Casual gains have initial type labels which may not'
-        h(2)='be appropriate for your project. You can adapt the '
-        h(3)='labels if it clarifies your model. '
         call askok(' ','Change type labels?',OK,dok,3)
         if (OK) then 
-          h(1)='Select a label which describes the gain/load type'
-          h(2)='i.e. equip - equipment, light - lighting etc..   '
           DO 567 ITYPE=1,3
             write(outs,'(a,i2)') 'Label for type ',ITYPE
             write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
@@ -3657,8 +3604,6 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 #include "profile.h"
 
-      common/pophelp/h(60)
-
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -3680,7 +3625,7 @@ C Profile database commons via profile.h.
 
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
-      CHARACTER H*72,hold*40
+      CHARACTER hold*40
       character*8 ll1,ll2,ll3
       character lltmp*144
       character fs*1  ! file separator
@@ -3688,6 +3633,13 @@ C Profile database commons via profile.h.
 
       integer IPPFT,IPPHAST  ! for local editing.
       logical unixok  ! to check for database path file separators
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SCASL'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3743,63 +3695,30 @@ C Copy the string list of event profiles to local string variable.
       DO 50 I = 1,NPDBITEMS
         DESC(I)=PDBDESC(I)
    50 CONTINUE
+
+      helptopic='operations_event_import'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       
 C Present a list of profiles to select from.
-      H(1)='Any one of the profiles may be selected.'
       IX=1
       NITEMS=NPDBITEMS
       CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
-     &         40,NITEMS,DESC,'db profiles',IER,1)
+     &         40,NITEMS,DESC,'db profiles',IER,nbhelp)
       IF(IX.EQ.0)RETURN
 
       INDEX=IPRVAL(1)
 
 C Identify nature of casual gain
-      H(1)='Casual gains within a zone can be be designated to be '
-      H(2)='of one of three user-defined types so that for example '
-      H(3)='occupant gains can be separately tracked from that of '
-      H(4)='lighting or equipment.  The types listed can have any'
-      H(5)='meaning that the user chooses (type labels can be edited'
-      h(6)='in the main operations menu.'
-      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
+      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,
+     &  nbhelp)
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
 
 C << this would be a good place to expand the logic so that lighting
 C << and small power can be entered in terms of W/m2.
-      H(1) ='In order to expand the profile into energy values the'
-      H(2) ='sensible and latent load in Watts equivalent to 100% is'
-      h(3) =' required. '
-      h(4) =' '
-      h(5) ='Also supply the radiant and convective fraction for the'
-      h(6) ='sensible load (these normally should sum to 1.00) '
-      h(7) =' '
-      h(8) ='The radiant and convective split of lighting fixtures is'
-      h(9) ='listed below(CIBSE Consice Handbook Table A6.5) : '
-      h(10)='  fluorescent radiant = 30  convective = 70'
-      h(11)='  tungsten    radiant = 85  convective = 15'
-      h(12)='  HP mercury sodium radiant = 50 convective = 50'
-      h(13)='  low pressure sodium radiant = 43 convective = 57'
-      h(14)=' '
-      h(15)='The position of lamps determines the distribution of '
-      h(16)='heat into room or ceiling void (CIBSE Table A6.4) '
-      h(17)='  recessed open fixture  upwards = 38 downwards = 62'
-      h(18)='  recessed with louvre   upwards = 45 downwards = 55'
-      h(19)='  recessed with diffuser upwards = 53 downwards = 47'
-      h(20)='  surface mount open fixt upwards = 12 downwards = 88'
-      h(21)='  surface mount enclosed prismatic up= 22 down = 78'
-      h(22)='  suspended near ceiling enclosed prismatic upwards = 6'
-      h(23)='     downwards = 94'
-      h(24)='  suspended or wall mounted or desk lamp upwards = 0'
-      h(25)=' '
-      h(26)='The radiant and convective split for office equipement'
-      h(27)='is typically: (CIBSE Table A6.9) '
-      h(28)=' desktop computer radiant = 14 convective = 86'
-      h(29)=' monitor (type not defined) radiant = 35 conv = 65'
-      h(30)=' laser printer  radiant 33 convective 67'
       CALL EASKS(HOLD,
      &  ' 100% sensible & latent loads, radiant & convective fraction:',
-     &        ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,30)
+     &  ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,nbhelp)
       K=0
       CALL EGETWR(HOLD,K,PS,0.0,999999.,'F','sensible 100%',IER)
       CALL EGETWR(HOLD,K,PL,0.0,999999.,'F','latent 100%',IER)
@@ -3809,21 +3728,16 @@ C << and small power can be entered in terms of W/m2.
       SUM = RAD + CON
       IF (SUM .LT. 0.98 .OR. SUM .GT. 1.02)then
         dok=.false.
-        h(1)='If the sum is less than 0.98 or greater than 1.00 then'
-        h(2)='the sensible load may not be well represented in your '
-        h(3)='model. Tweaking this is for experts only! '
         call askok(' The Sum of radiant and convective fractions is',
-     &    ' not close to 1.0! Are you sure about this? ',OK,dok,2)
+     &    ' not close to 1.0! Are you sure about this? ',OK,dok,nbhelp)
        if(.NOT.ok)goto 100
       ENDIF
       IF(IELF(ICOMP).GT.0) THEN
         dok=.false.
-        h(1)='Electrical data (e.g. power factor, leading/lagging'
-        h(2)='loads, real power, phase) might be used by electrical'
-        h(3)='engineers and in models where other power components'
-        h(4)='are being defined. If not just say no. '
+        helptopic='operations_electrical'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Include electrical data with this profile?',
-     &    '(see help)',OK,dok,4)
+     &    '(see help)',OK,dok,nbhelp)
         IF(.NOT.OK) THEN
           PPF=0.0
           IPPF=0
@@ -3831,23 +3745,12 @@ C << and small power can be entered in terms of W/m2.
           IPPHAS=1
           PE=0.0
         ELSE
-          H(1)='Enter a power factor between 0.-1.'
-          H(2)='Power factor is the ratio of real to apparent'
-          H(3)='power drawn by the load.'
           CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
-     &      0.,'F',1.,'F',0.8,'Power factor ',IER,3)
-
-          H(1)='A lagging load is one with an inductive'
-          H(2)='component i.e. flourescent lighting, a '
-          H(3)='leading load is one with a capacative  '
-          H(4)='element. Unity loads are purely resistive'
-          H(5)='i.e. incandescent lighting.'
-          H(6)=' '
-          H(7)='A cancel leaves the model without electrical data'
-          H(8)='for this item. '
+     &      0.,'F',1.,'F',0.8,'Power factor ',IER,nbhelp)
           ippft=ippf
           CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
-     &      '(see help) ',-1,'F',1,'F',0,'casual gain type',IERI,8) 
+     &      '(see help) ',-1,'F',1,'F',0,'casual gain type',IERI,
+     &      nbhelp) 
           if(ieri.eq.-3)then
             PPF=0.0
             IPPF=0
@@ -3859,25 +3762,15 @@ C << and small power can be entered in terms of W/m2.
             ippf=ippft
           endif
 
-          H(1)='To expand the profile into energy values it'
-          H(2)='is necessary to supply the power consumption'
-          H(3)='equivalent to 100%.'
           PE=PS
           CALL EASKR(PE,' ','Power consumption? (W) ? ',
-     &      0.,'F',99.,'-',PS,'Power consumption ',IER,3)
+     &      0.,'F',99.,'-',PS,'Power consumption ',IER,nbhelp)
 
           PBVOLT=240.
-          H(1)='At what voltage does the load operate ?'
           CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
-     &      0.,'F',99.,'-',240.,'Operational volatage ',IER,1)
+     &      0.,'F',99.,'-',240.,'Operational volatage ',IER,nbhelp)
 
           IPPHAST=1
-          H(1)='Which phse of the three phse supply is the load'
-          H(2)='connected to ? (1-3) or 4 - all three i.e. for'
-          H(3)='a large induction motor.'
-          H(4)=' '
-          H(5)='A cancel leaves the model without electrical data'
-          H(6)='for this item. '
           ipphast=ipphas
           CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
      &       1,'F',4,'F',1,'casual gain type',IERI,6) 
@@ -3933,7 +3826,6 @@ C If silent is true then use icgs & icgf parameters.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -3947,11 +3839,18 @@ C Electrical data flag and elctrical data.
 
       logical OK,DOK,CLOSE,silent
 
-      character OUTS*124,hold*24,h*72
+      character OUTS*124,hold*24
 
       integer IV,ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
       integer IALL
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDCASGN'  ! set for subroutine
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -3969,14 +3868,16 @@ C If new period then set defaults otherwise get data from common.
      &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
       endif
 
+      helptopic='operations_casual_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C If silent jump to insertion logic.
       if(silent) goto 112
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
       write (hold,'(2i5,a)') ICGSX,ICGFX,'  '
-      h(1)='Period during which casual gains applies.'
-      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
+      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,nbhelp)
       if(ier.eq.-3) return  ! user canceled
       K=0
       CALL EGETWI(hold,K,IVS,0,24,'F','period start',IER)
@@ -3999,65 +3900,12 @@ C Warn user if the zone base area is still zero.
 
 C Ask for sensible and latent gain.
 C Can be specified as: W, W/obj, W/m^2, m^2/obj
-      h(1)='A gain can be specified as:'
-      h(2)=' Watts - explicitly set the gain.'
-      h(3)=' Watts per square meter - will use the floor area of the '
-      h(4)='  zone to calculate the total gain.'
-      h(5)=' Watts per object - gain/object and number of objects are'
-      h(6)='  required (an object could be a person or computer).'
-      h(7)=' Square meters per object - will use the floor area of the'
-      h(8)='  zone to calculate the total gain. For the particular'
-      h(9)='  case of an occupant there is an assumption that each'
-      h(10)=' person is 95W sensible and 45W latent.'
-      h(11)=' '
-      h(12)='ESP-r asks for fixed sensible and latent values. The'
-      h(13)='values for occupants are really a function of the current'
-      h(14)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(15)='If possible pick a value for the likely temperature rnage.'
-      h(16)='For an adult and average mix '
-      h(17)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
-      h(18)='Seated inactive    115     100  15     90  25      75  40'
-      h(19)='       avg mix     100      87  13     78  22      65  35'
-      h(20)='Seated light work  140     110  30    100  40      80  60'
-      h(21)='       avg mix     126      99  27     90  36      72  54'
-      h(22)='Seated office work 140     110  30    100  40      80  60'
-      h(23)='       avg mix     130     102  28     93  37      74  56'
-      h(24)='Standing light work 160    120  40    110  50      85  75'
-      h(25)='       avg mix      141    106  35     97  44      75  66'
-      h(26)='Light factory work 235     150  85    130 105     100 135'
-      h(27)='       avg mix     209     133  76    116  93      89 121'
-      h(28)='Medium factory work 265    160 105    140 125     105 160'
-      h(29)='       avg mix      249    150  99    132 117      99 150'
-      h(30)='Heavy factory work 440     220 220    190 250     135 305'
-      h(31)='       avg mix     440     220 220    190 250     135 305'
-      h(32)=' '
       IGU=1
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
      &     'Watts per square meter','Watts per object',
-     &     'Square meters per object',IGU,32)
+     &     'Square meters per object',IGU,nbhelp)
 
 C Common portion of help message for detailed dialogs.
-      h(4)=' '
-      h(5)='ESP-r asks for fixed sensible and latent values. The'
-      h(6)='values for occupants are really a function of the current'
-      h(7)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(8)='If possible pick a value for the likely temperature rnage.'
-      h(9)='For an adult and average mix '
-      h(10)='              Total W 15C sen lat 20C sen lat 24C sen lat'
-      h(11)='Seated inactive   115     100  15     90  25      75  40'
-      h(12)='       avg mix    100      87  13     78  22      65  35'
-      h(13)='Seated light work 140     110  30    100  40      80  60'
-      h(14)='       avg mix    126      99  27     90  36      72  54'
-      h(15)='Seated office work 140    110  30    100  40      80  60'
-      h(16)='       avg mix     130    102  28     93  37      74  56'
-      h(17)='Standing light work 160   120  40    110  50      85  75'
-      h(18)='       avg mix      141   106  35     97  44      75  66'
-      h(19)='Light factory work 235    150  85    130 105     100 135'
-      h(20)='       avg mix     209    133  76    116  93      89 121'
-      h(21)='Medium factory work 265   160 105    140 125     105 160'
-      h(22)='       avg mix      249   150  99    132 117      99 150'
-      h(23)='Heavy factory work 440    220 220    190 250     135 305'
-      h(24)='       avg mix     440    220 220    190 250     135 305'
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
@@ -4066,11 +3914,8 @@ C Gain as W - require gain only.
         else
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
-        h(1)='Supply the sensible and latent gain in Watts.'
-        h(2)=' '
-        h(3)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
         if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
@@ -4087,11 +3932,8 @@ C Gain as W/m^2 - require gain per square meter.
         else
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
- 30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
-        h(2)=' '
-        h(3)=' '
-        call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+ 30     call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
+     &          ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
         if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
@@ -4114,11 +3956,8 @@ C Gain as W/object - require no of objects and gain per object. If
 C user cancels go back to initial question.
 C << an actual cancel option not yet implemented >>
         NOBJ=1
- 40     h(1)='The number of objects for the current gain type is '
-        h(2)='required. For example the number of computers.'
-        h(3)=' '
-        CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
-     &    0,'W',100,'W',1,'no. objects',IERI,24)
+ 40     CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
+     &    0,'W',100,'W',1,'no. objects',IERI,nbhelp)
         if(ieri.eq.0)then
           continue
         elseif(ieri.eq.-3)then
@@ -4128,11 +3967,8 @@ C << an actual cancel option not yet implemented >>
         endif
 
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
-        h(1)='Supply the sensible and latent gain in Watts.'
-        h(2)=' '
-        h(3)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-     &          ' ',24,'  0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'  0.   0. ','casual gn info',IER,nbhelp)
         K=0
         if(ier.eq.-3) goto 10  ! user canceled
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
@@ -4155,11 +3991,8 @@ C If user cancels go back to initial question.
           FLA=10.
         endif
         XFLA=FLA
-        h(1)='The floor area per object for the current gain type is '
-        h(2)='required. For example the area per person assuming that'
-        h(3)='for people the sensible is 95W and latent is 45W. '
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
-     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
+     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,nbhelp)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
@@ -4177,11 +4010,8 @@ C that each person is 95W sensible and 45W latent.
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
-            h(1)='Supply the sensible and latent gain in Watts/object.'
-            h(2)=' '
-            h(3)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
             call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
@@ -4204,34 +4034,10 @@ C that each person is 95W sensible and 45W latent.
 
 C Ask for rad/ conv split.
  70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
-      h(1)='Supply the radiant and convective fraction for'
-      h(2)='the sensible load (should be <=1.00) '
-      h(3) =' '
-      h(4) ='The radiant and convective split of lighting fixtures is'
-      h(5) ='listed below(CIBSE Consice Handbook Table A6.5) : '
-      h(6) ='  fluorescent radiant = 30  convective = 70'
-      h(7) ='  tungsten    radiant = 85  convective = 15'
-      h(8) ='  HP mercury sodium radiant = 50 convective = 50'
-      h(9) ='  low pressure sodium radiant = 43 convective = 57'
-      h(10)=' '
-      h(11)='The position of lamps determines the distribution of '
-      h(12)='heat into room or ceiling void (CIBSE Table A6.4) '
-      h(13)='  recessed open fixture  upwards = 38 downwards = 62'
-      h(14)='  recessed with louvre   upwards = 45 downwards = 55'
-      h(15)='  recessed with diffuser upwards = 53 downwards = 47'
-      h(16)='  surface mount open fixt upwards = 12 downwards = 88'
-      h(17)='  surface mount enclosed prismatic up= 22 down = 78'
-      h(18)='  suspended near ceiling enclosed prismatic upwards = 6'
-      h(19)='     downwards = 94'
-      h(20)='  suspended or wall mounted or desk lamp upwards = 0'
-      h(21)=' '
-      h(22)='The radiant and convective split for office equipement'
-      h(23)='is typically: (CIBSE Table A6.9) '
-      h(24)=' desktop computer radiant = 14 convective = 86'
-      h(25)=' monitor (type not defined) radiant = 35 conv = 65'
-      h(26)=' laser printer  radiant 33 convective 67'
+      helptopic='operations_lighting_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call EASKS(HOLD,'Radiant & convective fraction: (see help)',
-     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,26)
+     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,nbhelp)
       K=0
       call EGETWR(HOLD,K,RAD,0.,1.0,'F','rad frac',IER)
       CMAX=(1.00-RAD)+0.02  ! allow for small rounding errors
@@ -4241,12 +4047,8 @@ C Ask for rad/ conv split.
         write(outs,'(a,f7.3)') 
      &    'The gains radiant & convective parts add up to ',rad+con
         DOK=.false.
-        h(1)='Setting the total radiant and convective split of a'
-        h(2)='casual gain to less than 0.9 can lead to confusion'
-        h(3)='(600W with 0.4 rad and 0.4 conv is 480W total) and '
-        h(4)='should only be done by experts.'
         CALL ASKOK(outs,
-     &    ' This is less than 0.9. Are you sure?',OK,DOK,4)
+     &    ' This is less than 0.9. Are you sure?',OK,DOK,nbhelp)
         IF(.NOT.OK)GOTO 70
       endif
       RADCX=RAD
@@ -4255,25 +4057,15 @@ C Ask for rad/ conv split.
 C Electrical details.
       if (IELF(ICOMP).EQ.1) then
         DOK=.false.
-        h(1)='Electrical data (e.g. power factor, leading/lagging'
-        h(2)='loads, real power, phase) might be used by electrical'
-        h(3)='engineers and in models where other power components'
-        h(4)='are being defined. If not just say no. '
-        call ASKOK(' ','Does this load need electrical data?',OK,DOK,4)
+        call ASKOK(' ','Does this load need electrical data?',
+     &    OK,DOK,nbhelp)
         if(OK) then
 
 C Get the electrical details of the load from the user
-          H(1)=' Power factor will vary between 0 - 1.0'
  80       pft=PFX
           call EASKR(pft,' ','Load power factor?',
-     &           0.0,'F',1.0,'F',1.0,'power factor',IER,1)
+     &           0.0,'F',1.0,'F',1.0,'power factor',IER,nbhelp)
           if (IER.ne.0) goto 80
-
-          H(1)='The load will either be capacitive, leading current,'
-          H(2)='or reactive with a lagging current, most loads take '
-          H(3)='a lagging current.'
-          H(4)=' '
-          H(5)='A (*) flags an existing value. '
 
           call ECLOSE(pft,1.0,0.0001,CLOSE)
           if (CLOSE) then
@@ -4281,13 +4073,13 @@ C Get the electrical details of the load from the user
           else
             if(ipfX.eq.-1)then
               call EASKAB('Is the load current leading or lagging?',
-     &          '(see help)','Leading (*)','Lagging',IOPT,5)
+     &          '(see help)','Leading (*)','Lagging',IOPT,nbhelp)
             elseif(ipfX.eq.1)then
               call EASKAB('Is the load current leading or lagging?',
-     &          '(see help)','Leading','Lagging (*)',IOPT,5)
+     &          '(see help)','Leading','Lagging (*)',IOPT,nbhelp)
             else
               call EASKAB('Is the load current leading or lagging?',
-     &          '(see help)','Leading','Lagging',IOPT,5)
+     &          '(see help)','Leading','Lagging',IOPT,nbhelp)
             endif
             if (IOPT.EQ.1) then
               IPFT=-1
@@ -4296,27 +4088,19 @@ C Get the electrical details of the load from the user
             endif
           endif
 
-          H(1)='What is the real power consumption in watts?'
-          H(2)='This might be the same as the sensible load for'
-          H(3)='some devices (please check). '
  90       pwrt=PWRX
           call EASKR(pwrt,'Real power consumption ?','  ',
-     &          0.0,'-',10000.0,'-',CMGSX,'power consumption',IER,3)
+     &      0.0,'-',10000.0,'-',CMGSX,'power consumption',IER,nbhelp)
           if (IER.ne.0) goto 90
 
-          H(1)=' What voltage does the load operate at i.e. 220V'
  100      bvoltt=BVOLTX
           call EASKR(bvoltt,' ','Operational voltage?',
-     &          0.0,'-',10000.0,'-',220.0,'op voltage',IER,1)
+     &          0.0,'-',10000.0,'-',220.0,'op voltage',IER,nbhelp)
           if (IER.ne.0) goto 100
 
-          H(1)='To which phase of the 3-phase supply is the load '
-          H(2)='connected, 1-3 or 4-all three.'
-          H(3)=' '
-          H(4)='A cancel leaves the electrical data unchanged.'
  110      IPHAST=IPHASX
           call EASKI(IPHAST,'Which phase is load connected to?',
-     &      '(see help)',1,'F',4,'F',1,'phase ',IERI,4)
+     &      '(see help)',1,'F',4,'F',1,'phase ',IERI,nbhelp)
           if(ieri.eq.-3)then
             continue
           elseif (ieri.gt.0)then
@@ -4390,7 +4174,6 @@ C  ICD - copy (=2) delete (=1) flag
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -4413,9 +4196,18 @@ C Descriptive label for a zone load or casual gain.
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
 
-      character h*72,VERT(3*MC)*35
+      character VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
       integer ilistlen
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CDCASGN'  ! set for subroutine
+      helptopic='casual_copy_delete'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Choose day type to delete/copy period from
       IX=1
@@ -4423,12 +4215,12 @@ C Choose day type to delete/copy period from
         call edisp(iuout,'Choose daytype to delete period from')
         CALL EPICKS(IX,KSTR,' ',
      &  'Choose day type to delete period from',12,NBDAYTYPE,CALENTAG,
-     &  'Choose daytype to delete period from',IER,1)
+     &  'Choose daytype to delete period from',IER,nbhelp)
       ELSEIF(ICD.EQ.2)THEN
         call edisp(iuout,'Choose daytype to copy period from')
         CALL EPICKS(IX,KSTR,' ',
      &  'Choose day type to copy period from',12,NBDAYTYPE,CALENTAG,
-     &  'Choose daytype to copy period from',IER,1)
+     &  'Choose daytype to copy period from',IER,nbhelp)
       ENDIF
 
       IDT=kstr(1)
@@ -4454,10 +4246,9 @@ C << Revise to work with more casual gain types >>
  10   continue
 
       IF(ICD.EQ.1)THEN
-        H(1)='One or more of the periods may be deleted (removed).'
         call EPICKS(ilistlen,IVERT,' ',
      &    'Casual gain period(s) to delete:',
-     &    35,M,VERT,'Casual gain period to delete',IER,1)
+     &    35,M,VERT,'Casual gain period to delete',IER,nbhelp)
 
 C Delete items in IVERT array. Sort IVERT first.
         if (ilistlen.gt.0) then
@@ -4472,16 +4263,14 @@ C Delete items in IVERT array. Sort IVERT first.
       else
 
 C Copy periods.
-        h(1)='All the casual gains associated with a specified day type'
-        h(2)='can be copied to another day type.'
         CALL EPICKS(IX,KSTR,' ',
      &  'Choose day type to copy period to',12,NBDAYTYPE,CALENTAG,
-     &  'Choose daytype to copy period to',IER,1)
+     &  'Choose daytype to copy period to',IER,nbhelp)
         IDTT=kstr(1)
         M=NCAS(IDT)
         IXX=M
         call EPICKS(IXX,IVERT,' ','Casual gain period(s) to copy:',
-     &         35,M,VERT,'Casual gain period to copy',IER,1)
+     &         35,M,VERT,'Casual gain period to copy',IER,nbhelp)
         do 210 IX=1,NCAS(IDT)
          if (NCAS(IDTT).lt.MC) then
             ICOPY=0
@@ -4522,9 +4311,7 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
 C sfile (char*(*)) is the name of operations file outwith the model
-C   which is used is isource is zero.
-C itrc - if zero then work silently.
-C act = '-' normal actions, 's' silent actions.
+C   which is used if isource is zero.
 
 C This subroutine does not alter the air flow schedules in the
 C destination zone, only the casual gains.
@@ -4542,9 +4329,18 @@ C << initial intent to guide later revisions?
       
       integer lnblnk  ! function definition
 
+C Passed parameters
+      integer  isource  ! index of source zone
+      integer  idest    ! index of destination zone
+      character actcas*8  ! instruction 'allcas' copies all
+      character iwatt*8   ! instruction see above
+      character*(*) sfile ! source operations file name if isource is zero
+      integer  itrc       ! if zero work silently
+      character act*1   ! '-' normal, 's' silent
+      integer ier       ! if non-zero there was a problem
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -4596,16 +4392,19 @@ C Descriptive label for a zone load or casual gain.
       integer ifullysilent !flag to drive the silent model creation without
                            !questions about the operation files data
 
-      character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
-      character h*72
       character ltmp*72
-      character fs*1,GFILE*72,iwatt*8
-      character actcas*8
-      character act*1   ! '-' normal, 's' silent
+      character fs*1,GFILE*72
       LOGICAL XST,unixok,dok,ok
       character actflatfile*1
       integer idty
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='IMPORTZCASG'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4627,7 +4426,10 @@ C so there is no need to clear nac
       lodlabel(idest,4)='NA    '  
       lodlabel(idest,5)='AnnEl '  
       lodlabel(idest,6)='NA    ' 
-      lodlabel(idest,7)='NA    '      
+      lodlabel(idest,7)='NA    '
+  
+      helptopic='oper_import_dialogs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -4734,10 +4536,8 @@ C name based on the zone name.
         if(act(1:1).eq.'s')then
           LPROJ(idest)=ltmp
         else
-          h(1)='This is the suggested name for the file that will'
-          h(2)='hold the imported casual gain data. '
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-     &      ' ',72,GFILE,'new operations file',IER,2)
+     &      ' ',72,GFILE,'new operations file',IER,nbhelp)
           LPROJ(idest)=ltmp
         endif
 
@@ -4767,10 +4567,8 @@ C then we do not know the ratio set to 1.0 and inform user.
       if(iwatt(1:6).eq.'W-m2-W')then
         if(isource.eq.0)then
           VAL=10.0
-          h(1)='Because this is a pattern file there is no associated'
-          h(2)='zone and to do a ratio we need an assumed area. '
           CALL EASKR(VAL,' ',' Assumed floor area of source ? ',
-     &        0.10,'F',9999.0,'W',0.0,'assumed floor area',IER,2)
+     &        0.10,'F',9999.0,'W',0.0,'assumed floor area',IER,nbhelp)
           if(ZBASEA(idest).gt.0.01)then
             ratioarea=VAL/ZBASEA(idest)
           else
@@ -4835,11 +4633,8 @@ C << separate documentation string for air flows and casual gains.
         endif
 
         if(act(1:1).eq.'-')then
-          H(1)='Notes (<248 char) for schedules of zone air flow and' 
-          H(2)='casual gains can be included in the model. Use this'
-          H(3)='facility to clarify what is happening in the zone.'
           CALL EASKS248(oprdescc,'Operations notes (please edit):',
-     &      ' ',72,'base_case','operation notes',IER,3)
+     &      ' ',72,'base_case','operation notes',IER,nbhelp)
           if(oprdescc(1:2).ne.'  ')oprdesc(idest)=oprdescc
         endif
 
@@ -5475,7 +5270,6 @@ C initcasday does initial setup of all casual day types.
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -5486,22 +5280,16 @@ C initcasday does initial setup of all casual day types.
       INTEGER NCAS,ICGS,ICGF,ICGT,ILN
       REAL CMGS,CMGL,RADC,CONC
       dimension iper(24),iperf(24)
-      character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
+      character hold*48,OUTS*12,LOUTS*24,VOUTS*50
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
-      h(1)='For the current day type specify how many periods'
-      h(2)='for each casual gain type (occupants, lights and'
-      h(3)='small power). Do not include periods for gain types'
-      h(4)='which you will be importing from an Events Profiles'
-      h(5)='database.'
-      h(6)=' '
-      h(7)='If you set the number of periods for a type to zero'
-      h(8)='you can update it later. The number of periods should'
-      h(9)='cover the whole day (i.e. from 0h00 to 24h00). For '
-      h(10)='example, if there are gains between 8h00 and 18h00'
-      h(11)='and nothing at other times, define this as three'
-      h(12)='periods - 0h00 to 8h00 with no gains, 8h00 to 18h00'
-      h(13)='with gains and 18h00 to 24h00 with no gains.'
-      h(14)='Period start times should be in ascending order.'
+      helpinsub='initcasday'  ! set for subroutine
+      helptopic='operations_initial'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       DO 600 IDTY=1,NBDAYTYPE  
         nbocper=1
@@ -5515,7 +5303,7 @@ C initcasday does initial setup of all casual day types.
      &  ' casual gain periods?'
         CALL EASKS(HOLD,VOUTS,
      &  'occupants / lights / equipment or small power',
-     &  24,'  0  0  0  ','no. CG periods',IER,14)
+     &  24,'  0  0  0  ','no. CG periods',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
@@ -5576,18 +5364,30 @@ C Increment ipcount for each new period.
 
 C ******* initcasper
 C initcasper supports setting up initial periods for
-C schedules. It is passed nper and returns an array iper(24)
+C schedules. It returns an array iper(24)
 C with the start times of each period and iperf(24) with finish
-C times for each period. If act='e' the allow
-C editing of current array values. If act='i' initialise and 
-C edit.
+C times for each period.
 C << Note change to real when casual gains data structure improves >>
       subroutine initcasper(nper,iper,iperf,act,label)
-      common/pophelp/h(60)
-      character act*1,cstr*72,h*72,msg*72
+
+C Passed parameters
+      integer nper  ! user supplied number of periods
+      integer iper(24)  ! array of start times
+      integer iperf(24) ! array of finish times
+      character act*1   ! i is initialise and edit e is edit current
       character*(*) label
-      dimension iper(24),iperf(24)
+
+      character cstr*72,msg*72
       real incr
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='initcasper'  ! set for subroutine
+      helptopic='operations_allocate_per'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       if(nper.lt.24)incr=1.
       if(nper.lt.12)incr=2.
@@ -5613,11 +5413,10 @@ C Make up an editing string for the start of each period.
         WRITE(CSTR(K:K1),'(i5)') iper(J)
         K=K1+1
    60 CONTINUE
-      h(1)='If you define actual start times the subsequent'
-      h(2)='editing tasks will be easier.'
       write(msg,'(3a)') 'Start time for each ',
      &  label(1:lnblnk(label)),' period.'
-      CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',IER,2)
+      CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',
+     &  IER,nbhelp)
 
 C Extract the start timings and then sort out the finishes.
       K=0

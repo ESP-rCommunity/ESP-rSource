@@ -204,7 +204,7 @@ C Remember if each zone is fully attributed.
       character DESCRC*25
       character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
       character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
@@ -266,8 +266,8 @@ C in the current model. A -1 means not applicable
       integer im,k,mnulen   ! multi column lines
       logical odd   ! for display of vertex info
       
-      INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
-      INTEGER :: ins4,inss1,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: i,icc,icoth,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
@@ -683,20 +683,10 @@ C Generate report sorted by surface attributes.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('global search by attribute',nbhelp,'-',0,0,IER)
 
-C << mlcmatch not yet used >>
         CALL EASKABCD(' Filter for surface composition:',' ',
      &    'any construction','those marked UNKNOWN',
      &    'specific construction','cancel',ins4,nbhelp)
-        if(ins4.eq.1)then
-          write(mlcmatch,'(a)') 'ANY         '
-        elseif(ins4.eq.2)then
-          write(mlcmatch,'(a)') 'UNKNOWN     '
-        elseif(ins4.eq.3)then
-          CALL EPKMLC(ISEL,'Select construction for matching surfaces',
-     &      'or -Exit',IER)
-          if(ISEL.eq.0)return
-          write(mlcmatch,'(a)')DESC(ISEL)(1:12)
-        elseif(ins4.eq.4)then
+        if(ins4.eq.4)then
           return
         endif
 

@@ -17068,153 +17068,94 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
         CALL EASKABC(' ','Infiltration import:','preserve ac/h',
         CALL EASKABC(' ','Ventilation import:','preserve ac/h',
 *subroutine EDAIRFL
-*item EDAIRFL
-'Period during which air flow applies.'
+*item EDAIRFL operations_air_details
+'There are several inputs describing air flows at a specific'
+'period on the current day type:'
+' '
+' Period during which air flow applies defined by a start hour'
+' and finish hour.
+'  '
+' Infiltration air flow rates are specified in air change per hour'
+' or m^3/s.'
+' '
+' Ventilation air flow rates are specified in air changes (relative'
+' to the volume of the recieving zone) or in ^3/s. You are asked'
+' which zone is the source.'
+'  '
+' For ventilation you may also specify a fixed temperature source'
+' of air (degC) at a specific flow rate or the outside ambient'
+' temperature.'
 *enditem
         CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
-*item EDAIRFL
-'An air flow rate can be specified in air change per '
-'hour or m^3/s.'
-*enditem
         CALL EASKAB(' ','Air flow specified in:','AC/h',
-*item EDAIRFL
-'Supply the infiltration rate in ac/h.'
-*enditem
-            call EASKR(XACH,' ','Infiltration rate?',
-*item EDAIRFL
-'Supply the ventilation rate in ac/h relative'
-'to the volume of the receiving zone.'
-*enditem
-            call EASKR(XACH,' ','Ventilation rate?',
-*item EDAIRFL
-'Supply the infiltration rate in m^3/s.'
-*enditem
-            call EASKR(XACH,' ','Infiltration rate?',
-*item EDAIRFL
-'Supply the ventilation rate in m^3/s relative.'
-'to the volume of the receiving zone.'
-*enditem
-            call EASKR(XACH,' ','Ventilation rate?',
-*item EDAIRFL
-*enditem
-          CALL EASKABC(' ','Ventilation air temperature:',
-*item EDAIRFL
-*enditem
-            call askzone(IV,IPTX,'Ventilation from which zone?',
-*item EDAIRFL
-'Supply the ventilation air temperature in degC.'
-*enditem
-            call EASKR(XTA,' ','Supply temperature?',
+        call EASKR(XACH,' ','Infiltration rate?',
+        call EASKR(XACH,' ','Ventilation rate?',
+        call EASKR(XACH,' ','Infiltration rate?',
+        call EASKR(XACH,' ','Ventilation rate?',
+        CALL EASKABC(' ','Ventilation air temperature:',
+        call askzone(IV,IPTX,'Ventilation from which zone?',
+        call EASKR(XTA,' ','Supply temperature?',
 *subroutine ADDAFP
 *subroutine CDAIRFL
-*item CDAIRFL
-'One or more of the periods may be deleted.'
+*item CDAIRFL operations_copy_flow
+'There are a number of options for managing the air flow schedule:'
+'  '
+' One or more of the periods may be deleted.'
+'  '
+' All the flows associated with a specified day type'
+' can be copied to another day type.'
+'  '
 *enditem
         call EPICKS(ilistlen,IVERT,' ','Air flow period(s) to delete:',
-*item CDAIRFL
-'All the casual gains associated with a specified day type'
-'can be copied to another day type.'
-*enditem
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
-*item CDAIRFL
-*enditem
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
 *subroutine COPYAIRFL
-*item COPYAIRFL
-'This is the suggested name for the file that will'
-'hold the imported air flow schedules data. '
+*item COPYAIRFL copy_air_via_import
+' Air flows from a [pattern file] can be copied into the current'
+' zones air flow schedule. You must specify the assumed volume of'
+' the pattern file source zone so that it can be scaled to the'
+' destination zone volume.'
 *enditem
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-*item COPYAIRFL
-'Because this is a pattern file there is no associated'
-'zone and to do a ratio we need an assumed volume. '
-*enditem
           CALL EASKR(VAL,' ','Assumed volume of source?',
 *subroutine CHKAIRFL
 *subroutine PLTAIR
 *subroutine EDCAS
-*item EDCAS
-'You were presented with this message because the'
-'file is in an older format which might have overlaps'
-'in the casual gain periods. The current definition'
-'of casual gain periods does not support overlapping'
-'periods and stores the periods by time and day type.'
+*item EDCAS operations_warn_overlap
+'You were presented with this message because the file is an older'
+'format which might have overlaps in the casual gain periods. The'
+'current definition of casual gain periods does not support
+'overlapping periods and stores the periods by time and day type.'
 ' '
-'It is recommended that you say YES and then check that'
-'the updated periods are correct.'
+'It is recommended that you say YES and then check that the'
+'updated periods are correct.'
 *enditem
           call askok(' ','Sort and remove overlaps from casual gains?',
-*item EDCAS
-'Casual gains are defined via one or more periods, the'
-'magnitude at a given time being the summation of the '
-'gains in all periods which include that time.  In '
-'this way complex patterns may be described. '
+*item EDCAS operations_casual_menu
+'Casual gains are defined via a profile (one or more periods) for each'
+'day type in the model calendar. The magnitude at a given time being'
+'found via checking the period data. To define a complex profile'
+'many periods may be required. Please plan carefully so that you can'
+'input the data correctly (correcting errors takes longer than'
+'planning).
 ' '
-'You may use an [additive] or [sequential] approach or'
-'a combination as you choose.  The total gain is '
-'displayed in the graphic feedback window.'
+'The total gain is displayed in the graphic feedback window.'
 '  '
-'If electrical definitions are included the menu will'
-'show the power consumption of the load and the power'
-'factor. The graphs will continue to show the casual'
-'gains to the zone.'
+'If electrical definitions are included the menu will show the'
+'power consumption of the load and the power factor. The graphs'
+'will continue to show the casual gains to the zone.'
 '  '
-'Import casul gains - you select a zone with casual'
-'gains patterns and they are copied into this zone,'
-'optionally with adjustments if the zone base areas'
-*enditem
-        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
-*item EDCAS
-'If you choose to incorporate electrical data into '
-'the operations file you will be asked to specify '
-'additional data items for each casual gain. With '
-'the extra data items casual gains are now zone '
-'loads - zone loads contain both thermal and '
-'electrical information. Type definitions remain '
-'the same as for casual gains. '
-*enditem
-         call easkabc('Do you wish to include definition of electrical',
-*item EDCAS
-*enditem
-          call easkab(' Do you wish to remove definition of  ',
-*item EDCAS
-*enditem
-        CALL PHELPD('gains menu',18,'-',0,0,IER)
-*item EDCAS
-'You can apply a scaling factor to all entries of a '
-'particular casual gain type (useful for parametric '
-'studies on profiles which have been imported).'
-'If you are not scaling gains choose all gains and then'
-'choose a factor of 1.0'
-*enditem
-        CALL EASKATOG('Apply scaling factor to which casual gain type?',
-*item EDCAS
-*enditem
-          call EASKABC('Import profile for one or all day types',
-*item EDCAS
-*enditem
-            CALL EPICKS(IX,KSTR,' ',
-*item EDCAS
-*enditem
-          CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
-*item EDCAS
-'The options: '
-' add - adds a period to one or all day types'
-' '
-' delete - deletes one or more periods (within a list'
-'   of all periods in all days).'
-' '
-' copy - copies periods from one day type to another  '
-'   Currently it adds the copied periods to the '
-'   destination in addition to existing periods already'
-'   present in the destination day type '
-' '
-' import - imports casual gain patterns for all gains'
-'   and day types from another zone (overwrites).'
-' '
-' import pattern - imports casual gain patterns for all'
-'   gains and day types from file outwith the model '
-'   (overwrites)'
+'If you choose to incorporate electrical data into the operations'
+'file you will be asked to specify additional data items for the'
+'casual gain so that both thermal and electical information is
+'included.
+'  '
+'Import casul gains - you select a zone with casual gains patterns'
+'and they are copied into this zone, optionally with adjustments'
+'if the zone base areas differ.'
+'  '
+'Import pattern - imports casual gain patterns for all gains and'
+'day types from file outwith the model (overwrites current data)'
 ' '
 'When importing you can specify whether to:'
 ' a) preserve the absolute W being imported e.g. 123W'
@@ -17223,24 +17164,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    destination zone base areas e.g. 123W in source'
 '    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
 '    zone.'
-*enditem
-        CALL EASKATOG('Casual gain period options:','(see help)',
-*item EDCAS
-*enditem
-          CALL EASKABCD('New casual gain of which type?',' ',
-*item EDCAS
-*enditem
-            call EASKABC('Add period for one or all day types',
-*item EDCAS
-*enditem
-              CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
-*item EDCAS
-*enditem
-            call askzone(isource,izdef,'Casual gains from which zone?',
-*item EDCAS
-*enditem
-          CALL EASKABC('Casual import:',' ','preserve absolute W',
-*item EDCAS
+'  '
 'An automated process has been used to manage the imported'
 'schedules. It usually does it as intended and, as with all'
 'automated processes it is recommended that you confirm '
@@ -17249,40 +17173,63 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'One approach is to generate a new QA report and check this'
 'against the previous model and then run a short assessment'
 'to confirm that the predictions are as expected. '
+' '
+'You may also manage the casual gain periods by removing a period'
+'or by adding a period to one or all day types.'
+' '
+'You may also copy periods from one day type to another. Currently'
+'it adds the copied periods to the destination in addition to'
+'existing periods already present in the destination day type '
+'  '
+'You can apply a scaling factor to all entries of a particular'
+'casual gain type (useful for parametric studies on profiles'
+'which have been imported). If you are not scaling gains choose'
+'all gains and then choose a factor of 1.0'
 *enditem
-          CALL PHELPD('operation import confirm',8,'-',0,0,IER)
-*item EDCAS
+        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+        call easkabc('Do you wish to include definition of electrical',
+        call easkab(' Do you wish to remove definition of  ',
+        CALL EASKATOG('Apply scaling factor to which casual gain type?',
+        call EASKABC('Import profile for one or all day types',
+        CALL EPICKS(IX,KSTR,' ',
+        CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
+        CALL EASKATOG('Casual gain period options:','(see help)',
+        CALL EASKABCD('New casual gain of which type?',' ',
+        call EASKABC('Add period for one or all day types',
+        CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
+        call askzone(isource,izdef,'Casual gains from which zone?',
+        CALL EASKABC('Casual import:',' ','preserve absolute W',
+        CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+*item EDCAS operations_casual_labels
 'Casual gains have initial type labels which may not'
 'be appropriate for your project. You can adapt the '
 'labels if it clarifies your model. '
+'  '
+'If you want to use the standard labels select them from the list.'
 *enditem
         call askok(' ','Change type labels?',OK,dok,3)
-*item EDCAS
-'Select a label which describes the gain/load type'
-'i.e. equip - equipment, light - lighting etc..   '
-*enditem
-            call easks(TYPSTR,' ',outs,8,
+        call easks(TYPSTR,' ',outs,8,
 *subroutine SCASL
-*item SCASL
-'Any one of the profiles may be selected.'
-*enditem
-      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
-*item SCASL
-'Casual gains within a zone can be be designated to be '
-'of one of three user-defined types so that for example '
-'occupant gains can be separately tracked from that of '
-'lighting or equipment.  The types listed can have any'
-'meaning that the user chooses (type labels can be edited'
-'in the main operations menu.'
-*enditem
-      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
-*item SCASL
-'In order to expand the profile into energy values the'
-'sensible and latent load in Watts equivalent to 100% is'
-' required. '
-' '
-'Also supply the radiant and convective fraction for the'
-'sensible load (these normally should sum to 1.00) '
+*item SCASL operations_event_import
+'The periods defined in an event profile database can be used'
+'to form operational schedules. A list of the event profiles'
+'database entries is presented and any one of the profiles'
+'may be selected.'
+'  '
+'After selecting the profile you are asked which of the three'
+'user-defined casual gain types (occupant light small-power) to'
+'associate with the profile.  You can assign what-ever meaning'
+'you need to the three types - you could use two of them to'
+'represent two different kinds of lighting. If you want you can'
+'edit the label of a casual gain type to reflect your specific'
+'use.'
+'  '
+'Event profiles include values between zero and one for two'
+'separate data types. For use with casual gains you are requested'
+'to supply the Watts equivalent to 100%.  You are also asked to'
+'specify the radiant and convective fracion for the sensible'
+'(they should sum to 1.00). You are warned if they sum to less'
+'than 0.98 or more than 1.00.'
 ' '
 'The radiant and convective split of lighting fixtures is'
 'listed below(CIBSE Consice Handbook Table A6.5) : '
@@ -17308,68 +17255,57 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
 *enditem
+      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
+      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
       CALL EASKS(HOLD,
-*item SCASL
-'If the sum is less than 0.98 or greater than 1.00 then'
-'the sensible load may not be well represented in your '
-'model. Tweaking this is for experts only! '
-*enditem
-        call askok(' The Sum of radiant and convective fractions is',
-*item SCASL
+      call askok(' The Sum of radiant and convective fractions is',
+*item SCASL operations_electrical
 'Electrical data (e.g. power factor, leading/lagging'
 'loads, real power, phase) might be used by electrical'
 'engineers and in models where other power components'
 'are being defined. If not just say no. '
+'  '
+' Power factor values between 0.-1. Power factor is the ratio of'
+' real to apparentvpower drawn by the load.'
+'  '
+'A lagging load is one with an inductive component i.e. flourescent'
+'lighting, a leading load is one with a capacative element. Unity'
+'loads are purely resistive i.e. incandescent lighting.'
+' '
+'A cancel leaves the model without electrical data for this item.'
+'  '
+'To expand the profile into energy values it is necessary to supply'
+'the power consumption equivalent to 100%.'
+'  '
+'You will also be asked about:'
+'  Voltage for the electrical device represented'
+'  '
+'  Phase of the three phase supply is the load connected to ? (1-3)'
+'  or 4 - all three i.e. for a large induction motor.'
+' '
+'A cancel leaves the model without electrical data for this item.'
+
 *enditem
         CALL ASKOK('Include electrical data with this profile?',
-*item SCASL
-'Enter a power factor between 0.-1.'
-'Power factor is the ratio of real to apparent'
-'power drawn by the load.'
-*enditem
-          CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
-*item SCASL
-'A lagging load is one with an inductive'
-'component i.e. flourescent lighting, a '
-'leading load is one with a capacative  '
-'element. Unity loads are purely resistive'
-'i.e. incandescent lighting.'
-' '
-'A cancel leaves the model without electrical data'
-'for this item. '
-*enditem
-          CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
-*item SCASL
-'To expand the profile into energy values it'
-'is necessary to supply the power consumption'
-'equivalent to 100%.'
-*enditem
-          CALL EASKR(PE,' ','Power consumption? (W) ? ',
-*item SCASL
-'At what voltage does the load operate ?'
-*enditem
-          CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
-*item SCASL
-'Which phse of the three phse supply is the load'
-'connected to ? (1-3) or 4 - all three i.e. for'
-'a large induction motor.'
-' '
-'A cancel leaves the model without electrical data'
-'for this item. '
-*enditem
-          CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
+        CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
+        CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
+        CALL EASKR(PE,' ','Power consumption? (W) ? ',
+        CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
+        CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
 *subroutine EDCASGN
 *item EDCASGN
-'Period during which casual gains applies.'
-*enditem
-      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
-*item EDCASGN
+'The scheduling of casual gains involves defining a number of'
+'periods in each calendar day type.'
+'  '
 'A gain can be specified as:'
 ' Watts - explicitly set the gain.'
+'  '
 ' Watts per square meter - will use the floor area of the '
 '  zone to calculate the total gain.'
+'  '
 ' Watts per object - gain/object and number of objects are'
 '  required (an object could be a person or computer).'
+'  '
 ' Square meters per object - will use the floor area of the'
 '  zone to calculate the total gain. For the particular'
 '  case of an occupant there is an assumption that each'
@@ -17397,77 +17333,30 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       avg mix     440     220 220    190 250     135 305'
 ' '
 *enditem
+      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
-*item EDCASGN
-' '
-'ESP-r asks for fixed sensible and latent values. The'
-'values for occupants are really a function of the current'
-'zone temperature (CIBSE Concise Handbook Table 6.1)'
-'If possible pick a value for the likely temperature rnage.'
-'For an adult and average mix '
-'              Total W 15C sen lat 20C sen lat 24C sen lat'
-'Seated inactive   115     100  15     90  25      75  40'
-'       avg mix    100      87  13     78  22      65  35'
-'Seated light work 140     110  30    100  40      80  60'
-'       avg mix    126      99  27     90  36      72  54'
-'Seated office work 140    110  30    100  40      80  60'
-'       avg mix     130    102  28     93  37      74  56'
-'Standing light work 160   120  40    110  50      85  75'
-'       avg mix      141   106  35     97  44      75  66'
-'Light factory work 235    150  85    130 105     100 135'
-'       avg mix     209    133  76    116  93      89 121'
-'Medium factory work 265   160 105    140 125     105 160'
-'       avg mix      249   150  99    132 117      99 150'
-'Heavy factory work 440    220 220    190 250     135 305'
-'       avg mix     440    220 220    190 250     135 305'
-'Supply the sensible and latent gain in Watts.'
-' '
-' '
-*enditem
-        call EASKS(HOLD,'Sensible and latent gain (W):',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts/m^2.'
-' '
-' '
-*enditem
+      call EASKS(HOLD,'Sensible and latent gain (W):',
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
-*item EDCASGN
-'The number of objects for the current gain type is '
-'required. For example the number of computers.'
-' '
-*enditem
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts.'
-' '
-' '
-*enditem
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-*item EDCASGN
-'The floor area per object for the current gain type is '
-'required. For example the area per person assuming that'
-'for people the sensible is 95W and latent is 45W. '
-*enditem
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts/object.'
-' '
-' '
-*enditem
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
-*item EDCASGN
-'Supply the radiant and convective fraction for'
-'the sensible load (should be <=1.00) '
+*item EDCASGN operations_lighting_data
+'Supply the radiant and convective fraction for the sensible load'
+'(should be ~1.00). Setting the total radiant and convective split'
+'of a casual gain to less than 0.9 can lead to confusion. For example:'
+'(600W with 0.4 rad and 0.4 conv is 480W total) and should only be'
+'done by experts.'
 ' '
-'The radiant and convective split of lighting fixtures is'
-'listed below(CIBSE Consice Handbook Table A6.5) : '
+'The radiant and convective split of lighting fixtures is listed'
+'below(CIBSE Consice Handbook Table A6.5) : '
 '  fluorescent radiant = 30  convective = 70'
 '  tungsten    radiant = 85  convective = 15'
 '  HP mercury sodium radiant = 50 convective = 50'
 '  low pressure sodium radiant = 43 convective = 57'
 ' '
-'The position of lamps determines the distribution of '
-'heat into room or ceiling void (CIBSE Table A6.4) '
+'The position of lamps determines the distribution of heat into'
+'a room or ceiling void (CIBSE Table A6.4) '
 '  recessed open fixture  upwards = 38 downwards = 62'
 '  recessed with louvre   upwards = 45 downwards = 55'
 '  recessed with diffuser upwards = 53 downwards = 47'
@@ -17477,123 +17366,107 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '     downwards = 94'
 '  suspended or wall mounted or desk lamp upwards = 0'
 ' '
-'The radiant and convective split for office equipement'
-'is typically: (CIBSE Table A6.9) '
+'The radiant and convective split for office equipement is typically'
+'(CIBSE Table A6.9): '
 ' desktop computer radiant = 14 convective = 86'
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
-*enditem
-      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
-*item EDCASGN
-'Setting the total radiant and convective split of a'
-'casual gain to less than 0.9 can lead to confusion'
-'(600W with 0.4 rad and 0.4 conv is 480W total) and '
-'should only be done by experts.'
-*enditem
-        CALL ASKOK(outs,
-*item EDCASGN
-'Electrical data (e.g. power factor, leading/lagging'
-'loads, real power, phase) might be used by electrical'
-'engineers and in models where other power components'
-'are being defined. If not just say no. '
-*enditem
-        call ASKOK(' ','Does this load need electrical data?',OK,DOK,4)
-*item EDCASGN
+'   '
+'Electrical data (e.g. power factor, leading/lagging loads, real power,'
+'phase) might be used by electrical engineers and in models where other'
+'power components are being defined. If not just say no. '
+'  '
 ' Power factor will vary between 0 - 1.0'
-*enditem
-          call EASKR(pft,' ','Load power factor?',
-*item EDCASGN
-'The load will either be capacitive, leading current,'
-'or reactive with a lagging current, most loads take '
-'a lagging current.'
+'  '
+'The load will either be capacitive, leading current, or reactive with'
+'a lagging current, most loads take a lagging current.'
 ' '
-'A (*) flags an existing value. '
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-'What is the real power consumption in watts?'
-'This might be the same as the sensible load for'
-'some devices (please check). '
-*enditem
-          call EASKR(pwrt,'Real power consumption ?','  ',
-*item EDCASGN
-' What voltage does the load operate at i.e. 220V'
-*enditem
-          call EASKR(bvoltt,' ','Operational voltage?',
-*item EDCASGN
-'To which phase of the 3-phase supply is the load '
-'connected, 1-3 or 4-all three.'
+'You are also asked about the following: '
+'  '
+'  What is the real power consumption in watts? This might be the same'
+'  as the sensible load for some devices (please check). '
+'  '
+'  Voltage the load operate at i.e. 220V'
+'  '
+'  Phase of the 3-phase supply is the load connected, 1-3 or'
+'  4-all three.'
 ' '
 'A cancel leaves the electrical data unchanged.'
 *enditem
-          call EASKI(IPHAST,'Which phase is load connected to?',
+      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
+      CALL ASKOK(outs,
+      call ASKOK(' ','Does this load need electrical data?',OK,DOK,4)
+      call EASKR(pft,' ','Load power factor?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKR(pwrt,'Real power consumption ?','  ',
+      call EASKR(bvoltt,' ','Operational voltage?',
+      call EASKI(IPHAST,'Which phase is load connected to?',
 *subroutine CDCASGN
-*item CDCASGN
+*item CDCASGN casual_copy_delete
+'You can manage casual gains by removing one or more casual gain'
+'periods. A list of the current casual gains is presented and'
+'you must choose the period to delete.'
+'  '
+'You can copy the casual gains for a specified day type to another'
+'day type.'
+'  '
 *enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-*enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-'One or more of the periods may be deleted (removed).'
-*enditem
         call EPICKS(ilistlen,IVERT,' ',
-*item CDCASGN
-'All the casual gains associated with a specified day type'
-'can be copied to another day type.'
-*enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-*enditem
         call EPICKS(IXX,IVERT,' ','Casual gain period(s) to copy:',
 *subroutine IMPORTZCASG
-*item IMPORTZCASG
-'This is the suggested name for the file that will'
-'hold the imported casual gain data. '
+*item IMPORTZCASG oper_import_dialogs
+'There are several user interactions associated with importing'
+'data from an external-to-the-model operations file (including'
+'so-called pattern files which are zone operation files located'
+'in the pattern folder of the ESP-r distribution).'
+'  '
+'In the case of a [pattern] file there is no associated zone'
+'and thus no inference can be made as to the volume and floor'
+'area associated with the data to be imported. You will be asked'
+'to supply a value.'
+'  '
+'If there is no current zone operations file to copy into then'
+'you will be asked to confirm the name of the zone operation'
+'file. '
+'  '
+'During the import process you will be asked to confirm or adapt'
+'the documentation for the zone operations. You may accept the'
+'text in the import source. '
 *enditem
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-*item IMPORTZCASG
-'Because this is a pattern file there is no associated'
-'zone and to do a ratio we need an assumed area. '
-*enditem
           CALL EASKR(VAL,' ',' Assumed floor area of source ? ',
-*item IMPORTZCASG
-*enditem
           call askok('Use the source documentation?',' ',OK,DOK,0)
-*item IMPORTZCASG
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(oprdescc,'Operations notes (please edit):',
 *subroutine PLTCASGN
 *subroutine insdelcasper
 *subroutine initcasday
-*item initcasday
-'For the current day type specify how many periods'
-'for each casual gain type (occupants, lights and'
-'small power). Do not include periods for gain types'
-'which you will be importing from an Events Profiles'
+*item initcasday operations_initial
+'For the current day type specify how many periods for each'
+'casual gain type (typically occupants, lights and small '
+'power). Do not include periods for gain types which you will'
+'be importing from an Events Profiles Database.'
 ' '
-'If you set the number of periods for a type to zero'
-'you can update it later. The number of periods should'
-'cover the whole day (i.e. from 0h00 to 24h00). For '
-'example, if there are gains between 8h00 and 18h00'
-'and nothing at other times, define this as three'
-'periods - 0h00 to 8h00 with no gains, 8h00 to 18h00'
-'with gains and 18h00 to 24h00 with no gains.'
-'Period start times should be in ascending order.'
+'If you set the number of periods for a type to zero or one you can'
+'update it later. The number of periods should cover the whole day'
+'(i.e. from 0h00 to 24h00). For example:'
+'  if there are gains between 8h00 and 18h00 and nothing at other'
+'  times, define this as three periods - 0h00 to 8h00 with no gains,'
+'  8h00 to 18h00 with gains and 18h00 to 24h00 with no gains.'
+'  '
+'Period start times should be in ascending order. The process works'
+'better (faster and fewer errors) if you plan the schedules for each'
+'day type in advance. If you input the correct start times subsequent'
+'editing tasks will take less time.'
 *enditem
         CALL EASKS(HOLD,VOUTS,
 *subroutine initcasper
-*item initcasper
-'If you define actual start times the subsequent'
+*item initcasper operations_allocate_per
+'If your initial definition of start times is correct then subsequent'
 'editing tasks will be easier.'
 *enditem
       CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',IER,2)
