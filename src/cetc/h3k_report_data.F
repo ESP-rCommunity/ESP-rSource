@@ -64,11 +64,13 @@ C*******************************************************************************
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
 
       IMPLICIT NONE
-#include "building.h"
-#include "model.h"
-#include "geometry.h"
-#include "control.h"
-#include "blc25_open_windows.h"
+      
+      include "building.h"
+      include "model.h"
+      include "geometry.h"
+      include "control.h"
+      include "blc25_open_windows.h"
+
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -1192,6 +1194,16 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
 
+C.....Cooling delivered by free-cooling means
+           
+      call add_to_xml_reporting (
+     &         fFreeCoolDelivered(iZone),
+     &         H3K_rep_NAME(1:16)//'/free_energy/cooling',
+     &         'units', '(W)',
+     &         'Zone free cooling ' )
+     
+     
+     
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
       Qm2_Heat=Q_Heat/zbasea(iZone)

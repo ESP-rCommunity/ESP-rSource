@@ -52,6 +52,8 @@ C      BCL24:  adaptive human comfort model.
 C      BCL25_open_windows: switch between different 
 C             air flow computation methods.
 C      BCL26:  heat exchanger model controlling zone flux extraction.
+C      BCL27:  Simple idealized controller based on BCL01 with 
+C              limited support for free-cooling
 C      BCL99:  constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine.
@@ -78,7 +80,7 @@ C The main building control function executive.
 
 C Check if running in dll mode.
       call isadll(dll)
-
+    
 C 26 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
@@ -102,7 +104,9 @@ C For the special case of current zone, mixed node control only.
 
 C CL1 is basic control with potential for a different heating and
 C cooling set point.   Limiting capacities allow either heating or
-C cooling to be disallowed. Humidity control may also be active.      
+C cooling to be disallowed. Humidity control may also be active.  
+C Note: this is now a legacy inteface to BCL01_extended, which 
+C supports these functions + simplistic free-cooling control.     
       case (1)
         CALL BCL01(ier)
         if(ier.eq.2)then
@@ -227,6 +231,10 @@ C CL26 uses a heat exchanger model to determine the heat flux
 C to remove from the associated zone.
       case (26)
         call BCL26
+        
+C CL27: Interface to BCL01_extended with free-cooling activated
+      case (27) 
+        call BCL01_extended(IER, .true.) 
       
 C New control laws should be inserted here.
       case default 
@@ -1105,12 +1113,12 @@ C Basic controller with symplistic free-cooling capabilities.
 C
       SUBROUTINE BCL01_extended(IER,bFreeCool)
       implicit none 
-      
           
-#include "building.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "control.h"
+      include "building.h"
+      include "hvac_parameters.h"
+      include "hvac_common.h"
+      include "control.h"
+      include "blc25_open_windows.h"
 
       integer IER ! Error flag
       
@@ -1124,6 +1132,14 @@ C
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       integer ITCF, ITRACE, IZNTRC, ITU ! I/O parameters for trace
       
+C Climate data
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real QFP, QFF
+      real TP, TF
+      real QDP, QDF
+      real VP, VF
+      real DP, DF
+      real HP, HF
       
       
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -1175,6 +1191,11 @@ C control.
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
       real QHB, QCB, Qmst
       
+C Freecooling algorithm
+      real fQFreeCool         ! cooling achieved by ventilation
+      logical bFreeCoolActive ! flag for free cooling active. 
+      real fFreeCoolTemp      ! Threshold at which free-cooling 
+                              ! is available (oC)
       
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
@@ -1333,11 +1354,17 @@ C as a master control.
       QHB(ICF)=QHM
       QCB(ICF)=QCM
 
+C Get temperature threshold for free-cooling estimates 
+      if ( bFreeCool ) fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
+      
+      
 C Determine if a RH is to be controlled. If this is the case store the set point
 C for the zone and set the RH control flag. The control action takes place in 
 C MZVAPC, where the zone humidity and moisture content is calculated. 
+C (note: humidity control and symplistic free-cooling are mutually 
+C  exclusive.) 
       IRHCT(IICOMP)=0
-      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7)THEN
+      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. bFreeCool )THEN
 
 C Upper relative humidity set point (%).
         RHSPTU(IICOMP)=BMISCD(ICF,IDTYP,IPER,8)
@@ -1501,20 +1528,58 @@ C Is heat flux determined according to surface area?
 C If necessary, multiply heat flux by surface area to convert 
 C from W/m^2 to W 
 
+
       if ( bQBySurf ) then 
       
         fQTotal = Q * SNA(IICOMP,ISUR) 
         
       else 
       
-        fQTotal = Q 
+        fQTotal = Q
         
       endif 
       
+C Determine if this capacity can be delivered using free-cooling. 
+C (This is very simple algorithm at present, but it might one day connect
+C  to more sophisticated algorithms) 
+
+      if ( bFreeCool    .and. 
+     &     fQTotal < 0. .and. 
+     &     TF < ( TFA(IICOMP) - fFreeCoolTemp ) ) then 
+
+        fQFreeCool = fQTotal
+        
+        bFreeCoolActive = .true. 
+        
+C Compute the 'conductivity' achieved by free cooling to 
+C append to zone mass-balance solution on next timestep. 
+C
+C                              [ Free Cooling Load (W) ]
+C    conductivity (W/K) =  ------------------------------------
+C                          [ Zone temp (K) - Outdoor Temp (K) ]
+C
+        !fCondFreeCool(IICOMP) = fQFreeCool / ( TFA(IICOMP) - TF) 
+        
+        
+      else  
+
+C No free cooling.
+
+        fQFreeCool = 0.
+        
+        bFreeCoolActive = .false. 
+        
+        fCondFreeCool(IICOMP) = 0.
       
-C Do we have enough capacity?      
-      if ( fQTotal > QMX ) fQTotal = QMX
-      if ( fQTotal < QMN ) fQTotal = QMN
+C Do we have enough heating/cooling capacity?      
+        if ( fQTotal > QMX ) fQTotal = QMX
+        if ( fQTotal < QMN ) fQTotal = QMN
+      
+      endif 
+
+C Save free-cooling for reporting later
+      fFreeCoolDelivered(IICOMP) = fQFreeCool * (-1.0)      
+      
       
 C Possibly convert back to W/m^2 if needed       
 
@@ -1533,67 +1598,16 @@ C Recompute resultant temperature.
       TFUT=(BB3-BB2*Q)/BB1
       
       
-C Save future time-row plant injection. 
-      QFUT=Q      
+C Save future time-row plant injection. If free cooling 
+C is active, plant does not inject any heating/cooling. 
+      if ( bFreeCoolActive ) then       
+        QFut = 0.
+      else       
+        QFUT = Q      
+      endif 
       
-      
-C Step around old code.      
-      sidestep: if ( 1 .eq. 2 ) then 
-      
-C Is temp. too high ?
-      IF(TCTL.GT.CSP)GOTO 1
-      IPLT=1
-      QMX=QHM
-      QMN=QHN
-      TCONT=HSP
-
-C Too low, heat to HSP.
-      Q=(BB3-BB1*HSP)/BB2
-
-C Convert from (/m^2) if necessary.
-      QQ=Q
-      ISUR=0
-      IF(IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0)ISUR=IBAN(ICF,2)
-      IF(ISUR.GT.0)QQ=Q*SNA(IICOMP,ISUR)
-
-C Is this capacity available ?
-      IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 2
-      IF(QQ.GT.QHM)GOTO 3
-      Q=QHN
-      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-      GOTO 2
-    3 Q=QHM
-      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-      GOTO 2
-
-C Temp. too high, cool to CSP.
-    1 Q=(BB3-BB1*CSP)/BB2
-      IPLT=2
-      QMX=QCM
-      QMN=QCN
-      TCONT=CSP
-
-C Convert from (/m^2) if necessary.
-      QQ=Q
-      ISUR=0
-      IF(IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0)ISUR=IBAN(ICF,2)
-      IF(ISUR.GT.0)QQ=Q*SNA(IICOMP,ISUR)
-
-C Is this available ?
-      IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 2
-      IF(QQ.LT.QCM)GOTO 5
-      Q=QCN
-      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-      GOTO 2
-    5 Q=QCM
-      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
-
-    2 TFUT=(BB3-BB2*Q)/BB1
-      QFUT=Q
-
-      
-      endif sidestep
-      
+C      print*, TF, TFA(IICOMP), bFreeCoolActive, fQTotal, QFut, 
+C     &   fFreeCoolDelivered(IICOMP)    
       
 c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,

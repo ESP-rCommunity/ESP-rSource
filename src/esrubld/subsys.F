@@ -1848,7 +1848,7 @@ C Some other control.
         endif AssignVent
       endif TdfFlow
 
-C Set up zone moisture balance information for use in MZVAPC, unless
+C Set up zone air balance information for use in MZVAPC, unless
 C current zone is mapped to mass flow network node, in which case ZMBI
 C is filled by MFLF2B. 
 C ZMBI,1= infiltration mass flow rate; 2= product of zone coupling
@@ -1873,7 +1873,7 @@ C no node in the current zone.
 
 C Check infiltration.
          IF(CVIF.GT.0.0) THEN
-           ZMBI(ICOMP,1)=CVIF/1006.
+           ZMBI(ICOMP,1)=(CVIF + fCondFreeCool(ICOMP) ) / 1006.
            ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+ZMBI(ICOMP,1)
          END IF
 
