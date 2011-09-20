@@ -6978,7 +6978,7 @@ C it points to the same zone as is used by the master controller.
      &          'master control loop!','W')
             endif
             if(iban(icloop,1).gt.0)then
-                modval=.true.
+              modval=.true.
             else
               call usrmsg(
      &          'Slave actuator must be in the slave zone!',

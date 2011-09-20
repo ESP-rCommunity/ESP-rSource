@@ -258,6 +258,7 @@ C in the current model. A -1 means not applicable
       real foundRextra  ! extra CIBSE resistance for foundation
 
       character*10 wkd1, wkd2
+      character louts*248,loutsd*248
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
@@ -267,6 +268,7 @@ C in the current model. A -1 means not applicable
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
+      INTEGER :: iw,lsna
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
       REAL :: UVD,UVI,UVU,vtranper
@@ -431,7 +433,7 @@ C Setup the selection menu.
         items(15)='h geometry >> compact'
       elseif(geominfo.eq.2)then
         items(15)='h geometry >> verbose'
-      elseif(geominfo.eq.2)then
+      elseif(geominfo.eq.3)then
         items(15)='h geometry >> very verbose'
       endif
       if(schedinfo.eq.-1)then
@@ -452,7 +454,7 @@ C Setup the selection menu.
       elseif(zoneextrainfo.eq.2)then
         items(17)='j zone extras >> verbose'
       endif
-      if(geominfo.eq.1.or.geominfo.eq.2)then
+      if(geominfo.ge.1)then
         items(18)='k sort by surface attrbution'
       else
         items(18)='k n/a'
@@ -1809,7 +1811,7 @@ C If there is external glazing or skylights then report.
         endif
 
 C Note: surinfo not dependant on recent geometry scan.
-        if(geominfo.eq.2)then
+        if(geominfo.ge.2)then
           context=.true.
           CALL SURINFO(IVALS(IZ),itu,context)
           call eclose(gversion(IZZ),1.1,0.01,newgeo)
@@ -1877,6 +1879,29 @@ C Setup phrases for the menu and for editing length and psi values.
               endif
             endif
           endif
+        endif
+        if(geominfo.eq.3)then    ! Very verbose - include coordinates.
+
+C Write vertices with minimal white space comma separated.
+          call edisp(itu,' Vertices (X Y Z) in the zone...')
+          DO 960 I = 1,NZTV(izz)
+            WRITE(outs,'(a,3F12.5,a,i3)')'*vertex ',
+     &        X(I),Y(I),Z(I),'  # ',I
+            call edisp(itu,outs)
+960       CONTINUE
+
+          call edisp(itu,
+     &    ' Number of vertices followed by list of associated vert')
+          DO 970 I = 1,NZSUR(izz)
+            icc=izstocn(izz,i)        ! find connection
+            lsna=lnblnk(SSNAME(icc))  ! get length of surf name
+            write(louts,'(a,42I4)') '*edges ',NVER(I),
+     &        (JVN(I,J),J=1,NVER(I))
+            call SDELIM(louts,loutsd,'C',IW)  ! make comma separated
+            write(outs248,'(3a)') 
+     &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna)
+            call edisp248(itu,outs248,100)
+970       CONTINUE
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.

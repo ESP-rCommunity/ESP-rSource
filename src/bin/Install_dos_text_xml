@@ -393,12 +393,16 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
     #
     # This code has only been tested with GNU ld.
     #
-    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
-    case $ld_output in
-      "") xsl_libs_available="no";;
-      *)  xsl_libs_available="yes";;
-    esac
-    
+     if [ ! -d /usr/include/libxslt ] && [ ! -d /usr/local/include/libxslt ]; then
+       # Libraries not found. Disable XLST support 
+       xsl_libs_available="no"
+       echo " ";
+       echo " Warning: Library libxslt could not be found."
+       echo " XSLT formatting support disabled. "
+     else
+       xsl_libs_available="yes"
+       echo " XSLT output support enabled."
+     fi
    fi
 fi
 

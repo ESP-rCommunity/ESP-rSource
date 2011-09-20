@@ -1551,6 +1551,33 @@ C It is controlled. Establish sensed variable.
             IF(IVAL.EQ.5)TX=TF ! infil, ext db t, factors
         endif ChkOprCtl
       
+C Compute parameters needed to access infiltration/ventilation
+C schedules. Determine day, time parameters needed to access scheduled infiltration 
+C parameters from the OPR file. 
+        IDAY1=IDYP
+        IF(IT2.EQ.1) then
+          IDAY2=IDYP+1
+        ELSE
+          IDAY2 = IDYP
+        ENDIF
+        IF(IDAY2.GT.365)IDAY2=IDAY2-365
+        ID1=ICALENDER(IDAY1)
+        ID2=ICALENDER(IDAY2)
+        DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
+          ID1=1
+          ID2=1
+          IF(IDWP.EQ.6)ID1=2
+          IF(IDWP.EQ.7)ID1=3
+          IF(IT2.EQ.1)then
+            IF(IDWF.EQ.6)ID2=2
+            IF(IDWF.EQ.7)ID2=3
+          else
+            IF(IDWP.EQ.6)ID2=2
+            IF(IDWP.EQ.7)ID2=3
+          endif
+        ENDIF DtypeLt3
+
+	  
 C Air flow infiltration is specified via the .opr file, 
 C the air-flow network, or the AIM-2 infiltration model. Check 
 C the contents of the iAirFlowModel array.  
@@ -1627,30 +1654,7 @@ C User has not specified any air flow (Can't really happen!)
 C========================================================================         
         elseif (  bOPR ) then
 C User has provided scheduled air flows.     
-C Determine day, time parameters needed to access scheduled infiltration 
-C parameters from the OPR file. 
-        IDAY1=IDYP
-        IF(IT2.EQ.1) then
-          IDAY2=IDYP+1
-        ELSE
-          IDAY2 = IDYP
-        ENDIF
-        IF(IDAY2.GT.365)IDAY2=IDAY2-365
-        ID1=ICALENDER(IDAY1)
-        ID2=ICALENDER(IDAY2)
-        DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
-          ID1=1
-          ID2=1
-          IF(IDWP.EQ.6)ID1=2
-          IF(IDWP.EQ.7)ID1=3
-          IF(IT2.EQ.1)then
-            IF(IDWF.EQ.6)ID2=2
-            IF(IDWF.EQ.7)ID2=3
-          else
-            IF(IDWP.EQ.6)ID2=2
-            IF(IDWP.EQ.7)ID2=3
-          endif
-        ENDIF DtypeLt3
+
 C Gather infiltration values from schedule.
         CV1=CVIN(ID1,ICOMP,IT1)
         CV2=CVIN(ID2,ICOMP,IT2)
@@ -1801,14 +1805,14 @@ C Collect data from air flow module.
 
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
-	CV1=CVVN(ID1,ICOMP,IT1)*xmod
-	CV2=CVVN(ID2,ICOMP,IT2)*xmod
-	IC2=ICCN(ID2,ICOMP,IT2)
-	TA1=TIAN(ID1,ICOMP,IT1)
-	TA2=TIAN(ID2,ICOMP,IT2)
-        CF=CV1+(TRAT*(CV2-CV1))
-        ICF=IC2
-        TAF=TA2
+          CV1=CVVN(ID1,ICOMP,IT1)*xmod
+          CV2=CVVN(ID2,ICOMP,IT2)*xmod
+          IC2=ICCN(ID2,ICOMP,IT2)
+          TA1=TIAN(ID1,ICOMP,IT1)
+          TA2=TIAN(ID2,ICOMP,IT2)
+          CF=CV1+(TRAT*(CV2-CV1))
+          ICF=IC2
+          TAF=TA2
           ! This is a piece of legacy code that is superfluous here
           ! (and possibly superfluous all together as TRAT is 
           ! set to 1 when the air flow network is active [IARN=1]). 
@@ -1818,7 +1822,7 @@ C .aim2 case.
           ! .opr file schedules.
           ! 
           ! IF(IAIRN.ge.1)TAF=TA1+(TRAT*(TA2-TA1))
-        CVVF=CF
+          CVVF=CF
  
 C Check if zone is thermostatically controlled, and optionally 
 C overwrite the computed ventilation conductance by that determined 

@@ -428,7 +428,7 @@ C would cause an array error to check so warn user.
               SVCTL=sngl(DABS(PRES(NDSCNN(ICNN,1))
      &                       -PRES(NDSCNN(ICNN,2))))
             elseif(ICLCTP.EQ.41)then
-              SVCTL=CCONC(NDSCNN(ICNN,1),IFS3)*1000
+              SVCTL=CCONC(NDSCNN(ICNN,1),IFS3)*1000.
             else 
               WRITE(outs,*)' CFFVAR: function ',ICFP,' type ',ICLCTP
               call edisp(iuout,outs)
@@ -863,6 +863,7 @@ C climate file commons
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
@@ -879,15 +880,35 @@ C when version 2 of the law will be published
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
 
+C Casual gain data.
+C NCGPER - number of periods for each gain (zone, day type, gain type)
+C TCGS - start time of gain (zone, day type, gain type, period)
+C CGSENR - sensible gain radiant portion (zone, day type, gain type, period)
+C CGSENC - sensible gain convective portion (zone, day type, gain type, period)
+C CGLAT - latent gain (zone, day type, gain type, period)
+C CGCTL - gain control fraction (zone, present/future, gain type)
+C ICGCTL - pointer to controlled gain type.
+      common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
+     &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
+      common/btime/btimep,btimef
+
 C Adaptive comfort common
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
 
+C Day types 
+      common/calena/calename,calentag(MDTY),calendayname(MDTY) 
+      character calename*32,calentag*12,calendayname*32 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365) 
+      INTEGER nbdaytype,nbcaldays,icalender 
+      
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
       REAL PREVTEMP(MMD)
-      CHARACTER*72 LAPROB
+      CHARACTER*72 LAPROB,H
       CHARACTER*2 MODE
       REAL Wposs,Fposs,WNposs,ACavail,Havail,PF,PWRfan,FUNCW
+      LOGICAL CLOSER
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -969,7 +990,12 @@ c      DTfan=fmiscd(ICFP,IDTYPP,IPERP,11)
       WD=fmiscd(ICFP,IDTYPP,IPERP,12)
       FD=fmiscd(ICFP,IDTYPP,IPERP,13)
 c      AIsurf=fmiscd(ICFP,IDTYPP,IPERP,14)
-
+      CWO=fmiscd(ICFP,IDTYPP,IPERP,15)
+      CWC=fmiscd(ICFP,IDTYPP,IPERP,16)
+      CFO=fmiscd(ICFP,IDTYPP,IPERP,17)
+      CFC=fmiscd(ICFP,IDTYPP,IPERP,18)
+      CNC=fmiscd(ICFP,IDTYPP,IPERP,19)
+      
 C Calculate running mean outside air temperature TRM
       COEFF=1.
       TRM=0.
@@ -1006,7 +1032,7 @@ C (retained for historic purposes)
         IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
         IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
 
-C Pakistan mode determination (four modes)
+C Mode determination (four modes)
 C Mode = AC air conditioning
 C Mode = NC night cooling
 C Mode = HT heating
@@ -1014,67 +1040,257 @@ C Mode = FR free running (no heating or air conditioning, may have fan)
 C Calculate mode and Tcomfort.
       IF(ACAVAIL.GT.0..AND.TRM.GT.28.1)THEN
         MODE='AC'
-	TCOMF=0.416*TRM+16.5
+        TCOMF=0.416*TRM+16.5 ! 2nd version (Pakistan algorithm)
+                             ! No 3rd version
       ELSEIF(Havail.GT.0..AND.TRM.LT.10.)THEN
         MODE='HT'
-	TCOMF=0.156*TRM+19.1
+c        TCOMF=0.156*TRM+19.1  ! 2nd version (Pakistan algorithm
+        TCOMF=0.090*TRM+22.6  ! 3rd version (Europe and UK)
       ELSE
         MODE='FR'
-	IF(IFANON.EQ.0)THEN
-          TCOMF=0.408*TRM+16.6
+        IF(IFANON.EQ.0)THEN
+c          TCOMF=0.408*TRM+16.6
+          TCOMF=0.330*TRM+20.8  ! 3rd version
         ELSE
-          TCOMF=0.480*TRM+16.6
+c          TCOMF=0.480*TRM+16.6
+          TCOMF=0.330*TRM+18.8   ! 3rd version
         ENDIF
       ENDIF
 
-C Pakistan fan status determination. Note that fans are assumed on
-C in AC mode. If Tout < 23.6 then fans are assumed to be off.
-      IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
-        FUNCF=0.595*(TOP-TCOMF+(IFANON-0.5)*FD)
-        PF=EXP(FUNCF)/(1.+EXP(FUNCF))
-        RNF=RNOR()
-        RNF=ABS(RNF)
-        RNF=1000.*RNF
-        IRNF=INT(RNF)
-        RNF=RNF-REAL(IRNF)
-        IF(PF.GT.RNF)THEN
+C Determine if this timestep is the first occupied timestep
+C Assume not occupied
+      IOCCUPC=0         ! Current
+      IOCCUPP=0         ! Previous
+      ISTARTOCC=0
+
+C Determine year day number of present day
+      IDAY=IYD
+      IDAY=ICALENDER(IYD)
+
+C Calculate the current and previous period id.
+      IGN=1 ! Occupancy
+      IPERC=NCGPER(ICOMP,IDAY,IGN)
+      IPERP=NCGPER(ICOMP,IDAY,IGN)
+      do 30 I=1,NCGPER(ICOMP,IDAY,IGN)
+        if (BTIMEF.le.TCGS(ICOMP,IDAY,IGN,I+1).and.
+     &      BTIMEF.gt.TCGS(ICOMP,IDAY,IGN,I)) then
+          IPERC=I
+        endif
+        if (BTIMEP.le.TCGS(ICOMP,IDAY,IGN,I+1).and.
+     &      BTIMEP.gt.TCGS(ICOMP,IDAY,IGN,I)) then
+          IPERP=I
+        endif
+ 30   continue
+
+C Determine if current and previous indicate start of occupancy
+      IF(IPERC.GT.0)THEN
+        IF(CGSENC(ICOMP,IDAY,IGN,IPERC).GT.0.)IOCCUPC=1
+      ENDIF
+      IF(IPERP.GT.0)THEN
+        IF(CGSENC(ICOMP,IDAY,IGN,IPERP).GT.0.)IOCCUPP=1
+      ENDIF
+
+      IF(IOCCUPP.EQ.0.AND.IOCCUPC.EQ.1)ISTARTOCC=1
+
+C Determine initial status of window and fan at start of occupancy
+      IF(ISTARTOCC.EQ.1)THEN
+        IF(WPOSS.GT.0.)THEN
+          FUNCW=0.448*TOP-10.3
+          PW=EXP(FUNCW)/(1.+EXP(FUNCW))
+          RNW=RNOR()
+          RNW=ABS(RNW)
+          RNW=1000.*RNW
+          IRNW=INT(RNW)
+          RNW=RNW-REAL(IRNW)
+          IF(PW.GT.RNW)THEN
+            IWIN=1
+          ELSE
+            IWIN=0
+          ENDIF
+        ELSE
+          IWIN=0
+        ENDIF
+        IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
+          FUNCF=0.374*TOP-10.6
+          PF=EXP(FUNCF)/(1.+EXP(FUNCF))
+          RNF=RNOR()
+          RNF=ABS(RNF)
+          RNF=1000.*RNF
+          IRNF=INT(RNF)
+          RNF=RNF-REAL(IRNF)
+          IF(PF.GT.RNF)THEN
+            IFANON=1
+          ELSE
+            IFANON=0
+          ENDIF
+        ELSEIF(MODE.EQ.'AC'.AND.Fposs.GT.0.)THEN
           IFANON=1
         ELSE
           IFANON=0
         ENDIF
-      ELSEIF(MODE.EQ.'AC'.AND.Fposs.GT.0.)THEN
-      	IFANON=1
+
+C Determine status of window and fan at other occupied times
       ELSE
-        IFANON=0
-      ENDIF
-      IF(TRM.LT.23.6)IFANON=0
-      
-C Pakistan window status determination. If Night cooling then window
+
+C Window status determination. If Night cooling then window
 C open if Trm > 28.1, WNposs should only be set to 1 outside of the 
-C occupied hours!! If window opening not effective for cooling then 
+C occupied hours!! If window opening not effective for cooling then
 C window is closed - this is currently defined as when Tout>(Top+4).
-C The windows will be forced shut if alpha is set to 0.    
-      IF(Wposs.GT.0.)THEN
-        FUNCW=0.525*(TOP-TCOMF+(IWIN-0.5)*WD)
-        PW=EXP(FUNCW)/(1.+EXP(FUNCW))
-        RNW=RNOR()
-        RNW=ABS(RNW)
-        RNW=1000.*RNW    
-        IRNW=INT(RNW)
-        RNW=RNW-REAL(IRNW)
-        IF(PW.GT.RNW)THEN
-          IWIN=1
-        ELSE
-          IWIN=0
+C The windows will be forced shut if alpha is set to 0.   
+        IF(MODE.EQ.'HT'.OR.MODE.EQ.'FR')THEN
+          CLOSER=.FALSE.
+          CALL ECLOSE(PREVSTATWIN,0.0,0.0001,CLOSER)
+          IF(CLOSER)THEN   !  If window closed previously
+            FUNCWO=0.8*(TOP-TCOMF-CWO)
+            PWO=EXP(FUNCWO)/(1.+EXP(FUNCWO))
+            RNWO=RNOR()
+            RNWO=ABS(RNWO)
+            RNWO=1000.*RNWO   
+            IRNWO=INT(RNWO)
+            RNWO=RNWO-REAL(IRNWO)
+            PW=PWO ! For reporting in scratch file
+            FUNCW=FUNCWO ! For reporting in scratch file
+            RNW=RNWO ! For reporting in scratch file
+            IF(PWO.GT.RNWO)THEN
+              IWIN=1
+            ELSE
+              IWIN=0
+            ENDIF
+          ELSE  ! If window was open previously
+            FUNCWC=0.8*(TOP-TCOMF+CWC)
+            PWC=EXP(FUNCWC)/(1.+EXP(FUNCWC))
+            RNWC=RNOR()
+            RNWC=ABS(RNWC)
+            RNWC=1000.*RNWC
+            IRNWC=INT(RNWC)
+            RNWC=RNWC-REAL(IRNWC)
+            PW=PWC ! For reporting in scratch file
+            FUNCW=FUNCWC ! For reporting in scratch file
+            RNW=RNWC ! For reporting in scratch file
+            IF(PWC.GT.RNWC)THEN
+              IWIN=0
+            ELSE
+              IWIN=1
+            ENDIF
+          ENDIF
         ENDIF
-      ELSE
-        IWIN=0
+
+C Fan status determination. Note that fans are assumed on
+C in AC mode. If Tout < 23.6 then fans are assumed to be off.
+      IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
+        CLOSER=.FALSE.
+        CALL ECLOSE(PREVSTATFAN,0.0,0.0001,CLOSER)
+        IF(CLOSER)THEN   !  If fan off previously
+            FUNCFO=0.8*(TOP-TCOMF-CFO)
+            PFO=EXP(FUNCFO)/(1.+EXP(FUNCFO))
+            RNFO=RNOR()
+            RNFO=ABS(RNFO)
+            RNFO=1000.*RNFO
+            IRNFO=INT(RNFO)
+            RNFO=RNFO-REAL(IRNFO)
+            PF=PFO ! For reporting in scratch file
+            FUNCF=FUNCFO ! For reporting in scratch file
+            RNF=RNFO ! For reporting in scratch file
+            IF(PFO.GT.RNFO)THEN
+              IFANON=1
+            ELSE
+              IFANON=0
+            ENDIF
+          ELSE  ! If fan on previously
+            FUNCFC=0.8*(TOP-TCOMF+CFC)
+            PFC=EXP(FUNCFC)/(1.+EXP(FUNCFC))
+            RNFC=RNOR()
+            RNFC=ABS(RNFC)
+            RNFC=1000.*RNFC
+            IRNFC=INT(RNFC)
+            RNFC=RNFC-REAL(IRNFC)
+            PF=PFC ! For reporting in scratch file
+            FUNCF=FUNCFC ! For reporting in scratch file
+            RNF=RNFC ! For reporting in scratch file
+            IF(PFC.GT.RNFC)THEN
+              IFANON=0
+            ELSE
+              IFANON=1
+            ENDIF
+          ENDIF
+        ENDIF
+
+C Force action based on TRM and other parameters
+        IF(TOUT.GT.(TOP+4.).AND.TRM.GT.28.1) IWIN=0
+        IF(WNposs.GT.0.1.AND.TRM.GT.28.1) IWIN=1     
+        IF(MODE.EQ.'AC')IWIN=0   
+
+C Force action based on alpha = 0
+        closer=.false.
+        call eclose(alpha,0.0,0.01,closer)
+        IF(closer)then
+          IWIN=0   
+          IFANON=0
+        endif
+
+C Force action based on alpha = 1
+        closer=.false.
+        call eclose(alpha,1.0,0.01,closer)
+        IF(closer)then
+          IWIN=1
+          IFANON=1
+        endif
+
+C Force action based on alpha = 0.5
+        closer=.false.
+        call eclose(alpha,0.5,0.01,closer)
+        IF(closer)then
+          IWIN=1
+          IFANON=0
+        endif
+
+C Force action based on alpha = 0.3
+        closer=.false.
+        call eclose(alpha,0.5,0.01,closer)
+        IF(closer)then
+          IWIN=0
+          IFANON=1
+        endif
       ENDIF
-      
-      IF(TOUT.GT.(TOP+4.).AND.TRM.GT.28.1) IWIN=0
-      IF(WNposs.GT.0.1.AND.TRM.GT.28.1) IWIN=1      
-      IF(MODE.EQ.'AC')IWIN=0   
-      IF(ALPHA.LT.0.1)IWIN=0   
+
+C Window operation version 2
+C        IF(Wposs.GT.0.)THEN
+C          FUNCW=0.525*(TOP-TCOMF+(IWIN-0.5)*WD)
+C          PW=EXP(FUNCW)/(1.+EXP(FUNCW))
+C          RNW=RNOR()
+C          RNW=ABS(RNW)
+C          RNW=1000.*RNW   
+C          IRNW=INT(RNW)
+C          RNW=RNW-REAL(IRNW)
+C          IF(PW.GT.RNW)THEN
+C            IWIN=1
+C          ELSE
+C            IWIN=0
+C          ENDIF
+C        ELSE
+C          IWIN=0
+C        ENDIF
+
+C Fan operation version 2
+C        IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
+C          FUNCF=0.595*(TOP-TCOMF+(IFANON-0.5)*FD)
+C          PF=EXP(FUNCF)/(1.+EXP(FUNCF))
+C          RNF=RNOR()
+C          RNF=ABS(RNF)
+C          RNF=1000.*RNF
+C          IRNF=INT(RNF)
+C          RNF=RNF-REAL(IRNF)
+C          IF(PF.GT.RNF)THEN
+C            IFANON=1
+C          ELSE
+C            IFANON=0
+C          ENDIF
+C        ELSEIF(MODE.EQ.'AC'.AND.Fposs.GT.0.)THEN
+C          IFANON=1
+C        ELSE
+C          IFANON=0
+C        ENDIF
+C         IF(TRM.LT.23.6)IFANON=0
 
 C Door opening (Aizaz to enable functionality)
 C Currently door opening modelled manually by changing the flow
@@ -1084,7 +1300,7 @@ C       FUNCD=0.081*TOP-1.34
 C       PD=EXP(FUNCD)/(1.+EXP(FUNCD))
 C       RNW=RNOR()
 C       RNW=ABS(RNW)
-C       RNW=1000.*RNW    
+C       RNW=1000.*RNW   
 C       IRNW=INT(RNW)
 C       RNW=RNW-REAL(IRNW)
 C       IF(PD.GT.RNW)THEN
@@ -1105,9 +1321,8 @@ C Store values for window, fan, door status (Aizaz to enable Door)
       PREVSTATWIN=REAL(IWIN)
       ONFRAC=REAL(IWIN) 
 C     PREVSTATDOOR=REAL(IDOOR)
-      
-      
-C AIRFLOW NETWORK CONTROL CODE HERE:      
+     
+C AIRFLOW NETWORK CONTROL CODE HERE:     
       if(ifan(ICFP,1).eq.-3)then
 C Controlling a connection. (ICNN not relevant, therefor 0)
           CTLPOS(ifan(icfp,2))=ONFRAC
@@ -1120,14 +1335,23 @@ C Establish sensed variable magnitude and actuated node location.
           endif
   1     continue
       endif
-      
-C fort.96 file write statement here:    
-c      IF(NSINC.EQ.1.)write(96,*)
-c     &'Top TMRT Tout Trm  Tcomf  FUNCF PF  RNF  FAN FUNCw Pw RNW  WIN M'
-c      write(96,'(F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F5.1,1X,F4.1,
+     
+C fort.96 file write statement here:   
+      IF(NSINC.EQ.1.)write(96,*)
+c     &'IDAY btimef Top TMRT Tout Trm  Tcomf  FUNCF PF  RNF  FAN FUNCw Pw
+c     & RNW  WIN M'
+c      write(96,'(i3,1x,F5.2,1x,F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F4.1,
+c     & 1X,F5.1,1X,F4.1,
 c     & 1X,F4.1,1X,I2,1X,F5.1,1X,F4.1,1X,F4.1,1X,I2,1X,A)')
-c     & Top,TMRT,Tout,Trm,Tcomf,FUNCF,PF,RNF,
+c     & IDAY,BTIMEF,Top,TMRT,Tout,Trm,Tcomf,FUNCF,PF,RNF,
 c     & IFANON,FUNCw,Pw,RNW,IWIN,MODE
+
+     &'IDAY,btimef,Top,TMRT,Tout,Trm,Tcomf,FUNCF,PF,RNF,FAN,FUNCw,Pw,RNW
+     &,WIN,M'
+      write(96,*)
+     & IDAY,',',BTIMEF,',',Top,',',TMRT,',',Tout,',',Trm,',',Tcomf,',',
+     & FUNCF,',',PF,',',RNF,',',
+     & IFANON,',',FUNCw,',',Pw,',',RNW,',',IWIN,',',MODE,',',ICOMP
      
 C node number is ifsn(icfp,3), get zone associated with node
       DO 546 ICOM=1,NCOMP
@@ -1136,7 +1360,6 @@ C node number is ifsn(icfp,3), get zone associated with node
           TOTPWR(ICOMP)=0.
         ENDIF
   546 CONTINUE
-
 
 C Gains adding to thermal zone(s). Lights not yet enabled
 C If fan is on add fan power to casual gains for that zone
@@ -1153,10 +1376,10 @@ C Find total power of the equipment
  
  
       GOTO 9999
-  999 helptopic='flow_ctl_04_error'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL PHELPD('data i/o error',nbhelp,'i/o exception handler',
-     &  0,0,IER)
+  999 H(1) = 'A data i/o error has occured in the program at FCL04'
+      H(2) = 'and it is probably best not to go on. '
+      H(3) = 'Program is taking one step back.'
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
  9999 RETURN
       END
 
