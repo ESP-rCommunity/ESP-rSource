@@ -73,14 +73,14 @@ C
 C
 C REFERENCES:
 C
-C   Beausoleil-Morrison, I., editor (2007). Experimental Investigation 
-C     of Residential Cogeneration Devices and Calibration of Annex 42 
+C   Beausoleil-Morrison, I., editor (2007). Experimental Investigation
+C     of Residential Cogeneration Devices and Calibration of Annex 42
 C     Models. IEA/ECBCS Annex 42.
 C
-C   Beausoleil-Morrison, I. and Kelly, N., editors (2007). 
-C     Specifications for Modelling Fuel cell and Combustion-Based 
+C   Beausoleil-Morrison, I. and Kelly, N., editors (2007).
+C     Specifications for Modelling Fuel cell and Combustion-Based
 C     Residential Cogneration devices within Whole-Building
-C     Simulation programs. IEA/ECBCS Annex 42. 
+C     Simulation programs. IEA/ECBCS Annex 42.
 C
 C======================================================================
 
@@ -838,7 +838,7 @@ C.....Key model parameters
                                  ! (kg/s^2) or power output (W/s)
 
       real fTime_Constant        ! Effective thermal time constant (s)
-      real fTC_eng_node          ! Individual time constants for both 
+      real fTC_eng_node          ! Individual time constants for both
       real fTC_cw_node           !   engine and cooling water nodes (s)
       real fSoln_alpha           ! Implicit / explicit weighting factor
 
@@ -1001,10 +1001,10 @@ C.....Misc parameters / flags
       logical bFuel_Rate_Limited       ! Flag indicating rate of change
                                        !   in fuel flow is rate-limited.
 
-      integer iStrategy                ! Flag indicating how function 
+      integer iStrategy                ! Flag indicating how function
                                        !   Eval_TS_average should treat
                                        !   variables when the maximum
-                                       !   specified rate of change is not 
+                                       !   specified rate of change is not
                                        !   exceeded.
 
       logical bLimited                 ! Flag indicating output of function
@@ -1174,7 +1174,7 @@ C----------------------------------------------------------------------
 
 C.....Get cooling water temperature & mass flow rate (future row)
       fCW_temperature_in_F = convar ( iCW_conn_index, iPropTemp )   ! oC
-      fCW_mass_flow_F =   pcondr( iCW_conn_index ) 
+      fCW_mass_flow_F =   pcondr( iCW_conn_index )
      &                  * convar ( iCW_conn_index, iProp1stFlow )   ! kg/s
 
 C.....Get temperature of cooling water at outlet of engine heat
@@ -1502,8 +1502,8 @@ C-------------------------------------------------------------------
         if ( fOP_target_F < fPower_Out_MIN ( iPComp ) )
      &       fOP_target_F = fPower_Out_MIN ( iPComp )
 
-C.......Make sure power rate of power change respects 
-C.......controller limit 
+C.......Make sure power rate of power change respects
+C.......controller limit
         call Eval_TS_average (
      &           fP_net_init,
      &           fOP_target_F,
@@ -1517,9 +1517,9 @@ C.......controller limit
 
 C.......If requested change in OP will exceed rate-limited
 C.......value, reset OP to respect rate-limit.
-        if ( bPowerLimited ) then 
+        if ( bPowerLimited ) then
           fOP_target_F = fRate_limited_value
-        endif 
+        endif
 
 
 C-----------------------------------------------------------------
@@ -1684,17 +1684,17 @@ C         rate and maximum rate of change. Eval_TS_average will
 C         also return the fuel flow at the future timerow, and
 C         the average flow over the timestep.
 C
-C         If the bPowerLimited flag is set, the iLinear strategy 
-C         is set to ensure the resulting fuel flow varies linearly 
+C         If the bPowerLimited flag is set, the iLinear strategy
+C         is set to ensure the resulting fuel flow varies linearly
 C         from timestep to time step. Otherwise, use iStepwise
-C         strategy, which assumes the fuel flow rate will 
-C         vary as fast as permitted by the fuel flow rate limit. 
+C         strategy, which assumes the fuel flow rate will
+C         vary as fast as permitted by the fuel flow rate limit.
 C-------------------------------------------------------------------
           if ( bPowerLimited ) then
             iStrategy = iLinear
           else
             iStrategy = iStepwise
-          endif 
+          endif
 
           call Eval_TS_average (
      &        fN_fuel_flow_init,
@@ -1891,14 +1891,14 @@ C.......ICE unit doesn't produce power during startup
         if ( iOperating_mode_F == iOP_startup ) fP_net = 0
 
         if ( bFuel_Rate_Limited ) then
-        
+
           iStrategy = iLinear
-          
-        else 
-          
+
+        else
+
           iStrategy = iStepwise
-          
-        endif 
+
+        endif
 
         call Eval_TS_average (
      &           fP_net_init,
@@ -2057,24 +2057,24 @@ C
 C     Consider the linear system:
 C
 C       dX
-C       --  = -a X(t) + c 
+C       --  = -a X(t) + c
 C       dt
 C
 C     The time constant is:
 C
 C
-C       TC = 1 / a 
+C       TC = 1 / a
 C
-C     If each node in the engine model is set considered to be a 
-C     linear system subject to constant boundary conditions, 
-C     meaningful time constants can be calculated. For the 
-C     engine 
+C     If each node in the engine model is set considered to be a
+C     linear system subject to constant boundary conditions,
+C     meaningful time constants can be calculated. For the
+C     engine
 C
 C     Consider the engine control volume:
 C
 C       d T_eng    - UA_HX ( T_eng - T_cw )  - UA_loss ( T_eng - T_amb )
 C       -------  = -----------------------------------------------------
-C         dt                        [MC]_eng 
+C         dt                        [MC]_eng
 C
 C       d T_eng    -[UA_HX + UA_loss] ( T_eng ) + C
 C       -------  = --------------------------------
@@ -2090,10 +2090,10 @@ C       TC_eng = -----------------
 C                [UA_HX + UA_loss]
 C
 C-----------------------------------------------------------------------
-    
+
 
 C.....Ensure denominator will not be zero!
-      call eclose ( fEffective_UA_HX(iPComp) 
+      call eclose ( fEffective_UA_HX(iPComp)
      &                + fEffective_UA_loss(iPComp),
      &                0.0, 1.0E-03, bNums_are_close )
 
@@ -2105,8 +2105,8 @@ C........Time constant is arbitrarly large:
       else
 
          fTC_eng_node = fEffective_MC_engine(iPComp)
-     &                    / 
-     &                      (   fEffective_UA_HX(iPComp) 
+     &                    /
+     &                      (   fEffective_UA_HX(iPComp)
      &                        + fEffective_UA_loss(iPComp)
      &                      )
 
@@ -2137,7 +2137,7 @@ C-----------------------------------------------------------------------
 
 
 C.....Ensure denominator will not be zero!
-      call eclose ( fEffective_UA_HX(iPComp) 
+      call eclose ( fEffective_UA_HX(iPComp)
      &                + fCW_heat_cap_F,
      &                0.0, 1.0E-03, bNums_are_close )
 
@@ -2149,16 +2149,16 @@ C........Time constant is arbitrarly large:
       else
 
          fTC_cw_node = fEffective_MC_HX(iPComp)
-     &                    / 
-     &                      (   fEffective_UA_HX(iPComp) 
+     &                    /
+     &                      (   fEffective_UA_HX(iPComp)
      &                        + fCW_heat_cap_F
      &                      )
 
       endif
 
 C-----------------------------------------------------------------------
-C     Now use the smallest time constant when evaluating stability 
-C     of mixed solution scheme. 
+C     Now use the smallest time constant when evaluating stability
+C     of mixed solution scheme.
 C-----------------------------------------------------------------------
       fTime_Constant = amin1(fTC_cw_node,fTC_eng_node)
 
@@ -3543,6 +3543,7 @@ C-----------------------------------------------------------------------
 
       subroutine A42_CHP_H3Kreports_module (
      &                 iIndex, iStatus )
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "cetc_cogen.h"
@@ -3593,11 +3594,9 @@ C.....Miscellaneous plant data
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      character*128 H3Kname       ! holding variable
-      character*128 char_temp     ! holding variable
       character*124 cContext      ! Contextual buffer
-      character*248 cParamName    ! holding variable
-      integer iLength,iNameLength ! Length of strings
+      integer iNameLength ! Length of strings
+
 
       integer iUnit_Status_flag   ! flag indicating unit status
 
@@ -3680,20 +3679,12 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C        Initialize reports -> boundary conditions and statistics
 C----------------------------------------------------------------------
-C........Get component name and length
-         write(char_temp,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:lnblnk(pcname(iIndex))),
-     &      '/misc_data'
-         call h3k_StoreString(char_temp,iStorage_index(iIndex),
-     &      iLength)
-
+      ! not longer required.
       endif
 
 C--------------------------------------------
-C.....Recover Component name
-      call h3k_RecoverString(iStorage_index(iIndex),
-     &                       char_temp, iNameLength)
+C.....Recover Component name's length
+      iNameLength = lnblnk(pcname(iIndex))
 
 C.....Get model node and connection indicies.
       iEngine_Node_index = NPCDAT ( iIndex, 9 )
@@ -3734,124 +3725,63 @@ C.....Check if cooling water flow rate is zero.
 
 C--------------------------------------------
 C.....Output data: Control Scheme
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/external_control/scheme'
-      call add_to_xml_reporting(
-     &   fReport_Control_Method(iIndex),
-     &   H3Kname,
-     &   'units', '(-)',
-     &   'A42 CHP model: External control scheme type'
-     &   )
+      call AddToReportWild1(rvPltExtCtrlScheme%Identifier,
+     &         fReport_Control_Method(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------------
 C.....Write a name: Control Signal
-      write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/external_control/signal'
-      call add_to_xml_reporting(
-     &   fReport_Control_Signal(iIndex),
-     &   H3Kname,
-     &   'units', '(-)',
-     &   'A42 CHP model: External control signal'
-     &   )
+      call AddToReportWild1(rvPltExtCtrlSignal%Identifier,
+     &         fReport_Control_Signal(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------------
 C.....Write a name: Time spent inoperative
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/operating_mode/inoperative'
-      call add_to_xml_reporting(
-     &   fReport_time_spent(iIndex,iOP_inoperative),
-     &   H3Kname,
-     &   'units', '(s)',
-     &   'A42 CHP model: Cumulative time spent inoperative'
-     &   )
-
+      call AddToReportWild1(rvPltOperModeInop%Identifier,
+     &         fReport_time_spent(iIndex,iOP_inoperative),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in start-up
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/operating_mode/start_up'
-      call add_to_xml_reporting(
-     &   fReport_time_spent(iIndex,iOP_startup),
-     &   H3Kname,
-     &   'units', '(s)',
-     &   'A42 CHP model: Cumulative time spent in start-up mode'
-     &   )
+      call AddToReportWild1(rvPltA42OperModeStartUp%Identifier,
+     &         fReport_time_spent(iIndex,iOP_startup),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in warm-up
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/operating_mode/warmup'
-      call add_to_xml_reporting(
-     &   fReport_time_spent(iIndex,iOP_warmup),
-     &   H3Kname,
-     &   'units', '(s)',
-     &   'A42 CHP model: Cumulative time spent warming up'
-     &   )
-
+      call AddToReportWild1(rvPltOperModeWarmup%Identifier,
+     &         fReport_time_spent(iIndex,iOP_warmup),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in normal operation
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/operating_mode/normal_operation'
-      call add_to_xml_reporting(
-     &   fReport_time_spent(iIndex,iOP_normal_operation),
-     &   H3Kname,
-     &   'units', '(s)',
-     &   'A42 CHP model: Cumulative time spent in normal operation'
-     &   )
+      call AddToReportWild1(rvPltOpenModeNormOper%Identifier,
+     &         fReport_time_spent(iIndex,iOP_normal_operation),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Time spent in shutdown
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/operating_mode/shutdown'
-      call add_to_xml_reporting(
-     &   fReport_time_spent(iIndex,iOP_shutdown),
-     &   H3Kname,
-     &   'units', '(s)',
-     &   'A42 CHP model: Cumulative time spent in shut-down mode'
-     &   )
+      call AddToReportWild1(rvPltOperModeShutdown%Identifier,
+     &         fReport_time_spent(iIndex,iOP_shutdown),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Containment temperature
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),'/containment_temperature'
-      call add_to_xml_reporting(
-     &   fReport_Containment_Temp(iIndex),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'A42 CHP model: temperature of containing room'
-     &   )
+      call AddToReportWild1(rvPltContTemp%Identifier,
+     &         fReport_Containment_Temp(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Cooling water temperature
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength), '/cooling_water/temperature'
-      call add_to_xml_reporting(
-     &   fReport_CW_Temperature(iIndex),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'A42 CHP model: temperature of cooling water at inlet'
-     &   )
-
-
+      call AddToReportWild1(rvPltCoolWaterTemp%Identifier,
+     &         fReport_CW_Temperature(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Cooling water mass flow rate
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength), '/cooling_water/flow_rate'
-      call add_to_xml_reporting(
-     &   fReport_CW_Mass_Flow(iIndex),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'A42 CHP model: mass flow rate of cooling water'
-     &   )
+      call AddToReportWild1(rvPltCoolWaterFlowRt%Identifier,
+     &         fReport_CW_Mass_Flow(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-------------------------------------------------------------------
 C     Initialize reports. -> instantaneous data
@@ -3859,147 +3789,80 @@ C-------------------------------------------------------------------
 
 C-----------------------------------------
 C.....Write a name: Net power
-      write(H3Kname,'(A,A)')
-     &   char_temp(1:iNameLength), '/instantaneous/power/net'
-      call add_to_xml_reporting(
-     &   fReport_Net_Power(iIndex),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: net power produced'
-     &   )
+      call AddToReportWild1(rvPltInstPowerNet%Identifier,
+     &         fReport_Net_Power(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Heat recovery
-      write(H3Kname,'(A,A)')
-     &   char_temp(1:iNameLength),'/instantaneous/heat_recovery'
-      call add_to_xml_reporting(
-     &   fReport_Heat_Recovery(iIndex),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: Rate of heat transfer to cooling water'
-     &   )
+      call AddToReportWild1(rvPltInstHeatRec%Identifier,
+     &         fReport_Heat_Recovery(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Air flow
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/instantaneous/combustion_air/flow_rate'
-      call add_to_xml_reporting(
-     &   fReport_Air_Flow(iIndex),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'A42 CHP model: combustion air flow rate'
-     &   )
-
+      call AddToReportWild1(rvPltInstFlowRt%Identifier,
+     &         fReport_Air_Flow(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel flow
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),'/instantaneous/fuel/flow_rate'
-      call add_to_xml_reporting(
-     &   fReport_Fuel_Flow(iIndex),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'A42 CHP model: fuel mass flow rate'
-     &   )
+      call AddToReportWild1(rvPltInstFuelFlowRt%Identifier,
+     &         fReport_Fuel_Flow(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
+
 C-----------------------------------------
 C.....Write a name: fuel LHV flow rate
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/instantaneous/fuel/gross_energy_input'
-      call add_to_xml_reporting(
-     &   fReport_Fuel_LHV_rate(iIndex),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: LHV flow rate of fuel used by engine'
-     &   )
+      call AddToReportWild1(rvPltInstFuelGrossEnInput%Identifier,
+     &         fReport_Fuel_LHV_rate(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel LHV value:
 C.....This data should be time-invariant, but there's presently
 C.....no better way to export time-invariant data out of ESP-r.
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/instantaneous/fuel/lower_heating_value'
-      call add_to_xml_reporting(
-     &   fFuel_LHV(iIndex),
-     &   H3Kname,
-     &   'units', '(J/kg)',
-     &   'A42 CHP model: LHV of fuel used by engine'
-     &   )
-
+      call AddToReportWild1(rvPltInstFuelLowHeatVal%Identifier,
+     &         fFuel_LHV(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Skin losses
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/instantaneous/heat_loss'
-      call add_to_xml_reporting(
-     &   fHeat_loss,
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: rate of heat loss to surroundings'
-     &   )
-
+      call AddToReportWild1(rvPltInstHeatLoss%Identifier,
+     &         fHeat_loss,
+     &         pcname(iIndex)(1:iNameLength))
 
 C-------------------------------------------------------------------
 C     Reports -> time-step averaged data
 C-------------------------------------------------------------------
 C-----------------------------------------
 C.....Write a name: Heat recovery
-      write(H3Kname,'(A,A)')
-     &   char_temp(1:iNameLength),'/average/heat_recovery'
-      call add_to_xml_reporting(
-     &   fQ_recovery_average,
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: Rate of heat transfer to cooling water'
-     &    // 'averaged over time step'
-     &   )
+      call AddToReportWild1(rvPltAvgHeatRec%Identifier,
+     &         fQ_recovery_average,
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: Net power
-      write(H3Kname,'(A,A)')
-     &   char_temp(1:iNameLength),'/average/power/net'
-      call add_to_xml_reporting(
-     &   fAverage_Net_Power(iIndex),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: Rate of net electrical production averaged'
-     &     // 'over timestep' )
+      call AddToReportWild1(rvPltAvgPowNet%Identifier,
+     &         fAverage_Net_Power(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel flow
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),'/average/fuel/flow_rate'
-      call add_to_xml_reporting(
-     &   fAverage_Fuel_Flow(iIndex),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'A42 CHP model: Fuel mass flow rate averaged over timestep'
-     &   )
+      call AddToReportWild1(rvPltAvgFuelFlowRt%Identifier,
+     &         fAverage_Fuel_Flow(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: fuel LHV flow rate
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),'/average/fuel/gross_energy_input'
-      call add_to_xml_reporting(
-     &   fAverage_Fuel_LHV_rate(iIndex),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'A42 CHP model: LHV of fuel used by engine, averaged over'
-     &      //' timestep' )
+      call AddToReportWild1(rvPltAvgFuelGrossEnIn%Identifier,
+     &         fAverage_Fuel_LHV_rate(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C.....Write a name: carbon dioixide emissions
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),'/average/emissions/carbon_dioxide'
-      call add_to_xml_reporting(
-     &   fAverage_CO2_emissions(iIndex),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'A42 CHP model: carbon dioxide emissions, averaged over'
-     &      //' timestep' )
+      call AddToReportWild1(rvPltAvgEmisCarbDio%Identifier,
+     &         fAverage_CO2_emissions(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C----------------------------------------------------------------------
 C        Check if unit is operating, and if so, report efficiencies
@@ -4009,110 +3872,58 @@ C----------------------------------------------------------------------
 
 C-----------------------------------------
 C........Write a name: electrical efficiency
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),'/average/efficiency/electric'
-         call add_to_xml_reporting(
-     &      fAverage_Electric_Efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Electrical efficiency'
-     &        // ' averaged over timestep' )
+         call AddToReportWild1(rvPltAvgEffElec%Identifier,
+     &         fAverage_Electric_Efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C........Write a name: thermal efficiency
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),'/average/efficiency/thermal'
-         call add_to_xml_reporting(
-     &      fAverage_Thermal_Efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Thermal efficiency averaged over '
-     &        // 'timestep')
-
+         call AddToReportWild1(rvPltAvgEffTherm%Identifier,
+     &         fAverage_Thermal_Efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C-----------------------------------------
 C........Write a name: cogeneration efficiency
-         write(H3Kname,'(A,A)')
-     &      char_temp(1:iNameLength),'/average/efficiency/cogeneration'
-         call add_to_xml_reporting(
-     &      fAverage_Cogen_efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Cogeneration (overall) efficiency'
-     &       // ' averaged over timestep')
-
+         call AddToReportWild1(rvPltAvgEffCogen%Identifier,
+     &         fAverage_Cogen_efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C........Write a name: Cogeneration efficency
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/instantaneous/efficiency/cogeneration'
-         call add_to_xml_reporting(
-     &      fReport_Cogen_Efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Cogeneration (overall) efficiency '
-     &       // 'at end of time step'
-     &    )
+         call AddToReportWild1(rvPltInstEffCogen%Identifier,
+     &         fReport_Cogen_Efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: Electric efficency
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/instantaneous/efficiency/electric'
-         call add_to_xml_reporting(
-     &      fReport_Electric_Efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Electrical efficiency'
-     &      // ' at end of timestep')
+         call AddToReportWild1(rvPltInstEffElec%Identifier,
+     &         fReport_Electric_Efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
 C........Write a name: Thermal Efficiency
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/instantaneous/efficiency/thermal'
-         call add_to_xml_reporting(
-     &      fReport_Thermal_Efficiency(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Electrical efficiency'
-     &       // 'at end of timestep')
+         call AddToReportWild1(rvPltInstEffTherm%Identifier,
+     &         fReport_Thermal_Efficiency(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
       endif
 
 C--------------------------------------
 C........Write a name: Solution weighting factor
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/solution_params/weighting_factor'
-         call add_to_xml_reporting(
-     &      fReport_alpha(iIndex),
-     &      H3Kname,
-     &      'units', '(-)',
-     &      'A42 CHP model: Implicit/explicit solution'
-     &       // ' weighting factor.')
+         call AddToReportWild1(rvPltSolWeightFact%Identifier,
+     &          fReport_alpha(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
-C........Write a name: engine control volume TC 
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/solution_params/time_constant/engine_control_volume'
-         call add_to_xml_reporting(
-     &      fReport_TC_eng(iIndex),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'A42 CHP model: Engine control volume time constant')
+C........Write a name: engine control volume TC
+         call AddToReportWild1(rvPltSolTmeCstEngCtrlVol%Identifier,
+     &         fReport_TC_eng(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
 C--------------------------------------
-C........Write a name: cooling water control volume TC 
-         write(H3Kname,'(A,A)')
-     &     char_temp(1:iNameLength),
-     &     '/solution_params/time_constant/cw_control_volume'
-         call add_to_xml_reporting(
-     &      fReport_TC_cw(iIndex),
-     &      H3Kname,
-     &      'units', '(s)',
-     &      'A42 CHP model: Cooling water control volume time constant')
+C........Write a name: cooling water control volume TC
+         call AddToReportWild1(rvPltSolTmeCstCWCtrlVol%Identifier,
+     &         fReport_TC_cw(iIndex),
+     &         pcname(iIndex)(1:iNameLength))
 
       return
       end  ! of subroutine
@@ -4130,7 +3941,7 @@ C     fX_target     - 'Target' value variable X
 C     fX_max_change -  Maximum rate of change permitted in
 C                      variable X (1/seconds)
 C     fTS_duration  -  Timestep duration (seconds)
-C     iStrategy     -  Flag indicating if step will be accomplished 
+C     iStrategy     -  Flag indicating if step will be accomplished
 C                      as quickly as possible, or linearly
 C                      between two points.
 C
@@ -4144,19 +3955,19 @@ C                      is rate limited.
 C
 C  Assumptions:
 C
-C     - Variable X exhibits linear behavior between initial and 
+C     - Variable X exhibits linear behavior between initial and
 C       final values.
 C
-C     If stepwise strategy is specified, allow variable to change 
+C     If stepwise strategy is specified, allow variable to change
 C     at maximum rate until future value is reached, afterwhich
 C     the remainder of the timestep is spend at steady-state.
-C         
+C
 C         ^
 C         |
 C         |
 C         |
-C         |                
-C      Y2=+              +  +  +  +  +  +  +  +  
+C         |
+C      Y2=+              +  +  +  +  +  +  +  +
 C         |             +
 C         |            +
 C         |           +
@@ -4173,20 +3984,20 @@ C               |<- Rate->|<----   Steady    --->|
 C                 limited          state
 C
 C     If linear strategy is specified, assume variable will vary
-C     linarly across timestep 
-C         
+C     linarly across timestep
+C
 C         ^
 C         |
 C         |
 C         |                / <- max rate-limited change
-C         |               / 
-C      Y2=+              /                 +  <- Actual 
-C         |             /                +       rate of 
+C         |               /
+C      Y2=+              /                 +  <- Actual
+C         |             /                +       rate of
 C         |            /              +          change.
 C         |           /            +
 C         |          /          +
 C         |         /        +
-C         |        /      + 
+C         |        /      +
 C         |       /    +
 C         |      /  +
 C      Y1-+     +
@@ -4350,8 +4161,8 @@ C.....  Variable will spend all of its time in transient.
       if ( iStrategy == iLinear ) then
         fTS_frac_transient = 1.0
         fTS_frac_steady = 0.0
-      endif 
-        
+      endif
+
 
       fX_average = (fX_initial + fX_final) / 2.0 * fTS_frac_transient
      &             + fX_final * fTS_frac_steady

@@ -11,9 +11,13 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ish.o aim2_module.o arrow.o ascii_mat.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+
+OBJECTS = h3kmodule.o ish.o aim2_module.o arrow.o ascii_mat.o \
 	  basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
-   c2fdum.o common3dv.o cread3dv.o \
+	  c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o \
 	  edatabase.o edcondb.o egeometry.o emfnetw.o enetmisc.o \
 	  esru_misc.o esystem.o sifile.o eroper.o filelist.o graph.o inscon.o \
@@ -21,7 +25,7 @@ OBJECTS = ish.o aim2_module.o arrow.o ascii_mat.o \
 	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
 	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod h3kmodule.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
@@ -131,6 +135,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -145,4 +152,4 @@ clean:
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
 	eroper.F filelist.F item.F mfcdat.F nwkrewr.F plelevvc.F readTrnsys.F rwipv.F \
-	rwsbem.F sort.F startup.F tdfile.F pltcfg.F
+	rwsbem.F sort.F startup.F tdfile.F pltcfg.F h3kmodule.f90

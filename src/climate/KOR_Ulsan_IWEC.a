@@ -8,7 +8,7 @@
 # col 5: Wind direction     (clockwise deg from north) 
 # col 6: Relative humidity               (Percent)
 ULSAN - KOR IWEC 471520         # site name
- 2001,35.55,-5.68,0   # year latitude long diff rad flag
+ 1991,35.55,-5.68,0   # year, latitude, long diff, direct normal rad flag
  1,365    # period (julian days)
 * day  1 month  1
  0,85,0,0,180,77
@@ -9134,4 +9134,4 @@ ULSAN - KOR IWEC 471520         # site name
  0,108,0,0,0,67
  0,103,0,0,0,69
  0,98,0,0,0,72
- 0,0,0,0,0,0
+ 0,92,0,0,0,74

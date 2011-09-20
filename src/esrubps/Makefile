@@ -15,13 +15,18 @@ PROG = bps$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
 %.o : %.cpp
 	$(MCPL) $(CFLAGS) -c $<
 
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
+
+
+BPS_OBJECTS = h3kmodule.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -54,12 +59,12 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_t
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o   
+	  AirFlowModelRoutines.o Res_elec_Ctl.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod 
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod h3kmodule.mod
 
 $(PROG): $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags) 
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -469,6 +474,9 @@ h3kstore.F:
 h3koutput.F:
 	rm -f h3koutput.F
 	ln -s $(CETCdir)/h3koutput.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 FC_components.F:
 	rm -f FC_components.F
 	ln -s $(CETCdir)/FC_components.F .
@@ -669,8 +677,8 @@ stratified_tank_2HX.F:
 AirFlowModelRoutines.F:
 	rm -f AirFlowModelRoutines.F
 	ln -s $(BLDdir)/AirFlowModelRoutines.F .
-  
-  
+
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -715,4 +723,4 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	AirFlowModelRoutines.F Res_elec_Ctl.F
+	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90

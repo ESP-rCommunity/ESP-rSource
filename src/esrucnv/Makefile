@@ -11,15 +11,18 @@ PROG = ecnv$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+OBJECTS = h3kmodule.o aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  bscoeff.o bscoeff_extended.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
-	  startup.o tdfile.o wwxfig.o zipcnv.o
+	  startup.o tdfile.o wwxfig.o zipcnv.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod h3kmodule.mod	
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
@@ -111,6 +114,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -124,4 +130,4 @@ clean:
 	c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F
+	sort.F startup.F tdfile.F h3kmodule.f90

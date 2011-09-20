@@ -93,6 +93,7 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
 C      character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
+      character message*48    ! for vertex dialog
       integer IRT  ! for radio button
       integer icmpall  ! to signal request to compare all names
 
@@ -1053,8 +1054,9 @@ C present editing of vertices with the option for mouse.
             if(ISCOPT.eq.0)then  
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
-              CALL EASKS248(t248,' Associated vertices (type indices)?',
-     &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
+              write(message,'(a)')'Vertices associated with new surface'
+              CALL EASKS248(t248,message,
+     &         ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
               NV = iCountWords(t248)
               K=0
               DO 943 J=1,NV
@@ -1111,7 +1113,8 @@ C updated reflect this in the write(t248 statement).
               hold64='                                                '
               write(t248,'(3a)') hold64,hold64,hold64
               WRITE(t248,'(42I4)')(JJVN(J),J=1,ijvn)
-              CALL EASKS248(t248,' Associated vertices (type indices)?',
+              write(message,'(a)')'Vertices associated with new surface'
+              CALL EASKS248(t248,message,
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
               NV = iCountWords(t248)
               K=0
@@ -1126,10 +1129,9 @@ C updated reflect this in the write(t248 statement).
 C For the GTK version there is no mouse click so offer a blank editing
 C string. Fill the string first with spaces and a single character (GTK
 C does not seem to like to start with a fully blank string).
-C            hold64='                                                  '
-C            write(t248,'(3a)') hold64,hold64,hold64
             t248='  1                                               '
-            CALL EASKS248(t248,'Associated vertices (type indices)?',
+            write(message,'(a)') 'Vertices associated with new surface'
+            CALL EASKS248(t248,message,
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,nbhelp)
             NV = iCountWords(t248)
             K=0
@@ -1949,7 +1951,7 @@ C ivimb=1 then we have an unmatched edge.
           bounded=.false.
           ivimb=(abs((matchab+10)-(matchba+10)))
           if(ivimb.eq.2)then
-            write(outs,'(a,i2,a,i2,a,a)')
+            write(outs,'(a,i3,a,i3,a,a)')
      &        'The edge between vertices ',itv1(ip),' &',
      &        itv2(ip),' of ',SNAME(icomp,irelsur(ip))
             if(ivb.ne.0)then
@@ -1959,7 +1961,7 @@ C ivimb=1 then we have an unmatched edge.
             endif
             inve=inve+1
           elseif(ivimb.eq.1)then
-            write(outs,'(a,i2,a,i2,3a)')
+            write(outs,'(a,i3,a,i3,3a)')
      &        'The edge between vertices ',itv1(ip),' &',itv2(ip),
      &        ' of ',SNAME(icomp,irelsur(ip)),' may be unbounded.'
             if(ivb.ne.0)then

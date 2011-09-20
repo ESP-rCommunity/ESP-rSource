@@ -52,8 +52,6 @@ C      BCL24:  adaptive human comfort model.
 C      BCL25_open_windows: switch between different 
 C             air flow computation methods.
 C      BCL26:  heat exchanger model controlling zone flux extraction.
-C      BCL27:  Simple idealized controller based on BCL01 with 
-C              limited support for free-cooling
 C      BCL99:  constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine.
@@ -80,7 +78,7 @@ C The main building control function executive.
 
 C Check if running in dll mode.
       call isadll(dll)
-    
+
 C 26 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
@@ -104,9 +102,7 @@ C For the special case of current zone, mixed node control only.
 
 C CL1 is basic control with potential for a different heating and
 C cooling set point.   Limiting capacities allow either heating or
-C cooling to be disallowed. Humidity control may also be active.  
-C Note: this is now a legacy inteface to BCL01_extended, which 
-C supports these functions + simplistic free-cooling control.     
+C cooling to be disallowed. Humidity control may also be active.      
       case (1)
         CALL BCL01(ier)
         if(ier.eq.2)then
@@ -231,10 +227,6 @@ C CL26 uses a heat exchanger model to determine the heat flux
 C to remove from the associated zone.
       case (26)
         call BCL26
-        
-C CL27: Interface to BCL01_extended with free-cooling activated
-      case (27) 
-        call BCL01_extended(IER, .true.) 
       
 C New control laws should be inserted here.
       case default 
@@ -1087,116 +1079,32 @@ C Temperature too high: extract fixed cooling.
       END
 
 C ******************** BCL01
-C BCL01 is a legacy interface to BCL01_extended, which also offers 
-C a symplistic 'free-cool' algorithm. To enable legacy behavior, it 
-C invokes BCL01_extended with the free-cooling flag set to .false.
-C
+C A basic controller.
       SUBROUTINE BCL01(IER)
-      implicit none 
-      
-C.....Error flag
-      integer IER
-      
-C.....Flag for invoking free-cooling capabilities 
-      logical bFreeCool
-      bFreeCool = .false. 
-      
-C.....Interface to extended BCL01       
-      call BCL01_extended(IER,bFreeCool)
-      
-      return 
-      end 
 
-
-C ******************** BCL01_extended
-C Basic controller with symplistic free-cooling capabilities.      
-C
-      SUBROUTINE BCL01_extended(IER,bFreeCool)
-      implicit none 
-          
-      include "building.h"
-      include "hvac_parameters.h"
-      include "hvac_common.h"
-      include "control.h"
-      include "blc25_open_windows.h"
-
-      integer IER ! Error flag
-      
-      logical bFreeCool ! logical flag indicating if free-cooling 
-                        ! capabilities are to be invoked.
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
-      integer ITC, ICNT 
-      
-      
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      integer ITCF, ITRACE, IZNTRC, ITU ! I/O parameters for trace
-      
-C Climate data
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-      real QFP, QFF
-      real TP, TF
-      real QDP, QDF
-      real VP, VF
-      real DP, DF
-      real HP, HF
-      
-      
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      integer IHRP, IHRF   ! Present and future hour of day
-      integer IDYP, IDYF   ! present and future day of year
-      integer IDWP, IDWF   ! Present and future day of week
-      integer NSINC        ! Simulation timestep
-      integer ITS          ! ?
-      
-      
       COMMON/BTIME/BTIMEP,BTIMEF
-      real BTimeP, BTimeF    ! Building present and future time of day
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer iuout, iuin
-      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      integer iCF, iDTyp, iPer
-      real BB1, BB2, BB3 
-      integer iIComp
-      real TNP
-      real QFut, TFut
-      
-      
-      
       COMMON/PREC1/SNA(MCOM,MS)
-      real sna  ! Surface area (m2)
 
 C Common for relative humidity control (ideal) and dew point relative humidity
 C control.
       COMMON/IDRHCTL1/RHSPTU(MCOM),RHSPTL(MCOM),RHHC(MCOM),
      &RHDC(MCOM),IRHCT(MCOM)
-      
-      real RHSPTU, RHSPTL
-      real RHHC
-      real RHDC
-      integer IRHCT
-      
       COMMON/ATPRES/PATMOS
-      real PATMOS ! Ambient pressure 
-      
       COMMON/FVALG/GFA(MCOM)
-      real GFA    ! Zone humidity ratio 
-      
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-      real TFA    ! Zone future temperature (oC)
-      real QFA    ! Zone furure plant injection/extraction (W)
-      
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-      real QHB, QCB, Qmst
-      
-C Freecooling algorithm
-      real fQFreeCool         ! cooling achieved by ventilation
-      logical bFreeCoolActive ! flag for free cooling active. 
-      real fFreeCoolTemp      ! Threshold at which free-cooling 
-                              ! is available (oC)
-      
+
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and 
 C to evaluate passive solar design performance. Also used 
@@ -1214,45 +1122,6 @@ C Heating and cooling setpoint (oC)
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,CLOSERH
 
-      
-C Local variables for control algorithm
-      real CSP ! Cooling set point (oC) 
-      real HSP ! Heating set point (oC) 
-      
-      integer iPlt ! Unknown flag
-
-      real TCont ! Control temperature (oC)
-      real TCtl, TiTm
-      
-C Plant heat transfer: 
-      real Q
-      real QCM
-      real QCN
-      real QHM
-      real QHN
-      real QMN, QMX ! min & max heat transfer (W)
-      
-      real QQ       !?
-      
-      logical bQBySurf   ! Flag indicating Q is per unit surface area 
-      
-      real fQTotal       ! Total zone/plant interaction (W)
-      
-
-C Humidity Calculations: 
-      integer iRHCTT
-      real RHC, RHI, RHT
-      
-      
-      
-C counter 
-      integer iSur, iter
-
-C External functions 
-      real PCRH2
-      real DEWPT
-
-      
 C Check to see if running in dll mode.
       call isadll(dll)
 
@@ -1308,7 +1177,7 @@ C the zone law needs to be updated. The variable cooling/heating capacity
 C is set at the approprite HVAC equipment simulation routine.
 
 C Set maximum heating capacity:
-      if(cont_fun_heat_cap(IICOMP).gt.0. ) then
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
         QHM=cont_fun_heat_cap(IICOMP)
       else
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
@@ -1318,7 +1187,7 @@ C Set minimum heating capacity
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
 C Set maximum cooling capacity:
-      if(cont_fun_cool_cap(IICOMP).gt.0. ) then
+      if(cont_fun_cool_cap(IICOMP).gt.0 ) then
          QCM = - cont_fun_cool_cap(IICOMP)
       else
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
@@ -1330,7 +1199,7 @@ C Set minimum cooling capacity
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
-C Save heating/cooling setpointsd 
+C Save heating/cooling setpoints
       fHeatSetpoint(iicomp) = HSP
       fCoolSetpoint(iicomp) = CSP
 
@@ -1354,17 +1223,11 @@ C as a master control.
       QHB(ICF)=QHM
       QCB(ICF)=QCM
 
-C Get temperature threshold for free-cooling estimates 
-      if ( bFreeCool ) fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
-      
-      
 C Determine if a RH is to be controlled. If this is the case store the set point
 C for the zone and set the RH control flag. The control action takes place in 
 C MZVAPC, where the zone humidity and moisture content is calculated. 
-C (note: humidity control and symplistic free-cooling are mutually 
-C  exclusive.) 
       IRHCT(IICOMP)=0
-      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. bFreeCool )THEN
+      IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7)THEN
 
 C Upper relative humidity set point (%).
         RHSPTU(IICOMP)=BMISCD(ICF,IDTYP,IPER,8)
@@ -1467,7 +1330,8 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
       ENDIF
 
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
-  
+      
+c      WRITE(*,*)'Controlling zone to...',HSP,CSP,TCTL,TNP    
 C Since sensed temperature is not within range, attempt to control
 C THIS zone's temperature.
       TCTL=TNP
@@ -1476,7 +1340,7 @@ C Inserted for the EU Fog Project: if heating or cooling set point is set to
 C -1000., the controller will use the dew point temperature as the set point.
 C This is an alternative to humidification in that the zone RH is  maintained
 C at (approx.) 100% RH.
-      IF(int(CSP).EQ.-1000 .OR. int(HSP).EQ.-1000)THEN
+      IF(int(CSP).EQ.-1000.OR.int(HSP).EQ.-1000)THEN
         
 C Set point is the dew point temperature of the zone. 
         PATMOS=1013.25
@@ -1486,129 +1350,56 @@ C Set point is the dew point temperature of the zone.
         IF(CSP.LT.0.0)CSP=0.0
       ENDIF
 
-C Check zone temperature and determine of heating or cooling functions 
-C 
+C Is temp. too high ?
+      IF(TCTL.GT.CSP)GOTO 1
+      IPLT=1
+      QMX=QHM
+      QMN=QHN
+      TCONT=HSP
 
-      HeatOrCool: if ( TCTL > CSP ) THEN 
-      
-        IPLT=2
-        QMX=QCN    ! Note that cooling is negative!
-        QMN=QCM
-        TCONT=CSP
-      
-      else 
-        
-        IPLT=1
-        QMX=QHM      
-        QMN=QHN
-        TCont=HSP
-            
-      endif HeatOrCool
-      
-      
-           
-C Determine required plant capacity 
+C Too low, heat to HSP.
+      Q=(BB3-BB1*HSP)/BB2
 
-      Q=(BB3-BB1*TCont)/BB2
-           
-C Is heat flux determined according to surface area?
+C Convert from (/m^2) if necessary.
+      QQ=Q
+      ISUR=0
+      IF(IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0)ISUR=IBAN(ICF,2)
+      IF(ISUR.GT.0)QQ=Q*SNA(IICOMP,ISUR)
 
-      
-      if ( IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0) then 
-        bQBySurf = .true. 
-        ISUR=IBAN(ICF,2)
-      
-      else 
-      
-        bQBySurf = .false.   
-        
-      endif 
-      
-      
-C If necessary, multiply heat flux by surface area to convert 
-C from W/m^2 to W 
+C Is this capacity available ?
+      IF(QQ.LE.QHM.AND.QQ.GE.QHN)GOTO 2
+      IF(QQ.GT.QHM)GOTO 3
+      Q=QHN
+      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+      GOTO 2
+    3 Q=QHM
+      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+      GOTO 2
 
+C Temp. too high, cool to CSP.
+    1 Q=(BB3-BB1*CSP)/BB2
+      IPLT=2
+      QMX=QCM
+      QMN=QCN
+      TCONT=CSP
 
-      if ( bQBySurf ) then 
-      
-        fQTotal = Q * SNA(IICOMP,ISUR) 
-        
-      else 
-      
-        fQTotal = Q
-        
-      endif 
-      
-C Determine if this capacity can be delivered using free-cooling. 
-C (This is very simple algorithm at present, but it might one day connect
-C  to more sophisticated algorithms) 
+C Convert from (/m^2) if necessary.
+      QQ=Q
+      ISUR=0
+      IF(IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0)ISUR=IBAN(ICF,2)
+      IF(ISUR.GT.0)QQ=Q*SNA(IICOMP,ISUR)
 
-      if ( bFreeCool    .and. 
-     &     fQTotal < 0. .and. 
-     &     TF < ( TFA(IICOMP) - fFreeCoolTemp ) ) then 
+C Is this available ?
+      IF(QQ.GE.QCM.AND.QQ.LE.QCN)GOTO 2
+      IF(QQ.LT.QCM)GOTO 5
+      Q=QCN
+      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
+      GOTO 2
+    5 Q=QCM
+      IF(ISUR.GT.0)Q=Q/SNA(IICOMP,ISUR)
 
-        fQFreeCool = fQTotal
-        
-        bFreeCoolActive = .true. 
-        
-C Compute the 'conductivity' achieved by free cooling to 
-C append to zone mass-balance solution on next timestep. 
-C
-C                              [ Free Cooling Load (W) ]
-C    conductivity (W/K) =  ------------------------------------
-C                          [ Zone temp (K) - Outdoor Temp (K) ]
-C
-        !fCondFreeCool(IICOMP) = fQFreeCool / ( TFA(IICOMP) - TF) 
-        
-        
-      else  
-
-C No free cooling.
-
-        fQFreeCool = 0.
-        
-        bFreeCoolActive = .false. 
-        
-        fCondFreeCool(IICOMP) = 0.
-      
-C Do we have enough heating/cooling capacity?      
-        if ( fQTotal > QMX ) fQTotal = QMX
-        if ( fQTotal < QMN ) fQTotal = QMN
-      
-      endif 
-
-C Save free-cooling for reporting later
-      fFreeCoolDelivered(IICOMP) = fQFreeCool * (-1.0)      
-      
-      
-C Possibly convert back to W/m^2 if needed       
-
-      if ( bQBySurf ) then 
-      
-        Q = fQTotal / SNA(IICOMP,ISUR)
-        
-      else 
-      
-        Q = fQTotal
-        
-      endif 
-      
-      
-C Recompute resultant temperature.       
-      TFUT=(BB3-BB2*Q)/BB1
-      
-      
-C Save future time-row plant injection. If free cooling 
-C is active, plant does not inject any heating/cooling. 
-      if ( bFreeCoolActive ) then       
-        QFut = 0.
-      else       
-        QFUT = Q      
-      endif 
-      
-C      print*, TF, TFA(IICOMP), bFreeCoolActive, fQTotal, QFut, 
-C     &   fFreeCoolDelivered(IICOMP)    
-      
+    2 TFUT=(BB3-BB2*Q)/BB1
+      QFUT=Q
 c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -2023,10 +1814,10 @@ c of the throttling ranges.
       QCMN=-BMISCD(ICF,IDTYP,IPER,8)
       CSP=BMISCD(ICF,IDTYP,IPER,9)
       CTR=BMISCD(ICF,IDTYP,IPER,10)   
-      IF(IMO.EQ.2)TI=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
-      IF(IMO.EQ.3)TD=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
-      IF(IMO.EQ.4)TI=real(INT(BMISCD(ICF,IDTYP,IPER,11)))
-      IF(IMO.EQ.4)TD=real(INT(BMISCD(ICF,IDTYP,IPER,12)))
+      IF(IMO.EQ.2)TI=INT(BMISCD(ICF,IDTYP,IPER,11))
+      IF(IMO.EQ.3)TD=INT(BMISCD(ICF,IDTYP,IPER,11))
+      IF(IMO.EQ.4)TI=INT(BMISCD(ICF,IDTYP,IPER,11))
+      IF(IMO.EQ.4)TD=INT(BMISCD(ICF,IDTYP,IPER,12))
   
 C Fatal error tests:      
       IF(INT(BMISCD(ICF,IDTYP,IPER,2)).LT.1.OR.
@@ -2059,7 +1850,7 @@ c CTL = lower cooling temperature limit
       CTL=CSP-(CTR/2.0)
 
 C Set time-step increment required for integral and derivative action,
-      TDELTA=3600./real(NTSTEP)
+      TDELTA=3600/NTSTEP
 
 C << consider in the future to revise code to only restart the
 C << integral action when the new setpont is attained.
@@ -3219,7 +3010,7 @@ c CSPOFF = cooling OFF set point temp. (deg.C)
 C If the zone associated with this control function is served by an HVAC system
 C simulated ideally, then use HVAC system capacity to update controller
 C heating/cooling capacity for time step. 
-      if(cont_fun_heat_cap(IICOMP).gt.0. ) then
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
         QHM=cont_fun_heat_cap(IICOMP)
       else
         QHM=BMISCD(ICF,IDTYP,IPER,2)       
@@ -3476,7 +3267,7 @@ C Determine the weighted sensed temperature;
 20    CONTINUE
 
 C Determine the mean sensed temperature value;
-      TEMPAV=TEMPTO/real(NSEN(ICF))
+      TEMPAV=TEMPTO/(NSEN(ICF))
 
 C Apply scaling factor (SCALEF) and offset (OFFSET) for zonal
 C pro rata temperature control.
@@ -3543,7 +3334,7 @@ C Is this capacity available ?
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0.
+      QMN=0
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
 
@@ -3700,7 +3491,7 @@ C Determine the weighted sensed temperature;
 20    CONTINUE
 
 C Determine the mean of the sensed temperature values;
-      TEMPAV=TEMPTO/(real(NSEN(ICF)))
+      TEMPAV=TEMPTO/(NSEN(ICF))
 
       IF(ISM.EQ.1)THEN
          TMSEN=TEMPHI
@@ -3747,7 +3538,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QHMX=Q
-      QHMN=0.
+      QHMN=0
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QHMX,QHMN,TFUT,QFUT)
@@ -3852,22 +3643,22 @@ C this case simultaneous heating and cooling may result.
              
 C Establish the total cycle period time in terms of time-steps:
 C for heating;
-      NTSCYH=NINT((CYTH*real(NTSTEP))/3600.)
+      NTSCYH=NINT((CYTH*NTSTEP)/3600)
 C for cooling;
-      NTSCYC=NINT((CYTC*real(NTSTEP))/3600.)
+      NTSCYC=NINT((CYTC*NTSTEP)/3600)
   
 C Establish the minimum ON and OFF cycle times in terms of time-steps:
 C for heating;
-      MTSHON=NINT((HONMIN*real(NTSTEP))/3600.)
-      MTSHOF=NINT((HOFMIN*real(NTSTEP))/3600.)
+      MTSHON=NINT((HONMIN*NTSTEP)/3600)
+      MTSHOF=NINT((HOFMIN*NTSTEP)/3600)
 C for cooling;
-      MTSCON=NINT((CONMIN*real(NTSTEP))/3600.)
-      MTSCOF=NINT((COFMIN*real(NTSTEP))/3600.)
+      MTSCON=NINT((CONMIN*NTSTEP)/3600)
+      MTSCOF=NINT((COFMIN*NTSTEP)/3600)
       
 C Proportionality ratio for heating,
-      RATIOH=real(NTSCYH-(MTSHON+MTSHOF))/(HSPOFF-HSPON)
+      RATIOH=(NTSCYH-(MTSHON+MTSHOF))/(HSPOFF-HSPON)
 C Proportionality ratio for cooling,
-      RATIOC=real(NTSCYC-(MTSCON+MTSCOF))/(CSPON-CSPOFF)
+      RATIOC=(NTSCYC-(MTSCON+MTSCOF))/(CSPON-CSPOFF)
 
 C Determine the control point temperature,
       CALL CFVAR(TCTL,IER)
@@ -3880,7 +3671,7 @@ C Heating cycle:
       IF(ICOUNH.EQ.0.OR.ICOUNH.EQ.NTSCYH)THEN
 C End of heating cycle period;
 C Re-establish no. of ON time-steps for next cycle period, 
-        NTSHON=NINT(real(NTSCYH-MTSHOF)+RATIOH*(TCTL-HSPON))
+        NTSHON=NINT((NTSCYH-MTSHOF)+RATIOH*(TCTL-HSPON))
         IF(NTSHON.LT.MTSHON)NTSHON=MTSHON
         IF(NTSHON.GT.(NTSCYH-MTSHOF))NTSHON=(NTSCYH-MTSHOF)        
         IF(TCTL.GE.HSPOFF)NTSHON=0
@@ -3901,7 +3692,7 @@ C Cooling cycle:
       IF(ICOUNC.EQ.0.OR.ICOUNC.EQ.NTSCYC)THEN
 C End of cooling cycle period;
 C Re-establish no. of ON time-steps for next cycle period,
-        NTSCON=NINT(real(NTSCYC-MTSCOF)-(RATIOC*(CSPON-TCTL)))
+        NTSCON=NINT((NTSCYC-MTSCOF)-(RATIOC*(CSPON-TCTL)))
         IF(NTSCON.LT.MTSCON)NTSCON=MTSCON 
         IF(NTSCON.GT.(NTSCYC-MTSCOF))NTSCON=NTSCYC-MTSCOF
         IF(TCTL.LE.CSPOFF)NTSCON=0 
@@ -3929,7 +3720,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0.
+      QMN=0
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -4137,7 +3928,7 @@ C Convert from (/m^2) if necessary.
       QFUT=Q
       IPLT=1
       QMX=Q
-      QMN=0.
+      QMN=0
       TCONT=TFUT
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
@@ -4232,8 +4023,8 @@ C A2      =  EXT TEMP. "       "   "     "        "     "
       endif
 
 C FATAL ERROR TESTS,
-      if( int(bmiscd(icf,idtyp,iper,1)).lt.6 .or. 
-     &    int(bmiscd(icf,idtyp,iper,1)).gt.9 )goto 99
+      if(int(bmiscd(icf,idtyp,iper,1)).lt.6.or.int(bmiscd(icf,idtyp,iper
+     &,1)).gt.9.)goto 99
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -4361,7 +4152,7 @@ C CONTINUE WITH SIMULATION IF < MINIMUM TEMPERATURE DIFFERENCE
       endif
 
 C CONTINUE WITH SIMULATION IF `TIMOPT' < 0.0
-      if(irwind.eq.-1 .and. stfut.lt.0.0 .and. stpres.le.0.0 )then
+      if(irwind.eq.-1.and.stfut.lt.0.and.stpres.le.0)then
         irwind=0
         timopt=stpres
       endif
@@ -4886,7 +4677,7 @@ C MOM defuzzification method selected by user.
             ENDIF
 65       CONTINUE
 
-         IF(PEAKS.GT.0.)THEN
+         IF(PEAKS.GT.0)THEN
             FZCTL=TOTAL/PEAKS
          ELSE
             FZCTL=0.
@@ -4914,7 +4705,7 @@ C Alpha Cut = 1: 'Full triangle' COA.
                ELSE
                   A=FZM(IFP,3,J,5)-FZM(IFP,3,J,1)
                   B=FZM(IFP,3,J,3)
-                  COA(J)=FZM(IFP,3,J,1)+((A+B)/3.)
+                  COA(J)=FZM(IFP,3,J,1)+((A+B)/3)
                ENDIF
 
 C Alpha Cut < 1: 'Trapezoidal' COA.
@@ -4966,7 +4757,7 @@ C Now find overall centroid == Fuzzy Logic Controller Output.
 80        CONTINUE
 
           IF(NONZRO.GT.0)THEN
-             FZCTL=COATOT/real(NONZRO)
+             FZCTL=COATOT/NONZRO
           ELSE
               FZCTL=0.
           ENDIF
@@ -5068,7 +4859,7 @@ C Set output flux.
       Q=SENVAL
 
       QMX=Q
-      QMN=0.
+      QMN=0
       IPLT=1
       TCONT=SENVAL
 
@@ -5411,7 +5202,7 @@ C I mode = 0 then uses esp-r data if 1 then user specified.
         alpha = hcif(icomp,isur)
 C Wet opaque surface calculation for vapour released into the space
         wi=gfa(icomp)
-        CP= SPHTC2(TD,wi)*1000.
+        CP= SPHTC2(TD,wi)*1000
         hundred=100.0
         w=HUMRT1(Tbas,hundred,PATMOS,0)
         Ev= alpha * Abas * (w - wi)/cp
@@ -5436,7 +5227,7 @@ C Emissivity of the surface should have been set to zero for the model
 C Calculate the vapour into the space (kg/s).
 C Use zone moisture content (xi), x at saturation to evaluate Ev.  
         wi=gfa(icomp)
-        CP= SPHTC2(TD,wi)*1000.
+        CP= SPHTC2(TD,wi)*1000
         hundred=100.0
         w=HUMRT1(Tbas,hundred,PATMOS,0)
         Ev= alpha * Abas * (w - wi)/cp
@@ -6651,7 +6442,7 @@ C Trace output
       QFUT=0.
       TFUT=TNP
 
-      WGPI=3.14159  ! pi
+      WGPI=3.14159	! pi
 
 C Set the temperature of the fluid at inlet of the inner pipe to the
 C temperature of the fluid at the outlet of the fluid-filled glazing
@@ -6669,9 +6460,9 @@ C Heat exchange area.! Li delete the laster letter C
 C Mass flow rate in inner pipe (heat exchanger closed circuit).
       WGFMINNER=CVF(IICOMP)/zfldC
 
-      WGVFOUT=WGFMOUTER/1000./(WGPI*(WGDIOUTERPIPE**2.-
-     &          (WGDIINERPIPE+0.0024)**2.)/4.)
-      WGVFIN=WGFMINNER/1000./(WGPI*WGDIINERPIPE**2./4.)
+      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
+     &          (WGDIINERPIPE+0.0024)**2)/4)
+      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
 
       WGCMAX=WGFMOUTER*WGACF
       WGCMIN=WGFMINNER*WGACF
@@ -6685,7 +6476,7 @@ C Mass flow rate in inner pipe (heat exchanger closed circuit).
  	        
 C IF WGT20 > WGT10, set the heat transfer to zero. 
       IF (WGT10.LT.WGT20.OR.WGFMINNER.LT.0.0001) THEN
-         WGHEXCHANGE=0.
+         WGHEXCHANGE=0
          WGT22=WGT20
          WGT11=WGT10 
          GOTO 109
@@ -6702,26 +6493,26 @@ C WGT10 AND WGT20.
       WGAK=55.001
       WGBK1=0.277
       WGBK2=-0.002
-      WGBK3=3.652/1000000.
+      WGBK3=3.652/1000000
 
-      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2.+WGBK3*WGT2**3.)/100.
-      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2.+WGBK3*WGT1**3.)/100.
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
        
       WGAV=1.759
       WGBV1=-0.047
       WGBV2=0.001
-      WGBV3=-2.59/1000000.
+      WGBV3=-2.59/1000000
     	    
-      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
-      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
 
       WGAP=13.39
       WGBP1=-1.0*0.406
       WGBP2=0.005
-      WGBP3=-2.367/100000.
+      WGBP3=-2.367/100000
 
-      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2.+WGBP3*WGT2**3.
-      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2.+WGBP3*WGT1**3.
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
 
       WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
       WGREI=WGVFIN*WGDIINERPIPE/WGVISI
@@ -6729,9 +6520,9 @@ C WGT10 AND WGT20.
 C Calculate the heat transfer coefficient.
       IF (WGREO.LT.2300.0) THEN
          WGANUO=7.37
-      ELSE IF (WGREO.LT.10000.) THEN
-         WGANUO=0.16*(WGREO**(2.0/3.0)-125.)*WGPRTO**(1.0/3.0)*
-     &   (1.+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREO.LT.10000) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
+     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
       END IF
@@ -6742,25 +6533,25 @@ C Calculate the heat transfer coefficient.
          IF (WGAJUDGE.GT.10.0) THEN
          WGANUI=1.86*(WGAJUDGE**0.333)
          ELSE
-         WGANUI=3.66+0.0668*WGAJUDGE/(1.+0.04*WGAJUDGE**(2.0/3.0))
+         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
          END IF
-      ELSE IF (WGREI.LT.10000.) THEN
-         WGANUI=0.16*(WGREI**(2.0/3.0)-125.)*WGPRTI**(1.0/3.0)*
-     &          (1.+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREI.LT.10000) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
+     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
       END IF
       WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
 
-      WGEXCHANGERK=1./(1./WGAHWOHE+1./WGAHWIHE)
+      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
 
       IF (WGCMIN.GT.0.1) THEN
       WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
       IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
-         WGEWGPI=WGANTU/(1.+WGANTU)
+         WGEWGPI=WGANTU/(1+WGANTU)
       ELSE 
-         WGEWGPI=(1.-EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))/
-     &   (1.-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))
+         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
+     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
       END IF
       WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
       GOTO 107
@@ -6775,27 +6566,27 @@ C using updated guesstimate of outlet water temperature.
       WGT1=WGT10/2.0+WGT11/2.0
       WGT2=WGT20/2.0+WGT22/2.0
 
-      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2.+WGBK3*WGT2**3.)/100.
-      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2.+WGBK3*WGT1**3.)/100.
+      WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
+      WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
     	    
-      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2.+WGBV3*WGT2**3.)/1000000.0
-      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2.+WGBV3*WGT1**3.)/1000000.0
+      WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
+      WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
 
-      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2.+WGBP3*WGT2**3.
-      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2.+WGBP3*WGT1**3.
+      WGPRTO=WGAP+WGBP1*WGT2+WGBP2*WGT2**2+WGBP3*WGT2**3
+      WGPRTI=WGAP+WGBP1*WGT1+WGBP2*WGT1**2+WGBP3*WGT1**3
 
-      WGVFOUT=WGFMOUTER/1000./(WGPI*(WGDIOUTERPIPE**2.-
-     &          (WGDIINERPIPE+0.0024)**2.)/4.)
-      WGVFIN=WGFMINNER/1000./(WGPI*WGDIINERPIPE**2./4.)
+      WGVFOUT=WGFMOUTER/1000/(WGPI*(WGDIOUTERPIPE**2-
+     &          (WGDIINERPIPE+0.0024)**2)/4)
+      WGVFIN=WGFMINNER/1000/(WGPI*WGDIINERPIPE**2/4)
       WGREO=WGVFOUT*(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGVISO
       WGREI=WGVFIN*WGDIINERPIPE/WGVISI
 
 C Calculate the heat transfer coefficient.
       IF (WGREO.LT.2300.0) THEN
          WGANUO=7.37
-      ELSE IF (WGREO.LT.10000.) THEN
-         WGANUO=0.16*(WGREO**(2.0/3.0)-125.)*WGPRTO**(1.0/3.0)*
-     &   (1.+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREO.LT.10000) THEN
+         WGANUO=0.16*(WGREO**(2.0/3.0)-125)*WGPRTO**(1.0/3.0)*
+     &   (1+(WGDIOUTERPIPE-WGDIINERPIPE-0.0024)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUO=0.023*WGREO**0.8*WGPRTO**0.4
       END IF
@@ -6806,25 +6597,25 @@ C Calculate the heat transfer coefficient.
          IF (WGAJUDGE.GT.10.0) THEN
          WGANUI=1.86*(WGAJUDGE**0.333)
          ELSE
-         WGANUI=3.66+0.0668*WGAJUDGE/(1.+0.04*WGAJUDGE**(2.0/3.0))
+         WGANUI=3.66+0.0668*WGAJUDGE/(1+0.04*WGAJUDGE**(2.0/3.0))
          END IF
-      ELSE IF (WGREI.LT.10000.) THEN
-         WGANUI=0.16*(WGREI**(2.0/3.0)-125.)*WGPRTI**(1.0/3.0)*
-     &          (1.+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
+      ELSE IF (WGREI.LT.10000) THEN
+         WGANUI=0.16*(WGREI**(2.0/3.0)-125)*WGPRTI**(1.0/3.0)*
+     &          (1+(WGDIINERPIPE)/WGALHEAT)**(2.0/3.0)
       ELSE
          WGANUI=0.023*WGREI**0.8*WGPRTI**0.4
       END IF
       WGAHWIHE=WGANUI*WGAKWEXI/WGDIINERPIPE
 
-      WGEXCHANGERK=1./(1./WGAHWOHE+1./WGAHWIHE)
+      WGEXCHANGERK=1/(1/WGAHWOHE+1/WGAHWIHE)
 
       IF (WGCMIN.GT.0.1) THEN
       WGANTU=WGEXCHANGERK*WGAEXCHANGE/WGCMIN
       IF (ABS((WGCMIN/WGCMAX)-1.0).LT.0.01) THEN
-         WGEWGPI=WGANTU/(1.+WGANTU)
+         WGEWGPI=WGANTU/(1+WGANTU)
       ELSE 
-         WGEWGPI=(1.-EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))/
-     &   (1.-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1.-WGCMIN/WGCMAX)))
+         WGEWGPI=(1-EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))/
+     &   (1-WGCMIN/WGCMAX*EXP(-1.0*WGANTU*(1-WGCMIN/WGCMAX)))
       END IF
       WGHEXCHANGE=WGEWGPI*WGCMIN*(WGT10-WGT20)
       GOTO 108
@@ -7016,8 +6807,8 @@ C Check that 2nd data item = zero (This allows time based control).
         if(itpmod(ICMP))then 
           if(close)then
             usealt=.false.
-          elseif(tfa(ICMP).lt.real(ibsn(jcf,2)).and.
-     &         tfa(ICMP).gt.real(ibsn(jcf,3)))then
+          elseif(tfa(ICMP).lt.ibsn(jcf,2).and.
+     &         tfa(ICMP).gt.ibsn(jcf,3))then
             usealt=.false.
           else
             usealt=.true.
@@ -7025,8 +6816,8 @@ C Check that 2nd data item = zero (This allows time based control).
         else
           if(close)then
             usealt=.false.
-          elseif(tfa(ICMP).lt.real(ibsn(jcf,2)).and.
-     &         tfa(ICMP).gt.real(ibsn(jcf,3)))then
+          elseif(tfa(ICMP).lt.ibsn(jcf,2).and.
+     &         tfa(ICMP).gt.ibsn(jcf,3))then
             usealt=.false.
           else
             usealt=.true.

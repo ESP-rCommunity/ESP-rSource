@@ -69,6 +69,7 @@ C   and Coverage of Vanadium Redox Flow Batteries", Proceedings eSim2008 Confere
 C
 C *********************************************************************
       SUBROUTINE POWOC_CETC_BATTERY(IPWC)
+      use h3kmodule
       IMPLICIT NONE
 #include "BATTERY.h"
 #include "power.h"
@@ -204,7 +205,7 @@ C      INTEGER StopTime             ! time step to start debugging
       REAL pBatSysCharge           !- Power taken by the battery system in charge mode
       REAL pBatSysDischarge        !- Power provided by the battery system in discharge mode
 
-      CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
+      INTEGER iNameLength          ! Store the variable's name length (for Reporting)
 
 C-------- For debugging only ----------------------------------------------------------------
 C      DumTime = 0
@@ -230,7 +231,7 @@ C     is not considered. It is put here for the reference of future improvement.
 
       ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN !Lithium-ion battery
          iZoneIndex = INT(powcdat(IPWC,72))
-         batDemandP = batDemandP_Lion !This is to read the battery load specificied 
+         batDemandP = batDemandP_Lion !This is to read the battery load specificied
                                       !Specifically by Res_elec_Ctl.F
 C-----Add support for other battery types
 C     ELSEIF (POWCOMID(IPWC) .EQ.??) THEN
@@ -350,7 +351,7 @@ C-------solution that should be replaced with a more generalized approach in the
          maxCBat = maxCBatDischarge
          maxPBat = maxPBatDischarge
 C      ! First, try to see if putting the load on the battery will result in a thermal emergency
-         batLoad = MIN(batDemandP, maxPBat) 
+         batLoad = MIN(batDemandP, maxPBat)
          IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
            CALL DoDischarge(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &                    maxCBat,maxPBat,batLoad,pBat,pHeaters,
@@ -420,7 +421,7 @@ C    Evaluate the total power balance of the system
       ENDIF
 
       nPreviousTS = nTimeStep
-      
+
 C Save variables that are required by control sensors.
       iPow_Time_Row_Count(IPWC) = 2                         ! # of additional data
       fPow_Time_Row_Future(IPWC,1) = (1. - batDODFin)*100.  ! battery SOC, %
@@ -447,151 +448,55 @@ C XML output
 C-------------------------------------------------------
 
 
-C.... Get component name
-      hold_name = powcomnam(IPWC)
-C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
+C.... Get component name's length
+      iNameLength = lnblnk(powcomnam(IPWC))
 
-      write(root_name, '(A,A,A,A)')
-     &     'electrical_net/',
-     &     'power_only_components/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
+      Call AddToReportWild1(rvEPowBattDem%Identifier,
+     &      batDemandP,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_system_demand'
+      Call AddToReportWild1(rvEPowBattOper%Identifier,
+     &      real(batMode),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       batDemandP,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Demand on battery system' )
+      Call AddToReportWild1(rvEPowBattVolt%Identifier,
+     &      batVolt,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattDOD%Identifier,
+     &      batDODFin,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_mode'
+      Call AddToReportWild1(rvEPowBattCurr%Identifier,
+     &      batCurFin,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-
-      call add_to_xml_reporting(
-     &                       real(batMode),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery mode of operation' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_voltage'
-
-
-      call add_to_xml_reporting(
-     &                       batVolt,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(V)',
-     &                       'Battery operating voltage' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_DOD'
-
-
-      call add_to_xml_reporting(
-     &                       batDODFin,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery depth of discharge' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_current'
-
-      call add_to_xml_reporting(
-     &                       batCurFin,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(A)',
-     &                       'Battery current' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_internal_heat'
-
-      call add_to_xml_reporting(
-     &                       pIntHeatFin,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery internal heat' )
-
+      Call AddToReportWild1(rvEPowbattIntH%Identifier,
+     &      pIntHeatFin,
+     &      powcomnam(IPWC)(1:iNameLength))
 
 C Calculate and report SOC in %
        batSOC = (1. - batDODFin ) * 100.
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_SOC'
+      Call AddToReportWild1(rvEPowBattSOC%Identifier,
+     &      batSOC,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       batSOC,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(%)',
-     &                       'Battery state of charge' )
+      Call AddToReportWild1(rvEPowBattLd%Identifier,
+     &      pBat,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattMaxPow%Identifier,
+     &      maxPBat,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_load'
+      Call AddToReportWild1(rvEPowBattMaxPowChrg%Identifier,
+     &      maxPBatCharge,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       pBat,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Load on the battery' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_max_power'
-
-      call add_to_xml_reporting(
-     &                       maxPBat,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery max power' )
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_max_charge_power'
-
-      call add_to_xml_reporting(
-     &                       maxPBatCharge,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery max charge power' )
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_max_discharge_power'
-
-      call add_to_xml_reporting(
-     &                       maxPBatDischarge,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery max discharge power' )
-
+      Call AddToReportWild1(rvEPowBattMaxDschrg%Identifier,
+     &      maxPBatDischarge,
+     &      powcomnam(IPWC)(1:iNameLength))
 
 C    Calculate and report max battery heater power in W
       nParal = int(POWCDAT(IPWC,1))
@@ -599,207 +504,73 @@ C    Calculate and report max battery heater power in W
       heatersRes = POWCDAT(IPWC,13)/(nParal*nSerie)
       maxPowHeat = batVolt**2/heatersRes
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_max_heater_power'
+      Call AddToReportWild1(rvEPowBattMaxHPow%Identifier,
+     &      maxPowHeat,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       maxPowHeat,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery max heater power' )
+      Call AddToReportWild1(rvEPowBattHPow%Identifier,
+     &      pHeaters,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattPowBal%Identifier,
+     &      batPowBal,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_heater_power'
+      Call AddToReportWild1(rvEPowBattSysLd%Identifier,
+     &      pBatSystem,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       pHeaters,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery heater power' )
+      Call AddToReportWild1(rvEPowBattSysChrgLd%Identifier,
+     &      pBatSysCharge,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattSysDschrgLd%Identifier,
+     &      pBatSysDischarge,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_power_balance'
+      Call AddToReportWild1(rvEPowBattTemp%Identifier,
+     &      batTFin,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       batPowBal,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Battery power balance' )
+      Call AddToReportWild1(rvEPowBattLfUsed%Identifier,
+     &      batLifeUsed,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattLfUsedCum%Identifier,
+     &      cumBatLifeUsed,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_system_load'
+      Call AddToReportWild1(rvEPowBattLfUseFac%Identifier,
+     &      real(lifeUseFactor),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       pBatSystem,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Load on battery system' )
+      Call AddToReportWild1(rvEPowBattChrgCyc%Identifier,
+     &      real(mandChargeCycle),
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattManChrgPh%Identifier,
+     &      real(mandChargePhase),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_system_charge_load'
+      Call AddToReportWild1(rvEPowBattManChrgPhInc%Identifier,
+     &      real(mandChargePhaseIncrease),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       pBatSysCharge,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Charge load on battery system' )
+      Call AddToReportWild1(rvEPowBattTmeLstFulChrg%Identifier,
+     &      timeSinceLastFullCharge,
+     &      powcomnam(IPWC)(1:iNameLength))
 
+      Call AddToReportWild1(rvEPowBattBdTreatFlg%Identifier,
+     &      real(abuseFlag),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_system_discharge_load'
+      Call AddToReportWild1(rvEPowBattCtrlScn%Identifier,
+     &      REAL(RE_H2_control_scenario),
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      call add_to_xml_reporting(
-     &                       pBatSysDischarge,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Discharge load on battery system' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_temp'
-
-      call add_to_xml_reporting(
-     &                       batTFin,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(oC)',
-     &                       'Battery temperature' )
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_life_used'
-
-      call add_to_xml_reporting(
-     &                       batLifeUsed,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(years)',
-     &                       'Battery life used' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_life_used_cum'
-
-      call add_to_xml_reporting(
-     &                       cumBatLifeUsed,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(years)',
-     &                       'Cumulative battery life used' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_life_use_factor'
-
-      call add_to_xml_reporting(
-     &                       real(lifeUseFactor),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery life use factor' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_mand_charge_cycle'
-
-      call add_to_xml_reporting(
-     &                       real(mandChargeCycle),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery mandatory charge cycle' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_mand_charge_phase'
-
-      call add_to_xml_reporting(
-     &                       real(mandChargePhase),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery mandatory charge phase' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_mand_charge_phase_increase'
-
-      call add_to_xml_reporting(
-     &                       real(mandChargePhaseIncrease),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery mandatory charge phase increase' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_time_since_last_full_charge'
-
-      call add_to_xml_reporting(
-     &                       timeSinceLastFullCharge,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(hours)',
-     &                       'Battery time since last full charge' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_bad_treatment_flag'
-
-      call add_to_xml_reporting(
-     &                       real(abuseFlag),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery abuse flag' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/battery_control_scenario'
-
-      call add_to_xml_reporting(
-     &                       REAL(RE_H2_control_scenario),
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Battery control scenario' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/Lion_cycles_used'
-
-      call add_to_xml_reporting(
-     &                       cycles_used_Lion,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Li-on cycles used' )
+      Call AddToReportWild1(rvEPowBattLiOnCycUsed%Identifier,
+     &      cycles_used_Lion,
+     &      powcomnam(IPWC)(1:iNameLength))
 
       RETURN
       END
@@ -1532,7 +1303,7 @@ C     Increment the number of iterations
       ! Not converged and iteration limit not exceeded -> repeat loop
          GOTO 610
       ENDIF
-      
+
       IF(numIter.GT.maxIter)  THEN
       !Max number of iterations exceeded -> give warning
         WRITE(IUOUT,*) 'Warning Battery Model: Troublesome ',
@@ -4394,7 +4165,7 @@ C************** Calculation
      &    R2hi*batDOD**2. + R1hi*batDOD + R0hi)
         ENDIF
       ENDIF
-      
+
 C Make sure no negative value is returned
       IF (RInt_Lion .LE. 0.0) THEN
          WRITE(IUOUT,*) 'Warning Battery Model: Negative or Nul ',
@@ -4669,7 +4440,7 @@ C         The needed energy in watts to return to safe points
 
         IF (batMode_or .NE. 1) THEN ! Originally in charge or idle mode, cant happen
                                     ! to bring into safe limits
-                                    
+
 C         Re-evaluate the max current and power that you could discharge now that you changed modes
           maxC = MaxCurrent(IPWC,batTIni,DODIni,batMode,dtTStep)
           maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,
@@ -4811,30 +4582,30 @@ C figure out heat needed from battery to bring back into safe limits
 
       ENDIF
 
-      
-C     Evaluate the current on the battery         
+
+C     Evaluate the current on the battery
       batCur = CurForPow(IPWC,batTIni,DODIni,batMode,dtTStep,pBat)
      &         + self_discharge
-     
-C     Evaluate the voltage on the battery      
+
+C     Evaluate the voltage on the battery
       batVolt = AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,batCur)
 
-C     Evaluate the internal heat generated by the battery 
+C     Evaluate the internal heat generated by the battery
       pIntHeat = InternalHeat(IPWC,batTIni,DODIni,batMode,dtTStep,
      &          batCur)
 
 C     Get battery's final state
       batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,
      &            dtTStep,batCur)
-     
+
 C     Get battery's final temperature
       batTFin = batTIni*exp(-hA*dtTStep*3600./mCp) + (zoneT +
      &  (RInt_Lion(IPWC,(DODIni+batDODFin)/2.,batMode,batCur)
-     &  *batCur**2. + pHeaters)/hA)*(1. - 
+     &  *batCur**2. + pHeaters)/hA)*(1. -
      &  exp(-hA*dtTStep*3600./mCp))
 
 C**To keep the battery at 25 Celcius for debugging
-C      batTFin = 25.    
+C      batTFin = 25.
 
 C  Find out how much of the battery cycle life has depleted
       cycles_used_Lion = cycles_used_Lion +
@@ -5001,8 +4772,8 @@ C POWCDAT (IPWC,32):    c2  The second current discharged at (Amps)
 C POWCDAT (IPWC,33):    alpha2  The alpha required to discharge/charge at second rate
 C POWCDAT (IPWC,34):    c3  The third current discharged at (Amps)
 C POWCDAT (IPWC,35):    alpha3  The alpha required to discharge/charge at third rate
-C POWCDAT (IPWC,36):    c4  The fourth current discharged at (Amps) 
-C POWCDAT (IPWC,37):    alpha4  The alpha required to discharge/charge at fourth rate 
+C POWCDAT (IPWC,36):    c4  The fourth current discharged at (Amps)
+C POWCDAT (IPWC,37):    alpha4  The alpha required to discharge/charge at fourth rate
 C POWCDAT (IPWC,38):    c5  The fifth current discharged at (Amps)
 C POWCDAT (IPWC,39):    alpha5  The alpha required to discharge/charge at fifth rate
 C POWCDAT (IPWC,40):    c6  The sixth current discharged at (Amps)
@@ -5023,9 +4794,9 @@ C POWCDAT (IPWC,51):    offset2 The voltage offset required to discharge/charge 
 C POWCDAT (IPWC,52):    t3  The third temperature discharged/charged at in Celsius
 C POWCDAT (IPWC,53):    beta3   The beta required to discharge/charge at the third temperature
 C POWCDAT (IPWC,54):    offset3 The voltage offset required to discharge/charge at the third temperature (V)
-C POWCDAT (IPWC,55):    t4  The fourth temperature discharged/charged at in Celsius 
-C POWCDAT (IPWC,56):    beta4   The beta required to discharge/charge at the fourth temperature 
-C POWCDAT (IPWC,57):    offset4 The voltage offset required to discharge/charge at the fourth temperature (V) 
+C POWCDAT (IPWC,55):    t4  The fourth temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,56):    beta4   The beta required to discharge/charge at the fourth temperature
+C POWCDAT (IPWC,57):    offset4 The voltage offset required to discharge/charge at the fourth temperature (V)
 C POWCDAT (IPWC,58):    t5  The fifth temperature discharged/charged at in Celsius
 C POWCDAT (IPWC,59):    beta5   The beta required to discharge/charge at the fifth temperature
 C POWCDAT (IPWC,60):    offset5 The voltage offset required to discharge/charge at the fifth temperature (V)

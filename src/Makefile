@@ -43,6 +43,14 @@ disableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoH3KReports
 
+enableSQLite:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libSQLite
+	
+disableSQLite:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoSQLite
+
 # PROGRAMS:
 
 aco: 

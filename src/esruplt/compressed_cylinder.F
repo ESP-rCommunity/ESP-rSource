@@ -75,11 +75,11 @@ C----------------------------------------------------------------------
 
 #include "plant.h"
 C----------------------------------------------------------------------
-C     Logical array indicating if plant components have support for 4th, 
+C     Logical array indicating if plant components have support for 4th,
 C     hydrogen matrix
 C----------------------------------------------------------------------
-      common  / H2_lib / 
-     &     h2FlowSupport      
+      common  / H2_lib /
+     &     h2FlowSupport
       logical h2FlowSupport(mpcom)
 
 C----------------------------------------------------------------------
@@ -102,12 +102,12 @@ C-----------------------------------------------------------------------
      &            iProp1stFlow = 2,
      &            iProp2ndFlow = 3,
      &            iPropH2Flow  = 4 )
-                       
+
 C-----------------------------------------------------------------------
 C     Enable the fourth, hydrogen flow matrix
 C-----------------------------------------------------------------------
       h2FlowSupport ( iComponent ) = .true.
-         
+
 C----------------------------------------------------------------------
 C     Determine which matrix is being solved, and set coefficients
 C     accordingly.
@@ -211,6 +211,7 @@ C----------------------------------------------------------------------
      &            iComponent,
      &            iPlant_Matrix,
      &            fCoefficients )
+      use h3kmodule
       implicit none
 #include "building.h"
 #include "plant.h"
@@ -333,7 +334,7 @@ C.....Miscellaneous plant data
       real pcqp(mpnode)
       real pcntmp(mpcom)      ! present time row plant containment temp (oC)
 
-C.....Common containing plant componet mass diversion ratios 
+C.....Common containing plant componet mass diversion ratios
       common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),ipc2(mpcon),
      &            ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
       integer npcon           !-number of inter-component connections
@@ -359,7 +360,7 @@ C.....Trace/error reporting unit numbers
       integer iTc,iCnt
       integer iUout,iUin
       integer iTcf,iTrace,iZntrc,iTu
-      
+
 C----------------------------------------------------------------------
 C     Model commons
 C----------------------------------------------------------------------
@@ -386,18 +387,18 @@ C.....Compressed cylinder results.
       real fReport_H2_pressure_future
       integer iStore_Connect_index
       real fReport_H2_deficit_IMP
-      real fReport_H2_deficit_EXP     
+      real fReport_H2_deficit_EXP
 
 C.....Variables used by controller, hydrogen compressor.
 C.....Note: these variables are presently implemented as h2-network specific
 C.....customizations. They should be reimplemented in a modular fashion when
-C.....time permits. 
+C.....time permits.
       common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
       logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
                                      ! in storage reached.
 
       real fCyl_reported_pressure    ! Variable used to report current
-                                     ! pressure to compressor 
+                                     ! pressure to compressor
 
 C----------------------------------------------------------------------
 C     Local Variables
@@ -458,7 +459,7 @@ C.....State variables & other data
       real fCyl_H2_demand_IMP   ! Hydrogen demanded by external
                                 !    controller (kg/s) for implicitly
                                 !    modelled components
-                                
+
       real fCyl_H2_vent         ! Rate at which hydrogen must be vented to
                                 !     the atmosphere (kg/s)
 
@@ -473,10 +474,10 @@ C.....State variables & other data
       real fCyl_H2_charge_future       ! Rate at which hydrogen is stored within
                                        !     the tank (kg/s)
 
-      real fCyl_H2_deficit_EXP   ! H2 deficit in meeting the load of the 
+      real fCyl_H2_deficit_EXP   ! H2 deficit in meeting the load of the
                                  ! explicit part (kg/s)
- 
-      real fCyl_H2_deficit_IMP   ! H2 deficit in meeting the load of the 
+
+      real fCyl_H2_deficit_IMP   ! H2 deficit in meeting the load of the
                                  ! implicit part (kg/s)
 
       real fSoln_alpha          ! implicit/explicit weighting factor (-)
@@ -541,7 +542,7 @@ C-----------------------------------------------------------------------
       integer iCount            ! Counter
       logical bNums_Are_Close   ! logical result of close-to-zero comparisons
 
-C.....Flag for enabling / disabling venting 
+C.....Flag for enabling / disabling venting
       logical bVent_OK
       integer iVent_flag
       integer iNo_Vent, iVent_OK
@@ -552,7 +553,7 @@ C.....Flags indicating venting warning has been issued.
       logical bVent_Warn ( MPCom )
       data bVent_Warn / MPCom * .false. /
       save bVent_Warn
-     
+
 C----------------------------------------------------------------------
 C     Named constants
 C----------------------------------------------------------------------
@@ -623,14 +624,14 @@ C----------------------------------------------------------------------
       fCyl_MAX_press   =  ADATA ( iComponent, 6 )     ! kPa
       fCyl_Init_press  =  ADATA ( iComponent, 7 )     ! kPa
       iGas_LAW     = int( ADATA ( iComponent, 8 ) )   ! (-)
-      iVent_flag   = int( ADATA ( iComponent, 9 ) )   ! (-) 
+      iVent_flag   = int( ADATA ( iComponent, 9 ) )   ! (-)
 
-C.....Set flag to enable / disable venting       
+C.....Set flag to enable / disable venting
       if ( iVent_flag == iVent_OK ) then
         bVent_OK = .true.
       else
         bVent_OK = .false.
-      endif 
+      endif
 
 C----------------------------------------------------------------------
 C     Collect properties of incomming hydrogen connection
@@ -642,7 +643,7 @@ C.....    connection to the j'th node of component i. It is used
 C.....    as a pointer.
       iConn_index = icondx ( iComponent, 1, 1 )
 C.....Future time row connection temperature (oC)
-      fConn_Temp_Future = CONVAR( iConn_index, iPropTemp ) 
+      fConn_Temp_Future = CONVAR( iConn_index, iPropTemp )
 C.....Connection hydrogen mass flow rate (kg/s)
       fConn_Mass_Flow   = CONVAR (iConn_index, iPropH2Flow )
      &                       * pcondr ( iConn_index )
@@ -659,9 +660,9 @@ C----------------------------------------------------------------------
       if ( bNums_Are_Close ) then
 
          fCyl_UA_ambient = 0.0
-         
-      endif 
-      
+
+      endif
+
 C----------------------------------------------------------------------
 C     Collect temperatue state variables from present-row time blocks
 C----------------------------------------------------------------------
@@ -759,7 +760,7 @@ C........Explicit hydrogen demand (kg/s)
 C........Implicit hydrogen demand (kg/s)
          fCyl_H2_demand_IMP = CDATA ( iComponent, 2 )
 
-C........Total demand (kg/s)         
+C........Total demand (kg/s)
          fCyl_H2_demand     = fCyl_H2_demand_EXP + fCyl_H2_demand_IMP
 
 C----------------------------------------------------------------------
@@ -813,7 +814,7 @@ C-----------------------------------------------------------------------
             bCyl_H2_max_reached = .true.
 
 C...........Warn user.
-            if ( .not. bVent_Warn ( iComponent ) ) then 
+            if ( .not. bVent_Warn ( iComponent ) ) then
 
               write (itu,'(A)') ' '
               write (itu,'(A,I2,A)') ' Warning: Compressed cylinder'
@@ -821,7 +822,7 @@ C...........Warn user.
               write (itu,'(A,g10.5,A)') '          Maximum pressure (',
      &          fCyl_MAX_press, ' kPa) exceeded!'
 
-              if ( bVent_OK ) then 
+              if ( bVent_OK ) then
                 write (itu,'(A)') '          Hydrogen will be vented.'
               else
                 write (itu,'(A)') '          Hydrogen venting disabled'
@@ -831,7 +832,7 @@ C...........Warn user.
               write (itu,'(A)') ' '
 
               bVent_Warn ( iComponent ) = .true.
-            endif 
+            endif
 
 C...........Check if venting is permitted, and calculate vent rate
             if ( bVent_OK ) then
@@ -843,8 +844,8 @@ C...........Check if venting is permitted, and calculate vent rate
 C.............Venting not permitted
               fCyl_H2_vent = 0.0
 
-                       
-            endif 
+
+            endif
 
 C...........Rate at which tank is charged
             fCyl_H2_charge_future = fConn_Mass_Flow - fCyl_H2_vent   ! (kg/s)
@@ -903,36 +904,36 @@ C----------------------------------------------------------------------
 C...........Explicit demand cannot be met. Set implicit supply to
 C...........zero
             fH2_plt_IMP_supply_TOTAL( iComponent ) = 0.0
-            
+
             fH2_plt_EXP_supply_TOTAL( iComponent ) =
      &             fCyl_H2_discharge_future
-         
+
          else
 
 C...........Explicit demand can be met, and at least some of
 C...........the implicit demand can be met.
-            
+
             fH2_plt_EXP_supply_TOTAL ( iComponent )
      &         = fCyl_H2_demand_EXP
-            
+
             fH2_plt_IMP_supply_TOTAL (iComponent )
      &         = fCyl_H2_discharge_future
      &          - fH2_plt_EXP_supply_TOTAL ( iComponent )
-     
-         endif 
+
+         endif
 
 C-----------------------------------------------------------------------
 C        Calculate the H2 deficits (kg/s).
 C
-C        This section should not be part of the storage model, but 
-C        shouldbe incorporated into the H2 component models 
+C        This section should not be part of the storage model, but
+C        shouldbe incorporated into the H2 component models
 C        when they will be made more advanced.
 C-----------------------------------------------------------------------
-         fCyl_H2_deficit_IMP = (fCyl_H2_demand_IMP - 
+         fCyl_H2_deficit_IMP = (fCyl_H2_demand_IMP -
      &      fH2_plt_IMP_supply_TOTAL (iComponent))
-         fCyl_H2_deficit_EXP = (fCyl_H2_demand_EXP - 
+         fCyl_H2_deficit_EXP = (fCyl_H2_demand_EXP -
      &      fH2_plt_EXP_supply_TOTAL (iComponent))
-     
+
 C----------------------------------------------------------------------
 C        Calculate the matrix coefficients characterizing
 C        the component's hydrogen balance:
@@ -1247,162 +1248,118 @@ C--------------------------------------------------------------------------
 
 C.....Debugging output
       if ( bDebug ) then
-         call add_to_xml_reporting(
-     &             fCyl_Volume,
-     &             'debug/gas_cylinder/init/Volume',
-     &             'units', '(m3)',
-     &             ' ')
-         call add_to_xml_reporting(
-     &             fCyl_solid_mass,
-     &             'debug/gas_cylinder/init/S_mass',
-     &             'units', '(kg)',
-     &             ' ')
-         call add_to_xml_reporting(
-     &             fCyl_solid_Cp,
-     &             'debug/gas_cylinder/init/S_Cp',
-     &             'units', '(J/kg oC)',
-     &             ' ')
-         call add_to_xml_reporting(
-     &             fCyl_UA_ambient,
-     &             'debug/gas_cylinder/init/UA',
-     &             'units', '(W /oC)',
-     &             ' ')
-          call add_to_xml_reporting(
-     &             fCyl_MAX_press,
-     &             'debug/gas_cylinder/init/press/max',
-     &             'units', '(kPa)',
-     &             ' ')
-          call add_to_xml_reporting(
-     &             fCyl_MIN_press,
-     &             'debug/gas_cylinder/init/press/min',
-     &             'units', '(kPa)',
-     &             ' ')
-          call add_to_xml_reporting(
-     &             fCyl_Init_press,
-     &             'debug/gas_cylinder/init/press/init',
-     &             'units', '(kPa)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylm3%Identifier,
+     &         fCyl_Volume,
+     &         'Volume')
 
-          call add_to_xml_reporting(
-     &             fR_hydrogen,
-     &             'debug/gas_cylinder/init/H2_R',
-     &             'units', '(kJ/kg K)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylkg%Identifier,
+     &         fCyl_solid_mass,
+     &         'S_mass')
 
-          call add_to_xml_reporting(
-     &             fCyl_Temp_Present,
-     &             'debug/gas_cylinder/node/temp/present',
-     &             'units', '(oC)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylJKgoC%Identifier,
+     &         fCyl_solid_Cp,
+     &         'S_Cp')
 
-          call add_to_xml_reporting(
-     &             fCyl_Temp_Future,
-     &             'debug/gas_cylinder/node/temp/future',
-     &             'units', '(oC)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylWoC%Identifier,
+     &         fCyl_UA_ambient,
+     &         'UA')
 
-          call add_to_xml_reporting(
-     &             fCyl_H2_demand,
-     &             'debug/gas_cylinder/H2_demand',
-     &             'units', '(kg/s)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+     &         fCyl_MAX_press,
+     &         'press/max')
 
-          call add_to_xml_reporting(
-     &             fConn_Temp_Future,
-     &             'debug/gas_cylinder/conn/temp/future',
-     &             'units', '(oC)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+     &         fCyl_MIN_press,
+     &         'press/min')
 
-          call add_to_xml_reporting(
-     &             fConn_Temp_Present,
-     &             'debug/gas_cylinder/conn/temp/present',
-     &             'units', '(oC)',
-     &             ' ')
+         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+     &         fCyl_Init_press,
+     &         'press/init')
 
-          call add_to_xml_reporting(
-     &          fSoln_alpha,
-     &          'debug/gas_cylinder/alpha',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCylkjkgK%Identifier,
+     &         fR_hydrogen,
+     &         'H2_R')
 
-         call add_to_xml_reporting(
-     &          fCoefficients(1),
-     &          'debug/gas_cylinder/coeff/1',
-     &          'units', '(W)',
-     &          ' ')
-         call add_to_xml_reporting(
-     &          fCoefficients(2),
-     &          'debug/gas_cylinder/coeff/2',
-     &          'units', '(W)',
-     &          ' ')
-         call add_to_xml_reporting(
-     &          fCoefficients(3),
-     &          'debug/gas_cylinder/coeff/3',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+     &         fCyl_Temp_Present,
+     &         'node/temp/present')
 
-         call add_to_xml_reporting(
-     &          fCharge_Pv_present,
-     &          'debug/gas_cylinder/flow_work/charge/present',
-     &          'units', '(W)',
-     &          ' ')
-         call add_to_xml_reporting(
-     &          fCharge_Pv_future,
-     &          'debug/gas_cylinder/flow_work/charge/future',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+     &         fCyl_Temp_Future,
+     &         'node/temp/future')
 
-         call add_to_xml_reporting(
-     &          fDischarge_Pv_present,
-     &          'debug/gas_cylinder/flow_work/discharge/present',
-     &          'units', '(W)',
-     &          ' ')
-         call add_to_xml_reporting(
-     &          fDischarge_Pv_future,
-     &          'debug/gas_cylinder/flow_work/discharge/future',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCylkgs%Identifier,
+     &         fCyl_H2_demand,
+     &         'H2_demand')
 
-         call add_to_xml_reporting(
-     &          fConn_dU_present,
-     &          'debug/gas_cylinder/dU/charge/present',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+     &         fConn_Temp_Future,
+     &         'conn/temp/future')
 
-         call add_to_xml_reporting(
-     &          fCyl_HeatLoss_present,
-     &          'debug/gas_cylinder/heat_loss/present',
-     &          'units', '(W)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+     &         fConn_Temp_Present,
+     &         'conn/temp/present')
 
-          call add_to_xml_reporting(
-     &          fConn_H2_Cv_future,
-     &          'debug/gas_cylinder/H2/fConn_H2_Cv_future',
-     &          'units', '(J/kg K)',
-     &          ' ')
+          call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fSoln_alpha,
+     &         'alpha')
 
-         call add_to_xml_reporting(
-     &          fConn_H2_Cv_present,
-     &          'debug/gas_cylinder/H2/fConn_H2_Cv_present',
-     &          'units', '(J/kg K)',
-     &          ' ')
-          call add_to_xml_reporting(
-     &          fCyl_H2_Cv_future,
-     &          'debug/gas_cylinder/H2/fCyl_H2_Cv_future',
-     &          'units', '(J/kg K)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCoefficients(1),
+     &         'coeff/1')
 
-         call add_to_xml_reporting(
-     &          fCyl_H2_Cv_present,
-     &          'debug/gas_cylinder/H2/fCyl_H2_Cv_present',
-     &          'units', '(J/kg K)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCoefficients(2),
+     &         'coeff/2')
 
-         call add_to_xml_reporting(
-     &          fCyl_heat_cap,
-     &          'debug/gas_cylinder/heat_capacitance',
-     &          'units', '(J/kg K)',
-     &          ' ')
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCoefficients(3),
+     &         'coeff/3')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCharge_Pv_present,
+     &         'flow_work/charge/present')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCharge_Pv_future,
+     &         'flow_work/charge/future')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fDischarge_Pv_present,
+     &         'flow_work/discharge/present')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fDischarge_Pv_future,
+     &         'flow_work/discharge/future')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fConn_dU_present,
+     &         'dU/charge/present')
+
+         call AddToReportWild1(rvDebugGasCylw%Identifier,
+     &         fCyl_HeatLoss_present,
+     &         'heat_loss/present')
+
+         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+     &         fConn_H2_Cv_future,
+     &         'H2/fConn_H2_Cv_future')
+
+         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+     &         fConn_H2_Cv_present,
+     &         'H2/fConn_H2_Cv_present')
+
+         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+     &         fCyl_H2_Cv_future,
+     &         'H2/fCyl_H2_Cv_future')
+
+         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+     &         fCyl_H2_Cv_present,
+     &         'H2/fCyl_H2_Cv_present')
+
+         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+     &         fCyl_heat_cap,
+     &         'heat_capacitance')
+
       endif
 
 
@@ -1651,11 +1608,12 @@ C Outputs
 C  None
 C----------------------------------------------------------------------
       subroutine Comp_Cyl_PostPro(iComponent, iStatus)
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "chemical_properties.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -1696,13 +1654,13 @@ C.....Misc. plant component data.
 C.....Variables used by controller, hydrogen compressor.
 C.....Note: these variables are presently implemented as h2-network specific
 C.....customizations. They should be reimplemented in a modular fashion when
-C.....time permits. 
+C.....time permits.
       common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
       logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
                                      ! in storage reached.
 
       real fCyl_reported_pressure    ! Variable used to report current
-                                     ! pressure to compressor 
+                                     ! pressure to compressor
 
 
 C----------------------------------------------------------------------
@@ -1731,7 +1689,7 @@ C.....Compressed cylinder results.
       real fReport_H2_pressure_future
       integer iStore_Connect_index
       real fReport_H2_deficit_IMP
-      real fReport_H2_deficit_EXP     
+      real fReport_H2_deficit_EXP
 
 C.....Named constants:
 C.....reporting module status
@@ -1757,9 +1715,7 @@ C.....Properties
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------
-      character*128 H3Kname       ! holding variable
-      character*128 char_temp     ! holding variable
-      integer iLength,iNameLength ! Length of strings
+      integer iNameLength         ! holding variable's length
 
 C.....Arrays storing locations of output variables
       integer iStorage_index(mpcom)
@@ -1783,20 +1739,16 @@ C----------------------------------------------------------------------
                                 ! associated with a connection
 
 
+
       if ( iStatus .eq. iInitialize ) then
 C----------------------------------------------------------------------
 C        Initialize reports
 C----------------------------------------------------------------------
-C........Get component name and length
-         write(char_temp,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iComponent)(1:lnblnk(pcname(iComponent))),
-     &      '/misc_data'
-         call h3k_StoreString(char_temp,
-     &                        iStorage_index(iComponent),
-     &                        iLength)
 
       else
+
+
+      iNameLength = lnblnk(pcname(iComponent))
 
 C-----------------------------------------------------------------------
 C     Collect cylinder volume
@@ -1830,116 +1782,63 @@ C.....generalized as time permits.
 C----------------------------------------------------------------------
 C     Recover Component name
 C----------------------------------------------------------------------
-      call h3k_RecoverString(iStorage_index(iComponent),
-     &                       char_temp, iNameLength)
+!      call h3k_RecoverString(iStorage_index(iComponent),
+!     &                       char_temp, iNameLength)
 
 C--------------------------------------------
 C.....Output data: Present time-row mass
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/mass/present'
-      call add_to_xml_reporting(
-     &   fReport_H2_mass_present(iComponent),
-     &   H3Kname,
-     &   'units', '(kg)',
-     &   'Compressed gas cylinder: hydrogen mass at present time-row'
-     &   )
+      call AddToReportWild1(rvPltMassPresent%Identifier,
+     &         fReport_H2_mass_present(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: Future time-row mass
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/mass/future'
-      call add_to_xml_reporting(
-     &   fReport_H2_mass_future(iComponent),
-     &   H3Kname,
-     &   'units', '(kg)',
-     &   'Compressed gas cylinder: hydrogen mass at future time-row'
-     &   )
+      call AddToReportWild1(rvPltMassFuture%Identifier,
+     &         fReport_H2_mass_future(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 charge rate
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/hydrogen_charge_rate'
-      call add_to_xml_reporting(
-     &   fReport_H2_charge(iComponent),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'Compressed gas cylinder: rate of charge'
-     &   )
+      call AddToReportWild1(rvPltHydroChargeRt%Identifier,
+     &         fReport_H2_charge(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 discharge rate
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/hydrogen_discharge_rate'
-      call add_to_xml_reporting(
-     &   fReport_H2_discharge(iComponent),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'Compressed gas cylinder: rate of discharge'
-     &   )
+      call AddToReportWild1(rvPltHydroDischgRt%Identifier,
+     &         fReport_H2_discharge(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: Flow rate @ vent
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/vent_H2_rate'
-      call add_to_xml_reporting(
-     &   fReport_H2_vent(iComponent),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'Compressed gas cylinder: rate at which excess hydrogen '
-     &    // 'is vented' )
+      call AddToReportWild1(rvPltVentH2Rt%Identifier,
+     &         fReport_H2_vent(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C----------------------------------------------------------------------
 C--------------------------------------------
 C.....Output data: Pressure at present time-row
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/pressure/present'
-      call add_to_xml_reporting(
-     &   fReport_H2_pressure_present(iComponent),
-     &   H3Kname,
-     &   'units', '(kPa)',
-     &   'Compressed gas cylinder: gas pressure at present time-row '
-     &    )
+      call AddToReportWild1(rvPltPressPres%Identifier,
+     &         fReport_H2_pressure_present(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
+
 C--------------------------------------------
 C.....Output data: Pressure at future time-row
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/pressure/future'
-      call add_to_xml_reporting(
-     &   fReport_H2_pressure_future(iComponent),
-     &   H3Kname,
-     &   'units', '(kPa)',
-     &   'Compressed gas cylinder: gas pressure at future time-row '
-     &    )
+      call AddToReportWild1(rvPltPressFut%Identifier,
+     &         fReport_H2_pressure_future(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 deficit implicit part
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/hydrogen_deficit_IMP'
-      call add_to_xml_reporting(
-     &   fReport_H2_deficit_IMP(iComponent),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'Compressed gas cylinder: H2 deficit (IMP)'
-     &   )
+      call AddToReportWild1(rvPltHydroDefIMP%Identifier,
+     &         fReport_H2_deficit_IMP(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 deficit explicit part
-      write(H3Kname,'(A,A)')
-     &  char_temp(1:iNameLength),
-     &  '/hydrogen_deficit_EXP'
-      call add_to_xml_reporting(
-     &   fReport_H2_deficit_EXP(iComponent),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'Compressed gas cylinder: H2 deficit (EXP)'
-     &   )
+      call AddToReportWild1(rvPltHydroDefEXP%Identifier,
+     &         fReport_H2_deficit_EXP(iComponent),
+     &         pcname(iComponent)(1:iNameLength))
 
 C----------------------------------------------------------------------
 C     Save connection temperature for next time-row
@@ -1955,4 +1854,4 @@ C----------------------------------------------------------------------
 
 
 
-               
+

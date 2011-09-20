@@ -6883,7 +6883,7 @@ C it points to the same zone as is used by the master controller.
             endif
             if(ibsn(icloop,1).gt.0.and.imasctlindex.gt.0)then
               if(ibsn(icloop,1).eq.ibsn(imasctlindex,1))then
-                continue
+                modval=.true.
               else
                 call usrmsg(
      &           'Slave sensor must sense the same zone as the',
@@ -6895,7 +6895,7 @@ C it points to the same zone as is used by the master controller.
      &          'master control loop!','W')
             endif
             if(iban(icloop,1).gt.0)then
-              continue
+              modval=.true.
             else
               call usrmsg(
      &          'Slave actuator must be in the slave zone!',

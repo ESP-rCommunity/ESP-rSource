@@ -1,223 +1,206 @@
-
-#ifdef _WIN32
-#pragma warning (disable: 4786) //to disable annoying "identifier was truncated to '255' characters in the debug information" in VC++
-#endif
-
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-#include <cstdio>
-#include <cstring>
-
-#include "sys/stat.h"
-
 #include "TReportsManager.h"
-#include "TXMLAdapter.h"
-
-#define DISKDB "h3kreports_DB.tmp"
 
 #define DEBUG 0
-#define DEBUG_1 0
-
-#define SUMMARY     0
-#define LOG         1
-#define STEP        2
-#define DUMPALLDATA 3
-
 
 using namespace std;
 
-std::string gString;
+///convert int i to string
+char* StringValue(char* sDestination, int i)
+{
+   #ifdef _WIN32
+     _snprintf(sDestination, 255, "%i", i);
+   #endif
 
+   #ifndef _WIN32
+     snprintf(sDestination, 255, "%i", i);
+   #endif
 
-//Yee old trim function..
-std::string trim(std::string const& source, char const* delims = " \t\r\n") {
-  //cout << "trim_: " << std::endl;
-  std::string result(source);
-  std::string::size_type index = result.find_last_not_of(delims);
-  if(index != std::string::npos)
-    result.erase(++index);
-
-  index = result.find_first_not_of(delims);
-  if(index != std::string::npos)
-    result.erase(0, index);
-  else
-    result.erase();
-
-  return result;
-
+   return sDestination;
 }
+
+///convert double f to string
+char* StringValue(char* sDestination, double f)
+{
+   #ifdef _WIN32
+      _snprintf(sDestination, 255, "%f", f);
+   #endif
+
+   #ifndef _WIN32
+      snprintf(sDestination, 255, "%f", f);
+   #endif
+
+  return sDestination;
+}
+
+///convert float f to string
+char* StringValue(char* sDestination, float f)
+{
+   #ifdef _WIN32
+      _snprintf(sDestination, 255, "%f", f);
+   #endif
+
+   #ifndef _WIN32
+      snprintf(sDestination, 255, "%f", f);
+   #endif
+
+  return sDestination;
+}
+
+///check if a file exists
+bool Exists(const char* sFilename)
+{
+   bool flag = false;
+   fstream fin;
+   fin.open(sFilename,ios::in);
+   if( fin.is_open() )
+      flag=true;
+   fin.close();
+
+   return flag;
+}
+
+/* ********************************************************************
+** Method:   ReplaceChar()
+** Purpose:  Custon routine, to inject a string at the position the
+**           delimiter is found.  Method makes manipulation in memory
+**           caller must ensure that the str is large enough.
+** Scope:    Public method
+** Params:   str - pointer of a string (must be large enough and
+                                        nul terminated)
+**           insert - pointer to a string(not necessarily nul term)
+**           start - start position -of the inserted string
+**           end - end position - of the inserted string
+**           cDelimiter - delimiter to find and replace (only first occurance
+                                                         is replace)
+** Returns:  to pointer to str
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-14
+** ***************************************************************** */
+char* ReplaceChar(char *str,const char *insert, int start, int end, char cDelimiter)
+{
+   int strlenght, pchlenght, insertlenght;
+   char *pch;
+
+   insertlenght = end - start;
+   strlenght = strlen(str);
+
+   //Get the delimiter address and it distance from the start of the string
+   pch = (char*)memchr(str,cDelimiter,strlenght);
+
+   pchlenght = pch-str;
+
+   //create a space fro the insert, sizeof of the insert
+   memmove(pch+insertlenght-1,pch,strlenght-pchlenght+1);
+
+   //insert the characters
+   while(insertlenght-- >0)
+   {
+      str[pchlenght+insertlenght] = insert[start+insertlenght];
+   }
+
+   return str;
+}
+
+
 
 extern "C"
 {
-  //These are the calls advertised to Fortran. Note that they are all
-  //lowercase and end in an underscore. Calls from Fortran must omit
-  //the trailing underscore
+   //These are the calls advertised to Fortran. Note that they are all
+   //lowercase and end in an underscore. Calls from Fortran must omit
+   //the trailing underscore
+   /* ********************************************************************
+   ** Method:   rep_set_parameter__
+   ** Purpose:  Called by the fortran code to set report parameters
+   ** Params:   sParamName - param name
+   **           sParamValue - param's value
+   ** Returns:  Nothing
+   ** ***************************************************************** */
+   void rep_set_parameter__(char *sParamName,char *sParamValue,int sNameLength,int sValueLength)
+   {
+      std::string paramName =std::string(sParamName, sNameLength);
+      std::string paramValue =std::string(sParamValue, sValueLength);
+
+      TReportsManager::Instance()->SetReportParameter(paramName, paramValue);
+   }
+   //dummy routine see __ equivalent
+   void rep_set_parameter_(char *sParamName,char *sParamValue,int sNameLength,int sValueLength)
+   {
+      rep_set_parameter__(sParamName, sParamValue, sNameLength, sValueLength);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   bh3k_rep_enabled
+   ** Purpose:  Called by the fortran code to determine if this reporting
+   **           output is enabled or not
+   ** Params:   None
+   ** Returns:  true/false
+   ** ***************************************************************** */
+   bool bh3k_rep_enabled__(){
+      return TReportsManager::Instance()->ReportsEnabled();
+   }
+   bool bh3k_rep_enabled_(){return bh3k_rep_enabled__();}
+
+
+   /* ********************************************************************
+   ** Method:   h3k_enable_reports
+   ** Purpose:  Called by the fortran code to enable/disable reporting
+   ** Params:   true/false
+   ** Returns:  N/A
+   ** ***************************************************************** */
+   void h3k_enable_reports__( bool& bNewStatus ){
+       TReportsManager::Instance()->EnableReports(bNewStatus);
+       return;
+   }
+   void h3k_enable_reports_( bool& bNewStatus )
+   {h3k_enable_reports__( bNewStatus );}
 
   /**
-   *  Perform binning operations and move to next timestep
-   */
-
-  void rep_update__(long* step, float* hour, long* day, int* iStartup)
-  {
-    if(DEBUG) cout << "rep_update_: " << *step << "\t"
-                   << *hour << "\t" << *day << endl;
-    TReportsManager::Instance()->Update( *step, *hour, *day, *iStartup );
-  }
-
-  /**
-   * Save data passed from bps
-   *
-   * note: sPassedValue and sPassedName are switched from the C++ call because
-   * Fortran strings need to be at the end of a CALL - go figure
-   *
-   */
-  void rep_report__(float *value, char *name, int sPassedName_length)
-  {
-    std::string passedName = std::string(name, sPassedName_length);
-
-    if(DEBUG) cout << "rep_report_: " << sPassedName_length
-                   << " \"" << *value << "\"\t\"" << passedName
-                   << "\"" << endl;
-    TReportsManager::Instance()->Report(passedName, *value);
-  }
-
-
-  /**
-   * Text summary (obsolete)
-   */
-  void rep_summary__(  )
-  {
-    TReportsManager::Instance()->OutputSummary();
-  }
-
-
-  /**
-   *  Output results in xml/csv formats
-   */
-
-  void rep_xml_summary__( )
-  {
-    // produce a dictionary of results
-    TReportsManager::Instance()->OutputDictionary();
-    // produce out.xml
-    TReportsManager::Instance()->OutputXMLSummary();
-    // produce out.csv
-    TReportsManager::Instance()->OutputCSVData();
-    // produce out.summary
-    TReportsManager::Instance()->OutputTXTsummary();
-
-  }
-
-  /**
-   *  attach metadata to a variable
-   */
-
-  void rep_set_meta__(char *sVarName, char *sMetaName, char *sMetaValue,
-                      int sVarNameLength, int sMetaNameLength, int sMetaValueLength)
-  {
-    
-    
-   std::string varName =std::string(sVarName, sVarNameLength);
-
-   // (24-Jun-2011 Bart) Added dummy variable description to pass to SaveMetaItems.
-   // Prior to the implementation of add_to_xml_reporting function, the functions 
-   // rep_set_meta and rep_report were used instead. A variable description
-   // was not passed until add_to_xml_reporting was implemented. 
-   //
-   // There are still many calls to the old rep_set_meta routine in esp-r plant code
-   // that do not pass any variable description. As a result, XML reports assigns a bogus 
-   // description to variables passed with rep_set_meta. This went
-   // unnoticed until the optimized meta code, which proesses meta items only once, 
-   // was implemented. 
-   char* sDescription = "";
-   int sDescriptionLength = 0;
-
-   // Save meta items and do not convert to std strings here to avoid
-   // computational overhead. These items are retrieved in function 
-   // TReportsManager::SearchVars only once per variable. The meta data
-   // is then converted to std::strings and then pushed to the m_metadata
-   // storage map using function TReportsManager::SetMeta.
-   TReportsManager::Instance()->SaveMetaItems( sMetaName,sMetaValue,sDescription,sMetaNameLength,sMetaValueLength,sDescriptionLength);  
-
-  }
-
-  /** 
-   *  Set configuration file
-   */
-  void rep_set_config_file__(char *sFilePath, int sPathLength)
-  {
-   std::string str =std::string(sFilePath, sPathLength);
-
-    TReportsManager::Instance()->ParseConfigFile(str);
-
-  }
-
-  /**
-   *  Set a parameter
-   */
-   void rep_set_parameter__(char *sParamName,
-                           char *sParamValue,
-                           int sNameLength,
-                           int sValueLength)
-  {
-    std::string paramName =std::string(sParamName, sNameLength);
-    std::string paramValue =std::string(sParamValue, sValueLength);
-    
-    TReportsManager::Instance()->SetReportParameter(paramName, paramValue);
-  
-  }
-  
-  /**
-   *  Return boolian indicating if output is enabled.
-   */
-  bool bh3k_rep_enabled__(){
-    return TReportsManager::Instance()->ReportsEnabled();
-  }
-
-  /**
-   *   Enable / disable output 
-   */
-  void h3k_enable_reports__( bool& bNewStatus ){
-    TReportsManager::Instance()->EnableReports(bNewStatus);
-    return;
-  }
-  
-  /** 
-   * return a boolian indicating H3kreports is active
+   * return a boolean indicating H3kreports is active
    */
   bool rep_xmlstatus__(){
     return true;
   }
+  bool rep_xmlstatus_()
+  {
+    return rep_xmlstatus__();
+  }
 
-  /**
-   * Return the current value of a configuration parameter
-   *
-   */
+
+   /* ********************************************************************
+   ** Method:   rep_report_config
+   ** Purpose:  Called by the fortran code to retrieve a report
+   **           configuration parameter
+   ** Params:   sValue - returned char*
+   **           iValLength - returned char*'s length
+   **           sParam - param to query
+   **           iNameLength - param's length
+   ** Returns:  the value of the passed configuration (sValue)
+   ** Mod Date: 2011-09-09
+   ** ***************************************************************** */
    void rep_report_config__(char* sValue, int iValLength, char *sParam, int iNameLength){
-
-
-      short iPos;
+      int iPos;
       std::string paramValue;
-      std::string paramName; 
+      std::string paramName;
 
       paramName = std::string(sParam, iNameLength);
-      
-      
-      TReportsManager::Instance()->ReportConfig(paramName,paramValue);
-   
-      strcpy (sValue, paramValue.c_str());
+
+      paramValue = TReportsManager::Instance()->ReportConfig(paramName);
+
+      strncpy (sValue, paramValue.c_str(),iValLength);
 
       for (iPos = paramValue.size(); iPos<=iValLength; iPos++){
          sValue[iPos]=' ';
       }
-   
+
       return;
    }
-  /** 
-   * Return the current status of an item in a vector 
+   void rep_report_config_(char* sValue, int iValLength, char *sParam, int iNameLength)
+   {rep_report_config__(sValue, iValLength, sParam, iNameLength); }
+
+
+  /**
+   * Return the current status of an item in a vector
    *
    */
    bool rep_report_list__(char *sType, char *sSheet,
@@ -230,11 +213,13 @@ extern "C"
       paramType  = std::string(sType, iTypeLength);
       paramValue = std::string(sSheet, iSheetLength);
 
-      
+
       return TReportsManager::Instance()->ReportList(paramType,paramValue);
-   
+
    }
-   
+   bool rep_report_list_(char *sType, char *sSheet, int iTypeLength, int iSheetLength)
+   {return rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);}
+
    /**
     * Update the value of a configuration parameter
     *
@@ -245,8 +230,12 @@ extern "C"
       std::string paramValue = std::string(sValue, iValLength);
 
       TReportsManager::Instance()->UpdateConfig(paramName, paramValue);
-      
     }
+    void rep_update_config_(char* sParam, char* sValue, int iNameLength, int iValLength)
+    {
+       rep_update_config__(sParam, sValue, iNameLength, iValLength);
+    }
+
    /**
     * Toggle the status of an on-off configuration parameter
     */
@@ -255,479 +244,2046 @@ extern "C"
       std::string paramName = std::string(sParam, iNameLength);
 
       return TReportsManager::Instance()->ToggleConfig(paramName);
-
+    }
+    bool rep_toggle_config_(char* sParam, int iNameLength)
+    {
+       return rep_toggle_config__(sParam, iNameLength);
     }
 
 
     /**
      *   Write out configuration file with new options
      */
-     
     void rep_update_config_file__(){
 
       TReportsManager::Instance()->UpdateConfigFile();
-    
+
     }
+     void rep_update_config_file_()
+    {
+      rep_update_config_file__();
+    }
+
     /**
      *  Clean up extra files
      */
     void rep_cleanup_files__(){
-      
+
       TReportsManager::Instance()->Cleanup();
-      
     }
-
-/**
-* This is a faster function to add a report for a value in ESP-r.
-  There is no need  for LNBLNK to be used on any of the character arguments
-  on the fortran side. This replaces rep_set_meta and rep_report..This will
-  reduce simtulation times. Note there still has to be some major overhaul on
-  the data structure itself (Like each zone, system and potentially surface
-  entity has to be unique . This is problematic when trying to write genteric
-  xslt transforms..So new functionality will be add as time goes on..So proper
-  versioning of the xml file is required.
-
-* @param value The float value to be stored and reported on.
-* @param sVarName The Unique xml path location to where the data is to be stored.
-* @param sMetaName The metatag to be added. (usually 'units' is used)
-* @param sMetaValue The value for the above metatag (Usually the unit type, like
-                    (W) for watts)
-* @param sDescription A detailed description of the variable being reported on.
-                    Will be outputted with the dictionary.
-* @param *Length The length of the corrosponding char arrays.
-
-**/
-
-void add_to_xml_reporting__(float* value,
-                        char* sVarName,
-                        char* sMetaName,
-                        char* sMetaValue,
-                        char* sDescription,
-                        int sVarNameLength,
-                        int sMetaNameLength,
-                        int sMetaValueLength,
-                        int sDescriptionLength)
-{
-   std::string varName =std::string(sVarName, sVarNameLength);
-
-   // Save meta items and do not convert to std strings here to avoid
-   // computational overhead. These items are retrieved in function 
-   // TReportsManager::SearchVars only once per varialbe. The meta data
-   // is then converted to std::strings and then pushed to the m_metadata
-   // storage map using function TReportsManager::SetMeta.
-   TReportsManager::Instance()->SaveMetaItems( sMetaName,sMetaValue,sDescription,sMetaNameLength,sMetaValueLength,sDescriptionLength);  
-
-   TReportsManager::Instance()->Report(varName, *value);
-
-  }
-
-  /**
-    These interfaces to the above functions are needed to deal with
-    dissimilar name mangling between GNU and sun compilers. (gcc
-    adds two underscores to fortran function names containing
-    embedded undescrores, while cc adds only one)
-
-  **/
-
-  void rep_update_(long* step, float* hour, long* day, int* iStartup)
-  {
-    rep_update__(step, hour, day, iStartup);
-  }
-
-  void rep_report_(float *value, char *name, int sPassedName_length)
-  {
-     rep_report__(value, name, sPassedName_length);
-  }
-
-  void rep_summary_(  )
-  {
-    rep_summary__();
-  }
-
-  void rep_xml_summary_( )
-  {
-    rep_xml_summary__();
-  }
-
-  void rep_set_meta_(char *sVarName, char *sMetaName, char *sMetaValue,
-                      int sVarNameLength, int sMetaNameLength, int sMetaValueLength)
-  {
-       rep_set_meta__(sVarName, sMetaName, sMetaValue,
-                      sVarNameLength, sMetaNameLength, sMetaValueLength);
-  }
-
-
-  void rep_set_config_file_(char *sFilePath, int sPathLength)
-  {
-     rep_set_config_file__(sFilePath, sPathLength);
-  }
-
-
-   void rep_set_parameter_(char *sParamName,
-                           char *sParamValue,
-                           int sNameLength,
-                           int sValueLength)
-  {
-      rep_set_parameter__(sParamName, sParamValue, sNameLength, sValueLength);
-  
-  }
-
-  bool bh3k_rep_enabled_(){
-    return bh3k_rep_enabled__();
-  }
-
-
-  void h3k_enable_reports_( bool& bNewStatus )
-  {
-    h3k_enable_reports__( bNewStatus );
-  }
-  
-
-  bool rep_xmlstatus_()
-  {
-    return rep_xmlstatus__();
-  }
-
-
-   void rep_report_config_(char* sValue, int iValLength, char *sParam, int iNameLength)
-   {
-      rep_report_config__(sValue, iValLength, sParam, iNameLength);
-   }
-
-   bool rep_report_list_(char *sType, char *sSheet,
-                          int iTypeLength, int iSheetLength)
-   {
-      return rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
-   }
-   
-   
-    void rep_update_config_(char* sParam, char* sValue, int iNameLength, int iValLength)
-    {
-       rep_update_config__(sParam, sValue, iNameLength, iValLength);
-    }
-
-    bool rep_toggle_config_(char* sParam, int iNameLength)
-    {
-      return rep_toggle_config__(sParam, iNameLength);
-    }
-
-
-
-     
-    void rep_update_config_file_()
-    {
-      rep_update_config_file__();
-    }
-    
-  
-    void add_to_xml_reporting_(float* value,
-                          char* sVarName,
-                          char* sMetaName,
-                          char* sMetaValue,
-                          char* sDescription,
-                          int sVarNameLength,
-                          int sMetaNameLength,
-                          int sMetaValueLength,
-                          int sDescriptionLength)
-    {
-       add_to_xml_reporting__(value,
-                              sVarName,
-                              sMetaName,
-                              sMetaValue,
-                              sDescription,
-                              sVarNameLength,
-                              sMetaNameLength,
-                              sMetaValueLength,
-                              sDescriptionLength);
-    }
-
     void rep_cleanup_files_(){
       rep_cleanup_files__();
     }
+
+   /* ********************************************************************
+   ** Method:   add_to_report
+   ** Purpose:  Called by the fortran code to pass data value for a
+   **           specified variable
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           fValue - pointer to a fortran real
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-15
+   ** ***************************************************************** */
+   void add_to_report__(int* iIdentifier, float* fValue){
+      TReportsManager::Instance()->AddToReportDataList(*iIdentifier,"",*fValue);
+   }
+   //Dummy routine see __ equivalent
+   void add_to_report_(int* iIdentifier, float* fValue){
+      add_to_report__(iIdentifier,fValue);
+   }
+
+   /* ********************************************************************
+   ** Method:   add_to_report_wild_
+   ** Purpose:  Called by the Fortran code to pass data value for a
+   **           specified variable
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           fValue - pointer to a fortran real
+   **           sWild_ - pointers to fortran strings
+   **           strLen_ - lenght of the passed in strings
+   ** Note:     It's important to ensure that the strings are send from
+   **           Fortran without spaces (correctly allocated).  The trim
+   **           routine could be added to the corresponding h3kmodule.f90
+   **           wrapper if this is problematic.  This was left out for
+   **           speed reasons
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-15
+   ** ***************************************************************** */
+   void add_to_report_wild3__(int* iIdentifier,float* fValue,char* sWild1,
+                          char* sWild2,char* sWild3,int strLen1,
+                          int strLen2,int strLen3){
+      char temp[strLen1+strLen2+strLen3+3];
+
+      //Kludge: quick way to build a * delimited string with the params
+      memcpy(temp,sWild1,strLen1);
+      temp[strLen1] = '*';
+      memcpy(temp+strLen1+1,sWild2,strLen2);
+      temp[strLen1+strLen2+1] = '*';
+      memcpy(temp+strLen1+strLen2+2,sWild3,strLen3);
+      temp[strLen1+strLen2+strLen3+2] = '\0';
+
+      TReportsManager::Instance()->AddToReportDataList(*iIdentifier,temp,*fValue);
+   }
+   void add_to_report_wild3_(int* iIdentifier,float* fValue,char* sWild1,char* sWild2,
+                          char* sWild3,int strLen1,int strLen2,int strLen3){
+      add_to_report_wild3__(iIdentifier,fValue,sWild1,sWild2,sWild3,strLen1,strLen2,strLen3);
+   }
+
+   /* ********************************************************************
+   ** Method:   add_to_report_wild_
+   ** Purpose:  Called by the Fortran code to pass data value for a
+   **           specified variable
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           fValue - pointer to a fortran real
+   **           sWild_ - pointers to fortran strings
+   **           strLen_ - lenght of the passed in strings
+   ** Note:     It's important to ensure that the strings are send from
+   **           Fortran without spaces (correctly allocated).  The trim
+   **           routine could be added to the corresponding h3kmodule.f90
+   **           wrapper if this is problematic.  This was left out for
+   **           speed reasons
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-15
+   ** ***************************************************************** */
+   void add_to_report_wild2__(int* iIdentifier,float* fValue,char* sWild1,
+                          char* sWild2,int strLen1,int strLen2){
+
+      char temp[strLen1+strLen2+2];
+
+      //Kludge: quick way to build a * delimited string with the params
+      memcpy(temp,sWild1,strLen1);
+      temp[strLen1] = '*';
+      memcpy(temp+strLen1+1,sWild2,strLen2);
+      temp[strLen1+strLen2+1] = '\0';
+
+      TReportsManager::Instance()->AddToReportDataList(*iIdentifier,temp,*fValue);
+   }
+   void add_to_report_wild2_(int* iIdentifier,float* fValue,char* sWild1,
+                             char* sWild2,int strLen1,int strLen2){
+      add_to_report_wild2__(iIdentifier,fValue,sWild1,sWild2,strLen1,strLen2);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   add_to_report_wild_
+   ** Purpose:  Called by the Fortran code to pass data value for a
+   **           specified variable
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           fValue - pointer to a fortran real
+   **           sWild_ - pointers to fortran strings
+   **           strLen_ - lenght of the passed in strings
+   ** Note:     It's important to ensure that the strings are send from
+   **           Fortran without spaces (correctly allocated).  The trim
+   **           routine could be added to the corresponding h3kmodule.f90
+   **           wrapper if this is problematic.  This was left out for
+   **           speed reasons
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-15
+   ** ***************************************************************** */
+   void add_to_report_wild1__(int* iIdentifier,float* fValue,char* sWild1,int strLen1){
+      char temp[strLen1+1];
+
+      //Kludge: quick way to build a string with the params
+      memcpy(temp,sWild1,strLen1);
+      temp[strLen1] = '\0';
+
+      TReportsManager::Instance()->AddToReportDataList(*iIdentifier,temp,*fValue);
+   }
+   void add_to_report_wild1_(int* iIdentifier,float* fValue,char* sWild1,int strLen1){
+      add_to_report_wild1__(iIdentifier,fValue,sWild1,strLen1);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   add_to_report_details
+   ** Purpose:  Enables fortran to set variable's metadata details.
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           cUnit - pointer to fortran unit string "units"
+   **           cType - pointer to the fortran type string "(w)(V)(oC)..."
+   **           cDescription - pointer to the fortran description string
+   **           strLen1,2,3 - lenght of the passed in strings
+   ** Note:     Only the first sent details to the specified variable will
+   **           be kept.  These routines, are less
+   **           efficient then when you specify the details in the h3kmodule.f90.
+   **           ** Avoid the use of these methods where possible. **
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-08-30
+   ** ***************************************************************** */
+   void add_to_report_details__(int* iIdentifier,char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3)
+   {
+      string sUnit, sType, sDescription;
+
+      //only set the first time per variable, all after are ignore
+      if(!TReportsManager::Instance()->IsReportDetailWildSet(*iIdentifier,""))
+      {
+         sUnit = string(cUnit, strLen1);
+         sType = string(cType, strLen2);
+         sDescription = string(cDescription, strLen3);
+
+         TReportsManager::Instance()->AddToReportDetails(*iIdentifier,"",sUnit,sType,sDescription);
+      }
+   }
+   void add_to_report_details_(int* iIdentifier,char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3)
+   {
+      add_to_report_details__(iIdentifier,cUnit,cType,cDescription,strLen1, strLen2, strLen3);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   add_to_report_details_wild1
+   ** Purpose:  Enables fortran to set variable's metadata details.
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           cWild1 - pointer to fortran string, wild identifier
+   **           cUnit - pointer to fortran unit string "units"
+   **           cType - pointer to the fortran type string "(w)(V)(oC)..."
+   **           cDescription - pointer to the fortran description string
+   **           strLen1,2,3,4 - lenght of the passed in strings
+   ** Note:     Only the first sent details to the specified variable will
+   **           be kept.  These routines, are less efficient then when you
+   **           specify the details in the h3kmodule.f90.
+   **           ** Avoid the use of these methods where possible. **
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-08-30
+   ** ***************************************************************** */
+   void add_to_report_details_wild1__(int* iIdentifier,char* cWild1, char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3,int strLen4)
+   {
+      char temp[strLen1+1];
+      string sUnit, sType, sDescription;
+
+      //Kludge: quick way to build a string with the params
+      memcpy(temp,cWild1,strLen1);
+      temp[strLen1] = '\0';
+
+      //only set the first time per variable, all after are ignore
+      if(!TReportsManager::Instance()->IsReportDetailWildSet(*iIdentifier,temp))
+      {
+         sUnit = string(cUnit, strLen2);
+         sType = string(cType, strLen3);
+         sDescription = string(cDescription, strLen4);
+
+         TReportsManager::Instance()->AddToReportDetails(*iIdentifier,temp,sUnit,sType,sDescription);
+      }
+   }
+   void add_to_report_details_wild1_(int* iIdentifier, char* cWild1, char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3, int strLen4)
+   {
+      add_to_report_details_wild1__(iIdentifier,cWild1,cUnit,cType,cDescription,strLen1, strLen2, strLen3,strLen4);
+   }
+
+   /* ********************************************************************
+   ** Method:   add_to_report_details_wild2
+   ** Purpose:  Enables fortran to set variable's metadata details.
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           cWild1 - pointer to fortran string, wild identifier
+   **           cWild2 - pointer to fortran string, wild identifier
+   **           cUnit - pointer to fortran unit string "units"
+   **           cType - pointer to the fortran type string "(w)(V)(oC)..."
+   **           cDescription - pointer to the fortran description string
+   **           strLen1,2,3,4,5 - lenght of the passed in strings
+   ** Note:     Only the first sent details to the specified variable will
+   **           be kept.  These routines, are less efficient then when you
+   **           specify the details in the h3kmodule.f90.
+   **           ** Avoid the use of these methods where possible. **
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-08-30
+   ** ***************************************************************** */
+   void add_to_report_details_wild2__(int* iIdentifier,char* cWild1,char* cWild2, char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3,int strLen4,int strLen5)
+   {
+      char temp[strLen1+strLen2+2];
+      string sUnit, sType, sDescription;
+
+      //Kludge: quick way to build a string with the params
+      memcpy(temp,cWild1,strLen1);
+      temp[strLen1] = '*';
+      memcpy(temp+strLen1+1,cWild2,strLen2);
+      temp[strLen1+strLen2+1] = '\0';
+
+      //only set the first time per variable, all after are ignore
+      if(!TReportsManager::Instance()->IsReportDetailWildSet(*iIdentifier,temp))
+      {
+         sUnit = string(cUnit, strLen3);
+         sType = string(cType, strLen4);
+         sDescription = string(cDescription, strLen5);
+
+         TReportsManager::Instance()->AddToReportDetails(*iIdentifier,temp,sUnit,sType,sDescription);
+      }
+   }
+   void add_to_report_details_wild2_(int* iIdentifier, char* cWild1, char* cWild2, char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3, int strLen4, int strLen5)
+   {
+      add_to_report_details_wild2__(iIdentifier,cWild1,cWild2,cUnit,cType,cDescription,strLen1, strLen2, strLen3,strLen4,strLen5);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   add_to_report_details_wild3
+   ** Purpose:  Enables fortran to set variable's metadata details.
+   ** Params:   iIdentifier - pointer to a fortran integer*4
+   **           cWild1 - pointer to fortran string, wild identifier
+   **           cWild2 - pointer to fortran string, wild identifier
+   **           cWild3 - pointer to fortran string, wild identifier
+   **           cUnit - pointer to fortran unit string "units"
+   **           cType - pointer to the fortran type string "(w)(V)(oC)..."
+   **           cDescription - pointer to the fortran description string
+   **           strLen1,2,3,4,5,6 - lenght of the passed in strings
+   ** Note:     Only the first sent details to the specified variable will
+   **           be kept.  These routines, are less efficient then when you
+   **           specify the details in the h3kmodule.f90.
+   **           ** Avoid the use of these methods where possible. **
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-08-30
+   ** ***************************************************************** */
+   void add_to_report_details_wild3__(int* iIdentifier,char* cWild1,char* cWild2, char* cWild3,char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3,int strLen4,int strLen5,int strLen6)
+   {
+      char temp[strLen1+strLen2+strLen3+3];
+      string sUnit, sType, sDescription;
+
+      //Kludge: quick way to build a string with the params
+      memcpy(temp,cWild1,strLen1);
+      temp[strLen1] = '*';
+      memcpy(temp+strLen1+1,cWild2,strLen2);
+      temp[strLen1+strLen2+1] = '*';
+      memcpy(temp+strLen1+strLen2+2,cWild3,strLen3);
+      temp[strLen1+strLen2+strLen3+2] = '\0';
+
+      //only set the first time per variable, all after are ignore
+      if(!TReportsManager::Instance()->IsReportDetailWildSet(*iIdentifier,temp))
+      {
+         sUnit = string(cUnit, strLen4);
+         sType = string(cType, strLen5);
+         sDescription = string(cDescription, strLen6);
+
+         TReportsManager::Instance()->AddToReportDetails(*iIdentifier,temp,sUnit,sType,sDescription);
+      }
+   }
+   void add_to_report_details_wild3_(int* iIdentifier, char* cWild1, char* cWild2, char* cWild3, char* cUnit,char* cType,char* cDescription,
+                               int strLen1, int strLen2, int strLen3, int strLen4, int strLen5, int strLen6)
+   {
+      add_to_report_details_wild3__(iIdentifier,cWild1,cWild2,cWild3,cUnit,cType,cDescription,strLen1, strLen2, strLen3,strLen4,strLen5,strLen6);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   set_report_simulation_info
+   ** Purpose:  Called by the fortran code to pass the a simulation
+   **           information
+   ** Params:   iStartday - start day in a 365 day year format
+   **                        (example:  Feb 1st --> 32) **no leap year **
+   **           iEndDay -  end day in a 365 day year format
+   **                        (example: Dec 31st --> 365) **no leap year **
+   **           iTimeStep - number of time step per hour
+   **                        (example: 12 --> 5 minute time step (60/12))
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-20
+   ** ***************************************************************** */
+   void set_report_simulation_info__(int* iStartDay, int* iEndDay,int* iTimeStep){
+      TReportsManager::Instance()->SetSimulationInfo(*iStartDay,*iEndDay,*iTimeStep);
+   }
+   void set_report_simulation_info_(int* iStartDay, int* iEndDay,int* iTimeStep){
+      set_report_simulation_info__(iStartDay,iEndDay,iTimeStep);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   set_report_variable()
+   ** Purpose:  Called by the fortran code to pass the a Report Variable
+   **             definition, id, description, to the C++ containers
+   ** Params:     sVariableName -  The Unique xml path location to where the data is to be stored.
+                  sMetaName -  The metatag to be added. (usually 'units' is used)
+                  sMetaValue - The value for the above metatag (Usually the unit type, like
+                       (W) for watts)
+                  sDescription - A detailed description of the variable being reported on.
+                       Will be outputted with the dictionary.
+                  *Length - The length of the corrosponding char arrays.
+   ** Returns:  N/A, changes the information in memory
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-06-27
+   ** ***************************************************************** */
+   void set_report_variable__(int * iIdentifier,bool* bEnabled,int* iVariableNameLength,
+                          int* iMetatypeLength,int* iMetaValueLength,int* iDescriptionLength,
+                          char* sVariableName,char* sMetaType,char* sMetaValue,
+                          char* sDescription,int strLen1,int strLen2,int strLen3,
+                          int strLen4){
+      static int iVarIdentity = 1;
+
+      //This will terminate the fortran string with NUL character
+      //Making this character array in memory a valid c format.
+      sVariableName[*iVariableNameLength] = '\0';
+      sMetaType[*iMetatypeLength] = '\0';
+      sMetaValue[*iMetaValueLength] = '\0';
+      sDescription[*iDescriptionLength] = '\0';
+
+      //Add variable into storage container
+      TReportsManager::Instance()->AddToVariableInfoList(iVarIdentity,sVariableName,sMetaType,
+                                                         sMetaValue,sDescription);
+
+      //Kludge: dynamic generation of identifiers used on the c++ & fortran side
+      *iIdentifier = iVarIdentity;
+
+      //Kludge: this enabled the fortran side to see if a variable is enabled
+      *bEnabled = TReportsManager::Instance()->IsVariableEnable(iVarIdentity);
+
+      //Increment static identifier
+      iVarIdentity++;
+   }
+
+   //dummy call to set_report_variable__
+   void set_report_variable_(int * iIdentifier,bool* bEnabled,int* iVariableNameLength,
+                          int* iMetatypeLength,int* iMetaValueLength,int* iDescriptionLength,
+                          char* sVariableName,char* sMetaType,char* sMetaValue,
+                          char* sDescription,int strLen1,int strLen2,int strLen3,
+                          int strLen4){
+      set_report_variable__(iIdentifier,bEnabled,
+            iVariableNameLength,iMetatypeLength,iMetaValueLength,iDescriptionLength,
+            sVariableName, sMetaType, sMetaValue, sDescription,
+            strLen1,strLen2,strLen3,strLen4);
+   }
+
+
+   /* ********************************************************************
+   ** Method:   generate_output()
+   ** Purpose:  Called by the fortran code to start the report generation
+   ** Scope:    Public
+   ** Params:   N/A
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-14
+   ** ***************************************************************** */
+   void generate_output__()
+   {
+      TReportsManager::Instance()->GenerateOutput();
+   }
+   //dummy call to the generate_output__
+   void generate_output_()
+   {
+      generate_output__();
+   }
+
+
+   /* ********************************************************************
+   ** Method:   report_next_time_step()
+   ** Purpose:  Called by the fortran code to indicate the start of the
+   **           next time step and information about that timestep
+   ** Scope:    Public
+   ** Params:   iStep - step number
+   **           iHour = TimeStep Hour
+   **           iMinute = TimeStep Minute... may not be needed
+   **           iDay = TimeStep Day
+   **           iStartup = Startup indicator (logical in Fortran == int in C++)
+   ** Returns:  N/A
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-07-14
+   ** ***************************************************************** */
+   void report_next_time_step__(int *iStep,int *iHour,int *iDay,int *iStartup)
+   {
+      //Call ReportManager routine to store the time step data
+      TReportsManager::Instance()->AddToTimeStepList((*iStartup)?true:false, *iStep, *iDay, *iHour);
+   }
+   //dummy routine, calls the __
+   void report_next_time_step_(int *iStep,int *iHour,int *iDay,int *iStartup)
+   {
+      report_next_time_step__(iStep,iHour,iDay,iStartup);
+   }
 }
 
-// Prototypes
-int Increment_vector_count();
-
-bool testForMatch( const std::vector<std::string>& txtlist, const std::string& search_text);
-
-bool SearchVars( const std::vector<std::string>& txtlist,
-                 const std::string& search_text,
-                 TVariableData& Variable,
-                 int mode  );
-
-bool SearchAllVars( const std::vector<std::string>& txtlist1,
-                    const std::vector<std::string>& txtlist2,
-                    const std::vector<std::string>& txtlist3,
-                    const std::string& search_text,
-                    TVariableData& Variable);
 
 TReportsManager* TReportsManager::ptr_Instance = NULL;
-
-bool TimeDataInRange(const TTimeData& data, const TTimeDataRange& range)
-{
-  if((range.begin.month < data.month) || (range.end.month > data.month))
-    return false;
-
-  if(range.begin.month == data.month)
-    {
-      if(range.begin.day > data.day) return false;
-      else if(range.begin.day == data.day)
-        {
-          if(range.begin.hour > data.hour) return false;
-          else if(range.begin.hour == data.hour)
-            {
-              if(range.begin.step > data.step) return false;
-            }
-        }
-    }
-
-  if(range.end.month == data.month)
-    {
-      if(range.end.day < data.day) return false;
-      else if(range.end.day == data.day)
-        {
-          if(range.end.hour < data.hour) return false;
-          else if(range.end.hour == data.hour)
-            {
-              if(range.end.step < data.step) return false;
-            }
-        }
-    }
-
-  return true;
-}
-
+/* ********************************************************************
+** Method:   Instance
+** Scope:    Public
+** Purpose:  Creates a singleton instance of the TReportManager
+** Params:   N/A
+** Returns:  N/A
+** ***************************************************************** */
 TReportsManager* TReportsManager::Instance(  )
 {
-  if(ptr_Instance == NULL) //create a new instance
-    {
+   if(ptr_Instance == NULL) //create a new instance
       ptr_Instance = new TReportsManager();
-    }
-  return ptr_Instance;
+
+   return ptr_Instance;
 }
 
-// Constructor
+/* ********************************************************************
+** Method:   TReportsManager
+** Scope:    Private
+** Purpose:  Constructor, initialize params
+** Params:   N/A
+** Returns:  N/A
+** ***************************************************************** */
 TReportsManager::TReportsManager(  )
 {
-  m_currentMonth = 0;
-  m_step_count = 0;
-  m_currentTime.step = 0;
-  m_currentTime.hour = 0;
-  m_currentTime.day = 0;
-  m_currentTime.month = 0;
-  m_vector_count = 0;
-  bFirstWrite = true;
+   //Initialize members
+   m_lCurrentStep = 0;
+   m_bStartUp = true;
+   m_lActiveSteps = 0;
+   m_iActualStartDay = 0;
+   m_iCurrentMonthIndex = 0;
+   m_fMinutePerTimeStep = 0; //set by bps
+   m_iTimeStepPerHour = 0; //set by bps
+   m_lOutputStepCount = 0;
+   m_iStartMonthIndex = 0;
+   m_lSaveToDisk = 0; //set by input.xml
+   bReports_Enabled = false;
 
-  ParseConfigFile("input.xml"); //default input file
-  
- 
-  SetFlags();                   //set config flags & defaults
-  
-  // Optionally, open up results storage on disk
-  
-  if ( bSaveToDisk ) Open_db_file();
-    
+
+   //remove the out.csv and out.db3 on init since the save_to_disk
+   //option will append to file and database as the simulation runs
+   remove("out.csv");
+   remove("out.db3");
+
+   ParseConfigFile("input.xml"); //default input file
+
+   SetFlags();                   //set config flags & defaults
+
+
 }
 
-/**
- * Update all data at the end of a timestep, and perform avg/bin operations
-   operations as necessary
- */
- 
-bool TReportsManager::Update(long step, float hour, long day, int iStartup)
+
+
+/* ********************************************************************
+** Method:   ~TReportsManager
+** Scope:    Private
+** Purpose:  Desctructor, called by the Cleanup routine
+** Params:   N/A
+** Returns:  N/A
+** ***************************************************************** */
+//Destructor -- called by the Cleanup routine.
+TReportsManager::~TReportsManager()
 {
 
-  if ( ! bReports_Enabled ) return false;
-
-  static bool firstCallToUpdate = true;
-  bool yearRollOver = false;
-  VariableDataMap::iterator pos;
-  // if simulation is still in start-up, and output of
-  // start-up data not requested, return without doing anything.
-  if ( iStartup == 1  && ! bReportStartup){return true;}
-
-  if(DEBUG) cout << "Update step: " << step << "  hour: " << hour << "  day: "
-                 << day << endl;
-
-  if(firstCallToUpdate) //init on first call
-    {
-      m_first_step = step; 
-    
-      m_step_count = 0;
-      if(DEBUG) cout << "First call" << endl;
-      
-      m_currentTime.step = step - 1; // -1 to force an update this call
-      
-      m_currentTime.hour = (int)hour;
-      m_currentTime.day = day;
-
-      //set month
-      m_currentTime.month = 0;
-      while(m_currentTime.day > kMonthlyTimesteps[m_currentTime.month])
-        ++m_currentTime.month;
-
-      firstCallToUpdate = false;
-    }
-
-  if(day - m_currentTime.day < 0) yearRollOver = true;
-
-
-
-  //add new hour
-  if((int)hour != m_currentTime.hour)
-    {
-      for(pos  = m_variableDataList.begin();
-          pos != m_variableDataList.end(); ++pos)
-        if(SearchAllVars(m_nodes,
-                         m_step_nodes,
-                         m_summary_nodes,
-                         pos->first,
-                         pos->second))
-          
-          // pos->second.UpdateHourly();
-
-      m_currentTime.hour = (int)hour;
-
-      if(DEBUG) cout << "Rollover hour: " << m_currentTime.hour << endl;
-    }
-
-  //add a new day
-  if(day != m_currentTime.day)
-    {
-      for(pos  = m_variableDataList.begin();
-          pos != m_variableDataList.end(); ++pos)
-        if(SearchAllVars(m_nodes,
-                        m_step_nodes,
-                        m_summary_nodes,
-                        pos->first,
-                        pos->second))
-          pos->second.UpdateDaily();
-
-      m_currentTime.day = day;
-      if(DEBUG) cout << "Rollover day: " << m_currentTime.day << endl;
-    }
-
-  //add a new month
-  if((m_currentTime.day > kMonthlyTimesteps[m_currentTime.month]) || yearRollOver)
-    {
-      for(pos = m_variableDataList.begin();
-          pos != m_variableDataList.end(); ++pos)
-        if( SearchAllVars(m_nodes,
-                         m_step_nodes,
-                         m_summary_nodes,
-                         pos->first,
-                         pos->second))
-          pos->second.UpdateMonthly(); 
-
-      m_currentTime.month = (m_currentTime.month + 1)%12;
-
-      //
-
-      m_month_bin_ts.push_back(1);
-
-      if(DEBUG) cout << "Rollover month: " << m_currentTime.month << endl;
-    }
-  else{
-
-      m_month_bin_ts.push_back(0);
-
-    }
-
-
-
-  //add a new year - not used right now
-  /*    if(m_currentTime.month == m_rolloverTime.month)
-        {
-        for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos)
-        pos->second.UpdateAnnual();
-
-        //m_currentTime.month = 0;
-        }*/
-
-  //check user-defined spans
-  for(unsigned int i = 0; i < m_userDefinedTime.size(); i++)
-    {
-      if(TimeDataInRange(m_currentTime, m_userDefinedTime[i]))
-        {
-
-          for(pos  = m_variableDataList.begin();
-              pos != m_variableDataList.end(); ++pos)
-            if( SearchAllVars(m_nodes,
-                              m_step_nodes,
-                              m_summary_nodes,
-                              pos->first,
-                              pos->second))
-              pos->second.UpdateUserDefined();
-        }
-    }
-
-  /* check to see if the time step has changed, and if so,
-     update data list. Note: these calls must come after
-     the above roll-over code. Otherwise, the data will be
-     assigned to the hour/day/month/year current bin, before
-     rollover functions have determined of a new bin is required.
-  */
-  if(step != m_currentTime.step)
-    {
-      for(pos  = m_variableDataList.begin();
-          pos != m_variableDataList.end(); ++pos)
-        if( SearchAllVars(m_nodes,
-                          m_step_nodes,
-                          m_summary_nodes,
-                          pos->first,
-                          pos->second))
-          pos->second.Update(bSaveToDisk, step);
-      
-      m_currentTime.step = step;
-    
-    }
-
-  m_step_count++;
-
-  return true;
 }
 
+
+/* ********************************************************************
+** Method:   SetSimulationInfo
+** Scope:    public
+** Purpose:  Calculates and stores the simulation data
+** Params:   iStartday - start day in a 365 day year format
+**                        (example:  Feb 1st --> 32) **no leap year **
+**           iEndDay -  end day in a 365 day year format
+**                        (example: Dec 31st --> 365) **no leap year **
+**           iTimeStep - number of time step per hour
+**                        (example: 12 --> 5 minute time step (60/12))
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-20
+** ***************************************************************** */
+void TReportsManager::SetSimulationInfo(int iStartDay,int iEndDay,int iTimeStep){
+   //Calculate the total number of steps the simulation will encounter
+   m_iStartDay = iStartDay;
+   m_iEndDay = iEndDay;
+   m_iTimeStepPerHour = iTimeStep;
+   m_iExpectedTimeSteps = (iEndDay - iStartDay +1) * iTimeStep * 24;
+   m_fMinutePerTimeStep = (float)1.0 / (float)m_iTimeStepPerHour * (float)60.0;
+
+   //perform some vector optimization
+   m_TimeStepList.reserve(m_iExpectedTimeSteps);
+
+   //auto save to disk to avoid gigabytes in memory, when there are more then
+   //SAVE_TO_DISK_TRIGGER timesteps the option is turned on.
+   if(m_iExpectedTimeSteps > SAVE_TO_DISK_TRIGGER && bSaveToDisk == false)
+   {
+      bSaveToDisk = true;
+      m_lSaveToDisk = SAVE_TO_DISK_MAX;
+   }
+}
+
+
+
+/* ********************************************************************
+** Method:   AddToTimeStepList()
+** Scope:    public
+** Purpose:  Store the timestep relevent data.
+** Params:   bStartup - true/false, startup step
+**           iStep - unique step number
+**           iDay - day number
+**           iHour - hour
+** Returns:  N/A
+** Comments: This method will not check for duplicate time step, it is
+**           expected that the fortran code will only call this once
+**           per timestep during the simulation loop.
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-14
+** ***************************************************************** */
+void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour){
+   struct stTimeStep ts;
+   static bool bOutofStartup = false;
+   ReportDataMap::iterator itDataMap;
+   int iModulus;
+
+   //If save_to_disk mode true, send to output every m_lSaveToDisk Timestep.
+   //At this point we know that m_iCurrentStep or m_lActiveSteps have completed
+   //the data insertion.
+   if(bSaveToDisk)
+   {
+      //Get the modulus of the
+      if(bReportStartup)
+         iModulus = m_lCurrentStep % m_lSaveToDisk;
+      else
+         iModulus = m_lActiveSteps % m_lSaveToDisk;
+
+      //if it's time to call the save to disk routine
+      if(iModulus == 0 && iStep > m_lSaveToDisk)
+      {
+         (bReportStartup)?GenerateStepOutput(m_lCurrentStep):GenerateStepOutput(m_lActiveSteps);
+      }
+   }
+
+   //Get the upcomming step information
+   ts.Startup = m_bStartUp = bStartup;
+   ts.Step = m_lCurrentStep = iStep;
+   ts.Day = iDay;
+   ts.Hour = iHour;
+
+   //once out of startup mode it never returns
+   if(!bStartup)
+   {
+      //Increment Active Step Counter
+      m_lActiveSteps++;
+      //Store the actual first day data was recorded
+      if (m_lActiveSteps == 1){
+         m_iActualStartDay = iDay;
+         m_iStartMonthIndex = GetMonthIndex(iDay);
+      }
+
+      //Store the current Time Step's month index;, ignore startup steps.
+      m_iCurrentMonthIndex = GetMonthIndex(iDay,m_iCurrentMonthIndex);
+
+      //Code will be executed only once, when the simulation first exits startup.
+      if(!bOutofStartup)
+      {
+         //Set the report variable that have already been initiated to simulation started true
+         for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
+         {
+            itDataMap->second.SetSimulationStarted(true);
+         }
+
+         bOutofStartup = true;
+      }
+   }
+
+   //Push on vector
+   m_TimeStepList.push_back(ts);
+}
+
+
+/* ********************************************************************
+** Method:   AddToVariableInfoList()
+** Scope:    public
+** Purpose:  Accessor method to add a variable to the m_VariableInfoList
+** Params:   int id - identifier for the variable
+**           sVarName - prepared statement created in h3kmodule.f90
+**           sMetaType - metaType initiated in h3kmodule.f90
+**           sMetaValue - metaValue initiated in h3kmodule.f90
+**           sDescription - variable description initiated in h3kmodule.f90
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-13
+** ***************************************************************** */
+void TReportsManager::AddToVariableInfoList(int id,const char* sVarName, const char* sMetaType,
+                                 const char* sMetaValue, const char* sDescription){
+   stVariableInfo rv;
+
+   rv.VarName = sVarName;
+   rv.MetaType = sMetaType;
+   rv.MetaValue = sMetaValue;
+   rv.Description = sDescription;
+
+   //Use binary logic to see if variable was requested for any of the output
+   rv.OutputType = GetOutputType(sVarName);
+   (rv.OutputType&0xFF)?rv.Enabled=true:rv.Enabled=false;
+
+   //insert the value to the map object
+   m_VariableInfoList.insert(make_pair(id,rv));
+}
+
+
+/* ********************************************************************
+** Method:   AddToReportDetails()
+** Scope:    public
+** Purpose:  Populate meta variable data
+** Note:     ** avoid the use of this method where possible ** this method
+**           is not as efficient as declaring the varaible descriptor
+**           in the h3kmodule.f90
+** Params:   int id - identifier for the variable
+**           sDelimiter - the wild char (makes up the map key with id)
+**           sUnit - the unit type
+**           sType - the variable tytpe
+**           sDescription - the variable description
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-30
+** ***************************************************************** */
+void TReportsManager::AddToReportDetails(int id,const char* sDelimiter, const string& sUnit,
+                                         const string& sType,const string& sDescription)
+{
+   ReportDataMap::iterator it;
+
+   //find the variable
+   it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
+   if(it != m_ReportDataList.end())
+   {
+      //populate the variables unit,type,description.
+      it->second.SetVariableDescriptoinWild(sUnit,sType,sDescription);
+   }
+
+   //if not found ignore, maybe error report too?
+}
+
+
+/* ********************************************************************
+** Method:   IsReportDetailWildSet()
+** Scope:    public
+** Purpose:  Return true/flase, if the passed in identifier maps and a
+**           variable where the description was reported as wild.
+** Note:     ** avoid the use of this technique when possible **
+** Params:   int id - identifier for the variable
+**           sDelimiter - the wild char (makes up the map key with id)
+** Returns:  true/false
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-30
+** ***************************************************************** */
+bool TReportsManager::IsReportDetailWildSet(int id, const char* sDelimiter)
+{
+   bool bRtn = false;
+   ReportDataMap::iterator it;
+
+   //fetch the variable,
+   it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
+   if(it != m_ReportDataList.end())
+   {
+      bRtn = it->second.IsVariableDescriptionWild();
+   }
+
+   return bRtn;
+}
+
+
+/* ********************************************************************
+** Method:   AddToReportDataList()
+** Scope:    public
+** Purpose:  Accessor method to add data to the m_ReportDataList
+** Params:   int id - identifier for the variable
+**           sDelimiter - the wild char (makes up the map key with id)
+**           fValue - value to store
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-15
+** ***************************************************************** */
+void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float fValue){
+   ReportDataMap::iterator it;
+   VariableInfoMap::const_iterator itInfoMap;
+
+   //Find if it exits
+   it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
+   if(it == m_ReportDataList.end()){
+      //create and retrieve the new member
+      m_ReportDataList.insert(make_pair(stMapKey(id,string(sDelimiter)),TReportData(!m_bStartUp)));
+      it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
+
+      //used for performance enhancements
+      if(bSaveToDisk)
+         it->second.SetExpectedTimeSteps(m_lSaveToDisk);
+      else
+         it->second.SetExpectedTimeSteps(m_iExpectedTimeSteps);
+
+      //used to figure out the month passed values belong too.
+      it->second.SetSimulationStartDay(m_iActualStartDay);
+
+      //used to set if we'll report on the Startup period or not.
+      it->second.SetReportStartupPeriod(bReportStartup);
+
+      //used to set if we are to apply time step averaging
+      it->second.SetTimeStepAveraging(bTS_averaging);
+
+      //populate some startup information that is found in the VariableInfo dictionary
+      itInfoMap = m_VariableInfoList.find(id);
+      if(itInfoMap != m_VariableInfoList.end()){
+         //set output type
+         it->second.SetOutputType(itInfoMap->second.OutputType);
+
+         //Create the fully qualified variable name
+         GetVariableName(itInfoMap->second.VarName,sDelimiter,it->second.sVarName);
+      }
+   }
+
+   //Push the value to the storage bins,
+   if(bReportStartup)
+      it->second.AddValue(m_lCurrentStep-m_lOutputStepCount,m_iCurrentMonthIndex-m_iStartMonthIndex,fValue);
+   else
+      it->second.AddValue(m_lActiveSteps-m_lOutputStepCount,m_iCurrentMonthIndex-m_iStartMonthIndex,fValue);
+
+}
+
+/* ********************************************************************
+** Method:   GetVariableName
+** Scope:    public
+** Purpose:  With the id and delimiter string the method will construct
+**           a the full qualified string and insert into the
+**           sDestination argument.
+** Params:   id - variable id
+**           sDelimiter - pointer to the delimiter string
+**           sDestimation - pointer to the result string
+** Returns:  by Ref - changes sDestination
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-18
+** ***************************************************************** */
+void TReportsManager::GetVariableName(const char* sVarName, const char* sDelimiter, char *sDestination)
+{
+   //char *sReturn;
+   int i,x;
+
+   //copy string
+   strcpy(sDestination, sVarName);
+
+   if(sDelimiter[0]!='\0')
+   {
+      //iterator through tokens
+      x = 0;
+      for(i=0;i<strlen(sDelimiter);i++)
+      {
+         if(sDelimiter[i]=='*' || sDelimiter[i] == '\0')
+         {
+            sDestination = ReplaceChar(sDestination,sDelimiter,x,i,'*');
+            x = i+1;
+         }
+      }
+
+      //handle the last token
+      sDestination = ReplaceChar(sDestination, sDelimiter,x,i,'*');
+   }
+
+
+   return;
+}
+
+/* ********************************************************************
+** Method:   GetMonthIndex
+** Scope:    private
+** Purpose:  Return the month index of the passed in day
+**             ex: 1-31 = 0, 32-59 = 1 ... (no leap year!)
+** Params:   iDay - the day number
+**           iStartIndex(optional) - kick start the loop to a
+**             predefined location, 0 if not specified.
+** Note:     Leap years are now a factor, based on 12 month per year,
+**           365 days in a year.
+** Returns:  month index (0-Jan,1-Feb...12-Jan,13-Feb ...)
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-21
+** ***************************************************************** */
+int TReportsManager::GetMonthIndex(int iDay){GetMonthIndex(iDay,0);}
+int TReportsManager::GetMonthIndex(int iDay,int iStartIndex)
+{
+   int i,x,y;
+   x = 0;
+   y= iStartIndex;
+
+   //Inifinite loop to handle the multi year
+   while(1)
+   {
+      //Find the month index
+      for(i=y;i<12-1;i++){
+         if(iDay <= kMonthlyTimesteps[i]+(x*365))
+            break;
+      }
+
+      //in a multi year, we need to loop again for another year
+      if(iDay > kMonthlyTimesteps[i]+(x*365)){
+         x++;
+         y = 0; //back to 0
+      }
+      else{
+         break; //exit infinite loop
+      }
+   }
+
+   return i+(x*12);
+}
+
+/* ********************************************************************
+** Method:   IsVariableEnable
+** Scope:    public
+** Purpose:  Used to determine if a variable was requested from the
+**           input.xml for any type of output.
+** Params:   int id - identifier for the variable
+** Returns:  true/false - false on Error
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-14
+** ***************************************************************** */
+bool TReportsManager::IsVariableEnable(int iVarIdentifier)
+{
+   bool bReturn = false;
+   VariableInfoMap::const_iterator it;
+
+   //find the member in m_VariableInfoList
+   it = m_VariableInfoList.find(iVarIdentifier);
+   if(it != m_VariableInfoList.end()){
+      //found
+      bReturn = it->second.Enabled;
+   }
+
+   return bReturn;
+}
+
+
+/* ********************************************************************
+** Method:   GenerateOutput()
+** Scope:    public
+** Purpose:  Method used to generate all the reports configures in the
+**           input.xml
+** Params:   N/A
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-14
+** ***************************************************************** */
+void TReportsManager::GenerateOutput(){
+   ReportDataMap::iterator it;
+   stSortedMapKeyRef sortedMapKeylist[m_ReportDataList.size()];
+   TXMLAdapter XMLAdapter;
+   DBManager *objDBManager;
+   int i;
+
+
+   //Loop through all collection variables
+   i = 0;
+   for(it = m_ReportDataList.begin();it != m_ReportDataList.end(); it++)
+   {
+      //level out the steps and month containers, same size
+      if(bReportStartup)
+         it->second.Finalize(m_lCurrentStep,m_iCurrentMonthIndex-m_iStartMonthIndex, m_lOutputStepCount);
+      else
+         it->second.Finalize(m_lActiveSteps,m_iCurrentMonthIndex-m_iStartMonthIndex, m_lOutputStepCount);
+
+      //Kludge: for performance reasons, we'll sort by the pointers to the variable
+      //        name definitions and store pointer to MapKey object from the
+      //        m_ReportDataList.  With this the output function can iterate
+      //        through that array and find the corresponding Map object
+      if(bSortOutput)
+      {
+         sortedMapKeylist[i].mapKey = &it->first;
+         sortedMapKeylist[i++].cString = it->second.sVarName;
+      }
+   }
+
+   //Use quick sort to sort the constructed structure of <char*, mapkey*>
+   //** Retrieve maps for output with the sort will slow down the simulation **
+   //          ** Guess slow down is 5% longers sim time. **
+   if(bSortOutput)
+      qsort(sortedMapKeylist,i, sizeof(struct stSortedMapKeyRef), cmp_by_string);
+
+
+   //Print the dictionary
+   OutputDictionary("out.dictionary", sortedMapKeylist );
+
+   //Print the XML Data
+   if(bOutLogXML)
+   {
+       OutputXMLData("out.xml",sortedMapKeylist);
+
+      // Check to see that i) a valid style sheet was provided and
+      // ii) transforms were requested.
+      if (  bStyleSheetGood &&  bTransformXMLRequested ) {
+         // Synopsys :
+         // WriteTransformedXML( source , target, stylesheet list )
+         XMLAdapter.WriteTransformedXML("out.xml",  m_StyleSheets );
+      }
+   }
+
+
+   if(bOutLogDB || bOutStepDB)
+   {
+      //Initialize the database file & table structure
+      objDBManager = new DBManager("out.db3");
+
+      //Output the database
+      OutputSQLiteData(objDBManager);
+
+      //add the indexes, this operation takes a considerable amount of time
+      //but searching on an unindex database would be greatly inaficient.
+      objDBManager->indexDatabase();
+
+      //close the database, delete the object
+      delete objDBManager;
+   }
+
+
+
+   //Print to CSV file
+   if(bOutStepCSV)
+      OutputCSVData("out.csv",sortedMapKeylist);
+
+   //Print the summary data
+   OutputTXTsummary("out.summary",sortedMapKeylist);
+}
+
+
+/* ********************************************************************
+** Method:   GenerateStepOutput()
+** Scope:    private
+** Purpose:  Method used to push the step output in an incremental
+**           fashion to avoid too large of a merory footprint.
+**           This is controlled by the save_to_disk input.xml option
+**           and triggers by the AddTimeStepList routine
+** Notes:    Since the variable number may grow during a simulation
+**           the sorting has to be done each time.  The OutputCSVData
+**           will handle the proper insertion of the new entry if
+**           required.
+** Params:   The total step count in so far.
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-24
+** ***************************************************************** */
+void TReportsManager::GenerateStepOutput(unsigned long lStepCount){
+   ReportDataMap::iterator itDataMap;
+   stSortedMapKeyRef sortedMapKeylist[m_ReportDataList.size()];
+   DBManager *objDBManager;
+   int i;
+
+   //Finalize (fill with zeros) the active step vectors up to the step count
+   i = 0;
+   for(itDataMap = m_ReportDataList.begin();itDataMap != m_ReportDataList.end(); itDataMap++)
+   {
+      //Kludge: for performance reasons, we'll sort by the pointers to the variable
+      //        name definitions and store pointer to MapKey object from the
+      //        m_ReportDataList.  With this the output function can iterate
+      //        through that array and find the corresponding Map object
+      if(bSortOutput)
+      {
+            sortedMapKeylist[i].mapKey = &itDataMap->first;
+            sortedMapKeylist[i++].cString = itDataMap->second.sVarName;
+      }
+
+      if(itDataMap->second.IsOutStep())
+      {
+         //make the all steps containers even size
+         itDataMap->second.FinalizeStepData(lStepCount-m_lOutputStepCount);
+      }
+   }
+
+   //Use quick sort to sort the constructed structure of <char*, mapkey*>
+   //** Retrieve maps for output with the sort will slow down the simulation **
+   //          ** Guess slow down is 5% longers sim time. **
+   if(bSortOutput)
+      qsort(sortedMapKeylist,i, sizeof(struct stSortedMapKeyRef), cmp_by_string);
+
+
+   //Output the steps
+   if(bOutStepCSV)
+      OutputCSVData("out.csv", sortedMapKeylist);
+
+   //Output to the database
+   if(bOutStepDB)
+   {
+      //Initialize the database file & table structure
+      objDBManager = new DBManager("out.db3");
+
+      //Output the database
+      OutputSQLiteStepData(objDBManager);
+
+      //close the database, delete the object
+      delete objDBManager;
+   }
+
+
+   //resize the vectors
+   for(itDataMap = m_ReportDataList.begin(); itDataMap != m_ReportDataList.end(); itDataMap++)
+   {
+      if(itDataMap->second.IsOutStep())
+      {
+         //Remove the values that were outputted
+         itDataMap->second.EraseSteps(m_lSaveToDisk);
+
+         //Set the variable as already in output
+         //this will be used to deal with new members that come in exsistance
+         //after the first output was generated
+         itDataMap->second.m_bStepOutput = true;
+      }
+   }
+
+   m_lOutputStepCount = lStepCount;
+}
+
+/* ********************************************************************
+** Method:   OutputSQLiteData()
+** Scope:    private
+** Purpose:  Outputs requested data from the input.xml
+**           in an SQLite3 database format.
+** Params:   objDBManager - pointer to an open database object
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-22
+** ***************************************************************** */
+void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
+{
+   VariableInfoMap::const_iterator itInfoMap;
+   ReportDataMap::iterator itDataMap;
+   TimeStepVector::const_iterator itTimeStep;
+   TBinnedData *ptrBin;
+   string sIntegratedUnits;
+   const char *sMetaValue;
+   long lStep,lVariableID;
+   int i,j, iVariableDescID;
+   bool bIntegratedUnit,bIsWatt;
+   double dTotal;
+
+   //Populate the common variable descriptors
+   for(itInfoMap = m_VariableInfoList.begin(); itInfoMap != m_VariableInfoList.end(); itInfoMap++)
+   {
+      objDBManager->addVariableDescriptor(itInfoMap->first, itInfoMap->second.VarName,itInfoMap->second.MetaType,
+                                 itInfoMap->second.MetaValue,itInfoMap->second.Description);
+   }
+
+
+   //Populate the TimeStep info if step data requested
+   if(bOutStepDB)
+   {
+      lStep = 1;
+      for(itTimeStep = m_TimeStepList.begin();itTimeStep != m_TimeStepList.end();itTimeStep++)
+      {
+         //Skip over the startup steps unless ask to report on
+         if(bReportStartup || !itTimeStep->Startup)
+         {
+            //The step value in the itTimeStep will not start at one,
+            //use an incremental index instead
+            objDBManager->addTimeStep(lStep++,itTimeStep->Hour,itTimeStep->Day, (int)itTimeStep->Startup);
+         }
+
+      }
+   }
+
+   //Send all the values
+   j = 1;
+   for(itDataMap = m_ReportDataList.begin();itDataMap != m_ReportDataList.end(); itDataMap++)
+   {
+      if(itDataMap->second.IsOutLog() || itDataMap->second.IsOutStep())
+      {
+         //If the variable was overwritten in the course of the simluation by the add_to_report_details
+         //routines then we must send a new variable descriptor to the database with the overwritten info
+         //usually-false.
+         if(itDataMap->second.IsVariableDescriptionWild())
+         {
+            //get the next avail variable descriptor id
+            iVariableDescID = m_VariableInfoList.size() + j++;
+            //add the new variable descriptor
+            objDBManager->addVariableDescriptor(iVariableDescID,
+                                 itDataMap->second.sVarName, itDataMap->second.getVariableMetaType().c_str(),
+                                 itDataMap->second.getVariableMetaValue().c_str(),
+                                 itDataMap->second.getVariableDescription().c_str());
+         }
+         else
+         {
+            //for the exception of above the descriptor id is the database first identifier.
+            iVariableDescID = itDataMap->first.identifier;
+         }
+
+
+         //Get the variable db id, if negative, populate the appropriate tables
+         lVariableID = itDataMap->second.m_iDBVariableID;
+         if(lVariableID < 0)
+         {
+            //add the variable name
+            lVariableID = objDBManager->addVariableName(iVariableDescID,
+                                                        itDataMap->first.delimiters.c_str(),
+                                                        itDataMap->second.sVarName);
+            //backfill zero for unitialize variable (will only occurs in save_to_disk mode).
+            for(i=1; i <= m_lOutputStepCount; i++)
+            {
+               objDBManager->addValue(i,lVariableID,0.0);
+            }
+         }
+         else //name already set (during step save)
+         {
+            if(itDataMap->second.IsVariableDescriptionWild())
+            {
+               //Update the variable name to point to the new descriptor
+               objDBManager->updateVariableName(lVariableID,iVariableDescID);
+            }
+         }
+
+
+         //Push the step data
+         if(itDataMap->second.IsOutStep() && bOutStepDB)
+         {
+            //Store the step data, outputStepCount is populate when "save_to_disk" is true
+            lStep = m_lOutputStepCount + 1;
+
+            itDataMap->second.GetNextStepValueReset();
+            while(!itDataMap->second.GetNextStepValueEnd())
+            {
+               //push the value to the database.
+               objDBManager->addValue(lStep++,lVariableID,itDataMap->second.GetNextStepValue());
+            }
+         }
+
+
+
+         //Push the log Data
+         if(itDataMap->second.IsOutLog() && bOutLogDB)
+         {
+            //Send the monthly binned data
+            i = 0;
+            itDataMap->second.GetNextMonthlyBinReset();
+            ptrBin = itDataMap->second.GetNextMonthlyBin();
+            while(ptrBin != NULL)
+            {
+               objDBManager->addBinData(lVariableID,i++,(int)ptrBin->Timesteps(),(int)ptrBin->ActiveTimesteps(),
+                                              ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
+                                              ptrBin->TotalAverage(),1);
+
+
+               //Get next
+               ptrBin = itDataMap->second.GetNextMonthlyBin();
+            }
+
+
+            //Send the annual binned data
+            ptrBin = itDataMap->second.GetAnnualBin();
+            objDBManager->addBinData(lVariableID,0,(int)ptrBin->Timesteps(),(int)ptrBin->ActiveTimesteps(),
+                                              ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
+                                              ptrBin->TotalAverage(),0);
+
+
+            //send the integrated data
+            sIntegratedUnits = "";
+            bIntegratedUnit = false;
+            bIsWatt = false;
+
+            //Get the metavalue, information in a different location when
+            //add_to_report_details is used. usually - false
+            if(itDataMap->second.IsVariableDescriptionWild())
+            {
+               sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
+            }
+            else
+            {
+               itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+               sMetaValue = itInfoMap->second.MetaValue;
+            }
+
+            //set the integrated types
+            if(strcmp(sMetaValue,"(W)")==0)
+            {
+               sIntegratedUnits = "GJ";
+               bIntegratedUnit = true;
+               bIsWatt = true;
+            }
+            else if(strcmp(sMetaValue,"(kg/s)")==0)
+            {
+               sIntegratedUnits = "kg";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(kWh/s)")==0)
+            {
+               sIntegratedUnits = "kWh";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(l/s)")==0)
+            {
+               sIntegratedUnits = "l";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(m3/s)")==0)
+            {
+               sIntegratedUnits = "m3";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(tonne/s)")==0)
+            {
+               sIntegratedUnits = "tonne";
+               bIntegratedUnit = true;
+            }
+
+            if(bIntegratedUnit)
+            {
+               i = 0;
+
+               //Integrate monthly bin data
+               itDataMap->second.GetNextMonthlyBinReset();
+               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               while(ptrBin != NULL)
+               {
+                  //for W->J, convert result calculated in GJ
+                  if (bIsWatt)
+                     dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+                  else
+                     dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+
+
+                  objDBManager->addIntegratedData(lVariableID,i,sIntegratedUnits.c_str(),dTotal, BIN_MONTH_TYPE);
+
+                  //Get Next bin
+                  ptrBin = itDataMap->second.GetNextMonthlyBin();
+                  i++;
+               }
+
+               //Integrated annual bin data
+               ptrBin = itDataMap->second.GetAnnualBin();
+               if (bIsWatt)
+                  dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+               else
+                  dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+
+               objDBManager->addIntegratedData(lVariableID,0,sIntegratedUnits.c_str(),dTotal, BIN_ANNUAL_TYPE);
+            }
+         }
+      }
+   }
+}
+
+/* ********************************************************************
+** Method:   OutputSQLiteStepData()
+** Scope:    private
+** Purpose:  Used for incremental step output, will output only step
+**           values to the database.  If a new variable came into existance
+**           the method will backfill past outputted step to zero.
+** Params:   sFileName - the file to create !will overwrite existing
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-26
+** ***************************************************************** */
+void TReportsManager::OutputSQLiteStepData(DBManager *objDBManager)
+{
+   ReportDataMap::iterator itDataMap;
+   int i;
+   int iVariableID;
+   long lStep;
+
+   //go through the variable list
+   for(itDataMap = m_ReportDataList.begin();itDataMap != m_ReportDataList.end(); itDataMap++)
+   {
+      //check if it's a step data
+      if(itDataMap->second.IsOutStep())
+      {
+         iVariableID = itDataMap->second.m_iDBVariableID;
+         //get the variable id
+         if(iVariableID < 0)
+         {
+            //Never initialized, generate an key
+            iVariableID = objDBManager->addVariableName(itDataMap->first.identifier,
+                                                         itDataMap->first.delimiters.c_str(),
+                                                         itDataMap->second.sVarName);
+            //If we need to backfill variable with zeros
+            for(i=1; i <= m_lOutputStepCount; i++)
+            {
+               objDBManager->addValue(i,iVariableID,0.0);
+            }
+
+            //update the storage's db id
+            itDataMap->second.m_iDBVariableID = iVariableID;
+         }
+
+         //Store the steps values in the vectors.
+         lStep = m_lOutputStepCount + 1;
+         itDataMap->second.GetNextStepValueReset();
+         while(!itDataMap->second.GetNextStepValueEnd())
+         {
+            //push the value to the database.
+            objDBManager->addValue(lStep++,iVariableID,itDataMap->second.GetNextStepValue());
+         }
+      }
+   }
+}
+
+
+/* ********************************************************************
+** Method:   OutputXMLData()
+** Scope:    private
+** Purpose:  Outputs <log_variable> requested data in the input.xml
+**           in an XML format.
+** Params:   sFileName - the file to create !will overwrite existing
+**           sortedRef - an array that contains the mapkey in sorted order
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-08
+** ***************************************************************** */
+void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sortedRef[])
+{
+   bool useFlatHierarchy, bIntegratedUnit, bIsWatt;
+   ReportDataMap::iterator itDataMap;
+   TXMLAdapter objXMLdoc;
+   TXMLNode currentNode,tokenNode, integratedNode;
+   VariableInfoMap::const_iterator itInfoMap;
+   TBinnedData *ptrBin;
+   const char *sMetaType, *sMetaValue, *sDescription;
+   char *sTok, sTemp[256],sLastTok[256];
+   vector<TXMLNode> nextNodeVector;
+   string sIntegratedUnits;
+   int i,j;
+   double dTotal;
+
+   //Get some of the input configs
+   if(m_params["hierarchy"].empty() || m_params["hierarchy"] == "tree")
+      useFlatHierarchy = false;
+   else
+      useFlatHierarchy = true;
+
+   //Initialize the XML doc
+   objXMLdoc.AddNode(NULL, "system", "");
+   objXMLdoc.AddAttribute(objXMLdoc.RootNode(),"version","1.0");
+
+   //if the sort_order is requester, we retreive the report map differently
+   j = 0;
+   if(bSortOutput)
+   {
+      if(j < m_ReportDataList.size())
+         itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+      else
+         itDataMap = m_ReportDataList.end();
+   }
+   else
+      itDataMap = m_ReportDataList.begin();
+
+   while(itDataMap != m_ReportDataList.end())
+   {
+      //only output if it was set as <log_variable>
+      if(itDataMap->second.IsOutLog())
+      {
+         //for testing
+         //itDataMap->second.PrintLogData();
+         currentNode = objXMLdoc.RootNode();
+
+         if(useFlatHierarchy)
+         {
+            currentNode = objXMLdoc.AddNode(currentNode, "parameter", "");
+            objXMLdoc.AddNode(currentNode, "name", itDataMap->second.sVarName);
+         }
+         else
+         {
+            //copy the string loop through the tokens
+            strcpy(sTemp,itDataMap->second.sVarName);
+            sTok = strtok(sTemp,"/");
+            while(sTok != NULL)
+            {
+               //save the last valid token to push to xml
+               strcpy(sLastTok,sTok);
+
+               //build the XML node tree
+               nextNodeVector = objXMLdoc.GetChildren(currentNode,sTok);
+               if(nextNodeVector.size() == 0)
+                  currentNode = objXMLdoc.AddNode(currentNode,sTok,"");
+               else
+                  currentNode = nextNodeVector[0];
+
+               sTok = strtok(NULL,"/");
+            }
+
+            //Store where the actual token node is, since currentNode will walk back/forth
+            tokenNode = currentNode;
+
+            //START add description
+            //Fetch the description for this node in the case it's overwritten by the
+            //add_to_report_details routines fetch from a different store.
+            if(itDataMap->second.IsVariableDescriptionWild())
+            {
+               sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
+               sMetaType = itDataMap->second.getVariableMetaType().c_str();
+               sDescription = itDataMap->second.getVariableDescription().c_str();
+            }
+            else
+            {
+               itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+               sMetaType = itInfoMap->second.MetaType;
+               sMetaValue= itInfoMap->second.MetaValue;
+               sDescription = itInfoMap->second.Description;
+            }
+
+            //Add to XML
+            objXMLdoc.AddNode(currentNode,"name",sLastTok);
+            objXMLdoc.AddNode(currentNode,"description",sDescription);
+            objXMLdoc.AddNode(currentNode,sMetaType,sMetaValue);
+            //END add description
+
+            //START add monthly bin
+            i = 0;
+            itDataMap->second.GetNextMonthlyBinReset();
+            ptrBin = itDataMap->second.GetNextMonthlyBin();
+            while(ptrBin != NULL)
+            {
+               currentNode = objXMLdoc.AddNode(tokenNode,"binned_data","");
+               objXMLdoc.AddAttribute(currentNode, "type", "monthly");
+               objXMLdoc.AddNode(currentNode, "index", StringValue(sTemp,i++));
+               objXMLdoc.AddNode(currentNode, "steps", StringValue(sTemp,(int)ptrBin->Timesteps()));
+               objXMLdoc.AddNode(currentNode, "active_steps", StringValue(sTemp,(int)ptrBin->ActiveTimesteps()));
+               objXMLdoc.AddNode(currentNode, "sum", StringValue(sTemp,ptrBin->Sum()));
+               objXMLdoc.AddNode(currentNode, "max", StringValue(sTemp,ptrBin->Max()));
+               objXMLdoc.AddNode(currentNode, "min", StringValue(sTemp,ptrBin->Min()));
+               objXMLdoc.AddNode(currentNode, "active_average", StringValue(sTemp,ptrBin->ActiveAverage()));
+               objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage()));
+
+               //Get next
+               ptrBin = itDataMap->second.GetNextMonthlyBin();
+            }
+            //END add monthly bin
+
+            //START annual bin to xml
+            ptrBin = itDataMap->second.GetAnnualBin();
+            currentNode = objXMLdoc.AddNode(tokenNode,"binned_data","");
+            objXMLdoc.AddAttribute(currentNode,"type","annual");
+            objXMLdoc.AddNode(currentNode,"steps",StringValue(sTemp,(int)ptrBin->Timesteps()));
+            objXMLdoc.AddNode(currentNode,"active_steps",StringValue(sTemp,(int)ptrBin->ActiveTimesteps()));
+            objXMLdoc.AddNode(currentNode,"sum",StringValue(sTemp,ptrBin->Sum()));
+            if(ptrBin->ActiveTimesteps() > 0) //these are only valid if the variable is active
+            {
+               objXMLdoc.AddNode(currentNode, "max", StringValue(sTemp,ptrBin->Max()));
+               objXMLdoc.AddNode(currentNode, "min", StringValue(sTemp,ptrBin->Min()));
+            }
+            else
+            {
+               objXMLdoc.AddNode(currentNode, "max", "NaN");
+               objXMLdoc.AddNode(currentNode, "min", "NaN");
+            }
+            objXMLdoc.AddNode(currentNode, "active_average", StringValue(sTemp,ptrBin->ActiveAverage()));
+            objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage()));
+            //END annual bin
+
+            //START Custom manipulation: Integrate mass/energy flow
+            sIntegratedUnits = "";
+            bIntegratedUnit = false;
+            bIsWatt = false;
+            if(strcmp(sMetaValue,"(W)")==0)
+            {
+               sIntegratedUnits = "GJ";
+               bIntegratedUnit = true;
+               bIsWatt = true;
+            }
+            else if(strcmp(sMetaValue,"(kg/s)")==0)
+            {
+               sIntegratedUnits = "kg";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(kWh/s)")==0)
+            {
+               sIntegratedUnits = "kWh";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(l/s)")==0)
+            {
+               sIntegratedUnits = "l";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(m3/s)")==0)
+            {
+               sIntegratedUnits = "m3";
+               bIntegratedUnit = true;
+            }
+            else if(strcmp(sMetaValue,"(tonne/s)")==0)
+            {
+               sIntegratedUnits = "tonne";
+               bIntegratedUnit = true;
+            }
+
+            if(bIntegratedUnit)
+            {
+               integratedNode = objXMLdoc.AddNode(tokenNode, "integrated_data", "");
+               objXMLdoc.AddAttribute(integratedNode,"units",sIntegratedUnits.c_str());
+
+               //Integrate monthly bin data
+               i = 0;
+               itDataMap->second.GetNextMonthlyBinReset();
+               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               while(ptrBin != NULL)
+               {
+                  //for W->J, convert result calculated in GJ
+                  if (bIsWatt)
+                     dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+                  else
+                     dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+
+                  currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dTotal));
+                  objXMLdoc.AddAttribute(currentNode, "number", StringValue(sTemp,i));
+                  objXMLdoc.AddAttribute(currentNode, "type", "monthly");
+
+                  //Get Next bin
+                  ptrBin = itDataMap->second.GetNextMonthlyBin();
+                  i++;
+               }
+
+               // And integrate annual data
+               ptrBin = itDataMap->second.GetAnnualBin();
+               if (bIsWatt)
+                  dTotal = (ptrBin->Sum() * m_fMinutePerTimeStep * 60. ) / 1e09;
+               else
+                  dTotal = ptrBin->Sum() * m_fMinutePerTimeStep * 60.;
+               currentNode = objXMLdoc.AddNode(integratedNode,"bin",StringValue(sTemp,dTotal));
+               objXMLdoc.AddAttribute(currentNode, "type", "annual");
+            }
+            //END Custom manipulation: Integrate mass/energy flow
+         }
+      }
+
+      //Get the next ReportData map iterator
+      if(bSortOutput)
+      {
+         if(j < m_ReportDataList.size())
+            itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+         else
+            itDataMap = m_ReportDataList.end();
+      }
+      else
+         itDataMap = ++itDataMap;
+   }
+   objXMLdoc.WriteToFile(sFileName);
+}
+
+
+/* ********************************************************************
+** Method:   OutputTXTsummary()
+** Scope:    private
+** Purpose:  Output <summary_variable> requested data in the input.xml
+** Params:   sFileName - the file to create !will overwrite existing
+**           sortedRef - an array that contains the mapkey in sorted order
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-09-09
+** ***************************************************************** */
+void TReportsManager::OutputTXTsummary(const char *sFileName, stSortedMapKeyRef sortedRef[])
+{
+   VariableInfoMap::const_iterator itInfoMap;
+   ReportDataMap::iterator itDataMap;
+   TBinnedData *ptrBin;
+   bool isEmpty = true;
+   char *sVarName;
+   const char *sMetaValue;
+   char buffer[255];
+   double gj,kg;
+   int j;
+
+   //Open the file
+   ofstream summaryFile(sFileName,ios::trunc);
+   summaryFile.setf(ios::showpoint);
+   summaryFile.precision(8);
+
+   if(summaryFile.is_open())
+   {
+      //if the sort_order is requester, we retreive the report map differently
+      j = 0;
+      if(bSortOutput)
+      {
+         if(j < m_ReportDataList.size())
+            itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+         else
+            itDataMap = m_ReportDataList.end();
+      }
+      else
+         itDataMap = m_ReportDataList.begin();
+
+      while(itDataMap != m_ReportDataList.end())
+      {
+         if(itDataMap->second.IsOutSummary())
+         {
+            //Get the overwritten variable meta information if overwritten during the
+            //course of the simulation with the add_to_report_details routines.  Usually-false
+            if(itDataMap->second.IsVariableDescriptionWild())
+            {
+               sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
+            }
+            else
+            {
+               itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+               sMetaValue = itInfoMap->second.MetaValue;
+            }
+            ptrBin = itDataMap->second.GetAnnualBin();
+            sVarName = itDataMap->second.sVarName;
+
+            //push to output stream
+            summaryFile << sVarName << "::Total_Average " << StringValue(buffer,ptrBin->TotalAverage()) << " " << sMetaValue << "\n";
+            summaryFile << sVarName << "::Active_Average " << StringValue(buffer,ptrBin->ActiveAverage()) << " " << sMetaValue << "\n";
+
+            if(ptrBin->ActiveTimesteps() > 0)
+            {
+               summaryFile << sVarName << "::Maximum " << StringValue(buffer,ptrBin->Max()) << " " << sMetaValue << "\n";
+               summaryFile << sVarName << "::Minimum " << StringValue(buffer,ptrBin->Min()) << " " << sMetaValue << "\n";
+            }
+            else
+            {
+               summaryFile << sVarName << "::Maximum NaN " << sMetaValue << "\n";
+               summaryFile << sVarName << "::Minimum NaN " << sMetaValue << "\n";
+            }
+
+            if(strcmp(sMetaValue,"(W)") == 0)
+            {
+               gj = ptrBin->Sum() * (float)m_fMinutePerTimeStep * 60 / 1e09;
+               summaryFile << sVarName << "::AnnualTotal " << StringValue(buffer,gj) << " (GJ)\n";
+            }
+
+            if(strcmp(sMetaValue,"(kg/s)") == 0)
+            {
+               kg = ptrBin->Sum() * (float)m_fMinutePerTimeStep * 60;
+               summaryFile << sVarName << "::AnnualTotal " << StringValue(buffer,kg) << " (kg)\n";
+            }
+            isEmpty = false;
+         }
+
+         //Get next ReportData Map iterator
+         if(bSortOutput)
+         {
+            if(j < m_ReportDataList.size())
+               itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+            else
+               itDataMap = m_ReportDataList.end();
+         }
+         else
+            itDataMap = ++itDataMap;
+      }
+   }
+
+
+   // close file
+   summaryFile.close();
+
+   //remove the file if nothing was written
+   if(isEmpty)
+      remove(sFileName);
+
+   return;
+}
+
+
+/* ********************************************************************
+** Method:   OutputCSVData()
+** Scope:    private
+** Purpose:  Output <step_variable> requested data in the input.xml
+** Params:   sFileName - the file to create !will overwrite existing
+**           sortedRef - an array that contains the mapkey in sorted order
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-23
+** ***************************************************************** */
+void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sortedRef[])
+{
+   VariableInfoMap::const_iterator itInfoMap;
+   ReportDataMap::iterator itDataMap;
+   static bool isInit = false;
+   int i,j, iSteps=0, iPos=0;
+   string sTemp;
+
+
+   //open the file, append mode
+   ofstream outfile(sFileName,ios::app);
+   outfile.setf(ios::showpoint);
+   outfile.precision(8);
+
+   if(outfile.is_open())
+   {
+      //if the sort_order is requester, we retreive the report map differently
+      j = 0;
+      if(bSortOutput)
+      {
+         if(j < m_ReportDataList.size())
+            itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+         else
+            itDataMap = m_ReportDataList.end();
+      }
+      else
+         itDataMap = m_ReportDataList.begin();
+
+      while(itDataMap != m_ReportDataList.end())
+      {
+         if(itDataMap->second.IsOutStep())
+         {
+            //Store the #of steps stored (since they are all the same size it doesn't
+            //mather if the counter is overwritten by a different variable
+            iSteps = itDataMap->second.GetStepCount();
+
+            //Store the current position in the csv
+            iPos++;
+
+            //** note: may perform better if the MetaValue was part of the m_ReportDataList **
+            itInfoMap = m_VariableInfoList.find(itDataMap->first.identifier);
+
+            //Make the header more readable
+            sTemp = itDataMap->second.sVarName;
+            for(i=0;i<sTemp.length();i++)
+            {
+               if(sTemp[i] == '/')
+               {
+                  sTemp[i] = ':';
+               }
+               if(sTemp[i] == '_')
+               {
+                  sTemp[i] = ' ';
+               }
+            }
+            sTemp+= " ";
+            if(itDataMap->second.IsVariableDescriptionWild())
+               sTemp+= itDataMap->second.getVariableMetaValue();
+            else
+               sTemp+= itInfoMap->second.MetaValue;
+            sTemp+= ", ";
+
+            if(isInit)
+            {
+               if(!itDataMap->second.m_bStepOutput)
+               {
+                  outfile.close();
+
+                  //new variable brought came alive, must add new column to CSV
+                  InjectVariableToCSV(sFileName,sTemp.c_str(),iPos);
+                  //InjectValueToCSV(sFileName,1,4,itDataMap->second.sVarName);
+
+                  outfile.open(sFileName,ios::app);
+                  outfile.setf(ios::showpoint);
+                  outfile.precision(8);
+               }
+            }
+            else
+            {
+               //push to output stream
+               outfile << sTemp;
+            }
+         }
+
+         //Get the next ReportData map iterator
+         if(bSortOutput)
+         {
+            if(j < m_ReportDataList.size())
+               itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+            else
+               itDataMap = m_ReportDataList.end();
+         }
+         else
+            itDataMap = ++itDataMap;
+      }
+
+      if(!isInit)
+         outfile << '\n';
+
+
+      //output step data
+      for(i=0;i<iSteps;i++)
+      {
+         //if the sort_order is requester, we retreive the report map differently
+         j = 0;
+         if(bSortOutput)
+         {
+            if(j < m_ReportDataList.size())
+               itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+            else
+               itDataMap = m_ReportDataList.end();
+         }
+         else
+            itDataMap = m_ReportDataList.begin();
+
+
+         while(itDataMap != m_ReportDataList.end())
+         {
+            if(itDataMap->second.IsOutStep())
+            {
+               outfile << itDataMap->second.GetStepValue(i) << ", ";
+            }
+
+            //Get the next ReportData map iterator
+            if(bSortOutput)
+            {
+               if(j < m_ReportDataList.size())
+                  itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+               else
+                  itDataMap = m_ReportDataList.end();
+            }
+            else
+               itDataMap = ++itDataMap;
+         }
+         outfile << '\n';
+      }
+   }
+
+   isInit = true;
+
+   //Close file
+   outfile.close();
+}
+
+
+/* ********************************************************************
+** Method:   OutputDictionary()
+** Scope:    private
+** Purpose:  Used only when save_to_disk is true, this method will insert
+**           and initialize a variable that would have came into existance
+**           after the first write occured.
+** Params:   sFileName - the file to create - will append to the file
+**           sVarName - the formated name to insert
+**           iPosition - the column location to insert the variable
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-29
+** ***************************************************************** */
+void TReportsManager::InjectVariableToCSV(const char *sFileName, const char *sVarName, int iPosition)
+{
+   ofstream objOutFile;
+   ifstream objInFile;
+   string sTempFileName, sBuffer, sVarToInsert;
+   int iLineNumber = 0;
+   int iFoundPos = 0;
+   int iPos = iPosition;
+
+   //Create a temp outfile
+   sTempFileName = sFileName;
+   sTempFileName+= ".tmp";
+
+   //Open the files streams
+   objOutFile.open(sTempFileName.c_str(),ios::trunc);
+   objInFile.open(sFileName, ios::in);
+
+   //Create the column name to insert
+   sVarToInsert = sVarName;
+
+   if(objInFile.is_open() && objOutFile.is_open())
+   {
+      //get the first line
+      getline(objInFile,sBuffer);
+      while(!objInFile.eof())
+      {
+         //Find the position to insert
+         iFoundPos = 0;
+         while(iPos-- > 1)
+         {
+            iFoundPos = sBuffer.find(",", iFoundPos + 1, 1);
+         }
+
+         //modify the line accordingly
+         if(iLineNumber == 0)
+            (iFoundPos > 1)?sBuffer.insert(iFoundPos + 2, sVarToInsert):sBuffer.insert(iFoundPos, sVarToInsert);
+         else
+            (iFoundPos > 1)?sBuffer.insert(iFoundPos + 2,"0.0000000, "):sBuffer.insert(iFoundPos,"0.0000000, ");
+
+         //push to new file
+         objOutFile << sBuffer.c_str() << '\n';
+         getline(objInFile,sBuffer);
+         iLineNumber++;
+         iPos = iPosition;
+      }
+   }
+
+
+   //Delete the file, rename the temp
+   objInFile.close();
+   objOutFile.close();
+   remove(sFileName);
+   rename(sTempFileName.c_str(),sFileName);
+}
+
+
+
+/* ********************************************************************
+** Method:   OutputDictionary()
+** Scope:    private
+** Purpose:  Outputs all possible variables from a simulation.  The
+**           current logic is to output only the variables it encounters
+**           with there fully describes name (rendered during simulation).
+**           Depending on the use of the information, an output of all possible
+**           variables with the wildcard in may be more desirable.
+**           ** To confirm **
+** Params:   sFileName - the file to create !will overwrite existing
+** Returns:  N/A
+** Author:   Claude Lamarche
+** Mod Date: 2011-08-08
+** ***************************************************************** */
+void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef sortedRef[])
+{
+   VariableInfoMap::const_iterator itInfoMap;
+   ReportDataMap::iterator itDataMap;
+   const char *sMetaValue, *sDescription;
+   ofstream outfile(sFileName,ios::trunc);
+   int j;
+
+   //Code that loops and outputs all the variable with wildcards
+   //and their information.
+   if(outfile.is_open())
+   {
+      //loop will output all available variable in esp-r initialized in the h3kmodule.f90
+      if(bDumpDictionaryAll)
+      {
+
+         for(itInfoMap = m_VariableInfoList.begin();itInfoMap != m_VariableInfoList.end(); itInfoMap++)
+         {
+            outfile << itInfoMap->second.VarName
+                     << ":\n\n     "
+                     << itInfoMap->second.Description
+                     << " "
+                     << itInfoMap->second.MetaValue
+                     << "\n\n";
+
+         }
+      }
+      else //only the variable encountered during the simulation
+      {
+         j = 0;
+         if(bSortOutput)
+         {
+            if(j < m_ReportDataList.size())
+               itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+            else
+               itDataMap = m_ReportDataList.end();
+         }
+         else
+            itDataMap = m_ReportDataList.begin();
+
+         while(itDataMap != m_ReportDataList.end())
+         {
+            //Get the information differently if variable's information was overwritten
+            //during the simulation by the add_to_report_details routines. usually-false
+            if(itDataMap->second.IsVariableDescriptionWild())
+            {
+               sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
+               sDescription = itDataMap->second.getVariableDescription().c_str();
+            }
+            else
+            {
+               itInfoMap =  m_VariableInfoList.find(itDataMap->first.identifier);
+               sMetaValue = itInfoMap->second.MetaValue;
+               sDescription = itInfoMap->second.Description;
+            }
+
+            outfile << itDataMap->second.sVarName
+                  << ":\n\n     "
+                  << sDescription
+                  << " "
+                  << sMetaValue
+                  << "\n\n";
+
+
+
+            //Get next ReportData Map iterator
+            if(bSortOutput)
+            {
+               if(j < m_ReportDataList.size())
+                  itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+               else
+                  itDataMap = m_ReportDataList.end();
+            }
+            else
+               itDataMap = ++itDataMap;
+         }
+      }
+   }
+
+   //Close file
+   outfile.close();
+}
+
+
+
+/** Claude: obsolete for now... need to figure out later
 void TReportsManager::AddUserDefinedTimeRange(TTimeDataRange range)
 {
   m_userDefinedTime.push_back(range);
 }
+*/
 
-/**
- * Take data passed from bps and stuff it into the approprate vector
- */
-void TReportsManager::Report( const std::string& sPassedName, const double& sPassedValue )
-{
-     if ( ! bReports_Enabled ) return;
-        
-     // Only set variable if it matches requested log/summary/step data.
-     if ( SearchAllVars( m_nodes,
-                         m_step_nodes,
-                         m_summary_nodes,
-                         sPassedName,
-                         m_variableDataList[sPassedName]) ) {   
-        
-        m_variableDataList[sPassedName].Set(sPassedValue,
-                                            bTS_averaging, 
-                                            bSaveToDisk,
-                                            m_step_count,
-                                            m_month_bin_ts);
-        
-     }
-}
 
-/**
- * Set meta parameters, such as the units associated with a variable
- */
- 
-void TReportsManager::SetMeta(const std::string& sName, const std::string& sMetaName, const std::string& sMetaValue)
-{
-
-  if ( ! bReports_Enabled ) return;
-  m_variableDataList[sName].SetMeta(sMetaName, sMetaValue);
-  
-
-}
 
 /**
  * Function returing the current status of reporting output
@@ -745,361 +2301,14 @@ void TReportsManager::EnableReports( bool& ReportsStatus ){
 }
 
 
-bool TReportsManager::OutputSummary()
-{
-  return OutputSummary("out.txt");
-}
-
-bool TReportsManager::OutputSummary( const std::string& outFilePath )
-{
-
-  if ( ! bReports_Enabled ) return false;
-
-  if(m_inputFilePath == "") //by default, we dump everything
-    {
-      //Log();
-    }
-
-  return true;
-}
-
-
-
-
-
-// void TReportsManager::Log(  )
-// {
-// 
-//   if ( ! bReports_Enabled ) return;
-// 
-//   VariableDataMap::iterator pos;
-//   for( pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos)
-//     {
-//       cout << "Outputing data for: " << trim(pos->first) << endl;
-//       pos->second.Log();
-//     }
-// }
-
-void TReportsManager::OutputXMLSummary()
-{
-
-  if ( ! bReports_Enabled ) return;
-
-  // Write out out.xml
-  OutputXMLSummary("out.xml");
-  std::string Target;
-
-  // Check to see that i) a valid style sheet was provided and
-  // ii) transforms were requested.
-  if (  bStyleSheetGood &&  bTransformXMLRequested ) {
-
-    TXMLAdapter XMLAdapter;
-
-    // Synopsys :
-    // WriteTransformedXML( source , target, stylesheet list )
-    XMLAdapter.WriteTransformedXML( std::string("out.xml"),  m_StyleSheets );
-  }
-
-}
-
-std::vector<std::string> PathComponents( std::string  path)
-{
-  vector<std::string> comp;
-  size_t index, last_index;
-
-  last_index = 0;
-  if(path[path.size()-1] == '/') path.erase(path.size()-1); //remove trailing slash
-
-  while((index = path.find("/", last_index + 1)) != std::string::npos)
-    {
-      if(path[last_index] == '/') ++last_index;
-      comp.push_back(path.substr(last_index, index - last_index));
-      last_index = index;
-    }
-
-  return comp;
-}
-
-///Streams report to an XML output file.
-
-void TReportsManager::OutputXMLSummary(  const std::string& outFilePath )
-{
-
-  if ( ! bReports_Enabled ) return;
-  
-  //determine which variables to log
-  bool useFlatHierarchy;
-  // only dump xml if there's xml to dump!
-  if(m_nodes.size() >> 0 || bDumpEverything ){
-
-    if(m_params["hierarchy"].empty() || m_params["hierarchy"] == "tree")
-      useFlatHierarchy = false;
-    else
-      useFlatHierarchy = true;
-
-    TXMLAdapter doc;
-    doc.AddNode(NULL, "system", "");
-
-    // if style sheet provided and embedded link requested,
-    // link style sheet.
-    if(!m_stylesheet_list.empty() &&  bLinkStyleSheet )
-    //set it to the first stylesheet in list only.
-      doc.SetStylesheet(m_stylesheet_list[0]);
-
-    doc.AddAttribute(doc.RootNode(), "version", "1.0");
-    VariableDataMap::iterator pos;
-
-    std::string currentPath = "";
-    for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos)
-      {
-        if(bDumpEverything ||  SearchVars(m_nodes,
-                                          pos->first,
-                                          pos->second,
-                                          LOG))
-          {
-            TXMLNode currentNode = doc.RootNode();
-
-            if(useFlatHierarchy)
-              {
-                currentNode = doc.AddNode(currentNode, "parameter", "");
-                doc.AddNode(currentNode, "name", trim(pos->first));
-              }
-            else
-              {
-                vector<std::string> comp = PathComponents(trim(pos->first));
-                for(unsigned int i = 0; i < comp.size(); i++)
-                  {
-                    vector<TXMLNode> nextNodeVector = doc.GetChildren(currentNode, comp[i]);
-                    if(nextNodeVector.size() == 0)
-                      currentNode = doc.AddNode(currentNode, comp[i], "");
-                    else
-                      currentNode = nextNodeVector[0];
-                  }
-
-                currentNode = doc.AddNode(currentNode, trim(pos->first).substr(trim(pos->first).find_last_of("/") + 1), "");
-                doc.AddNode(currentNode, "name", trim(pos->first).substr(trim(pos->first).find_last_of("/") + 1));
-              }
-            //tell it to output step data if required
-            //if( testForMatch(m_step_nodes, pos->first) )
-            //  SetMeta(pos->first, "StepData", "");
-            //find(m_step_nodes.begin(), m_step_nodes.end(), pos->first) != m_step_nodes.end())
-
-
-            pos->second.OutputXML(&doc, currentNode, m_params);
-          }
-      }
-
-    doc.WriteToFile(outFilePath);
-  }
-}
-
-/*
- * Output Dictionary simply dumps a listing of all valid tags
- * encountered during a simulation run.
- *
- */
-bool TReportsManager::OutputDictionary()
-{
-  return OutputDictionary("out.dictionary");
-}
-bool TReportsManager::OutputDictionary( const std::string& outFilePath )
-{
-
-  if ( ! bReports_Enabled ) return false;
-
-  VariableDataMap::iterator pos;
-
-  ofstream dictionaryFile;
-  if ( m_variableDataList.size() >> 0 && bDumpDictionary ){
-
-    dictionaryFile.open(outFilePath.c_str());
-
-    for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      dictionaryFile << "\""
-                     << trim(pos->first)
-                     << "\",\""
-                     << pos->second.RetrieveMeta("description")
-                     << "\",\""
-                     << pos->second.RetrieveMeta("units")
-                     << "\"\n";
-    }
-    dictionaryFile.close();
-  }
-  return true;
-}
-
-
-/**
- * OUTPUT summary is an alternative method for producing
-   a token-value list of data without performing a transform
-   on the xml output.
- *
- */
-bool TReportsManager::OutputTXTsummary()
-{
-  return OutputTXTsummary("out.summary");
-}
-
-bool TReportsManager::OutputTXTsummary( const std::string& outFilePath )
-{
-
-  if ( ! bReports_Enabled ) return false;
-
-  VariableDataMap::iterator pos;
-  ofstream summaryFile;
-  summaryFile.setf(ios::showpoint);
-  summaryFile.precision(8);
-
-
-  if (m_summary_nodes.size() >> 0){
-
-    // open summary file
-    summaryFile.open(outFilePath.c_str());
-
-    // loop through all nodes, and check if summary data has been requested.
-    for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos){
-      if ( SearchVars(m_summary_nodes,
-                      pos->first,
-                      pos->second,
-                      SUMMARY) ){
-        // summary output has been requested. Open file, if necessary
-        summaryFile <<  pos->second.OutputTXT( trim(pos->first) ,m_params );
-      }
-    }
-
-    // close file
-    summaryFile.close();
-  }
-  return true;
-}
-/**
- * OUTPUT CSV data is an alternative method for producing CSV
- * formatted output without transforming XML. Permits time-step
- * data to be produced from h3kreports on plantforms without
- * XSLT2.0 support.
- *
- */
-
-bool TReportsManager::OutputCSVData()
-{
-  return OutputCSVData("out.csv");
-}
-
-bool TReportsManager::OutputCSVData( const std::string& outFilePath )
-{
-
-  if ( ! bReports_Enabled ) return false ;
-  
-  VariableDataMap::iterator pos;
-  unsigned int curr_step,step_start;
-  bool fileopen;
-
-  std::string temp_text;
-
-  ofstream csvFile;
-  csvFile.setf(ios::showpoint);
-  csvFile.precision(8);
-
-  /* Check if time-step averaging has been set. If so, skip first (unaveraged)
-   * step.
-   *
-   */
-
-  if ( bTS_averaging ) {
-    //skip first step
-   step_start = 1;
-  }else{
-    step_start = 0;
-  }
-
-  fileopen = 0;
-
-  // write out header row (names)
-  for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-
-    if( SearchVars(m_step_nodes,
-                   pos->first,
-                   pos->second,
-                   STEP) ){
-      // open file if necessary
-
-      if (!fileopen) {
-        csvFile.open(outFilePath.c_str());
-        fileopen = 1;
-      }
-
-
-      // Add spaces to make header more "speadsheet friendly"
-      temp_text = trim(pos->first);
-      while ( temp_text.find("/") != string::npos ){
-         temp_text.replace( temp_text.find("/"), 1, ":");
-      }
-      while ( temp_text.find("_") != string::npos ){
-         temp_text.replace( temp_text.find("_"), 1, " ");
-      }
-
-      csvFile << temp_text;  //pos->first;
-
-// write out unit
-      csvFile << " ";
-      csvFile << pos->second.RetrieveMeta("units");
-
-      csvFile << ", ";
-    }
-  }
-  csvFile << "\n";
-
-/*
-  // write out units
-  for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-    if( SearchVars(m_step_nodes,
-                   pos->first,
-                   pos->second,
-                   STEP) ){
-      csvFile << pos->second.RetrieveMeta("units");
-      csvFile << ", ";
-    }
-  }
-  csvFile << "\n";
-*/
-
-  // loop through all timesteps
-  for (curr_step = step_start; curr_step <  m_step_count ; curr_step++){
-    // loop through all variables
-    for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      // check if time-step data has been requested for variable
-      if( SearchVars(m_step_nodes,
-                     pos->first,
-                     pos->second,
-                     STEP) ){
-
-        // time-step data has been requested. Stream out.
-        csvFile << pos->second.RetrieveValue(curr_step,
-                                             m_first_step,
-                                             bSaveToDisk);
-        csvFile << ", ";
-
-      }
-    }
-    // End of variable list. New line
-    csvFile << "\n";
-  }
-
-  csvFile.close();
-
-  return true;
-}
-
 
 /**
  * SetReportParameter: collect & store configuration data passed from bps
  *
  *
  */
-
 void TReportsManager::SetReportParameter(const std::string& param, const std::string& value)
 {
-
   if ( ! bReports_Enabled ) return;
 
   m_params[param] = value;
@@ -1126,13 +2335,13 @@ void TReportsManager::SetReportParameter(const std::string& param, const std::st
  * that are in memory.
  */
 void TReportsManager::UpdateConfigFile(){
-
    std::vector<std::string>::iterator sheet;
    std::vector<std::string>::iterator var;
+   std::set<std::string>::iterator it;
    std::map<std::string, std::string>::iterator param;
-   std::string sTemp;
-   
-   TXMLAdapter inputXML ;
+   std::string sTemp,sTemp2;
+
+   TXMLAdapter inputXML;
 
    // Set defaults if required.
    SetFlags();
@@ -1140,23 +2349,26 @@ void TReportsManager::UpdateConfigFile(){
    inputXML.AddNode(NULL, "configuration", "");
    TXMLNode currentNode = inputXML.RootNode();
 
-   // Loop through all defined parameters, add to xml document 
+   // Loop through all defined parameters, add to xml document
    for( param = m_params.begin(); param != m_params.end(); param++)
    {
       // Don't write out unset parameters
-      if ( param->second != ""){
-         inputXML.AddNode(currentNode,param->first,param->second);
+      // Don't write out the every attribute on the save_to_disk
+      sTemp = param->first;
+      sTemp2 = param->second;
+      if ( param->second != "" && param->second !="save_to_disk_every"){
+         inputXML.AddNode(currentNode,sTemp.c_str(),sTemp2.c_str());
       }
    }
-   
-   // Loop through stylesheets, and add to xml document 
+
+   // Loop through stylesheets, and add to xml document
    for (sheet  = m_stylesheet_list.begin();
         sheet != m_stylesheet_list.end();
         sheet++)
    {
     sTemp = *(sheet);
     inputXML.AddNode(currentNode,"style_sheet",sTemp.c_str());
-  
+
    }
 
    // Loop through XSL transform targets
@@ -1166,31 +2378,27 @@ void TReportsManager::UpdateConfigFile(){
    {
     sTemp = *(sheet);
     inputXML.AddNode(currentNode,"transform_destination_file",sTemp.c_str());
-  
+
    }
 
    // Loop through output variables and add to document
-   for ( var = m_nodes.begin(); var != m_nodes.end(); var++ ){
-      sTemp = *(var);
-      inputXML.AddNode(currentNode,"log_variable",sTemp.c_str());
+   for (it=m_nodes.begin() ; it !=m_nodes.end(); it++ ){
+      inputXML.AddNode(currentNode,"log_variable",(*it).c_str());
    }
-   
+
    // Loop through timestep output variables and add to document
-   for ( var = m_step_nodes.begin(); var != m_step_nodes.end(); var++ ){
-      sTemp = *(var);
-      inputXML.AddNode(currentNode,"step_variable",sTemp.c_str());
+   for (it=m_step_nodes.begin() ; it !=m_step_nodes.end(); it++ ){
+      inputXML.AddNode(currentNode,"step_variable",(*it).c_str());
    }
 
    // Loop through summary output variables and add to document
-   for ( var = m_summary_nodes.begin(); var != m_summary_nodes.end(); var++ ){
-      sTemp = *(var);
-      inputXML.AddNode(currentNode,"summary_variable",sTemp.c_str());
+   for (it=m_summary_nodes.begin() ; it !=m_summary_nodes.end(); it++ ){
+      inputXML.AddNode(currentNode,"summary_variable",(*it).c_str());
    }
 
    // Write XML document ot disk
-   inputXML.WriteToFile(m_inputFilePath);   
+   inputXML.WriteToFile(m_inputFilePath.c_str());
 }
-
 
 /**
  * Parse the configuration file (input.xml)
@@ -1199,32 +2407,28 @@ void TReportsManager::UpdateConfigFile(){
 
 void TReportsManager::ParseConfigFile( const std::string& filePath  )
 {
-  
-  
   TXMLAdapter inputXML(filePath);
   m_inputFilePath = filePath;
 
-  
-  
   if(inputXML.RootNode() == NULL)
   {
       bReports_Enabled = false;
       return;
-  
+
   }else{
-      
+
       bReports_Enabled = true;
 
   }
 
   // Nodes to appear in out.xml
-  inputXML.GetNodeValues("log_variable", inputXML.RootNode(),m_nodes);
+  inputXML.GetNodeValuesSet("log_variable", inputXML.RootNode(),m_nodes);
 
   // Nodes to appear in out.csv
-  inputXML.GetNodeValues("step_variable", inputXML.RootNode(),m_step_nodes);
+  inputXML.GetNodeValuesSet("step_variable", inputXML.RootNode(),m_step_nodes);
 
   // Nodes to appear in out.summary
-  inputXML.GetNodeValues("summary_variable", inputXML.RootNode(),m_summary_nodes);
+  inputXML.GetNodeValuesSet("summary_variable", inputXML.RootNode(),m_summary_nodes);
 
   // Sytlesheet list for multiple transforms.
   inputXML.GetNodeValues("style_sheet", inputXML.RootNode(),m_stylesheet_list);
@@ -1247,7 +2451,7 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
 
   //overide for time-step averaging
   m_params["time_step_averaging"] = inputXML.GetFirstNodeValue("time_step_averaging", inputXML.RootNode());
-  
+
   // concise reporting mode
   m_params["dump_all_data"] = inputXML.GetFirstNodeValue("dump_all_data", inputXML.RootNode());
 
@@ -1259,10 +2463,22 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
 
   // Dictionary output
   m_params["output_dictionary"] = inputXML.GetFirstNodeValue("output_dictionary", inputXML.RootNode());
-  
-  // Save to disk
+
+  // Save to disk, save_to_disk max attribute
   m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
-  
+  m_params["save_to_disk_every"] = inputXML.GetFirstAttributeValue("save_to_disk","every").c_str();
+
+
+  //Get step variable output mode
+  m_params["step_output_format"] = inputXML.GetFirstNodeValue("step_output_format", inputXML.RootNode());
+
+  //Get log variable output mode
+  m_params["log_output_format"] = inputXML.GetFirstNodeValue("log_output_format", inputXML.RootNode());
+
+  // Sort the output flag
+  m_params["sort_output"] = inputXML.GetFirstNodeValue("sort_output", inputXML.RootNode());
+
+
   return;
 }
 
@@ -1297,7 +2513,7 @@ void TReportsManager::SetFlags(){
 
     // Append stylesheet/target pair to map.
     m_StyleSheets.insert( pair<std::string,std::string>(*(sheet),m_xsl_targets.at(pos-1) ) );
-  
+
   }
 
 
@@ -1323,7 +2539,7 @@ void TReportsManager::SetFlags(){
 
   }
 
-  
+
   // Now delete the sheets that weren't found.
   for ( sheet = erase_sheets.begin(); sheet != erase_sheets.end(); sheet++ ){
     m_StyleSheets.erase(*(sheet));
@@ -1341,7 +2557,7 @@ void TReportsManager::SetFlags(){
   }
 
   // Check if stylesheet should be linked
-  
+
   if ( m_params["link_style_sheet"]  == "true" ){
     bLinkStyleSheet = true;
   }else{
@@ -1350,7 +2566,7 @@ void TReportsManager::SetFlags(){
   }
 
   // Check if an XSLT transform is requested
-  
+
   if ( m_params["apply_style_sheet"] == "true" ) {
     bTransformXMLRequested = true;
   }else{
@@ -1359,7 +2575,7 @@ void TReportsManager::SetFlags(){
   }
 
   //Conscise reporting mode
- 
+
   if ( m_params["dump_all_data"]  == "true" ){
     bDumpEverything = true;
   }else{
@@ -1367,7 +2583,7 @@ void TReportsManager::SetFlags(){
     bDumpEverything = false;
   }
   // wildcards
- 
+
   if ( m_params["enable_xml_wildcards"]  == "true" ){
     bWildCardsEnabled = true ;
   }else{
@@ -1381,36 +2597,102 @@ void TReportsManager::SetFlags(){
     m_params["report_startup_period_data"] = "false";
     bReportStartup = false;
   }
-  
-  // Dictionary output?
-  if ( m_params["output_dictionary"] == "true" ){
+
+  // Dictionary output: all, sim, off, (true, false) for legacy support
+  if ( m_params["output_dictionary"] == "all" )
+  {
+     bDumpDictionaryAll = true;
+     bDumpDictionary = true;
+  }
+  else if(m_params["output_dictionary"] == "sim")
+  {
+     bDumpDictionaryAll = false;
+     bDumpDictionary = true;
+  }
+  else if(m_params["output_dictionary"] == "off")
+  {
+     bDumpDictionaryAll = false;
+     bDumpDictionary = false;
+  }
+  else if ( m_params["output_dictionary"] == "true" )
+  {
     bDumpDictionary = true;
-  }else{
-    m_params["output_dictionary"] = "false";
+    bDumpDictionaryAll = false;
+  }
+  else //false or anything else
+  {
+    m_params["output_dictionary"] = "off";
     bDumpDictionary = false;
+    bDumpDictionaryAll = false;
   }
 
-  // Timestep averaging 
+
+  // Timestep averaging
   if ( m_params["time_step_averaging"] == "false" ){
       bTS_averaging = false;
   }else if (m_params["time_step_averaging"] == "true" ){
       bTS_averaging = true;
   }
-  
-  // Optionally store data on disk
-  if ( m_params["save_to_disk"] == "true" ){
-     bSaveToDisk = true;
-  }else{
-    m_params["save_to_disk"] = "false";
-    bSaveToDisk = false;
-  }
+
+
+   // Optionally store data on disk (push step every x)
+   // default - false
+   if ( m_params["save_to_disk"] == "true" )
+      bSaveToDisk = true;
+   else
+      bSaveToDisk = false;
+
+   //Optional size to store, depending on the amount of variable
+   //for the step data store, the default 10000 should keep
+   //the memory footprint below 200MB, a 100 for example will
+   //keep is below 50MB.  The ideal setting depends on the
+   //system running the engine, the goal is to stay out of
+   //virtual memory.
+   m_lSaveToDisk = atoi(m_params["save_to_disk_every"].c_str());
+   if(m_lSaveToDisk == 0)
+      m_lSaveToDisk = SAVE_TO_DISK_DEFAULT;
+   else if(m_lSaveToDisk < SAVE_TO_DISK_MIN)
+      m_lSaveToDisk = SAVE_TO_DISK_MIN;
+   else if(m_lSaveToDisk > SAVE_TO_DISK_MAX)
+      m_lSaveToDisk = SAVE_TO_DISK_MAX;
+   else
+      m_lSaveToDisk = SAVE_TO_DISK_DEFAULT;
+
+  // Optional sort output data, default true for legacy support
+  if (m_params["sort_output"] == "false")
+    bSortOutput = false;
+  else
+    bSortOutput = true;
+
+   //Log output mode: default XML
+   bOutLogXML = bOutLogDB = false;
+   if(m_params["log_output_format"] == "all")
+      bOutLogXML = bOutLogDB = true;
+   else if(m_params["log_output_format"] == "db")
+      bOutLogDB = true;
+   else if(m_params["log_output_format"] == "xml")
+      bOutLogXML = true;
+   else
+      bOutLogXML = true;
+
+
+   //Step output mode: default CSV
+   bOutStepDB = bOutStepCSV = false;
+   if(m_params["step_output_format"] == "all")
+      bOutStepDB = bOutStepCSV = true;
+   else if(m_params["step_output_format"] == "db")
+      bOutStepDB = true;
+   else if(m_params["step_output_format"] == "csv")
+      bOutStepCSV = true;
+   else
+     bOutStepCSV = true;
 
   return;
 }
 
 /**
  *    Function to determine if a parameter has been
- *    defined 
+ *    defined
  *
  */
 
@@ -1427,13 +2709,13 @@ bool TReportsManager::ReportList( std::string cType,
          bFound = true;
 
       }else{
-         
+
          bFound = false;
 
       }
 
    // Other types of searches added here
-   }else{         
+   }else{
 
    }
 
@@ -1444,31 +2726,27 @@ bool TReportsManager::ReportList( std::string cType,
  *   Return the value of a requested parameter
  *
  */
-void TReportsManager::ReportConfig(std::string cParam,
-                                   std::string &cValue){
-
-   cValue = m_params[cParam];
-   return;
-
+string TReportsManager::ReportConfig(std::string cParam){
+   return m_params[cParam];
 }
 
 /**
  *   Toggle value of requested parameter (true/false)
  *
  */
- 
-
 bool TReportsManager::ToggleConfig(std::string cParam){
    bool bSuccess;
    bSuccess = true;
-   
+
+
+   //boolean type settings, true/false
    if ( m_params [ cParam ] == "true" ){
       m_params [ cParam ] = "false";
    }else{
       m_params [ cParam ] = "true";
    }
-   
-   return bSuccess; 
+
+   return bSuccess;
 }
 
 /**
@@ -1477,8 +2755,8 @@ bool TReportsManager::ToggleConfig(std::string cParam){
  */
 void TReportsManager::UpdateConfig(std::string cParam,
                                    std::string cValue ){
-   
-  
+
+
    // Add a style sheet to the stylesheet vector
    if ( cParam == "+style_sheet" &&
          std::find(m_stylesheet_list.begin(),m_stylesheet_list.end(), cValue)
@@ -1490,7 +2768,7 @@ void TReportsManager::UpdateConfig(std::string cParam,
         m_stylesheet_list.push_back(cValue);
 
    // Drop a stylesheet from the vector
-        
+
    }else if ( cParam == "-style_sheet" ){
 
          m_stylesheet_list.erase( std::find(m_stylesheet_list.begin(),
@@ -1506,330 +2784,82 @@ void TReportsManager::UpdateConfig(std::string cParam,
    SetFlags();
 }
 
-void TReportsManager::OutputTimestepData(  )
-{
 
-}
+/* ********************************************************************
+** Method:   GetOutputType()
+** Purpose:  Return the output type requested for a passed in variable
+** Params:   variabled name
+** Returns:  unsigned char, bitwize representation of the output type
+** Author:   Claude Lamarche
+** Mod Date: 2011-07-12
+** ***************************************************************** */
+unsigned char TReportsManager::GetOutputType(const char* search_text){
+   Wildcard Cwildcard_engine;
+   unsigned char cOutputType = 0x00;
+   set<string>::iterator it;
+   string sStr;
 
-
-TTimeData TReportsManager::GetTimeInfo(  )
-{
-  return m_currentTime;
-}
-
-/**
- * Search through an array of strings, and check if any string matches search_text
- *
- */
-
-bool TReportsManager::testForMatch(const std::vector<std::string>& txtlist,
-                                   const std::string& search_text){
-
-  Wildcard Cwildcard_engine;
-  unsigned int txt;
-  bool bResult = false;
-
-  // Check if we've already flagged this data
-
-
-  for (txt = 0; txt < txtlist.size() ; txt++ ) {
-
-    // Wildcard searching
-    if ( bWildCardsEnabled ){
-
-      if ( Cwildcard_engine.wildcardfit(txtlist[txt].c_str(),search_text.c_str()) == 1) {
-        bResult = true;
-        return bResult;
+   if ( bDumpEverything ){
+    //Bitwise or
+    cOutputType = cOutputType | OUT_ALL;
+   }
+   else{
+      if(bWildCardsEnabled)
+      {
+         //for each vector loop and test for match and set the return bit
+         for(it = m_nodes.begin(); it != m_nodes.end(); it++)
+         {
+            sStr = *it;
+            if(Cwildcard_engine.wildcardfit(sStr.c_str(),search_text) == 1)
+            {
+               cOutputType = cOutputType | OUT_LOG;
+               break;
+            }
+         }
+         for(it = m_step_nodes.begin(); it != m_step_nodes.end(); it++)
+         {
+            sStr = *it;
+            if(Cwildcard_engine.wildcardfit(sStr.c_str(),search_text) == 1)
+            {
+               cOutputType = cOutputType | OUT_STEP;
+               break;
+            }
+         }
+         for(it = m_summary_nodes.begin(); it != m_summary_nodes.end(); it++)
+         {
+            sStr = *it;
+            if(Cwildcard_engine.wildcardfit(sStr.c_str(),search_text) == 1)
+            {
+               cOutputType = cOutputType | OUT_SUMMARY;
+               break;
+            }
+         }
       }
-
-    } else if( txtlist[txt] == search_text ) {
-
-      bResult = true;
-      return bResult;
-
-    }
-
-  }
-
-  return bResult;
+      else
+      {
+         //Bitset the output type for return
+         if(m_nodes.find(search_text) != m_nodes.end())
+            cOutputType = cOutputType | OUT_LOG;
+         if(m_step_nodes.find(search_text) != m_step_nodes.end())
+            cOutputType = cOutputType | OUT_STEP;
+         if(m_summary_nodes.find(search_text) != m_summary_nodes.end())
+            cOutputType = cOutputType | OUT_SUMMARY;
+      }
+   }
+   return cOutputType;
 }
 
-/**
- * Search for a variable in an array of strings
- *
- */
-bool TReportsManager::SearchVars( const std::vector<std::string>& txtlist,
-                                  const std::string& search_text,
-                                  TVariableData& Variable,
-                                  int mode ){
 
-  bool result;
 
-  // Check if search has been performed perviously
-  if ( ! Variable.QuerySearchStatus(mode) ){
-
-    // run search
-    if(bDumpEverything){// If all data has been requested, return *match*
-      result = true;
-    }
-    else{
-      result = testForMatch( txtlist,  trim(search_text));
-    }
-
-    // Save search result to ensure that we don't
-    // have to run test-for-match again for this
-    // variable!
-
-    // update variable result
-    Variable.UpdateSearchResult( mode, result);
-
-    // Update search status
-    Variable.UpdateSearchStatus( mode, true);
-
-    // If processing variable the first time, set the meta data (units and description).
-    // Now the saved meta data passed by add_to_xml_reporting is converted to 
-    // std::strings so that it can be pushed onto the storage map using the SetMeta
-    // function. This approach makes use of the existing search functionality and 
-    // results in a 35-40% runtime reduction compared to the previous method. 
-    std::string metaName =std::string(sMetaName_sv, sMetaNameLength_sv);
-    std::string metaValue =std::string(sMetaValue_sv, sMetaValueLength_sv);
-    std::string metaDesc =std::string(sDescription_sv, sDescriptionLength_sv);               
-    SetMeta(search_text, metaName, metaValue);
-    SetMeta(search_text, "description", metaDesc);
-
-  }
-
-  // return result
-  return Variable.QuerySearchResult(mode);
-
-}
-
-/**
- * Search for a variable in three arrays of strings
- *
- */
-
-bool TReportsManager::SearchAllVars(const std::vector<std::string>& txtlist1,
-                                    const std::vector<std::string>& txtlist2,
-                                    const std::vector<std::string>& txtlist3,
-                                    const std::string& search_text,
-                                    TVariableData& Variable){
-
-  if ( bDumpEverything ){
-    return SearchVars(m_dummy_list, search_text, Variable, DUMPALLDATA);
-  }
-  else{
-
-    if ( SearchVars(txtlist1, search_text, Variable, LOG )){
-      return true;
-    }
-    if ( SearchVars(txtlist2, search_text, Variable, STEP  )){
-      return true;
-    }
-    if ( SearchVars(txtlist3, search_text, Variable, SUMMARY )){
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Save meta data passed from add_to_xml_reporting call
- *
- */
-void TReportsManager::SaveMetaItems( char* sMetaName,
-                        char* sMetaValue,
-                        char* sDescription,
-                        int sMetaNameLength,
-                        int sMetaValueLength,
-                        int sDescriptionLength)
-{
-      sMetaName_sv          = sMetaName;
-      sMetaValue_sv         = sMetaValue;
-      sDescription_sv       = sDescription;	
-      sMetaNameLength_sv    = sMetaNameLength;
-      sMetaValueLength_sv   = sMetaValueLength;
-      sDescriptionLength_sv = sDescriptionLength;
-
-      return;
-}
-
-/**
- * -----------------------------------------------------------------
- * 
- * The following routines will optionally save time-step data into 
- * a scratch file, instead of pushing it onto the heap.  The file is
- * formatted as a list-of-lists; for each variable reported by
- * h3kreports, the file contains all time-row data. Data for subsequent
- * variables are appended at the end of the file. 
- * For instance, a file containing N time row data from two variables 
- * would look like this:
- *
- * VARIABLE:  ___________ V 1______________   ____________ V 2 ___________
- *           /                             \ /                            \
- * TIME ROW: | __Ts1__  __Ts2__     __TsN__ | __Ts1__  __Ts2__     __TsN__ |
- *           |/       \/       \   /       \|/       \/       \   /       \|
- * FILE DATA:|---8B---|---8B---|...|---8B---|---8B---|---8B---|...|---8B---|....
- *
- * There are no delimiters in the file; each piece of data is stored
- * as a double (~8 Bytes on most systems)
- *
- * The facility does not need to know the total number of variables that
- * will be reported---it merely appends new variables on to the end of 
- * the current file. But it must know the total number of timesteps
- * expected in a simulaton, which prevents its use with variable 
- * timestep.
- */
- 
 /**
  * Delete temporary file
  */
 void TReportsManager::Cleanup(){
-  if (bSaveToDisk){  
-    Close_db_file(); 
-  }
-  return;
-}
 
-/**
- * Open a database file for storing data on disk.
- */
-void TReportsManager::Open_db_file(){
-  struct stat file_stat;
-  ofstream TempStream;
-  // Delete file, if it exists.
-  if ( stat ( DISKDB, &file_stat ) == 0 ){
-    remove(DISKDB);
-  }
-  
-  // For resons unknown, fstream cannot open a file for 
-  // read/write if it does not already exist. Therefore, 
-  // create an empty file. 
-  TempStream.clear();
-  TempStream.open(DISKDB, ios::binary);
-  TempStream.close();
-  
-  diskDB.open ( DISKDB , ios::in | ios::out | ios::binary );
-  
-  if ( ! diskDB.is_open() ) {
-    cout << "\n\n XML OUTPUT ERROR: could not open file " << DISKDB << " for writing.\n";
-    cout << " Error flag: "<< diskDB.rdstate() <<"\n";
-    exit(1);
-  }
-  return;
-}
-/**
- * Close database file and delete from disk.
- */
-void TReportsManager::Close_db_file(){
-  if ( DEBUG ) cout << "Closing DB file\n";
-  diskDB.close();
-  remove(DISKDB);
-  return;
-}
+   //This will trigger the destructor
+   delete Instance();
 
-/**
- * Read data from disk
- */ 
-double Read_from_db_file(int var_index, long step) {
-    return TReportsManager::Instance()->Read_from_db_file(var_index, step);
-}
-
-double TReportsManager::Read_from_db_file( int var_index, long step){
-   
-  streampos start_byte; 
-  double val; 
-  
-/* Compute the location of the current time row data, for the 
-     specified variable.
-  
-     start-byte   = [  ( {Index of current vector} - 1 ) * { total number of timesteps }
-                    
-                       + ( {current timestep} - { first step } ) ] *  { bytes-per-redcord }
-                       
-  */
-  
-  start_byte = (   ( var_index - 1 ) * m_ts_count 
-                        + ( step - m_first_step ) )  * m_datasize;
-    
-  if ( DEBUG) cout << "TS:"<<step<<" Reading "<< m_datasize << " bytes for var "
-                    <<var_index 
-                    << " Starting at byte " << start_byte;
-  
-  diskDB.seekg ( start_byte ); 
-  diskDB.read ( (char*)&val, m_datasize );
-  if ( ! diskDB ){
-    if (DEBUG) cout << " ( ERROR! Read "<< diskDB.gcount() << "bytes, Val is " << val << ")\n";
-  }else{
-    if (DEBUG) cout << " ( Read "<< diskDB.gcount() << "bytes, Val is " << val << ")\n";
-  }                  
-  
-  return val;
-  
-}
-
-/**
- * Write data to disk
- */
-
-bool Write_to_db_file(int var_index, double val, long step){
-  return TReportsManager::Instance()->Write_to_db_file(var_index,val,step);
-}
-
-bool TReportsManager::Write_to_db_file(int var_index, double val, long step){
-        
-  streampos start_byte;     
-  double val2;
-  if ( bFirstWrite ) {
-  
-    // Determine size of double, in bites.
-    m_datasize = sizeof(double);
-  
-    // Collect number of timesteps
-    m_ts_count = int( strtod(m_params["number_of_timesteps"].c_str(), NULL) ); 
-    
-    bFirstWrite = false;
-  }
-  
-  /* Compute the location of the current time row data, for the 
-     specified variable.
-  
-     start-byte   = [  ( {Index of current vector} - 1 ) * { total number of timesteps }
-                    
-                       + ( {current timestep} - {first times step} ) ] *  { bytes-per-redcord }
-                       
-  */
-  start_byte = (   ( var_index - 1 ) * m_ts_count 
-                        + ( step - m_first_step ) ) * m_datasize;
-  
-  if (DEBUG) cout << "TS:"<<step<<" Writing "<< m_datasize << " bytes for var "
-                    <<var_index << "(" << val <<")"
-                    << " Starting at byte " << start_byte ;
-                    
-  // Now write data:
-  diskDB.seekp( start_byte );
-  
-  if (DEBUG){
-    diskDB.write( (char*)&val, m_datasize );
-    diskDB.seekg( start_byte );
-    diskDB.read( (char*)&val2, m_datasize );
-    cout << " ( Val is " << val2 << ")\n";
-  } 
-  diskDB.seekp( start_byte );
-  return diskDB.write( (char*)&val, m_datasize );
-
-}
-
-/**
- * Increment vector count.
- */
-int Increment_set_vector_count(){
-  return TReportsManager::Instance()->Increment_set_vector_count();
-}
-
-int TReportsManager::Increment_set_vector_count(){
-  m_vector_count++;
-  return m_vector_count;
+   return;
 }
 
 

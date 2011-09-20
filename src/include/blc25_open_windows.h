@@ -22,15 +22,3 @@ C Named constants
      &            iAIM2model   = 1, 
      &            iOPRschedule = 2,      
      &            iFlowNetwork = 3 )
-     s
-C Parameters for free cooling component of BCL01
-      common /blc01/ fCondFreeCool, fFreeCoolDelivered
-      
-      real fFreeCoolDelivered(mcom)
-      
-      real fCondFreeCool(mcom)      ! Conductivity assoc. with 
-                                    ! free-cooling
-                                    
-                                    
-      
-      

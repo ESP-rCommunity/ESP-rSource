@@ -1,13 +1,13 @@
 
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -115,7 +115,7 @@ C    tank_fuel_molefrac_total  ditto
 C    molW_fuel_tank            molecular weight of fuel, kg/kmol (in MODULE FC_tanks)
 C    HHV_fuel_tank             HHV of fuel, MJ/kmol (in MODULE FC_tanks)
 C    tank_DHW_draw             flag indicating whether tank supplies DHW (in MODULE FC_tanks)
-C    tank_space_heat           flag indicating whether tank is connected to a 
+C    tank_space_heat           flag indicating whether tank is connected to a
 C                              fan-coil (in MODULE FC_tanks)
 C                              that supplies space heating (in MODULE FC_tanks)
 C    FC_DHW_nominal_Lperday    Nominal DHW draw (L/day) based on occupancy (in MODULE FC_tanks)
@@ -171,9 +171,9 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Interface to chemical_properties.F
-C---------------------------------------------------------------------------------      
+C---------------------------------------------------------------------------------
       real fEval_Mixture_HV
-      
+
 C---------------------------------------------------------------------------------
 C Initialize variables. These were formerly initialized in MODULEs prior to the
 C conversion of the code to enable compilation with g77.
@@ -183,7 +183,7 @@ C-------------------------------------------------------------------------------
 C DHW nominal water draws.
 C---------------------------------------------------------------------------------
       DATA ( FC_DHW_CSA_Lperhour(jhour),jhour=1,24 )
-     &                           /   9., 7., 0., 0., 0., 
+     &                           /   9., 7., 0., 0., 0.,
      &                               0., 0., 8.,18.,15.,
      &                              16.,16.,14.,13.,12.,
      &                              10., 9.,10.,12.,16.,
@@ -322,7 +322,7 @@ C-------------------------------------------------------------------------------
       tank_fuel_molefrac_C2H6  = ADATA(IPCOMP,11)
       tank_fuel_molefrac_C3H8  = ADATA(IPCOMP,12)
 
-      
+
 
 C---------------------------------------------------------------------------------
 C Assign variable indicating whether there is a DHW as well as a space-heating
@@ -359,7 +359,7 @@ C-------------------------------------------------------------------------------
      &                     + FC_DHW_CSA_Lperhour(j)
       END DO
       DO j=1,24
-        FC_DHW_CSA_fraction(j) = 
+        FC_DHW_CSA_fraction(j) =
      &                       FC_DHW_CSA_Lperhour(j) / FC_DHW_CSA_Lperday
       END DO
 
@@ -401,12 +401,12 @@ C-------------------------------------------------------------------------------
 
 
 C---------------------------------------------------------------------------------
-C Zero fFuel_composition array, and assign compositions 
+C Zero fFuel_composition array, and assign compositions
 C---------------------------------------------------------------------------------
       do  J = 1, iCompound_count
          fFuel_composition(j) = 0.0
       enddo
-      
+
       fFuel_composition ( iMethane ) = tank_fuel_molefrac_CH4
       fFuel_composition ( iEthane  ) = tank_fuel_molefrac_C2H6
       fFuel_composition ( iPropane ) = tank_fuel_molefrac_C3H8
@@ -522,7 +522,7 @@ C    IMPEXP                    identifies implicit/explicit handling of plant
 C                              equations (common/PCEQU)
 C    RATIMP                    user-specified implicit weighting fraction (common/PCEQU)
 C    TIMSEC                    time-step in explicit plant domain (seconds) (common/PCTIME)
-C    CDATA(i,j)                control signal for component `i', node `j' (common/C9) 
+C    CDATA(i,j)                control signal for component `i', node `j' (common/C9)
 
 C OUTPUTS:
 C    COUT(i)             coefficient for ISTATS balance for `i'th matrix position
@@ -532,6 +532,7 @@ C    TC(i)               time constant (seconds) of plant component `i'
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_fuel_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -716,7 +717,7 @@ C time-row values of the UA-value. PUAF is mapped to PUAP by subroutine MZNASS
 C following the solution of the energy matrix for the current time-step.
 C Variables used:
 C    PUAP(i)  present time-row UA-value
-C    PUAF(i)  future time-row UA-value 
+C    PUAF(i)  future time-row UA-value
 C---------------------------------------------------------------------------------
 C-------Determine UA.
         tank_UA_future  = tank_UA  ! `tank_UA' from dbase (could be replaced by a correlation)
@@ -840,10 +841,10 @@ C-------------------------------------------------------------------------------
 
         mdotCp_DHW_present = DHW_draw_present
      &                     * RHOFLD(3,T_makeup_present)
-     &                     * SHTFLD( 3,T_makeup_present ) 
+     &                     * SHTFLD( 3,T_makeup_present )
         mdotCp_DHW_future  = DHW_draw_future
      &                     * RHOFLD(3,T_makeup_future)
-     &                     * SHTFLD( 3,T_makeup_future ) 
+     &                     * SHTFLD( 3,T_makeup_future )
 
 
 C---------------------------------------------------------------------------------
@@ -1044,12 +1045,12 @@ C-------------------------------------------------------------------------------
 C Calculate the enthalpy (kJ/kmol) of the combustion gases leaving node 2 and
 C entering node 3 (Beausoleil-Morrison 2001a eq 25). The function H_gas returns the
 C relative enthalpy of each fuel constituent in kJ/kmol. Evaluate the enthalpies
-C at the temperature solved the previous time-step. 
+C at the temperature solved the previous time-step.
 C The coefficients established for node 2 the previous iteration may have led
 C to an unrealistic CSVF solution. This is particularly prone to happen on the
 C very first plant simulation increment. In order to prevent the H_comb calculation
 C from blowing up, place a range check on T_comb to force it within a physically
-C realistic range. 
+C realistic range.
 C Variables used:
 C     CSVF(i,1)  future time-row temperature for node `i'.
 C---------------------------------------------------------------------------------
@@ -1095,7 +1096,7 @@ C The coefficients established for node 3 the previous iteration may have led
 C to an unrealistic CSVF solution. This is particularly prone to happen on the
 C very first plant simulation increment. In order to prevent the H_exh_tanka calculation
 C from blowing up, place a range check on T_exh_tank to force it within a physically
-C realistic range. 
+C realistic range.
 C Variables used:
 C     CSVF(i,1)  future time-row temperature for node `i'.
 C---------------------------------------------------------------------------------
@@ -1257,11 +1258,8 @@ C---------No exhaust: make exhaust temperature equal room temperature.
 C-------Store time step burner output for h3kstore output
         fSDHW_TSTank_fuel_watts = q_burner
 C......add to XML reporting
-      call add_to_xml_reporting(
-     &         fSDHW_TSTank_fuel_watts,
-     &         'plant/SDHW_summary/DHW_tank_fuel',
-     &         'units','(W)',
-     &         'Fuel burner input to the DHW tank')
+      call AddToReport(rvPltSDHWSumDHWTankFuel%Identifier,
+     &         fSDHW_TSTank_fuel_watts)
 
 C.....Report fuel consumption.
       fSUFuelEnergyUse( iNaturalGas, iUseUncatagorized) = q_burner
@@ -1330,7 +1328,7 @@ C-------------------------------------------------------------------------------
 C Store results to calculate monthly averages and (optionally) to produce an
 C ASCII file with time-step output.
 C
-C  - Note: report "present" (ie. last timestep values of all state variables) 
+C  - Note: report "present" (ie. last timestep values of all state variables)
 C          since they are not available for the current tiemstep yet
 C---------------------------------------------------------------------------------
       IF(ISTATS.eq.1) CALL H3KSTORE_FuelCell_Fossil_Tank(
@@ -1457,7 +1455,7 @@ C ------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Declare local variables.
 C---------------------------------------------------------------------------------
-      REAL T_tank 
+      REAL T_tank
       REAL adjust_p,adjust_f
       INTEGER hour_p,hour_f,iday_p,imonth_p,iday_f,imonth_f
       LOGICAL close_to_zero
@@ -1509,13 +1507,13 @@ C---------Determine the hour of the day at the present and future time-rows.
 C---------Calculate the adjustment to the draw to account for the current tank temperature,
 C---------at the present and future time-rows.
 C---------
-C---------Modification: Coefficients adjust_p and adjust_f become meaningless when the 
-C---------tank temperature and makeup temperatures are approximately equal, but their 
-C---------values grow very large under these circumstances. Therefore, check to see 
+C---------Modification: Coefficients adjust_p and adjust_f become meaningless when the
+C---------tank temperature and makeup temperatures are approximately equal, but their
+C---------values grow very large under these circumstances. Therefore, check to see
 C---------if the denominator (tank temperature - makeup temperature) is close to zero
 C---------and set the resulting coefficient to zero if this is the case. This modification
-C---------effectively zero's the DHW draw under these circumstances, but if the tank 
-C---------temperature is anywhere near the make-up temperature it is extremely unlikely 
+C---------effectively zero's the DHW draw under these circumstances, but if the tank
+C---------temperature is anywhere near the make-up temperature it is extremely unlikely
 C---------that the occupant will be using the tank for DHW use anyway.
           CALL ECLOSE(T_tank-T_makeup_present, 0.0, 1.0, close_to_zero)
           IF (close_to_zero) THEN
@@ -1808,7 +1806,7 @@ C-------------------------------------------------------------------------------
      &                     + FC_DHW_CSA_Lperhour(j)
       END DO
       DO j=1,24
-        FC_DHW_CSA_fraction(j) = 
+        FC_DHW_CSA_fraction(j) =
      &                       FC_DHW_CSA_Lperhour(j) / FC_DHW_CSA_Lperday
       END DO
 
@@ -1876,7 +1874,7 @@ C    IMPEXP                    identifies implicit/explicit handling of plant
 C                              equations (common/PCEQU)
 C    RATIMP                    user-specified implicit weighting fraction (common/PCEQU)
 C    TIMSEC                    time-step in explicit plant domain (seconds) (common/PCTIME)
-C    CDATA(i,j)   control signal for component `i', node `j' (common/C9) 
+C    CDATA(i,j)   control signal for component `i', node `j' (common/C9)
 
 C OUTPUTS:
 C    COUT(i)             coefficient for ISTATS balance for `i'th matrix position
@@ -1886,6 +1884,7 @@ C    TC(i)               time constant (seconds) of plant component `i'
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE FC_tank_elec_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -1981,12 +1980,12 @@ C-------------------------------------------------------------------------------
       REAL SHTFLD
       REAL RHOFLD
       INTEGER I
-      
+
 
 C---------------------------------------------------------------------------------
 C Start trace if trace output requested.
 C---------------------------------------------------------------------------------
-      IF(ITC.gt.0 .AND. NSINC.ge.ITC .AND.NSINC.le.ITCF 
+      IF(ITC.gt.0 .AND. NSINC.ge.ITC .AND.NSINC.le.ITCF
      & .AND.ITRACE(37).ne.0)THEN
         WRITE(ITU,*) ' Entering sub FC_tank_fuel_coeff_gen'
       END IF
@@ -2067,7 +2066,7 @@ C time-row values of the UA-value. PUAF is mapped to PUAP by subroutine MZNASS
 C following the solution of the energy matrix for the current time-step.
 C Variables used:
 C    PUAP(i)  present time-row UA-value
-C    PUAF(i)  future time-row UA-value 
+C    PUAF(i)  future time-row UA-value
 C---------------------------------------------------------------------------------
 C-------Determine UA.
         tank_UA_future  = tank_UA  ! `tank_UA' from dbase (could be replaced by a correlation)
@@ -2189,7 +2188,7 @@ C                  temperaturere `T'.
 C    SHTFLD(3,T)   function that returns heat capacity (J/kgK) of water (index 3)
 C                  at temperature `T'.
 C
-C    Modification: Check to see if the tank 
+C    Modification: Check to see if the tank
 C---------------------------------------------------------------------------------
         CALL FC_DHW_load(T_node1_future)
 
@@ -2198,7 +2197,7 @@ C-------------------------------------------------------------------------------
      &                     * SHTFLD( 3,T_makeup_present )
         mdotCp_DHW_future  = DHW_draw_future
      &                     * RHOFLD(3,T_makeup_future)
-     &                     * SHTFLD( 3,T_makeup_future ) 
+     &                     * SHTFLD( 3,T_makeup_future )
 
 
 C---------------------------------------------------------------------------------
@@ -2344,11 +2343,10 @@ C-------------------------------------------------------------------------------
       fSDHW_TSTank_Elec_watts = q_element
 
 C ...add to XML reporting
-      call add_to_xml_reporting(
-     &        fSDHW_TSTank_Elec_watts,
-     &        'plant/SDHW_summary/DHW_tank_elec',
-     &        'units','(W)',
-     &        'Electric element input of the DHW tank')
+      call AddToReport(
+     &         rvPltSDHWSumDHWTankElec%Identifier,
+     &         fSDHW_TSTank_Elec_watts)
+
 C.....Save Elecrical energy use in storage array.
       fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = q_element
 C.....Pass storage array to Site utilities facility.
@@ -2406,7 +2404,7 @@ C-------------------------------------------------------------------------------
      &     T_makeup_future,     ! temp of DHW make-up water
      &     DHW_draw_future,     ! flow rate of DHW draw
      &     tank_UA_future,      !UA Tank
-     &     Troom_future,        ! Predicted Temp of Room.            
+     &     Troom_future,        ! Predicted Temp of Room.
      &     q_heatdump_future    ! rate of energy dumped
      &     )
 C---------------------------------------------------------------------------------
@@ -2602,19 +2600,19 @@ C
 C Copyright CETC 2004
 C
 C This subroutine transfers miscellaneous (non-state-variable) data from the water tank
-C model to the h3kreports object. The relevant data is stored in the 
-C commonblock, and transported using the rep_set_meta / rep_report routines.
+C model to the h3kreports object. The relevant data is stored in the
+C commonblock, and transported using the h3kmodule's AddToReport routines.
 C
 C--------------------------------------------------------------------------------------------
 
       Subroutine CETC_tank_data_transport(iComponentIndex,iTankType)
-
-      implicit none 
+      use h3kmodule
+      implicit none
 
 #include "plant.h"
 #include "cogen_tanks.h"
 
-C.....Passed variables 
+C.....Passed variables
       integer iComponentIndex   ! index of FC in plant component network
       integer iTankType         ! flag for gas or electircal tank types
 
@@ -2627,7 +2625,7 @@ C.....ESP-r Commons
      &     CSVP(MPNODE,MPVAR)   ! Plant present state variables
       real CSVF, CSVP
 
-C.....Plant component present/future variables 
+C.....Plant component present/future variables
       common/pcvar/pctf(mpcon),pcrf(mpcon),puaf(mpnode),pcqf(mpnode),
      & pcntmf(mpcom),pctp(mpcon),pcrp(mpcon),puap(mpnode),
      & pcqp(mpnode),pcntmp(mpcom)
@@ -2642,24 +2640,18 @@ C.....Common contaning diversion ratios for plant network connections
       REAL PCONDR,PCONSD
 
       common/report_loads/fReportDHWLoad(mpcom)
-      real fReportDHWLoad                ! DHW load computed by a plant 
+      real fReportDHWLoad                ! DHW load computed by a plant
                                          ! component (W)
 
 C.....Local Variables
-      CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
-      character*128 root_name    ! root name of component node 
-      character*128 hold_name    ! temporary variable for string manipulation
-      logical bClose             ! flag for close-to-zero comparison
-
       integer iNameLen           ! Length of a plant component name
-      integer iBaseLen           ! Length of a string.
 
 C.....Named constants
-      integer iTemperature      ! named constant for temperature properity 
+      integer iTemperature      ! named constant for temperature properity
       integer i1st_flow         ! named constant for first phase flow properity
-      integer i2nd_flow    ! named constant for second phase flow properity      
+      integer i2nd_flow    ! named constant for second phase flow properity
       parameter ( iTemperature     = 1,
-     &            i1st_flow        = 2, 
+     &            i1st_flow        = 2,
      &            i2nd_flow        = 3)
       integer iGas_tank         ! flag for gas-fired tank
       integer iEle_tank         ! flag for electrially heated tank
@@ -2667,60 +2659,46 @@ C.....Named constants
      &           iEle_tank = 2
      &     )
 
-C.....Calculated values 
+C.....Calculated values
       real fWater_temperature   ! water temperature in tank (oC)
       real fConn_heat_injection ! heat injected/extracted by connection (W)
       real DHW_load             ! instantaneous dhw load (W)
       real fJacket_losses       ! losses to environment (W)
 
-C.....References: 
+C.....References:
       real H3K_connect_property ! function returning data for a given connection
-      real SHTFLD     
+      real SHTFLD
 
 C.....Update future row values using most recently calcuated data obtained
 C.....from state variables
 
 C.....Connection temperatures
       PCTF(con1a) = H3K_connect_property( con1a, iTemperature )
-      PCTF(con1b) = H3K_connect_property( con1b, iTemperature ) 
+      PCTF(con1b) = H3K_connect_property( con1b, iTemperature )
 
 
       iNameLen = iPltNameLen(iComponentIndex)
 
-C.....Format string as: 'plant/NAME/misc_data'
-
-      WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     pcname(iComponentIndex)(1:iNameLen),
-     &     '/misc_data'
-
-      iBaseLen = iNameLen + 16
-
 C.....Water temperature
-      fWater_temperature =  CSVF( node1, iTemperature ) 
+      fWater_temperature =  CSVF( node1, iTemperature )
 
-      call add_to_xml_reporting(
-     &     CSVF(node1,iTemperature),
-     &     root_name(1:iBaseLen) // '/water_temperature',
-     &     'units', '(oC)',
-     &     'Hot water tank water temperature' )
+      call AddToReportWild1(
+     &      rvPltWaterTemp%Identifier,
+     &      CSVF(node1,iTemperature),
+     &      pcname(iComponentIndex)(1:iNameLen))
 
 C.....Connection 1 heat injection
 C.....Heat injection = flow rate * ( T_in - T_tank)
-      fConn_heat_injection = pcondr(con1a)  
+      fConn_heat_injection = pcondr(con1a)
      &     * H3K_connect_property(con1a,i1st_flow)
      &     * SHTFLD(3,(H3K_connect_property(con1a,iTemperature)
      &                + fWater_temperature )/2.0)
-     &     * ( H3K_connect_property(con1a,iTemperature) -  
+     &     * ( H3K_connect_property(con1a,iTemperature) -
      &     fWater_temperature )
-      
 
-      call add_to_xml_reporting(
-     &     fConn_heat_injection,
-     &     root_name(1:iBaseLen) // '/connection_1/heat_injection',
-     &     'units', '(W)',
-     &     'Hot water tank connection 1: heat injection' )
-      
+      call AddToReportWild1(rvPltConn1HeatInject%Identifier,
+     &   fConn_heat_injection,
+     &   pcname(iComponentIndex)(1:iNameLen))
 
 C.....Connection 2 heat injection
 C.....Heat injection = flow rate * Cp * ( T_in - T_tank)
@@ -2728,47 +2706,35 @@ C.....Heat injection = flow rate * Cp * ( T_in - T_tank)
      &     * H3K_connect_property(con1b,i1st_flow)
      &     * SHTFLD(3,(H3K_connect_property(con1b,iTemperature)
      &                + fWater_temperature )/2.0)
-     &     * ( H3K_connect_property(con1b,iTemperature) -  
+     &     * ( H3K_connect_property(con1b,iTemperature) -
      &     fWater_temperature )
 
-      call add_to_xml_reporting(
-     &     fConn_heat_injection,
-     &     root_name(1:iBaseLen) // '/connection_2/heat_injection',
-     &     'units', '(W)',
-     &     'Hot water tank connection 2: heat injection' )
+       call AddToReportWild1(rvPltConn2HeatInject%Identifier,
+     &         fConn_heat_injection,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 
-C.....DHW draw 
-      call add_to_xml_reporting(
-     &     dhw_draw_future,
-     &     root_name(1:iBaseLen) //
-     &       '/domestic_hot_water/volumetric_draw',
-     &     'units', '(m3/s)',
-     &     'Hot water tank: domestic hot water volumetric draw' )
+C.....DHW draw
+      call AddToReportWild1(rvPltDomHotWtrVol%Identifier,
+     &        dhw_draw_future,
+     &        pcname(iComponentIndex)(1:iNameLen))
 
-
-C.......DHW make-up temperature 
-
-      call add_to_xml_reporting(
-     &     T_makeup_future,
-     &     root_name(1:iBaseLen) //
-     &           '/domestic_hot_water/make_up_temperature',
-     &     'units', '(oC)',
-     &     'Hot water tank: water make-up temperature' )
+C.......DHW make-up temperature
+      call AddToReportWild1(rvPltDomHotWtrMkTemp%identifier,
+     &         T_makeup_future,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......DHW thermal load
 C.......
 C.......Calculate data:
-C.......LOAD = (T - T_makeup) * (m * Cp)     
-      
-      DHW_load = (fWater_temperature - T_makeup_future) 
+C.......LOAD = (T - T_makeup) * (m * Cp)
+
+      DHW_load = (fWater_temperature - T_makeup_future)
      &     * mdotCp_DHW_future
 
-      call add_to_xml_reporting(
-     &     DHW_load,
-     &     root_name(1:iBaseLen) // '/domestic_hot_water/thermal_load',
-     &     'units', '(W)',
-     &     'Hot water tank: domestic hot water thermal load' )
+      call AddToReportWild1(rvPltDomHotWtrThermal%identifier,
+     &         DHW_load,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 
       fReportDHWLoad(iComponentIndex) = DHW_load
@@ -2776,118 +2742,77 @@ C.....Gas-fired tank calculations
       if ( iTankType .eq. iGas_tank ) then
 
 C.......Burner heat procuction
-
-        call add_to_xml_reporting(
-     &     q_burner,
-     &     root_name(1:iBaseLen) // '/burner_heat_production',
-     &     'units', '(W)',
-     &     'Hot water tank: rate of burner heat production' )
-
+      call AddToReportWild1(rvPltBurnOut%identifier,
+     &         q_burner,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Fuel Flow
-
-        call add_to_xml_reporting(
-     &     m_dot_fuel_kg_t,
-     &     root_name(1:iBaseLen) // '/fuel_flow',
-     &     'units', '(kg/s)',
-     &     'Hot water tank: burner fuel flow rate' )
+      call AddToReportWild1(rvPltFuelFlow%identifier,
+     &         m_dot_fuel_kg_t,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Volumetric fuel flow at STP.
 C.......-> set name
-        call add_to_xml_reporting(
-     &     Vdot_fuel_STP_t,
-     &     root_name(1:iBaseLen) // '/fuel_flow_vol_STP',
-     &     'units', '(slpm)',
-     &     'Hot water tank: burner fuel flow rate' )
-
+      call AddToReportWild1(rvPltFuelFlowVolSTP%identifier,
+     &         Vdot_fuel_STP_t,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......'gross heat input' (lower heating value flow rate)
+      call AddToReportWild1(rvPltFuelFlowLHVVal%identifier,
+     &         m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
-        call add_to_xml_reporting(
-     &     m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
-     &     root_name(1:iBaseLen) // '/fuel_flow_LHV_value',
-     &     'units', '(W)',
-     &     'Hot water tank: LHV of fuel used' )
-
-     
 C.......Air Flow
-
-
-        call add_to_xml_reporting(
-     &     m_dot_air_kg_t,
-     &     root_name(1:iBaseLen) // '/air_flow',
-     &     'units', '(kg/s)',
-     &     'Hot water tank: burner air flow rate' )
+      call AddToReportWild1(rvPltAirFlow%identifier,
+     &         m_dot_air_kg_t,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C.......Exhaust Gas
+      call AddToReportWild1(rvPltExhaustFlow%identifier,
+     &         m_dot_exh_kg_t,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
-        call add_to_xml_reporting(
-     &     m_dot_exh_kg_t,
-     &     root_name(1:iBaseLen) // '/exhaust_flow',
-     &     'units', '(kg/s)',
-     &     'Hot water tank: burner exhaust flow rate' )
-
-
-        call add_to_xml_reporting(
-     &     m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
-     &     root_name(1:iBaseLen) // '/energy_input',
-     &     'units', '(W)',
-     &     'Hot water tank: Energy requirements' )
+      call AddToReportWild1(rvPltEInput%identifier,
+     &          m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 
-      
       elseif( iTankType .eq. iEle_tank ) then
 C........Operations specific to electrical tank would go here.
-
-        call add_to_xml_reporting(
-     &     q_element,
-     &     root_name(1:iBaseLen) // '/energy_input',
-     &     'units', '(W)',
-     &     'Hot water tank: Energy requirements'  )
+      call AddToReportWild1(rvPltEInput%identifier,
+     &          q_element,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 
-      endif 
+      endif
 
 C.......Heat_transfer to water
+      call AddToReportWild1(rvPltHTransWater%identifier,
+     &         q_capture_future,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
-
-      call add_to_xml_reporting(
-     &     q_capture_future,
-     &     root_name(1:iBaseLen) // '/heat_transfer_to_water', 
-     &     'units', '(W)',
-     &     'Hot water tank: rate of heat transfer to water' )
-
-C.......Jacket losses 
+C.......Jacket losses
       fJacket_losses = tank_UA * (fWater_temperature - Troom_future)
-
-      call add_to_xml_reporting(
-     &     fJacket_losses,
-     &     root_name(1:iBaseLen) // '/jacket_losses',
-     &     'units', '(W)',
-     &     'Hot water tank: rate of heat loss to surroundings' )
+      call AddToReportWild1(rvPltJacketLoss%identifier,
+     &         fJacket_losses,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 C---------------------------------------------------------------------------------
 C       Store heat leakage for injection into containing zone
-C       '1' indicates that gain is convective. 
+C       '1' indicates that gain is convective.
 C---------------------------------------------------------------------------------
        call store_plt_gain ( iComponentIndex,
      &                        fJacket_losses, iConvective)
 
-     
+
 C.......Heat dump
-
-      call add_to_xml_reporting(
-     &     q_heatdump_future,
-     &     root_name(1:iBaseLen) // '/heat_dump',
-     &     'units', '(W)',
-     &     'Hot water tank: rate at which heat is "dumped" from '
-     &      // 'tank to prevent water from boiling.' )
+      call AddToReportWild1(rvPltHeatDump%identifier,
+     &         q_heatdump_future,
+     &         pcname(iComponentIndex)(1:iNameLen))
 
 
-     
-     
 C.......H3Kreports.(HIGH_TEMP_FUEL_WATER_TANK).end........................
 
 
-      return 
+      return
       end

@@ -1,13 +1,13 @@
 
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -102,7 +102,7 @@ C 4. Check whether the containment of the trnsys component should be defined
       REAL QDATA,PCAOUT
       INTEGER napdat
 
-C Please refer to SUBROUTINE TRNPMXT at esruplt/pmatrix.F for the 
+C Please refer to SUBROUTINE TRNPMXT at esruplt/pmatrix.F for the
 C comments about the following TRNSYS commons.
 C
 C Common for TRNSYS general information
@@ -186,7 +186,7 @@ C--------------------------
 
 C Check that each node in the component has the correct number of connections
 C to other components. A trnsys component needs to follow two rules:
-C 1st rule: if a trnsys input is linked to a connection, this connection 
+C 1st rule: if a trnsys input is linked to a connection, this connection
 C           must be defined.
 C 2nd rule: if a trnsys componet defines a (receiving) connection, this connection
 C           must be reflected in its input.
@@ -200,7 +200,7 @@ C Step 1: Input-linked connections must be defined.
 C  NTRNXIN(): number of inputs for a trnsys type
       DO i=1, NTRNXIN(iTRNCOM)
          iCat = ITRNX_CAT(iTRNCOM,i)
-         IF(iCat .GE. 1 .AND. iCat .LE. 3) THEN 
+         IF(iCat .GE. 1 .AND. iCat .LE. 3) THEN
 C        the input is linked to a specified connection
             iLnk1 = ITRNX_LNK1(iTRNCOM,i)    ! node
             iLnk2 = ITRNX_LNK2(iTRNCOM,i)    ! coupling
@@ -253,7 +253,7 @@ C 2. The additional output must exist for that component.
 C  NTRNXIN(): number of inputs for a trnsys type
       DO i=1, NTRNXIN(iTRNCOM)
          iCat = ITRNX_CAT(iTRNCOM,i)
-         IF(iCat .EQ. 5) THEN 
+         IF(iCat .EQ. 5) THEN
 C        input is linked to the additional output of a specified component
             iLnk1 = ITRNX_LNK1(iTRNCOM,i)   ! component
             iLnk2 = ITRNX_LNK2(iTRNCOM,i)   ! additional output id
@@ -461,13 +461,13 @@ C a value of -99. is assumed by esp-r, causing error.
 
 
 C The validity of ADATA for trnsys component is checked by trnsys type.
-C At the beginning of simulation (TIME=TIME0), trnsys type will check 
+C At the beginning of simulation (TIME=TIME0), trnsys type will check
 C the validity of parameters. We can call trnsys type here
 C to check ADATA as other static_template do. However, many operations
 C are involved each time calling trnsys types. Thus, we move the
 C (TIME=TIME0) call to the coefficient generator, where trnsys is called
 C more than once at the beginning of simulation.
-C 
+C
       RETURN
 
       END SUBROUTINE trnsys_static_temp
@@ -487,6 +487,7 @@ C 3. its right-hand coefficients are from trnsys output (or input).
 
 
       SUBROUTINE trnsys_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -579,7 +580,7 @@ C     Common for determining if the plant domain has converged
       COMMON/pcnam/pcname(mpcom)       ! Plant component names
       CHARACTER*15 pcname
 
-C Please refer to SUBROUTINE TRNPMXT at esruplt/pmatrix.F for the 
+C Please refer to SUBROUTINE TRNPMXT at esruplt/pmatrix.F for the
 C comments about the following TRNSYS commons.
 C
 C Common for TRNSYS general information
@@ -616,7 +617,7 @@ C Common for TRNSYS outputs
 C Common for TRNSYS derivatives
       COMMON/TRNSYSDER/NTRNDER(MTRNCOM),
      &                 TRNDER_SET(MTRNCOM),
-     &                 TRNDER_INT(MTRNCOM,MTRNDER) 
+     &                 TRNDER_INT(MTRNCOM,MTRNDER)
       INTEGER NTRNDER
       LOGICAL TRNDER_SET
       DOUBLE PRECISION    TRNDER_INT
@@ -667,15 +668,12 @@ C Local variables
       REAL     parTemp   ! the temperature on which parameter properties are based
       DOUBLE PRECISION  valueMultiply, valueAdd
 
-      DOUBLE PRECISION  simtime, par(MADATA), xin(MTRNXIN), 
+      DOUBLE PRECISION  simtime, par(MADATA), xin(MTRNXIN),
      &                    out(MTRNOUT),Tinit(MTRNDER), dtdt(MTRNDER)
       INTEGER  icntrl, info(15)
       SAVE     info       !info(7) relies on its previous value
 
       CHARACTER*3   unitCode        ! TRNSYS unit code
-      CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
-      CHARACTER*128 root_name       ! root name of component node 
-      CHARACTER*128 hold_name       ! temporary variable for string manipulation
 
       LOGICAL toTrnsys  !the direction of unit conversion between esp-r and trnsys
                         ! .true. means from esp-r to trnsys
@@ -723,7 +721,7 @@ C    "nsincp=1" indicates that this is the first plant time-step
 C    "bPltcon=true" indicates that this is the first trnsys call in a time step
 C
 C  For the iterative calls (ie.,not the first call) in the first time step,
-C  the simulation time is moved one step further in order to perform 
+C  the simulation time is moved one step further in order to perform
 C  trnsys simulaton. Otherwise, trnsys will perform TIME=TIME0 manipulations.
 C
 C iss is deducted to avoid potential numerical problems
@@ -802,7 +800,7 @@ C In the future, this number might need to be read from the input file
 
 C info(12): trnsys version for which the type was written.
 C info(12) will be assigned by trnsys type at initialization call
-C with info(7) =-2. 
+C with info(7) =-2.
       info(12) = INFO_SHORT(iTRNCOM,4)
 
 
@@ -842,7 +840,7 @@ C Map ADATA to trnsys parameters
          par(i) = DBLE(ADATA(IPCOMP, i) )
       END DO
 
-C Update those time-dependent parameters 
+C Update those time-dependent parameters
       DO i=1, MTRNPARV
          iPos = ITRNP_POS(iTRNCOM,i)
 
@@ -967,12 +965,12 @@ C        linked to a function value
 
 C New input type inserted here
 
-         ELSE 
+         ELSE
             call elinc(1)
             WRITE(IUOUT,*) ' No mapping mechanism defined for ',
      &                     'input type ',iCat
             STOP ' trnsys_coeff_gen: unresolvable error on input'
-         END IF    ! --> IF(iCat .EQ. 0) 
+         END IF    ! --> IF(iCat .EQ. 0)
 
 C        Unit conversion
          IF(iCat .NE. 0 .AND. iCat .NE. 6) THEN
@@ -987,7 +985,7 @@ C        Unit conversion
 
 
 C Map derivatives and initial values for dependent variables
-C    This condition is valid for plant domain only 
+C    This condition is valid for plant domain only
 C    This condition may be not sufficient if cross-domain iteration exists
       IF(nsincp .EQ. 1 .AND. bPltcon ) THEN
          IF(TRNDER_SET(iTRNCOM) ) THEN
@@ -1009,7 +1007,7 @@ C Should be updated in the future
 
 
 C Call trnsys subroutine
-C Since trnsys types are capable of producing all outputs related to 
+C Since trnsys types are capable of producing all outputs related to
 C energy, firt and second phase mass equations, each trnsys subroutine
 C should be called only once for a given plant component coefficienct
 C call. Otherwise, the trnsys subroutine may be called more than once
@@ -1027,11 +1025,11 @@ C     4th call: real simulation, info(7) = 0
 C  For all other time steps, the trnsys is called once within
 C    this subroutine.
 C
-C    The alternate return used by trnsys subroutine aims to detect the 
-C    error of unlinked type. Since DLL is not used here, this type of 
+C    The alternate return used by trnsys subroutine aims to detect the
+C    error of unlinked type. Since DLL is not used here, this type of
 C    error will never occur.
 
-      IF(ISTATS .EQ. iCall_State) THEN 
+      IF(ISTATS .EQ. iCall_State) THEN
         IF(nTYPE .EQ. 60) THEN         ! stratified water tank
           IF(nsincp .EQ. 1 .AND. bPltcon) THEN
 C     Three trnsys type calls are needed prior to real simulation
@@ -1061,7 +1059,7 @@ C             Initialization call, i.e., info(7) = -1
                  INFO_SHORT(iTRNCOM,3) = info(10)
               ELSE IF( i .EQ. 3) THEN
 C             TIME = TIME0 manipulations
-C           After TIME=TIME0 call, increase simtime to perform 
+C           After TIME=TIME0 call, increase simtime to perform
 C           real simulation afterwards.
                  simtime = simtime + TIMSEC/3600.
               END IF
@@ -1113,7 +1111,7 @@ C             Initialization call, i.e., info(7) = -1
                  INFO_SHORT(iTRNCOM,3) = info(10)
               ELSE IF( i .EQ. 3) THEN
 C             TIME = TIME0 manipulations
-C           After TIME=TIME0 call, increase simtime to perform 
+C           After TIME=TIME0 call, increase simtime to perform
 C           real simulation afterwards.
                  simtime = simtime + TIMSEC/3600.
               END IF
@@ -1165,7 +1163,7 @@ C             Initialization call, i.e., info(7) = -1
                  INFO_SHORT(iTRNCOM,3) = info(10)
               ELSE IF( i .EQ. 3) THEN
 C             TIME = TIME0 manipulations
-C           After TIME=TIME0 call, increase simtime to perform 
+C           After TIME=TIME0 call, increase simtime to perform
 C           real simulation afterwards.
                  simtime = simtime + TIMSEC/3600.
               END IF
@@ -1286,7 +1284,7 @@ C     Second phase mass balance
 
 
 C Map trnsys outputs to PCAOUT
-C    Unit conversion is not carried out purposely here to 
+C    Unit conversion is not carried out purposely here to
 C    facilitate future validation work
       DO i=1, NAPDAT(IPCOMP)
          iOut = ITRNO_ADD_LNK(iTRNCOM,i)
@@ -1335,25 +1333,18 @@ C Complete trace if trace output requested.
 
 
 C XML output
-C     Get component name
-      hold_name = pcname(IPCOMP) 
-C     Format string as: 'plant/NAME/misc_data'
-
-      WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
       DO i=1, NAPDAT(IPCOMP)
-         WRITE(H3K_rep_NAME,'(A,A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/',TRN_ADD_DESC(iTRNCOM,i)
+         Call AddToReportWild2(rvPltMiscData%Identifier,
+     &      PCAOUT(IPCOMP,i),
+     &      pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),
+     &      TRN_ADD_DESC(iTRNCOM,i))
 
-         CALL add_to_xml_reporting(
-     &                   PCAOUT(IPCOMP,i),
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   TRNO_ADD_UNT(iTRNCOM,i),
-     &                   TRN_ADD_DESC(iTRNCOM,i) )
+         Call AddToReportDetailsWild2(rvPltMiscData%Identifier,
+     &      pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),
+     &      TRN_ADD_DESC(iTRNCOM,i),
+     &      'units',
+     &      TRNO_ADD_UNT(iTRNCOM,i),
+     &      TRN_ADD_DESC(iTRNCOM,i))
       END DO
 
 
@@ -1369,7 +1360,7 @@ C********************* getConversionFactors****************************
 C This subroutine gets the unit conversion factors based on unitCode.
 C Note that unitCode is trnsys-oriented, which means that the user-
 C indicated unitCodes are for trnsys parameters, inputs or outputs.
-C Since the mapping between esp-r and trnsys is bidirectional, the 
+C Since the mapping between esp-r and trnsys is bidirectional, the
 C unit conversion can be either from esp-r to trnsys or the other way.
 C The direction is indicated by the logical variable "toTrnsys".
 C
@@ -1532,7 +1523,7 @@ C        units of mass flow rate
          END IF
 
          IF(unitName .EQ. 'DM' .OR. unitName .EQ. 'dm') THEN
-C        dimensionless 
+C        dimensionless
             valueMultiply =  1.d0
             valueAdd = 0.d0
             RETURN
@@ -1653,7 +1644,7 @@ C        units of mass flow rate
          END IF
 
          IF(unitName .EQ. 'DM' .OR. unitName .EQ. 'dm') THEN
-C        dimensionless 
+C        dimensionless
             valueMultiply =  1.d0
             valueAdd = 0.d0
             RETURN

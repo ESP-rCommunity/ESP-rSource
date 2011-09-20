@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -36,8 +36,9 @@ C-------------------------Config_H3k_reports_menu:---------------------
 C This procedure displays  menu allowing a user to configure h3k reports
 C
 C
-C----------------------------------------------------------------------   
+C----------------------------------------------------------------------
       subroutine Config_H3k_reports_menu()
+      use h3kmodule
       implicit none
 
 C External functions.
@@ -63,12 +64,12 @@ C----------------------------------------------------------------------
       character*20 cSerializer
 
 
-      
+
       logical bValues(iParam_MAX) ! values of parameters
                                   !    returned by h3kreports
 
 
-      character*50 cValue         ! Option value                            
+      character*50 cValue         ! Option value
       character*29 cMenu(30)      ! Menu to be displayed
       integer iMenu_Count         ! Number of choices on menu
 
@@ -88,16 +89,16 @@ C----------------------------------------------------------------------
       save cAltPath
 
       character*72 cDestFile      ! Destination for xslt transform
-      
+
       character*128 cFilePaths(12)! full paths to xslt files.
       logical bFileFound(12)      ! flags indicating that files
                                   !   are found
-      integer iNumberSupported    ! # of xslt files supported                                  
+      integer iNumberSupported    ! # of xslt files supported
       integer iNumberAvailable    ! # of xslt files available
 
       integer iPath, iFile        ! Counters
       integer iSS_list_start      ! start of stylesheet list
-      integer iSS_list_end        ! end of stylesheet list 
+      integer iSS_list_end        ! end of stylesheet list
 
       logical bStyleSheet_Selected ! flag indicating SS has been selected
       logical bTransform_available ! flag indicating "transform" option
@@ -110,17 +111,6 @@ C     ESP-r variables
 C----------------------------------------------------------------------
       common/uhome/upath
       character upath*72             ! path to ~/
-C----------------------------------------------------------------------
-C     References 
-C----------------------------------------------------------------------                                  
-      logical bH3K_Rep_Enabled       ! Function indicating the status of
-                                     !    h3kreports output
-      character*50 Rep_Report_Config ! Function returing the current value
-                                     !    of configuration parameters
-      logical rep_Report_List        ! Function returing the current status
-                                     !    of a stylesheet
-      logical rep_toggle_config      ! Funcion toggling an on-off configuration
-                                     !    parameter.
 
 
 C-----------------------------------------------------------------------
@@ -133,7 +123,7 @@ C-----------------------------------------------------------------------
 
       iPaths = 4
 C-----------------------------------------------------------------------
-C     Set available xslt supported files 
+C     Set available xslt supported files
 C-----------------------------------------------------------------------
       cFiles(1) = 'generic_summary.xsl'
       cFiles(2) = 'generic_summary_html.xsl'
@@ -142,28 +132,28 @@ C-----------------------------------------------------------------------
       cFileNames(2) ='2 summary (HTML) '
 
       iNumberSupported = 2
-                         
+
       bDone = .false.
 
 
-      
-         
-      
+
+
+
 C-----------------------------------------------------------------------
 C     Loop until user leaves menu
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
       do while ( .not. bDone )
 
 C........Search for xsl files
          iNumberAvailable = 0
          do iFile = 1, iNumberSupported
-   
+
             bFileFound (iFile) = .false.
-            
+
             do iPath  = 1, iPaths
-   
+
                if ( .not. bFileFound ( iFile ) ) then
-                  
+
                   cFilePaths(iFile) =
      &             cPaths(iPath)(1:lnblnk(cPaths(iPath)))
      &              // cFiles(iFile)(1:lnblnk(cFiles(iFile)))
@@ -172,9 +162,9 @@ C........Search for xsl files
      &                   FILE  = cFilePaths(iFile)
      &                        (1:lnblnk(cFilePaths(iFile))),
      &                   EXIST = bFileFound(iFile) )
-     
+
                endif
-   
+
             enddo
 
             if (bFileFound(iFile)) then
@@ -184,100 +174,102 @@ C........Search for xsl files
          enddo
 C----------------------------------------------------------------------
 C        Create help prompt. This must be done each time the
-C        help menu is displayed, because the `h` array will be
+C        help menu is displayed, because the ''h'' array will be
 C        overwritten below when the user is prompted for files.
 C----------------------------------------------------------------------
-
-        h(1) = 'H3K Reports provides an alternate facility for '
-        h(2) = 'recovering results from bps. Results can be saved'
-        h(3) = 'in ascii, CSV or XML formats, and can be translated'
-        h(4) = 'into HTML or text files using an XSL stylesheet.'
-        h(5) = 'H3K Reports is compatable with ESP-r`s existing '
-        h(6) = 'results recovery facilities, and can be used in '
-        h(7) = 'conjunction with res.'
-        h(8) = ' '
-        h(9) = 'Files:'
-        h(10)= '  input.xml: Configuration file stored in the cfg'
-        h(11)= '    directory.                                   '
-        h(11)= '  out.xml: XML formatted file containing summary '
-        h(12)= '    results from the simulation. '
-        h(13)= '  out.csv: CSV formatted file containing time step'
-        h(14)= '    data from the simulation.'
-        h(15)= '  '
-        h(16)= '  It is also possible to translate the out.xml file'
-        h(17)= '  into any ASCII format using an XSL stylesheet.'
-        h(18)= ' '
-        h(19)= 'Options:'
-        h(20)= '  a Enable/disable H3k Reports '
-        h(21)= '  b Dictionary output: Optionally output a listing '
-        h(22)= '    of all data that can be accessed with H3K Reports.'
-        h(23)= '    Data will be output to an ascii file called '
-        h(24)= '    out.dictinoary.'
-        h(25)= '  c XML Structure: Use flat or nested `tree` format'
-        h(26)= '    for XML output files.'
-        h(27)= '  d TS averaging: Optionally overide bps`s time-step'
-        h(28)= '    averaging setting. '
-        h(29)= '  e Report startup period: Optionally include data '
-        h(30)= '    from the start-up period data in results '
-        h(31)= '  f Output all data: Optionally report all data '
-        h(32)= '    available to H3K Reports. If this option is not '
-        h(33)= '    selected, only the variables specified in the '
-        h(34)= '    input.xml configuration file will be reported. '
-        h(35)= '    If no parameters are included in input.xml, H3K '
-        h(36)= '    Reports will not produce any output unless `Output'
-        h(37)= '    all data` is selected.'
-        h(38)= ' '
-        h(39)= 'XSL formatted output:'
-        h(40)= '  1 summary (CSV): XSL file producing brief, summary'
-        h(41)= '    statistics in an ascii file.'
-        h(42)= '  2 summary (HTML): XSL file producing summary '
-        h(43)= '    statistics in an HTML file.'
-        h(44)= '  '
-        h(45)= 'XSL options:'
-        h(46)= '  g Path to XSL files...: Path in which bps should '
-        h(47)= '    look for .xsl files.'
-        h(48)= '  h Link stylesheet: Optionally include a link within '
-        h(49)= '    out.xml to the selected stylesheet, permitting    '
-        h(50)= '    out.xml to be viewed in a browser.'
-        h(51)= '  i Apply stylesheet: Optionally apply the stylesheet '
-        h(52)= '    to produce formatted output directly.'
-        h(53)= '  j Transform target file: File formatted output should'
-        h(54)= '    be saved in.'
-        h(55)= ' '
-
+      h(1)= 'H3K Reports provides an alternate facility for '
+      h(2)= 'recovering results from bps. Results can be saved'
+      h(3)= 'in ascii, CSV, XML or SQLite formats, and can be '
+      h(4)= 'translated into HTML or text files using an XSL.'
+      h(5)= 'H3K Reports is compatable with ESP-r''s existing '
+      h(6)= 'results recovery facilities, and can be used in '
+      h(7)= 'conjunction with res.'
+      h(8)= ' '
+      h(9)= 'Files:'
+      h(10)= '  input.xml: Configuration file stored with the .cfg '
+      h(11)= '  out.xml: XML formatted containing summary result file.'
+      h(12)= '  out.csv: CSV formatted containing step result file.'
+      h(13)= '  out.db: SQLite file containing step and/or summary '
+      h(14)= '          results.'
+      h(15)= '  '
+      h(16)= '  It is also possible to translate the out.xml file'
+      h(17)= '  into any ASCII format using an XSL stylesheet.'
+      h(18)= ' '
+      h(19)= 'Select options:'
+      h(20)= '  a Enable/disable H3k Reports '
+      h(21)= '  b Dictionary output: Optionally output a listing '
+      h(22)= '    of all data variables used by H3K Reports in file '
+      h(23)= '    called out.dictionary.  Options include: (all)(sim)'
+      h(24)= '  c XML Structure: Use flat or nested ''tree'' format'
+      h(25)= '    for XML output files.'
+      h(26)= '  d TS averaging: Optionally overide bps''s time-step'
+      h(27)= '    averaging setting. '
+      h(28)= '  e Report startup period: Optionally include data '
+      h(29)= '    from the start-up period data in results '
+      h(30)= '  f Asynchronous save to disk: This option will reduce'
+      h(31)= '    bps''s memory requirements on longer simulations.'
+      h(32)= '  g Sort Output: Optionally sorts the results by name '
+      h(33)= '    before writting to output files.'
+      h(34)= ' '
+      h(35)= 'Select data:'
+      h(36)= '  h Step output format: choose the ouput format of'
+      h(37)= '    collected step data: CSV(default), SQLite or both.'
+      h(38)= '  i Log output format: choose the output format of'
+      h(39)= '    collected log data: XML(default), SQLite or both.'
+      h(40)= '  j Output all data: Optionally report all data '
+      h(41)= '    available to H3K Reports. If this option is not '
+      h(42)= '    selected, only the variables specified in the '
+      h(43)= '    input.xml configuration file will be reported. '
+      h(44)= ' '
+      h(45)= 'XSL formatted output:'
+      h(46)= '  1 summary (CSV): XSL file producing brief, summary'
+      h(47)= '    statistics in an ascii file.'
+      h(48)= '  2 summary (HTML): XSL file producing summary '
+      h(49)= '    statistics in an HTML file.'
+      h(50)= '  '
+      h(51)= 'XSL options:'
+      h(52)= '  k Path to XSL files...: Path in which bps should '
+      h(53)= '    look for .xsl files.'
+      h(54)= '  l Link stylesheet: Optionally include a link within '
+      h(55)= '    out.xml to the selected stylesheet, permitting    '
+      h(56)= '    out.xml to be viewed in a browser.'
+      h(57)= '  m Apply stylesheet: Optionally apply the stylesheet '
+      h(58)= '    to produce formatted output directly.'
+      h(59)= '  n Transform target file: File formatted output should'
+      h(60)= '    be saved in.'
 
 C----------------------------------------------------------------------
 C        Build menu
 C----------------------------------------------------------------------
 
-         if ( bH3K_Rep_Enabled() ) then
+         if (isH3KEnabled()) then
                cMenu (1)= 'a H3K Reports >> enabled      '
          else
                cMenu (1)= 'a H3K Reports >> disabled     '
          endif
 
-         cValue = rep_Report_Config("output_dictionary")
-
-
-         if ( bH3K_Rep_Enabled() ) then
+         if ( isH3KEnabled() ) then
             cMenu(2) = '  ____________________________'
             cMenu(3) = '  Select options:             '
 
-            cValue = rep_Report_Config ("output_dictionary")
-            if ( cValue(1:4) == 'true' ) then
-               cMenu(4) = 'b Dictionary output: enabled '
+            call GetReportConfig ("output_dictionary",cValue)
+            if ((cValue(1:3) == 'sim') .or.
+     &                  (cValue(1:4) == 'true')) then
+               cMenu(4) = 'b Dictionary out: sim '
+            else if (cValue(1:3) == 'all') then
+               cMenu(4) = 'b Dictionary out: all '
             else
-               cMenu(4) = 'b Dictionary output: disabled'
+               cMenu(4) = 'b Dictionary out: off'
             endif
 
-            cValue = rep_Report_Config ("hierarchy")
+            call GetReportConfig ("hierarchy",cValue)
             if ( cValue(1:4) == 'flat' ) then
                cMenu(5) = 'c XML structure: flat'
             else
                cMenu(5) = 'c XML structure: tree'
             endif
 
-            cValue = rep_Report_Config("time_step_averaging")
+            call GetReportConfig("time_step_averaging",cValue)
             if ( cValue(1:4) == 'true' ) then
                cMenu (6) = 'd TS averaging: on'
             elseif ( cValue(1:5) == 'false' ) then
@@ -286,43 +278,73 @@ C----------------------------------------------------------------------
                cMenu (6) = 'd TS averaging: default'
             endif
 
-            cValue = rep_Report_config("report_startup_period_data")
+            call GetReportConfig("report_startup_period_data",cValue)
             if ( cValue (1:4) == 'true' ) then
                cMenu(7) = 'e Report startup period     *'
             else
                cmenu(7) = 'e Report startup period '
             endif
 
-            cMenu(8) = '  ____________________________'
-            cMenu(9) = '  Select data:                '
-
-
-            cValue = rep_Report_Config ("dump_all_data")
-            if ( cValue(1:4) == "true" ) then
-               cMenu(10) = 'f All data                  *'
+            call GetReportConfig("save_to_disk",cValue)
+            if ( cValue (1:4) == 'true' ) then
+               cMenu(8) = 'f Asynchronous save to disk *'
             else
-               cMenu(10) = 'f All data '
-            endif           
-            
-            
-            
-            cMenu(11) = '  ____________________________'
-            cMenu(12) = '  XSLT formatted output:      '
+               cmenu(8) = 'f Asynchronous save to disk '
+            endif
 
-            
-            iMenu_Count = 12
+            call GetReportConfig("sort_output",cValue)
+            if ( cValue (1:4) == 'true' ) then
+               cMenu(9) = 'g Sort Output              *'
+            else
+               cmenu(9) = 'g Sort Output '
+            endif
 
-            
+            cMenu(10) = '  ____________________________'
+            cMenu(11) = '  Select data:                '
+
+
+            call GetReportConfig("step_output_format",cValue)
+            if (cValue(1:3) == "all" ) then
+               cMenu(12) = 'h Step output format: all'
+            else if(cValue(1:2) == "db" ) then
+               cMenu(12) = 'h Step output format: db'
+            else !default csv
+               cMenu(12) = 'h Step output format: csv'
+            endif
+
+            call GetReportConfig("log_output_format",cValue)
+            if (cValue(1:3) == "all" ) then
+               cMenu(13) = 'i Log output format: all'
+            else if(cValue(1:2) == "db" ) then
+               cMenu(13) = 'i Log output format: db'
+            else !default xml
+               cMenu(13) = 'i Log output format: xml'
+            endif
+
+            call GetReportConfig ("dump_all_data",cValue)
+            if ( cValue(1:4) == "true" ) then
+               cMenu(14) = 'j All data                  *'
+            else
+               cMenu(14) = 'j All data '
+            endif
+
+            cMenu(15) = '  ____________________________'
+            cMenu(16) = '  XSLT formatted output:      '
+
+
+            iMenu_Count = 16
+
+
             bStyleSheet_Selected = .false.
             iSS_list_start = iMenu_Count
-            
+
             if ( iNumberAvailable .gt. 0 ) then
                do iFile = 1, iNumberSupported
                   if ( bFileFound (iFile) ) then
 
-                     iMenu_Count = iMenu_Count + 1 
+                     iMenu_Count = iMenu_Count + 1
 
-                     if ( rep_Report_List("style_sheet",
+                     if ( GetReportList("style_sheet",
      &                            cFilePaths(iFile)
      &                            (1:lnblnk(cFilePaths(iFile))))) then
                         cMenu ( iMenu_Count ) =
@@ -333,9 +355,9 @@ C----------------------------------------------------------------------
 
                         cMenu ( iMenu_Count ) =
      &                     cFileNames(iFile)
-     &                        (1:lnblnk(cFileNames(iFile)))                     
+     &                        (1:lnblnk(cFileNames(iFile)))
 
-                     endif 
+                     endif
 
                   endif
                enddo
@@ -344,28 +366,28 @@ C----------------------------------------------------------------------
             iSS_list_end = iMenu_Count
 
             cMenu(iMenu_Count+1) = ' '
-            cMenu(iMenu_Count+2) = 'e Path to xsl files... '
+            cMenu(iMenu_Count+2) = 'k Path to xsl files... '
             iMenu_Count = iMenu_Count + 2
-            
+
             if ( bStyleSheet_Selected ) then
-C..............xslt transform options 
-               cValue = rep_Report_Config ( "link_style_sheet" )
+C..............xslt transform options
+               call GetReportConfig ( "link_style_sheet" ,cValue)
                if ( cValue(1:4) == "true" ) then
-                  cMenu(iMenu_Count+1) = 'f Link style sheet          *'
+                  cMenu(iMenu_Count+1) = 'l Link style sheet          *'
                else
-                  cMenu(iMenu_Count+1) = 'f Link style sheet          '
+                  cMenu(iMenu_Count+1) = 'l Link style sheet          '
                endif
-               
-               cValue = rep_Report_Config ( "apply_style_sheet" )
+
+               call GetReportConfig ( "apply_style_sheet",cValue )
                if ( cValue(1:4) == "true" ) then
-                  cMenu(iMenu_Count+2) = 'g Apply style sheet         *'
-                  cMenu(iMenu_Count+3) = 'h Transform target file...   '
-C.................Set flag indicating that transform is available                  
+                  cMenu(iMenu_Count+2) = 'm Apply style sheet         *'
+                  cMenu(iMenu_Count+3) = 'n Transform target file...   '
+C.................Set flag indicating that transform is available
                   bTransform_available = .true.
                else
-                  cMenu(iMenu_Count+2) = 'g Apply style sheet          '
+                  cMenu(iMenu_Count+2) = 'm Apply style sheet          '
                   cMenu(iMenu_count+3) = ' '
-C.................Set flag indicating transform is unavailable                  
+C.................Set flag indicating transform is unavailable
                   bTransform_available = .false.
                endif
 
@@ -374,8 +396,8 @@ C.................Set flag indicating transform is unavailable
 
 C..............Set flags indicating that transform option is unavailable
                bTransform_available = .false.
-                                                
-C..............Empty menu.            
+
+C..............Empty menu.
                cMenu(iMenu_Count+1) = ' '
                cMenu(iMenu_Count+2) = ' '
                cMenu(iMenu_Count+3) = ' '
@@ -383,11 +405,11 @@ C..............Empty menu.
             endif
 
             iMenu_Count = iMenu_Count + 3
-            
+
          else
-         
-            iMenu_Count = 1            
-            
+
+            iMenu_Count = 1
+
          endif
 
 C----------------------------------------------------------------------
@@ -397,7 +419,7 @@ C----------------------------------------------------------------------
          cMenu(iMenu_count-2) = '  ____________________________'
          cMenu(iMenu_count-1) = '? Help                        '
          cMenu(iMenu_count-0) = '- Exit H3K Reports menu       '
-      
+
 C----------------------------------------------------------------------
 C        Display menu
 C----------------------------------------------------------------------
@@ -415,86 +437,130 @@ C----------------------------------------------------------------------
          if ( iChoice == iMenu_Count ) then
 C...........Configuration is complete. Quit loop.
             bDone = .true.
-         
+
          elseif ( iChoice == iMenu_Count - 1 ) then
 C...........Display help menu
             call phelpd('H3K Reports',55,'H3K Reports ',0,0,ierr)
-                    
+
          elseif ( iChoice == 1 ) then
 C...........Toggle h3kreports on/off
-            if ( bH3K_Rep_Enabled() ) then
-              
-               call h3k_enable_reports ( .false. )
-            
+            if ( isH3KEnabled() ) then
+               call SetReportEnable ( .false. )
             else
-               
-               call h3k_enable_reports ( .true. )
-            
-            endif 
+               call SetReportEnable ( .true. )
+            endif
 
-         elseif ( bH3K_Rep_Enabled() ) then
-
-C...........Toggle dictionary
+         elseif ( isH3KEnabled() ) then
+C...........Toggle dictionary all --> sim --> off
+C...........                  (support true/false legacy)
             if ( iChoice == 4 ) then
-            
-                if( .not. rep_toggle_config("output_dictionary") ) then
-                   ! Possible error trapping here
-                endif 
-
-C..........Toggle flat/tree hierarchy                
+                print *,"iChoice 4"
+                call GetReportConfig ("output_dictionary",cValue)
+                if((cValue(1:3) == "sim") .or.
+     &                        (cValue(1:4) == "true")) then
+                  call SetReportConfig ("output_dictionary","off")
+                elseif(cValue(1:3) == "all") then
+                  call SetReportConfig ("output_dictionary","sim")
+                else !assume sim (default)
+                  call SetReportConfig ("output_dictionary","all")
+                end if
+C..........Toggle flat/tree hierarchy
             elseif ( iChoice == 5 ) then
-               cValue = rep_Report_Config ("hierarchy")
+               call GetReportConfig ("hierarchy",cValue)
                if ( cValue(1:4)== "tree" ) then
-                  call rep_Update_Config ("hierarchy", "flat")
-               else 
-                  call rep_Update_Config ("hierarchy", "tree")
+                  call SetReportConfig ("hierarchy", "flat")
+               else
+                  call SetReportConfig ("hierarchy", "tree")
                endif
-               
+
 C...........Toggle timestep averaging
             elseif ( iChoice == 6 ) then
-               
-               if ( .not. rep_toggle_config (
+
+               if ( .not. ReportToggleConfig (
      &                      "time_step_averaging") ) then
                   ! Possibly error trap
-               endif 
+               endif
 
 C...........Toggle reporting start-up period
             elseif ( iChoice == 7 ) then
-               if ( .not. rep_toggle_config(
+               if ( .not. ReportToggleConfig(
      &                       "report_startup_period_data") ) then
                   ! possibly error trap
                endif
-            
-C...........Toggle dump all data               
-            elseif ( iChoice == 10 ) then
- 
-               if( .not. rep_toggle_config("dump_all_data") ) then
+
+C...........Toggle Asynchronous save to disk
+            elseif ( iChoice == 8 ) then
+               if ( .not. ReportToggleConfig(
+     &                       "save_to_disk") ) then
+                  ! possibly error trap
+               endif
+
+C...........Toggle sort output
+            elseif ( iChoice == 9 ) then
+               if ( .not. ReportToggleConfig(
+     &                       "sort_output") ) then
+                  ! possibly error trap
+               endif
+
+C...........Toggle step output format all,csv,db
+            elseif ( iChoice == 12 ) then
+               call GetReportConfig ("step_output_format",cValue)
+               if(cValue(1:3) == "all") then
+                  call SetReportConfig ("step_output_format", "csv")
+               elseif (cValue(1:3) == "csv") then
+                  call SetReportConfig ("step_output_format", "db")
+               elseif (cValue(1:2) == "db") then
+                  call SetReportConfig ("step_output_format", "all")
+               else !assume csv(default)
+                  call SetReportConfig ("step_output_format", "db")
+               endif
+
+
+C...........Toggle log output format all,xml,db
+            elseif ( iChoice == 13 ) then
+               call GetReportConfig ("log_output_format",cValue)
+               if(cValue(1:3) == "all") then
+                  call SetReportConfig ("log_output_format", "xml")
+               elseif (cValue(1:3) == "xml") then
+                  call SetReportConfig ("log_output_format", "db")
+               elseif (cValue(1:2) == "db") then
+                  call SetReportConfig ("log_output_format", "all")
+               else !assume xml(default)
+                  call SetReportConfig ("log_output_format", "db")
+               endif
+
+
+
+C...........Toggle dump all data
+            elseif ( iChoice == 14 ) then
+
+               if( .not. ReportToggleConfig("dump_all_data") ) then
                    ! Possible error trapping here
                 endif
 
-C...........Enable/disable stylesheet                
-            elseif ( iChoice .gt. iSS_list_start 
+C...........Enable/disable stylesheet
+            elseif ( iChoice .gt. iSS_list_start
      &               .and. iChoice .le. iSS_list_end ) then
-               
+
                iFile = iChoice - iSS_list_start
 
-C..............If stylesheet already exists, drop it               
-               if ( rep_Report_List("style_sheet",
+C..............If stylesheet already exists, drop it
+               if ( GetReportList("style_sheet",
      &              cFilePaths(iFile)(1:lnblnk(cFilePaths(iFile))))
      &             )then
-     
-                  call rep_Update_Config ("-style_sheet",
+
+                  call SetReportConfig ("-style_sheet",
      &                                    cFilePaths(iFile)
      &                                    (1:lnblnk(cFilePaths(iFile))))
 
-C..............If stylesheet does not exist, add it     
+C..............If stylesheet does not exist, add it
                else
-                  call rep_Update_Config ("+style_sheet",
+                  call SetReportConfig ("+style_sheet",
      &                                    cFilePaths(iFile)
      &                                    (1:lnblnk(cFilePaths(iFile))))
-               endif 
-               
-C...........Update customizable xslt path               
+               endif
+
+C...........Update customizable xslt path
             elseif ( iChoice ==  iSS_list_end + 2 ) then
                h(1) = 'H3K Reports will search for xsl files on your'
                h(2) = 'system. The default paths are: '
@@ -507,10 +573,10 @@ C...........Update customizable xslt path
                h(9) = 'in this path, they will be listed in the '
                h(10)= 'menu. '
                h(11)= ' '
-               h(12)= 'Remember to include a trailing slash (`/`) '
+               h(12)= 'Remember to include a trailing slash (''/'') '
                h(13)= 'when specifying directories .'
-               
-               
+
+
                CALL EASKS(cAltPath,' Path to xsl files?',
      &                   ' ',72,'./','Path to xslt files',ierr,13)
 
@@ -520,56 +586,57 @@ C...........Link stylesheet
             elseif ( iChoice ==  iSS_list_end + 3 .and.
      &               bStyleSheet_Selected ) then
 
-                if( .not. rep_toggle_config("link_style_sheet") ) then
+                if( .not. ReportToggleConfig("link_style_sheet") ) then
                    ! Possible error trapping here
                 endif
 
 C...........Apply stylesheet using integrated xslt processor
             elseif ( iChoice ==  iSS_list_end + 4 .and.
      &               bStyleSheet_Selected ) then
-                
-                if( .not. rep_toggle_config("apply_style_sheet") ) then
+
+                if( .not. ReportToggleConfig("apply_style_sheet") ) then
                    ! Possible error trapping here
                 endif
 
 C...............Empty transform destination file, if defined
-                cValue = rep_Report_Config("transform_destination_file")
+                call GetReportConfig("transform_destination_file",
+     &                  cValue)
                 if ( cValue (1:3) /= '   ' ) then
-                   call rep_Update_Config
+                   call SetReportConfig
      &                   ("transform_destination_file", ' ')
-                endif 
-                
+                endif
+
 C...........Specify transform destination file
             elseif ( iChoice == iSS_list_end + 5 .and.
      &                bTransform_available ) then
 
-               h(1) = 'If `apply style sheet` is selected, H3K Reports'
-               h(2) = 'will automatically transform the xml output'
-               h(3) = 'using the selected style sheet and write the'
-               h(4) = 'results to disk. You can specify the name of the'
-               h(5) = 'output file here.'
-               
+            h(1) = 'If ''apply style sheet'' is selected, H3K Reports'
+            h(2) = 'will automatically transform the xml output'
+            h(3) = 'using the selected style sheet and write the'
+            h(4) = 'results to disk. You can specify the name of the'
+            h(5) = 'output file here.'
+
                call easks(cDestFile,' Transform destination file?',
      &                             ' ',72,
      &                             'Results.out',
      &                             'Transform destination file',ierr,5)
      &
 
-               call rep_Update_Config ("transform_destination_file",
+               call SetReportConfig ("transform_destination_file",
      &                                 cDestFile(1:lnblnk(cDestFile)))
-     
+
 
             endif
-                                          
-         endif 
-     
+
+         endif
+
       enddo
 
 C.....Update configuration file
-      call rep_update_config_file ()
-      
-      return
-      end 
+      call UpdateConfigFile ()
 
-      
-      
+      return
+      end
+
+
+

@@ -1,10 +1,11 @@
-
 #ifndef TBINNEDDATA_H
 #define TBINNEDDATA_H
 
 #ifdef _WIN32
 #pragma warning (disable: 4786) //to disable annoying "identifier was truncated to '255' characters in the debug information" in VC++
 #endif
+
+#include <cstdio>
 
 /**
 Class TBinnedData
@@ -17,7 +18,8 @@ class TBinnedData
 public:
 
 	TBinnedData();
-	
+	~TBinnedData();
+
 	/**
 	AddValue(double val)
 	@param val new value
@@ -26,21 +28,22 @@ public:
 
 	*/
 	void AddValue(double val); /// Does not call Increment()
-	
+
+   void RemoveValue(double val);
 	/**
 	Increment()
 
 	Increments the total number of timesteps
 	*/
 	void Increment();
-	
+
 	/**
 	Log()
 
 	Logs the output to cout
 	*/
 	void Log();
-	
+
 	///getters
 	double Timesteps();
 	double ActiveTimesteps();
@@ -49,7 +52,7 @@ public:
 	double Min();
 	double ActiveAverage();
 	double TotalAverage();
-	
+
 protected:
 
     int m_activeTimesteps;
@@ -58,8 +61,7 @@ protected:
     double m_maxValue;
     double m_minValue;
     double m_activeAverage;
-	double m_totalAverage;
-	
+
 	double m_lastValue;
 	bool m_isInit;
 

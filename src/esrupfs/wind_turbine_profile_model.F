@@ -28,34 +28,34 @@ C REAL FUNCTION GetWindTurbinePower(WindSpeed)
 C     Determines the Wind turbine power output based upon windspeed.
 C
 C REAL FUNCTION GetWTPower(IPWC)
-C     Determines the Wind speed. Either using direct climate data or 
-C     using Nick Kelly's probability distribution. Then calculated the 
+C     Determines the Wind speed. Either using direct climate data or
+C     using Nick Kelly's probability distribution. Then calculated the
 C     resulting wind turbine power output using GetWindTurbinePower(WindSpeed).
 
 C SUBROUTINE POWOC_Wind_Read_Data(IPWC)
 C     This subroutine will read in all profile data as well as component data
 C     required by the wind turbine profile model.
-C     
+C
 
 
 C *********************************************************************
 C Model: Wind_Turbine_Profile_model
-C 
+C
 C SUBROUTINE POWOC_Wind_Prof_Supp_Elec(IPWC)
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
 C Modified by: Maria Mottillo, February 2007
-C  
-C - This code will determine the power output of a wind turbine. 
-C - A wind turbine pwr vs wind speed profile is used to determine the power output at any given time.  
-C - The influence of geography and site layout on wind speed is handled through Nick Kelly's 
+C
+C - This code will determine the power output of a wind turbine.
+C - A wind turbine pwr vs wind speed profile is used to determine the power output at any given time.
+C - The influence of geography and site layout on wind speed is handled through Nick Kelly's
 C   wind model (this is optional). Direct wind speed from the climate data can be used instead or
 C   wind speed data from a boundary condition definition file can be used. In the latter case, it
 C   is assumed that the wind speed is measured at the site and at the height of the wind turbine(s),
 C   thus no adjustments are made to the .bcd wind speed data for geography or site layout.
-C -Note: In the case of multiple wind turbines it is assumed that the placement is as such that the turbines 
-C     do not affect each other. 
+C -Note: In the case of multiple wind turbines it is assumed that the placement is as such that the turbines
+C     do not affect each other.
 C
 C
 C INPUTS:
@@ -108,7 +108,7 @@ C Common holding power entering/leaving components developed for wind-generated
 C hydrogen-based system model.
 C---------------------------------------------------------------------------------
        COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -149,7 +149,7 @@ C Declarations for local variables.
 C---------------------------------------------------------------------------------
       LOGICAL   XST,dll
       CHARACTER OUTS*124
- 
+
       REAL      fWindSpeedProfile(100),fWindPowerProfile(100)
       INTEGER   iDataPoints
 
@@ -160,7 +160,7 @@ C electrical supply data. Determine data type and convert from ASCII file to bin
 C for direct access during simulation.
 C-------------------------------------------------------------------------------------------
 C Make sure profile is only read in once.
-C      write(*,*) 'Wind Turbine Profile Active ',LWndSupp      
+C      write(*,*) 'Wind Turbine Profile Active ',LWndSupp
 
 C Read the profile data and component data in.
       CALL POWOC_Wind_Read_Data(IPWC)
@@ -173,9 +173,9 @@ C  Take into account scalar multiplier applied to wind supply
 C  POWCDAT(IPWC,2) holds the scalar multiplier (additional data item).
 
       QTotalWindSupply = GetWTPower(IPWC)*POWCDAT(IPWC,2)
-C      write(*,*) 'Wind Turbine Power = ',QTotalWindSupply 
+C      write(*,*) 'Wind Turbine Power = ',QTotalWindSupply
 C Convert from kW to W and strore in PPOWOC
-      PPOWOC(IPWC) = QTotalWindSupply * 1000.0 
+      PPOWOC(IPWC) = QTotalWindSupply * 1000.0
       QPOWOC(IPWC) = 0.
 
 
@@ -185,15 +185,15 @@ C Convert from kW to W and strore in PPOWOC
 
 C *********************************************************************
 C Model: Wind_Turbine_Profile_model
-C 
+C
 C SUBROUTINE POWOC_Wind_Read_Data(IPWC)
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
-C  
-C - This subroutine will read in all the data required for the model. 
-C - Data is to be entered via esp-r's component interface. 
-C - The profile of the wind turbines performance is to be entered via an ascii 
+C
+C - This subroutine will read in all the data required for the model.
+C - Data is to be entered via esp-r's component interface.
+C - The profile of the wind turbines performance is to be entered via an ascii
 C     input file. See examples for format.
 C
 C INPUTS:
@@ -205,7 +205,7 @@ C ------------------------------------------------------------------------------
       IMPLICIT NONE
 #include "power.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C---------------------------------------------------------------------------------
@@ -247,7 +247,7 @@ C Common holding power entering/leaving components developed for wind-generated
 C hydrogen-based system model.
 C---------------------------------------------------------------------------------
       COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -262,7 +262,7 @@ C-------------------------------------------------------------------------------
       COMMON/FILEP/IFIL
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
-      
+
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
@@ -291,11 +291,11 @@ C Declarations for local variables.
 C---------------------------------------------------------------------------------
       LOGICAL   XST,dll
       CHARACTER OUTS*124
- 
+
       CHARACTER OUTSTR*124,word*124
       INTEGER IUNIT,IFIL,k,IER,ND,ival,i,ISTAT,IUOUT, IUIN
       REAL val
-      
+
       INTEGER iDatapoints
       REAL HDWTI
       REAL NTURB
@@ -323,7 +323,7 @@ C Read in the component data.
       TURBI= POWCDAT(IPWC,7)
 
 
-C Make sure profile is only read in once.       
+C Make sure profile is only read in once.
       IF(iWndSupp==0) THEN
 C         write(outs,*) 'Wind Turbine Profile Active ',LWndSupp
 C POWCDATS(IPWC,1) holds the profile file name (additional data string).
@@ -371,7 +371,7 @@ C      write(*,*)'OPening file',LWndSupp
      &'Wind Turbine Profile data: data points',IER)
       iDataPoints=ival
 C      write(*,*)'Wind Turbine: Data Points = ',iDatapoints
-C place profile into arrays. 
+C place profile into arrays.
       do 10 i = 1,iDataPoints
       CALL STRIPC(IWndSupp_ascii,OUTSTR,99,ND,1,
      & 'Wind Turbine Profile:data value',IER)
@@ -391,27 +391,27 @@ C      write (*,*)'Wind power data point read:',fWindPowerProfile(i)
       RETURN
       END
 
-      
+
 C *********************************************************************
 C Model: Wind_Turbine_Profile_model
-C 
+C
 C REAL FUNCTION GetWindTurbinePower(WindSpeed)
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
-C  
-C - This routine will determine the wind power generated via the profile given in 
+C
+C - This routine will determine the wind power generated via the profile given in
 C     the input file. It uses simple linear interpolaton to determine the power.Any
 C     wind speeds outside of the given power curves will return a zero.
 C
 C INPUTS:
 C     - REAL WindSpeed   The windspeed in m/s
 C
-C *********************************************************************      
+C *********************************************************************
       REAL FUNCTION GetWindTurbinePower(WindSpeed)
       IMPLICIT NONE
       COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -419,34 +419,34 @@ C *********************************************************************
 
 
       REAL         QElecT, QTotalWindSupply, QFarmG
-      REAL         fWindSpeedProfile(100),fWindPowerProfile(100)    
-      INTEGER      iDataPoints,i  
+      REAL         fWindSpeedProfile(100),fWindPowerProfile(100)
+      INTEGER      iDataPoints,i
       REAL WindSpeed
 
 
       i=0.
       GetWindTurbinePower =0.
-C      Determine if within turbine power curve range. 
+C      Determine if within turbine power curve range.
       IF  ( WindSpeed .le. fWindSpeedProfile(iDataPoints) .and.
      &     WindSpeed .ge. fWindSpeedProfile(1)) THEN
 C     Find range
          DO WHILE (GetWindTurbinePower .eq. 0. .and. i .lt.iDataPoints )
             i=i+1
-            if ( WindSpeed .ge. fWindSpeedProfile(i) .and. 
+            if ( WindSpeed .ge. fWindSpeedProfile(i) .and.
      &           WindSpeed .lt. fWindSpeedProfile(i+1) ) then
-               
+
 C     use linear interpolation
-               
+
                GetWindTurbinePower = fWindPowerProfile(i)
      &              +(  ( Windspeed - fWindSpeedProfile(i))
      &              /
-     &              ( fWindSpeedProfile(i+1) - fWindSpeedProfile(i) ) 
+     &              ( fWindSpeedProfile(i+1) - fWindSpeedProfile(i) )
      &              * (fWindPowerProfile(i+1) - fWindPowerProfile(i)))
 
 
             ENDIF
-         END DO   
-            
+         END DO
+
 C     Use linear interpolation to determine power output.
       ELSE
          GetWindTurbinePower = 0.
@@ -457,27 +457,28 @@ C     Use linear interpolation to determine power output.
 
       RETURN
       END  ! of FUNCTION
-      
-      
- 
+
+
+
 C *********************************************************************
 C Model: Wind_Turbine_Profile_model
-C 
+C
 C REAL FUNCTION GetWindTurbinePower(WindSpeed)
 C
 C Created by: Phylroy Lopez
 C Initial Creation Date: Jan 2005
-C  
-C - This routine will determine the wind power generated via the profile given in 
+C
+C - This routine will determine the wind power generated via the profile given in
 C     the input file. It uses simple linear interpolaton to determine the power.Any
-C     wind speeds outside of the given power curve will return a zero. This will determine the 
-C     actual wind speed and use it with the GetWindturbine Power 
+C     wind speeds outside of the given power curve will return a zero. This will determine the
+C     actual wind speed and use it with the GetWindturbine Power
 C
 C INPUTS:
 C     - INTEGER IPWC    Component number.
 C
-C *********************************************************************      
+C *********************************************************************
        REAL FUNCTION GetWTPower(IPWC)
+       use h3kmodule
        IMPLICIT NONE
 #include "building.h"
 #include "plant.h"
@@ -522,7 +523,7 @@ C Common holding power entering/leaving components developed for wind-generated
 C hydrogen-based system model.
 C---------------------------------------------------------------------------------
       COMMON/WINDHYD/
-     & QTotalWindSupply, 
+     & QTotalWindSupply,
      & QFarmG,
      & fWindspeedProfile,
      & fWindPowerProfile,
@@ -537,7 +538,7 @@ C-------------------------------------------------------------------------------
       COMMON/FILEP/IFIL
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
-      
+
 C---------------------------------------------------------------------------------
 C Declarations for common block variables.
 C---------------------------------------------------------------------------------
@@ -565,16 +566,14 @@ C-------------------------------------------------------------------------------
 C Declarations for local variables.
 C---------------------------------------------------------------------------------
       LOGICAL   XST,dll
- 
+
       CHARACTER OUTSTR*124,word*124
       INTEGER IUNIT,IFIL,k,IER,ND,ival,i,ISTAT,IUOUT, IUIN
       REAL val
-      
-      INTEGER iDatapoints
-      
-C.....Strings used for XML output reporting
-      CHARACTER*128  hold_name, root_name, H3K_rep_NAME
 
+      INTEGER iDatapoints
+
+      INTEGER iNameLength  !Use to store temporary variable's length (for reporting)
 
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
@@ -631,7 +630,7 @@ C.....Strings used for XML output reporting
       INTEGER J
       REAL PDV
       REAL PRC
-      REAL TSL 
+      REAL TSL
       REAL TDUR
       REAL WISPDM
       REAL WIDIRM
@@ -641,7 +640,7 @@ C.....Strings used for XML output reporting
                                !   (& fraction thereof)
 
 C Subroutine
-      REAL  GetWindTurbinePower     
+      REAL  GetWindTurbinePower
       REAL TotalPRC
 
       real fConvert_current_TS_to_DAY     ! Function returning current day #
@@ -662,7 +661,7 @@ C Read in the component data.
 C Set up pi
       PI = 22. / 7.
 
-C Get the current climate data 
+C Get the current climate data
       WIDIR = DF
       WISPD = VF
       DRYBT = TF
@@ -701,7 +700,7 @@ C Rural location
 C Set the new wind speed and turbulent intensity from profiles. If height
 C is zero set to a small value to avoid a NaN.
 
-C set height of wind turbine to a small number if zero.. 
+C set height of wind turbine to a small number if zero..
         IF( HDWTI .LT. 1E-6 ) HDWTI = 1E-6
 
 C set reference height to small number if zero.
@@ -721,7 +720,7 @@ C        write(*,*) 'Profile TURBI ',TURBI
       ELSEIF (IPROF.EQ.2) THEN
 
 C....Get the wind speed data from the boundary condition definition file
-C....In this case, it is assumed that the wind speed data is recorded at the wind farm site- no 
+C....In this case, it is assumed that the wind speed data is recorded at the wind farm site- no
 C....corrections are applied for the site location and/or turbine height.
 
 C....The name of the boundary condition file column header containing the wind speed data
@@ -730,7 +729,7 @@ C....should correspond to the second data string input specified for the power-o
 
 C....Save column header name as string
         write (cName_buffer, '(A)') powcdats(IPWC,2)
-              
+
 C....Get day
         fDay = fConvert_current_TS_to_DAY()
 
@@ -739,7 +738,7 @@ C.....Write contextual buffer
      &     'condition data for power-only-component (pfs component ',
      &      IPWC,')'
 
-       
+
 C....Get wind speed
         WISPD =  fGet_BC_data_by_name ( cName_buffer,
      &                                  fDay,
@@ -750,7 +749,7 @@ C....Get wind speed
 
       ENDIF
 
-      
+
 
       IF(IWSTAT.GT.0)THEN
 
@@ -769,9 +768,9 @@ C Calculate the range of wind component speeds
 
 
 C Calculate the increment (divided into 10 of a range -3 to +3)
-        INC=6.0*STDEV/10. 
+        INC=6.0*STDEV/10.
 
-C initialize counter. 
+C initialize counter.
         ICOUNT=1
 
 C initialize total for timestep.
@@ -782,7 +781,7 @@ C Set up starting U values.
 
         TotalPRC = 0.
 
-C Set up loop to generate power output. 
+C Set up loop to generate power output.
         DO 66 I=1,10
 C Calculate the current U-value probability density
           PDU = ( 1. / (STDEV * ( 2. * PI ) ** 0.5 ) ) *
@@ -792,17 +791,17 @@ C Calculate the current U-value probability density
 
 C Set the starting value of V
           VALV=MINV
- 
+
           DO 77 J=1,10
 
 C Ditto for the V-value
             PDV=( 1. / ( STDEV * ( 2. * PI ) ** 0.5 ) ) *
      & EXP( - ( ( ( VALV - COMPV ) ** 2. ) / ( 2. * STDEV ** 2. ) ) )
-           
+
 
 C Calculate the combined probability.
             PRC=( INC * PDU ) * ( INC * PDV )
-           
+
 C Calculate the duration of this wind speed and direction
             TSL = 3600. / REAL( ntstep )
             TDUR = PRC * TSL
@@ -832,7 +831,7 @@ C ...and wind direction...
 
 
 C Get wind power for given wind speed.
-            
+
 C            write(*,*)'Stat Windspeed',WISPDM
             PWR = GetWindTurbinePower( WISPDM )
 C            write(*,*)'Stat Power',PWR
@@ -847,11 +846,11 @@ C Obtain the number of KJ for probability slice.
   66    CONTINUE
 
 C Write results for probability based power output
-C        Convert back to kW. 
+C        Convert back to kW.
         POWER= PWRTOT / TSL
 C        write(*,*)'Stat Total Power',POWER
 C         write(*,*)'TotalPRC',TotalPRC
-      ELSE       
+      ELSE
         POWER= GetWindTurbinePower( WISPD )
 C        write(*,*)'Windspeed',WISPD
 C        write(*,*)'Power',POWER
@@ -860,42 +859,17 @@ C        write(*,*)'Power',POWER
 
 C XML reporting
 
-C.... Get component name
-      hold_name = powcomnam(IPWC)
+C.... Get component name's length
+      iNameLength = lnblnk(powcomnam(IPWC))
+
 C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
+      Call AddToReportWild1(rvEPowWindGenOut%Identifier,
+     &      GetWTPower,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-      write(root_name, '(A,A,A,A)')
-     &     'electrical_net/',
-     &     'power_only_components/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/Wind_Gen_Output'
-
-
-      call add_to_xml_reporting(
-     &                       GetWTPower,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Wind generator output' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/Wind_Speed'
-
-
-      call add_to_xml_reporting(
-     &                       WISPD,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(m/s)',
-     &                       'Wind speed' )
-
+      Call AddToReportWild1(rvEPowWindSpeed%Identifier,
+     &      WISPD,
+     &      powcomnam(IPWC)(1:iNameLength))
 
 
       RETURN

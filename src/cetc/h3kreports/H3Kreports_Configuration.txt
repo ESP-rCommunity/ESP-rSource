@@ -3,7 +3,7 @@
                      H3Kreports
 
     A flexible and extensible reporting facility for ESP-r 
-    with support for xml output
+    with support for xml, csv and database output
 
     Contents:
     
@@ -14,6 +14,7 @@
     5. Configuration
     6. Adding data to H3Kreports output 
     7. Memory footprint
+    8. Database structure
 
 
 ABSTRACT
@@ -34,14 +35,15 @@ REQUIREMENTS
 ================================
 
 H3Kreports requires the libxml2 library. The libxslt library is not
-required, but may facilitate formatting H3Kreports output.
+required, but may facilitate formatting H3Kreports output. SQLite 
+is not require, but database output is only avaible when installed.
 
 By design, H3Kreports stores simulation results on the heap, enabling 
 swift recovery. However, bps's resulting memory requirements can 
 approach or exceed the available system memory when:
-  
+
   - annual simulations are performed at small timesteps, and/or
-  
+
   - a large number of output data are requested.
 
 
@@ -58,9 +60,9 @@ CONFIGURATION
 
 H3Kreports is configured using an xml file, called "input.xml".  
 H3Kreports expects to find this file in a model's /cfg directory. If
-the file is not found, a set of defaults are assumed. There is no
-support for configuring H3Kreports through ESP-r's graphical
-interfaces, and such capabilities are not envisioned in the future. 
+the file is not found, a set of defaults are assumed. There is only
+limited support for configuring H3Kreports through ESP-r's graphical
+interfaces. 
 
 The basic structure of input.xml is as follows:
 
@@ -94,24 +96,46 @@ configuration options include:
 
    <dump_all_data>
 
-     - Instructs H3Kreports to store and output all data, in both 
-       .xml and .csv formats, regardless of which variable names 
-       were requested. 
+     - Instructs H3Kreports to store and output all data, in specified 
+       formats, regardless of which variable names were requested. 
        
        NOTE: performing a complete dump of all simulation data requires
        significant amounts of system memory. When dumping results from 
        annual simulations run at short (that is, 1-5 minute timesteps),
        bps's may require several hundred megabytes, or even gigabytes 
-       of memory. The <save_to_disk> option, discussed below, can 
-       reduce these requirements somewhat.
+       of memory. The <save_to_disk> option, discussed below, will 
+       reduce these requirements.
 
      - Valid values: true, false (default)
 
+   <step_output_format> 
+
+     - Instructs H3Kreports to store the output of step data in the 
+       specified format.  CSV output will be stored in a "out.csv"
+       file.  Database output will be stored in a "out.db3" file. 
+
+       NOTE: the db format produces an SQLite3 database file epr-r
+       must be built with the --SQLite option for this format to be
+       available.
+
+     - Valid values: all, db, csv (default)
+
+   <log_output_format> 
+
+     - Instructs H3kreports to store the output of log data in the 
+       specified format.  XML output will be stored in "out.xml".   
+       Database output will be stored in "out.db3".
+
+       NOTE: the db format produces an SQLite3 database file epr-r
+       must be built with the --SQLite option for this format to be
+       available.
+
+     - Valid values: all, db, xml (default)
 
    <enable_xml_wildcards>
 
      - Enables simple wildcard matching when comparing x-path variable
-       names with requested output. 
+       names with requested output.
 
      - Valid values: true, false (default)
 
@@ -136,7 +160,8 @@ configuration options include:
 
      - Instructs H3Kreports to calculate and store summary statistics
        (min, max, average, monthly bin) for the specified variable. 
-       The specified variable will appear in out.xml.
+       The specified variable will appear in the output format defined
+       in <log_output_format>.
 
      - Valid values: x-path name for any H3Kreports variable. If the 
        <enable_xml_wildcards> tag has been set to true, simple
@@ -150,15 +175,19 @@ configuration options include:
 
                
    <output_dictionary> 
-  
-     - Instructs H3Kreports to output a list of all variables
-       encountered during a simulation in ascii format. The list will
-       appear in a file called "out.dictionary". This option is
-       especially useful if you are unfamiliar with the H3Kreports
-       variable naming convention used in ESP-r. 
 
-     - Valid values: true, false (default)
+     - Instructs H3Kreports to output a list in ascii format of variables
+       avaible for reporting.  This list will appear in a file called 
+       "out.dictionary".  There are two options for dictionary output. 
+       Option "sim": reports simulation encountered variable names (fully 
+           defined). 
+       Option "all": reports all the defined variables available for 
+           reporting in esp-r before their name are resoved.  Expect
+           the apperance of wilcards * in the variable names.  These
+           are to be replaced by character sets during the simulation run. 
 
+     - Valid values: sim(default), all, off 
+		     true, false (legacy support - true .eq. sim)
 
    <report_startup_period_data>
 
@@ -168,23 +197,23 @@ configuration options include:
 
      - Valid values: true, false (default)
 
-   <save_to_disk>
- 
-     - Instructs H3Kreports to save time-step data in a scratch file 
-       on disk, rather than paging the data into memory. This option
-       can significantly reduce bps's memory requirements on longer 
-       simulations, but is only effective if options 
-       <dump_all_data>true</dump_all_data> or <step_variable>...</step_variable>
-       are set. 
+   <save_to_disk every="#rows">
+     - Instructs H3Kreports to push the step data to defined output 
+       every #rows.  This option will significantly reduce bps's 
+       memory requirements on longer simulation, but is only effective
+       if options <dump_all_data>true</dump_all_data> or
+       <step_variable>...</step_variable> are set.  The optional "every" 
+       attribute instructs H3Kreports how many timestep before a write to
+       is done.        
 
-     - Valid values: true, false 
-
+     - Valid values: true, false
+     - Attribute "every"(optional): 100-10000 default 1000 if unspecified
      
    <step_variable>
 
      - Instructs H3Kreports to store time-step data for the specified
-       variable. The specified variable will appear in out.csv, and
-       its time step data will be included in out.xml.
+       variable. The specified variable will appear the output format
+       specified with the <log_output_format> option.  
 
      - Valid values: x-path name for any H3Kreports variable. If the 
        <enable_xml_wildcards> tag has been set to true, simple
@@ -198,8 +227,7 @@ configuration options include:
 
      - Note: when wildcard matching is used to match a large set of
        variables, ESP-r's memory requirements and the file sizes of 
-       out.xml & out.csv can grow significantly.
-
+       out.csv can grow significantly.
        
    <style_sheet>
 
@@ -255,6 +283,12 @@ configuration options include:
 
 ADDING DATA TO H3KREPORTS OUTPUT
 ================================
+
+Step 1: Define the variable
+
+
+
+
 
 A single function call is used to pass data to H3KReports:
 

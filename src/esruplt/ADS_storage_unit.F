@@ -1,13 +1,13 @@
 C------------------------------------------------------------------------------------
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -21,11 +21,11 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C This file contains the following subroutines related to the component model 
+C This file contains the following subroutines related to the component model
 C of an adorption storage unit.
 C
 C ADS_stg_static_template: Static template executed prior to timestep simulation.
-C                          
+C
 C ADS_stg_coeff_gen: Coefficient generator for adsorption storage unit component.
 C                    This subroutine is executed each timestep, or iteration (there
 C                    may be several iterations per timestep for convergence).
@@ -34,7 +34,7 @@ C This file also contains the following function:
 C ADS_mass_ratio: This function calculates the ratio of adsorbate to adsorbent, X,
 C                 within the adsorber using the Dubinin-Astakov (D-A) equation. X
 C                 is a function of pressure and temperature within the adsorber.
-C                
+C
 C------------------------------------------------------------------------------------
 C References:
 
@@ -64,7 +64,7 @@ C The adsorption storage unit component is represented with 3 nodes:
 C node 1 represents the adsorber
 C node 2 represents the condenser.
 C node 3 represents the evaporator.
- 
+
 C INPUTS:
 C    IPCOMP     plant component index
 C    NPCOMP     number of plant components
@@ -83,7 +83,7 @@ C    fCpAdsorbent:      Specific heat of adsorbent contained in adsorber (J/kgK)
 C    fCoeff_Wo:         Coefficient Wo of Dubinin-Astakhov (D-A) adsorption equilibrium
 C                       equation. Wo represents the volume of the adsorption space,
 C                       a charateristic of the adsorbent (m3/kg adsorbent).
-C    fCoeff_D:          Coefficient D of D-A adsorption equilibrium equation. D is a 
+C    fCoeff_D:          Coefficient D of D-A adsorption equilibrium equation. D is a
 C                       characteristic of the adsorbent/adsorbate pair (-).
 C    fCoeff_n:          Coefficient n of D-A adsorption equilibrium equation. n is a
 C                       characteristic of the adsorbent/adsorbate pair (-).
@@ -109,7 +109,7 @@ C                       the adsorber (oC).
 C    fCondPressure:     Condenser pressure (kPa).
 C    fCondEffec:        Condenser heat exchanger effectiveness (-).
 C    fMassFlowAirCond:  Mass flow rate of air entering condenser (kg/s).
-C    fSurfAreaCond:     Surface area of condenser (m2).      
+C    fSurfAreaCond:     Surface area of condenser (m2).
 C    fCondOverallHamb:  Overall heat transfer coefficient condenser-surroundings (W/m2K).
 C    fCondFanPower:     Condenser fan power rating (W).
 C    fEvapPressure:     Evaporator pressure (kPa).
@@ -146,7 +146,7 @@ C-------------------------------------------------------------------------------
 
        COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
        INTEGER ITCF            !-building-side time increment
-                               !-to end trace output 
+                               !-to end trace output
        INTEGER ITRACE          !-trace call index
        INTEGER IZNTRC          !-zone trace index
        INTEGER ITU             !-trace output unit number
@@ -182,7 +182,7 @@ C-------------------------------------------------------------------------------
        COMMON/ADS_storage_4/iPhaseCycle
 
 
-       INTEGER    iPhaseCycle     
+       INTEGER    iPhaseCycle
 
 
 C------------------------------------------------------------------------------------
@@ -195,7 +195,7 @@ C-------------------------------------------------------------------------------
        INTEGER  iNumCtlVar                 !-number of control variables for component
        PARAMETER ( iNumCtlVar = 2 )        !-if only simulating component, change to 0!
        INTEGER  itemp, i, j
-       LOGICAL  bMistake  
+       LOGICAL  bMistake
        REAL     ADS_mass_ratio
 
 
@@ -212,7 +212,7 @@ C-------------------------------------------------------------------------------
             itemp = (IPCOMP/5)*5
             if ( itemp.EQ.IPCOMP .OR. IPCOMP.EQ.NPCOMP) then
                 CALL EPAGEW            !-write 5 lines at a time
-            endif          
+            endif
          endif
       endif
 
@@ -224,7 +224,7 @@ C the plant network (.pln) file. NCI(IPCOMP) holds the number of possible
 C plant control variables as specified in the .pln file.
 C The adsorption storage component has two control variables.
 C------------------------------------------------------------------------------------
-C This code is commented out here for testing of plant component model-no control 
+C This code is commented out here for testing of plant component model-no control
 C variables are considered.
 
       if ( NCI(IPCOMP) .NE. iNumCtlVar ) then
@@ -309,7 +309,7 @@ C      endif
 
 
 C------------------------------------------------------------------------------------
-C Assign user-specified inputs.  
+C Assign user-specified inputs.
 C------------------------------------------------------------------------------------
 
       fMassAdsorbent         = ADATA(IPCOMP,1)
@@ -336,7 +336,7 @@ C-------------------------------------------------------------------------------
       fCondPressure          = ADATA(IPCOMP,22)
       fCondEffec             = ADATA(IPCOMP,23)
       fMassFlowAirCond       = ADATA(IPCOMP,24)
-      fSurfAreaCond          = ADATA(IPCOMP,25)     
+      fSurfAreaCond          = ADATA(IPCOMP,25)
       fCondOverallHamb       = ADATA(IPCOMP,26)
       fCondFanPower          = ADATA(IPCOMP,27)
       fEvapPressure          = ADATA(IPCOMP,28)
@@ -361,11 +361,11 @@ C Set initial conditions of adsorber (node 1).
 C------------------------------------------------------------------------------------
 
 
-      fPressAdsorber_Present = fPressAdsorber_Init   !-present value set for first 
+      fPressAdsorber_Present = fPressAdsorber_Init   !-present value set for first
                                                      !-iteration of coefficient generator
 
 
-      fX_Initial = ADS_mass_ratio( fPressAdsorber_Init,    !-initial adsorbate to 
+      fX_Initial = ADS_mass_ratio( fPressAdsorber_Init,    !-initial adsorbate to
      &                             fTempAdsorber_Init,     !-adsorbent mass based on
      &                             fCoeff_Wo,              !-initial temperature and
      &                             fCoeff_D,               !-pressure
@@ -428,7 +428,7 @@ C charging mode, is configured to be connected to a reservoir
 C that stores the adsorbate in liquid form. Node 3, which is active
 C during the discharge of the adsorption storage unit, is configured
 C to be connected to the reservoir of liquid adsorbate and to an
-C auxiliary water tank that provides low-temperature heat. 
+C auxiliary water tank that provides low-temperature heat.
 
 
 C INPUTS:
@@ -438,7 +438,7 @@ C    fCpAdsorbent:      Specific heat of adsorbent contained in adsorber (J/kgK)
 C    fCoeff_Wo:         Coefficient Wo of Dubinin-Astakhov (D-A) adsorption equilibrium
 C                       equation. Wo represents the volume of the adsorption space,
 C                       a charateristic of the adsorbent (m3/kg adsorbent).
-C    fCoeff_D:          Coefficient D of D-A adsorption equilibrium equation. D is a 
+C    fCoeff_D:          Coefficient D of D-A adsorption equilibrium equation. D is a
 C                       characteristic of the adsorbent/adsorbate pair (-).
 C    fCoeff_n:          Coefficient n of D-A adsorption equilibrium equation. n is a
 C                       characteristic of the adsorbent/adsorbate pair (-).
@@ -462,7 +462,7 @@ C                       respectively (oC).
 C    fCondPressure:     Condenser pressure (kPa).
 C    fCondEffec:        Condenser heat exchanger effectiveness (-).
 C    fMassFlowAirCond:  Mass flow rate of air entering condenser (kg/s).
-C    fSurfAreaCond:     Surface area of condenser (m2).      
+C    fSurfAreaCond:     Surface area of condenser (m2).
 C    fCondOverallHamb:  Overall heat transfer coefficient condenser-surroundings (W/m2K).
 C    fCondFanPower:     Condenser fan power rating (W).
 C    fEvapPressure:     Evaporator pressure (kPa).
@@ -499,6 +499,7 @@ C-------------------------------------------------------------------------------
 
 
        SUBROUTINE ADS_stg_coeff_gen(IPCOMP,COUT,ISTATS)
+       use h3kmodule
        IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -519,7 +520,7 @@ C-------------------------------------------------------------------------------
 
        COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
        INTEGER ITCF            !-building-side time increment
-                               !-to end trace output 
+                               !-to end trace output
        INTEGER ITRACE          !-trace call index
        INTEGER IZNTRC          !-zone trace index
        INTEGER ITU             !-trace output unit number
@@ -542,7 +543,7 @@ C-------------------------------------------------------------------------------
                                !-for plant solution
        REAL    PERREL          !-maximum allowed relative error
                                !-for plant solution
-       REAL    PERTMP          !-maximum allowed absolute error 
+       REAL    PERTMP          !-maximum allowed absolute error
                                !-temperature for plant solution (K)
        REAL    PERFLX          !-maximum allowed absolute error
                                !-heat flux for plant solution (W)
@@ -567,7 +568,7 @@ C-------------------------------------------------------------------------------
        INTEGER IPC1            !-component number defining the receiving
                                !-component
        INTEGER IPN1            !-node number defining the receiving component
-       INTEGER IPCT            !-plant component inter-connection type 
+       INTEGER IPCT            !-plant component inter-connection type
        INTEGER IPC2            !-component number defining the sending
                                !-component
        INTEGER IPN2            !-node number defining the sending component
@@ -601,7 +602,7 @@ C-------------------------------------------------------------------------------
      &              PCQP(MPNODE),PCNTMP(MPCOM)
        REAL    PCTF            !-future value of sending node temperature
                                !-for plant connection
-       REAL    PCRF            !-future value of heat capacity rate for plant 
+       REAL    PCRF            !-future value of heat capacity rate for plant
                                !-connection
        REAL    PUAF            !-future value of plant node's UA value
        REAL    PCQF            !-future value of plant node heat addition/extraction
@@ -646,7 +647,7 @@ C-------------------------------------------------------------------------------
        REAL    HF              !-relative humidity, future hour
 
 
-       COMMON/pltcon/bpltcon,lastTStp   
+       COMMON/pltcon/bpltcon,lastTStp
        LOGICAL bpltcon                  !-logical variable indicating if plant domain
        REAL    lastTStp                 !-converged in previous iteration
 
@@ -661,7 +662,7 @@ C-------------------------------------------------------------------------------
        COMMON/ADS_storage_4/iPhaseCycle
 
 
-       INTEGER    iPhaseCycle     
+       INTEGER    iPhaseCycle
        INTEGER    iIsotericHtg
        INTEGER    iDesorption
        INTEGER    iIsotericClg
@@ -698,7 +699,7 @@ C-------------------------------------------------------------------------------
        REAL       fTemp_node1_present, fTemp_node1_future  !-present and future temperature values of node 1, oC
        REAL       fTemp_node2, fTemp_node3      !-temperature values of nodes 2 and 3, respectively, oC
        REAL       fTemp_node2_K, fTemp_node3_K  !-temperature values of nodes 2 and 3, respectively, K
-       REAL       R_gas                    !-universal gas constant             
+       REAL       R_gas                    !-universal gas constant
        PARAMETER ( R_gas = 8.3144 )        !-(kJ/kmolK)
 
        REAL       fH2O_molW       !-molecular weight of water (kg/kmol)
@@ -714,7 +715,7 @@ C-------------------------------------------------------------------------------
        REAL       ADS_mass_ratio      !- function to calculate X(P,T)
        REAL       H2OPSAT             !- function to calculate saturated vapour pressure
                                       !- using Clausius-Clapeyron equation
-       REAL       CpVapour            !- function to approximate specific heat of 
+       REAL       CpVapour            !- function to approximate specific heat of
                                       !- saturated vapour wrt reference temperature (kJ/kgK)
        REAL       CpLiquid            !- function to approximate specific heat of
                                       !- saturated liquid wrt reference temperature (kJ/kgK)
@@ -744,7 +745,7 @@ C-------------------------------------------------------------------------------
        PARAMETER( fAccuracy = 0.0001 )
        INTEGER    i                  !-counter
        INTEGER    itemp
-                                     
+
        REAL       fTemp_cond_out     !- temperature of air leaving condenser (oC)
        REAL       fTemp_evap_out     !- temperature of water leaving evaporator (oC)
 
@@ -760,9 +761,7 @@ C-------------------------------------------------------------------------------
        REAL       fChHeatTransfer    !- heat transferred between fuel cell and adsorber (charging), (W)
        REAL       fDisHeatTransfer   !- heat transferred between tank and adsorber (discharge), (W)
 
-       CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
-       character*128 root_name       ! root name of component node 
-       character*128 hold_name       ! temporary variable for string manipulation
+       integer    iNameLength        ! temporary variable for storing string length
 
        real       fCondHeat          !- heat rejected from condenser to outdoors (W)
        real       fEvapHeat          !- heat input to evaporator from aux heat source (W)
@@ -797,7 +796,7 @@ C    con1a          number of first connection to node 1 (to fuel cell)
 C    con1b          number of second connection to node 1 (to water tank)
 C    con2           number of connection to  node 2 (to reservoir)
 C    con3a          number of first connection to node 3 (to auxiliary water tank)
-C    con3b          number of second connection to node 3 (to reservoir) 
+C    con3b          number of second connection to node 3 (to reservoir)
 C----------------------------------------------------------------------------------     --
       node1 = NPCDAT(IPCOMP,9)
       node2 = NPCDAT(IPCOMP,9)+1
@@ -848,7 +847,7 @@ C      CSVI(node3,2) = CSVF(node3,2)
 
 
 C------------------------------------------------------------------------------------
-C The adsorption storage unit has three possible modes of operation: 
+C The adsorption storage unit has three possible modes of operation:
 C (1) charging mode
 C (2) discharge mode
 C (3) storage mode.
@@ -860,7 +859,7 @@ C below a minimum setpoint temperature.
 C A MORE SOPHISTICATED CONTROL SHOULD BE IMPLEMENTED TO AVOID THE STORAGE UNIT
 C GOING INTO DISCHARGE MODE WHEN THE FUEL CELL MAY OPERATE SOON (WILL CAUSE HEAT
 C DUMP).
-C 
+C
 C WHEN ONLY RUNNING SIMULATION OF COMPONENT,
 C CODE PERTAINING TO CDATA IS COMMENTED OUT.
 C------------------------------------------------------------------------------------
@@ -876,9 +875,9 @@ C it is in storage mode.
 C for testing of plant component model
 C charging phase testing
 C         bCharging = .TRUE.
-C discharge phase testing 
+C discharge phase testing
 C         bDischarge = .TRUE.
- 
+
 C for testing when unit goes into storage mode, do not want to reset to charging/discharge mode
 C         if ( iPhaseCycle .EQ. iStorage ) then
 C            bCharging = .FALSE.
@@ -890,7 +889,7 @@ C          bCharging = .FALSE.
 C         bDischarge = .FALSE.
 C end code for testing.
 
-         if ( .NOT.bCharging .AND. .NOT.bDischarge ) then 
+         if ( .NOT.bCharging .AND. .NOT.bDischarge ) then
              bStorage = .TRUE.
          else
              bStorage = .FALSE.
@@ -898,7 +897,7 @@ C end code for testing.
 
 C-----------------------------------------------------------------------------------
 C NOTE: THE WAY THE CODE IS SET UP WILL HAVE TO ENSURE THAT THE  FIRST CONNECTION
-C TO THE ADSORBER IS TO HEAT SOURCE (IE FUEL CELL). MAY WANT TO ADD ERROR 
+C TO THE ADSORBER IS TO HEAT SOURCE (IE FUEL CELL). MAY WANT TO ADD ERROR
 C TRAPPING OR MODIFY CODE TO ELIMINATE THIS RESTRICTION.
 
 C Variables used:
@@ -944,11 +943,11 @@ C Set initial temperature of adsorber node
        fTemp_node1_future  = CSVF(node1,1)
 
 
-C If unit just switched into storage mode, 
+C If unit just switched into storage mode,
 C recalculate X with latest temperature value.
 
 
-      if ( bStorage ) then 
+      if ( bStorage ) then
 
 
 
@@ -958,7 +957,7 @@ C recalculate X with latest temperature value.
      &                                   fTemp_node1_present,
      &                                   fCoeff_Wo,
      &                                   fCoeff_D,
-     &                                   fCoeff_n ) 
+     &                                   fCoeff_n )
 
 
 
@@ -970,7 +969,7 @@ C recalculate X with latest temperature value.
      &                                   fTemp_node1_present,
      &                                   fCoeff_Wo,
      &                                   fCoeff_D,
-     &                                   fCoeff_n ) 
+     &                                   fCoeff_n )
 
 
          endif
@@ -983,7 +982,7 @@ C recalculate X with latest temperature value.
 
 C-----------------------------------------------------------------------------------
 C If the adsorption storage unit is in charging mode, the maximum temperature
-C of the adsorber to ensure proper heat transfer with the heat source is 
+C of the adsorber to ensure proper heat transfer with the heat source is
 C the temperature of the heat source minus the minimum temperature difference
 C specified by the user. Similarly, during the discharge phase, the minimum
 C temperature of the adsorber to ensure proper heat transfer with the heat
@@ -991,7 +990,7 @@ C sink is the temperature of the heat sink plus the minimum temperature differen
 C The adsorption storage unit is set to storage mode if the adsorber is greater
 C than or equal to the maximum temperature or if the adsorber is less than or
 C equal to the minimum temperature (this is done by the controller).
-C NOTE: THE WAY THE CODE IS SET UP, THE FIRST CONNECTION TO THE ADSORBER NODE 
+C NOTE: THE WAY THE CODE IS SET UP, THE FIRST CONNECTION TO THE ADSORBER NODE
 C MUST BE TO THE HEAT SOURCE. THE SECOND CONNECTION TO THE ADSORBER NODE IS
 C TO THE HEAT SINK.
 C-----------------------------------------------------------------------------------
@@ -1006,7 +1005,7 @@ C-------------------------------------------------------------------------------
 C-----------------------------------------------------------------------------------
 C Determine the `present' and `future' temperature of the room containing the
 C adsorption storage unit. This is used to calculate the heat lost from the
-C unit to the room during the charging, discharge and storage phases. 
+C unit to the room during the charging, discharge and storage phases.
 C Variables used:
 C    PCNTMP(i)  present time-row temperature of room containing component `i'.
 C    PCNTMF(i)  future time-row temperature of room containing component `i';
@@ -1158,7 +1157,7 @@ C--------------------------------------------------------------------
         if ( bCharging ) then
 
 
-           if ( iPhaseCycle .EQ. 0 .OR. 
+           if ( iPhaseCycle .EQ. 0 .OR.
      &          iPhaseCycle .EQ. iStorage ) then       !-phase of the cycle not yet found
                                                        !-or previous phase of cycle was storage
 
@@ -1175,7 +1174,7 @@ C X = fX_present and P = fCondPressure
      &                       fCondPressure,
      &                       40.0,
      &                       200.0,
-     &                       bSuccess )                
+     &                       bSuccess )
 
                 if ( bSuccess ) then         !-value exists within acceptable range
 
@@ -1206,7 +1205,7 @@ C Determine phase of cycle
            if ( fTemp_node1_present .LT. fTemp_switch ) then
 
 
-                     iPhaseCycle = iIsotericHtg              
+                     iPhaseCycle = iIsotericHtg
 
 C Calculate pressure
 
@@ -1253,7 +1252,7 @@ C and the present adsorber temperature, for which X = fX_present and P = fEvapPr
      &                       fEvapPressure,
      &                       40.0,
      &                       200.0,
-     &                       bSuccess )                
+     &                       bSuccess )
 
 
 
@@ -1264,7 +1263,7 @@ C and the present adsorber temperature, for which X = fX_present and P = fEvapPr
      &                                       fCoeff_D,
      &                                       fCoeff_n,
      &                                       fX_Present,
-     &                                       fEvapPressure,     
+     &                                       fEvapPressure,
      &                                       40.0,
      &                                       fTemp_node1_present,
      &                                       fAccuracy )
@@ -1283,7 +1282,7 @@ C and the present adsorber temperature, for which X = fX_present and P = fEvapPr
 
                  iPhaseCycle = iIsotericClg
 
-C Calculate pressure 
+C Calculate pressure
                  fVapPressureAdsorber = PSOLVE( fCoeff_Wo,
      &                                          fCoeff_D,
      &                                          fCoeff_n,
@@ -1308,7 +1307,7 @@ C Calculate pressure
             iPhaseCycle = iStorage
 
         endif
-                
+
 
 
 C Save future value just calculated for next iteration
@@ -1345,7 +1344,7 @@ C dT = fDT_Derivative  (user input)
      &                                    fCoeff_D,
      &                                    fCoeff_n )
 
-               fdX_dT = ( X_Tplus - X_Tminus ) / fDT_Derivative 
+               fdX_dT = ( X_Tplus - X_Tminus ) / fDT_Derivative
 
 
 
@@ -1378,9 +1377,9 @@ C dT = fDT_Derivative  (user input)
 
 C-----------------------------------------------------------------------------------
 C Determine ratio of mass of adsorbate to mass of adsorbent, X, in the adsorber
-C using the D-A equation. X is a function of temperature T and pressure P. 
+C using the D-A equation. X is a function of temperature T and pressure P.
 C X is constant during the isoteric heating and isoteric cooling phases
-C and therefore the value of X from the previous iteration (X_Present) remains 
+C and therefore the value of X from the previous iteration (X_Present) remains
 C unchanged.
 C However, X varies during the desorption and adsorption phases, therefore
 C X_Present is recalculated.
@@ -1403,7 +1402,7 @@ C this is required to determine dX/dt later
      &                                     fTemp_node1_present,
      &                                     fCoeff_Wo,
      &                                     fCoeff_D,
-     &                                     fCoeff_n ) 
+     &                                     fCoeff_n )
 
          elseif ( iPhaseCycle .EQ. iAdsorption ) then
 
@@ -1412,7 +1411,7 @@ C this is required to determine dX/dt later
      &                                     fTemp_node1_present,
      &                                     fCoeff_Wo,
      &                                     fCoeff_D,
-     &                                     fCoeff_n ) 
+     &                                     fCoeff_n )
 
          endif
 
@@ -1443,7 +1442,7 @@ C Variables used:
 C     TC(i)        time constant (seconds) of plant component `i'
 C---------------------------------------------------------------------------------
 
-        Rinv = ( 1. / fRtotal_Adsorber ) + fMdotCp_con1a_future +     
+        Rinv = ( 1. / fRtotal_Adsorber ) + fMdotCp_con1a_future +
      &            fMdotCp_con1b_future                                 !-W/K
         CALL ECLOSE(Rinv,0.,0.001,CLOSE)
         IF(CLOSE)THEN
@@ -1507,7 +1506,7 @@ C-------------------------------------------------------------------------------
 C-----------------------------------------------------------------------------------
 C Determine specific heat of air entering the condenser
 C Variables used:
-C SHTFLD(1,T): function that returns the heat capacity (J/kgK) of air (index 1) 
+C SHTFLD(1,T): function that returns the heat capacity (J/kgK) of air (index 1)
 C              at temperature T
 C-----------------------------------------------------------------------------------
 
@@ -1529,17 +1528,17 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Assume that the rate of vapour desorbed from the adsorbent during the
-C charging phase is equal to the mass flow rate of vapour entering the 
+C charging phase is equal to the mass flow rate of vapour entering the
 C condenser. Similarly, assume that the rate of vapour adsorbed by the
 C adsorbent during the discharge phase is equal to the mass flow rate
-C of vapour leaving the evaporator. 
+C of vapour leaving the evaporator.
 C---------------------------------------------------------------------------------
 
 
         if ( iPhaseCycle .EQ. iDesorption .OR.
      &       iPhaseCycle .EQ. iAdsorption ) then
 
-            fMdotVap =  fMassAdsorbent * 
+            fMdotVap =  fMassAdsorbent *
      &                  ABS( fX_Present - fX_Past ) / TIMSEC            !-kg/s
 
 
@@ -1552,13 +1551,13 @@ C-------------------------------------------------------------------------------
 
 
 C---------------------------------------------------------------------------------
-C Determine specific heat of vapour entering the condenser from the adsorber 
+C Determine specific heat of vapour entering the condenser from the adsorber
 C (desorption phase) or the specific heat of the vapour entering the
 C adsorber from the evaporator (adsorption phase).
 C Specific heat is found by linearizing the enthalpy of the vapour at the
-C temperature of the "sending" component (adsorber or evaporator) 
+C temperature of the "sending" component (adsorber or evaporator)
 C at the present time-step with respect to a reference
-C temperature of 25oC (298 K). The saturation enthalpy of the vapour is 
+C temperature of 25oC (298 K). The saturation enthalpy of the vapour is
 C determined using the Shomate equation (source National Institute of Standards
 C and Technology (NIST) Chemistry Handbook available on-line).
 C---------------------------------------------------------------------------------
@@ -1580,9 +1579,9 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Determine the product of mass flow and heat capacity (W/K) of the connection
 C to node 3 (the evaporator). This is the heat capacity rate (W/K) of the
-C water from the auxiliary water tank to the evaporator. 
+C water from the auxiliary water tank to the evaporator.
 C Note that the way the code is set up,the first connection to the evaporator
-C must be to the heat source (auxiliary water tank) and the second 
+C must be to the heat source (auxiliary water tank) and the second
 C connection must be to the mass source (reservoir that contains the
 C adsorbate liquid.
 C The connection is only active when the adsorption unit is in the adsorption
@@ -1590,7 +1589,7 @@ C phase of the discharge cycle.
 C
 C Variables used:
 C    CONVAR(i,1)        Temperature (oC) of the sending node for connection 'i'
-C    CONVAR(i,2)        Water mass flow rate (kg/s) at sending node for 
+C    CONVAR(i,2)        Water mass flow rate (kg/s) at sending node for
 C                       connection 'i'
 C    PCONDR(i)          Ratio of flow rate leaving sending node 'i' that
 C                       reaches the receiving node.
@@ -1618,8 +1617,8 @@ C-------------------------------------------------------------------------------
 
 
 C---------------------------------------------------------------------------------
-C Determine the temperature of the liquid adsorbate flowing from the 
-C reservoir to the evaporator. This temperature is used to determine 
+C Determine the temperature of the liquid adsorbate flowing from the
+C reservoir to the evaporator. This temperature is used to determine
 C the enthalpy of the liquid so that an approximate value of specific
 C heat can be determined.
 C Variables used:
@@ -1631,10 +1630,10 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Determine specific heat of liquid water leaving the condenser (desorption phase)
-C or the specific heat of the liquid water entering the evaporator (adsorption 
-C phase). The specific heat is found by linearizing the enthalpy of the liquid 
+C or the specific heat of the liquid water entering the evaporator (adsorption
+C phase). The specific heat is found by linearizing the enthalpy of the liquid
 C at the temperature of the "sending" component with respect to a reference
-C temperature of 25oC (298 K). The saturation enthalpy of the liquid is 
+C temperature of 25oC (298 K). The saturation enthalpy of the liquid is
 C determined using the Shomate equation (source National Institute of Standards
 C and Technology (NIST) Chemistry Handbook available on-line).
 C---------------------------------------------------------------------------------
@@ -1657,7 +1656,7 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Calculate condenser fan power consumption. Note that this is not taken into
-C account in the energy balance on the condenser but is only reported as an 
+C account in the energy balance on the condenser but is only reported as an
 C additional output variable. The condenser only operates when the adsorption
 C storage unit is in the desorption mode.
 C---------------------------------------------------------------------------------
@@ -1669,7 +1668,7 @@ C-------------------------------------------------------------------------------
         else
 
            fQElecCondFan = 0.
-           
+
         endif
 
 
@@ -1700,8 +1699,8 @@ C the charging process and the heat transferred to the hot water tank
 C (heat sink) during the discharge process
 
 
-       fChHeatTransfer = fAdsFCHeatXeff * fMdotCp_con1a_future * 
-     &                     ( fTemp_con1a - fTemp_node1_future )       
+       fChHeatTransfer = fAdsFCHeatXeff * fMdotCp_con1a_future *
+     &                     ( fTemp_con1a - fTemp_node1_future )
 
 
 
@@ -1712,7 +1711,7 @@ C (heat sink) during the discharge process
 
 C Calculate heat rejected by condenser
 
-        fCondHeat = fCondEffec * fMdotCp_air *            
+        fCondHeat = fCondEffec * fMdotCp_air *
      &              ( fTemp_node2 - fTemp_outdoor )
 
 C Calculate heat input at evaporator
@@ -1751,15 +1750,15 @@ C Node 1 energy balance
      &            alpha * part4
         COUT(5) = -1. * alpha * part3
         COUT(6) = -1. * alpha * part4
-     
+
         COUT(9) = ( part1 +
      &            (-1.) * (1. - alpha) * part2 +
      &            (-1.) * (1. - alpha) * part5 +
-     &            (-1.) * (1. - alpha) * part6  ) *  fTemp_node1_present 
+     &            (-1.) * (1. - alpha) * part6  ) *  fTemp_node1_present
      &            + (1. - alpha) * part5 * fTemp_con1a_present +
      &            (1. - alpha) * part6 * fTemp_con1b_present +
      &            (1. - alpha) * part2 * fTamb_present +
-     &            alpha * part2 * fTamb_future             
+     &            alpha * part2 * fTamb_future
 
 
 C Node 2 energy balance
@@ -1771,7 +1770,7 @@ C Only applicable during desorption phase
      &                        fMdotVap * fCpLiq )
            COUT(10) = fMdotVap * ( fCpVap * fTemp_ref - fHvap_ref ) +
      &                fMdotVap * ( fHliq_ref - fCpLiq * fTemp_ref ) +
-     &              (-1.) * ( fCondEffec * fMdotCp_air * fTemp_outdoor ) 
+     &              (-1.) * ( fCondEffec * fMdotCp_air * fTemp_outdoor )
      &              + (-1.) * ( fCondOverallHamb * fSurfAreaCond *
      &                                               fTamb_future )
        else
@@ -1807,17 +1806,17 @@ C End of energy balance section / Beginning of 1st phase mass balances *********
 C*********************************************************************************
       elseif ( ISTATS .EQ. 2 ) then
 C Node 1: mass flow in equals mass flow out
-C Note the mass flow rate of vapour leaving the adsorber and going to 
-C the condenser during the desorption phase is taken care of in 
+C Note the mass flow rate of vapour leaving the adsorber and going to
+C the condenser during the desorption phase is taken care of in
 C the code above.
         COUT(1) = 1.
 
         if ( bCharging ) then
           COUT(5) = -1. * PCONDR(con1a) * 2.           !-connection to heat source only active
         else                                       !-during the charging phase
-          COUT(5) = 0.                        
-        endif                                  
-                                               
+          COUT(5) = 0.
+        endif
+
         if ( bDischarge ) then
           COUT(6) = -1. * PCONDR(con1b) * 2.           !-connection to heat sink only active
         else                                       !-during the discharge phase
@@ -1864,7 +1863,7 @@ C Node 3: no balance required so make flow zero.
 
 
 
-      endif 
+      endif
 C*********************************************************************************
 C End of energy and mass balances ************************************************
 C*********************************************************************************
@@ -1878,7 +1877,7 @@ C-------------------------------------------------------------------------------
       PCAOUT(IPCOMP,1) = fTemp_Adsorber_Max      !-max temperature of adsorber during desorption,oC
       PCAOUT(IPCOMP,2) = fTemp_Adsorber_Min      !-min temperature of adsorber during adsorption,oC
       PCAOUT(IPCOMP,3) = fVapPressureAdsorber    !-pressure in adsorber, kPa
-      PCAOUT(IPCOMP,4) = iPhaseCycle             !-flag indication phase of cycle unit is in:
+      PCAOUT(IPCOMP,4) = real(iPhaseCycle)       !-flag indication phase of cycle unit is in:
                                                  !- 1 = Isoteric Heating
                                                  !- 2 = Desorption
                                                  !- 3 = Isoteric Cooling
@@ -1919,11 +1918,11 @@ C-------------------------------------------------------------------------------
      &                       'evaporator = ',fTemp_con3a, '  (oC)'
              WRITE(ITU,*) 'Heat cap of heat source to evap = ',
      &                       fMdotCp_con3a,  '(W/K)'
-            
+
           endif
 
           WRITE(ITU,*) 'CDATA : '
-          
+
           if ( bCharging ) then
              WRITE(ITU,*) 'Unit is in charging mode.'
           elseif ( bDischarge ) then
@@ -1950,7 +1949,7 @@ C-------------------------------------------------------------------------------
           endif
 
           if ( ISTATS .EQ. 1 ) then
-             if ( bCharging ) then           
+             if ( bCharging ) then
                 WRITE(ITU,*) 'Temp switch from isoteric htg to ',
      &                       'desorption = ', fTemp_switch, ' (oC)'
              elseif ( bDischarge ) then
@@ -1971,13 +1970,13 @@ C-------------------------------------------------------------------------------
      &                       'adsorber = ', fMdotVap
              endif
           endif
- 
+
 
           WRITE(ITU,*) ' Matrix coefficients for ISTATS = ', ISTATS
           WRITE(ITU,*) (COUT(i), i = 1,11)
           if ( ITU.EQ.IUOUT ) then            !-trace output going to screen (vs file)
                itemp = ( IPCOMP / 4 ) * 4
-               if ( (itemp .EQ. IPCOMP) .OR. (IPCOMP.EQ.NPCOMP) ) 
+               if ( (itemp .EQ. IPCOMP) .OR. (IPCOMP.EQ.NPCOMP) )
      &                           call epagew          !-write 4 lines at a time
           endif
           WRITE(ITU,*) ' Leaving subroutine ADS_stg_coeff_gen'
@@ -1988,187 +1987,75 @@ C-------------------------------------------------------------------------------
 C XML output.
 C------------------------------------------------------------------------------------
 
-      fPhaseCycle = real(iPhaseCycle)      !- real number required for add_to_xml_reporting subroutine
+      fPhaseCycle = real(iPhaseCycle)      !- real number required for AddToReport subroutines
 
 
-C.....Get component name
-      hold_name = pcname(IPCOMP) 
+C.....Get component name's length
+      iNameLength = lnblnk(pcname(IPCOMP))
 C.....Format string as: 'plant/NAME/misc_data'
+       call AddToReportWild1(rvPltMaxAdsTemp%Identifier,
+     &      fTemp_Adsorber_Max,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
+       call AddToReportWild1(rvPltMinAdsTemp%Identifier,
+     &      fTemp_Adsorber_Min,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/max_ads_temp'
+       call AddToReportWild1(rvPltAbsorbPress%Identifier,
+     &      fVapPressureAdsorber,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fTemp_Adsorber_Max,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &                   'Maximum temperature of adsorber' )
+       call AddToReportWild1(rvPltAdsVapFlow%Identifier,
+     &      fMdotVap,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/min_ads_temp'   
+       call AddToReportWild1(rvPltCondFanPow%Identifier,
+     &      fQElecCondFan,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fTemp_Adsorber_Min,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &                   'Minimum temperature of adsorber' )   
+       call AddToReportWild1(rvPltAdsorpHeat%Identifier,
+     &      fAdsorptionHeat,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/adsorber_press'   
+       call AddToReportWild1(rvPltAdsHeatTransCH%Identifier,
+     &      fChHeatTransfer,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fVapPressureAdsorber,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kPa)',
-     &                   'Adsorber pressure' )   
+       call AddToReportWild1(rvPltAdsHeatTransDis%Identifier,
+     &      fDisHeatTransfer,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/ads_vapour_flow'   
+       call AddToReportWild1(rvPltAdsAmbHeatLoss%Identifier,
+     &      fAdsQloss,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fMdotVap,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &        'Mass flow rate of vapour leaving/entering the adsorber' )
+       call AddToReportWild1(rvPltCondAmbHeatLoss%Identifier,
+     &      fCondQloss,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/cond_fan_power'   
+       call AddToReportWild1(rvPltEvapAmbHeatLoss%Identifier,
+     &      fEvapQloss,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fQElecCondFan,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Power draw of condenser fan' )
+       call AddToReportWild1(rvPltTempCondIn%Identifier,
+     &      fTemp_outdoor,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/adsorption_heat'   
+       call AddToReportWild1(rvPltCondHeat%Identifier,
+     &      fCondHeat,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   fAdsorptionHeat,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &     'Rate of heat stored in desorption/released by adsorption' )
+       call AddToReportWild1(rvPltEvapHeat%Identifier,
+     &      fEvapHeat,
+     &      pcname(IPCOMP)(1:iNameLength))
 
+       call AddToReportWild1(rvPltRatioX%Identifier,
+     &      fX_Present,
+     &      pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/ads_heat_transfer_ch'   
-
-       call add_to_xml_reporting(
-     &                   fChHeatTransfer,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Rate of heat transfer to adsorber' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/ads_heat_transfer_dis'   
-
-       call add_to_xml_reporting(
-     &                   fDisHeatTransfer,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Rate of heat transfer from adsorber' )
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/ads_amb_heat_loss'   
-
-       call add_to_xml_reporting(
-     &                   fAdsQloss,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &               'Rate of heat loss from adsorber to ambient' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/cond_amb_heat_loss'   
-
-       call add_to_xml_reporting(
-     &                   fCondQloss,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &               'Rate of heat loss from condenser to ambient' )
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/evap_amb_heat_loss'   
-
-       call add_to_xml_reporting(
-     &                   fEvapQloss,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &               'Rate of heat loss from evaporator to ambient' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/temp_cond_in'   
-
-       call add_to_xml_reporting(
-     &                   fTemp_outdoor,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &               'Temperature of air entering condenser' )
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/cond_heat'   
-
-       call add_to_xml_reporting(
-     &                   fCondHeat,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &               'Rate of heat rejected by condenser' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/evap_heat'   
-
-       call add_to_xml_reporting(
-     &                   fEvapHeat,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &               'Rate of heat input to evaporator' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/ratio_X'   
-
-       call add_to_xml_reporting(
-     &                   fX_Present,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   'kg/kg adsorbent',
-     &               'Ratio of adsorbate to adsorbent' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/cycle_phase'   
-
-       call add_to_xml_reporting(
-     &                   fPhaseCycle,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(-)',
-     &               'Phase of adsorption cycle' )
-
-
-
+       call AddToReportWild1(rvPltCyclePhase%Identifier,
+     &      fPhaseCycle,
+     &      pcname(IPCOMP)(1:iNameLength))
 
 C------------------------------------------------------------------------------------
 C End of subroutine: ADS_stg_coeff_gen
@@ -2216,10 +2103,10 @@ C-------------------------------------------------------------------------------
        REAL    FUNPV          !-function calculates saturation vapour pressure (Pa)
                               !-as a function of temperature T(Kelvin) and tau (-)
        REAL    FUNRHOL        !-function calculates the saturated liquid density
-                              !-as a function of tau       
-       
-       REAL    Temp_Kelvin         
-       REAL    Temp_critical                !-from IAPWS 1992 supplementary release 
+                              !-as a function of tau
+
+       REAL    Temp_Kelvin
+       REAL    Temp_critical                !-from IAPWS 1992 supplementary release
        PARAMETER( Temp_critical = 647.096 ) !-on saturation properties of water
        REAL    tau                          !-tau = 1 - T/Tcrit
        REAL    Pressure_Pa
@@ -2248,7 +2135,7 @@ C Calculate X using D-A equation
 
         ADS_mass_ratio = Wo * LiqDensity *
      &                  exp( -1.0*D *
-     &                  ( Temp_Kelvin * LOG(Psat/Pressure_Pa) )**n )        
+     &                  ( Temp_Kelvin * LOG(Psat/Pressure_Pa) )**n )
 
 
 
@@ -2296,7 +2183,7 @@ C******************************Function CpVapour********************************
 C
 C This function calculates the specific heat of saturated vapour by linearizing the
 C enthalpy of the saturated vapour at the temperature T with respect to a reference
-C temperature of 25oC (298 K). The enthalpy of the saturated vapour is 
+C temperature of 25oC (298 K). The enthalpy of the saturated vapour is
 C determined using the Shomate equation (source National Institute of Standards
 C and Technology (NIST) Chemistry Handbook available on-line).
 C INPUTS:
@@ -2360,7 +2247,7 @@ C****************************Function CpLiquid**********************************
 C
 C This function calculates the specific heat of saturated liquid by linearizing the
 C enthalpy of the saturated liquid at the temperature T with respect to a reference
-C temperature of 25oC (298 K). The enthalpy of the saturated liquid is 
+C temperature of 25oC (298 K). The enthalpy of the saturated liquid is
 C determined using the Shomate equation (source National Institute of Standards
 C and Technology (NIST) Chemistry Handbook available on-line).
 C INPUTS:
@@ -2425,10 +2312,10 @@ C Initial Creation Date: January, 2005
 C Copyright CETC 2001
 c     This function will determine the Cp of water vapour at a given
 C     Temperature C and Pressure.
-C INPUTS: 
+C INPUTS:
 c     REAL Temp  ! Degrees celsius
-c     REAL Pressure       ! pascals.  
-C OUTPUT: 
+c     REAL Pressure       ! pascals.
+C OUTPUT:
 c     REAL  H20GasCpCel   ! joules/(kg Kelvin)
 c Note no unit testing has been performed for this function.
 C -------------------------------------------------------------------------------------
@@ -2460,14 +2347,14 @@ C **********************************H20GasCp ***********************************
 C Created by: Maria Mottillo
 C Adapted from H20LiquidCp created by Phylroy Lopez
 C Initial Creation Date: January, 2005
-C     This function will determine the specific heat of water vapour 
+C     This function will determine the specific heat of water vapour
 C     given the temperature and pressure.
-C INPUTS: 
+C INPUTS:
 C     REAL Temp  ! Temperature in Kelvin
-C     REAL Pressure       ! in pascals.  
-C OUTPUT: 
+C     REAL Pressure       ! in pascals.
+C OUTPUT:
 C     REAL  H20GasCp    joules/(kg Kelvin)
-C -------------------------------------------------------------------------------------    
+C -------------------------------------------------------------------------------------
 
 
       FUNCTION H20GasCp(Temp, Pressure)
@@ -2478,7 +2365,7 @@ C ------------------------------------------------------------------------------
       REAL Temp
       REAL Pressure
       REAL CV
-      H20GasCp = 
+      H20GasCp =
      &     REAL(IAPWSCP(H20GasDensity(Temp, Pressure),Temp,CV))
       RETURN
       END
@@ -2559,7 +2446,7 @@ C*******************************************************************************
       REAL X, P           !- known values for which want to determine T
       REAL T1, T2         !- acceptable range for T
       LOGICAL SUCCESS     !- true if T is within acceptable range
-      
+
 
       REAL F1, F2         !- function F(T) = 0
       REAL ADS_mass_ratio !- function used to determine X
@@ -2570,7 +2457,7 @@ C*******************************************************************************
           STOP 'SUBROUTINE Tcheck: unresolvable error'
       endif
 
-      
+
       F1 = X - ADS_mass_ratio( P, T1, Wo, D, n )
       F2 = X - ADS_mass_ratio( P, T2, Wo, D, n )
 
@@ -2592,7 +2479,7 @@ C This function determines the temperature of the adsorber given the ratio of ad
 C to adsorbent X, and the pressure of the adsorber. It is used to determine the
 C temperature at which the phase of the cycle goes from isoteric heating to desorption
 C during the charging stage or the temperature at which the phase of the cycle goes
-C from isoteric cooling to adsorption during the discharge phase. Temperature is 
+C from isoteric cooling to adsorption during the discharge phase. Temperature is
 C determined using the bisection method. This function is a revised version of the function
 C RTBIS in Chapter 9 of (Press et al., 1986).
 
@@ -2604,9 +2491,9 @@ C X: Ratio of mass of adsorbate to mass of adsorbent (kg/kg adsorbent)
 C P: Pressure (kPa), equal to the condenser pressure (charging phase) or
 C    evaporator pressure (discharge phase)
 C T1,T2: Range of values the solution will lie between (oC)
-C 
+C
 C OUTPUTS:
-C T: Temperature (oC) at end of isoteric heating phase (charging) or 
+C T: Temperature (oC) at end of isoteric heating phase (charging) or
 C    end of isoteric cooling phase (discharge).
 C---------------------------------------------------------------------------------------
 
@@ -2618,27 +2505,27 @@ C-------------------------------------------------------------------------------
       INTEGER IUIN            !-read unit number
 
       REAL TSOLVE
-      REAL Wo,D,n            
-      REAL X, P             
+      REAL Wo,D,n
+      REAL X, P
       REAL T1, T2
       REAL ACC
 
       INTEGER JMAX         !- maximum number of iterations
       PARAMETER( JMAX = 40 )
 
-      REAL FMID, F, DT, TMID 
+      REAL FMID, F, DT, TMID
       REAL ADS_mass_ratio       !-function to calculate X
       INTEGER J
       LOGICAL closet2, closet1
 
 
       FMID = X - ADS_mass_ratio( P, T2, Wo, D, n )
-      F = X - ADS_mass_ratio( P, T1, Wo, D, n )  
+      F = X - ADS_mass_ratio( P, T1, Wo, D, n )
 
       call eclose(FMID,0.,ACC,closet2)
       call eclose(F,0.,ACC,closet1)
 
-      if ( closet2 ) then 
+      if ( closet2 ) then
 
            TSOLVE = T2
            RETURN
@@ -2665,7 +2552,7 @@ C-------------------------------------------------------------------------------
       endif
 
       if ( F .LT. 0. ) then
-        
+
           TSOLVE = T1
           DT = T2 - T1
 
@@ -2683,7 +2570,7 @@ C-------------------------------------------------------------------------------
           FMID = X - ADS_mass_ratio( P, TMID, Wo, D, n )
 
           if ( FMID .LE. 0. ) TSOLVE = TMID
- 
+
           if ( (ABS(DT) .lt. ACC) .OR. (FMID.EQ.0.) ) RETURN
 
 
@@ -2700,7 +2587,7 @@ C-------------------------------------------------------------------------------
       STOP 'FUNCTION TSOLVE: unresolvable error'
 
       RETURN
-      END      
+      END
 
 C*****************************************************************************************
 
@@ -2711,7 +2598,7 @@ C
 C This function is used to solve for pressure during the isoteric heating and cooling
 C phases using the Dubinin - Astakhov equation. During the isoteric heating and cooling
 C phases, the value of X is constant. Knowing X and the temperature T, the pressure
-C is determined iteratively using the bisection method. This function is a revised 
+C is determined iteratively using the bisection method. This function is a revised
 C version of the RTBIS function in Chapter 9 of (Press et al., 1986)
 
 C INPUTS:
@@ -2723,7 +2610,7 @@ C T:  Temperature (oC)
 C P1, P2: Range of pressures solution will be lie between  (kPa)
 C ACC: The iteration will continue until the solution is +/- this value
 
-C 
+C
 C OUTPUTS:
 C PSolve: Pressure for a given X and T within the range P1-P2 (kPa)
 C-------------------------------------------------------------------------------------------
@@ -2751,15 +2638,15 @@ C end debugging
 
 
       REAL PSOLVE
-      REAL Wo,D,n            
-      REAL X, T              
+      REAL Wo,D,n
+      REAL X, T
       REAL P1, P2
       REAL ACC
 
       INTEGER JMAX         !- maximum number of iterations
       PARAMETER( JMAX = 40 )
 
-      REAL FMID, F, DP, PMID 
+      REAL FMID, F, DP, PMID
       REAL ADS_mass_ratio       !-function to calculate X
       INTEGER J
 
@@ -2767,12 +2654,12 @@ C end debugging
 
 
       FMID = X - ADS_mass_ratio( P2, T, Wo, D, n )
-      F = X - ADS_mass_ratio( P1, T, Wo, D, n )  
+      F = X - ADS_mass_ratio( P1, T, Wo, D, n )
 
       call eclose(FMID,0.,ACC,closep2)
       call eclose(F,0.,ACC,closep1)
 
-      if ( closep2 ) then 
+      if ( closep2 ) then
 
            PSOLVE = P2
            RETURN
@@ -2795,14 +2682,14 @@ C end debugging
            WRITE(IUOUT,*) ' F = ', F
            WRITE(IUOUT,*) ' X(P2,T) = ', ADS_mass_ratio(P2,T,Wo,D,n)
            WRITE(IUOUT,*) ' X(P1,T) = ', ADS_mass_ratio(P1,T,Wo,D,n)
-C for debugging 
+C for debugging
 C           write(iuout,*) 'nsinc = ', nsinc
 C end debugging
            STOP 'FUNCTION PSOLVE: unresolvable error'
       endif
 
       if ( F .LT. 0. ) then
-        
+
           PSOLVE = P1
           DP = P2 - P1
 
@@ -2820,7 +2707,7 @@ C end debugging
           FMID = X - ADS_mass_ratio( PMID, T, Wo, D, n )
 
           if ( FMID .LE. 0. ) PSOLVE = PMID
- 
+
           if ( (ABS(DP) .lt. ACC) .OR. (FMID.EQ.0.) ) RETURN
 
 
@@ -2837,7 +2724,7 @@ C end debugging
       STOP 'FUNCTION PSOLVE: unresolvable error'
 
       RETURN
-      END      
+      END
 
 C***********************************************************************************************
 
