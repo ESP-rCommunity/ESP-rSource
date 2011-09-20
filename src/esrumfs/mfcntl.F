@@ -863,7 +863,6 @@ C climate file commons
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
@@ -905,7 +904,7 @@ C Day types
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
       REAL PREVTEMP(MMD)
-      CHARACTER*72 LAPROB,H
+      CHARACTER*72 LAPROB
       CHARACTER*2 MODE
       REAL Wposs,Fposs,WNposs,ACavail,Havail,PF,PWRfan,FUNCW
       LOGICAL CLOSER
@@ -1373,13 +1372,15 @@ c      ENDIF
        GLNPWR=0.
 C Find total power of the equipment
       TOTPWR(ICOMP)=FNPWR+GLNPWR
- 
- 
+
       GOTO 9999
-  999 H(1) = 'A data i/o error has occured in the program at FCL04'
-      H(2) = 'and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+
+C Error message for this controller.
+  999 helptopic='flow_ctl_04_error'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('node connection selection',nbhelp,
+     &            'i/o exception handler',0,0,IER)
+
  9999 RETURN
       END
 
