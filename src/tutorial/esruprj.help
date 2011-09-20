@@ -7694,36 +7694,61 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *subroutine LINTHBRDG
 *item LINTHBRDG linear_thermal_bridge
 'Linear thermal bridges are composed of a length (m) and a'
-'psi value W/mK and are used to represent the difference in'
-'heat flow due to a corner junction or edge.'
+'psi value (W/mK) and are used to represent the difference in'
+'heat flow due to a corner, junction or edge. Psi values are'
+'typically derived via 3rd party software such as LBNL THERM.'
 '  '
-'The user needs to define the length of the thermal bridge at'
-'each junction/openings/etc. Psi values can also be defined or'
-'the default values from BRE IP 1/06 can be used.'
+'When entering the facility you are asked if the zone has'
+'construtions with metal cladding or no metal cladding or if'
+'you wish to define thermal bridges as a percentage of the'
+'heat flows through the facade.  If you select metal or non-metal'
+'cladding then the geometry of the room, the boundary condition'
+'attribute and USE attribute of each surface is checked to determine'
+'the cagetory of thermal bridge to apply to each edge.'
 '  '
-'The underlying assumptions about heat flows via thermal'
-'bridges depend on whether the facade uses metal cladding.'
+'The total length of the category bridge as'
+'well as initial default values (based on the BRE Information'
+'publication 1/06) are set.'
 '  '
-'If you have not yet done so you can setup thermal bridge'
-'definitions to fit the specifics of your design. If there'
-'are existing definitions you can update them.'
+'Only use this facility IF ALL the surfaces in the zone have been'
+'fully attributed and the geometry is stable.  If you alter the'
+'geometry or the boundary attributes then the Project Manager may'
+'re-evaluate the lengths and psi values and overwrite manually'
+'computed values.'
 '  '
-'Initial values will be based on the geometry of the room as'
-'well as the boundary conditions and the surface USES attributes.'
-'IF YOU HAVE NOT YET set the boundary conditions or surface USE'
-'attributes for this zone you should do that first (choose exit).'
+'If you agree with the initial geometric and brounday scan then'
+'you have very little work to do.  If you want to alter the'
+'lengths or the psi values then the interface allows you to edit'
+'these as required. If you have an additional type of thermal'
+'bridge then you can either use the [user defined] bridge type'
+'or a zero length bridge of another type.'
+'  '
+'At simulation time the lengths and psi values are added up'
+'and then multiplied by the temperature difference between the'
+'zone and the outside.  The labels and types of thermal bridges'
+'are for documentation purposes and to help in checking the'
+'model.'
+'  '
+'The underlying assumptions for the default values of heat flows'
+'via thermal bridges depend on whether the facade uses metal'
+'cladding. If the zone is mixed then you will have to manually'
+'edit the lengths and psi values.'
 ' '
 'The fixed % option sets thermal bridges equivalent to a percentage'
-'of the overall UA value. '
+'of the overall UA value of the zone. NOTE: if you enter the'
+'facility selecting metal or non-metal facade and then switch to'
+'the % facility then the software does not clear the lengths or'
+'psi values.  If you wish to switch from % to one of the other'
+'methods the interface gets confused.'
 *enditem
-            CALL EASKABCD('This zone:','(see help)',
-            CALL EASKABCD('This zone:','(see help)',
+        CALL EASKABCD('This zone:','(see help)',
+        CALL EASKABCD('This zone:','(see help)',
         CALL PHELPD('thermal bridge menu',4,'-',0,0,IER)
-          CALL EASKR(thbrpercent,' ',
-            CALL EASKR(psiv,phrasepsi(lookfor),msg,
-              CALL EASKR(lenv,phraselen(lookfor),msg,
-          CALL EASKR(psiv,phrasepsi(lookfor),msg,
-          CALL EASKR(lenv,phraselen(lookfor),msg,
+        CALL EASKR(thbrpercent,' ',
+        CALL EASKR(psiv,phrasepsi(lookfor),msg,
+        CALL EASKR(lenv,phraselen(lookfor),msg,
+        CALL EASKR(psiv,phrasepsi(lookfor),msg,
+        CALL EASKR(lenv,phraselen(lookfor),msg,
         CALL EASKR(psiv,phrasepsi(lookfor),msg,
         CALL EASKR(lenv,phraselen(lookfor),
 *subroutine updatesvfc
