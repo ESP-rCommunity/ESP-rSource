@@ -572,7 +572,7 @@ C Ask for alternative glazing file.
             call FPOPEN(ita2,ISTAT,1,4,atfile)
           endif
         endif
-      else
+      else ! silent mode ... actually, a loop through NBSRIF() would be necessary, here, no?
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
         if (NABS.gt.0) then
@@ -599,6 +599,7 @@ C Ask for alternative glazing file.
       WRITE(iglzfil,'(a)') '  '
 
 C Aternative glazing descriptions file.
+C << a loop through more than one "alternative" sets should be here, no?
       if (NABS.gt.0) then
         WRITE(ita2,'(a)') '# Radiance glazing (alt) definitions'
         WRITE(ita2,'(a)') '# (first line of file must not be edited)'
@@ -698,12 +699,12 @@ C not be skipped.
         iskip(im)=0
 
 C Pick up general description of the composite.
-        WRITE(MLCN,'(A)')DESC(IM)(1:12) ! MLC construction name
-        WRITE(OTF,'(A)') DESC(IM)(15:18)
-        IF(OTF.EQ.' ')OTF='OPAQ'
-        IF(OTF.EQ.'TRAN'.or.OTF.EQ.'CFC ')THEN
+        WRITE(MLCN,'(A)') DESC(IM)(1:12) ! MLC construction name
+        WRITE(OTF,'(A)') DESC(IM)(15:18) ! MLC type
+        IF(OTF.EQ.' ') OTF='OPAQ'
+        IF(OTF(1:4).EQ.'TRAN'.or.OTF(1:4).EQ.'CFC ') THEN
           WRITE(OPT,'(A)') DESC(IM)(21:32) ! "OPAQUE", "<optics data set name>" or "USE GSLedit"
-          IF(OPT.EQ.' ')OPT='UNKNOWN'
+          IF(OPT.EQ.' ') OPT='UNKNOWN'
         ELSE
           OPT='OPAQUE'
         ENDIF
@@ -723,8 +724,8 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF(1:4).NE.'OPAQ')then
-          CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
+        if (OTF(1:4).NE.'OPAQ') then !<< need to exclude CFC here and treat separately!!
+          CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER) ! will probably return trash for CFCs!
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
           gvt=gvt1/0.0036261119/VTRN
@@ -773,19 +774,22 @@ C Check for blind shutter control.
             WRITE(ita2,'(a)') '  '
           endif
 
-C create a glass entry for each glass layer of CFC (".or." in line 866 would need to be removed!)
-c        elseif (OTF.EQ.'CFC ')then
+C Create a glass material entry for each CFC 
+C   (additional "if" would need to be added in/near line 727)
+C The visual transmittance is based on <???>
+C Only consider internal or external, not intermediate blinds!?
+c        elseif (OTF(1:4).EQ.'CFC ')then
 c          do ilay 1 to im_ncfc_el(izone,icfc)
 c          
-c            if (im_cfcltp(izone,icfc,ilay).eq.2) ! layer is blind
-c            
-c            endif
-c            
-c          enddo
-C Blind control?
-c          if (NABS.gt.0) then
-c          
-c          endif
+C      SUBROUTINE DWINVT(IZONE,ISURF,VTDIR,VTDIF,BLIND)
+C or
+C
+      ! For CFC, it is of no concern if blind control is active or not, as
+      ! visual transmittance values for the system include time step blind setting!
+      ! Which value to take here???
+c        VTDIR=transBB_V(IZONE,ISURF) ! value corresponding to current incidence angle on surface
+c        VTDIF=transD_V(IZONE,ISURF)
+c
 
         else ! Not a TMC or CFC ...
           WRITE(imatfil,'(a)') '# External MLC Colours... '
@@ -820,7 +824,7 @@ c          endif
         endif
    45 continue
 
-C Open the outsite geometry/composition file.
+C Open the outside geometry/composition file.
       call edisp(iuout,' creating outside composition. ')
       CALL ERPFREE(irofil,ISTAT)
       if(ACT_1.eq.'i')then
@@ -875,7 +879,7 @@ C Do not use sky for Day_coef purpose.
         WRITE(irofil,'(a)') '  '
       endif
 
-C The ground ring material is the RGD values for the ground glow modified 
+C The ground ring material is the RGB values for the ground glow modified 
 C by the ground reflectivity (thus the ground is a shade of brown).
       WRITE(irofil,'(a)') 'void brightfunc mud'
       WRITE(irofil,'(a)') '4 dirt dirt.cal -s 0.5'
@@ -892,7 +896,7 @@ C by the ground reflectivity (thus the ground is a shade of brown).
       WRITE(irofil,'(a)') '0  '
       WRITE(irofil,'(a)') '0  '
 
-C Make sure the ground ring is at least 30m radius.
+C Make sure the ground ring is at least 30m diameter.
       if(grdd.lt.15.)grdd=15.0
       WRITE(irofil,'(a,2F7.1,a,F7.1)') '8 ',grcx,grcy,
      &                                 ' -0.01  0. 0. 1. 0. ',grdd*2.
@@ -1105,6 +1109,8 @@ C Set surface logicals to false.
 C Get the surfaces connection index;
 C Opaque,
 C   External connections: create two surfaces (shift 3mm inwards).
+C     ... for daylighting, wall thickness actually should be taken into
+C         account ... << to do?
 C   Other connections: create one surface (shift 3mm inwards).
 C Transparent,
 C   All connections: create one surface (no shift).
@@ -1131,14 +1137,14 @@ C     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
             endif
           else
             write(material,'(a)') SSMLCN(icn)(1:12)
-            if(iskip(icf).eq.1)ifict=1
+            if (iskip(icf).eq.1) ifict=1
           endif
 
 C Depending on surface type (fict/tran/opaq) write header info.  
-          if(ifict.eq.1)then
+          if (ifict.eq.1) then
 C          if(iskip(icf).eq.1)then
             WRITE(outs,'(a,a)') '# skipping fict surface: ',zsn(isf)
-            if(ACT_1.eq.'i')call edisp(iuout,outs)
+            if(ACT_1.eq.'i') call edisp(iuout,outs)
             WRITE(iglzfil,'(a)') outs
             WRITE(iglzfil,'(a)') '  '
 
@@ -1191,11 +1197,13 @@ C Write mkillum header (e=exclude, i=include).
               if (IANS.eq.1) then 
                 WRITE(iglzfil,'(a,a,a)') '#@mkillum e=',
      &                         material(1:lnblnk(material)),' d=48 s=32' 
+C               Additional entry for alternative data set?
                 if (NABS.gt.0) WRITE(ita2,'(a,a,a)') '#@mkillum e=',
      &                      material(1:lnblnk(material)),'_sw d=48 s=32' 
               else 
                 WRITE(iglzfil,'(a,a,a)') '#@mkillum i=',
      &                         material(1:lnblnk(material)),' d=48 s=32'
+C               Additional entry for alternative data set?
                 if (NABS.gt.0) WRITE(ita2,'(a,a,a)') '#@mkillum i=',
      &                      material(1:lnblnk(material)),'_sw d=48 s=32' 
               endif
@@ -1225,6 +1233,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
      &                    QT,SVALS(2),'*s+',TVALS(2),'*t',QT,
      &                    QT,SVALS(3),'*s+',TVALS(3),'*t',QT,' 2  2',
      &                    ' | xform -t ',(TFORM(IXX),IXX=1,3)
+C                   Additional entry for alternative data set?
                     if (NABS.gt.0) then
                       write(outs,'(a,a)') 
      &                               material(1:lnblnk(material)),'_sw'
@@ -1258,6 +1267,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
                     WRITE(iglzfil,'(3F11.5)')
      &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1274             continue
+C                 Additional entry for alternative data set?
                   if (NABS.gt.0) then
                     WRITE(ita2,'(a,a,a)')material(1:lnblnk(material)),
      &                     '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
@@ -1270,6 +1280,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
  1275               continue
                   endif
                 endif
+C == huh?
               else ! surface is/was not divided
                 WRITE(iglzfil,'(a,a,a)') material(1:lnblnk(material)),
      &                        '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
@@ -1280,6 +1291,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
                   WRITE(iglzfil,'(3F11.5)')
      &                     X(JVN(isf,iv)),Y(JVN(isf,iv)),Z(JVN(isf,iv))
  1174           continue
+C               Additional entry for alternative data set?
                 if (NABS.gt.0) then
                   WRITE(ita2,'(a,a,a)') material(1:lnblnk(material)),
      &                     '_sw  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
@@ -1292,6 +1304,16 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
  1175             continue
                 endif
               endif
+C 20/09/2011:
+C treat CFCs different? Or better: If CFC has internal or external blind
+C create one explicitly (at current angle?)?
+c              if (im_cfcltp(izone,icfc,ilay).eq.2) ! layer is blind
+c                create venetian blind ?
+c           
+C                genblind()
+c              endif
+
+C == huh?
             else
               WRITE(outs,'(a,a)')'# skipping transparent surface: ',
      &                                                         zsn(isf)

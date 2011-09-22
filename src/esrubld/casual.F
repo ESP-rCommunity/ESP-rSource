@@ -1720,8 +1720,7 @@ C information.
 
 C Continue only if this surface is (nearly) vertical, is TMC or CFC, 
 c === 11.10.2010 === comment out all the warnings (lines 1593 - 1628) which
-c   seem to be superfluous. No "bounding box" seems to be calculated in below
-c   code block, no "width" and "height" are calculated, either, it seems (A.G.).
+c   seem to be superfluous (A.G.).
 C has 4 vertices and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
             IF(ITMCFL(ICOMP,J).GT.0 .or. ICFCFL(ICOMP,J).gt.0) THEN
