@@ -293,11 +293,6 @@ C Read in the zone geometry.
         call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
         call strup(zname(mz),ZN)
 
-C Read in util & obstruction file.
-C        IF(IOBS(mz).EQ.1)THEN
-C          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
-C        endif
-
 C Inclusion of obstructions.
         if(nbobs(mz).ge.1)then
           if(incobs.eq.0)goto 61

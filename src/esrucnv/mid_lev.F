@@ -267,30 +267,21 @@ C Note: all the insert files are assumed to be in local folder.
       character oformat*24,head*4,RZNAME*24,outs*124
       logical skip,match
 
-      xscale=1.
-      yscale=1.
-      zscale=1.
-      rotangl=0.
-      nrow=1
-      ncolumn=1
-      rdisp=0.
+      xscale=1.0; yscale=1.0; zscale=1.0; rotangl=0.0
+      nrow=1; ncolumn=1
+      rdisp=0.0
       cdisp=0
-      zrot=0.
+      zrot=0.0
       iucs = 0
-      xucs = 0.0
-      yucs = 0.0
-      zucs = 0.0
-      xrot = 0.0
-      yrot = 0.0
+      xucs = 0.0; yucs = 0.0; zucs = 0.0
+      xrot = 0.0; yrot = 0.0
       delta = 0.015625
 
-      xnorm = 0.0
-      ynorm = 0.0
-      znorm = 1.0
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
       call initmatrix
 
 C Read an entity from DXF file. Depending on the value of gcode
-C process the entity type.
+C process the entity type until gcode is zero.
       call readgc(itrc)
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
@@ -578,9 +569,7 @@ C << Note, if this is being called within a block definition >>
 C << and the layer name is 0 (as it might be in microgds) then >>
 C << can ignore this and continue with the current layer info. >>
       numpl = 0
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
       polylinflag = 0
       mesh = 0
       mclosed = 0
@@ -706,9 +695,7 @@ C Dump out the sides as planes.  If esp update connections.
                 endif
               endif
             endif
-            coorx = xarray(i)
-            coory = yarray(i)
-            coorz = zarray(i)
+            coorx = xarray(i); coory = yarray(i); coorz = zarray(i)
             call putcoods(itrc)
             coorz = coorz + thick
             call putcoods(itrc)

@@ -49,11 +49,11 @@ C face3d are triangles or quads which are general surfaces in autocad.
       real xx(10),yy(10),zz(10)
       integer count
 
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! initial assumptions
       call readgc(itrc)  
-      count=0      
+      count=0
+
+C Loop until gcode is zero.   
  9001 if (gcode.ne.0)then
          if (gcode.eq.8) then
             call getlay(currlay,itrc)
@@ -80,7 +80,8 @@ C face3d are triangles or quads which are general surfaces in autocad.
          goto  9001
       endif
 
-c Test for triangular patch.
+C Test for triangular patch.
+C << use close3 instead >>
       if (xx(count).eq.xx(count-1).and.yy(count).eq.yy(count-1)
      &     .and.zz(count).eq.zz(count-1)) count = count - 1
 
@@ -102,6 +103,7 @@ C If working on a block write to temporary block file.
         endif
       elseif(oformat(1:3).eq.'esp')then
         if(head.eq.'OBS_')then
+          continue
         elseif(head.eq.'BLK_')then
 
 C Writing to temporary block file, do it in viewer format.
@@ -122,9 +124,7 @@ C Update the izstocn array!
       endif
 
       do 10 i=1,count
-         coorx=xx(i)
-         coory=yy(i)
-         coorz=zz(i)
+         coorx=xx(i); coory=yy(i); coorz=zz(i)
          call putcoods(itrc)
  10   continue
 
@@ -134,7 +134,8 @@ C Update the izstocn array!
 
 ****** genlin
 C this subroutine processes the 'LINE' command in .dxf file of
-C autocad and translates it if it is extruded.
+C autocad and translates it if it is extruded into a surface,
+C otherwise if it is 2D it might be useful for click-on-bitmap.
       subroutine genlin(itrc)
 #include "building.h"
 #include "geometry.h"
@@ -148,9 +149,9 @@ C autocad and translates it if it is extruded.
       integer gcode,innum,ioin,ioout,ioblk,flagins
       integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+     &  basey,xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
+     &          blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/attrs/ currlay, currcol, oldlay, oldcol
@@ -158,18 +159,12 @@ C autocad and translates it if it is extruded.
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
       logical match,close
-      real dx1,dy1,dz1
+      real dx1,dy1,dz1    ! offset in each axis
 
-      sx = 0.      
-      sy = 0.
-      ex = 0.        
-      ey = 0.       
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
-      thickx = 0.
-      thicky = 0.
-      thickz = 1.
+      sx = 0.0; sy = 0.0  ! start coord
+      ex = 0.0; ey = 0.0  ! end coord       
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! vector
+      thickx = 0.0; thicky = 0.0; thickz = 1.0 
       if (thick.gt.0.) then
          flag3d=1.
       else
@@ -183,51 +178,48 @@ C autocad and translates it if it is extruded.
          if (gcode.eq.8) then
             call getlay(currlay,itrc)
             call matchl(currlay,head,RZNAME,match,im)
-            if(match)indxzon=im
+            if(match)indxzon=im   ! set zone index
          elseif (gcode.eq.10) then
-            sx=coorx        
-            sy=coory
+            sx=coorx; sy=coory  ! set start
          elseif (gcode.eq.11) then
-            ex=coorx        
-            ey=coory        
+            ex=coorx; ey=coory  ! set end        
          elseif (gcode.eq.30) then
-            z1 = realin
+            z1 = realin         ! Z at start
          elseif (gcode.eq.31) then
-            z2 = realin
+            z2 = realin         ! Z at end
          elseif (gcode.eq.38) then        
-            z1=realin        
+            z1=realin           ! entity elevation v11 or earlier   
             z2 = z1
          elseif (gcode.eq.39) then        
             thick=realin        
             if (thick.gt.0.) flag3d = 1.
          elseif (gcode.eq.62) then
-            currcol = innum
+            currcol = innum     ! colour number
          elseif (gcode.eq.210) then
-            thickx = realin
+            thickx = realin     ! X extrusion direction
          elseif (gcode.eq.220) then
-            thicky = realin
+            thicky = realin     ! Y extrusion direction
          elseif (gcode.eq.230) then
-            thickz = realin
+            thickz = realin     ! Z ectrusion direction
          endif
-         call readgc(itrc)
+         call readgc(itrc)    ! scan next line
          goto  9001
       endif
 
+C A zero code so have passed end of the entity.
       call writelc
       call initmatrix
       call eclose(flag3d,0.0,0.001,close)
-      if (close) then        
+      if (close) then
+
+C << place to record point information for click-on-bitmap >>      
           call edisp(iuout, ' skipping single LINE ')
       else        
-         xnorm = thickx
-         ynorm = thicky
-         znorm = thickz
+         xnorm = thickx; ynorm = thicky; znorm = thickz
          call initmatrix
          call xformp(0.,0.,thick, dx1,dy1,dz1)
          flag3d=0.       
-         xnorm = 0.
-         ynorm = 0.
-         znorm = 1.
+         xnorm = 0.0; ynorm = 0.0; znorm = 1.0
          call initmatrix
          if(oformat(1:6).eq.'viewer')then
            if(head.eq.'BLK_')then
@@ -257,13 +249,9 @@ C update IZSTOCN to reflect this change.
            endif
          endif
       
-         coorx = sx
-         coory = sy
-         coorz = z1
+         coorx = sx; coory = sy; coorz = z1  ! pass start
          call putcoods(itrc)      
-         coorx = ex
-         coory = ey
-         coorz = z2
+         coorx = ex; coory = ey; coorz = z2  ! pass end
          call putcoods(itrc)        
          coorx = ex + dx1
          coory = ey + dy1
@@ -290,9 +278,7 @@ C autocad and skip over it.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       character instring*72
 
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0 
 
       call readgc(itrc)     
  9001 if (gcode.ne.0)then
@@ -320,9 +306,7 @@ C autocad and skip over it.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       character instring*72,tstr*80
 
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
 
       call readgc(itrc)        
  9001 if (gcode.ne.0)then
@@ -373,9 +357,7 @@ C Clear initial values for local variables.
       else
         flag3d = 0.
       endif
-      xnorm = 0.
-      ynorm = 0.
-      znorm = 1.
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0  ! initial assumptions
       radiu = 0.
       cx = 0.      
       cy = 0.
@@ -445,7 +427,9 @@ C Find current layer and then matching zone.
             endif  
           elseif(oformat(1:3).eq.'esp')then
             if(head.eq.'OBS_')then
+              continue
             elseif(head.eq.'BLK_')then
+              continue
             else
     
 C Updating NZSUR for this zone but also to
@@ -498,13 +482,9 @@ c  final vertex output
       parameter (SMALL = 0.015625)
 
       if (abs(xnorm).lt.SMALL .and. abs(ynorm).lt.SMALL) then
-        wx = 0.0
-        wy = 1.0
-        wz = 0.0
+        wx = 0.0; wy = 1.0; wz = 0.0
       else
-        wx = 0.0
-        wy = 0.0
-        wz = 1.0
+        wx = 0.0; wy = 0.0; wz = 1.0
       endif
 
 c get the X-axis vector
@@ -515,9 +495,7 @@ c get the Y-axis vector
      &           amat(1,2),amat(2,2),amat(3,2))
 
 c get the Z-axis vector
-      amat(1,3) = xnorm
-      amat(2,3) = ynorm
-      amat(3,3) = znorm
+      amat(1,3) = xnorm; amat(2,3) = ynorm; amat(3,3) = znorm
       return
       end
 
