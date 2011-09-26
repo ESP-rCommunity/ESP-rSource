@@ -48,10 +48,13 @@ C << a /tmp folder so work out a different approach >>
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
       character bname*72,pbname*72,chr*1,instring*72
-      character oformat*24,RZNAME*24,head*4,outs*124
+      character RZNAME*24,outs*124
       logical skip,reset,match,close
 
       reset = .false.
@@ -267,10 +270,13 @@ C Note: all the insert files are assumed to be in local folder.
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
                
       character bname*72,pbname*72,chr*1,instring*72,scratch*72
-      character oformat*24,head*4,RZNAME*24,outs*124
+      character RZNAME*24,outs*124
       logical skip,match
 
       xscale=1.0; yscale=1.0; zscale=1.0; rotangl=0.0
@@ -518,9 +524,10 @@ C Write the contents of a viewer layer file.
       common/attrs/currlay,currcol,oldlay,oldcol
 
       common/laytoo/ layuse(MAXLAY)
-      common/dxfe/oformat,indxzon,head
-      character oformat*24,head*4
 
+      integer indxzon
+      character oformat*24,head*4
+      common/dxfe/oformat,indxzon,head
 
       if (oldlay.ne.currlay) then
         if(oformat(1:6).eq.'viewer')then
@@ -572,8 +579,12 @@ C itrc indicator so that debug can be done from command line.
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-      character instring*72,oformat*24,head*4,RZNAME*24
+
+      character instring*72,RZNAME*24
       logical match,close
 
 C << Note, if this is being called within a block definition >>

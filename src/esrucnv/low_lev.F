@@ -43,9 +43,12 @@ C face3d are triangles or quads which are general surfaces in autocad.
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,oformat*24,head*4,RZNAME*24
+      character instring*72,RZNAME*24
       logical match
 
       real xx(10),yy(10),zz(10)
@@ -160,8 +163,12 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-      character instring*72,oformat*24,head*4,RZNAME*24
+
+      character instring*72,RZNAME*24
       logical match,close
       real dx1,dy1,dz1    ! offset in each axis
 
@@ -355,8 +362,12 @@ C ****** genarc
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-      character instring*72,oformat*24,head*4,RZNAME*24
+
+      character instring*72,RZNAME*24
       logical match,close
 
 C Clear initial values for local variables.

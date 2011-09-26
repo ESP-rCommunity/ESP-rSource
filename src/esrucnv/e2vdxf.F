@@ -43,10 +43,14 @@ C geometry.h provides commons G0/G1/G2/G5/precz/GS5.
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
+
       logical doobs
 
-      character oformat*24,head*4,ZN*12,outs*124
+      character ZN*12,outs*124
 
 C Setup standard assumptions.
       if(incobs.eq.1)doobs=.true.
@@ -438,10 +442,14 @@ C THF (THINGS) file for use in MicroGDS.
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
+
       LOGICAL doobs
 
-      character oformat*24,head*4,ZN*12,outs*124
+      character ZN*12,outs*124
       integer llbm    ! length of block material
 
 C Setup standard assumptions.

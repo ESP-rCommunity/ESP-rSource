@@ -60,6 +60,9 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
       common/laytoo/ layuse(MAXLAY)
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
 C ESP-r commons.
@@ -99,8 +102,8 @@ C Name of current application
 
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
-      character iformat*24,oformat*24,number*3,fs*1
-      character RZNAME*24,head*4,ZN*12,LTMP*144
+      character iformat*24,number*3,fs*1
+      character RZNAME*24,ZN*12,LTMP*144
       character path*72
       character upgcfg*72
 
@@ -1091,9 +1094,12 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
      &       layflag(MAXLAY)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,oformat*24,head*4,outs*124
+      character instring*72,outs*124
       character layname*72
       logical match
       integer nbofsurf  ! to pass to matchv
