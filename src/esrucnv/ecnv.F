@@ -43,12 +43,14 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
-      integer gcode,innum,ioin,ioout,ioblk,flagins
+      integer gcode,innum,flagins
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/rp/repfile,repelev,repthick,nrep
 
@@ -1074,13 +1076,15 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer IUOUT,IUIN
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer gcode,innum,ioin,ioout,ioblk,flagins
+      integer gcode,innum,flagins
       common/rd/gcode,instring,innum,realin,coorx,coory,
      &          coorz,blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/fg/flag3d,flagins,radians,dxfconv
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
@@ -1177,11 +1181,13 @@ C itrc sets debug mode if greater than one.
       subroutine readgc(itrc)
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,ioin,ioout,ioblk
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,
      & coorz,blkxorg,blkyorg,blkzorg
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       character instring*72,outs*124
 
@@ -1418,6 +1424,8 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS

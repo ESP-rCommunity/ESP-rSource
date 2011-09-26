@@ -35,12 +35,14 @@ C << a /tmp folder so work out a different approach >>
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
+      integer gcode,innum,polylinflag,flagins
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/vex/elevlast,thicklast,polylinflag
 
@@ -252,12 +254,14 @@ C Note: all the insert files are assumed to be in local folder.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,ioin,ioout,ioblk,flagins
+      integer gcode,innum,flagins
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
       integer currlay,currcol,oldlay,oldcol
@@ -507,7 +511,7 @@ C Write the contents of a viewer layer file.
       subroutine writelc
 
       parameter (MAXLAY = 80)
-      integer ioin,ioout,ioblk
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
       integer currlay,currcol,oldlay,oldcol
@@ -552,12 +556,14 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
+      integer gcode,innum,polylinflag,flagins
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
+
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),

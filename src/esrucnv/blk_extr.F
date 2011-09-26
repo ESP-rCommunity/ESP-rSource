@@ -29,8 +29,9 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,flagins,ioin,ioout,ioblk
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer gcode,innum,flagins
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv

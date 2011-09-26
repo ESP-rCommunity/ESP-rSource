@@ -46,6 +46,7 @@ C geometry.h provides commons G0/G1/G2/G4/c20/precz/GS5/GS6.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
+      integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
 
