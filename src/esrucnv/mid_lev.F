@@ -35,15 +35,21 @@ C << a /tmp folder so work out a different approach >>
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,polylinflag,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
+
+      real elevlast,thicklast
+      integer polylinflag
       common/vex/elevlast,thicklast,polylinflag
 
       integer currlay,currcol,oldlay,oldcol
@@ -257,11 +263,14 @@ C Note: all the insert files are assumed to be in local folder.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
@@ -563,11 +572,14 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum,polylinflag,flagins
+      integer gcode,innum,polylinflag
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
@@ -757,12 +769,16 @@ C vertex - compose XYZ from data in a DXF file.
       subroutine vertex(itrc)
 
       parameter (MAXPNT = 100)
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
+
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
       character instring*72

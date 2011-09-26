@@ -151,12 +151,16 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &  basey,xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &          blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
+
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
@@ -350,11 +354,14 @@ C ****** genarc
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs

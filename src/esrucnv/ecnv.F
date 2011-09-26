@@ -43,11 +43,14 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
@@ -1079,12 +1082,15 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer IUOUT,IUIN
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer gcode,innum,flagins
+      integer gcode,innum
       common/rd/gcode,instring,innum,realin,coorx,coory,
      &          coorz,blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
+
+      real flag3d,radians,dxfconv
+      integer flagins
       common/fg/flag3d,flagins,radians,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
