@@ -43,9 +43,13 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
-      integer gcode,innum
+
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -104,7 +108,7 @@ C Name of current application
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
-      character inf*144,ouf*144,layname*72,instring*72,lf*72
+      character inf*144,ouf*144,layname*72,lf*72
       character iformat*24,number*3,fs*1
       character RZNAME*24,ZN*12,LTMP*144
       character path*72
@@ -1083,6 +1087,8 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       COMMON/OUTIN/IUOUT,IUIN
 
       integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,
      &          coorz,blkxorg,blkyorg,blkzorg
 
@@ -1105,7 +1111,7 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,outs*124
+      character outs*124
       character layname*72
       logical match
       integer nbofsurf  ! to pass to matchv
@@ -1193,15 +1199,19 @@ C itrc sets debug mode if greater than one.
       subroutine readgc(itrc)
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum
+
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,
      & coorz,blkxorg,blkyorg,blkzorg
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      character instring*72,outs*124
+      character outs*124
 
       read(ioin,'(I6)',end=500,err=600) gcode
       if (gcode.lt.10) then

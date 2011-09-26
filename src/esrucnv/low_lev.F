@@ -32,9 +32,12 @@ C face3d are triangles or quads which are general surfaces in autocad.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       integer ioin,ioout,ioblk,iosblk,iotobs
@@ -48,7 +51,7 @@ C face3d are triangles or quads which are general surfaces in autocad.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,RZNAME*24
+      character RZNAME*24
       logical match
 
       real xx(10),yy(10),zz(10)
@@ -151,9 +154,12 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &  basey,xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &          blkxorg,blkyorg,blkzorg
 
@@ -172,7 +178,7 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,RZNAME*24
+      character RZNAME*24
       logical match,close
       real dx1,dy1,dz1    ! offset in each axis
 
@@ -286,13 +292,14 @@ C autocad and skip over it.
       subroutine gencrl(itrc)
 
       integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
-      character instring*72
 
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0 
 
@@ -315,13 +322,15 @@ C autocad and skip over it.
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
-      character instring*72,tstr*80
+      character tstr*80
 
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0
 
@@ -354,9 +363,12 @@ C ****** genarc
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -374,7 +386,7 @@ C ****** genarc
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,RZNAME*24
+      character RZNAME*24
       logical match,close
 
 C Clear initial values for local variables.

@@ -35,9 +35,13 @@ C << a /tmp folder so work out a different approach >>
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum
+
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -59,7 +63,7 @@ C << a /tmp folder so work out a different approach >>
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character bname*72,pbname*72,chr*1,instring*72
+      character bname*72,pbname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,reset,match,close
 
@@ -263,9 +267,13 @@ C Note: all the insert files are assumed to be in local folder.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum
+
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -284,7 +292,7 @@ C Note: all the insert files are assumed to be in local folder.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
                
-      character bname*72,pbname*72,chr*1,instring*72,scratch*72
+      character bname*72,pbname*72,chr*1,scratch*72
       character RZNAME*24,outs*124
       logical skip,match
 
@@ -487,6 +495,8 @@ C  the name is added.
 
       parameter (MAXLAY = 80)
       integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -496,7 +506,7 @@ C  the name is added.
      &       layflag(MAXLAY)
 
       common/laytoo/ layuse(MAXLAY)
-      character layname*72,instring*72,outs*124
+      character layname*72,outs*124
 
       do 100 i = 1, numlay
         if (layname(i) .eq. instring) then
@@ -572,9 +582,13 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum,polylinflag
+      integer polylinflag
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -596,7 +610,7 @@ C itrc indicator so that debug can be done from command line.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,RZNAME*24
+      character RZNAME*24
       logical match,close
 
 C << Note, if this is being called within a block definition >>
@@ -769,9 +783,13 @@ C vertex - compose XYZ from data in a DXF file.
       subroutine vertex(itrc)
 
       parameter (MAXPNT = 100)
-      integer gcode,innum
+
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -781,7 +799,6 @@ C vertex - compose XYZ from data in a DXF file.
 
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
-      character instring*72
 
       ivertflag = 0
       call readgc(itrc) 

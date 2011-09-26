@@ -32,6 +32,8 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
@@ -43,7 +45,7 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,bn*72,instr*72,ckstr*85,endstr*85
+      character bn*72,instr*72,ckstr*85,endstr*85
       
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
