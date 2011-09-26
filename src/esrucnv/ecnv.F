@@ -44,7 +44,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
@@ -52,7 +51,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/rp/repfile,repelev,repthick,nrep
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
+
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
       common/laytoo/ layuse(MAXLAY)
@@ -1072,11 +1074,12 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer IUOUT,IUIN
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer currlay, currcol, oldlay, oldcol
       integer gcode,innum,ioin,ioout,ioblk,flagins
       common/rd/gcode,instring,innum,realin,coorx,coory,
      &          coorz,blkxorg,blkyorg,blkzorg
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/matrix/ amat(3,3), xnorm, ynorm, znorm

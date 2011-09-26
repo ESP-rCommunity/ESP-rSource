@@ -36,7 +36,6 @@ C << a /tmp folder so work out a different approach >>
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
@@ -44,7 +43,9 @@ C << a /tmp folder so work out a different approach >>
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/vex/elevlast,thicklast,polylinflag
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/dxfe/oformat,indxzon,head
 
       character bname*72,pbname*72,chr*1,instring*72
@@ -252,14 +253,15 @@ C Note: all the insert files are assumed to be in local folder.
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,ioin,ioout,ioblk,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
                
@@ -466,10 +468,11 @@ C  the name is added.
 
       parameter (MAXLAY = 80)
       integer gcode,innum
-      integer currlay, currcol, oldlay, oldcol
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
 
@@ -505,9 +508,10 @@ C Write the contents of a viewer layer file.
 
       parameter (MAXLAY = 80)
       integer ioin,ioout,ioblk
-      integer currlay, currcol, oldlay, oldcol
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
 
       common/laytoo/ layuse(MAXLAY)
       common/dxfe/oformat,indxzon,head
@@ -549,7 +553,6 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
@@ -559,7 +562,9 @@ C itrc indicator so that debug can be done from command line.
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24

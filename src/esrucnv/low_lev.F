@@ -33,13 +33,14 @@ C face3d are triangles or quads which are general surfaces in autocad.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
 
@@ -147,14 +148,15 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &  basey,xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &          blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
@@ -271,10 +273,11 @@ C autocad and skip over it.
       subroutine gencrl(itrc)
 
       integer gcode,innum
-      integer currlay, currcol, oldlay, oldcol
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       character instring*72
 
@@ -299,10 +302,11 @@ C autocad and skip over it.
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum
-      integer currlay, currcol, oldlay, oldcol
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       character instring*72,tstr*80
 
@@ -338,14 +342,15 @@ C ****** genarc
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
-      integer currlay, currcol, oldlay, oldcol
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
       common/fg/flag3d,flagins,radians,dxfconv
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/attrs/ currlay, currcol, oldlay, oldcol
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
