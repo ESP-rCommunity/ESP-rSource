@@ -130,7 +130,7 @@ esru_ask.o:
 esru_x.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -I$(XINSTALLDIR)/include -c esru_x.c
 esru_fc.o:
-	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.f
+	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.F
 esru_util.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -I../lib -c esru_util.c
 version.o:
