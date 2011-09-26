@@ -45,9 +45,9 @@ C << a /tmp folder so work out a different approach >>
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -277,9 +277,9 @@ C Note: all the insert files are assumed to be in local folder.
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -592,9 +592,9 @@ C itrc indicator so that debug can be done from command line.
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -793,9 +793,9 @@ C vertex - compose XYZ from data in a DXF file.
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl

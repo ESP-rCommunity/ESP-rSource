@@ -53,9 +53,9 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -124,7 +124,7 @@ C Name of current application
 
 C Data types for parcnv call.
       integer itrc,incobs,ichop,itmprm,iverb
-      real conv
+      real conv,PI,radians
       integer nbo  ! local variable for nbobs
  
 C System parameter initializing. Use ioin for the input file,
@@ -1095,9 +1095,9 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs

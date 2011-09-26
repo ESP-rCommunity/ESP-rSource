@@ -163,9 +163,9 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &          blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -372,9 +372,9 @@ C ****** genarc
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
-      real flag3d,radians,dxfconv
+      real flag3d,dxfconv
       integer flagins
-      common/fg/flag3d,flagins,radians,dxfconv
+      common/fg/flag3d,flagins,dxfconv
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
@@ -388,8 +388,11 @@ C ****** genarc
 
       character RZNAME*24
       logical match,close
+      real PI,radians
 
 C Clear initial values for local variables.
+      PI = 4.0 * ATAN(1.0)
+      radians = PI/180.
       if (thick .gt. 0.) then
         flag3d = 1.
       else
