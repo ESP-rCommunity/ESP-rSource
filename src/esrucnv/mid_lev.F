@@ -23,6 +23,538 @@ c  BLOCK: processes the block definitions in .dxf file
 C  insert: processes the 'INSERT' command in .dxf file and
 C  getlay: looks through the current layer names for the
 
+C ******** scandxf
+C Scandxf does a high level scan of a DXF file and takes
+C the information gathered and writes to various output
+C file formats.
+      subroutine scandxf(filname1,filname2,itrc)
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+
+      character cfgroot*24,LCFGF*72
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      parameter (MAXLAY = 80)
+      integer gcode,innum
+      character instring*72
+      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg
+
+      integer currlay,currcol,oldlay,oldcol
+      common/attrs/currlay,currcol,oldlay,oldcol
+
+      character layname*72
+      integer numlay,laycolour,layflag
+      common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
+     &       layflag(MAXLAY)
+
+      integer indxzon
+      character oformat*24,head*4
+      common/dxfe/oformat,indxzon,head
+
+      integer lineno
+      integer ilay
+      character ZN*12
+      character RZNAME*24
+      character ltobs*72,outs*248
+      character number*3
+      logical OPND,match,doobs
+
+C File names.
+      character filname*144,filname2*144,filname1*144,lf*72
+
+C System parameter initializing. Use ioin for the input file,
+C ioout for primary output file, ioblk for block storage,
+C iotmp2 for miscel output files. Iotobs is obstruction block
+C storage.
+      ioin=1        
+      ioout=2        
+      ioblk=3
+      iotmp2=11        
+      iotobs=13        
+      iosblk=14
+
+      lineno = 0
+
+C The high level scan of a DXF file starts here. It works by
+C calling readgc to recover information from the DXF file until
+C and EOF is located. It looks for 'HEAD' and 'TABL' and 'ENDSEC'.
+      if(itrc.gt.1)then
+        call edisp(iuout,' ')
+        call edisp(iuout,'Start of debug of DXF file contents...')
+      endif
+      instring = 'start'
+ 9007 if (instring(1:3).ne.'EOF')then
+        call readgc(itrc)
+        if (instring(1:4).eq.'HEAD') then
+
+C HEAD section. Note if header section has a number of entries then
+C keep reading until ENDSEC is read.
+          if(itrc.gt.1) call edisp(iuout,' ')
+          if(itrc.gt.0)call edisp(iuout,' Processing dxf head...')
+ 9002     if (instring(1:6).ne.'ENDSEC')then
+            if (instring(2:5).eq.'SURF') then
+              call readgc(itrc)
+              minseg=innum
+            else
+              read(ioin,'(A)') instring
+              lineno = lineno + 1
+              goto  9002
+            endif
+            call readgc(itrc)
+            goto  9002
+          endif
+          if(itrc.gt.0)call edisp(iuout, ' Head processed...')
+        elseif (instring(1:4).eq.'TABL') then
+
+C TABLE section. Read until we find ENDSEC.We are interested in the
+C number of layers and layer colours and layer names.
+          if(itrc.gt.1) call edisp(iuout,' ')
+          if(itrc.gt.0)call edisp(iuout, ' Tables being processed....')
+ 9008     if (instring(1:6).ne.'ENDSEC')then
+            if (gcode.eq.2 .and. instring(:5).eq.'LAYER') then
+              ilay = 0
+              call readgc(itrc)
+ 9009         if (gcode.ne.0 .or.
+     &           (gcode.eq.0 .and. instring(1:6).ne.'ENDTAB')) then
+                if (gcode.eq.2) then
+                  call getlay(ilay,itrc)
+                  if (ilay .gt. 0) laycolour(ilay) = 1
+                elseif (gcode.eq.62) then
+                  if (ilay .gt. 0) laycolour(ilay) = abs(innum)
+                elseif (gcode .eq. 70) then
+                  if (ilay .gt. 0) layflag(ilay) = innum
+                endif
+                call readgc(itrc)
+                goto 9009
+              endif
+            else
+              read(ioin,'(A)') instring
+              lineno = lineno + 1
+              goto  9008
+            endif
+            call readgc(itrc)
+            goto  9008
+          endif
+          if(itrc.gt.0)call edisp(iuout, ' Tables processed....')
+
+C Transform information into esp-r common blocks. Begin by looping
+C though known layers, skipping layer `0` and `1`.  But if there are
+C only two layers and they are '0' and '1' then we have no named
+C layers so warn the user and advise that layer zero data will be
+C placed in a zone named First.
+           if(oformat(1:3).eq.'esp')then
+             if(numlay.eq.1)then
+               if(layname(1)(1:1).eq.'0')then
+                 call edisp(iuout,
+     & 'DXF file has no named layers. Dumping layer 0 into zone First')
+
+C Assuming a single esp-r zone so create file names etc.
+                 NCOMP=NCOMP+1
+                 write(ZN,'(a)') 'First'
+                 ln =lnblnk(ZN)
+                 if(itrc.gt.1)then
+                   write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &               NCOMP,' named ',zn
+                   call edisp(iuout,outs)
+                 endif
+                 NCCODE(NCOMP)=NCOMP
+                 write(zname(NCOMP),'(a)') ZN
+                 lnzname(NCOMP)=lnblnk(ZN)
+                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                   write(lf,'(a,a4)') ZN(1:ln),'.geo'
+                 else
+                   write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
+     &               fs,ZN(1:ln),'.geo'
+                 endif
+                 LGEOM(NCOMP)=lf
+                 goto 46    ! jump to next step
+               endif
+             endif
+             do 45 i=1,numlay
+               ll=lnblnk(layname(i))
+               if(layname(i)(1:ll).ne.'0'.and.
+     &            layname(i)(1:ll).ne.'1')then
+                 call matchl(i,head,RZNAME,match,im)
+                 if(.NOT.match)then
+
+C Found a new zone so create file names etc.
+                   NCOMP=NCOMP+1
+                   ln = min0(12,lnblnk(RZNAME))
+                   write(ZN,'(a)') RZNAME(1:ln)
+                   if(itrc.gt.1)then
+                     write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &                 NCOMP,' named ',zn
+                     call edisp(iuout,outs)
+                   endif
+                   NCCODE(NCOMP)=NCOMP
+                   write(zname(NCOMP),'(a)') ZN
+                   lnzname(NCOMP)=lnblnk(ZN)
+                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                     write(lf,'(a,a4)') ZN(1:ln),'.geo'
+                   else
+                     write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
+     &                 fs,ZN(1:ln),'.geo'
+                   endif
+                   LGEOM(NCOMP)=lf
+                 else
+
+C Found subset of an existing zone.  If an obstructions
+C layer (starts with OBS_) then create a zone obs file. Add path
+C for zone files.
+
+C << need to update to work with v1.1 geometry files with embedded
+C << obstructions
+                   if(head.eq.'OBS_')then
+                     if(IOBS(im).eq.0)then
+                       IOBS(im)=1
+                       doobs=.TRUE.
+                       if(zonepth(1:2).eq.'  '.or.
+     &                    zonepth(1:2).eq.'./')then
+                         write(lf,'(a,a4)') 
+     &                     zname(im)(1:lnzname(im)),'.obs'
+                       else
+                         write(lf,'(a,a1,a,a4)') 
+     &                     zonepth(1:lnblnk(zonepth)),fs,
+     &                     zname(im)(1:lnzname(im)),'.obs'
+                       endif
+                       ZOBS(im)=lf
+                       if(itrc.gt.1)then
+                         write(outs,'(2a)')'Creating obstructions for ',
+     &                     head(1:lnblnk(head))
+                         call edisp(iuout,outs)
+                       endif
+                     endif
+                   endif
+                 endif
+               endif
+  45         continue
+
+C If obstruction layers (names beginning with "OBS_" make
+C a scratch file to collect data.
+
+C << the following line will not work with Windows >>
+C << consider saving obstruction info into memory instead >>
+
+  46         ltobs='/tmp/tobs'
+             open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
+     &            err=903)
+
+C Continue with configuration file.
+             write(ioout,'(I7,a)')ncomp,'  # no of zones'
+
+C Write zone information to configuration file depending on format.
+C Knowing zones, create other zone files.
+             do 44 k2=1,ncomp
+               if(icfgv.lt.3)then
+                 call usrmsg('Configuration file is an old format. ',
+     &             'skipping read... ','W')
+                 stop 'ecnv aborted.'
+               elseif(icfgv.eq.3.or.icfgv.eq.4)then
+                 WRITE(ioout,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
+     &             '*zon ',NCCODE(k2),'   # reference for ',zname(k2)
+                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &             '*opr ',LPROJ(k2)(:LNBLNK(LPROJ(k2))),'  # schedules'
+                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &             '*geo ',LGEOM(k2)(:lnblnk(LGEOM(k2))),'  # geometry'
+                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &             '*con ',LTHRM(k2)(:LNBLNK(LTHRM(k2))),
+     &             '  # construction'
+                 if(IOBS(k2).eq.1)then
+                   WRITE(ioout,'(a,a)',IOSTAT=IOS,ERR=2)'*obs ',
+     &               ZOBS(k2)(1:lnblnk(ZOBS(k2)))
+                 endif
+                 WRITE(ioout,'(A)',IOSTAT=IOS,ERR=2)'*zend '
+               endif
+  44         continue
+           endif
+         elseif (instring(1:4).eq.'BLOC') then
+
+C << ? block treatment with esp-r? >>
+            call block(itrc)
+         elseif (instring(1:4).eq.'ENTI') then
+
+C ENTITY section.
+C << ? entity treatment with esp-r? >>
+            elev=dfltelev        
+            thick=dfltthick        
+            xscale=1.      
+            yscale=1.       
+            zscale=1.    
+            rotangl=0.
+      
+            if(itrc.gt.1) call edisp(iuout,' ')
+            if(itrc.gt.0)call edisp(iuout, ' Entities processing...')
+            blkxorg=0.0
+            blkyorg=0.0
+            blkzorg=0.0
+            currlay = 0
+            currcol = 1
+            call readgc(itrc)
+ 91         if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
+     &                           'ENDBLK') then
+              elev=dfltelev        
+              thick=dfltthick        
+              if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
+
+C Take in 2D lines, if extruded then make into surfaces.
+                call genlin(itrc)
+              elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
+                call genarc(itrc)
+              elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
+                if(itrc.gt.0)call edisp(iuout, ' skipping POINT ')
+              elseif (instring(1:5).eq.'TRACE') then        
+                if(itrc.gt.0)call edisp(iuout, ' skipping TRACE ')
+              elseif (instring(1:5).eq.'SOLID') then        
+                if(itrc.gt.0)call edisp(iuout, ' skipping SOLID ')
+              elseif(instring(1:6).eq.'INSERT') then        
+                call insert(itrc)        
+              elseif (instring(1:5).eq.'CIRCL') then        
+                if(itrc.gt.0)call edisp(iuout, ' skipping CIRCLE ')
+                call gencrl(itrc)
+              elseif (instring(1:5).eq.'POLYL') then
+                call genplin(itrc)
+              elseif (instring(1:6).eq.'3DFACE') then
+                call face3d(itrc)
+              elseif (instring(1:6).eq.'3DLINE') then
+                if(itrc.gt.0)call edisp(iuout,' skipping single line ')
+              elseif (instring(1:4).eq.'TEXT') then 
+                if(itrc.gt.0)call edisp(iuout, ' skipping text ')
+                call gentext(itrc)
+              elseif (gcode.eq.8) then
+                call getlay(currlay,itrc)
+                call readgc(itrc)
+              elseif (gcode.eq.39) then
+                thick = realin
+                call readgc(itrc)
+              elseif (gcode.eq.62) then
+               currcol = innum
+               call readgc(itrc)
+              else
+               call readgc(itrc)
+              endif
+             goto  91
+           endif
+           if(itrc.gt.0)call edisp(iuout, ' Entities processed....')
+         endif
+         goto  9007
+      endif
+
+C  Write the picture name in .vew file
+      if(oformat(1:6).eq.'viewer')then
+        write(ioout,'(a)') 'NAM'
+        write(ioout,'(a,a1,a)') 'AutoCAD',fs,filname2(1:(leng))        
+        write(ioout,'(a)') 'END'
+        call edisp(iuout, ' ')
+        call edisp(iuout, 'ecnv conversion is complete.')
+        write(outs,'(2a)') 'dxf2v_finished ',
+     &                    filname2(1:lnblnk(filname2))
+        call edisp248(iuout,outs,100)
+
+C Close the files, remove temporary files if not to be kept.
+        close(ioout)
+        if(itmprm.eq.1)then
+          INQUIRE(ioblk,OPENED=OPND)
+          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+          if(itrc.gt.0)then
+            INQUIRE(iosblk,OPENED=OPND)
+            close(iosblk,STATUS='DELETE')
+          endif
+        else
+          INQUIRE(ioblk,OPENED=OPND)
+          IF(OPND)close(ioblk)
+          if(itrc.gt.0)close(iosblk)
+        endif
+      elseif(oformat(1:3).eq.'esp')then
+
+C Generate the zone geometry and any obstruction files. These
+C facilities require that IC1 IE1 ICT IC2 IE2 and IZSTOCN are
+C up to date. Start over and assume everything faces an
+C unknown boundary.  Actually in the low and mid level code
+C scanning the DXF file the values of izstocn and ncon have 
+C been updated. This start-again block of code is for safety.
+        NCON=0
+        icc=0
+        do 57 iv=1,ncomp
+          do 58 icz=1,nzsur(iv)
+            icc=icc+1
+            ncon=ncon+1
+            IC1(icc)=iv
+            IE1(icc)=icz
+            ICT(icc)=-1
+            IC2(icc)=0
+            IE2(icc)=0
+            IZSTOCN(IC1(icc),IE1(icc))=icc
+   58     continue
+   
+C Use the local wegeom to write out a old style of esp-r
+C geometry file based on the information available. After
+C writing close iotmp2 so that it can be used for the
+C connections file.
+
+C << need an alternative to wegeom for version 1.1 >>
+          if(itrc.gt.0)then
+            WRITE(outs,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
+     &        'Writing zone ',NCCODE(iv),' named ',zname(iv)
+            call edisp248(iuout,outs,100)
+	  endif
+          lf=LGEOM(iv)
+          ivv=iv
+          call wegeom(iotmp2,ivv,lf,ier)
+          close(iotmp2)
+
+C Create a dummy obstruction file for zone. Rewind the temporary
+C block store file and scann for blocks matching the current
+C zone.
+C << what about newer obstruction forms ? >>
+          if(IOBS(ivv).eq.1)then
+            nbobs(ivv)=0
+            INQUIRE(iotobs,OPENED=OPND)
+            if(OPND)then
+              rewind(iotobs,ERR=999)
+            else
+              ltobs='/tmp/tobs'
+              open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
+     &            err=903)
+            endif
+  142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
+            if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
+              nbobs(ivv)=nbobs(ivv)+1
+              nbo=nbobs(ivv)
+              XOB(ivv,nbo)=TXO
+              YOB(ivv,nbo)=TYO
+              ZOB(ivv,nbo)=TZO
+              DXOB(ivv,nbo)=TDX
+              DYOB(ivv,nbo)=TDY
+              DZOB(ivv,nbo)=TDZ
+              BANGOB(ivv,nbo,1)=TBANG
+              BANGOB(ivv,nbo,2)=0.0
+              BANGOB(ivv,nbo,3)=0.0
+              BLOCKTYP(ivv,nbo)='obs '
+            endif
+            goto 142
+ 143        continue
+ 
+C << NOTE: if we switch over to the new geometry format there is no
+C << need for a separate obstructions file
+ 
+            CALL EFOPSEQ(iotmp2,ZOBS(ivv),3,IER)
+            write(iotmp2,'(a,a)')
+     &        '# DUMMY site obstruction file defined in ',
+     &        ZOBS(ivv)(1:lnblnk(ZOBS(ivv)))
+            write(iotmp2,'(a,a)')'# associated with zone geom file ',
+     &        LGEOM(ivv)(1:lnblnk(LGEOM(ivv)))
+            write(iotmp2,'(a)')' 0.0  0.0  # dummy valuse'
+            write(iotmp2,'(I4,a)') nbobs(ivv),
+     &        '     # no obstruction blocks'
+            write(iotmp2,'(a)')
+     &       '# origin  X   Y   Z   width  depth  height  angle  descr'
+            do 144 ibx=1,nbobs(ivv)
+              write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
+     &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
+     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' dxf # block '
+ 144        continue
+            write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
+            write(iotmp2,'(a)')'    20    20     5     5'
+            close(iotmp2)
+          endif
+  57    continue
+
+C Write out the connections (assuming everything exterior). Check to see
+C that LCNN is something other than UNKNOWN.
+        if(LCNN(1:7).eq.'UNKNOWN')then
+          write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
+        endif
+        if(icfgv.eq.3.or.icfgv.eq.4)then
+          WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &        '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
+          CALL EFOPSEQ(iotmp2,LCNN,3,IER)
+          WRITE(iotmp2,'(A,A)',IOSTAT=IOS,ERR=2) '*connections  for ',
+     &      cfgroot(1:lnblnk(cfgroot))
+          call dstamp(dstmp)
+          WRITE(iotmp2,'(A,A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
+          WRITE(iotmp2,'(I7,A)',IOSTAT=IOS,ERR=2)
+     &        NCON,'   # number of connections'
+        endif
+        do 61 iv=1,ncomp
+          do 66 is=1,NZSUR(iv)
+            write(iotmp2,'(2i4,a)')iv,is,'  -1   0   0'
+  66      continue
+  61    continue
+        write(ioout,'(a)')'      0   # no mass flow analysis'
+        if(icfgv.eq.3.or.icfgv.eq.4)close(iotmp2)
+        close(ioout)
+
+        if(itmprm.eq.1)then
+          INQUIRE(ioblk,OPENED=OPND)
+          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+          if(itrc.gt.0)then
+            INQUIRE(iosblk,OPENED=OPND)
+            close(iosblk,STATUS='DELETE')
+          endif
+          if(doobs)then
+            INQUIRE(iotobs,OPENED=OPND)
+            IF(OPND)close(iotobs,STATUS='DELETE')
+          endif
+        else
+          INQUIRE(ioblk,OPENED=OPND)
+          IF(OPND)close(ioblk)
+          if(itrc.gt.0)close(iosblk)
+          if(doobs)close(iotobs)
+        endif
+      endif
+
+C Dump out layer names and equivalent number.
+      write(filname2,'(a,a4)')filname(1:(leng)),'.lay'        
+      open(ioout,file=filname2,status='UNKNOWN', err=901)
+      write(ioout,'(a,a)') 'Layer names used in the file : ',
+     &      filname1(1:lnblnk(filname1))
+      write(ioout,'(a)') 'Number  Name       Default Colour'
+      do 10 i = 1,numlay
+        if (laycolour(i) .gt. 0) then
+           write(number,'(i3)') laycolour(i)
+        else
+           number = ' - '
+        endif
+        write(ioout,1000) i, layname(i)(1:15), number
+ 1000   format('  ',i3,'    : ',a,'  ',a)
+ 10   continue
+      close(ioout)
+      call edisp(iuout,' End of conversion.')
+
+      return
+
+ 901  write(outs,'(2a)') 'Error opening "NEW" file :',
+     &     filname2(:lnblnk(filname2))
+      call edisp248(iuout,outs,100)
+      goto 999
+
+ 903  call edisp(iuout,'Error opening or writing temp obstr file.')
+      close(iotobs)
+      stop
+
+    2 CALL edisp(iuout,' Problem writing config data config...')
+      close(ioout)
+      goto 999
+
+    3 CALL edisp(iuout,' Problem writing configuration name...')
+      close(ioout)
+      goto 999
+
+ 999  stop 'ecnv aborted.'
+      end
+
 C ******** block
 c BLOCK processes the block definitions in .dxf file
 c of Autocad and create a /tmp/blockdxf2e file for later
@@ -30,6 +562,7 @@ c 'INSERT' command use.
 
 C << NOTE: for some computer types there will not be >>
 C << a /tmp folder so work out a different approach >>
+C << possibly using memory >>
       subroutine block(itrc)
       
       integer lnblnk  ! function definition
@@ -123,6 +656,7 @@ C Remove possible leading * from block name.
 C There are certain block types that can be ignored:
 C aecid.vew, border.vew, ddi.vew, for these look until
 C `ENDBLK` found.
+C << consider adding to this list >>
           skip=.false.
           if(bname(1:9).eq.'aecid.vew')then
             skip=.true.
@@ -170,9 +704,9 @@ C Note the gcode=10 reads in the x & y block origin
       write(ioblk,'(a)') 'BLOCK BASE '
       write(ioblk,*) blkxorg,blkyorg,blkzorg
       
-C If the input string is something other then ENDBLK then
+C If the input string is something other than ENDBLK then
 C parse the set of commands that can be used. Skip those
-C that we cannot use.
+C that we cannot use (SOLID, CIRCLE, POINT, TEXT).
  9003 if (instring(1:6).ne.'ENDBLK')then
         elev=dfltelev
         thick = dfltthick
@@ -214,6 +748,8 @@ C Circles are not delt with, but need to skip lines.
         elseif (instring(1:5).eq.'3DFAC') then
           call face3d(itrc)
         elseif (instring(1:5).eq.'3DLIN') then 
+
+C << can we do something with 3DLIN? >>
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping line:',bname(1:leng)
             call edisp(iuout,outs)
@@ -227,12 +763,12 @@ C Text is not delt with, but need to skip lines.
           endif
           call gentext(itrc)
         elseif (gcode.eq.8) then
-          call getlay(currlay,itrc)
+          call getlay(currlay,itrc)   ! layer name
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
           call readgc(itrc)
         elseif (gcode.eq.62) then
-          currcol = innum
+          currcol = innum   ! the colour index
           call readgc(itrc)
         else
           call readgc(itrc)
@@ -410,6 +946,7 @@ C scratch file (block_scratch) for reporting translations.
 C << NOTE: to be done >>
 C << there will not be a /tmp folder on Native Windows >>
 C << find another place to put this temporary file >>
+C << or consider using memory rather than scratch files >>
 
       write(pbname,'(a)') '/tmp/blockdxf2e'
       write(scratch,'(a)') '/tmp/block_scratch'
@@ -462,6 +999,14 @@ C in and converted.
             coorx=x
             coory=y
             if(oformat(1:3).eq.'esp')then
+
+C This assumes that obstructions are in blocks named obstruction
+C and the data is written to a scratch file.
+
+C << hold this information in memory so that no scratch file
+C << is needed and extend to include additional rotations and
+C << tilts and opacity and ??
+
               if(bname(1:11).eq.'obstruction')then
                 call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
@@ -502,11 +1047,14 @@ C  the name is added.
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
+
+      character layname*72
+      integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
 
       common/laytoo/ layuse(MAXLAY)
-      character layname*72,outs*124
+      character outs*124
 
       do 100 i = 1, numlay
         if (layname(i) .eq. instring) then

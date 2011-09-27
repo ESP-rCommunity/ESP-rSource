@@ -64,6 +64,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
 
+      character layname*72
+      integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
       common/laytoo/ layuse(MAXLAY)
@@ -108,7 +110,7 @@ C Name of current application
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
-      character inf*144,ouf*144,layname*72,lf*72
+      character inf*144,ouf*144,lf*72
       character iformat*24,number*3,fs*1
       character RZNAME*24,ZN*12,LTMP*144
       character path*72
@@ -124,7 +126,7 @@ C Name of current application
 
 C Data types for parcnv call.
       integer itrc,incobs,ichop,itmprm,iverb
-      real conv,PI,radians
+      real conv
       integer nbo  ! local variable for nbobs
  
 C System parameter initializing. Use ioin for the input file,
@@ -175,8 +177,6 @@ C Get command line parameters.
       oldcol = 1
       currlay = 0
       currcol = 1
-      PI = 4.0 * ATAN(1.0)
-      radians = PI/180.
       minseg = 6
       dxfconv = 1.0
       layuse(1)=0
@@ -485,7 +485,9 @@ C to be scanned.
       endif
   28  continue   ! we found the * Building line.
 
-C The general control part of the program
+C The high level scan of a DXF file starts here. It works by
+C calling readgc to recover information from the DXF file until
+C and EOF is located. It looks for 'HEAD' and 'TABL' and 'ENDSEC'.
       if(itrc.gt.1)then
         call edisp(iuout,' ')
         call edisp(iuout,'Start of debug of DXF file contents...')
@@ -514,7 +516,8 @@ C keep reading until ENDSEC is read.
           if(itrc.gt.0)call edisp(iuout, ' Head processed...')
         elseif (instring(1:4).eq.'TABL') then
 
-C TABLE section. Read until we find ENDSEC.
+C TABLE section. Read until we find ENDSEC.We are interested in the
+C number of layers and layer colours and layer names.
           if(itrc.gt.1) call edisp(iuout,' ')
           if(itrc.gt.0)call edisp(iuout, ' Tables being processed....')
  9008     if (instring(1:6).ne.'ENDSEC')then
@@ -577,11 +580,21 @@ C Assuming a single esp-r zone so create file names etc.
                  goto 46    ! jump to next step
                endif
              endif
+
+C For each layer setup associated zone names or obstruction info.
+             if(itrc.gt.1)then
+               write(outs,*) 'layers found in header ',numlay
+               call edisp(iuout,outs)
+             endif
              do 45 i=1,numlay
                ll=lnblnk(layname(i))
                if(layname(i)(1:ll).ne.'0'.and.
      &            layname(i)(1:ll).ne.'1')then
                  call matchl(i,head,RZNAME,match,im)
+                 if(itrc.gt.1)then
+                   write(outs,*) 'cl match ',i,head,' ',RZNAME,match,im
+                   call edisp(iuout,outs)
+                 endif
                  if(.NOT.match)then
 
 C Found a new zone so create file names etc.
@@ -605,10 +618,13 @@ C Found a new zone so create file names etc.
                    LGEOM(NCOMP)=lf
                  else
 
-C Found subset of an existing zone.  If obstructions
-C layer then we know about some utilities.  Add path so
-C that zone files live in same folder as the configuration file.
-                   if(head.eq.'OBS_')then
+C Found subset of an existing zone.  If an obstructions
+C layer (starts with OBS_) then create a zone obs file. Add path
+C for zone files.
+
+C << need to update to work with v1.1 geometry files with embedded
+C << obstructions
+                   if(head(1:4).eq.'OBS_')then
                      if(IOBS(im).eq.0)then
                        IOBS(im)=1
                        doobs=.TRUE.
@@ -637,6 +653,8 @@ C If obstruction layers (names beginning with "OBS_" make
 C a scratch file to collect data.
 
 C << the following line will not work with Windows >>
+C << consider saving obstruction info into memory instead >>
+
   46         ltobs='/tmp/tobs'
              open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
      &            err=903)
@@ -807,7 +825,7 @@ C << need an alternative to wegeom for version 1.1 >>
 C Create a dummy obstruction file for zone. Rewind the temporary
 C block store file and scann for blocks matching the current
 C zone.
-C << what about newer >>
+C << what about newer obstruction forms ? >>
           if(IOBS(ivv).eq.1)then
             nbobs(ivv)=0
             INQUIRE(iotobs,OPENED=OPND)
@@ -922,6 +940,7 @@ C Dump out layer names and equivalent number.
  10   continue
       close(ioout)
       call edisp(iuout,' End of conversion.')
+
       CALL EPAGEND
       STOP
 
@@ -1102,6 +1121,9 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer ioin,ioout,ioblk,iosblk,iotobs
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      character layname*72
+      integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1112,7 +1134,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       common/dxfe/oformat,indxzon,head
 
       character outs*124
-      character layname*72
       logical match
       integer nbofsurf  ! to pass to matchv
 
@@ -1278,9 +1299,13 @@ C first then accept match.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+
+      character layname*72
+      integer numlay,laycolour,layflag
       common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      character layname*72,TZNAME*24,RZNAME*24,head*4
+
+      character TZNAME*24,RZNAME*24,head*4
       logical match
 
       head=' '
