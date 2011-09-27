@@ -27,7 +27,7 @@ C ******** scandxf
 C Scandxf does a high level scan of a DXF file and takes
 C the information gathered and writes to various output
 C file formats.
-      subroutine scandxf(filname1,filname2,itrc)
+      subroutine scandxf(filname,filname1,filname2,itmprm,itrc)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -51,6 +51,10 @@ C file formats.
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
 
+      integer lineno
+      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
+     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
 
@@ -63,16 +67,25 @@ C file formats.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      integer lineno
       integer ilay
       character ZN*12
       character RZNAME*24
-      character ltobs*72,outs*248
-      character number*3
-      logical OPND,match,doobs
+      character ltobs*72,outs*248,fs*1
+      character number*3,dstmp*24
+      logical OPND,match,doobs,unixok
 
 C File names.
       character filname*144,filname2*144,filname1*144,lf*72
+
+      integer itrc,itmprm
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
@@ -86,6 +99,11 @@ C storage.
       iosblk=14
 
       lineno = 0
+      elev=0.
+      dfltelev=elev
+      thick=0.
+      dfltthick=thick
+      minseg = 6
 
 C The high level scan of a DXF file starts here. It works by
 C calling readgc to recover information from the DXF file until
@@ -353,13 +371,13 @@ C Take in 2D lines, if extruded then make into surfaces.
 
 C  Write the picture name in .vew file
       if(oformat(1:6).eq.'viewer')then
+        leng=lnblnk(filname2)                
         write(ioout,'(a)') 'NAM'
         write(ioout,'(a,a1,a)') 'AutoCAD',fs,filname2(1:(leng))        
         write(ioout,'(a)') 'END'
         call edisp(iuout, ' ')
         call edisp(iuout, 'ecnv conversion is complete.')
-        write(outs,'(2a)') 'dxf2v_finished ',
-     &                    filname2(1:lnblnk(filname2))
+        write(outs,'(2a)') 'dxf2v_finished ',filname2(1:leng)
         call edisp248(iuout,outs,100)
 
 C Close the files, remove temporary files if not to be kept.
@@ -516,7 +534,8 @@ C that LCNN is something other than UNKNOWN.
       endif
 
 C Dump out layer names and equivalent number.
-      write(filname2,'(a,a4)')filname(1:(leng)),'.lay'        
+      leng=lnblnk(filname2)                
+      write(filname2,'(a,a4)')filname(1:leng),'.lay'        
       open(ioout,file=filname2,status='UNKNOWN', err=901)
       write(ioout,'(a,a)') 'Layer names used in the file : ',
      &      filname1(1:lnblnk(filname1))

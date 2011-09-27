@@ -44,6 +44,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
 
+      integer lineno
       common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
      & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
 
