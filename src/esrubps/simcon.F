@@ -2138,10 +2138,12 @@ C ICNT    - counts trace output for page numbering purposes
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
+      COMMON/PREC7/ITCNST
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
@@ -2188,7 +2190,7 @@ C For help messages
       ITEM(19)='u surface adjacent conditions'
       ITEM(20)='v plant matrix template      '
       ITEM(21)='w plant component static     '
-      ITEM(22)='x plant component adj inf    '
+      ITEM(22)='x plant component adj info   '
       ITEM(23)='y plant coef generator       '
       ITEM(24)='z plant matrix solution      '
       ITEM(25)='1 plant matrix setup         '
@@ -2263,38 +2265,57 @@ C Help for trace facility.
 C Shift the menu index back to get trace index.
       if(ino.eq.1)then
         II=2
+        call edisp(iuout,'Selected electical calculation trace.')
       elseif(ino.eq.2)then
         II=3
+        call edisp(iuout,'Selected temporal items trace.')
       elseif(ino.eq.3)then
         II=4
+        call edisp(iuout,'Selected view factor & longwave trace.')
       elseif(ino.eq.4)then
         II=5
+        call edisp(iuout,
+     &    'Selected shading & insolation trace.You must re-scan')
+        call edisp(iuout,'the model cfg file to get this report.')
       elseif(ino.eq.5)then
         II=6
+        call edisp(iuout,'Selected heat transfer coef trace.')
       elseif(ino.eq.6)then
         II=10
+        call edisp(iuout,'Selected zone RH & condensation trace.')
       elseif(ino.eq.7)then
         II=11
+        call edisp(iuout,'Selected infiltration & ventilation trace.')
       elseif(ino.eq.8)then
         II=12
+        call edisp(iuout,'Selected zone casual gains trace.')
       elseif(ino.eq.9)then
         II=14
+        call edisp(iuout,'Selected zone miscellaneous trace.')
       elseif(ino.eq.10)then
         II=15
+        call edisp(iuout,'Selected zone matrix modification trace.')
       elseif(ino.eq.11)then
         II=19
+        call edisp(iuout,'Selected solar radiation trace.')
       elseif(ino.eq.12)then
         II=25
+        call edisp(iuout,'Selected air flow calculations trace.')
       elseif(ino.eq.13)then
         II=26
+        call edisp(iuout,'Selected zone matrix setup trace.')
       elseif(ino.eq.14)then
         II=27
+        call edisp(iuout,'Selected matrix forward reduction trace.')
       elseif(ino.eq.15)then
         II=28
+        call edisp(iuout,'Selected matrix forward adjustment trace.')
       elseif(ino.eq.16)then
         II=29
+        call edisp(iuout,'Selected matrix forward red compl trace.')
       elseif(ino.eq.17)then
         II=30
+        call edisp(iuout,'Selected zone equation solution trace.')
       elseif(ino.eq.18)then
         II=31
 
@@ -2303,6 +2324,7 @@ C Trace output of library save..
           call edisp(iuout,'no zones yet for library save trace...')
           goto 4
         endif
+        call edisp(iuout,'Selected zone & surface flux balance trace.')
 
 C Ask for surfaces to be traced in the surface balances.
         CALL EASKI(NSURF,' ',
@@ -2317,22 +2339,30 @@ C Ask for surfaces to be traced in the surface balances.
   703   CONTINUE
       elseif(ino.eq.19)then
         II=32
+        call edisp(iuout,'Selected surface adjacent conditions trace.')
       elseif(ino.eq.20)then
         II=34
+        call edisp(iuout,'Selected plant matrix template trace.')
       elseif(ino.eq.21)then
         II=35
+        call edisp(iuout,'Selected plant component staic trace.')
       elseif(ino.eq.22)then
         II=36
+        call edisp(iuout,'Selected plant component adj info trace.')
       elseif(ino.eq.23)then
         II=37
+        call edisp(iuout,'Selected plant coefficient generator trace.')
       elseif(ino.eq.24)then
         II=38
+        call edisp(iuout,'Selected plant matrix solution trace.')
       elseif(ino.eq.25)then
         II=39
+        call edisp(iuout,'Selected plant matrix setup trace.')
       elseif(ino.eq.26)then
 
 C If all plant turn on related traces as well.
         II=40
+        call edisp(iuout,'Selected all plant trace.')
         ITRACE(34)=1
         ITRACE(35)=1
         ITRACE(36)=1
@@ -2343,15 +2373,19 @@ C If all plant turn on related traces as well.
         goto 4
       elseif(ino.eq.27)then
         II=41
+        call edisp(iuout,'Selected control functions trace.')
       elseif(ino.eq.28)then
         II=42
+        call edisp(iuout,'Selected timestep controller trace.')
       elseif(ino.eq.29)then
         II=7
         ITRACE(7)=1
+        call edisp(iuout,'Selected network flow ascii trace.')
         goto 4
       elseif(ino.eq.31)then
 
 C Clear all selections.
+        call edisp(iuout,'Selected CLEAR ALL trace.')
         DO 50 I=1,MTRACE
           ITRACE(I)=0
    50   CONTINUE
@@ -2362,7 +2396,16 @@ C Set trace index for the topic ON.
       ITRACE(II)=1
       GOTO 4
 
- 9988 IVAL=ITC
+C Good place to remind user of the number of timesteps
+C in the pre-simulation period.
+ 9988 write(outs,'(a,i5,a)')'The presimulation period is ',
+     &  ITCNST*24*NTSTEP,' timesteps.'
+      call edisp(iuout,outs)
+      IDAYS=ISDF-ISDS+1+ITCNST
+      write(outs,'(a,i5,a)')'The last timestep of the simulation is ',
+     &  IDAYS*24*NTSTEP,' timesteps.'
+      call edisp(iuout,outs)
+      IVAL=ITC
       CALL EASKI(IVAL,' Start trace after how many',
      &  ' (zone-side) time increments ?  ',
      &  1,'F',1,'-',1,'trace start',IER,nbhelp)
