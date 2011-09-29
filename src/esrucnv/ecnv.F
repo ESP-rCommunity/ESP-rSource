@@ -317,6 +317,7 @@ C files and close the cfg file.
           call escdef(iotmp2,IER)
           call clrprb
         endif
+
       elseif(oformat(1:3).eq.'dxf')then
 
 C If AutoCAD then also find its path so that support files can be
@@ -324,18 +325,25 @@ C placed in the same folder.
         write(outs,'(2a)')'The AutoCAD DXF file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
       elseif(oformat(1:6).eq.'zip')then
+
         write(outs,'(2a)')'The zip output file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
       elseif(oformat(1:4).eq.'xfig')then
+
         write(outs,'(2a)')'The xfig output file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
       elseif(oformat(1:3).eq.'THF'.or.oformat(1:3).eq.'thf')then
+
         write(outs,'(2a)')'The THF output file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
       else
         call edisp(iuout,'ecnv_error unknown_output_format')
         stop 'ecnv aborted.'
@@ -392,6 +400,10 @@ C Find the path and local file name.
           stop 'ecnv aborted.'
         endif
 
+C If output format is viewer or dxf.
+
+C << consider more passed parameters to fine-tune entity types >>
+
         if(oformat(1:6).eq.'viewer'.or.oformat(1:3).eq.'dxf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
           call e2vdxf(incobs,ichop)
@@ -409,6 +421,11 @@ C Create THF (THINGS) file.
           STOP
         endif
 
+C Create an Abacus zip file format.
+
+C << note this format is no longer used and might be
+C << considered for removal
+
         if(oformat(1:6).eq.'zip')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
           WRITE(ioout,'(a)') 'COM data file converted from `esp`'
@@ -424,6 +441,10 @@ C Create THF (THINGS) file.
           CALL EPAGEND
           STOP
         endif
+
+C Export to VRML. 
+
+C << consider updating to a newer format such as SVG >>
         if(oformat(1:4).eq.'vrml')then
           write(htmlfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.html'
           open(ioblk,file=htmlfile,status='UNKNOWN', err=901)
