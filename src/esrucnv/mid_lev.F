@@ -392,7 +392,7 @@ C Close the files, remove temporary files if not to be kept.
         close(ioout)
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+C          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
@@ -513,7 +513,7 @@ C that LCNN is something other than UNKNOWN.
 
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
-          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+C          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
@@ -710,6 +710,8 @@ C Note the gcode=10 reads in the x & y block origin
         call readgc(itrc)
         goto  9001
       endif
+
+C << use ichartblk and chartblk rather than ioblk >>
       write(ioblk,'(a)') 'BLOCK BASE '
       write(ioblk,*) blkxorg,blkyorg,blkzorg
       
@@ -784,6 +786,8 @@ C Text is not delt with, but need to skip lines.
         endif
         goto  9003
       endif
+
+C << use ichartblk and chartblk rather than ioblk >>
       write(ioblk,'(a,a)') '*end ',bname(1:leng)
       goto 10
 

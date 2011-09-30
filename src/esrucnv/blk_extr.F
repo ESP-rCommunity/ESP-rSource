@@ -45,6 +45,14 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
+C << use ichartblk and chartblk rather than ioblk >>
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many blocks found
+      common/dxfci/ichartobs,ichartblk 
+
       character bn*72,instr*72,ckstr*85,endstr*85
       character outs*124
       
@@ -66,11 +74,14 @@ C Found start of block.
           write(outs,'(a,a)') 'found ',bn(1:lnblnk(bn))
           call edisp(iuout,outs)
         endif
+
+C << use ichartblk and chartblk rather than ioblk >>
  12     read(ioblk,'(a)',end=500,err=600) instr
         l=lnblnk(instr)
         if(instr(1:10).eq.'BLOCK BASE')then
 
 C Read the block base origin.
+C << use ichartblk and chartblk rather than ioblk >>
           read(ioblk,*) blkxorg,blkyorg,blkzorg
           if(itrc.gt.0)then
             write(outs,*) 'b base = ',blkxorg,blkyorg,blkzorg,
@@ -83,6 +94,7 @@ C Read the block base origin.
         elseif(instr(1:3).eq.'LAY')then
 
 C Skip past the layer index and read again.
+C << use ichartblk and chartblk rather than ioblk >>
           read(ioblk,*,end=500,err=600)ilayer
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'LAY'
@@ -92,6 +104,7 @@ C Skip past the layer index and read again.
         elseif(instr(1:3).eq.'COL')then
 
 C Skip past the colour and read again.
+C << use ichartblk and chartblk rather than ioblk >>
           read(ioblk,*,end=500,err=600)icolour
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'COL'
@@ -101,6 +114,7 @@ C Skip past the colour and read again.
         elseif(instr(1:3).eq.'PLA')then
 
 C Found a plane, see how many vertices.
+C << use ichartblk and chartblk rather than ioblk >>
           read(ioblk,*,end=500,err=600) ivert
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a,2x,a)') instr(1:l),bn(1:lnblnk(bn))
@@ -110,6 +124,7 @@ C Found a plane, see how many vertices.
             do 42 iv=1,ivert
 
 C Get coords.
+C << use ichartblk and chartblk rather than ioblk >>
               read(ioblk,*,end=500,err=600) X0,Y0,Z0
               if(itrc.gt.0)then
                 write(outs,'(a,3f12.5)') 'vert ',X0,Y0,Z0
@@ -159,14 +174,14 @@ C Convert from mm to metres if requrired, write to file and tell user.
           endif
           goto 12
         elseif(instr(1:l).eq.endstr(1:lc))then
-          rewind(ioblk,ERR=999)
+          rewind(ioblk,ERR=999)   ! will not need
           return
         endif
       elseif(instr(1:l).eq.endstr(1:lc))then
 
 C End of block information, see about processing vertices.
 C Make sure to rewind the file.
-        rewind(ioblk,ERR=999)
+        rewind(ioblk,ERR=999)  ! will not need
         return
       else
         goto 10

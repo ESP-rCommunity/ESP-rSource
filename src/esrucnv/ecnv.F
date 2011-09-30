@@ -422,7 +422,8 @@ C << considered for removal
           STOP
         endif
 
-C Export to VRML. 
+C Export to VRML which also includes an html file (which also
+C makes use of ioblk file channel).
 
 C << consider updating to a newer format such as SVG >>
         if(oformat(1:4).eq.'vrml')then
@@ -439,7 +440,7 @@ C << consider updating to a newer format such as SVG >>
           WRITE(ioout,'(a)') ' '
           call e2vrml(itrc,ichop)
           CALL ERPFREE(ioout,ISTAT)
-          CALL ERPFREE(ioblk,ISTAT)
+          CALL ERPFREE(ioblk,ISTAT)  ! free up the html file
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
@@ -676,6 +677,13 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many blocks found
+      common/dxfci/ichartobs,ichartblk 
+
       character outs*124
       logical match
       integer nbofsurf  ! to pass to matchv
@@ -694,6 +702,8 @@ C For both file formats convert from mm to metres.
       if(oformat(1:6).eq.'viewer')then
         if (flagins.eq.0) then      
           if(head.eq.'BLK_')then
+
+C << use chartblk array rather than ioblk >>
             write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else
             write(ioout,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
@@ -703,6 +713,8 @@ C For both file formats convert from mm to metres.
           yy = yy-blkyorg        
           zz = zz-blkzorg      
           if(head.eq.'BLK_')then
+
+C << use chartblk array rather than ioblk >>
             write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           else
             write(ioout,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
@@ -710,16 +722,21 @@ C For both file formats convert from mm to metres.
         endif  
       elseif(oformat(1:3).eq.'esp')then
         if(head.eq.'OBS_')then
+          continue
         elseif(head.eq.'BLK_')then
 
 C Currently writing to temporary block file so do this in viewer
 C format (for later recovery as an obstruction block).
           if (flagins.eq.0) then      
+
+C << use chartblk array rather than ioblk >>
             write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else        
             xx = xx-blkxorg
             yy = yy-blkyorg        
             zz = zz-blkzorg      
+
+C << use chartblk array rather than ioblk >>
             write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv  
           endif      
         else
