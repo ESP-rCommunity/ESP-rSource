@@ -33,8 +33,8 @@ C geometry.h provides commons G0/G1/G2/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       dimension ndum(MS)
 
       character outs*124

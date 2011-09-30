@@ -71,6 +71,13 @@ C file formats.
       integer nbo  ! local variable for nbobs
       character ZN*12
       character RZNAME*24
+
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many blocks found
+      common/dxfci/ichartobs,ichartblk 
       character ltobs*72,outs*248,fs*1
       character number*3,dstmp*24
       logical OPND,match,doobs,unixok
@@ -90,13 +97,11 @@ C Set folder separator (fs) to \ or / as required.
 
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
-C iotmp2 for miscel output files. Iotobs is obstruction block
-C storage.
+C iotmp2 for miscel output files.
       ioin=1        
       ioout=2        
       ioblk=3
       iotmp2=11        
-      iotobs=13        
       iosblk=14
 
       lineno = 0
@@ -105,6 +110,13 @@ C storage.
       thick=0.
       dfltthick=thick
       minseg = 6
+
+C Clear text buffers for obstructions.
+      ichartobs = 0
+      do 466 iloop=1,500
+        chartobs(iloop)='  '
+        chartblk(iloop)='  '
+  466 continue
 
 C The high level scan of a DXF file starts here. It works by
 C calling readgc to recover information from the DXF file until
@@ -264,18 +276,11 @@ C << obstructions
                endif
   45         continue
 
-C If obstruction layers (names beginning with "OBS_" make
-C a scratch file to collect data.
-
-C << the following line will not work with Windows >>
-C << consider saving obstruction info into memory instead >>
-
-  46         ltobs='/tmp/tobs'
-             open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
-     &            err=903)
+C If obstruction layers (names beginning with "OBS_" use
+C ichartobs and chartobs to hold data. Reset ichartobs.
 
 C Continue with configuration file.
-             write(ioout,'(I7,a)')ncomp,'  # no of zones'
+  46         write(ioout,'(I7,a)')ncomp,'  # no of zones'
 
 C Write zone information to configuration file depending on format.
 C Knowing zones, create other zone files.
@@ -437,36 +442,30 @@ C << need an alternative to wegeom for version 1.1 >>
           call wegeom(iotmp2,ivv,lf,ier)
           close(iotmp2)
 
-C Create a dummy obstruction file for zone. Rewind the temporary
-C block store file and scann for blocks matching the current
-C zone.
+C Create a dummy obstruction file for zone. Loop through the
+C character arry chartobs and scan for blocks matching the
+C curret zone name.
 C << what about newer obstruction forms ? >>
           if(IOBS(ivv).eq.1)then
             nbobs(ivv)=0
-            INQUIRE(iotobs,OPENED=OPND)
-            if(OPND)then
-              rewind(iotobs,ERR=999)
-            else
-              ltobs='/tmp/tobs'
-              open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
-     &            err=903)
-            endif
-  142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
-            if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
-              nbobs(ivv)=nbobs(ivv)+1
-              nbo=nbobs(ivv)
-              XOB(ivv,nbo)=TXO
-              YOB(ivv,nbo)=TYO
-              ZOB(ivv,nbo)=TZO
-              DXOB(ivv,nbo)=TDX
-              DYOB(ivv,nbo)=TDY
-              DZOB(ivv,nbo)=TDZ
-              BANGOB(ivv,nbo,1)=TBANG
-              BANGOB(ivv,nbo,2)=0.0
-              BANGOB(ivv,nbo,3)=0.0
-              BLOCKTYP(ivv,nbo)='obs '
-            endif
-            goto 142
+            do 142 iloop=1,ichartobs
+              read(chartobs(iloop),*)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
+              if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
+                nbobs(ivv)=nbobs(ivv)+1
+                nbo=nbobs(ivv)
+                XOB(ivv,nbo)=TXO
+                YOB(ivv,nbo)=TYO
+                ZOB(ivv,nbo)=TZO
+                DXOB(ivv,nbo)=TDX
+                DYOB(ivv,nbo)=TDY
+                DZOB(ivv,nbo)=TDZ
+                BANGOB(ivv,nbo,1)=TBANG
+                BANGOB(ivv,nbo,2)=0.0
+                BANGOB(ivv,nbo,3)=0.0
+                BLOCKTYP(ivv,nbo)='obs '
+                write(BLOCKNAME(ivv,nbo),'(a,i2.2)') 'dxf',iloop
+              endif
+ 142        continue
  143        continue
  
 C << NOTE: if we switch over to the new geometry format there is no
@@ -484,9 +483,10 @@ C << need for a separate obstructions file
             write(iotmp2,'(a)')
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
             do 144 ibx=1,nbobs(ivv)
-              write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
+              write(iotmp2,'(7f9.4,3a)')XOB(ivv,ibx),YOB(ivv,ibx),
      &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
-     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' dxf # block '
+     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' ',
+     &          BLOCKNAME(ivv,ibx),' # block '
  144        continue
             write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
             write(iotmp2,'(a)')'    20    20     5     5'
@@ -526,15 +526,10 @@ C that LCNN is something other than UNKNOWN.
             INQUIRE(iosblk,OPENED=OPND)
             close(iosblk,STATUS='DELETE')
           endif
-          if(doobs)then
-            INQUIRE(iotobs,OPENED=OPND)
-            IF(OPND)close(iotobs,STATUS='DELETE')
-          endif
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
           if(itrc.gt.0)close(iosblk)
-          if(doobs)close(iotobs)
         endif
       endif
 
@@ -563,10 +558,6 @@ C Dump out layer names and equivalent number.
      &     filname2(:lnblnk(filname2))
       call edisp248(iuout,outs,100)
       goto 999
-
- 903  call edisp(iuout,'Error opening or writing temp obstr file.')
-      close(iotobs)
-      stop
 
     2 CALL edisp(iuout,' Problem writing config data config...')
       close(ioout)
@@ -606,8 +597,8 @@ C << possibly using memory >>
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
 
       real elevlast,thicklast
       integer polylinflag
@@ -619,6 +610,13 @@ C << possibly using memory >>
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
+
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many blocks found
+      common/dxfci/ichartobs,ichartblk 
 
       character bname*72,pbname*72,chr*1
       character RZNAME*24,outs*124
@@ -841,8 +839,8 @@ C Note: all the insert files are assumed to be in local folder.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -851,7 +849,14 @@ C Note: all the insert files are assumed to be in local folder.
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-               
+
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many blocks found
+      common/dxfci/ichartobs,ichartblk 
+
       character bname*72,pbname*72,chr*1,scratch*72
       character RZNAME*24,outs*124
       logical skip,match
@@ -1034,9 +1039,15 @@ C << tilts and opacity and ??
               if(bname(1:11).eq.'obstruction')then
                 call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
-                write(iotobs,'(a12,2x,7f9.4)')RZNAME(1:12),
+                ichartobs=ichartobs+1
+                write(chartobs(ichartobs),'(a12,2x,7f9.4)')
+     &            RZNAME(1:12),
      &            coorx*dxfconv,coory*dxfconv,coorz*dxfconv,
      &            xscale*dxfconv,yscale*dxfconv,zscale*dxfconv,rotangl
+
+C Debug.
+                write(6,*) 'chartobs=',ichartobs,' ',
+     &            chartobs(ichartobs)
               else
               endif
             elseif(oformat(1:6).eq.'viewer')then
@@ -1108,8 +1119,8 @@ C Write the contents of a viewer layer file.
       subroutine writelc
 
       parameter (MAXLAY = 80)
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -1168,8 +1179,8 @@ C itrc indicator so that debug can be done from command line.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl

@@ -52,8 +52,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       common/rp/repfile,repelev,repthick,nrep
 
       integer currlay,currcol,oldlay,oldcol
@@ -118,8 +118,7 @@ C Data types for parcnv call.
  
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
-C iotmp2 for miscel output files. Iotobs is obstruction block
-C storage.
+C iotmp2 for miscel output files.
       call ezero
       call curmodule('ecnv')
       cAppName = 'ecnv'
@@ -129,8 +128,7 @@ C storage.
       ioin=1        
       ioout=2        
       ioblk=3
-      iotmp2=11        
-      iotobs=13        
+      iotmp2=11               
       iosblk=14
       IFIL=15   ! set this to a higher number so no clash
       IUOUT=6
@@ -664,8 +662,8 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       character layname*72
@@ -776,8 +774,8 @@ C itrc sets debug mode if greater than one.
       common/rd/gcode,instring,innum,realin,coorx,coory,
      & coorz,blkxorg,blkyorg,blkzorg
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       character outs*124
 
       read(ioin,'(I6)',end=500,err=600) gcode
@@ -1018,8 +1016,8 @@ C << MUST be updated to reflect ipath and longer database names >>
 
       common/cctlnm/ctldoc,lctlf
 
-      integer ioin,ioout,ioblk,iosblk,iotobs
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk,iosblk
+      common/io/ioin,ioout,ioblk,iosblk
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
