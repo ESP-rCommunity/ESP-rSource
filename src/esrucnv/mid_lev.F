@@ -78,9 +78,9 @@ C file formats.
       integer ichartobs       ! how many obstructions found
       integer ichartblk       ! how many blocks found
       common/dxfci/ichartobs,ichartblk 
-      character ltobs*72,outs*248,fs*1
+      character outs*248,fs*1
       character number*3,dstmp*24
-      logical OPND,match,doobs,unixok
+      logical OPND,match,unixok
 
 C File names.
       character filname*144,filname2*144,filname1*144,lf*72
@@ -102,7 +102,6 @@ C iotmp2 for miscel output files.
       ioout=2        
       ioblk=3
       iotmp2=11        
-      iosblk=14
 
       lineno = 0
       elev=0.
@@ -254,7 +253,6 @@ C << obstructions
                    if(head.eq.'OBS_')then
                      if(IOBS(im).eq.0)then
                        IOBS(im)=1
-                       doobs=.TRUE.
                        if(zonepth(1:2).eq.'  '.or.
      &                    zonepth(1:2).eq.'./')then
                          write(lf,'(a,a4)') 
@@ -395,14 +393,9 @@ C Close the files, remove temporary files if not to be kept.
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)CLOSE(ioblk,STATUS='DELETE')
-          if(itrc.gt.0)then
-            INQUIRE(iosblk,OPENED=OPND)
-            close(iosblk,STATUS='DELETE')
-          endif
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
-          if(itrc.gt.0)close(iosblk)
         endif
       elseif(oformat(1:3).eq.'esp')then
 
@@ -466,7 +459,6 @@ C << what about newer obstruction forms ? >>
                 write(BLOCKNAME(ivv,nbo),'(a,i2.2)') 'dxf',iloop
               endif
  142        continue
- 143        continue
  
 C << NOTE: if we switch over to the new geometry format there is no
 C << need for a separate obstructions file
@@ -522,14 +514,9 @@ C that LCNN is something other than UNKNOWN.
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)CLOSE(ioblk,STATUS='DELETE')
-          if(itrc.gt.0)then
-            INQUIRE(iosblk,OPENED=OPND)
-            close(iosblk,STATUS='DELETE')
-          endif
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
-          if(itrc.gt.0)close(iosblk)
         endif
       endif
 
@@ -597,8 +584,8 @@ C << possibly using memory >>
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       real elevlast,thicklast
       integer polylinflag
@@ -839,8 +826,8 @@ C Note: all the insert files are assumed to be in local folder.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -857,7 +844,7 @@ C Note: all the insert files are assumed to be in local folder.
       integer ichartblk       ! how many blocks found
       common/dxfci/ichartobs,ichartblk 
 
-      character bname*72,pbname*72,chr*1,scratch*72
+      character bname*72,pbname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,match
 
@@ -969,8 +956,7 @@ C If one of the blocks we know we can skip then do so.
       x=dx
       coorz=dz
 
-C All imported block definition files come from (blockdxf2e) and a
-C scratch file (block_scratch) for reporting translations.
+C All imported block definition files come from (blockdxf2e).
 
 C << NOTE: to be done >>
 C << there will not be a /tmp folder on Native Windows >>
@@ -978,11 +964,7 @@ C << find another place to put this temporary file >>
 C << or consider using memory rather than scratch files >>
 
       write(pbname,'(a)') '/tmp/blockdxf2e'
-      write(scratch,'(a)') '/tmp/block_scratch'
       open(ioblk,file=pbname,status='UNKNOWN')
-      if(itrc.gt.0)then
-        open(iosblk,file=scratch,status='UNKNOWN')
-      endif
 
       if (iucs .eq. 1) then
         if (abs(xucs) .lt. delta) then
@@ -1030,10 +1012,9 @@ C in and converted.
             if(oformat(1:3).eq.'esp')then
 
 C This assumes that obstructions are in blocks named obstruction
-C and the data is written to a scratch file.
+C and the data is written to an array of strings for later scanning.
 
-C << hold this information in memory so that no scratch file
-C << is needed and extend to include additional rotations and
+C << extend to include additional rotations and
 C << tilts and opacity and ??
 
               if(bname(1:11).eq.'obstruction')then
@@ -1119,8 +1100,8 @@ C Write the contents of a viewer layer file.
       subroutine writelc
 
       parameter (MAXLAY = 80)
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -1179,8 +1160,8 @@ C itrc indicator so that debug can be done from command line.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl

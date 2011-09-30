@@ -40,8 +40,8 @@ C face3d are triangles or quads which are general surfaces in autocad.
       real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -167,8 +167,8 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer flagins
       common/fg/flag3d,flagins,dxfconv
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -375,8 +375,8 @@ C ****** genarc
       real flag3d,dxfconv
       integer flagins
       common/fg/flag3d,flagins,dxfconv
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol

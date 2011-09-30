@@ -41,8 +41,8 @@ C geometry.h provides commons G0/G1/G2/G5/precz/GS5.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer indxzon
       character oformat*24,head*4
@@ -563,8 +563,8 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
 
       integer indxzon
       character oformat*24,head*4

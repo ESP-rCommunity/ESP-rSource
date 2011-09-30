@@ -29,8 +29,8 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer ioin,ioout,ioblk,iosblk
-      common/io/ioin,ioout,ioblk,iosblk
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       integer gcode,innum
       character instring*72
       real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
@@ -46,6 +46,7 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       common/dxfe/oformat,indxzon,head
 
       character bn*72,instr*72,ckstr*85,endstr*85
+      character outs*124
       
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
@@ -61,7 +62,10 @@ C local strings for comparison.
       if(instr(1:l).eq.ckstr(1:lc))then
 
 C Found start of block.
-        if(itrc.gt.0)write(iosblk,'(a,a)') 'found ',bn(1:lnblnk(bn))
+        if(itrc.gt.0)then
+          write(outs,'(a,a)') 'found ',bn(1:lnblnk(bn))
+          call edisp(iuout,outs)
+        endif
  12     read(ioblk,'(a)',end=500,err=600) instr
         l=lnblnk(instr)
         if(instr(1:10).eq.'BLOCK BASE')then
@@ -69,9 +73,11 @@ C Found start of block.
 C Read the block base origin.
           read(ioblk,*) blkxorg,blkyorg,blkzorg
           if(itrc.gt.0)then
-            write(iosblk,*) 'b base = ',blkxorg,blkyorg,blkzorg,
+            write(outs,*) 'b base = ',blkxorg,blkyorg,blkzorg,
      &               ' place at ',xp,yp,zp
-            write(iosblk,*) 'scale by ',xsc,ysc,zsc,' rotate ',rot
+            call edisp(iuout,outs)
+            write(outs,*) 'scale by ',xsc,ysc,zsc,' rotate ',rot
+            call edisp(iuout,outs)
           endif
           goto 12
         elseif(instr(1:3).eq.'LAY')then
@@ -105,13 +111,19 @@ C Found a plane, see how many vertices.
 
 C Get coords.
               read(ioblk,*,end=500,err=600) X0,Y0,Z0
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)') 'vert ',X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)') 'vert ',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Scale & (block) Origin displacement.
               X0=(X0-blkxorg)*xsc
               Y0=(Y0-blkyorg)*ysc
               Z0=(Z0-blkzorg)*zsc
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)') 'scald',X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)') 'scald',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Rotate about Z axis.
               if(rot.gt.0.0.or.rot.lt.0.0)then
@@ -126,15 +138,19 @@ C Translate by
               X0=X0+xp
               Y0=Y0+yp
               Z0=Z0+zp
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)')'trand ',X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)')'trand ',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Convert from mm to metres if requrired, write to file and tell user.
               X0=X0*dxfconv
               Y0=Y0*dxfconv
               Z0=Z0*dxfconv
               if(itrc.gt.0)then
-                write(iosblk,'(a,3f12.4)') ' new  ',X0,Y0,Z0
-                write(iosblk,'(a)')        '  '
+                write(outs,'(a,3f12.4)') ' new  ',X0,Y0,Z0
+                call edisp(iuout,outs)
+                call edisp(iuout,'  ')
               endif
               if(oformat(1:6).eq.'viewer')then
                 write(ioout,'(3f12.4)') X0,Y0,Z0
@@ -159,8 +175,9 @@ C Make sure to rewind the file.
   22  return
 
  500  if(itrc.gt.0)then
-        write(iosblk,'(a)') 'end of block file found... '
-        write(iosblk,*) ' instr=',instr
+        write(outs,'(a)') 'end of block file found... '
+        call edisp(iuout,outs)
+        call edisp(iuout,instr)
       endif
       rewind(ioblk,ERR=999)
       goto 22
