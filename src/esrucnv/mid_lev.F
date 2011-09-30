@@ -18,7 +18,7 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Mid level routines for dxf translator.
+C Hight & Mid level routines for dxf translator.
 c  BLOCK: processes the block definitions in .dxf file
 C  insert: processes the 'INSERT' command in .dxf file and
 C  getlay: looks through the current layer names for the
@@ -68,6 +68,7 @@ C file formats.
       common/dxfe/oformat,indxzon,head
 
       integer ilay
+      integer nbo  ! local variable for nbobs
       character ZN*12
       character RZNAME*24
       character ltobs*72,outs*248,fs*1
@@ -136,7 +137,7 @@ C keep reading until ENDSEC is read.
           if(itrc.gt.0)call edisp(iuout, ' Head processed...')
         elseif (instring(1:4).eq.'TABL') then
 
-C TABLE section. Read until we find ENDSEC.We are interested in the
+C TABLE section. Read until we find ENDSEC. We are interested in the
 C number of layers and layer colours and layer names.
           if(itrc.gt.1) call edisp(iuout,' ')
           if(itrc.gt.0)call edisp(iuout, ' Tables being processed....')
@@ -205,6 +206,10 @@ C Assuming a single esp-r zone so create file names etc.
                if(layname(i)(1:ll).ne.'0'.and.
      &            layname(i)(1:ll).ne.'1')then
                  call matchl(i,head,RZNAME,match,im)
+                 if(itrc.gt.1)then
+                   write(outs,*) 'cl match ',i,head,' ',RZNAME,match,im
+                   call edisp(iuout,outs)
+                 endif
                  if(.NOT.match)then
 
 C Found a new zone so create file names etc.
@@ -250,7 +255,7 @@ C << obstructions
                        ZOBS(im)=lf
                        if(itrc.gt.1)then
                          write(outs,'(2a)')'Creating obstructions for ',
-     &                     head(1:lnblnk(head))
+     &                     zname(im)(1:lnzname(im))
                          call edisp(iuout,outs)
                        endif
                      endif
