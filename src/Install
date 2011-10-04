@@ -381,10 +381,10 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
     #
     # This code has only been tested with GNU ld.
     #
-    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
+    ld_output=`ld -lxslt`
     case $ld_output in
-      "") xsl_libs_available="no";;
-      *)  xsl_libs_available="yes";;
+      "") xsl_libs_available="yes";;
+      *)  xsl_libs_available="no";;
     esac
 
    fi
@@ -393,37 +393,35 @@ fi
 # check that SQLite support is available
 if [ "$SQLite_support" = "yes" ]; then
    # check for libsqlite3.so library on system
-   if [ ! -e /usr/lib/libsqlite3.so ]; then
-      # Library not found. Disable SQLite support
-      SQLite_support="no"
-      SQLite_libs_found="no"
-      # If runnning silently, warn user.
-      if [ "$mode" = "silent" ]; then
-         echo " "
-         echo " Warning: Library libsqlite3 could not be found"
-         echo " in /usr/lib "
-         echo " "
-         echo " SQLite support disabled."
-      fi
-   else
-      # check if the xml support is enabled
-      if [ "$xml_support" = "no"]; then
-         # XML not installed, Disable SQLite support
-         SQLite_support="no"
-         # If running silently, warn user.
-         if [ "$mode" = "silent" ]; then
-            echo " "
-            echo " Warning: SQLite requires the XML option"
-            echo " to be enabled"
-            echo " "
-            echo " SQLite support disabled."
-         fi
-      fi
-
-      # Add SQLite include files to include paths
-      SQLite_libs_found="yes"
-      LIBSQLITE3_INCLUDE="-I/usr/lib -lsqlite3"
-   fi
+   ld_output=`ld -lsqlite3`
+   case $ld_output in 
+     "" ) SQLite_libs_found="yes";
+          if [ "$xml_support" = "no"]; then
+             # XML not installed, Disable SQLite support
+             SQLite_support="no"
+             # If running silently, warn user.
+             if [ "$mode" = "silent" ]; then
+                echo " "
+                echo " Warning: SQLite requires the XML option"
+                echo " to be enabled"
+                echo " "
+                echo " SQLite support disabled."
+             fi
+          else
+            LIBSQLITE3_INCLUDE="-I/usr/lib -lsqlite3"
+          fi
+          ;;
+     *  ) SQLite_libs_found="no"; 
+          SQLite_support="no"; 
+          if [ "$mode" = "silent" ]; then
+             echo " ";
+             echo " Warning: Library libsqlite3 could not be found";
+             echo " in /usr/lib ";
+             echo " ";
+             echo " SQLite support disabled.";
+          fi
+          ;;
+   esac
 fi
 
 #--------------------------------------------------------------------
@@ -1244,9 +1242,9 @@ case $SQLite_support in
   yes)
        # Link SQLite library,along with stdc++.
        case $compiler in
-         sunF90)  ULIBS="$ULIBS -L/usr/local/lib -lsqlite3 -lSQLite -lCstd";;
-         GNU)     ULIBS="$ULIBS -L/usr/local/lib -lsqlite3 -lSQLite -lstdc++";;
-         intel)   ULIBS="$ULIBS -L/usr/local/lib -lsqlite3 -lSQLite -lstdc++";;
+         sunF90)  ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lCstd";;
+         GNU)     ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lstdc++";;
+         intel)   ULIBS="$ULIBS -L/usr/local/lib -lSQLite -lsqlite3 -lstdc++";;
        esac;
 
        # Append ws2_32 library on mingw and Crun to Sun
