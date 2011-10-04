@@ -1188,8 +1188,9 @@ C control.
       real TFA    ! Zone future temperature (oC)
       real QFA    ! Zone furure plant injection/extraction (W)
       
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
       real QHB, QCB, Qmst
+      logical bMasterFreeCoolFlag
       
 C Freecooling algorithm
       real fQFreeCool         ! cooling achieved by ventilation
@@ -1551,16 +1552,7 @@ C  to more sophisticated algorithms)
         
         bFreeCoolActive = .true. 
         
-C Compute the 'conductivity' achieved by free cooling to 
-C append to zone mass-balance solution on next timestep. 
-C
-C                              [ Free Cooling Load (W) ]
-C    conductivity (W/K) =  ------------------------------------
-C                          [ Zone temp (K) - Outdoor Temp (K) ]
-C
-        !fCondFreeCool(IICOMP) = fQFreeCool / ( TFA(IICOMP) - TF) 
-        
-        
+       
       else  
 
 C No free cooling.
@@ -1568,8 +1560,7 @@ C No free cooling.
         fQFreeCool = 0.
         
         bFreeCoolActive = .false. 
-        
-        fCondFreeCool(IICOMP) = 0.
+
       
 C Do we have enough heating/cooling capacity?      
         if ( fQTotal > QMX ) fQTotal = QMX
@@ -1614,7 +1605,8 @@ c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
      &IPLT,QMX,QMN,TFUT,QFUT)
 
 C Set QFUT for use by slave controller
-      Qmst(ICF)=QFUT
+      Qmst(ICF)=Q
+      bMasterFreeCoolFlag(ICF) = bFreeCoolActive
       
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1654,7 +1646,9 @@ C A free-float controller.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
+      
+      logical bMasterFreeCoolFlag
       
       character outs*124
 
@@ -5519,17 +5513,21 @@ C deliver proportionally).
 
       SUBROUTINE BCL21
 
-#include "building.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "control.h"
+      include "building.h"
+      include "hvac_parameters.h"
+      include "hvac_common.h"
+      include "control.h"
+      include "blc25_open_windows.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),bMasterFreeCoolFlag(MCF)
+      
+      logical bMasterFreeCoolFlag
+      
 
 C Commons for identifying wether a zone is heated or cooled.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
@@ -5596,7 +5594,7 @@ C Collect heating flags and setpoints from master zone
       bZoneHeated(iicomp)   = bZoneHeated(iMasterZone)
       bZoneCooled(iicomp)   = bZoneCooled(iMasterZone)
       fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
-      fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
+      fCoolSetpoint(iicomp) = fCoolSetpoint(iMasterZone)
 
       if (QM.GT.0.0) then
 
@@ -5652,9 +5650,32 @@ C Check Qslv not greater than specified base capacities
       endif
   
       QFUT=Qslv       
-   
+      
+     
+
+
+C Check for free cooling in master zone (are windows open?)      
+      if ( bMasterFreeCoolFlag(imasctlindex) ) then 
+        
+        Tslv = fCoolSetpoint(iicomp)
+        
+        fFreeCoolDelivered(IICOMP) = (BB3-BB1*Tslv)/BB2
+      
+        if( fFreeCoolDelivered(IICOMP) < 0. ) 
+     &                 fFreeCoolDelivered(IICOMP) = 0.
+        
+        QFUT = 0.
+      
+      else 
+      
+        fFreeCoolDelivered(IICOMP) = 0.
+    
+      endif 
+
+      
 C Determine temperatures in slave zone
-      Tslv=(BB3-BB2*QFUT)/BB1
+      Tslv=(BB3-BB2*MAX(QFUT,fFreeCoolDelivered(IICOMP)))/BB1    
+
       
 C If zero capacity to zone, use TNP
       call eclose(QM,0.00,0.1,close)
