@@ -31,6 +31,7 @@ C file formats.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
@@ -50,10 +51,6 @@ C file formats.
       real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
-
-      integer lineno
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -567,13 +564,11 @@ C << NOTE: for some computer types there will not be >>
 C << a /tmp folder so work out a different approach >>
 C << possibly using memory >>
       subroutine block(itrc)
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -812,13 +807,11 @@ C Subroutine insert processes the 'INSERT' command in .dxf file and
 C translates it into 'FIL' command for .vew file of viewer.
 C Note: all the insert files are assumed to be in local folder.
       subroutine insert(itrc) 
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -1138,6 +1131,7 @@ C itrc indicator so that debug can be done from command line.
       subroutine genplin(itrc)
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1147,8 +1141,6 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer polylinflag
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -1345,11 +1337,9 @@ C Dump out the sides as planes.  If esp update connections.
 C ****** vertex
 C vertex - compose XYZ from data in a DXF file.
       subroutine vertex(itrc)
+#include "dxfdata.h"
 
       parameter (MAXPNT = 100)
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72

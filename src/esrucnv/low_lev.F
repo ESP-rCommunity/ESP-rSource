@@ -25,15 +25,13 @@ C face3d are triangles or quads which are general surfaces in autocad.
       subroutine face3d(itrc)
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
       
       COMMON/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -158,15 +156,13 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       subroutine genlin(itrc)
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -376,15 +372,13 @@ C ****** genarc
       subroutine genarc(itrc) 
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72

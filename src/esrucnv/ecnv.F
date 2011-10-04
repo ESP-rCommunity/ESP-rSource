@@ -38,14 +38,11 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
 #include "espriou.h"
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
-
-      integer lineno
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       real flag3d,dxfconv
       integer flagins
@@ -784,11 +781,9 @@ C ********** readgc
 C Subroutine to read group code from dxf file. The parameter
 C itrc sets debug mode if greater than one.
       subroutine readgc(itrc)
+#include "dxfdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
-     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
