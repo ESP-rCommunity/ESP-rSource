@@ -45,11 +45,6 @@ C file formats.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character layname*72
-      integer numlay,laycolour,layflag
-      common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
-     &       layflag(MAXLAY)
-
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
@@ -174,7 +169,7 @@ C layers so warn the user and advise that layer zero data will be
 C placed in a zone named First.
            if(oformat(1:3).eq.'esp')then
              if(numlay.eq.1)then
-               if(layname(1)(1:1).eq.'0')then
+               if(dxflayname(1)(1:1).eq.'0')then
                  call edisp(iuout,
      & 'DXF file has no named layers. Dumping layer 0 into zone First')
 
@@ -201,9 +196,9 @@ C Assuming a single esp-r zone so create file names etc.
                endif
              endif
              do 45 i=1,numlay
-               ll=lnblnk(layname(i))
-               if(layname(i)(1:ll).ne.'0'.and.
-     &            layname(i)(1:ll).ne.'1')then
+               ll=lnblnk(dxflayname(i))
+               if(dxflayname(i)(1:ll).ne.'0'.and.
+     &            dxflayname(i)(1:ll).ne.'1')then
                  call matchl(i,head,RZNAME,match,im)
                  if(itrc.gt.1)then
                    write(outs,*) 'cl match ',i,head,' ',RZNAME,match,im
@@ -521,7 +516,7 @@ C Dump out layer names and equivalent number.
         else
            number = ' - '
         endif
-        write(ioout,1000) i, layname(i)(1:15), number
+        write(ioout,1000) i, dxflayname(i)(1:15), number
  1000   format('  ',i3,'    : ',a,'  ',a)
  10   continue
       close(ioout)
@@ -1012,15 +1007,10 @@ C  the name is added.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      character layname*72
-      integer numlay,laycolour,layflag
-      common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
-     &       layflag(MAXLAY)
-
       character outs*124
 
       do 100 i = 1, numlay
-        if (layname(i) .eq. instring) then
+        if (dxflayname(i) .eq. instring) then
           ilay = i
           if (laycolour(i).gt.0) currcol = laycolour(i)
           goto 999
@@ -1029,7 +1019,7 @@ C  the name is added.
 
 C If this line is reached then name was not found so add it.
       numlay = numlay + 1
-      layname(numlay) = instring
+      dxflayname(numlay) = instring
       laycolour(numlay) = 0
       layflag(numlay) = 0
       ilay = numlay

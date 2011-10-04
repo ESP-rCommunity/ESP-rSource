@@ -41,3 +41,11 @@ C Indicator is layer has been used.
       integer layuse  ! zero if not touched nonzero if referenced
       common/laytoo/layuse(MAXLAY)
 
+C Layer name and colour.
+      character dxflayname*72  ! as extracted from dxf file
+      integer numlay      ! number of layers found
+      integer laycolour   ! index of layer colour
+      integer layflag     ! zero or the value if gcode is 70
+      common/layers/dxflayname(MAXLAY), numlay, laycolour(MAXLAY),
+     &       layflag(MAXLAY)
+

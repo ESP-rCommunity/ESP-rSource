@@ -637,10 +637,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       common/io/ioin,ioout,ioblk
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
-      character layname*72
-      integer numlay,laycolour,layflag
-      common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
-     &       layflag(MAXLAY)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
@@ -664,7 +660,7 @@ C Multiply current xx,yy,zz by transformation matrix
       yy = coorx*amat(2,1) + coory*amat(2,2) + coorz*amat(2,3)
       zz = coorx*amat(3,1) + coory*amat(3,2) + coorz*amat(3,3)
 
-      llay=lnblnk(layname(currlay))
+      llay=lnblnk(dxflayname(currlay))
 
 C If viewer format write coordinates either absolute or reset
 C from blk?org.  If one of the 'BLK_' layers then write to
@@ -726,13 +722,13 @@ C Write chartblk array.
 C If on layer "0" or "1" do not bother to match vertex if there are
 C named layers. If there are no named layers then accept '0'. 
           if(numlay.eq.1)then
-            if(layname(1)(1:1).eq.'0')then
+            if(dxflayname(1)(1:1).eq.'0')then
               continue   ! this is a known case.
             endif
           else
             if(llay.eq.1)then
-              if(layname(currlay)(1:1).eq.'0')return
-              if(layname(currlay)(1:1).eq.'1')return
+              if(dxflayname(currlay)(1:1).eq.'0')return
+              if(dxflayname(currlay)(1:1).eq.'1')return
             endif
           endif
           nbofsurf=NZSUR(indxzon)
@@ -830,11 +826,6 @@ C first then accept match.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character layname*72
-      integer numlay,laycolour,layflag
-      common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
-     &       layflag(MAXLAY)
-
       character TZNAME*24,RZNAME*24,head*4
       logical match
 
@@ -843,7 +834,7 @@ C first then accept match.
 C Copy and clean layer name, check to see if it begins with 'OBS_' or
 C 'OPQ_' or 'TRN_', find the characters after this and check if this
 C matches a known zone name.
-      call st2name(layname(il),TZNAME)
+      call st2name(dxflayname(il),TZNAME)
       ltz = lnblnk(TZNAME)
 
 C If there were no named layers and the conversion is stuffing
