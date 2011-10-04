@@ -52,8 +52,8 @@ C file formats.
      &           blkxorg,blkyorg,blkzorg
 
       integer lineno
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -104,10 +104,10 @@ C iotmp2 for miscel output files.
       iotmp2=11        
 
       lineno = 0
-      elev=0.
-      dfltelev=elev
-      thick=0.
-      dfltthick=thick
+      entelev=0.
+      dfltelev=entelev
+      entthick=0.
+      dfltthick=entthick
       minseg = 6
 
 C Clear text buffers for obstructions.
@@ -314,8 +314,8 @@ C << ? block treatment with esp-r? >>
 
 C ENTITY section.
 C << ? entity treatment with esp-r? >>
-            elev=dfltelev        
-            thick=dfltthick        
+            entelev=dfltelev        
+            entthick=dfltthick        
             xscale=1.      
             yscale=1.       
             zscale=1.    
@@ -331,8 +331,8 @@ C << ? entity treatment with esp-r? >>
             call readgc(itrc)
  91         if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
      &                           'ENDBLK') then
-              elev=dfltelev        
-              thick=dfltthick        
+              entelev=dfltelev        
+              entthick=dfltthick        
               if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
 
 C Take in 2D lines, if extruded then make into surfaces.
@@ -363,7 +363,7 @@ C Take in 2D lines, if extruded then make into surfaces.
                 call getlay(currlay,itrc)
                 call readgc(itrc)
               elseif (gcode.eq.39) then
-                thick = realin
+                entthick = realin
                 call readgc(itrc)
               elseif (gcode.eq.62) then
                currcol = innum
@@ -572,8 +572,8 @@ C << possibly using memory >>
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -584,9 +584,6 @@ C << possibly using memory >>
       real flag3d,dxfconv
       integer flagins
       common/fg/flag3d,flagins,dxfconv
-
-      integer ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk
 
       real elevlast,thicklast
       integer polylinflag
@@ -606,7 +603,7 @@ C << possibly using memory >>
       integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
-      character bname*72,pbname*72,chr*1
+      character bname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,reset,match,close
 
@@ -698,7 +695,7 @@ C Note the gcode=10 reads in the x & y block origin
         elseif (gcode.eq.10) then
           blkxorg=coorx
           blkyorg=coory
-          blkzorg=elev
+          blkzorg=entelev
         elseif (gcode.eq.30) then
           blkzorg=realin
         elseif (gcode.eq.38) then
@@ -721,8 +718,8 @@ C If the input string is something other than ENDBLK then
 C parse the set of commands that can be used. Skip those
 C that we cannot use (SOLID, CIRCLE, POINT, TEXT).
  9003 if (instring(1:6).ne.'ENDBLK')then
-        elev=dfltelev
-        thick = dfltthick
+        entelev=dfltelev
+        entthick = dfltthick
         if (instring(1:5).eq.'TRACE') then
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping TRACE:',bname(1:leng)
@@ -820,8 +817,8 @@ C Note: all the insert files are assumed to be in local folder.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -851,7 +848,7 @@ C Note: all the insert files are assumed to be in local folder.
       integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
-      character bname*72,pbname*72,chr*1
+      character bname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,match
 
@@ -901,13 +898,13 @@ C Found the block name, read `instance` information.
         elseif (gcode.eq.10) then
           dx=coorx
           dy=coory
-          dz=elev
+          dz=entelev
         elseif (gcode.eq.30) then
           dz=realin
         elseif (gcode.eq.38) then
-          elev=realin
+          entelev=realin
         elseif (gcode.eq.39) then
-          thick=realin
+          entthick=realin
         elseif (gcode.eq.41) then
           xscale=realin
         elseif (gcode.eq.42) then
@@ -1150,8 +1147,8 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer polylinflag
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -1199,10 +1196,10 @@ C Find current layer and then matching zone.
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
         elseif (gcode.eq.38) then
-          elev=realin
+          entelev=realin
         elseif (gcode.eq.39) then
           flag3d=1.0
-          thick=realin
+          entthick=realin
         elseif (gcode.eq.40) then
         elseif (gcode.eq.41) then
         elseif (gcode.eq.62) then
@@ -1312,7 +1309,7 @@ C Dump out the sides as planes.  If esp update connections.
             endif
             coorx = xarray(i); coory = yarray(i); coorz = zarray(i)
             call putcoods(itrc)
-            coorz = coorz + thick
+            coorz = coorz + entthick
             call putcoods(itrc)
             coorx = xarray(i+1)
             coory = yarray(i+1)
@@ -1332,14 +1329,14 @@ C Dump out the sides as planes.  If esp update connections.
       endif
  9003 if (gcode.ne.0)then
         if (gcode.eq.38) then
-          elev=realin
+          entelev=realin
         elseif (gcode.eq.39) then
-          thick=realin
+          entthick=realin
         endif
         call readgc(itrc)
         goto  9003
       endif
-      thick = 0.0
+      entthick = 0.0
 
       return
       end
@@ -1351,8 +1348,8 @@ C vertex - compose XYZ from data in a DXF file.
 
       parameter (MAXPNT = 100)
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -1371,20 +1368,20 @@ C vertex - compose XYZ from data in a DXF file.
       call readgc(itrc) 
  9001 if (gcode.ne.0)then
         if (gcode.eq.38) then 
-          elev=realin 
+          entelev=realin 
         elseif (gcode.eq.39) then
           flag3d=1.0
-          thick=realin
+          entthick=realin
         elseif (gcode.eq.70) then
           ivertflag=innum
         elseif (gcode.eq.10) then
           numpl = numpl + 1
           xarray(numpl)=coorx
           yarray(numpl)=coory
-          zarray(numpl)=elev 
+          zarray(numpl)=entelev 
         elseif (gcode.eq.30) then
           zarray(numpl)=realin
-          elev = realin
+          entelev = realin
         elseif (gcode.eq.50) then 
         endif
         call readgc(itrc)

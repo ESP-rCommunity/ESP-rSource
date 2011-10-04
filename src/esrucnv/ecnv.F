@@ -44,8 +44,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       parameter (MAXLAY = 80)
 
       integer lineno
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     & basey, xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       real flag3d,dxfconv
       integer flagins
@@ -146,21 +146,15 @@ C Get command line parameters.
       call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,
      &  ouf,upgcfg)
       itrc=iverb    ! set trace after call to parcnv
-      xincr=0        
-      yincr=0        
-      zincr=0        
       rotangl=0.        
       xscale=1.        
       yscale=1.        
       zscale=1.        
-      elev=0.
-      dfltelev=elev
-      thick=0.
-      dfltthick=thick
+      entelev=0.
+      dfltelev=entelev
+      entthick=0.
+      dfltthick=entthick
       flagins=0        
-      basex=0
-      basey=0
-      basez=0
       oldlay = 0
       oldcol = 1
       currlay = 0
@@ -793,8 +787,8 @@ C itrc sets debug mode if greater than one.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72

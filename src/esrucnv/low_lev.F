@@ -32,8 +32,8 @@ C face3d are triangles or quads which are general surfaces in autocad.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -77,7 +77,7 @@ C Loop until gcode is zero.
          elseif (gcode.ge.10 .and. gcode.le.16) then
             xx(gcode-9)=coorx        
             yy(gcode-9)=coory
-            zz(gcode-9)=elev
+            zz(gcode-9)=entelev
             count = gcode - 9
          elseif (gcode.ge.30 .and. gcode.le.36) then
             zz(gcode-29)=realin
@@ -165,8 +165,8 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &  basey,xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -204,7 +204,7 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       ex = 0.0; ey = 0.0  ! end coord       
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! vector
       thickx = 0.0; thicky = 0.0; thickz = 1.0 
-      if (thick.gt.0.) then
+      if (entthick.gt.0.0) then
          flag3d=1.
       else
          flag3d=0.
@@ -230,8 +230,8 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
             z1=realin           ! entity elevation v11 or earlier   
             z2 = z1
          elseif (gcode.eq.39) then        
-            thick=realin        
-            if (thick.gt.0.) flag3d = 1.
+            entthick=realin        
+            if (entthick.gt.0.) flag3d = 1.
          elseif (gcode.eq.62) then
             currcol = innum     ! colour number
          elseif (gcode.eq.210) then
@@ -256,7 +256,7 @@ C << place to record point information for click-on-bitmap >>
       else        
          xnorm = thickx; ynorm = thicky; znorm = thickz
          call initmatrix
-         call xformp(0.,0.,thick, dx1,dy1,dz1)
+         call xformp(0.,0.,entthick, dx1,dy1,dz1)
          flag3d=0.       
          xnorm = 0.0; ynorm = 0.0; znorm = 1.0
          call initmatrix
@@ -383,8 +383,8 @@ C ****** genarc
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      common/trn/xscale,yscale,zscale,rotangl,basex,lineno,minseg,
-     &basey,  xincr,yincr,zincr,basez,elev,thick,dfltelev,dfltthick
+      common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
+     &  entelev,entthick,dfltelev,dfltthick
 
       integer gcode,innum
       character instring*72
@@ -421,7 +421,7 @@ C Use ichartblk and chartblk as a scratch area for blocks
 C Clear initial values for local variables.
       PI = 4.0 * ATAN(1.0)
       radians = PI/180.
-      if (thick .gt. 0.) then
+      if (entthick .gt. 0.) then
         flag3d = 1.
       else
         flag3d = 0.
@@ -443,11 +443,11 @@ C Find current layer and then matching zone.
           cx=coorx                
           cy=coory                
         elseif (gcode.eq.30) then
-          elev=realin                
+          entelev=realin                
         elseif (gcode.eq.38) then                
-          elev=realin                
+          entelev=realin                
         elseif (gcode.eq.39) then                
-          thick=realin                
+          entthick=realin                
           flag3d=1.                
         elseif (gcode.eq.40) then                
           radiu=realin                
@@ -517,25 +517,25 @@ C update IZSTOCN for this surface.
             
           coorx=radiu*cos(startangl*radians)+cx                
           coory=radiu*sin(startangl*radians)+cy                
-          coorz=elev                
+          coorz=entelev                
           call putcoods(itrc)                
-          coorz=elev+thick                
+          coorz=entelev+entthick                
           call putcoods(itrc)                
           startangl=startangl+divs                
           if (startangl.ge.endangl) goto 110                
           coorx=radiu*cos(startangl*radians)+cx                
           coory=radiu*sin(startangl*radians)+cy                
-          coorz=elev+thick                
+          coorz=entelev+entthick                
           call putcoods(itrc)                
-          coorz=elev                
+          coorz=entelev                
           call putcoods(itrc)                
           goto  9003
         endif
  110    coorx=radiu*cos(endangl*radians)+cx
         coory=radiu*sin(endangl*radians)+cy                
-        coorz=elev+thick                
+        coorz=entelev+entthick                
         call putcoods(itrc)                
-        coorz=elev                
+        coorz=entelev                
         call putcoods(itrc)                
       endif                
       coorz=0                
