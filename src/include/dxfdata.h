@@ -49,3 +49,10 @@ C Layer name and colour.
       common/layers/dxflayname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
 
+C String arrays and counters for block objects.
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many block lines found
+      common/dxfci/ichartobs,ichartblk 

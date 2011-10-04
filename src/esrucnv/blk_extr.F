@@ -38,13 +38,6 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       common/dxfe/oformat,indxzon,head
 
 C Use ichartblk and chartblk as a scratch area for blocks
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
       character bn*72,instr*72,ckstr*85,endstr*85
       character outs*124
       

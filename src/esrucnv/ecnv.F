@@ -644,13 +644,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
       character outs*124
       logical match
       integer nbofsurf  ! to pass to matchv

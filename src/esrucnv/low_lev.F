@@ -42,13 +42,6 @@ C face3d are triangles or quads which are general surfaces in autocad.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
       character RZNAME*24
       logical match
 
@@ -165,13 +158,6 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
-
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
 
       character RZNAME*24
       logical match,close
@@ -356,14 +342,7 @@ C ****** genarc
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-C Use ichartblk and chartblk as a scratch area for blocks
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
+C Use ichartblk and chartblk as a scratch area for blocks.
       character RZNAME*24
       logical match,close
       real PI,radians

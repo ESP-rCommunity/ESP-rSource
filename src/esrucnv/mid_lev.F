@@ -53,13 +53,6 @@ C file formats.
       integer nbo  ! local variable for nbobs
       character ZN*12
       character RZNAME*24
-
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
       character outs*248,fs*1
       character number*3,dstmp*24
       logical OPND,match,unixok
@@ -563,13 +556,6 @@ C << possibly using memory >>
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
       character bname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,reset,match,close
@@ -793,13 +779,6 @@ C Note: all the insert files are assumed to be in local folder.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      character chartobs*124  ! string buffer for obstructions
-      character chartblk*124  ! string buffer for blocks
-      common/dxfc/chartobs(500),chartblk(500)
-      integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many block lines found
-      common/dxfci/ichartobs,ichartblk 
-
       character bname*72,chr*1
       character RZNAME*24,outs*124
       logical skip,match
@@ -977,8 +956,8 @@ C Write the next character array with coordinates.
      &              yscale*dxfconv,zscale*dxfconv,rotangl
 
 C Debug.
-                  write(6,*) 'chartobs=',ichartobs,' ',
-     &              chartobs(ichartobs)
+C                  write(6,*) 'chartobs=',ichartobs,' ',
+C     &              chartobs(ichartobs)
                 endif
               else
                 continue
