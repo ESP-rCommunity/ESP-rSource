@@ -11,3 +11,13 @@ C Transforms to be applied.
       real dfltelev,dfltthick ! default entity elevation and thickness
       common/trn/xscale,yscale,zscale,rotangl,lineno,minseg,
      &  entelev,entthick,dfltelev,dfltthick
+
+C Descriptors of most recently scanned gcode entry.
+      integer gcode ! code that identifies data type
+      integer innum ! typically used to signal colour
+      character instring*72
+      real realin   ! a real number to be processed
+      real coorx,coory,coorz  ! current coordinate
+      real blkxorg,blkyorg,blkzorg  ! origin of block entity
+      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
+     &           blkxorg,blkyorg,blkzorg

@@ -46,11 +46,6 @@ C file formats.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       parameter (MAXLAY = 80)
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -570,12 +565,6 @@ C << possibly using memory >>
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
-
       real flag3d,dxfconv
       integer flagins
       common/fg/flag3d,flagins,dxfconv
@@ -813,12 +802,6 @@ C Note: all the insert files are assumed to be in local folder.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
-
       real flag3d,dxfconv
       integer flagins
       common/fg/flag3d,flagins,dxfconv
@@ -1042,17 +1025,13 @@ C  string in instring, and returns the equivalent layer number
 C  if the string is not in the current layer names list, then
 C  the name is added.
       subroutine getlay(ilay,itrc)
+#include "dxfdata.h"
 
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
       parameter (MAXLAY = 80)
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -1141,12 +1120,6 @@ C itrc indicator so that debug can be done from command line.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer polylinflag
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       real flag3d,dxfconv
       integer flagins
@@ -1340,12 +1313,6 @@ C vertex - compose XYZ from data in a DXF file.
 #include "dxfdata.h"
 
       parameter (MAXPNT = 100)
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       real flag3d,dxfconv
       integer flagins

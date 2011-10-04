@@ -637,18 +637,13 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       subroutine putcoods(itrc)
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
       parameter (MAXLAY = 80)
       
       integer lnblnk  ! function definition
       
       integer IUOUT,IUIN
       COMMON/OUTIN/IUOUT,IUIN
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,
-     &          coorz,blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -784,12 +779,6 @@ C itrc sets debug mode if greater than one.
 #include "dxfdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,
-     & coorz,blkxorg,blkyorg,blkzorg
 
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk

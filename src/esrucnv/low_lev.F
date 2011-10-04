@@ -33,11 +33,6 @@ C face3d are triangles or quads which are general surfaces in autocad.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
@@ -163,12 +158,6 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &          blkxorg,blkyorg,blkzorg
 
       real flag3d,dxfconv
       integer flagins
@@ -306,12 +295,7 @@ C update IZSTOCN to reflect this change.
 C this subroutine processes the 'CIRLCE' command in .dxf file of
 C autocad and skip over it.
       subroutine gencrl(itrc)
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
+#include "dxfdata.h"
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -335,13 +319,9 @@ C autocad and skip over it.
 C this subroutine processes the 'TEXT' command in .dxf file of
 C autocad and skip over it.
       subroutine gentext(itrc)
+#include "dxfdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
@@ -379,12 +359,6 @@ C ****** genarc
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      integer gcode,innum
-      character instring*72
-      real realin,coorx,coory,coorz,blkxorg,blkyorg,blkzorg
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
 
       real flag3d,dxfconv
       integer flagins
