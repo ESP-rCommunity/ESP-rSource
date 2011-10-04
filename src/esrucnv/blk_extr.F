@@ -45,12 +45,12 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-C << use ichartblk and chartblk rather than ioblk >>
+C Use ichartblk and chartblk as a scratch area for blocks
       character chartobs*124  ! string buffer for obstructions
       character chartblk*124  ! string buffer for blocks
       common/dxfc/chartobs(500),chartblk(500)
       integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many blocks found
+      integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
       character bn*72,instr*72,ckstr*85,endstr*85
@@ -65,7 +65,9 @@ C local strings for comparison.
       write(endstr,'(a,a)') '*end ',bn(1:lnblnk(bn))
       lc=lnblnk(instr)+5
 
- 10   read(ioblk,'(a)',end=500,err=600) instr
+C Read from the string array chartblk.
+      if(ichartblk.eq.0) ichartblk=1  ! if zero reset to one
+ 10   read(chartblk(ichartblk),'(a)',end=500,err=600) instr
       l=lnblnk(instr)
       if(instr(1:l).eq.ckstr(1:lc))then
 
@@ -75,14 +77,17 @@ C Found start of block.
           call edisp(iuout,outs)
         endif
 
-C << use ichartblk and chartblk rather than ioblk >>
- 12     read(ioblk,'(a)',end=500,err=600) instr
+C Increment ichartblk and read chartblk array.
+ 12     ichartblk=ichartblk+1
+        read(chartblk(ichartblk),'(a)',end=500,err=600) instr
         l=lnblnk(instr)
         if(instr(1:10).eq.'BLOCK BASE')then
 
 C Read the block base origin.
-C << use ichartblk and chartblk rather than ioblk >>
-          read(ioblk,*) blkxorg,blkyorg,blkzorg
+C Increment ichartblk and read chartblk array
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) blkxorg,blkyorg,
+     &      blkzorg
           if(itrc.gt.0)then
             write(outs,*) 'b base = ',blkxorg,blkyorg,blkzorg,
      &               ' place at ',xp,yp,zp
@@ -94,8 +99,9 @@ C << use ichartblk and chartblk rather than ioblk >>
         elseif(instr(1:3).eq.'LAY')then
 
 C Skip past the layer index and read again.
-C << use ichartblk and chartblk rather than ioblk >>
-          read(ioblk,*,end=500,err=600)ilayer
+C Increment ichartblk and read chartblk array
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) ilayer
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'LAY'
             write(ioout,'(i3)') ilayer
@@ -104,8 +110,8 @@ C << use ichartblk and chartblk rather than ioblk >>
         elseif(instr(1:3).eq.'COL')then
 
 C Skip past the colour and read again.
-C << use ichartblk and chartblk rather than ioblk >>
-          read(ioblk,*,end=500,err=600)icolour
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) icolour
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'COL'
             write(ioout,'(i3)') icolour
@@ -114,8 +120,8 @@ C << use ichartblk and chartblk rather than ioblk >>
         elseif(instr(1:3).eq.'PLA')then
 
 C Found a plane, see how many vertices.
-C << use ichartblk and chartblk rather than ioblk >>
-          read(ioblk,*,end=500,err=600) ivert
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) ivert
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a,2x,a)') instr(1:l),bn(1:lnblnk(bn))
             write(ioout,'(i3)') ivert
@@ -124,8 +130,8 @@ C << use ichartblk and chartblk rather than ioblk >>
             do 42 iv=1,ivert
 
 C Get coords.
-C << use ichartblk and chartblk rather than ioblk >>
-              read(ioblk,*,end=500,err=600) X0,Y0,Z0
+              ichartblk=ichartblk+1
+              read(chartblk(ichartblk),*,end=500,err=600) X0,Y0,Z0
               if(itrc.gt.0)then
                 write(outs,'(a,3f12.5)') 'vert ',X0,Y0,Z0
                 call edisp(iuout,outs)
@@ -181,7 +187,7 @@ C Convert from mm to metres if requrired, write to file and tell user.
 
 C End of block information, see about processing vertices.
 C Make sure to rewind the file.
-        rewind(ioblk,ERR=999)  ! will not need
+        ichartblk=0  ! reset array
         return
       else
         goto 10
@@ -194,7 +200,7 @@ C Make sure to rewind the file.
         call edisp(iuout,outs)
         call edisp(iuout,instr)
       endif
-      rewind(ioblk,ERR=999)
+      ichartblk=0  ! reset array
       goto 22
 
  600  call edisp(iuout,'error reading block file... ')

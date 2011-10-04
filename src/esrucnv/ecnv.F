@@ -31,7 +31,6 @@ C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
 #include "model.h"
-C #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -113,8 +112,13 @@ C Name of current application
       logical unixok
 
 C Data types for parcnv call.
-      integer itrc,incobs,ichop,itmprm,iverb
-      real conv
+      integer itrc
+      integer iverb  ! 2 is trace active 0 is silent
+      integer incobs ! zero default 1 to include obstructions
+      integer ichop  ! zero default 1 if -chop in cmd line but
+                     ! is not yet used
+      integer itmprm ! 1 is delete tmp files 0 is keep them
+      real conv      ! passed as 0.001 if coords in mm
  
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
@@ -138,7 +142,7 @@ C iotmp2 for miscel output files.
       matver=0.0   ! initial assumption of binary materials database
 
 
-C Get command line parameters.
+C Get command line parameters. 
       call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,
      &  ouf,upgcfg)
       itrc=iverb    ! set trace after call to parcnv
@@ -422,7 +426,7 @@ C << considered for removal
           STOP
         endif
 
-C Export to VRML which also includes an html file (which also
+C Export to VRML which also includes an html file (which
 C makes use of ioblk file channel).
 
 C << consider updating to a newer format such as SVG >>
@@ -681,7 +685,7 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       character chartblk*124  ! string buffer for blocks
       common/dxfc/chartobs(500),chartblk(500)
       integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many blocks found
+      integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
       character outs*124
@@ -703,8 +707,10 @@ C For both file formats convert from mm to metres.
         if (flagins.eq.0) then      
           if(head.eq.'BLK_')then
 
-C << use chartblk array rather than ioblk >>
-            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
+C Increment chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)') xx*dxfconv, 
+     &        yy*dxfconv, zz*dxfconv
           else
             write(ioout,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           endif
@@ -714,8 +720,10 @@ C << use chartblk array rather than ioblk >>
           zz = zz-blkzorg      
           if(head.eq.'BLK_')then
 
-C << use chartblk array rather than ioblk >>
-            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
+C Write chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)')  xx*dxfconv,
+     &        yy*dxfconv, zz*dxfconv        
           else
             write(ioout,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           endif
@@ -729,15 +737,19 @@ C Currently writing to temporary block file so do this in viewer
 C format (for later recovery as an obstruction block).
           if (flagins.eq.0) then      
 
-C << use chartblk array rather than ioblk >>
-            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
+C Write chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)') xx*dxfconv,
+     &        yy*dxfconv, zz*dxfconv
           else        
             xx = xx-blkxorg
             yy = yy-blkyorg        
             zz = zz-blkzorg      
 
-C << use chartblk array rather than ioblk >>
-            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv  
+C Write chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)')  xx*dxfconv,
+     &        yy*dxfconv, zz*dxfconv  
           endif      
         else
           x1=xx*dxfconv

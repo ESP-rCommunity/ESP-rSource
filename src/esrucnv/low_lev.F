@@ -51,6 +51,13 @@ C face3d are triangles or quads which are general surfaces in autocad.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many block lines found
+      common/dxfci/ichartobs,ichartblk 
+
       character RZNAME*24
       logical match
 
@@ -101,10 +108,12 @@ C << use close3 instead >>
       call initmatrix
       if(oformat(1:6).eq.'viewer')then
 
-C If working on a block write to temporary block file.
+C If working on a block write to chartblk.array.
         if(head.eq.'BLK_')then
-          write(ioblk,'(a)') 'PLA (3DFACE)'
-          write(ioblk,'(i3)') count
+          ichartblk=ichartblk+1
+          write(chartblk(ichartblk),'(a)') 'PLA (3DFACE)'
+          ichartblk=ichartblk+1
+          write(chartblk(ichartblk),'(i3)') count
         else 
           write(ioout,'(a)') 'PLA (3DFACE)'
           write(ioout,'(i3)') count 
@@ -115,8 +124,10 @@ C If working on a block write to temporary block file.
         elseif(head.eq.'BLK_')then
 
 C Writing to temporary block file, do it in viewer format.
-          write(ioblk,'(a)') 'PLA (3DFACE)'
-          write(ioblk,'(i3)') count 
+          ichartblk=ichartblk+1
+          write(chartblk(ichartblk),'(a)') 'PLA (3DFACE)'
+          ichartblk=ichartblk+1
+          write(chartblk(ichartblk),'(i3)') count 
         else
 
 C Here we are updating the number of surfaces in the zone
@@ -177,6 +188,13 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
+
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many block lines found
+      common/dxfci/ichartobs,ichartblk 
 
       character RZNAME*24
       logical match,close
@@ -244,8 +262,10 @@ C << place to record point information for click-on-bitmap >>
          call initmatrix
          if(oformat(1:6).eq.'viewer')then
            if(head.eq.'BLK_')then
-             write(ioblk,'(a)') 'PLA  (2D ext line)'
-             write(ioblk,'(a)') '  4' 
+             ichartblk=ichartblk+1
+             write(chartblk(ichartblk),'(a)') 'PLA  (2D ext line)'
+             ichartblk=ichartblk+1
+             write(chartblk(ichartblk),'(a)') '  4' 
            else 
              write(ioout,'(a)') 'PLA  (2D ext line)'
              write(ioout,'(a)') '  4' 
@@ -386,6 +406,14 @@ C ****** genarc
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
+C Use ichartblk and chartblk as a scratch area for blocks
+      character chartobs*124  ! string buffer for obstructions
+      character chartblk*124  ! string buffer for blocks
+      common/dxfc/chartobs(500),chartblk(500)
+      integer ichartobs       ! how many obstructions found
+      integer ichartblk       ! how many block lines found
+      common/dxfci/ichartobs,ichartblk 
+
       character RZNAME*24
       logical match,close
       real PI,radians
@@ -460,8 +488,10 @@ C Find current layer and then matching zone.
  9003   if (startangl.lt.endangl)then
           if(oformat(1:6).eq.'viewer')then
             if(head.eq.'BLK_')then
-              write(ioblk,'(a)') 'PLANE (ARC: 2D extr)'
-              write(ioblk,'(a)') '  4' 
+              ichartblk=ichartblk+1
+              write(chartblk(ichartblk),'(a)') 'PLANE (ARC: 2D extr)'
+              ichartblk=ichartblk+1
+              write(chartblk(ichartblk),'(a)') '  4' 
             else 
               write(ioout,'(a)') 'PLANE (ARC: 2D extr)'              
               write(ioout,'(a)') '  4' 

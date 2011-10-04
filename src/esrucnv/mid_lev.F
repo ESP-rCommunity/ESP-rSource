@@ -76,7 +76,7 @@ C file formats.
       character chartblk*124  ! string buffer for blocks
       common/dxfc/chartobs(500),chartblk(500)
       integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many blocks found
+      integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
       character outs*248,fs*1
       character number*3,dstmp*24
@@ -112,6 +112,7 @@ C iotmp2 for miscel output files.
 
 C Clear text buffers for obstructions.
       ichartobs = 0
+      ichartblk = 0 
       do 466 iloop=1,500
         chartobs(iloop)='  '
         chartblk(iloop)='  '
@@ -392,7 +393,7 @@ C Close the files, remove temporary files if not to be kept.
         close(ioout)
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
-C          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
@@ -513,7 +514,7 @@ C that LCNN is something other than UNKNOWN.
 
         if(itmprm.eq.1)then
           INQUIRE(ioblk,OPENED=OPND)
-C          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
+          IF(OPND)CLOSE(ioblk,STATUS='DELETE')
         else
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
@@ -602,7 +603,7 @@ C << possibly using memory >>
       character chartblk*124  ! string buffer for blocks
       common/dxfc/chartobs(500),chartblk(500)
       integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many blocks found
+      integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
       character bname*72,pbname*72,chr*1
@@ -611,11 +612,9 @@ C << possibly using memory >>
 
       reset = .false.
 
-C Place a temporary file in the users home folder with name based
-C on the current process number. << >>
+C Place info in the chartblk array.
       if(itrc.gt.0)call edisp(iuout,' Processing BLOCK section...')
-      write(pbname,'(a)') '/tmp/blockdxf2e'
-      open(ioblk,file=pbname,status='UNKNOWN')
+      ichartblk = 0  ! reset position of array
 
 C The temporary block file (blockdxf2e) will be read in again,
 C if the mm>>metre conversion is on then disable it while writing.
@@ -692,9 +691,10 @@ C << consider adding to this list >>
             goto 91
           endif
 
-C Being a block definition place it in the local folder.
+C Being a block definition place it in the local array chartblk.
 C Note the gcode=10 reads in the x & y block origin
-          write(ioblk,'(a,a)') '*blk ',bname(1:leng)
+          ichartblk=ichartblk+1
+          write(chartblk(ichartblk),'(a,a)') '*blk ',bname(1:leng)
         elseif (gcode.eq.10) then
           blkxorg=coorx
           blkyorg=coory
@@ -711,9 +711,11 @@ C Note the gcode=10 reads in the x & y block origin
         goto  9001
       endif
 
-C << use ichartblk and chartblk rather than ioblk >>
-      write(ioblk,'(a)') 'BLOCK BASE '
-      write(ioblk,*) blkxorg,blkyorg,blkzorg
+C Increment ichartblk and write chartblk array
+      ichartblk=ichartblk+1
+      write(chartblk(ichartblk),'(a)') 'BLOCK BASE '
+      ichartblk=ichartblk+1
+      write(chartblk(ichartblk),*) blkxorg,blkyorg,blkzorg
       
 C If the input string is something other than ENDBLK then
 C parse the set of commands that can be used. Skip those
@@ -787,13 +789,14 @@ C Text is not delt with, but need to skip lines.
         goto  9003
       endif
 
-C << use ichartblk and chartblk rather than ioblk >>
-      write(ioblk,'(a,a)') '*end ',bname(1:leng)
+C Increment ichartblk and write to chartblk.
+      ichartblk=ichartblk+1
+      write(chartblk(ichartblk),'(a,a)') '*end ',bname(1:leng)
       goto 10
 
 C Finished the block file, close it.
  100  if(itrc.gt.0)call edisp(iuout,' Block section processed...')
-      close(ioblk)
+      ichartblk=0  ! rewind array position
 
       flagins=0
       dfltelev = elevlast
@@ -845,7 +848,7 @@ C Note: all the insert files are assumed to be in local folder.
       character chartblk*124  ! string buffer for blocks
       common/dxfc/chartobs(500),chartblk(500)
       integer ichartobs       ! how many obstructions found
-      integer ichartblk       ! how many blocks found
+      integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
 
       character bname*72,pbname*72,chr*1
@@ -960,16 +963,7 @@ C If one of the blocks we know we can skip then do so.
       x=dx
       coorz=dz
 
-C All imported block definition files come from (blockdxf2e).
-
-C << NOTE: to be done >>
-C << there will not be a /tmp folder on Native Windows >>
-C << find another place to put this temporary file >>
-C << or consider using memory rather than scratch files >>
-
-      write(pbname,'(a)') '/tmp/blockdxf2e'
-      open(ioblk,file=pbname,status='UNKNOWN')
-
+C All imported block definition files come from array chartblk.
       if (iucs .eq. 1) then
         if (abs(xucs) .lt. delta) then
           xrot = 90.0
@@ -1024,16 +1018,21 @@ C << tilts and opacity and ??
               if(bname(1:11).eq.'obstruction')then
                 call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
-                ichartobs=ichartobs+1
-                write(chartobs(ichartobs),'(a12,2x,7f9.4)')
-     &            RZNAME(1:12),
-     &            coorx*dxfconv,coory*dxfconv,coorz*dxfconv,
-     &            xscale*dxfconv,yscale*dxfconv,zscale*dxfconv,rotangl
+                if(ichartobs+1.lt.500)then
+
+C Write the next character array with coordinates.
+                  ichartobs=ichartobs+1
+                  write(chartobs(ichartobs),'(a12,2x,7f9.4)')
+     &              RZNAME(1:12),coorx*dxfconv,
+     &              coory*dxfconv,coorz*dxfconv,xscale*dxfconv,
+     &              yscale*dxfconv,zscale*dxfconv,rotangl
 
 C Debug.
-                write(6,*) 'chartobs=',ichartobs,' ',
-     &            chartobs(ichartobs)
+                  write(6,*) 'chartobs=',ichartobs,' ',
+     &              chartobs(ichartobs)
+                endif
               else
+                continue
               endif
             elseif(oformat(1:6).eq.'viewer')then
               call extrblk(itrc,bname,coorx,coory,coorz,
