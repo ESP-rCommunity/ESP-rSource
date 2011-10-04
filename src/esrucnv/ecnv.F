@@ -370,7 +370,7 @@ C << consider more passed parameters to fine-tune entity types >>
 
         if(oformat(1:6).eq.'viewer'.or.oformat(1:3).eq.'dxf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
-          call e2vdxf(incobs,ichop)
+          call e2vdxf(incobs)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
@@ -379,7 +379,7 @@ C << consider more passed parameters to fine-tune entity types >>
 C Create THF (THINGS) file.
         if(oformat(1:3).eq.'THF'.or.oformat(1:3).eq.'thf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
-          call e2thf(itrc,incobs,ichop)
+          call e2thf(incobs)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
@@ -399,7 +399,7 @@ C << considered for removal
           WRITE(ioout,'(a)') ' '
           WRITE(ioout,'(a)') 'ESP'
           WRITE(ioout,'(a)') 'ANT'
-          call e2zip(incobs,ichop)
+          call e2zip(incobs)
           CALL ERPFREE(ioout,ISTAT)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND

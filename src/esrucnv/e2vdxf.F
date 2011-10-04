@@ -23,7 +23,7 @@ C an AutoCad DXF file or viewer file.
 C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
-      subroutine e2vdxf(incobs,ichop)
+      subroutine e2vdxf(incobs)
 #include "building.h"
 #include "model.h"
 
@@ -546,7 +546,7 @@ C *************e2thf
 C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
-      subroutine e2thf(itrc,incobs,ichop)
+      subroutine e2thf(incobs)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -567,13 +567,10 @@ C THF (THINGS) file for use in MicroGDS.
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
-      LOGICAL doobs
-
       character ZN*12,outs*124
       integer llbm    ! length of block material
 
 C Setup standard assumptions.
-      if(incobs.eq.1)doobs=.true.
       IFIL=11
 
 C Assume configuration file is from IFIL+5, any leakage description
