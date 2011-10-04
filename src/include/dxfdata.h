@@ -27,3 +27,9 @@ C Flags used to identify 3D entities.
       real dxfconv     ! supports dimension conversion
       integer flagins  ! sets state of entity currently unused
       common/fg/flag3d,flagins,dxfconv
+
+C Current and prior layers and colours.
+      integer currlay,oldlay ! current and past index of layer
+      integer currcol,oldcol ! current and past colour number
+      common/attrs/currlay,currcol,oldlay,oldcol
+

@@ -47,9 +47,6 @@ C file formats.
 
       parameter (MAXLAY = 80)
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
-
       character layname*72
       integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
@@ -569,9 +566,6 @@ C << possibly using memory >>
       integer polylinflag
       common/vex/elevlast,thicklast,polylinflag
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
-
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
@@ -800,9 +794,6 @@ C Note: all the insert files are assumed to be in local folder.
 
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
-
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       integer indxzon
@@ -1025,9 +1016,6 @@ C  the name is added.
 
       parameter (MAXLAY = 80)
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
-
       character layname*72
       integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
@@ -1062,13 +1050,11 @@ C If this line is reached then name was not found so add it.
 C ******** WRITELC
 C Write the contents of a viewer layer file.
       subroutine writelc
+#include "dxfdata.h"
 
       parameter (MAXLAY = 80)
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
-
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
 
       common/laytoo/ layuse(MAXLAY)
 
@@ -1118,9 +1104,6 @@ C itrc indicator so that debug can be done from command line.
       common/vex/elevlast,thicklast,polylinflag
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl
-
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       integer indxzon

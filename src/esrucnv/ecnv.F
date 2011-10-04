@@ -48,9 +48,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/io/ioin,ioout,ioblk
       common/rp/repfile,repelev,repthick,nrep
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
-
       common/laytoo/ layuse(MAXLAY)
 
       integer indxzon
@@ -640,9 +637,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       
       integer IUOUT,IUIN
       COMMON/OUTIN/IUOUT,IUIN
-
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
 
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk

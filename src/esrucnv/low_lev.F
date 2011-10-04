@@ -36,8 +36,6 @@ C face3d are triangles or quads which are general surfaces in autocad.
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       integer indxzon
@@ -162,8 +160,6 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       integer indxzon
@@ -293,8 +289,6 @@ C autocad and skip over it.
       subroutine gencrl(itrc)
 #include "dxfdata.h"
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0 
@@ -319,8 +313,6 @@ C autocad and skip over it.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       character tstr*80
 
@@ -358,8 +350,6 @@ C ****** genarc
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
-      integer currlay,currcol,oldlay,oldcol
-      common/attrs/currlay,currcol,oldlay,oldcol
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
 
       integer indxzon
