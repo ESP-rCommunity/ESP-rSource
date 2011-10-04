@@ -45,8 +45,6 @@ C file formats.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      parameter (MAXLAY = 80)
-
       character layname*72
       integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
@@ -1014,14 +1012,11 @@ C  the name is added.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      parameter (MAXLAY = 80)
-
       character layname*72
       integer numlay,laycolour,layflag
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
 
-      common/laytoo/ layuse(MAXLAY)
       character outs*124
 
       do 100 i = 1, numlay
@@ -1052,11 +1047,8 @@ C Write the contents of a viewer layer file.
       subroutine writelc
 #include "dxfdata.h"
 
-      parameter (MAXLAY = 80)
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
-
-      common/laytoo/ layuse(MAXLAY)
 
       integer indxzon
       character oformat*24,head*4

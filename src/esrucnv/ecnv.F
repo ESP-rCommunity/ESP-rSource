@@ -42,13 +42,9 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer lnblnk  ! function definition
 
-      parameter (MAXLAY = 80)
-
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
       common/rp/repfile,repelev,repthick,nrep
-
-      common/laytoo/ layuse(MAXLAY)
 
       integer indxzon
       character oformat*24,head*4
@@ -631,7 +627,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
 #include "building.h"
 #include "geometry.h"
 #include "dxfdata.h"
-      parameter (MAXLAY = 80)
       
       integer lnblnk  ! function definition
       
@@ -828,10 +823,9 @@ C first then accept match.
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
 #include "geometry.h"
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
-
-      parameter (MAXLAY = 80)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

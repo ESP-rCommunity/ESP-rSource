@@ -1,6 +1,10 @@
 C This header relates to data found in DXF files. It is
-C dependant on ?? and should follow ? so that
-C parameters will have been defined.
+C loosely dependant on building.h.
+
+C Maximum number of layers from DXF. Each zone in esp-r might require
+C up to three layers (opaque transparent obstructions) so should be updated
+C to reflect MCOM in building.h.
+      parameter (MAXLAY = 80)
 
 C Transforms to be applied.
       real xscale,yscale,zscale  ! scaling to apply to each entity axis
@@ -32,4 +36,8 @@ C Current and prior layers and colours.
       integer currlay,oldlay ! current and past index of layer
       integer currcol,oldcol ! current and past colour number
       common/attrs/currlay,currcol,oldlay,oldcol
+
+C Indicator is layer has been used.
+      integer layuse  ! zero if not touched nonzero if referenced
+      common/laytoo/layuse(MAXLAY)
 
