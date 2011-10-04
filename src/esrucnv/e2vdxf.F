@@ -91,16 +91,13 @@ C Write to output file.
           WRITE(ioout,'(a,a15)')'GEN ',ZN
           WRITE(ioout,'(2I7)')NTV,NSUR
           DO 40 J=1,NTV
-            WRITE(ioout,'(3F8.3)')X(J),Y(J),Z(J)
+            WRITE(ioout,'(3F9.4)')X(J),Y(J),Z(J)
    40     continue
           DO 50 J=1,NSUR
             WRITE(ioout,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-C Read in obstruction file.
-C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
-C     &      0,0,iuout,IER)
-
+C Deal with solar obstructions.
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
@@ -133,7 +130,7 @@ C Write obstructions to output file.
               WRITE(ioout,'(a,a15,a)')'GEN ',ZN,' obstructions'
               WRITE(ioout,'(a)')'  8  6'
               DO 240 J=1,8  ! each of the vertices
-                WRITE(ioout,'(3F8.3)')XB(J),YB(J),ZB(J)
+                WRITE(ioout,'(3F9.4)')XB(J),YB(J),ZB(J)
   240         continue
               DO 250 J=1,6  ! each of the surfaces
                 WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
@@ -457,44 +454,44 @@ C Reread in the geometry file.
 C Now surface information.  If there are tmc`s then put
 C them in layer 'TRN_??' and put opaque in standard zone layer'
 
-C << why not use 3DPOLY for all? >>
-
+C To avoid mix of wire-frame lines and what looks like solid
+C blocks use 3DPOLY for all surfaces in the model.
         do 75 isf=1,nsur
           iv=NVER(isf)
-          if(iv.eq.3.or.iv.eq.4)then
-            WRITE(ioout,'(A)')'3DFACE'
-            WRITE(ioout,'(A)')'  8'
-            if(SOTF(isf).eq.'TRAN')then
-              WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
-            else
-              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
-            endif
-            inc = 0
-            DO 314 ibsv=1,iv
-              ii=JVN(isf,ibsv)
-              WRITE(ioout,'(I3)')10+inc
-              WRITE(ioout,'(f9.1)')X(II)*1000.0
-              WRITE(ioout,'(I3)')20+inc
-              WRITE(ioout,'(f9.1)')Y(II)*1000.0
-              WRITE(ioout,'(I3)')30+inc
-              WRITE(ioout,'(f9.1)')Z(II)*1000.0
-              inc = inc+1
-314         continue
+C          if(iv.eq.3.or.iv.eq.4)then
+C            WRITE(ioout,'(A)')'3DFACE'
+C            WRITE(ioout,'(A)')'  8'
+C            if(SOTF(isf).eq.'TRAN')then
+C              WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
+C            else
+C              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
+C            endif
+C            inc = 0
+C            DO 314 ibsv=1,iv
+C              ii=JVN(isf,ibsv)
+C              WRITE(ioout,'(I3)')10+inc
+C              WRITE(ioout,'(f9.1)')X(II)*1000.0
+C              WRITE(ioout,'(I3)')20+inc
+C              WRITE(ioout,'(f9.1)')Y(II)*1000.0
+C              WRITE(ioout,'(I3)')30+inc
+C              WRITE(ioout,'(f9.1)')Z(II)*1000.0
+C              inc = inc+1
+C314         continue
 
 C If a triangular surface duplicate the 4th corner.
-            if(iv.eq.3)then
-              ii=JVN(isf,3)
-              WRITE(ioout,'(a)') ' 13'
-              WRITE(ioout,'(f9.1)')X(ii)*1000.0
-              WRITE(ioout,'(a)') ' 23'
-              WRITE(ioout,'(f9.1)')Y(ii)*1000.0
-              WRITE(ioout,'(a)') ' 33'
-              WRITE(ioout,'(f9.1)')Z(ii)*1000.0
-            endif
-            write(ioout,'(a1)')'0'
-          else
+C            if(iv.eq.3)then
+C              ii=JVN(isf,3)
+C              WRITE(ioout,'(a)') ' 13'
+C              WRITE(ioout,'(f9.1)')X(ii)*1000.0
+C              WRITE(ioout,'(a)') ' 23'
+C              WRITE(ioout,'(f9.1)')Y(ii)*1000.0
+C              WRITE(ioout,'(a)') ' 33'
+C              WRITE(ioout,'(f9.1)')Z(ii)*1000.0
+C            endif
+C            write(ioout,'(a1)')'0'
+C          else
 
-C More complex shape - write as a 3DPOLY with VERTEX.
+C Write as a 3DPOLY with VERTEX.
             WRITE(ioout,'(A)')'POLYLINE'
             WRITE(ioout,'(A)')'  8'
             if(SOTF(isf).eq.'TRAN')then
@@ -516,11 +513,11 @@ C More complex shape - write as a 3DPOLY with VERTEX.
               WRITE(ioout,'(A)') ZN(1:lnblnk(ZN))
               ii=JVN(isf,ibsv)
               WRITE(ioout,'(a)') ' 10'
-              WRITE(ioout,'(f9.1)')X(ii)*1000.0
+              WRITE(ioout,'(f10.1)')X(ii)*1000.0
               WRITE(ioout,'(a)') ' 20'
-              WRITE(ioout,'(f9.1)')Y(ii)*1000.0
+              WRITE(ioout,'(f10.1)')Y(ii)*1000.0
               WRITE(ioout,'(a)') ' 30'
-              WRITE(ioout,'(f9.1)')Z(ii)*1000.0
+              WRITE(ioout,'(f10.1)')Z(ii)*1000.0
               WRITE(ioout,'(A)')' 70'
               WRITE(ioout,'(A)')'    32'
               WRITE(ioout,'(A)')'  0'
@@ -529,7 +526,7 @@ C More complex shape - write as a 3DPOLY with VERTEX.
             WRITE(ioout,'(A)')'  8'
             WRITE(ioout,'(A)')'0'
             WRITE(ioout,'(A)')'  0'
-          endif
+C          endif
  75     continue
   54  continue
 

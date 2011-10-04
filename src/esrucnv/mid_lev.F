@@ -954,10 +954,6 @@ C Write the next character array with coordinates.
      &              RZNAME(1:12),coorx*dxfconv,
      &              coory*dxfconv,coorz*dxfconv,xscale*dxfconv,
      &              yscale*dxfconv,zscale*dxfconv,rotangl
-
-C Debug.
-C                  write(6,*) 'chartobs=',ichartobs,' ',
-C     &              chartobs(ichartobs)
                 endif
               else
                 continue

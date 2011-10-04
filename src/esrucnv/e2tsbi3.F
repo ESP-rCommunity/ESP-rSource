@@ -104,7 +104,6 @@ C Define a VRML material for each construction in the database.
       do 166 im= 1,NMLC
 
 C Pick up general description of the composite.
-        ifound=im
         call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties (AE & AI).
@@ -191,12 +190,10 @@ C Read in the zone geometry.
 
 C Work out the colours for each of the surfaces in this zone by looping
 C through each of the MLC and finding a match.
-          ifound = 0
           do 6 im= 1,NMLC
             if(SMLCN(j)(1:12).eq.DESC(IM)(1:12))then
 
 C Pick up general description of the composite.
-              ifound=im
               call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties.
@@ -376,12 +373,10 @@ C into GB1 commons and write them out using similar logic.
 
 C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).
-          ifound = 0
           do 66 im= 1,NMLC
             if(BLOCKMAT(newfoc,IB)(1:12).eq.DESC(IM)(1:12))then
 
 C Pick up general description of the composite.
-              ifound=im
               WRITE(MLCN,'(A)')DESC(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
@@ -496,20 +491,14 @@ C If there is a ground topology create surfaces for it.
           do 303 igg = 1,ngt
 
 C Find the matching mlc index.
-            ifound = 0
             AE=0.5
             DO 701 imm=1,NMLC
               IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
-                ifound=im
                 matarrayindex=IPRMAT(IM,1)   ! which array index
                 if(matarrayindex.ge.0)then
                   AE=matdbina(matarrayindex)
                 endif
                 gvt=0.00
-
-C Debug.
-C                write(6,*) 'matching ',imm,' ',DESC(imm),AE,IPR(IMM,1)
-
                 goto 702
               endif
  701        CONTINUE
