@@ -363,6 +363,7 @@ C                                           ! per m2 of floor area
       real fZoneVentilationLoad           ! Ventilation load
       real fZoneInternalGains             ! Internal gains
       real fZoneUsefulInternalGains       ! Useful internal gains
+
 C       real fm2ZoneUsefulInternalGains     ! As fZoneUsefulInternalGains but
 C                                           ! per m2 of floor area
       real fZoneAdverseInternalGains      ! Gains during cooling
@@ -439,7 +440,7 @@ C.....Loads
       real fSUMHeatGainFloor                 !
       real fSUMHeatGainInfiltration          !
       real fSUMHeatGainVentilation
-
+      real fSUMFreeCooling                   ! Free cooling delivered 
 C.....Gains (W)
       real fSUMInternalGains                 ! Internal sources
       real fSUMUsefulInternalGains           !   - coincident with heating
@@ -467,7 +468,7 @@ C.....Air loads (W)
      &     fSUMHeatGainCeiling, fSUMHeatGainWindows, fSUMHeatGainWalls,
      &     fSUMHeatGainFloor, fSUMHeatLossVentilation,
      &     fSUMHeatGainVentilation, fSUMHeatLossInfiltration,
-     &     fSUMHeatGainInfiltration
+     &     fSUMHeatGainInfiltration, fSUMFreeCooling
 
 
 
@@ -532,6 +533,7 @@ C----------------------------------------------------------------------
         fSUMAdverseInternalGains          = 0.0
         fSUMAdverseSolarGains             = 0.0
         fSUMHeatGainVentilation           = 0.0
+        fSUMFreeCooling                   = 0.0
 
       endif reset_building_totals
 
@@ -1073,7 +1075,8 @@ C.....Thermal loads
       fSUMHeatLoss = fSUMHeatLoss + fZoneHeatLoad
       fSUMHeatGain = fSUMHeatGain + fZoneCoolLoad
 
-
+      fSUMFreeCooling = fSUMFreeCooling + fFreeCoolDelivered(iZone) 
+      
 C.....Air load
       fSUMVentilationLoad  = fSUMVentilationLoad + fZoneVentilationLoad
       fSUMInfiltrationLoad =   fSUMInfiltrationLoad
@@ -1174,14 +1177,12 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         cZone_Chars)
 
 C.....Cooling delivered by free-cooling means
-           
-      call add_to_xml_reporting (
+
+      call AddToReportWild1 (
+     &         rvFreeCoolingDelivered%Identifier,
      &         fFreeCoolDelivered(iZone),
-     &         H3K_rep_NAME(1:16)//'/free_energy/cooling',
-     &         'units', '(W)',
-     &         'Zone free cooling ' )
-     
-     
+     &         cZone_Chars)
+    
      
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
@@ -1463,6 +1464,11 @@ C.......Net flux for building
      &         rvBuildingAllZonesSuppliedEnergyNetFlux%Identifier,
      &         fSUMNetFlux)
 
+C.......Free cooling 
+      call AddToReport(
+     &         rvBuildingAllZonesFreeCooling%Identifier,
+     &         fSUMFreeCooling)     
+     
 C.......Total solar gains
       call AddToReport(
      &         rvBuildingAllZonesInsolationTotal%Identifier,
@@ -3550,7 +3556,7 @@ C.........Loop through all interconnections in a flow network
                if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
-                  if (FLW1(jj) .lt. 0) THEN
+                  if (FLW1(jj) .lt. 0.) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
                     rhon=DENSIT(NDFLD(ii),TNOD(ii))
