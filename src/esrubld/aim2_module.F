@@ -2434,6 +2434,7 @@ C **********************************************************************
       blockdata OpenWindows
       implicit none 
       include "building.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
       
       data bWindowsOpen  / mcom * .false. /

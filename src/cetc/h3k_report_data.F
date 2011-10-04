@@ -70,6 +70,7 @@ C*******************************************************************************
       include "model.h"
       include "geometry.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
 
 C.....Passed variable
@@ -164,17 +165,19 @@ C.....Window properties
       real tmct, tmca, tmcref, tvtr
       integer itmcfl
 
-C.....Description of zone control action; these data are used
-C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
-C.....Flags indicating zone is heated, cooled.
+C Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-
-C.....Heating and cooling setpoint (oC)
+C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
 C.....Ventilation, infiltration data
       common/coe39/cvip,cvvp,cvif,cvvf,qvnp,xx3,cvvpm,cvvfm
@@ -472,6 +475,16 @@ C.....Air loads (W)
 
 
 
+C Function counting # of operable windows in zone      
+      integer iCountAFN110Couplings 
+      
+C Window opening data
+      integer iWindowCount    
+      integer iWindow      
+C Flow control data 
+      COMMON/mfctl/ctlpos(MCNN)      
+      real ctlpos
+
 C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
 C----------------------------------------------------------------------
@@ -678,6 +691,30 @@ C.....Collect zone air-changes/hour
      &       ' Warning: AIM2_infil_to_zones array not allocated (a)')
         END IF
       END IF
+
+
+C.....Data for debugging BCL25      
+C      iWindowCount = iCountAFN110Couplings (iZone,iFlowConnection )
+      
+C      CDebugWindowLoop: do iWindow = 1, iWindowCount
+
+C.......Pad window index to 'XX'
+C        if ( iWindow .gt. 9 ) then
+C          write (cWin_Chars,'(I2)') iWindow
+C        else
+C          write (cWin_Chars,'(A,I1)') '0', iWindow 
+C        endif
+C.......Create base name
+C        H3K_rep_NAME = 'building/zone_' // cZone_Chars
+C     &                                  // '/bcl25/Window_'
+C     &                                  // cWin_Chars  
+C              call add_to_xml_reporting (
+C     &              ctlpos(iFlowConnection(iWindow)) ,
+C     &              H3K_rep_NAME // '/ctlpos',
+C     &              'units', '(-)',
+C     &              'debug bcl25: window control signal ' )    
+            
+C      enddo DebugWindowLoop       
 
 C-----------------------------------------------------------------------
 C     Compute external heat loss/heat gain metrics by examining all
@@ -3605,17 +3642,19 @@ C-----------------------------------------------------------------------
       blockdata initialize_h3k_zone_ctl_flags
 #include "building.h"
 
-C.....Description of zone control action; these data are used
-C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
-C.....Flags indicating zone is heated, cooled.
+C Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-
-C.....Heating and cooling setpoint (oC)
+C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
       data bZoneHeated / MCOM * .false. /
       data bZoneCooled / MCOM * .false. /
@@ -3629,17 +3668,19 @@ C-----------------------------------------------------------------------
       subroutine h3kReports_reset_zone_flags()
 #include "building.h"
 
-C.....Description of zone control action; these data are used
-C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
-C.....Flags indicating zone is heated, cooled.
+C Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-
-C.....Heating and cooling setpoint (oC)
+C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones

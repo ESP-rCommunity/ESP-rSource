@@ -3139,17 +3139,19 @@ C PCL08 is a `Two-Position` controller.
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/PCLOP8/LASTOUT(MCF)
-
+      
 C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and
-C to evaluate passive solar design performance.
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM)
 
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
