@@ -79,7 +79,8 @@ MODULE h3kmodule
          rvEnvAllComponentsNetFlux, rvInsolationTotal, rvInsolationUseful, &
          rvInsolationAdverse, rvInternalGainsTotal, rvInternalGainsUseful, &
          rvInternalGainsAdverse, rvBuildingAllZonesSuppliedEnergyHeating, &
-         rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux
+         rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux, &
+         rvFreeCoolingDelivered 
    Type(ReportVariable) :: rvBuildingAllZonesInsolationTotal, rvBuildingAllZonesInsolationUseful, &
          rvBuildingAllZonesInsolationAdverse, rvBuildingAllZonesEnvelopeWindowsHeatLoss, &
          rvBuildingAllZonesEnvelopeWallsHeatLoss, rvBuildingAllZonesEnvelopeFloorsHeatLoss, &
@@ -99,7 +100,8 @@ MODULE h3kmodule
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
          rvClimateDryBulbTemperature, rvClimateRelativeHumidity, rvClimateWindVelocity, &
          rvClimateWindDirection, rvClimateCloudCover, rvClimateSkyTemperature, &
-         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat
+         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat, &
+         rvBuildingAllZonesFreeCooling
    Type(ReportVariable) :: rvBuildingTimePresent, rvBuildingTimeFuture,rvBuildingHourPresent, &
          rvBuildingHourFuture,rvBuildingDayNumberPresent, rvBuildingDayNumberFuture,&
          rvBuildingYearPresent,rvBuildingYearFuture, rvBuildingDayPresent,rvBuildingMonth, &
@@ -417,6 +419,12 @@ CONTAINS
       rvSuppliedEnergyCooling%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCooling )
 
+      rvFreeCoolingDelivered%VariableName = 'building/zone_*/free_cooling/'
+      rvFreeCoolingDelivered%MetaType = 'units'
+      rvFreeCoolingDelivered%VariableType = '(W)'
+      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone '
+      Call AddVariable(rvFreeCoolingDelivered )
+      
       rvSuppliedEnergyNetPerm2%VariableName = 'building/zone_*/supplied_energy/net_Perm2'
       rvSuppliedEnergyNetPerm2%MetaType = 'units'
       rvSuppliedEnergyNetPerm2%VariableType = '(W/m2)'
@@ -675,6 +683,12 @@ CONTAINS
       rvBuildingAllZonesSuppliedEnergyCooling%Description = 'Total amount of cooling supplied to the building (all zones).'
       Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )
 
+      rvBuildingAllZonesFreeCooling%VariableName = 'building/all_zones/free_cooling'
+      rvBuildingAllZonesFreeCooling%MetaType = 'units'
+      rvBuildingAllZonesFreeCooling%VariableType = '(W)'
+      rvBuildingAllZonesFreeCooling%Description = 'Free cooling used in building (all zones).'
+      Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )      
+      
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableName = 'building/all_zones/supplied_energy/net_flux'
       rvBuildingAllZonesSuppliedEnergyNetFlux%MetaType = 'units'
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableType = '(W)'
