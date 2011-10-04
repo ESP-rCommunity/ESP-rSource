@@ -44,10 +44,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       parameter (MAXLAY = 80)
 
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
-
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
       common/rp/repfile,repelev,repthick,nrep
@@ -647,10 +643,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
 
       integer currlay,currcol,oldlay,oldcol
       common/attrs/currlay,currcol,oldlay,oldcol
-
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk

@@ -565,10 +565,6 @@ C << possibly using memory >>
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
-
       real elevlast,thicklast
       integer polylinflag
       common/vex/elevlast,thicklast,polylinflag
@@ -801,10 +797,6 @@ C Note: all the insert files are assumed to be in local folder.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
 
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
@@ -1121,10 +1113,6 @@ C itrc indicator so that debug can be done from command line.
 
       integer polylinflag
 
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
-
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
       common/vex/elevlast,thicklast,polylinflag
@@ -1313,10 +1301,6 @@ C vertex - compose XYZ from data in a DXF file.
 #include "dxfdata.h"
 
       parameter (MAXPNT = 100)
-
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
 
       common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
      &       numpl

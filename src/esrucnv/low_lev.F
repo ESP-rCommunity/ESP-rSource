@@ -159,10 +159,6 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
-
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
@@ -359,10 +355,6 @@ C ****** genarc
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 

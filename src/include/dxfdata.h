@@ -21,3 +21,9 @@ C Descriptors of most recently scanned gcode entry.
       real blkxorg,blkyorg,blkzorg  ! origin of block entity
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
      &           blkxorg,blkyorg,blkzorg
+
+C Flags used to identify 3D entities.
+      real flag3d      ! zero is 2D one is 3D
+      real dxfconv     ! supports dimension conversion
+      integer flagins  ! sets state of entity currently unused
+      common/fg/flag3d,flagins,dxfconv

@@ -33,10 +33,6 @@ C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk
 
-      real flag3d,dxfconv
-      integer flagins
-      common/fg/flag3d,flagins,dxfconv
-
       integer indxzon
       character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
