@@ -244,7 +244,7 @@ C foundshoc will become true if any zones have SHOCC descriptions.
 
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
-      logical rep_xmlstatus ! function indicating if h3kreports is available.
+
 
 C Expected finish time variables.
       character*24 ectime
