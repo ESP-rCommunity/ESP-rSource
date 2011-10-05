@@ -53,6 +53,7 @@ C           - Principle use is for function button facility on workstations.
 
 C For operational details refer to the ESP-r program user's manual.
       program res
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"

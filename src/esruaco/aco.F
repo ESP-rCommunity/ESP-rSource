@@ -44,6 +44,7 @@ C XNbFur(MaxFur)(Real)      Nb of unit or surface area for the current
 C                           furniture
 
       PROGRAM RevTime
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"

@@ -39,6 +39,7 @@ C  ILoss (Integer) = Flag to include the break & loos or not in the calculation 
 C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed)
 
       PROGRAM eco
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"

@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -18,6 +18,380 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C ********************************************************************************
+C************************************************************************************
+C************************************************************************************
+C************************************************************************************
+C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for
+C   setting up environemt and parsing command lines.
+C	Francesca Macdonald 4/5/2011
+C************************************************************************************
+      MODULE PARSE_COMMAND_LINE
+      IMPLICIT NONE
+
+C Constants used to differentiate between modules
+      integer, parameter :: CONST_PARPSF = 1
+      integer, parameter :: CONST_PARPSFF = 2
+      integer, parameter :: CONST_PARSIM = 3
+      integer, parameter :: CONST_PARRES = 4
+      integer, parameter :: CONST_PARCLM = 5
+      integer, parameter :: CONST_PARSISH = 6
+      integer, parameter :: CONST_PARSPRJ = 7
+      integer, parameter :: CONST_PARSFZ = 8
+      integer, parameter :: CONST_PARTF = 9
+      integer, parameter :: CONST_PARTFA = 10
+      integer, parameter :: CONST_PARSE2R = 11
+      integer, parameter :: CONST_PARSFACT = 12
+
+C Add Proceedures
+      CONTAINS
+C *******************************************************************************
+C GetCommandLineArguments () Parses the command line
+C *******************************************************************************
+
+C Parse command lines.
+      SUBROUTINE GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      IMPLICIT NONE
+C Common blocks
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/APPNAME/cAppName
+C Timeout information
+      COMMON/TIMEOUT/sTimeout,iTimeoutFlag
+C Declare  calling parameter types
+      integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
+      integer, intent(in)  ::  module
+      real, intent(out)     ::  data1,data2,data3
+      character(144), intent(out)  :: inf, inf2
+      character(16), intent(out)   :: zone,act
+      character(72), intent(out)   :: actf,ascif
+      character(12), intent(out)	  :: aut,aim
+      character(4), intent(out)	  :: browse
+      character(8), intent(out)	  :: sps
+
+C Variable declaration
+      character(8)  :: ModuleName
+      character(12)  :: cAppName
+      character(72)  :: argument, sTimeout
+      character(8)   :: mode
+      character(24)  :: appn
+      character(248) :: outs
+      character(48)  :: prog
+      integer 	:: m, i, IOS, IUOUT,IUIN, iXavail
+      integer   :: iTimeoutFlag
+      logical :: unixok
+
+C Variable initialisation
+      argument = ' '
+      m = iargc()
+      data1=0.0
+      data2=0.0
+      data3=0.0
+      iverb =0
+      i = 0
+      iappw = 0
+      iappx = 0
+      iappy = 0
+      aut  = 'interactive'
+      argument = ' '
+      IOS=0  ! initial value
+      act = 'NONE'
+      aim = 'NONE'
+      browse = 'no'
+      zone = 'ALL'
+      sps  = 'UNKNOWN'
+      inf  = 'UNKNOWN'
+      inf2  = 'UNKNOWN'
+      actf = 'UNKNOWN'
+      ascif  = 'UNKNOWN'
+      if (module.eq.CONST_PARRES)	act = 'UNKNOWN'
+      if (module.eq.CONST_PARSIM) aut  = 'default'
+
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+      if ( iXavail() == 1 ) then
+        termtype = 8
+        mode = 'graphic'
+      else
+        termtype = -1
+        mode = 'text'
+      end if
+      call getarg(i,prog)
+      call findapp(prog,appn)
+
+      if(m.eq.0)then
+        return
+      elseif(m.ge.1)then
+        Parseloop: DO
+          i= i+1
+          if(i.gt.m)EXIT Parseloop
+          call getarg(i,argument)
+          if(argument(1:5).eq.'-help')then
+            call parpsfh(appn)
+            stop
+          elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit
+            CALL ESPrVersion("summary",cAppName,IUOUT)
+            stop
+          elseif( argument(1:10) .eq. '-buildinfo' ) then
+C Display detailed build information and then quit
+            CALL ESPrVersion("details",cAppName,IUOUT)
+            stop
+          elseif(argument(1:2).eq.'-v')then
+            if (module.eq.CONST_PARSIM) iverb = 2   ! tell application to run with debug on
+                        ! Note: this option MUST follow -version for both to be supported
+          elseif(argument(1:5).eq.'-mode')then
+            i=i+1
+            call getarg(i,argument)
+            if(argument(1:4).eq.'text')then
+              termtype = -1
+              mode = 'text'
+            elseif(argument(1:4).eq.'page')then
+              termtype = -2
+              mode = 'page'
+            elseif(argument(1:5).eq.'graph')then
+              termtype = 8
+              mode = 'graphic'
+            elseif(argument(1:6).eq.'script')then
+              termtype = -6
+              mode = 'script'
+            endif
+          elseif(argument(1:2).eq.'-s')then
+            if ((module.ne.CONST_PARTF).or.
+     &          (module.ne.CONST_PARTFA)) then
+              i=i+1
+              call getarg(i,argument)
+              read(argument,*,IOSTAT=IOS,ERR=2)iappw
+              i=i+1
+              call getarg(i,argument)
+              read(argument,*,IOSTAT=IOS,ERR=2)iappx
+              i=i+1
+              call getarg(i,argument)
+              read(argument,*,IOSTAT=IOS,ERR=2)iappy
+            end if
+          elseif(argument(1:5).eq.'-file')then
+            if (module.eq.CONST_PARPSFF) then
+              i=i+1
+              call getarg(i,inf)
+              i=i+1
+              call getarg(i,inf2)
+            else
+              i=i+1
+              call getarg(i,inf)
+            end if
+          ! It is important to check for -actf before checking for -act.
+          elseif(argument(1:5).eq.'-actf')then
+            if ((module.eq.CONST_PARSFACT).or.(module.eq.CONST_PARRES)
+     &           .or.(module.eq.CONST_PARSIM)) then
+              i=i+1
+              call getarg(i,actf)
+            end if
+          elseif(argument(1:4).eq.'-act')then
+            if ((module.eq.CONST_PARTFA).or.
+     &          (module.eq.CONST_PARSFACT)) then
+              i=i+1
+              call getarg(i,act)
+            else if (module.eq.CONST_PARSE2R) then
+              i=i+1
+              call getarg(i,act)
+            else if (module.eq.CONST_PARRES) then
+              i=i+1
+              call getarg(i,act)
+              i=i+1
+              call getarg(i,aut)
+            else if (module.eq.CONST_PARCLM) then
+              i=i+1
+              call getarg(i,act)
+              i=i+1
+              call getarg(i,aut)
+              i=i+1
+              call getarg(i,ascif)
+            else if (module.eq.CONST_PARSISH) then
+              i=i+1
+              call getarg(i,act)
+C If act is asci2bin or bin2asci read ascii file name
+              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+                i=i+1
+                call getarg(i,ascif)
+              end if
+            else if(module.eq.CONST_PARSPRJ)then
+              i=i+1
+              call getarg(i,act)
+              if(act(1:6).eq.'rotate')then
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data1
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data2
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data3
+              elseif(act(1:9).eq.'transform')then
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data1
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data2
+                i=i+1
+                call getarg(i,argument)
+                read(argument,*,IOSTAT=IOS,ERR=2)data3
+              end if
+            end if
+          elseif(argument(1:5).eq.'-zone')then
+            if ((module.eq.CONST_PARSFZ).or.(module.eq.CONST_PARSISH)
+     &         .or.(module.eq.CONST_PARSE2R).or.
+     &         (module.eq.CONST_PARSPRJ))then
+              i=i+1
+              call getarg(i,zone)
+            end if
+          elseif(argument(1:8).eq.'-purpose')then
+            if (module.eq.CONST_PARSE2R) then
+              i=i+1
+              call getarg(i,aim)
+            end if
+          elseif(argument(1:2).eq.'-b')then
+            if ((module.eq.CONST_PARSE2R).or.
+     &          (module.eq.CONST_PARSIM)) then
+              i=i+1
+              call getarg(i,browse)
+            end if
+          elseif(argument(1:2).eq.'-p')then
+            if (module.eq.CONST_PARSIM) then
+              i=i+1
+              call getarg(i,sps)
+              i=i+1
+              call getarg(i,aut)
+            end if
+          elseif(argument(1:8).eq.'-timeout')then
+            if (module.eq.CONST_PARSIM) then
+              i=i+1
+              call getarg(i,sTimeout)
+              iTimeoutFlag = 1
+            end if
+          else
+            if (module.eq.CONST_PARTFA) then
+C Assume argument is an input file without the -file token.
+              write(inf,'(a)') argument(1:lnblnk(argument))
+            end if
+          end if
+        end do parseloop
+      end if
+
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          if  (module.eq.CONST_PARTFA) then
+            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
+          else if (module.eq.CONST_PARSFZ) then
+            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+          else if (module.eq.CONST_PARSFACT) then
+            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
+     &      ' applied to ',actf(1:lnblnk(actf))
+          else if (module.eq.CONST_PARRES) then
+            outs=' '
+            write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
+     &        ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &        inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
+     &       ' in ',aut,' mode.'
+          else if (module.eq.CONST_PARSISH) then
+            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+     &      ,' with action ',act(1:lnblnk(act))
+          else if (module.eq.CONST_PARCLM) then
+            outs=' '
+            write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
+     &       ' in ',aut,' mode.'
+            write(outs,'(2a)') 'using/making file ',
+     &        ascif(1:lnblnk(ascif))
+          else if (module.eq.CONST_PARSE2R) then
+            write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
+     &      ' with scene purpose ',aim(1:lnblnk(aim)),
+     &      ' with action ',act(1:lnblnk(act))
+          else if (module.eq.CONST_PARSIM) then
+            outs=' '
+            if ( iVerb == 2 ) then
+              write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &          ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &          inf(1:lnblnk(inf))
+              if(unixok)call edisp(iuout,outs)
+              outs=' '
+              write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
+     &         ' in ',aut,' mode and ',browse,' browsing.'
+              if(unixok)call edisp(iuout,outs)
+          else if (module.eq.CONST_PARSPRJ) then
+            write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+     &      ,' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &      data2,data3
+          else
+           write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &     ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf))
+C         call edisp248(iuout,outs,90)
+          end if
+        end if
+        return
+      endif
+
+C Errors.
+   2  call isunix(unixok)
+      if(unixok)then
+        SELECT CASE (module)
+        CASE (CONST_PARPSF)
+          ModuleName = 'parpsf'
+        CASE (CONST_PARPSFF)
+          ModuleName = 'parpsff'
+        CASE (CONST_PARSIM)
+          ModuleName = 'parsim'
+        CASE (CONST_PARRES)
+          ModuleName = 'parres'
+        CASE (CONST_PARCLM)
+          ModuleName = 'parclm'
+        CASE (CONST_PARSISH)
+          ModuleName = 'parsish'
+        CASE (CONST_PARSPRJ)
+          ModuleName = 'parsprj'
+        CASE (CONST_PARSFZ)
+          ModuleName = 'parsfz'
+        CASE (CONST_PARTF)
+          ModuleName = 'partf'
+        CASE (CONST_PARTFA)
+          ModuleName = 'partfa'
+        CASE (CONST_PARSE2R)
+          ModuleName = 'parse2r'
+        CASE (CONST_PARSFACT)
+          ModuleName = 'parsfact'
+        END SELECT
+        if(IOS.eq.2)then
+          write(6,'(2a)')ModuleName,
+     &        ': permission error getting parameters.'
+        else
+          write(6,'(2a)')ModuleName, ': error extracting parameters.'
+        endif
+      endif
+      return
+      END SUBROUTINE GetCommandLineArguments
+      END MODULE PARSE_COMMAND_LINE
+************************************************************************************
+************************************************************************************
+************************************************************************************
+
+
 C Subroutines used by all modules for setting up environemt and
 C parsing command lines.
 C  SCESPRC: scans the ESP-r dot file (environment)
@@ -25,9 +399,9 @@ C  ESCDEF : scans the ESP-r defaults definition file
 
 C parsepar variants: Parse command lines.
 C  parpsf: allowa terminal, size and config file arguments
-C         to be passed to the program from the invocation line.  
+C         to be passed to the program from the invocation line.
 C  parpsff: supports terminal, size and two file arguments
-C         to be passed to the program from the invocation line.  
+C         to be passed to the program from the invocation line.
 C  parpsfh: Help message for parpsf.
 C  parsim: allows terminal, size, config file, simulation parameter
 C         file arguments to be passed
@@ -36,7 +410,7 @@ C         to be passed to res
 C  parclm: allows terminal, size, input file, action and silent arguments
 C         and output (converted) file to be passed to clm
 C  parsish: allows the module ish to be passed a terminal, size, config file,
-C         zone focus and actions arguments from the invocation line.  
+C         zone focus and actions arguments from the invocation line.
 C parsfza: allows a terminal, size, config file, zone focus and actions arguments
 C         to be passed to the program
 C parsprj: allows terminal, size, config file, zone focus and actions arguments
@@ -54,21 +428,530 @@ C         to be passed to the program
 C parcnv parse command line paramters for ecnv.
 C FINDAPP: given a file name (string) see if it contains one of the
 C          esp-r modules
+c***********************************************************************************
+c***********************************************************************************
+c***********************************************************************************
+c***********************************************************************************
+      MODULE START_UP
 
-C ******************** scesprc 
+      USE PARSE_COMMAND_LINE
+C Add Proceedures
+      CONTAINS
+
+C ********* parpsf (equivalent to startpsf.c)
+C parpsf allowa terminal, size and config file arguments
+C to be passed to the program from the invocation line.
+
+      subroutine parpsf(termtype,iappw,iappx,iappy,inf)
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARPSF
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+
+      end subroutine parpsf
+
+C ********* parpsff
+C parpsff supports terminal, size and two file arguments
+C to be passed to the program from the invocation line.
+
+      subroutine parpsff(termtype,iappw,iappx,iappy,infa,infb)
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: infa, infb
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARPSFF
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,infa,infb,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+
+      end subroutine parpsff
+
+
+
+C ********* parres
+C parres allows terminal, size, results file, action and silent arguments
+C  to be passed to res from the invocation line.
+
+      subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(72), intent(inout) :: actf
+      character(12), intent(inout) :: aut
+      character(16), intent(inout) :: act
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: ascif
+      character(12) :: aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARRES
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine parres
+
+C ********* parclm
+C parclm allows terminal, size, input file, action and silent arguments
+C and output (converted) file to be passed to clm from the invocation line.
+
+      subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act
+      character(12), intent(inout) :: aut
+      character(72), intent(inout) :: ascif
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: actf
+      character(12) :: aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARCLM
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+
+      end subroutine parclm
+
+
+C ********* parsish
+C parsish allows the module ish to be passed a terminal, size, config file,
+C zone focus and actions arguments from the invocation line.
+
+      subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
+     &  ascif)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act, zone
+      character(72), intent(inout) :: ascif
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(72) :: actf
+      character(12) :: aim, aut
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARSISH
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+
+      end subroutine parsish
+
+C ********* parsprj
+C parsprj allows terminal, size, config file, zone focus and actions arguments
+C (including 3 real data) to be passed to the prj from the invocation line.
+      subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
+     &        data1,data2,data3)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      real, intent(inout)     ::  data1,data2,data3
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act, zone
+
+      integer :: module, iverb
+      character(144) :: inf2
+      character(72) :: actf,ascif
+      character(12) :: aim, aut
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARSPRJ
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine parsprj
+
+C ********* parsfz (equivalent to startsfz.c)
+C parsfz allows terminal, size, config file, zone focus arguments
+C to be passed to the program from the invocation line.
+
+      subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout)  :: zone
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARSFZ
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine parsfz
+
+
+C ********* partf (equivalent to startup.c)
+C partf allows terminal and config file arguments
+C to be passed to the program from the invocation line.
+
+      subroutine partf(termtype,inf)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype
+      character(144), intent(inout)  :: inf
+
+      integer :: module, iverb,iappw,iappx,iappy
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARTF
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine partf
+
+C ********* partfa (equivalent to partf with an action parameter)
+C partfa allows terminal, file and action arguments
+C  to be passed to the program from the invocation line.
+C  Logic allows for the -file token to be optional.
+      subroutine partfa(termtype,inf,act)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout)  :: act
+
+      integer :: module, iverb,iappw,iappx,iappy
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARTFA
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine partfa
+
+C ********* parse2r
+C parse2r allows terminal, size, config file, scene purpose and actions arguments
+C  to be passed to e2r from the invocation line.
+
+      subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
+     &  browse)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: zone,act
+      character(12), intent(inout) :: aim
+      character(4), intent(inout) :: browse
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(72) :: actf,ascif
+      character(12) :: aut
+      character(8) :: sps
+
+      module = CONST_PARSE2R
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine parse2r
+C ********* parsim
+C parsim: allows terminal, size, config file, simulation parameter file arguments
+C  to be passed to the program from the invocation line.
+
+      subroutine parsim(iverb,termtype,iappw,iappx,iappy,inf,browse,
+     &  sps,aut,actf)
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  iverb, termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(72), intent(inout) :: actf
+      character(12), intent(inout) :: aut
+      character(4), intent(inout) :: browse
+      character(8), intent(inout) :: sps
+
+      integer :: module
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: ascif
+      character(12) :: aim
+
+      module = CONST_PARSIM
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+
+      end subroutine parsim
+
+C ********* parsfact
+C parsfact allows terminal, size, file and actions arguments
+C  to be passed to the program from the invocation line.
+
+      subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
+
+      IMPLICIT NONE
+C Declare  calling parameter types
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act
+      character(72), intent(inout) :: actf
+
+      integer :: module, iverb
+      real ::  data1,data2,data3
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
+      module = CONST_PARSFACT
+      call GetCommandLineArguments(module,termtype,iappw,iappx,
+     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &			   iverb,sps,data1,data2,data3)
+      end subroutine parsfact
+
+      END MODULE START_UP
+C***********************************************************************************************************************
+C***********************************************************************************************************************
+C***********************************************************************************************************************
+C***********************************************************************************************************************
+C***********************************************************************************************************************
+C***********************************************************************************************************************
+C parcnv parse command line paramters for ecnv.
+      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
+     &                   inf,ouf,ucfg)
+
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      integer iargc,m
+      integer termtype
+      integer i,iverb,itmprm,iobs,ichop
+      real conv
+      character argument*72,prog*48,inf*144,outs*248,appn*24
+      character iform*24,oform*24,ouf*144,ucfg*72,mode*8
+
+      inf  = 'UNKNOWN'
+      iform = 'UNKNOWN'
+      oform = 'UNKNOWN'
+      ouf  = 'UNKNOWN'
+      ucfg  = 'UNKNOWN'
+      conv = 0.001
+      iverb = 0
+      itmprm = 1
+      iobs  = 0
+      ichop = 0
+
+C Get number of arguments and command name.
+      termtype = -1
+      mode = 'text'
+      m = iargc()
+      i = 0
+      call getarg(i,prog)
+      call findapp(prog,appn)
+
+C If one parameter.
+      if(m.eq.0)then
+        stop
+      elseif(m.ge.1)then
+  41    i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+        if(argument(1:5).eq.'-help')then
+      call edisp(iuout,'The product model filter. ')
+      call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
+      call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
+      call edisp(iuout,
+     &  '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
+      call edisp(iuout,' ')
+      call edisp(iuout,'Where options are:')
+      call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
+      call edisp(iuout,'      (dxf = AutoCAD V11-12)')
+      call edisp(iuout,'      (ww = ww graphic commands)')
+      call edisp(iuout,' -in [file]  = input file')
+      call edisp(iuout,
+     &  ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
+      call edisp(iuout,' -out [file] = output file')
+      call edisp(iuout,' -v          = verbose mode')
+      call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
+      call edisp(iuout,' -keep       = retain scratch files')
+      call edisp(iuout,' -obs        = include esp-r obstructions')
+      call edisp(iuout,' ')
+      call edisp(iuout,'The following combinations are supported:')
+      call edisp(iuout,'  input format  output format')
+      call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
+      call edisp(iuout,'  dxf           esp-r, viewer')
+      call edisp(iuout,'  zip           esp-r, viewer')
+      call edisp(iuout,' ')
+      call edisp(iuout,'If converting to esp-r then an additional')
+      call edisp(iuout,'parameter is allowed:')
+      call edisp(iuout,' -u [upgrade] when updating a model from ')
+      call edisp(iuout,'    registration stage.')
+      call edisp(iuout,' ')
+      call edisp(iuout,' -help :this help message.')
+      call edisp(iuout,' ')
+          stop
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 2   ! tell application to run with debug on
+        elseif(argument(1:3).eq.'-mm')then
+          conv = 0.001
+        elseif(argument(1:6).eq.'-metre')then
+          conv = 1.00
+        elseif(argument(1:4).eq.'-obs')then
+          iobs = 1
+        elseif(argument(1:5).eq.'-chop')then
+          ichop = 1
+        elseif(argument(1:5).eq.'-keep')then
+          itmprm = 0
+        elseif(argument(1:3).eq.'-in')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:4).eq.'-out')then
+          i=i+1
+          call getarg(i,ouf)
+        elseif(argument(1:2).eq.'-u')then
+          i=i+1
+          call getarg(i,ucfg)
+          call edisp(iuout,'Will attempt to update configuration')
+        elseif(argument(1:3).eq.'-if')then
+          i=i+1
+          call getarg(i,iform)
+        elseif(argument(1:3).eq.'-of')then
+          i=i+1
+          call getarg(i,oform)
+        endif
+        goto 41
+
+  42    continue
+        write(outs,'(4a)') 'Starting ecnv in ',
+     &    oform(1:lnblnk(oform)),' mode with in file ',
+     &    inf(1:lnblnk(inf))
+        call edisp248(iuout,outs,100)
+        write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
+        call edisp248(iuout,outs,100)
+        return
+      endif
+      end
+
+C ******* FINDAPP
+C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
+      SUBROUTINE findapp(string,appn)
+
+      integer lnblnk  ! function definition
+
+      CHARACTER*(*) string,appn
+      logical unixok
+
+C Clear variables and get string lengths.
+      ilfilen = LEN(appn)
+      ilstr = LEN(string)
+      call isunix(unixok)
+
+C Scan for last position of a `/' (UNIX) or '\' (NT).
+      islash = 0
+      DO 99 I=1,LEN(string)
+
+C Comment out UNIX or NT version as required.
+        if(unixok)then
+          if(string(I:I).eq.'/')islash=I
+        else
+         if(string(I:I).eq.'\\')islash=I
+C         if(string(I:I).eq.'\')islash=I
+        endif
+        if(ichar(string(I:I)).lt.32)goto 100
+ 99   CONTINUE
+
+C If islash = 0 then no root.
+100   if(islash.eq.0)then
+        if(ilstr.ge.ilfilen)then
+          write(appn,'(a)')string(1:ilfilen)
+        elseif(ilstr.lt.ilfilen)then
+          write(appn,'(a)')string(1:lnblnk(string))
+        endif
+      else
+
+C If islash > 0 then root and file name
+        is=islash+1
+        write(appn,'(a)') string(is:lnblnk(string))
+      endif
+
+      RETURN
+      END
+C ******************** scesprc
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder or in the esp-r distribution.  If not found
 C then some defaults are set.
 C Note: take this opportunity to instanciate common block stddbpath
 C while we have information on where esp-r was installed.
 
-      SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)  
+      SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)
 C Use espriou.h for climatelist file name and defdbfl.
 #include "building.h"
 #include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -130,7 +1013,7 @@ C Where validation tests are kept.
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48
       character foldlbl*20,foldexe*48
-      character vldlbl*20,vldfl*72 
+      character vldlbl*20,vldfl*72
       character journcmd*20,jfile*72
 
 C Altdot is an alternative location for the esprc file in
@@ -166,7 +1049,7 @@ C initial values because they will not be used.
         gxwdlbl='no graphic dump'
       else
 
-C Assume initial values for interactive use. Default to putting 
+C Assume initial values for interactive use. Default to putting
 C temporary files in the users home folder.
         teditor='vi'
         tedlbl='word processor'
@@ -294,7 +1177,7 @@ C If '*ESPRC' found then read db until '*end' found.
       CALL EGETW(OUTSTR,K,WORD,'W','dot sequences',IFLAG)
       if(WORD(1:5).eq.'*gprn')then
 
-C Capture rectangular area of screen via capexgf is in wwlib.c 
+C Capture rectangular area of screen via capexgf is in wwlib.c
         CALL EGETP(OUTSTR,K,gprlbl,'W','rect area lbl',IER)
         CALL EGETP(OUTSTR,K,gprcmd,'W','rect area exe',IER)
         write(outs,'(a,a,2x,a)')' Rectangular area grab:',gprlbl,gprcmd
@@ -418,7 +1301,7 @@ C Close file before exiting.
       RETURN
       END
 
-C ******************** ESCDEF 
+C ******************** ESCDEF
 C ESCDEF scans the ESP-r defaults definition file and returns
 C the default file and database names via common block.
 C It uses espinstalldir.h which was created by the Install
@@ -431,7 +1314,7 @@ C for code complience purposes or for use defined uses.
 #include "esprdbfile.h"
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -717,255 +1600,8 @@ C Close defaults file before exiting.
    45 CONTINUE
       CALL ERPFREE(IFDEF,ISTAT)
       RETURN
-      END
+      END SUBROUTINE
 
-C Parse command lines.
-
-C ********* parpsf (equivalent to startpsf.c)
-C parpsf allowa terminal, size and config file arguments
-C to be passed to the program from the invocation line.  
-
-      subroutine parpsf(termtype,iappw,iappx,iappy,inf)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Name of current application
-      common/APPNAME/cAppName
-      character*12 cAppName      
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24,outs*248
-      integer iXavail
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf))
-C          call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-          write(6,'(a)')'parpsf: permission error getting parameters.'
-        else
-          write(6,'(a)')'parpsf: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parpsff
-C parpsff supports terminal, size and two file arguments
-C to be passed to the program from the invocation line.  
-
-      subroutine parpsff(termtype,iappw,iappx,iappy,infa,infb)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/APPNAME/cAppName
-      character*12 cAppName      
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,infa*72,infb*72,appn*24,outs*124
-      logical unixok
-
-C NT or Unix version.
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      infa  = 'UNKNOWN'
-      infb  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,infa)
-          i=i+1
-          call getarg(i,infb)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with files ',
-     &      infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-C          call edisp(iuout,outs)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-         write(6,'(a)') 'parpsff: permission error getting parameters.'
-        else
-         write(6,'(a)') 'parpsff: error extracting parameters.'
-        endif
-      endif
-      return
-      end
 
 C ****** parpsfh
 C parpsfh: Help message for parpsf.
@@ -973,7 +1609,7 @@ C parpsfh: Help message for parpsf.
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
 
-      if(appn(1:3).eq.'bps')then
+      if(appn(1:3).eq.'bld'.or.appn(1:3).eq.'bps')then
         call edisp(iuout,'This is the ESP-r Simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
@@ -1045,6 +1681,7 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
+        call edisp(iuout,'       [-act {recalculate|update_silent}]')
         call edisp(iuout,'       [-act [recalculate|update_silent]}')
         call edisp(iuout,'       [     { <action> <file>]}')
         call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
@@ -1054,9 +1691,9 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  where -act recalculate')
         call edisp(iuout,'    interactively recalculates shading.')
         call edisp(iuout,'  where -act update_silent')
-        call edisp(iuout,'    no user interaction during recalculation')
+        call edisp(iuout,'    no usr interaction during recalculation.')
         call edisp(iuout,'  where -act useupdate_silent')
-        call edisp(iuout,'    no user interaction during recalculation')
+        call edisp(iuout,'    no usr interaction during recalculation')
         call edisp(iuout,'    and any existing ascii shading file is')
         call edisp(iuout,'    converted to a binary file otherwise a')
         call edisp(iuout,'    full calculation is performed')
@@ -1080,6 +1717,10 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'This is the power flow simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
+      elseif(appn(1:3).eq.'plt')then
+        call edisp(iuout,'The stand-alone plant module. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <plant network file>]')
       elseif(appn(1:3).eq.'prj')then
         call edisp(iuout,'The project manager.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1098,8 +1739,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,' (where -act rotate is followed by the angle')
         call edisp(iuout,'  degrees +=anticlockwise and the X and Y')
         call edisp(iuout,'  coordinates to rotate around.)')
-        call edisp(iuout,'       [-act QA] ')
-        call edisp(iuout,' (where -act QA generates QA report & exits)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1114,6 +1753,18 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   recovery commands]')
         call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
+      elseif(appn(1:3).eq.'tdf')then
+        call edisp(iuout,'The temporal database manager. ')
+        call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-file <database file>]')
+        call edisp(iuout,'       [-act {update|extract|export|}')
+        call edisp(iuout,'              import}}')
+        call edisp(iuout,'       [-actf file as follows:')
+        call edisp(iuout,' if act = update, actf gives commands')
+        call edisp(iuout,' if act = extract, actf gives commands')
+        call edisp(iuout,' if act = export, actf holds exported data')
+        call edisp(iuout,' if act = import, actf is data to import')
+        call edisp(iuout,'       [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'vew')then
         call edisp(iuout,'The hidden line viewer. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1131,1515 +1782,3 @@ C parpsfh: Help message for parpsf.
       call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
-
-C ********* parsim
-C parsim: allows terminal, size, config file, simulation parameter file arguments
-C  to be passed to the program from the invocation line.  
-
-      subroutine parsim(iverb,termtype,iappw,iappx,iappy,inf,browse,
-     &  sps,aut,actf)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Timeout information
-      common/TIMEOUT/sTimeout,iTimeoutFlag
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      
-      character sTimeout*72  
-      integer iTimeoutFlag
-      integer iverb,termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,sps*8,aut*12,actf*72,browse*4
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      browse = 'no'
-      inf  = 'UNKNOWN'
-      sps  = 'UNKNOWN'
-      aut  = 'default'
-      actf  = 'UNKNOWN'
-      argument = ' '
-      iverb = 0
-
-C Get arguments from command line: if one parameter.
-      if(m.eq.0)then
-C There's nothing to parse. Do not report "Starting APP with FILE..."
-C unless -v is specified (and m>=1).
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
-                      ! Note: this option MUST follow -version
-                      ! for both to be supported
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-b')then
-          i=i+1
-          call getarg(i,browse)
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:2).eq.'-p')then
-          i=i+1
-          call getarg(i,sps)
-          i=i+1
-          call getarg(i,aut)
-        elseif(argument(1:5).eq.'-actf')then
-          i=i+1
-          call getarg(i,actf)
-        elseif(argument(1:8).eq.'-timeout')then
-          i=i+1
-          call getarg(i,sTimeout)
-          iTimeoutFlag = 1          
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        outs=' '
-        if ( iVerb == 2 ) then
-          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf))
-          if(unixok)call edisp(iuout,outs)
-          outs=' '
-          write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
-     &     ' in ',aut,' mode and ',browse,' browsing.'
-          if(unixok)call edisp(iuout,outs)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-          write(6,'(a)') 'parsim: permission error getting parameters.'
-        else
-          write(6,'(a)') 'parsim: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parres
-C parres allows terminal, size, results file, action and silent arguments
-C  to be passed to res from the invocation line.  
-
-      subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,actf*72,act*16,aut*12
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      act  = 'UNKNOWN'
-      aut  = 'interactive'
-      actf  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
- 41     i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-actf')then
-          i=i+1
-          call getarg(i,actf)
-        elseif(argument(1:4).eq.'-act')then
-          i=i+1
-          call getarg(i,act)
-          i=i+1
-          call getarg(i,aut)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          outs=' '
-          write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
-     &     ' in ',aut,' mode.'
-C          call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-          write(6,'(a)') 'parres: permission error getting parameters.'
-        else
-          write(6,'(a)') 'parres: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parclm
-C parclm allows terminal, size, input file, action and silent arguments
-C and output (converted) file to be passed to clm from the invocation line.  
-
-      subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName      
-
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,ascif*72,act*16,aut*12
-      logical unixok
-
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      act = 'NONE'
-      aut  = 'interactive'
-      ascif  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
- 41     i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:4).eq.'-act')then
-          i=i+1
-          call getarg(i,act)
-          i=i+1
-          call getarg(i,aut)
-          i=i+1
-          call getarg(i,ascif)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          outs=' '
-          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf))
-C          call edisp(iuout,outs)
-          outs=' '
-          write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
-     &     ' in ',aut,' mode.'
-C          call edisp(iuout,outs)
-          write(outs,'(2a)') 'using/making file ',ascif(1:lnblnk(ascif))
-C          call edisp(iuout,outs)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-          write(6,'(a)') 'parclm: permission error getting parameters.'
-        else
-          write(6,'(a)') 'parclm: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-
-C ********* parsish
-C parsish allows the module ish to be passed a terminal, size, config file,
-C zone focus and actions arguments from the invocation line.  
-
-      subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
-     &  ascif)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,zone*16,act*16,ascif*72
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      zone = 'ALL'
-      act = 'NONE'
-      ascif  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-zone')then
-          i=i+1
-          call getarg(i,zone)
-        elseif(argument(1:4).eq.'-act')then
-          i=i+1
-          call getarg(i,act)
-	  
-C If act is asci2bin or bin2asci read ascii file name
-          if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
-            i=i+1
-            call getarg(i,ascif)
-	  endif
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act))
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-         write(6,'(a)') 'parsfza: permission error getting parameters.'
-        else
-         write(6,'(a)') 'parsfza: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parsprj 
-C parsprj allows terminal, size, config file, zone focus and actions arguments
-C (including 3 real data) to be passed to the prj from the invocation line.  
-      subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
-     &        data1,data2,data3)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,zone*16,act*16
-      real data1,data2,data3
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      zone = 'ALL'
-      act = 'NONE'
-      argument = ' '
-      data1=0.0
-      data2=0.0
-      data3=0.0
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-zone')then
-          i=i+1
-          call getarg(i,zone)
-        elseif(argument(1:4).eq.'-act')then
-          i=i+1
-          call getarg(i,act)
-	  if(act(1:6).eq.'rotate')then
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data1
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data2
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data3
-          elseif(act(1:9).eq.'transform')then
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data1
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data2
-            i=i+1
-            call getarg(i,argument)
-            read(argument,*,IOSTAT=IOS,ERR=2)data3
-	  endif
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-     &    data2,data3
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-         write(6,'(a)') 'parsprj: permission error getting parameters.'
-        else
-         write(6,'(a)') 'parsprj: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parsfz (equivalent to startsfz.c)
-C parsfz allows terminal, size, config file, zone focus arguments
-C to be passed to the program from the invocation line.  
-
-      subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,zone*16
-      logical unixok
-
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      zone = 'ALL'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-zone')then
-          i=i+1
-          call getarg(i,zone)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-          write(6,'(a)') 'parsfz: permission error getting parameters.'
-        else
-          write(6,'(a)') 'parsfz: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-
-C ********* partf (equivalent to startup.c)
-C partf allows terminal and config file arguments
-C to be passed to the program from the invocation line.  
-
-      subroutine partf(termtype,inf)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24,outs*248
-      logical unixok
-
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      inf  = 'UNKNOWN'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-      end
-
-C ********* partfa (equivalent to partf with an action parameter)
-C partfa allows terminal, file and action arguments
-C  to be passed to the program from the invocation line.  
-C  Logic allows for the -file token to be optional.
-      subroutine partfa(termtype,inf,act)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
-      logical unixok
-
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      inf  = 'UNKNOWN'
-      act = 'NONE'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-act ')then
-          i=i+1
-          call getarg(i,act)
-        else
-
-C Assume argument is an input file without the -file token.
-          write(inf,'(a)') argument(1:lnblnk(argument))
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-      end
-
-C ********* parse2r 
-C parse2r allows terminal, size, config file, scene purpose and actions arguments
-C  to be passed to e2r from the invocation line.  
-
-      subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
-     &  browse)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,inf*144,appn*24
-      character aim*12,act*72,zone*16,browse*4
-      character outs*248,mode*8
-      logical unixok
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-       
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      browse = 'no'
-      inf  = 'UNKNOWN'
-      zone = 'NONE'
-      aim = 'NONE'
-      act = 'NONE'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-zone')then
-          i=i+1
-          call getarg(i,zone)
-        elseif(argument(1:8).eq.'-purpose')then
-          i=i+1
-          call getarg(i,aim)
-        elseif(argument(1:4).eq.'-act')then
-          i=i+1
-          call getarg(i,act)
-        elseif(argument(1:2).eq.'-b')then
-          i=i+1
-          call getarg(i,browse)
-        endif
-        goto 41
-
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
-     &    ' with scene purpose ',aim(1:lnblnk(aim)),
-     &    ' with action ',act(1:lnblnk(act))
-C          call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-         write(6,'(a)') 'parse2r: permission error getting parameters.'
-        else
-         write(6,'(a)') 'parse2r: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C ********* parsfact
-C parsfact allows terminal, size, file and actions arguments
-C  to be passed to the program from the invocation line.  
-
-      subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
-      integer termtype,iappw,iappx,iappy
-      character*48 prog
-      integer iargc,m
-      character argument*72,mode*8,inf*144,actf*72,appn*24
-      character outs*248,act*16
-      logical unixok
-
-
-C Determine if an X graphics library (GTK or X11) was linked
-C into binary, and set default terminal type as necessary
-      IOS=0  ! initial value
-
-      if ( iXavail() == 1 ) then 
-        termtype = 8
-        mode = 'graphic'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      else
-        termtype = -1
-        mode = 'text'
-        m = iargc()
-        i = 0
-        call getarg(i,prog)
-        call findapp(prog,appn)
-      endif
-      
-      iappw = 0
-      iappx = 0
-      iappy = 0
-      inf  = 'UNKNOWN'
-      actf = 'UNKNOWN'
-      act = 'NONE'
-      argument = ' '
-
-C Get arguments from command line: if no paramters just
-C return, otherwise process parameters.
-      if(m.eq.0)then
-        return
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call parpsfh(appn)
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:5).eq.'-mode')then
-          i=i+1
-          call getarg(i,argument)
-          if(argument(1:4).eq.'text')then
-            termtype = -1
-            mode = 'text'
-          elseif(argument(1:4).eq.'page')then
-            termtype = -2
-            mode = 'page'
-          elseif(argument(1:5).eq.'graph')then
-            termtype = 8
-            mode = 'graphic'
-          elseif(argument(1:6).eq.'script')then
-            termtype = -6
-            mode = 'script'
-          endif
-        elseif(argument(1:2).eq.'-s')then
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappw
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappx
-          i=i+1
-          call getarg(i,argument)
-          read(argument,*,IOSTAT=IOS,ERR=2)iappy
-        elseif(argument(1:5).eq.'-file')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:5).eq.'-act ')then
-          i=i+1
-          call getarg(i,act)
-        elseif(argument(1:5).eq.'-actf')then
-          i=i+1
-          call getarg(i,actf)
-        endif
-        goto 41
-  42    continue
-
-C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
-     &    ' applied to ',actf(1:lnblnk(actf))
-C         call edisp248(iuout,outs,90)
-        endif
-        return
-      endif
-
-C Errors.
-   2  call isunix(unixok)
-      if(unixok)then
-        if(IOS.eq.2)then
-         write(6,'(a)')'parsfact: permission error getting parameters.'
-        else
-         write(6,'(a)')'parsfact: error extracting parameters.'
-        endif
-      endif
-      return
-      end
-
-C parcnv parse command line paramters for ecnv.
-      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
-     &                   inf,ouf,ucfg)
-      
-      integer lnblnk  ! function definition
-
-      COMMON/OUTIN/IUOUT,IUIN
-      common/APPNAME/cAppName
-      character*12 cAppName      
-
-      integer iargc,m
-      integer termtype
-      integer i,iverb,itmprm,iobs,ichop
-      real conv
-      character argument*72,prog*48,inf*144,outs*248,appn*24
-      character iform*24,oform*24,ouf*144,ucfg*72,mode*8
-
-      inf  = 'UNKNOWN'
-      iform = 'UNKNOWN'
-      oform = 'UNKNOWN'
-      ouf  = 'UNKNOWN'
-      ucfg  = 'UNKNOWN'
-      conv = 0.001
-      iverb = 0
-      itmprm = 1
-      iobs  = 0
-      ichop = 0
-
-C Get number of arguments and command name.
-      termtype = -1
-      mode = 'text'
-      m = iargc()
-      i = 0
-      call getarg(i,prog)
-      call findapp(prog,appn)
-      argument = ' '
-
-C If one parameter.
-      if(m.eq.0)then
-        stop
-      elseif(m.ge.1)then
-  41    i= i+1
-        if(i.gt.m)goto 42
-        call getarg(i,argument)
-
-        if(argument(1:5).eq.'-help')then
-          call edisp(iuout,'The product model filter. ')
-          call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
-          call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
-          call edisp(iuout,
-     &    '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
-          call edisp(iuout,' ')
-          call edisp(iuout,'Where options are:')
-          call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
-          call edisp(iuout,'      (dxf = AutoCAD V11-12)')
-          call edisp(iuout,'      (ww = ww graphic commands)')
-          call edisp(iuout,' -in [file]  = input file')
-          call edisp(iuout,
-     &    ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
-          call edisp(iuout,' -out [file] = output file')
-          call edisp(iuout,' -v          = verbose mode')
-          call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
-          call edisp(iuout,' -keep       = retain scratch files')
-          call edisp(iuout,' -obs        = include esp-r obstructions')
-          call edisp(iuout,' ')
-          call edisp(iuout,'The following combinations are supported:')
-          call edisp(iuout,'  input format  output format')
-          call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
-          call edisp(iuout,'  dxf           esp-r, viewer')
-          call edisp(iuout,'  zip           esp-r, viewer')
-          call edisp(iuout,' ')
-          call edisp(iuout,'If converting to esp-r then an additional') 
-          call edisp(iuout,'parameter is allowed:')
-          call edisp(iuout,' -u [upgrade] when updating a model from ')
-          call edisp(iuout,'    registration stage.')
-          call edisp(iuout,' ')
-          call edisp(iuout,' -help :this help message.')
-          call edisp(iuout,' ')
-          stop
-        elseif(argument(1:8) .eq. '-version' ) then
-C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
-          stop
-        elseif( argument(1:10) .eq. '-buildinfo' ) then
-C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
-          stop
-        elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
-        elseif(argument(1:3).eq.'-mm')then
-          conv = 0.001
-        elseif(argument(1:6).eq.'-metre')then
-          conv = 1.00
-        elseif(argument(1:4).eq.'-obs')then
-          iobs = 1
-        elseif(argument(1:5).eq.'-chop')then
-          ichop = 1
-        elseif(argument(1:5).eq.'-keep')then
-          itmprm = 0
-        elseif(argument(1:3).eq.'-in')then
-          i=i+1
-          call getarg(i,inf)
-        elseif(argument(1:4).eq.'-out')then
-          i=i+1
-          call getarg(i,ouf)
-        elseif(argument(1:2).eq.'-u')then
-          i=i+1
-          call getarg(i,ucfg)
-          call edisp(iuout,'Will attempt to update configuration')
-        elseif(argument(1:3).eq.'-if')then
-          i=i+1
-          call getarg(i,iform)
-        elseif(argument(1:3).eq.'-of')then
-          i=i+1
-          call getarg(i,oform)
-        endif
-        goto 41
-
-  42    continue
-        write(outs,'(4a)') 'Starting ecnv in ',
-     &    oform(1:lnblnk(oform)),' mode with in file ',
-     &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,100)
-        write(outs,'(3a)') 'and output file ',ouf(1:lnblnk(ouf)),'.'
-        call edisp248(iuout,outs,100)
-        return
-      endif
-      end
-
-C ******* FINDAPP
-C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
-      SUBROUTINE findapp(string,appn)
-      
-      integer lnblnk  ! function definition
-
-      CHARACTER*(*) string,appn
-      logical unixok
-
-C Clear variables and get string lengths.
-      ilfilen = LEN(appn)
-      ilstr = LEN(string)
-      call isunix(unixok)
-
-C Scan for last position of a `/' (UNIX) or '\' (NT).
-      islash = 0
-      DO 99 I=1,LEN(string)
-
-C Comment out UNIX or NT version as required.
-        if(unixok)then
-          if(string(I:I).eq.'/')islash=I
-        else
-         if(string(I:I).eq.'\\')islash=I
-C         if(string(I:I).eq.'\')islash=I
-        endif
-        if(ichar(string(I:I)).lt.32)goto 100
- 99   CONTINUE
-
-C If islash = 0 then no root.
-100   if(islash.eq.0)then
-        if(ilstr.ge.ilfilen)then
-          write(appn,'(a)')string(1:ilfilen)
-        elseif(ilstr.lt.ilfilen)then
-          write(appn,'(a)')string(1:lnblnk(string))
-        endif
-      else
-
-C If islash > 0 then root and file name
-        is=islash+1
-        write(appn,'(a)') string(is:lnblnk(string))
-      endif
-
-      RETURN
-      END

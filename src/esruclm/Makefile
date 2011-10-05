@@ -6,10 +6,12 @@ PROG = clm$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = clm.o c2fdum.o cfiles.o cfrqdis.o chead.o clmgrf.o clmint.o \
+OBJECTS = startup.o clm.o c2fdum.o cfiles.o cfrqdis.o chead.o clmgrf.o clmint.o \
           clmpsychart.o clmmmm.o clmper.o clmseq.o clmsyn.o \
 	  clmxmn.o clpred.o commonclm.o ctlexp.o dossupport.o psychro.o rcdblist.o \
-	  rrite.o startup.o
+	  rrite.o 
+
+MODULES = start_up.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -43,5 +45,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	c2fdum.F commonclm.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F 
