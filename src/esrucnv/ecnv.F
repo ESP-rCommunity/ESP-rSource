@@ -1,6 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2011.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
@@ -22,9 +22,7 @@ C Filter between various design tools.
 C AutoCAD Notes:
 C   it traps some AEC and AutoCAD constructs  which are
 C   not in keeping with energy analysis. It assumes CAD units
-C   a mm (unless otherwise instructed).  AutoCAD block definitions
-C   are held in a file `blockdxf2e` which is deleted unless otherwise
-C   instructed.
+C   a mm (unless otherwise instructed).
 
 C Portions of the DXF translation can be traced back (eventually) 
 C to code from ABACUS, Department of Architecture & Building Science.
@@ -729,14 +727,14 @@ C named layers. If there are no named layers then accept '0'.
           call matchv(indxzon,nbofsurf,match,x1,y1,z1)
 
 C Debug.
-          if(itrc.gt.1)then
-            if(match)then
-              write(outs,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
-            else
-              write(outs,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
-            endif
-            call edisp(iuout,outs)
-          endif
+C          if(itrc.gt.1)then
+C            if(match)then
+C              write(outs,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
+C            else
+C              write(outs,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
+C            endif
+C            call edisp(iuout,outs)
+C          endif
         endif
       endif     
       return
@@ -778,7 +776,7 @@ C Debug...
            write(iuout,*) 'gcode is ',gcode,coorx,lineno
          endif
          if (icode.ne.(gcode+10)) then
-            call edisp(iuout,'Y co-ordinate missing')
+            call edisp(iuout,'Warning: Y co-ordinate missing')
             goto 600
          endif
          read(ioin,*,end=500,err=600) coory

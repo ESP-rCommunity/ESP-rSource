@@ -215,7 +215,7 @@ C A zero code so have passed end of the entity.
       if (close) then
 
 C << place to record point information for click-on-bitmap >>      
-          call edisp(iuout, ' skipping single LINE ')
+        call edisp(iuout, ' skipping single LINE ')
       else        
          xnorm = thickx; ynorm = thicky; znorm = thickz
          call initmatrix
@@ -237,8 +237,9 @@ C << place to record point information for click-on-bitmap >>
 
 C Add a surface to zone.
            if(head.eq.'OBS_')then
+             continue
            elseif(head.eq.'BLK_')then
-             call edisp(iuout,'block (2D ext line)..')
+             continue
            else
   
 C Incrementing NZSUR for this zone but also to

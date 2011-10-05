@@ -12,7 +12,7 @@ PROG = ecnv$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
-	  bscoeff.o bscoeff_extended.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
+	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o e2vrml.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \

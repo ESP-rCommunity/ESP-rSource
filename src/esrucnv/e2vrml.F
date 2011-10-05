@@ -19,9 +19,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ESRU vrml translator - .
-C Current version February 2005.
+C Current version October 2011.
 
 C e2vrml: Generate VRLM 2.0 world of esp-r model.
+
+C << consider a variant that writes to SVG or other more
+C << modern file format.
 
 C ******* Translate esp data to vrlm world.
 C e2vrml takes zones/obstructions and any ground topology and

@@ -4,7 +4,7 @@ C loosely dependant on building.h.
 C Maximum number of layers from DXF. Each zone in esp-r might require
 C up to three layers (opaque transparent obstructions) so should be updated
 C to reflect MCOM in building.h.
-      parameter (MAXLAY = 80)
+      parameter (MAXLAY = 240)
 
 C Transforms to be applied.
       real xscale,yscale,zscale  ! scaling to apply to each entity axis

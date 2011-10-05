@@ -18,10 +18,11 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C e2dxf takes an esp-r problem definition and creates either
-C an AutoCad DXF file or viewer file.
-C e2thf takes an esp-r problem definition and creates a
-C THF (THINGS) file for use in MicroGDS.
+C e2dxf: takes an esp-r problem definition and creates either
+C        an AutoCad DXF file or viewer file.
+C e2thf: takes an esp-r problem definition and creates a
+C        THF (THINGS) file for use in MicroGDS.
+C lindir: finds the angles associate with a line in space.
 
       subroutine e2vdxf(incobs)
 #include "building.h"
@@ -653,9 +654,9 @@ C Free the THF file and reread in the geometry file.
       END
 
 C-----------------------------------------------------------------------
-C THIS SUBROUTINE FINDS THE ANGLES ASSOCIATED WITH A LINE IN
-C SPACE. THE ANGLES RETURNED ARE THE ALPHA AND THETA ANGLES IN DEGREES.
-C ALPHA LIES IN THE XY PLANE AND THETA MEASURED FROM THE XY PLANE.
+C lindir finds the angles associate with a line in space.
+C The angles returned are the alpha and theta angles in degrees.
+C Alpha lies in the XY plane and Theta measured from the XY plane.
 C-----------------------------------------------------------------------
       SUBROUTINE LINDIR(X1,Y1,Z1,X2,Y2,Z2,ALPHA,THETA)
 
