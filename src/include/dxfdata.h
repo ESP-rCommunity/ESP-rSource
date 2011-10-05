@@ -56,3 +56,17 @@ C String arrays and counters for block objects.
       integer ichartobs       ! how many obstructions found
       integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
+
+C Arrays for clickon points and lines.
+      integer nbdxfcoords,nbdxflines  ! total number of coordinates and lines
+      real dxfx,dxfy,dxfz   ! x y z of a dxf coordinate
+      integer idxfedge      ! array of start and end index of 2 coords of a line
+      integer idxfedgelay,idxfedgecol  ! index of layer and colour
+      character*12 dxfedgetype
+      common/dxfclick/nbdxfcoords,nbdxflines,dxfx(5000),dxfy(5000),
+     &       dxfz(5000),idxfedge(5000,2),idxfedgelay(5000),
+     &       idxfedgecol(5000)
+
+C Bounds of the dxf data.
+      real dxfminx,dxfminy,dxfminz,dxfmaxx,dxfmaxy,dxfmaxz
+      common/dxfbounds/dxfminx,dxfminy,dxfminz,dxfmaxx,dxfmaxy,dxfmaxz

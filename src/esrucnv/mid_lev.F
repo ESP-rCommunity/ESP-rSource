@@ -138,8 +138,8 @@ C number of layers and layer colours and layer names.
             if (gcode.eq.2 .and. instring(:5).eq.'LAYER') then
               ilay = 0
               call readgc(itrc)
- 9009         if (gcode.ne.0 .or.
-     &           (gcode.eq.0 .and. instring(1:6).ne.'ENDTAB')) then
+ 9009         if(gcode.ne.0 .or.
+     &          (gcode.eq.0 .and. instring(1:6).ne.'ENDTAB')) then
                 if (gcode.eq.2) then
                   call getlay(ilay,itrc)
                   if (ilay .gt. 0) laycolour(ilay) = 1
@@ -166,61 +166,61 @@ C though known layers, skipping layer `0` and `1`.  But if there are
 C only two layers and they are '0' and '1' then we have no named
 C layers so warn the user and advise that layer zero data will be
 C placed in a zone named First.
-           if(oformat(1:3).eq.'esp')then
-             if(numlay.eq.1)then
-               if(dxflayname(1)(1:1).eq.'0')then
-                 call edisp(iuout,
+          if(oformat(1:3).eq.'esp')then
+            if(numlay.eq.1)then
+              if(dxflayname(1)(1:1).eq.'0')then
+                call edisp(iuout,
      & 'DXF file has no named layers. Dumping layer 0 into zone First')
 
 C Assuming a single esp-r zone so create file names etc.
-                 NCOMP=NCOMP+1
-                 write(ZN,'(a)') 'First'
-                 ln =lnblnk(ZN)
-                 if(itrc.gt.1)then
-                   write(outs,'(a,i2,2a)') 'Creating new zone ',
-     &               NCOMP,' named ',zn
-                   call edisp(iuout,outs)
-                 endif
-                 NCCODE(NCOMP)=NCOMP
-                 write(zname(NCOMP),'(a)') ZN
-                 lnzname(NCOMP)=lnblnk(ZN)
-                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                   write(lf,'(a,a4)') ZN(1:ln),'.geo'
-                 else
-                   write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
-     &               fs,ZN(1:ln),'.geo'
-                 endif
-                 LGEOM(NCOMP)=lf
-                 goto 46    ! jump to next step
-               endif
-             endif
-             do 45 i=1,numlay
-               ll=lnblnk(dxflayname(i))
-               if(dxflayname(i)(1:ll).ne.'0'.and.
-     &            dxflayname(i)(1:ll).ne.'1')then
-                 call matchl(i,head,RZNAME,match,im)
-                 if(.NOT.match)then
+                NCOMP=NCOMP+1
+                write(ZN,'(a)') 'First'
+                ln =lnblnk(ZN)
+                if(itrc.gt.1)then
+                  write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &              NCOMP,' named ',zn
+                  call edisp(iuout,outs)
+                endif
+                NCCODE(NCOMP)=NCOMP
+                write(zname(NCOMP),'(a)') ZN
+                lnzname(NCOMP)=lnblnk(ZN)
+                if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                  write(lf,'(a,a4)') ZN(1:ln),'.geo'
+                else
+                  write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
+     &              fs,ZN(1:ln),'.geo'
+                endif
+                LGEOM(NCOMP)=lf
+                goto 46    ! jump to next step
+              endif
+            endif
+            do 45 i=1,numlay
+              ll=lnblnk(dxflayname(i))
+              if(dxflayname(i)(1:ll).ne.'0'.and.
+     &           dxflayname(i)(1:ll).ne.'1')then
+                call matchl(i,head,RZNAME,match,im)
+                if(.NOT.match)then
 
 C Found a new zone so create file names etc.
-                   NCOMP=NCOMP+1
-                   ln = min0(12,lnblnk(RZNAME))
-                   write(ZN,'(a)') RZNAME(1:ln)
-                   if(itrc.gt.1)then
-                     write(outs,'(a,i2,2a)') 'Creating new zone ',
-     &                 NCOMP,' named ',zn
-                     call edisp(iuout,outs)
-                   endif
-                   NCCODE(NCOMP)=NCOMP
-                   write(zname(NCOMP),'(a)') ZN
-                   lnzname(NCOMP)=lnblnk(ZN)
-                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                     write(lf,'(a,a4)') ZN(1:ln),'.geo'
-                   else
-                     write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
-     &                 fs,ZN(1:ln),'.geo'
-                   endif
-                   LGEOM(NCOMP)=lf
-                 else
+                  NCOMP=NCOMP+1
+                  ln = min0(12,lnblnk(RZNAME))
+                  write(ZN,'(a)') RZNAME(1:ln)
+                  if(itrc.gt.1)then
+                    write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &                NCOMP,' named ',zn
+                    call edisp(iuout,outs)
+                  endif
+                  NCCODE(NCOMP)=NCOMP
+                  write(zname(NCOMP),'(a)') ZN
+                  lnzname(NCOMP)=lnblnk(ZN)
+                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                    write(lf,'(a,a4)') ZN(1:ln),'.geo'
+                  else
+                    write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
+     &                fs,ZN(1:ln),'.geo'
+                  endif
+                  LGEOM(NCOMP)=lf
+                else
 
 C Found subset of an existing zone.  If an obstructions
 C layer (starts with OBS_) then create a zone obs file. Add path
@@ -228,133 +228,136 @@ C for zone files.
 
 C << need to update to work with v1.1 geometry files with embedded
 C << obstructions
-                   if(head.eq.'OBS_')then
-                     if(IOBS(im).eq.0)then
-                       IOBS(im)=1
-                       if(zonepth(1:2).eq.'  '.or.
-     &                    zonepth(1:2).eq.'./')then
-                         write(lf,'(a,a4)') 
-     &                     zname(im)(1:lnzname(im)),'.obs'
-                       else
-                         write(lf,'(a,a1,a,a4)') 
-     &                     zonepth(1:lnblnk(zonepth)),fs,
-     &                     zname(im)(1:lnzname(im)),'.obs'
-                       endif
-                       ZOBS(im)=lf
-                       if(itrc.gt.1)then
-                         write(outs,'(2a)')'Creating obstructions for ',
-     &                     zname(im)(1:lnzname(im))
-                         call edisp(iuout,outs)
-                       endif
-                     endif
-                   endif
-                 endif
-               endif
-  45         continue
+                  if(head.eq.'OBS_')then
+                    if(IOBS(im).eq.0)then
+                      IOBS(im)=1
+                      if(zonepth(1:2).eq.'  '.or.
+     &                   zonepth(1:2).eq.'./')then
+                        write(lf,'(a,a4)') 
+     &                    zname(im)(1:lnzname(im)),'.obs'
+                      else
+                        write(lf,'(a,a1,a,a4)') 
+     &                    zonepth(1:lnblnk(zonepth)),fs,
+     &                    zname(im)(1:lnzname(im)),'.obs'
+                      endif
+                      ZOBS(im)=lf
+                      if(itrc.gt.1)then
+                        write(outs,'(2a)')'Creating obstructions for ',
+     &                    zname(im)(1:lnzname(im))
+                        call edisp(iuout,outs)
+                      endif
+                    endif
+                  endif
+                endif
+              endif
+  45        continue
 
 C If obstruction layers (names beginning with "OBS_" use
 C ichartobs and chartobs to hold data. Reset ichartobs.
 
 C Continue with configuration file.
-  46         write(ioout,'(I7,a)')ncomp,'  # no of zones'
+  46        write(ioout,'(I7,a)')ncomp,'  # no of zones'
 
 C Write zone information to configuration file depending on format.
 C Knowing zones, create other zone files.
-             do 44 k2=1,ncomp
-               if(icfgv.lt.3)then
-                 call usrmsg('Configuration file is an old format. ',
-     &             'skipping read... ','W')
-                 stop 'ecnv aborted.'
-               elseif(icfgv.eq.3.or.icfgv.eq.4)then
-                 WRITE(ioout,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
-     &             '*zon ',NCCODE(k2),'   # reference for ',zname(k2)
-                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &             '*opr ',LPROJ(k2)(:LNBLNK(LPROJ(k2))),'  # schedules'
-                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &             '*geo ',LGEOM(k2)(:lnblnk(LGEOM(k2))),'  # geometry'
-                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &             '*con ',LTHRM(k2)(:LNBLNK(LTHRM(k2))),
-     &             '  # construction'
-                 if(IOBS(k2).eq.1)then
-                   WRITE(ioout,'(a,a)',IOSTAT=IOS,ERR=2)'*obs ',
-     &               ZOBS(k2)(1:lnblnk(ZOBS(k2)))
-                 endif
-                 WRITE(ioout,'(A)',IOSTAT=IOS,ERR=2)'*zend '
-               endif
-  44         continue
-           endif
-         elseif (instring(1:4).eq.'BLOC') then
+            do 44 k2=1,ncomp
+              if(icfgv.lt.3)then
+                call usrmsg('Configuration file is an old format. ',
+     &            'skipping read... ','W')
+                stop 'ecnv aborted.'
+              elseif(icfgv.eq.3.or.icfgv.eq.4)then
+                WRITE(ioout,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
+     &            '*zon ',NCCODE(k2),'   # reference for ',zname(k2)
+                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &            '*opr ',LPROJ(k2)(:LNBLNK(LPROJ(k2))),'  # schedules'
+                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &            '*geo ',LGEOM(k2)(:lnblnk(LGEOM(k2))),'  # geometry'
+                WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &            '*con ',LTHRM(k2)(:LNBLNK(LTHRM(k2))),
+     &            '  # construction'
+                if(IOBS(k2).eq.1)then
+                  WRITE(ioout,'(a,a)',IOSTAT=IOS,ERR=2)'*obs ',
+     &              ZOBS(k2)(1:lnblnk(ZOBS(k2)))
+                endif
+                WRITE(ioout,'(A)',IOSTAT=IOS,ERR=2)'*zend '
+              endif
+  44        continue
+          elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
+          endif
+        elseif (instring(1:4).eq.'BLOC') then
 
 C << ? block treatment with esp-r? >>
-            call block(itrc)
-         elseif (instring(1:4).eq.'ENTI') then
+          call block(itrc)
+        elseif (instring(1:4).eq.'ENTI') then
 
 C ENTITY section.
 C << ? entity treatment with esp-r? >>
+          entelev=dfltelev        
+          entthick=dfltthick        
+          xscale=1.      
+          yscale=1.       
+          zscale=1.    
+          rotangl=0.
+      
+          if(itrc.gt.1) call edisp(iuout,' ')
+          if(itrc.gt.0)call edisp(iuout, ' Entities processing...')
+          blkxorg=0.0
+          blkyorg=0.0
+          blkzorg=0.0
+          currlay = 0
+          currcol = 1
+          call readgc(itrc)
+ 91       if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
+     &                           'ENDBLK') then
             entelev=dfltelev        
             entthick=dfltthick        
-            xscale=1.      
-            yscale=1.       
-            zscale=1.    
-            rotangl=0.
-      
-            if(itrc.gt.1) call edisp(iuout,' ')
-            if(itrc.gt.0)call edisp(iuout, ' Entities processing...')
-            blkxorg=0.0
-            blkyorg=0.0
-            blkzorg=0.0
-            currlay = 0
-            currcol = 1
-            call readgc(itrc)
- 91         if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
-     &                           'ENDBLK') then
-              entelev=dfltelev        
-              entthick=dfltthick        
-              if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
+            if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
 
 C Take in 2D lines, if extruded then make into surfaces.
-                call genlin(itrc)
-              elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
-                call genarc(itrc)
-              elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
-                if(itrc.gt.0)call edisp(iuout, ' skipping POINT ')
-              elseif (instring(1:5).eq.'TRACE') then        
-                if(itrc.gt.0)call edisp(iuout, ' skipping TRACE ')
-              elseif (instring(1:5).eq.'SOLID') then        
-                if(itrc.gt.0)call edisp(iuout, ' skipping SOLID ')
-              elseif(instring(1:6).eq.'INSERT') then        
-                call insert(itrc)        
-              elseif (instring(1:5).eq.'CIRCL') then        
-                if(itrc.gt.0)call edisp(iuout, ' skipping CIRCLE ')
-                call gencrl(itrc)
-              elseif (instring(1:5).eq.'POLYL') then
-                call genplin(itrc)
-              elseif (instring(1:6).eq.'3DFACE') then
-                call face3d(itrc)
-              elseif (instring(1:6).eq.'3DLINE') then
+              call genlin(itrc)
+            elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
+              call genarc(itrc)
+            elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
+              if(itrc.gt.0)call edisp(iuout, ' skipping POINT ')
+            elseif (instring(1:5).eq.'TRACE') then        
+              if(itrc.gt.0)call edisp(iuout, ' skipping TRACE ')
+            elseif (instring(1:5).eq.'SOLID') then        
+              if(itrc.gt.0)call edisp(iuout, ' skipping SOLID ')
+            elseif(instring(1:6).eq.'INSERT') then        
+              call insert(itrc)        
+            elseif (instring(1:5).eq.'CIRCL') then        
+              if(itrc.gt.0)call edisp(iuout, ' skipping CIRCLE ')
+              call gencrl(itrc)
+            elseif (instring(1:5).eq.'POLYL') then
+              call genplin(itrc)
+            elseif (instring(1:6).eq.'3DFACE') then
+              call face3d(itrc)
+            elseif (instring(1:6).eq.'3DLINE') then
 
 C << is there some use for the points associated with a 3dline? >>
-                if(itrc.gt.0)call edisp(iuout,' skipping single line ')
-              elseif (instring(1:4).eq.'TEXT') then 
-                if(itrc.gt.0)call edisp(iuout, ' skipping text ')
-                call gentext(itrc)
-              elseif (gcode.eq.8) then
-                call getlay(currlay,itrc)
-                call readgc(itrc)
-              elseif (gcode.eq.39) then
-                entthick = realin
-                call readgc(itrc)
-              elseif (gcode.eq.62) then
-               currcol = innum
-               call readgc(itrc)
-              else
-               call readgc(itrc)
-              endif
-             goto  91
-           endif
-           if(itrc.gt.0)call edisp(iuout, ' Entities processed....')
-         endif
-         goto  9007
+              if(itrc.gt.0)call edisp(iuout,' skipping single line ')
+            elseif (instring(1:4).eq.'TEXT') then 
+              if(itrc.gt.0)call edisp(iuout, ' skipping text ')
+              call gentext(itrc)
+            elseif (gcode.eq.8) then
+              call getlay(currlay,itrc)
+              call readgc(itrc)
+            elseif (gcode.eq.39) then
+              entthick = realin
+              call readgc(itrc)
+            elseif (gcode.eq.62) then
+             currcol = innum
+             call readgc(itrc)
+            else
+             call readgc(itrc)
+            endif
+            goto  91
+          endif
+          if(itrc.gt.0)call edisp(iuout, ' Entities processed....')
+        endif
+        goto  9007
       endif
 
 C  Write the picture name in .vew file
@@ -377,6 +380,12 @@ C Close the files, remove temporary files if not to be kept.
           INQUIRE(ioblk,OPENED=OPND)
           IF(OPND)close(ioblk)
         endif
+      elseif(oformat(1:5).eq.'click')then
+
+C Final processing of click arrays happens in calling code.
+        call edisp(iuout,' End of conversion.')
+        return
+
       elseif(oformat(1:3).eq.'esp')then
 
 C Generate the zone geometry and any obstruction files. These
@@ -501,7 +510,7 @@ C that LCNN is something other than UNKNOWN.
       endif
 
 C Dump out layer names and equivalent number.
-      leng=lnblnk(filname2)                
+      leng=lnblnk(filname)                
       write(filname2,'(2a)')filname(1:leng),'.lay'        
       open(ioout,file=filname2,status='UNKNOWN', err=901)
       write(ioout,'(a,a)') 'Layer names used in the file : ',
@@ -684,6 +693,8 @@ C that we cannot use (SOLID, CIRCLE, POINT, TEXT).
           call genarc(itrc)
         elseif (instring(1:5).eq.'SOLID') then
           if(itrc.gt.0)then
+
+C << could click have a use for solid? >>
             write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
             call edisp(iuout,outs)
           endif
@@ -833,6 +844,10 @@ C Increment ichartblk and read chartblk array
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'LAY'
             write(ioout,'(i3)') ilayer
+          elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
+
           endif
           goto 12
         elseif(instr(1:3).eq.'COL')then
@@ -845,6 +860,9 @@ C << could colour be used to signal composition? >>
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'COL'
             write(ioout,'(i3)') icolour
+          elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
           endif
           goto 12
         elseif(instr(1:3).eq.'PLA')then
@@ -855,6 +873,9 @@ C Found a plane, see how many vertices.
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a,2x,a)') instr(1:l),bn(1:lnblnk(bn))
             write(ioout,'(i3)') ivert
+          elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
           endif
           if(ivert.gt.0)then
             do 42 iv=1,ivert
@@ -885,8 +906,8 @@ C Translate by
               X0=X0+xp
               Y0=Y0+yp
               Z0=Z0+zp
-              if(itrc.gt.0)then
-                write(outs,'(a,3f8.4,a,f8.3,a,3f8.4)') 
+              if(itrc.gt.1)then
+                write(outs,'(a,3f8.3,a,f8.3,a,3f8.3)') 
      &            'scald ',xsc,ysc,zsc,' rot ',rot,
      &            ' trand ',xp,yp,zp
                 call edisp(iuout,outs)
@@ -903,6 +924,9 @@ C Convert from mm to metres if requrired, write to file and tell user.
               endif
               if(oformat(1:6).eq.'viewer')then
                 write(ioout,'(3f12.4)') X0,Y0,Z0
+              elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
               endif
   42        continue
           endif
@@ -1093,6 +1117,9 @@ C << Note: zrot not defined >>
             elseif(oformat(1:3).eq.'esp')then
               if(bname(1:11).eq.'obstruction')then
               endif
+            elseif(oformat(1:5).eq.'click')then
+
+C << ?? >>
             endif
             y=y+rdisp
  7006     continue
@@ -1108,6 +1135,8 @@ C in and converted.
             if(oformat(1:6).eq.'viewer')then
               write(ioout,'(a)') 'COMMENT'
               write(ioout,'(a)') bname(1:lnblnk(bname))
+            elseif(oformat(1:5).eq.'click')then
+C << ?? >>
             endif
             if(itrc.gt.0)then
               write(outs,'(a,a)') ' importing ',bname(1:lnblnk(bname))
@@ -1141,6 +1170,8 @@ C Write the next character array with coordinates.
             elseif(oformat(1:6).eq.'viewer')then
               call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
+            elseif(oformat(1:5).eq.'click')then
+C << ?? >>
             endif
             y=y+rdisp
  7002     continue
@@ -1203,6 +1234,8 @@ C writelc srites the contents of a viewer layer file.
         if(oformat(1:6).eq.'viewer')then
           write(ioout,'(a)') 'LAY'
           write(ioout,'(i3)') currlay
+        elseif(oformat(1:5).eq.'click')then
+C << ?? >>
         endif
         oldlay = currlay
         layuse(oldlay) = layuse(oldlay) + 1
@@ -1212,6 +1245,8 @@ C writelc srites the contents of a viewer layer file.
         if(oformat(1:6).eq.'viewer')then
           write(ioout,'(a)') 'COL'
           write(ioout,'(i3)') currcol
+        elseif(oformat(1:5).eq.'click')then
+C << ?? >>
         endif
         oldcol = currcol
       endif
@@ -1249,10 +1284,12 @@ C itrc indicator so that debug can be done from command line.
 
       character RZNAME*24
       logical match,close
+      integer iestart,iend
 
 C << Note, if this is being called within a block definition >>
 C << and the layer name is 0 (as it might be in microgds) then >>
 C << can ignore this and continue with the current layer info. >>
+      iestart=0; iend=0   ! clear
       numpl = 0
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0
       polylinflag = 0
@@ -1342,6 +1379,7 @@ C << Polylines can probably be treated as surfaces >>
 
 C Add a surface to zone and update connection.
             if(head.eq.'OBS_')then
+              continue
             elseif(head.eq.'BLK_')then
               continue
             else
@@ -1353,13 +1391,32 @@ C Add a surface to zone and update connection.
      &          'genplin increment esp surf list ',NCON,NZSUR(indxzon)
               endif
             endif
+          elseif(oformat(1:5).eq.'click')then
+            iestart=nbdxflines+1  ! start of edge list
           endif
           do 9006 i = istart, istart+numd-1
             coorx = xarray(i)
             coory = yarray(i)
             coorz = zarray(i)
             call putcoods(itrc)
+            if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+              nbdxflines=nbdxflines+1
+              idxfedge(nbdxflines,1)=nbdxfcoords-1
+              idxfedge(nbdxflines,2)=nbdxfcoords
+              idxfedgecol(nbdxflines)=currcol
+              idxfedgelay(nbdxflines)=currlay
+            endif
  9006     continue
+          iend=nbdxflines   ! end of edge list
+          if(oformat(1:5).eq.'click')then
+            write(ioout,'(a)') '*startline  # from POLY'
+            do 9017 j = iestart,iend
+              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &          idxfedge(j,2),currcol,currlay,' # ',j
+ 9017       continue
+          endif
         else
 
 C Dump out the sides as planes.  If esp update connections.
@@ -1369,7 +1426,9 @@ C Dump out the sides as planes.  If esp update connections.
               write(ioout,'(a)') '  4'
             elseif(oformat(1:3).eq.'esp')then
               if(head.eq.'OBS_')then
+                continue
               elseif(head.eq.'BLK_')then
+                continue
               else
                 NZSUR(indxzon) = NZSUR(indxzon) + 1
                 NCON=NCON+1
@@ -1380,16 +1439,53 @@ C Dump out the sides as planes.  If esp update connections.
                 endif
               endif
             endif
+
+            iestart=0; iend=0   ! clear
             coorx = xarray(i); coory = yarray(i); coorz = zarray(i)
             call putcoods(itrc)
+            iestart=nbdxfcoords  ! mark start of the edge list
             coorz = coorz + entthick
             call putcoods(itrc)
+            if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+              nbdxflines=nbdxflines+1
+              idxfedge(nbdxflines,1)=nbdxfcoords-1
+              idxfedge(nbdxflines,2)=nbdxfcoords
+              idxfedgecol(nbdxflines)=currcol
+              idxfedgelay(nbdxflines)=currlay
+            endif
             coorx = xarray(i+1)
             coory = yarray(i+1)
             call putcoods(itrc)
+            if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+              nbdxflines=nbdxflines+1
+              idxfedge(nbdxflines,1)=nbdxfcoords-1
+              idxfedge(nbdxflines,2)=nbdxfcoords
+              idxfedgecol(nbdxflines)=currcol
+              idxfedgelay(nbdxflines)=currlay
+            endif
             coorz = zarray(i+1)
             call putcoods(itrc)
+            if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+              nbdxflines=nbdxflines+1
+              idxfedge(nbdxflines,1)=nbdxfcoords-1
+              idxfedge(nbdxflines,2)=nbdxfcoords
+              idxfedgecol(nbdxflines)=currcol
+              idxfedgelay(nbdxflines)=currlay
+            endif
  9007     continue
+          iend=nbdxflines   ! end of edge list
+          if(oformat(1:5).eq.'click')then
+            do 9018 i = iestart,iend
+              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(i,1),
+     &          idxfedge(i,2),currcol,currlay,' # ',nbdxflines
+ 9018       continue
+          endif
         endif
         istart = istart+numd-1
         numtod = numtod - numd + 1

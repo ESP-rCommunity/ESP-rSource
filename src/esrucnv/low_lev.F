@@ -47,36 +47,38 @@ C face3d are triangles or quads which are general surfaces in autocad.
 
       real xx(10),yy(10),zz(10)
       integer count
+      integer iestart,iend
 
+      iestart=0; iend=0   ! clear
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! initial assumptions
       call readgc(itrc)  
       count=0
 
 C Loop until gcode is zero.   
  9001 if (gcode.ne.0)then
-         if (gcode.eq.8) then
-            call getlay(currlay,itrc)
-            call matchl(currlay,head,RZNAME,match,im)
-            if(match)indxzon=im
-         elseif (gcode.ge.10 .and. gcode.le.16) then
-            xx(gcode-9)=coorx        
-            yy(gcode-9)=coory
-            zz(gcode-9)=entelev
-            count = gcode - 9
-         elseif (gcode.ge.30 .and. gcode.le.36) then
-            zz(gcode-29)=realin
-            count = gcode -29
-         elseif (gcode.eq.62) then
-            currcol = innum
-         elseif (gcode.eq.210) then
-            xnorm = realin
-         elseif (gcode.eq.220) then
-            ynorm = realin
-         elseif (gcode.eq.230) then
-            znorm = realin
-         endif
-         call readgc(itrc)
-         goto  9001
+        if(gcode.eq.8) then
+          call getlay(currlay,itrc)
+          call matchl(currlay,head,RZNAME,match,im)
+          if(match)indxzon=im
+        elseif (gcode.ge.10 .and. gcode.le.16) then
+          xx(gcode-9)=coorx        
+          yy(gcode-9)=coory
+          zz(gcode-9)=entelev
+          count = gcode - 9
+        elseif (gcode.ge.30 .and. gcode.le.36) then
+          zz(gcode-29)=realin
+          count = gcode -29
+        elseif (gcode.eq.62) then
+          currcol = innum
+        elseif (gcode.eq.210) then
+          xnorm = realin
+        elseif (gcode.eq.220) then
+          ynorm = realin
+        elseif (gcode.eq.230) then
+          znorm = realin
+        endif
+        call readgc(itrc)
+        goto  9001
       endif
 
 C Test for triangular patch.
@@ -124,12 +126,31 @@ C Update the izstocn array!
      &        'face3d increment esp surf list ',NCON,NZSUR(indxzon)
           endif
         endif
+      elseif(oformat(1:5).eq.'click')then
+        iestart=nbdxflines+1  ! start of edge list
       endif
 
       do 10 i=1,count
-         coorx=xx(i); coory=yy(i); coorz=zz(i)
-         call putcoods(itrc)
- 10   continue
+        coorx=xx(i); coory=yy(i); coorz=zz(i)
+        call putcoods(itrc)
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
+  10  continue
+      iend=nbdxflines   ! end of edge list
+      if(oformat(1:5).eq.'click')then
+        write(ioout,'(a)') '*startline  # from 3DFACE'
+        do 9017 j = iestart,iend
+          write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &      idxfedge(j,2),currcol,currlay,' # ',j
+ 9017   continue
+      endif
 
       return
       end
@@ -162,7 +183,9 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       character RZNAME*24
       logical match,close
       real dx1,dy1,dz1    ! offset in each axis
+      integer iestart,iend
 
+      iestart=0; iend=0   ! clear
       sx = 0.0; sy = 0.0  ! start coord
       ex = 0.0; ey = 0.0  ! end coord       
       xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! vector
@@ -176,36 +199,36 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       z2 = dfltelev
 
       call readgc(itrc)        
- 9001 if (gcode.ne.0)then
-         if (gcode.eq.8) then
-            call getlay(currlay,itrc)
-            call matchl(currlay,head,RZNAME,match,im)
-            if(match)indxzon=im   ! set zone index
-         elseif (gcode.eq.10) then
-            sx=coorx; sy=coory  ! set start
-         elseif (gcode.eq.11) then
-            ex=coorx; ey=coory  ! set end        
-         elseif (gcode.eq.30) then
-            z1 = realin         ! Z at start
-         elseif (gcode.eq.31) then
-            z2 = realin         ! Z at end
-         elseif (gcode.eq.38) then        
-            z1=realin           ! entity elevation v11 or earlier   
-            z2 = z1
-         elseif (gcode.eq.39) then        
-            entthick=realin        
-            if (entthick.gt.0.) flag3d = 1.
-         elseif (gcode.eq.62) then
-            currcol = innum     ! colour number
-         elseif (gcode.eq.210) then
-            thickx = realin     ! X extrusion direction
-         elseif (gcode.eq.220) then
-            thicky = realin     ! Y extrusion direction
-         elseif (gcode.eq.230) then
-            thickz = realin     ! Z ectrusion direction
-         endif
-         call readgc(itrc)    ! scan next line
-         goto  9001
+ 9001 if(gcode.ne.0)then
+        if(gcode.eq.8) then
+          call getlay(currlay,itrc)
+          call matchl(currlay,head,RZNAME,match,im)
+          if(match)indxzon=im   ! set zone index
+        elseif (gcode.eq.10) then
+          sx=coorx; sy=coory  ! set start
+        elseif (gcode.eq.11) then
+          ex=coorx; ey=coory  ! set end        
+        elseif (gcode.eq.30) then
+          z1 = realin         ! Z at start
+        elseif (gcode.eq.31) then
+          z2 = realin         ! Z at end
+        elseif (gcode.eq.38) then        
+          z1=realin           ! entity elevation v11 or earlier   
+          z2 = z1
+        elseif (gcode.eq.39) then        
+          entthick=realin        
+          if (entthick.gt.0.) flag3d = 1.
+        elseif (gcode.eq.62) then
+          currcol = innum     ! colour number
+        elseif (gcode.eq.210) then
+          thickx = realin     ! X extrusion direction
+        elseif (gcode.eq.220) then
+          thicky = realin     ! Y extrusion direction
+        elseif (gcode.eq.230) then
+          thickz = realin     ! Z ectrusion direction
+        endif
+        call readgc(itrc)    ! scan next line
+        goto  9001
       endif
 
 C A zero code so have passed end of the entity.
@@ -217,55 +240,92 @@ C A zero code so have passed end of the entity.
 C << place to record point information for click-on-bitmap >>      
         call edisp(iuout, ' skipping single LINE ')
       else        
-         xnorm = thickx; ynorm = thicky; znorm = thickz
-         call initmatrix
-         call xformp(0.,0.,entthick, dx1,dy1,dz1)
-         flag3d=0.       
-         xnorm = 0.0; ynorm = 0.0; znorm = 1.0
-         call initmatrix
-         if(oformat(1:6).eq.'viewer')then
-           if(head.eq.'BLK_')then
-             ichartblk=ichartblk+1
-             write(chartblk(ichartblk),'(a)') 'PLA  (2D ext line)'
-             ichartblk=ichartblk+1
-             write(chartblk(ichartblk),'(a)') '  4' 
-           else 
-             write(ioout,'(a)') 'PLA  (2D ext line)'
-             write(ioout,'(a)') '  4' 
-           endif
-         elseif(oformat(1:3).eq.'esp')then
+        xnorm = thickx; ynorm = thicky; znorm = thickz
+        call initmatrix
+        call xformp(0.,0.,entthick, dx1,dy1,dz1)
+        flag3d=0.       
+        xnorm = 0.0; ynorm = 0.0; znorm = 1.0
+        call initmatrix
+        if(oformat(1:6).eq.'viewer')then
+          if(head.eq.'BLK_')then
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(a)') 'PLA  (2D ext line)'
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(a)') '  4' 
+          else 
+            write(ioout,'(a)') 'PLA  (2D ext line)'
+            write(ioout,'(a)') '  4' 
+          endif
+        elseif(oformat(1:3).eq.'esp')then
 
 C Add a surface to zone.
-           if(head.eq.'OBS_')then
-             continue
-           elseif(head.eq.'BLK_')then
-             continue
-           else
+          if(head.eq.'OBS_')then
+            continue
+          elseif(head.eq.'BLK_')then
+            continue
+          else
   
 C Incrementing NZSUR for this zone but also to
 C update IZSTOCN to reflect this change.
-             NZSUR(indxzon) = NZSUR(indxzon) + 1
-             NCON=NCON+1
-             IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
-             if(itrc.gt.1)then
-               write(iuout,*) 
-     &         'genlin increment esp surf list ',NCON,NZSUR(indxzon)
-             endif
-           endif
-         endif
+            NZSUR(indxzon) = NZSUR(indxzon) + 1
+            NCON=NCON+1
+            IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+            if(itrc.gt.1)then
+              write(iuout,*) 
+     &        'genlin increment esp surf list ',NCON,NZSUR(indxzon)
+            endif
+          endif
+        elseif(oformat(1:5).eq.'click')then
+          iestart=nbdxflines+1  ! start of edge list
+        endif
       
-         coorx = sx; coory = sy; coorz = z1  ! pass start
-         call putcoods(itrc)      
-         coorx = ex; coory = ey; coorz = z2  ! pass end
-         call putcoods(itrc)        
-         coorx = ex + dx1
-         coory = ey + dy1
-         coorz = z2 + dz1
-         call putcoods(itrc)        
-         coorx = sx + dx1
-         coory = sy + dy1
-         coorz = z1 + dz1
-         call putcoods(itrc)        
+        coorx = sx; coory = sy; coorz = z1  ! pass start
+        call putcoods(itrc)      
+        coorx = ex; coory = ey; coorz = z2  ! pass end
+        call putcoods(itrc)        
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
+        coorx = ex + dx1
+        coory = ey + dy1
+        coorz = z2 + dz1
+        call putcoods(itrc)        
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
+        coorx = sx + dx1
+        coory = sy + dy1
+        coorz = z1 + dz1
+        call putcoods(itrc)        
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
+        iend=nbdxflines   ! end of edge list
+        if(oformat(1:5).eq.'click')then
+          write(ioout,'(a)') '*startline  # from 2D ext line'
+          do 9017 j = iestart,iend
+            write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &        idxfedge(j,2),currcol,currlay,' # ',j
+ 9017     continue
+        endif
       endif        
       return
       end
@@ -347,8 +407,10 @@ C Use ichartblk and chartblk as a scratch area for blocks.
       character RZNAME*24
       logical match,close
       real PI,radians
+      integer iestart,iend
 
 C Clear initial values for local variables.
+      iestart=0; iend=0   ! clear
       PI = 4.0 * ATAN(1.0)
       radians = PI/180.
       if (entthick .gt. 0.) then
@@ -443,6 +505,8 @@ C update IZSTOCN for this surface.
      &          'genarc increment esp surf list ',NCON,NZSUR(indxzon)
               endif
             endif
+          elseif(oformat(1:5).eq.'click')then
+            iestart=nbdxflines+1  ! start of edge list
           endif
             
           coorx=radiu*cos(startangl*radians)+cx                
@@ -451,22 +515,75 @@ C update IZSTOCN for this surface.
           call putcoods(itrc)                
           coorz=entelev+entthick                
           call putcoods(itrc)                
+          if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+            nbdxflines=nbdxflines+1
+            idxfedge(nbdxflines,1)=nbdxfcoords-1
+            idxfedge(nbdxflines,2)=nbdxfcoords
+            idxfedgecol(nbdxflines)=currcol
+            idxfedgelay(nbdxflines)=currlay
+          endif
           startangl=startangl+divs                
           if (startangl.ge.endangl) goto 110                
           coorx=radiu*cos(startangl*radians)+cx                
           coory=radiu*sin(startangl*radians)+cy                
           coorz=entelev+entthick                
           call putcoods(itrc)                
+          if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+            nbdxflines=nbdxflines+1
+            idxfedge(nbdxflines,1)=nbdxfcoords-1
+            idxfedge(nbdxflines,2)=nbdxfcoords
+            idxfedgecol(nbdxflines)=currcol
+            idxfedgelay(nbdxflines)=currlay
+          endif
           coorz=entelev                
           call putcoods(itrc)                
+          if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+            nbdxflines=nbdxflines+1
+            idxfedge(nbdxflines,1)=nbdxfcoords-1
+            idxfedge(nbdxflines,2)=nbdxfcoords
+            idxfedgecol(nbdxflines)=currcol
+            idxfedgelay(nbdxflines)=currlay
+          endif
           goto  9003
         endif
  110    coorx=radiu*cos(endangl*radians)+cx
         coory=radiu*sin(endangl*radians)+cy                
         coorz=entelev+entthick                
         call putcoods(itrc)                
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
         coorz=entelev                
         call putcoods(itrc)                
+        if(oformat(1:5).eq.'click')then
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+        endif
+        iend=nbdxflines   ! end of edge list
+        if(oformat(1:5).eq.'click')then
+          write(ioout,'(a)') '*startline  # from genarc'
+          do 9017 j = iestart,iend
+            write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &        idxfedge(j,2),currcol,currlay,' # ',j
+ 9017     continue
+        endif
       endif                
       coorz=0                
       return                
