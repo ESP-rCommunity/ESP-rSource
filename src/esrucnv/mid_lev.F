@@ -29,6 +29,12 @@ C writelc: srites the contents of a viewer layer file.
 C genplin: parse a 2 or 3D polyline from information in DXF file.
 C  vertex: compose XYZ from data in a DXF file.
 
+C Notes on DXF versions:
+C The code below is based on DXF files typically known as V12 and V13
+C ( $ACADVER AC1009 or AC1012 ). Some entities changed in V14 ( AC1014)
+C in particular POLYLINE can be rendered as LWPOLYLINE which is somewhat
+C more compact and does not use the VERTEX construct.
+
 C ******** scandxf
 C Scandxf does a high level scan of a DXF file and takes
 C the information gathered and writes to various output
@@ -60,7 +66,7 @@ C file formats.
       character ZN*12
       character RZNAME*24
       character outs*248,fs*1
-      character number*3,dstmp*24
+      character dstmp*24
       logical OPND,match,unixok
 
 C File names.
@@ -310,7 +316,7 @@ C << ? entity treatment with esp-r? >>
           currcol = 1
           call readgc(itrc)
  91       if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
-     &                           'ENDBLK') then
+     &                         'ENDBLK') then
             entelev=dfltelev        
             entthick=dfltthick        
             if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
@@ -332,6 +338,8 @@ C Take in 2D lines, if extruded then make into surfaces.
               call gencrl(itrc)
             elseif (instring(1:5).eq.'POLYL') then
               call genplin(itrc)
+            elseif (instring(1:7).eq.'LWPOLYL') then
+              call genlwplin(itrc)
             elseif (instring(1:6).eq.'3DFACE') then
               call face3d(itrc)
             elseif (instring(1:6).eq.'3DLINE') then
@@ -518,12 +526,12 @@ C Dump out layer names and equivalent number.
       write(ioout,'(a)') 'Number  Name       Default Colour'
       do 10 i = 1,numlay
         if (laycolour(i) .gt. 0) then
-           write(number,'(i3)') laycolour(i)
+          write(ioout,'(a,i3,3a,i3)') '*layer',i,' ',
+     &      dxflayname(i)(1:lnblnk(dxflayname(i))),' ',laycolour(i)
         else
-           number = ' - '
+          write(ioout,'(a,i3,3a)') '*layer',i,' ',
+     &      dxflayname(i)(1:lnblnk(dxflayname(i))),' - '
         endif
-        write(ioout,1000) i, dxflayname(i)(1:15), number
- 1000   format('  ',i3,'    : ',a,'  ',a)
  10   continue
       close(ioout)
       call edisp(iuout,' End of conversion.')
@@ -619,11 +627,19 @@ C Remove possible leading * from block name.
             bname(1:(leng-1))=bname(2:leng)
             leng=leng-1
           endif
+
+C << we may need to inform lower level calls e.g. solid
+C << that this is being done from within the block section
+C << some current dwg files have lots of block definitions
+C << should these data be dulplicated in the string arrays
+C << as well as in the dxf arrays?
              
 C There are certain block types that can be ignored:
 C aecid.vew, border.vew, ddi.vew, for these look until
 C `ENDBLK` found.
+
 C << consider adding to this list >>
+
           skip=.false.
           if(bname(1:9).eq.'aecid.vew')then
             skip=.true.
@@ -678,7 +694,8 @@ C Increment ichartblk and write chartblk array
       
 C If the input string is something other than ENDBLK then
 C parse the set of commands that can be used. Skip those
-C that we cannot use (SOLID, CIRCLE, POINT, TEXT).
+C that we cannot use (CIRCLE, POINT, TEXT). Work under
+C way to use SOLID
  9003 if (instring(1:6).ne.'ENDBLK')then
         entelev=dfltelev
         entthick = dfltthick
@@ -692,14 +709,15 @@ C that we cannot use (SOLID, CIRCLE, POINT, TEXT).
         elseif (instring(1:3).eq.'ARC') then
           call genarc(itrc)
         elseif (instring(1:5).eq.'SOLID') then
-          if(itrc.gt.0)then
+          call solid(itrc)   ! solid is work in progress
+C          if(itrc.gt.0)then
 
-C << could click have a use for solid? >>
-            write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
-            call edisp(iuout,outs)
-          endif
-          call readgc(itrc)
-          goto  9003
+C << could click have a use for solid - yes >>
+C            write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
+C            call edisp(iuout,outs)
+C          endif
+C          call readgc(itrc)
+C          goto  9003
         elseif (instring(1:6).eq.'CIRCLE') then
 
 C Circles are not delt with, but need to skip lines.
@@ -1171,6 +1189,9 @@ C Write the next character array with coordinates.
               call extrblk(itrc,bname,coorx,coory,coorz,
      &                     xscale,yscale,zscale,rotangl,ier)
             elseif(oformat(1:5).eq.'click')then
+
+C << An inserted block might be of various types such as POLYLINE >>
+C << ?? >>
 C << ?? >>
             endif
             y=y+rdisp
@@ -1255,7 +1276,8 @@ C << ?? >>
 
 C ******* genplin
 C genplin - parse a 2 or 3D polyline from information in DXF file.
-C itrc indicator so that debug can be done from command line.
+C (V12 AC1009 & V13 AC1012). itrc indicator so that debug can be 
+C done from command line.
 
       subroutine genplin(itrc)
 #include "building.h"
@@ -1316,6 +1338,7 @@ C Find current layer and then matching zone.
           currcol = innum
         elseif (gcode.eq.70) then
           polylinflag = innum
+          if(polylinflag.eq.1) nclosed = 1
 c  check the bits to see which flags are set
 c            ibset = iand(innum,1)
 c            if (ibset .gt. 0) mclosed = 1
@@ -1402,9 +1425,28 @@ C Add a surface to zone and update connection.
             if(oformat(1:5).eq.'click')then
 
 C Each call to putcoords incremented nbdxfcoords so make up the edge.
-              nbdxflines=nbdxflines+1
-              idxfedge(nbdxflines,1)=nbdxfcoords-1
-              idxfedge(nbdxflines,2)=nbdxfcoords
+C If we are less than numtod the edge is this coord plus the next one.
+C If last point and closed then point back to first, otherwise
+C no line is needed.
+              if(i.lt.numtod)then
+                nbdxflines=nbdxflines+1
+              elseif(i.eq.numtod.and.nclosed.eq.1)then
+                nbdxflines=nbdxflines+1
+              else
+                continue
+              endif
+              if(i.lt.numtod) idxfedge(nbdxflines,1)=nbdxfcoords
+              if(i.eq.numtod.and.nclosed.eq.1)then
+                idxfedge(nbdxflines,1)=nbdxfcoords
+              else
+                continue
+              endif
+              if(i.lt.numtod) idxfedge(nbdxflines,2)=nbdxfcoords+1
+              if(i.eq.numtod.and.nclosed.eq.1)then
+                idxfedge(nbdxflines,2)=iestart  ! point back to start
+              else
+                continue
+              endif
               idxfedgecol(nbdxflines)=currcol
               idxfedgelay(nbdxflines)=currlay
             endif
@@ -1481,6 +1523,7 @@ C Each call to putcoords incremented nbdxfcoords so make up the edge.
  9007     continue
           iend=nbdxflines   ! end of edge list
           if(oformat(1:5).eq.'click')then
+            write(ioout,'(a)') '*startline  # from genplin'
             do 9018 i = iestart,iend
               write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(i,1),
      &          idxfedge(i,2),currcol,currlay,' # ',nbdxflines
@@ -1504,6 +1547,165 @@ C Each call to putcoords incremented nbdxfcoords so make up the edge.
         endif
         call readgc(itrc)
         goto  9003
+      endif
+      entthick = 0.0
+
+      return
+      end
+
+
+C ******* genlwplin
+C genlwplin - parse a 2D lwpolyline from information in a
+C V14 AC1014 DXF file.
+C itrc indicator so that debug can be done from command line.
+
+      subroutine genlwplin(itrc)
+#include "building.h"
+#include "geometry.h"
+#include "dxfdata.h"
+      parameter (MAXPNT = 100)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      integer polylinflag
+
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
+      common/vex/elevlast,thicklast,polylinflag
+      common/arrays/xarray(MAXPNT), yarray(MAXPNT), zarray(MAXPNT),
+     &       numpl
+      common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
+      common/dxfe/oformat,indxzon,head
+
+      character RZNAME*24
+      logical match,close
+      integer iestart,iend
+      integer nblwpoints
+
+C << Note, if this is being called within a block definition >>
+C << and the layer name is 0 (as it might be in microgds) then >>
+C << can ignore this and continue with the current layer info. >>
+
+      istart=1; iestart=0; iend=0   ! clear
+      numpl = 0; nblwpoints = 0 
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0
+      polylinflag = 0
+      mesh = 0
+      mclosed = 0
+      nclosed = 0
+      flag3d = 0.0
+      call readgc(itrc)
+ 9001 if (gcode.ne.0)then
+        if (gcode.eq.8) then
+
+C Find current layer and then matching zone.
+          call getlay(currlay,itrc)
+          call matchl(currlay,head,RZNAME,match,im)
+          if(match)indxzon=im
+        elseif (gcode.eq.10) then
+          numpl = numpl + 1
+          xarray(numpl)=coorx  ! recover the x and y coordinate
+          yarray(numpl)=coory
+        elseif (gcode.eq.38) then
+          entelev=realin
+        elseif (gcode.eq.39) then
+          flag3d=1.0
+          entthick=realin
+        elseif (gcode.eq.40) then
+        elseif (gcode.eq.41) then
+        elseif (gcode.eq.42) then
+        elseif (gcode.eq.43) then
+        elseif (gcode.eq.62) then
+          currcol = innum
+        elseif (gcode.eq.70) then
+          polylinflag = innum
+          if(polylinflag.eq.1) nclosed = 1
+c  check the bits to see which flags are set
+c            ibset = iand(innum,1)
+c            if (ibset .gt. 0) mclosed = 1
+c            ibset = iand(innum,32)
+c            if (ibset .gt. 0) nclosed = 1
+
+C << btest a function, a vax extension. >>
+C             if (btest(innum,1) .eq. .TRUE.) mclosed = 1
+C             if (btest(innum,6) .eq. .TRUE.) nclosed = 1
+             if (btest(innum,1)) mclosed = 1
+             if (btest(innum,6)) nclosed = 1
+        elseif (gcode.eq.90) then
+          nblwpoints = innum   ! expected number of points
+          write(6,*) 'gcode90 ',innum,realin,nblwpoints
+        elseif (gcode.eq.210) then
+          xnorm = realin
+        elseif (gcode.eq.220) then
+          ynorm = realin
+        elseif (gcode.eq.230) then
+          znorm = realin
+        endif
+        call readgc(itrc)
+        goto  9001
+      endif
+
+ 9002 if (nblwpoints.eq.numpl)then
+
+C We got the expected number of points so process.
+        call writelc
+        call initmatrix
+
+C Lwpolylines are only 2D.
+        if(oformat(1:6).eq.'viewer')then
+          continue
+        elseif(oformat(1:3).eq.'esp')then
+          continue
+        elseif(oformat(1:5).eq.'click')then
+
+C Get the coordinates back from the arrays, use putcoods and then
+C update the dxf arrays.
+          iestart=nbdxflines+1  ! start of edge list
+          do 9006 i = istart, numpl
+            coorx = xarray(i)
+            coory = yarray(i)
+            coorz = zarray(i)
+            call putcoods(itrc)
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+C If we are less than numpl the edge is this coord plus the next one.
+C If last point and closed then point back to first, otherwise
+C no line is needed.
+            if(i.lt.numpl)then
+              nbdxflines=nbdxflines+1
+            elseif(i.eq.numpl.and.nclosed.eq.1)then
+              nbdxflines=nbdxflines+1
+            else
+              continue
+            endif
+            if(i.lt.numpl) idxfedge(nbdxflines,1)=nbdxfcoords
+            if(i.eq.numpl.and.nclosed.eq.1)then
+              idxfedge(nbdxflines,1)=nbdxfcoords
+            else
+              continue
+            endif
+            if(i.lt.numpl) idxfedge(nbdxflines,2)=nbdxfcoords+1
+            if(i.eq.numpl.and.nclosed.eq.1)then
+              idxfedge(nbdxflines,2)=iestart  ! point back to start
+            else
+              continue
+            endif
+            idxfedgecol(nbdxflines)=currcol
+            idxfedgelay(nbdxflines)=currlay
+ 9006     continue
+          iend=nbdxflines   ! end of edge list
+          if(oformat(1:5).eq.'click')then
+            write(ioout,'(a)') '*startline  # from LWPOLY'
+            do 9017 j = iestart,iend
+              write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &          idxfedge(j,2),currcol,currlay,' # ',j
+ 9017       continue
+          endif
+        endif
+      else
+        write(ioout,'(a)') '# LWPOLY did not get expcted vertices'
       endif
       entthick = 0.0
 

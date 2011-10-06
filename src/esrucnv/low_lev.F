@@ -156,6 +156,112 @@ C Each call to putcoords incremented nbdxfcoords so make up the edge.
       end
 
 
+C ***** solid
+C solid has 3-4 corners and an extrusion distance or a vector.
+
+C << this is work in progress currently it only does the >>
+C << base of the solid body. transforms are needed to do the >>
+C << upper 3-4 corners >>
+
+      subroutine solid(itrc)
+#include "building.h"
+#include "geometry.h"
+#include "dxfdata.h"
+      
+      COMMON/OUTIN/IUOUT,IUIN
+
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
+
+      common/matrix/ amat(3,3), xnorm, ynorm, znorm
+
+      integer indxzon
+      character oformat*24,head*4
+      common/dxfe/oformat,indxzon,head
+
+      character RZNAME*24
+      logical match
+
+      real xx(10),yy(10),zz(10)
+      integer count
+      integer iestart,iend
+
+      iestart=0; iend=0   ! clear
+      xnorm = 0.0; ynorm = 0.0; znorm = 1.0 ! initial assumptions
+      flag3d=0.
+      call readgc(itrc)  
+      count=4   ! there are typically 4 corners in a solid
+
+C Loop until gcode is zero.   
+ 9001 if (gcode.ne.0)then
+        if(gcode.eq.8) then
+          call getlay(currlay,itrc)
+          call matchl(currlay,head,RZNAME,match,im)
+          if(match)indxzon=im
+        elseif (gcode.ge.10 .and. gcode.le.16) then
+          xx(gcode-9)=coorx        
+          yy(gcode-9)=coory
+          zz(gcode-9)=entelev
+        elseif (gcode.ge.30 .and. gcode.le.36) then
+          zz(gcode-29)=realin
+        elseif (gcode.eq.39) then
+          entthick=realin        
+          if (entthick.gt.0.) flag3d = 1.
+        elseif (gcode.eq.62) then
+          currcol = innum
+        elseif (gcode.eq.210) then
+          xnorm = realin   ! x vector
+        elseif (gcode.eq.220) then
+          ynorm = realin   ! y vector
+        elseif (gcode.eq.230) then
+          znorm = realin   ! z vector
+        endif
+        call readgc(itrc)
+        goto  9001
+      endif
+
+C Test for triangular solid.
+C << use close3 instead >>
+      if (xx(count).eq.xx(count-1).and.yy(count).eq.yy(count-1)
+     &     .and.zz(count).eq.zz(count-1)) count = count - 1
+
+      if (xx(count).eq.xx(1).and.yy(count).eq.yy(1)
+     &     .and.zz(count).eq.zz(1)) count = count - 1
+
+      if (count .lt. 3) return
+      call writelc
+      call initmatrix
+      call xformp(0.,0.,entthick, dx1,dy1,dz1)
+      if(oformat(1:5).eq.'click')then
+        iestart=nbdxflines+1  ! start of edge list
+
+        do 10 i=1,count
+          coorx=xx(i); coory=yy(i); coorz=zz(i)
+          call putcoods(itrc)
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+  10    continue
+        iend=nbdxflines   ! end of edge list
+        write(ioout,'(a)') '*startline  # from SOLID'
+        do 9017 j = iestart,iend
+          write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',idxfedge(j,1),
+     &      idxfedge(j,2),currcol,currlay,' # ',j
+ 9017   continue
+      endif
+
+      return
+      end
+
+
 ****** genlin
 C this subroutine processes the 'LINE' command in .dxf file of
 C autocad and translates it if it is extruded into a surface,
@@ -236,9 +342,31 @@ C A zero code so have passed end of the entity.
       call initmatrix
       call eclose(flag3d,0.0,0.001,close)
       if (close) then
+        if(oformat(1:5).eq.'click')then
 
-C << place to record point information for click-on-bitmap >>      
-        call edisp(iuout, ' skipping single LINE ')
+C Click output can take a 2D line.
+          iestart=nbdxflines+1  ! start of edge list
+          coorx = sx; coory = sy; coorz = z1  ! pass start
+          call putcoods(itrc)      
+          coorx = ex; coory = ey; coorz = z2  ! pass end
+          call putcoods(itrc)        
+
+C Each call to putcoords incremented nbdxfcoords so make up the edge.
+          nbdxflines=nbdxflines+1
+          idxfedge(nbdxflines,1)=nbdxfcoords-1
+          idxfedge(nbdxflines,2)=nbdxfcoords
+          idxfedgecol(nbdxflines)=currcol
+          idxfedgelay(nbdxflines)=currlay
+          write(ioout,'(a)') '*startline  # from 2D line'
+          write(ioout,'(a,i5,i5,2i4,a,i5)') '*edge',
+     &      idxfedge(nbdxflines,1),
+     &      idxfedge(nbdxflines,2),currcol,currlay,' # ',nbdxflines
+
+        else
+
+C Other output formats cannot deal with 2D stuff.     
+          call edisp(iuout, ' skipping single LINE ')
+        endif
       else        
         xnorm = thickx; ynorm = thicky; znorm = thickz
         call initmatrix

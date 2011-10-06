@@ -63,9 +63,9 @@ C Arrays for clickon points and lines.
       integer idxfedge      ! array of start and end index of 2 coords of a line
       integer idxfedgelay,idxfedgecol  ! index of layer and colour
       character*12 dxfedgetype
-      common/dxfclick/nbdxfcoords,nbdxflines,dxfx(5000),dxfy(5000),
-     &       dxfz(5000),idxfedge(5000,2),idxfedgelay(5000),
-     &       idxfedgecol(5000)
+      common/dxfclick/nbdxfcoords,nbdxflines,dxfx(15000),dxfy(15000),
+     &       dxfz(15000),idxfedge(15000,2),idxfedgelay(15000),
+     &       idxfedgecol(15000)
 
 C Bounds of the dxf data.
       real dxfminx,dxfminy,dxfminz,dxfmaxx,dxfmaxy,dxfmaxz

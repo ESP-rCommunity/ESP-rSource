@@ -159,7 +159,10 @@ C   click are dxf points and lines to be used with clickonbitmap facility.
       currlay = 0
       currcol = 1
       minseg = 6
-      dxfconv = 1.0
+
+C Confirm conversion of scale.
+      dxfconv=conv
+C      dxfconv = 1.0
       layuse(1)=0
 
 C Set folder separator (fs) to \ or / as required.
@@ -501,7 +504,7 @@ C to be scanned.
 C Initial code for working with click coordinates and lines.
 C First clear the arrays.
         nbdxfcoords=0; nbdxflines=0
-        do 29 loop=1,5000
+        do 29 loop=1,15000
           dxfx(loop)=0.0; dxfy(loop)=0.0; dxfz(loop)=0.0
           idxfedge(loop,1)=0; idxfedge(loop,2)=0
           idxfedgelay(loop)=0; idxfedgecol(loop)=0
@@ -522,10 +525,10 @@ C Write the number of coordinates and lines.
         do 10 i = 1,numlay
           if (laycolour(i) .gt. 0) then
             write(ioout,'(a,i3,3a,i3)') '*layer',i,' ',
-     &        dxflayname(i)(1:15),' ',laycolour(i)
+     &        dxflayname(i)(1:lnblnk(dxflayname(i))),' ',laycolour(i)
           else
             write(ioout,'(a,i3,3a)') '*layer',i,' ',
-     &        dxflayname(i)(1:15),' - '
+     &        dxflayname(i)(1:lnblnk(dxflayname(i))),' - '
           endif
    10   continue
         close(ioout)
@@ -882,6 +885,8 @@ C Debug...
      &       ' ',instring(1:lnblnk(instring))
          endif
       elseif (gcode.ge.60.and.gcode.le.80) then
+         read(ioin,*,end=500,err=600) innum
+      elseif (gcode.eq.90) then
          read(ioin,*,end=500,err=600) innum
       elseif (gcode.ge.30.and.gcode.lt.60) then
          read(ioin,*,end=500,err=600) realin
