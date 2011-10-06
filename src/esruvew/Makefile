@@ -11,8 +11,8 @@ OBJECTS = startup.o viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
 	  pconvt.o pers1.o pers2.o plan.o plot.o select.o shrink.o \
 	  spout.o  transf.o vert.o
 
-MODULES = start_up.mod
- 
+MODULES = start_up.mod parse_command_line.mod
+
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 

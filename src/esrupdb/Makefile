@@ -7,10 +7,10 @@ PROG = pdb$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = startup.o pdb.o c2fdum.o pc_manip.o pcedit.o pcentr.o pcompi.o pcwrt.o \
-	  pshell.o 
+	  pshell.o
 
-MODULES = start_up.mod
- 
+MODULES = start_up.mod parse_command_line.mod
+
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
@@ -28,5 +28,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES)\
-	c2fdum.F startup.F 
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	c2fdum.F startup.F

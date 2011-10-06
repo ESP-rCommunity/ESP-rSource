@@ -9,10 +9,10 @@ PROG = mfs$(EXE)
 OBJECTS =startup.o mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
 	  fctlc.o gcfunc.o initalc.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
 	  mfinit.o mfmach.o mfmode.o mfplot.o mfrlst.o mfrset.o mftabl.o \
-	  mfutil.o psychro.o rnor.o 
+	  mfutil.o psychro.o rnor.o
 
-MODULES = start_up.mod
-	  
+MODULES = start_up.mod parse_command_line.mod
+
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
@@ -56,4 +56,4 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F gcfunc.F \
-        initalc.F psychro.F rnor.F startup.F 
+        initalc.F psychro.F rnor.F startup.F
