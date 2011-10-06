@@ -5280,6 +5280,8 @@ C Initial values for vertex at angle facility.
       anotherone=.false.
       iwhich=0; iwhich1=0; iwhich2=0
       lastv1=0; lastv2=0
+      lastv1=0
+      lastv2=0
 
 C Write vertices with minimal white space comma separated.
 C See if an even or odd number of items in list. Do this
