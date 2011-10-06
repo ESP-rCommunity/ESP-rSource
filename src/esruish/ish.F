@@ -82,6 +82,7 @@ C ********** ISH **********
 C Sets up defaults and offers main menu.
 
       program ish
+      USE START_UP
 #include "building.h"
 #include "model.h"
 

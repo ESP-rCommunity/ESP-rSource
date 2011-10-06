@@ -34,6 +34,7 @@ C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
 
       program grd
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"

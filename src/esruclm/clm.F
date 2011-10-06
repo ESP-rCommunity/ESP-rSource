@@ -24,6 +24,7 @@ C Clm allows the creation, modification and analysis of
 C climatic data sets compatible with ESP-r.
 
       program clm
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"

@@ -24,6 +24,7 @@ C File naming convention:  UNKNOWN - required but not yet defined,
 C blank or NONE not required and not yet defined.
 
       program e2r
+      USE START_UP      
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"

@@ -6,11 +6,13 @@ PROG = mfs$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
+OBJECTS =startup.o mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
 	  fctlc.o gcfunc.o initalc.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
 	  mfinit.o mfmach.o mfmode.o mfplot.o mfrlst.o mfrset.o mftabl.o \
-	  mfutil.o psychro.o rnor.o startup.o
+	  mfutil.o psychro.o rnor.o 
 
+MODULES = start_up.mod
+	  
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 
@@ -52,6 +54,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F gcfunc.F \
         initalc.F psychro.F rnor.F startup.F 
