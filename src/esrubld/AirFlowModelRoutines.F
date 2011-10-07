@@ -723,6 +723,13 @@ C.....Passed parameters
       double precision fDerivitive
       
 C.....ESP-r commons 
+
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
+
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      REAL TFA,QFA
+
       common/mflow5/rhon(mnod)
       
       real RhoN     ! Density of air at flow network nodes (kg/m3)
@@ -747,6 +754,9 @@ C.....ESP-r commons
                              ! (m, not used) 
 
       
+      real fScale                 ! Ratio for multiplying AIM-2 computed 
+                                  ! flow (typically 1.)
+      
       common/mflres/flw1(mcnn),flw2(mcnn),pres(mnod),
      &              resid(mnod),saflw(mnod)
      
@@ -754,6 +764,13 @@ C.....ESP-r commons
       
       double precision PRES, RESID, SAFLW ! Other flow data (not used)
 
+      common/mflow9/itpcmp(mcmp),isdcmp(mcmp),isdcnn(mcmp),
+     &              supcmp(mcmp,mcms)
+     
+      real supcmp     ! Supplementary data for components 
+      integer isdcmp, isdcnn, itpcmp  ! Not used       
+      
+      real fRhoAir
 C.....Named constants       
       real fSMALL 
       PARAMETER       (fSMALL=1.0E-15)
@@ -769,7 +786,10 @@ C.....AIM-2 computed infiltration for this zone
 C.....Index of coupled zone (if any)
       integer iCoupledZone 
       logical bCoupledZone 
+      integer iComponent
 
+      real airden
+      
 C.....References
       logical bFlowConnToOutside
 
@@ -777,7 +797,7 @@ C.....Start calculations: Get positive and negative nodes:
       iPositiveNode = NODPS(iConnection)
       iNegativeNode = NODNE(iConnection)
       
-      
+      iComponent = itpcon( iConnection )      
       
 C.....Detemine if connection couples zone to outside via 
 C.....function bFlowConnToOutside, and get coupled zone 
@@ -799,22 +819,27 @@ C.....infiltration air flow rate for the coupled zone
         endif 
         
         call AIM2_CONTROL_volume(iCoupledZone, fAIM2InfilFlow)
-            
       else 
 C.......Non-coupled zone: set infiltration air flow to zero.      
         fAIM2InfilFlow = 0.
              
       endif 
   
+      fScale = supcmp ( iComponent, 2 ) 
+
 C.....Save infiltration rate as bidirectional mass flow in arrays 
 C     Flw1 and Flw2
 C
-C        Flow rate (kg/s) = Infil. Air flow (m3/s) * density (m3/kg) 
+C        Flow rate (kg/s) = Infil. Air flow (m3/s) * density (kg/m3) 
 C
       
-      Flw1(iConnection) =  fAIM2InfilFlow * RHON(iZoneNode)
-      Flw2(iConnection) = -fAIM2InfilFlow * RHON(iZoneNode)
+      fRhoAir = AIRDEN(TF)
       
+      Flw1(iConnection) =  fAIM2InfilFlow * fRhoAir
+     &                     * dble ( fScale )
+      Flw2(iConnection) = -fAIM2InfilFlow * fRhoAir
+     &                     * dble ( fScale )
+
 C.....Compute derivitive (to help flow solver?) 
       
       
@@ -905,8 +930,8 @@ C.....Start calculations: Get positive and negative nodes:
       fFlow = supcmp ( iComponent, 2 ) 
 
       
-      Flw1(iConnection) =  fFlow * RHON(iPositiveNode)
-      Flw2(iConnection) = -fFlow * RHON(iPositiveNode)
+      Flw1(iConnection) = dble( fFlow ) * RHON(iPositiveNode)
+      Flw2(iConnection) = dble(-fFlow ) * RHON(iPositiveNode)
       
 C.....Compute derivitive (to help flow solver?) 
       
