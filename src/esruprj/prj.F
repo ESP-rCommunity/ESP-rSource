@@ -579,8 +579,11 @@ C Clear allocatable arrays
             endif
           endif
         endif
-      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
-     &       inact(1:2).eq.'QA')then
+C Actions that operate on on the model input files        
+      elseif(inact(1:9) .eq.'transform'.or.
+     &       inact(1:6) .eq.'rotate'   .or.
+     &       inact(1:2) .eq.'QA'       .or.
+     &       inact(1:16).eq.'update_con_files' ) then
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -619,16 +622,16 @@ C Scan control file if one exists.
             if(XST)then
               CALL EZCTLR(ICTLF,0,IUOUT,IER)
             endif
-	    
+
 C Now implement the transform based on data passed in command line
 C for all the zones in the model. NOTE: in the next line set the
 C value of silent = .false if you want to interact with the transform
 C or rotation.
 C            silent= .false.
             silent= .true.
-	    inpic=NCOMP
-	    do 29 iz=1,inpic
-	      ivals(iz)=iz
+            inpic=NCOMP
+            do 29 iz=1,inpic
+              ivals(iz)=iz
   29        continue
   
 C Perform either the transform or rotation or generate QA report.
@@ -639,10 +642,12 @@ C Perform either the transform or rotation or generate QA report.
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
               call prjqa(inpic,ivals,silent,ier)
-	    endif
+            elseif(inact(1:16).eq.'update_con_files')then
+              call Update_Con_Files_Silent(ITRC,ITRU,IER)
+            endif
             if(silent)then 
               call usrmsg(
-     &          'Processing of transform:rotate:QA complete.',
+     &          'Processing of transform:rotate:QA:update complete.',
      &          'Exiting from project manager','W')
 
 C Clear allocatable arrays

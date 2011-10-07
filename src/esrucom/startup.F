@@ -1100,6 +1100,11 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  coordinates to rotate around.)')
         call edisp(iuout,'       [-act QA] ')
         call edisp(iuout,' (where -act QA generates QA report & exits)')
+        call edisp(iuout,' (where -act update_con_files regenerates ')
+        call edisp(iuout,'  the zone construction [.con] files based ')
+        call edisp(iuout,'  on the materials and constructions db')
+        call edisp(iuout,'  contents, and the surface attributes ')
+        call edisp(iuout,'  contained in the .geo file.)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1815,7 +1820,7 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
-	  if(act(1:6).eq.'rotate')then
+          if(act(1:6).eq.'rotate')then
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data1
@@ -1835,7 +1840,9 @@ C Display detailed build information and then quit
             i=i+1
             call getarg(i,argument)
             read(argument,*,IOSTAT=IOS,ERR=2)data3
-	  endif
+          elseif(act(1:16) .eq. 'update_con_files') then 
+C No need to do anything: update_con_files takes no arguements          
+          endif
         endif
         goto 41
 

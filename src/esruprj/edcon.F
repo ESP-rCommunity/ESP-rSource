@@ -2165,3 +2165,39 @@ c time constant.
 
       return
       end
+      
+      
+C This is a supervisory routine that controls updating 
+C of the zone construction files (using current values in 
+C the constructions database) when invoked with the 
+C '-act update_con_files' command. 
+      
+      SUBROUTINE Update_Con_Files_Silent(ITRC,ITRU,IER)
+      implicit none
+      
+      include "building.h"
+      include "model.h"
+      
+      integer itrc, itru, ier      
+      
+      logical bSilent
+      parameter (bSilent =.true. )
+      integer iZone 
+      
+      integer ncomp,ncon
+      common/C1/ncomp,ncon
+            
+
+C Loop through zones and call edcon in silent mode.      
+      do  iZone=1 , ncomp
+        
+        print*, 'Updating zone consturction files for ', iZone 
+        call edcon(itrc,itru,iZone,bSilent,ier)
+        
+        
+      enddo
+      
+      return 
+      end subroutine Update_Con_Files_Silent
+      
+      
