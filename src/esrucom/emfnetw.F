@@ -866,7 +866,7 @@ C Type 500 multi configuration controller
      
       ELSE IF(ITPCMP(ICMP).eq.600) THEN
 C AIM-2 zone coupling       
-        if(NSDC.NE. 1)
+        if(NSDC.NE. 1 .and. NSDC .NE. 2 )
      & call MFERR(ICMP,' Number of suppl data items incorrect.',IER)
 
       ELSE IF(ITPCMP(ICMP).eq.610) THEN
