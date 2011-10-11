@@ -209,6 +209,7 @@ C ------------------------------------------------------------------------------
       implicit none
 #include "building.h"
 #include "power.h"
+#include "OffsiteUtilitiesPublic.h"
 
 C---------------------------------------------------------------------------------
 C Common holding the power-only component description read from the electric
@@ -253,17 +254,23 @@ C-------------------------------------------------------------------------------
       integer fScale_Factor
       character*72 cFile_Name
       real fGet_nonHVACld           ! Function reference
-
+      real fLoad 
 C.....Get .fcl filename and scaling factor
       write (cFile_Name, '(A)') POWCDATS(IPWC,1)
       fScale_Factor = POWCDAT(IPWC,1)
 
 C.....Recover loads
 
-
-      PPOWOC(IPWC) = -1.* fGet_nonHVACld ( cFile_Name ) * fScale_Factor
+      fLoad = fGet_nonHVACld ( cFile_Name ) * fScale_Factor
+      PPOWOC(IPWC) = -1.* fLoad
       QPOWOC(IPWC) = 0.
 
+C---------------------------------------------------------------------------------------------
+C     Store power use for later. 
+C---------------------------------------------------------------------------------------------      
+      fSUElectricityUse(iUseEquipment) = fLoad
+      call StorePfsCompEnergyUse(iPWC, fSUElectricityUse )      
+      
 
       RETURN
       END
@@ -428,7 +435,7 @@ C-------------------------------------------------------------------------------
      &                             q_HVAC_elec)
 
       fGet_nonHVACld = q_nonHVAC_elec
-
+           
       RETURN
       END
 
@@ -1027,7 +1034,7 @@ C The first data item is the efficiency of the PCU
       PCU_Eff = POWCDAT(IPWC,1)
 C The second data item is the ID of the plant component (electrical
 C generation device) to which the PCU component is connected.
-      iElecGen_ID = POWCDAT(IPWC,2)
+      iElecGen_ID = int(POWCDAT(IPWC,2))
 C Determine DC electrical power output of plant component to which
 C the PCU is connected.
       QElecGen = pwrp(iElecGen_ID)
@@ -1446,7 +1453,7 @@ C There are 6 data items for the PCU power-only component; See full definitions 
 
 
 C.....Operating mode of PCU
-      iOpMode = POWCDAT(IPWC,1)
+      iOpMode = int(POWCDAT(IPWC,1))
 
 C.....Nominal power of PCU (W)
       fNomPower = POWCDAT(IPWC,2)

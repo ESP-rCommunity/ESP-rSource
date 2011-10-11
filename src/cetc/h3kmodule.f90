@@ -132,7 +132,8 @@ MODULE h3kmodule
          rvTFuelAllEndEnergyContPropane,rvTFuelAllEndEnergyContMixWood,rvTFuelAllEndEnergyContHardWood, &
          rvTFuelAllEndEnergyContSoftWood,rvTFuelAllEndEnergyContPellets, &
          rvTFuelQty,rvTFuelQtyElec,rvTFuelQtyNatGas,rvTFuelQtyOil,rvTFuelQtyProp, &
-         rvTFuelQtyMixWood,rvTFuelQtyHardWood,rvTFuelQtySoftWood,rvTFuelQtyPellets
+         rvTFuelQtyMixWood,rvTFuelQtyHardWood,rvTFuelQtySoftWood,rvTFuelQtyPellets, &
+         rvTEnergyQty
 
    !Used by Solar.F
    Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth
@@ -1400,6 +1401,13 @@ CONTAINS
       rvTFuelQty%Description = '*** Description not defined ***'
       Call AddVariable(rvTFuelQty)
 
+      rvTEnergyQty%VariableName = 'total_fuel_use/test/*/*/energy_content'
+      rvTEnergyQty%MetaType = 'units'
+      rvTEnergyQty%VariableType = '(W)'
+      rvTEnergyQty%Description = 'Energy content of fuel used on site'
+      Call AddVariable(rvTEnergyQty)      
+      
+      
       !Claude - the following 8 variable's description differs from the original reporting
       rvTFuelQtyElec%VariableName = 'total_fuel_use/electricity/*/quantity'
       rvTFuelQtyElec%MetaType = 'units'

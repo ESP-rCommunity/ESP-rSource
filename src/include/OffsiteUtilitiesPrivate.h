@@ -8,7 +8,9 @@ C-----------------------------------------------------------------------
 C.....Counters
       integer iComponent, iFuel, iEndUse
 
-      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse
+      common/EnergyUse/fSiteEnergyUse, 
+     &                 fPltEnergyUse, 
+     &                 fPFSElectricityUse
 
 C.....Common storing site-wide energy use
       real fSiteEnergyUse(iNumOffsiteUtilComp, iNumFuel, iNumUses)
@@ -17,6 +19,9 @@ C.....Common storing energy use specific to plant components
 C.....(MPCom is the maximum number of plant components.)
       real fPltEnergyUse(MPCom, iNumFuel, iNumUses)
 
+      
+      real fPfsElectricityUse(MPOWCOM,iNumUses)
+      
 C.....Array indicating if energy used by plt components is catagorized, or not.
       logical bPltUseCatagorized(MPCom, iNumFuel)
       common/PltFuelCatagorize/bPltUseCatagorized
