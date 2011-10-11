@@ -1825,11 +1825,13 @@ C ******* termode
 C termode: given an index `mode` return a terminal text string.
       SUBROUTINE termode(mode,tmode)
       CHARACTER*(*) tmode
+
 #ifdef OSI
       integer mode          ! passed from tchild
 #else
       integer*8 mode          ! passed from tchild
 #endif
+
       tmode = ' '
       if(mode.eq.-1)then
         tmode = 'text'

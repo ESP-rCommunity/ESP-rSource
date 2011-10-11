@@ -6,10 +6,12 @@ PROG = viewer$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
+OBJECTS = startup.o viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
 	  ctlexp.o dossupport.o ext.o hlr.o hlr2.o input.o invert.o \
 	  pconvt.o pers1.o pers2.o plan.o plot.o select.o shrink.o \
-	  spout.o startup.o transf.o vert.o
+	  spout.o  transf.o vert.o
+
+MODULES = start_up.mod parse_command_line.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -34,5 +36,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	c2fdum.F ctlexp.F startup.F dossupport.F

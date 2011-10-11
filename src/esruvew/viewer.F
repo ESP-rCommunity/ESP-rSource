@@ -1,6 +1,7 @@
 C VIEWER MAIN PROGRAM
 
       program viewer
+      USE START_UP
 #include "viewer.h"
 #include "viewer.h2"
 #include "espriou.h"

@@ -77,7 +77,7 @@ C ipxw and ipyw are associated the pixel coordinates.
       dimension pxw(MTV),pyw(MTV),ipxw(MTV),ipyw(MTV)
 
 C ipxwhis & ipywhis are previous pixel points for floor plan.
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
 
 C iphisznst & iphisznfn are the historical points start and
 C end indices for each zone.
@@ -240,7 +240,7 @@ C Vertices and pixels (clear list of pixels for vertices and corners).
 C Clear history of pixel points. nipwhis is the cummulative number
 C of historical points.
       nipwhis=0
-      do 9 i=1,300
+      do 9 i=1,MGTV
         ipxwhis(i)=0
         ipywhis(i)=0
         if(i.le.MCOM)then
@@ -479,6 +479,7 @@ C Save any ground topology.
             call edisp(iuout,outs)
           endif
         else
+
           continue
         endif
       elseif(INO.EQ.MITEM-3)then
@@ -1592,6 +1593,8 @@ C instanciate the common blocks.
             call winscl('-',0)
             call edisp(iuout,'Instanciating new objects...')
             if(inpmode.eq.6)then
+
+C Create single ground surface.
               NGTV=INVERT
               NGT=1
               NGVER(1)=3
@@ -1601,8 +1604,12 @@ C instanciate the common blocks.
               GSNAME(1)='first'
               GMLCN(1)='UNKN'
             else
+
+C Create a single surface out of first 3 vertices so that a
+C zone geometry file can be created. 
               NTV=INVERT
               NSUR=1
+              NZSUR(ICOMP)=NSUR
               NVER(1)=3
               JVN(1,1)=1
               JVN(1,2)=2
@@ -1639,9 +1646,120 @@ C Update the connection list for an initial surface.
               SSPARENT(iccc)=SPARENT(1)
               IZSTOCN(icomp,1)=iccc
               NCON=ICCC
+
+C Complete zone data before exiting use a similar pattern to that
+C of the floor plan extrusion block of code below.
+              IF(zname(ICOMP)(1:2).EQ.'  ')THEN
+               IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+               IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+               lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
+              ENDIF
+              if(zdesc(ICOMP)(1:2).EQ.'  ')then
+               write(zdesc(ICOMP),'(2a)') 
+     &           zname(ICOMP)(1:lnzname(ICOMP)),' describes a...'
+               lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
+              endif
+
+C Set type type and version based on current value of igupgrade.
+              CTYPE(icomp)='GEN '
+              if(igupgrade.eq.2)then
+                gversion(icomp)=1.1
+              else
+                gversion(icomp)=1.0
+              endif
+              NDP(ICOMP)=3
+              IDPN(ICOMP,1)=0
+              IDPN(ICOMP,2)=0
+              IDPN(ICOMP,3)=0
+
+C Update the G7 common blocks and then assign ZBASEA.
+              call zgupdate(2,ICOMP,ier)
+              IUZBASEA(icomp)=0
+              IBASES(ICOMP,1)=NSUR
+              IZBASELIST(ICOMP)=1
+              ibcs=IZSTOCN(icomp,NSUR)
+              ZBASEA(icomp)= SSNA(ibcs)
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+              DO 41 J=1,NZTV(ICOMP)
+                VCOORD(ICOMP,J,1)=X(J)
+                VCOORD(ICOMP,J,2)=Y(J)
+                VCOORD(ICOMP,J,3)=Z(J)
+   41         CONTINUE
+ 
+C Save this to file before passing into the geometry editing facility.
+              write(outs,'(3a)') 'Updating ',
+     &          zdesc(ICOMP)(1:lnzdesc(ICOMP)),'...'
+              call edisp(iuout,outs)
+              call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+              if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                gversion(icomp) =1.1
+                newgeo = .true.
+              endif
+              if(newgeo)then
+                call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              else
+                call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+              endif
+              IF(IER.EQ.1)THEN
+               CALL usrmsg(' ','Problem creating geometry file...','W')
+              ENDIF
+
+              write(outs,'(3a)') 'Updating ',
+     &          zdesc(ICOMP)(1:lnzdesc(ICOMP)),'...done.'
+              call edisp(iuout,outs)
+
+C Read in control file if defined, setup additional file names and then
+C write out the ctl file with additional zone lined to no control and
+C lastly, update the configuration file.
+              OKC=.false.
+              if(LCTLF(1:2).ne.'  '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
+              if(OKC)then
+                ICTLF=IFIL+1
+                CALL ERPFREE(ICTLF,ISTAT)
+                call FINDFIL(LCTLF,XST)
+                IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+              endif
+
+              NCOMP=NCOMP+1
+              NCCODE(ICOMP)=NCOMP
+              if(OKC)then
+                icascf(NCOMP)=0
+                call usrmsg(' updating control for additional zone...',
+     &            ' ','P')
+                call CTLWRT(ICTLF,IER)
+                call usrmsg(' ',' ','-')
+              endif
+              CALL EMKCFG('-',IER)
+              call usrmsg(' updating model for additional zone...done.',
+     &          ' ','P')
+
+C Save the extrusion points to the history list. Set iphisznst
+C to the first point in this zone and iphisznfn to the closing
+C point of the zone.
+              if(NW.gt.0)then
+                do 218 j=1,NW
+                  if(nipwhis+1.le.MGTV)then
+                    nipwhis=nipwhis+1
+                    if(j.eq.1)iphisznst(icomp)=nipwhis
+                    ipxwhis(nipwhis)=ipxw(j)
+                    ipywhis(nipwhis)=ipyw(j)
+                 endif
+  218           continue
+                if(nipwhis+1.le.MGTV)then
+                  nipwhis=nipwhis+1
+                  ipxwhis(nipwhis)=ipxw(1)
+                  ipywhis(nipwhis)=ipyw(1)
+                endif
+                iphisznfn(icomp)=nipwhis
+              endif
+
+C << to here >>
             endif
             justentered=.false.
-         endif
+          endif
         elseif(inpmode.eq.3)then
 
 C Floor plan extrusion. click on corners until list terminated, allowing
@@ -2027,14 +2145,14 @@ C to the first point in this zone and iphisznfn to the closing
 C point of the zone.
             if(NW.gt.0)then
               do 217 j=1,NW
-                if(nipwhis+1.le.300)then
+                if(nipwhis+1.le.MGTV)then
                   nipwhis=nipwhis+1
                   if(j.eq.1)iphisznst(icomp)=nipwhis
                   ipxwhis(nipwhis)=ipxw(j)
                   ipywhis(nipwhis)=ipyw(j)
                 endif
   217         continue
-              if(nipwhis+1.le.300)then
+              if(nipwhis+1.le.MGTV)then
                 nipwhis=nipwhis+1
                 ipxwhis(nipwhis)=ipxw(1)
                 ipywhis(nipwhis)=ipyw(1)
@@ -2829,7 +2947,7 @@ C inpm is the input mode.
       logical xbmnorth,xbmorigin
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
 
       if(xbmnorth)then
         ixtn1=ixtn1+idfxoffset
@@ -2898,7 +3016,7 @@ C Other is the grid distance if user supplied (iwmg=7).
       logical xbmnorth,xbmorigin,xbmgrid,xbmscale,completed,within
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300),viewlim(6)
+      dimension ipxwhis(MGTV),ipywhis(MGTV),viewlim(6)
       dimension iphisznst(MCOM),iphisznfn(MCOM)
       character fname*72,temp6*6,temp3*3
 #ifdef OSI
@@ -3119,7 +3237,7 @@ C inpm is the input mode.
       logical xbmnorth,xbmorigin
       dimension ipxx(MGTV),ipyy(MGTV),ipzz(MGTV)
       dimension ipxw(MTV),ipyw(MTV)
-      dimension ipxwhis(300),ipywhis(300)
+      dimension ipxwhis(MGTV),ipywhis(MGTV)
       character fname*72
 
 C Debug.

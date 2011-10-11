@@ -11,6 +11,19 @@ echo "NOTE: the installation folder is /opt/esru. IF YOU HAVE AN"
 echo "OLDER ESP-r in /home/esru or /usr/esru you should"
 echo "remove it."
 echo " "
+echo "Your current HOME folder is defined as: $HOME"
+echo "if $HOME/bin does not exist it will be created."
+echo "  "
+echo "Note on a 64 bit Linux computer you should use a 64 bit"
+echo "version of ESP-r to avoid clashes in operating system"
+echo "libraries between 32 and 46 bit versions."
+echo "  "
+echo "here is a readme (hint reading it might save time later)..."
+
+more $ISD/esp-r_v11.11_linux_precomp.readme
+
+echo "  "
+echo "continuing the install process..."
 
 DSP1=" \n
  Oops, you are not root, if you do not have administrative\n
@@ -105,13 +118,18 @@ echo " a) the standard X11 implementation"
 echo " b) an implementation using the GTK graphics"
 echo "    library which lacks a few functions which"
 echo "    have not been ported."
+echo " c) choose between X11 and GTK after install"
 echo " "
-echo " select option [a/b]:"
+echo "You can choose one of these now or to switch between"
+echo "them via a link_to script at any time in the future."
+echo " select option [a/b/c]:"
 read which
 if [[ $which = 'a' ]] ; then
   echo "proceeding with the X11 version..."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
+elif  [[ $which = 'c' ]] ; then
+  echo "allowing future switching between X11 and GTK version..."
 else
  echo "did not understand your response....aborting."
  exit
@@ -124,16 +142,36 @@ echo " This may take a few minutes ..."
 if [ ! -d /opt/esru ]; then
   mkdir /opt/esru
 fi
+if [ ! -d $HOME/bin ]; then
+  mkdir $HOME/bin
+  cp $ISD/link_to $HOME/bin
+  cp $ISD/link_to_bash $HOME/bin
+  chmod a+x $HOME/bin/link_to
+  chmod a+x $HOME/bin/link_to_bash
+  echo "putting link_to script in $HOME/bin"
+else
+  cp $ISD/link_to $HOME/bin
+  cp $ISD/link_to_bash $HOME/bin
+  chmod a+x $HOME/bin/link_to
+  chmod a+x $HOME/bin/link_to_bash
+  echo " putting link_to script in $HOME/bin"
+fi
   
 cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.9_linux_64.tar.gz | tar xf - 
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  $HOME/bin/link_to_bash /opt/esru/esp-r/binX11
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
-  echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.9_linux_64.tar.gz | tar xf - 
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  $HOME/bin/link_to_bash /opt/esru/esp-r/binGTK
+  echo " Extracting ESP-r distribution ...done."
+elif  [[ $which = 'c' ]] ; then
+  echo " Extracting ESP-r distribution ..."
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  echo " Please run the link_to script to set ESP-r version preference."
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
@@ -153,5 +191,11 @@ cd $ISD
 echo " "
 echo -n " Please wait while the installer performs cleanup..."
 for i in `ls /opt/esru/esp-r/bin`; do echo -n .; sleep 0.5; done;
+
+echo "  "
+echo "another chance to view the readme text..."
+echo "  "
+more $ISD/esp-r_v11.11_linux_precomp.readme
+
 
 

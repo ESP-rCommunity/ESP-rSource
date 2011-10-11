@@ -31,6 +31,7 @@ C   FNCNGR: changes the name of file ORIGNAM by appending APP
 
 C ********** MAIN
       program prj
+      USE START_UP
 #include "building.h"
 #include "model.h"
 

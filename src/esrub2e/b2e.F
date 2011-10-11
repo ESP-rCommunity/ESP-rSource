@@ -27,6 +27,7 @@ C pertinent data to the BEMS tool.
 C *********************************** B2E ******************************
 
       PROGRAM B2E
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "espriou.h"

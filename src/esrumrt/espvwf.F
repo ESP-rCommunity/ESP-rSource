@@ -22,6 +22,7 @@ C ESRU: espvwf
 
 C Revised to take in configuration file and zone focus.
       program espvwf
+      USE START_UP
 #include "building.h"
 #include "model.h"
 

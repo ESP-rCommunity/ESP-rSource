@@ -12,15 +12,16 @@ PROG= eco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = eco.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
+OBJECTS = startup.o eco.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  bscoeff.o bscoeff_extended.o c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o ecocalc.o ecoesp.o \
 	  econstr.o edatabase.o edcondb.o egeometry.o emfnetw.o \
 	  enetmisc.o enetrewr.o eroper.o esru_misc.o esystem.o filelist.o \
 	  item.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o readBCF.o \
-	  rwipv.o rwsbem.o startup.o sort.o tdfile.o
+	  rwipv.o rwsbem.o  sort.o tdfile.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)

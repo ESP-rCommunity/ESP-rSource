@@ -930,7 +930,7 @@ C Set the menu control text.
       IMPTL=M
 
 C Help text for this menu.
-      helptopic='temporal_import_parameters'
+      helptopic='temporal_import_param'
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
@@ -969,7 +969,7 @@ C casual gain files.
      &    0,'F',43800,'W',1,'begin read @',IER,nbhelp)
         IMSTL=IV
       ELSEIF(INODA.EQ.IMPTL-1)THEN
-        helptopic='temporal_import_parameters'
+        helptopic='temporal_import_param'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('period fields',nbhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.IMPTL-2)THEN
@@ -1154,7 +1154,7 @@ C Specify the column to be read in for each of the timestep fields.
 C If 0 then ignore.
         IFLD=INODA-MHEAD-1+ISFLDS
         IV=IMSTC(IFLD)
-        helptopic='temporal_import_parameters'
+        helptopic='temporal_import_param'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(IV,' ','Associated column in import file:',
      &    0,'F',0,'-',1,'associated column',IER,nbhelp)
@@ -1252,7 +1252,7 @@ C Set the menu control text.
       IMPTL=M
 
 C Help text for this menu.
-      helptopic='temporal_import_parameters'
+      helptopic='temporal_import_param'
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
@@ -1283,7 +1283,7 @@ C Specify that read of import file begins at (non_comment) line IMSTL.
      &    0,'F',43800,'W',1,'begin read @',IER,nbhelp)
         IMSTL=IV
       ELSEIF(INODA.EQ.IMPTL-1)THEN
-        helptopic='temporal_import_parameters'
+        helptopic='temporal_import_param'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('period fields',nbhelp,'-',0,0,IER)
       ELSEIF(INODA.EQ.IMPTL-2)THEN      
