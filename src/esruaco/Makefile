@@ -14,13 +14,14 @@ PROG= aco$(EXE)
 
 OBJECTS = aco.o acocalc.o acoesp.o aim2_module.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
- c2fdum.o common3dv.o  \
+	c2fdum.o common3dv.o  \
 	cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o filelist.o item.o mfcdat.o nwkrewr.o pltcfg.o readaco.o \
 	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o startup.o tdfile.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(F_to_C_flags) 

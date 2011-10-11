@@ -9,6 +9,8 @@ PROG = mld$(EXE)
 OBJECTS = mld.o c2fdum.o mycores.o psychro.o startup.o \
 	  stats.o vfr.o
 
+MODULES = start_up.mod parse_command_line.mod
+
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
 

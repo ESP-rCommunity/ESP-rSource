@@ -20,7 +20,8 @@ OBJECTS = eco.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  item.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o readBCF.o \
 	  rwipv.o rwsbem.o startup.o sort.o tdfile.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
