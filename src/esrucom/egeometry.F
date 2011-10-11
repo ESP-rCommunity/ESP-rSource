@@ -4484,8 +4484,8 @@ C be duplicates.
 
       DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
-      dimension idupv(MS,6)    ! duplicate vertex indices
-      dimension iduplist(MS,6) ! position in list
+      dimension idupv(MS,12)    ! duplicate vertex indices
+      dimension iduplist(MS,12) ! position in list
       LOGICAL closeazi,closeelv
       CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
