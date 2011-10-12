@@ -43,6 +43,19 @@ C     Maximum number of nodes in a stratified tank
       INTEGER MAX_NNODES
       PARAMETER (MAX_NNODES=100)
 
+C     Maximum number of cells in radial and axial direction and total in PCM module
+      INTEGER MX, MY, MXMY
+      PARAMETER (MX=100, MY=100, MXMY=1000)      
+      
+C     Maximum number of PCM sections in axial direction
+      INTEGER MPCMSEC
+      PARAMETER (MPCMSEC=100)
+      
+C     PI is the number pi     
+      REAL PI
+      PARAMETER (PI=3.1415926535897932385)
+     
+      
 C---- COMMON CONTAINING STRATIFIED TANK DATA
 
       INTEGER N_STANK                  ! Actual number of stratified tanks
@@ -52,6 +65,29 @@ C---- COMMON CONTAINING STRATIFIED TANK DATA
       REAL TAVGP_STANK(MAX_STANK)      ! Past average tank temperature
       REAL TAVGF_STANK(MAX_STANK)      ! Future average tank temperature
       REAL PTIMEF_STANK                ! Current time of tank calculations
+      
+C---- COMMON CONTAINIG PCM MODULE DATA
 
+      INTEGER NSIZEPCM(MAX_STANK,2)
+      REAL HPCM_MOD(MXMY,MAX_STANK)    ! PCM module enthalpy (for each cell)
+      REAL TPCM_MOD(MXMY,MAX_STANK)    ! PCM module temperature (for each cell)
+      REAL TM                          ! Phase Change temperature [C]
+      PARAMETER (TM=0.0)               ! Scaling temprature [C]
+      REAL HPCMSEC(MY,MAX_STANK)       ! PCM section height [m]
+      REAL DR(MAX_STANK)               ! Grid dimension in radial direction [m]
+      REAL DPCMNODE(MY-1,MAX_STANK)    ! Distance among PCM nodes [m]
+      INTEGER NPCMDATA(4,MAX_STANK)    ! nX,nY,PCMbot,nPCMtop
+      REAL AXB(MY,MAX_STANK)           ! Border face of external CV, in contact with DHW [m^2]
+      REAL AY(MX,MAX_STANK)            ! CV faces in axial direction  (north-south) [m^2]
+      REAL AX(MXMY-MY,MAX_STANK)       ! CV faces in radial direction (east-west) [m^2]
+      REAL V(MXMY,MAX_STANK)           ! Cells volumes [m^3]
+      
+
+
+      
       COMMON/STRATIFIED_TANK/N_STANK,IPCOMP_STANK,TP_STANK,TF_STANK,
-     &  TAVGP_STANK,TAVGF_STANK,PTIMEF_STANK
+     &  TAVGP_STANK,TAVGF_STANK,PTIMEF_STANK,NSIZEPCM,
+     &  HPCM_MOD,TPCM_MOD, NPCMDATA, HPCMSEC, DPCMNODE,
+     &  AX,AXB,AY,V,DR
+
+
