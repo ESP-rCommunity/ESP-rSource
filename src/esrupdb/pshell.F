@@ -80,14 +80,11 @@ C Used by shell to compare keyed items
 C ie compare component descriptions
       LOGICAL FUNCTION COMPDS (N1,N2)
 #include "plantdb.h"
+#include "pdb_data.h"
 
       COMMON /PL/ INDXPR(MAXPC)
       common/OUTIN/IUOUT,IUIN
-      COMMON /PCDATA/ ZGTYPE, ZCDATE, ZCDESC
 
-      CHARACTER*40 ZGTYPE
-      CHARACTER*16 ZCDATE
-      CHARACTER*80 ZCDESC
       CHARACTER*80 PZDESC
 
       NN = INDXPR(N1)

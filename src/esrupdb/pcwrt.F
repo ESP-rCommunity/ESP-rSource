@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C PCWRT of ESRUpdb
         SUBROUTINE PCWRT (ICHAN)
 #include "plantdb.h"
+#include "pdb_data.h"
 
 C Formatted output of a complete plant component entry.  The channel
 C used for output is passed as an argument.
@@ -29,7 +30,6 @@ C used for output is passed as an argument.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -55,9 +55,6 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      CHARACTER*40 ZGTYPE
-      CHARACTER*16 ZCDATE
-      CHARACTER*80 ZCDESC
       character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
       character*30 adodsc, tadods
       character*60 ltpcmp, tltpcm

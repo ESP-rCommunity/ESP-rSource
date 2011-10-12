@@ -86,6 +86,7 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
+#include "pdb_data.h"
       
       integer lnblnk  ! function definition
 
@@ -95,7 +96,6 @@ C write it to the terminal.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -111,7 +111,7 @@ C write it to the terminal.
       LOGICAL COMPDS, COMPNO
       CHARACTER ZITEM(11)*24
       character LTMP*72,buffer*120
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      CHARACTER dtdesc*68,adodsc*30
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
 
@@ -383,13 +383,14 @@ C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
 #include "plantdb.h"  
+#include "pdb_data.h"
+  
       common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -397,7 +398,7 @@ C selected before deletion.
      &              adodsc(mxaout),noutyp(mxaout)
       common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      CHARACTER dtdesc*68,adodsc*30
       character buffer*120
 
       dimension ival(MAXPC)
@@ -507,11 +508,11 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
+#include "pdb_data.h" 
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -538,7 +539,6 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
       character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
       character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       logical ok,dok
@@ -761,12 +761,13 @@ C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
 #include "plantdb.h" 
+#include "pdb_data.h"
+ 
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -793,7 +794,6 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
       character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
       character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       character outs*124

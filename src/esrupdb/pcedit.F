@@ -35,13 +35,14 @@ C            for this component.
 
       subroutine pcedit(ival)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -52,7 +53,7 @@ C            for this component.
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      CHARACTER dtdesc*68,adodsc*30
 
       dimension ivals(MAXPC)
       character buffer*120,ltmp*80

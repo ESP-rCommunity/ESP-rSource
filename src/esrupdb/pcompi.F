@@ -31,9 +31,10 @@ C blocks PCBLKA and PCBLKB.
 
       SUBROUTINE PCRD
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/OUTIN/IUOUT,IUIN
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -44,9 +45,6 @@ C blocks PCBLKA and PCBLKB.
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)
 
-      CHARACTER*40 ZGTYPE
-      CHARACTER*16 ZCDATE
-      CHARACTER*80 ZCDESC
       character*68 dtdesc
       character*30 adodsc
 
@@ -489,11 +487,12 @@ C for one plant component entry and puts it into the common
 C blocks PCBLKA and PCBLKB.
       SUBROUTINE PCRDF(IUFIL)
 #include "plantdb.h" 
+#include "pdb_data.h"
+
       common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -520,9 +519,6 @@ C TRNSYS types data.
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      CHARACTER*40 ZGTYPE
-      CHARACTER*16 ZCDATE
-      CHARACTER*80 ZCDESC
       CHARACTER*23 PZDESC
       character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
       character*30 adodsc, tadods
@@ -803,6 +799,7 @@ C if act is 'h' write the header boilerplate
 C if act is 'g' write generic item.
       SUBROUTINE PCRDFGDB(IUFIL,act)
 #include "plantdb.h" 
+#include "pdb_data.h" 
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -811,7 +808,6 @@ C if act is 'g' write generic item.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
@@ -868,7 +864,7 @@ C once per item until the end-of-file.
       common/totconv/itotconv
       common/SFIG/NSIGFIG
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,PZDESC*23
+      CHARACTER PZDESC*23
       character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
       character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60,ctype*20
 
