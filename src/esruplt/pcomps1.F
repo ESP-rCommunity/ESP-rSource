@@ -802,6 +802,78 @@ C Error handling
 
       END 
 
+
+C ************************ CMP69S *************************
+C CMP69S establishes for a plant component with plant db code 690 ie.
+C 3 nodes (ISV=20) water/steam flow diverger built from primitive parts
+C data derivable from the static manufacturers data already read from
+C the database and saves it in the static data common block, and also
+C whether the specified number of controlled variables is OK, and also
+C whether the number of connections to this component is correct
+C and whether the connected nodes are of a type as expected by the
+C corresponding coefficient generator routine
+
+C   node 1 represents fluid at first outlet  (ISV=20)
+C   node 2 represents fluid at second outlet  (ISV=20)
+C   node 3 represents fluid at inlet  (ISV=20)
+
+      SUBROUTINE CMP69S(IPCOMP)
+#include "plant.h"
+#include "building.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+
+C Trace output
+      IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
+         WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
+         WRITE(ITU,*) ' 3 nodes (ISV=20) water/steam flow diverger',
+     &                ' built from primitive parts with control'
+         NITMS=0
+         WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/5)*5
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+C Check user specified number of controlled variables
+      NCITM=1 
+      IF(NCI(IPCOMP).NE.NCITM)
+     &   WRITE(ITU,*) ' CMP69S warning: user specified wrong number',
+     &                ' of controlled variables, une control required'
+
+C Check component has only 1 connection to "water"
+      NCONS=1
+      DO 10 IPCONC=1,MPCONC
+      IPCON=ICONDX(IPCOMP,3,IPCONC)
+      IF(IPCONC.LE.NCONS) THEN
+         IF(IPCON.EQ.0) THEN
+            GOTO 990
+         ELSE IF(ICONTP(IPCON).NE.20) THEN
+            GOTO 990
+         END IF
+      ELSE IF(IPCON.NE.0) THEN
+         GOTO 990
+      END IF
+   10 CONTINUE
+
+      RETURN
+
+C Error handling
+  990 WRITE(IUOUT,*) ' CMP69S: connection error for component ',IPCOMP
+      WRITE(IUOUT,*) '         should be ',NCONS,' water connection(s)'
+      STOP ' CMP69S: unresolvable error'
+
+      END 
+
+
+
 C ******************** CMP95S ********************
 C CMP95S establishes for a plant component with plant db code 950 ie.
 C 1 node (ISV=20) Radiant Heating/Cooling System

@@ -7074,3 +7074,33 @@ control period finish hour                                            0.0000
 open(1) shut(0) outside period                                        0.0000
 index for the sensed property                                         0.0000
 signal set point                                                      0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :  106 
+ 
+ Component Description
+    Generic type     : controlled WCH water flow diverger
+    Description      : water flow diverger; 3 node PP model; with control
+    Insertion date   : 12 October 2011
+    Type: Single component                    Component code :    690
+ 
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      6
+    Matrix positions :   1,   3,   4,   5,   6,   9,
+    Node connections :   1,   1,   1,
+    Variable type    :  20,  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   0    Bdata items   :   0    Cdata items   :   1
+ CDATA variables:
+    1  Mass flow fraction on first way (-)
+ 
+ Number of additional output parameters:     0
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0

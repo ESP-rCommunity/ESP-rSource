@@ -35,6 +35,7 @@ C  cmp64c 1 node (ISV=20) water/steam flow converger
 C  cmp65c 3 node (ISV=20) water/steam flow diverger
 C  cmp66c 3 node (ISV=21) moist air flow diverger
 C  cmp68c 1 node (ISV=21) moist air flow converger
+C  cmp69c 1 node (ISV=21) water/steam flow diverger with controlled ratio
 
 C ******************** CMP53C ********************
 
@@ -2923,6 +2924,196 @@ C Trace output
       END IF
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP68C'
+
+      RETURN
+      END
+
+C **************************** CMP69C ****************************
+
+C CMP69C generates for plant component IPCOMP with plant db code 690
+C i.e. 3 nodes (ISV=20) water/steam flow diverger  with control
+C built from primitive parts;
+C this is a simple adaption of component CMP65C with controlled flow ratio 
+C   node 1 represents fluid at first outlet
+C   node 2 represents fluid at second outlet
+C   node 3 represents fluid at inlet
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, & present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: none
+C     BDATA: none
+C     CDATA: 1  flow ratio (first outlet to inlet)
+
+      SUBROUTINE CMP69C(IPCOMP,COUT,ISTATS)
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/PP0C/A(MPP,MPPC),B(MPP,MPPC),Alpha
+
+      PARAMETER (SMALL=1.0E-15)
+
+      REAL      COUT(MPCOE)
+      logical closea,close
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP69C'
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+C Define connection number
+      ICON1=ICONDX(IPCOMP,3,1)
+
+C Define location of sub-matrix template
+      INOD1=NPCDAT(IPCOMP,9)
+      INOD2=NPCDAT(IPCOMP,9)+1
+      INOD3=NPCDAT(IPCOMP,9)+2
+
+C Following procedures apply to all istats values (1, 2 or 3)
+
+C set all reverse flow to zero if any
+      if(CSVF(INOD1,2).LT.0.) CSVF(INOD1,2)=0.
+      if(CSVF(INOD1,3).LT.0.) CSVF(INOD1,3)=0.
+      if(CSVF(INOD2,2).LT.0.) CSVF(INOD2,2)=0.
+      if(CSVF(INOD2,3).LT.0.) CSVF(INOD2,3)=0.
+      if(CSVF(INOD3,2).LT.0.) CSVF(INOD3,2)=0.
+      if(CSVF(INOD3,3).LT.0.) CSVF(INOD3,3)=0.
+
+C First mark 1st phase (liquid water) mass flow rates for iteration;
+C ICSV is the array holding iteration flag for each plant node & each state
+C variable
+      ICSV(INOD1,2)=1
+      CSVI(INOD1,2)=CSVF(INOD1,2)
+      ICSV(INOD2,2)=1
+      CSVI(INOD2,2)=CSVF(INOD2,2)
+      ICSV(INOD3,2)=1
+      CSVI(INOD3,2)=CSVF(INOD3,2)
+
+C Then mark 2nd phase (steam vapour) mass flow rates for iteration
+      ICSV(INOD1,3)=1
+      CSVI(INOD1,3)=CSVF(INOD1,3)
+      ICSV(INOD2,3)=1
+      CSVI(INOD2,3)=CSVF(INOD2,3)
+      ICSV(INOD3,3)=1
+      CSVI(INOD3,3)=CSVF(INOD3,3)
+
+C Start with establishing incoming fluid temperatures Tr0
+      Tr0=CONVAR(ICON1,1)
+
+C Mark current fluid temperatures for iteration
+      ICSV(INOD1,1)=1
+      CSVI(INOD1,1)=CSVF(INOD1,1)
+      ICSV(INOD2,1)=1
+      CSVI(INOD2,1)=CSVF(INOD2,1)
+      ICSV(INOD3,1)=1
+      CSVI(INOD3,1)=CSVF(INOD3,1)
+
+      Tr1=CSVI(INOD1,1)
+      Tr2=CSVI(INOD2,1)
+      Tr3=CSVI(INOD3,1)
+
+C Determine values of valuables used in this component e.g. fluid mass 
+C flow rates, specific heats, and latent heat (note: mass of
+C encapsulated water & steam vapour to be neglected)
+
+C Firstly identify the specified CDATA 
+      R=CDATA(IPCOMP,1)
+
+C reverse flow of incoming fluid has been set zero by MZPADJ if any
+      Rmw0=PCONDR(ICON1)*CONVAR(ICON1,2)
+      Rmv0=PCONDR(ICON1)*CONVAR(ICON1,3)
+      Rmr0=Rmw0+Rmv0
+      Rmw1=CSVI(INOD1,2)
+      Rmv1=CSVI(INOD1,3)
+
+C Flow rates at nodes 2 & 3 for reporting purpose
+      Rmw2=CSVI(INOD2,2)
+      Rmv2=CSVI(INOD2,3)
+      Rmw3=CSVI(INOD3,2)
+      Rmv3=CSVI(INOD3,3)
+
+      call eclose(R,-99.00,0.001,closea)
+      IF(.not.closea) GO TO 10
+
+C Get value of R
+      call eclose(Rmr0,0.00,0.00001,close)
+      IF(.NOT.close) THEN
+C      IF(Rmr0.NE.0.) THEN
+        R=(Rmw1+Rmv1)/Rmr0
+      ELSE
+        R=0.5
+      ENDIF
+
+C Current component time-constant TC set to zero because of 
+C no thermal capacitance term in this component
+      TC(IPCOMP)=0.
+
+C Establish matrix equation coefficients
+
+ 10   CALL PP51(IPCOMP,ISTATS,R)
+
+      COUT(1)=A(51,1)
+      COUT(2)=A(51,4)
+      COUT(3)=A(51,2)
+      COUT(4)=A(51,3)
+      COUT(5)=A(51,5)
+      COUT(6)=1.
+      COUT(7)=-1.
+      COUT(8)=B(51,1)
+      COUT(9)=B(51,2)
+      COUT(10)=0.
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 3 nodes (ISV=20) water/steam flow diverger',
+     &               ' built by Primitive Parts'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2,INOD3
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' Rmw0    = ',Rmw0,' (Kg/s)'
+            WRITE(ITU,*) ' Rmv0    = ',Rmv0,' (Kg/s)'
+            WRITE(ITU,*) ' Rmw1   = ',Rmw1,' (kg/s)'
+            WRITE(ITU,*) ' Rmv1   = ',Rmv1,' (kg/s)'
+            WRITE(ITU,*) ' Rmw2    = ',Rmw2,' (Kg/s)'
+            WRITE(ITU,*) ' Rmv2    = ',Rmv2,' (Kg/s)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' Tr0    = ',Tr0,' (C)'
+            WRITE(ITU,*) ' Tr1    = ',Tr1,' (C)'
+            WRITE(ITU,*) ' Tr2    = ',Tr2,' (C)' 
+            WRITE(ITU,*) ' R   = ',R
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=10
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP69C'
 
       RETURN
       END
