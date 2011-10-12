@@ -81,6 +81,7 @@ C      CMP64S   1 node (ISV=20) Water/steam flow converger
 C      CMP65S   3 node (ISV=20) Water/steam flow diverger
 C      CMP66S   3 node (ISV=21) AC  moist air flow diverger
 C      CMP68S   1 node (ISV=21) AC  moist air flow converger
+C      CMP69S   3 node (ISV=20) Water/steam flow diverger with controlled ratio
 C PP-based components end
 C      CMP67S   3 node (ISV>19) AC  heat transfer tube
 C      CMP70S   1 node (ISV=20) Flat plate solar collector (type1)
@@ -238,6 +239,8 @@ C Component by component, call routine to deal with relevant type
          CALL CMP68S(IPCOMP)
       ELSE IF(ITYPE.EQ.67) THEN
          CALL CMP67S(IPCOMP)
+      ELSE IF(ITYPE.EQ.69) THEN
+         CALL CMP69S(IPCOMP)
       ELSE IF(ITYPE.EQ.70) THEN
          CALL CMP70S(IPCOMP)
       ELSE IF(ITYPE.EQ.71) THEN
@@ -344,6 +347,12 @@ C 2-node stratified storage tank model with 1 immersed heat exchanger
          CALL stratified_tank_1HX_static(IPCOMP)
 C 3-node stratified storage tank model with 2 immersed heat exchangers
       ELSE IF(ITYPE.EQ.127) THEN
+         CALL stratified_tank_2HX_static(IPCOMP)
+C 3-node stratified storage tank model with 1 immersed heat exchanger and PCM
+      ELSE IF(ITYPE.EQ.128) THEN
+         CALL stratified_tank_1HX_static(IPCOMP)
+C 4-node stratified storage tank model with 2 immersed heat exchanger and PCM
+      ELSE IF(ITYPE.EQ.129) THEN
          CALL stratified_tank_2HX_static(IPCOMP)
 
       ELSE

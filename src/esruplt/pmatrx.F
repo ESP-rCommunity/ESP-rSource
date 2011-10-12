@@ -1328,6 +1328,9 @@ C 1 node (ISV=21) AC  air flow converger
 C 3 node (ISV>19) AC  heat transfer tube.
          ELSE IF(ITYPE.EQ.67) THEN
             CALL CMP67C(IPCOMP,OUT,ISTATS)
+C 3 node (ISV>19) PP  water diverger with control built from primitive parts
+         ELSE IF(ITYPE.EQ.69) THEN
+            CALL CMP69C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20) flat plate collector (type1).
          ELSE IF(ITYPE.EQ.70) THEN
             CALL CMP70C(IPCOMP,OUT,ISTATS)
@@ -1479,7 +1482,12 @@ C 2-node stratified storage tank model with 1 immersed heat exchanger
         ELSE IF (ITYPE .EQ. 127) THEN
 C 3-node stratified storage tank model with 2 immersed heat exchangers
            CALL stratified_tank_2HX_coeff_gen(IPCOMP,OUT,ISTATS)
-
+        ELSE IF (ITYPE .EQ. 128) THEN
+C 3-node stratified storage tank model with 1 immersed heat exchanger and PCM
+           CALL stratified_tank_1HX_coeff_gen(IPCOMP,OUT,ISTATS)
+        ELSE IF (ITYPE .EQ. 129) THEN
+C 3-node stratified storage tank model with 2 immersed heat exchanger and PCM
+           CALL stratified_tank_2HX_coeff_gen(IPCOMP,OUT,ISTATS)
 C New component equation generators inserted here
 
          ELSE

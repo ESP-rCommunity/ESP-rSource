@@ -690,7 +690,7 @@ C     Copyright:  CETC 2007
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This function calculates the conductivity of water in the range
-C     0 to 140 °C
+C     0 to 140 ï¿½C
 C     
 C     REFERENCE
 C
@@ -699,7 +699,7 @@ C     Incropera & DeWitt, Fundamentals of Heat and Mass Transfer, 3rd ed.
 C     p. A22.
 C
 C     INPUT
-C     T         REAL           temperature, °C
+C     T         REAL           temperature, ï¿½C
 C
 C     OUTPUT
 C     KWATER    REAL           thermal conductivity of water, W/m/K
@@ -988,9 +988,9 @@ C     temperature of a stratified tank
 C
 C=======================================================================
    
-      SUBROUTINE stratified_tank_calc(Volume, Height, DefPerimeter,
-     &  HIn0, HIn1, HOut0, HOut1, U, k_destrat, NSteps, NNodes,
-     &  HasHX0, 
+      SUBROUTINE stratified_tank_calc(Volume, Height, 
+     &  DefPerimeter,HIn0, HIn1, HOut0, HOut1, U, k_destrat, NSteps, 
+     &  NNodes,HasHX0, 
      &  HInHX0, HOutHX0, DinHX0, DoutHX0, DcoilHX0, PitchHX0, kHX0, 
      &  HasHX1, 
      &  HInHX1, HOutHX1, DinHX1, DoutHX1, DcoilHX1, PitchHX1, kHX1, 
@@ -998,8 +998,12 @@ C=======================================================================
      &  TInHX0, MdotHX0, GlycolFracHX0,
      &  TInHX1, MdotHX1, GlycolFracHX1,
      &  TOut0, TOut1, TAvg, TOutHX0, TOutHX1, QLoss, QImmersedHX,
-     &  StepCount, MixCount, NSecAvg, T, IER)
-     
+     &  StepCount, MixCount, NSecAvg, T, IER, 
+     &  HPCM_MOD,TPCM_MOD,
+     &  Axb,Ax,Ay,V,
+     &  nX,nY,NPCMbot,NPCMtop,dr,
+     &  PCMrho,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
+     &  HPCMcyl,DPCMcyl,HPCMbot,HPCMtop, NPCM, HASPCM,DPCMnode)
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -1016,6 +1020,21 @@ C     MAXNNODES is the maximum number of nodes in a stratified tank
 C     PI is the number pi
       REAL PI
       PARAMETER (PI=3.1415926535897932385)
+
+
+C=====AGGIUNTO DA ROBY=========================================================================================
+      INTEGER mX,mY
+
+C      INTEGER MCELLS
+C      PARAMETER(MCELLS=2000)
+C      INTEGER MAX_STANK
+C      PARAMETER (MAX_STANK=5)
+C      INTEGER mX
+      PARAMETER (mX=100)
+C      INTEGER mY
+      PARAMETER (mY=100)
+C=====FINE AGGIUNTO DA ROBY====================================================================================
+
 
 C---- Arguments
 
@@ -1153,6 +1172,50 @@ C     0.5 = Crank-Nicholson, order 2, unconditionally stable
 C     1.0 = Euler implicit, order 1, unconditionally stable
       REAL ALPHA
      
+
+C=====AGGIUNTO ROBY================================================================================
+      REAL QPCM(MAX_NNODES)       ! exchanged heat between PCM cylinders and water [W]
+      LOGICAL HasPCM
+
+
+      REAL TPCM_MOD(nY,nX) 
+      REAL HPCM_MOD(nY,nX) 
+
+      INTEGER I_STANK 
+
+      REAL V(nY,nX)           ! cells volumes [m^3]
+      REAL Ax(nY,nX-1)        ! CV faces in radial direction (east-west) [m^2]
+      REAL Axb(nY)             ! border face of external CV, in contact with DHW
+      REAL Ay(nX)          ! CV faces in axial direction  (north-south) [m^2]
+
+      INTEGER nX           ! number of cells in radial direction [-]
+      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER NPCMbot            ! tank node corresponding to the lower cylinder node
+                                 ! tank node which the cylinder bottom is located in
+      INTEGER NPCMtop            ! tank node corresponding to the higher cylinder node
+                                 ! tank node which the cylinder top is located in
+      INTEGER NPCM               ! number of PCM modules
+
+      REAL*4 PCMrho             ! density [kg/m^3]
+      REAL*4 cs              ! specific heat of solid [J/(kg K)]
+      REAL*4 cl              ! specific heat of liquid [J/(kg K)]
+      REAL*4 heatLat         ! latent heat [J/kg]
+      REAL*4 cndcts          ! conductivity into solid [W/(m K)]
+      REAL*4 cndctl          ! conductivity into liquid [W/(m K)]
+      REAL*4 Tmi             ! melting temperature  [Â°C]
+      INTEGER method         ! time integration method [-]
+      REAL*4 e               ! phase change range [Â°C]
+      REAL*4 HPCMcyl         ! cylinder height [m]
+      REAL*4 DPCMcyl         ! PCM cylinders diameter [m]
+      REAL*4 HPCMbot         ! Position of the cylinder bottom [m]
+      REAL*4 HPCMtop         ! Position of the cylinder top [m]
+      REAL*4 dr              ! grid dimension in radial direction
+      REAL*4 DPCMnode(nY-1)    ! distance among PCM nodes
+
+C=====AGGIUNTO ROBY================================================================================
+
+
+
 C-----------------------------------------------------------------------
 C     Initialization
 C-----------------------------------------------------------------------
@@ -1216,6 +1279,7 @@ C---- Zero arrays used in calculations
         Tstep(i) = 0.
         Tstep_prev(i) = 0.
         QHX(i) = 0.
+        QPCM(i) = 0.
    20 continue
 
 C---- Zero losses to the environment
@@ -1346,18 +1410,19 @@ C---- The loop starts here and ends at label 900
   110   continue
 
 C-----------------------------------------------------------------------
-C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS
+C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS AND PCM MODULES  <--- AGGIUNTO DA ROBY
 C     The calculation is done only once per internal time step, since it 
 C     depends only on the temperatures in the tank at the end of the 
 C     previous internal time step
 C     When the calculation is done, the tank is considered unmixed. The
-C     heat transfer from the immersed HX, QHX, is calculated at the node
-C     level (not the section level)
+C     heat transfer from the immersed HX, QHX, and from the immersed PCM   <--- AGGIUNTO DA ROBY
+C     modules, QPCM,is calculated at the node level (not the section level)
 C-----------------------------------------------------------------------
 
       if (p > LastpHX) then
 C----     Zero heat transfer array
           do 115 i = 1,NSec,1
+            QPCM(i) = 0.
             QHX(i) = 0.
   115     continue
 
@@ -1374,6 +1439,19 @@ C----     Zero heat transfer array
      &        DcoilHX1, PitchHX1, kHX1, 
      &        Tstep_prev, Mdot, NNodes,
      &        TInHX1, MdotHX1, GlycolFracHX1, TOutHX1step, QHX)
+
+
+          if (HasPCM)
+
+     &      call immersed_PCM(nX,nY,NPCMbot,NPCMtop,dr,
+     &        NodeHeight, Tstep_prev(1),  
+     &        Mdot(1), NNodes, QPCM(1), ts, 
+     &        HPCM_MOD(1,1),TPCM_MOD(1,1),
+     &        Axb(1),Ax(1,1),Ay(1),V(1,1),
+     &        PCMrho,cs,cl,heatLat,cndcts,cndctl,Tmi,
+     &        method,e,
+     &        HPCMcyl,DPCMcyl,HPCMbot,HPCMtop,
+     &        DPCMnode(1),CrossArea)
 
           LastpHX = p
         endif
@@ -1485,7 +1563,7 @@ C---- Heat loss term, beginning of time step
 
 C---- Transfer from immersed HX
           do 125 m = ibot,itop,1
-            Tsec(i) = Tsec(i) + QHX(m)
+            Tsec(i) = Tsec(i) + QHX(m)+NPCM*QPCM(m)
   125     continue
 
 C---- Conduction term to lower section, beginning of time step
@@ -1815,10 +1893,10 @@ C---- Local variables
       REAL    THX          ! average temperature of segment of HX
       REAL    THX_tol      ! tolerance on calculation of temperature of segment of HX
 C     Thermophysical properties fluid inside HX
-      REAL    mu           ! dynamic viscosity [Pa·s or kg/m/s]
+      REAL    mu           ! dynamic viscosity [Paï¿½s or kg/m/s]
       REAL    Cp           ! specific heat [J/kg/K]
       REAL    k            ! thermal conductivity [W/m/K]
-      REAL    mu_wall_i    ! dynamic viscosity at inside wall temperature [N·s/m or kg/s]
+      REAL    mu_wall_i    ! dynamic viscosity at inside wall temperature [Nï¿½s/m or kg/s]
       REAL    Cp_wall_i    ! specific heat at inside wall temperature [J/kg/K]
       REAL    k_wall_i     ! thermal conductivity at inside wall temperature [W/m/K]
 C     Non-dimensional numbers of fluid inside HX
@@ -1841,12 +1919,12 @@ C     Heat transfer coefficients between HX fluid and tank fluid
       LOGICAL CLOSEA       ! Auxiliary variable
 
 C     Thermophysical properties of tank fluid
-      REAL    mu_s         ! dynamic viscosity [Pa·s or kg/m/s]
+      REAL    mu_s         ! dynamic viscosity [Paï¿½s or kg/m/s]
       REAL    Cp_s         ! specific heat [J/g/K]
       REAL    beta_s       ! coefficient of volumetric thermal expansion [1/K] 
       REAL    k_s          ! thermal conductivity [W/m/K]
       REAL    rho_s        ! density [kg/m3]
-      REAL    mu_wall_s    ! dynamic viscosity at outside wall temperature [Pa·s/m or kg/m/s]
+      REAL    mu_wall_s    ! dynamic viscosity at outside wall temperature [Paï¿½s/m or kg/m/s]
       REAL    Cp_wall_s    ! specific heat at outside wall temperature [J/kg/K]
       REAL    k_wall_s     ! thermal conductivity at inside wall temperature [W/m/K]
       REAL    Pr_s         ! Prandtl number []
@@ -1875,7 +1953,7 @@ C---- Functions
 
       INTEGER Bound                ! Bound a number by two others
       REAL glycol_water_density    ! Function for density of glycol-water mixture [kg/m3]
-      REAL glycol_water_viscosity  ! Function for dynamic viscosity of glycol-water mixture [Pa·s]
+      REAL glycol_water_viscosity  ! Function for dynamic viscosity of glycol-water mixture [Paï¿½s]
       REAL glycol_water_cond       ! Function for thermal conductivity of glycol [W/m/K]
       REAL glycol_water_cp         ! Function for specific heat or glycol-water [J/kg/K]
       REAL glycol_water_thermexp   ! Function for coefficient of thermal expansion of glycol-water [1/K]
@@ -2035,7 +2113,7 @@ C----     Thermophysical properties of tank liquid for that node
         
 C----     Natural convection
 C         The length scale to use for Ra is the distance that a fluid particle travels 
-C         in the boundary layer on the body, or PI·D/2. See Liu, 2003
+C         in the boundary layer on the body, or PIï¿½D/2. See Liu, 2003
           Daux = PI*DoutHX/2
           DeltaT = abs(Ts-Twall_o)
           Ra = abs(9.81*beta_s*Daux**3.*DeltaT
