@@ -8,3 +8,9 @@ C Names and documentation.
       CHARACTER*16 ZCDATE  ! date of insertion into db
       CHARACTER*80 ZCDESC  ! component description e.g. air mixing box
       common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
+
+C Location data.
+      integer NPC    ! number of components in database
+      integer ITMLOC ! for each component 1 the start record in the
+                     ! database and 2 the component code
+      common/PCDATC/NPC,ITMLOC(MAXPC,2)

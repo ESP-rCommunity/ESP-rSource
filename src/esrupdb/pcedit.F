@@ -48,7 +48,6 @@ C            for this component.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)

@@ -101,7 +101,6 @@ C write it to the terminal.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
       COMMON /PL/ INDXPR(MAXPC)
 
       dimension ival(MAXPC)
@@ -327,6 +326,8 @@ C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
@@ -336,7 +337,6 @@ C component and its data is returned.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       character dtdesc*68,adodsc*30
       logical ok,dok
@@ -396,7 +396,6 @@ C selected before deletion.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       CHARACTER dtdesc*68,adodsc*30
       character buffer*120
@@ -518,7 +517,6 @@ C PCGET of ESRUpdb
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)
@@ -773,7 +771,6 @@ C PCPUT of ESRUpdb
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)
@@ -864,8 +861,8 @@ C Remove old entry if too small.
 
 C Make space at end of library.
         NPC = NPC + 1
-        ITMLOC(NPC,1) = NXTREC
-        ITMLOC(NPC,2) = ICODE
+        ITMLOC(NPC,1) = NXTREC  ! assign the start record
+        ITMLOC(NPC,2) = ICODE   ! remember the component code
         NXTREC = NXTREC + ISZ
         CALL PCUPDT (1)
         IREC = ITMLOC(NPC,1)
@@ -1060,12 +1057,13 @@ C Error handling.
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
 C Delete entry by compacting library
       INTEGER RECORD(IRECLN)
@@ -1132,12 +1130,13 @@ C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
       CHARACTER PZDESC*25
       logical ok,dok
 

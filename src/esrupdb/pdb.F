@@ -23,6 +23,7 @@ C Boston, MA 02111-1307 USA.
 #include "building.h"
 #include "model.h"
 #include "plantdb.h"
+#include "pdb_data.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 
@@ -55,7 +56,6 @@ C Path to problem and command line file (if any).
       EQUIVALENCE (ERRFLG, ISTAT)
 
       common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
@@ -377,11 +377,11 @@ C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       DIMENSION comp(MAXPC), ival(inpc)
       CHARACTER comp*80,cdesc*80,outs*124
