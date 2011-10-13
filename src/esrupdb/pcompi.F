@@ -480,11 +480,6 @@ C blocks PCBLKA and PCBLKB.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C Mass flow components data.
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C TRNSYS types data.
       common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
      &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
@@ -497,9 +492,9 @@ C TRNSYS types data.
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
       CHARACTER*23 PZDESC
-      character*68 mfsdsc, tdtdsc, tmfsds
+      character*68 tdtdsc, tmfsds
       character*30 tadods
-      character*60 ltpcmp, tltpcm
+      character*60 tltpcm
 
       character*20 ctype
 
@@ -785,11 +780,6 @@ C if act is 'g' write generic item.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C Mass flow components data.
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C TRNSYS types data.
       common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
      &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
@@ -832,8 +822,8 @@ C once per item until the end-of-file.
       common/SFIG/NSIGFIG
 
       CHARACTER PZDESC*23
-      character mfsdsc*68,tdtdsc*68,tmfsds*68
-      character tadods*30,ltpcmp*60,tltpcm*60,ctype*20
+      character tdtdsc*68,tmfsds*68
+      character tadods*30,tltpcm*60,ctype*20
 
 C Generic strings.
       character tab*1,class*12,h*72,act*1,fmt*10,qu*1,uchr*1,t68*68

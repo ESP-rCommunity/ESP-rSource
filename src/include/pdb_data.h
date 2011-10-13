@@ -61,3 +61,20 @@ C << some of this might become arrays for all components? >>
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
+C Mass flow components data
+      integer itpcmp  ! for each external component connection the
+                      ! typical flow component type used
+      integer isdcmp  ! for each external component connection the
+                      ! flow total nb of supplemental data including
+                      ! flow control data
+      integer isdcnn  ! for each external component connection the
+                      ! flow number of connections
+      real supcmp  ! for each external component connection the flow
+                   ! supplemental data e.g. fluid type
+      character mfsdsc*68  ! description of each supplemental flow data
+      character ltpcmp*60  ! text associated with each external comp conn
+      integer isdifc  ! for each external component connection the flow
+                      ! initial supplemental data defining flow comp
+      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
+     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
+     &              ltpcmp(maxcon), isdifc(maxcon)

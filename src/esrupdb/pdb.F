@@ -55,11 +55,6 @@ C Path to problem and command line file (if any).
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C Name of current application
       common/APPNAME/cAppName
       
@@ -71,7 +66,6 @@ C Name of current application
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
-      character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier

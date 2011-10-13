@@ -490,11 +490,6 @@ C PCGET of ESRUpdb
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C TRNSYS types data
       common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
      &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
@@ -506,8 +501,8 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character mfsdsc*68,tdtdsc*68,tmfsds*68
-      character tadods*30,ltpcmp*60,tltpcm*60
+      character tdtdsc*68,tmfsds*68
+      character tadods*30,tltpcm*60
       logical ok,dok
 
 C For help messages
@@ -734,11 +729,6 @@ C PCPUT of ESRUpdb
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C TRNSYS types data
       common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
      &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
@@ -750,8 +740,8 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character mfsdsc*68,tdtdsc*68,tmfsds*68
-      character tadods*30,ltpcmp*60,tltpcm*60
+      character tdtdsc*68,tmfsds*68
+      character tadods*30,tltpcm*60
       character outs*124
       logical ok,dok
 

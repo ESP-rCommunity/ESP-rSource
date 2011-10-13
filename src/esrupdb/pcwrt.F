@@ -30,11 +30,6 @@ C used for output is passed as an argument.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
 
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C TRNSYS types data
       common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
      &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
@@ -46,9 +41,9 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character*68 mfsdsc, tdtdsc, tmfsds
+      character*68 tdtdsc, tmfsds
       character*30 tadods
-      character*60 ltpcmp, tltpcm
+      character*60 tltpcm
       character text*20, buffer*120
 
 C Reset the display mode to act as a script.
