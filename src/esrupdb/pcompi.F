@@ -476,25 +476,10 @@ C blocks PCBLKA and PCBLKB.
 #include "plantdb.h" 
 #include "pdb_data.h"
 
-      common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C TRNSYS types data.
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
       CHARACTER*23 PZDESC
-      character*68 tdtdsc, tmfsds
-      character*30 tadods
-      character*60 tltpcm
 
       character*20 ctype
 
@@ -780,17 +765,6 @@ C if act is 'g' write generic item.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-C TRNSYS types data.
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
 C Generic db commons.
       common/gendb1/idbwidth(13),lastr(13),nbdbdoc(13),nbunit(13),
      &              nbsrc(13),nbcat(13),nbitem(13),idbver(13)     
@@ -822,11 +796,10 @@ C once per item until the end-of-file.
       common/SFIG/NSIGFIG
 
       CHARACTER PZDESC*23
-      character tdtdsc*68,tmfsds*68
-      character tadods*30,tltpcm*60,ctype*20
+      character ctype*20
 
 C Generic strings.
-      character tab*1,class*12,h*72,act*1,fmt*10,qu*1,uchr*1,t68*68
+      character tab*1,class*12,act*1,fmt*10,qu*1,uchr*1,t68*68
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,itdoc*248
       character ittag*12,itmenu*32,itdate*24

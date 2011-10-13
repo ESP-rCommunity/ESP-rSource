@@ -66,7 +66,6 @@ C ******************************************************************
 C  Parameters
 C Used by shell to exchange items
 C ie PC index for print list
-      common/OUTIN/IUOUT,IUIN
 
       ITMP = INDXPR(N2)
       INDXPR(N2) = INDXPR(N1)
@@ -81,8 +80,6 @@ C ie compare component descriptions
       LOGICAL FUNCTION COMPDS (N1,N2)
 #include "plantdb.h"
 #include "pdb_data.h"
-
-      common/OUTIN/IUOUT,IUIN
 
       CHARACTER*80 PZDESC
 
@@ -107,8 +104,6 @@ C ******************************************************************
 
 C INDXPR used by shell to compare keyed items
 C ie compare component codes
-      common/OUTIN/IUOUT,IUIN
-
       NN = INDXPR(N1)
       CALL PCGET (NN)
       NCODE = ICODE

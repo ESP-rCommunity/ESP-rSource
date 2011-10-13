@@ -78,3 +78,39 @@ C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
      &              ltpcmp(maxcon), isdifc(maxcon)
+
+C TRNSYS types data
+      integer ntypes ! number of TRNSYS types in the database
+      integer ittype ! TRNSYS type number for each
+      integer ntadat ! number of A data in TRNSYS type
+      integer ntbdat ! number of B data in TRNSYS type
+      integer ntcdat ! number of C data in TRNSYS type
+      integer ntapot ! number of additional output parameters
+      integer ntmisc ! total of adata and bdata varaibles
+      character tdtdsc*68 ! description of each supplemental data
+      real tdatms    ! value of each supplemental data
+      real trange    ! minimum and maximum for each supplemental data
+      character*30 tadods  ! additional output variable description
+      integer ntaotp ! additional output variable type ??
+      integer ittpcm ! for each external component connection the
+                     ! typical flow component type used
+      integer itsdcm ! for each external component connection the
+                     ! flow total nb of supplemental data including
+                     ! flow control data
+      integer itsdcn ! for each external component connection the
+                     ! flow number of connections
+      real tsupcm    ! for each external component connection the flow
+                     ! supplemental data e.g. fluid type
+      character tmfsds*68 ! description of each supplemental flow data
+      character tltpcm*60 ! text associated with each external comp conn
+      integer itsdif ! for each external component connection the flow
+                     ! initial supplemental data defining flow comp
+      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
+     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
+     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
+     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
+     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
+     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
+     &              tsupcm(MXTSYS,maxcon,maxflw),
+     &              tmfsds(MXTSYS,maxcon,maxflw),
+     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
