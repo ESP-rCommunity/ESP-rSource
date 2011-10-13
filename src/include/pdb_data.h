@@ -17,3 +17,20 @@ C Location data.
       
       integer NXTREC ! next available record for components
       common/PCCTL/NXTREC
+
+C Lists.
+      integer INDXPR  ! array of plant component indices to sort
+                      ! or list
+      COMMON/PL/INDXPR(MAXPC)
+
+C Current component inter-connection data.
+      integer ictype  ! zero is single component one is meta component
+                      ! two is TRNSYS component
+      integer mncomp  ! for a META component the nb of components used
+      integer mncon   ! for a META component the nb of comp inter-connections
+      integer micode  ! for a META component the index of each component used
+      integer icndat  ! for each META inter-connection five values defining
+                      ! the connection ??
+      real rcndat     ! for each META inter-connection three real data
+      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
+     &              rcndat(maxcon,3)

@@ -101,7 +101,6 @@ C write it to the terminal.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-      COMMON /PL/ INDXPR(MAXPC)
 
       dimension ival(MAXPC)
       logical ok,dok
@@ -129,7 +128,7 @@ C Check library is not empty.
 
       lastmmod=mmod   ! remember the display mode
 
-C Initialize print list.
+C Initialize print list array INDXPR.
       DO 100 I = 1, NPC
         INDXPR(I) = I
   100 CONTINUE
@@ -517,9 +516,6 @@ C PCGET of ESRUpdb
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -769,9 +765,6 @@ C PCPUT of ESRUpdb
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
 
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),

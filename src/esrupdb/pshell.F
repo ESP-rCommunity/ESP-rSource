@@ -61,11 +61,11 @@ C Return
 C ******************************************************************
       SUBROUTINE PCEXCH (N1,N2)
 #include "plantdb.h"
+#include "pdb_data.h"
 
 C  Parameters
 C Used by shell to exchange items
 C ie PC index for print list
-      COMMON/PL/INDXPR(MAXPC)
       common/OUTIN/IUOUT,IUIN
 
       ITMP = INDXPR(N2)
@@ -82,7 +82,6 @@ C ie compare component descriptions
 #include "plantdb.h"
 #include "pdb_data.h"
 
-      COMMON /PL/ INDXPR(MAXPC)
       common/OUTIN/IUOUT,IUIN
 
       CHARACTER*80 PZDESC
@@ -104,10 +103,10 @@ C ie compare component descriptions
 C ******************************************************************
       LOGICAL FUNCTION COMPNO (N1,N2)
 #include "plantdb.h"
+#include "pdb_data.h"
 
-C Used by shell to compare keyed items
+C INDXPR used by shell to compare keyed items
 C ie compare component codes
-      COMMON /PL/ INDXPR(MAXPC)
       common/OUTIN/IUOUT,IUIN
       COMMON /PCDATB/ ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &                nadata,nbdata,ncdata,napout,

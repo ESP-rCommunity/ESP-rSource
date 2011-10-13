@@ -48,9 +48,6 @@ C            for this component.
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
       CHARACTER dtdesc*68,adodsc*30
 
       dimension ivals(MAXPC)

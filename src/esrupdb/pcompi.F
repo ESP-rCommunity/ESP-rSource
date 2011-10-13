@@ -41,9 +41,6 @@ C blocks PCBLKA and PCBLKB.
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
       character*68 dtdesc
       character*30 adodsc
 
@@ -498,9 +495,6 @@ C blocks PCBLKA and PCBLKB.
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
 C Mass flow components data.
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -811,9 +805,6 @@ C if act is 'g' write generic item.
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
 
 C Mass flow components data.
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
