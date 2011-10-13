@@ -42,7 +42,6 @@ C            for this component.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
       common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
      &              nadata,nbdata,ncdata,napout,
      &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),

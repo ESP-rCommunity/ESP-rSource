@@ -14,3 +14,6 @@ C Location data.
       integer ITMLOC ! for each component 1 the start record in the
                      ! database and 2 the component code
       common/PCDATC/NPC,ITMLOC(MAXPC,2)
+      
+      integer NXTREC ! next available record for components
+      common/PCCTL/NXTREC

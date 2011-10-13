@@ -55,8 +55,6 @@ C Path to problem and command line file (if any).
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
