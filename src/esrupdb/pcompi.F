@@ -35,15 +35,6 @@ C blocks PCBLKA and PCBLKB.
 
       common/OUTIN/IUOUT,IUIN
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      character*68 dtdesc
-      character*30 adodsc
-
       character buffer*120, ltmp*80, text*20
       CHARACTER*24 TUNIX
 
@@ -489,12 +480,6 @@ C blocks PCBLKA and PCBLKB.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
 C Mass flow components data.
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -512,8 +497,8 @@ C TRNSYS types data.
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
       CHARACTER*23 PZDESC
-      character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
-      character*30 adodsc, tadods
+      character*68 mfsdsc, tdtdsc, tmfsds
+      character*30 tadods
       character*60 ltpcmp, tltpcm
 
       character*20 ctype
@@ -800,12 +785,6 @@ C if act is 'g' write generic item.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
 C Mass flow components data.
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -853,8 +832,8 @@ C once per item until the end-of-file.
       common/SFIG/NSIGFIG
 
       CHARACTER PZDESC*23
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60,ctype*20
+      character mfsdsc*68,tdtdsc*68,tmfsds*68
+      character tadods*30,ltpcmp*60,tltpcm*60,ctype*20
 
 C Generic strings.
       character tab*1,class*12,h*72,act*1,fmt*10,qu*1,uchr*1,t68*68

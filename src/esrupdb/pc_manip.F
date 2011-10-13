@@ -96,12 +96,6 @@ C write it to the terminal.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
       dimension ival(MAXPC)
       logical ok,dok
 
@@ -109,7 +103,6 @@ C write it to the terminal.
       LOGICAL COMPDS, COMPNO
       CHARACTER ZITEM(11)*24
       character LTMP*72,buffer*120
-      CHARACTER dtdesc*68,adodsc*30
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
 
@@ -331,13 +324,6 @@ C component and its data is returned.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      character dtdesc*68,adodsc*30
       logical ok,dok
 
 C For help messages
@@ -389,13 +375,6 @@ C selected before deletion.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      CHARACTER dtdesc*68,adodsc*30
       character buffer*120
 
       dimension ival(MAXPC)
@@ -505,16 +484,11 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
-#include "pdb_data.h" 
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
 
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
@@ -532,8 +506,8 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
+      character mfsdsc*68,tdtdsc*68,tmfsds*68
+      character tadods*30,ltpcmp*60,tltpcm*60
       logical ok,dok
 
 C For help messages
@@ -760,12 +734,6 @@ C PCPUT of ESRUpdb
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -782,8 +750,8 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
+      character mfsdsc*68,tdtdsc*68,tmfsds*68
+      character tadods*30,ltpcmp*60,tltpcm*60
       character outs*124
       logical ok,dok
 

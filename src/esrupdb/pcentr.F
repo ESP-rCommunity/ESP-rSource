@@ -27,6 +27,7 @@ C user input data before the routine.
 C 'PCPUT' is called to add it to the datatbase.
         SUBROUTINE PCENTR
 #include "plantdb.h" 
+#include "pdb_data.h" 
       
       integer lnblnk  ! function definition
 
@@ -35,13 +36,7 @@ C 'PCPUT' is called to add it to the datatbase.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      character dtdesc*68,adodsc*30,PZDESC*25 
+      character PZDESC*25 
       character LTMP*72,ltmpg*72,buffer*90
       LOGICAL OK,dok
 

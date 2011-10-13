@@ -42,14 +42,6 @@ C            for this component.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      CHARACTER dtdesc*68,adodsc*30
-
       dimension ivals(MAXPC)
       character buffer*120,ltmp*80
       character zitem(11)*20

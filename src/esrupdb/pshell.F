@@ -108,14 +108,6 @@ C ******************************************************************
 C INDXPR used by shell to compare keyed items
 C ie compare component codes
       common/OUTIN/IUOUT,IUIN
-      COMMON /PCDATB/ ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &                nadata,nbdata,ncdata,napout,
-     &                NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &                dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &                adodsc(mxaout),noutyp(mxaout)
-
-      character*68 dtdesc
-      character*30 adodsc
 
       NN = INDXPR(N1)
       CALL PCGET (NN)

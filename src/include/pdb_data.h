@@ -34,3 +34,30 @@ C Current component inter-connection data.
       real rcndat     ! for each META inter-connection three real data
       common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
      &              rcndat(maxcon,3)
+
+C Current component descriptors. 
+C << some of this might become arrays for all components? >>
+      integer ICODE  ! the current component code
+      integer INDXPC ! position within array of all plant components
+      integer IRC    ! not used
+      integer NNODE  ! number of nodes in the component
+      integer NMATX  ! number of non-zero matrix coefficients
+      integer NMISC  ! total of adata and bdata varaibles
+      integer nadata ! number of A data variables
+      integer nbdata ! number of B data variables
+      integer ncdata ! number of C data variables
+      integer napout ! number of additional ouput variables
+      integer NDCON  ! for each node a connectivity value ??
+      integer ISV    ! for each node signals water or air or solid etc
+      integer NCPOS  ! position of coefficient within matrix
+      character dtdesc*68 ! description of A data or B data variable
+      real DATAMS    ! value of A data or B data variables
+      real range     ! minimum and maximum for A data or B data variables
+      character adodsc*30  ! additional output variable description
+      integer noutyp ! additional output variable type ??
+      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
+     &              nadata,nbdata,ncdata,napout,
+     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
+     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
+     &              adodsc(mxaout),noutyp(mxaout)
+

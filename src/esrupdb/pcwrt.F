@@ -30,12 +30,6 @@ C used for output is passed as an argument.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
 C Mass flow components data
       common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
      &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
@@ -52,8 +46,8 @@ C TRNSYS types data
      &              tmfsds(MXTSYS,maxcon,maxflw),
      &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
 
-      character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
-      character*30 adodsc, tadods
+      character*68 mfsdsc, tdtdsc, tmfsds
+      character*30 tadods
       character*60 ltpcmp, tltpcm
       character text*20, buffer*120
 
