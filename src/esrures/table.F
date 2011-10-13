@@ -244,7 +244,7 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       character outs*124,outs248*248 ! string buffers
-      character outs800*800,outs800d*800  ! really long string buffers
+      character outs1800*1800,outs1800d*1800  ! really really long string buffers
       character act*1,sq*1,unit*7,t28*28,dg*1
       character LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
@@ -406,30 +406,30 @@ C   don't do this if printing to file.
           is=1
           do 100 ir=1,irows
             K=6   ! initial value for 248 buffer
-            K4=6  ! initial value for 800 buffer
+            K4=6  ! initial value for 1800 buffer
             if (ir.gt.1) then
               outs248='     '  ! clear for 248 buffer
-              outs800='     '  ! clear for 800 buffer
+              outs1800='     '  ! clear for 1800 buffer
             else
               if (IHFLAG.eq.1.and.ixopen.eq.1) then
                 if (delim.eq.'X') then
                   outs248='*time'
-                  outs800='*time'
+                  outs1800='*time'
                 else
                   outs248='#Time'
-                  outs800='#Time'
+                  outs1800='#Time'
                 endif
               elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
                 if (delim.eq.'X') then
                   outs248='*time'
-                  outs800='*time'
+                  outs1800='*time'
                 else
                   outs248='Time'
-                  outs800='Time'
+                  outs1800='Time'
                 endif
               else
                 outs248='Time '
-                outs800='Time '
+                outs1800='Time '
               endif
             endif
             do 20 IL=1,NGET
@@ -465,7 +465,7 @@ C says that ~33 labels can be written in the 800 char width. If data
 C relates to surfaces then labels take up more space.
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs248(K:KE),'(3a)') ' ',
+                  write(outs248(K:KE),'(3a)') ',',
      &              t28(1:lnblnk(t28)),unit
                   K=K+lnblnk(t28)+lnblnk(unit)+1
                 else
@@ -479,18 +479,18 @@ C relates to surfaces then labels take up more space.
               endif
 
 C For writing to file also fill the 800 char buffer
-              if(KE4.le.800)then
+              if(KE4.le.1800)then
                 if (ixopen.eq.1) then
                   call SDELIM(TABLABEL(IL),t28,'N',IW)
-                  write(outs800(K4:KE4),'(3a)') ' ',
+                  write(outs1800(K4:KE4),'(3a)') ',',
      &              t28(1:lnblnk(t28)),unit
                   K4=K4+lnblnk(t28)+lnblnk(unit)+1
                 else
                   if (ir.lt.4) then
-                    write (outs800(K4:KE4),'(2a)') '|',
+                    write (outs1800(K4:KE4),'(2a)') '|',
      &                TABLABEL(IL)(is:ie)
                   else
-                    write (outs800(K4:KE4),'(2a)') '| ',unit
+                    write (outs1800(K4:KE4),'(2a)') '| ',unit
                   endif
                   K4=KE4
                 endif
@@ -503,14 +503,14 @@ C demarcations are omitted.
 C Debug.
 C            write(6,*) outs248(1:lnblnk(outs248))
 C            write(6,*) ' '
-C            write(6,*) outs800(1:lnblnk(outs800))
+C            write(6,*) outs1800(1:lnblnk(outs1800))
 C            write(6,*) ' '
 
             lnb=lnblnk(outs248)+1   ! ensure we do not warp line
             if (IDAY.eq.IODS)then
               if(ixopen.eq.1)then
-                lnb=lnblnk(outs800)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+                lnb=lnblnk(outs1800)   ! write directly to file
+                write(itru,'(A)',iostat=ios,err=1)outs1800(1:lnb)
               else
                 lnb=MIN0(lnblnk(outs248),124)
                 if(lnb.lt.124)then
@@ -522,8 +522,8 @@ C            write(6,*) ' '
 
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
-                lnb=lnblnk(outs800)   ! write directly to file
-                write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+                lnb=lnblnk(outs1800)   ! write directly to file
+                write(itru,'(A)',iostat=ios,err=1)outs1800(1:lnb)
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 lnb=MIN0(lnblnk(outs248),124)
                 if(lnb.lt.124)then
@@ -556,29 +556,29 @@ C Within requested output period.
 
 C Display data. Create both data strings for this timestep.
           outs248='  '
-          outs800='  '
+          outs1800='  '
           if (IHFLAG.eq.0) then 
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
               write (outs248,'(3a)') sq,LJTIME,sq
-              write (outs800,'(3a)') sq,LJTIME,sq
+              write (outs1800,'(3a)') sq,LJTIME,sq
               K=11
             else
               call STIME(J,LTIME)
               write (outs248,'(a5)') LTIME
-              write (outs800,'(a5)') LTIME
+              write (outs1800,'(a5)') LTIME
               K=6
             endif
           else
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
               write (outs248,'(3a)') sq,LJTIME,sq
-              write (outs800,'(3a)') sq,LJTIME,sq
+              write (outs1800,'(3a)') sq,LJTIME,sq
               K=11
             else
               RDOTY=FLOAT(IDAY)+(ATIME/24.)
               write (outs248,'(f10.4)') RDOTY
-              write (outs800,'(f10.4)') RDOTY
+              write (outs1800,'(f10.4)') RDOTY
               K=11
             endif
           endif
@@ -616,7 +616,7 @@ C If writing to file then write data to the 800 char string buffer.
             k=klast   ! re-establish k position value
             do 411 IG=1,NGET
               KE=K+11
-              if(KE.le.800)then
+              if(KE.le.1800)then
                 IZONE=IGETNO(IG,2)
 
 C If there is occupancy filter and occupancy then include in check.
@@ -625,16 +625,16 @@ C Assume fully occupied.
                 ioc=1
                 if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
                 if(ioc.ne.0) then
-                  write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
+                  write (outs1800(K:KE),'(f11.2)') VAL2(IG,J)
                 elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
                   if (VAL2(IG,J).gt.100.0) then
-                    write (outs800(K:KE),'(a)') '  invl dT  '
+                    write (outs1800(K:KE),'(a)') '  invl dT  '
                     IINLVDT=1
                   else
-                    write (outs800(K:KE),'(f11.2)') VAL2(IG,J)
+                    write (outs1800(K:KE),'(f11.2)') VAL2(IG,J)
                   endif
                 else
-                  write (outs800(K:KE),'(a)') '  not occ  '
+                  write (outs1800(K:KE),'(a)') '  not occ  '
                 endif
                 K=K+11
               endif
@@ -642,19 +642,19 @@ C Assume fully occupied.
           endif
 
           if(ixopen.eq.1)then
-            lnb=lnblnk(outs800)   ! write directly to file
+            lnb=lnblnk(outs1800)   ! write directly to file
 
             if(delim.eq.'-')then
-              write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+              write(itru,'(A)',iostat=ios,err=1)outs1800(1:lnb)
             else
 
 C If delimiter set to alternative then process text before writing.
 C If using X delimeter (tagged data) then set the delimeter to a comma.
               dg=delim
               if (delim.eq.'X') dg='C'
-              call SDELIM(outs800,outs800d,dg,IW)
-              lnb=lnblnk(outs800d)   ! write directly to file
-              write(itru,'(A)',iostat=ios,err=1) outs800d(1:lnb)
+              call SDELIM(outs1800,outs1800d,dg,IW)
+              lnb=lnblnk(outs1800d)   ! write directly to file
+              write(itru,'(A)',iostat=ios,err=1) outs1800d(1:lnb)
             endif
           else
 
