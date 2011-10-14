@@ -6944,7 +6944,7 @@ C delimiter:
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       CHARACTER*(*) MSG
-      CHARACTER WWMSG*124
+      CHARACTER WWMSG*1800
       character xfile*144,tg*1,delim*1,dg*1
 
 C If delimiter set to alternative then process text before edisp call.

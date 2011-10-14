@@ -509,7 +509,6 @@ C write out labels for each column.
             xlouts='Time '
           endif
           K=6
-          labellen=32
 
 C For those dumping to a spreadsheet file this would be a good
 C place to write out longer label on a single line.
@@ -522,25 +521,28 @@ c            else
 c            endif
             if(KE.le.248)then
               if(ILFLAG.eq.0)then
-                write (louts(K:KE),'(a,a)') ',',
-c     &             GLMFLABEL(IL)(1:labellen-1)
-     &             GLMFLABEL(IL)(1:lke)
-c                K=K+labellen
+                write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
                 K=K+lke
               else
 
 C Also use the current delimiter.
                 if(delim.eq.'-')then
                   write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'T')then
                   tab=CHAR(9)
                   write (louts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
+                  write (xlouts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'C')then
                   write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'S')then
                   write (louts(K:KE),'(a,a)') ' ',GLMFLABEL(IL)(1:lke)
+                  write (xlouts(K:KE),'(a,a)') ' ',GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'X')then
                   write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
                 endif
                 K=K+lke+1
               endif
@@ -710,8 +712,10 @@ C Assume fully occupied.
                   endif
                   if(ioc.ne.0) then
                     write (louts(K:KE),'(f11.4)') FLOWVALS(IXY)
+                    write (xlouts(K:KE),'(f11.4)') FLOWVALS(IXY)
                   else
                     write (louts(K:KE),'(a)') '  not occ  '
+                    write (xlouts(K:KE),'(a)') '  not occ  '
                   endif
                   K=K+11
 C long lines
@@ -734,8 +738,10 @@ C Assume fully occupied.
  410          continue
                 if(KE.le.248)then
                   call eddisp(itru,louts)
+c                  call edisp(itru,louts)
                 elseif(KE.le.1800)then
-                 call eddisp(itru,xlouts)
+                  call eddisp(itru,xlouts)
+c                  call edisp(itru,xlouts)
                 endif
 C Debug.
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)

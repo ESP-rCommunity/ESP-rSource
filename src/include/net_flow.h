@@ -32,7 +32,7 @@ C Max number of connection lists and number of connections allowed.
       PARAMETER (MFCNLST=10)
       PARAMETER (MFCNEL=5)
 C Max items to display
-      PARAMETER (MFRS=20)
+      PARAMETER (MFRS=42)
 C Max number of contaminants, this is equal to parameter MCTM in
 C cfd.h if MCONTM is changed change MCTM accordingly
       PARAMETER (MCONTM=4)
