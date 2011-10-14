@@ -65,7 +65,7 @@ C MOFLOWSU clears commons/ sets default values.
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
+      character SMFLABEL*32,GMFLABEL*48,GLMFLABEL*48
 
       integer YAXSET, ADDLIN
 
@@ -557,7 +557,7 @@ C Volume flow rate: IMFGET = 4.
         IMFGETNO(NMFGET,5)=1
         IMFGETNO(NMFGET,6)=2
         IMFGETNO(NMFGET,7)=3
-        SUFFIX=' m^3/s'
+        SUFFIX='_m^3/s'
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Conn flow rate (m^3/s)'
         elseif(IROC.eq.1)then
@@ -2435,7 +2435,7 @@ C glmflabel char*32 is longer label for flow item
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
 
       character VERT(MZS+3)*36,KEY*1
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
+      character SMFLABEL*32,GMFLABEL*48,GLMFLABEL*48
       integer ORDER,OGET
       dimension INCGET(MFRS),ORDER(MFRS),OGET(MFRS)
       integer MVERT,IVERT ! max items and current menu item

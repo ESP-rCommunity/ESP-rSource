@@ -72,7 +72,7 @@ C For help messages
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
       IDHFLG=0
-      ILFLAG=0
+      ILFLAG=1
 
   503 ITEM(1)   ='2 select result set    '
       ITEM(2)   ='3 define period        '

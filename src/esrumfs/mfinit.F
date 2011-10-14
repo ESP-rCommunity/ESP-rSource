@@ -72,9 +72,9 @@ C Initiates filling of flow component data arrays.
 
 C Set default values for iteration parameters, stack pressure difference
 C calculation model, matrix solver type and trace output flag.
-      MAXITF=350
-      FERREL=.000001
-      FERMFL=.00000001
+      MAXITF=500
+      FERREL=1.0E-10
+      FERMFL=1.0E-12
       PMAX=50.
       STEFFR=-0.5
       IPSMOD=1

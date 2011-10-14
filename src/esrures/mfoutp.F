@@ -90,9 +90,9 @@ C Simulator parameters.
 
       dimension Yold(MZS), TIMEold(MZS)
       character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
-      character ALABEL(5)*12,t20*20,act*1
+      character ALABEL(5)*12,t20*20,act*1,xlouts*1800
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
+      character SMFLABEL*32,GMFLABEL*48,GLMFLABEL*48
       character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
       character graftitle*64,grlbl*24,t24*24,LTIME*5
@@ -499,32 +499,39 @@ C write out labels for each column.
             call edisp(itru,outs)
           else
             louts='  '
+            xlouts='  '
           endif
           if (IHFLAG.eq.1) then
             louts='#Time'
+            xlouts='#Time'
           else
             louts='Time '
+            xlouts='Time '
           endif
           K=6
+          labellen=32
 
 C For those dumping to a spreadsheet file this would be a good
 C place to write out longer label on a single line.
           do 20 IL=1,NMFGET
-            if(ILFLAG.eq.0)then
-              KE=K+11
-            else
+c            if(ILFLAG.eq.0)then
+c              KE=K+labellen
+c            else
               lke=lnblnk(GLMFLABEL(IL))
               KE=K+lke+1
-            endif
+c            endif
             if(KE.le.248)then
               if(ILFLAG.eq.0)then
-                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
-                K=K+11
+                write (louts(K:KE),'(a,a)') ',',
+c     &             GLMFLABEL(IL)(1:labellen-1)
+     &             GLMFLABEL(IL)(1:lke)
+c                K=K+labellen
+                K=K+lke
               else
 
 C Also use the current delimiter.
                 if(delim.eq.'-')then
-                  write (louts(K:KE),'(a,a)') '|',GLMFLABEL(IL)(1:lke)
+                  write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'T')then
                   tab=CHAR(9)
                   write (louts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
@@ -537,53 +544,113 @@ C Also use the current delimiter.
                 endif
                 K=K+lke+1
               endif
+C Long lines:
+            elseif(KE.le.1800)then
+              if(ILFLAG.eq.0)then
+                write (xlouts(K:KE),'(a,a)') ',',
+     &             GLMFLABEL(IL)(1:lke)
+c                K=K+labellen
+                K=K+lke
+              else
+
+C Also use the current delimiter.
+                if(delim.eq.'-')then
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'T')then
+                  tab=CHAR(9)
+                  write (xlouts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'C')then
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'S')then
+                  write (xlouts(K:KE),'(a,a)') ' ',GLMFLABEL(IL)(1:lke)
+                elseif(delim.eq.'X')then
+                  write (xlouts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                endif
+                K=K+lke+1
+              endif
             endif
+
  20       continue
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
           if (IDAY.eq.IODS)then
-            call edisp(itru,louts)
+            if(KE.le.248)then
+              call edisp(itru,louts)
+            elseif(KE.le.1800)then
+              call edisp(itru,xlouts)
+            endif
           else
-            if (IDHFLG.eq.1)call edisp(itru,louts)
+            if (IDHFLG.eq.1) then
+              if(KE.le.248)then
+                call edisp(itru,louts)
+              elseif(KE.le.1800)then
+                call edisp(itru,xlouts)
+              endif
+            endif
           endif
 
 C If multi-line labels then write out the 2nd line.
           if(ILFLAG.eq.0)then
             if (IDHFLG.eq.1) then
               louts='#    '
+              xlouts='#    '
             else
               louts='     '
+              xlouts='     '
             endif
             if (IHFLAG.eq.1) then
               louts='#    '
+              xlouts='#    '
             else
               louts='     '
+              xlouts='     '
             endif
             K=6
+            labellen=11
             do 225 IL=1,NMFGET
-              KE=K+11
+              KE=K+labellen
               if(KE.le.248)then
-                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(11:20)
-                K=K+11
+                write (louts(K:KE),'(a,a)') ',',
+     &                          GLMFLABEL(IL)(1:20)
+                K=K+labellen
+C long header line
+              elseif(KE.le.1800)then
+                write (xlouts(K:KE),'(a,a)') ',',
+     &                          GLMFLABEL(IL)(1:20)
+                K=K+labellen
               endif
  225        continue
             if (IDAY.eq.IODS)then
-              call edisp(itru,louts)
+              if(KE.le.248)then
+                call edisp(itru,louts)
+              elseif(KE.le.1800)then
+                call edisp(itru,xlouts)
+              endif
             else
-              if (IDHFLG.eq.1)call edisp(itru,louts)
+              if (IDHFLG.eq.1) then
+                if(KE.le.248)then
+                  call edisp(itru,louts)
+                elseif(KE.le.1800)then
+                  call edisp(itru,xlouts)
+                endif
+              endif
             endif
           endif
 
           if (IDHFLG.eq.1) then
             louts='#    '
+            xlouts='#    '
           else
             louts='     '
+            xlouts='     '
           endif
           if (IHFLAG.eq.1) then
             louts='#    '
+            xlouts='#    '
           else
             louts='     '
+            xlouts='     '
           endif
         endif
 
@@ -616,15 +683,18 @@ C from zone iocpzone. Start with assumption of full occupancy.
               call DATIME(JJ,ATIME)
               TIME=float(IHRD)+ATIME
               louts='  '
+              xlouts='  '
               if (IHFLAG.eq.0) then 
 
 C Split flow time into hours and minutes, repeating every 24 hours.
                 call STIME(JJ,LTIME)
                 write (louts,'(a5)') LTIME
+                write (xlouts,'(a5)') LTIME
                 K=6
               else
                 RDOTY=FLOAT(IDAY)+(ATIME/24.)
                 write (louts,'(f10.4)') RDOTY
+                write (xlouts,'(f10.4)') RDOTY
                 K=11
               endif
               do 410 IXY=1,NMFGET
@@ -644,10 +714,29 @@ C Assume fully occupied.
                     write (louts(K:KE),'(a)') '  not occ  '
                   endif
                   K=K+11
+C long lines
+                elseif(KE.le.1800)then
+
+C If there is occupancy filter and occupancy then include in check.
+C Assume fully occupied.
+                  ih=int(ATIME+1.)
+                  ioc=1
+                  if(iocupf.eq.1.and.iocpzone.ne.0)then
+                    call getocup(iocpzone,IDAY,ih,ioc,iier)
+                  endif
+                  if(ioc.ne.0) then
+                    write (xlouts(K:KE),'(f11.4)') FLOWVALS(IXY)
+                  else
+                    write (xlouts(K:KE),'(a)') '  not occ  '
+                  endif
+                  K=K+11
                 endif
  410          continue
-              call eddisp(itru,louts)
-
+                if(KE.le.248)then
+                  call eddisp(itru,louts)
+                elseif(KE.le.1800)then
+                 call eddisp(itru,xlouts)
+                endif
 C Debug.
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
 
