@@ -32,6 +32,10 @@ C IAIM2 set to 1 if AIM-2 infiltration model active.
 C LAIM2 (72 char) file holding AIM-2 infiltration model data.
 C      common/aim2def/iAIM2,LAIM2
 
+C << Task for future - respond to invocation via command line
+C << -act QA in combination with -v or -vv to set the level
+C << of reporing if from command line.
+
       USE AIM2_InputData, ONLY:iAIM2,LAIM2
       USE AIM2, ONLY:AIM2_READIN, AIM2_report
       

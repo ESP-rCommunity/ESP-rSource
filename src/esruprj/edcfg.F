@@ -3197,6 +3197,8 @@ C ************* NEWPRB
 C NEWPRB specifies a new model via existing or new configuration file
 C and the various CAD and native definition facilities. 
 C Parameters passed into newprb:
+C  itrc = zero silent, one summary, two verbose and this may be
+C         reset via user actions
 C  confirm=true request confirmation of configuration file name
 C  ckpath=true finds the path to it (should be false for CAD use as
 C         the file and its location is already known). 
@@ -3699,7 +3701,12 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
         endif
       endif
  444  IF(XST)THEN
-        if(itrc.gt.0)then
+ 
+C If user already said silent or very verbose follow this.
+C Otherwise allow a choice to switch to a different level.
+        if(itrc.eq.2)then
+	  continue  ! user already set full report
+        elseif(itrc.eq.1)then
           CALL EASKABC('When reading the model description,',
      &      'do it:','silently','with synopsis','full report',
      &      IW,0)

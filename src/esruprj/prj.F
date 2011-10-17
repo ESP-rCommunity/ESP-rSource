@@ -145,6 +145,7 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
+      integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit
@@ -180,6 +181,7 @@ C Passed parameters for pregist.
 C Returned parameters from silentread.
       character theprimedirective*8
 
+      integer itrc    ! feedback level during scans
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
@@ -209,7 +211,6 @@ C Initialize variables and recover command line arguments.
       cAppName = 'prj'
       helpinapp='prj'  ! set once for the application
       helpinsub='prj'  ! set for MAIN
-      ITRC=0
       IUOUT=6
       IUIN=5
       LIMTTY=24
@@ -226,7 +227,8 @@ C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
+      itrc=iverb    ! set trace level after call to parsprj
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -877,7 +879,7 @@ C Change focus to zone but do not act on any ianother jump command.
         endif
       endif
 
-      ITRC=1
+C      ITRC=1  ! why reset this ?
     3 INO=-4
       ITEMS(1) =  'a introduction to ESP-r'
       ITEMS(2) =  'b database maintenance'

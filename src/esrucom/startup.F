@@ -968,7 +968,7 @@ C Errors.
       end
 
 C ****** parpsfh
-C parpsfh: Help message for parpsf.
+C parpsfh: Help message for several of the command line parsers.
       subroutine parpsfh(appn)
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
@@ -977,6 +977,7 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'This is the ESP-r Simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,'       [-v|-vv] verbose or very verbose')
         call edisp(iuout,'   [-p <param_set_name> <how>]')
         call edisp(iuout,'    (where how {interactive|silent} defines')
         call edisp(iuout,'     whether the user interacts')
@@ -1083,6 +1084,7 @@ C parpsfh: Help message for parpsf.
       elseif(appn(1:3).eq.'prj')then
         call edisp(iuout,'The project manager.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
+        call edisp(iuout,'       [-v|-vv] verbose or very verbose')
         call edisp(iuout,
      &     '       [-file <configuration>|<silent command>]')
         call edisp(iuout,'       [-zone <name|index>]')
@@ -1711,7 +1713,7 @@ C ********* parsprj
 C parsprj allows terminal, size, config file, zone focus and actions arguments
 C (including 3 real data) to be passed to the prj from the invocation line.  
       subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
-     &        data1,data2,data3)
+     &        data1,data2,data3,iverb)
       
       integer lnblnk  ! function definition
 
@@ -1722,6 +1724,7 @@ C Application name
       character*12 cAppName
 
       integer termtype,iappw,iappx,iappy
+      integer iverb
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1759,6 +1762,7 @@ C into binary, and set default terminal type as necessary
       data1=0.0
       data2=0.0
       data3=0.0
+      iverb = 0  ! assume silent initial scan
 
 C Get arguments from command line: if no paramters just
 C return, otherwise process parameters.
@@ -1780,6 +1784,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
           CALL ESPrVersion("details",cAppName,IUOUT)
           stop
+        elseif(argument(1:3).eq.'-vv')then
+          iverb = 2   ! tell application to run with debug verbose
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 1   ! tell application to run with debug moderate
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -2530,7 +2538,8 @@ C If one parameter.
           call edisp(iuout,
      &    ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
           call edisp(iuout,' -out [file] = output file')
-          call edisp(iuout,' -v          = verbose mode')
+          call edisp(iuout,' -v          = verbose mode during scan')
+          call edisp(iuout,' -vv         = very verbose during scan')
           call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
           call edisp(iuout,' -keep       = retain scratch files')
           call edisp(iuout,' -obs        = include esp-r obstructions')
@@ -2557,8 +2566,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
           CALL ESPrVersion("details",cAppName,IUOUT)
           stop
+        elseif(argument(1:3).eq.'-vv')then
+          iverb = 2   ! tell application to run with debug verbose
         elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
+          iverb = 1   ! tell application to run with debug moderate
         elseif(argument(1:3).eq.'-mm')then
           conv = 0.001
         elseif(argument(1:6).eq.'-metre')then
