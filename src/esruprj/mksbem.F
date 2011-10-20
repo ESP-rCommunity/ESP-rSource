@@ -3108,8 +3108,6 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
@@ -3124,6 +3122,13 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       logical NEAR
       real Air_infilt
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmregs'  ! set for subroutine
+
 C Echo the current state of regulations.
       call lstncm('b',iuout)
 
@@ -3133,10 +3138,12 @@ c individual editing of infiltration.
         iedit(iz)=0
  230  continue
 
+      helptopic='ncm_bldg_regs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IX=1
       JSTR(1)=IRGG
  902  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  50,MREG,BLDREG,'Define building services strategy',IER,2)
+     &  50,MREG,BLDREG,'Define building services strategy',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 902
       if(JSTR(1).LE.4.AND.JSTR(1).GE.1)then
         IRGG=JSTR(1)
@@ -3148,8 +3155,8 @@ c individual editing of infiltration.
 C Enter bulding design stage
       IX=1
       JSTR(1)=ISTG
- 903  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  12,MSTG,BLDSTG,'Define building services strategy',IER,2)
+ 903  CALL EPICKS(IX,JSTR,' ','Define building stage to use',
+     &  12,MSTG,BLDSTG,'Define building stage',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 903
       if(JSTR(1).LE.2.AND.JSTR(1).GE.1)then
         ISTG=JSTR(1)
@@ -3163,12 +3170,12 @@ C Enter Scottish building types if Scottish regs to be used
         IX=1
         JSTR(1)=ISBT
  904    CALL EPICKS(IX,JSTR,' ','Define building type',
-     &    40,MSBT,SBTYP,'Define building type',IER,2)
+     &    40,MSBT,SBTYP,'Define building type',IER,nbhelp)
         IF(JSTR(1).EQ.0)GOTO 904
         IF(JSTR(1).LE.2.AND.JSTR(1).GE.1)ISBT=JSTR(1)
         CALL EASKABC('Is the building built/designed following',
      &    'guidance in Accredited Construction Details (Scotland)',
-     &    'yes','no','Do not know',IW,2)
+     &    'yes','no','Do not know',IW,nbhelp)
         IF(IW.EQ.1)THEN
           SBREF='YES'
         ELSE
@@ -3181,11 +3188,11 @@ C Enter Scottish building types if Scottish regs to be used
 C Enter building permeability
       CALL EASKR(BINF50,
      &  'Enter building permeability at 50Pa in m3/m2.hour',
-     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
       CALL EASKABC(
      &  'Is a compliance check to be performed on the building',
      &  'regarding air permeability value?',
-     &  'yes','no','Do not know',IW,2)
+     &  'yes','no','Do not know',IW,nbhelp)
       IF(IW.EQ.2)THEN
         APCHK='NO '
       ELSE
@@ -3197,12 +3204,13 @@ C communicated by AECOM
 c      CALL EASKABC(
 c     &  'Infer air changes per hour from permeability',
 c     &  'value using CIBSE data',
-c     &  'yes','no','Do not know',IW,2)
+c     &  'yes','no','Do not know',IW,nbhelp)
       IW=1
- 4252 IF(IW.EQ.1)THEN
+      IF(IW.EQ.1)THEN
         ICIBSE1=1 ; ICIBSE2=1 ; ICIBSE3=1 ! initialise
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
-     &  54,8,CIBSESTR1,'Pick building that best matches model',IER,2)
+     &    54,8,CIBSESTR1,'Pick building that best matches model',
+     &    IER,nbhelp)
         ICIBSE1=JSTR(1)
         DO 134 IBT=1,4
           IF(ICIBSESTOR(ICIBSE1,IBT).EQ.0)THEN
@@ -3218,8 +3226,9 @@ c     &  'yes','no','Do not know',IW,2)
           ENDIF
  134    CONTINUE
         CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
-     &  'per floor that best matches model',
-     &  46,4,CIBSESTR2,'Pick closest storeys and/or floor area',IER,2)
+     &    'per floor that best matches model',
+     &    46,4,CIBSESTR2,'Pick closest storeys and/or floor area',
+     &    IER,nbhelp)
         ICIBSE2=JSTR(1)
 
 C Select CIBSE table value that best fits user supplied permeability value
@@ -3297,17 +3306,13 @@ C If a long list include page facility text and info on portion seen.
       ZITEMS(M+3)= '- exit this menu                 '
       nitms=M+3
 
-C Help text for this menu.
-      H(1)='Air leakage rates can be specified for'
-      H(2)='for every zone in terms of air changes per hour. '
-
       CALL EMENU('zone air changes per hour',ZITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
         continue
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('AIR LEAKAGE',2,'-',0,0,IER)
+        CALL PHELPD('AIR LEAKAGE',nbhelp,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitms-2)THEN
 
@@ -3322,7 +3327,7 @@ C If there are enough items allow paging control via EKPAGE.
         Air_infilt=ACH(INO)
         CALL EASKR(Air_infilt,' ',
      &   'Air changes per hour for this zone?',0.0,'W',30.0,'W',0.0,
-     &   'air leakage for the zone',IER,0)
+     &   'air leakage for the zone',IER,nbhelp)
         ACH(INO)=Air_infilt
         iedit(ino)=1
         goto 3
@@ -3332,16 +3337,9 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Use existing building type if non-zero.
       call lstncm('b',iuout)
-      h(1)='For the UK National Calculation Method you are required'
-      h(2)='to select one of these building types. '
-      h(3)=' '
-      h(4)='Depending on the type of building the notional model will'
-      h(5)='have different assumptions about glazing areas. The '
-      h(6)='building type will also help in the selection of room '
-      h(7)='use patterns. '
       IX=1
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
-     &  42,29,BTYPNAME,'building types',IER,7)
+     &  42,29,BTYPNAME,'building types',IER,nbhelp)
       IF(IVALSS(1).EQ.0)GOTO 905
       if(IVALSS(1).gt.0)then
         ibusertyp=IVALSS(1)
@@ -3387,7 +3385,6 @@ C required models ') which returned iuact=1.
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -3431,7 +3428,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER ACT*1,ADF*124
       character cfgroot*24,LCFGF*72,NNAME*72
       character fs*1,msgl2*48,tab*1
-      character outs*124,h*72,GUESS*24
+      character outs*124,GUESS*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -3468,6 +3465,13 @@ C For tdf to call arlist:
       integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
       REAL val_converted
       real ZD  ! depth for ground temp calc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSTRIPPED'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3750,9 +3754,9 @@ C Write control file (filename.ctl is saved to filename_str.ctl)
         XST=.FALSE.
         call FINDFIL(LCTLF,XST)  ! using model path
         IF(XST)THEN
-          H(1) = ' Control file exists. Choose to overwrite in '
-          H(2) = ' question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         CALL CTLWRT(ICTLF,IER)
 
@@ -3774,9 +3778,9 @@ C first temporal item.
         XST=.FALSE.
         call findfil(LTDFA,XST)
         IF(XST)THEN
-          H(1)='Temporal data file exists. Choose to overwrite in '
-          H(2)='question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         iafil=IUTDFA
         ITDFLG=3
@@ -4113,7 +4117,6 @@ C This routine assumes newer geometry files are being used.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -4131,7 +4134,7 @@ C This routine assumes newer geometry files are being used.
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72,H*72
+      CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12
       CHARACTER*12 XJCCU,XKCCU
@@ -4154,18 +4157,22 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM'  ! set for subroutine
+
 C Initialise variables
       SN=' '
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
       IF(ISBEM.NE.2)THEN
-        H(1) = 'You have not defined NCM details about the building. '
-        H(2) = 'These can be defined by choosing model context in the '
-        H(3) = 'browse / edit / simulate menu and then choosing  '
-        H(4) = 'option UK NCM specifications. '
-        H(5) = 'You are being returned to the NCM editing facility. '
-        CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
+        helptopic='ncm_details_missing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
         ier=2  ! signal insufficient details
         RETURN
       ENDIF
@@ -4224,11 +4231,9 @@ C << (e.g. a zero activity) need to be marked at this point.
           ier = 2
         endif
         if(ier.ne.0)then
-          H(1)='A problem was found when scanning the origial'
-          H(2)='model geometry. You may need to alter the original'
-          H(3)='model in order to proceed.'
-          H(4)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',4,'-',0,0,IER)
+          helptopic='ncm_geom_scan_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=3  ! signal geometry issue
           return
         endif
@@ -4275,10 +4280,9 @@ C Make a copy of constructions file and tmc file if applicable.
         LTWIN(ICOMP)=NNAME
         CALL MKTWIN(IFU,ICOMP,QUIET,IER)
         if(ier.ne.0)then
-          H(1)='A problem was found when copying origial'
-          H(2)='model files. Check if you have write permission.'
-          H(3)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',3,'-',0,0,IER)
+          helptopic='ncm_file_copy_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=4  ! signal geometry issue
           return
         endif
@@ -4326,9 +4330,9 @@ C Re-establish glazing fractions based on UK NCM guidelines
         WALLFRFR=0.10
         GLZFR=0.
       else
-        H(1)='A problem was found - the NCM building type'
-        H(2)='was not defined. Please do this and try again.'
-        CALL PHELPD('NCM building type undefined!',2,'-',0,0,IER)
+        helptopic='ncm_bld_type_not'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM building type undefined!',nbhelp,'-',0,0,IER)
         ier=5  ! signal ncm issue
         return
       endif
@@ -5397,9 +5401,6 @@ C IMODE = 4 -> Typical model
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
 
-      common/pophelp/h(60)
-      character h*72
-
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
       CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
@@ -5418,6 +5419,14 @@ C Monthly averaging parameters
       REAL Cool_Supply(12), Cool_Demand(12)
       REAL Aux_Supply(12)
       REAL Light_Supply(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RSL6TF'  ! set for subroutine
+
       DO 34 IM=1,12
         DHW_Supply(IM)  =0. ; DHW_Demand(IM)  =0.
         Heat_Supply(IM) =0. ; Heat_Demand(IM) =0.
@@ -5438,9 +5447,11 @@ C Get text file name and initialise variables
       ELSE ! warn if file could not be opened
         write(outs,'(2a)') 'could not open ',ltxtf(1:72)
         call edisp(iuout,outs)
-        H(1)='name of the text result file'
+        helptopic='ncm_save_six_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LTXTF,'Name of text results file?',
-     &    '(<72 characters)',72,'result.txt','text res file',IER,1)
+     &    '(<72 characters)',72,'result.txt','text res file',
+     &    IER,nbhelp)
         CALL EFOPSEQ(IUR,LTXTF,1,IER)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
@@ -13295,8 +13306,6 @@ C information)
 
       common/outin/iuout,iuin
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer isystCurrent
       logical menulogical !Logical to use for a menu in order to avoid the GOTO statements
       logical pickedsomething ! set to true if one of the options selected
@@ -13306,6 +13315,13 @@ C information)
       character head*30,items*50
       integer IansLeakage
       integer nitms,ino ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='defLeakage'  ! set for subroutine
 
       pickedsomething=.false.
       menulogical=.false.
@@ -13323,13 +13339,8 @@ C information)
         write(head,'(a)')'Ductwork/AHU leakage details'
 
 C Help text for this menu.
-        H(1) ='This menu allows the definition of ductwork'
-        H(2) ='and Air Handling Unit details. These will '
-        H(3) ='be used for the Auxiliary Energy calculation'
-        H(4) ='for the stripped building. The defaults will'
-        H(5) ='use the worse case options: this for the '
-        H(6) ='ductwork question is "Class Worse than A"'
-        H(7) ='and for AHU is "Class worse than L3".'
+        helptopic='ncm_ductwork_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for ductwork and AHU details.
         call emenu(head,items,nitms,ino)
@@ -13355,16 +13366,13 @@ C value it should be preserved.
         elseif(ino.eq.nitms-1)then
 
 C Produce help text for the menu.
-          call phelpd(head,7,'-',0,0,IER)
+          call phelpd(head,nbhelp,'-',0,0,IER)
           menulogical=.false.
         elseif(INO.EQ.1)THEN
-          H(1)='The default is the same as Class Worse than A.'
-          H(2)='Class B is the best option here. See '
-          H(3)='EN 13779 Standard for more details.'
           call easkabcd(' ',
-     &     'Has the ductwork been leakage tested ?',
-     &     'No use default leakage','Class B','Class A',
-     &     'Class Worse than A',IansLeakage,3)
+     &      'Has the ductwork been leakage tested ?',
+     &      'No use default leakage','Class B','Class A',
+     &      'Class Worse than A',IansLeakage,nbhelp)
           if(IansLeakage.eq.1)then
             write(ductwork(isystCurrent)(1:24),'(a)')
      &           'No, use default leakage'
@@ -13396,16 +13404,13 @@ C the auxiliary energy calculation in iSBEM.
           endif
           pickedsomething=.true.
         elseif(ino.eq.2)then
-          H(1)='The default is the same as Class Worse than L3.'
-          H(2)='Class L1 is the best option here. See EN 13779'
-          H(3)='Standard for more details.'
           i_default=1
           i_define=0
           call menuatol('Define AHU leakage',
-     &    'Does the AHU meet CEN leakage Standards?',
-     &    'a No, use default leakage','b Class L1','c Class L2',
-     &    'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
-     &    ' ',' ',' ',i_define,i_default,3)
+     &      'Does the AHU meet CEN leakage Standards?',
+     &      'a No, use default leakage','b Class L1','c Class L2',
+     &      'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
+     &      ' ',' ',' ',i_define,i_default,nbhelp)
           if(i_define.eq.1)then
             write(AHUleakage(isystCurrent)(1:24),'(a)')
      &          'No, use default leakage'

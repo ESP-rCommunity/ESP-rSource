@@ -14526,116 +14526,104 @@ Another mode is to scan the zone operations file and to compose'
         CALL EASKI(pi_limit,' ','Insurance cover limit?',
         CALL EASKABCD(' ','Complexity level ?',
 *subroutine edsbmregs
-*item edsbmregs
+*item edsbmregs ncm_bldg_regs
+'Select from the list of choices the appropriate building regulations'
+'for this project.'
+'  '
+'Next select from list the stage of the project.'
+'  '
+'If you are using the Scottish regulations are are asked to nominate'
+'a Scottish building type. Depending on the type of building the'
+'notional model will have different assumptions about glazing areas.'
+'The building type will also help in the selection of room '
+'use patterns. '
+'  '
+'For all locations you are asked to define the building permeability'
+'based on a 50Pa test in units of m^3/m^2/hour (where m^2 is the'
+'building envelope area) You are also asked whether a compliance'
+'check will be carried out.'
+'  '
+'A approximation of infiltration based on CIBSE data is used. The'
+'selections allow you to define a number of levels and level floor'
+'area so that a correlation can be recovered.'
+'  '
+'Based on the above information you are then asked to confirm the'
+'air leakage rates (to be added to the fresh air requirement) in'
+'terms of air changes per hour.'
 *enditem
  902  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-*item edsbmregs
-*enditem
  903  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-*item edsbmregs
-*enditem
  904    CALL EPICKS(IX,JSTR,' ','Define building type',
-*item edsbmregs
-*enditem
         CALL EASKABC('Is the building built/designed following',
-*item edsbmregs
-*enditem
       CALL EASKR(BINF50,
-*item edsbmregs
-*enditem
       CALL EASKABC(
-*item edsbmregs
-*enditem
-c      CALL EASKABC(
-*item edsbmregs
-*enditem
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
-*item edsbmregs
-*enditem
         CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
-*item edsbmregs
-'Air leakage rates can be specified for'
-'for every zone in terms of air changes per hour. '
-*enditem
         CALL PHELPD('AIR LEAKAGE',2,'-',0,0,IER)
-*item edsbmregs
-*enditem
         CALL EASKR(Air_infilt,' ',
-*item edsbmregs
-'For the UK National Calculation Method you are required'
-'to select one of these building types. '
-' '
-'Depending on the type of building the notional model will'
-'have different assumptions about glazing areas. The '
-'building type will also help in the selection of room '
-'use patterns. '
-*enditem
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
 *subroutine EMKSTRIPPED
-*item EMKSTRIPPED
-' Control file exists. Choose to overwrite in '
-' question that will follow '
+*item EMKSTRIPPED ncm_str_ctl_warn
+'A control file exists. Choose to overwrite in the'
+'questions that will follow. '
+'  '
+'There is also a check to see if a temporal data file'
+'also exists and let you confirm if it should be overwritten.'
 *enditem
           CALL PHELPD('File exists',2,'-',0,0,IER)
-*item EMKSTRIPPED
-'Temporal data file exists. Choose to overwrite in '
-'question that will follow '
-*enditem
           CALL PHELPD('File exists',2,'-',0,0,IER)
 *subroutine EMKSBM
-*item EMKSBM
- 'You have not defined NCM details about the building. '
- 'These can be defined by choosing model context in the '
- 'browse / edit / simulate menu and then choosing  '
- 'option UK NCM specifications. '
- 'You are being returned to the NCM editing facility. '
+*item EMKSBM ncm_details_missing
+'You have not defined NCM details about the building.'
+'These can be defined by choosing model context in the'
+'browse / edit / simulate menu and then choosing'
+'option UK NCM specifications. '
+'You are being returned to the NCM editing facility.'
 *enditem
         CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_geom_scan_issue
 'A problem was found when scanning the origial'
 'model geometry. You may need to alter the original'
 'model in order to proceed.'
 'You are being returned to the NCM editing facility. '
 *enditem
           CALL PHELPD('NCM details undefined!',4,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_file_copy_issue
 'A problem was found when copying origial'
 'model files. Check if you have write permission.'
 'You are being returned to the NCM editing facility. '
 *enditem
           CALL PHELPD('NCM details undefined!',3,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_bld_type_not
 'A problem was found - the NCM building type'
 'was not defined. Please do this and try again.'
 *enditem
         CALL PHELPD('NCM building type undefined!',2,'-',0,0,IER)
 *subroutine RSL6TF
-*item RSL6TF
-'name of the text result file'
+*item RSL6TF ncm_save_six_file
+'Please supply the name of the [level 6] text result file.'
 *enditem
         CALL EASKS(LTXTF,'Name of text results file?',
 *subroutine defLeakage
-*item defLeakage
-'This menu allows the definition of ductwork'
-'and Air Handling Unit details. These will '
-'be used for the Auxiliary Energy calculation'
-'for the stripped building. The defaults will'
-'use the worse case options: this for the '
-'ductwork question is "Class Worse than A"'
-'and for AHU is "Class worse than L3".'
+*item defLeakage ncm_ductwork_details
+'This menu allows the definition of ductwork and air handling'
+'Unit details. These will be used for the Auxiliary Energy'
+'calculation for the stripped building. The defaults will'
+'use the worse case options: this for the ductwork question'
+'is [Class Worse than A] and for AHU is [Class worse than L3].'
+'  '
+'For the ductwork calss:'
+'  The default is the same as Class Worse than A.'
+'  Class B is the best option here. See '
+'  EN 13779 Standard for more details.'
+'  '
+'For the AHU class:'
+'  The default is the same as Class Worse than L3.'
+'  Class L1 is the best option here. See EN 13779'
+'  Standard for more details.'
 *enditem
           call phelpd(head,7,'-',0,0,IER)
-*item defLeakage
-'The default is the same as Class Worse than A.'
-'Class B is the best option here. See '
-'EN 13779 Standard for more details.'
-*enditem
           call easkabcd(' ',
-*item defLeakage
-'The default is the same as Class Worse than L3.'
-'Class L1 is the best option here. See EN 13779'
-'Standard for more details.'
-*enditem
           call menuatol('Define AHU leakage',
 *subroutine epltnet
 *item epltnet
