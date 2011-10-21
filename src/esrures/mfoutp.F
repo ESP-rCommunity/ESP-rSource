@@ -80,7 +80,12 @@ C Occupancy filter info.
       common/mfocup/iocpzone
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+
+      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
+      integer  LNSMFLABEL,LNGMFLABEL,LNGLMFLABEL ! length of label strings
+      COMMON/LNMFLABEL/LNSMFLABEL(MFRS),LNGMFLABEL(MFRS),
+     &                 LNGLMFLABEL(MFRS)
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
 
 C Simulator parameters.
@@ -92,7 +97,6 @@ C Simulator parameters.
       character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
       character ALABEL(5)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
       character graftitle*64,grlbl*24,t24*24,LTIME*5
@@ -210,7 +214,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NMFGET.ge.1)then
-          write(outs,'(2a)')GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+          write(outs,'(2a)')GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &      '>> file.'
         else
           write(outs,'(a)')' Output being directed to file.' 
@@ -375,7 +379,7 @@ C Calculate average.
 
 C Inform user of the histo range and reset nb of bins and typcial bin size.
         write(outs,'(a,a,a,f9.2,a,f10.2)')'The ',
-     &    GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),' data range is',
+     &    GLMFLABEL(1)(1:LNGLMFLABEL(1)),' data range is',
      &    XMIN,' to',XMAX
         call edisp(itru,outs)
         if(iocupf.eq.1.and.iocpzone.ne.0)then
@@ -487,6 +491,9 @@ C Write graph head and set up axis positions and draw.
 
 C Recover and plot data. If listing to file or text feedback then
 C write out labels for each column.
+
+C << place to add logic to also detect ixopen as in table.F:381 >>
+
       do 10 IDAY=IODS,IODF
         if (MENUTYPE.eq.4) then
           CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
@@ -511,9 +518,9 @@ C For those dumping to a spreadsheet file this would be a good
 C place to write out longer label on a single line.
           do 20 IL=1,NMFGET
             if(ILFLAG.eq.0)then
-              KE=K+11
+              KE=K+11   ! short label
             else
-              lke=lnblnk(GLMFLABEL(IL))
+              lke=LNGLMFLABEL(IL)  ! longer lable length
               KE=K+lke+1
             endif
             if(KE.le.248)then
@@ -843,21 +850,21 @@ C indicate that several flow items (e.g. nodes) are included.
             if(NMFGET.eq.1)then
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),', Bin width =',
      &            DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),', Bin width =',
      &            DXBIN
               endif
             else
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &            ' (...), Bin width =',DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &            ' (...), Bin width =',DXBIN
               endif
             endif
