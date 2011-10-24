@@ -2832,8 +2832,10 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iicol
 #endif
 
 C Text for each slot.
@@ -3131,7 +3133,8 @@ C Plot out the first 7 days.
             do 147 j = lstart,lfinish
               write(word3(1:3),'(a)') am1slots(J)(1:3)
               idcol=m1slots(j,2)
-              if(idcol.eq.0)call winscl('-',0)
+              iicol=0
+              if(idcol.eq.0)call winscl('-',iicol)
               call findviewtext(icx,line,isize,ix,iy)
               if(idcol.eq.0)then
                 call textatxy(ix,iy,word3,'-',idcol)
@@ -3146,7 +3149,8 @@ C Shift over another character and print out the 2nd months line.
             do 148 j = lstart,lfinish
               write(word3(1:3),'(a)') am2slots(J)(1:3)
               idcol=m2slots(j,2)
-              if(idcol.eq.0)call winscl('-',0)
+              iicol=0
+              if(idcol.eq.0)call winscl('-',iicol)
               call findviewtext(icx,line,isize,ix,iy)
               if(idcol.eq.0)then
                 call textatxy(ix,iy,word3,'-',idcol)
@@ -3160,7 +3164,8 @@ C Shift over another character and print out the 2nd months line.
 
 C Also include list of day types.
         line=line+2
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         write(etext,*) 'Calendar: ',calename
         iside=line
         isize=0
@@ -3170,7 +3175,8 @@ C Also include list of day types.
           line=line+1
           write(etext,*) calentag(icd),' ',calendayname(icd)
           idcol=icd
-          if(idcol.eq.0)call winscl('-',0)
+          iicol=0
+          if(idcol.eq.0)call winscl('-',iicol)
           call findviewtext(3,line,isize,ix,iy)
           if(idcol.eq.0)then
             call textatxy(ix,iy,etext,'-',idcol)
@@ -3178,7 +3184,8 @@ C Also include list of day types.
             call textatxy(ix,iy,etext,'z',idcol)
           endif
  151    continue
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
       endif
       return

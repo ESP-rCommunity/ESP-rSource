@@ -5048,8 +5048,16 @@ C Parameters
             ENDIF
  8794     CONTINUE
  8792   CONTINUE
-        WRITE(OUTSTR,9993)I,X(I),Y(I),Z(I),(ISASSO(IH),IH=1,IHIT)
- 9993   FORMAT(I5,3F10.3,'  ',10(I2,', '))
+        if(IHIT.lt.5)then
+
+C If there are less than 5 surfaces write our their names.
+          WRITE(OUTSTR,9994)I,X(I),Y(I),Z(I),
+     &      (SNAME(icomp,ISASSO(IH)),IH=1,IHIT)
+ 9994     FORMAT(I5,3F10.4,'  ',5(A,' '))
+        else
+          WRITE(OUTSTR,9993)I,X(I),Y(I),Z(I),(ISASSO(IH),IH=1,IHIT)
+ 9993     FORMAT(I5,3F10.4,'  ',10(I2,', '))
+        endif
         call edisp(ITRU,OUTSTR)
  8790 CONTINUE
 
@@ -5063,13 +5071,13 @@ C Surfaces with associated vertices.
       DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
         if(NV.le.27)then
-          WRITE(OUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+          WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
         else
-          WRITE(LOUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+          WRITE(LOUTSTR,9990)SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp248(ITRU,LOUTSTR,90)
         endif 
- 9990   FORMAT(I6,I9,I5,42(',',I3))
+ 9990   FORMAT(A,I3,I5,42(',',I3))
  9991 CONTINUE
       RETURN
       END

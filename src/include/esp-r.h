@@ -130,7 +130,7 @@ void	wwcsetend_();
 void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
 void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);
 void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,char* ftmppth,long int* ibrowse,
-        int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);
+        long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);
 void	curmodule_(char* fcmodule,int len_fcmodule);
 void	capexgf_(char* cmd,int len_cmd);
 void	capextf_(char* cmd,int len_cmd);

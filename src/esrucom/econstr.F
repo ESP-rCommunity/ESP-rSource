@@ -537,6 +537,8 @@ C Reporting.
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
+
+C << possible place to use ssmlcindex >>
         imatch(i)=0
         RT(I)=0.
         do 5 ii=1,nmlc

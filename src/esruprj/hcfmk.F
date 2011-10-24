@@ -1987,7 +1987,7 @@ C Not one of the legal menu choices.
 
 C Selected correlations control: .
       IF(iw.eq.2) THEN
-        helptopic='zone_htc_correlation_edit'
+        helptopic='zone_htc_correlat_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
         hcfpdescr(IN) = 'User supplied hc correlations'
         DO 71 J=1,NS

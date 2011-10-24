@@ -6,39 +6,7 @@
 # databases, training and reference materials.
 #
 # This script is a work in progress, and is undergoing
-# continual improvement. It has been tested on the following
-# platform/compiler/graphics library configurations:
-#
-# =====================================================================================
-# OS      Distribution / Host       User         rev   Compiler   x11   GTK   noX   XML
-# =====================================================================================
-# Linux   Gentoo / NRCan:c.monster  aferguso     578   gcc3.4.6    P     P     P     P
-#                                                      gcc4.1.1    P     P     P     P
-#                                                      gcc32       P     P     P     P
-#         Mandrake 10.0             jhand        578   gcc3.4      P     P     -     P
-#         -----------------------------------------------------------------------------
-#         Fedora Core 5             A.Horsford   489   gcc32       P     -     -     -
-#                                                480   gcc4.1.0    X     -     -     -
-#         -----------------------------------------------------------------------------
-#         Linspire (2.6.14) (a)     C.Jones      480   gcc3.3.5    X     X     -     -
-# -------------------------------------------------------------------------------------
-# CYGWIN  NT5.1                     aferguso     578   gcc3.4.4    P     P     P     -
-# -------------------------------------------------------------------------------------
-# MINGW   NT5.1                     aferguso     578   gcc3.4.2    -     P     P     -
-# -------------------------------------------------------------------------------------
-# Solaris SunOS 4 / NRCan:nrn7      aferguso     578   sunCC       X (b) -     P     -
-# Solaris SunOS 5.10                jhand        578   sunCC       P     -     -     -
-# Solaris SunOS 5.10                jhand        578   gcc3.4      P     P     -     -
-# -------------------------------------------------------------------------------------
-# Mac OSX 10.4                      jhand        578   gcc3.3      P     P     -     -
-# =====================================================================================
-# Notes:
-#  P  : pass - all ESP-r binaries compiled successfully, ancillary files installed
-#  X  : fail - one or more of the ESP-r binaries failed to compile
-#  -  : not applicable / not tested
-#  (a): Linspire seems to be an extrodinarly non-standard linux system.
-#  (b): nrn7 appears to have non-standard X11 header files.
-#
+# continual improvement.
 
 #=====================================================================
 clim_convert()  # converts climate dbs from iwec.a to binary formats
@@ -138,8 +106,8 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
-# (bld plt, net are not currently built)
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res vew"
+# (net, run are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -186,14 +154,11 @@ if [ $# -ne 0 ]; then
                         extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
-        --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
-        --gcc3)         gnu_version="gcc3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --gcc3-fpe)     enableFPE="yes";           shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -279,10 +244,8 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --compiler_version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
-  echo "        binaries gcc-3.4.6, g++-3.4.6, and g77-3.4.6, specify "
-  echo "        '--compiler_version -3.4.6'."
-  echo "        compilation on Apple PPC machines should typically use"
-  echo "        '--compiler_version -3.3'."
+  echo "        binaries gcc-4.3, g++-4.3, and gfortran-4.3, specify "
+  echo "        '--compiler_version -4.3'."
   echo " "
   echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
   echo "        <PATH>/esp-r directory. The default path is:"
@@ -300,19 +263,6 @@ if [ $help -eq 1 ]; then
   echo "        compilers."
   echo " "
   echo "    --force: Overwrite a corrupted installation. "
-  echo " "
-  echo "    --gcc3-fpe: Enable rudamentry gcc3 floating-point-exception"
-  echo "         handling procedures."
-  echo " "
-# Soon to be obsoleted option:  
-#   echo "    --gcc32: Use 3.2 version of GCC provided by the"
-#   echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
-#   echo "         and compat-libf2c-32 packages."
-#   echo " "
-  echo "    --gcc3: Use the GCC3 compilers (gcc, g++ and g77)."
-  echo "         NOTE: support for GCC3 is provided for legacy "
-  echo "         applications only, and will be discontinued in the"
-  echo "         future. Please use GCC4, Sun F90 or Intel if possible."
   echo " "
   echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
   echo "         (this option is enabled by default)."
@@ -355,11 +305,9 @@ if [ $help -eq 1 ]; then
   echo " "
   echo " Notes:"
   echo " "
-  echo " 1. While ESP-r compiles with the GCC 4 / gFortran compilers, the "
-  echo "    results obtained with ESP-r binaries built with GCC4 exhibit "
-  echo "    unexplained differences from the GCC3 versions. Until the "
-  echo "    GCC4 results have been verified, use GCC3-built versions of "
-  echo "    ESP-r for scientific research or consulting work."
+  echo " 1. The latest ESP-r release (11.11) no longer compiles with GCC3 / g77"
+  echo "    which are now regarded as obsolete. Use GCC4 / gFortran compilers"
+  echo "    instead. The current reference version is GCC 4.3.2"
   echo " "
   echo " 2. There are two versions of ESP-r - the standard full distribution"
   echo "    based on the X11 graphic libraries and a beta version which uses the"
@@ -386,19 +334,24 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/libxslt"
-
+    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt"
+    echo " "
+    echo " XML output support enabled."
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
     #
     # This code has only been tested with GNU ld.
     #
-    ld_output=`ld -o /dev/null -lxslt 2>&1 | sed "s/^ld: cannot find .*$//g"`
-    case $ld_output in
-      "") xsl_libs_available="no";;
-      *)  xsl_libs_available="yes";;
-    esac
-    
+     if [ ! -d /usr/include/libxslt ] && [ ! -d /usr/local/include/libxslt ]; then
+       # Libraries not found. Disable XLST support 
+       xsl_libs_available="no"
+       echo " ";
+       echo " Warning: Library libxslt could not be found."
+       echo " XSLT formatting support disabled. "
+     else
+       xsl_libs_available="yes"
+       echo " XSLT output support enabled."
+     fi
    fi
 fi
 
@@ -414,6 +367,8 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "CYGWIN_NT-5.1" ] &&
       [ "$architecture" != "CYGWIN_NT-5.0" ] &&
       [ "$architecture" != "CYGWIN_NT-5.2" ] &&
+      [ "$architecture" != "CYGWIN_NT-6.0" ] &&
+      [ "$architecture" != "CYGWIN_NT-6.1-WOW64" ] &&
       [ "$architecture" != "MINGW32_NT-5.1" ] &&
       [ "$architecture" != "MINGW32_NT-5.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
@@ -528,7 +483,7 @@ if [ "$platform" = "auto-detect" ]; then
    # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
-      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  ) platform="cygwin";;
+      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
       MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
@@ -569,7 +524,7 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
      fi
      echo " Compiler: "
      echo "  (1) Sun fortran 90 (cc and f90)"
-     echo "  (2) GNU fortran (gcc 3.X and g77)"
+     echo "  (2) GNU fortran (gcc 4.X and gfortran)"
      echo "  (3) Intel fortran (icc, icpc and ifort)"
      read A
      if [ "$A" = "" ]; then
@@ -988,8 +943,6 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc3)     CC=gcc;   CPL=g++;    FC=g77;      ;;
-           gcc32)    CC=gcc32; CPL=g++32;  FC=g77       ;;
            gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
@@ -1007,9 +960,7 @@ if [ "$extendedDebugging" == "yes" ]; then
   case $compiler in
     sunF90) ExtendedDebugFlags="$ExtendedDebugFlags";;
     GNU) case $gnu_version in
-            gcc3)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
-            gcc32)    ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
-            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check"  ;;
+            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check -ffpe-trap=zero,invalid,overflow,underflow"  ;;
           esac;;
     intel)  ExtendedDebugFlags="$ExtendedDebugFlags -debug all -C -fp-stack-check -traceback -inline-debug-info -fpe0 "  ;;
   esac
@@ -1058,9 +1009,7 @@ case $compiler in
    sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag $ExtendedDebugFlags -C " ;;
    GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic ";
            case $gnu_version in
-             # set -finit-local-zero for gcc3
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
-             *)    FFLAGS="$FFLAGS -finit-local-zero" ;;
            esac ;;
    intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags -O0" ;;
 esac
@@ -1202,8 +1151,6 @@ if [ "$enableFPE" == "yes" ]; then
   case $compiler in
     sunF90)   ;;
     GNU) case $gnu_version in
-            gcc3)     gcc3_fpe_target="enableGccFPE"   ;;
-            gcc32)    gcc3_fpe_target="disableGccFPE"   ;;
             gcc4)     gcc3_fpe_target="disableGccFPE"  ;;
           esac;;
   esac
@@ -1600,11 +1547,11 @@ echo " Installing ESP-r system. This may take some time."
     echo "       bModified         = .TRUE."                              >> ${SRCdir}/include/build_info.h 
   fi
   
-  echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
+  echo "C      URL commented out, as it likely exceeds gfortran's  "      >> ${SRCdir}/include/build_info.h 
   echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
   
   echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
-  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cSource           = \"$source\""                           >> ${SRCdir}/include/build_info.h 
   echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
   echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
   echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
@@ -1752,6 +1699,8 @@ echo -n " Installing esprc and default (configuration files) into ${ESPdir}..."
 # Write out default ESP-r file
 #-----------------------------
 
+  echo -n "   - Installing help files..."
+  cp -r ${SRCdir}/tutorial/*.help ${ESPdir}/lib
 
 # Header tag for default file 
 echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1767,6 +1716,7 @@ echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
 echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
 echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
 echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+
 
 # Will we install databases?
 case "${install_dbs}" in
@@ -1933,6 +1883,8 @@ if [ "$install_training" = "yes" ]; then
      
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     cd ${SRCdir}/training/Temporal_Clm
+     $CLM -mode text -file 15265.climate -act asci2bin 15265.climate.a >/dev/null
      cd ${SRCdir}
      echo " Done."
      echo -n "   - Updating climate databases in validation models..."
@@ -1952,7 +1904,7 @@ if [ "$install_training" = "yes" ]; then
      find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
      find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
      echo " Done."
-     echo -n "   - Removing binary databases from training models ..."
+     echo -n "   - Removing binary database from training models ..."
      cd ${SRCdir}/
      rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
      rm -f validation/CEN/13791/databases/WM_A.clm
@@ -2072,7 +2024,7 @@ zzz
   echo -n "   - Installing tutorial files..."
   rm -rf ${ESPdir}/tutorial
   mkdir ${ESPdir}/tutorial
-  cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
+  cp -r ${SRCdir}/tutorial/*.tut ${ESPdir}/tutorial
   echo " Done."
   
   

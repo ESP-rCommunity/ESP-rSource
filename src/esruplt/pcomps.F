@@ -348,7 +348,6 @@ C 3-node stratified storage tank model with 2 immersed heat exchangers
 
       ELSE
 
-        call elinc(1)
         WRITE(IUOUT,*) ' No static template for component ',IPCOMP
         STOP ' MZSDAT: unresolvable error on component type'
       END IF

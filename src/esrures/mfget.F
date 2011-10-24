@@ -62,12 +62,12 @@ C MOFLOWSU clears commons/ sets default values.
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
 C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
@@ -79,6 +79,7 @@ C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
 
 C Set add profile label ADDLIN=0 i.e. no add
       ADDLIN=0
+      horaxisdiv=0  ! assume default horizontal divisions
 
 C Reset to no choices and current result set.
       NMFGET=0
@@ -143,7 +144,7 @@ C air flow reporting.
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
@@ -162,7 +163,7 @@ C air flow reporting.
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
       DIMENSION ICtmPK(MCONTM)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer lcname  ! length of contaminate string
       integer IOT,IWM  ! for radio buttons
       integer NITMS,INO ! max items and current menu item
@@ -193,6 +194,7 @@ C  CTLST - contaminant list
       CNLST=.FALSE.
       CRLST=.FALSE.
       CTLST=.FALSE.
+      IDH=1   ! assume no horizontal separator
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -805,6 +807,10 @@ C Set axis limits for the current plot.
             endif
  555      continue
 
+C Ask user preference for horizontal axis.
+          CALL EASKABCD('Horizontal axis divisions:',' ','default',
+     &      'hours','days','weeks',horaxisdiv,nbhelp)
+
 C Redraw graph (if applicable).
           if (NMFGET.gt.0) then
             if (YAXSET(1).eq.2.or.YAXSET(2).eq.2.or.YAXSET(3).eq.2.or.
@@ -1154,6 +1160,8 @@ C Ask if only flows associated with a single node.
         if (CNLST) then
           helptopic='res_mass_flow_cnn_select'
           call gethelptext(helpinsub,helptopic,nbhelp)
+          IDH=1
+          IDNO=1
           call MENUATOL('Select a flow option',' ',
      &   'a individual connections','b total of connections',
      &   'c total entering node','d total from ambient',

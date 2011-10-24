@@ -281,10 +281,12 @@ C ****************** mycograph *****************************
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
 #endif
 
 C For help messages
@@ -352,33 +354,47 @@ C Set the intervals for the chart.
 C If horizontal line is not the bottom or top draw as grey.
       TD=xmin
   20  if(greyok.and.(TD.gt.xmin.and.TD.lt.xmax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       isym=0
       CALL etplot(TD,ymax,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       TD=TD+TDINT
       iupdown=0
       CALL etplot(TD,ymin,iupdown,isym)
       IF(TD.LE.xmax) goto 20
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw the relative humidity lines
       iupdown=0
       CALL etplot(xmin,ymin,iupdown,isym)
       RH=ymin
   30  if(greyok.and.(RH.gt.ymin.and.RH.lt.ymax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       CALL etplot(xmax,RH,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       RH=RH+RHINT
       iupdown=0
       CALL etplot(xmin,RH,iupdown,isym)
       IF(RH.LE.ymax) goto 30 
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw on mould growth curves curves.
       do 90 imld=1,mould

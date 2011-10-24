@@ -18,6 +18,7 @@ These routines are called from ESP-r fortran code. The routines are :-
 #include <dirent.h>
 #include <sys/time.h>
 #include <string.h>
+#include <fc_commons.h>
 /* external defines are found in wwxlegacy.h */
 #include "wwxlegacy.h"
 
@@ -191,7 +192,6 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 
 /* local working string arrays */
   char *locflist = flist;
-  char *locact = act;
   int locnflist = *nflist;
   static char file_list[100][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
@@ -209,8 +209,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   locnflist = 0;
   for ( i = 0; i < 99; i++ ) {
     nwflist[i] = (long int) 0;
-    strcpy(file_list[i],
-      "                                                                         ");
+    strncpy(file_list[i],"                                                                         ",73);
   }
 /* Work with copy of folder name. */
   f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
@@ -325,8 +324,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
     }
 /* get recovered folder or file names back into the original fortran array */
     ipos = 0;
-    strcpy(locflist,
-  "                                                                         ");
+    strncpy(locflist,"                                                                         ",73);
   for(num = 0; num < locnflist; num++) {	/* for each recovered string...  */
     strncpy(&locflist[ipos],file_list[num],(unsigned int)lenflist);	/* copy to local array */
     ipos=ipos+lenflist;
@@ -389,7 +387,7 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
 
 /* curproject_() - pass in info on the current project from fortran */
 void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
+  iincomp,iincon,len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
   char *fcfgroot;	/* f77 project root name    */
   char *fpath;	/* f77 project path    */
   char *fupath;	/* f77 users path    */
@@ -397,37 +395,44 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   char *fdocpth;	/* f77 relative path to documents    */
   char *ftmppth;	/* f77 relative path to scratch folder    */
   long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
+  long int *iincomp;	/* current number of zones in model */
+  long int *iincon;	/* current number of connections in model */
   int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
 {
   int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
 
   l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
   browse = (int) *ibrowse;
-  strcpy(cfgroot,"                       ");
+  strncpy(cfgroot,"                        ",24);
   f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
   cfgroot[l_root] = '\0';
-  strcpy(imgpth, "                       ");
+  strncpy(imgpth, "                        ",24);
   f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
   imgpth[l_fimgpth] = '\0';
-  strcpy(docpth, "                       ");
+  strncpy(docpth, "                        ",24);
   f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
   docpth[l_fdocpth] = '\0';
-  strcpy(tmppth, "                       ");
+  strncpy(tmppth, "                        ",24);
   f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
   tmppth[l_ftmppth] = '\0';
-  strcpy(path,
-      "                                                                         ");
+  strncpy(path, "                                                                         ",72);
   f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
   path[l_fpath] = '\0';
-  strcpy(upath,
-      "                                                                         ");
+  strncpy(upath,"                                                                         ",72);
   f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
   upath[l_fupath] = '\0';
+  c1_.NCOMP = *iincomp;  // pass curent number of zones and connections to c1_ structure
+  c1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
 /* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
 /* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
 /* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
 /* debug  fprintf(stderr,"path %s\n",path);  */
 /* debug  fprintf(stderr,"upath %s\n",upath);  */
 /* debug  fprintf(stderr,"browse %d\n",browse);  */
+/* debug  fprintf(stderr,"ibrowse %ld\n",*ibrowse); */
+/* debug  fprintf(stderr,"iincompb %d\n",c1_.NCOMP); */
+/* debug fprintf(stderr,"iincon %d\n",c1_.NCON); */
   return;
 }
+
+// good place for other functions to pass information from fortran to c (like image_ and ray2_)

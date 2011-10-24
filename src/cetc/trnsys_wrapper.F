@@ -901,7 +901,6 @@ C           additional output of a specified component
 C New category of time-dependent parameters inserted here
 
          ELSE
-            call elinc(1)
             WRITE(IUOUT,*) ' No mapping defined for parameter type ',
      &                     iCat
             STOP ' trnsys_coeff_gen: unresolvable error on parameters'
@@ -968,7 +967,6 @@ C        linked to a function value
 C New input type inserted here
 
          ELSE 
-            call elinc(1)
             WRITE(IUOUT,*) ' No mapping mechanism defined for ',
      &                     'input type ',iCat
             STOP ' trnsys_coeff_gen: unresolvable error on input'
@@ -1191,7 +1189,6 @@ C           real simulation afterwards.
 C  Calling other trnsys type subroutines inserted here
 
         ELSE
-          call elinc(1)
           WRITE(IUOUT,*) ' No subroutine available for trnysys type '
      &        ,nTYPE
           STOP ' trnsys_coeff_gen: unresolvable error on trnsys sub'

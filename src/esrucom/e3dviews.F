@@ -688,6 +688,13 @@ C the arrows in a medium grey.
       real diag   ! diagonal across the site
       logical greyok
 
+C Local variables to pass to edline.
+#ifdef OSI
+      integer iicol
+#else
+      integer*8 iicol
+#endif       
+
       diag = XMX-XMN
       if(diag.lt.20.0)then
         shaft=1.0; al=0.3; aw=0.15
@@ -704,7 +711,10 @@ C If libraries and monitor support greyscale remember this.
       endif
 
 C Make up coordinates for arrow along X axis.
-      if(greyok)call winscl('i',nifgrey-3)
+      if(greyok)then
+        iicol=nifgrey-3
+        call winscl('i',iicol)
+      endif
       P(1)=0.1; P(2)=0.0; P(3)=-0.1
       Q(1)=shaft; Q(2)=0.0; Q(3)=-0.1
       call arrow(P,Q,al,aw,ipoints,'a',2)
@@ -721,7 +731,10 @@ C Make up coordinate for arrow along Z axis.
       Q(1)=-0.1; Q(2)=-0.1; Q(3)=shaft
       call arrow(P,Q,al,aw,ipoints,'a',2)
       call forceflush()
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
       RETURN
       END
@@ -860,6 +873,7 @@ C Process selected zones.
         IZ=IZ+1
         IF(IZ.GT.nzg)GOTO 200
         IVZ=nznog(IZ)
+        IF(IVZ.le.0) goto 100  ! unknown zone try next one
 
 C If bounds ok then update project bounds with saved zone values.
         if(iZBFLG(IVZ).eq.1)then

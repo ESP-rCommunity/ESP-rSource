@@ -1346,11 +1346,11 @@ C MOSYSSU clears commons/ sets default values for systems plotting.
 
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       character SPLABEL*32,GPLABEL*20
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
@@ -1412,7 +1412,7 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
@@ -1460,15 +1460,17 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       dimension FAVE(MSYSRS), FSTD(MSYSRS), NF(MSYSRS)
       dimension TMAX(MSYSRS), TMIN(MSYSRS), IQHRS(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
 #endif
 
       logical colok,ok,dok,unixok
@@ -2356,7 +2358,8 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IPGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                    call winscl('z',ICM)
+                    iicol=ICM
+                    call winscl('z',iicol)
                   endif
                 endif
 
@@ -2365,7 +2368,10 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(GTIME,Yold(IX),iupdown,isym)
-                if(colok)call winscl('-',0)
+                if(colok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -2604,7 +2610,8 @@ C than that of the number of colours re-use an earlier colour.
                       ICM=IPGETNO(IX,2)
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                      call winscl('z',ICM)
+                      iicol=ICM
+                      call winscl('z',iicol)
                     endif
                   endif
 
@@ -2613,7 +2620,10 @@ C then reset to forground colour.
                   iupdown=IPEN
                   isym=MARK
                   call etplot(GTIME,Yold(IX),iupdown,isym)
-                  if(colok)call winscl('-',0)
+                  if(colok)then
+                    iicol=0
+                    call winscl('-',iicol)
+                  endif
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then
 
@@ -2794,12 +2804,16 @@ C Finally label lines, matching zone line colour if used.
               ICM=IPGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
  202    continue
 
