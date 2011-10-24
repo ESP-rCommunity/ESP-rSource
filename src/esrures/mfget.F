@@ -1880,7 +1880,8 @@ C Contaminant concentrations on record 2+NCONTM
           MFRECVR(2+IMFGETNO(I,3))=1
         ENDIF
         if (IMFGETNO(I,1).eq.3.or.IMFGETNO(I,1).eq.4.or.
-     &      IMFGETNO(I,1).eq.5.or.IMFGETNO(I,1).eq.6) then
+     &      IMFGETNO(I,1).eq.5.or.IMFGETNO(I,1).eq.6.or.
+     &      IMFGETNO(I,1).eq.7.or.IMFGETNO(I,1).eq.8) then
 
 C Connection flows and stack pressure on record 2+NCON+NCONTM.
           if (IMFGETNO(I,2).gt.0) then
@@ -1951,7 +1952,7 @@ C Recover required records for timestep.
           IREC=IHREC+I-1
           READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(FRDAT(I,K),K=1,NMRL)
 
-C Dwebug.
+C Debug.
 C          write(6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
 
         endif
@@ -1967,10 +1968,12 @@ C Put requested data into correct slots.
 
 C Node pressure.
           FLOWVALS(I)=FRDAT(1,IMFGETNO(I,2))
+
         elseif (IMFGETNO(I,1).eq.2) then
 
 C Node temperature.
           FLOWVALS(I)=FRDAT(2,IMFGETNO(I,2))
+
         elseif (IMFGETNO(I,1).eq.3) then
 
 C Connection net mass flow rate (kg/s).
@@ -2005,6 +2008,7 @@ C Return inter-node flow for two nodes
             FLOWVALS(I+1)=FLOW2
             NEXT=1
           endif
+
         elseif (IMFGETNO(I,1).eq.4) then
 
 C Connection net volume flow rate (m^3/s).
@@ -2039,6 +2043,7 @@ C Return inter-node flow for two nodes
             FLOWVALS(I+1)=VFLOW2
             NEXT=1
           endif
+
         elseif (IMFGETNO(I,1).eq.5) then
 
 C Connection net air change rate rate (-).  Depending on IMFGETNO(I,4)
@@ -2078,6 +2083,7 @@ C Return inter-node flow for two nodes
             FLOWVALS(I+1)=FLOWVALS(I+1)*3600.0/SUPNOD(IMFGETNO(I,3),2)
             NEXT=1
           endif
+
         elseif (IMFGETNO(I,1).eq.6) then
 
 C Connection net fluid speed (m/s).  Depending on IMFGETNO(I,4)
@@ -2122,6 +2128,7 @@ C Debug.
 C          write(6,*) 'area of component type ',icomptype,' is ',area
 
           FLOWVALS(I)=FLOWVALS(I)/area
+
         elseif (IMFGETNO(I,1).eq.7) then
 
 C Node pressure difference.
@@ -2131,37 +2138,47 @@ C Node pressure difference.
         elseif (IMFGETNO(I,1).eq.8) then
 
 C Connection stack pressure.
-          FLOWVALS(I)=FRDAT(2+NCONTM+IMFGETNO(I,2),1)
+          IROW=2+IMFGETNO(I,2)+NCONTM
+          FLOWVALS(I)=FRDAT(IROW,1)
+
+C Debug.
+C          write(6,*) 'stack i row',i,irow,FRDAT(IROW,1),FLOWVALS(I)
+
         elseif (IMFGETNO(I,1).eq.9) then
 
 C Ambient temperature.
           IPAR=1
           call MFCLIM(IDAY,IHR,ITS,IPAR,VAL)
           FLOWVALS(I)=VAL
+
         elseif (IMFGETNO(I,1).eq.10) then
 
 C Ambient wind speed.
           IPAR=2
           call MFCLIM(IDAY,IHR,ITS,IPAR,VAL)
           FLOWVALS(I)=VAL
+
         elseif (IMFGETNO(I,1).eq.11) then
 
 C Ambient wind direction.
           IPAR=3
           call MFCLIM(IDAY,IHR,ITS,IPAR,VAL)
           FLOWVALS(I)=VAL
+
         elseif (IMFGETNO(I,1).eq.12) then
 
 C Ambient RH.
           IPAR=4
           call MFCLIM(IDAY,IHR,ITS,IPAR,VAL)
           FLOWVALS(I)=VAL
+
         elseif (IMFGETNO(I,1).eq.14) then
 
 C Contaminant concentration
           INOD=IMFGETNO(I,2)
           ICONTM=IMFGETNO(I,3)
           FLOWVALS(I)=FRDAT(2+ICONTM,INOD)
+
         endif
  20   continue
 
