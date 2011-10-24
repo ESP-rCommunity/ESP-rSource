@@ -374,7 +374,7 @@ C Ambient temperature:IMFGET = 9
 C Note: overload IMFGETNO(NMFGET,2) so that climate values can
 C each have a different line colour.
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -384,8 +384,8 @@ C each have a different line colour.
         IMFGETNO(NMFGET,6)=1
         IMFGETNO(NMFGET,7)=1
         GMFLABEL(NMFGET)='Ambient db Tmp'; LNGMFLABEL(NMFGET)=14
-        GLMFLABEL(NMFGET)='Ambient dry bulb temperature'
-        LNGLMFLABEL(NMFGET)=28
+        GLMFLABEL(NMFGET)='Ambient dry bulb Temp'
+        LNGLMFLABEL(NMFGET)=21
         if(IROC.eq.0)then
           SMFLABEL(NMFGET)='Ambient db temperature (degC)'
           LNSMFLABEL(NMFGET)=29
@@ -400,7 +400,7 @@ C If timestep listing go back to see if any other data should be included.
 
 C Wind speed: IMFGET = 10
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -425,7 +425,7 @@ C If timestep listing go back to see if any other data should be included.
 
 C Wind direction: IMFGET = 11
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -450,7 +450,7 @@ C If timestep listing go back to see if any other data should be included.
 
 C Ambient RH: IMFGET = 12
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -476,7 +476,7 @@ C If timestep listing go back to see if any other data should be included.
 
 C Presure at node. IMFGET = 1
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -497,7 +497,7 @@ C Presure at node. IMFGET = 1
 
 C Connection pressure difference IMFGET = 7
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -518,7 +518,7 @@ C Connection pressure difference IMFGET = 7
 
 C Stack pressure: IMFGET = 8
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -539,7 +539,7 @@ C Stack pressure: IMFGET = 8
 
 C Temperature at node: IMFGET = 2
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -560,7 +560,7 @@ C Temperature at node: IMFGET = 2
 
 C Mass flow rate: IMFGET = 3.
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -582,7 +582,7 @@ C Mass flow rate: IMFGET = 3.
 
 C Volume flow rate: IMFGET = 4.
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -604,7 +604,7 @@ C Volume flow rate: IMFGET = 4.
 
 C Air change rate: IMFGET = 5.
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -627,7 +627,7 @@ C Air change rate: IMFGET = 5.
 
 C Velocity: IMFGET = 6.
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -648,7 +648,7 @@ C Velocity: IMFGET = 6.
 
 C Contaminant concentration at node: IMFGET = 14
         if((NMFGET+1).GT.MFRS)then
-          call usrmsg('Number of graph items exceeded.',' ','P')
+          call usrmsg('Number of items exceeded.',' ','P')
           goto 1
         endif
         NMFGET=NMFGET+1
@@ -672,7 +672,7 @@ C Energy associated with a flow stream: IMFGET = 13.
         call edisp(iuout,'This option not yet available.')
         goto 1
 C        if((NMFGET+1).GT.MFRS)then
-C          call usrmsg('Number of graph items exceeded.',' ','P')
+C          call usrmsg('Number of items exceeded.',' ','P')
 C          goto 1
 C        endif
 C        NMFGET=NMFGET+1
@@ -1008,6 +1008,7 @@ C Toggle tabular listing label format.
             call edisp(iuout,' ')
             call edisp(iuout,'one line column labels (spreadsheets)')
           endif
+          goto 1   ! jump back to the menu
         else
           call edisp(iuout,'selected item 26?? ')
         endif
