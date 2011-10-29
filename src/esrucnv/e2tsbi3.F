@@ -103,7 +103,7 @@ C Define a VRML material for each construction in the database.
 
 C Pick up general description of the composite.
         ifound=im
-        call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties (AE & AI).
           matarrayindex=IPRMAT(IM,1)   ! which array index
@@ -195,7 +195,7 @@ C through each of the MLC and finding a match.
 
 C Pick up general description of the composite.
               ifound=im
-              call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties.
                 matarrayindex=IPRMAT(IM,1)   ! which array index

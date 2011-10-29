@@ -46,10 +46,10 @@ void winfnt_(font_index)
 {
    
    gint ifont_index;
-   ifont_index = (gint) *font_index;
    PangoFontDescription *pfd;	/* to hold test font */
-   
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
+
+   ifont_index = (gint) *font_index;
 
 /* Originally there were three options for fonts and disp_fnt was either 0, 1, or 2.
  * With the addition of Serif Largest, Courier Small, Courier Medium, Courier Large and Courier Largest,

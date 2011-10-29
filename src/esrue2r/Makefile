@@ -12,7 +12,9 @@ PROG = e2r$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o e2r.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
+MODULE_OBJECTS = startup.o aim2_module.o
+
+OBJECTS = e2r.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
 	  bscoeff_extended.o c2fdum.o common3dv.o cread3dv.o ctlexp.o ctread.o \
 	  dossupport.o e2rfile.o e2rform.o e2rvp.o e3dviews.o ecasctl.o econstr.o econtrol.o \
 	  edatabase.o edcondb.o egeometry.o egtgeom.o emfnetw.o enetmisc.o \
@@ -22,8 +24,8 @@ OBJECTS = startup.o e2r.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -157,7 +159,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F e3dviews.F \
 	dossupport.F ecasctl.F econstr.F econtrol.F edcondb.F edatabase.F egeometry.F egtgeom.F \

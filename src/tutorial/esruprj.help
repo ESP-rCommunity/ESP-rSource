@@ -7527,20 +7527,21 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *item EDVERT surface_vertex_menu
 'This menu allows existing vertices to be viewed and edited.'
 ' '
-' edit vertex - select one and you can then alter the values'
-'   of the X Y or Z value and if you are in graphic mode you'
-'   can see the change in the zone.
+' edit vertex - select one and you can then alter the values of the'
+'   X Y or Z value and if you are in graphic mode you can see the '
+'   change in the zone. You can jump to previous or next vertex'
+'   but the zone may not fully re-draw until you say ok.'
 ' '
 ' + manage vertices - add a new vertex, delete an existing vertex'
-'   if it is not being referenced by a surface, copy a vertex'
-'   (you will be given the option to edit the X Y Z values after'
-'   the copy), replicate a vertex allows a number of copies to be'
-'   made (useful if only one coordinate needs to be altered) or'
-'   delete ALL UNREFERENCED vertices in the zone. If you are in'
-'   graphics mode you can click on the vertex to select it.'
+'   if it is not being referenced by a surface, copy a vertex (you'
+'   will be given the option to edit the X Y Z values after the'
+'   copy), replicate a vertex allows a number of copies to be made'
+'   (useful if only one coordinate needs to be altered), delete ALL'
+'   UNREFERENCED vertices in the zone or copy vertices (up to 10)'
+'   from another zone. If you are in X11 graphics mode click select.'
+'  '
+'Transforms - provides options to reduce the need for calculator:'
 ' '
-'Transforms - provides a number of options which reduce the need'
-'   to get out your calculator:
 '  *--x-* Vertex on a line: creates one (or more) points along a'
 '  line (i.e. two vertices and then a distance (m) along the line).'
 ' '
@@ -7561,10 +7562,10 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  The intersection of a line & plane asks you for two points'
 '  defining a line as well as a polygon to test.'
 ' '
-'  The intersection of LINES and plan ask for a plane to test'
-'  and then checks ALL lines that intersect that plane and'
-'  adds vertices where they cross. This can be used to help'
-'  subdivide surfaces within a zone.'
+'  The intersection of LINES and plan ask for a plane to test and'
+'  then checks ALL lines that intersect that plane and adds vertices'
+'  where they cross. This can be used to help subdivide surfaces'
+'  within a zone or work with a sloped ceiling.'
 '  '
 '  Distance between vertex and a line - you are asked to identify'
 '  the line as well as the vertex.'
@@ -7580,9 +7581,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'Where a new vertex is created you will be asked to confirm that'
 'you want it to be included in the zone.'
 '  '
-'If a new vertex is within 3mm of an existing edge you may be'
-'asked whether the vertex should be included in the associated'
-'polygon.'
+'If a new vertex is within 3mm of an existing edge confirmation'
+'about including the vertex in a polygon is provided.'
 *enditem
         CALL PHELPD('configuration section',2,'-',0,0,IER)
         call MENUATOL(' ',
@@ -7791,6 +7791,21 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
         CALL EASKR(psiv,phrasepsi(lookfor),msg,
         CALL EASKR(lenv,phraselen(lookfor),
 *subroutine updatesvfc
+*subroutine CPVERT
+*item CPVERT surface_vertex_copy
+'When working on the coordinates of one zone you might want to copy'
+'vertices from another zone to ensure proper alignment.'
+'This menu allows you to select up to 10 vertices from another zone'
+'and have them copied into the current zone. If any of the vertices'
+'are close to an existing vertex the copy is not completed. If a'
+'copied vertext is very need an existing edge it will be incorporated'
+'into the edge and the surface edge list updated.'
+'  '
+'Current you are only presented with a list of vertices. There is no'
+'wireframe view of the other zone.  Thus you should plan ahead and'
+'review the vertices of the other zone prior to requesting vertex'
+'copies.'
+*enditem
 *subroutine IPVCMD
 *subroutine ipvdat
 *item ipvdat ipv_menu_overview
@@ -10813,7 +10828,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
         call askok('Apply this move?',' ',OK,dok,1)
         CALL EASKABC(outs,' ','new vertex',
   43    CALL EASKS(HOLD,outs,' ',32,' 0. 0. 0. ','vtx co',IER,2)
-*item EDGVERT ground_form_vertex_manage
+*item EDGVERT ground_form_vert_manage
 'If a new vertex is a minor variation of an existing '
 'point then it may be easier to copy and then edit. '
 ' '
@@ -11730,7 +11745,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
       CALL EASKATOG('calculation control (see help):',' ',
       CALL PHELPD('conv coef data',2,'-',0,0,IER)
       CALL EASKS(SN,outs,'inside, outside?',12,' -1.0 -1.0',
-*item EPHCF zone_htc_correlation_edit
+*item EPHCF zone_htc_correlat_edit
 'A number of empirical correlations and fixed values, '
 'extracted from the following sources, are supported: '
 ' '

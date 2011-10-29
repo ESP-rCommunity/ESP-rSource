@@ -471,6 +471,7 @@ C Make sure that: SMALL < | PRC / HPRC | < RLARG
       ELSE
          RELAX(INOD)=DBLE(1.0)
       END IF
+c      write(*,*)'Node ',INOD,' RELAX= ',RELAX(INOD),' RATIO= ',RATIO
       HPRC(INOD)=PRC(INOD)
       PRC(INOD)=PRC(INOD)*RELAX(INOD)
    70 CONTINUE

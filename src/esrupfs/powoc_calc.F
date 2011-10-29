@@ -159,7 +159,6 @@ c     ELSEIF (ITYPE==??) THEN
 
 C-----This power-only component type is not currently supported.
       ELSE
-        call elinc(1)
         WRITE(IUOUT,*) ' No support for this type of power-only comp. ',
      &                 ITYPE
         STOP ' POWOC_CALC: unresolvable error on power-only comp type'

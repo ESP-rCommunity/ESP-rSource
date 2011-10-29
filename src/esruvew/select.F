@@ -88,12 +88,10 @@ C  SET ALL
       RETURN
 C
 C   ERROR
- 900  call elinc(2)
-      WRITE(IUOUT,1100)
+ 900  WRITE(IUOUT,1100)
  1100 FORMAT('+SELECT ERROR, Respecify>')
       GO TO 10
- 920  call elinc(2)
-      WRITE(IUOUT,1200)
+ 920  WRITE(IUOUT,1200)
  1200 FORMAT('+SELECT:Number out of range, Respecify>')
       GO TO 10
 C

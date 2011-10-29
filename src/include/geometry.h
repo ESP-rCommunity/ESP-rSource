@@ -255,4 +255,8 @@ C  (zero if no surface is close to horizontal facing down).
       integer izsfloor,izsceil
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
+C Althought ssmlcn(mcon) holds the name of the construction, also knowing the
+C matching index in the database can save search time.
+      integer ssmlcindex  ! for each connection points to MLC db item or zero
+      common/precmlc/ssmlcindex(MCON)
 

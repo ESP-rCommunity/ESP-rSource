@@ -182,9 +182,11 @@ C since not all compilers use the same default.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iicol
 #endif
 
       tab=' '
@@ -300,13 +302,22 @@ c and 'N' stands for node in this component.
           ncoord(i,1,2)=igb-int((value+yadd)*ysc)
           iy= ncoord(i,1,2)
           ix= ncoord(i,1,1)+3
-          if(colok)call winscl('z',i)
+          if(colok)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           call wstxpt(ix,iy,clabel)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
 
 c else start plotting.
         else
-          if(colok)call winscl('z',i)
+          if(colok)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           ti=float(icount)/float(instpp)
           ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
           ncoord(i,2,2)=igb-int((value+yadd)*ysc)
@@ -314,7 +325,10 @@ c else start plotting.
           call eline (ncoord(i,2,1),ncoord(i,2,2), lndrab)
           ncoord(i,1,1)=ncoord(i,2,1)
           ncoord(i,1,2)=ncoord(i,2,2)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush
         endif
    10 continue

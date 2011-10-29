@@ -175,7 +175,7 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -201,8 +201,9 @@ C act='p' iget parameters already set.
       character ALABEL(5)*12,t20*20,act*1
       character graftitle*64,grlbl*24,t24*24
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
+      integer overalldays ! number of days to graph (to set axis)
       integer oneonright  ! if only one axis on right.
       integer twoonrighta ! nearest if two axis on right
       integer twoonrightb ! farthest if two axis on right
@@ -211,9 +212,11 @@ C act='p' iget parameters already set.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
+      integer*8 iicol
 #endif
 
       logical kwatts,colok
@@ -471,8 +474,31 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis. But if there is no right axis then
 C there should be logic to maximize the width of the plot.  << to be done >>
-      call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,'Time Hrs')
-
+C Determine how many days to graph. If less than 2 months default to hourly,
+C if 2-4 months default to days, if longer than 4 months use weeks as the
+C default.
+      if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
+        overalldays=IODF-IODS
+        if(overalldays.le.60)then
+          call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &      'Time Hrs')
+        elseif(overalldays.gt.60.and.overalldays.le.120)then
+          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &      2,24,iods,'Time (days)')
+        else
+          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &      3,168,iods,'Time (weeks)')
+        endif
+      elseif(horaxisdiv.eq.2)then
+        call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &    'Time Hrs')
+      elseif(horaxisdiv.eq.3)then
+        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &    2,24,iods,'Time (days)')
+      elseif(horaxisdiv.eq.4)then
+        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+     &    3,168,iods,'Time (weeks)')
+      endif
 C Recover and plot data.
  99   do 10 IDAY=IODS,IODF
         call GOGET(IDAY)
@@ -572,7 +598,10 @@ C look sensible.
 C If plotting colours for different zones then recall which
 C zone we are dealing with.
             if(colok)then
-              if(IGETNO(IX,2).gt.0)call winscl('z',IGETNO(IX,2))
+              if(IGETNO(IX,2).gt.0)then
+                iicol=IGETNO(IX,2)
+                call winscl('z',iicol)
+              endif
             endif
 
 C Plot the current value - this has already been copied to Yold and
@@ -580,7 +609,10 @@ C then reset to forground colour.
             iupdown=IPEN
             isym=MARK
             call etplot(TIME,Yold(IX),iupdown,isym)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
  421      CONTINUE
  400    CONTINUE
@@ -599,11 +631,17 @@ C If IMFS is > zero then use IMFS-1 for line label.
         call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
-          if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
+          if(IGETNO(I,2).gt.0)then
+            iicol=IGETNO(I,2)
+            call winscl('z',iicol)
+          endif
         endif
         call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
         call wstxpt(iid1,iid2,t20)
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
  200  continue
       if(IMFS.gt.0.and.IMFS.lt.4)then
@@ -644,13 +682,13 @@ C to graphical result display.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C To extend logic to maximize plotting area.
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
       integer onright  ! number of axis on right
       integer onleft   ! whether there is an axis on the left

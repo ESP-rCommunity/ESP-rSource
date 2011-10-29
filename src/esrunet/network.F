@@ -936,10 +936,12 @@ C Grid commons
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
 #endif
 
 C Clear the screen
@@ -1034,7 +1036,8 @@ C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
         greyok=.false.
         if(nifgrey.gt.4)then
-          call winscl('i',nifgrey-3)
+          iicol=nifgrey-3
+          call winscl('i',iicol)
           greyok=.true.
         endif
 
@@ -1081,7 +1084,10 @@ C Draw on the Y grid lines.
         IF(GY.LT.YMAX) GOTO 20
 
 C Return to black lines after drawing grid.
-        if(greyok)call winscl('-',0)
+        if(greyok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
       ENDIF
 
 C Draw on the network description. 
@@ -2063,9 +2069,11 @@ C      REAL MATRIX_A,MATRIX_B
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iix1,iiy1,iix2,iiy2  ! passed to edline
+      integer iicol
 #else
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
+      integer*8 iicol
 #endif
 
       X=XYZICON(ICN,1)
@@ -2110,13 +2118,13 @@ C Move to the first point and plot the icon in highlighted mode.
             IE=IVEICN(ICN,I,2)
             call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
             call u2pixel(VCICON(ICN,IE,1),VCICON(ICN,IE,2),ix2,iy2)
-            icol=IVEICN(ICN,I,3)
+            iicol=IVEICN(ICN,I,3)
             if(IVEICN(ICN,I,4).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVEICN(ICN,I,4).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVEICN(ICN,I,4).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C IVEICN(n,n,5) line type (1=solid, 2=dotted, 3=dashed, 4=double)
@@ -2140,7 +2148,8 @@ C If select draw double thickness, otherwise use the line style of the icon.
                 call edwline(ix1,iy1,ix2,iy2)
               endif
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
   10      CONTINUE
         endif
@@ -2150,13 +2159,13 @@ C Do any dots.
           DO 11 I=1,NIVD(ICN)
             IS=IVDOT(ICN,I,1)
             call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
-            icol=IVDOT(ICN,I,2)
+            iicol=IVDOT(ICN,I,2)
             if(IVDOT(ICN,I,3).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVDOT(ICN,I,3).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVDOT(ICN,I,3).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C Draw small or large dot.
@@ -2167,7 +2176,8 @@ C Draw small or large dot.
             else
 	      call esymbol(ix1,iy1,32,1)
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
   11      CONTINUE
         endif
@@ -2186,17 +2196,17 @@ C pixel radius (ir1) via call to crowxyz.
      &          real(iy2),z2))
             iang1=IVARC(ICN,I,3)
             iang2=IVARC(ICN,I,4)
-            icol=IVARC(ICN,I,5)
+            iicol=IVARC(ICN,I,5)
             if(IVARC(ICN,I,6).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVARC(ICN,I,6).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVARC(ICN,I,6).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C Debug.
-C            write(6,*) ix1,iy1,is,ir,ir1,iang1,iang2,icol
+C            write(6,*) ix1,iy1,is,ir,ir1,iang1,iang2,iicol
 
 C Draw unfilled or filled arc.
             if(IVARC(ICN,I,7).eq.0)then
@@ -2204,7 +2214,8 @@ C Draw unfilled or filled arc.
             else
 	      call earc(ix1,iy1,ir1,iang1,iang2,1)
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
    9      CONTINUE
         endif
@@ -2213,20 +2224,22 @@ C Do any internal labels in smallest font in the specified colour.
         DO 12 I=1,NIVL(ICN)
           IS=IVLBL(ICN,I,1)
           call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
+          iicol=IVLBL(ICN,I,2)
           icol=IVLBL(ICN,I,2)
           IF(IFS.GT.0)CALL winfnt(0)
           write(LBLINT,'(a)') NWICNLBL(ICN,I) 
           if(IVLBL(ICN,I,3).eq.0)then
-            call winscl('i',icol)
+            call winscl('i',iicol)
             call textatxy(ix1,iy1,LBLINT,'i',icol)
           elseif(IVLBL(ICN,I,3).eq.1)then
-            call winscl('g',icol)
+            call winscl('g',iicol)
             call textatxy(ix1,iy1,LBLINT,'g',icol)
           elseif(IVLBL(ICN,I,3).eq.2)then
-            call winscl('z',icol)
+            call winscl('z',iicol)
             call textatxy(ix1,iy1,LBLINT,'z',icol)
           endif
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           IF(IFS.GT.0)CALL winfnt(IFS)
           call forceflush()
   12    CONTINUE
@@ -2245,7 +2258,8 @@ C it in black and use a smaller font if the scale is less than 1.
      &               .AND.IYL.LT.IGB)THEN
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(0)
           call textatxy(ixlc,iyl,LABL,'i',6)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(IFS)
         ENDIF
       ELSE
@@ -2258,8 +2272,8 @@ C Draw on the connection points for the component (applies to all components)
 
 C Move to first position.
 C Set the drawing colour depending on the attachment type.
-          icol=ICNCT(ICN,I)
-          call winscl('z',icol)
+          iicol=ICNCT(ICN,I)
+          call winscl('z',iicol)
 
           if(INWKTYP.eq.6)then
 
@@ -2303,7 +2317,8 @@ C Otherwise draw a square.
           endif
 
 C Reset the line colour to standard.
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
 100     CONTINUE
       ENDIF
@@ -2358,7 +2373,11 @@ C Logical
       LOGICAL CLOSE,CLOSES,CLOSEE,CLOSEP,FOUND,ISEL,CSEL
 
       REAL PI
-
+#ifdef OSI
+      integer iicol
+#else
+      integer*8 iicol
+#endif
 C Draw the connection, with a square at each intermediate point.
 
 C Move to the start of the connection 
@@ -2414,8 +2433,8 @@ C If the layer is correct then check if the connection is within screen limits.
 
 C Move to the start of the connection.
 C Set the drawing colour depending on the connection type.
-      icol=ICNNT(ICON)
-      call winscl('z',icol)
+      iicol=ICNNT(ICON)
+      call winscl('z',iicol)
 
 C Store the start point as the previous point and start drawing the
 C connection. 
@@ -2781,7 +2800,8 @@ C Draw the arrow.
       ENDIF
       
 C Reset the line colour to standard.
-      call winscl('-',0)
+      iicol=0
+      call winscl('-',iicol)
       RETURN
       END
 

@@ -318,21 +318,25 @@ C If RVAL is outwith range for failure then set to default.
 
 C Check that value is not trivially close to zero (i.e. not
 C instantiated on the Fortran side before the call).
-      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
-      if(close)RVAL=0.0
    20 WORD=' '
-      if(abs(rval).gt.1.E+6)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
-        WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
-        WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
-        WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
-      elseif(abs(rval).le.1.E-4)then
-        WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
+      if(close)then
+        RVAL=0.0
+        ask='   0.00   '
       else
-        WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+        if(abs(rval).gt.1.E+6)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
+          WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
+          WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
+          WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-4)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        else
+          WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+        endif
       endif
 
 C Generate help and default strings.
@@ -2252,7 +2256,6 @@ C Setup a single line menu to pick from via EASKS.
         LN1=max(1,lnblnk(MSG1))
         LN3=max(1,lnblnk(MSG3))
         ans = '  '
-        CALL ELINC(1)
         WRITE(IUOUT,'(a)')MSG1(1:LN1)
         WRITE(IUOUT,'(a)')MSG3(1:LN3)
 
@@ -2702,7 +2705,6 @@ C Print out the menu. If text is > 36 char or there are few items
 C then restrict to a single column. If less than 36 characters
 C print double column.
         IF(IMLENG.GT.36.OR.NITMS.LE.6)THEN
-          CALL ELINC(NITMS)
           LN=max(1,LNBLNK(ITEMS(1)))
           WRITE(IUOUT,900,iostat=ios,err=1)NAME(1:ITLENG),ITEMS(1)(1:LN)
   900     FORMAT(/,1X,a,': ',a)
@@ -2714,7 +2716,6 @@ C print double column.
    92     CONTINUE
         ELSEIF(IMLENG.LT.24)THEN
           MNULEN=NITMS/2
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,902,iostat=ios,err=2)NAME(1:ITLENG),
      &      ITEMS(1)(1:IMLENG),ITEMS(MNULEN+1)(1:IMLENG)
   902     FORMAT(/,1X,a,':  ',a,'   ',a)
@@ -2731,7 +2732,6 @@ C print double column.
           ENDIF
         ELSEIF(IMLENG.GE.24.and.IMLENG.LE.36)THEN
           MNULEN=(NITMS/2)
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,'(2a)',iostat=ios,err=2)NAME(1:ITLENG),':'
           DO 193 K=1,MNULEN
             WRITE(IUOUT,'(2X,a,3x,a)',iostat=ios,err=2)
@@ -3188,13 +3188,11 @@ C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
           WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ELSE
-          CALL ELINC(1)
           WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
-        CALL ELINC(1)
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ENDIF
 
@@ -3362,125 +3360,6 @@ C impx impy before recalling fprofma.
 
       end
 
-C ****** invoke graphics capture proforma
-      subroutine profgrdump()
-#include "building.h"
-#include "model.h"
-
-C Path to model and command line file (if any).
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FILEP/IFIL
-      common/rpath/path
-      common/pophelp/h(60)
-      common/C21/IFCFG,cfgroot,LCFGF
-
-C Graphic capture, window dump: label, command.
-      common/gprint/gprlbl,gprcmd
-      common/gxwd/gxwdlbl,gxwdcmd
-
-      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,h*72,tfile*60,uname*24,fs*1
-      character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
-      character LCFGF*72,dh*72,gcmd*90
-      character gprlbl*20,gprcmd*48
-      character gxwdlbl*20,gxwdcmd*60
-
-      logical unixok
-
-      if(MMOD.ne.8)return
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      uname=' '
-      call usrname(uname)
-
-      h(1)='A screen image of a user selected portion '
-      h(2)='of the screen or the whole screen can be   '
-      h(3)='captured. It uses the application defined  '
-      h(4)='in the esprc file (typically import from   '
-      h(5)='the ImageMagick suite). A GIF image is     '
-      h(6)='assumed. Edit the file name as required.   '
-      nhelp=6
-      CALL PHELPW(NHELP,IHW,IER)
-      call dupphelp(dh)
-      call updhelp(dh,NHELP,IHW)
-      tfile='  '
-      LNU=max(1,lnblnk(upath))
-      if(cfgroot(1:2).eq.'  ')then
-        LN=max(1,lnblnk(uname))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_.gif'
-      else
-        LN=max(1,lnblnk(cfgroot))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_.gif'
-      endif
-      iswidth(1)=60
-      title='capture graphics'
-      ltypes='ltte'
-      list(1)='options:         '
-      list(2)='user defined area'
-      list(3)='whole of screen  '
-      list(4)='file:            '
-      listact(1) = 0
-      listact(2) = 1
-      listact(3) = 0
-      listact(4) = 0
-      impx = 0
-      impy = 0
-      impcwth = 67
-      nstr = 1
-      nlist = 4
-  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
-     &    iswidth,listact,ino,nhelp)
-
-C Debug.
-C      write(6,*)listact,'  ',ino
-      if(ino.eq.-1)then
-
-C If no action return.
-        return
-      elseif(ino.eq.(nlist+1))then
-
-C If signaled ok then attempt to write out file.
-C        write(6,*)sstr(1)
-        tfile=sstr(1)
-        ltf=max(1,lnblnk(tfile))
-        if(listact(2).eq.1)then
-          LN=max(1,lnblnk(gprcmd))
-          write(gcmd,'(3a)') gprcmd(1:LN),' ',tfile(1:ltf)
-        elseif(listact(3).eq.1)then
-          LN=max(1,lnblnk(gxwdcmd))
-          write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
-        endif
-C Debug
-C        write(6,*)gcmd
-        call runit(gcmd,'-')
-        return
-      elseif(ino.eq.1)then
-
-C If user has switched from create to append update display (reset
-C impx impy before recalling fprofma.
-        if(listact(2).eq.1)listact(3)=0
-        impx = 0
-        impy = 0
-        goto 43
-      elseif(ino.eq.2)then
-        if(listact(3).eq.1)listact(2)=0
-        impx = 0
-        impy = 0
-        goto 43
-      else
-        impx = 0
-        impy = 0
-        goto 43
-      endif
-      return
-
-      end
 
 C ************************ PHELPD
 C PHELPD displays the current contents of common pophelp in a form
@@ -3737,9 +3616,6 @@ C then it represents the zone which is currently being edited.
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      integer ifs,itfs,imfs
-      COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/PREC8/SLAT,SLON
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
 C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
@@ -3766,25 +3642,19 @@ C ITPPSW current view - perspective/plan/south/west
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
       DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
       CHARACTER ITEMS*32,H*72,LFIL*72,outs*124
-      CHARACTER FALT*37,MTHNAM*3,ETEXT*60
-      CHARACTER DESCRH*5,DESCRD*5,path*72
+      CHARACTER FALT*37
+      CHARACTER path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
       CHARACTER head*19
 
-      dimension mthnam(12),iavdec(12)
-      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
-      data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &            'Sep','Oct','Nov','Dec'/
       integer IW  ! for radio buttons
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
-      integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
       integer iappr,iappt,iappb ! for use with findrtb
       integer iapprp,iapptp,iappbp ! for local offsets
 #else
-      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
       integer*8 ICPMOD          ! passed from tchild
       integer*8 iappr,iappt,iappb ! for use with findrtb
       integer*8 iapprp,iapptp,iappbp ! for local offsets
@@ -4229,49 +4099,10 @@ C          call usrmsg(' ','Starting perspective viewer.','-')
 
 C Draw the zones and any obstructions based on sun position
 C at user specified time (offer 11 am on day of average solar
-C declination in June).
-        NTS=1
-        IMO=6
-        IDO=iavdec(IMO)
-        STIME=11.
+C declination in June). Use chgsun subroutine in cfommon3dv.F
+        call edisp(iuout,'Setup initial date and time for solar view.')
+        call chgsun(0)
 
-C Use the ASKTIM in esru_lib.F (as opposed to ASKRTIM in esrures/utils.F).
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
-
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @ ',DESCRH,
-     &      ' Solar azimuth',SAZI,', elevation',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          CALL EASKAB(' ','New view point:',
-     &        'next hour','exit',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          else
-            ITSNM=0
-            goto 92
-          endif
-        else
-          CALL EASKAB('View point below horizon!','Options:',
-     &        'another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-        endif
       ELSEIF(IVERT.EQ.22)THEN
 
 C Produce help text for the  menu.

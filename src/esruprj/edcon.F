@@ -776,13 +776,7 @@ C Surface properties.
 C Find composite which matches.
       ICF=-1
       lstr=lnblnk(SSMLCN(icn1))
-      DO 20 IC=1,NMLC
-        if(lstr.lt.12)then
-          IF(DESC(IC)(1:lstr).EQ.SSMLCN(icn1)(1:lstr))ICF=IC
-        else
-          IF(DESC(IC)(1:12).EQ.SSMLCN(icn1)(1:12))ICF=IC
-        endif
-  20  CONTINUE
+      if(ssmlcindex(icn1).ne.0) ICF=ssmlcindex(icn1)
 
 C For each layer.
       M=M+1
@@ -914,6 +908,7 @@ C the OPAQUE/TRANSPARENT flag as well.
         ENDIF
         IF(IC.GT.0)THEN
           WRITE(SSMLCN(icn1),'(A)')DESC(IC)(1:12)
+          ssmlcindex(icn1)=IC   ! update array
           if(DESC(IC)(15:18).EQ.'TRAN')then
             SSOTF(icn1)='TRAN'
           endif
@@ -1176,6 +1171,7 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
           CALL EPKMLC(ISEL,outs,'Please select one...',IER)
           IF(ISEL.GT.0)THEN
             WRITE(SSMLCN(ioc),'(A)')DESC(ISEL)(1:12)
+            ssmlcindex(ioc)=ISEL  ! update other surf index
             if(DESC(ISEL)(15:18).EQ.'TRAN')then
               SSOTF(ioc)='TRAN'
               ITMCFL(ICOMP,IS)=1
@@ -1200,106 +1196,104 @@ C Remember this change by saving the file.....
 C Reset number of layers, if at end of loop it is still 0 then
 C the material was not found and must be asked for.
         NE(IS)=0
-        DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SSMLCN(ioc))THEN
-            MODCON=.TRUE.
-            NE(IS)=LAYERS(IC)
-
-C Gather information about each layer. Read in the materials db info.
-            DO 23, IL=1,LAYERS(IC)
-                matarrayindex=IPRMAT(IC,IL)   ! which array index
-                if(matarrayindex.ge.0)then
-
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-                  if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-                  E=0.99; A=0.99
-                  NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
-
-C If g or h air gap and version 1.2 then assign DRAIR
-                  if(matarrayindex.eq.0)then
-                    continue
-	          elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h')then
-                    if(closemat2)then
-                      DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                      DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                      DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-                    endif
-                  endif
-                endif
-
-              CON(IS,IL)=DBCON
-              DEN(IS,IL)=DBDEN
-              SHT(IS,IL)=DBSHT
-              THK(IS,IL)=DTHK(IC,IL)
-
-C Assign surface properties.
-              IF(IL.EQ.1)         EMISE(IS)=E
-              IF(IL.EQ.LAYERS(IC))EMISI(IS)=E
-              IF(IL.EQ.LAYERS(IC))ABSI(IS)=A
-              IF(IL.EQ.1)         ABSE(IS)=A
-              IF(IPR(IC,IL).EQ.0)THEN
-
-C Keep track of the air gaps in the composite, these variables may
-C eventually be redundant. Based on the orientation of the surface
-C assign an appropriate U value to each air gap encountered.
-                if(NAIRG(IS)+1.gt.MGP)then
-                  call usrmsg(
-     &           ' As defined, this composite contains more air gaps',
-     &           ' then allowed - please change your description','W')
-                else
-                  NAIRG(IS)=NAIRG(IS)+1
-                  IPAIRG(IS,NAIRG(IS))=IL
-                  IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
-                    RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-                  ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
-     &                   SSVFC(ioc)(1:4).EQ.'CEIL')THEN
-                    RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
-                  ELSE
-                    RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
-                  ENDIF
-                endif
-              ELSE
-                  matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h')then
-                    if(NAIRG(IS)+1.gt.MGP)then
-                  call usrmsg(
-     &               'This construction contains more air gaps than',
-     &               'allowed - please change your description','W')
-                    else
-                      NAIRG(IS)=NAIRG(IS)+1
-                      IPAIRG(IS,NAIRG(IS))=IL
-                      IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
-                        RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-                      ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
-     &                       SSVFC(ioc)(1:4).EQ.'CEIL')THEN
-                        RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
-                      ELSE
-                        RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
-                      ENDIF
-                    endif
-                  endif
-              ENDIF
-   23       CONTINUE
-          ENDIF
-   20   CONTINUE
-        if(NE(IS).eq.0)then
+        if(ssmlcindex(ioc).eq.0)then
           write(outs,'(5A)') ' The construction ',SSMLCN(ioc),
      &         ' of ',SSNAME(ioc),' was not found in the mlc db...'
           call usrmsg(outs,'resetting attribute to UNKNOWN.','W')
           SSMLCN(ioc)='UNKNOWN'
           goto 244
         endif
+
+        IC=ssmlcindex(ioc)
+        MODCON=.TRUE.
+        NE(IS)=LAYERS(IC)
+
+C Gather information about each layer. Read in the materials db info.
+        DO 23, IL=1,LAYERS(IC)
+          matarrayindex=IPRMAT(IC,IL)   ! which array index
+          if(matarrayindex.ge.0)then
+
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+              E=0.99; A=0.99
+              NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+            if(matarrayindex.eq.0)then
+              continue
+	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
+              if(closemat2)then
+                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
+                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
+                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
+              endif
+            endif
+          endif
+
+          CON(IS,IL)=DBCON
+          DEN(IS,IL)=DBDEN
+          SHT(IS,IL)=DBSHT
+          THK(IS,IL)=DTHK(IC,IL)
+
+C Assign surface properties.
+          IF(IL.EQ.1)         EMISE(IS)=E
+          IF(IL.EQ.LAYERS(IC))EMISI(IS)=E
+          IF(IL.EQ.LAYERS(IC))ABSI(IS)=A
+          IF(IL.EQ.1)         ABSE(IS)=A
+          IF(IPR(IC,IL).EQ.0)THEN
+
+C Keep track of the air gaps in the composite, these variables may
+C eventually be redundant. Based on the orientation of the surface
+C assign an appropriate U value to each air gap encountered.
+            if(NAIRG(IS)+1.gt.MGP)then
+              call usrmsg(
+     &          ' As defined, this composite contains more air gaps',
+     &          ' then allowed - please change your description','W')
+            else
+              NAIRG(IS)=NAIRG(IS)+1
+              IPAIRG(IS,NAIRG(IS))=IL
+              IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
+              ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &               SSVFC(ioc)(1:4).EQ.'CEIL')THEN
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
+              ELSE
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
+              ENDIF
+            endif
+          ELSE
+            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h')then
+              if(NAIRG(IS)+1.gt.MGP)then
+                call usrmsg(
+     &            'This construction contains more air gaps than',
+     &            'allowed - please change your description','W')
+              else
+                NAIRG(IS)=NAIRG(IS)+1
+                IPAIRG(IS,NAIRG(IS))=IL
+                IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
+                ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &                 SSVFC(ioc)(1:4).EQ.'CEIL')THEN
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
+                ELSE
+                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
+                ENDIF
+              endif
+            endif
+          ENDIF
+   23   CONTINUE
 
 C Assume no default windows.
    10 CONTINUE
@@ -1561,10 +1555,9 @@ C to 0.
           GOTO 10
         ENDIF
 
+C Use ssmlcindex to get matching MLC index
  246    ICF=-1
-        DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SSMLCN(icn1))ICF=IC   ! find matching MLC
-  20    CONTINUE
+        if(ssmlcindex(icn1).ne.0) ICF=ssmlcindex(icn1)
         IF(ICF.EQ.-1)THEN
           WRITE(outs,'(A,A12)')
      &    ' select a transparent one for: ',SSNAME(icn1)
@@ -1572,6 +1565,7 @@ C to 0.
      &      outs,IER)
           IF(ISEL.GT.0)THEN
             WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+            ssmlcindex(icn1)=ISEL   ! update array
             ICF=ISEL
           ELSE
             RETURN
@@ -1593,6 +1587,7 @@ C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
             if(ISEL.GT.0)then
               WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
               SSOTF(icn1)='OPAQUE'
@@ -1604,6 +1599,7 @@ C Switch back to opaque construction.
      &        ' ',IER)
             if(ISEL.GT.0)then
               WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
             endif
           endif
@@ -2093,8 +2089,6 @@ C Loop through referenced mlc and derives the longest timeconstant.
 #include "esprdbfile.h"
 #include "material.h"
 
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
@@ -2106,7 +2100,6 @@ c ITCNST  - number of start-up days
       integer matarrayindex ! the indes within matdatarray
 
       character outs*124
-      character MLCN*12
       logical found,closemat1,closemat2
 
 C Establish if material data arrays have been filled. If not return
@@ -2129,12 +2122,10 @@ C each layer and keep track of time constant.
       do 40 ic=1,nmlc
 
 c First determine maximum thermal diffusivity and associated
-c homogeneous layer.
-        WRITE(MLCN,'(A12)')DESC(ic)(1:12)
-        lmlc=lnblnk(MLCN)
+c homogeneous layer. Locate if the MLC database item is used.
         found=.false.
         do 42 icn=1,ncon
-          if(MLCN(1:lmlc).eq.SSMLCN(icn)(1:lnblnk(SSMLCN(icn))))then
+          if(ssmlcindex(icn).eq.ic) then
             found=.true.
             goto 43
           endif

@@ -13,7 +13,9 @@ REPdir = $(SRCdir)/cetc/h3kreports
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o res.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
+MODULE_OBJECTS = startup.o aim2_module.o
+
+OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
    bscoeff_extended.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o cgd.o \
 	  comfort.o convect2.o ctread.o design.o dmdrep.o dossupport.o e3dviews.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o emfnetw.o enerbs.o \
@@ -28,8 +30,8 @@ OBJECTS = startup.o res.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -184,7 +186,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F \
 	bscoeff.F bscoeff_extended.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F \
 	convect2.F ctread.F \

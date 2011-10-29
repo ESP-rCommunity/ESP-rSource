@@ -496,9 +496,14 @@ C Print info on surface.
 C ******************** MOFDRW
 C MOFDRW displays the construction temperature profiles.
 
-      SUBROUTINE MOFDRW(ICOMP,ISUR,act)
+      SUBROUTINE MOFDRW(ICOMP,ISUR,act,ispeed)
 #include "building.h"
 #include "geometry.h"
+
+C Passed parameters
+      integer icomp  ! zone index
+      integer isur   ! surface index
+      integer ispeed ! 1 is 200ms 2 is 100ms 3 is 50ms
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -521,9 +526,11 @@ C IPRZ is material db ref for each layer.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
 #endif
 
 C Re-establish available colours.
@@ -599,7 +606,13 @@ C to allow for outside temp to be in VAL2(1,?)
 C If single-stepping pause, every 20 timesteps refresh the axis.
 C If there are limited interface colours then revert to refreshing at
 C each timestep. Pause 200msec at each timestep.
-            call pausems(200)
+            if(ispeed.eq.1)then
+              call pausems(200)
+            elseif(ispeed.eq.2)then
+              call pausems(100)
+            elseif(ispeed.eq.3)then
+              call pausems(50)
+            endif
             if(nifgrey.lt.4)then
               call MOFHED(ICOMP,ISUR,'s')
               call MOFAXS(ICOMP,ISUR)
@@ -620,7 +633,8 @@ C each timestep. Pause 200msec at each timestep.
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
-              call winscl('i',nifgrey-1)
+              iicol=nifgrey-1
+              call winscl('i',iicol)
               XX=THKMIN
               iupdown=0
               isym=0
@@ -635,7 +649,8 @@ C If possible reset the foreground colour to white and redraw the line.
               iupdown=1
               call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
 
 C Re-Draw construction section.
@@ -655,8 +670,21 @@ C Re-Draw construction section.
   102       CONTINUE
             call forceflush
           else
+            call STIME(j,TDESCR)
+            call STDATE(IYEAR,ID,DS,DS1)
+            WRITE(ETEXT,'(4A)')' Time ',DS1,' at ',TDESCR
+            iside=5
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
             call forceflush
-            call pausems(100)
+            if(ispeed.eq.1)then
+              call pausems(100)
+            elseif(ispeed.eq.2)then
+              call pausems(60)
+            elseif(ispeed.eq.3)then
+              call pausems(40)
+            endif
           endif
    20   CONTINUE
    10 CONTINUE

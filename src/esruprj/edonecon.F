@@ -672,8 +672,11 @@ C         THETA is measured from the XY plane.
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION COORD(MV,3)
       character outs*124
+      logical skip1,skip2
 
 C ANACC is the tolerance in degrees before a corner is assumed.
+      skip1=.false.
+      skip2=.false.
       icc=IZSTOCN(IZN,JSURF)
       if(icc.eq.0)then
         write(outs,'(a,i3,a,i3,a)') 
@@ -714,21 +717,27 @@ C Loop over each vertex to locate an apex.
          Z3=VCOORD(IZN,IVERT3,3)
 
 C Find angles of edge 1.
-         CALL LINDIR(X1,Y1,Z1,X2,Y2,Z2,ALPHA1,THETA1)
+         CALL LINDIR(X1,Y1,Z1,X2,Y2,Z2,ALPHA1,THETA1,skip1)
 
 C Find angles of edge 2.
-         CALL LINDIR(X2,Y2,Z2,X3,Y3,Z3,ALPHA2,THETA2)
+         CALL LINDIR(X2,Y2,Z2,X3,Y3,Z3,ALPHA2,THETA2,skip2)
 
-         ALDIFF=ABS(ALPHA2-ALPHA1)
-         THDIFF=ABS(THETA2-THETA1)
+         if(skip1)then
+           continue   ! 1st pair conincident
+         elseif(skip2)then
+           continue   ! 2nd pair conincident
+         else
+           ALDIFF=ABS(ALPHA2-ALPHA1)
+           THDIFF=ABS(THETA2-THETA1)
 
 C If angles difference greater than ANACC then apex located.
-         IF (ALDIFF.GT.ANACC.OR.THDIFF.GT.ANACC) THEN
-            NAPICS=NAPICS+1
-            COORD(NAPICS,1)=X2
-            COORD(NAPICS,2)=Y2
-            COORD(NAPICS,3)=Z2
-         ENDIF
+           IF (ALDIFF.GT.ANACC.OR.THDIFF.GT.ANACC) THEN
+              NAPICS=NAPICS+1
+              COORD(NAPICS,1)=X2
+              COORD(NAPICS,2)=Y2
+              COORD(NAPICS,3)=Z2
+           ENDIF
+         endif
    10 CONTINUE
 
       RETURN
@@ -739,9 +748,19 @@ C ************ LINDIR
 C LINDIR finds the angles associated with a line in
 C space. The angles returned are the alpha and theta angles in degrees.
 C Alpha lies in the XY plane and theta measured from the XY plane.
-      subroutine lindir(X1,Y1,Z1,X2,Y2,Z2,ALPHA,THETA)
+C If points are coincident skip is returned as true to avoid division
+C by zero.
+      subroutine lindir(X1,Y1,Z1,X2,Y2,Z2,ALPHA,THETA,skip)
 
-      logical close
+      logical skip,close,close3
+
+C First check that the two points are not coincident.
+      skip=.false.
+      call eclose3(X1,Y1,Z1,X2,Y2,Z2,0.001,skip)
+      if(skip)then
+        theta=0.0; alpha=0.0; return
+      endif
+
       PI = 4.0 * ATAN(1.0)
       DIST=SQRT((X2-X1)**2+(Y2-Y1)**2+(Z2-Z1)**2)
       THETA=ASIN((Z2-Z1)/DIST)

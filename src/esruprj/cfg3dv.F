@@ -138,9 +138,11 @@ C Local variables to pass to edline and axiscale.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
+      integer iicol
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
+      integer*8 iicol
 #endif
 
 C If not in graphic mode return.
@@ -456,9 +458,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok) call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then
@@ -517,9 +525,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then

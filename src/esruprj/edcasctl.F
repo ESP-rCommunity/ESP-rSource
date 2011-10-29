@@ -102,6 +102,7 @@ C For help messages
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
+      ICMDCF=0  ! set initial value
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then

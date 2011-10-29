@@ -116,7 +116,6 @@ C If IVAL is outwith range for failure then set to default.
 
 C Clear string buffers
    20 WORD=' '
-      ask='           '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
@@ -339,7 +338,7 @@ C    ...
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16
       CHARACTER OUTSTR*124,DSTR*124,outs*124
-      character prompt*144
+      character ask*16,prompt*144
       LOGICAL OK,close,DOK,unixok
 
 C If RVAL is outwith range for failure then set to default.
@@ -348,9 +347,26 @@ C If RVAL is outwith range for failure then set to default.
 
 C Check that value is not trivially close to zero (i.e. not
 C instantiated on the Fortran side before the call).
-      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
-      if(close)RVAL=0.0
    20 WORD=' '
+      CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
+      if(close)then
+        RVAL=0.0
+        ask='   0.00   '
+      else
+        if(abs(rval).gt.1.E+6)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
+          WRITE(ask,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E+4.and.rval.gt.1.E-3)then
+          WRITE(ask,'(G14.4)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-3.and.rval.gt.1.E-4)then
+          WRITE(ask,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
+        elseif(abs(rval).le.1.E-4)then
+          WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+        else
+          WRITE(ask,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+        endif
+      endif
 
 C Generate help and default strings.
       CALL REL16STR(DEFLT,STR2,IW2,IER)
@@ -370,7 +386,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -380,11 +396,14 @@ C If in graphic mode use graphic facilities to edit the number.
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
         endif
-        RVALUE=RVAL
-        CALL askreal(PROMPT,RVALUE,IFLG)
 
 C Debug.
-C        write(6,*) 'EASKR',RVALUE,IFLG
+C        write(6,*) '< askr prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askr string ',ask(1:lnblnk(ask))
+        CALL askdialog(PROMPT,ask,IFLG)
+
+C Debug.
+C        write(6,*) 'askr VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -396,22 +415,25 @@ C A cancel answer detected, set ier to -3 and return.
 
 C A default answer detected, set to default value.
           call edisp(iuout,DSTR)
-          call edisp(iuout,' ')
           RVAL=DEFLT
-          RETURN
-        ELSEIF(IFLG.eq.-1)THEN
-
-C A blank, carriage return or line feed encountered, assume user
-C wishes to use prior/existing real value.
-          CALL REL16STR(RVAL,STR2,IW2,IER)
-          WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
-          CALL USRMSG(' ',OUTSTR,'-')
+          call usrmsg('  ','  ','-')
           RETURN
         ELSE
 
-C A valid number or interaction, so update RVALT for later use.
-          RVALT=RVALUE
+C Strip off the last character (end of line mark) as well as any
+C leading blanks from string returned.
+          call c2fstr(ask,WORD)
         ENDIF
+        IF(WORD.EQ.' ')THEN
+
+C A blank, carriage return or line feed encountered, assume user
+C wishes to use prior/existing real value.
+          CALL EXPSTR(RVAL,STR2,IW2,IER)
+          WRITE(OUTSTR,55,iostat=ios,err=1)STR2(1:IW2)
+          CALL USRMSG(' ',OUTSTR,'-')
+          RETURN
+        ENDIF
+
       ELSE
 
 C In text mode, remind user of current value.
@@ -447,15 +469,15 @@ C use prior/existing real value.
           endif
           RETURN
         ENDIF
+      ENDIF
 
-C Decode the text mode interface string into a real.
-        read(WORD,*,ERR=89)rvalt
-        CALL REL16STR(RVALT,STR1,IW1,IER)
-        IF(IER.NE.0)THEN
-          CALL USRMSG(' ','Did not understand, try again..','-')
-          IER=0
-          GOTO 20
-        ENDIF
+C Decode the string into a real.
+      read(WORD,*,ERR=89)rvalt
+      CALL REL16STR(RVALT,STR1,IW1,IER)
+      IF(IER.NE.0)THEN
+        CALL USRMSG(' ','Did not understand, try again..','-')
+        IER=0
+        GOTO 20
       ENDIF
 
 C Check RVALT against minimum and respond based on MINACT.
@@ -576,7 +598,6 @@ C on the fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.00
    20 WORD=' '
-      ask='           '
       WRITE(ask,'(1PE14.6)')RVAL
 
 C Generate help and default strings.
@@ -597,7 +618,7 @@ C If in graphic mode use graphic facilities to edit the number.
         call dupphelp(newnbhelp)
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-	if((LN1+LN2+1).lt.144)then
+        if((LN1+LN2+1).lt.144)then
           if(LN1.eq.1)then
             write(prompt,'(a)') PROMP2(1:LN2)
           else
@@ -1840,7 +1861,6 @@ C If in terminal type 8 use dialogue box.
         WORD=' '
         CALL PHELPW(newnbhelp,IHW,IER)
         call dupphelp(newnbhelp)
-        lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
@@ -2585,14 +2605,12 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         optg='  '
         if (DEFLT) then
           if(DOK)then
-            id=1
             iw=1
             opta='default (yes)'
             optb='no'
             call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
      &        iw)
           else
-            id=2
             iw=2
             opta='yes'
             optb='default (no)'
@@ -2600,7 +2618,6 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
      &        iw)
           endif
         else
-          id=0
           iw=0
           opta='yes'
           optb='no'
@@ -2609,7 +2626,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         endif
 	
 C Debug.
-C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
+C        write(6,*) 'espabcbox selected iw ',iw,opta,optb,optc
 
         IF(IW.eq.1)THEN
           OK=.TRUE.
@@ -2973,7 +2990,7 @@ C MMOD=-2 TELETYPE: wait if full, page with blank line.
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,301)
   301       FORMAT(/,' ',50('-'),'>>',$)
-            READ(IUIN,'(A1)')DUMMY
+            READ(IUIN,'(A1)') DUMMY
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -3221,7 +3238,6 @@ C Print out the menu. If text is > 36 char or there are few items
 C then restrict to a single column. If less than 36 characters
 C print double column.
         IF(IMLENG.GT.36.OR.NITMS.LE.6)THEN
-          CALL ELINC(NITMS)
           LN=max(1,LNBLNK(ITEMS(1)))
           WRITE(IUOUT,900,iostat=ios,err=1)NAME(1:ITLENG),ITEMS(1)(1:LN)
   900     FORMAT(/,1X,a,': ',a)
@@ -3233,7 +3249,6 @@ C print double column.
    92     CONTINUE
         ELSEIF(IMLENG.LT.24)THEN
           MNULEN=NITMS/2
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,902,iostat=ios,err=2)NAME(1:ITLENG),
      &      ITEMS(1)(1:IMLENG),ITEMS(MNULEN+1)(1:IMLENG)
   902     FORMAT(/,1X,a,':  ',a,'   ',a)
@@ -3250,7 +3265,6 @@ C print double column.
           ENDIF
         ELSEIF(IMLENG.GE.24.and.IMLENG.LE.36)THEN
           MNULEN=(NITMS/2)
-          CALL ELINC(MNULEN)
           WRITE(IUOUT,'(2a)',iostat=ios,err=2)NAME(1:ITLENG),':'
           DO 193 K=1,MNULEN
             WRITE(IUOUT,'(2X,a,3x,a)',iostat=ios,err=2)
@@ -3700,13 +3714,11 @@ C otherwise redirect to user display.
         IF(ITRU.EQ.ICOUT)THEN
           WRITE(ICOUT,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ELSE
-          CALL ELINC(1)
           WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
         ENDIF
       ELSE
 
 C Write this to standard text window.
-        CALL ELINC(1)
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ENDIF
 
@@ -3875,128 +3887,6 @@ C impx impy before recalling fprofma.
 
       end
 
-C ****** invoke graphics capture proforma
-      subroutine profgrdump()
-#include "building.h"
-#include "model.h"
-
-C Path to model and command line file (if any).
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FILEP/IFIL
-      common/rpath/path
-      common/pophelp/h(60)
-      common/C21/IFCFG,cfgroot,LCFGF
-
-C Graphic capture, window dump: label, command.
-      common/gprint/gprlbl,gprcmd
-      common/gxwd/gxwdlbl,gxwdcmd
-
-      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,h*72,tfile*60,uname*24,fs*1
-      character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
-      character LCFGF*72,dh*72,gcmd*90
-      character gprlbl*20,gprcmd*48
-      character gxwdlbl*20,gxwdcmd*60
-
-      logical unixok
-
-      if(MMOD.ne.8)return
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      uname=' '
-      call usrname(uname)
-
-      h(1)='A screen image of a user selected portion '
-      h(2)='of the screen or the whole screen can be   '
-      h(3)='captured. It uses the application defined  '
-      h(4)='in the esprc file (typically import from   '
-      h(5)='the ImageMagick suite). A GIF image is     '
-      h(6)='assumed. Edit the file name as required.   '
-      nhelp=6
-      CALL PHELPW(NHELP,IHW,IER)
-      call dupphelp(NHELP)
-      tfile='  '
-      LNU=max(1,lnblnk(upath))
-      if(cfgroot(1:2).eq.'  ')then
-        LN=max(1,lnblnk(uname))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_.gif'
-      else
-        LN=max(1,lnblnk(cfgroot))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_.gif'
-      endif
-      iswidth(1)=60
-      title='capture graphics'
-      ltypes='ltte'
-      list(1)='options:         '
-      list(2)='user defined area'
-      list(3)='whole of screen  '
-      list(4)='file:            '
-      listact(1) = 0
-      listact(2) = 1
-      listact(3) = 0
-      listact(4) = 0
-      impx = 0
-      impy = 0
-      impcwth = 67
-      nstr = 1
-      nlist = 4
-  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
-     &    iswidth,listact,ino,nhelp)
-
-C Debug.
-C      write(6,*)listact,'  ',ino
-
-      if(ino.eq.-1)then
-
-C If no action return.
-        return
-      elseif(ino.eq.(nlist+1))then
-
-C If signaled ok then attempt to write out file.
-C        write(6,*)sstr(1)
-
-        tfile=sstr(1)
-        ltf=max(1,lnblnk(tfile))
-        if(listact(2).eq.1)then
-          LN=max(1,lnblnk(gprcmd))
-          write(gcmd,'(3a)') gprcmd(1:LN),' ',tfile(1:ltf)
-        elseif(listact(3).eq.1)then
-          LN=max(1,lnblnk(gxwdcmd))
-          write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
-        endif
-
-C Debug
-C        write(6,*)gcmd
-
-        call runit(gcmd,'-')
-        return
-      elseif(ino.eq.1)then
-
-C If user has switched from create to append update display (reset
-C impx impy before recalling fprofma.
-        if(listact(2).eq.1)listact(3)=0
-        impx = 0
-        impy = 0
-        goto 43
-      elseif(ino.eq.2)then
-        if(listact(3).eq.1)listact(2)=0
-        impx = 0
-        impy = 0
-        goto 43
-      else
-        impx = 0
-        impy = 0
-        goto 43
-      endif
-      return
-
-      end
 
 C ************************ PHELPD
 C PHELPD displays the current contents of common pophelp in a form
@@ -4228,8 +4118,11 @@ C pophelp where IL is the number of lines of help under consideration.
 
 C ********* WIRETOG
 C WIRETOG sets wireframe toggles and is called from C code in esp-r.c
-C with its current idea as to
-C the number of zones which have currently been selected for display.
+C with its current idea as to the number of zones which have currently
+C been selected for display.
+
+C Note: wiretog is currently not called - might depreciate it and
+C evtogset.
       subroutine wiretog(inpk)
 #include "building.h"
 
@@ -4693,54 +4586,10 @@ C drive viewer.
       ELSEIF(IWHICH.EQ.7)THEN
 
 C Draw the zones and any obstructions based on sun
-C position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-        write(outs,'(A,F6.2,A,F6.2)')
-     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
-        call edisp(iuout,' ')
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        call edisp(iuout,' Date and time for the view... ')
-        NTS=1
-        IMO=6
-        IDO=1
-        STIME=1.
-  67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
-  68    CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0.0)THEN
-          CALL ANGXYZ(SAZI,SALT,X1,Y1,Z1)
-          EYEM(1)=X1
-          EYEM(2)=Y1
-          EYEM(3)=Z1
-          ITSNM=1
-          MODIFY=.TRUE.
-          MODLEN=.TRUE.
-          CALL ADJVIEW(IER)
+C position. Use chgsun subroutine in cfommon3dv.F
+        call edisp(iuout,'Setup initial date and time for solar view.')
+        call chgsun(0)
 
-C Generate a heading for the view.
-          CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
-          WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azim:',SAZI,' elev:',SALT
-          ivt2=2
-          ivt3=1
-          ivt4=IFS
-          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
-          CALL EASKAB(' ',' Next viewpoint:',
-     &        'next hour','exit',IW,0)
-          if(IW.eq.1)then
-            STIME=STIME+((60.0/FLOAT(NTS))/60.0)
-            goto 68
-          else
-            ITSNM=0
-            goto 92
-          endif
-        else
-          CALL EASKAB(' View point below horizon:',' ',
-     &        'specify another time','exit',IW,0)
-          if(IW.eq.1)goto 67
-          ITSNM=0
-        endif
       ELSEIF(IWHICH.EQ.8)THEN
         return
       ENDIF
@@ -4751,6 +4600,7 @@ C Generate a heading for the view.
 C ************* EVTOGSET
 C EVTOGSET provides setup environment for wire frame toggles w/in prj.
 C IER=0 OK, IER=1 problem.
+C NOTE: NOTHING USES THIS - IT MIGHT BE DEPRECIATED
       SUBROUTINE EVTOGSET(ITRC,act,IER)
 #include "building.h"
 #include "esprdbfile.h"

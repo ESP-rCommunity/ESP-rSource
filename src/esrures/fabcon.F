@@ -47,6 +47,7 @@ C of inter-fabric temperature and condensation conditions.
       CHARACTER*23 ITEM(10)
       character xfile*144,tg*1,delim*1,act*1
       integer NITMS,INO ! max items and current menu item
+      integer IW,IWS    ! user choices
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -94,6 +95,10 @@ C Request zone and surface for output and check if graph should be
 C plotted over the whole period or one timestep at a time.
           CALL ASKZON(ICOMP)
           CALL ASKSUR(ICOMP,ISUR)
+          if(icomp.eq.0.or.isur.eq.0)then
+            call usrmsg('nothing selected...',' ','W')
+            goto 3
+          endif
           helptopic='condensation_animation'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('When plotting temperatures:',' ',
@@ -101,6 +106,13 @@ C plotted over the whole period or one timestep at a time.
      &      'continue',IW,nbhelp)
           if(IW.eq.1)act='-'
           if(IW.eq.2)act='a'
+          if(IW.eq.3) goto 3
+
+C Ask about speed
+          IWS=2
+          CALL EASKABC('Plotting speed:',' ',
+     &      'slower (200ms/step)','normal (100ms/step)',
+     &      'fast (50ms/step',IWS,nbhelp)
 
 C Get element thicknesses for this construction.
           CALL MOTHKE(ICOMP,ISUR)
@@ -112,7 +124,7 @@ C Compute scale and draw axes.
           CALL MOFAXS(ICOMP,ISUR)
 
 C Draw profiles.
-          CALL MOFDRW(ICOMP,ISUR,act)
+          CALL MOFDRW(ICOMP,ISUR,act,IWS)
         else
           goto 5
         endif

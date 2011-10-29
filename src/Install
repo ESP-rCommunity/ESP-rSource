@@ -106,8 +106,8 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
-# (bld plt, net are not currently built)
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res vew"
+# (net, run are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -175,7 +175,7 @@ if [ $# -ne 0 ]; then
               else
                  # Trap unsupported arguements.
                  echo " " 
-                 echo " Error: arguement $i is not supported. "
+                 echo " Error: argument $i is not supported. "
                  echo " Run ./Install --help for more information."
                  echo " " 
                  exit
@@ -244,10 +244,8 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --compiler_version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
-  echo "        binaries gcc-3.4.6, g++-3.4.6, and g77-3.4.6, specify "
-  echo "        '--compiler_version -3.4.6'."
-  echo "        compilation on Apple PPC machines should typically use"
-  echo "        '--compiler_version -3.3'."
+  echo "        binaries gcc-4.3, g++-4.3, and gfortran-4.3, specify "
+  echo "        '--compiler_version -4.3'."
   echo " "
   echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
   echo "        <PATH>/esp-r directory. The default path is:"
@@ -526,7 +524,7 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
      fi
      echo " Compiler: "
      echo "  (1) Sun fortran 90 (cc and f90)"
-     echo "  (2) GNU fortran (gcc 3.X and g77)"
+     echo "  (2) GNU fortran (gcc 4.X and gfortran)"
      echo "  (3) Intel fortran (icc, icpc and ifort)"
      read A
      if [ "$A" = "" ]; then
@@ -993,7 +991,7 @@ case $platform in
         esac;;
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
-          i386)    fDefType="-DOSX -DOSI -DLIN";;
+          i386)    fDefType="-DOSX -DOSI -DLIN -m64";;
 #          i386)    fDefType="-DOSX -DOSI -DLIN -m32";;
           x86_64)  fDefType="-DOSX -DLIN";;
         esac;;
@@ -1552,11 +1550,11 @@ echo " Installing ESP-r system. This may take some time."
     echo "       bModified         = .TRUE."                              >> ${SRCdir}/include/build_info.h 
   fi
   
-  echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
+  echo "C      URL commented out, as it likely exceeds gfortran's  "      >> ${SRCdir}/include/build_info.h 
   echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
   
   echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
-  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cSource           = \"$source\""                           >> ${SRCdir}/include/build_info.h 
   echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
   echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
   echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 

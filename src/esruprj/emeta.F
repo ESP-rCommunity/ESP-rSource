@@ -814,6 +814,7 @@ C Reset to represent UNKNOWN
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
         SSMLCN(iccc)=SMLCN(icc)
+        ssmlcindex(iccc)=ssmlcindex(icc)
         SSVFC(iccc)=SVFC(icc)
         SSOTHER(iccc,1)=SOTHER(icc,1)
         SSOTHER(iccc,2)=SOTHER(icc,2)

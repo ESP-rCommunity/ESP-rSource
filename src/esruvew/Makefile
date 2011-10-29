@@ -6,15 +6,17 @@ PROG = viewer$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
+MODULE_OBJECTS = startup.o
+
+OBJECTS = viewer.o azalts.o berror.o beye.o bmatr.o c2fdum.o chat.o \
 	  ctlexp.o dossupport.o ext.o hlr.o hlr2.o input.o invert.o \
 	  pconvt.o pers1.o pers2.o plan.o plot.o select.o shrink.o \
 	  spout.o  transf.o vert.o
 
 MODULES = start_up.mod
  
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 c2fdum.F:
 	rm -f c2fdum.F
@@ -36,5 +38,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	c2fdum.F ctlexp.F startup.F dossupport.F

@@ -253,6 +253,7 @@ C update IE1 for surfaces > IWHICH otherwise just compact IC1 & IE1.
           SSNAME(ix)=SSNAME(IX+1)
           SSOTF(IX)=SSOTF(IX+1)
           SSMLCN(IX)=SSMLCN(IX+1)
+          ssmlcindex(IX)=ssmlcindex(IX+1)
           SSTHICK(IX)=SSTHICK(IX+1)
           SSVFC(IX)=SSVFC(IX+1)
           SSOTHER(IX,1)=SSOTHER(IX+1,1)
@@ -885,7 +886,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &               'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of surface ',
@@ -1583,13 +1584,13 @@ C it is then it should not be delted so set iier
  8792     CONTINUE
           IF(IHIT.GT.0)THEN
             if(ACTION.eq.'D'.or.ACTION.eq.'d')then
-            WRITE(OUTSTR,9993)IWHICH,X(IWHICH),Y(IWHICH),Z(IWHICH)
- 9993       FORMAT(' Vertex ',I2,' located at ',3F10.3)
-            CALL EDISP(iuout,OUTSTR)
-            CALL EDISP(iuout,' is associated with surfaces: ')
-            WRITE(OUTSTR,9983)(ISASSO(IH),IH=1,IHIT)
- 9983       FORMAT(' ',10(I2,', '))
-            CALL EDISP(iuout,OUTSTR)
+              WRITE(OUTSTR,9993)IWHICH,X(IWHICH),Y(IWHICH),Z(IWHICH)
+ 9993         FORMAT(' Vertex ',I3,' located at ',3F10.3)
+              CALL EDISP(iuout,OUTSTR)
+              CALL EDISP(iuout,' is associated with surfaces: ')
+              WRITE(OUTSTR,9983)(ISASSO(IH),IH=1,IHIT)
+ 9983         FORMAT(' ',10(I2,', '))
+              CALL EDISP(iuout,OUTSTR)
             endif
             if(ihit.eq.1)then
               iier=ISASSO(1)
@@ -1700,7 +1701,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &              matchver)
                   if(.NOT.matchver) goto 247
                   if(offset.lt.0.004)then
-                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                    write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &               'New vertex ',iwhich3,' @',
      &                X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &                ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -1815,7 +1816,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &            matchver)
                 if(.NOT.matchver) goto 347
                 if(offset.lt.0.004)then
-                  write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                  write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &             'Copied vertex ',iwhich3,' @',
      &              X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &              ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -2438,14 +2439,14 @@ C (otherwise there will be two surfaces point to the same other surface).
         SOTHER(NSUR,2)='0'
         SOTHER(NSUR,3)='0'
       else
-      SOTHER(NSUR,1)=SOTHER(IS,1)
-      SOTHER(NSUR,2)=SOTHER(IS,2)
-      SOTHER(NSUR,3)=SOTHER(IS,3)
+        SOTHER(NSUR,1)=SOTHER(IS,1)
+        SOTHER(NSUR,2)=SOTHER(IS,2)
+        SOTHER(NSUR,3)=SOTHER(IS,3)
       endif
       SUSE(NSUR,1)='-'
       SUSE(NSUR,2)='-'
 
-C If in silent mode assign construction otherwise select.
+C If in silent mode assign construction otherwise select. 
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         WRITE(SMLCN(NSUR),'(A)') rsmlcn(1:12)
         WRITE(SOTF(NSUR),'(A)')  rsotf(1:lnblnk(rsotf))
@@ -2602,14 +2603,18 @@ C Update common blocks G6 & G7 (insert data into connections based list).
           IC2(ICONT)=0
           IE2(ICONT)=0
         else
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
         endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICONT)=imlcindex
         SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
@@ -2737,14 +2742,18 @@ C Update common blocks G6 & G7 (insert data into connections based list).
           IC2(ICONT)=0
           IE2(ICONT)=0
         else
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
         endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
         SSMLCN(ICONT)=SMLCN(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICONT)=imlcindex
         SSTHICK(ICONT)=SSTHICK(NSUR)
         SSVFC(ICONT)=SVFC(NSUR)
         SSOTHER(ICONT,1)=SOTHER(NSUR,1)
@@ -2814,7 +2823,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
      &          matchver)
               if(.NOT.matchver) goto 247
               if(offset.lt.0.004)then
-                write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+                write(outs,'(a,i3,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
      &            'Door vertex ',iwhich3,' @',
      &            X(NTV),Y(NTV),Z(NTV),' is close (',offset,
      &            ') to edge ',IWHICH1,' &',IWHICH2,' of ',
@@ -2983,6 +2992,7 @@ C Typically the mark 234 has been used with this code.
         SSNAME(IX)=SSNAME(IX-1)
         SSOTF(IX)=SSOTF(IX-1)
         SSMLCN(IX)=SSMLCN(IX-1)
+        ssmlcindex(IX)=ssmlcindex(IX-1)
         SSTHICK(IX)=SSTHICK(IX-1)
         SSVFC(IX)=SSVFC(IX-1)
         SSOTHER(IX,1)=SSOTHER(IX-1,1)
@@ -3053,6 +3063,10 @@ C Update common blocks G6 & G7
         SSNAME(ICON)=SNAME(ICOMP,NSUR)
         SSOTF(ICON)=SOTF(NSUR)
         SSMLCN(ICON)=SMLCN(NSUR)
+
+C Discover matching MLC index.
+        call matchmlcdesc(SMLCN(NSUR),imlcindex)
+        ssmlcindex(ICON)= imlcindex
         SSTHICK(ICON)=SSTHICK(NSUR)
         SSVFC(ICON)=SVFC(NSUR)
         SSOTHER(ICON,1)=SOTHER(NSUR,1)

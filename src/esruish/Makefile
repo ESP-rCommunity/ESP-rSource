@@ -11,7 +11,9 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o ish.o aim2_module.o arrow.o ascii_mat.o \
+MODULE_OBJECTS = startup.o aim2_module.o
+
+OBJECTS = ish.o arrow.o ascii_mat.o \
 	  basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
    c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o \
@@ -23,8 +25,8 @@ OBJECTS = startup.o ish.o aim2_module.o arrow.o ascii_mat.o \
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -143,7 +145,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F common3dv.F cread3dv.F ctlexp.F \
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \

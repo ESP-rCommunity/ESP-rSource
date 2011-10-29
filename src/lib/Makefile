@@ -132,7 +132,7 @@ esru_x.o:
 esru_fc.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.f
 esru_util.o:
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c esru_util.c
+	$(MCC) $(LD_FLAGS) $(CFLAGS) -I../lib -c esru_util.c
 version.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c version.F
 
