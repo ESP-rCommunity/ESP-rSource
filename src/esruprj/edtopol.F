@@ -2805,6 +2805,9 @@ C updated as well.
                   LTMP=LGEOM(IZ)
                   call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+
+C << this is a place to update ssmlcindex >>
+
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
                  if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
@@ -2841,6 +2844,9 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+
+C << this is a place to update ssmlcindex  >>
+
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
                  if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
@@ -2877,6 +2883,9 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call georead(IUF,LTMP,IZ,1,iuout,IER)
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
+
+C << this is a place to update ssmlcindex >>
+
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
                  if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
@@ -3174,6 +3183,9 @@ C Search and replace by finding matching constructions.
 
 C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
+
+C << this is a place to update ssmlcindex >>
+
                     if(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                     if(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
                     if(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
@@ -3252,6 +3264,9 @@ C Anchor point substitution.
 
 C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
+
+C << this is a place to update ssmlcindex >>
+
             IF(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
             IF(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
             IF(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
@@ -3393,6 +3408,9 @@ C 'any horizontal','any orien.','cancel'.
                 IF(OK)then
                   ioc=IZSTOCN(IVALS(IZ),i)
                   WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
+
+C << this is a place to update ssmlcindex >>
+
                   IF(DESC(ISEL)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                   IF(DESC(ISEL)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
                   IF(DESC(ISEL)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '

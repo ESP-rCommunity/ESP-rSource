@@ -187,8 +187,7 @@ C      write(6,*) ' start for current results set ',IRCPLP,ireccfg
   100 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS1: plant results library error',
+  999 WRITE(IUOUT,*) ' MZPLS1: plant results library error',
      &               ' at record ',IREC
       call epwait
       GOTO 100
@@ -232,7 +231,6 @@ C Read number of simulation result sets currently stored in library.
 
 C If solution library full, open new library.
       IF(NSIM.EQ.30) THEN
-         call elinc(1)
          WRITE(IUOUT,1010)
  1010    FORMAT(' Results library full; please specify another')
          call epwait
@@ -542,8 +540,7 @@ C Trace output.
   500 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS3: library error at record ',IREC
+  999 WRITE(IUOUT,*) ' MZPLS3: library error at record ',IREC
       GOTO 500
 
       END
@@ -573,7 +570,6 @@ C 'start address' record, unless library is already full.
 C Save start address of next result-set.
          WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) IRCPLP
       ELSE
-         call elinc(1)
          WRITE(IUOUT,*) ' MZPLS4: plant results library is full'
          call epwait
       END IF
@@ -581,8 +577,7 @@ C Save start address of next result-set.
    10 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS4: library error at record ',IREC
+  999 WRITE(IUOUT,*) ' MZPLS4: library error at record ',IREC
       GOTO 10
 
       END

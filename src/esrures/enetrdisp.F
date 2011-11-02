@@ -43,7 +43,7 @@ C
 C View parameters
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/NETPLOT/XSTRT,XFIN,ILINST(MERAWD),AXSC(5)
 
 C Array of recovered data
@@ -71,7 +71,7 @@ C The period details
       CHARACTER EVLABS*16,EVLABU*4,STR*20,EXLAB*5
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
-      INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
+      INTEGER YAXSET,ADDLIN,horaxisdiv,EVAXIS,EVMARK,EVLINE,EFILT
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel

@@ -1,5 +1,5 @@
 /*
- * copyright ESRU 2001-9
+ * copyright ESRU 2001-11
  * This source may be copied, distributed, altered or used, but not sold
  * for profit.  This notice should remain in the source unaltered, and
  * any changes to the source made known to ESRU.
@@ -111,4 +111,4 @@ void	wwcsetend_();
 void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
 void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);
 void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,char* ftmppth,long int* ibrowse,
-        int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);
+        long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);

@@ -639,6 +639,7 @@ C Clear the connection list.
         SSNAME(icc)=' '
         SSOTF(icc)=' '
         SSMLCN(icc)=' '
+        ssmlcindex(icc)=0  ! no matching MLC
         SSVFC(icc)=' '
         SSOTHER(icc,1)='UNKNOWN'
         SSOTHER(icc,2)='0'
@@ -3438,6 +3439,9 @@ C Special materials file flag
       logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
+
+C << a place to use ssmlcindex >>
+
       imatch=0
       icc=IZSTOCN(icomp,is)
       do 5 i=1,nmlc

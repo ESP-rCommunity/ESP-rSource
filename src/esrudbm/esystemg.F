@@ -517,6 +517,12 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
+
       helpinsub='ERSYSG'  ! set for subroutine
       
       
@@ -2461,14 +2467,16 @@ C Pass information about the current model to the C interface.
       limgpth=imgpth
       ldocpth=docpth
       ltmppth=tmppth
+      iincomp=ncomp
+      iincon=ncon
       if(browse)then
         ibrowse=1
         call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+     &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
         call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+     &    ibrowse,iincomp,iincon)
       endif
       RETURN
 

@@ -198,10 +198,10 @@ C Set default values for IGETNO array and associated plotting/ labeling arrays.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
 C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
@@ -213,6 +213,7 @@ C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
 
 C Set add profile label ADDLIN=0 i.e. no add
       ADDLIN=0
+      horaxisdiv=0  ! assume default horizontal divisions
 
 C Reset to no choices and current result set.
       NGET=0
@@ -439,7 +440,7 @@ C Optional title for graph and up to 5 other labels and their positions.
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
       COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
@@ -468,7 +469,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       dimension ISP(MS),IZNSEL(MCON),ISFSEL(MCON)
       dimension IVALS(17),IVALC(21)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer nbofhelp   ! how many help lines to display for different menu types.
       integer loop       ! for do loops
       integer IAC        ! for user selection
@@ -3065,10 +3066,14 @@ C Set axis limits.
             endif
  555      continue
 
+C Ask user preference for horizontal axis.
+          CALL EASKABCD('Horizontal axis divisions:',' ','default',
+     &      'hours','days','weeks',horaxisdiv,nbhelp)
+
 C Redraw graph (if applicable).
           if (NGET.gt.0) then
-            if (YAXSET(1).eq.2.or.YAXSET(2).eq.2.or.YAXSET(3).eq.2.or.
-     &                                           YAXSET(4).eq.2) return
+            if (YAXSET(1).eq.2.or.YAXSET(2).eq.2.or.
+     &          YAXSET(3).eq.2.or.YAXSET(4).eq.2) return
           endif
         else
 

@@ -427,7 +427,7 @@ C SAINTER calculates summary statistics within result sets.
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -448,7 +448,7 @@ C SAINTER calculates summary statistics within result sets.
 
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot

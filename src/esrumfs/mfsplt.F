@@ -154,7 +154,6 @@ C If NDAYT=0 set data to weekday, saturday and sunday format
         IDF=IPCDV(ICFP,IDTYPP,2)
         IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
    10 CONTINUE
-      CALL ELINC(3)
       WRITE(IUOUT,*) ' MFCNTL: plant control loop ',ICFP
       WRITE(IUOUT,*) '         no valid day type for year-day ',IDAY
       STOP ' MFCNTL: cannot locate appropriate day type'

@@ -1123,7 +1123,7 @@ C            endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Alter vertex list by deleting/ copy / replicate / editing.
-        helptopic='ground_form_vertex_manage'
+        helptopic='ground_form_vert_manage'
         call gethelptext(helpinsub,helptopic,nbhelp)
         IRT=1
         CALL EASKATOG('Vertex operations:',' ','add','delete','copy',

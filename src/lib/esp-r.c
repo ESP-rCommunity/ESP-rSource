@@ -24,12 +24,15 @@
 #include <glib.h>
 #include <esp-r.h>
 #include <commons.h>
+#include <fc_commons.h>
 
 #define ESP_LIST_MAIN
 #include <esp_list.h>
 #undef ESP_LIST_MAIN
 
 /* Global variable definitions start here */
+extern chgeye_();     /* in esrucom/common3dv.F */
+extern chgsun_();     /* in esrucom/common3dv.F */
 extern FILE *wwc;
 extern int  wwc_ok;   /* from esru_util.c */
 extern int  wwc_macro;   /* from esru_util.c */
@@ -172,7 +175,7 @@ static gboolean configure_event( GtkWidget *widget,
                      widget->window,
                      0, 0, 0, 0, -1, -1);*/
     g_object_unref(gr_image);
-/* debug fprintf(stderr,"configure_event unref gr_image\n"); */
+// fprintf(stderr,"configure_event unref gr_image\n");
   }
 
   gr_image = gdk_pixmap_new(widget->window,
@@ -388,10 +391,8 @@ void text_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* First find the size of the graphic window. Note: do this prior to changing
  * the text feedback display font by using Pango context previously setup in esp-r.c */
@@ -419,61 +420,61 @@ void text_feedback_reset ( void)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
 
-     /* fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 3 ) {
      pfd = pango_font_description_from_string("Serif,Medium 14");
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
      f_width  = font_calculations_array[courier_large].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width);
 
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
      f_height = font_calculations_array[courier_largest].f_height;
      f_width  = font_calculations_array[courier_largest].f_width;
 
-     /* fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width); debug */
+     // fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width);
    }
 
    gtk_widget_modify_font(text, pfd);
 
-   /* fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
+   // fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
 
    pango_font_description_free(pfd);
 
@@ -496,10 +497,8 @@ void emenu_feedback_reset ( void)
    gint f_width;	/* pixel width of default font */
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* the following would not be necessary if graphicf extents were remembered globally */
 /* << fix this >> */
@@ -516,9 +515,9 @@ void emenu_feedback_reset ( void)
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   /* fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
-   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
-   /* fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
+   // fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);
+   // fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);
+   // fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
 
 /* create font description to use for resetting the menu font << dosn't quite work >>.
  * Use pango_font_get_metrics to get font width and height.
@@ -555,10 +554,8 @@ void graphic_feedback_reset ( void)
 
    gint g_width,g_height;	/* size of the graphics widget */
    long int b_top, b_bottom, b_left, b_right; /* pixels at top/bottom/left/right */
-   gint textf_pix_ht;	/* pixel height of text feedback (based on number of lines requested) */
    long int ifsc,itfsc,imfsc,lttyc; /* parameters must be long int */
-   long int gw,gh,gdw,gdh,g3w,g3h;             /* to match fortran conventions */
-   long int cl,cr,ct,cb,vl,vr,vt,vb;
+   long int gw,gh;             /* to match fortran conventions */
 
 /* Create font description to use for resetting the graphic font.
  * Use pango_font_get_metrics to get font width and height. */
@@ -643,9 +640,9 @@ void graphic_feedback_reset ( void)
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   /* fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
-   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
-   /* fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
+   // fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);
+   // fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);
+   // fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);
 
    ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
    lttyc=10;	/* << this is a place holder >> */
@@ -770,7 +767,7 @@ void sml_menu_gph_cb (GtkWidget *widget, gpointer resize)
 /* **** Define small/medium/large option menu for use in graphics font resizing
  * New radio buttons and labels are added in the graphic feedback submenu to give
  * users more flexibility in choice of fonts the user can now choose any one of
-  * the fonts from Serif small, medium, large and largest and Courier small, medium,
+ * the fonts from Serif small, medium, large and largest and Courier small, medium,
  * large, largest
  */
 static GtkWidget *sml_menu_gph ( void)
@@ -939,7 +936,16 @@ void esru_elev_down ( void)
   chgelev_(&elevchange);  /* Deal with user selection of azimuth decrement  */
 }
 
-/* esru_wire_pick() - send message to fortran to rotate wireframe down. */
+/* esru_chg_sun() - send message to fortran to setup solar view. */
+void esru_chg_sun ( void)
+{
+  long int isunhour;	/* current value to pass to fortran. */
+  isunhour = 0;	/* initial up */
+  chgsun_(&isunhour);  /* Deal with user selection of solar view  */
+}
+
+/* esru_wire_pick() - send message to fortran. */
+/* THIS IS NOT CURRENTLY CALLED */
 void esru_wire_pick ( void)
 {
   long int avail_wire;	/* current value of wire_avail to pass to fortran. */
@@ -947,7 +953,8 @@ void esru_wire_pick ( void)
   wirepk_(&avail_wire);  /* Deal with user selection of wireframe control  */
 }
 
-/* esru_wire_tog() - send message to fortran to rotate wireframe down. */
+/* esru_wire_tog() - send message to fortran. */
+/* THIS IS NOT CURRENTLY CALLED */
 void esru_wire_tog ( void)
 {
   long int avail_wire;	/* current value of wire_avail to pass to fortran. */
@@ -998,7 +1005,9 @@ void esru_wire_ctl ( void)
    GtkWidget *IncludeSimilar, *IncludeSurObsGrnd, *IncludeGrnd;
    GtkWidget *HighDefault, *HighConstr, *HighOpaque, *HighTrans, *HighPartAtt;
 
-   gint nrows, irow, icol, izone, itchar, ichar, result;
+   gint izone, itchar, ichar, result;
+   guint nrows, irow, icol;
+   int curindex;
    int no_valid_event;
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
@@ -1126,20 +1135,24 @@ void esru_wire_ctl ( void)
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
    /* create zones to display list  <<pick up zone names here>>*/
-   nrows = 1 + c1_.NCOMP/4;
+   nrows = 1 + (guint)(c1_.NCOMP/4);
    irow = 0;
-   //fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
-   //fprintf(stderr,"number of rows %d\n",nrows);
-   //fprintf(stderr,"number of rows %f\n",nrows);
+   // fprintf(stderr,"number of zones %d\n",c1_.NCOMP);
+   // fprintf(stderr,"number of cnn %d\n",c1_.NCON);
+   // fprintf(stderr,"number of rows %d\n",nrows);
+   // fprintf(stderr,"nzg is %d\n",gzonpik_.nzg);
+   // fprintf(stderr,"nznog zero is %d\n",gzonpik_.nznog[0]);
+   // fprintf(stderr,"nznog one is %d\n",gzonpik_.nznog[1]);
+   // fprintf(stderr,"nznog two is %d\n",gzonpik_.nznog[2]);
    frame = gtk_frame_new ("Zones to display");
    gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
    table = gtk_table_new (nrows, 4, TRUE);
    gtk_container_add (GTK_CONTAINER (frame), table);
    getzonenames_();
    izone = 0;
-   while (izone < c1_.NCOMP) {
-     for(icol = 0; icol < 4; icol++) {	/* fill columns in order  <<why does the while loop not work?>>*/
-       /* fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow); */
+   while (izone < (gint)c1_.NCOMP) {
+     for(icol = 0; icol < 4; icol++) {	/* fill columns in order */
+       // fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
        zone_button[izone] = gtk_check_button_new_with_label (zonenames[izone]);
        gtk_table_attach_defaults (GTK_TABLE (table), zone_button[izone], icol, icol+1, irow, irow+1);
        izone++;
@@ -1150,8 +1163,10 @@ void esru_wire_ctl ( void)
       This means that the zone referenced in the fortran
       code is one more than in the c code (hence the -1 below).
    */
-   for (izone = 0; izone < gzonpik_.nzg; izone++) {
-     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[gzonpik_.nznog[izone]-1]), TRUE);
+   for (izone = 0; izone < (gint)gzonpik_.nzg; izone++) {
+     curindex = (int)gzonpik_.nznog[izone]-1;
+     // fprintf(stderr,"Zone %d, index %d index %d\n",izone,izone+1, curindex);
+     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[curindex]), TRUE);
    }
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
 
@@ -1310,13 +1325,17 @@ void esru_wire_ctl ( void)
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ViewBoundOptimum)) == TRUE) {
            ray2_.ITBND = 1;} else {ray2_.ITBND = 0;}
          /* Remember that C starts at zero, so add one to the zoneid to get the correct value
-            for the fortran code.
+            for the fortran code. Reset nzg, if button ticked et nznog array to the zone
+            index.
          */
          gzonpik_.nzg = 0;
-         for (izone = 0; izone < c1_.NCOMP; izone++) {
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
+         // fprintf(stderr,"-nzg is now %d\n",gzonpik_.nzg);
+         // fprintf(stderr,"-nznog zero is now %d\n",gzonpik_.nznog[0]);
+         // fprintf(stderr,"-nznog one is now %d\n",gzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
            ray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
@@ -1358,8 +1377,11 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 3;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
            ray2_.ITPPSW = 4;}
+         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
+         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
+           &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
+           &ray2_.ITORG,&ray2_.GRDIS,&ray2_.ITBND,&ray2_.ITDSP,&ray2_.ITHLS,&ray2_.ITHLZ,&ray2_.ITPPSW);
 
-         gdupdate_();
          no_valid_event = FALSE;
          break;
        case GTK_RESPONSE_APPLY:
@@ -1391,7 +1413,7 @@ void esru_wire_ctl ( void)
             for the fortran code.
          */
          gzonpik_.nzg = 0;
-         for (izone = 0; izone < c1_.NCOMP; izone++) {
+         for (izone = 0; izone < (gint)c1_.NCOMP; izone++) {
            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (zone_button[izone])) == TRUE) {
              gzonpik_.nznog[gzonpik_.nzg++] = izone+1;}
          }
@@ -1432,8 +1454,11 @@ void esru_wire_ctl ( void)
            ray2_.ITPPSW = 3;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ViewFromSun)) == TRUE) {
            ray2_.ITPPSW = 4;}
+         // pass back to the fortran the numbers that a user might have changed and invoke updated view (in the fortran)
+         chgeye_(&image_.EYEM[0],&image_.EYEM[1],&image_.EYEM[2],&image_.VIEWM[0],&image_.VIEWM[1],
+           &image_.VIEWM[2],&image_.ANG,&ray2_.ITZNM,&ray2_.ITSNM,&ray2_.ITVNO,&ray2_.ITOBS,&ray2_.ITSNR,&ray2_.ITGRD,
+           &ray2_.ITORG,&ray2_.GRDIS,&ray2_.ITBND,&ray2_.ITDSP,&ray2_.ITHLS,&ray2_.ITHLZ,&ray2_.ITPPSW);
 
-         gdupdate_();
          esru_ask_wire();	/* re-instanciate the help associated with this interface */
          break;
        case GTK_RESPONSE_HELP:
@@ -1545,6 +1570,11 @@ GtkWidget *create_static_menus( void )
    gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
    g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
                              G_CALLBACK (esru_elev_down), NULL);
+
+   menu_items = gtk_menu_item_new_with_label ("view from sun");
+   gtk_menu_shell_append (GTK_MENU_SHELL (view_items), menu_items);
+   g_signal_connect_swapped (G_OBJECT (menu_items), "activate",
+                             G_CALLBACK (esru_chg_sun), NULL);
 
 /* disable wireframe controls and wireframe toggles
  *  menu_items = gtk_menu_item_new_with_label ("wireframe controls");
@@ -2084,7 +2114,7 @@ char *gintstr[] = {
         if ((gdk_color_parse(gintstr[11],&grey43)==1) && (gdk_colormap_alloc_color(cmap,&grey43,FALSE,TRUE)==1))  ngr=ngr+1;
       }
       ngr=ngr+2;	/* include black (ngr-1) and white (ngr) */
-      /* fprintf(stderr,"greys ngr %ld\n",ngr); */
+      // fprintf(stderr,"greys ngr %ld\n",ngr);
       infofg = black;  infobg = white;
 
     } else {
@@ -2131,7 +2161,7 @@ void setcscale_() {
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
   if ( ncscale <= 45 ) {
     gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
-    /* fprintf(stderr,"Trying reduced colour set\n"); */
+    // fprintf(stderr,"Trying reduced colour set\n");
     ncscale = 0;
     ih = -1;
     for (ic=0; ic<24; ic++) {
@@ -2150,7 +2180,7 @@ void setcscale_() {
       }
     }
   }
-  /* fprintf(stderr,"Created cscale %ld\n",ncscale);	 debug */
+  // fprintf(stderr,"Created cscale %ld\n",ncscale);
   return;
 }
 
@@ -2159,7 +2189,7 @@ void setcscale_() {
 void clrcscale_() {
   gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
   ncscale = 0;
-  /* fprintf(stderr,"Freed cscale colour set\n");	 debug */
+  // fprintf(stderr,"Freed cscale colour set\n");
   return;
 }
 
@@ -2195,7 +2225,7 @@ void setgscale_() {
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
   if ( ngscale <= 47 ) {
     gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
-    /* fprintf(stderr,"Trying reduced grey set\n"); */
+    // fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
     for (ic=0; ic<24; ic++) {
@@ -2214,7 +2244,7 @@ void setgscale_() {
       }
     }
   }
-  /* fprintf(stderr,"Created grey cscale %ld\n",ngscale); */
+  // fprintf(stderr,"Created grey cscale %ld\n",ngscale);
   return;
 }
 
@@ -2223,7 +2253,7 @@ void setgscale_() {
 void clrgscale_() {
   gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
   ngscale = 0;
-  /* fprintf(stderr,"Freed gscale colour set\n"); */
+  // fprintf(stderr,"Freed gscale colour set\n");
   return;
 }
 
@@ -2436,29 +2466,29 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
 #endif
-   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
+   // fprintf(stderr,"refresh graphic font medium 10\n");
  } else if (butn_fnt == 4 ) {
    pfd = pango_font_description_from_string("Courier,Medium 8");
    f_height = font_calculations_array[courier_small].f_height;
    f_width  = font_calculations_array[courier_small].f_width;
 
-   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
+   // fprintf(stderr,"refresh graphic font medium 12\n");
  }else if (butn_fnt == 5 ) {
    pfd = pango_font_description_from_string("Courier,Medium 10");
    f_height = font_calculations_array[courier_medium].f_height;
    f_width  = font_calculations_array[courier_medium].f_width;
-   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
+   // fprintf(stderr,"refresh graphic font medium 12\n");
  } else if (butn_fnt == 6 ) {
    pfd = pango_font_description_from_string("Courier,Medium 12");
    f_height = font_calculations_array[courier_large].f_height;
    f_width  = font_calculations_array[courier_large].f_width;
 
-   /* fprintf(stderr,"refresh graphic font medium 10\n"); debug */
+   // fprintf(stderr,"refresh graphic font medium 10\n");
  } else if (butn_fnt == 7 ) {
    pfd = pango_font_description_from_string("Courier,Medium 14");
    f_height = font_calculations_array[courier_largest].f_height;
    f_width  = font_calculations_array[courier_largest].f_width;
-   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
+   // fprintf(stderr,"refresh graphic font medium 12\n");
  }
  gtk_widget_modify_font(graphic, pfd);	/* << ?? >> */
 
@@ -2471,7 +2501,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * are to the pixmap which is the same size as graphic, the coordinates
  * derived are based on upper left of the pixmap = 0, 0. */
  gdk_drawable_get_size(graphic->window,&g_width,&g_height);
- /* fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
+ // fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);
  b_top = 0 + (f_height * (*ct));
  b_bottom = g_height - 9 - (f_height * ((gint) *cb));
  b_left = 0 + 9 + (f_width * ((gint) *cl));

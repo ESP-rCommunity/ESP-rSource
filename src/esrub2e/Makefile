@@ -11,15 +11,17 @@ PROG = b2e$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aim2_module.o basesimp.o basesimp_inputs.o startup.o b2e.o bscoeff.o bscoeff_extended.o \
+MODULE_OBJECTS = aim2_module.o startup.o
+
+OBJECTS = basesimp.o basesimp_inputs.o b2e.o bscoeff.o bscoeff_extended.o \
 	c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o initalc.o item.o mfcdat.o \
 	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	start_up.mod parse_command_line.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -110,7 +112,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F filelist.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \

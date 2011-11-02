@@ -267,7 +267,15 @@
 '  '
 *enditem
 *item MOFCON condensation_animation
-'Animation shows each timestep in sequence.'
+'Animation shows each timestep in sequence. You have a choice'
+'of the speed of the animation. There is no option to pause or'
+'exit from the animation once it starts - so best to try it with'
+'a short period first.
+' '
+'The choice of all-timesteps-at-once draws each timesteps data'
+'over the previous timestep with a minimal pause.'
+'The choice animate data display clears the prior data before'
+'drawing the current timesteps temperatures through the surface.'
 *enditem
           CALL EASKABC('When plotting temperatures:',' ',
 *subroutine MOINTC

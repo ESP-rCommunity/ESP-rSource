@@ -225,6 +225,18 @@
 *cfg    /usr/esru/esp-r/training/flow/cfg/bld_flw_ctl.cfg
 *root	/usr/esru/esp-r/training/flow
 *item
+*name	office with Trombe-Michell wall
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
+*item
+*name	...Trombe-Michell wall with open dampers
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall_crack.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
+*item
+*name	...Trombe-Michell wall with controlled dampers
+*cfg    /usr/esru/esp-r/training/trombe_wall/cfg/trombe_wall_crack_ctl.cfg
+*root	/usr/esru/esp-r/training/trombe_wall
+*item
 *name	forced ventilation network with controlled recirculation
 *cfg    /usr/esru/esp-r/training/flow/cfg/bld_mech_ven.cfg
 *root	/usr/esru/esp-r/training/flow

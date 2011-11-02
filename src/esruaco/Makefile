@@ -12,7 +12,9 @@ PROG= aco$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o aco.o acocalc.o acoesp.o aim2_module.o arrow.o ascii_mat.o \
+MODULE_OBJECTS = startup.o aim2_module.o
+
+OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
  c2fdum.o common3dv.o  \
 	cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
@@ -23,8 +25,8 @@ OBJECTS = startup.o aco.o acocalc.o acoesp.o aim2_module.o arrow.o ascii_mat.o \
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(F_to_C_flags)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -140,7 +142,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULE_OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F blcond.F basesimp.F basesimp_inputs.F \
 	bscoeff.F bscoeff_extended.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \

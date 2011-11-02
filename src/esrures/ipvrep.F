@@ -1708,6 +1708,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,8)=1
                   SLABEL(I)='Dry bulb temperature,degC'
                   LNSLABEL(I)=25
+                  TABLABEL(I)='Dry bulb temperature'; LNTABLABEL(I)=20
                 elseif(imetget(ig).eq.6)then
                   SUFFIX=' Res T'
                   IGETNO(I,1)=6
@@ -1719,7 +1720,8 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=5
                   IGETNO(I,8)=1
                   SLABEL(I)='Resultant temperature,degC'
-                  LNSLABEL(I)=25
+                  LNSLABEL(I)=26
+                  TABLABEL(I)='Resultant temperature'; LNTABLABEL(I)=21
                 elseif(imetget(ig).eq.11)then
                   SUFFIX=' Inf'
                   IGETNO(I,1)=11
@@ -1731,6 +1733,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=4
                   IGETNO(I,8)=2
                   SLABEL(I)='Infiltration load,W'; LNSLABEL(I)=19
+                  TABLABEL(I)='Infiltration load'; LNTABLABEL(I)=17
                 elseif(imetget(ig).eq.12)then
                   SUFFIX=' Vent'
                   IGETNO(I,1)=12
@@ -1742,6 +1745,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
                   SLABEL(I)='Ventilation load,W'; LNSLABEL(I)=18
+                  TABLABEL(I)='Ventilation load'; LNTABLABEL(I)=16
                 elseif(imetget(ig).eq.13)then
                   SUFFIX=' RH'
                   IGETNO(I,1)=13
@@ -1753,6 +1757,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=4
                   IGETNO(I,8)=4
                   SLABEL(I)='Relative humidity,%'; LNSLABEL(I)=19
+                  TABLABEL(I)='Relative humidity'; LNTABLABEL(I)=17
                 elseif(imetget(ig).eq.15)then
                   SUFFIX=' TotCnv'
                   IGETNO(I,1)=15
@@ -1764,6 +1769,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=12
                   IGETNO(I,8)=2
                   SLABEL(I)='Total casual gains,W'; LNSLABEL(I)=20
+                  TABLABEL(I)='Total casual gains'; LNTABLABEL(I)=18
                 elseif(imetget(ig).eq.38)then
                   SUFFIX=' SolinEx'
                   IGETNO(I,1)=38
@@ -1776,6 +1782,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,8)=2
                   SLABEL(I)='Solar entering from outside,W'
                   LNSLABEL(I)=29
+                  TABLABEL(I)='Solar from outside'; LNTABLABEL(I)=18
                 elseif(imetget(ig).eq.40)then
                   SUFFIX=' TSolabs'
                   IGETNO(I,1)=40
@@ -1787,6 +1794,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=9
                   IGETNO(I,8)=2
                   SLABEL(I)='Total solar absorbed,W'; LNSLABEL(I)=22
+                  TABLABEL(I)='Total solar absorbed'; LNTABLABEL(I)=20
                 elseif(imetget(ig).eq.73)then
                   SUFFIX=' Guth'
                   IGETNO(I,1)=73
@@ -1798,6 +1806,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,7)=6
                   IGETNO(I,8)=1
                   SLABEL(I)='Guth comfort index,-'; LNSLABEL(I)=20
+                  TABLABEL(I)='Guth comfort index'; LNTABLABEL(I)=18
                 endif
                 lnz=lnzname(izmg(ig,i))
                 write (GLABEL(I),'(a,a)')ZNAME(izmg(ig,i))(1:lnz),
@@ -3278,8 +3287,8 @@ C uncontrolled and controlled lighting.
               IGETNO(I,3)=0
               IGETNO(I,4)=0
               IGETNO(I,5)=ISET
-              SLABEL(I)='Heating flux injection (W)'
-              LNSLABEL(I)=26
+              SLABEL(I)='Heating flux injection (W)'; LNSLABEL(I)=26
+              TABLABEL(I)='Heating flux injection'; LNTABLABEL(I)=22
    60       CONTINUE
             call GOGET(IDAY)
             DO 161 I=1,NZ
@@ -3290,8 +3299,8 @@ C uncontrolled and controlled lighting.
   161       continue
             DO 63 I=1,NZ
               IGETNO(I,1)=9
-              SLABEL(I)='Cooling flux (W)'
-              LNSLABEL(I)=16
+              SLABEL(I)='Cooling flux (W)'; LNSLABEL(I)=16
+              TABLABEL(I)='Cooling flux'; LNTABLABEL(I)=12
    63       CONTINUE
             call GOGET(IDAY)
             DO 64 I=1,NZ
@@ -3303,8 +3312,8 @@ C uncontrolled and controlled lighting.
             DO 66 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=5
-              SLABEL(I)='Lighting (unctld) gains (W)'
-              LNSLABEL(I)=27
+              SLABEL(I)='Lighting (unctld) gains (W)'; LNSLABEL(I)=27
+              TABLABEL(I)='Lighting (unctld) gains'; LNTABLABEL(I)=23
    66       CONTINUE
             call GOGET(IDAY)
             DO 67 I=1,NZ
@@ -3315,8 +3324,8 @@ C uncontrolled and controlled lighting.
             DO 70 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=7
-              SLABEL(I)='Lighting (ctld) gains (W)'
-              LNSLABEL(I)=25
+              SLABEL(I)='Lighting (ctld) gains (W)'; LNSLABEL(I)=25
+              TABLABEL(I)='Lighting (ctld) gains'; LNTABLABEL(I)=21
    70       CONTINUE
             call GOGET(IDAY)
             DO 71 I=1,NZ
@@ -3329,8 +3338,8 @@ C Small power (assumed to be equipment casual gains)
             DO 74 I=1,NZ
               IGETNO(I,1)=15
               IGETNO(I,3)=6
-              SLABEL(I)='Small power (W)'
-              LNSLABEL(I)=15
+              SLABEL(I)='Small power (W)'; LNSLABEL(I)=15
+              TABLABEL(I)='Small power'; LNTABLABEL(I)=11
    74       CONTINUE
             call GOGET(IDAY)
             DO 75 I=1,NZ

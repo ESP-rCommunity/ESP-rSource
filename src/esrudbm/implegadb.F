@@ -200,7 +200,7 @@ C to include information on optical properties).
         DESC=RSTR(1:LNBLNK(RSTR))
 
 C Parse the DESC string into string tokens.
-        call parsemlcdesc(DESC,MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC,MLCN,OTF,OPT,MLCSYM,isymindex)
 
         symname=MLCSYM
         othcolr='grey50'
@@ -1407,36 +1407,50 @@ C Air layer encountered so put in zeroes.
       END
 
 C ******* parsemlcdesc (copy from edatabase.F)
-C parsemlcdesc: Parse the DESC string from common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C Parse the DESC string from the MLC common block returning text for
+C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+C If isymindex is non-zero it is index of MLC for symmetric MLC.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Clear parameters to be returned and then copy from DES.
-      MLCN=' '
-      OTF=' '
       OPT=' '
       MLCSYM=' '
       WRITE(MLCN,'(A)')DES(1:12)
       WRITE(OTF,'(A)') DES(15:18)
-      IF(OTF.EQ.' ')OTF='OPAQ'
-      IF(OTF.EQ.'TRAN')THEN
+      IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
+      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
         WRITE(OPT,'(A)') DES(21:32)
         IF(OPT.EQ.' ')OPT='UNKNOWN'
+      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        OPT='USE GSLedit'
       ELSE
         OPT='OPAQUE'
       ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
+C check the MLC index of MLCSYM so that can be returned.
       if(lnblnk(DES).gt.35)then
         WRITE(MLCSYM,'(A)') DES(35:46)
+
+C Look for index for MLCSYM in the current MLC database.
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
+            isymindex=ii   ! remember MLC index     
+          endif
+  5     continue
       else
         MLCSYM='  '
+        isymindex=0   ! signal not applicable     
       endif
       return
       end
