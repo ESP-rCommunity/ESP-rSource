@@ -2940,9 +2940,25 @@ C   node 3 represents fluid at inlet
 C matrix equation coefficients COUT (in order: self-coupling, cross-
 C coupling, & present-time coefficients) for energy balance (ISTATS=1),
 C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
-C     ADATA: none
+C      ADATA: 1 : linear law
+C             2 : equipercentage law
+C             if equipercentage
+C             3 : exponent term
+C             4 : minimum value for which the equipotential law helds
 C     BDATA: none
 C     CDATA: 1  flow ratio (first outlet to inlet)
+C
+C      This component responds to an input variable from 0 to 1, 1 means
+C      open towards node 1 and closed towards node 2, 0 closed node 1
+C      and open node 2.
+C      to control the valve two laws are implemnented: linear with a
+C      value ranging between 0 and 1 and equipercentage: the aperture of
+C      the first way is correlated to the signal with the formula:
+C                   XN*(x-1)
+C      m_1/m_max = e 
+C
+C      this correlation holds only until x reaches a minimum value 
+C      nput by the user as ADATA(3) from this point linear correlation is adopted.     
 
       SUBROUTINE CMP69C(IPCOMP,COUT,ISTATS)
 #include "plant.h"
@@ -3035,8 +3051,12 @@ C Determine values of valuables used in this component e.g. fluid mass
 C flow rates, specific heats, and latent heat (note: mass of
 C encapsulated water & steam vapour to be neglected)
 
+      ITYPE = ADATA(IPCOMP,1)
+      XN    = ADATA(IPCOMP,2)
+      XMIN  = ADATA(IPCOMP,3)
+
 C Firstly identify the specified CDATA 
-      R=CDATA(IPCOMP,1)
+      RPOS=CDATA(IPCOMP,1)
 
 C reverse flow of incoming fluid has been set zero by MZPADJ if any
       Rmw0=PCONDR(ICON1)*CONVAR(ICON1,2)
@@ -3051,7 +3071,7 @@ C Flow rates at nodes 2 & 3 for reporting purpose
       Rmw3=CSVI(INOD3,2)
       Rmv3=CSVI(INOD3,3)
 
-      call eclose(R,-99.00,0.001,closea)
+      call eclose(RPOS,-99.00,0.001,closea)
       IF(.not.closea) GO TO 10
 
 C Get value of R
@@ -3067,9 +3087,25 @@ C Current component time-constant TC set to zero because of
 C no thermal capacitance term in this component
       TC(IPCOMP)=0.
 
+C Establish the fraction of first out to inlet, first out is  node 1
+      
+  10  IF (ITYPE .EQ. 1) THEN
+C equipercentage law              
+         IF (RPOS .GT. RMIN) THEN
+C exponential law                 
+             R = EXP(XN*(RPOS-1))
+         ELSE
+C linear law                 
+             RMIN = EXP(XN*(XMIN - 1))
+             R = RMIN/XMIN*RPOS
+         ENDIF
+      ELSE
+c linear correlation              
+         R = RPOS
+      ENDIF    
 C Establish matrix equation coefficients
 
- 10   CALL PP51(IPCOMP,ISTATS,R)
+      CALL PP51(IPCOMP,ISTATS,R)
 
       COUT(1)=A(51,1)
       COUT(2)=A(51,4)
