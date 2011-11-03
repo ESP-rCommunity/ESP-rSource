@@ -222,16 +222,16 @@ C Plant control information.
 
 C Write control data and compact, if very long then use two lines.
             if(NITEMS.lt.19)then
-              WRITE(outs,'(19f13.5)',IOSTAT=ios,ERR=1)
+              WRITE(outs,'(19e13.4)',IOSTAT=ios,ERR=1)
      &          (PMISCD(II,JJ,KK,L),L=2,NITEMS)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
             else
-              WRITE(outs,'(19f13.5)',IOSTAT=ios,ERR=1)
+              WRITE(outs,'(19e13.4)',IOSTAT=ios,ERR=1)
      &          (PMISCD(II,JJ,KK,L),L=2,18)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
-              WRITE(outs,'(19f13.5)',IOSTAT=ios,ERR=1)
+              WRITE(outs,'(19e13.4)',IOSTAT=ios,ERR=1)
      &          (PMISCD(II,JJ,KK,L),L=19,nitems)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
