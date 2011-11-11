@@ -1,15 +1,12 @@
 SRCdir = `pwd`/..
-COMdir = $(SRCdir)/esrucom
 LIBdir = $(SRCdir)/lib
-MFSdir = $(SRCdir)/esrumfs
-PRJdir = $(SRCdir)/esruprj
 PROG = stats$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o esru_nox.o csv_stats.o 
+OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o 
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS)
@@ -23,9 +20,6 @@ esru_fc.F:
 esru_lib.F:
 	rm -f esru_lib.F
 	ln -s $(LIBdir)/esru_lib.F .
-esru_nox.c:
-	rm -f esru_nox.c
-	ln -s $(LIBdir)/esru_nox.c .
 esru_libNonGTK.F:
 	rm -f esru_libNonGTK.F
 	ln -s $(LIBdir)/esru_libNonGTK.F .
@@ -41,5 +35,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_nox.c esru_libNonGTK.F 
+	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F 
 

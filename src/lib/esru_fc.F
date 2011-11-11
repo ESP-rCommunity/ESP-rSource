@@ -1,4 +1,10 @@
-C Fortran dummies for stuff in wwlib.c
+C Fortran dummies for stuff in C code of lib folder mostly related
+C to graphic calls. It is useful for applications that need to be
+C compiled as pure Fortran.
+
+C If the parameter of the C function change the matching subroutine
+C in this source file should be adapted to match.
+
 C	sizeint         :- passess window size & position
 C	win3d	:- opens a viewing box taking into account menu
 C                  width and dialogue box.
@@ -338,17 +344,17 @@ C      write(6,*) opta
       return
       end
 
-C      subroutine espad(limit,limtty,line)
-C      return
-C      end
+      subroutine espad(limit,limtty,line)
+      return
+      end
 
       subroutine egdispclr
       return
       end
 
-C      subroutine trackview(ichar,irx,iry)
-C      return
-C      end
+      subroutine trackview(ichar,irx,iry)
+      return
+      end
 
       subroutine eline(ix,iy,ioperation)
       return
@@ -458,11 +464,11 @@ C      end
       return
       end
 
-C      subroutine evwmenu(titleptr,impx,impy,iwth,irpx,irpy,
-C     &  ino,ipflg,iuresp)
-C      character*(*) titleptr
-C      return
-C      end
+      subroutine evwmenu(titleptr,impx,impy,iwth,irpx,irpy,
+     &  ino,ipflg,iuresp)
+      character*(*) titleptr
+      return
+      end
 
 C      subroutine aux_menu
 C      return
@@ -480,10 +486,10 @@ C      end
       return
       end
 
-C      subroutine opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,
-C     &  iicfgn,iicfgc,iicfgdfn)
-C      return
-C      end
+      subroutine opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,
+     &  iicfgn,iicfgc,iicfgdfn)
+      return
+      end
 
       subroutine opensetup
       return
@@ -526,12 +532,12 @@ C      end
       return
       end
 
-C      subroutine findrtb(iright,itop,ibottom)
-C      iright=0
-C      itop=0
-C      ibottom=0
-C      return
-C      end
+      subroutine findrtb(iright,itop,ibottom)
+      iright=0
+      itop=0
+      ibottom=0
+      return
+      end
 
 C      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
 C     &  ftmppth,ibrowse,iincomp,iincon)
@@ -572,13 +578,13 @@ C      subroutine nwkgflg(ngf)
 C      return
 C      end
 
-C      subroutine fprofma(sstr,nstr,title,list,nlist,listtypes,impx,
-C     &  impy,impcwth,iswidth,listact,ino,nhelp)
-C      character*(*) sstr(*),list(*)
-C      character*(*) title,listtypes
-C      dimension iswidth(nlist),listact(nlist)
-C      return
-C      end
+      subroutine fprofma(sstr,nstr,title,list,nlist,listtypes,impx,
+     &  impy,impcwth,iswidth,listact,ino,nhelp)
+      character*(*) sstr(*),list(*)
+      character*(*) title,listtypes
+      dimension iswidth(nlist),listact(nlist)
+      return
+      end
 
 C Dummy subroutine for a function available in GTK for displaying images
 C in a pop-up window.
@@ -587,21 +593,21 @@ C      character*(*) head,topic,act,longtfile
 C      return
 C      end
 
-C      subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
-C      character*(*) fname
-C      integer ixoffset,iyoffset,iwidth,ihight,
-C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
-C      return
-C      end
+      subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+     &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
+      character*(*) fname
+      integer ixoffset,iyoffset,iwidth,ihight,
+     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
+      return
+      end
 
-C      subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-C     &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
-C      character*(*) fname
-C      integer ixoffset,iyoffset,iwidth,ihight,
-C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
-C      return
-C      end
+      subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+     &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
+      character*(*) fname
+      integer ixoffset,iyoffset,iwidth,ihight,
+     &        inuma, inumb,ixbul,iybul,ixblr,iyblr
+      return
+      end
 
       subroutine findviewtext(icx,line,isize,ix,iy)
       integer icx,line,isize,ix,iy
