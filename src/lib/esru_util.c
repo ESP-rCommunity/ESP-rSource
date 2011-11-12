@@ -193,7 +193,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 /* local working string arrays */
   char *locflist = flist;
   int locnflist = *nflist;
-  static char file_list[100][73];	/* character arrays to hold folder or file names. */
+  static char file_list[400][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
   char act2[8];	/* buffer for act */
 
@@ -207,7 +207,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 */
 /* clear the local return string array and reset nflist */
   locnflist = 0;
-  for ( i = 0; i < 99; i++ ) {
+  for ( i = 0; i < 399; i++ ) {
     nwflist[i] = (long int) 0;
     strncpy(file_list[i],"                                                                         ",73);
   }
@@ -315,7 +315,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 /* the terminal index should match the size of the file_list[] buffer and that
  * should match the MFFOLD parameter on the fortran side! 
  */
-      if ((foundone == 1) && (locnflist <= 99)) {	/* add d_name to the fixed string array */
+      if ((foundone == 1) && (locnflist <= 399)) {	/* add d_name to the fixed string array */
         ic = (int) strlen(dirt->d_name);
         nwflist[locnflist] = ic;	/* remember width of d_name */
         strcpy(file_list[locnflist],dirt->d_name);
