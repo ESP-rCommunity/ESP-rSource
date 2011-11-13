@@ -58,7 +58,7 @@ C geometry.h provides commons G0/G2/precz.
 
       CHARACTER*72 LTMP
       character HFILE*72,head*33
-      CHARACTER ITEM(30)*33
+      CHARACTER ITEM(31)*33
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
       integer NITEMS,INO ! max items and current menu item
@@ -255,7 +255,7 @@ C names, turn off grid and origin.
       if(MMOD.EQ.8)call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 
-C Determine the convective regime (A-G)..
+C Determine the convective regime (A-P)..
    20 INO = -2
       write(ITEM(1),'(a)') ' Buoyancy-driven flow         '
       ITEM(2) =            '   surf-to-air temp diff...   '
@@ -268,27 +268,28 @@ C Determine the convective regime (A-G)..
       ITEM(9) =            '   open vertical channel...   '
       ITEM(10)=            'f    Molina & Maestre corl    '
       ITEM(11)=            'g    Bar-Cohen and Ros. corl  '
-      ITEM(12)=            ' _________________________    '
-      write(ITEM(13),'(a)')' Mechanically driven flow     '
-      ITEM(14)=            '   air-based HVAC system...   '
-      ITEM(15)=            'h    VAV with CV heating      '
-      ITEM(16)=            'i    VAV with VV heating      '
-      ITEM(17)=            'j    CV with variable temp    '
-      ITEM(18)=            '   circulation within zone... '
-      ITEM(19)=            'k    via circulation fan      '
-      ITEM(20)=            ' ________________________     '
-      ITEM(21) =           '  Mixed flow (buoyancy + mech)'
-      ITEM(22)=            'l    VAV with CV heating      '
-      ITEM(23)=            'm    VAV with VV heating      '
-      ITEM(24)=            'n    CV with variable temp    '
-      ITEM(25)=            ' _________________________    '
-      ITEM(26)=            'o User defined or CEN values  '
+      ITEM(12)=            'h    ISO 15099 corl           '
+      ITEM(13)=            ' _________________________    '
+      write(ITEM(14),'(a)')' Mechanically driven flow     '
+      ITEM(15)=            '   air-based HVAC system...   '
+      ITEM(16)=            'h    VAV with CV heating      '
+      ITEM(17)=            'i    VAV with VV heating      '
+      ITEM(18)=            'j    CV with variable temp    '
+      ITEM(19)=            '   circulation within zone... '
+      ITEM(20)=            'k    via circulation fan      '
+      ITEM(21)=            ' ________________________     '
+      ITEM(22)=            '  Mixed flow (buoyancy + mech)'
+      ITEM(23)=            'l    VAV with CV heating      '
+      ITEM(24)=            'm    VAV with VV heating      '
+      ITEM(25)=            'n    CV with variable temp    '
+      ITEM(26)=            ' _________________________    '
+      ITEM(27)=            'o User defined or CEN values  '
 
-      ITEM(27)=            '! list                        '
-      ITEM(28)=            '! save                        '
-      ITEM(29)=            '? help                        '
-      ITEM(30)=            '- exit                        '
-      NITEMS=30
+      ITEM(28)=            '! list                        '
+      ITEM(29)=            '! save                        '
+      ITEM(30)=            '? help                        '
+      ITEM(31)=            '- exit                        '
+      NITEMS=31
 
 C Redraw wireframe on each return.
       CALL INLNST(1)
@@ -335,6 +336,8 @@ C Convective regime `B'. Buoyancy caused by heater not under window.
         call EconvB(ITRU,IUF,ICOMP,iopt,IER)
       ELSEIF(INO.EQ.10)then
 
+C Convective regime 'F'. Convection in open vertical channel w/ or
+C w/o consideration of air flow velocities from afn.
 C Open vertical channel convection - Molina & Maestre correlation        
         iopt=1
         call EconvF (ITRU,IUF,ICOMP,iopt,IER)
@@ -343,24 +346,29 @@ C Open vertical channel convection - Molina & Maestre correlation
 C Open vertical channel convection - Bar-Cohen correlation        
         iopt=2
         call EconvF (ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.15)then
+      ELSEIF(INO.EQ.12)then
+
+C Open vertical channel convection - ISO 15099 correlation        
+        iopt=3
+        call EconvF (ITRU,IUF,ICOMP,iopt,IER)
+      ELSEIF(INO.EQ.16)then
 
 C Convective regime `C'. Convection dominated by mechanical forces caused
 C by an air-handling system delivering heated or cooled air to the room
 C through ceiling or floor mounted diffusers. VAV with CV heating.
         iopt=1
         call EconvC(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.16)then
+      ELSEIF(INO.EQ.17)then
 
 C Convective regime `C'. VAV with VV heating.
         iopt=2
         call EconvC(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.17)then
+      ELSEIF(INO.EQ.18)then
 
 C Convective regime `C'. CV with variable temperature.
         iopt=3
         call EconvC(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.19)then
+      ELSEIF(INO.EQ.20)then
 
 C Convective regime `D'.
 C ==> Khalifa 8 for walls opposite fan (requires list of walls)
@@ -369,35 +377,35 @@ C     Khalifa 4 for ceilings
 C     Alamdari-Hammond for floors
 C     Toggle to Alamdari-Hammond for all surf when no heat or no cool
         call EconvD(ITRU,IUF,ICOMP,IER)
-      ELSEIF(INO.EQ.22)then
+      ELSEIF(INO.EQ.23)then
 
 C Convective regime `E'. Mixed flow model. VAV with CV heating.
         iopt=1
         call EconvE(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.23)then
+      ELSEIF(INO.EQ.24)then
 
 C Convective regime `E'. Mixed flow model. VAV with VV heating.
         iopt=2
         call EconvE(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.24)then
+      ELSEIF(INO.EQ.25)then
 
 C Convective regime `E'. Mixed flow model. CV with variable temperatures.
         iopt=3
         call EconvE(ITRU,IUF,ICOMP,iopt,IER)
-      ELSEIF(INO.EQ.26)then
+      ELSEIF(INO.EQ.27)then
 
 C User will manually create convection file.
         call EHCMAN(ITRU,IUF,ICOMP,IER)
-      ELSEIF(INO.eq.27)then
+      ELSEIF(INO.eq.28)then
 
 C List current data.
         call listhtc(iuout,ICOMP,IER)
-      ELSEIF (INO.EQ.28)then
+      ELSEIF (INO.EQ.29)then
 
 C Write data to file.
         CALL EMKHTC(LHCCO(ICOMP),ICOMP,IUF,ITRU,IER)
 
-      ELSEIF (INO.EQ.29)then
+      ELSEIF (INO.EQ.30)then
 C Display help info.
 C Note that the ACA facility is described in section 5.2
 C of the following thesis (available in PDF format from
@@ -411,7 +419,7 @@ C University of Strathclyde, Glasgow UK.
         helptopic='zone_htc_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('convective calculations',nbhelp,'-',0,0,IER)
-      ELSEIF (INO.EQ.30)then
+      ELSEIF (INO.EQ.31)then
         RETURN
       ELSE
         goto 20
@@ -1641,7 +1649,9 @@ C ******************** EconvF ********************
 C EconvF controls the input of data related to convective regime F, buoyancy
 C        driven flow in open vertical channels.
 C Derived from code in EconvA.
-C IOPT: 1 = Molina & Maestre, 2 = Bar-Cohen correlation.
+C IOPT: 1 = Molina & Maestre, 
+C       2 = Bar-Cohen correlation and
+C       3 = ISO 15099 correlation.
       SUBROUTINE EconvF(ITRU,IUF,ICOMP,IOPT,IER)
 #include "building.h"
 #include "model.h"
@@ -1706,7 +1716,7 @@ C Establish the cause of the buoyancy driving force.
 C Choose where is the air comming into the channel.
       helptopic='zone_htc_vert_chan_data'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      IF((IOPT.EQ.1).OR.(IOPT.EQ.2)) THEN
+      IF((IOPT.EQ.1).OR.(IOPT.EQ.2).or.(iopt.eq.3)) THEN
         CALL EASKAB(' ','Air enters channel from','Outdoor',
      &    'Another zone',IW,nbhelp)
         IF (IW.EQ.1) THEN
@@ -1728,7 +1738,8 @@ C Choose where is the air comming into the channel.
       IF(IOPT.EQ.1)THEN
 
 C Molina & Maestre correlation developed in the SOLVENT project.
-C The control law ICOR= 15 will be assigned to all surfaces in the channel
+C The control law ICOR= 15 will be assigned to all vertical surfaces 
+C in the channel.
         hcphrase(1) = 'convec. vert channel'
         hcphrase(2) = 'Molina'
         DO 10 ISUR=1,NZSUR(ICOMP)
@@ -1823,7 +1834,64 @@ C Ceiling.
             CVdata(IPER,ISUR,8) = 99.
           endif
    11   CONTINUE
-      ENDIF
+      ELSEIF(IOPT.EQ.3)THEN
+
+C ISO 15099
+C The correlation will be assigned to the vertical surfaces
+C independently of the heating being turned on or off
+C This correlation will have an ICOR of 17.
+        hcphrase(1) = 'Convec. vert channel'
+        hcphrase(2) = 'ISO 15099'
+
+C Ask Channel width
+        CALL EASKR(CWIDTH,'Channel width ?',
+     &    ' ',0.01,'W',1.5,'W',0.05,'Channel width',IER,nbhelp) 
+
+C Ask Channel height
+        CALL EASKR(CHEIGHT,'Channel height ?',
+     &    ' ',0.1,'W',100.0,'W',1.0,'Channel height',IER,nbhelp) 
+
+C Examine each surface in the zone. Select ICOR based on surface orientation.
+C ANGLE=0 for walls and other vertical surfaces; ANGLE=-90 for floors;
+C and ANGLE=+90 for ceilings.
+        DO 12 ISUR=1,NZSUR(ICOMP)
+          icc=izstocn(icomp,isur) 
+          ANGLE = SSPELV(icc)
+          if(ANGLE.LE.45..AND.ANGLE.GE.-45.) then
+
+C Vertical surface. Apply correlation 
+            CVdata(IPER,ISUR,1) = 1.
+            CVdata(IPER,ISUR,2) = 17.
+            CVdata(IPER,ISUR,3) = 17.
+            CVdata(IPER,ISUR,4) = 0.
+            CVdata(IPER,ISUR,5) = 99.
+            CVdata(IPER,ISUR,6) = 99.
+            CVdata(IPER,ISUR,7) = 99.
+            CVdata(IPER,ISUR,8) = 99.
+          elseif(ANGLE.LT.-45.) then
+C Floor.
+            CVdata(IPER,ISUR,1) = 1.
+            CVdata(IPER,ISUR,2) = -1.
+            CVdata(IPER,ISUR,3) = -1.
+            CVdata(IPER,ISUR,4) = 0.
+            CVdata(IPER,ISUR,5) = 99.
+            CVdata(IPER,ISUR,6) = 99.
+            CVdata(IPER,ISUR,7) = 99.
+            CVdata(IPER,ISUR,8) = 99.
+          elseif(ANGLE.GT.45.) then
+C Ceiling.
+            CVdata(IPER,ISUR,1) = 1.
+            CVdata(IPER,ISUR,2) = -1.
+            CVdata(IPER,ISUR,3) = -1.
+            CVdata(IPER,ISUR,4) = 0.
+            CVdata(IPER,ISUR,5) = 99.
+            CVdata(IPER,ISUR,6) = 99.
+            CVdata(IPER,ISUR,7) = 99.
+            CVdata(IPER,ISUR,8) = 99.
+          endif
+   12   CONTINUE
+
+      ENDIF ! IOPT 
 
 C Concatenate the phrases to make hcfpdescr.
       lhcp1=lnblnk(hcphrase(1))
@@ -2536,6 +2604,7 @@ C Rewind file check first line and if *HC_Ctl read 2nd line as datestamp.
           else
 
 C Not a recognised file << what error code to return? >>
+            write(*,*)" Not recognised HC file "
             goto 390
           endif
         endif
@@ -2545,8 +2614,10 @@ C Number of control time intervals.
         CALL STRIPC(IUF,OUTSTR,1,num1,1,'htc periods',IER)
         K=0
         CALL EGETWI(OUTSTR,K,IHCFP,1,MP,'W','htc periods',IER)
-        if(ier.ne.0) goto 390
-
+        if(ier.ne.0) then
+            write(*,*)" Problem in HTC periods "        
+          goto 390
+        endif
 C Number of surfaces.
         CALL STRIPC(IUF,OUTSTR,1,num1,1,'htc surfaces',IER)
         K=0

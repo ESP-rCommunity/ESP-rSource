@@ -626,7 +626,9 @@ C Trace output ?
       goto 1000
 
 C Error messages.
-  390 call edisp(iuout,' HC File read error.')
+  390 write(outs,77)OUTSTR
+   77 format(' Outstr: ',A,' HC File read error. ')
+      call edisp(iuout,outs)
       CALL ERPFREE(IUF,ISTAT)
       call epwait
       call epagend

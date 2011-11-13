@@ -689,14 +689,14 @@ C simulation toggle, surface orientation, and direction of heat flow)
 C can be used for other surfaces.
 
 C Firstly, determine whether adaptive control is to be applied...
-C ...Has the the user has specified a convection (.htc) file for this zone?
+C ...Has the user specified a convection (.htc) file for this zone?
       IF( IHC(ICOMP).EQ.1 ) THEN
 C ...Check each control period for `type 3' control.
         DO 24 k=1,NHCFP(ICOMP)
           IF( iCTLTP(ICOMP,k).eq.3 )THEN
 C ...Are we within the time interval for `type 3'?
             IF( BTIMEF.le.HCFPFT(ICOMP,k) .and.
-     &                                  BTIMEF.gt.HCFPST(ICOMP,k)) THEN
+     &                              BTIMEF.gt.HCFPST(ICOMP,k)) THEN
 
 C Adaptive control will be applied. Get index for zone, surface, and time
 C interval; use data for `inside' or `outside' surface.
