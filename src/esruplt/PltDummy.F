@@ -26,8 +26,9 @@ C     not needed in prj.
 C-----------------------------------------------------------------------
 
       subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
-      implicit none
+      implicit none      
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
