@@ -396,7 +396,7 @@ if [ "$SQLite_support" = "yes" ]; then
    ld_output=`ld -lsqlite3`
    case $ld_output in 
      "" ) SQLite_libs_found="yes";
-          if [ "$xml_support" = "no"]; then
+          if [ "$xml_support" = "no" ]; then
              # XML not installed, Disable SQLite support
              SQLite_support="no"
              # If running silently, warn user.
