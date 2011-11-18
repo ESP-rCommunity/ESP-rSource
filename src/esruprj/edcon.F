@@ -92,7 +92,7 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-
+   
       helpinsub='EDCON'  ! set for subroutine
 
 C Clear number of TMC's and layers in each before loading common data.
@@ -143,6 +143,7 @@ C Read in the related geometry file into common.
         RETURN
       ENDIF
 
+      
 C Scan through the geometry file and if most of the construction
 C attributes have not been set then advise the user to use the
 C geometry facility first.
@@ -225,12 +226,8 @@ C Construction file name not yet specified.
           ENDIF
         ENDIF
       else
-
 C If in quiet mode: the file should exist => error if we are here.
-        IF (QUIET) THEN
-          CALL PHELPD('file error',nbhelp,'-',0,0,IER)
-          RETURN
-        ELSE
+        IF ( .not. QUIET ) THEN
           write(outs,'(1x,A,A)')LTHRM(ICOMP)(:lnblnk(LTHRM(ICOMP))),
      &        ' not found!'
           CALL EASKAB(outs,'Options:','respecify',
