@@ -1805,6 +1805,7 @@ C defined.
       subroutine mzpst1(b1,b2,b3,icomp,qf)
       include "building.h"
       include "control.h"
+      include "net_flow.h"
       include "blc25_open_windows.h"
 
       common/tc/itc,icnt
