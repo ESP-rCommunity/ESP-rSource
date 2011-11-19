@@ -19,9 +19,20 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C csvstats     - the main controlling routine.
+C SURVEYCSV    - scanning occupancy csv file to separate text summary files
+C actsumscan   - Reads activity pattern summary file. Work in progress.
+C GLOBALCSV    - Reads concatinated activity csv file to generate one text
+C                summary file.
+C hourlytoperiods - Recover periods from hourly data in the daypattern array.
+C parpsf - allows terminal, size and file arguments to be passed.
+C partfa - allows terminal, file and action arguments to be passed.
+
 C ****************************************** csvstats ***************************************
 C csvstats.F is the main routine which scans an activity csv file and generates
 C a summary of the data.
+C << todo: be able to scan summary files to check for daytypes over the
+C << various profiles. Use -act to say whether it is a csv file or a
+C << summary file
 C *********************************** csvstats ******************************
 
       PROGRAM csvstats
@@ -51,6 +62,7 @@ C Significant figure reporting limit (NSIGFIG).
       CHARACTER INTER*144,INF*144
       character path*72,upath*72,outs248*248
       character fs*1
+      character act*16 ! c is csv file s is summary file
       LOGICAL unixok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -66,7 +78,8 @@ C Initial assumptions.
       NSIGFIG=3
 
 C Get command line parameters.
-      call parpsf(MODL,iappw,iappx,iappy,inf)
+      call partfa(MODL,inf,act)
+C      call parpsf(MODL,iappw,iappx,iappy,inf)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -80,43 +93,19 @@ C Set folder separator (fs) to \ or / as required.
 c Initialise output device, assume minimal trace, set reduced
 C size of window display.
       MMOD=MODL
-      if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=570
-        iappx=80
-        iappy=100
-      else
-        if(iappx.le.0)iappx=80
-        if(iappy.le.0)iappy=100
-        if(iappw.le.200)then
-          iappwi=int(570*iappw*0.01)
-          iappw=iappwi
-        elseif(iappw.gt.200)then
-          continue
-        endif
-      endif
+      iappw=570
+      iappx=80
+      iappy=100
 
 C Set pixels high to iappw and pixels wide to factor in monitor size.
       iapphi=iappw
       iappwi=int(real(iappw)*(1024.0/780.0))
 
-      if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(24*iappw*0.01),12)
-        LIMTTY= MAX0(int(8*iappw*0.01),4)
-        LIMIT = MAX0(int(8*iappw*0.01),4)
-      else
-        menuchw = 24
-        LIMTTY=20
-        LIMIT =20
-      endif
-      IF(MMOD.EQ.8)THEN
-        IMFS=1
-        IFS=1
-        ITFS=1
-        call userfonts(IFS,ITFS,IMFS)
-      ELSE
-        LIMTTY=24
-        LIMIT =24
-      ENDIF
+      menuchw = 24
+      LIMTTY=20
+      LIMIT =20
+      LIMTTY=24
+      LIMIT =24
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
      &'csv parser: enquiries to esru@strath.ac.uk')
       IF(MMOD.EQ.-6)then
@@ -125,24 +114,6 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
         ICOUT=IUOUT
       endif
 
-C Open the text display box equal to LIMTTY if MMOD = 8.
-      IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,10,30,4,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1)then
-          call opencpw
-          call opensetup
-        endif
-        mdispl=0
-        nifgrey=0
-        ncset=0
-        ngset=0
-        nzonec=0
-        call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
-        call startbuffer()
-      ENDIF
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get user's custom settings.
@@ -150,7 +121,7 @@ C Find the user's home folder then get user's custom settings.
 
       INIT =0
 
-C Take command line file name to LCMDF and use as initial survey file.
+C Take command line file name to INTER and use as initial survey file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
         call edisp(iuout,'ERROR: no input file specified')
         call epwait
@@ -162,8 +133,22 @@ C Take command line file name to LCMDF and use as initial survey file.
         CALL EDISP248(IUOUT,OUTS248,80)
       endif
 
-C Call the survey engine, the main controlling routine with the filename argument .
-      CALL SURVEYCSV(INTER)
+C Call the survey subroutines, the main controlling routine with the 
+C filename argument.  C for csv files, S for summary files,
+C G for csv files to a global list.
+      if(act(1:1).eq.'c'.or.act(1:1).eq.'C'.or.act(1:1).eq.'-')then
+        CALL SURVEYCSV(INTER)
+      elseif(act(1:1).eq.'s'.or.act(1:1).eq.'S')then
+
+C << subroutine in planning >>
+        write(6,*) 'tobe done...',INTER
+        call actsumscan(INTER)
+
+      elseif(act(1:1).eq.'g'.or.act(1:1).eq.'G')then
+
+C << subroutine to be adapted >>
+        CALL GLOBALCSV(INTER)
+      endif
 
       END
 
@@ -178,16 +163,17 @@ C This is the main controlling routine for scanning the occupancy csv file.
 C Common blocks for day patterns collected.
       integer nbdaypattern  ! how many day patterns (thus far) 
       integer daythispattern  ! for each pattern the number of days found
+                              ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(50),
-     &              daypattern(50,5,24)
+      common/daypat/nbdaypattern,daysthispattern(99,700),
+     &              daypattern(99,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(50),perpatstart(50,35),
-     &                 perpatend(50,35),perdata(50,5,35)
+      common/dayperiod/nbperpat(99),perpatstart(99,35),
+     &                 perpatend(99,35),perdata(99,5,35)
 
       character INTER*144,LFOUT*144,LFLABEL*144
       character LINDEX*12  ! 12 character to hold core file name e.g. 434
@@ -224,7 +210,7 @@ C Common blocks for day patterns collected.
           
 C Call the routines which read and process the data sent in the interaction file.
 
-C Assume climate file is on IFIL.
+C Assume csv file is on IFIL.
       IUNIT=IFIL
       IUF=IFIL+1
       IUL=IFIL+2
@@ -308,8 +294,8 @@ C Initial values.
       columnsum(1)=0.
       columnsum(2)=0.
       columnsum(3)=0.
-      do 40 ipat=1,50
-        daysthispattern(ipat)=0
+      do 40 ipat=1,99
+        daysthispattern(ipat,1)=0
         do 41 ih=1,24
           daypattern(ipat,1,ih)=0. ! OCFRAC
           daypattern(ipat,2,ih)=0. ! LTFRAC
@@ -400,7 +386,8 @@ C If LOOP is 24 then either save the day values as the first pattern
 C or test the day values against the known patterns.
       if(nbdaypattern.eq.0)then
         nbdaypattern=nbdaypattern+1
-        daysthispattern(nbdaypattern)=daysthispattern(nbdaypattern)+1
+        daysthispattern(nbdaypattern,1)=
+     &    daysthispattern(nbdaypattern,1)+1
         do 43 ih=1,24
           daypattern(nbdaypattern,1,ih)=dayvals(1,ih) ! OCFRAC
           daypattern(nbdaypattern,2,ih)=dayvals(2,ih) ! LTFRAC
@@ -423,7 +410,7 @@ C Point the pattern index to the Julian day.
         if(LLOOP.ge.8760) goto 99   ! use with 366 day files to stop at 365 days
 C        if(LLOOP.ge.8784) goto 99
         goto 42  ! read another line of the file
-      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.50)then
+      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.99)then
 
 C Test current dayvals against all prior day patterns.
         TOL=0.01
@@ -451,7 +438,7 @@ C            call edisp(iuout,outs)
 
 C Point the pattern index to the Julian day. 
             calender(icurday)=ipat
-            daysthispattern(ipat)=daysthispattern(ipat)+1
+            daysthispattern(ipat,1)=daysthispattern(ipat,1)+1
             if(LLOOP.ge.8760) goto 99    ! to force 365 days
 C            if(LLOOP.ge.8784) goto 99
             goto 42  ! read another line of the file
@@ -477,12 +464,13 @@ C        write(6,*) (dayvals(1,ih),ih=1,24)
 
 C Point the pattern index to the Julian day. 
         calender(icurday)=nbdaypattern
-        daysthispattern(nbdaypattern)=daysthispattern(nbdaypattern)+1
+        daysthispattern(nbdaypattern,1)=
+     &    daysthispattern(nbdaypattern,1)+1
         if(LLOOP.ge.8760) goto 99    ! to force 365 days
 C        if(LLOOP.ge.8784) goto 99
         goto 42  ! read another line of the file
 
-      elseif(nbdaypattern.ge.50)then
+      elseif(nbdaypattern.ge.99)then
         write(outs,'(a,i3,a)') 'Reached pattern ',
      &      nbdaypattern,' no more space'
         call edisp(iuout,outs)
@@ -543,7 +531,7 @@ C Find the periods for the patterns
 C List out the patterns that have been found (comma separated).
       do 98 ipat=1,nbdaypattern
         write(outs,'(a,i3,a,F5.0,a)') '*Pattern',ipat,' used on ',
-     &    daysthispattern(ipat),' days'
+     &    daysthispattern(ipat,1),' days'
         call edisp(IUF,outs)
         write(outs,'(a,24F5.2)') '*Ocupfrac ',
      &    (daypattern(ipat,1,ih),ih=1,24)
@@ -585,7 +573,7 @@ C Write out the periods for each of the patterns.
 
 C List out the patterns that have been found (comma separated).
       write(6,*) 'ipat actname ',IOCIND,ACTNAME
-      write(outs,'(a,i3,a,a)') '*Schedule',IOCIND,' activity ',
+      write(outs,'(a,i4,a,a)') '*Schedule',IOCIND,' activity ',
      &  ACTNAME(1:lnblnk(ACTNAME))
       call edisp(IUF,outs)
       write(outs,'(a,i3)') '*Day_types',nbdaypattern
@@ -612,22 +600,625 @@ C List out the patterns that have been found (comma separated).
       RETURN
       END
 
+C ********* ACTSUMSCAN
+C Reads an activity pattern summary file. This is work in progress.
+
+      subroutine actsumscan(INTER)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+C Common blocks for day patterns collected.
+      integer nbdaypattern  ! how many day patterns (thus far) 
+      integer daythispattern  ! for each pattern the number of days found
+                              ! for each activity
+      real daypattern ! (daytype,dayval,hour)
+      common/daypat/nbdaypattern,daysthispattern(99,700),
+     &              daypattern(99,5,24)
+
+      integer nbperpat     ! periods for each pattern
+      real perpatstart     ! start time of period (up to 35 periods)
+      real perpatend       ! end time of the period
+      real perdata         ! data for the period
+      common/dayperiod/nbperpat(99),perpatstart(99,35),
+     &                 perpatend(99,35),perdata(99,5,35)
+
+      character INTER*144,LFOUT*144,LFLABEL*144
+      character LINDEX*12  ! 12 character to hold core file name e.g. 434
+
+C Decode: *Activity_pattern  100 named Open plan office
+C IOCIND ACTNAME
+
+C Decode: *Non_zero_occupancy_hours,3234
+C nonzero(1)
+
+C Decode: *Summation_of_occupancy_frac,1563
+C columnsum(1)
+
+C Decode: *Days_with_occupancy,365.
+C atleastonehour(1)
+
+C Decode: *Non_zero_light_hours,3234.
+C nonzero(2)
+
+C Decode: *Summation_of_light_frac,3234.
+C columnsum(2)
+
+C Decode: *Days_with_lights,365.
+C atleastonehour(2)
+
+C Decode: *Non_zero_equipment_hours,8760.
+C nonzero(3)
+
+C Decode: *Summation_of_equipment_frac,3510.
+C columnsum(3)
+
+C Decode: *Days_with_equipment,365.
+C atleastonehour(2)
+
+C Decode: *Nb_of_patterns,2
+C nbdaypattern
+
+C Decode: *Pattern  1 used on  261. days
+C ipat daysthispattern(ipat)
+ 
+C Decode: *Ocupfrac,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.25,0.50,0.75,0.75,0.50,0.50,0.75,0.75,0.75,0.25,0.00,0.00,0.00,0.00,0.00,0.00
+C  (daypattern(ipat,1,ih),ih=1,24)
+
+C Decode: *Lightfrac,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,0.00,0.00,0.00,0.00,0.00,0.00
+C  (daypattern(ipat,2,ih),ih=1,24)
+
+C Decode: *Equipfrac,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,0.05,0.05,0.05,0.05,0.05,0.05
+C  (daypattern(ipat,3,ih),ih=1,24)
+
+C Decode: *HeatSP,12.,12.,12.,12.,12.,12.,12.,22.,22.,22.,22.,22.,22.,22.,22.,22.,22.,22.,12.,12.,12.,12.,12.,12.
+C  (daypattern(ipat,4,ih),ih=1,24)
+
+C Decode: *CoolSP,100.,100.,100.,100.,100.,100.,100.,24.,24.,24.,24.,24.,24.,24.,24.,24.,24.,24.,100.,100.,100.,100.,100.,100.
+C  (daypattern(ipat,5,ih),ih=1,24)
+
+C Decode: *Schedule100 activity Open plan office
+C (? skip this line)
+
+C Decode: *Day_types,2
+C nbdaypattern
+
+C Decode: *Day_pattern,1,periods,9
+C ipat nbperpat(ipat)
+
+C Decode: *Period,0.000,8.000,0.0000,0.0000,0.0500,12.00,100.00
+C   perpatstart(ipat,iper),perpatend(ipat,iper),perdata(ipat,1,iper),
+C   perdata(ipat,2,iper),perdata(ipat,3,iper),
+C   perdata(ipat,4,iper),perdata(ipat,5,iper)
+
+C Decode: *End
+
+      return
+      end
+
+C **************** GLOBALCSV **********************************************
+C This scans a concatenated occupancy csv file (e.g. made of all the csv).
+C It notices when a new activity happens via the value in the first column
+C and writes to a single global text summary file.
+
+      SUBROUTINE GLOBALCSV(INTER)
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+C Common blocks for day patterns collected.
+      integer nbdaypattern  ! how many day patterns (thus far) 
+      integer daythispattern  ! for each pattern the number of days found
+                              ! for each activity
+      real daypattern ! (daytype,dayval,hour)
+      common/daypat/nbdaypattern,daysthispattern(99,700),
+     &              daypattern(99,5,24)
+
+      integer nbperpat     ! periods for each pattern
+      real perpatstart     ! start time of period (up to 35 periods)
+      real perpatend       ! end time of the period
+      real perdata         ! data for the period
+      common/dayperiod/nbperpat(99),perpatstart(99,35),
+     &                 perpatend(99,35),perdata(99,5,35)
+
+      integer iactindex    ! index of the activity in the order read in
+      integer ndayusedby   ! how may references to this unique day
+      integer idayusedby   ! the unique day index as used by each of
+                           ! the activity index
+      integer nbactivitiesread  ! eg from all the concatenated csv
+      integer actnbdaytype ! number of day types associated with an
+                           ! activity in ID order
+      integer actdaytypelist ! list of day types used by activity
+      common/allact/iactindex(700),ndayusedby(99),idayusedby(99,700),
+     &              actnbdaytype(700),actdaytypelist(700,99)
+      character actname*48 ! name of activity in ID order
+      common/charact/actname(700)
+
+
+      character INTER*144,LFOUT*144,LFLABEL*144
+      character LINDEX*12  ! 12 character to hold core file name e.g. 434
+ 
+      integer LOOP ! hour counter
+      integer LLOOP  ! counter for lines of the file that have been scanned
+      integer LIHR ! hour of day on the current line
+      integer ipat ! loop for patterns
+      integer ih   ! loop for hours
+      integer IOCIND
+      integer k,k2 ! position in buffer
+      integer loop99(99)   ! temporary array
+      real OCFRAC,LTFRAC,EQFRAC,HTSP,CLSP
+      real dayvals  ! for OCFRAC,LTFRAC,EQFRAC,HTSP,CLSP
+      dimension dayvals(5,24)
+      logical close,oneclose
+      logical at_last_line  ! signal that final line of file reached so process last day.
+      real nonzero,daynonzero
+      dimension nonzero(3)  ! instances of non-zero values for OCFRAC,LTFRAC,EQFRAC
+      dimension daynonzero(99,3)  ! instances of non-zero values for OCFRAC,LTFRAC,EQFRAC
+      logical labelfile     ! true if label file exists
+      logical sameact       ! true if activity index has not changed
+      logical foundact      ! true if activity index has been confirmed
+      integer icurday  ! the current day of the year
+      character outs*144,outsd*144
+      character outstr*124,outstrlbl*124
+      integer calender     ! for each Julian day the pattern index
+      integer actcalender  ! also remember for each of the activities
+      dimension calender(366),actcalender(700,366)
+
+      character loutc*96
+      integer loutlen,itrunc  ! for printing calendar list
+      integer lnb,lnd         ! for length of file name
+      integer iwhich    ! current activity index
+      integer iwhichhis ! last known activity index
+          
+C Call the routines which read and process the data sent in the interaction file.
+
+C Assume csv file is on IFIL.
+      IUNIT=IFIL
+      IUF=IFIL+1
+      IUL=IFIL+2
+      ACTNAME='UNKNOWN'  ! assume no file with activity labels
+
+      CALL EFOPSEQ(IUNIT,INTER,1,IER)
+      if(ier.ne.0)then
+        call usrmsg(' Problem opening...',INTER,'W')
+        ier = 1
+        return
+      endif
+
+C Make up an output file with a .text ending matching the input file name.
+      lnb=lnblnk(INTER)
+      lnd=lnb-3
+      if(INTER(lnd:lnb).eq.'.csv')then
+        WRITE(LFOUT,'(2a)') INTER(1:lnd),'text'
+      else
+        WRITE(LFOUT,'(2a)') INTER(1:lnb),'text'
+      endif
+
+C Debug.
+      write(6,*) LFOUT(1:lnblnk(LFOUT))
+      CALL EFOPSEQ(IUF,LFOUT,4,IER)
+      if(ier.eq.0)then
+        continue
+      else
+        call usrmsg(' Problem opening...',LFOUT,'W')
+        ier = 2
+        return
+      endif
+
+C Clear the arrays for all possible activities.
+      nbactivitiesread=0
+      do 30 k=1,700
+        iactindex(k)=-1   ! set -1 for not referenced
+        actname(k)='  '
+  30  continue
+
+C Check and see if the file EHWandAuxE.csv exists.
+      LFLABEL='DHWandAuxE.csv'
+      CALL EFOPSEQ(IUL,LFLABEL,1,IER)
+      if(ier.eq.0)then
+
+C If it exists, then remember each of the activity type labels.
+        labelfile=.true.
+        CALL STRIPC(IUL,OUTSTRLBL,0,ND,1,'label line 1',IER)
+ 49     CALL STRIPC(IUL,OUTSTRLBL,0,ND,1,'label data line',IER)
+        if(IER.eq.0)then
+          K2=0
+          CALL EGETWI(OUTSTRLBL,K2,IOC,0,700,'W','occup index',IER)
+          if(IOC.le.700)then
+            call egetdq(OUTSTRLBL,K,ACTNAME(ioc),'-',
+     &          'room activity type',ier)
+            iactindex(ioc)=ioc   ! set activity index in ID order
+            goto 49
+          else
+            goto 49
+          endif
+        else
+          CALL ERPFREE(IUL,ISTAT)  ! close the file
+        endif
+
+      else
+        call usrmsg(' Problem opening...',LFLABEL,'W')
+        labelfile=.false.
+        iwhich=0
+        ACTNAME='UNKNOWN'
+      endif
+
+C Initial values.
+ 48   at_last_line=.false.  ! we are not at the last line
+      LOOP=0
+      LLOOP=0
+      nbdaypattern=0
+      icurday=0
+      close=.false.
+      nonzero(1)=0.
+      nonzero(2)=0.
+      nonzero(3)=0.
+      do 40 ipat=1,99
+        do 41 ih=1,24
+          daypattern(ipat,1,ih)=0. ! OCFRAC
+          daypattern(ipat,2,ih)=0. ! LTFRAC
+          daypattern(ipat,3,ih)=0. ! EQFRAC
+          daypattern(ipat,4,ih)=0. ! HTSP
+          daypattern(ipat,5,ih)=0. ! CLSP
+  41    continue
+        ndayusedby(ipat)=0
+        do 31 k2=1,700
+          idayusedby(ipat,k2)=-1  ! set -1 for not referenced
+          daysthispattern(ipat,k2)=0
+  31    continue
+  40  continue
+      sameact  = .false.
+      foundact = .false.
+
+C Each line of the csv file is the same:
+C column type description  range       variable  variable
+C  1     int  index of activity
+C  2     real occupant fraction 0.-1.
+C  3     real lighting fraction 0.-1.
+C  4     real equipment fraction 0.-1.
+C  5     real heating setpoint degrees
+C  6     real cooling setpoint degrees
+C  7     integer hour of the day
+C  8     string  year-month-day (no read)
+ 42   CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'csv line 1',IER)
+      if(IER.ne.0)then
+
+C Debug.
+        write(6,*) 'stripc end of file ',ier
+        CALL ERPFREE(IUNIT,ISTAT)
+        at_last_line=.true.
+        goto 99
+      endif
+
+C Test if end marker found.
+      if(OUTSTR(1:3).eq.'END')then
+        at_last_line=.true.
+        goto 99
+      endif
+
+C Read the activity index (via 1st column).
+      K=0
+      CALL EGETWI(OUTSTR,K,IOCIND,0,700,'W','occup index',IER)
+
+C If we have not established the occupancy index check for match.
+      if(.NOT.foundact)then
+        if(IOCIND.ge.0.and.IOCIND.lt.700)then
+          do 51 k2=1,700
+            if(iactindex(k2).eq.IOCIND)then
+              iwhich = IOCIND          ! this is the current activity
+              iwhichhis = IOCIND       ! and reset history
+              foundact = .true.        ! set logical
+              nbactivitiesread = nbactivitiesread + 1
+              iactindex(nbactivitiesread)=IOCIND ! in the order found remember index
+            endif
+  51      continue
+        endif
+      else
+
+C Has the occupancy pattern changed? If it has then rescan for
+C the new index & label.
+        if(IOCIND.ne.iwhichhis)then
+          do 50 k2=1,700
+            if(iactindex(k2).eq.IOCIND)then
+              iwhich = IOCIND          ! this is the current activity
+              iwhichhis = IOCIND       ! and reset history
+              foundact = .true.        ! set logical
+              icurday=0  ! reset
+              nbactivitiesread = nbactivitiesread + 1
+              iactindex(nbactivitiesread)=IOCIND ! in the order found remember index
+              write(6,*) 'reset to 1 jan',nbactivitiesread,iocind
+            endif
+  50      continue
+
+C Indices to reset.
+          nonzero(1)=0.
+          nonzero(2)=0.
+          nonzero(3)=0.
+
+C << anything to write out? >>
+        else
+
+        endif
+      endif
+
+C Get the rest of the line from the csv file.
+      CALL EGETWR(OUTSTR,K,OCFRAC,0.,1.,'W','occupant fraction',IER)
+      CALL EGETWR(OUTSTR,K,LTFRAC,0.,1.,'W','lighting fraction',IER)
+      CALL EGETWR(OUTSTR,K,EQFRAC,0.,1.,'W','equipment fraction',IER)
+      CALL EGETWR(OUTSTR,K,HTSP,0.,100.,'W','heating setpoint',IER)
+      CALL EGETWR(OUTSTR,K,CLSP,0.,100.,'W','coolinging setpoint',IER)
+      CALL EGETWI(OUTSTR,K,LIHR,0,24,'W','hour',IER)
+      if(ier.eq.0.and.LIHR.gt.0.and.LIHR.le.24)then
+        LOOP=LOOP+1    ! increment
+        LLOOP=LLOOP+1  ! increment
+        dayvals(1,LIHR)=OCFRAC
+        dayvals(2,LIHR)=LTFRAC
+        dayvals(3,LIHR)=EQFRAC
+        dayvals(4,LIHR)=HTSP
+        dayvals(5,LIHR)=CLSP
+
+C Increment instance counter if > zero.
+        if(OCFRAC.gt.0.0)then
+          nonzero(1)=nonzero(1)+1.
+        endif
+        if(LTFRAC.gt.0.0)then
+          nonzero(2)=nonzero(2)+1.
+        endif
+        if(EQFRAC.gt.0.0)then
+          nonzero(3)=nonzero(3)+1.
+        endif
+
+      endif
+
+      if(LOOP.lt.24) goto 42  ! loop until we have 24 hours of data
+
+      icurday=icurday+1  ! increment the day
+      LOOP=0   ! reset LOOP
+
+C If LOOP is 24 then either save the day values as the first pattern
+C or test the day values against the known patterns.
+      if(nbdaypattern.eq.0)then
+        nbdaypattern=nbdaypattern+1
+        daysthispattern(nbdaypattern,IOCIND)=
+     &    daysthispattern(nbdaypattern,IOCIND)+1
+        do 43 ih=1,24
+          daypattern(nbdaypattern,1,ih)=dayvals(1,ih) ! OCFRAC
+          daypattern(nbdaypattern,2,ih)=dayvals(2,ih) ! LTFRAC
+          daypattern(nbdaypattern,3,ih)=dayvals(3,ih) ! EQFRAC
+          daypattern(nbdaypattern,4,ih)=dayvals(4,ih) ! HTSP
+          daypattern(nbdaypattern,5,ih)=dayvals(5,ih) ! CLSP
+  43    continue
+        ndayusedby(nbdaypattern)=ndayusedby(nbdaypattern)+1 !increment for day
+        actnbdaytype(IOCIND)=actnbdaytype(IOCIND)+1  ! increment for activity
+        idayusedby(nbdaypattern,ndayusedby(nbdaypattern))=IOCIND
+        actdaytypelist(IOCIND,actnbdaytype(IOCIND))=nbdaypattern  ! add to list
+        write(outs,'(a,i3)') 'First day pattern on day ',icurday
+        call edisp(iuout,outs)
+
+C Debug.
+        write(6,'(24F5.2)') (dayvals(1,ih),ih=1,24)
+C        write(6,'(24F5.2)') (dayvals(2,ih),ih=1,24)
+C        write(6,'(24F5.2)') (dayvals(3,ih),ih=1,24)
+C        write(6,*) (dayvals(4,ih),ih=1,24)
+C        write(6,*) (dayvals(5,ih),ih=1,24)
+
+C Point the pattern index to the Julian day. 
+        calender(icurday)=nbdaypattern
+        actcalender(IOCIND,icurday)=nbdaypattern
+        goto 42  ! read another line of the file
+
+      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.99)then
+
+C Test current dayvals against all prior day patterns.
+        TOL=0.01
+        do 44 ipat=1,nbdaypattern
+          oneclose=.true.
+          do 45 ih=1,24
+            do 46 iv=1,5
+              R1=daypattern(ipat,iv,ih)
+              R2=dayvals(iv,ih)
+              call ECLOSE(R1,R2,TOL,CLOSE)
+              if(.NOT.close)then
+                oneclose=.false.  ! if there is a difference must have a new pattern
+              endif
+  46        continue
+  45      continue
+
+C If oneclose is still true then it matches a prior pattern so there is
+C no need to check further.
+          if(oneclose)then
+
+C Debug.
+            write(outs,'(a,i3,a,i2)') 'Julian day pattern ',icurday,
+     &        ' matches pattern ',ipat
+            call edisp(iuout,outs)
+
+C Point the pattern index to the Julian day. 
+            calender(icurday)=ipat
+            actcalender(IOCIND,icurday)=ipat
+            daysthispattern(ipat,IOCIND)=daysthispattern(ipat,IOCIND)+1
+            goto 42  ! read another line of the file
+          endif
+  44    continue
+
+C If we reached this point then none of the existing patterns was matched
+C and thus we should create a new pattern
+        nbdaypattern=nbdaypattern+1
+        daysthispattern(nbdaypattern,IOCIND)=
+     &    daysthispattern(nbdaypattern,IOCIND)+1
+        do 47 ih=1,24
+          daypattern(nbdaypattern,1,ih)=dayvals(1,ih) ! OCFRAC
+          daypattern(nbdaypattern,2,ih)=dayvals(2,ih) ! LTFRAC
+          daypattern(nbdaypattern,3,ih)=dayvals(3,ih) ! EQFRAC
+          daypattern(nbdaypattern,4,ih)=dayvals(4,ih) ! HTSP
+          daypattern(nbdaypattern,5,ih)=dayvals(5,ih) ! CLSP
+  47    continue
+        ndayusedby(nbdaypattern)=ndayusedby(nbdaypattern)+1 !increment
+        actnbdaytype(IOCIND)=actnbdaytype(IOCIND)+1  ! increment for activity
+        idayusedby(nbdaypattern,ndayusedby(nbdaypattern))=IOCIND
+        actdaytypelist(IOCIND,actnbdaytype(IOCIND))=nbdaypattern  ! add to list
+
+C Debug.
+        write(outs,'(a,i3,a,i3)') 'New Julian day pattern ',
+     &    nbdaypattern,' for Julian day ',icurday
+        call edisp(iuout,outs)
+        write(6,*) (dayvals(1,ih),ih=1,24)
+
+C Point the pattern index to the Julian day. 
+        calender(icurday)=nbdaypattern
+        actcalender(IOCIND,icurday)=nbdaypattern
+        goto 42  ! read another line of the file
+
+      elseif(nbdaypattern.ge.99)then
+        write(outs,'(a,i3,a)') 'Reached pattern ',
+     &      nbdaypattern,' no more space'
+        call edisp(iuout,outs)
+      endif
+
+C End of file reached or max number of patterns filled. Thus the
+C collected data can be written out (comma separated).
+ 99   CALL EDISP(IUOUT,' ')
+
+      write(outs,'(a,i6)')  '*Lines_scanned ',LLOOP
+      call SDELIM(outs,outsd,'C',IW)
+      call edisp(IUF,outsd)
+
+C << there will also be several full patterns so this needs to
+C << be a loop.
+
+C Find the periods for each of the unique day patterns
+      call hourlytoperiods(ier)
+
+      write(outs,'(a,i3)') '*Nb_of_patterns',nbdaypattern
+      call SDELIM(outs,outsd,'C',IW)
+      call edisp(IUF,outsd)
+
+C List out the unique day patterns that have been found (comma separated).
+C need also to list the activities that use this day pattern.
+      do 98 ipat=1,nbdaypattern
+        write(outs,'(a,i3,a,i3,a)') '*Pattern',ipat,' referenced by ',
+     &    ndayusedby(ipat),' activities'
+        call edisp(IUF,outs)
+        write(outs,'(a,24F5.2)') '*Ocupfrac ',
+     &    (daypattern(ipat,1,ih),ih=1,24)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        write(outs,'(a,24F5.2)') '*Lightfrac ',
+     &     (daypattern(ipat,2,ih),ih=1,24)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        write(outs,'(a,24F5.2)') '*Equipfrac ',
+     &    (daypattern(ipat,3,ih),ih=1,24)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        write(outs,'(a,24F5.0)') '*HeatSP ',
+     &    (daypattern(ipat,4,ih),ih=1,24)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        write(outs,'(a,24F5.0)') '*CoolSP ',
+     &    (daypattern(ipat,5,ih),ih=1,24)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        write(outs,'(a,i3,a,i3)') '*Day_pattern',ipat,' periods ',
+     &    nbperpat(ipat)
+        call SDELIM(outs,outsd,'C',IW)
+        call edisp(IUF,outsd)
+        do 199 iper=1,nbperpat(ipat)
+          write(outs,'(a,2f7.3,3f8.4,2f7.2)') '*Period ',
+     &      perpatstart(ipat,iper),
+     &      perpatend(ipat,iper),perdata(ipat,1,iper),
+     &      perdata(ipat,2,iper),perdata(ipat,3,iper),
+     &      perdata(ipat,4,iper),perdata(ipat,5,iper)
+          call SDELIM(outs,outsd,'C',IW)
+          call edisp(IUF,outsd)
+  199   continue
+  98  continue
+
+C For each of the activity patterns that were compiled from 
+C the csv file write out an entry. 
+      do 201 iact=1,nbactivitiesread
+        lan=lnblnk(actname(iactindex(iact)))
+        write(outs,'(a,i4,2a)')  '*Activity_pattern ',iactindex(iact),
+     &    ' named ',ACTNAME(iactindex(iact))(1:lan)
+        call edisp(IUF,outs)
+
+C Document the list of patterns used by this activity
+        ndt=actnbdaytype(iactindex(iact))
+        write(outs,'(a,i4)')  '*nb_day_types ',ndt
+        do 76 k2=1,ndt
+          loop99=actdaytypelist(iactindex(iact),k2)
+  76    continue
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          call ailist(ipos,ndt,loop99,99,'C',loutc,loutlen,itrunc)
+          call edisp(IUF,loutc)
+          ipos=itrunc+1
+        end do
+
+C List each of the day types and the periods of this activity.
+C In the code we can just point back to the unique day pattern
+C for the raw data we need.
+        do 78 k2=1,ndt
+          ipat=actdaytypelist(iactindex(iact),k2)
+          write(outs,'(a,i3,a,i3)') '*Day_pattern',ipat,' periods ',
+     &      nbperpat(ipat)
+          call SDELIM(outs,outsd,'C',IW)
+          call edisp(IUF,outsd)
+          do 198 iper=1,nbperpat(ipat)
+            write(outs,'(a,2f7.3,3f8.4,2f7.2)') '*Period ',
+     &        perpatstart(ipat,iper),
+     &        perpatend(ipat,iper),perdata(ipat,1,iper),
+     &        perdata(ipat,2,iper),perdata(ipat,3,iper),
+     &        perdata(ipat,4,iper),perdata(ipat,5,iper)
+            call SDELIM(outs,outsd,'C',IW)
+            call edisp(IUF,outsd)
+  198     continue
+
+  78    continue
+
+C List the calendar.
+        call edisp(IUF,'*Index_each_julian_day_of_the_year:')
+        do 77 k2=1,365
+          calender(k2)=actcalender(iactindex(iact),k2)
+  77    continue
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          call ailist(ipos,366,calender,366,'C',loutc,loutlen,itrunc)
+C Debug
+C        write(6,'(1x,a)',IOSTAT=ios,ERR=2) loutc(1:loutlen)
+
+          call edisp(IUF,loutc)
+          ipos=itrunc+1
+        end do
+
+ 201  continue
+
+      CALL EDISP(IUF,'*End')
+      CALL ERPFREE(IUF,ISTAT)  ! close the file
+
+      RETURN
+      END
+
+
 C Recover periods from hourly data in the daypattern array.
       subroutine hourlytoperiods(ier)
 
 C Common blocks for day patterns collected.
       integer nbdaypattern  ! how many day patterns (thus far) 
       integer daythispattern  ! for each pattern the number of days found
+                              ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(50),
-     &              daypattern(50,5,24)
+      common/daypat/nbdaypattern,daysthispattern(99,700),
+     &              daypattern(99,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(50),perpatstart(50,35),
-     &                 perpatend(50,35),perdata(50,5,35)
+      common/dayperiod/nbperpat(99),perpatstart(99,35),
+     &                 perpatend(99,35),perdata(99,5,35)
 
       logical occupchange   ! a change in occupancy
       logical lightchange   ! a change in lighting
@@ -702,6 +1293,7 @@ C data and then set the timings and update the *was values.
             perdata(ipat,3,iper)=equipwas
             perdata(ipat,4,iper)=heatwas
             perdata(ipat,5,iper)=coolwas
+C Debug.
             write(6,*) 'st end',perpatstart(ipat,iper),
      &        perpatend(ipat,iper),occupwas,lightwas,equipwas,
      &        heatwas,coolwas
@@ -711,6 +1303,7 @@ C data and then set the timings and update the *was values.
             equipwas=equipis
             heatwas=heatis
             coolwas=coolis
+C Debug.
             write(6,*) iper,ihour
             iper=iper+1   ! increment the period
             nbperpat(ipat)=iper
@@ -850,6 +1443,173 @@ C Errors.
         endif
       endif
       return
+      end
+
+C *********
+C << Issue: each csv file implies a possibly unique set of calendar day
+C << types - and a model must have one calendar rather than lots of
+C << calendars.
+
+C << Task is to scan all of the profile summaries and determine
+C << the number of unique day types for the whole collection of
+C << profiles and then apply this back to the summaries. It would be
+C << great if minimal editing or file manipulation was required.
+
+C << Could there be a directory scan from within stats that located
+C << all of the csv files, scanned each one in turn and produced
+C << ONE summary file. That way we could do lots of manipulations
+C << in memory and write out an aggregate.
+
+C << the internal array sizes would need to accommodate the full set
+C << of csv files - that would be huge...
+C << logic might be...
+C open folder, make up a list of all of the csv file names
+C open a csv file
+C set initial counters
+C loop through sets of 24 hours
+C find unique pattern as per normal, remember:
+C   -> how many patterns for this csv
+C   -> how many patterns globally 
+C   -> pointer to julian day as well as activity pattern number
+C   -> is it the 1st or 2nd or 3rd for this csv
+C at end of the csv file clear the locals
+C open the next csv file 
+C loop through sets of 24 hours - compare these against the global
+C   array of day patterns for matches and remember:
+C   -> how many patterns for this csv
+C   -> how many patterns globally 
+C   -> pointer to julian day as well as activity pattern number
+C  (a unique pattern many be used by many activities - do I need
+C   an array for this?)
+
+C  when there are no more in the list 
+C write out each unique pattern found globally
+C figure out the patterns (global) associated with each activity and
+C write out the pattern index for each of 365 days for the activity
+
+C the consolidated set of day types - we are looking for when the
+C index (1st 2nd or 3rd for that csv) changes. 
+C  1 1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1  act 1 (total of 2 day types)
+C  1 1 1 2 1 1 1 1 1 1 1 1 3 1 1 1 1  act 2 (total of 3 day types)
+C  1 1 1 1 1 1 1 2 2 2 1 1 3 3 3 1 1  act 3 (total of 3 day types)
+
+C one 4th day for act 1 we need to have an alt day type which is
+C the same as pattern 1 (could be nb of patterns for that activity plus
+C this index so the revised layout for act 1 & 2 might be...
+C  1 1 1 3 1 1 1 3 3 4 1 1 3 1 1 1 1  act 1 (1st revision)
+C  1 1 1 2 1 1 1 1 1 1 1 1 3 1 1 1 1  act 2 (total of 3 day types)
+
+C If we try and take into account act 3 then
+C  1 1 1 3 1 1 1 3 3 4 1 1 3 5 5 1 1  act 1 (2nd revision 5=3=1  4=2)
+C  1 1 1 2 1 1 1 4 4 4 1 1 6 4 4 1 1  act 2 (1st revision 4=1 6=3)
+C  1 1 1 1 1 1 1 2 2 2 1 1 3 3 3 1 1  act 3 (total of 3 day types)
+
+C imagine doing an activity 4, the pattern becomes ever more complicated
+C as we work back and revise the earlier activities.
+
+C BUT, if we go with the global indicies on each julidan day what
+C does that do for us? Would that yield something that might work?
+
+C ********* partfa (equivalent to partf with an action parameter)
+C partfa allows terminal, file and action arguments
+C  to be passed to the program from the invocation line.  
+C  Logic allows for the -file token to be optional.
+
+C This is a truncated version of partfa from startup.F which has
+C fewer dependencies than the standard version.
+      subroutine partfa(termtype,inf,act)
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/APPNAME/cAppName
+      character*12 cAppName
+      integer termtype
+      character*48 prog
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
+      logical unixok
+
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+      endif
+      
+      inf  = 'UNKNOWN'
+      act = 'NONE'
+      argument = ' '
+
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
+      if(m.eq.0)then
+        return
+      elseif(m.ge.1)then
+  41    i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+
+        if(argument(1:5).eq.'-help')then
+
+C Only give feedback if non-DOS.
+          call isunix(unixok)
+          if(unixok)then
+            call edisp(iuout,'command line is csv or summary file')
+            stop
+          endif
+        elseif(argument(1:5).eq.'-mode')then
+          i=i+1
+          call getarg(i,argument)
+          if(argument(1:4).eq.'text')then
+            termtype = -1
+            mode = 'text'
+          elseif(argument(1:4).eq.'page')then
+            termtype = -2
+            mode = 'page'
+          elseif(argument(1:5).eq.'graph')then
+            termtype = 8
+            mode = 'graphic'
+          elseif(argument(1:6).eq.'script')then
+            termtype = -6
+            mode = 'script'
+          endif
+        elseif(argument(1:5).eq.'-file')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:5).eq.'-act ')then
+          i=i+1
+          call getarg(i,act)
+        else
+
+C Assume argument is an input file without the -file token.
+          write(inf,'(a)') argument(1:lnblnk(argument))
+        endif
+        goto 41
+
+  42    continue
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
+C         call edisp248(iuout,outs,90)
+        endif
+        return
+      endif
       end
 
 C Dummy subroutines.

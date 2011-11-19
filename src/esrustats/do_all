@@ -8,7 +8,7 @@ echo currently working on $PWD
 foreach i ( `ls *.csv` )
  if ( -f $i ) then
    echo looking at $i
-   ./csv_stats -file $i
+   ./csv_stats -file $i -act c
    echo " "
  endif
 end

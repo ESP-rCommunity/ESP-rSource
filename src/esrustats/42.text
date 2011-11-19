@@ -1,16 +1,12 @@
 *Activity_pattern   42 named Eating/drinking area
 *Days_scanned,365
-*Hours_scanned,8760
-*Non_zero_occupancy_hours,772.
+*Hours_scanned,8783
 *Summation_of_occupancy_frac,386.
 *Days_with_occupancy,193.
-*Non_zero_light_hours,768.
 *Summation_of_light_frac,768.
 *Days_with_lights,192.
-*Non_zero_equipment_hours,8760.
-*Summation_of_equipment_frac,1171.
+*Summation_of_equipment_frac,1173.
 *Days_with_equipment,365.
-*SBEM,772.,386.,193.,768.,768.,192.,8760.,1171.,365.
 *Nb_of_patterns,3
 *Pattern  1 used on  172. days
 *Ocupfrac,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
@@ -39,7 +35,7 @@
 1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,
 2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,1,1,1,1,1,1,1,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,
 2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,1,1,1,1,1,1,1,1,0
-*Schedule 42 activity Eating/drinking area
+*Schedule  42 activity Eating/drinking area
 *Day_types,3
 *Day_pattern,1,periods,1
 *Period,0.000,24.000,0.0000,0.0000,0.0500,12.00,100.00
