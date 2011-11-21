@@ -423,7 +423,7 @@ C no need to check further.
           if(oneclose)then
 
 C Debug.
-C            write(outs,'(a,i3,a,i2)') 'Julian day pattern ',icurday,
+C            write(outs,'(a,i3,a,i3)') 'Julian day pattern ',icurday,
 C     &        ' matches pattern ',ipat
 C            call edisp(iuout,outs)
 
@@ -743,6 +743,7 @@ C Common blocks for day patterns collected.
       real nonzero
       dimension nonzero(3)  ! instances of non-zero values for OCFRAC,LTFRAC,EQFRAC
       logical foundact      ! true if activity index has been confirmed
+      logical alredyknown   ! for testing if prior day type known by activity
       integer icurday  ! the current day of the year
       character outs*144,outsd*144
       character t48*48
@@ -978,8 +979,8 @@ C or test the day values against the known patterns.
           daypattern(nbdaypattern,5,ih)=dayvals(5,ih) ! CLSP
   43    continue
         ndayusedby(nbdaypattern)=ndayusedby(nbdaypattern)+1 !increment for day
-        actnbdaytype(IOCIND)=actnbdaytype(IOCIND)+1  ! increment for activity
         idayusedby(nbdaypattern,ndayusedby(nbdaypattern))=IOCIND
+        actnbdaytype(IOCIND)=actnbdaytype(IOCIND)+1  ! increment for activity
         actdaytypelist(IOCIND,actnbdaytype(IOCIND))=nbdaypattern  ! add to list
         write(outs,'(a,i3)') 'First day pattern on day ',icurday
         call edisp(iuout,outs)
@@ -1018,7 +1019,7 @@ C no need to check further.
           if(oneclose)then
 
 C Debug.
-            write(outs,'(a,i3,a,i2,a,i3)') 'Julian day pattern ',
+            write(outs,'(a,i3,a,i3,a,i3)') 'Julian day pattern ',
      &        icurday,' matches pattern ',ipat,' act ',iocind
             call edisp(iuout,outs)
 
@@ -1026,6 +1027,20 @@ C Point the pattern index to the Julian day.
             calender(icurday)=ipat
             actcalender(IOCIND,icurday)=ipat
             daysthispattern(ipat,IOCIND)=daysthispattern(ipat,IOCIND)+1
+
+C Check if this is also know by ndayusedby & idayusedby for day pattern ipat
+            alredyknown=.false.
+            do 53 k2=1,ndayusedby(ipat)
+              if(idayusedby(ipat,k2).eq.IOCIND)then
+                alredyknown=.true.
+              endif
+  53        continue
+            if(.NOT.alredyknown)then
+              ndayusedby(ipat)=ndayusedby(ipat)+1 !increment
+              idayusedby(ipat,ndayusedby(ipat))=IOCIND
+              actnbdaytype(IOCIND)=actnbdaytype(IOCIND)+1  ! increment for activity
+              actdaytypelist(IOCIND,actnbdaytype(IOCIND))=ipat  ! add to list
+            endif
             goto 42  ! read another line of the file
           endif
   44    continue
@@ -1086,13 +1101,14 @@ C Find the periods for each of the unique day patterns
 C List out the unique day patterns that have been found (comma separated).
 C Also list the indeix of activities that use this day pattern (via ailist).
       do 98 ipat=1,nbdaypattern
-        write(outs,'(a,i3,a,i3,a)') '*Day_pattern',ipat,
+        write(outs,'(a,i3,a,i3,a)') '*Day_pattern ',ipat,
      &   ' referenced_by ',ndayusedby(ipat),' activities'
         call SDELIM(outs,outsd,'C',IW)
         call edisp(IUF,outsd)
 
+C Cast idayusedby to single dimension array for use in ailist.
         do 76 k2=1,ndayusedby(ipat)
-          loop700=idayusedby(ipat,k2)
+          loop700(k2)=idayusedby(ipat,k2)
   76    continue
         itrunc=1
         ipos=1
@@ -1150,7 +1166,7 @@ C In the code we can just point back to the unique day pattern
 C for the raw data we need.
         do 78 k2=1,ndt
           ipat=actdaytypelist(index,k2)  ! shortcut to day pattern
-          write(outs,'(a,i3,a,i3)') '*Day_pattern',ipat,' periods ',
+          write(outs,'(a,i3,a,i3)') '*Day_pattern ',ipat,' periods ',
      &      nbperpat(ipat)
           call SDELIM(outs,outsd,'C',IW)
           call edisp(IUF,outsd)
