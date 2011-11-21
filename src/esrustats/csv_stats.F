@@ -160,15 +160,15 @@ C Common blocks for day patterns collected.
       integer daysthispattern ! for each pattern the number of days found
                               ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(199,0:700),
-     &              daypattern(199,5,24)
+      common/daypat/nbdaypattern,daysthispattern(599,0:700),
+     &              daypattern(599,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(199),perpatstart(199,35),
-     &                 perpatend(199,35),perdata(199,5,35)
+      common/dayperiod/nbperpat(599),perpatstart(599,35),
+     &                 perpatend(599,35),perdata(599,5,35)
 
       character INTER*144,LFOUT*144,LFLABEL*144
       character LINDEX*12  ! 12 character to hold core file name e.g. 434
@@ -287,7 +287,7 @@ C Initial values.
       atleastonehour(1)=0.
       atleastonehour(2)=0.
       atleastonehour(3)=0.
-      do 40 ipat=1,199
+      do 40 ipat=1,599
         daysthispattern(ipat,1)=0
         do 41 ih=1,24
           daypattern(ipat,1,ih)=0. ! OCFRAC
@@ -401,7 +401,7 @@ C Point the pattern index to the Julian day.
         if(LLOOP.ge.8760) goto 99   ! use with 366 day files to stop at 365 days
 C        if(LLOOP.ge.8784) goto 99
         goto 42  ! read another line of the file
-      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.199)then
+      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.599)then
 
 C Test current dayvals against all prior day patterns.
         TOL=0.01
@@ -461,7 +461,7 @@ C Point the pattern index to the Julian day.
 C        if(LLOOP.ge.8784) goto 99
         goto 42  ! read another line of the file
 
-      elseif(nbdaypattern.ge.199)then
+      elseif(nbdaypattern.ge.599)then
         write(outs,'(a,i3,a)') 'Reached pattern ',
      &      nbdaypattern,' no more space'
         call edisp(iuout,outs)
@@ -515,7 +515,7 @@ C Find the periods for the patterns
      &  nonzero(3),columnsum(3),atleastonehour(3)
       call SDELIM(outs,outsd,'C',IW)
       call edisp(IUF,outsd)
-      write(outs,'(a,i3)') '*Nb_of_patterns',nbdaypattern
+      write(outs,'(a,i3)') '*Nb_of_patterns ',nbdaypattern
       call SDELIM(outs,outsd,'C',IW)
       call edisp(IUF,outsd)
 
@@ -604,15 +604,15 @@ C Common blocks for day patterns collected.
       integer daysthispattern  ! for each pattern the number of days found
                               ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(199,0:700),
-     &              daypattern(199,5,24)
+      common/daypat/nbdaypattern,daysthispattern(599,0:700),
+     &              daypattern(599,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(199),perpatstart(199,35),
-     &                 perpatend(199,35),perdata(199,5,35)
+      common/dayperiod/nbperpat(599),perpatstart(599,35),
+     &                 perpatend(599,35),perdata(599,5,35)
 
       character INTER*144,LFOUT*144,LFLABEL*144
 
@@ -701,15 +701,15 @@ C Common blocks for day patterns collected.
       integer daysthispattern  ! for each pattern the number of days found
                               ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(199,0:700),
-     &              daypattern(199,5,24)
+      common/daypat/nbdaypattern,daysthispattern(599,0:700),
+     &              daypattern(599,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(199),perpatstart(199,35),
-     &                 perpatend(199,35),perdata(199,5,35)
+      common/dayperiod/nbperpat(599),perpatstart(599,35),
+     &                 perpatend(599,35),perdata(599,5,35)
 
       integer iactindex    ! index of the activity in the order read in
       integer ndayusedby   ! how may references to this unique day
@@ -719,9 +719,9 @@ C Common blocks for day patterns collected.
       integer actnbdaytype ! number of day types associated with an
                            ! activity in ID order
       integer actdaytypelist ! list of day types used by activity
-      common/allact/iactindex(0:700),ndayusedby(199),
-     &  idayusedby(199,0:700),actnbdaytype(0:700),
-     &  actdaytypelist(0:700,199)
+      common/allact/iactindex(0:700),ndayusedby(599),
+     &  idayusedby(599,0:700),actnbdaytype(0:700),
+     &  actdaytypelist(0:700,599)
       character actname*48 ! name of activity in ID order
       common/charact/actname(0:700)
 
@@ -835,7 +835,7 @@ C Initial values.
       nonzero(1)=0.
       nonzero(2)=0.
       nonzero(3)=0.
-      do 40 ipat=1,199
+      do 40 ipat=1,599
         do 41 ih=1,24
           daypattern(ipat,1,ih)=0. ! OCFRAC
           daypattern(ipat,2,ih)=0. ! LTFRAC
@@ -997,7 +997,7 @@ C Point the pattern index to the Julian day.
         actcalender(IOCIND,icurday)=nbdaypattern
         goto 42  ! read another line of the file
 
-      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.199)then
+      elseif(nbdaypattern.ge.1.and.nbdaypattern.lt.599)then
 
 C Test current dayvals against all prior day patterns.
         TOL=0.01
@@ -1074,7 +1074,7 @@ C Point the pattern index to the Julian day.
         actcalender(IOCIND,icurday)=nbdaypattern
         goto 42  ! read another line of the file
 
-      elseif(nbdaypattern.ge.199)then
+      elseif(nbdaypattern.ge.599)then
         write(outs,'(a,i3,a)') 'Reached pattern ',
      &      nbdaypattern,' no more space'
         call edisp(iuout,outs)
@@ -1084,7 +1084,7 @@ C End of file reached or max number of patterns filled. Thus the
 C collected data can be written out (comma separated).
  99   CALL EDISP(IUOUT,' ')
 
-      write(outs,'(a,i6)')  '*Lines_scanned ',LLOOP
+      write(outs,'(a,i8)')  '*Lines_scanned ',LLOOP
       call SDELIM(outs,outsd,'C',IW)
       call edisp(IUF,outsd)
 
@@ -1215,15 +1215,15 @@ C Common blocks for day patterns collected.
       integer daysthispattern  ! for each pattern the number of days found
                               ! for each activity
       real daypattern ! (daytype,dayval,hour)
-      common/daypat/nbdaypattern,daysthispattern(199,0:700),
-     &              daypattern(199,5,24)
+      common/daypat/nbdaypattern,daysthispattern(599,0:700),
+     &              daypattern(599,5,24)
 
       integer nbperpat     ! periods for each pattern
       real perpatstart     ! start time of period (up to 35 periods)
       real perpatend       ! end time of the period
       real perdata         ! data for the period
-      common/dayperiod/nbperpat(199),perpatstart(199,35),
-     &                 perpatend(199,35),perdata(199,5,35)
+      common/dayperiod/nbperpat(599),perpatstart(599,35),
+     &                 perpatend(599,35),perdata(599,5,35)
 
       logical occupchange   ! a change in occupancy
       logical lightchange   ! a change in lighting
