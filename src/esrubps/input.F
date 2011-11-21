@@ -936,8 +936,8 @@ C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types

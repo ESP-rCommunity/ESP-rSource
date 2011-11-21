@@ -146,8 +146,8 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER ICOMP,IAIRN,ICAAS
       CHARACTER*72 LAPROB
 
-      COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/C1/NCOMP,NCON
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       CHARACTER LUALF*72,LCNG*15,LLOC*15
@@ -4120,8 +4120,8 @@ C This routine assumes newer geometry files are being used.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
@@ -5148,8 +5148,8 @@ C Changes to the model are then made.
       CHARACTER CFGROOT*24,LCFGF*72
       INTEGER IFCFG
 
-      common/C1/NCOMP,NCON
       integer ncomp,ncon
+      common/C1/NCOMP,NCON
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER IZSTOCN
@@ -5394,8 +5394,8 @@ C IMODE = 4 -> Typical model
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/C21/IFCFG,CFGROOT,LCFGF
       INTEGER IFCFG
@@ -6547,8 +6547,8 @@ C Part F for Northern Ireland.
 #include "building.h"
 #include "geometry.h"
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN

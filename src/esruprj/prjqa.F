@@ -76,8 +76,8 @@ C Parameters passed into subroutine:
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
       
-      common/C1/NCOMP,NCON
       integer ncomp,ncon
+      common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C6/INDCFG

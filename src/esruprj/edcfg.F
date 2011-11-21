@@ -75,8 +75,8 @@ C Function definition
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
-      common/C1/NCOMP,NCON
       INTEGER :: ncomp,ncon
+      common/C1/NCOMP,NCON
       common/C6/INDCFG
       INTEGER :: indcfg
       common/C21/IFCFG,cfgroot,LCFGF
