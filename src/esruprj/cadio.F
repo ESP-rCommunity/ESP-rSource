@@ -50,7 +50,7 @@ C exportcad: controls model export facilities.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
-      DIMENSION ITEMS1(11)
+      DIMENSION ITEMS1(10)
 
       character LFIL*72,path*72,LCFGF*72
       character ITEMS1*34,doit*248,outs*124,outs248*248
@@ -97,25 +97,24 @@ C Set folder separator (fs) to \ or / as required.
    33 INO1=-4
       ITEMS1(1) ='a to VIEWER (Abacus)       '
       ITEMS1(2) ='b to DXF (V12-V14)         '
-      ITEMS1(3) ='c to XZIP (Abacus/IES)     '
-      ITEMS1(4) ='d to RADIANCE              '
-      ITEMS1(5) ='e to xfig (vector ploting) '
-      ITEMS1(6) ='f to MicroGDS (THINGS file)'
-      ITEMS1(7) ='g to EnergyPlus            '
-      ITEMS1(8) ='i to VRML #2.0             '
-      ITEMS1(9) ='j to ESP-r meta file       '
-      ITEMS1(10)='? help                     '
-      ITEMS1(11)='- exit this menu           '
+      ITEMS1(3) ='c to RADIANCE              '
+      ITEMS1(4) ='d to xfig (vector ploting) '
+      ITEMS1(5) ='e to MicroGDS (THINGS file)'
+      ITEMS1(6) ='f to EnergyPlus            '
+      ITEMS1(7) ='g to VRML #2.0             '
+      ITEMS1(8) ='h to ESP-r meta file       '
+      ITEMS1(9)='? help                     '
+      ITEMS1(10)='- exit this menu           '
 
 C Help text for this menu.
       helptopic='cad_export_choices'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=11
+      NITMS=10
       CALL EMENU('Export Model',ITEMS1,NITMS,INO1)
 
 C Prepare filter command lines with path.
 
-      if(INO1.EQ.1.or.INO1.EQ.2.or.INO1.eq.10.or.INO1.eq.11)then
+      if(INO1.EQ.1.or.INO1.EQ.2.or.INO1.eq.9.or.INO1.eq.10)then
         continue
       else
 
@@ -269,43 +268,6 @@ C and change any / to \.
 
       ELSEIF(INO1.EQ.3)THEN
 
-C XZIP creation. Process similar to ecnv filter for VIEWER.
-        call tstamp('>','PRJ: export to xzip')
-        doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'_zip'
-        CALL EASKS(LFIL,' ','ZIP file name?',
-     &            72,' ','zip export file',IER,nbhelp)
-C        call edisp(iuout,' Performing model conversion.')
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        if(itrc.le.1)then
-          write(doit,'(4a)') 'ecnv -if esp -in ',
-     &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
-        elseif(itrc.gt.1)then
-          write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
-        endif
-        call usrmsg('Starting conversion via',doit,'-')
-        call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-     &    ' has been created.'
-        call edisp(iuout,outs)
-
-      ELSEIF(INO1.EQ.4)THEN
-
 C RADIANCE creation. Starts e2r with current configuration file.
         dok=.true.
         CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,nbhelp)
@@ -341,7 +303,7 @@ C If browsing pass this information to e2r.
           call runit(doit,'-')
         endif
 
-      ELSEIF(INO1.EQ.5)THEN
+      ELSEIF(INO1.EQ.4)THEN
 
 C Toggle output redirection to xfig.
         dok=.true.
@@ -400,7 +362,7 @@ C << has been created
           endif
         endif
 
-      ELSEIF(INO1.EQ.6)THEN
+      ELSEIF(INO1.EQ.5)THEN
 
 C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
         call tstamp('>','PRJ: export to THINGS')
@@ -435,7 +397,7 @@ C Why is the addpath not used?
      &    ' has been created.'
         call edisp(iuout,outs)
 
-      ELSEIF(INO1.EQ.7)THEN
+      ELSEIF(INO1.EQ.6)THEN
 
 C Export to EnergyPlus IDF file (work in progress)
         call tstamp('>','PRJ: export to energyplus')
@@ -461,7 +423,7 @@ C Export to EnergyPlus IDF file (work in progress)
           call edisp(iuout,' Completed model conversion.')
         endif
 
-      ELSEIF(INO1.EQ.8)THEN
+      ELSEIF(INO1.EQ.7)THEN
 
 C Export to VRML (2.0) file.
         call tstamp('>','PRJ: export to VRML')
@@ -498,7 +460,7 @@ C     &    ' has been created.'
 C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
-      ELSEIF(INO1.EQ.9)THEN
+      ELSEIF(INO1.EQ.8)THEN
 
 C Export to ESP-r meta file.
         call tstamp('>','PRJ: export to ESP-r meta')
@@ -519,12 +481,13 @@ C and change any / to \.
         endif
         ioout=2
         call METAWRITE(ioout,longtfile,'-',IER)
-      ELSEIF(INO1.EQ.10)THEN
+
+      ELSEIF(INO1.EQ.9)THEN
       
 C Pop up the help text.
        CALL PHELPD('export menu',nbhelp,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.11)THEN
+      ELSEIF(INO1.EQ.10)THEN
         RETURN
       else
         goto 33
@@ -591,18 +554,22 @@ C Tell the user to create a model configuration file.
 
 C Ask user which format of CAD file will be scanned in.
       CALL EASKABC('Specify which CAD format to work with',
-     &  'Options:','DXF (version 12)','ZIP CAD format',
+     &  'Options:','DXF (version 12-14)','other CAD format',
      &  'cancel',IRT,nbhelp)
       if(irt.eq.1)then
         cadfmt='DXF '
       elseif(irt.eq.2)then
-        cadfmt='ZIP '
+        call usrmsg(
+     &    'Alternative CAD input format is work in progress.',
+     &    '  ','-')
+        return
       elseif(irt.eq.3)then
         return
       endif
 
 C If there is a currently loaded model then convert it.
       if(NCOMP.gt.0.and.cadfmt(1:3).eq.'DXF')then
+
         call tstamp('>','PRJ: start CAD')
         doit = ' '
         CALL EASKS(LFIL,' Put current model into DXF file named: ',
@@ -628,29 +595,8 @@ C and change any / to \.
      &      longtfile(1:lnblnk(longtfile)),
      &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
         endif
-      elseif(NCOMP.gt.0.and.cadfmt(1:3).eq.'ZIP')then
-        doit = ' '
-        CALL EASKS(LFIL,'Put current model into XZIP file named: ',
-     &    ' ',72,' ','xzip export file',IER,nbhelp)
-        call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        if(itrc.le.1)then
-          write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
-        elseif(itrc.gt.1)then
-          write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of zip -out ',LFIL(1:lnblnk(LFIL))
-        endif
       endif
+
       if(NCOMP.gt.0)then
         call runit(doit,'-')
         write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
@@ -664,15 +610,8 @@ C and change any / to \.
       CALL ASKOK(outs,'(no will just generate the file)',
      &  OK,dok,nbhelp)
       IF(OK)then
-
-C << might do a cd to the current configuration location? before running zip >>
         if(cadfmt(1:3).eq.'ZIP')then
-          if(NCOMP.gt.0)then
-            write(doit,'(a,2x,a)') cadexe,LFIL(1:lnblnk(LFIL))
-            call runit(doit,'graph')
-          else
-            call runit(cadexe,'graph')
-          endif
+          continue
         elseif(cadfmt(1:3).eq.'DXF')then
           call runit(cadexe,'graph')
         endif
@@ -685,7 +624,7 @@ C << might do a cd to the current configuration location? before running zip >>
      &    ' ',72,' ','cad import file',IER,nbhelp)
 
 C Read the first couple of lines of the import file to see if it
-C is a ZIP or DXF file.
+C is a DXF file.
         CALL ERPFREE(ifun,ISTAT)
         call FPOPEN(ifun,ISTAT,1,0,LFIL)
         IF(ISTAT.LT.0)THEN
@@ -699,19 +638,12 @@ C is a ZIP or DXF file.
           endif
         endif
         CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD first line',IER)
-        if(OUTSTR(1:8).eq.'COM data')then
-          typez=.true.
-          call edisp(iuout,'Based on initial line of file:')
+        CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD 2nd line',IER)
+        if(OUTSTR(1:7).eq.'SECTION')then
+          typez=.false.
+          call edisp(iuout,'Based on 2nd line of file:')
           call edisp(iuout,outstr)
-          call edisp(iuout,'this file is assumed to be a ZIP file.')
-        else
-          CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD 2nd line',IER)
-          if(OUTSTR(1:7).eq.'SECTION')then
-            typez=.false.
-            call edisp(iuout,'Based on 2nd line of file:')
-            call edisp(iuout,outstr)
-            call edisp(iuout,'this file is assumed to be a DXF file.')
-          endif
+          call edisp(iuout,'this file is assumed to be a DXF file.')
         endif
         CALL ERPFREE(ifun,ISTAT)
 
@@ -728,26 +660,14 @@ C and change any / to \.
         endif
         call edisp(iuout,' Performing model conversion.')
         call tstamp('>','PRJ: import from CAD')
-        if(typez)then
-          if(itrc.le.1)then
-            write(doit,'(4a)') 'ecnv -if zip -in ',
-     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
-     &        longtfile(1:lnblnk(longtfile))
-          elseif(itrc.gt.1)then
-            write(doit,'(4a)')'ecnv -v -if zip -in ',
-     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
-     &        longtfile(1:lnblnk(longtfile))
-          endif
-        else
-          if(itrc.le.1)then
-            write(doit,'(4a)') 'ecnv -obs -mm -if dxf -in ',
-     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
-     &        longtfile(1:lnblnk(longtfile))
-          elseif(itrc.gt.1)then
-            write(doit,'(4a)')'ecnv -v -obs -mm -if dxf -in ',
-     &        LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
-     &        longtfile(1:lnblnk(longtfile))
-          endif
+        if(itrc.le.1)then
+          write(doit,'(4a)') 'ecnv -obs -mm -if dxf -in ',
+     &      LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &      longtfile(1:lnblnk(longtfile))
+        elseif(itrc.gt.1)then
+          write(doit,'(4a)')'ecnv -v -obs -mm -if dxf -in ',
+     &      LFIL(1:lnblnk(LFIL)),' -of esp -u upgrade -out ',
+     &      longtfile(1:lnblnk(longtfile))
         endif
         call usrmsg('doing conversion via',doit,'-')
         call runit(doit,'-')

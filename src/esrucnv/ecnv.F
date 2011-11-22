@@ -126,17 +126,15 @@ C iotmp2 for miscel output files.
       matver=0.0   ! initial assumption of binary materials database
 
 C Get command line parameters. 
-C input formats are: [esp|dxf|zip|ww] where:
+C input formats are: [esp|dxf|ww] where:
 C   dxf = AutoCAD V11-14 ASCII files.
-C   zip is a format from the Abacus Unit of the University of Strathclye.
 C   ww = ww graphic vector command set (output by ESP-r graphic modules).
 
-C output formats are: [esp|dxf|viewer|zip|xfig|vrml] where
+C output formats are: [esp|dxf|viewer|xfig|vrml] where
 C   esp is primarily the geometry of an ESP-r model with cfg and cnn files.
 C   dxf is V12-V14 DXF file which includes surfaces and some types of
 C      solar obstructions.
 C   viewer is a hidden line wire-frame viewing tool included with ESP-r.
-C   zip is a format from the Abacus Unit of the University of Strathclye
 C   xfig is a vector drawing package.
 C   vrml includes virtual world file and matching html file holding the
 C      attributes of the geometric entities.
@@ -208,8 +206,6 @@ C Determine root name of dxf file (to make layer file from).
         else
           write(filname1,'(2a)') filname(1:leng),'.dxf'
         endif       
-      elseif(iformat(1:3).eq.'zip')then
-        filname1=filname
       elseif(iformat(1:3).eq.'esp')then
         filname1=filname
         call fdroot(filname1,path,LCFGF)
@@ -320,12 +316,6 @@ C placed in the same folder.
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
 
-      elseif(oformat(1:6).eq.'zip')then
-
-        write(outs,'(2a)')'The zip output file will be: ',
-     &                  filname2(1:lnblnk(filname2))
-        call edisp248(iuout,outs,100)
-
       elseif(oformat(1:4).eq.'xfig')then
 
         write(outs,'(2a)')'The xfig output file will be: ',
@@ -343,19 +333,6 @@ C placed in the same folder.
         stop 'ecnv aborted.'
       endif
     
-
-C If input format is zip and output is esp go and do this.
-      if(iformat(1:3).eq.'zip')then
-        if(oformat(1:3).eq.'esp'.or.oformat(1:6).eq.'viewer')then
-          open(ioin ,file=filname1,status='OLD', err=900)
-          open(ioout,file=filname2,status='UNKNOWN', err=901)
-          call zipcnv(upgcfg,filname2,itrc,IER)
-          close(ioout)
-          close(ioin)
-          stop
-        endif
-      endif
-
 C If input format is ww and output is xfig go and do this.
       if(iformat(1:2).eq.'ww'.and.oformat(1:4).eq.'xfig')then
         open(ioin ,file=filname1,status='OLD', err=900)
@@ -410,27 +387,6 @@ C Create THF (THINGS) file.
         if(oformat(1:3).eq.'THF'.or.oformat(1:3).eq.'thf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
           call e2thf(incobs)
-          call edisp(iuout,' End of conversion.')
-          CALL EPAGEND
-          STOP
-        endif
-
-C Create an Abacus zip file format.
-
-C << note this format is no longer used and might be
-C << considered for removal
-
-        if(oformat(1:6).eq.'zip')then
-          open(ioout,file=filname2,status='UNKNOWN', err=901)
-          WRITE(ioout,'(a)') 'COM data file converted from `esp`'
-          WRITE(ioout,'(a)') 'NAME'
-          WRITE(ioout,'(a,a,a)') '"',filname2(1:lnblnk(filname2)),'"'
-          WRITE(ioout,'(a)') 'COM DATE ....'
-          WRITE(ioout,'(a)') ' '
-          WRITE(ioout,'(a)') 'ESP'
-          WRITE(ioout,'(a)') 'ANT'
-          call e2zip(incobs)
-          CALL ERPFREE(ioout,ISTAT)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
