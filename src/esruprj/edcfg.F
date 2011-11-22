@@ -3976,7 +3976,7 @@ C << it would be clearer if all model I/O happened there >>
       common/rpath/path
       logical concat,OK,DOK,browse,XST,deref,unixok
       character dradcf*72,LCFGF*72,OUTSTR*124,outs*124,outs248*248
-      character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
+      character dvfil*72,cfgroot*24,ltmp*72
       character doit*144,tmode*8,act*1
       character fs*1
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
@@ -4025,7 +4025,6 @@ C a remote folder.
         endif
         dvfil='std.vew'
         doit = ' '
-        llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
@@ -4034,7 +4033,7 @@ C lltmp is the file name returned by the user selection.
         lltmp='  '
         CALL EASKXORGTKF(L144,
      &    'Viewer export file name?',' ',
-     &    'model.vew',lltmp,'viewer file',IER,nbhelp)
+     &    dvfil,lltmp,'viewer file',IER,nbhelp)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then

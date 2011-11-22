@@ -52,7 +52,7 @@ C exportcad: controls model export facilities.
 
       DIMENSION ITEMS1(11)
 
-      character LFIL*72,path*72,LCFGF*72,tfile*72
+      character LFIL*72,path*72,LCFGF*72
       character ITEMS1*34,doit*248,outs*124,outs248*248
       character cfgroot*24,tmode*12
       character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
@@ -91,6 +91,8 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+      ioout=2  ! set initial value
+      lfil='  '
 
    33 INO1=-4
       ITEMS1(1) ='a to VIEWER (Abacus)       '
@@ -155,7 +157,7 @@ C or remotely.
         else
           write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
         endif
-        dvfil='std.vew'
+        dvfil='std.vew'  ! default file name
         doit = ' '
 
 C The X11 version will be returning only the name of the
@@ -165,7 +167,7 @@ C lltmp is the file name returned by the user selection.
         lltmp='  '
         CALL EASKXORGTKF(L144,
      &    'Viewer export file name?',' ',
-     &    'model.vew',lltmp,'viewer file',IER,nbhelp)
+     &    dvfil,lltmp,'viewer file',IER,nbhelp)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then

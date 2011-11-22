@@ -5,8 +5,6 @@ C----------------------------------------------------
       
       integer lnblnk  ! function definition
 
-      integer igraphiclib  ! external definition
-
       PARAMETER (MNF = 10)
       PARAMETER (MTR = 100)
       PARAMETER (MELT = 8)
@@ -33,7 +31,7 @@ C----------------------------------------------------
       CHARACTER*10 SN(MELT,6)
       character FNAME*72,outs*124
 
-      LOGICAL LOOK,NOIGN,OK,XST
+      LOGICAL LOOK,NOIGN
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -122,7 +120,6 @@ C Confirm command line file.
  11   helptopic='the_viewer_file'
       call gethelptext(helpinsub,helptopic,nbhelp)
       L144=LCMDFL
-      llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
