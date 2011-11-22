@@ -494,7 +494,7 @@ C information. This is shorter than the string returned by CONXINFO.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer IZSTOC
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXITM*48,SST1*12,ZST1*12,SST2*12,ZST2*12
 
