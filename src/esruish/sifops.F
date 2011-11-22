@@ -46,6 +46,7 @@ C with the db at simulation time.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -932,6 +933,7 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)

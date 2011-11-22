@@ -178,6 +178,7 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -359,6 +360,7 @@ C          1 = textual feedback or 2 = File
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

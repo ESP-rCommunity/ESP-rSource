@@ -126,6 +126,7 @@ C zbasea(),ibases(),iuzbasea(),izbaselist() are defined in geometry.h
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
@@ -983,6 +984,7 @@ C Parameters
       integer IER          ! IER 0 OK IER 1 problem
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NOTE: G1 is only valid for the zone that has currently been
@@ -1327,6 +1329,7 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C << do we need transparent surface area facing different orientations? >>
       common/PREC18/ZTRANA(MCOM)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Error subroutine and error details for dll mode.
@@ -2433,6 +2436,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
@@ -3501,6 +3505,7 @@ C If context is .true. then give verbose description of the boundary.
 
       common/SFIG/NSIGFIG
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
@@ -3602,6 +3607,7 @@ C the connections file).
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER OTHSTR*30,SST2*12,ZST2*12
 
@@ -3869,6 +3875,7 @@ C VOL(MCOM)     - zone bounded volume
 C << could it use ?? instead of G1? >>
 
       common/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
@@ -4097,6 +4104,7 @@ C act is '-' derive geometric data or 'c' also determine parent
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER outs*124,act*1,h*72
@@ -4585,6 +4593,7 @@ C be duplicates.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION IDVN(MV),nTbchild(MCON)
@@ -4865,6 +4874,7 @@ C << zone geometry file if havec24 is true?
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Variables from geometry.h:
@@ -5071,6 +5081,7 @@ C << update documentation as well as reporting based on files >>
 #include "model.h"
 #include "geometry.h"
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
@@ -5299,6 +5310,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       logical ok
@@ -5335,6 +5347,7 @@ C If 'is' is returned as 0 if no match.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       
@@ -5364,6 +5377,7 @@ C and length is its maximum length.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)

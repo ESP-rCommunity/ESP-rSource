@@ -37,6 +37,7 @@ C points are later excluded.
       common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
 C Get the current connection and number of surfaces in zone.
@@ -89,6 +90,7 @@ C no selection.  'iva' is the array of selections.
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
@@ -311,6 +313,7 @@ C target surface.
 #include "geometry.h"
 
       common/g1t/xft(mv),zft(mv)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension c(2*mv+2)

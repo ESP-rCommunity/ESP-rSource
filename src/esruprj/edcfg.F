@@ -77,12 +77,12 @@ C Function definition
       
       INTEGER :: ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C6/INDCFG
       INTEGER :: indcfg
-      common/C21/IFCFG,cfgroot,LCFGF
+      common/C6/INDCFG
       INTEGER :: ifcfg
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
 
@@ -1231,6 +1231,7 @@ C output, IER=0 indicates no error.
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
@@ -3229,6 +3230,7 @@ C espriou.h for parameter MFFOLD
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
       common/rcmd/LCMDFL

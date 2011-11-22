@@ -575,6 +575,7 @@ C << update this to generate v1.1 geometry file >>
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1017,6 +1018,7 @@ C Matches or adds a vertex to a zone.
 #include "building.h"
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical clx,cly,clz,match,unixok

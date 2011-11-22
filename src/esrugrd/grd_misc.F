@@ -242,6 +242,7 @@ C FACDRW draws the elevation of the surface.
 
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1T/XFT(MV),ZFT(MV)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

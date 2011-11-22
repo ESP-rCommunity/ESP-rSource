@@ -209,6 +209,7 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       integer mon,isc,iyd
@@ -404,6 +405,7 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
@@ -802,6 +804,7 @@ C at hour jj.
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
       common/outin/iuout,iuin
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)

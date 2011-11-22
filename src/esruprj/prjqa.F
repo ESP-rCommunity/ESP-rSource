@@ -89,8 +89,8 @@ C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
@@ -2369,6 +2369,7 @@ C not browsing.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
@@ -2838,6 +2839,7 @@ C Parameters passed in
       character act*1      ! 'c' clear and 'p' process
  
       common/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C bridgelen was calculated in subroutine suredgeadj

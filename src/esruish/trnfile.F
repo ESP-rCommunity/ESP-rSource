@@ -74,6 +74,7 @@ C to the zone transitional shading file.
       common/filep/ifil
       common/g1t/xft(mv),zft(mv)
       common/find/irecl
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension irecs(ms)
@@ -124,6 +125,7 @@ C and computes the overall direct and diffuse shading factors.
       common/find/irecl
       common/ihtime/ihour
       common/data2/pso(ms,mt),psof(ms,mt)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/data1/ical,idifc,init
 

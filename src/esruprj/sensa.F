@@ -615,6 +615,7 @@ C   specification and 2 if there was a cancel issued during editing.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)

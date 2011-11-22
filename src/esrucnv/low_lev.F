@@ -31,6 +31,7 @@ C face3d are triangles or quads which are general surfaces in autocad.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer ioin,ioout,ioblk
@@ -172,6 +173,7 @@ C << upper 3-4 corners >>
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer ioin,ioout,ioblk
@@ -275,6 +277,7 @@ C otherwise if it is 2D it might be useful for click-on-bitmap.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer ioin,ioout,ioblk
@@ -521,6 +524,7 @@ C ****** genarc
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer ioin,ioout,ioblk
       common/io/ioin,ioout,ioblk

@@ -192,6 +192,7 @@ c   icont  - >0 if shaded surfaces were found
 #include "geometry.h"
 
       common/outin/iuout,iuin
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       integer mon,isc,iyd
