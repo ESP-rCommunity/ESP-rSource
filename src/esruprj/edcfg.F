@@ -171,8 +171,7 @@ C Uncertainty.
       integer ier           ! non-zero if a problem
       
       INTEGER :: itrc,itru,i,ic,icc,istat
-      INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
-      INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
+      INTEGER :: iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
@@ -198,6 +197,22 @@ C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       integer hvind, indhvac, hvidind
       PARAMETER (nhvac_items = 5)
       dimension HVAC_ITEMS(nhvac_items)
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3257,6 +3272,22 @@ C Defaults.
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*72
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*72
