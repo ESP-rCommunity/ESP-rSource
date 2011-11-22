@@ -96,7 +96,7 @@ C Set folder separator (fs) to \ or / as required.
 
    33 INO1=-4
       ITEMS1(1) ='a to VIEWER (Abacus)       '
-      ITEMS1(2) ='b to DXF (V12)             '
+      ITEMS1(2) ='b to DXF (V12-V14)         '
       ITEMS1(3) ='c to XZIP (Abacus/IES)     '
       ITEMS1(4) ='d to RADIANCE              '
       ITEMS1(5) ='e to xfig (vector ploting) '
@@ -115,7 +115,7 @@ C Help text for this menu.
 
 C Prepare filter command lines with path.
 
-      if(INO1.EQ.1.or.INO1.eq.10.or.INO1.eq.11)then
+      if(INO1.EQ.1.or.INO1.EQ.2.or.INO1.eq.10.or.INO1.eq.11)then
         continue
       else
 
@@ -207,13 +207,39 @@ C and change any / to \.
 
       ELSEIF(INO1.EQ.2)THEN
 
-C DXF creation.  Process similar to ecnv filter for VIEWER.
+C DXF creation. Process similar to ecnv filter for VIEWER.
         call tstamp('>','PRJ: export to DXF')
+        iw=0
+        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKAB('The model is in a remote folder.',
+     &    'Place exported file in:','current path','local folder',
+     &    IW,nbhelp)
+        endif
+        if(iw.eq.1)then
+          write(L144,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCFGF(1:lnblnk(LCFGF)),'.DXF'
+        else
+          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.DXF'
+        endif
+        dvfil='std.DXF'  ! default file name
         doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.DXF'
-        CALL EASKS(LFIL,' ','DXF file name?',
-     &            72,' ','dxf export file',IER,nbhelp)
-C        call edisp(iuout,' Performing model conversion.')
+
+C L144 is the suggested name and lltmp is the file name returned
+C by the user selection.
+        lltmp='  '
+        CALL EASKXORGTKF(L144,'DXF export file name?',' ',
+     &    dvfil,lltmp,'dxf file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+        call edisp(iuout,' Performing model conversion.')
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -228,18 +254,19 @@ C and change any / to \.
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
+     &      ' -of dxf -out ',lltmp(1:lnblnk(lltmp))
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
      &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of dxf -out ',LFIL(1:lnblnk(LFIL))
+     &      ' -of dxf -out ',lltmp(1:lnblnk(lltmp))
         endif
         call usrmsg('Starting conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
+        write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
      &    ' has been created.'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,90)
+
       ELSEIF(INO1.EQ.3)THEN
 
 C XZIP creation. Process similar to ecnv filter for VIEWER.
@@ -276,6 +303,7 @@ C and change any / to \.
         write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
      &    ' has been created.'
         call edisp(iuout,outs)
+
       ELSEIF(INO1.EQ.4)THEN
 
 C RADIANCE creation. Starts e2r with current configuration file.
@@ -312,6 +340,7 @@ C If browsing pass this information to e2r.
           call usrmsg('Starting Radiance conversion via',doit,'-')
           call runit(doit,'-')
         endif
+
       ELSEIF(INO1.EQ.5)THEN
 
 C Toggle output redirection to xfig.
@@ -370,6 +399,7 @@ C << has been created
 
           endif
         endif
+
       ELSEIF(INO1.EQ.6)THEN
 
 C Export to THINGS (MicroGDS THF) file. Treat obstructions as clusters.
@@ -404,6 +434,7 @@ C Why is the addpath not used?
         write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
      &    ' has been created.'
         call edisp(iuout,outs)
+
       ELSEIF(INO1.EQ.7)THEN
 
 C Export to EnergyPlus IDF file (work in progress)

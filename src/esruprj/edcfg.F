@@ -4004,6 +4004,7 @@ C Set folder separator (fs) to \ or / as required.
 
       helptopic='visualization_options'
       call gethelptext(helpinsub,helptopic,nbhelp)
+
   11  if(act.eq.'V')then
 
 C Construct a 'VIEWER' format file.  First get file name. Take
@@ -4085,6 +4086,7 @@ C string to drive VIEWER.
           call runit(doit,tmode)
         endif
         return
+
       elseif(act.eq.'R')then
 
 C If in browse mode then run e2r and return, otherwise check rcf name
