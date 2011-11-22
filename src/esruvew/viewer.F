@@ -45,7 +45,7 @@ C call plot which does most everything else.
 C Initialise terminal and begin program.
       call ezero
       call curmodule('vew ')
-      cAppName = 'vww'
+      cAppName = 'vew'
       helpinapp='vew'  ! set once for the application
       helpinsub='vew'  ! set for MAIN
       IUIN = 5

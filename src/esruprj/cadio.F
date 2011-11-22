@@ -53,11 +53,13 @@ C exportcad: controls model export facilities.
       DIMENSION ITEMS1(11)
 
       character LFIL*72,path*72,LCFGF*72,tfile*72
-      character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
-      character xfile*144,tg*1,delim*1,ffile*72
+      character ITEMS1*34,doit*248,outs*124,outs248*248
+      character cfgroot*24,tmode*12
+      character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
       character ETEXT*82
-      character longtfile*144,longtfiledos*144
+      character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
+      character fs*1
       logical oke
       integer NITMS,INO1 ! max items and current menu item
 
@@ -82,8 +84,13 @@ C For help messages
          return
       endif
 
-C Check if Unix-based or DOS based.
+C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
    33 INO1=-4
       ITEMS1(1) ='a to VIEWER (Abacus)       '
@@ -106,14 +113,15 @@ C Help text for this menu.
 
 C Prepare filter command lines with path.
 
-C << to be done - the code that creates the initial LFIL is not yet updated
-C << to work with DOS paths with spaces. >>
-
-      if(INO1.eq.10.or.INO1.eq.11)then
+      if(INO1.EQ.1.or.INO1.eq.10.or.INO1.eq.11)then
         continue
       else
+
+C Note: this sets up initial part of LFIL but some later
+C code tends to overwrite this and thus the user choice
+C is lost. 
         iw=0
-        if(path.ne.'./'.and.path.ne.' ')then
+        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
           write(outs,'(A,A)') 'The current path is: ',path
           call edisp(iuout,outs)
           CALL EASKAB('The model is in a remote folder.',
@@ -127,41 +135,73 @@ C << to work with DOS paths with spaces. >>
         endif
       endif
 
-      IF(INO1.EQ.1)THEN
+ 11   IF(INO1.EQ.1)THEN
 
-C Construct a 'VIEWER' format file.  First get file name.
+C Construct a 'VIEWER' format file.  First get file name taking
+C into account whether the user is working in the model folder
+C or remotely.
         call tstamp('>','PRJ: export to viewer')
+        iw=0
+        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKAB('The model is in a remote folder.',
+     &    'Place exported file in:','current path','local folder',
+     &    IW,nbhelp)
+        endif
+        if(iw.eq.1)then
+          write(L144,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
+        else
+          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
+        endif
+        dvfil='std.vew'
         doit = ' '
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.vew'
-        CALL EASKS(LFIL,' ','VIEWER file name?',
-     &              72,' ','VIEWER input file',IER,nbhelp)
-C        call edisp(iuout,'Performing model conversion.')
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. L144 is the suggested name and
+C lltmp is the file name returned by the user selection.
+        lltmp='  '
+        CALL EASKXORGTKF(L144,
+     &    'Viewer export file name?',' ',
+     &    'model.vew',lltmp,'viewer file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
         if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
+          call addpath(LCFGF,longtfile,concat)  ! for the model cfg file
         else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
+          call addpath(LCFGF,longtfile,concat)  ! for the model cfg file
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos
         endif
         if(itrc.le.1)then
           write(doit,'(4a)') 'ecnv -obs -if esp -in ',
-     &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of viewer -out ',LFIL(1:lnblnk(LFIL))
+     &      longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
+     &      lltmp(1:lnblnk(lltmp))
+          call usrmsg('starting conversion via',doit,'-')
+          call runit(doit,'-')
         elseif(itrc.gt.1)then
           write(doit,'(4a)') 'ecnv -v -obs -if esp -in ',
-     &       longtfile(1:lnblnk(longtfile)),
-     &      ' -of viewer -out ',LFIL(1:lnblnk(LFIL))
+     &      longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
+     &      lltmp(1:lnblnk(lltmp))
+          call usrmsg('starting conversion via',doit,'-')
         endif
-        call usrmsg('Starting conversion via',doit,'-')
         tmode = 'text'
         call runit(doit,tmode)
-        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
+        write(outs248,'(3a)')'The file ',lltmp(1:lnblnk(lltmp)),
      &    ' has been created.'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,90)
 
       ELSEIF(INO1.EQ.2)THEN
 
