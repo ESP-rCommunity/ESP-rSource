@@ -2526,13 +2526,13 @@ C If one parameter.
         if(argument(1:5).eq.'-help')then
           call edisp(iuout,'The product model filter. ')
           call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
-          call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
+          call edisp(iuout,'  -if {esp|dxf|ww} -in <file> ')
           call edisp(iuout,
-     &    '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
+     &    '  -of {esp|dxf|viewer|xfig|vrml} -out <file>')
           call edisp(iuout,' ')
           call edisp(iuout,'Where options are:')
-          call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
-          call edisp(iuout,'      (dxf = AutoCAD V11-12)')
+          call edisp(iuout,' -if [esp|dxf|ww] = input format')
+          call edisp(iuout,'      (dxf = AutoCAD V12-14)')
           call edisp(iuout,'      (ww = ww graphic commands)')
           call edisp(iuout,' -in [file]  = input file')
           call edisp(iuout,
@@ -2546,9 +2546,8 @@ C If one parameter.
           call edisp(iuout,' ')
           call edisp(iuout,'The following combinations are supported:')
           call edisp(iuout,'  input format  output format')
-          call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
+          call edisp(iuout,'  esp-r         dxf, viewer, vrml')
           call edisp(iuout,'  dxf           esp-r, viewer')
-          call edisp(iuout,'  zip           esp-r, viewer')
           call edisp(iuout,' ')
           call edisp(iuout,'If converting to esp-r then an additional') 
           call edisp(iuout,'parameter is allowed:')
