@@ -60,9 +60,13 @@ C geometry.h provides commons G0/G1/G2/precz/GS5/GS6.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IER=0
@@ -76,12 +80,22 @@ C return the offsets which define it. Recalculate igw and igwh
 C on fortran to address fault in 64 bit win3d code.
       call startbuffer()
       if(menuchw.ne.0)then
-        CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+        iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       else
-        CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+        iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=32
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       endif
-      igw=igr-igl
-      igwh=igb-igt
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       

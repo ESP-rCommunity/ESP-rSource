@@ -144,10 +144,14 @@ C Local variables to pass to edline and axiscale.
       integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If not in graphic mode return.
@@ -169,9 +173,15 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
-      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
