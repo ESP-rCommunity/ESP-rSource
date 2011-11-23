@@ -1959,7 +1959,7 @@ C NB LUDCMS is the single precision version of LUDCMP
       DIMENSION INDX(N)
 
       PARAMETER (SMALL=1.0E-20)
-      PARAMETER (NMAX=100)
+      PARAMETER (NMAX=1000)
       DIMENSION VV(NMAX)
 
       IF(N.GT.NMAX) STOP ' LUDCMS: local array VV too small !'
