@@ -85,6 +85,7 @@ C---- Stratified tank common
 C---- Local variables      
 
       INTEGER NITMS
+C      INTEGER I
       INTEGER J
       INTEGER NCITM,NCONS
       INTEGER IPCON,IPCONC
@@ -101,6 +102,7 @@ C---- Local variables
       REAL K_DESTRAT            ! Destratification conductivity [W/m/C]
       REAL VOL                  ! Tank volume [m3]
       REAL U                    ! Tank heat loss coefficient [W/m2/C]
+
 
 C---- Set error flag to false
       ERROR_FLAG = .false.
@@ -622,7 +624,7 @@ C---- Call stratified tank function
       HASHX1=.FALSE.
       HASHX2=.FALSE.
       DUMMY=0.
-      CALL stratified_tank_calc(VOL, H, P,
+      CALL stratified_tank_calc(VOL, H, P, 
      &  HIN1, HIN2, HOUT1, HOUT2, U, K_DESTRAT, NSTEPS, NNODES,
      &  HASHX1, 
      &  DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY,
@@ -1002,7 +1004,7 @@ C=======================================================================
      &  HPCM_MOD,TPCM_MOD,
      &  Axb,Ax,Ay,V,
      &  nX,nY,NPCMbot,NPCMtop,dr,
-     &  PCMrho,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
+     &  PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
      &  HPCMcyl,DPCMcyl,HPCMbot,HPCMtop, NPCM, HASPCM,DPCMnode)
 C-----------------------------------------------------------------------
 C     Declarations
@@ -1196,7 +1198,8 @@ C=====AGGIUNTO ROBY=============================================================
                                  ! tank node which the cylinder top is located in
       INTEGER NPCM               ! number of PCM modules
 
-      REAL*4 PCMrho             ! density [kg/m^3]
+      REAL*4 PCMrhos             ! density of solid [kg/m^3]
+      REAL*4 PCMrhol             ! density of solid [kg/m^3]
       REAL*4 cs              ! specific heat of solid [J/(kg K)]
       REAL*4 cl              ! specific heat of liquid [J/(kg K)]
       REAL*4 heatLat         ! latent heat [J/kg]
@@ -1211,6 +1214,10 @@ C=====AGGIUNTO ROBY=============================================================
       REAL*4 HPCMtop         ! Position of the cylinder top [m]
       REAL*4 dr              ! grid dimension in radial direction
       REAL*4 DPCMnode(nY-1)    ! distance among PCM nodes
+
+! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       REAL TMP_PREV(mY,mX)
+! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 C=====AGGIUNTO ROBY================================================================================
 
@@ -1425,6 +1432,15 @@ C----     Zero heat transfer array
             QPCM(i) = 0.
             QHX(i) = 0.
   115     continue
+! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
+! C---- Convert section temperatures into node temperatures
+!         do 117 i=NSec,1,-1
+!           do 116 j = Sectop(i),Secbot(i),-1
+!             Tstep_prev(j) = Tsec(i)
+!   116     continue
+!   117   continue
+! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
+
 
           if (HasHX0) 
      &      call immersed_HX_calc(NodeHeight, CrossArea, 
@@ -1440,21 +1456,41 @@ C----     Zero heat transfer array
      &        Tstep_prev, Mdot, NNodes,
      &        TInHX1, MdotHX1, GlycolFracHX1, TOutHX1step, QHX)
 
+! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
+!          endif
+! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
 
-          if (HasPCM)
-
-     &      call immersed_PCM(nX,nY,NPCMbot,NPCMtop,dr,
+          if (HasPCM) 
+     &      call immersed_PCM(nX,nY,NPCMbot,NPCMtop,dr, !Se cicla da "goto 110" ==> p = LastpHX e questo non viene chiamato
      &        NodeHeight, Tstep_prev(1),  
      &        Mdot(1), NNodes, QPCM(1), ts, 
      &        HPCM_MOD(1,1),TPCM_MOD(1,1),
      &        Axb(1),Ax(1,1),Ay(1),V(1,1),
-     &        PCMrho,cs,cl,heatLat,cndcts,cndctl,Tmi,
+     &        PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,
      &        method,e,
      &        HPCMcyl,DPCMcyl,HPCMbot,HPCMtop,
      &        DPCMnode(1),CrossArea)
 
           LastpHX = p
-        endif
+
+C===============================================================================SCOMMENTARE!!!!!!!!!!!!!!!!!
+      endif
+C===============================================================================SCOMMENTARE!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! C-----Computes the average heat flux from PCM
+!       DO i=1,nY
+!           QPCM(i) = 0.
+!       ENDDO
+C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
 
 C-----------------------------------------------------------------------
 C---- SECTION TEMPERATURE CALCULATION ALGORITHM
@@ -1474,7 +1510,7 @@ C---- Zero all coefficients
   120   continue       
 
 C---- Loop over sections
-      
+
         do 130 i=1,NSec,1
 
 C---- Calculate bottom and top node of this section, and number of nodes

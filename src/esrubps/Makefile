@@ -56,7 +56,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o   
+	  AirFlowModelRoutines.o Res_elec_Ctl.o PCM_stratified_tank.o  
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod
 
@@ -671,7 +671,9 @@ stratified_tank_2HX.F:
 AirFlowModelRoutines.F:
 	rm -f AirFlowModelRoutines.F
 	ln -s $(BLDdir)/AirFlowModelRoutines.F .
-
+PCM_stratified_tank.F:
+	rm -f PCM_stratified_tank.F
+	ln -s $(PLTdir)/PCM_stratified_tank.F .  
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -717,4 +719,4 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	AirFlowModelRoutines.F Res_elec_Ctl.F
+	AirFlowModelRoutines.F Res_elec_Ctl.F PCM_stratified_tank.F

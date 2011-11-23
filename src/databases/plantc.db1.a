@@ -7111,3 +7111,216 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
  
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    107
+ 
+ Component Description
+    Generic type     : Stratified tank with PCM and 1 immersed
+    Description      : Stratified tank with PCM and 1 immersed HX; 3 node model
+    Insertion date   : 12 October 2011
+    Type: Single component                    Component code :   1280
+ 
+ Nodal Scheme Description
+    Number of nodes  :   3      No of nonzero matrix elements :      3
+    Matrix positions :   1,   5,   9,
+    Node connections :   1,   1,   0,
+    Variable type    :  20,  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :  32    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.27300        Range (Min Max):    0.10000E-01    10.000
+    2 Tank height (m)
+      Value =    1.5000        Range (Min Max):    0.10000        10.000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =   -1.0000        Range (Min Max):    -1.0000        5.0000
+    4 Height of flow inlet (m)
+      Value =    1.5000        Range (Min Max):     0.0000        10.000
+    5 Height of flow outlet (m)
+      Value =    0.0000        Range (Min Max):     0.0000        10.000
+    6 Tank heat loss coefficient (W/m2-K)
+      Value =   0.10000        Range (Min Max):     0.0000        100.00
+    7 Additional destratification conductivity (W/m-K)
+      Value =    0.0000        Range (Min Max):     0.0000        100.00
+    8 Number of nodes
+      Value =    20.000        Range (Min Max):     0.0000        100.00
+    9 Internal time steps per simulation time step
+      Value =    5.0000        Range (Min Max):     1.0000        100.00
+   10 Initial temperature of tank (C)
+      Value =    20.000        Range (Min Max):     0.0000        100.00
+   11 Boiling temperature of fluid (C)
+      Value =    100.00        Range (Min Max):     50.000        200.00
+   12 Height of immersed HX inlet (m)
+      Value =    0.0000        Range (Min Max):     0.0000        10.000
+   13 Height of immersed HX outlet (m)
+      Value =    1.5000        Range (Min Max):     0.0000        10.000
+   14 Inside diameter of immersed HX coil (m)
+      Value =   0.34000E-01    Range (Min Max):     0.0000       0.10000
+   15 Outside diameter of immersed HX coil (m)
+      Value =   0.38000E-01    Range (Min Max):     0.0000       0.10000
+   16 Diameter of immersed HX coil (m)
+      Value =   0.35100        Range (Min Max):     0.0000        1.5000
+   17 Pitch of immersed HX coil (distance from one loop to the next) (m)
+      Value =   0.56000E-01    Range (Min Max):     0.0000       0.50000
+   18 Thermal conductivity of immersed HX coil material (W/m/K)
+      Value =    40.000        Range (Min Max):    0.10000        320.00
+   19 Number of PCM tanks
+      Value =    0.0000        Range (Min Max):     0.0000        50.000
+   20 Cylinder height (m)
+      Value =   0.24660        Range (Min Max):     0.0000        1.0000
+   21 Cylinder diameter (m)
+      Value =   0.88000E-01    Range (Min Max):     0.0000       0.50000
+   22 Cylinder bottom position (m)
+      Value =   0.25000        Range (Min Max):     0.0000        1.0000
+   23 N. of cells in radial direction (-)
+      Value =    20.000        Range (Min Max):     10.000        500.00
+   24 Density of PCM (kg/m^3)
+      Value =    1350.0        Range (Min Max):     1.0000        5000.0
+   25 Specific heat solid (J/(kg K))
+      Value =    2500.0        Range (Min Max):     1.0000        5000.0
+   26 Specific heat liquid (J/(kg K))
+      Value =    2500.0        Range (Min Max):     1.0000        5000.0
+   27 Latent heat (J/kg)
+      Value =   0.20000E+06    Range (Min Max):     1.0000       0.10000E+07
+   28 Solid conductivity (W/(m K))
+      Value =    5.0000        Range (Min Max):     1.0000        100.00
+   29 Liquid conductivity (W/(m K))
+      Value =    2.0000        Range (Min Max):     1.0000        100.00
+   30 Change phase temperature (C)
+      Value =    54.500        Range (Min Max):     1.0000        100.00
+   31 Time integration: 1 = explicit method; 2 = implicit method
+      Value =    0.0000        Range (Min Max):     1.0000        2.0000
+   32 Phase change range (C)
+      Value =   0.50000        Range (Min Max):     0.0000        10.000
+ 
+ Number of additional output parameters:     6
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+    6 Heat transf. from imm. HX      Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    108
+ 
+ Component Description
+    Generic type     : Stratified tank with PCM and 2 immersed
+    Description      : Stratified tank with PCM and 2 immersed HXs; 4 node model
+    Insertion date   : 12 October 2011
+    Type: Single component                    Component code :   1290
+ 
+ Nodal Scheme Description
+    Number of nodes  :   4      No of nonzero matrix elements :      4
+    Matrix positions :   1,   6,  11,  16,
+    Node connections :   1,   1,   1,   0,
+    Variable type    :  20,  20,  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :  39    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.27300        Range (Min Max):    0.10000E-01    10.000
+    2 Tank height (m)
+      Value =    1.5000        Range (Min Max):    0.10000        10.000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =   -1.0000        Range (Min Max):    -1.0000        5.0000
+    4 Height of flow inlet (m)
+      Value =    1.5000        Range (Min Max):     0.0000        10.000
+    5 Height of flow outlet (m)
+      Value =    0.0000        Range (Min Max):     0.0000        10.000
+    6 Tank heat loss coefficient (W/m2-K)
+      Value =   0.10000        Range (Min Max):     0.0000        100.00
+    7 Additional destratification conductivity (W/m-K)
+      Value =    0.0000        Range (Min Max):     0.0000        100.00
+    8 Number of nodes
+      Value =    20.000        Range (Min Max):     0.0000        100.00
+    9 Internal time steps per simulation time step
+      Value =    5.0000        Range (Min Max):     1.0000        100.00
+   10 Initial temperature of tank (C)
+      Value =    20.000        Range (Min Max):     0.0000        100.00
+   11 Boiling temperature of fluid (C)
+      Value =    100.00        Range (Min Max):     50.000        200.00
+   12 Height of first immersed HX inlet (m)
+      Value =    0.0000        Range (Min Max):     0.0000        10.000
+   13 Height of first immersed HX outlet (m)
+      Value =    1.5000        Range (Min Max):     0.0000        10.000
+   14 Inside diameter of first immersed HX coil (m)
+      Value =   0.34000E-01    Range (Min Max):     0.0000       0.10000
+   15 Outside diameter of first immersed HX coil (m)
+      Value =   0.38000E-01    Range (Min Max):     0.0000       0.10000
+   16 Diameter of first immersed HX coil (m)
+      Value =   0.35100        Range (Min Max):     0.0000        1.5000
+   17 Pitch of first immersed HX coil (distance from one loop to the next)
+      Value =   0.56000E-01    Range (Min Max):     0.0000       0.50000
+   18 Thermal conductivity of first immersed HX coil material (W/m/K)
+      Value =    40.000        Range (Min Max):    0.10000        320.00
+   19 eight of second immersed HX inlet (m)
+      Value =    0.0000        Range (Min Max):     0.0000        10.000
+   20 Height of second immersed HX outlet (m)
+      Value =    1.5000        Range (Min Max):     0.0000        10.000
+   21 Inside diameter of second immersed HX coil (m)
+      Value =   0.34000E-01    Range (Min Max):     0.0000       0.10000
+   22 Outside diameter of second immersed HX coil (m)
+      Value =   0.38000E-01    Range (Min Max):     0.0000       0.10000
+   23 Diameter of second immersed HX coil (m)
+      Value =   0.35100        Range (Min Max):     0.0000        1.5000
+   24 Pitch of second immersed HX coil (distance from one loop to the next
+      Value =   0.56000E-01    Range (Min Max):     0.0000       0.50000
+   25 Thermal conductivity of second immersed HX coil material (W/m/K)
+      Value =    40.000        Range (Min Max):    0.10000        320.00
+   26 Number of PCM tanks
+      Value =    0.0000        Range (Min Max):     0.0000        50.000
+   27 Cylinder height (m)
+      Value =   0.24660        Range (Min Max):     0.0000        1.0000
+   28 Cylinder diameter (m)
+      Value =   0.88000E-01    Range (Min Max):     0.0000       0.50000
+   29 Cylinder bottom position (m)
+      Value =   0.25000        Range (Min Max):     0.0000        1.0000
+   30 N. of cells in radial direction (-)
+      Value =    20.000        Range (Min Max):     10.000        0.0000
+   31 Density of PCM (kg/m^3)
+      Value =    1350.0        Range (Min Max):     1.0000        5000.0
+   32 Specific heat solid (J/(kg K))
+      Value =    2500.0        Range (Min Max):     1.0000        5000.0
+   33 Specific heat liquid (J/(kg K))
+      Value =    2500.0        Range (Min Max):     1.0000        5000.0
+   34 Latent heat (J/kg)
+      Value =   0.20000E+06    Range (Min Max):     1.0000       0.10000E+07
+   35 Solid conductivity (W/(m K))
+      Value =    5.0000        Range (Min Max):     1.0000        100.00
+   36 Liquid conductivity (W/(m K))
+      Value =    2.0000        Range (Min Max):     1.0000        100.00
+   37 Change phase temperature (C)
+      Value =    54.500        Range (Min Max):     1.0000        100.00
+   38 Time integration: 1 = explicit method; 2 = implicit method
+      Value =    0.0000        Range (Min Max):     1.0000        2.0000
+   39 Phase change range (C)
+      Value =   0.50000        Range (Min Max):     0.0000        10.000
+ 
+ Number of additional output parameters:     6
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+    6 Heat transf. from imm. HXs     Type :    1
+ 
+ Mass flow components data
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+ 

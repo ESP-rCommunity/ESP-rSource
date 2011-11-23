@@ -114,7 +114,8 @@ C===============================================================================
       INTEGER nXnY              ! Number of total cells [-]
 C      INTEGER nCells
       INTEGER NPCM              ! Number of PCM modules
-      REAL*4 PCMrho             ! Density [kg/m^3]
+      REAL*4 PCMrhos            ! Density of solid [kg/m^3]
+      REAL*4 PCMrhol            ! Density of liquid [kg/m^3]
       REAL*4 cs                 ! Specific heat of solid [J/(kg K)]
       REAL*4 cl                 ! Specific heat of liquid [J/(kg K)]
       REAL*4 heatLat            ! Latent heat [J/kg]
@@ -137,7 +138,6 @@ C      INTEGER nCells
       REAL*4 HeightNode         ! Tank CV height
 
       REAL*4 rp(mX)             ! Radius (axis-node distance) [m]
-
 C========================================================================================================FINE ROBERTA
 
 
@@ -182,16 +182,17 @@ C---- PCM data
       HPCMbot = ADATA(IPCOMP,29)  ! Position of the ciylinder bottom (m)
       nX      = INT(ADATA(IPCOMP,30)) 
                                   ! Number of cells in radial direction (-)
-      PCMrho  = ADATA(IPCOMP,31)  ! Density (kg/m^3)
-      cs      = ADATA(IPCOMP,32)  ! Specific heat of solid (J/(kg K))
-      cl      = ADATA(IPCOMP,33)  ! Specific heat of liquid (J/(kg K))
-      heatLat = ADATA(IPCOMP,34)  ! Latent heat (J/kg)
-      cndcts  = ADATA(IPCOMP,35)  ! Conductivity into solid (W/(m K))
-      cndctl  = ADATA(IPCOMP,36)  ! Conductivity into liquid [W/(m K)]
-      Tmi     = ADATA(IPCOMP,37)  ! Phase change temperature (C)
-      method  = INT(ADATA(IPCOMP,38))
+      PCMrhos = ADATA(IPCOMP,31)  ! Density of solid (kg/m^3)
+      PCMrhol = ADATA(IPCOMP,32)  ! Density of liquid (kg/m^3)
+      cs      = ADATA(IPCOMP,33)  ! Specific heat of solid (J/(kg K))
+      cl      = ADATA(IPCOMP,34)  ! Specific heat of liquid (J/(kg K))
+      heatLat = ADATA(IPCOMP,35)  ! Latent heat (J/kg)
+      cndcts  = ADATA(IPCOMP,36)  ! Conductivity into solid (W/(m K))
+      cndctl  = ADATA(IPCOMP,37)  ! Conductivity into liquid [W/(m K)]
+      Tmi     = ADATA(IPCOMP,38)  ! Phase change temperature (C)
+      method  = INT(ADATA(IPCOMP,39))
                                   !time integration method (-)
-      e       = ADATA(IPCOMP,39)  ! Phase change range (C)
+      e       = ADATA(IPCOMP,40)  ! Phase change range (C)
 C========================================================================================================FINE ROBERTA
 
 C---- Check that number of nodes is within acceptable range
@@ -388,35 +389,17 @@ C-----distance among PCM nodes - from bottom to top
       ENDIF
 
 
-
+! RIPRISTINARE!!!!!!!!!!!!!!!!!
 C-----GRID
       dr(N_STANK) = DPCMcyl/(2*(nX-1))
+! RIPRISTINARE!!!!!!!!!!!!!!!!!
 
       nY = NPCMsec
-C      nCells = 2*nX*nY ! dimension of TPCM_MOD and HPCM_MOD, for 2 time steps
-      nXnY = nX*nY ! dimension of TPCM_MOD and HPCM_MOD vectors
+      nXnY = nX*nY ! TPCM_MOD and HPCM_MOD dimension 
 
 
 
-! C-----INITIAL CONDITIONS for explicit method
-! 
-!       DO J=1, nXnY
-!           TPCM_MOD(J+nXnY,N_STANK) = TINIT-Tmi
-!       ENDDO
-! 
-! 
-!       DO J = 1,nXnY
-!         IF ((TINIT-Tmi) .LT. Tm) THEN ! cells initial enthalpy [J/kg]
-!           HPCM_MOD(J+nXnY,N_STANK) = cs*(TINIT-Tmi)
-!         ELSE
-!           HPCM_MOD(J+nXnY,N_STANK) = cl*(TINIT-Tmi-Tm)+
-!      &                               heatLat+cs*Tm
-!         ENDIF
-!       ENDDO
-
-
-
-C-----INITIAL CONDITIONS for implicit method
+C-----INITIAL CONDITIONS 
       DO J=1, nX       
         DO i=1, nY
           K=(J-1)*NY+I
@@ -441,7 +424,7 @@ C-----INITIAL CONDITIONS for implicit method
 
 
 
-
+! RIPRISTINARE!!!!!!!!!!!!!!!!!
 C-----GEOMETRY
 
 C-----PCM cells radius 
@@ -493,8 +476,57 @@ C-----cells PCM volume
           ENDIF
         ENDDO              
       ENDDO
+! RIPRISTINARE!!!!!!!!!!!!!!!!!
 
 
+
+! CANCELLARE!!!!!!!!!!!!!
+! C-----PCM cells radius 
+! 
+!       dr(N_STANK) = DPCMcyl/((2*nX)-1)
+! 
+!         rp(nX) = 0.
+!         DO j=nX-1,1,-1
+!           rp(j)=rp(j+1)+dr(N_STANK)
+!         ENDDO
+! 
+! 
+! C-----lateral surface of PCM cells 
+! 
+!       DO I=1,nY
+!         Axb(I,N_STANK) = pi*DPCMcyl*HPCMsec(I,N_STANK) ! border cells
+!       ENDDO 
+! 
+! 
+!       DO J=1,nX-1 
+!         DO I=1,nY
+!           K=(J-1)*nY+I
+!           Ax(K,N_STANK)=2*pi*HPCMsec(I,N_STANK)*
+!      &                    (rp(J)-dr(N_STANK)/2) ! generic cells
+!         ENDDO
+!       ENDDO
+! 
+! C-----top/bottom surface of PCM cells 
+! 
+!       DO J=1,nX-1
+!           Ay(J,N_STANK) = 2*dr(N_STANK)*rp(j)*pi ! generic cell
+!       ENDDO
+!       Ay(nX,N_STANK) = (dr(N_STANK)/2)**2*pi ! internal cell
+!    
+! 
+! C-----cells PCM volume 
+!       DO J=1,nX-1
+!         DO I=1,nY
+!           K=(J-1)*nY+I
+!           V(K,N_STANK)= 2*dr(N_STANK)*rp(j)*pi*HPCMsec(I,N_STANK) ! generic cell
+!         ENDDO              
+!       ENDDO
+!       J=nX
+!       DO I=1,nY
+!         K=(J-1)*nY+I
+!         V(K,N_STANK)= (dr(N_STANK)/2)**2*pi*HPCMsec(I,N_STANK) ! internal cell
+!       ENDDO
+! !CANCELLARE!!!!!!!!!!!!!
 
 
 C---- Assign PCM grid and position data
@@ -870,7 +902,8 @@ C---- Functions
 C======================================================================================INIZIO AGGIUNTO ROBERTA
 c---- PCM data
       INTEGER NPCM              ! Number of PCM modules
-      REAL*4 PCMrho             ! Density [kg/m^3]
+      REAL*4 PCMrhos            ! Density of solid [kg/m^3]
+      REAL*4 PCMrhol            ! Density of liquid [kg/m^3]
       REAL*4 cs                 ! Specific heat of solid [J/(kg K)]
       REAL*4 cl                 ! Specific heat of liquid [J/(kg K)]
       REAL*4 heatLat            ! Latent heat [J/kg]
@@ -940,16 +973,17 @@ C---- PCM data
       HPCMbot = ADATA(IPCOMP,29)  ! Position of the ciylinder bottom (m)
       nX      = INT(ADATA(IPCOMP,30)) 
                                   ! Number of cells in radial direction (-)
-      PCMrho  = ADATA(IPCOMP,31)  ! Density (kg/m^3)
-      cs      = ADATA(IPCOMP,32)  ! Specific heat of solid (J/(kg K))
-      cl      = ADATA(IPCOMP,33)  ! Specific heat of liquid (J/(kg K))
-      heatLat = ADATA(IPCOMP,34)  ! Latent heat (J/kg)
-      cndcts  = ADATA(IPCOMP,35)  ! Conductivity into solid (W/(m K))
-      cndctl  = ADATA(IPCOMP,36)  ! Conductivity into liquid [W/(m K)]
-      Tmi     = ADATA(IPCOMP,37)  ! Phase change temperature (C)
-      method  = INT(ADATA(IPCOMP,38))
+      PCMrhos = ADATA(IPCOMP,31)  ! Density of solid (kg/m^3)
+      PCMrhol = ADATA(IPCOMP,32)  ! Density of liquid (kg/m^3)
+      cs      = ADATA(IPCOMP,33)  ! Specific heat of solid (J/(kg K))
+      cl      = ADATA(IPCOMP,34)  ! Specific heat of liquid (J/(kg K))
+      heatLat = ADATA(IPCOMP,35)  ! Latent heat (J/kg)
+      cndcts  = ADATA(IPCOMP,36)  ! Conductivity into solid (W/(m K))
+      cndctl  = ADATA(IPCOMP,37)  ! Conductivity into liquid [W/(m K)]
+      Tmi     = ADATA(IPCOMP,38)  ! Phase change temperature (C)
+      method  = INT(ADATA(IPCOMP,39))
                                   !time integration method (-)
-      e       = ADATA(IPCOMP,39)  ! Phase change range (C)
+      e       = ADATA(IPCOMP,40)  ! Phase change range (C)
 
 C---- Initialize pcm_module
       HPCMtop = HPCMbot+HPCMcyl
@@ -1088,7 +1122,7 @@ C=================================================================FINE AGGIUNTO 
      &  Axb(1,I_STANK),Ax(1,I_STANK),Ay(1,I_STANK),
      &  V(1,I_STANK),
      &  nX,nY,NPCMbot,NPCMtop,dr(I_STANK),
-     &  PCMrho,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
+     &  PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
      &  HPCMcyl,DPCMcyl,HPCMbot,HPCMtop, NPCM, HASPCM,
      &  DPCMNODE(1,I_STANK))!============================================FINE AGGIUNTO ROBERTA
 
