@@ -2569,7 +2569,8 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
               do 401 IX=1,NPGET
                 if (MENUTYPE.eq.3) then
                   Iax=IPGETNO(IX,8)
-                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
+                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),
+     &              YSC(Iax))
                   if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                     TIMEold(IX)=0
                     Yold(IX)=VAL(IX)
@@ -2813,7 +2814,7 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 202 I=1,NPGET
           Iax=IPGETNO(I,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GPLABEL(I)
           if(colok)then
             if(IPGETNO(I,2).gt.0)then

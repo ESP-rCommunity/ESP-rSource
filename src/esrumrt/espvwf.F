@@ -434,7 +434,7 @@ C successful then scan all the zones via ZDATA.
             CFGOK=.TRUE.
             numberofzones=ncomp
             IF(MMOD.EQ.8)call updwire(numberofzones)
-            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+            CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -569,7 +569,7 @@ C Find the path and local file name.
           CFGOK=.TRUE.
           numberofzones=ncomp
           IF(MMOD.EQ.8) call updwire(numberofzones)
-          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+          CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 
