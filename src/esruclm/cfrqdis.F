@@ -453,7 +453,7 @@ C Stuff this into static memory.
 C Pick up the data increment for the horizontal axis and then draw
 C the horizontal axis.
       LABELX=LABLSX(IL)
-      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,XSC,1,LABELX)
+      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,XSC,1,LABELX)
 
 C Draw the vertical axis.
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,YSC,1,0,'Distribution')

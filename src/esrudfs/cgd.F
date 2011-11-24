@@ -347,11 +347,13 @@ C xax       - text for horiz axis.
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1
 #endif
 
 C x-z plane grid.
@@ -371,7 +373,8 @@ C Cast values for linescale.
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
+      iiw1=iigb+10
+      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
       iside=1
       isize=0
       ifont=1
@@ -452,11 +455,13 @@ C xax,yax   - text for horiz and vert axis.
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1
 #endif
 
 C x-z plane grid.
@@ -476,7 +481,8 @@ C Cast values for linescale.
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
-      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
+      iiw1=iigb+10
+      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
       if((Ymax-Ymin).lt.2.0)then
         call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,0,0,yax)
         call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,0,1,yax)

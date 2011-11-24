@@ -286,7 +286,7 @@ C      CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       call viewtext(etext,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
+      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
       CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')

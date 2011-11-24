@@ -162,8 +162,8 @@ C Calculate plotting box locations.
      &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
-        CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
-     &                                        'Number of Iterations')
+        CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    'Number of Iterations')
         CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
@@ -174,7 +174,7 @@ C Scale and draw residuals plot.
         CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
-        CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
+        CALL horaxis(plxmin,plxmax,iglmon,iigr,iigb,xadd,XSC,0,' ')
         CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0

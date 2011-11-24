@@ -2873,7 +2873,8 @@ C Re-set scale for gain (W) axis.
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw for first day type requested
-      CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
+      CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
+     &  'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
@@ -2884,7 +2885,7 @@ C Scale and draw for first day type requested
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
-      CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
+      CALL horaxis(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -2895,7 +2896,7 @@ C Scale and draw second day type requested
       CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
-      CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
+      CALL horaxis(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -4880,7 +4881,8 @@ C Re-set scale for gain (W) axis.
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw first day type requested
-      CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
+      CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
+     &  'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
@@ -4891,7 +4893,7 @@ C Scale and draw first day type requested
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
-      CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
+      CALL horaxis(plxmin,plxmax,iglsat,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
@@ -4902,7 +4904,7 @@ C Scale and draw second day type requested
       CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
-      CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
+      CALL horaxis(plxmin,plxmax,iglsun,iigr,iigb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0

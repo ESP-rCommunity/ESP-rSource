@@ -939,7 +939,7 @@ C Copy axis labels into local variable and then display the
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,igl,igr,igb,Xadd,xsc,0,HIT)
+      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
       VIT=' '
       VIT=VITEM
       call vrtaxis(YMINV,YMAXV,igl,igb,igt,Yadd,ysc,0,0,VIT)

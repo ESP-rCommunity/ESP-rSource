@@ -978,11 +978,11 @@ C Left axis.
 C Horizontal axis, label depending on data type.
 C If moderate data range use mode 1, otherwise try 0.
       if((XMAX-XMIN).lt.5.0)then
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
       elseif((XMAX-XMIN).ge.5.0.and.(XMAX-XMIN).lt.1000.)then
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,alabel)
       else
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
       endif
 
 C Right axis.

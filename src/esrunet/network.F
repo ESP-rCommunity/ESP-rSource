@@ -1024,10 +1024,10 @@ C Draw the grid with the current scaling parameters.
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'X (all grid dimensions in m)')
       ELSE
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'Y (all grid dimensions in m)')
       ENDIF
 

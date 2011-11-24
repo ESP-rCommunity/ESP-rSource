@@ -385,8 +385,8 @@ C Reset the scaling flag if required
   70    CONTINUE 
 
 C Draw horizontal (time) axis.
-        CALL HORAXIS(XSTRT,XFIN,IGL,IGR,IGB,XADD,TSC,1,
-     &                             'Time Hrs')
+        CALL HORAXIS(XSTRT,XFIN,iigl,iigr,iigb,XADD,TSC,1,
+     &    'Time Hrs')
      
       ELSEIF(MODE.EQ.'U')THEN
 

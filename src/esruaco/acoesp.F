@@ -1124,12 +1124,13 @@ C Calculate plotting box locations.
         CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
 
 C Scale and draw monitoring plot.
-        Call horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,'Frequ.[Hz]')
+        Call horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    'Frequ.[Hz]')
         call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1
-        write(title,'(20x,2a)') 'Reverberation time for space: ',TxtZone
+        write(title,'(20x,2a)')'Reverberation time for space: ',TxtZone
         iside=IPS
         isize=0
         ifont=0

@@ -326,7 +326,7 @@ C Scale the axes of the chart (initial values)
       CALL startbuffer()
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'Db Temp C')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'Db Temp C')
       CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,0,0,'RH %')
 
 C Store the scaling parameters used in drawing the axes

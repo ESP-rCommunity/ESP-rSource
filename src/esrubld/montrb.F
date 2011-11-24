@@ -205,11 +205,13 @@ C since not all compilers use the same default.
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Test save option selected.
@@ -223,6 +225,9 @@ C do an internal write placing an end marker which C can understand.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
       goto (1000,2000) mode
 
@@ -279,7 +284,7 @@ c Determine scaling ratios for other y axis.
      &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (h)')
+      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
 
 c Draw a scale vertical axis.
       call vrtaxis(yminb(1),ymaxb(1),igl,igb,igt,yadd,ysc,1,0,':')

@@ -953,16 +953,21 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
-      integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer*8 iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C DRAW TIME AXIS
 C Pick up the data increment for the horizontal axis.
@@ -973,15 +978,16 @@ C     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
 
       call dinterval(TMIN,TMAX,DT,NDEC,1)
       if(acthor.eq.'-')then
-        call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')
+        call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,
+     &    'Time (hours)')
       elseif(acthor.eq.'d')then
         CALL EDAY(id1,im1,isjday)
-        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,2,24,isjday,
-     &    'Time (days)')
+        call horaxishdw(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,2,24,
+     &    isjday,'Time (days)')
       elseif(acthor.eq.'w')then
         CALL EDAY(id1,im1,isjday)
-        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,3,168,isjday,
-     &    'Time (weeks)')
+        call horaxishdw(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,3,168,
+     &    isjday,'Time (weeks)')
       endif
       call forceflush()
 
@@ -1320,7 +1326,7 @@ C Stuff this into static memory.
       call linescale(iigl,Xaddd,XSC,iigb,Yaddd,YSC)
 
       call dinterval(TMIN,TMAX,DX,NDEC,1)
-      call horaxis(TMIN,TMAX,igl,igr,igb,Xaddd,XSC,0,'Time (hrs)')
+      call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xaddd,XSC,0,'Time (hrs)')
 
 
 C Draw the vertical axis.

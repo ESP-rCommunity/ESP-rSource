@@ -261,7 +261,7 @@ C      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       call viewtext(etext,iside,isize,ifont)
 
 C Draw horizontal axis and move to start point.
-      call horaxis(xmin,xmax,igl,igr,igb,Xadd,sca,0,'Horizontal')
+      call horaxis(xmin,xmax,iigl,iigr,iigb,Xadd,sca,0,'Horizontal')
 
 C Draw vertical axis.
       call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
@@ -411,8 +411,8 @@ C Place scaling in static C variables for use by line drawing routines.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Draw horizontal axis.
-      call horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,
-     &             'Azimuth deg.')
+      call horaxis(0.,360.,iigl,iigr,iigb,Xadd,xsc,0,
+     &  'Azimuth deg.')
 
 C Draw vertical axes on left and right.
       call vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude deg.')

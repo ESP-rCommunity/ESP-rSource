@@ -485,23 +485,23 @@ C default.
       if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
         overalldays=IODF-IODS
         if(overalldays.le.60)then
-          call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      'Time Hrs')
         elseif(overalldays.gt.60.and.overalldays.le.120)then
-          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      2,24,iods,'Time (days)')
         else
-          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      3,168,iods,'Time (weeks)')
         endif
       elseif(horaxisdiv.eq.2)then
-        call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    'Time Hrs')
       elseif(horaxisdiv.eq.3)then
-        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    2,24,iods,'Time (days)')
       elseif(horaxisdiv.eq.4)then
-        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    3,168,iods,'Time (weeks)')
       endif
 C Recover and plot data.
